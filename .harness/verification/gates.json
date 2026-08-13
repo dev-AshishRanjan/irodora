@@ -1,0 +1,168 @@
+{
+  "$schemaRef": "../state/schemas/gates.schema.json",
+  "version": 1,
+  "updated": "2026-08-13",
+  "description": "Ordered verification gates. Run in order; stop at the first failure. A gate activates with the feature that makes it meaningful — never earlier (a gate that cannot fail teaches nothing) and never later (a gate added after the fact finds a backlog instead of a regression). `ciStep: false` means the gate is deliberately covered inside another CI step; the ci-mirror check in verify-state.mjs knows that is intentional.",
+  "gates": [
+    {
+      "id": "state",
+      "order": 0,
+      "status": "active",
+      "activatesWith": null,
+      "command": "node scripts/verify-state.mjs",
+      "requiredFor": ["always"],
+      "ciStep": true,
+      "description": "Harness integrity. Validates feature_list.json and effects.json against their schemas; every E-### has a memory note and every memory note is referenced; every effect `to` path exists on disk; every critical link names a guard; wikilinks resolve; wip_limit is respected; blockers are done before a feature is in_progress; an in-flight feature has a plan; every PRD FR/NFR is claimed by a feature and appears in REQUIREMENTS-COVERAGE.md; the ADR index matches the ADR files; gates.json mirrors the CI workflow; every IRODORA_* variable read by config is documented in .env.example; scoped rules do not weaken a golden rule; governed-doc relative links resolve."
+    },
+    {
+      "id": "typecheck",
+      "order": 1,
+      "status": "pending",
+      "activatesWith": "F-001",
+      "command": "pnpm typecheck",
+      "requiredFor": ["code"],
+      "ciStep": true,
+      "description": "TypeScript strict typecheck across the workspace. Runs each package's tsconfig.json — the same project the editor and typescript-eslint use — so tests are covered. tsconfig.build.json is the EMIT project only; running the build project here would leave type errors accumulating in files no gate can see."
+    },
+    {
+      "id": "lint",
+      "order": 2,
+      "status": "pending",
+      "activatesWith": "F-001",
+      "command": "pnpm lint",
+      "requiredFor": ["code"],
+      "ciStep": true,
+      "description": "ESLint flat config, type-aware. Enforces package boundaries, the colour engine's platform-freedom rules, no-floating-promises, no colour literals outside the token layer, no hard-coded user-facing strings, and the claims copy lint. `eslint .` per package keeps it affordable — a single root run over the monorepo exhausts the V8 heap."
+    },
+    {
+      "id": "format",
+      "order": 3,
+      "status": "pending",
+      "activatesWith": "F-001",
+      "command": "pnpm format:check",
+      "requiredFor": ["code"],
+      "ciStep": true,
+      "description": "Prettier formatting check on code and root config. Prose (docs/, .harness/) and byte-significant data (golden datasets, corpus JSON) are excluded — reflowing them makes review diffs unreadable and, for golden data, changes bytes that are compared by hash."
+    },
+    {
+      "id": "test",
+      "order": 4,
+      "status": "pending",
+      "activatesWith": "F-001",
+      "command": "pnpm test",
+      "requiredFor": ["code"],
+      "ciStep": true,
+      "description": "Unit, integration and property-based tests (Vitest + fast-check), including every port's adapter conformance suite. Each conformance suite contains at least one case verified to fail against a deliberately broken adapter — a conformance case that cannot fail launders every adapter through it."
+    },
+    {
+      "id": "color-golden",
+      "order": 5,
+      "status": "pending",
+      "activatesWith": "F-006",
+      "command": "pnpm test:golden",
+      "requiredFor": ["color-engine"],
+      "ciStep": true,
+      "description": "The colour engine against published reference datasets: all 34 Sharma–Wu–Dalal CIEDE2000 pairs to 4 decimal places, Ottosson's OKLab values, Bruce Lindbloom's conversion tables, WCAG worked examples, published CVD confusion-line pairs, and near-black sRGB values that fail against a pure-power transfer function. Also runs the cross-platform identity check (NFR-3): 10,000 computations in Node, browser and React Native, asserted bitwise identical. Tolerance: ΔE00 ≤ 0.01, Lab ≤ 0.02 absolute. A changed golden value requires an ADR — it is a claim about physical reality."
+    },
+    {
+      "id": "build",
+      "order": 6,
+      "status": "pending",
+      "activatesWith": "F-001",
+      "command": "pnpm build",
+      "requiredFor": ["code"],
+      "ciStep": true,
+      "description": "Turborepo build of every package and app."
+    },
+    {
+      "id": "e2e",
+      "order": 7,
+      "status": "pending",
+      "activatesWith": "F-015",
+      "command": "pnpm test:e2e",
+      "requiredFor": ["user-facing"],
+      "ciStep": true,
+      "description": "End-to-end per surface. API runs HTTP-surface e2e via app.inject. Web runs Playwright against its own server, including axe WCAG 2.2 A/AA assertions, a keyboard-only journey, a simulated-CVD journey, and a NETWORK assertion proving that a Lens scan transmits no image bytes (NFR-12). Tenancy negative tests run with a populated decoy tenant — against an empty one they pass whether or not the policy works."
+    },
+    {
+      "id": "a11y",
+      "order": 8,
+      "status": "pending",
+      "activatesWith": "F-017",
+      "command": "pnpm test:a11y",
+      "requiredFor": ["web"],
+      "ciStep": false,
+      "description": "Accessibility (axe, WCAG 2.2 AA) for every web route — zero violations, not warnings. Asserted inside the web Playwright run, so CI's e2e step covers it; ciStep is false deliberately and the ci-mirror check knows that. Listed separately for traceability against NFR-8."
+    },
+    {
+      "id": "contrast",
+      "order": 9,
+      "status": "pending",
+      "activatesWith": "F-003",
+      "command": "pnpm test:contrast",
+      "requiredFor": ["web", "tokens"],
+      "ciStep": true,
+      "description": "Reads docs/design/design-system.manifest.json and asserts every declared `pairsWith` combination meets WCAG 2.2 AA in BOTH themes, reports APCA Lc alongside, and scans rendered surfaces for colour-only status indicators (NFR-9). A pairing used in a component but absent from `pairsWith` is a failure — the declaration is how the gate knows what to check. Report-only while the manifest status is `placeholder`; blocking once it is `approved`."
+    },
+    {
+      "id": "cvd",
+      "order": 10,
+      "status": "pending",
+      "activatesWith": "F-008",
+      "command": "pnpm test:cvd",
+      "requiredFor": ["color-engine", "recommendations"],
+      "ciStep": true,
+      "description": "Colour-vision-deficiency regression. Asserts that recommended outfits maintain the minimum separation score under protanopia, deuteranopia and tritanopia, and that the design system's own `cvdPairs` remain distinguishable at severity 1.0 — success and error especially. The product's interface is held to the standard it applies to outfits."
+    },
+    {
+      "id": "content",
+      "order": 11,
+      "status": "pending",
+      "activatesWith": "F-011",
+      "command": "pnpm test:content",
+      "requiredFor": ["content"],
+      "ciStep": true,
+      "description": "Corpus integrity (NFR-20). Fails the build if ANY entry lacks source, sourceType, derivation, verifiedBy or verifiedAt; if author and reviewer are the same identity; if a `historical` classification has no dated primary source; if a derived value is inconsistent with its xyz under the current engine; if a palette has no anchor; if a relation points at a missing slug; if a published entry differs from its checksum; or if a slug is duplicated. There is no partial publication — a corpus that is 95% verified is one where nobody knows which 5% to distrust."
+    },
+    {
+      "id": "perf",
+      "order": 12,
+      "status": "pending",
+      "activatesWith": "F-038",
+      "command": "pnpm bench",
+      "requiredFor": ["release"],
+      "ciStep": true,
+      "description": "Backend performance against ABSOLUTE committed thresholds (NFR-4), never baseline deltas — CI hardware varies, and a delta gate flakes until someone disables it. Boots the real Local runtime over a versioned deterministic corpus. Asserts recommendation p95 ≤ 200 ms, API p95 ≤ 300 ms, local analysis p95 ≤ 200 ms, capsule solve (40 garments) p95 ≤ 3 s. A miss is a tracked work item, never an edited threshold."
+    },
+    {
+      "id": "web-perf",
+      "order": 13,
+      "status": "pending",
+      "activatesWith": "F-038",
+      "command": "pnpm test:perf",
+      "requiredFor": ["web"],
+      "ciStep": true,
+      "description": "Frontend budgets (NFR-5). First-load JS per route, measured over the wire and gzipped, captured at the `load` event so lazily-imported chunks are correctly excluded — that exclusion IS the definition of the budget. Core Web Vitals measured by PerformanceObserver under prefers-reduced-motion with CPU throttling, median of 3 runs: LCP ≤ 2.0 s, CLS ≤ 0.05, TBT reported. Not Lighthouse: with animation running, TBT scales with the observation window rather than with the page. The honest limit: this does not measure what a motion-enabled visitor experiences. Requires the build gate to have run first."
+    },
+    {
+      "id": "e2e-full",
+      "order": 14,
+      "status": "pending",
+      "activatesWith": "F-044",
+      "command": "pnpm test:e2e:full",
+      "requiredFor": ["release"],
+      "ciStep": true,
+      "description": "Full-stack end-to-end against ONE live deployment — real API, real Postgres, real object storage, the production web build proxied at the live API. Runs the human journeys (J1 first value, J4 CVD check, J5 wardrobe) and the offline-to-online sync journey. Serialized with zero retries: a flaky full-stack gate is a lie, because it reports a state of the world it did not observe."
+    },
+    {
+      "id": "security",
+      "order": 15,
+      "status": "pending",
+      "activatesWith": "F-004",
+      "command": "pnpm security:secrets",
+      "requiredFor": ["always"],
+      "ciStep": true,
+      "description": "Secret scanning (gitleaks), dependency audit and SAST. A Critical or High advisory blocks release. A gitleaks finding ROTATES the secret — it never earns an allowlist entry, because a secret in git history is compromised regardless of whether the commit was pushed."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "irodora",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Irodora — a deterministic colour intelligence platform for what you wear.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "verify:state": "node scripts/verify-state.mjs",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "turbo run test",
+    "test:golden": "turbo run test:golden",
+    "test:cvd": "turbo run test:cvd",
+    "test:content": "node scripts/verify-content.mjs",
+    "build": "turbo run build",
+    "test:e2e": "turbo run test:e2e",
+    "test:a11y": "turbo run test:a11y",
+    "test:contrast": "turbo run test:contrast",
+    "test:e2e:full": "pnpm --filter @irodora/e2e-full test",
+    "test:perf": "pnpm --filter @irodora/web-perf test",
+    "bench": "pnpm --filter @irodora/bench test",
+    "security:secrets": "gitleaks detect --no-banner --redact --config .gitleaks.toml",
+    "clean": "turbo run clean && rimraf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.10.9",
+    "typescript": "^7.0.2"
+  }
+}

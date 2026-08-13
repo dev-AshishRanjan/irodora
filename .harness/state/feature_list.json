@@ -1,0 +1,1171 @@
+{
+  "$schemaRef": "schemas/feature_list.schema.json",
+  "version": 1,
+  "project": "Irodora",
+  "updated": "2026-08-13",
+  "policy": {
+    "wip_limit": 1,
+    "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
+  },
+  "statuses": ["backlog", "todo", "in_progress", "blocked", "in_review", "done"],
+  "releases": ["R0", "R1", "R2", "R3", "R4", "R5"],
+  "features": [
+    {
+      "id": "F-001",
+      "title": "Monorepo toolchain scaffold",
+      "requirements": ["NFR-24"],
+      "service": "root",
+      "release": "R0",
+      "priority": "must",
+      "status": "todo",
+      "acceptance": [
+        "pnpm workspace with apps/*, packages/*, tests/* resolves and installs",
+        "Turborepo pipeline runs typecheck, lint, format:check, test, build across the workspace",
+        "TypeScript project references configured; tsconfig.json is the lint/editor project and tsconfig.build.json is the emit project",
+        "Package boundary lint fails on a deep import into another package's internals",
+        "The colour-engine lint zone fails on node:*, window, document or process",
+        "Gates 1-4 and 6 activate in gates.json and run in CI"
+      ],
+      "verification": ["state", "typecheck", "lint", "format", "test", "build"],
+      "notes": "Node 24 LTS is pinned in .nvmrc. The workstation currently runs 22.16.0 and must be upgraded before this feature starts."
+    },
+    {
+      "id": "F-002",
+      "title": "Shared contracts package",
+      "requirements": ["NFR-24"],
+      "service": "packages",
+      "package": "@irodora/contracts",
+      "release": "R0",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-001"],
+      "acceptance": [
+        "Zod schemas are the single source of runtime validation, TypeScript types and OpenAPI",
+        "A schema change propagates to inferred types with no hand-written duplicate",
+        "The error-code enum is closed and versioned",
+        "No hand-written type duplicates a schema"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "build"]
+    },
+    {
+      "id": "F-003",
+      "title": "OKLCH-native design token package",
+      "requirements": ["NFR-8", "NFR-9"],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R0",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-001"],
+      "acceptance": [
+        "design-system.manifest.json compiles to CSS custom properties, TypeScript, React Native styles and a Tailwind v4 theme",
+        "The contrast gate reads the manifest and checks every pairsWith combination in both themes",
+        "Every status token pairs with an icon token; a status expressible only as colour cannot be constructed",
+        "cvdPairs are asserted distinguishable at severity 1.0",
+        "Gate 9 (contrast) activates, report-only while the manifest status is placeholder"
+      ],
+      "verification": ["state", "typecheck", "test", "contrast"],
+      "notes": "Concrete values arrive from the design deliverable. The structure and the pipeline land here."
+    },
+    {
+      "id": "F-004",
+      "title": "CI/CD pipeline and gate wiring",
+      "requirements": ["NFR-14", "NFR-19"],
+      "service": "root",
+      "release": "R0",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-001"],
+      "acceptance": [
+        "GitHub Actions runs every active gate in gates.json order, stopping at the first failure",
+        "The gates.json to ci.yml mirror check passes, and a deliberately removed step makes it fail",
+        "Branch protection requires all checks, one review, and linear history",
+        "gitleaks runs on every push; dependency audit blocks on Critical and High",
+        "Changesets configured for the publishable packages"
+      ],
+      "verification": ["state", "security"]
+    },
+    {
+      "id": "F-005",
+      "title": "Deployment profiles: local, VPS, cloud",
+      "requirements": ["NFR-18"],
+      "service": "infra",
+      "release": "R0",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-001"],
+      "acceptance": [
+        "Multi-stage Dockerfiles for api, worker and web; non-root, pinned base digests",
+        "infra/compose/docker-compose.prod.yml boots the full stack and is consumed unmodified by both Coolify and Dokploy",
+        "/healthz checks the process only; /readyz checks database and cache",
+        "Migrations run at boot under a Postgres advisory lock; simultaneous container starts do not race",
+        "Every infrastructure dependency sits behind a port with a conformance suite every adapter passes",
+        "The stack is deployed and verified on a real VPS through Coolify AND through Dokploy",
+        "Terraform skeleton for the cloud profile exists with remote state configured"
+      ],
+      "verification": ["state", "build", "security"],
+      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite."
+    },
+
+    {
+      "id": "F-006",
+      "title": "Colour spaces and conversion",
+      "requirements": ["FR-1", "NFR-1", "NFR-3", "NFR-19"],
+      "service": "packages",
+      "package": "@irodora/color-spaces",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-001"],
+      "acceptance": [
+        "sRGB, Display-P3, linear RGB, CIE XYZ (D65), CIELAB, CIELCh, OKLab and OKLCh conversions implemented",
+        "CAT16 chromatic adaptation, with Bradford available",
+        "Golden datasets from published sources, each citing its source, including near-black values that fail against a pure-power transfer function",
+        "Round-trip through every pair within DeltaE00 0.01 across 10,000 sampled colours",
+        "Cross-platform identity: Node, browser and React Native produce bitwise-identical output",
+        "Zero runtime dependencies; no node:*, DOM or process",
+        "Gate 5 (color-golden) activates"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "color-golden", "build"],
+      "effects": ["E-001", "E-002"]
+    },
+    {
+      "id": "F-007",
+      "title": "Colour difference and contrast",
+      "requirements": ["FR-2", "FR-3"],
+      "service": "packages",
+      "package": "@irodora/color-difference",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-006"],
+      "acceptance": [
+        "DeltaE76, DeltaE94, DeltaE00 (CIEDE2000) and DeltaEok implemented",
+        "All 34 Sharma-Wu-Dalal test pairs reproduced to 4 decimal places",
+        "WCAG 2.x contrast ratio matches the specification's worked examples exactly",
+        "APCA Lc computed and reported alongside",
+        "Property tests assert DeltaE symmetry and identity"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "color-golden", "build"],
+      "effects": ["E-003"]
+    },
+    {
+      "id": "F-008",
+      "title": "CVD engine and separation scoring",
+      "requirements": ["FR-4", "FR-5", "NFR-10"],
+      "service": "packages",
+      "package": "@irodora/cvd-engine",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-007"],
+      "acceptance": [
+        "Brettel-Vienot dichromacy and Machado anomalous trichromacy at severity 0 to 1",
+        "Dichromat simulation of a published confusion-line pair yields DeltaE00 below 2",
+        "One separation score in [0,100], combining post-simulation DeltaE00 with lightness difference, used identically by the UI and the recommendation engine",
+        "Gate 10 (cvd) activates"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "color-golden", "cvd", "build"],
+      "effects": ["E-005"]
+    },
+    {
+      "id": "F-009",
+      "title": "Gamut mapping",
+      "requirements": ["FR-8"],
+      "service": "packages",
+      "package": "@irodora/color-spaces",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-006"],
+      "acceptance": [
+        "Out-of-gamut colours map by OKLCh chroma reduction, preserving lightness and hue within stated bounds",
+        "Mapping an in-gamut colour is idempotent, asserted by property test",
+        "Golden set of known out-of-gamut colours and their mapped results"
+      ],
+      "verification": ["state", "typecheck", "test", "color-golden", "build"]
+    },
+    {
+      "id": "F-010",
+      "title": "The Color value type and reproducibility envelope",
+      "requirements": ["FR-9", "FR-10"],
+      "service": "packages",
+      "package": "@irodora/color-core",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-006"],
+      "acceptance": [
+        "Color carries required Provenance; an unclassified colour is not constructible",
+        "Provenance records source, confidence, conditions and originSpace",
+        "Color.unsafeFromHex is the only untracked construction path, and every call site is reviewed",
+        "Every derived result carries {engine, corpus, rules, profile}",
+        "A regression test pins historical envelopes and replays them byte-identically"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "build"],
+      "effects": ["E-002"]
+    },
+    {
+      "id": "F-011",
+      "title": "Corpus schema, provenance and the content gate",
+      "requirements": ["FR-21", "FR-23", "FR-24", "FR-25", "NFR-20"],
+      "service": "content",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-010"],
+      "acceptance": [
+        "Entry schema per docs/content/color-corpus-spec.md, with all provenance fields required",
+        "Five classifications enforced and displayed; our own curation cannot be marked historical",
+        "Derived values (lab, oklch, hex) computed from xyz by the engine at build time, never typed",
+        "Editorial workflow draft to review to verified to published to superseded; author and reviewer must differ",
+        "Corpus versions immutable once published, with checksums verified at load",
+        "Gate 11 (content) activates and fails the build on a single incomplete entry"
+      ],
+      "verification": ["state", "typecheck", "test", "content"],
+      "effects": ["E-001", "E-006"]
+    },
+    {
+      "id": "F-012",
+      "title": "Japanese colour atlas seed corpus",
+      "requirements": ["FR-20", "FR-21", "FR-22"],
+      "service": "content",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-011"],
+      "openQuestions": ["OQ-4", "OQ-5"],
+      "acceptance": [
+        "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
+        "Contemporary palette systems: Quiet Neutrals, Indigo Studies, Forest and Mineral, Earth and Clay, Seasonal",
+        "Every palette has an anchor role and editorial provenance",
+        "Every source appears in the register in docs/content/licensing-and-provenance.md",
+        "No entry derives from a scraped or unlicensed dataset"
+      ],
+      "verification": ["state", "content"],
+      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs."
+    },
+    {
+      "id": "F-013",
+      "title": "Colour naming engine",
+      "requirements": ["FR-7"],
+      "service": "packages",
+      "package": "@irodora/color-naming",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-007", "F-011"],
+      "acceptance": [
+        "Returns at least 3 ranked candidates with DeltaE00 and a similarity percentage",
+        "Two-stage retrieval: coarse Lab-bucket shortlist, then exact DeltaE00 ranking in the engine",
+        "A test brute-forces the full corpus and asserts the two-stage result is identical",
+        "Output language is closest digital reference, never an assertion of identity; enforced by the claims lint"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "build"]
+    },
+    {
+      "id": "F-014",
+      "title": "Harmony engine",
+      "requirements": ["FR-6"],
+      "service": "packages",
+      "package": "@irodora/color-harmony",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-009"],
+      "acceptance": [
+        "Monochromatic, tonal, analogous, complementary, split, triadic, tetradic, neutral, near-neutral, warm/cool, value-contrast and chroma-contrast generators",
+        "All generation happens in OKLCh, not HSL",
+        "Editorial Japanese harmonies sourced from the corpus, kept distinct from geometric ones",
+        "Every generated colour passes gamut mapping before it is returned"
+      ],
+      "verification": ["state", "typecheck", "test", "color-golden", "build"]
+    },
+    {
+      "id": "F-015",
+      "title": "API foundation",
+      "requirements": ["NFR-4", "NFR-14"],
+      "service": "api",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-002", "F-005"],
+      "acceptance": [
+        "Fastify 5 with Zod schemas generating the OpenAPI document at build time",
+        "Every route declares schemas for params, query, body and every response status",
+        "Closed error-code enum; no internal detail ever serialised to a client",
+        "Idempotency-Key required on every non-idempotent mutation",
+        "Cursor pagination with hard limits",
+        "Rate limiting per IP and per identifier on auth routes",
+        "/healthz and /readyz behave per the deployment contract",
+        "Gate 7 (e2e) activates"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "e2e", "build"],
+      "effects": ["E-004"]
+    },
+    {
+      "id": "F-016",
+      "title": "Catalog read API and caching",
+      "requirements": ["FR-20", "FR-47", "NFR-7"],
+      "service": "api",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-012", "F-015"],
+      "acceptance": [
+        "GET /v1/colors, /colors/{slug}, /palettes, /palettes/{slug}, /search",
+        "Immutable cache headers with the corpus version and the locale in the cache key",
+        "A corpus publish mints a new version rather than invalidating; a half-updated catalog is not servable",
+        "Postgres FTS plus pg_trgm for text; perceptual ranking in the engine, never in SQL"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "build"]
+    },
+    {
+      "id": "F-017",
+      "title": "Web foundation: design system, accessibility, i18n",
+      "requirements": ["NFR-5", "NFR-8", "NFR-9", "NFR-11"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-003", "F-016"],
+      "acceptance": [
+        "Next.js 16 App Router, React 19, Tailwind v4 consuming @irodora/design-tokens, Radix primitives",
+        "Server Components by default; the colour engine loads only on routes that use it",
+        "Enumerated en/ja message catalogue; a missing translation fails the build",
+        "Japanese line-height scale and kinsoku line breaking verified; font fallback covers every kanji in the corpus",
+        "Zero axe WCAG 2.2 A/AA violations on every route",
+        "Gates 8 (a11y) and 13 (web-perf) activate"
+      ],
+      "verification": ["state", "typecheck", "lint", "test", "e2e", "a11y", "contrast", "build"],
+      "effects": ["E-007"]
+    },
+    {
+      "id": "F-018",
+      "title": "Web Colour Atlas and colour detail",
+      "requirements": ["FR-20", "FR-21", "FR-24"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-017"],
+      "acceptance": [
+        "Every corpus entry reachable in 3 interactions or fewer from the atlas root",
+        "Server-rendered and statically generated per corpus version; indexable",
+        "The Atlas bundle contains no colour engine code",
+        "Colour detail shows names in four forms, every coordinate system, provenance, relations, palettes and CVD appearance",
+        "Every swatch has an accessible name and its numeric value"
+      ],
+      "verification": ["state", "e2e", "a11y", "contrast", "web-perf"]
+    },
+    {
+      "id": "F-019",
+      "title": "Web Colour Compare",
+      "requirements": ["FR-48"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-018"],
+      "acceptance": [
+        "DeltaE00, per-axis differences, OKLCh delta, CVD separation and contrast, each with its units and computation space",
+        "Tabular numerals, aligned columns, copyable values"
+      ],
+      "verification": ["state", "e2e", "a11y", "contrast"]
+    },
+    {
+      "id": "F-020",
+      "title": "Palette Studio",
+      "requirements": ["FR-49"],
+      "service": "web",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": ["F-018"],
+      "acceptance": [
+        "Build, edit, reorder and save palettes with anchor, neutral, light and accent roles",
+        "Palettes validate against the same schema as corpus palettes"
+      ],
+      "verification": ["state", "e2e", "a11y", "contrast"]
+    },
+    {
+      "id": "F-021",
+      "title": "Colour Finder",
+      "requirements": ["FR-47"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-016", "F-018"],
+      "acceptance": [
+        "Search by English name, Japanese name, kanji, romaji, hex, or natural phrase",
+        "A hex query returns its nearest entries by DeltaE00",
+        "Natural phrases map deterministically to lightness/chroma/hue regions from a versioned lexicon in content/rules"
+      ],
+      "verification": ["state", "e2e", "a11y", "test"]
+    },
+    {
+      "id": "F-022",
+      "title": "Web Colour Lens",
+      "requirements": ["FR-12", "FR-13", "FR-14", "FR-15", "FR-17", "FR-18", "NFR-12"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-013", "F-014", "F-017"],
+      "acceptance": [
+        "getUserMedia into an OffscreenCanvas with an explicit colour space",
+        "Live pick sustains 15 or more updates per second on the reference set",
+        "Precision pick samples 1000 or more pixels on a jittered grid, rejects specular highlights, extreme shadows and chromatic outliers, and averages in linear light",
+        "Returns median, trimmed mean, variance and confidence",
+        "Illumination class and capture quality shown BEFORE the colour value",
+        "Poor quality blocks a confident claim and returns a specific instruction",
+        "An e2e network assertion proves no image bytes are transmitted"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "a11y", "contrast", "web-perf"],
+      "effects": ["E-008"]
+    },
+    {
+      "id": "F-023",
+      "title": "Shareable colour cards",
+      "requirements": ["FR-50"],
+      "service": "web",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": ["F-018"],
+      "acceptance": [
+        "A rendered card with name, kanji, hex, attribution and corpus version",
+        "Renders identically server-side and client-side",
+        "Readable at thumbnail size"
+      ],
+      "verification": ["state", "e2e", "contrast"]
+    },
+    {
+      "id": "F-024",
+      "title": "Local-only mode and the offline engine",
+      "requirements": ["FR-12", "FR-55", "NFR-17"],
+      "service": "web",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-022"],
+      "acceptance": [
+        "Lens, atlas, harmony, compare and a local wardrobe work signed-out",
+        "An e2e run with the network disabled completes journeys J1 and J4",
+        "No account prompt blocks any core journey"
+      ],
+      "verification": ["state", "e2e", "a11y"]
+    },
+    {
+      "id": "F-025",
+      "title": "Claims copy lint",
+      "requirements": ["NFR-21"],
+      "service": "root",
+      "release": "R1",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-004"],
+      "acceptance": [
+        "Banned constructions fail lint across UI strings, marketing copy, documentation, code comments and identifiers",
+        "Permissible language is bound to Provenance.source",
+        "The allowlist is explicit, small, and each entry links to the measurement supporting it",
+        "A deliberately added banned phrase makes the gate fail"
+      ],
+      "verification": ["state", "lint"]
+    },
+
+    {
+      "id": "F-026",
+      "title": "Guided personal colour profile setup",
+      "requirements": ["FR-26", "FR-30"],
+      "service": "web",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-024"],
+      "acceptance": [
+        "Swatch-comparison flow completes in 90 seconds median, with no camera",
+        "Produces lightness range, temperature tendency, chroma tolerance, contrast preference, neutrals, accents and avoid-list, each with its own confidence",
+        "The data model has no single skin-colour field, and a schema check rejects a migration adding one",
+        "Every dimension is editable, and a user correction is never overwritten by re-derivation"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "a11y"]
+    },
+    {
+      "id": "F-027",
+      "title": "Photo-assisted profile setup",
+      "requirements": ["FR-27", "NFR-23"],
+      "service": "web",
+      "release": "R2",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": ["F-026"],
+      "acceptance": [
+        "Ranges derived on-device; the image is discarded and never transmitted",
+        "Every derived dimension presented as editable with its confidence",
+        "The profile is never finalised without explicit user confirmation",
+        "Bias validation across every ITA-degree band with a stated minimum sample per band"
+      ],
+      "verification": ["state", "test", "e2e"]
+    },
+    {
+      "id": "F-028",
+      "title": "Personal compatibility engine",
+      "requirements": ["FR-11", "FR-29"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-026"],
+      "acceptance": [
+        "Score in [0,100] as a pure function of profile and colour, given the rule version",
+        "Explanation objects are data: factor, contribution, direction, and an i18n message key",
+        "Per-dimension confidence weights the contribution of uncertain dimensions",
+        "No prose is generated at scoring time"
+      ],
+      "verification": ["state", "typecheck", "test", "build"]
+    },
+    {
+      "id": "F-029",
+      "title": "Rule and weight content system",
+      "requirements": ["FR-34", "FR-67"],
+      "service": "content",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-011"],
+      "acceptance": [
+        "Weights and harmony rules are versioned, immutable content in content/rules",
+        "Every rule carries a rationale; a weight without one cannot be published",
+        "Weights sum to 1.0, validated at publish time",
+        "Changing a weight changes rankings with no deployment",
+        "Occasion contexts are deterministic weighting profiles"
+      ],
+      "verification": ["state", "test", "content"],
+      "effects": ["E-009"]
+    },
+    {
+      "id": "F-030",
+      "title": "Outfit colour engine",
+      "requirements": ["FR-31", "FR-38"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-028", "F-029"],
+      "acceptance": [
+        "Given a garment colour and slot, returns 5 or more ranked trouser and 4 or more ranked shoe candidates",
+        "At least three alternatives per recommendation, each labelled with the dimension it moves along",
+        "Candidate generation is bounded before scoring",
+        "Recommendation p95 within NFR-4"
+      ],
+      "verification": ["state", "typecheck", "test", "perf", "build"]
+    },
+    {
+      "id": "F-031",
+      "title": "Outfit scoring and explainability",
+      "requirements": ["FR-11", "FR-32"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-030"],
+      "acceptance": [
+        "Colour harmony, personal fit, contrast, Japanese aesthetic, versatility and CVD accessibility scored separately, plus an overall",
+        "All component scores are shown; the overall never replaces them",
+        "Every score returns its factor decomposition with direction and magnitude"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e"]
+    },
+    {
+      "id": "F-032",
+      "title": "CVD outfit mode",
+      "requirements": ["FR-35"],
+      "service": "web",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-031"],
+      "acceptance": [
+        "Flags reduced separation and proposes an alternative with the measured improvement",
+        "The improvement is reproducible from the stored envelope",
+        "Reads as an observation about the outfit, not as a diagnosis of the user",
+        "Permanently available in the free tier"
+      ],
+      "verification": ["state", "cvd", "e2e", "a11y"]
+    },
+    {
+      "id": "F-033",
+      "title": "Authentication and account management",
+      "requirements": ["FR-53", "FR-54"],
+      "service": "api",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-015"],
+      "openQuestions": ["OQ-1"],
+      "acceptance": [
+        "OIDC, passkeys, Apple and Google; no password primitive exists in our code",
+        "Refresh token rotation with reuse detection; a replayed token revokes the family",
+        "Session revocation takes effect within 60 seconds across devices",
+        "Local-only mode remains fully functional signed-out"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "security"],
+      "notes": "Blocked until OQ-1 (self-hosted vs managed OIDC provider) closes as an ADR."
+    },
+    {
+      "id": "F-034",
+      "title": "Multi-tenancy and row-level security",
+      "requirements": ["FR-59"],
+      "service": "api",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-033"],
+      "acceptance": [
+        "tenant to organization to workspace to membership hierarchy in the schema",
+        "Every user-data table has tenant_id NOT NULL with RLS ENABLE and FORCE",
+        "irodora.tenant_id is set per connection from the session, never from a request field",
+        "A missing setting raises rather than returning rows",
+        "A negative test with a POPULATED decoy tenant proves cross-tenant reads return nothing",
+        "404, never 403, for another tenant's resource"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "security"],
+      "effects": ["E-010"]
+    },
+    {
+      "id": "F-035",
+      "title": "Data subject rights: export and erasure",
+      "requirements": ["FR-58"],
+      "service": "api",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-034"],
+      "acceptance": [
+        "POST /v1/me/export produces a machine-readable archive of every personal record",
+        "DELETE /v1/me hard-deletes AND de-indexes: database, blob storage, search index, cache, sync tombstones",
+        "A re-query against each store returns nothing; the job's exit code is not the proof",
+        "Both complete well within 30 days"
+      ],
+      "verification": ["state", "test", "e2e"]
+    },
+    {
+      "id": "F-036",
+      "title": "Observability baseline",
+      "requirements": ["NFR-16"],
+      "service": "api",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-015"],
+      "acceptance": [
+        "OpenTelemetry traces, metrics and structured logs across api, worker and web, exported over OTLP",
+        "Image buffers and profile dimensions are carried in types with no serialiser; passing one to a log or span attribute is a type error",
+        "A redaction test attempts to reach a sink from every path holding such data and fails the build if any succeeds",
+        "Measurement outcomes are recorded instead of measurement inputs"
+      ],
+      "verification": ["state", "typecheck", "test"]
+    },
+    {
+      "id": "F-037",
+      "title": "Ethical guardrails and bias validation",
+      "requirements": ["NFR-22", "NFR-23"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-027", "F-028"],
+      "acceptance": [
+        "A schema check rejects any migration adding a skin-colour, ethnicity, age or health field",
+        "No code path infers a protected characteristic",
+        "Held-out validation set stratified by ITA-degree band, every band above its minimum sample",
+        "Per-band accuracy published internally; a band that underperforms blocks release of the profile feature"
+      ],
+      "verification": ["state", "typecheck", "test"],
+      "notes": "A release blocker, not a nice-to-have. A personal-colour engine unvalidated across the full skin-tone range is not shippable."
+    },
+    {
+      "id": "F-038",
+      "title": "Performance budgets and gates",
+      "requirements": ["NFR-4", "NFR-5"],
+      "service": "tests",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": ["F-030"],
+      "acceptance": [
+        "Absolute committed thresholds, never baseline deltas",
+        "Backend bench boots the real runtime over a versioned deterministic corpus",
+        "Frontend measured over the wire, gzipped, at the load event, under prefers-reduced-motion with CPU throttling, median of 3",
+        "Each gate self-tests its own arithmetic every run",
+        "Gates 12 (perf) and 13 (web-perf) activate"
+      ],
+      "verification": ["state", "perf", "web-perf"]
+    },
+
+    {
+      "id": "F-039",
+      "title": "Mobile foundation: Expo development client",
+      "requirements": ["NFR-18"],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-024"],
+      "acceptance": [
+        "Expo SDK 57 with a development client and the New Architecture",
+        "ios/ and android/ are generated and gitignored; native config lives in app.config.ts and plugins",
+        "EAS Build produces installable builds from a Windows workstation",
+        "The shared colour engine is imported, never ported"
+      ],
+      "verification": ["state", "typecheck", "build"]
+    },
+    {
+      "id": "F-040",
+      "title": "Mobile Colour Lens",
+      "requirements": ["FR-13", "FR-14", "FR-15", "FR-17", "FR-18"],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-039"],
+      "acceptance": [
+        "VisionCamera frame processors on a worklet thread; the UI thread never blocks on colour maths",
+        "yuv pixel format with conversion in the processor; every frame explicitly disposed",
+        "Capture colour space is read, never assumed; unknown caps the confidence",
+        "Only a small numeric result crosses the bridge; frames are discarded",
+        "All four capture modes"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e"]
+    },
+    {
+      "id": "F-041",
+      "title": "Offline local storage",
+      "requirements": ["FR-56", "NFR-17"],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-039"],
+      "acceptance": [
+        "SQLite on mobile and IndexedDB on web behind one repository interface with a shared conformance suite",
+        "Writes succeed offline and survive restart; reads never block on network",
+        "Tokens and keys in SecureStore, never the app database"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e"]
+    },
+    {
+      "id": "F-042",
+      "title": "Wardrobe model, API and image encryption",
+      "requirements": ["FR-39", "FR-41", "NFR-13"],
+      "service": "api",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-034"],
+      "acceptance": [
+        "Only colour and type required at creation; every other field progressively enriched",
+        "Colour grouping uses perceptual distance, not hex string sorting",
+        "Wardrobe images under envelope encryption with per-tenant data keys; key rotation exercised in a test",
+        "EXIF stripped on ingest; images decoded only in the worker under hard limits",
+        "No documentation or copy describes this as end-to-end encryption"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "security"]
+    },
+    {
+      "id": "F-043",
+      "title": "Add-garment flows",
+      "requirements": ["FR-40"],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-040", "F-042"],
+      "acceptance": [
+        "Camera, Lens scan, manual colour and image upload",
+        "Median time to add an item 20 seconds or less, measured on device",
+        "Never more than two required fields"
+      ],
+      "verification": ["state", "e2e", "perf"]
+    },
+    {
+      "id": "F-044",
+      "title": "Sync protocol",
+      "requirements": ["FR-57"],
+      "service": "api",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-041", "F-042"],
+      "acceptance": [
+        "Field-level change records with per-field logical clocks; wall-clock time is advisory only",
+        "Deterministic tiebreak so every device converges to the SAME state",
+        "Typed merge rules: wear_count sums, outfit items union, preference weights merge and renormalise, deletion beats update",
+        "Push and pull in one round trip; idempotent on changeId",
+        "A property test applies a random permutation of a change set and asserts an identical final state",
+        "Tombstones retained 90 days; a device offline longer is forced to full resync",
+        "Gate 14 (e2e-full) activates"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e-full"]
+    },
+    {
+      "id": "F-045",
+      "title": "Outfit builder",
+      "requirements": ["FR-33"],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-031", "F-043"],
+      "acceptance": [
+        "Compose slots, lock items, swap colours, regenerate",
+        "The same locked set and versions always regenerate the same candidates"
+      ],
+      "verification": ["state", "e2e", "a11y"]
+    },
+    {
+      "id": "F-046",
+      "title": "Preference feedback loop",
+      "requirements": ["FR-37"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-031"],
+      "acceptance": [
+        "Repeated selection shifts a stored, inspectable per-user weight",
+        "The user can see and reset it",
+        "No model training; feedback affects only the submitting user, never global ranking"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-047",
+      "title": "Availability and graceful degradation",
+      "requirements": ["NFR-6"],
+      "service": "web",
+      "release": "R3",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-044"],
+      "acceptance": [
+        "A 503 from the API causes the client to fall back entirely to the local engine",
+        "Degraded-mode success rate measured and 95 percent or better",
+        "The fallback path is exercised in e2e-full, not assumed"
+      ],
+      "verification": ["state", "e2e-full"]
+    },
+
+    {
+      "id": "F-048",
+      "title": "Wardrobe coverage and gap analysis",
+      "requirements": ["FR-42", "FR-43"],
+      "service": "packages",
+      "package": "@irodora/optimization",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-045"],
+      "acceptance": [
+        "Reports valid outfit count and outfits per garment; recomputes incrementally on change",
+        "Gaps named in product language with the outfits they would unlock"
+      ],
+      "verification": ["state", "test", "perf"]
+    },
+    {
+      "id": "F-049",
+      "title": "Duplicate detection",
+      "requirements": ["FR-44"],
+      "service": "packages",
+      "package": "@irodora/optimization",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-045"],
+      "acceptance": [
+        "Flags items within DeltaE00 5 in the same category, showing the measured difference"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-050",
+      "title": "Capsule optimiser",
+      "requirements": ["FR-45"],
+      "service": "packages",
+      "package": "@irodora/optimization",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-048"],
+      "acceptance": [
+        "Solves at least N outfits from at most M garments for a 40-item wardrobe within NFR-4",
+        "Branch-and-bound with a heuristic seed and a hard time budget",
+        "Returns best-so-far on expiry; the result is deterministic and reproducible"
+      ],
+      "verification": ["state", "test", "perf"]
+    },
+    {
+      "id": "F-051",
+      "title": "Cost-per-wear",
+      "requirements": ["FR-46"],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": ["F-045"],
+      "acceptance": [
+        "Computed from cost and recorded wears; absent data yields unknown, never an invented estimate"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-052",
+      "title": "Shopping check",
+      "requirements": ["FR-52"],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-048", "F-049"],
+      "acceptance": [
+        "Outfits unlocked, personal compatibility and duplicate warning, computed against the local wardrobe offline"
+      ],
+      "verification": ["state", "e2e"]
+    },
+    {
+      "id": "F-053",
+      "title": "Calibrated scan and reference card",
+      "requirements": ["FR-16", "NFR-2"],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-040"],
+      "openQuestions": ["OQ-3"],
+      "acceptance": [
+        "Detects the card, locates patches, solves a correction from observed to known values",
+        "Mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix",
+        "The result is labelled calibrated; the correction matrix and its residual are stored for audit"
+      ],
+      "verification": ["state", "test", "color-golden"]
+    },
+    {
+      "id": "F-054",
+      "title": "Outfit scanner",
+      "requirements": ["FR-36"],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": ["F-040", "F-031"],
+      "acceptance": [
+        "Estimates per-garment colours with confidence and returns the full score set",
+        "Classical CV only, with manual region override always available"
+      ],
+      "verification": ["state", "test", "e2e"]
+    },
+    {
+      "id": "F-055",
+      "title": "Professional workspace",
+      "requirements": ["FR-28", "FR-61"],
+      "service": "web",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-019"],
+      "acceptance": [
+        "Lab and LCh shown by default, not only swatches",
+        "Accepts colorimeter values, marking the resulting profile reference",
+        "Reference libraries, batch compare, calibration workflow"
+      ],
+      "verification": ["state", "e2e", "a11y"]
+    },
+    {
+      "id": "F-056",
+      "title": "Exports and PDF reports",
+      "requirements": ["FR-51", "FR-65"],
+      "service": "worker",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-055"],
+      "acceptance": [
+        "CSV, JSON, CSS custom properties, ASE, design tokens and PDF",
+        "Every export embeds the engine and corpus versions",
+        "ASE round-trips through Adobe tooling",
+        "A report is reproducible from its envelope"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-057",
+      "title": "Public API, keys and quotas",
+      "requirements": ["FR-62", "FR-63"],
+      "service": "api",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-034"],
+      "acceptance": [
+        "OpenAPI generated from the implementation, never hand-written",
+        "@irodora/sdk generated from OpenAPI and consumed by our own clients",
+        "API keys with scopes; quota exhaustion returns a documented error with a reset time",
+        "Usage metering is auditable"
+      ],
+      "verification": ["state", "typecheck", "test", "e2e", "security"],
+      "effects": ["E-004"]
+    },
+    {
+      "id": "F-058",
+      "title": "Billing and entitlements",
+      "requirements": ["FR-60"],
+      "service": "api",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-057"],
+      "openQuestions": ["OQ-2"],
+      "acceptance": [
+        "Free, Pro, Studio and API tiers with server-side entitlement enforcement",
+        "A test proves a client cannot unlock a tier feature",
+        "Accessibility features are unconditionally in the free tier"
+      ],
+      "verification": ["state", "test", "e2e", "security"]
+    },
+    {
+      "id": "F-059",
+      "title": "Audit trail",
+      "requirements": ["NFR-15"],
+      "service": "api",
+      "release": "R4",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": ["F-034"],
+      "acceptance": [
+        "Append-only; the application role has no UPDATE or DELETE grant",
+        "Every corpus publish, entitlement change and role change queryable with actor, time and before/after",
+        "Chronological only; no user-facing column sorting"
+      ],
+      "verification": ["state", "test", "e2e"]
+    },
+    {
+      "id": "F-060",
+      "title": "Scale and load validation",
+      "requirements": ["NFR-7"],
+      "service": "tests",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-038"],
+      "acceptance": [
+        "100k corpus entries, 10k wardrobe items per user, 1000 rps catalog reads sustained within NFR-4",
+        "Origin-to-edge request ratio measured; a rise signals a broken cache key"
+      ],
+      "verification": ["state", "perf"]
+    },
+
+    {
+      "id": "F-061",
+      "title": "Admin content application",
+      "requirements": ["FR-66"],
+      "service": "admin",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-059"],
+      "acceptance": [
+        "Colours, palettes, translations, rules, sources and licences managed here",
+        "No corpus change is possible outside this application in production",
+        "Every publish is audit-logged with actor and diff"
+      ],
+      "verification": ["state", "e2e", "security"]
+    },
+    {
+      "id": "F-062",
+      "title": "Editorial review workflow",
+      "requirements": ["FR-68"],
+      "service": "admin",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-061"],
+      "acceptance": [
+        "draft to review to verified to published to superseded",
+        "An entry cannot reach published without a recorded reviewer distinct from the author",
+        "A published entry is never edited; corrections publish a new version"
+      ],
+      "verification": ["state", "content", "e2e"]
+    },
+    {
+      "id": "F-063",
+      "title": "Device colour lab",
+      "requirements": ["NFR-2"],
+      "service": "tests",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": ["F-053"],
+      "acceptance": [
+        "Controlled measurement across the reference device matrix, all modes, all illuminants, 10 or more repeats per combination",
+        "Published table of mean and p95 DeltaE00 per device, mode and lighting condition",
+        "Reported confidence is correlated with measured accuracy",
+        "No accuracy number is published without a row in this table"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-064",
+      "title": "Pattern and multi-colour extraction",
+      "requirements": ["FR-19"],
+      "service": "packages",
+      "package": "@irodora/color-core",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": ["F-040"],
+      "acceptance": [
+        "Ranked primary, secondary and accent colours with area proportions",
+        "Meets its accuracy target on the pattern test corpus for stripes, checks, colour blocks and prints"
+      ],
+      "verification": ["state", "test", "color-golden"]
+    },
+    {
+      "id": "F-065",
+      "title": "Occasion and weather context",
+      "requirements": ["FR-34"],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": ["F-029"],
+      "acceptance": [
+        "Occasion and weather are deterministic weighting profiles in versioned content",
+        "Weather is an optional input; the recommendation is unchanged and complete without it"
+      ],
+      "verification": ["state", "test"]
+    },
+    {
+      "id": "F-066",
+      "title": "Team workspaces",
+      "requirements": ["FR-64"],
+      "service": "web",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": ["F-058"],
+      "acceptance": [
+        "Roles and shared palette libraries within a workspace",
+        "Role changes take effect immediately and are audit-logged"
+      ],
+      "verification": ["state", "e2e", "test"]
+    }
+  ]
+}

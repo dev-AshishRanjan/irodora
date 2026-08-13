@@ -1,0 +1,42 @@
+# Irodora — git attributes
+#
+# Normalise line endings so a Windows workstation and a Linux CI runner
+# produce byte-identical files. This matters more than usual here: the colour
+# engine's golden datasets are compared by content hash.
+
+* text=auto eol=lf
+
+# Scripts that must keep platform-native endings
+*.ps1   text eol=crlf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+*.sh    text eol=lf
+
+# Binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.avif  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.icc   binary
+*.wasm  binary
+
+# Lockfiles: generated, not reviewed line by line
+pnpm-lock.yaml  linguist-generated=true -diff
+
+# Golden colour datasets: reviewed as data, never merged automatically.
+# A conflict here means two changes disagree about physical colour truth —
+# that must be resolved by a human, not by git.
+content/**/*.json           -merge
+packages/**/golden/**       -merge linguist-generated=false
+
+# Documentation and harness files drive language stats honestly
+docs/**       linguist-documentation=true
+.harness/**   linguist-documentation=true

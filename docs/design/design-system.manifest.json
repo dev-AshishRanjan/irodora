@@ -1,0 +1,158 @@
+{
+  "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
+  "version": 0,
+  "status": "placeholder",
+  "updated": "2026-08-13",
+  "description": "Machine-readable design tokens. The `contrast` gate reads this file. STATUS IS `placeholder`: the structure is final and the pipeline can be built and tested against it, but the values are provisional and arrive from the design deliverable (docs/design/DESIGN-BRIEF.md). The gate treats `placeholder` as report-only; it becomes blocking when status is `approved`.",
+
+  "themes": ["light", "dark"],
+
+  "color": {
+    "light": {
+      "surface.base": {
+        "oklch": { "l": 0.985, "c": 0.004, "h": 85 },
+        "srgb": "#FAF9F7",
+        "role": "The page. Warm off-white, deliberately near-neutral.",
+        "pairsWith": ["text.primary", "text.secondary", "border.subtle", "accent.base"]
+      },
+      "surface.raised": {
+        "oklch": { "l": 1.0, "c": 0.0, "h": 0 },
+        "srgb": "#FFFFFF",
+        "role": "Cards, panels, elevated regions.",
+        "pairsWith": ["text.primary", "text.secondary", "border.default"]
+      },
+      "surface.sunken": {
+        "oklch": { "l": 0.955, "c": 0.005, "h": 85 },
+        "srgb": "#F1EFEB",
+        "role": "Wells, inset regions, code blocks.",
+        "pairsWith": ["text.primary", "text.secondary"]
+      },
+      "text.primary": {
+        "oklch": { "l": 0.22, "c": 0.008, "h": 250 },
+        "srgb": "#26282C",
+        "role": "Body and headings. Sumi-inspired, never pure black.",
+        "pairsWith": []
+      },
+      "text.secondary": {
+        "oklch": { "l": 0.48, "c": 0.008, "h": 250 },
+        "srgb": "#6B6E74",
+        "role": "Supporting text, captions, metadata.",
+        "pairsWith": []
+      },
+      "text.tertiary": {
+        "oklch": { "l": 0.62, "c": 0.006, "h": 250 },
+        "srgb": "#93969B",
+        "role": "Placeholders and disabled text. AA at large sizes only — never used for essential information.",
+        "pairsWith": []
+      },
+      "border.subtle": {
+        "oklch": { "l": 0.92, "c": 0.004, "h": 85 },
+        "srgb": "#E6E3DE",
+        "role": "Hairline dividers.",
+        "pairsWith": []
+      },
+      "border.default": {
+        "oklch": { "l": 0.86, "c": 0.005, "h": 85 },
+        "srgb": "#D4D0C9",
+        "role": "Component borders.",
+        "pairsWith": []
+      },
+      "border.focus": {
+        "oklch": { "l": 0.52, "c": 0.09, "h": 250 },
+        "srgb": "#4A6C93",
+        "role": "Focus ring. Must be visible against every surface — checked by the contrast gate against all surface.* tokens.",
+        "pairsWith": ["surface.base", "surface.raised", "surface.sunken"]
+      },
+      "accent.base": {
+        "oklch": { "l": 0.44, "c": 0.086, "h": 252 },
+        "srgb": "#3C5A7D",
+        "role": "The single accent, drawn from indigo. Used sparingly and never adjacent to a colour sample.",
+        "pairsWith": ["surface.base", "surface.raised", "text.inverse"]
+      },
+      "text.inverse": {
+        "oklch": { "l": 0.99, "c": 0.002, "h": 85 },
+        "srgb": "#FCFBFA",
+        "role": "Text on accent and dark surfaces.",
+        "pairsWith": []
+      },
+      "swatch.border": {
+        "oklch": { "l": 0.78, "c": 0.004, "h": 85 },
+        "srgb": "#BFBCB6",
+        "role": "The border of a colour sample. Mid-neutral so it biases neither light nor dark samples.",
+        "pairsWith": []
+      },
+      "swatch.separator": {
+        "oklch": { "l": 0.97, "c": 0.002, "h": 85 },
+        "srgb": "#F7F6F4",
+        "role": "MANDATORY neutral gap between a colour sample and any adjacent coloured element. Simultaneous contrast makes this functional, not decorative.",
+        "pairsWith": []
+      },
+      "swatch.checker": {
+        "oklch": { "l": 0.9, "c": 0.0, "h": 0 },
+        "srgb": "#E0E0E0",
+        "role": "Transparency checkerboard.",
+        "pairsWith": []
+      }
+    },
+    "dark": {
+      "_note": "Derived from light by transforming L while preserving C and H, per ADR-0020. Values are generated, not authored; exceptions are recorded in `exceptions` below. Populated on design approval."
+    }
+  },
+
+  "status": {
+    "_note": "Every status token MUST pair with an icon token. A status expressible only as colour violates NFR-9, and pairing them here makes that impossible rather than merely discouraged.",
+    "success": { "colorToken": "status.success", "iconToken": "icon.check", "textRequired": true },
+    "warning": { "colorToken": "status.warning", "iconToken": "icon.alert", "textRequired": true },
+    "error": { "colorToken": "status.error", "iconToken": "icon.cross", "textRequired": true },
+    "info": { "colorToken": "status.info", "iconToken": "icon.info", "textRequired": true }
+  },
+
+  "cvdPairs": {
+    "_note": "Semantic pairs that must remain distinguishable under simulated CVD. Checked by the `cvd` gate at the minimum separation below. The product's own interface is held to the standard it applies to outfits.",
+    "minSeparation": 60,
+    "pairs": [
+      ["status.success", "status.error"],
+      ["status.warning", "status.error"],
+      ["accent.base", "text.primary"],
+      ["border.focus", "border.default"]
+    ]
+  },
+
+  "spacing": {
+    "_note": "Base unit and scale. 間 (ma) means the larger steps are used more than in a typical product. Populated on design approval.",
+    "base": 4,
+    "scale": []
+  },
+
+  "typography": {
+    "_note": "Tabular numerals everywhere — colour values appear in columns and must align. Japanese needs a separate line-height scale at the same size. Populated on design approval.",
+    "families": {},
+    "scale": [],
+    "lineHeight": { "latin": [], "japanese": [] },
+    "numeric": { "variantNumeric": "tabular-nums" }
+  },
+
+  "radius": {
+    "_note": "swatch is 0 and stays 0. A rounded sample changes perceived area and therefore perceived colour.",
+    "swatch": 0
+  },
+
+  "motion": {
+    "_note": "Every duration collapses to 0 under prefers-reduced-motion. Motion must never alter a colour mid-transition. Populated on design approval.",
+    "durations": {},
+    "easings": {}
+  },
+
+  "exceptions": [],
+
+  "gate": {
+    "contrast": {
+      "standard": "WCAG 2.2 AA",
+      "normalText": 4.5,
+      "largeText": 3.0,
+      "nonText": 3.0,
+      "reportAPCA": true,
+      "blockingWhenStatus": "approved"
+    }
+  }
+}

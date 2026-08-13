@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://irodora.com/schemas/effects.schema.json",
+  "title": "Irodora effect-link graph",
+  "description": "Recorded causal dependencies: if A changes, B must change too. Every link must name the automated guard that catches a violation — a critical link with guard 'none' fails the state gate, which turns this graph into a standing backlog of the checks we still owe. See ADR-0030.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updated", "links"],
+  "properties": {
+    "$schemaRef": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "updated": { "type": "string", "format": "date" },
+    "description": { "type": "string" },
+    "links": { "type": "array", "items": { "$ref": "#/$defs/link" } }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "file",
+            "symbol",
+            "module",
+            "package",
+            "contract",
+            "schema",
+            "test",
+            "artifact",
+            "decision",
+            "doc",
+            "gate",
+            "content"
+          ]
+        },
+        "ref": { "type": "string", "minLength": 1 },
+        "exists": {
+          "type": "boolean",
+          "description": "false when the target is planned but not yet created. The state gate skips path validation for these, and reports them so they cannot be forgotten."
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from",
+        "to",
+        "kind",
+        "scope",
+        "severity",
+        "guard",
+        "memory",
+        "rationale",
+        "confidence",
+        "origin",
+        "status"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^E-[0-9]{3}$" },
+        "from": { "$ref": "#/$defs/ref" },
+        "to": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ref" } },
+        "kind": { "type": "string", "const": "EFFECT_LINK" },
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Packages, apps or areas involved. Enables cross-service effect queries."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "critical = a silent break with product-wide consequence."
+        },
+        "guard": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The automated check that catches a violation: 'gate:<id>', 'test:<path>', 'lint:<rule>', or 'none'. A critical link with 'none' FAILS the state gate — record the feature that will add the guard rather than downgrading the severity."
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^memory/effects/[a-z0-9-]+\\.md$",
+          "description": "The narrative note. The JSON says THAT B depends on A; the note says WHY, which is what lets the next person judge whether the link still holds after a redesign."
+        },
+        "rationale": { "type": "string", "minLength": 20 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "origin": { "type": "string", "enum": ["manual", "static", "learned"] },
+        "status": { "type": "string", "enum": ["active", "resolved"] },
+        "feature": {
+          "type": "string",
+          "pattern": "^F-[0-9]{3}$",
+          "description": "The feature that will add the missing guard, where guard is 'none'."
+        }
+      }
+    }
+  }
+}

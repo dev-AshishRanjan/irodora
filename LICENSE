@@ -1,0 +1,65 @@
+Irodora — Proprietary Software Licence
+
+Copyright (c) 2026 Irodora. All rights reserved.
+
+NOTICE
+------
+This repository and everything in it — source code, documentation, design
+assets, the colour corpus, editorial content, and the agent harness — is
+proprietary and confidential. It is NOT open source.
+
+No licence, express or implied, is granted to any person or entity to use,
+copy, modify, merge, publish, distribute, sublicense, or sell any part of this
+software, except under a separate written agreement signed by the copyright
+holder.
+
+PERMITTED USE
+-------------
+Access to this repository is granted solely to individuals authorised by the
+copyright holder, and solely for the purpose of developing, operating, and
+maintaining the Irodora platform. Authorised individuals may reproduce and
+modify the software within this repository as required for that purpose.
+
+RESTRICTIONS
+------------
+Without prior written permission you may not:
+
+  1. disclose, publish, or distribute any part of this software to any third
+     party;
+  2. use this software, in whole or in part, in any product or service other
+     than Irodora;
+  3. reverse engineer, decompile, or disassemble any distributed binary form
+     of this software except to the extent that such activity is expressly
+     permitted by applicable law notwithstanding this limitation;
+  4. remove or alter any proprietary notice contained in this software.
+
+THIRD-PARTY MATERIAL
+--------------------
+This software incorporates third-party components under their own licences,
+and colour reference data under its own provenance and licensing terms. See
+NOTICE.md and docs/content/licensing-and-provenance.md. Nothing in this licence
+grants rights in third-party material beyond those granted by its own licence.
+
+NO WARRANTY
+-----------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+COLOUR MEASUREMENT DISCLAIMER
+-----------------------------
+Colour values produced by this software from consumer camera hardware are
+ESTIMATES. They are not colorimetric measurements and must not be relied upon
+where physical colour accuracy has legal, commercial, safety, or medical
+consequence. See docs/adr/0031-measurement-claims-policy.md.
+
+CONTACT
+-------
+Licensing enquiries: legal@irodora.com
+
+Note for maintainers: on incorporation, replace "Irodora" in the copyright line
+above with the registered legal entity name and record the change in
+docs/adr/. Until then this notice asserts rights in the project's name.

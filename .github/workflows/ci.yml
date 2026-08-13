@@ -1,0 +1,144 @@
+name: CI
+
+# This workflow MIRRORS .harness/verification/gates.json, in order.
+#
+# The mirror is machine-checked: scripts/verify-state.mjs fails if an active gate
+# has no step here. That check exists because the alternative failure is silent —
+# a gate declared in gates.json and never run in CI is theatre, and everything
+# downstream of it is unverified while appearing verified.
+#
+# Steps for gates that are still `pending` are present but guarded by a file
+# existence check, so they activate the moment the toolchain lands (F-001) rather
+# than waiting for someone to remember.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    name: Verification gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks needs history
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      # ---- gate 0: state -------------------------------------------------
+      # Runs first, always, with no dependencies. It is the only gate that is
+      # meaningful before any application code exists.
+      - name: 'Gate 0 — state'
+        run: node scripts/verify-state.mjs
+
+      # ---- toolchain (activates with F-001) ------------------------------
+      - name: Set up pnpm
+        if: hashFiles('pnpm-lock.yaml') != ''
+        uses: pnpm/action-setup@v4
+
+      - name: Install
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm install --frozen-lockfile
+
+      # ---- gates 1-6: code ------------------------------------------------
+      - name: 'Gate 1 — typecheck'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm typecheck
+
+      - name: 'Gate 2 — lint'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm lint
+
+      - name: 'Gate 3 — format'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm format:check
+
+      - name: 'Gate 4 — test'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm test
+
+      - name: 'Gate 5 — color-golden'
+        if: hashFiles('packages/color-spaces/package.json') != ''
+        run: pnpm test:golden
+
+      - name: 'Gate 6 — build'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: pnpm build
+
+      # ---- gates 7-11: surfaces and content -------------------------------
+      # Gate 8 (a11y) is asserted INSIDE the web Playwright run, so it has no
+      # step of its own. gates.json records that as ciStep:false and the mirror
+      # check knows the omission is deliberate.
+      - name: Install Playwright browsers
+        if: hashFiles('apps/web/package.json') != ''
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 'Gate 7 — e2e (includes gate 8, a11y)'
+        if: hashFiles('apps/web/package.json') != ''
+        run: pnpm test:e2e
+
+      - name: 'Gate 9 — contrast'
+        if: hashFiles('packages/design-tokens/package.json') != ''
+        run: pnpm test:contrast
+
+      - name: 'Gate 10 — cvd'
+        if: hashFiles('packages/cvd-engine/package.json') != ''
+        run: pnpm test:cvd
+
+      - name: 'Gate 11 — content'
+        if: hashFiles('content/colors') != ''
+        run: pnpm test:content
+
+      # ---- gates 12-14: release -------------------------------------------
+      - name: 'Gate 12 — perf'
+        if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''
+        run: pnpm bench
+
+      - name: 'Gate 13 — web-perf'
+        if: github.event_name == 'push' && hashFiles('tests/web-perf/package.json') != ''
+        run: pnpm test:perf
+
+      - name: 'Gate 14 — e2e-full'
+        if: github.event_name == 'push' && hashFiles('tests/e2e-full/package.json') != ''
+        run: pnpm test:e2e:full
+
+  security:
+    name: 'Gate 15 — security'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # A finding here ROTATES the secret. It never earns an allowlist entry —
+      # a secret in git history is compromised regardless of whether the commit
+      # was pushed, and removing it only makes it harder to find later.
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      - name: Dependency audit
+        if: hashFiles('pnpm-lock.yaml') != ''
+        run: |
+          corepack enable
+          pnpm audit --audit-level high

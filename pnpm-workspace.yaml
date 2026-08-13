@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tests/*"
+
+# Dependencies whose build scripts are allowed to run. pnpm blocks lifecycle
+# scripts by default; every entry here is a supply-chain decision, so the list
+# stays short and each addition is reviewed.
+onlyBuiltDependencies: []

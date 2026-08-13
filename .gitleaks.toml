@@ -1,0 +1,38 @@
+title = "Irodora secret scanning configuration"
+
+# Start from the upstream rule set, then narrow the allowlist. We never widen
+# a rule to make a scan pass: a finding is either a real secret (rotate it) or
+# a genuine false positive that earns a NARROW, path-scoped exemption here.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths and patterns that cannot contain live credentials"
+
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''pnpm-lock\.yaml$''',
+  # Example env files are required to contain placeholder-shaped values.
+  '''\.env\.example$''',
+  '''.*\.tfvars\.example$''',
+  # Documentation shows credential SHAPES so operators recognise them.
+  '''^docs/.*\.md$''',
+  '''^\.harness/.*\.md$''',
+]
+
+regexes = [
+  # Documented placeholders. These are the only placeholder forms allowed in
+  # the repository — any other high-entropy string is treated as a real secret.
+  '''(?i)(replace-me|changeme|example|placeholder|your-[a-z-]+-here|xxxxxxxx)''',
+  '''postgres://irodora:irodora@localhost''',
+]
+
+# Colour hex values and OKLCH triples are high-entropy by nature and appear in
+# enormous volume in this repository. They are not credentials.
+[[rules]]
+id = "irodora-colour-literal-not-a-secret"
+description = "Colour literals are product data, not secrets"
+regex = '''#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b'''
+[rules.allowlist]
+regexTarget = "match"
+regexes = ['''.*''']

@@ -1,0 +1,27 @@
+# Generated
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+.expo/
+coverage/
+pnpm-lock.yaml
+*.tsbuildinfo
+
+# Prose and harness documents are authored, not formatted. Prettier reflows
+# tables and code fences in ways that make review diffs unreadable, and the
+# harness files are read by agents where layout carries meaning.
+docs/
+.harness/
+.claude/
+*.md
+
+# Golden colour data is byte-significant
+packages/**/golden/
+content/colors/
+content/palettes/
+tests/color-lab/
+
+# Terraform has its own formatter (terraform fmt)
+infra/terraform/

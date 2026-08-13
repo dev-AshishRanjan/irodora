@@ -1,0 +1,33 @@
+We want to create a website or app
+It for japanese fashion or japanese color combination or japanese contemporary colors
+It will suggest me color that I (skin tone) should wear, colors of pants that will go with a specific color t-shirt
+We would also have a feature where you can show the cloth and it will tell you it's exact color
+This tool can be used by color blind people too
+
+A user flow can be, user add his skin-tone
+User opens camera through app, to scan a cloth, e.g tshirt
+We will suggest the contemporary colors for pants and shoes
+We will use color name, color code, and will render the color for reference
+
+This app would be unisex, works for both male and female clothing
+
+We can have website or app or both, as you see fit, and best use case
+
+We would like this to be not AI driven
+
+Is this possible?
+Can we do this entirely in js/ts stack?
+
+We want to have all the features from most of the existing apps in this space
+We want to go above and beyond these apps
+
+This is just an initial though
+Refine and Enhance it
+We will add many related advanced features and tools too, that this space is lacking
+
+We need this to be professional and enterprise grade, ready for production
+This is not poc, or hacky solution
+We need this to be robust, secure, scalable, optimized, professional and enterprise grade
+
+Think, reason and research before deciding anything
+Give me PRD and ADR and HLD

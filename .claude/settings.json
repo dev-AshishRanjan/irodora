@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read(//E:/JCFIP/**)",
+      "Glob(//E:/JCFIP/**)",
+      "Grep(//E:/JCFIP/**)",
+      "Edit(//E:/JCFIP/**)",
+      "Write(//E:/JCFIP/**)",
+
+      "Bash(node scripts/*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm build)",
+      "Bash(pnpm bench)",
+      "Bash(pnpm --filter *)",
+      "Bash(pnpm -w *)",
+
+      "Bash(docker compose ps)",
+      "Bash(docker compose up -d)",
+      "Bash(docker compose logs *)",
+      "Bash(docker compose stop)",
+
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git switch*)",
+      "Bash(git checkout -b*)",
+
+      "PowerShell(node scripts/*)",
+      "PowerShell(Get-ChildItem*)",
+      "PowerShell(Test-Path*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(pnpm add*)",
+      "Bash(pnpm remove*)",
+      "Bash(pnpm publish*)",
+      "Bash(pnpm --filter * add*)",
+      "Bash(docker compose down*)",
+      "Bash(terraform*)",
+      "Bash(aws*)",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf /*)",
+      "Read(//E:/JCFIP/.env)",
+      "Read(//E:/JCFIP/.env.*)",
+      "Edit(//E:/JCFIP/.env)",
+      "Read(//E:/JCFIP/.claude/settings.local.json)",
+      "Edit(//E:/JCFIP/.claude/settings.local.json)"
+    ]
+  },
+  "env": {
+    "IRODORA_PROFILE": "local"
+  }
+}
