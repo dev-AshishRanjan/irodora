@@ -8,6 +8,73 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — Phase 2a: Stage 1 wireframes, R1 web
+
+**Scope:** the design tooling decision, and the first wireframe deliverable. No code.
+
+### Done
+
+**[ADR-0032](../../docs/adr/0032-design-in-claude-wireframes-before-visual-before-code.md)** —
+design is produced in Claude rather than Figma, and the deliverable splits into three
+separately-approved stages: **wireframes → visual design → code**.
+
+The staging is the substantive part. A single combined design review collapses two different
+questions, and feedback about type weight arrives before anyone has agreed what is on the
+page. It matters more here than usual because half the hard constraints in the design brief
+are about what colour does to perception (C1, C6, C7) — which cannot be judged from a
+wireframe, while structural questions cannot be judged once the page is full of colour.
+
+`DESIGN-BRIEF.md` §7 rewritten to match: it now specifies the three stages, what is approved
+at each, and the greyscale rule with its one exception.
+
+**Stage 1 wireframes delivered** — R1 web, published as an inspectable artifact:
+
+- Colour detail (`/colors/[slug]`) — desktop and mobile, 11 annotations. Designed first
+  because every other surface reuses its parts.
+- Colour Atlas · Colour Lens (permission → live → result) · Compare · Home
+- Flow A as an annotated six-step sequence with p50 budgets
+- Eight component states, including the ones usually left blank: loading, no-results,
+  camera-denied, offline, poor-confidence, focus-visible
+- Six decisions surfaced explicitly for the reviewer, each with the alternative I did not take
+
+**The greyscale rule and its exception.** Wireframes are greyscale except where a colour
+*sample* appears — a sample is content, not decoration, and **C1 is only testable if you can
+see a garment colour sitting inside the chrome.** The document's own chrome follows the
+product's rule: one chromatic value in the entire page, a muted moss used only for annotation
+markers, chosen because the samples shown are indigo-family and a reviewer's eye must never
+conflate an annotation with a colour under examination.
+
+### Gates
+
+```
+Ran:      state ✓  (node scripts/verify-state.mjs) — 13 checks, 1 known warning
+NOT run:  everything else. Still no application code.
+```
+
+Verified after the ADR and brief edits: 33 ADRs, index consistent; 172 governed documents,
+all links resolve.
+
+### Recorded, not resolved
+
+- The **perceptual Atlas arrangement** (annotation 2.3) is the largest open question. It may
+  be the most distinctive thing on the site or an unnavigable novelty; it needs a stage-2
+  prototype before we commit either way.
+- **Colour values in the wireframes are placeholders.** Real corpus entries land with F-012,
+  each with complete provenance and a named reviewer. Nothing in the deliverable is a
+  verified colour claim, and the document says so.
+
+### Next
+
+1. **Review the wireframes.** Feedback references annotation numbers.
+2. On approval: wireframe the remaining R1 surfaces — Palette Studio, Finder results, the
+   shareable card — plus Flows B and C. Held until after this review so a structural
+   correction lands before they are drawn rather than after.
+3. Then stage 2 (visual design), then F-001.
+
+Nothing is `in_progress` in the feature list. Design work precedes R0.
+
+---
+
 ## 2026-08-13 — Phase 1: product definition and harness
 
 **Scope:** convert the four brainstorm documents into a production-grade documentation set

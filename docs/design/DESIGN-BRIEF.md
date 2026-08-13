@@ -5,7 +5,8 @@
 | **Status** | Ready for design |
 | **Audience** | Whoever designs the UI and flows (currently: Claude design) |
 | **Inputs** | [`BRAND.md`](BRAND.md) · [`../PRD.md`](../PRD.md) · [`ACCESSIBILITY.md`](ACCESSIBILITY.md) |
-| **Output** | Screens and flows for review → on approval, `DESIGN-SYSTEM.md` and the token manifest are completed, then implemented |
+| **Tool** | **Claude** — designs arrive as inspectable HTML/SVG, not Figma files ([ADR-0032](../adr/0032-design-in-claude-wireframes-before-visual-before-code.md)) |
+| **Output** | **Stage 1 wireframes** → approval → **Stage 2 visual design** → approval → code |
 
 This is the design contract. Anything here marked **hard constraint** is not a preference —
 it is enforced by a build gate or by a product commitment, and a design that violates it
@@ -159,20 +160,47 @@ not less.
 
 ---
 
-## 7. What to deliver
+## 7. What to deliver, and in what order
 
-1. **Flows A, B and C** as annotated screen sequences.
-2. **Priority 1 surfaces**, desktop and mobile web.
-3. **The component set** in §5, with every state: default, hover, focus-visible, active,
+Three stages, each separately approved
+([ADR-0032](../adr/0032-design-in-claude-wireframes-before-visual-before-code.md)). Nothing
+proceeds until the previous stage is signed off.
+
+### Stage 1 — Wireframes · **greyscale**
+
+1. **Priority 1 surfaces** (§3), desktop and mobile web.
+2. **Flows A, B and C** (§4) as annotated sequences.
+3. **Every state** for the components in §5: default, hover, focus-visible, active,
    disabled, loading, error, empty.
-4. **A token proposal** — colour (as OKLCh triples with intended contrast pairings),
-   spacing, type scale, radii, borders, motion durations.
-5. **Both themes**, both locales, for at least the colour detail page and the Lens result.
-6. **The mark and wordmark**, per [`BRAND.md` §7](BRAND.md#7-the-mark) — including
-   one-colour, 16 px, and CVD-simulated versions.
 
-**Format:** whatever reviews best. What matters is that the token proposal is precise
-enough to become `design-system.manifest.json` without a second round of decisions.
+**Greyscale, with one deliberate exception: a colour sample is content, not decoration.**
+Wireframes show a real representative colour wherever a sample would appear, because
+**C1 is only testable if you can see a sample sitting inside the chrome.** Everything else
+— chrome, type, borders, accents — is neutral.
+
+*Approving:* is this the right content, in the right order, with the right states?
+
+### Stage 2 — Visual design
+
+4. **A token proposal** — colour as OKLCh triples with their intended `pairsWith`
+   pairings, spacing, type scale, radii, borders, motion durations. Precise enough to
+   become `design-system.manifest.json` without a second round of decisions.
+5. **Both themes, both locales**, for at least the colour detail page and the Lens result.
+6. **The mark and wordmark** per [`BRAND.md` §7](BRAND.md#7-the-mark) — one-colour, 16 px,
+   and CVD-simulated.
+
+*Approving:* does it read as precise, honest, calm, editorial, accessible, unisex — and can
+you still judge a garment colour accurately inside it?
+
+### Stage 3 — Code
+
+The manifest `status` moves from `placeholder` to `approved`, **which makes the contrast
+gate blocking**.
+
+**Format throughout:** self-contained HTML with inline SVG, published as an artifact —
+openable, resizable, inspectable. Annotations sit in the page beside what they describe and
+are numbered, so feedback can reference a number. Because it is real markup, **axe and a
+contrast check can run against a design before it is implemented.**
 
 ---
 

@@ -55,6 +55,7 @@ Two rules that matter more than the format:
 | [0029](0029-harness-agnostic-core-thin-adapter.md) | Tool-agnostic `.harness/`; `.claude/` is a thin adapter | Accepted |
 | [0030](0030-effects-graph-is-a-committed-artifact.md) | The effect graph is committed, and every link names its guard | Accepted |
 | [0031](0031-measurement-claims-policy.md) | Every accuracy claim must have a measurement behind it | Accepted |
+| [0032](0032-design-in-claude-wireframes-before-visual-before-code.md) | Design happens in Claude; wireframes before visual design, both before code | Accepted |
 
 ## Open questions awaiting an ADR
 
