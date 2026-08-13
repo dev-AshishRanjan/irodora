@@ -1,146 +1,151 @@
 {
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
-  "version": 0,
-  "status": "placeholder",
-  "updated": "2026-08-13",
-  "description": "Machine-readable design tokens. The `contrast` gate reads this file. STATUS IS `placeholder`: the structure is final and the pipeline can be built and tested against it, but the values are provisional and arrive from the design deliverable (docs/design/DESIGN-BRIEF.md). The gate treats `placeholder` as report-only; it becomes blocking when status is `approved`.",
+  "version": 1,
+  "status": "approved",
+  "updated": "2026-08-14",
+  "approvedAt": "2026-08-14",
+  "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, exact colour — every radius is generous except the swatch, which is 0 forever.",
 
-  "themes": ["light", "dark"],
+  "themes": ["dark", "light"],
+  "defaultTheme": "dark",
+
+  "notes": {
+    "surfaces": "Four tonal steps lifted from one ground, Material-3 style, rather than five arbitrary greys. The neutral carries a trace of warmth (hue 70-85) because a cold slate casts on every sample beside it.",
+    "chroma": "The interface is near-achromatic by rule. Chroma above 0.01 in any surface or text token requires a recorded exception. The single accent appears only in focus rings and selection.",
+    "foreground3": "`foreground.3` FAILS AA against every surface at small sizes and is therefore restricted to decorative use and text >= 18.66px. Micro-labels use `foreground.2`. This restriction is enforced by the contrast gate, not by convention."
+  },
 
   "color": {
-    "light": {
-      "surface.base": {
-        "oklch": { "l": 0.985, "c": 0.004, "h": 85 },
-        "srgb": "#FAF9F7",
-        "role": "The page. Warm off-white, deliberately near-neutral.",
-        "pairsWith": ["text.primary", "text.secondary", "border.subtle", "accent.base"]
-      },
-      "surface.raised": {
-        "oklch": { "l": 1.0, "c": 0.0, "h": 0 },
-        "srgb": "#FFFFFF",
-        "role": "Cards, panels, elevated regions.",
-        "pairsWith": ["text.primary", "text.secondary", "border.default"]
-      },
-      "surface.sunken": {
-        "oklch": { "l": 0.955, "c": 0.005, "h": 85 },
-        "srgb": "#F1EFEB",
-        "role": "Wells, inset regions, code blocks.",
-        "pairsWith": ["text.primary", "text.secondary"]
-      },
-      "text.primary": {
-        "oklch": { "l": 0.22, "c": 0.008, "h": 250 },
-        "srgb": "#26282C",
-        "role": "Body and headings. Sumi-inspired, never pure black.",
-        "pairsWith": []
-      },
-      "text.secondary": {
-        "oklch": { "l": 0.48, "c": 0.008, "h": 250 },
-        "srgb": "#6B6E74",
-        "role": "Supporting text, captions, metadata.",
-        "pairsWith": []
-      },
-      "text.tertiary": {
-        "oklch": { "l": 0.62, "c": 0.006, "h": 250 },
-        "srgb": "#93969B",
-        "role": "Placeholders and disabled text. AA at large sizes only — never used for essential information.",
-        "pairsWith": []
-      },
-      "border.subtle": {
-        "oklch": { "l": 0.92, "c": 0.004, "h": 85 },
-        "srgb": "#E6E3DE",
-        "role": "Hairline dividers.",
-        "pairsWith": []
-      },
-      "border.default": {
-        "oklch": { "l": 0.86, "c": 0.005, "h": 85 },
-        "srgb": "#D4D0C9",
-        "role": "Component borders.",
-        "pairsWith": []
-      },
-      "border.focus": {
-        "oklch": { "l": 0.52, "c": 0.09, "h": 250 },
-        "srgb": "#4A6C93",
-        "role": "Focus ring. Must be visible against every surface — checked by the contrast gate against all surface.* tokens.",
-        "pairsWith": ["surface.base", "surface.raised", "surface.sunken"]
-      },
-      "accent.base": {
-        "oklch": { "l": 0.44, "c": 0.086, "h": 252 },
-        "srgb": "#3C5A7D",
-        "role": "The single accent, drawn from indigo. Used sparingly and never adjacent to a colour sample.",
-        "pairsWith": ["surface.base", "surface.raised", "text.inverse"]
-      },
-      "text.inverse": {
-        "oklch": { "l": 0.99, "c": 0.002, "h": 85 },
-        "srgb": "#FCFBFA",
-        "role": "Text on accent and dark surfaces.",
-        "pairsWith": []
-      },
-      "swatch.border": {
-        "oklch": { "l": 0.78, "c": 0.004, "h": 85 },
-        "srgb": "#BFBCB6",
-        "role": "The border of a colour sample. Mid-neutral so it biases neither light nor dark samples.",
-        "pairsWith": []
-      },
-      "swatch.separator": {
-        "oklch": { "l": 0.97, "c": 0.002, "h": 85 },
-        "srgb": "#F7F6F4",
-        "role": "MANDATORY neutral gap between a colour sample and any adjacent coloured element. Simultaneous contrast makes this functional, not decorative.",
-        "pairsWith": []
-      },
-      "swatch.checker": {
-        "oklch": { "l": 0.9, "c": 0.0, "h": 0 },
-        "srgb": "#E0E0E0",
-        "role": "Transparency checkerboard.",
-        "pairsWith": []
-      }
-    },
     "dark": {
-      "_note": "Derived from light by transforming L while preserving C and H, per ADR-0020. Values are generated, not authored; exceptions are recorded in `exceptions` below. Populated on design approval."
+      "background":    { "oklch": { "l": 0.135, "c": 0.004, "h": 70 }, "srgb": "#141312", "role": "The page.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.1":     { "oklch": { "l": 0.175, "c": 0.004, "h": 70 }, "srgb": "#1D1B1A", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.2":     { "oklch": { "l": 0.212, "c": 0.004, "h": 70 }, "srgb": "#262423", "role": "Raised — the confidence card, popovers.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.3":     { "oklch": { "l": 0.248, "c": 0.004, "h": 70 }, "srgb": "#2F2D2B", "role": "Meter tracks, inset wells.", "pairsWith": ["foreground"] },
+      "swatch.well":   { "oklch": { "l": 0.285, "c": 0.004, "h": 70 }, "srgb": "#383533", "role": "MANDATORY neutral ground beneath every colour sample. Functional, not decorative: whatever touches a sample changes how it reads.", "pairsWith": [] },
+      "swatch.hairline": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.16 }, "srgb": "rgba(255,255,255,0.16)", "role": "Inset hairline on a sample, so its edge is perceptible against any value.", "pairsWith": [] },
+      "foreground":    { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F7F4F0", "role": "Primary text. Warm off-white, never pure white.", "pairsWith": [] },
+      "foreground.2":  { "oklch": { "l": 0.715, "c": 0.006, "h": 80 }, "srgb": "#ADA79F", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
+      "foreground.3":  { "oklch": { "l": 0.600, "c": 0.006, "h": 80 }, "srgb": "#8B857E", "role": "Decorative and large text only. NOT for micro-labels.", "largeTextOnly": true, "pairsWith": [] },
+      "border":        { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(255,255,255,0.08)", "role": "Hairline. Translucent overlay, never a solid grey — depth reads as lift, not outline.", "pairsWith": [] },
+      "border.strong": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(255,255,255,0.14)", "role": "Outlined controls.", "pairsWith": [] },
+      "inverse":       { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F7F4F0", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
+      "inverse.foreground": { "oklch": { "l": 0.150, "c": 0.004, "h": 70 }, "srgb": "#171514", "role": "Text on inverse.", "pairsWith": [] },
+      "ring":          { "oklch": { "l": 0.680, "c": 0.075, "h": 246 }, "srgb": "#7096C4", "role": "Focus ring and selection. THE ONLY chromatic token in the chrome.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
+      "status.ok":     { "oklch": { "l": 0.760, "c": 0.090, "h": 158 }, "srgb": "#83C4A3", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.warn":   { "oklch": { "l": 0.810, "c": 0.100, "h": 78 },  "srgb": "#DCB878", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.bad":    { "oklch": { "l": 0.700, "c": 0.140, "h": 26 },  "srgb": "#DE8874", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "chart.1": { "oklch": { "l": 0.97, "c": 0, "h": 0 }, "srgb": "#F7F7F7", "role": "Data series 1.", "pairsWith": [] },
+      "chart.2": { "oklch": { "l": 0.78, "c": 0, "h": 0 }, "srgb": "#BEBEBE", "role": "Data series 2.", "pairsWith": [] },
+      "chart.3": { "oklch": { "l": 0.60, "c": 0, "h": 0 }, "srgb": "#8B8B8B", "role": "Data series 3.", "pairsWith": [] },
+      "chart.4": { "oklch": { "l": 0.44, "c": 0, "h": 0 }, "srgb": "#5E5E5E", "role": "Data series 4.", "pairsWith": [] },
+      "chart.5": { "oklch": { "l": 0.31, "c": 0, "h": 0 }, "srgb": "#3D3D3D", "role": "Data series 5.", "pairsWith": [] }
+    },
+
+    "light": {
+      "background":    { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCFA", "role": "The page.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.1":     { "oklch": { "l": 1.000, "c": 0, "h": 0 },      "srgb": "#FFFFFF", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.2":     { "oklch": { "l": 0.972, "c": 0.004, "h": 85 }, "srgb": "#F6F4F1", "role": "Raised.", "pairsWith": ["foreground", "foreground.2"] },
+      "surface.3":     { "oklch": { "l": 0.950, "c": 0.004, "h": 85 }, "srgb": "#EFECE8", "role": "Meter tracks.", "pairsWith": ["foreground"] },
+      "swatch.well":   { "oklch": { "l": 0.938, "c": 0.005, "h": 85 }, "srgb": "#EBE8E3", "role": "MANDATORY neutral ground beneath every colour sample.", "pairsWith": [] },
+      "swatch.hairline": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(0,0,0,0.14)", "role": "Inset hairline on a sample.", "pairsWith": [] },
+      "foreground":    { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#24211E", "role": "Primary text. Sumi-inspired, never pure black.", "pairsWith": [] },
+      "foreground.2":  { "oklch": { "l": 0.470, "c": 0.008, "h": 72 }, "srgb": "#6B6560", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
+      "foreground.3":  { "oklch": { "l": 0.635, "c": 0.006, "h": 75 }, "srgb": "#98928B", "role": "Decorative and large text only. NOT for micro-labels.", "largeTextOnly": true, "pairsWith": [] },
+      "border":        { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(0,0,0,0.08)", "role": "Hairline.", "pairsWith": [] },
+      "border.strong": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.15 }, "srgb": "rgba(0,0,0,0.15)", "role": "Outlined controls.", "pairsWith": [] },
+      "inverse":       { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#24211E", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
+      "inverse.foreground": { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCFA", "role": "Text on inverse.", "pairsWith": [] },
+      "ring":          { "oklch": { "l": 0.520, "c": 0.080, "h": 248 }, "srgb": "#4B6D9B", "role": "Focus ring and selection. THE ONLY chromatic token in the chrome.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
+      "status.ok":     { "oklch": { "l": 0.550, "c": 0.100, "h": 158 }, "srgb": "#3F8763", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.warn":   { "oklch": { "l": 0.600, "c": 0.110, "h": 70 },  "srgb": "#96703A", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.bad":    { "oklch": { "l": 0.550, "c": 0.160, "h": 26 },  "srgb": "#A64B37", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "chart.1": { "oklch": { "l": 0.20, "c": 0, "h": 0 }, "srgb": "#252525", "role": "Data series 1.", "pairsWith": [] },
+      "chart.2": { "oklch": { "l": 0.40, "c": 0, "h": 0 }, "srgb": "#545454", "role": "Data series 2.", "pairsWith": [] },
+      "chart.3": { "oklch": { "l": 0.58, "c": 0, "h": 0 }, "srgb": "#848484", "role": "Data series 3.", "pairsWith": [] },
+      "chart.4": { "oklch": { "l": 0.74, "c": 0, "h": 0 }, "srgb": "#B2B2B2", "role": "Data series 4.", "pairsWith": [] },
+      "chart.5": { "oklch": { "l": 0.87, "c": 0, "h": 0 }, "srgb": "#D8D8D8", "role": "Data series 5.", "pairsWith": [] }
     }
   },
 
   "status": {
-    "_note": "Every status token MUST pair with an icon token. A status expressible only as colour violates NFR-9, and pairing them here makes that impossible rather than merely discouraged.",
-    "success": { "colorToken": "status.success", "iconToken": "icon.check", "textRequired": true },
-    "warning": { "colorToken": "status.warning", "iconToken": "icon.alert", "textRequired": true },
-    "error": { "colorToken": "status.error", "iconToken": "icon.cross", "textRequired": true },
-    "info": { "colorToken": "status.info", "iconToken": "icon.info", "textRequired": true }
+    "_note": "Every status token MUST pair with an icon token AND a text label. Three channels, always. A status expressible only as colour cannot be constructed — the pairing is enforced here so it cannot be forgotten in a component.",
+    "ok":    { "colorToken": "status.ok",   "iconToken": "icon.check", "textRequired": true },
+    "warn":  { "colorToken": "status.warn", "iconToken": "icon.alert", "textRequired": true },
+    "bad":   { "colorToken": "status.bad",  "iconToken": "icon.cross", "textRequired": true }
   },
 
   "cvdPairs": {
-    "_note": "Semantic pairs that must remain distinguishable under simulated CVD. Checked by the `cvd` gate at the minimum separation below. The product's own interface is held to the standard it applies to outfits.",
+    "_note": "Semantic pairs that must remain distinguishable under simulated CVD at severity 1.0. Asserted by the `cvd` gate. The product's own interface is held to the standard it applies to outfits.",
     "minSeparation": 60,
     "pairs": [
-      ["status.success", "status.error"],
-      ["status.warning", "status.error"],
-      ["accent.base", "text.primary"],
-      ["border.focus", "border.default"]
+      ["status.ok", "status.bad"],
+      ["status.warn", "status.bad"],
+      ["status.ok", "status.warn"],
+      ["ring", "border.strong"]
     ]
   },
 
-  "spacing": {
-    "_note": "Base unit and scale. 間 (ma) means the larger steps are used more than in a typical product. Populated on design approval.",
-    "base": 4,
-    "scale": []
-  },
-
-  "typography": {
-    "_note": "Tabular numerals everywhere — colour values appear in columns and must align. Japanese needs a separate line-height scale at the same size. Populated on design approval.",
-    "families": {},
-    "scale": [],
-    "lineHeight": { "latin": [], "japanese": [] },
-    "numeric": { "variantNumeric": "tabular-nums" }
-  },
-
   "radius": {
-    "_note": "swatch is 0 and stays 0. A rounded sample changes perceived area and therefore perceived colour.",
+    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. swatch is 0 and never changes: corner radius removes sampled area from exactly the region the eye uses to judge a flat colour, and the effect grows as the swatch shrinks.",
+    "xs": 6, "sm": 10, "md": 14, "lg": 20, "xl": 28, "pill": 999,
     "swatch": 0
   },
 
+  "spacing": {
+    "base": 4,
+    "scale": [4, 8, 14, 20, 28, 40, 56, 96],
+    "_note": "Editorial rhythm: the larger steps carry more of the layout than in a typical dense UI. 間 (ma) is a design element."
+  },
+
+  "size": {
+    "tapTarget": 44,
+    "_note": "Apple's floor, applied on web too. Comfortable is also accessible."
+  },
+
+  "typography": {
+    "families": {
+      "sans": "Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif",
+      "mono": "'Geist Mono', ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace",
+      "jp": "'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif"
+    },
+    "scale": {
+      "display.1": { "size": 72, "lineHeight": 0.98, "tracking": "-0.04em", "weight": 500 },
+      "display.2": { "size": 34, "lineHeight": 1.05, "tracking": "-0.03em", "weight": 500 },
+      "title":     { "size": 22, "lineHeight": 1.20, "tracking": "-0.02em", "weight": 600 },
+      "body":      { "size": 15, "lineHeight": 1.65, "tracking": "0",       "weight": 400 },
+      "small":     { "size": 13, "lineHeight": 1.55, "tracking": "0",       "weight": 400 },
+      "xs":        { "size": 11.5, "lineHeight": 1.50, "tracking": "0",     "weight": 400 },
+      "label":     { "size": 10, "lineHeight": 1.40, "tracking": "0.16em",  "weight": 600, "transform": "uppercase" }
+    },
+    "lineHeight": {
+      "latin": 1.65,
+      "japanese": 1.85,
+      "_note": "Japanese needs more leading than Latin at the same size. A single line-height for both is a layout that was only ever checked in one language."
+    },
+    "numeric": {
+      "fontFeature": "tabular-nums",
+      "_note": "MANDATORY on every colour value, coordinate, score and delta. A professional scans these in a column; proportional figures make a ΔE table unreadable."
+    }
+  },
+
+  "elevation": {
+    "_note": "Tonal, never shadow. Surfaces lift by tint — which is what the swatch rule required anyway, because a shadow tints what it surrounds.",
+    "0": "background",
+    "1": "surface.1",
+    "2": "surface.2",
+    "3": "surface.3",
+    "shadow": "none"
+  },
+
   "motion": {
-    "_note": "Every duration collapses to 0 under prefers-reduced-motion. Motion must never alter a colour mid-transition. Populated on design approval.",
-    "durations": {},
-    "easings": {}
+    "_note": "Motion must NEVER alter a colour mid-transition — the intermediate frames are plausible, so a user reads a colour that never existed. Every duration collapses to 0 under prefers-reduced-motion.",
+    "durations": { "micro": 120, "local": 180, "view": 260 },
+    "easing": {
+      "out":   "cubic-bezier(0.16, 1, 0.3, 1)",
+      "inOut": "cubic-bezier(0.65, 0, 0.35, 1)"
+    },
+    "animatable": ["opacity", "transform"],
+    "forbidden": ["background-color on a swatch", "cross-fade between samples", "width", "height", "top", "left"]
   },
 
   "exceptions": [],
@@ -152,7 +157,11 @@
       "largeText": 3.0,
       "nonText": 3.0,
       "reportAPCA": true,
-      "blockingWhenStatus": "approved"
+      "blockingWhenStatus": "approved",
+      "chromaCeiling": {
+        "surfaceAndText": 0.01,
+        "_note": "Above this, a token needs a recorded exception. The interface is near-achromatic by rule so that the garment colour is the only chroma competing for the eye."
+      }
     }
   }
 }

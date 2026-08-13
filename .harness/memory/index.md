@@ -21,6 +21,10 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md](lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md) — ΔE00 violates the triangle inequality, so every spatial index ranks it subtly wrong and silently.
 - [lessons/cvd-is-scoring-not-rendering.md](lessons/cvd-is-scoring-not-rendering.md) — a CVD display filter helps designers, not the user it names.
 
+### Design
+
+- [lessons/the-constraint-and-the-taste-usually-agree.md](lessons/the-constraint-and-the-taste-usually-agree.md) — a constraint is a design direction, not a licence to be austere; find the field that already works under it.
+
 ### Engineering discipline
 
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.

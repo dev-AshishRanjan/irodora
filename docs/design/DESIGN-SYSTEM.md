@@ -2,17 +2,48 @@
 
 | | |
 |---|---|
-| **Status** | **Architecture defined; concrete values pending design approval.** |
+| **Status** | **Approved** · 2026-08-14 |
 | **Source of truth** | [`design-system.manifest.json`](design-system.manifest.json) |
-| **Decisions** | [ADR-0020](../adr/0020-design-tokens-are-oklch-native.md) · [ADR-0021](../adr/0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md) |
-
-This document defines **how tokens work**. The values arrive from
-[`DESIGN-BRIEF.md`](DESIGN-BRIEF.md) after design approval and are filled into the
-manifest, not into prose here.
+| **Decisions** | [ADR-0020](../adr/0020-design-tokens-are-oklch-native.md) · [ADR-0021](../adr/0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md) · [ADR-0033](../adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md) |
+| **Skills** | [`build-ui`](../../.harness/skills/build-ui/SKILL.md) · [`visual-taste`](../../.harness/skills/visual-taste/SKILL.md) · [`contrast-checker`](../../.harness/skills/contrast-checker/SKILL.md) · [`motion`](../../.harness/skills/motion/SKILL.md) |
 
 ---
 
-## 1. The manifest is the source of truth
+## The thesis
+
+> **Soft chrome, exact colour.**
+
+Everything is generous — 20 px cards, 28 px containers, full pills, 44 px targets, warm
+neutrals. Except the swatch, which is `radius: 0` at every size, forever.
+
+Corner radius removes sampled area from exactly the region the eye uses to judge a large flat
+colour, and the effect grows as the swatch shrinks — at 24 px a 10 px radius eats a fifth of
+the shape. Surrounded by softness, the hard edge reads as *deliberate precision* rather than
+as something unstyled. **The tension between the two is the design idea.**
+
+### Where it comes from
+
+**A colour page is a product page, and here the colour is the product.** Fashion retail
+solved our hardest constraint years ago: SSENSE, Net-a-Porter, COS and Aesop are near
+monochrome *because the clothes carry the colour*. An entire industry arrived independently
+at "the interface must not compete with the product"
+([[the-constraint-and-the-taste-usually-agree]]).
+
+So the swatch gets the treatment a garment photograph gets — 400 px, uninterrupted, undecorated
+— and the specification sits quiet beneath it, exactly where size-and-composition sits on a
+product page.
+
+### Taken and refused, deliberately
+
+| From | Taken | Refused |
+|---|---|---|
+| **Apple HIG** | Deference — chrome recedes, content leads. 44 px targets | **Translucency and vibrancy near a swatch.** A material that tints what shows through it is disqualified on a colour surface |
+| **Material 3** | Tonal elevation — surfaces lift by tint, not shadow. Generous radii and state layers | **Dynamic colour.** Deriving a UI palette from a source colour would tint the entire interface from the thing being examined. Fatal here |
+| **Fashion retail** | The whole information hierarchy: product first at full size, spec quiet beneath, editorial type, air | — |
+
+---
+
+## The manifest is the source of truth
 
 ```
 design-system.manifest.json
@@ -23,131 +54,89 @@ design-system.manifest.json
    └─→ Tailwind v4 theme
 ```
 
-Four targets, one source. A token that exists in CSS but not in React Native is a
-divergence between web and mobile, and there is no mechanism for one to appear.
+Four targets, one source. A token that exists in CSS but not in React Native is a divergence
+between web and mobile, and there is no mechanism for one to appear — which is also why
+[Astryx was not adopted](../adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md):
+it is web-only.
 
-**The `contrast` gate reads this file.** A token change that breaks a declared pairing
-fails the build ([ADR-0021](../adr/0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md)).
+**The `contrast` gate reads this file and is blocking**, from the moment it exists (F-003).
 
----
+### Token naming is shadcn/Base-UI compatible
 
-## 2. Colour tokens
-
-Authored in OKLCh. Every token carries its components, an sRGB fallback, a semantic role,
-and the pairings it is intended to be used in:
-
-```jsonc
-{
-  "surface.base": {
-    "oklch": { "l": 0.98, "c": 0.004, "h": 85 },
-    "srgb": "#FAF9F7",
-    "role": "The page. Warm off-white, near-neutral by design.",
-    "pairsWith": ["text.primary", "text.secondary", "border.subtle"]
-  }
-}
-```
-
-`pairsWith` is what makes the contrast gate possible: it declares the combinations that
-must hold, so the gate checks the pairings that actually occur rather than the cartesian
-product of every token.
-
-### Semantic layers
-
-| Layer | Purpose |
-|---|---|
-| `surface.*` | Page, raised, sunken, overlay |
-| `text.*` | Primary, secondary, tertiary, inverse, link |
-| `border.*` | Subtle, default, strong, focus |
-| `accent.*` | The single restrained accent, and its states |
-| `status.*` | Success, warning, error, info — **each with a required icon token** |
-| `swatch.*` | Chrome *around* colour samples: border, separator, checkerboard |
-
-**`swatch.*` exists as its own layer for a reason.** The chrome surrounding a colour under
-examination is the most perceptually sensitive surface in the product, and it must be
-governable independently of general UI surfaces — including a stricter neutrality
-requirement.
-
-### The rules
-
-1. **No raw colour literals in application code.** Lint-enforced. A hex in a component is a
-   token that was never defined.
-2. **Every `status.*` token pairs with an icon token.** A status expressible only as colour
-   violates NFR-9, and pairing them in the token layer makes the violation impossible
-   rather than merely discouraged.
-3. **Scales are generated** from hue, a chroma curve and lightness steps. Overrides are
-   permitted but must carry a recorded reason.
-4. **Dark theme is derived** by transforming `L` while preserving `C` and `H`, with
-   recorded exceptions.
-5. **Interface colour is near-neutral.** Chroma above a defined ceiling requires
-   justification — the interface must not compete with the subject.
+Deliberately, so the wider ecosystem's tooling — tweakcn, efferd blocks, coss blocks —
+remains usable as reference and as a starting point. **That is interoperability, not
+adoption.** The values are ours, and so are the rules a general-purpose system would have no
+reason to encode.
 
 ---
 
-## 3. Other token families
+## What the manifest carries that a normal design system does not
 
-| Family | Basis |
-|---|---|
-| **Spacing** | A single base unit; a small scale. 間 (*ma*) means the larger steps get used more than in a typical product |
-| **Type** | Modest ratio. **Tabular numerals everywhere.** Separate line-height scale for Japanese, which needs more leading than Latin at the same size |
-| **Radius** | Restrained. **`radius.swatch` is 0** — a rounded swatch changes the perceived area and therefore the perceived colour |
-| **Border** | Hairline default. Swatch borders are their own token |
-| **Motion** | Short durations, few easings. Every duration collapses to 0 under `prefers-reduced-motion` |
-| **Elevation** | Borders and surface changes, **not shadows**, anywhere near a swatch |
-| **Z-index** | A named, enumerated scale. No arbitrary numbers |
+**`swatch.well`** — a mandatory neutral ground beneath every colour sample, at every size.
+Functional, not decorative: simultaneous contrast means whatever touches a sample changes how
+it reads.
+
+**`radius.swatch: 0`** — an inviolable rule, sitting inside an otherwise generous radius scale.
+
+**`chromaCeiling`** — surfaces and text may not exceed chroma 0.01 without a recorded
+exception. The interface is near-achromatic *by rule*, so the garment colour is the only
+chroma competing for the eye.
+
+**`cvdPairs`** — semantic pairs asserted distinguishable under simulated CVD at severity 1.0.
+The product's own interface is held to the standard it applies to outfits.
+
+**`foreground.3` is `largeTextOnly`** — it fails AA against every surface at small sizes, so
+micro-labels use `foreground.2`. Recorded as a machine-checkable restriction rather than left
+as a convention someone forgets.
+
+**Greyscale `chart.1…5`** — series are separated by lightness, marker shape and a direct
+label. A hue-coded chart would put five competing colours beside a sample the user is trying
+to read, and hue-coding is also the encoding that fails under CVD. The accessible answer and
+the correct-perception answer are the same answer.
 
 ---
 
-## 4. Component contract
+## Component contract
 
 Every component in `@irodora/ui` must:
 
 1. Consume tokens. No literal values.
 2. Define all states: default · hover · **focus-visible** · active · disabled · loading ·
    error · empty.
-3. Have an accessible name, correct role, and correct keyboard behaviour — inherited from
-   Radix primitives where one exists, rather than reimplemented.
+3. Take behaviour from a headless primitive (Radix or Base UI — decided before F-017) rather
+   than reimplementing focus management, keyboard handling or ARIA.
 4. Work in both themes and both locales.
 5. Ship with axe assertions in its tests.
 6. **Never rely on colour alone** to convey state.
 
-### Colour components carry two additional obligations
+### Colour components carry two more
 
-7. **Never render a colour without its provenance.** The type system enforces this
-   ([ADR-0005](../adr/0005-measurement-provenance-is-a-type.md)) — a component that takes a
-   `Color` necessarily has its provenance and must show it.
-8. **Never place a decorative colour adjacent to a sample.** A neutral separator is
-   mandatory. Simultaneous contrast is not a subtlety here; it is the difference between a
-   correct and an incorrect reading.
+7. **Never render a colour without its provenance.** The type system enforces it
+   ([ADR-0005](../adr/0005-measurement-provenance-is-a-type.md)).
+8. **Never place a decorative colour adjacent to a sample.** The `swatch.well` is mandatory.
 
 ---
 
-## 5. Verification
+## Verification
 
 | Gate | Checks |
 |---|---|
-| `contrast` | Every `pairsWith` combination meets WCAG 2.2 AA; APCA Lc reported; a scan for colour-only status indicators |
+| `contrast` | Every `pairsWith` combination at AA, **both themes**; APCA reported; `largeTextOnly` respected; `chromaCeiling` on surfaces and text; a scan for colour-only status |
 | `a11y` | axe WCAG 2.2 A/AA on every route, zero violations |
-| `cvd` | Semantic pairs that must stay distinguishable — success/error, selected/unselected — remain separable under protan, deutan and tritan simulation |
-| `web-perf` | First-load JS budget per route; LCP and CLS |
-| `lint` | No raw colour literals; no arbitrary z-index; no hard-coded user-facing strings |
-
-**The token set is subject to the same CVD standard the product applies to outfits.** An
-interface that fails its own accessibility engine would be an argument against the product.
+| `cvd` | `cvdPairs` separable at severity 1.0 |
+| `web-perf` | First-load JS per route; LCP; CLS |
+| `lint` | No raw colour literals; no hard-coded user-facing strings; no arbitrary z-index |
 
 ---
 
-## 6. Pending design approval
+## Still open
 
-Everything below arrives from the design deliverable and is written into the manifest:
-
-- [ ] Concrete OKLCh values for every semantic token, both themes
-- [ ] Type families, scale and the Japanese line-height scale
-- [ ] Spacing base and scale
-- [ ] Radius, border and motion values
-- [ ] The `pairsWith` declarations the contrast gate will enforce
-- [ ] Icon set and the `status.*` icon pairings
-- [ ] The mark and wordmark
-
-Until then `design-system.manifest.json` holds the **schema and the structure** — enough
-for the gate and the build pipeline to exist and be tested with placeholder values, and
-not enough to pretend a design decision has been made.
+- **Primitives:** Radix or Base UI. Base UI is the Radix / MUI Base / Floating UI convergence
+  and is what coss.com/ui is built on. Settle before F-017.
+- **Perceptual Atlas arrangement** — colours positioned by hue and lightness rather than in
+  rows. Possibly the most distinctive thing on the site, possibly an unnavigable novelty.
+  Needs a prototype.
+- **Default theme on first visit** — dark is the primary design; light is the harder case.
+- **The mark** — in-product, or app icon only.
+- **Fonts:** Geist and Geist Mono are intended. Licensing and self-hosting to confirm; the
+  fallback stack is in the manifest.

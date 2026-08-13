@@ -41,7 +41,8 @@ skills say how to get there.
 
 | Skill | For |
 |---|---|
-| [build-ui](build-ui/SKILL.md) | Build a surface that passes the gates |
+| [visual-taste](visual-taste/SKILL.md) | **Avoid generic AI-looking design.** Infer the register, audit before redesigning, pre-flight before shipping |
+| [build-ui](build-ui/SKILL.md) | Build a surface that passes the gates, with the type and spacing craft |
 | [design-review](design-review/SKILL.md) | Review a design or an implemented surface |
 | [contrast-checker](contrast-checker/SKILL.md) | Check contrast properly |
 | [i18n-copy](i18n-copy/SKILL.md) | Write copy that works in both locales |

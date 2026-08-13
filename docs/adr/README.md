@@ -56,6 +56,7 @@ Two rules that matter more than the format:
 | [0030](0030-effects-graph-is-a-committed-artifact.md) | The effect graph is committed, and every link names its guard | Accepted |
 | [0031](0031-measurement-claims-policy.md) | Every accuracy claim must have a measurement behind it | Accepted |
 | [0032](0032-design-in-claude-wireframes-before-visual-before-code.md) | Design happens in Claude; wireframes before visual design, both before code | Accepted |
+| [0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md) | We own the token layer; primitives stay headless; Astryx is not adopted | Accepted |
 
 ## Open questions awaiting an ADR
 

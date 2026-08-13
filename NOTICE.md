@@ -91,3 +91,20 @@ by two openly published bodies of work, adapted rather than copied:
 Where an ECC skill was adapted, the derived file says so in its own header. Our principal
 adaptation is that all memory is written to the **in-repository** system of record rather
 than a personal agent store — see [ADR-0029](docs/adr/0029-harness-agnostic-core-thin-adapter.md).
+
+### Design skills
+
+Three published design skills were **read and adapted** into our own harness skills rather
+than installed as dependencies. We do not vendor them; each derived file names its source in
+its own header, and each was rewritten against this product's constraints.
+
+| Source | Licence | Adapted into | What we took, and what we changed |
+|---|---|---|---|
+| **taste-skill** (© 2026 Leonxlnx, `github.com/Leonxlnx/taste-skill`) | MIT | [`visual-taste`](.harness/skills/visual-taste/SKILL.md) | The anti-generic discipline, brief inference, audit-before-redesign, the pre-flight check. **Changed:** the escape from generic output is bound to *this* subject — for a colour product the answer is not "add visual interest", it is restraint executed with enough craft to read as deliberate |
+| **Emil Kowalski**, *Animations on the Web* (`emilkowal.ski`) | Published writing, cited not copied | [`motion`](.harness/skills/motion/SKILL.md) | Duration by interaction class, exits faster than entrances, ease-out as default, compositor properties only, springs only where a physical metaphor is real. **Changed:** the product rule that motion may never alter a colour overrides all of it wherever they meet |
+| **Impeccable** design skill · **shadcn/ui** conventions | — | [`build-ui`](.harness/skills/build-ui/SKILL.md) | Type-scale contrast, tracking by size, balanced headings, measure, proximity-before-size, tabular numerals. Token **naming** compatibility with shadcn/Base UI |
+
+**Astryx** (Meta, MIT) was evaluated as a frontend foundation and **not adopted** — see
+[ADR-0033](docs/adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md).
+No Astryx code is used. Our token names are shadcn/Base-UI compatible, which is
+interoperability rather than adoption; no shadcn code is vendored either.

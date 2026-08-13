@@ -8,6 +8,98 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — Phase 2b: design system approved · frontend foundation decided
+
+**Scope:** the Stage 1 wireframes were rejected, the design was rebuilt, and the frontend
+foundation question was researched and settled. No application code.
+
+### The rejection, and what was wrong
+
+Stage 1 wireframes came back as *"very bad — they lack design thinking and creativity."*
+That was correct.
+
+**The error:** C1 (*the interface must not decorate with colour*) was read as a reason to
+remove things. The output was structurally sound and lifeless — a spec document with the word
+*wireframe* on it. The constraint was treated as a limit to work within rather than as the
+direction to work toward.
+
+**What was actually true:** the references supplied — efferd, coss, and the fashion-retail
+canon — all converge on neutral chrome, greyscale data, chroma held back. That is not a
+compromise those designers accepted; it is what a product whose subject carries the colour
+genuinely wants. Captured as
+[[the-constraint-and-the-taste-usually-agree]], and it is why
+[`visual-taste`](../skills/visual-taste/SKILL.md) now exists.
+
+### Design system — approved
+
+Rebuilt on the thesis **soft chrome, exact colour**: everything generous — 20px cards, 28px
+containers, full pills, 44px targets, warm neutrals — except `radius.swatch: 0`, forever.
+Surrounded by softness the hard edge reads as deliberate precision, and that tension is the
+idea.
+
+Framing: **a colour page is a product page, and here the colour is the product.** The swatch
+takes the treatment a garment photograph gets; the specification sits quiet beneath it.
+
+Taken and refused deliberately rather than blended: **deference** and 44px targets from Apple
+HIG, **refusing** translucency near a swatch; **tonal elevation** and soft geometry from
+Material 3, **refusing** dynamic colour outright — deriving a UI palette from a source colour
+would tint the whole interface from the thing being examined.
+
+`design-system.manifest.json` now carries **real values**, `status: "approved"`, and rules a
+general-purpose system would have no reason to encode: `swatch.well` as a mandatory neutral
+ground · `chromaCeiling` of 0.01 on surfaces and text · `foreground.3` marked
+`largeTextOnly` because it fails AA at small sizes · greyscale `chart.1…5` · `cvdPairs`.
+**The `contrast` gate is blocking from the moment it exists (F-003).**
+
+### Frontend foundation — [ADR-0033](../../docs/adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md)
+
+**Astryx evaluated and not adopted.** It is genuinely good — 150+ accessible components, an
+MCP server, and Tailwind integration better engineered than expected (pre-compiled CSS,
+explicit `@layer` ordering, a token bridge).
+
+**It is web-only, and that is decisive.** Our manifest compiles to four targets including
+React Native precisely so web and mobile cannot drift; adopting Astryx would split the design
+system down the middle of the product, with the Lens on the far side. Its theme packages also
+own the colour semantics that are this product's substance.
+
+**Taken from it anyway:** its best idea is not its components — it is the MCP server letting
+an agent browse the design system. Recorded as a backlog candidate for our own tokens.
+
+Token names stay shadcn/Base-UI compatible so tweakcn, efferd and coss blocks remain usable
+as reference. Interoperability, not adoption. **Radix vs Base UI to settle before F-017.**
+
+### Skills adopted
+
+Three published design skills **read and adapted**, not installed — per
+[ADR-0029](../../docs/adr/0029-harness-agnostic-core-thin-adapter.md) we adapt and record
+provenance. Rather than five overlapping skill files, each source went where it belonged:
+
+| Source | Into | Adaptation |
+|---|---|---|
+| taste-skill (MIT, Leonxlnx) | **new** [`visual-taste`](../skills/visual-taste/SKILL.md) | Anti-generic discipline bound to *this* subject: the escape from generic here is restraint executed with craft, not added visual interest |
+| Emil Kowalski, *Animations on the Web* | [`motion`](../skills/motion/SKILL.md) | Duration by interaction class, exits faster, ease-out default, compositor properties only. Overridden wherever it meets "motion may never alter a colour" |
+| Impeccable · shadcn conventions | [`build-ui`](../skills/build-ui/SKILL.md) | Type-scale contrast, tracking by size, measure, proximity-before-size, tabular numerals |
+
+Provenance recorded in [`NOTICE.md`](../../NOTICE.md). No third-party code is vendored.
+
+### Gates
+
+```
+Ran:      state ✓  — 13 checks, 1 known warning
+NOT run:  everything else. Still no application code.
+```
+
+### Next
+
+1. Design the remaining R1 surfaces to the approved system — Palette Studio, Finder results,
+   the share card, Compare, Home — plus Flows B and C.
+2. Settle Radix vs Base UI.
+3. Then F-001.
+
+Nothing is `in_progress` in the feature list.
+
+---
+
 ## 2026-08-14 — Phase 2a: Stage 1 wireframes, R1 web
 
 **Scope:** the design tooling decision, and the first wireframe deliverable. No code.
