@@ -8,6 +8,82 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — F-005 IN PROGRESS · 2 of 8 increments · handoff
+
+**F-005 is claimed and `in_progress`.** Two increments are done, committed and green. This
+entry is the handoff — the plan
+([`F-005-deployment-profiles.md`](../plans/F-005-deployment-profiles.md)) holds the rest.
+
+### Done and committed
+
+| Increment | Commit | What |
+|---|---|---|
+| 1 — `@irodora/config` | `ae56dd1` | The environment contract: 46 variables as a Zod schema, profile-aware strictness, 18 tests |
+| 2 — `@irodora/ports` | `15ad3f5` | Cache and blob ports + conformance suites, 4 broken adapters proven caught |
+| — | `1f0f917` | Gate 15 false positive, fixed both ways |
+
+### Evidence at handoff
+
+```
+  ✓ state · typecheck · lint (10 guards) · format · test (165) · build
+  ✓ security   gitleaks 11 commits, no leaks · audit: no known vulnerabilities
+
+NOT run: color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf,
+         e2e-full — none applicable.
+NOT run: docker build, docker compose up — increments 5 and 6, not started.
+```
+
+### Two things worth carrying forward
+
+**Gate 15 caught my own test fixtures, and I committed while it was red.** Two invented
+32-character strings in `load.test.ts` were flagged as generic API keys — correctly; a
+scanner cannot know a fixture is fake. Fixed in both directions: the fixtures now use the
+placeholder vocabulary the config already allowlists, *and* a path-scoped exemption covers
+the history that already has them. The exemption is one file, not `*.test.ts`, and its cost
+is written beside it.
+
+**The commit that shipped red did so because of a pipe.** The command was
+`pnpm security:secrets 2>&1 | tail -1 && git commit`, and piping replaced the gate's exit
+status with `tail`'s, so `&&` saw success. "Never commit red" was not overridden by a
+judgement — it was lost to shell plumbing. **Read a gate's exit status directly; never
+through a pipeline.** The same shape as
+[[a-gate-that-errors-is-failing-open]], one layer further out: the gate worked, and the
+harness around it discarded the answer.
+
+**The conformance decoy that was not broken.** The first `AliasingBlob` subclassed the
+in-memory store and delegated to `super.put`, which copies — so the "broken" adapter behaved
+correctly and the proof failed. Written standalone now. A decoy has to be checked for being
+a real decoy.
+
+### Next, in order
+
+3. **Minimal API: `/healthz`, `/readyz`.** `apps/api` is still an empty stub. `/healthz`
+   answers about the process only; `/readyz` uses the ports. The negative test is the point:
+   with the database stopped, `/healthz` must stay 200 and `/readyz` must not — asserted with
+   the dependency actually down, not mocked.
+4. **Migration runner under a Postgres advisory lock.** Zero migrations to run, which is the
+   right order — the lock is infrastructure, the schema is F-034. Test with two processes
+   started simultaneously against one database; a single-process test passes whether or not
+   the lock works.
+5. **Dockerfiles** — multi-stage, non-root, pinned **digests** not tags. Assert the running
+   uid is not 0; a `USER` line is a claim, `docker run --rm <image> id -u` is the fact.
+6. **`infra/compose/docker-compose.prod.yml`** — boots locally, no platform-specific keys.
+7. **Terraform skeleton.** A commented backend block, not one pointing at a bucket nobody
+   created.
+8. Reconcile `docs/operations/deployment/*.md`, record, close.
+
+### Known, and not solvable here
+
+- **Acceptance 6 — deployed on a real VPS through Coolify AND Dokploy — cannot be met.**
+  There is no VPS and no git remote for either platform to pull from. Both deploy *from* a
+  repository. Delivered as runbooks plus a compose file built to be consumed unmodified;
+  the deployment itself stays outstanding and F-005 cannot honestly close without it.
+- **Acceptance 7's "remote state configured"** needs a real backend. The skeleton is
+  deliverable; the backend is not.
+- Docker **is** available (29.6.1), so increments 5 and 6 are genuinely verifiable here.
+
+---
+
 ## 2026-08-14 — F-004 DONE · the gate that checks the gates could not fail
 
 **Gate 15 (security) is active** — executed, and watched fire on planted secrets before being

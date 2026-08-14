@@ -33,6 +33,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 - [lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md](lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md) — a rule that has never been watched fail is not enforcement, it is configuration that parses.
 - [lessons/mutual-assignability-does-not-catch-an-optional-field.md](lessons/mutual-assignability-does-not-catch-an-optional-field.md) — assignability in both directions is not shape equality; assert the key set too, and prove it by breaking the type.
+- [lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md](lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md) — a check is only as good as the weakest link between its answer and the decision it governs; never put a gate inside a pipeline.
 - [lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md](lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md) — a branded string is not assignable from a plain one, and the zero-dependency engine can never name our brands.
 
 ### Environment
