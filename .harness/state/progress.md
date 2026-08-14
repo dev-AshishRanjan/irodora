@@ -8,6 +8,136 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — F-004 DONE · the gate that checks the gates could not fail
+
+**Gate 15 (security) is active** — executed, and watched fire on planted secrets before being
+switched on. **The gates ↔ CI mirror check had a hole in it**, found and closed.
+
+### Evidence
+
+```
+  ✓ gate 0   state          13 checks, 1 known warning (E-009)
+  ✓ gate 1   typecheck      31 tasks
+  ✓ gate 2   lint           31 tasks + 10 boundary guards
+  ✓ gate 3   format
+  ✓ gate 4   test           136 tests
+  ✓ gate 6   build          23 tasks
+  ✓ gate 15  security       gitleaks 8.30.1 — 7 commits, ~1.23 MB, no leaks
+                            pnpm audit --audit-level high — no known vulnerabilities
+  ✓ mirror proof            all 7 active gates proven mirrored
+
+NOT run: color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf,
+         e2e-full — each activates with its own feature.
+```
+
+**Gate 15 activated 2026-08-14**, after the F-001 precedent: run it, watch it pass, watch it
+fail, then activate. Never before.
+
+### The defect: gate 0's mirror check was matching substrings
+
+`verify-state.mjs` asserted every active gate has a step in `ci.yml` via
+`ci.includes(gate.command)`. Gate `test`'s command is `pnpm test` — a substring of eight
+lines in the workflow:
+
+```
+ 4 test    command="pnpm test"
+         line  73 | run: pnpm test          ← the real step
+         line  77 | run: pnpm test:golden
+         line  93 | run: pnpm test:e2e
+         … and five more
+```
+
+**Deleting the real `pnpm test` step left gate 0 green.** Gate `e2e` had the same hole via
+`pnpm test:e2e:full`. A gate could be removed from CI and nothing would notice — which is
+the precise failure gate 0 exists to prevent, sitting inside gate 0.
+
+Now matches whole `run:` commands (handling block scalars), so a gate named in a *comment*
+no longer counts as mirrored either — which matters, because the workflow names every gate
+in prose.
+
+**Confirmed by reverting:** with the old substring match restored, the new proof reports
+`✗ test — gate 0 stayed GREEN with the step removed`. With the fix, all seven pass.
+
+### `scripts/verify-gate-mirror.mjs` — the acceptance criterion as an executable check
+
+F-004 asked that "a deliberately removed step makes it fail". That is not a thing to assert
+once; it is a thing to run. The script removes **each active gate's step in turn** and
+asserts gate 0 fails *and names that gate* — so a gate 0 that fails for an unrelated reason
+does not count as the check working.
+
+It checks its own baseline first. If gate 0 is already red, it says so and stops rather than
+reporting seven false positives — the failure mode this repository has already hit twice.
+`ci.yml` is restored in a `finally` and the restore is verified byte-for-byte.
+
+### CI runs the command you run
+
+The secret scan used `gitleaks/gitleaks-action@v2`, so `gates.json` declared
+`pnpm security:secrets` while CI ran something else — and the mirror check would have failed
+the moment gate 15 activated. **That was the check being right.** CI now installs pinned
+gitleaks 8.30.1 and invokes the same command a developer does.
+
+**One job, in order, stopping at the first failure**, per the acceptance. The security job
+was merged into the gates job to satisfy that literally. The cost is named rather than
+hidden: a failing typecheck now means the secret scan does not run on that push. It still
+runs on every pull request, so a secret is caught before merge.
+
+### Proving the security gate can fail, without committing a secret
+
+A planted secret cannot go into git history to test the scanner — a secret in history is
+compromised even when fake. Scanned a scratch directory with `--no-git` instead: **3 of 4
+planted shapes detected, exit 1.**
+
+Worth recording: the AWS documentation example key `AKIAIOSFODNN7EXAMPLE` is **not**
+detected, because gitleaks' default rules allowlist published example credentials. A scan
+that stays green on that is correct. Anyone testing this gate with the first AWS key they
+find in a tutorial will conclude it is broken.
+
+### Also
+
+- **Changesets configured** for the 14 publishable packages; the 5 apps and `@irodora/testing`
+  are ignored — they deploy, they do not publish. The one non-default setting is
+  `fixed: [["@irodora/color-*", "@irodora/cvd-engine"]]`: **the engine packages version
+  together**, because every result carries an `engine` version in its reproducibility
+  envelope (FR-10), and `engine 1.4.0` cannot identify the code that produced an answer if
+  the modules drift apart. No publish automation — a pipeline that can publish before anyone
+  has decided what publishing means is one that publishes by accident.
+- **gitleaks 8.30.1 installed on this workstation** (`go install`), with the user's approval.
+  It is not a repo dependency; CI installs its own pinned copy.
+
+### Not delivered, and why
+
+**Branch protection (acceptance 3) is specified, not applied.** `git remote -v` is empty —
+there is no GitHub repository. The settings are written up in
+[`docs/operations/branch-protection.md`](../../docs/operations/branch-protection.md) ready to
+apply, including the reasoning for requiring **one** check (`Verification gates`) rather than
+sixteen: listing gates individually means editing branch protection every time one activates,
+and forgetting is silent.
+
+Creating a remote is publication, not local bookkeeping, so it was not done unasked. **Until
+protection is applied the gates can be observed and ignored** — recorded in
+`memory/observations.md` rather than left implied.
+
+### Watch out
+
+- **`pnpm security:secrets` needs gitleaks on PATH.** Installed here at `~/go/bin`. On a
+  machine without it the gate errors rather than passing — which is correct, but the message
+  is `command not found` and reads like a broken script.
+- **Gate 0 is the named guard for several effect links and has no link of its own.** Editing
+  `verify-state.mjs` traces to no dependents. The mirror check is now proven; its other
+  twelve checks are not. Recorded as a missing guard.
+- The mirror proof **writes to `ci.yml`**. If interrupted, `git checkout .github/workflows/ci.yml`.
+
+### Next
+
+**F-005** — deployment profiles — is the last R0 feature. **F-003 is deliberately not next:**
+[ADR-0037](../../docs/adr/0037-design-tokens-wait-for-the-engine-r0-closes-incomplete.md)
+added F-007 and F-008 as its real blockers, because its contrast gate and `cvdPairs`
+assertion need colour maths that only R1 owns, and the manifest is `approved` so that gate is
+blocking from the moment it exists. **R0 therefore closes with F-003 outstanding**, which is
+deliberate and recorded.
+
+---
+
 ## 2026-08-14 — F-002 DONE · one definition, three uses — and the third one was lying
 
 **`@irodora/contracts` exists.** Zod 4 schemas are the single source of runtime validation,

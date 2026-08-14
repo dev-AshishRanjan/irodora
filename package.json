@@ -28,10 +28,14 @@
     "test:perf": "pnpm --filter @irodora/web-perf test",
     "bench": "pnpm --filter @irodora/bench test",
     "security:secrets": "gitleaks detect --no-banner --redact --config .gitleaks.toml",
+    "changeset": "changeset",
+    "changeset:status": "changeset status",
+    "verify:mirror": "node scripts/verify-gate-mirror.mjs",
     "clean": "turbo run clean && rimraf node_modules",
     "verify:guards": "node scripts/verify-guards.mjs"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
     "eslint": "^10.8.1",

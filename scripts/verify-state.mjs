@@ -451,12 +451,66 @@ const gates = readJson(join(HARNESS, 'verification/gates.json'));
 const ciPath = join(ROOT, '.github/workflows/ci.yml');
 const ci = readText(ciPath);
 
+/**
+ * Every shell command the workflow actually runs.
+ *
+ * This used to be a substring test against the whole file, and it was weaker than it read.
+ * `pnpm test` is a substring of `pnpm test:golden`, `pnpm test:e2e`, `pnpm test:contrast` and
+ * five more — so **deleting the real `pnpm test` step left this check green**, which is the
+ * exact failure the check exists to prevent, sitting inside the check. `pnpm test:e2e` had
+ * the same hole via `pnpm test:e2e:full`.
+ *
+ * Matching whole run-commands also means a gate named in a COMMENT no longer counts as
+ * mirrored, which matters here because the workflow names every gate in prose.
+ *
+ * Handles both `run: cmd` and block scalars (`run: |` followed by indented lines).
+ */
+function ciRunCommands(yaml) {
+  const commands = [];
+  const lines = yaml.split('\n');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const inline = /^(\s*)-?\s*run:\s*(.*)$/.exec(line);
+    if (!inline) continue;
+
+    const [, indent, value] = inline;
+    if (value !== '|' && value !== '>' && value !== '|-' && value !== '>-') {
+      if (value.trim()) commands.push(value.trim());
+      continue;
+    }
+
+    // Block scalar: take the indented lines that follow.
+    for (let j = i + 1; j < lines.length; j++) {
+      const body = lines[j];
+      if (!body.trim()) continue;
+      const bodyIndent = /^(\s*)/.exec(body)[1];
+      if (bodyIndent.length <= indent.length) break;
+      commands.push(body.trim());
+    }
+  }
+
+  return commands;
+}
+
 if (gates) {
   const active = gates.gates.filter((g) => g.status === 'active');
   if (ci) {
+    const runCommands = ciRunCommands(ci);
+
     for (const gate of active) {
       if (gate.ciStep === false) continue;
-      if (!ci.includes(gate.command))
+
+      // A step counts as running the gate if its command IS the gate command, or begins
+      // with it followed by a shell boundary — `pnpm lint && something` still runs the gate,
+      // `pnpm lint:fix` does not.
+      const mirrored = runCommands.some((cmd) => {
+        if (!cmd.startsWith(gate.command)) return false;
+        const rest = cmd.slice(gate.command.length);
+        return rest === '' || /^[\s&|;]/.test(rest);
+      });
+
+      if (!mirrored)
         fail(
           'ci-mirror',
           `Active gate "${gate.id}" has no step in .github/workflows/ci.yml`,

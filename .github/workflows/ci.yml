@@ -2,14 +2,24 @@ name: CI
 
 # This workflow MIRRORS .harness/verification/gates.json, in order.
 #
-# The mirror is machine-checked: scripts/verify-state.mjs fails if an active gate
-# has no step here. That check exists because the alternative failure is silent —
-# a gate declared in gates.json and never run in CI is theatre, and everything
-# downstream of it is unverified while appearing verified.
+# The mirror is machine-checked twice over:
 #
-# Steps for gates that are still `pending` are present but guarded by a file
-# existence check, so they activate the moment the toolchain lands (F-001) rather
-# than waiting for someone to remember.
+#   1. scripts/verify-state.mjs fails if an active gate has no step here. It compares whole
+#      `run:` commands — NOT substrings. It used to use a substring test, and `pnpm test` is
+#      a substring of `pnpm test:golden`, `pnpm test:e2e` and six more, so deleting the real
+#      `pnpm test` step left the check green.
+#   2. scripts/verify-gate-mirror.mjs removes each active gate's step from this file in turn
+#      and asserts gate 0 fails naming that gate. A check nobody has watched fail is not a
+#      check — that script is what caught the defect above.
+#
+# ONE JOB, IN ORDER. Steps run sequentially and GitHub stops at the first failure, which is
+# what "every active gate in gates.json order, stopping at the first failure" (F-004) means.
+# The cost is real and worth naming: a failing typecheck means the secret scan does not run
+# on that push. The mitigation is that gate 15 also runs on every pull request, and a secret
+# is caught before merge rather than after.
+#
+# Steps for gates that are still `pending` are present but guarded by a file existence check,
+# so they activate the moment their feature lands rather than waiting for someone to remember.
 
 on:
   push:
@@ -24,6 +34,11 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Pinned, not `latest`. A scanner that changes under you turns a clean run into a noisy one
+  # on a commit that touched nothing, and the version is what makes a result reproducible.
+  GITLEAKS_VERSION: '8.30.1'
+
 jobs:
   gates:
     name: Verification gates
@@ -33,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # gitleaks needs history
+          fetch-depth: 0 # gitleaks scans history, not just the diff
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -45,6 +60,11 @@ jobs:
       # meaningful before any application code exists.
       - name: 'Gate 0 — state'
         run: node scripts/verify-state.mjs
+
+      # Not a gate, but the proof that gate 0's CI-mirror check can fail. It mutates
+      # ci.yml in place and restores it; on a runner that is a throwaway checkout.
+      - name: 'Gate 0 — mirror proof'
+        run: node scripts/verify-gate-mirror.mjs
 
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
@@ -93,11 +113,11 @@ jobs:
         run: pnpm test:e2e
 
       - name: 'Gate 9 — contrast'
-        if: hashFiles('packages/design-tokens/package.json') != ''
+        if: hashFiles('packages/design-tokens/dist') != ''
         run: pnpm test:contrast
 
       - name: 'Gate 10 — cvd'
-        if: hashFiles('packages/cvd-engine/package.json') != ''
+        if: hashFiles('packages/cvd-engine/dist') != ''
         run: pnpm test:cvd
 
       - name: 'Gate 11 — content'
@@ -117,28 +137,28 @@ jobs:
         if: github.event_name == 'push' && hashFiles('tests/e2e-full/package.json') != ''
         run: pnpm test:e2e:full
 
-  security:
-    name: 'Gate 15 — security'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # A finding here ROTATES the secret. It never earns an allowlist entry —
-      # a secret in git history is compromised regardless of whether the commit
-      # was pushed, and removing it only makes it harder to find later.
-      - name: Secret scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITLEAKS_CONFIG: .gitleaks.toml
-
-      - name: Dependency audit
-        if: hashFiles('pnpm-lock.yaml') != ''
+      # ---- gate 15: security ----------------------------------------------
+      # gitleaks is installed and then invoked through `pnpm security:secrets` — the SAME
+      # command a developer runs locally. Using gitleaks-action here instead would mean CI
+      # and a workstation scan different things with the same name, and the gate command in
+      # gates.json would describe neither.
+      #
+      # A finding ROTATES the secret. It never earns an allowlist entry: a secret in git
+      # history is compromised regardless of whether the commit was pushed, and removing it
+      # only makes it harder to find later.
+      - name: Install gitleaks
         run: |
-          corepack enable
-          pnpm audit --audit-level high
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: 'Gate 15 — security (secrets)'
+        run: pnpm security:secrets
+
+      - name: 'Gate 15 — security (dependency audit)'
+        if: hashFiles('pnpm-lock.yaml') != ''
+        # --audit-level high blocks on High AND Critical. Moderate and below are reported by
+        # the scheduled audit rather than blocking a pull request on a transitive advisory
+        # nobody can action today.
+        run: pnpm audit --audit-level high

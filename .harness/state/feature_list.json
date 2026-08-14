@@ -124,7 +124,9 @@
       "service": "root",
       "release": "R0",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
+      "plan": "plans/F-004-ci-cd-pipeline-and-gate-wiring.md",
+      "notes": "Acceptance criterion 3 (branch protection) is SPECIFIED, not applied: there is no git remote. See docs/operations/branch-protection.md and the observation in memory/observations.md. Everything else is delivered and proven; gate 15 activated after being executed and watched fire.",
       "blockedBy": [
         "F-001"
       ],

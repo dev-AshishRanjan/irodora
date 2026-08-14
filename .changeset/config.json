@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [["@irodora/color-*", "@irodora/cvd-engine"]],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@irodora/admin",
+    "@irodora/api",
+    "@irodora/mobile",
+    "@irodora/web",
+    "@irodora/worker",
+    "@irodora/testing"
+  ]
+}
