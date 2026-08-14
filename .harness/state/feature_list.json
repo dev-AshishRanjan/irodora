@@ -210,7 +210,8 @@
       "package": "@irodora/color-spaces",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-006-colour-spaces-and-conversion.md",
       "blockedBy": [
         "F-001"
       ],
