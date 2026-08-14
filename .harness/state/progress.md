@@ -8,7 +8,20 @@ reader cannot reconstruct.
 
 ---
 
-## 2026-08-14 — F-005 IN PROGRESS · 2 of 8 increments · handoff
+## 2026-08-14 — F-005 IN PROGRESS · 3 of 8 increments · handoff
+
+> **Updated after increment 3.** The entry below is the running handoff; read it top to
+> bottom. Increment 3 (`/healthz`, `/readyz`) is done and committed at `029314d`, plus
+> ADR-0038 at `66bec26`. 175 tests. Next is increment 4, the migration advisory lock.
+>
+> **Acceptance criteria 6 and 7 are now `attested`, not blockers** — see
+> [ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md). F-005 can
+> close on the gated criteria; the VPS deployment and Terraform remote state stay recorded as
+> owed, and gate 0 lists them on every run.
+>
+> The compatibility half of criterion 2 is **not** deferred with them: a static
+> `verify-compose-portability.mjs` lands in increment 6 and must be proven to fail on a real
+> violation, like every other guard here.
 
 **F-005 is claimed and `in_progress`.** Two increments are done, committed and green. This
 entry is the handoff — the plan
@@ -80,7 +93,16 @@ a real decoy.
   the deployment itself stays outstanding and F-005 cannot honestly close without it.
 - **Acceptance 7's "remote state configured"** needs a real backend. The skeleton is
   deliverable; the backend is not.
-- Docker **is** available (29.6.1), so increments 5 and 6 are genuinely verifiable here.
+- **The Docker daemon is NOT running.** `docker --version` reports 29.6.1, but that is the
+  CLI; `docker compose up` fails with
+  `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`.
+  Docker Desktop has to be started before increments **4, 5 and 6** can be verified —
+  the advisory-lock race test needs a real Postgres, and the images need a daemon to build.
+
+  Recorded because an earlier note in this file claimed Docker was available on the strength
+  of the CLI version alone. A version string proves a binary exists, not that the service
+  behind it is up — the same shape as a gate that cannot run being mistaken for one that
+  passed.
 
 ---
 
