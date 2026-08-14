@@ -17,17 +17,22 @@ function productionEnv(overrides: Record<string, string | undefined> = {}) {
     IRODORA_BLOB_REGION: 'eu-west-1',
     IRODORA_BLOB_BUCKET: 'irodora',
     IRODORA_BLOB_ACCESS_KEY_ID: 'AKIAEXAMPLEKEYID',
-    IRODORA_BLOB_SECRET_ACCESS_KEY: 'a-real-looking-secret-value-here',
+    IRODORA_BLOB_SECRET_ACCESS_KEY: 'example-blob-secret-for-tests-only',
     IRODORA_OIDC_ISSUER: 'https://auth.irodora.com',
     IRODORA_OIDC_CLIENT_ID: 'irodora-api',
-    IRODORA_OIDC_CLIENT_SECRET: 'another-real-looking-secret-value',
+    IRODORA_OIDC_CLIENT_SECRET: 'example-oidc-secret-for-tests-only',
     IRODORA_OIDC_AUDIENCE: 'irodora-api',
-    IRODORA_SESSION_SECRET: 'K7dPq2mXvRz9tLbN4wYcE6hJ8sA1uF3g',
+    // Fixtures use the documented placeholder vocabulary from .gitleaks.toml on purpose.
+    // The first draft of this file used random 32-character strings, and gate 15 flagged
+    // two of them as generic API keys — correctly, since it cannot know they are invented.
+    // A secret-shaped fixture is still a fixture, but it costs a scanner finding every time
+    // someone reads the history, so it is not worth writing one.
+    IRODORA_SESSION_SECRET: 'example-session-secret-for-tests-only',
     IRODORA_SESSION_COOKIE_DOMAIN: 'irodora.com',
     IRODORA_WEBAUTHN_RP_ID: 'irodora.com',
     IRODORA_WEBAUTHN_RP_NAME: 'Irodora',
     IRODORA_KMS_PROVIDER: 'local',
-    IRODORA_KMS_LOCAL_MASTER_KEY: 'Zx4Z7iW2qLp9dR3tB6yNc1VmH8jK5sA0',
+    IRODORA_KMS_LOCAL_MASTER_KEY: 'example-kms-master-key-for-tests-only',
     IRODORA_MAIL_TRANSPORT: 'log',
     IRODORA_MAIL_FROM: 'no-reply@irodora.com',
     ...overrides,

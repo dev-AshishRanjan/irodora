@@ -18,6 +18,19 @@ paths = [
   # Documentation shows credential SHAPES so operators recognise them.
   '''^docs/.*\.md$''',
   '''^\.harness/.*\.md$''',
+  # The environment-contract tests. This file's entire purpose is to feed
+  # secret-SHAPED values through the loader and assert they are never echoed —
+  # so it necessarily contains strings that look like credentials.
+  #
+  # Added 2026-08-14 (F-005) after gate 15 flagged two fixtures as generic API
+  # keys. They were invented for the test, not real, and the fixtures have since
+  # been rewritten to use the placeholder vocabulary above — but the original
+  # values are in commit ae56dd1 and gitleaks scans history.
+  #
+  # THE COST, stated rather than discovered later: a real secret pasted into
+  # this one file would not be caught. That is why the exemption is a single
+  # file and not `.*\.test\.ts$`.
+  '''^packages/config/src/load\.test\.ts$''',
 ]
 
 regexes = [
