@@ -137,6 +137,25 @@ importers:
       '@irodora/color-spaces':
         specifier: workspace:*
         version: link:../color-spaces
+    devDependencies:
+      '@irodora/testing':
+        specifier: workspace:*
+        version: link:../testing
+      '@types/culori':
+        specifier: ^4.0.1
+        version: 4.0.1
+      colorjs.io:
+        specifier: ^0.7.1
+        version: 0.7.1
+      culori:
+        specifier: ^4.0.2
+        version: 4.0.2
+      fast-check:
+        specifier: ^4.9.0
+        version: 4.9.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(yaml@2.9.0))
 
   packages/color-harmony:
     dependencies:

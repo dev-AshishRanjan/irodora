@@ -1,0 +1,116 @@
+{
+  "id": "luminance",
+  "description": "The three relative-luminance definitions this repository carries, and the constants each standard specifies. Every constant is pinned DIGIT FOR DIGIT at tolerance 0. F-006 shipped a dropped digit in an OKLab matrix that survived six golden datasets, two independent oracles and a matrix-inverse check, because the only checks on a transcribed constant were arithmetic ones. For a transcribed constant the only reliable check is comparing the transcription to the source.",
+  "entries": [
+    {
+      "id": "wcag-coefficients",
+      "source": "WCAG 2.x, definition of relative luminance: L = 0.2126 R + 0.7152 G + 0.0722 B",
+      "derivation": "published-value",
+      "input": "WCAG relative luminance coefficients, R G B",
+      "expected": [0.2126, 0.7152, 0.0722],
+      "tolerance": 0
+    },
+    {
+      "id": "apca-coefficients",
+      "source": "APCA 0.0.98G (Myndex, apca-w3); the same values appear in colorjs.io's contrast/APCA.js",
+      "derivation": "published-value",
+      "input": "APCA screen-luminance coefficients, R G B",
+      "expected": [0.2126729, 0.7151522, 0.072175],
+      "tolerance": 0
+    },
+    {
+      "id": "wcag-transfer-constants",
+      "source": "WCAG 2.x, definition of relative luminance: cutoff, slope, offset, exponent",
+      "derivation": "published-value",
+      "input": "cutoff, slope, offset, gamma",
+      "expected": [0.03928, 12.92, 0.055, 2.4],
+      "tolerance": 0
+    },
+    {
+      "id": "apca-gamma",
+      "source": "APCA 0.0.98G — a SIMPLE gamma with no linear segment, unlike IEC 61966-2-1",
+      "derivation": "published-value",
+      "input": "APCA mainTRC exponent",
+      "expected": 2.4,
+      "tolerance": 0
+    },
+    {
+      "id": "wcag-coefficients-sum-to-one",
+      "source": "WCAG 2.x — a rounding chosen so the coefficients sum to exactly 1, which is why a NEUTRAL has identical luminance under WCAG's rounded coefficients and under the exact sRGB Y row",
+      "derivation": "definitional",
+      "input": "0.2126 + 0.7152 + 0.0722",
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "apca-coefficients-do-not-sum-to-one",
+      "source": "APCA 0.0.98G — Lindbloom's rounding, which sums to 1.0000001 rather than 1",
+      "derivation": "published-formula",
+      "derivationNote": "0.2126729 + 0.7151522 + 0.072175 = 1.0000001. Recorded because it is easy to assume a luminance coefficient set is normalised and 'fix' it. APCA's published Lc values are computed with these, so normalising them would break every one.",
+      "input": "0.2126729 + 0.7151522 + 0.072175",
+      "expected": 1.0000001,
+      "tolerance": 0
+    },
+    {
+      "id": "wcag-luminance-white",
+      "source": "WCAG 2.x — white has relative luminance 1 by construction",
+      "derivation": "definitional",
+      "input": [1, 1, 1],
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "wcag-luminance-black",
+      "source": "WCAG 2.x — black has relative luminance 0 by construction",
+      "derivation": "definitional",
+      "input": [0, 0, 0],
+      "expected": 0,
+      "tolerance": 0
+    },
+    {
+      "id": "wcag-luminance-mid-grey",
+      "source": "WCAG 2.x relative luminance of sRGB 50% grey",
+      "derivation": "published-formula",
+      "derivationNote": "0.5 linearises to ((0.5 + 0.055)/1.055)^2.4 = 0.21404114048223255; the coefficients sum to 1, so a neutral's luminance is that value unchanged.",
+      "input": [0.5, 0.5, 0.5],
+      "expected": 0.21404114048223255,
+      "tolerance": 0
+    },
+    {
+      "id": "apca-luminance-white",
+      "source": "APCA 0.0.98G applied to sRGB white",
+      "derivation": "published-formula",
+      "derivationNote": "1^2.4 = 1 for each channel, so the result is the coefficient sum: 1.0000001, NOT 1. A direct consequence of the entry above.",
+      "input": [1, 1, 1],
+      "expected": 1.0000001,
+      "tolerance": 0
+    },
+    {
+      "id": "apca-luminance-mid-grey",
+      "source": "APCA 0.0.98G applied to sRGB 50% grey",
+      "derivation": "published-formula",
+      "derivationNote": "0.5^2.4 = 0.18946457081379978 per channel, times the coefficient sum 1.0000001 = 0.18946458976025685. Compare WCAG's 0.21404114048223255 for the same colour: the pure power function has no linear segment, and the two definitions differ by 11% at mid grey.",
+      "input": [0.5, 0.5, 0.5],
+      "expected": 0.18946458976025685,
+      "tolerance": 0
+    },
+    {
+      "id": "apca-and-wcag-diverge-by-39x-at-near-black",
+      "source": "APCA 0.0.98G versus WCAG 2.x, at 8-bit code 3 on every channel",
+      "derivation": "published-formula",
+      "derivationNote": "WCAG takes the LINEAR branch below its cutoff and returns 0.0009105809506465124; APCA's pure power function returns 0.00002340963389117342. The ratio is 38.8977. This is the same 39x that the engine's transfer-function golden set is built around — here it is CORRECT behaviour for both, because APCA specifies a simple gamma deliberately. Reusing the engine's piecewise transfer function for APCA would change Lc for every dark colour.",
+      "input": [0.011764705882352941, 0.011764705882352941, 0.011764705882352941],
+      "expected": { "wcag": 0.0009105809506465124, "apca": 0.00002340963389117342 },
+      "tolerance": 0
+    },
+    {
+      "id": "the-two-wcag-cutoffs-are-indistinguishable-for-8-bit-input",
+      "source": "WCAG 2.x publishes 0.03928; IEC 61966-2-1 publishes 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "0.03928 x 255 = 10.0164 and 0.04045 x 255 = 10.3148, so NO 8-bit code lies between them: code 10 is 0.039215686 (below both) and code 11 is 0.043137255 (above both). Over all 256 codes the maximum difference in linearised value is exactly 0. The constant used is WCAG's because this package reproduces WCAG; the choice has no numeric consequence for any colour WCAG contrast is ever applied to, and this entry is what says so rather than leaving it to be re-derived.",
+      "input": "max |linearise(c/255, 0.03928) - linearise(c/255, 0.04045)| over c in 0..255",
+      "expected": 0,
+      "tolerance": 0
+    }
+  ]
+}
