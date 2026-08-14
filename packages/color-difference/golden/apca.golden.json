@@ -1,0 +1,94 @@
+{
+  "id": "apca",
+  "description": "APCA 0.0.98G-4g. Every constant is pinned digit for digit at tolerance 0, and every Lc value is asserted BITWISE against colorjs.io's independent implementation of the same revision — worst difference across the set is exactly 0. APCA has been revised repeatedly, so the version is part of the answer: 'Lc 62' without a revision is not a reproducible claim.",
+  "entries": [
+    {
+      "id": "version",
+      "source": "APCA (Myndex, apca-w3); colorjs.io's contrast/APCA.js carries the same revision",
+      "derivation": "published-value",
+      "input": "algorithm revision",
+      "expected": "0.0.98G-4g",
+      "tolerance": 0
+    },
+    {
+      "id": "exponents",
+      "source": "APCA 0.0.98G-4g — normBG, normTXT, revTXT, revBG",
+      "derivation": "published-value",
+      "input": "normBG, normTXT, revTXT, revBG",
+      "expected": [0.56, 0.57, 0.62, 0.65],
+      "tolerance": 0
+    },
+    {
+      "id": "clamps",
+      "source": "APCA 0.0.98G-4g — blkThrs, blkClmp, loClip, deltaYmin",
+      "derivation": "published-value",
+      "input": "blkThrs, blkClmp, loClip, deltaYmin",
+      "expected": [0.022, 1.414, 0.1, 0.0005],
+      "tolerance": 0
+    },
+    {
+      "id": "scalers",
+      "source": "APCA 0.0.98G-4g — scaleBoW and scaleWoB are both 1.14; loBoWoffset and loWoBoffset are both 0.027 (w3c/silver issue 645)",
+      "derivation": "published-value",
+      "input": "scale, lowOffset",
+      "expected": [1.14, 0.027],
+      "tolerance": 0
+    },
+    {
+      "id": "black-text-on-white",
+      "source": "APCA 0.0.98G-4g; verified bitwise against colorjs.io",
+      "derivation": "published-formula",
+      "derivationNote": "Background white, text black. The maximum positive Lc — dark text on a light background. Note it is NOT the magnitude of the reverse case: APCA is asymmetric by design.",
+      "input": { "background": [1, 1, 1], "text": [0, 0, 0] },
+      "expected": 106.04067321268862,
+      "tolerance": 0
+    },
+    {
+      "id": "white-text-on-black",
+      "source": "APCA 0.0.98G-4g; verified bitwise against colorjs.io",
+      "derivation": "published-formula",
+      "derivationNote": "Background black, text white. NEGATIVE by design — the sign carries the polarity, and taking the absolute value throws away half the answer. |-107.88| is also not 106.04: light-on-dark and dark-on-light are different perceptual problems with different exponents.",
+      "input": { "background": [0, 0, 0], "text": [1, 1, 1] },
+      "expected": -107.88473318309848,
+      "tolerance": 0
+    },
+    {
+      "id": "767676-text-on-white",
+      "source": "APCA 0.0.98G-4g applied to the grey WCAG treats as the AA threshold against white",
+      "derivation": "published-formula",
+      "derivationNote": "sRGB [118,118,118] on white. WCAG rates this pairing 4.5422 — just passing AA. APCA rates it Lc 71.6, which is comfortably readable for body text. The two models agreeing here is why this pairing is uncontroversial.",
+      "input": {
+        "background": [1, 1, 1],
+        "text": [0.4627450980392157, 0.4627450980392157, 0.4627450980392157]
+      },
+      "expected": 71.57239122246546,
+      "tolerance": 0
+    },
+    {
+      "id": "blue-text-on-white-is-where-the-models-disagree",
+      "source": "APCA 0.0.98G-4g applied to sRGB blue on white",
+      "derivation": "published-formula",
+      "derivationNote": "WCAG rates white-on-blue 8.59 — nearly twice its AA threshold, suggesting excellent contrast. APCA rates it Lc -90.7, also high. The interesting disagreements are elsewhere; this entry pins the pairing so a future change to either model shows the divergence moving. ADR-0021 sends any disagreement to design review rather than letting one model override the other.",
+      "input": { "background": [0, 0, 1], "text": [1, 1, 1] },
+      "expected": -90.65303993262509,
+      "tolerance": 0
+    },
+    {
+      "id": "identical-colours-are-zero",
+      "source": "APCA 0.0.98G-4g — the deltaYmin noise gate",
+      "derivation": "definitional",
+      "input": { "background": [1, 1, 1], "text": [1, 1, 1] },
+      "expected": 0,
+      "tolerance": 0
+    },
+    {
+      "id": "one-step-apart-is-also-zero",
+      "source": "APCA 0.0.98G-4g — deltaYmin and loClip together",
+      "derivation": "published-formula",
+      "derivationNote": "White background, #FEFEFE text — one 8-bit step apart. Reports exactly 0 rather than a small number, because APCA declines to report a contrast nobody should act on. An implementation missing the gates returns roughly 0.5 here, which looks harmless and is a measurement that was not made.",
+      "input": { "background": [1, 1, 1], "text": [0.996078431372549, 0.996078431372549, 0.996078431372549] },
+      "expected": 0,
+      "tolerance": 0
+    }
+  ]
+}

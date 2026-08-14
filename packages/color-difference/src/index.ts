@@ -46,6 +46,21 @@ export {
 
 export { WCAG_FLARE, wcagContrast } from './wcag.js';
 
+export {
+  APCA_BLACK_CLAMP,
+  APCA_BLACK_THRESHOLD,
+  APCA_DELTA_Y_MIN,
+  APCA_LOW_CLIP,
+  APCA_LOW_OFFSET,
+  APCA_NORM_BG,
+  APCA_NORM_TXT,
+  APCA_REV_BG,
+  APCA_REV_TXT,
+  APCA_SCALE,
+  APCA_VERSION,
+  apcaLc,
+} from './apca.js';
+
 /** Which difference metric a caller asked for. */
 export type DifferenceMetric = 'de76' | 'de94' | 'de00' | 'deok';
 
