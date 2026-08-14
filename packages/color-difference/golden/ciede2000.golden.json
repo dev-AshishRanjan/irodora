@@ -1,0 +1,657 @@
+{
+  "id": "ciede2000",
+  "description": "All 34 Sharma-Wu-Dalal test pairs. These exist because CIEDE2000 has two failure modes that produce PLAUSIBLE results: the hue-difference discontinuity at +/-180 degrees, and a sign-wrong Rt term. An implementation that does not reproduce these is wrong regardless of how it reads. Tolerance is 5e-5 throughout because the published values are quoted to four decimal places; our worst deviation is 4.95e-5, which is that rounding and not slack. Every pair is ALSO computed independently by culori in the test, so a transcription error in any of the seven numbers per row is caught separately from an implementation error.",
+  "entries": [
+    {
+      "id": "pair-01",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 1",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.6772,
+          -79.7751
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 2.0425,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-02",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 2",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          3.1571,
+          -77.2803
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 2.8615,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-03",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 3",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.8361,
+          -74.02
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 3.4412,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-04",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 4",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -1.3802,
+          -84.2814
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-05",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 5",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -1.1848,
+          -84.8006
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-06",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 6",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -0.9009,
+          -85.5211
+        ],
+        "lab2": [
+          50,
+          0,
+          -82.7485
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-07",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 7",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          0,
+          0
+        ],
+        "lab2": [
+          50,
+          -1,
+          2
+        ]
+      },
+      "expected": 2.3669,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-08",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 8",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -1,
+          2
+        ],
+        "lab2": [
+          50,
+          0,
+          0
+        ]
+      },
+      "expected": 2.3669,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-09",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 9",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.49,
+          -0.001
+        ],
+        "lab2": [
+          50,
+          -2.49,
+          0.0009
+        ]
+      },
+      "expected": 7.1792,
+      "tolerance": 0.00005,
+      "derivationNote": "Pairs 9-12 straddle the +/-180 degree hue boundary with near-zero b*. A naive h2-h1 hue difference is wrong here and right almost everywhere else."
+    },
+    {
+      "id": "pair-10",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 10",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.49,
+          -0.001
+        ],
+        "lab2": [
+          50,
+          -2.49,
+          0.001
+        ]
+      },
+      "expected": 7.1792,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-11",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 11",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.49,
+          -0.001
+        ],
+        "lab2": [
+          50,
+          -2.49,
+          0.0011
+        ]
+      },
+      "expected": 7.2195,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-12",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 12",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.49,
+          -0.001
+        ],
+        "lab2": [
+          50,
+          -2.49,
+          0.0012
+        ]
+      },
+      "expected": 7.2195,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-13",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 13",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -0.001,
+          2.49
+        ],
+        "lab2": [
+          50,
+          0.0009,
+          -2.49
+        ]
+      },
+      "expected": 4.8045,
+      "tolerance": 0.00005,
+      "derivationNote": "Pairs 13-15 are the same trap rotated: near-zero a*, b* either side of zero."
+    },
+    {
+      "id": "pair-14",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 14",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -0.001,
+          2.49
+        ],
+        "lab2": [
+          50,
+          0.001,
+          -2.49
+        ]
+      },
+      "expected": 4.8045,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-15",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 15",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          -0.001,
+          2.49
+        ],
+        "lab2": [
+          50,
+          0.0011,
+          -2.49
+        ]
+      },
+      "expected": 4.7461,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-16",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 16",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          50,
+          0,
+          -2.5
+        ]
+      },
+      "expected": 4.3065,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-17",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 17",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          73,
+          25,
+          -18
+        ]
+      },
+      "expected": 27.1492,
+      "tolerance": 0.00005,
+      "derivationNote": "Pairs 17-20 are the large-difference cases, which check the compensation terms rather than the wrap."
+    },
+    {
+      "id": "pair-18",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 18",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          61,
+          -5,
+          29
+        ]
+      },
+      "expected": 22.8977,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-19",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 19",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          56,
+          -27,
+          -3
+        ]
+      },
+      "expected": 31.903,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-20",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 20",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          58,
+          24,
+          15
+        ]
+      },
+      "expected": 19.4535,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-21",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 21",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          50,
+          3.1736,
+          0.5854
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-22",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 22",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          50,
+          3.2972,
+          0
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-23",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 23",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          50,
+          1.8634,
+          0.5757
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-24",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 24",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          50,
+          2.5,
+          0
+        ],
+        "lab2": [
+          50,
+          3.2592,
+          0.335
+        ]
+      },
+      "expected": 1,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-25",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 25",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          60.2574,
+          -34.0099,
+          36.2677
+        ],
+        "lab2": [
+          60.4626,
+          -34.1751,
+          39.4387
+        ]
+      },
+      "expected": 1.2644,
+      "tolerance": 0.00005,
+      "derivationNote": "Pairs 25-34 are real colours, which is where Rt matters. A sign-flipped Rt is correct almost everywhere except the blue region around h = 275 degrees."
+    },
+    {
+      "id": "pair-26",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 26",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          63.0109,
+          -31.0961,
+          -5.8663
+        ],
+        "lab2": [
+          62.8187,
+          -29.7946,
+          -4.0864
+        ]
+      },
+      "expected": 1.263,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-27",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 27",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          61.2901,
+          3.7196,
+          -5.3901
+        ],
+        "lab2": [
+          61.4292,
+          2.248,
+          -4.962
+        ]
+      },
+      "expected": 1.8731,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-28",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 28",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          35.0831,
+          -44.1164,
+          3.7933
+        ],
+        "lab2": [
+          35.0232,
+          -40.0716,
+          1.5901
+        ]
+      },
+      "expected": 1.8645,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-29",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 29",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          22.7233,
+          20.0904,
+          -46.694
+        ],
+        "lab2": [
+          23.0331,
+          14.973,
+          -42.5619
+        ]
+      },
+      "expected": 2.0373,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-30",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 30",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          36.4612,
+          47.858,
+          18.3852
+        ],
+        "lab2": [
+          36.2715,
+          50.5065,
+          21.2231
+        ]
+      },
+      "expected": 1.4146,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-31",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 31",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          90.8027,
+          -2.0831,
+          1.441
+        ],
+        "lab2": [
+          91.1528,
+          -1.6435,
+          0.0447
+        ]
+      },
+      "expected": 1.4441,
+      "tolerance": 0.00005,
+      "derivationNote": "Pairs 31-32 are near-white; 33-34 are near-black. Both ends of the lightness compensation Sl."
+    },
+    {
+      "id": "pair-32",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 32",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          90.9257,
+          -0.5406,
+          -0.9208
+        ],
+        "lab2": [
+          88.6381,
+          -0.8985,
+          -0.7239
+        ]
+      },
+      "expected": 1.5381,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-33",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 33",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          6.7747,
+          -0.2908,
+          -2.4247
+        ],
+        "lab2": [
+          5.8714,
+          -0.0985,
+          -2.2286
+        ]
+      },
+      "expected": 0.6377,
+      "tolerance": 0.00005
+    },
+    {
+      "id": "pair-34",
+      "source": "Sharma, Wu & Dalal (2005), \"The CIEDE2000 Color-Difference Formula: Implementation Notes, Supplementary Test Data, and Mathematical Observations\", Color Research and Application 30(1), supplementary test data, pair 34",
+      "derivation": "published-value",
+      "input": {
+        "lab1": [
+          2.0776,
+          0.0795,
+          -1.135
+        ],
+        "lab2": [
+          0.9033,
+          -0.0636,
+          -0.5514
+        ]
+      },
+      "expected": 0.9082,
+      "tolerance": 0.00005
+    }
+  ]
+}

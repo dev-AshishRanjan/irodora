@@ -24,6 +24,17 @@ export {
   type LuminanceCoefficients,
 } from './luminance.js';
 
+export {
+  CIEDE2000_CHROMA_PIVOT_POW7,
+  CIEDE2000_COMPENSATION,
+  CIEDE2000_DEFAULT_WEIGHTS,
+  CIEDE2000_ROTATION,
+  CIEDE2000_T_COEFFICIENTS,
+  CIEDE2000_T_PHASES,
+  deltaE00,
+  type Ciede2000Weights,
+} from './ciede2000.js';
+
 /** Which difference metric a caller asked for. */
 export type DifferenceMetric = 'de76' | 'de94' | 'de00' | 'deok';
 
