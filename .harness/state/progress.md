@@ -8,6 +8,58 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — Phase 2c: R1 surface designs complete
+
+**Scope:** the remaining R1 surfaces designed on the approved system. No application code.
+
+### Delivered
+
+Home · Compare · Palette Studio · Finder · share card · Flow B (personal colour setup) ·
+Flow C (CVD outfit check). Same token scope as the design system, so the two artifacts are
+one system rather than two.
+
+**Every R1 surface in [`DESIGN-BRIEF.md` §3](../../docs/design/DESIGN-BRIEF.md) is now
+designed.**
+
+### Decisions worth recording
+
+**Compare suspends the separator rule, deliberately.** An `ADJACENT` mode butts the two
+samples together with no well between them — the one place in the product where that rule is
+lifted, and lifted *for the same reason it exists*. A colorist judges a difference by putting
+two samples edge to edge; the boundary **is** the comparison. `SEPARATED` restores the wells
+for judging each colour alone. Two modes, two questions, and the toggle names which one is
+being asked. This is an exception to a hard constraint and is recorded as one.
+
+**The Finder's interpretation panel became a feature.** Showing that "dark muted green"
+resolved to `L 0.25–0.45 · C 0.02–0.06 · H 120–165°` from a versioned lexicon explains an
+empty result, makes the search adjustable rather than a retry, and puts the determinism claim
+on the most ordinary screen in the product.
+
+**Flow C's grammar is the design.** Every sentence takes a colour pair as its subject, never
+the user — "the rust and the olive separate by 38", not "you may struggle to distinguish
+these". That single choice is the difference between an instrument and a diagnosis, and it
+belongs in copy review, not just in design.
+
+**The share card drops the well.** A card is a self-contained artefact landing on an unknown
+background, so the card's own margin becomes the neutral ground. Edge-to-edge swatch.
+
+### Gates
+
+```
+Ran:      state ✓  — 13 checks, 1 known warning
+NOT run:  everything else. Still no application code.
+```
+
+### Next
+
+1. **Settle Radix vs Base UI** — the last open foundation question before F-017.
+2. Then **F-001**, the monorepo toolchain scaffold, via `/next-feature` → `/plan`.
+3. Design work remaining is R2+ only, and follows its features rather than preceding them.
+
+Nothing is `in_progress` in the feature list.
+
+---
+
 ## 2026-08-14 — Phase 2b: design system approved · frontend foundation decided
 
 **Scope:** the Stage 1 wireframes were rejected, the design was rebuilt, and the frontend
