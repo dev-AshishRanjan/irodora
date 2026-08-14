@@ -93,6 +93,15 @@ export {
 } from './adaptation.js';
 
 export {
+  convert,
+  convertAdapted,
+  CONVERTIBLE_SPACES,
+  fromXyz,
+  toXyz,
+  type ConvertibleSpace,
+} from './convert.js';
+
+export {
   linearToSrgb,
   srgbToLinear,
   SRGB_EOTF_CUTOFF,

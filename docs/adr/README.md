@@ -62,6 +62,7 @@ Two rules that matter more than the format:
 | [0036](0036-wire-schema-and-engine-type-pinned-by-the-compiler.md) | The wire schema and the engine type are two artefacts, pinned by the compiler | Accepted |
 | [0037](0037-design-tokens-wait-for-the-engine-r0-closes-incomplete.md) | The design token package waits for the colour engine; R0 closes incomplete | Accepted |
 | [0038](0038-every-acceptance-criterion-names-its-check.md) | Every acceptance criterion names its check; external verification is attested, not gated | Accepted |
+| [0039](0039-oklab-is-derived-through-xyz-not-from-srgb-directly.md) | OKLab is derived through XYZ, and that costs 0.047 ΔE00 against every other implementation | Accepted |
 
 ## Open questions awaiting an ADR
 

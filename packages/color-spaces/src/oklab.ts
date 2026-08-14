@@ -6,13 +6,17 @@
  * perceptual distance as a 30° rotation from blue. Users notice even when they cannot say
  * why.
  *
- * **The route is XYZ → LMS → OKLab.** Ottosson also publishes a direct linear-sRGB → LMS
- * matrix, and it is tuned so that sRGB white lands exactly on `(1, 0, 0)`. We do not use it,
- * because XYZ is canonical (ADR-0003) and a second path for one input space is a second
- * answer waiting to disagree with the first. The cost is measured and small: white through
- * the XYZ route is `L = 0.9999988`, `C = 1.25e-4` rather than exactly `(1, 0, 0)`, a residual
- * of the published matrices' ten-decimal precision. It is asserted in the golden set rather
- * than corrected, because correcting it would mean using numbers no source publishes.
+ * **The route is XYZ → LMS → OKLab** (ADR-0039). Ottosson also publishes a direct
+ * linear-sRGB → LMS matrix, tuned so that sRGB white lands exactly on `(1, 0, 0)`, and it is
+ * what `culori`, `colorjs.io` and browsers use. We do not use it, because XYZ is canonical
+ * (ADR-0003) and a second path for one input space is a second answer waiting to disagree
+ * with the first.
+ *
+ * The cost is measured, not assumed: **1.24e-4 in OKLab components, 0.047 ΔE00 at worst,**
+ * against both oracles by the same amount to within 1e-9 — which is the signature of a path
+ * difference rather than of a defect. White through this route is `L = 0.9999988`,
+ * `C = 1.25e-4` rather than exactly `(1, 0, 0)`. Asserted in the golden set and the oracle
+ * suite rather than corrected; correcting it would mean using numbers no source publishes.
  *
  * `Math.cbrt`, never `Math.pow(x, 1/3)`: LMS components go negative for colours outside the
  * gamut they came from, and `pow` returns `NaN` for a negative base.
