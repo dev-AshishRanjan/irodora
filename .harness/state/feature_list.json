@@ -257,8 +257,9 @@
       "package": "@irodora/color-difference",
       "release": "R1",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "plan": "plans/F-007-colour-difference-and-contrast.md",
+      "notes": "DeltaE00 is now the ranking authority in code (E-003). DELIVERED: DeltaE76, DeltaE94 (both weightings), DeltaE00 and DeltaEok; WCAG 2.x contrast; APCA 0.0.98G-4g. All 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error. APCA asserted BITWISE against colorjs.io. Every constant in the package pinned digit-for-digit at tolerance 0 — the check F-006 did not have. THREE luminance definitions now coexist deliberately (engine, WCAG, APCA), each mandated by its own standard and none substitutable: swapping the engine s exact Y row for WCAG s rounded coefficients flips rgb(27,129,156) on white from failing AA to passing, and a sweep finds 111 such flips. Recorded in ADR-0041.",
       "blockedBy": [
         "F-006"
       ],

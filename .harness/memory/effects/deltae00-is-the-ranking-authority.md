@@ -36,6 +36,22 @@ bracket the discontinuity and the rotation region.
 An implementation that does not reproduce them is wrong, regardless of how it reads and
 regardless of what our other tests say.
 
+**As of F-007 this is real rather than planned**, and it acquired one thing this note did not
+originally ask for: **the reference data is checked for transcription separately from the
+implementation.** 34 rows × 7 numbers is 238 chances for a typo, and a typo and a genuine bug
+are indistinguishable from inside — both present as "our answer disagrees with the expected
+one". So `culori` computes ΔE00 on every transcribed pair independently; a row a third-party
+implementation also reproduces is a row whose seven numbers are internally consistent.
+
+That addition came from F-006, where a transcribed constant was wrong and six golden datasets
+could not see it. [[measure-what-a-golden-set-can-detect-before-trusting-it]]
+
+**The consumers this link names do not exist yet.** `@irodora/color-naming` is F-013,
+`@irodora/recommendation` is F-030, and the `cvd` gate activates with F-008. Until they land,
+the guard protects the source end only — the same shape as
+[[srgb-xyz-is-the-root-of-every-derived-value]], and worth stating rather than letting
+"critical link, guarded" imply more coverage than exists.
+
 ## What must happen on a change
 
 1. All 34 pairs, to 4 decimal places.

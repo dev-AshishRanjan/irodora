@@ -1,0 +1,137 @@
+{
+  "id": "cross-platform-identity",
+  "description": "A determinism fixture for the difference and contrast metrics, NOT a claim about physical reality. These functions use more transcendentals than the conversions do — pow, atan2, exp, sin, cos — and ECMAScript specifies all of them as implementation-approximated, so this is where a cross-engine divergence is most likely to appear first.",
+  "regenerate": "pnpm build && node scripts/generate-identity-fixture.mjs",
+  "attested": "The Node execution is gated. The browser and React Native executions are attested obligations (ADR-0038), landing with F-017 and F-039/F-040.",
+  "differenceVersion": "0.1.0",
+  "apcaVersion": "0.0.98G-4g",
+  "metrics": [
+    "deltaE76",
+    "deltaE94",
+    "deltaE00",
+    "deltaEok",
+    "wcagContrast(c, white)",
+    "wcagContrast(c, black)",
+    "apcaLc(white, c)",
+    "apcaLc(black, c)"
+  ],
+  "referenceSrgb": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "seed": "irodora/f-007/identity",
+  "count": 10000,
+  "valuesPerSample": 8,
+  "digest": "0b6a09f817998f67",
+  "probes": [
+    {
+      "index": 0,
+      "rgb": [
+        "3fb5135734000000",
+        "3feb593961600000",
+        "3fcf4934de000000"
+      ],
+      "output": [
+        "405871664e36b97b",
+        "403d41ef2029d144",
+        "4041e091a1b3f712",
+        "3fd308a13aff2da3",
+        "3ffe3496dc1a210a",
+        "40263f667f2db18c",
+        "404189ab3aa94eef",
+        "c050ddbf1a28e805"
+      ]
+    },
+    {
+      "index": 1,
+      "rgb": [
+        "3fa4bc9637e66667",
+        "3f907b274b000000",
+        "3f70ab9cae666667"
+      ],
+      "output": [
+        "404a008ddd8a9473",
+        "4049ffa569db9919",
+        "404388e3b778201d",
+        "3fdec5a897c4ba15",
+        "40345b4e72d9676d",
+        "3ff0817246d13cf4",
+        "405a7ea518e4c321",
+        "0000000000000000"
+      ]
+    },
+    {
+      "index": 2,
+      "rgb": [
+        "3feef4e72355c28f",
+        "3fef06d35a95c28f",
+        "3fef87b90faa3d71"
+      ],
+      "output": [
+        "4046049eb6de397c",
+        "404603a045cef4cd",
+        "4040074c17e31ccd",
+        "3fd848a71c118d8f",
+        "3ff1141c4b3bcb7c",
+        "4033ac7dbcab5696",
+        "0000000000000000",
+        "c059b82e3f9c4229"
+      ]
+    },
+    {
+      "index": 3,
+      "rgb": [
+        "3fedf374c1f00000",
+        "3fb2caace2999999",
+        "3f95508062000000"
+      ],
+      "output": [
+        "405861da16c765cf",
+        "4032571b24eada89",
+        "403eae7193013b29",
+        "3fcedbf9f28f2fa8",
+        "4011acf348eaec06",
+        "4013025f7b345f1b",
+        "40510198426da99c",
+        "c040d13f60d6efe0"
+      ]
+    },
+    {
+      "index": 5000,
+      "rgb": [
+        "3fd92b7bfc000000",
+        "3fe1740f07600000",
+        "3fea8b02dd400000"
+      ],
+      "output": [
+        "40451a1e30b70a0a",
+        "402e78f60121bd32",
+        "40361979a9055302",
+        "3fbffa0aaaa627bc",
+        "400b25708a1fd639",
+        "4018c13ab0938b1d",
+        "404ea45b8ffbbd11",
+        "c04434f26e958734"
+      ]
+    },
+    {
+      "index": 9999,
+      "rgb": [
+        "3fef2b1aeb09999a",
+        "3f911a0615333333",
+        "3fc3a34b22e66666"
+      ],
+      "output": [
+        "40579cdbe3268499",
+        "40320860c7195233",
+        "403e44217b4e808c",
+        "3fd0092f70a35ede",
+        "40109fc800556dd9",
+        "4014362921d1d963",
+        "40506be82eee15c9",
+        "c041fd0e70b4be97"
+      ]
+    }
+  ]
+}

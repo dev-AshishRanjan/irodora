@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 /**
- * Irodora — regenerate the cross-platform identity fixture (NFR-3).
+ * Irodora — regenerate the cross-platform identity fixtures (NFR-3).
+ *
+ * One fixture per engine package. `@irodora/color-difference` gets its own rather than being
+ * folded into the colour-spaces one, because the dependency runs difference → spaces and a
+ * shared fixture would have to live in whichever package could import both — which is
+ * neither of them.
  *
  * The fixture pins the exact IEEE-754 output of the colour engine over 10 000 seeded samples.
  * Gate 5 recomputes the digest on every run, so a change of a single bit anywhere in any
@@ -88,3 +93,95 @@ console.log(
   `  engine ${ENGINE_VERSION} · ${String(run.count)} samples × ${String(run.valuesPerSample)} values`,
 );
 console.log(`  digest ${run.digest}\n`);
+
+/* ------------------------------------------------ @irodora/color-difference */
+
+const DIFFERENCE = resolve(ROOT, 'packages/color-difference');
+const DIFFERENCE_OUT = resolve(DIFFERENCE, 'golden/cross-platform-identity.fixture.json');
+
+const difference = await import(pathToFileURL(resolve(DIFFERENCE, 'dist/index.js')).href);
+const spaces = engine;
+
+const {
+  deltaE00,
+  deltaE76,
+  deltaE94,
+  deltaEok,
+  wcagContrast,
+  apcaLc,
+  DIFFERENCE_VERSION,
+  APCA_VERSION,
+} = difference;
+const { xyzToLab, xyzToOklab } = spaces;
+
+/** A fixed reference every sample is measured against. Mid grey, so it is not a special case. */
+const REFERENCE_SRGB = [0.5, 0.5, 0.5];
+const REFERENCE_LAB = xyzToLab(srgbToXyz(REFERENCE_SRGB));
+const REFERENCE_OKLAB = xyzToOklab(srgbToXyz(REFERENCE_SRGB));
+const WHITE = [1, 1, 1];
+const BLACK = [0, 0, 0];
+
+/**
+ * MUST stay identical to `computeDifferenceVector` in
+ * packages/color-difference/test/identity/vectors.ts. The test recomputes the digest through
+ * the test-side function, so a divergence fails gate 5 rather than producing a fixture that
+ * nothing checks.
+ */
+const computeDifference = (rgb) => {
+  const xyz = srgbToXyz(rgb);
+  const lab = xyzToLab(xyz);
+  const oklab = xyzToOklab(xyz);
+
+  return [
+    deltaE76(lab, REFERENCE_LAB),
+    deltaE94(lab, REFERENCE_LAB),
+    deltaE00(lab, REFERENCE_LAB),
+    deltaEok(oklab, REFERENCE_OKLAB),
+    wcagContrast(rgb, WHITE),
+    wcagContrast(rgb, BLACK),
+    apcaLc(WHITE, rgb),
+    apcaLc(BLACK, rgb),
+  ];
+};
+
+const differenceRun = runIdentityVectors({
+  seed: 'irodora/f-007/identity',
+  count: 10_000,
+  compute: computeDifference,
+  probeIndices: [0, 1, 2, 3, 5_000, 9_999],
+});
+
+const differenceFixture = {
+  id: 'cross-platform-identity',
+  description:
+    'A determinism fixture for the difference and contrast metrics, NOT a claim about physical reality. These functions use more transcendentals than the conversions do — pow, atan2, exp, sin, cos — and ECMAScript specifies all of them as implementation-approximated, so this is where a cross-engine divergence is most likely to appear first.',
+  regenerate: 'pnpm build && node scripts/generate-identity-fixture.mjs',
+  attested:
+    'The Node execution is gated. The browser and React Native executions are attested obligations (ADR-0038), landing with F-017 and F-039/F-040.',
+  differenceVersion: DIFFERENCE_VERSION,
+  apcaVersion: APCA_VERSION,
+  metrics: [
+    'deltaE76',
+    'deltaE94',
+    'deltaE00',
+    'deltaEok',
+    'wcagContrast(c, white)',
+    'wcagContrast(c, black)',
+    'apcaLc(white, c)',
+    'apcaLc(black, c)',
+  ],
+  referenceSrgb: REFERENCE_SRGB,
+  seed: differenceRun.seed,
+  count: differenceRun.count,
+  valuesPerSample: differenceRun.valuesPerSample,
+  digest: differenceRun.digest,
+  probes: differenceRun.probes,
+};
+
+writeFileSync(DIFFERENCE_OUT, `${JSON.stringify(differenceFixture, null, 2)}\n`);
+
+console.log(`Difference fixture written to ${DIFFERENCE_OUT.replace(ROOT, '.')}`);
+console.log(
+  `  difference ${DIFFERENCE_VERSION} · APCA ${APCA_VERSION} · ${String(differenceRun.count)} samples × ${String(differenceRun.valuesPerSample)} values`,
+);
+console.log(`  digest ${differenceRun.digest}\n`);

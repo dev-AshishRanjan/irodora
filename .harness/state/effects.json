@@ -87,8 +87,7 @@
       "id": "E-003",
       "from": {
         "kind": "symbol",
-        "ref": "packages/color-difference/src/ciede2000.ts#deltaE00",
-        "exists": false
+        "ref": "packages/color-difference/src/ciede2000.ts#deltaE00"
       },
       "to": [
         {
@@ -101,8 +100,7 @@
         },
         {
           "kind": "test",
-          "ref": "packages/color-difference/golden",
-          "exists": false
+          "ref": "packages/color-difference/golden"
         },
         {
           "kind": "gate",
@@ -118,7 +116,7 @@
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/deltae00-is-the-ranking-authority.md",
-      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error.",
+      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only.",
       "confidence": 0.97,
       "origin": "manual",
       "status": "active"

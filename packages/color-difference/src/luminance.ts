@@ -18,6 +18,8 @@
  * segment near black — reusing the engine's piecewise transfer function there changes Lc for
  * every dark colour, which is most of this corpus.
  *
+ * Recorded as ADR-0041, with the measurements behind it.
+ *
  * That is why this package does **not** import the engine's luminance, and why nothing here
  * is shared between `wcag.ts` and `apca.ts` beyond the type.
  *

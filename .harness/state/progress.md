@@ -8,6 +8,160 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-15 — F-007 DONE · ΔE00 is the ranking authority, and a rounding that decides accessibility
+
+**ΔE00 exists in code.** Every naming result, duplicate warning, CVD separation score and
+recommendation ranking the product will ever produce now has a function behind it
+([E-003](../state/effects.json)).
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 12 warnings (11 attested + E-009)
+  ✓ gate 1   typecheck      37 tasks
+  ✓ gate 2   lint           37 tasks + 10 boundary guards + engine purity (proven)
+  ✓ gate 3   format
+  ✓ gate 4   test           621 tests
+  ✓ gate 5   color-golden   277 tests — 138 cited entries across 10 datasets, 2 identity digests
+  ✓ gate 6   build          25 tasks
+  ✓ gate 15  security       gitleaks clean · audit clean
+
+NOT run: e2e, a11y, contrast, cvd, content, perf, web-perf, e2e-full — each
+         activates with its own feature. `contrast` (F-003) is now partially
+         unblocked: it has its WCAG and APCA arithmetic, and still needs F-008
+         for cvdPairs.
+```
+
+### What was built
+
+`@irodora/color-difference`: ΔE76 · ΔE94 (both weightings) · **ΔE00** · ΔEok · WCAG 2.x
+contrast · **APCA 0.0.98G-4g**.
+
+- **All 34 Sharma–Wu–Dalal pairs to four decimal places.** Worst deviation 4.95e-5, which is
+  the paper's own rounding rather than slack — and that margin is pinned, so a future
+  tolerance widening is visible.
+- **APCA asserted bitwise against `colorjs.io`.** `toBe`, not a tolerance; worst difference
+  across the set is exactly 0.
+- **Every constant pinned digit-for-digit at tolerance 0** — the check F-006 did not have.
+
+### The transcription check, which is the real deliverable
+
+F-006 shipped a dropped digit that six golden datasets, two oracles and a matrix-inverse check
+could not see. This feature is 34 rows × 7 numbers plus 24 constants, so the same failure was
+the dominant risk — and **a typo and a genuine bug are indistinguishable from inside**: both
+present as "our answer disagrees with the expected one".
+
+So the reference data is checked **separately from the implementation**. `culori` computes
+ΔE00 on every transcribed pair independently; a row a third-party implementation also
+reproduces is a row whose seven numbers are internally consistent, and any remaining
+disagreement is ours. A decoy perturbs one number and confirms the consistency actually
+breaks.
+
+It earned its place immediately, on a smaller scale: two golden entries were first written
+with more decimal places than the probe that produced them had printed — digits I did not
+have. The test caught it at 4.4e-7.
+
+### The finding: a rounding that decides accessibility
+
+WCAG normatively specifies relative-luminance coefficients rounded to four decimals. Our
+engine has them to seventeen. The plan asserted that mattered; this feature measured it:
+
+| `rgb(27, 129, 156)` on white | ratio | AA at 4.5:1 |
+|---|---|---|
+| WCAG's published coefficients | 4.49990508 | **fails** |
+| the exact sRGB Y row | 4.50007872 | **passes** |
+
+A sweep of 8-bit colours against white found **111 such flips** across the 3:1, 4.5:1 and 7:1
+thresholds.
+
+So `wcagContrast` carries WCAG's constants rather than calling `srgbToXyz`, and "the
+difference is only 5e-4, just use the engine" is a WCAG conformance claim the specification
+does not support. **[ADR-0041](../../docs/adr/0041-three-luminance-definitions-coexist-deliberately.md)**
+records that three luminance definitions now coexist deliberately — engine, WCAG, APCA — and
+why none may be substituted for another.
+
+Two supporting facts, both measured:
+
+- WCAG's coefficients sum to **exactly 1**, so a *neutral* has bit-identical luminance under
+  WCAG and under the engine. Every grey agrees; only chromatic colours diverge. **A test suite
+  built from greys concludes the three definitions are interchangeable.**
+- APCA's sum to **1.0000001**, so `apcaLuminance(white)` is not 1. It looks like a defect to
+  normalise away, and normalising it would break every published Lc value.
+- APCA linearises with a **pure power function**, no linear segment. At 8-bit code 3 that is a
+  factor of 39 from the piecewise curve — and it is correct, because it is what APCA specifies.
+
+→ [[reproducing-a-standard-is-not-the-same-as-being-accurate]]
+
+### Also settled by measurement rather than memory
+
+**Which WCAG transfer cutoff.** WCAG publishes `0.03928`, IEC publishes `0.04045`. `0.03928 ×
+255 = 10.0164` and `0.04045 × 255 = 10.3148`, so **no 8-bit code lies between them** — over all
+256 codes the maximum difference is exactly 0. We use WCAG's because this package reproduces
+WCAG; the choice has no numeric consequence for any colour WCAG contrast is ever applied to. A
+decoy asserts the two *do* differ inside the band, so that is a reason rather than a
+coincidence.
+
+### Symmetry, asserted in both directions
+
+Acceptance criterion 5 asks for symmetry and identity. The honest reading is that symmetry
+must be asserted **where it holds and where it does not**:
+
+- ΔE76, ΔE00, ΔEok and WCAG contrast are symmetric — asserted `toBe`, bitwise. A metric that is
+  only *nearly* symmetric ranks A-then-B differently from B-then-A, which surfaces as an
+  unstable sort rather than as a failing test.
+- **ΔE94 is asymmetric by specification** (2.4% here) and **APCA is asymmetric by design**.
+  Asserting symmetry for either would fail, or be quietly deleted by whoever met it next.
+- ΔE94's asymmetry comes with the reason it hides: `Sc` and `Sh` depend only on the reference
+  colour's chroma, so two colours of *equal* chroma give the same answer either way round.
+
+Identity is `toBe(0)` — exactly zero, not merely small. An implementation returning 1e-16 would
+rank a colour as marginally different from itself.
+
+### Delivered against acceptance
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | ΔE76, ΔE94, ΔE00, ΔEok implemented | **Done** — ΔE94 in both published weightings |
+| 2 | All 34 Sharma–Wu–Dalal pairs to 4 dp | **Done**, worst 4.95e-5, each pair transcription-checked independently |
+| 3 | WCAG contrast matches the specification's worked examples exactly | **Done** — with WCAG's own constants, and the 111-flip measurement showing why that is required |
+| 4 | APCA Lc computed and reported alongside | **Done** — 0.0.98G-4g, bitwise against colorjs.io, version exported because "Lc 62" without one is not reproducible |
+| 5 | Property tests assert ΔE symmetry and identity | **Done**, in both directions |
+
+### Honest gaps
+
+- **The colour-science review is still owed.** It was launched during F-006, terminated on a
+  session limit before producing findings, and this feature extends the same maths. Two
+  features of colour science now have no domain review.
+- **E-003 is guarded at the source end only.** The consumers it names do not exist:
+  `color-naming` is F-013, `recommendation` is F-030, the `cvd` gate activates with F-008.
+- **APCA is not a normative standard and is pinned to one revision.** ADR-0021 stands: reported
+  alongside WCAG, never substituted, disagreements go to design review.
+- **The identity digests still prove platform-API freedom, not engine independence.** Both legs
+  run on V8. This package is where a divergence would appear first — CIEDE2000 alone calls
+  `atan2`, `exp`, `sin`, `cos` and `pow`, all implementation-approximated by ECMAScript.
+
+### Watch out
+
+- **`culori`'s ΔE00 must be tagged `lab65`, never `lab`.** Tagging D65 Lab as `lab` makes culori
+  adapt it from D50 first and every Sharma pair reads 9–13% low.
+- **ΔE94 takes the reference first.** Swapping the arguments is a different number.
+- **APCA takes background first, text second, and the sign is the polarity.** `Math.abs` on an
+  Lc throws away half the answer.
+- **ΔEok white-to-black is 1, not 100.** A threshold copied from a ΔE00 context is off by two
+  orders of magnitude.
+- **Two identity fixtures now exist**, one per engine package, because the dependency runs
+  difference → spaces and a shared fixture would have to live in neither. Regenerate both with
+  `node scripts/generate-identity-fixture.mjs`.
+
+### Next
+
+**F-008 — CVD engine and separation scoring**, blocked only by F-007. It consumes ΔE00 from
+here and activates gate 10. After it, **F-003 becomes eligible** and R0 can finally close.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-14 — F-006 DONE · the colour engine exists, and an independent review found the defect the gates could not
 
 **R1 has started.** Eight colour spaces convert in both directions through CIE XYZ (D65), and
