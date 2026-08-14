@@ -1,18 +1,38 @@
 /**
  * Colour space conversions.
  *
- * CIE XYZ (D65) is canonical; everything else derives from it (ADR-0003).
- * ZERO runtime dependencies, NO platform APIs — this must produce byte-identical
- * results in Node, the browser and React Native (NFR-3) and port to WASM.
+ * CIE XYZ (D65) is canonical; everything else derives from it (ADR-0003). ZERO runtime
+ * dependencies, NO platform APIs — this must produce byte-identical results in Node, the
+ * browser and React Native (NFR-3) and port to WASM.
+ *
+ * Enforced by `pnpm lint`: the ESLint colour-engine zone blocks `node:*` and the platform
+ * globals, and `scripts/verify-engine-purity.mjs` blocks a third-party import or a runtime
+ * dependency. Both have been watched fire.
  */
 
-/** The canonical internal representation: CIE XYZ at the D65 white point. */
-export type Xyz = readonly [x: number, y: number, z: number];
+export {
+  CANONICAL_ILLUMINANT,
+  type ColorSpace,
+  type Lab,
+  type LCh,
+  type LinearRgb,
+  type Matrix3,
+  type OkLab,
+  type OkLCh,
+  type Rgb,
+  type Xyz,
+} from './types.js';
 
-/** Spaces a colour may arrive in or be rendered to. Never canonical. */
-export type ColorSpace = 'srgb' | 'display-p3' | 'linear-srgb' | 'lab' | 'lch' | 'oklab' | 'oklch';
+export {
+  linearToSrgb,
+  srgbToLinear,
+  SRGB_EOTF_CUTOFF,
+  SRGB_GAMMA,
+  SRGB_JOIN_GAP,
+  SRGB_LINEAR_SLOPE,
+  SRGB_OETF_CUTOFF,
+  SRGB_OFFSET,
+} from './transfer.js';
 
-export const CANONICAL_ILLUMINANT = 'D65' as const;
-
-/** Implemented in F-006. */
-export const ENGINE_VERSION = '0.0.0' as const;
+/** Semver of the engine. Recorded in every reproducibility envelope (FR-10). */
+export const ENGINE_VERSION = '0.1.0' as const;

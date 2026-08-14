@@ -1,0 +1,121 @@
+{
+  "id": "srgb-transfer",
+  "description": "The sRGB transfer function (IEC 61966-2-1:1999). Weighted towards near-black, where the piecewise linear segment lives and where a pure-power implementation is wrong by up to a factor of 39. Entries below the cutoff have tolerance 0: the linear branch is a single IEEE-754 division, which is exactly rounded and therefore identical on every conforming runtime. Entries on the power branch carry a real tolerance, because ECMAScript specifies Math.pow as implementation-approximated.",
+  "entries": [
+    {
+      "id": "black",
+      "source": "IEC 61966-2-1:1999, transfer function; endpoint",
+      "derivation": "definitional",
+      "input": 0,
+      "expected": 0,
+      "tolerance": 0
+    },
+    {
+      "id": "white",
+      "source": "IEC 61966-2-1:1999, transfer function; endpoint",
+      "derivation": "definitional",
+      "input": 1,
+      "expected": 1,
+      "tolerance": 1e-15
+    },
+    {
+      "id": "code-1",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 1/255 = 0.00392156862745098; V <= 0.04045, so L = V / 12.92",
+      "input": 0.00392156862745098,
+      "expected": 0.0003035269835488375,
+      "tolerance": 0
+    },
+    {
+      "id": "code-2",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 2/255 = 0.00784313725490196; L = V / 12.92",
+      "input": 0.00784313725490196,
+      "expected": 0.000607053967097675,
+      "tolerance": 0
+    },
+    {
+      "id": "code-3",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 3/255 = 0.011764705882352941; L = V / 12.92. The pure power function returns 0.000023409631550210266 here — 39 times too small.",
+      "input": 0.011764705882352941,
+      "expected": 0.0009105809506465125,
+      "tolerance": 0
+    },
+    {
+      "id": "code-4",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 4/255 = 0.01568627450980392; L = V / 12.92",
+      "input": 0.01568627450980392,
+      "expected": 0.00121410793419535,
+      "tolerance": 0
+    },
+    {
+      "id": "code-5",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 5/255 = 0.0196078431372549; L = V / 12.92",
+      "input": 0.0196078431372549,
+      "expected": 0.0015176349177441874,
+      "tolerance": 0
+    },
+    {
+      "id": "code-6",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 6/255 = 0.023529411764705882; L = V / 12.92",
+      "input": 0.023529411764705882,
+      "expected": 0.001821161901293025,
+      "tolerance": 0
+    },
+    {
+      "id": "code-8",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 8/255 = 0.03137254901960784; L = V / 12.92",
+      "input": 0.03137254901960784,
+      "expected": 0.0024282158683907,
+      "tolerance": 0
+    },
+    {
+      "id": "code-10",
+      "source": "IEC 61966-2-1:1999, linear segment V <= 0.04045; the last 8-bit code below the cutoff",
+      "derivation": "published-formula",
+      "derivationNote": "V = 10/255 = 0.0392156862745098 <= 0.04045; L = V / 12.92. Code 11 is 0.0431... and crosses to the power branch.",
+      "input": 0.0392156862745098,
+      "expected": 0.003035269835488375,
+      "tolerance": 0
+    },
+    {
+      "id": "cutoff-exact",
+      "source": "IEC 61966-2-1:1999, the join at V = 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 0.04045 is the last value on the linear branch; L = 0.04045 / 12.92",
+      "input": 0.04045,
+      "expected": 0.0031308049535603713,
+      "tolerance": 0
+    },
+    {
+      "id": "code-11",
+      "source": "IEC 61966-2-1:1999, power segment V > 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 11/255 = 0.043137254901960784 > 0.04045, so L = ((V + 0.055) / 1.055) ^ 2.4",
+      "input": 0.043137254901960784,
+      "expected": 0.003346535763899161,
+      "tolerance": 1e-15
+    },
+    {
+      "id": "mid-grey-encoded",
+      "source": "IEC 61966-2-1:1999, power segment V > 0.04045",
+      "derivation": "published-formula",
+      "derivationNote": "V = 0.5; L = ((0.5 + 0.055) / 1.055) ^ 2.4. This is the value that makes 50% grey read as 21.4% of the light, which is why averaging encoded sRGB is systematically too dark.",
+      "input": 0.5,
+      "expected": 0.21404114048223255,
+      "tolerance": 1e-15
+    }
+  ]
+}
