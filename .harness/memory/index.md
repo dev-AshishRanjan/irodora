@@ -20,6 +20,9 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/srgb-transfer-function-has-a-linear-segment.md](lessons/srgb-transfer-function-has-a-linear-segment.md) — below 0.04045 sRGB is linear, and half this corpus lives there.
 - [lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md](lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md) — ΔE00 violates the triangle inequality, so every spatial index ranks it subtly wrong and silently.
 - [lessons/cvd-is-scoring-not-rendering.md](lessons/cvd-is-scoring-not-rendering.md) — a CVD display filter helps designers, not the user it names.
+- [lessons/the-adaptation-transform-is-a-product-decision-not-a-detail.md](lessons/the-adaptation-transform-is-a-product-decision-not-a-detail.md) — CAT16 and Bradford disagree by 8.6 ΔE76 on saturated blue, and blue is half this corpus.
+- [lessons/an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour.md](lessons/an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour.md) — culori read 10% low because our D65 Lab was tagged with its D50 mode; reproduce an oracle's own published values before trusting it.
+- [lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md](lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md) — three published decimals cannot see a 0.11% matrix error; measure the blind spot and aim a second check at it.
 
 ### Design
 
@@ -36,6 +39,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-decoy-that-is-not-broken-proves-nothing.md](lessons/a-decoy-that-is-not-broken-proves-nothing.md) — four decoys in one feature were secretly correct or misread; assert the baseline in every mutation table.
 - [lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md](lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md) — a check is only as good as the weakest link between its answer and the decision it governs; never put a gate inside a pipeline.
 - [lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md](lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md) — a branded string is not assignable from a plain one, and the zero-dependency engine can never name our brands.
+- [lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md](lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md) — gate 0 counted 13 scoped harnesses where 7 exist, and was scanning third-party files for golden-rule violations.
 
 ### Environment
 

@@ -8,6 +8,153 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — F-006 DONE · the colour engine exists, and gate 5 is active
+
+**R1 has started.** Eight colour spaces convert in both directions through CIE XYZ (D65), and
+**gate 5 (`color-golden`) is active** — executed, and each dataset watched reject a real
+mutation before being switched on.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 12 warnings (11 attested + E-009)
+  ✓ gate 1   typecheck      36 tasks
+  ✓ gate 2   lint           36 tasks + 10 boundary guards + engine purity (proven)
+  ✓ gate 3   format
+  ✓ gate 4   test           456 tests
+  ✓ gate 5   color-golden   125 tests — 60 cited golden entries + the identity fixture
+  ✓ gate 6   build          28 tasks
+  ✓ gate 15  security       gitleaks clean · audit clean
+
+  ✓ mirror proof            8/8 active gates, each watched fail when its CI step is removed
+
+NOT run: e2e, a11y, contrast, cvd, content, perf, web-perf, e2e-full — each
+         activates with its own feature; none has an applicable surface here.
+```
+
+### What was built
+
+`@irodora/color-spaces`: sRGB · Display-P3 · linear sRGB · XYZ (D65) · CIELAB · CIELCh ·
+OKLab · OKLCh, plus CAT16 and Bradford chromatic adaptation. Zero runtime dependencies, no
+`node:*`, no DOM, no `process`. `@irodora/testing` gained the seeded PRNG, the stratified
+sampler, the IEEE-754 digest and the golden-dataset validator — all platform-free.
+
+**56 ordered round-trip pairs, 10 000 stratified samples each, all within ΔE00 0.01** — and
+the real worst case, 1e-9, pinned separately so a degradation to 0.009 cannot pass silently.
+
+**Oracle cross-validation** against `culori` and `colorjs.io` over 10 000 samples:
+**bitwise identical to colorjs.io** on XYZ, Lab-D65, P3 and linear sRGB — 0, not 1e-15.
+
+### Six findings, five of them from a claim of mine that was not true
+
+1. **`culori`'s ΔE00 read 9–13% low against every Sharma–Wu–Dalal pair — and culori was
+   right.** `differenceCiede2000` normalises with `converter('lab65')`, so D65 Lab tagged
+   `lab` (culori's D50 mode) gets chromatically adapted before being measured. The plan had
+   specified exactly that tag, with backwards reasoning. Ten percent is the dangerous size:
+   too small to investigate, big enough to become a loosened tolerance.
+   → [[an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour]]
+
+2. **The OKLab M1 inverse was transcribed wrong by 7.6e-4**, and every conversion using it
+   still returned plausible numbers. Found by asserting `M · M⁻¹ = I`, which now covers all
+   six matrix pairs. The same check found that the CAT16 inverse printed in the literature is
+   rounded to 8 decimals and leaves a residual forty times worse than the hardware can do.
+
+3. **CAT16 and Bradford disagree by up to 8.57 ΔE76 on saturated blue** — median 0.15. I had
+   asserted "within 3". Blue is half this corpus, so the adaptation transform is a product
+   decision, not an implementation detail.
+   → [[the-adaptation-transform-is-a-product-decision-not-a-detail]]
+
+4. **Ottosson's published values cannot see a 0.11% matrix error.** The first decoy was a real
+   mutation the golden set was blind to. Rather than picking a bigger mutation, the set's
+   discriminating power was measured: 2% in any element is caught, 1% escapes in one element
+   in one direction, 0.1% is invisible. All three asserted, including the two limitations.
+   → [[measure-what-a-golden-set-can-detect-before-trusting-it]]
+
+5. **"A transposed matrix survives a white-point check" is false** — transposing moves Y by
+   0.19. The mutation that *does* survive is swapping two **columns**: white is the column
+   sum, so any permutation leaves it bit-identical while red and green trade places. That is
+   the real argument for having primaries in the golden set, and it is now the decoy.
+
+6. **Gate 0 was scanning `node_modules`.** Its scoped-harness count moved from 14 to 13 when
+   one unused dependency was removed — a count that changes with a `package.json` is not
+   counting what it claims. `walk()` used `statSync`, which follows symlinks, and had no
+   exclusion, so it read our own files through pnpm's workspace links *and* third-party
+   packages. A dependency shipping an `AGENTS.md` containing "may skip the gates" would have
+   failed our build on a file nobody here can edit. Fixed and proven both ways.
+   → [[a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository]]
+
+### Two decisions recorded
+
+**[ADR-0039](../../docs/adr/0039-oklab-is-derived-through-xyz-not-from-srgb-directly.md)** —
+OKLab is composed through XYZ, not via Ottosson's direct linear-sRGB matrix. `culori`,
+`colorjs.io` and browsers use the direct path, so this is a deliberate, measured disagreement
+with every implementation we can check against: **1.24e-4 in components, 0.047 ΔE00 at
+worst**. Both oracles differ from us by the *same* amount to within 1e-9, which is what
+identified it as a path difference rather than a defect. It means our OKLCh and the browser's
+are not bit-identical — which F-003 and F-017 need to know, and which copy must not claim.
+
+**`scripts/verify-engine-purity.mjs`** — "zero runtime dependencies" was a claim with no
+check behind it. Lint blocked `node:fs`; nothing blocked `import chroma from 'chroma-js'`.
+Two static checks over all six engine packages, both mutation-proven, running inside
+`pnpm lint`.
+
+### Delivered against acceptance
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Eight spaces, both directions | **Done** |
+| 2 | CAT16, with Bradford available | **Done** |
+| 3 | Golden datasets from published sources, near-black included | **Done** — 60 entries, each declaring published-value, published-formula or definitional; an entry citing no source fails the load |
+| 4 | Round trip every pair within ΔE00 0.01, 10 000 colours | **Done** — 56 pairs, actual worst 1e-9 |
+| 5 | Node, browser and React Native bitwise identical | **Mechanism + Node leg gated. Browser and device executions attested** (ADR-0038) |
+| 6 | Zero runtime dependencies; no `node:*`, DOM, `process` | **Done**, and now checked rather than claimed |
+| 7 | Gate 5 activates | **Done** — after execution and after each dataset was watched reject a mutation |
+
+### Honest gaps
+
+- **Bitwise cross-platform identity is not proven, and cannot be yet.** ECMAScript specifies
+  `Math.pow` and `Math.cbrt` as implementation-approximated, so identity across V8,
+  JavaScriptCore and Hermes is **not guaranteed by the language** — which matters for the
+  transfer function and OKLab's cube roots specifically. A browser did run the 300 000-value
+  fixture during this feature and matched the digest exactly, but Node and Chromium are both
+  V8: that proves the engine contains no platform API, not that engines agree. Hermes is the
+  interesting case and it needs a device (F-039/F-040).
+- **E-001 is half-guarded.** Gate 5 now protects the source end of "sRGB→XYZ is the root of
+  every derived value". The destination end — that stored corpus values still agree with the
+  engine — is the `content` gate, which activates with F-011. There is no corpus to
+  invalidate yet, so the missing half costs nothing today.
+- **The Sharma–Wu–Dalal pairs are in the round-trip test as an oracle check, not in a golden
+  dataset.** They belong to F-007, which ships CIEDE2000.
+- **`packages/color-spaces/golden/` has no WCAG or CVD data.** Those arrive with F-007 and
+  F-008; gate 5's description says so rather than implying coverage it does not have.
+
+### Watch out
+
+- **Our Lab is D65. Almost everything else is D50** — CSS `lab()`, `culori`'s `lab` mode,
+  most published Lab tables. Cross-check against `lab65` / `lab-d65`, or adapt first.
+- **Two published D65 white points are in circulation.** We derive from the chromaticity
+  x=0.3127 y=0.3290; tables commonly use the rounded XYZ `[0.95047, 1, 1.08883]`. The
+  difference is 0.004 ΔE76 on sRGB red — asserted in a test so nobody "fixes" our white point
+  to match a table and moves every corpus value.
+- **The identity fixture cannot be regenerated from the test suite**, because writing a file
+  needs `node:fs` and the colour-engine lint zone forbids it in tests. That is the rule
+  working: a fixture the suite can rewrite gets rewritten to make a red test green. Use
+  `node scripts/generate-identity-fixture.mjs`, deliberately.
+- **The toolchain is not on `PATH` by default.** Node 24.19.0 and pnpm 11.21.0 live at
+  `%APPDATA%\nvm\v24.19.0`; the machine's default `node` is 22.16.0, which fails the engines
+  check. Prefix `PATH` or the whole run fails with a message about `engines.node`.
+
+### Next
+
+**F-007 — colour difference and contrast** (`@irodora/color-difference`), blocked only by
+F-006. It brings the 34 Sharma–Wu–Dalal pairs into a golden dataset, WCAG contrast against
+the specification's worked examples, and APCA alongside. After F-007 and F-008, **F-003
+becomes eligible** and R0 can finally close.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-14 — F-005 DONE · the stack runs, and "portable" is a check rather than a claim
 
 **R0 is now complete except F-003**, which waits on the colour engine by design

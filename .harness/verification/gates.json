@@ -71,14 +71,15 @@
     {
       "id": "color-golden",
       "order": 5,
-      "status": "pending",
+      "status": "active",
       "activatesWith": "F-006",
       "command": "pnpm test:golden",
       "requiredFor": [
         "color-engine"
       ],
       "ciStep": true,
-      "description": "The colour engine against published reference datasets: all 34 Sharma–Wu–Dalal CIEDE2000 pairs to 4 decimal places, Ottosson's OKLab values, Bruce Lindbloom's conversion tables, WCAG worked examples, published CVD confusion-line pairs, and near-black sRGB values that fail against a pure-power transfer function. Also runs the cross-platform identity check (NFR-3): 10,000 computations in Node, browser and React Native, asserted bitwise identical. Tolerance: ΔE00 ≤ 0.01, Lab ≤ 0.02 absolute. A changed golden value requires an ADR — it is a claim about physical reality."
+      "description": "The colour engine against published reference datasets. As of F-006: six cited datasets — the sRGB transfer function (IEC 61966-2-1) weighted at near-black, sRGB and Display-P3 primaries and matrices (CSS Color 4 / SMPTE RP 431-2), CIELAB's exact rationals (CIE 15:2018), Ottosson's published OKLab table, and Lindbloom's Bradford adaptation matrix — plus the cross-platform identity fixture: 10,000 seeded samples × 30 values, digested over IEEE-754 bytes and asserted bit-identical (NFR-3). Every entry declares whether it is a published value, computed from a published formula, or definitional, and an entry citing no source fails the load. The Sharma–Wu–Dalal CIEDE2000 pairs, WCAG worked examples and CVD confusion-line pairs join with F-007 and F-008. Activated after being executed AND after each dataset was watched reject a real mutation: a pure-power transfer function, a column-swapped matrix (which leaves white BIT-identical), decimal-rounded ε and κ, and a 2% perturbation of any OKLab matrix element. A changed golden value requires an ADR — it is a claim about physical reality. The identity digest is a determinism fixture rather than such a claim, and regenerating it to make a test green is the one thing it exists to prevent.",
+      "activatedAt": "2026-08-14"
     },
     {
       "id": "build",

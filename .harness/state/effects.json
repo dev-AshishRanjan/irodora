@@ -8,14 +8,12 @@
       "id": "E-001",
       "from": {
         "kind": "symbol",
-        "ref": "packages/color-spaces/src/xyz.ts#srgbToXyz",
-        "exists": false
+        "ref": "packages/color-spaces/src/rgb.ts#srgbToXyz"
       },
       "to": [
         {
           "kind": "test",
-          "ref": "packages/color-spaces/golden",
-          "exists": false
+          "ref": "packages/color-spaces/golden"
         },
         {
           "kind": "package",
@@ -39,7 +37,7 @@
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/srgb-xyz-is-the-root-of-every-derived-value.md",
-      "rationale": "Every corpus entry's lab, oklch and hex columns are computed from xyz by this transform at build time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it.",
+      "rationale": "Every corpus entry's lab, oklch and hex columns are computed from xyz by this transform at build time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it. As of F-006 the transform exists and gate:color-golden is active, so the SOURCE end of this link is now guarded: 71 cited golden entries plus a 300,000-value determinism digest fail on any change. The DESTINATION end — that the stored corpus values still agree with the changed engine — needs the content gate, which activates with F-011. Until then this link is half-guarded, and that half is the half that matters least, because there is no corpus to invalidate yet.",
       "confidence": 0.98,
       "origin": "manual",
       "status": "active"

@@ -48,12 +48,35 @@ const readJson = (path) => {
 
 const readText = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : null);
 
+/**
+ * Directories that are never part of the repository's own governed surface.
+ *
+ * `node_modules` is the one that matters. pnpm links workspace packages into each other's
+ * `node_modules`, so a walk that descends into it re-visits our own packages through their
+ * symlinks — and, worse, walks into third-party packages. Before this exclusion the
+ * scoped-harness scan reported 13 harnesses when 8 exist, the extras being color-core's
+ * AGENTS.md reached through several packages' node_modules links. The count moved whenever a
+ * dependency was added or removed, which is how it was noticed.
+ *
+ * The count being wrong is the small half. The large half is that a scan for language
+ * weakening a golden rule was reading files we do not own: a dependency shipping an
+ * AGENTS.md with the wrong sentence in it would have failed our build on a file nobody here
+ * can edit.
+ */
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.turbo', '.next', '.expo', 'coverage']);
+
+/**
+ * `withFileTypes` is deliberate: `Dirent.isDirectory()` does NOT follow symlinks, where
+ * `statSync().isDirectory()` does. That is the second half of the same defect — a symlinked
+ * directory is now skipped rather than descended into, so a link cycle cannot hang the gate.
+ */
 const walk = (dir, filter = () => true, acc = []) => {
   if (!existsSync(dir)) return acc;
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) walk(full, filter, acc);
-    else if (filter(full)) acc.push(full);
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name)) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) walk(full, filter, acc);
+    else if (entry.isFile() && filter(full)) acc.push(full);
   }
   return acc;
 };
