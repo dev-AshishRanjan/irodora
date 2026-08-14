@@ -77,6 +77,15 @@ export {
 } from './lab.js';
 
 export {
+  oklabToOklch,
+  oklabToXyz,
+  oklchToOklab,
+  oklchToXyz,
+  xyzToOklab,
+  xyzToOklch,
+} from './oklab.js';
+
+export {
   linearToSrgb,
   srgbToLinear,
   SRGB_EOTF_CUTOFF,

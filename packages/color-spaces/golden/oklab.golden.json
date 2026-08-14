@@ -1,0 +1,109 @@
+{
+  "id": "oklab",
+  "description": "OKLab and OKLCh, Ottosson (2020). The first four entries are the values Ottosson publishes in his introduction of the space, to three decimal places — the strongest kind of golden entry here, because they are numbers printed in the source rather than consequences of it. They are what catches a transcribed digit in M1 or M2, which is otherwise invisible: a wrong matrix still produces a smooth, plausible, perceptually-reasonable-looking space.",
+  "entries": [
+    {
+      "id": "ottosson-white",
+      "source": "Ottosson, 'A perceptual color space for image processing' (2020), XYZ to OKLab reference table",
+      "derivation": "published-value",
+      "input": [0.95, 1.0, 1.089],
+      "expected": [1.0, 0.0, 0.0],
+      "tolerance": 0.001
+    },
+    {
+      "id": "ottosson-x",
+      "source": "Ottosson (2020), XYZ to OKLab reference table",
+      "derivation": "published-value",
+      "input": [1.0, 0.0, 0.0],
+      "expected": [0.45, 1.236, -0.019],
+      "tolerance": 0.001
+    },
+    {
+      "id": "ottosson-y",
+      "source": "Ottosson (2020), XYZ to OKLab reference table",
+      "derivation": "published-value",
+      "input": [0.0, 1.0, 0.0],
+      "expected": [0.922, -0.671, 0.263],
+      "tolerance": 0.001
+    },
+    {
+      "id": "ottosson-z",
+      "source": "Ottosson (2020), XYZ to OKLab reference table",
+      "derivation": "published-value",
+      "input": [0.0, 0.0, 1.0],
+      "expected": [0.153, -1.415, -0.449],
+      "tolerance": 0.001
+    },
+    {
+      "id": "black",
+      "source": "Ottosson (2020) — cbrt(0) is 0 and both matrices are linear, so black is fixed",
+      "derivation": "definitional",
+      "input": [0, 0, 0],
+      "expected": [0, 0, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "d65-white-residual",
+      "source": "Ottosson (2020), M1 and M2 as published to ten decimal places",
+      "derivation": "published-formula",
+      "derivationNote": "Our D65 white [0.9504559270516716, 1, 1.0890577507598784] through M1, cube root, M2. NOT exactly [1, 0, 0]: the published matrices carry ten decimal places, and the residual is L = 0.999998801859709 with chroma 1.2515e-4. Ottosson's separate linear-sRGB-to-LMS matrix is tuned so white is exact, but using it would be a second path for one input space, against ADR-0003. Recorded and bounded rather than corrected — correcting it would mean using numbers no source publishes.",
+      "input": [0.9504559270516716, 1, 1.0890577507598784],
+      "expected": [0.999998801859709, -0.00002175509151952637, -0.00012315520538908054],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-red-primary",
+      "source": "Ottosson (2020) applied to the sRGB red primary (IEC 61966-2-1)",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [0.41239079926595934, 0.21263900587151027, 0.01933081871559182] through M1, cube root, M2",
+      "input": [0.41239079926595934, 0.21263900587151027, 0.01933081871559182],
+      "expected": [0.6279536128446928, 0.22482856776096774, 0.12579221886785846],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-green-primary",
+      "source": "Ottosson (2020) applied to the sRGB green primary",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [0.357584339383878, 0.715168678767756, 0.11919477979462598]",
+      "input": [0.357584339383878, 0.715168678767756, 0.11919477979462598],
+      "expected": [0.8664392259801765, -0.23391802038712, 0.17941914876364384],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-blue-primary",
+      "source": "Ottosson (2020) applied to the sRGB blue primary",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [0.1804807884018343, 0.07219231536073371, 0.9505321522496607]",
+      "input": [0.1804807884018343, 0.07219231536073371, 0.9505321522496607],
+      "expected": [0.452013690140611, -0.03243237199253379, -0.3116359836792446],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-mid-grey",
+      "source": "Ottosson (2020) applied to 50% sRGB grey",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [0.20343667060423742, 0.21404114048223255, 0.23310316302365935]. L = 0.598 against CIELAB's L* = 53.4 for the same colour: OKLab lightness is on [0,1] and is NOT CIELAB lightness divided by 100.",
+      "input": [0.20343667060423742, 0.21404114048223255, 0.23310316302365935],
+      "expected": [0.5981800138224129, -0.000013013476537870883, -0.00007366907072792195],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "oklch-red-primary",
+      "source": "Ottosson (2020) — OKLCh is OKLab in polar form",
+      "derivation": "published-formula",
+      "derivationNote": "From OKLab [0.6279536128446928, 0.22482856776096774, 0.12579221886785846]: C = hypot(a, b) = 0.2576267983132719, h = atan2(b, a) = 29.22713628616782 degrees",
+      "input": [0.41239079926595934, 0.21263900587151027, 0.01933081871559182],
+      "expected": [0.6279536128446928, 0.2576267983132719, 29.22713628616782],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "oklch-blue-primary",
+      "source": "Ottosson (2020) — OKLCh is OKLab in polar form; b is negative so the raw angle folds",
+      "derivation": "published-formula",
+      "derivationNote": "From OKLab [0.452013690140611, -0.03243237199253379, -0.3116359836792446]: C = 0.3133190786990038, raw atan2 is negative and folds to 264.05854062680476 degrees",
+      "input": [0.1804807884018343, 0.07219231536073371, 0.9505321522496607],
+      "expected": [0.452013690140611, 0.3133190786990038, 264.05854062680476],
+      "tolerance": 1e-12
+    }
+  ]
+}
