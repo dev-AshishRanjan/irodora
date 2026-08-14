@@ -35,6 +35,15 @@ export {
   type Ciede2000Weights,
 } from './ciede2000.js';
 
+export {
+  deltaE76,
+  deltaE94,
+  deltaEok,
+  DELTAE94_GRAPHIC_ARTS,
+  DELTAE94_TEXTILES,
+  type DeltaE94Weights,
+} from './deltae.js';
+
 /** Which difference metric a caller asked for. */
 export type DifferenceMetric = 'de76' | 'de94' | 'de00' | 'deok';
 

@@ -1,0 +1,86 @@
+{
+  "id": "deltae",
+  "description": "DeltaE76, DeltaE94 and DeltaEok. Fewer published reference values exist for these than for CIEDE2000, so the set leans on definitional anchors and on two properties that are themselves published: CIEDE2000's symmetry, which appears in the Sharma-Wu-Dalal data as pairs 7 and 8 being the same colours reversed with the same answer, and DeltaE94's ASYMMETRY, which is specified rather than accidental.",
+  "entries": [
+    {
+      "id": "deltae94-graphic-arts-weights",
+      "source": "CIE 1994 (CIE 116-1995), graphic-arts application: kL = 1, K1 = 0.045, K2 = 0.015",
+      "derivation": "published-value",
+      "input": "kL, K1, K2",
+      "expected": [1, 0.045, 0.015],
+      "tolerance": 0
+    },
+    {
+      "id": "deltae94-textiles-weights",
+      "source": "CIE 1994 (CIE 116-1995), textiles application: kL = 2, K1 = 0.048, K2 = 0.014",
+      "derivation": "published-value",
+      "input": "kL, K1, K2",
+      "expected": [2, 0.048, 0.014],
+      "tolerance": 0
+    },
+    {
+      "id": "deltae76-white-to-black",
+      "source": "CIE 1976 — a Euclidean distance in CIELAB, so white to black is the L* range",
+      "derivation": "definitional",
+      "input": { "lab1": [100, 0, 0], "lab2": [0, 0, 0] },
+      "expected": 100,
+      "tolerance": 0
+    },
+    {
+      "id": "deltae00-white-to-black",
+      "source": "CIE 142:2001 — at Lbar' = 50 the lightness compensation Sl is exactly 1, and a pure lightness difference has no chroma or hue term, so DeltaE00 equals DeltaE76 here",
+      "derivation": "definitional",
+      "input": { "lab1": [100, 0, 0], "lab2": [0, 0, 0] },
+      "expected": 100,
+      "tolerance": 1e-13
+    },
+    {
+      "id": "deltae00-is-symmetric-per-the-published-data",
+      "source": "Sharma, Wu & Dalal (2005), pairs 7 and 8 — the same two colours in both orders, both published as 2.3669",
+      "derivation": "published-value",
+      "input": { "lab1": [50, 0, 0], "lab2": [50, -1, 2] },
+      "expected": 2.3669,
+      "tolerance": 5e-5
+    },
+    {
+      "id": "deltae94-is-asymmetric-by-specification",
+      "source": "CIE 1994 — Sc and Sh are computed from the FIRST colour, which the standard calls the reference",
+      "derivation": "published-formula",
+      "derivationNote": "Lab1 = [60.2574, -34.0099, 36.2677], Lab2 = [60.4626, -34.1751, 39.4387]. Forward gives 1.3909947095, reversed gives 1.3576187101 — a 2.4% difference. Recorded as an entry because it looks like a defect: a caller ranking candidates must pass the reference consistently, or the ordering means nothing.",
+      "input": {
+        "lab1": [60.2574, -34.0099, 36.2677],
+        "lab2": [60.4626, -34.1751, 39.4387]
+      },
+      "expected": { "forward": 1.3909947094745128, "reversed": 1.3576187100641364 },
+      "tolerance": 1e-12
+    },
+    {
+      "id": "deltae76-over-reports-saturated-blue",
+      "source": "Sharma, Wu & Dalal (2005) pair 1, measured under both metrics",
+      "derivation": "published-formula",
+      "derivationNote": "DeltaE76 = 4.0010632837 against a published DeltaE00 of 2.0425 for the same pair — a factor of 1.9589. This is why CIE 142 exists, and why DeltaE76 is never a stated result here.",
+      "input": {
+        "lab1": [50, 2.6772, -79.7751],
+        "lab2": [50, 0, -82.7485]
+      },
+      "expected": { "de76": 4.001063283678486, "ratioToDe00": 1.9589435828528874 },
+      "tolerance": 1e-4
+    },
+    {
+      "id": "deltaeok-identity",
+      "source": "A Euclidean distance is zero exactly when the operands are equal",
+      "derivation": "definitional",
+      "input": { "oklab1": [0.5, 0.1, 0.1], "oklab2": [0.5, 0.1, 0.1] },
+      "expected": 0,
+      "tolerance": 0
+    },
+    {
+      "id": "deltaeok-white-to-black",
+      "source": "Ottosson (2020) — OKLab lightness is on [0,1], so the white-to-black distance is 1, NOT 100",
+      "derivation": "definitional",
+      "input": { "oklab1": [1, 0, 0], "oklab2": [0, 0, 0] },
+      "expected": 1,
+      "tolerance": 0
+    }
+  ]
+}
