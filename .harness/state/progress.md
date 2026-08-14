@@ -8,7 +8,95 @@ reader cannot reconstruct.
 
 ---
 
-## Handoff — 2026-08-14 · F-001 IN PROGRESS, BLOCKED ON NODE
+## 2026-08-14 — F-001 DONE · the toolchain runs, and the boundaries are proven
+
+**Node 24.19.0 installed. `pnpm install` ran. All six applicable gates executed and passed.**
+
+### Evidence
+
+```
+node v24.19.0 · pnpm 11.21.0 · tsc 6.0.3
+
+  ✓ gate 0  state        4s
+  ✓ gate 1  typecheck    5s     31 tasks
+  ✓ gate 2  lint        16s     31 tasks + 5 boundary guards
+  ✓ gate 3  format       2s
+  ✓ gate 4  test         1s     31 tasks
+  ✓ gate 6  build        3s     23 tasks
+
+NOT run: color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf,
+         e2e-full, security — none applicable; each activates with its own feature.
+```
+
+**Gates 1–4 and 6 are now `active` in `gates.json`**, with `activatedAt: 2026-08-14`. They
+were activated *after* being executed and seen to pass, not before — a gate that has never
+run is theatre.
+
+### All five boundaries enforced, proven not assumed
+
+```
+✓ colour engine may not import a Node API        no-restricted-imports
+✓ colour engine may not touch a platform global  no-restricted-globals
+✓ colour engine keeps deep-import protection     no-restricted-imports
+✓ packages may not be deep-imported              no-restricted-imports
+✓ a floating promise is an error                 @typescript-eslint/no-floating-promises
+```
+
+### Two real defects the guards caught
+
+**1. A later flat-config object REPLACES a rule rather than merging it.** The colour-engine
+override declared only the `node:*` patterns, silently making deep imports legal in exactly
+the packages with the strictest written rules. Everything parsed, ESLint ran clean, nothing
+failed. Guard #3 exists for this specific defect — and it found it *before the rule had ever
+run in anger*. See
+[[a-later-flat-config-object-replaces-a-rule-it-does-not-merge]].
+
+**2. The guard runner itself was failing open-shaped.** It shelled out to `npx eslint`, which
+throws `EINVAL` on Windows under Node 20+. It correctly refused to pass — but reported all
+five as *"NOT enforced"*, which would have sent the next person to fix the ESLint config
+rather than the runner. Now uses the ESLint Node API and distinguishes **"could not run"**
+from **"did not fire"**.
+
+### Decision forced during install — [ADR-0035](../../docs/adr/0035-typescript-6-not-7-until-type-aware-linting-catches-up.md)
+
+`typescript-eslint` peers on `typescript >=4.8.4 <6.1.0`. **It does not support TypeScript 7.**
+
+The plan flagged this risk and said dropping from 7 would be an ADR, not a silent edit — so
+it is one. **Pinned to `~6.0.3`.** Type-aware linting is load-bearing for NFR-24 and four of
+the five guards; a compiler major is worth far less than the enforcement it would cost. The
+alternative — keeping TS 7 and dropping the type-aware rules — is the exact anti-pattern this
+harness exists to prevent.
+
+`~` not `^`, because the peer ceiling is `<6.1.0` and a caret would eventually resolve past it
+and break install at an unrelated moment.
+
+### Also corrected
+
+- **Invented dependency versions.** `eslint@^9.40.0` does not exist. Every version is now
+  queried from the registry: ESLint 10.8.1, typescript-eslint 8.67.0, @types/node 24.13.3
+  (matching the runtime, not `latest`), Prettier 3.9.6, Vitest 4.1.10.
+- **`allowBuilds`**, not `onlyBuiltDependencies` — pnpm 11's field. `unrs-resolver` approved
+  with its reasoning recorded: dev-only, transitive to the lint toolchain, never shipped.
+- **Turbo `test` outputs emptied.** It warned on every run about missing coverage output;
+  warning noise trains people to ignore warnings.
+
+### Watch out
+
+- **Node 24 is not on the default PATH.** `C:\Program Files\nodejs` is a real directory with a
+  May-2025 `node.exe` (22.16.0), so nvm-windows cannot symlink over it. `node --version` in a
+  fresh terminal still reports 22.16.0. Either remove the direct install and let nvm own the
+  path, or run `nvm use 24.19.0` from an elevated shell. **CI is unaffected** — it reads
+  `.nvmrc`.
+- The TypeScript 7 upgrade is a standing task with no owner. Trigger: typescript-eslint
+  shipping TS 7 support.
+
+### Next
+
+**F-002** — `@irodora/contracts` — is the next eligible feature. `/next-feature` → `/plan`.
+
+---
+
+## Superseded handoff — F-001 was blocked on Node
 
 **Feature:** F-001 — Monorepo toolchain scaffold ·
 [plan](../plans/F-001-monorepo-toolchain-scaffold.md)

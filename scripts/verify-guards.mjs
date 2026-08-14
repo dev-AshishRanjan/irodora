@@ -5,19 +5,20 @@
  * The architectural boundaries in ADR-0001 and ADR-0004 are enforced by ESLint rules.
  * A rule nobody has watched fail is not a boundary — it is a configuration file that
  * happens to parse. This script writes a deliberately violating file at the exact path
- * each rule targets, runs ESLint on it, and asserts the expected rule fires.
+ * each rule targets, lints it, and asserts the expected rule fires.
  *
  * It is the negative-test-needs-a-decoy discipline applied to lint: an empty fixture
  * would pass whether or not the rule works.
  *
  * Fixtures are written and deleted in the same run — nothing violating is ever committed.
- * Run after `pnpm install`; it needs ESLint on disk.
+ * Uses ESLint's Node API rather than shelling out: spawning `npx.cmd` throws EINVAL on
+ * Windows under Node 20+, and a guard that cannot run is a guard that is failing open.
  */
 
 import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { ESLint } from 'eslint';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -38,7 +39,7 @@ const GUARDS = [
     path: 'packages/color-spaces/src/__guard__.ts',
     rule: 'no-restricted-globals',
     must: 'NFR-3 — no DOM, no process, no platform branch inside the engine',
-    source: `export const x = typeof window;\n`,
+    source: `export const x = window.innerWidth;\n`,
   },
   {
     name: 'colour engine keeps deep-import protection',
@@ -48,7 +49,7 @@ const GUARDS = [
       'A later ESLint config object REPLACES no-restricted-imports rather than merging. ' +
       'Without the patterns repeated in the engine override, deep imports become legal in ' +
       'exactly the packages that need protecting most.',
-    source: `import { Xyz } from '@irodora/color-spaces/src/index.js';\nexport type A = Xyz;\n`,
+    source: `import type { Xyz } from '@irodora/color-spaces/src/index.js';\nexport type A = Xyz;\n`,
   },
   {
     name: 'packages may not be deep-imported',
@@ -66,58 +67,50 @@ const GUARDS = [
   },
 ];
 
-const GREEN = '\x1b[32m', RED = '\x1b[31m', DIM = '\x1b[2m', BOLD = '\x1b[1m', OFF = '\x1b[0m';
-
-function lintOne(absPath) {
-  try {
-    const out = execFileSync(
-      process.platform === 'win32' ? 'npx.cmd' : 'npx',
-      ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern', absPath],
-      { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-    );
-    return JSON.parse(out);
-  } catch (error) {
-    // ESLint exits non-zero when it reports errors — which is the expected case here.
-    if (error.stdout) {
-      try {
-        return JSON.parse(error.stdout);
-      } catch {
-        /* fall through */
-      }
-    }
-    throw new Error(`ESLint could not run: ${error.stderr || error.message}`);
-  }
-}
+const GREEN = '\x1b[32m',
+  RED = '\x1b[31m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  OFF = '\x1b[0m';
 
 console.log(`\n${BOLD}Irodora — boundary guards${OFF}\n`);
 
-const failures = [];
+const eslint = new ESLint({ cwd: ROOT, errorOnUnmatchedPattern: false });
+const notEnforced = [];
+const couldNotRun = [];
 
 for (const guard of GUARDS) {
   const abs = resolve(ROOT, guard.path);
   mkdirSync(dirname(abs), { recursive: true });
-  let results;
 
+  let results;
   try {
     writeFileSync(abs, guard.source, 'utf8');
-    results = lintOne(abs);
+    results = await eslint.lintFiles([abs]);
   } catch (error) {
-    failures.push({ guard, reason: error.message });
+    couldNotRun.push({ guard, reason: error.message });
     continue;
   } finally {
-    // Always remove the fixture, even if ESLint threw.
+    // Always remove the fixture, even if linting threw.
     if (existsSync(abs)) unlinkSync(abs);
   }
 
-  const reported = new Set(
-    (results ?? []).flatMap((r) => (r.messages ?? []).map((m) => m.ruleId).filter(Boolean)),
-  );
+  const reported = new Set(results.flatMap((r) => r.messages.map((m) => m.ruleId).filter(Boolean)));
+
+  // A fatal parse error means the file never reached the rules — that is a tooling
+  // failure, not a boundary failure, and conflating them would send the next person
+  // to fix the wrong thing.
+  const fatal = results.flatMap((r) => r.messages.filter((m) => m.fatal));
+  if (fatal.length) {
+    couldNotRun.push({ guard, reason: `parse error: ${fatal[0].message}` });
+    continue;
+  }
 
   if (reported.has(guard.rule)) {
     console.log(`  ${GREEN}✓${OFF} ${guard.name}`);
     console.log(`    ${DIM}${guard.rule} fired at ${relative(ROOT, abs)}${OFF}`);
   } else {
-    failures.push({
+    notEnforced.push({
       guard,
       reason: `expected "${guard.rule}"; ESLint reported ${
         reported.size ? [...reported].map((r) => `"${r}"`).join(', ') : 'nothing'
@@ -126,14 +119,31 @@ for (const guard of GUARDS) {
   }
 }
 
-if (failures.length) {
-  console.log(`\n${RED}${BOLD}${failures.length} guard(s) NOT enforced${OFF}\n`);
-  for (const { guard, reason } of failures) {
+if (couldNotRun.length) {
+  console.log(`\n${RED}${BOLD}${couldNotRun.length} guard(s) COULD NOT RUN${OFF}\n`);
+  for (const { guard, reason } of couldNotRun) {
+    console.log(`  ${RED}✗ ${guard.name}${OFF}`);
+    console.log(`    ${DIM}what:${OFF} ${reason}`);
+    console.log(
+      `    ${DIM}fix:${OFF} this is a TOOLING failure, not a boundary failure — repair the`,
+    );
+    console.log(`         guard runner before concluding anything about the rule\n`);
+  }
+}
+
+if (notEnforced.length) {
+  console.log(`\n${RED}${BOLD}${notEnforced.length} boundary(ies) NOT enforced${OFF}\n`);
+  for (const { guard, reason } of notEnforced) {
     console.log(`  ${RED}✗ ${guard.name}${OFF}`);
     console.log(`    ${DIM}what:${OFF} ${reason}`);
     console.log(`    ${DIM}why it matters:${OFF} ${guard.must}`);
-    console.log(`    ${DIM}fix:${OFF} restore the rule in eslint.config.mjs — do NOT delete this guard\n`);
+    console.log(
+      `    ${DIM}fix:${OFF} restore the rule in eslint.config.mjs — do NOT delete this guard\n`,
+    );
   }
+}
+
+if (couldNotRun.length || notEnforced.length) {
   console.log(
     `${RED}${BOLD}Boundary guards FAILED.${OFF} A boundary that cannot fail is not a boundary.\n`,
   );

@@ -1,9 +1,16 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "tests/*"
+  - 'apps/*'
+  - 'packages/*'
+  - 'tests/*'
 
 # Dependencies whose build scripts are allowed to run. pnpm blocks lifecycle
 # scripts by default; every entry here is a supply-chain decision, so the list
 # stays short and each addition is reviewed.
-onlyBuiltDependencies: []
+#
+# unrs-resolver — the native module resolver behind eslint-plugin-import-x, from
+# the oxc project. Its postinstall fetches the platform-native binding; without
+# it, import resolution in the lint gate silently degrades. DEV-ONLY: a transitive
+# dependency of our linting toolchain, never shipped, reaching no production
+# artefact and no user.
+allowBuilds:
+  unrs-resolver: true

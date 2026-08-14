@@ -71,9 +71,26 @@ const posix = (p) => p.split(sep).join('/');
  * outgrow the validator.
  */
 const SUPPORTED = new Set([
-  '$schema', '$id', '$ref', '$defs', 'title', 'description', 'type', 'required',
-  'properties', 'additionalProperties', 'enum', 'const', 'pattern', 'minimum',
-  'maximum', 'minItems', 'maxItems', 'minLength', 'items', 'format',
+  '$schema',
+  '$id',
+  '$ref',
+  '$defs',
+  'title',
+  'description',
+  'type',
+  'required',
+  'properties',
+  'additionalProperties',
+  'enum',
+  'const',
+  'pattern',
+  'minimum',
+  'maximum',
+  'minItems',
+  'maxItems',
+  'minLength',
+  'items',
+  'format',
 ]);
 
 function validate(schema, data, root, path, errors, unsupported) {
@@ -94,7 +111,10 @@ function validate(schema, data, root, path, errors, unsupported) {
 
   if (schema.type) {
     const actual = typeOf(data);
-    const ok = schema.type === 'number' ? actual === 'number' || actual === 'integer' : actual === schema.type;
+    const ok =
+      schema.type === 'number'
+        ? actual === 'number' || actual === 'integer'
+        : actual === schema.type;
     if (!ok) {
       errors.push(`${path}: expected ${schema.type}, got ${actual}`);
       return;
@@ -125,7 +145,9 @@ function validate(schema, data, root, path, errors, unsupported) {
     if (schema.minItems !== undefined && data.length < schema.minItems)
       errors.push(`${path}: must have at least ${schema.minItems} item(s)`);
     if (schema.items)
-      data.forEach((item, i) => validate(schema.items, item, root, `${path}[${i}]`, errors, unsupported));
+      data.forEach((item, i) =>
+        validate(schema.items, item, root, `${path}[${i}]`, errors, unsupported),
+      );
   }
 
   if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -151,14 +173,20 @@ const checkSchema = (name, schemaPath, dataPath) => {
   validate(schema, data, schema, name, errors, unsupported);
 
   if (unsupported.size)
-    warn('schema', `${name}: validator does not implement [${[...unsupported].join(', ')}] — those constraints are NOT being checked`);
+    warn(
+      'schema',
+      `${name}: validator does not implement [${[...unsupported].join(', ')}] — those constraints are NOT being checked`,
+    );
 
   if (errors.length) {
     fail(
       'schema',
       `${relative(ROOT, dataPath)} violates its schema (${errors.length} error${errors.length > 1 ? 's' : ''})`,
       'The state files are what every other check and every agent session reads.',
-      errors.slice(0, 12).map((e) => `  ${e}`).join('\n') + (errors.length > 12 ? `\n  … and ${errors.length - 12} more` : ''),
+      errors
+        .slice(0, 12)
+        .map((e) => `  ${e}`)
+        .join('\n') + (errors.length > 12 ? `\n  … and ${errors.length - 12} more` : ''),
     );
     return null;
   }
@@ -199,21 +227,30 @@ if (featureList) {
     for (const blocker of f.blockedBy ?? []) {
       const b = byId.get(blocker);
       if (!b)
-        fail('blockers', `${f.id} is blocked by ${blocker}, which does not exist`,
+        fail(
+          'blockers',
+          `${f.id} is blocked by ${blocker}, which does not exist`,
           'A dangling blocker means the dependency graph is wrong.',
-          `Remove it from ${f.id}.blockedBy, or add the missing feature.`);
+          `Remove it from ${f.id}.blockedBy, or add the missing feature.`,
+        );
       else if (['in_progress', 'done', 'in_review'].includes(f.status) && b.status !== 'done')
-        fail('blockers', `${f.id} is ${f.status} but its blocker ${blocker} is ${b.status}`,
+        fail(
+          'blockers',
+          `${f.id} is ${f.status} but its blocker ${blocker} is ${b.status}`,
           'Working on a feature whose dependency is unfinished produces work that cannot be verified.',
-          `Finish ${blocker} first, or correct the blockedBy list.`);
+          `Finish ${blocker} first, or correct the blockedBy list.`,
+        );
     }
 
     if (f.status === 'in_progress') {
       const planPath = f.plan ? join(HARNESS, f.plan) : null;
       if (!planPath || !existsSync(planPath))
-        fail('plan', `${f.id} is in_progress with no plan file`,
+        fail(
+          'plan',
+          `${f.id} is in_progress with no plan file`,
           'Plan before code is a golden rule: an approach discovered while implementing is a description, not a plan.',
-          `Write .harness/plans/${f.id}-<kebab-title>.md from plans/TEMPLATE.md and set the feature's "plan" field.`);
+          `Write .harness/plans/${f.id}-<kebab-title>.md from plans/TEMPLATE.md and set the feature's "plan" field.`,
+        );
     }
   }
   if (!failures.some((f) => f.check === 'blockers' || f.check === 'plan'))
@@ -229,35 +266,52 @@ if (prd && featureList) {
   const declared = new Set([...prd.matchAll(/\*\*((?:FR|NFR)-\d+)\*\*/g)].map((m) => m[1]));
 
   if (declared.size === 0)
-    fail('prd', 'No FR-*/NFR-* identifiers found in docs/PRD.md',
+    fail(
+      'prd',
+      'No FR-*/NFR-* identifiers found in docs/PRD.md',
       'Traceability is the mechanism that stops unrequested work and orphaned requirements.',
-      'Requirement ids must appear as **FR-1** / **NFR-1** in the PRD tables.');
+      'Requirement ids must appear as **FR-1** / **NFR-1** in the PRD tables.',
+    );
 
   const claimed = new Set();
   for (const f of featureList.features) {
     for (const req of f.requirements) {
       claimed.add(req);
       if (!declared.has(req))
-        fail('prd', `${f.id} claims ${req}, which does not exist in docs/PRD.md`,
+        fail(
+          'prd',
+          `${f.id} claims ${req}, which does not exist in docs/PRD.md`,
           'A feature traced to a non-existent requirement is unreviewable — there is nothing to check it against.',
-          `Correct ${f.id}.requirements, or add ${req} to the PRD.`);
+          `Correct ${f.id}.requirements, or add ${req} to the PRD.`,
+        );
     }
   }
 
   const orphans = [...declared].filter((r) => !claimed.has(r));
   if (orphans.length)
-    fail('prd', `${orphans.length} requirement(s) claimed by no feature: ${orphans.join(', ')}`,
+    fail(
+      'prd',
+      `${orphans.length} requirement(s) claimed by no feature: ${orphans.join(', ')}`,
       'An unclaimed requirement will never be built, and nothing will report that.',
-      'Assign each to a feature in feature_list.json, or remove it from the PRD.');
+      'Assign each to a feature in feature_list.json, or remove it from the PRD.',
+    );
 
   if (coverage) {
     const missing = [...declared].filter((r) => !new RegExp(`\\b${r}\\b`).test(coverage));
     if (missing.length)
-      fail('coverage', `${missing.length} requirement(s) absent from REQUIREMENTS-COVERAGE.md: ${missing.slice(0, 8).join(', ')}`,
+      fail(
+        'coverage',
+        `${missing.length} requirement(s) absent from REQUIREMENTS-COVERAGE.md: ${missing.slice(0, 8).join(', ')}`,
         'The coverage matrix is how a reviewer sees, at a glance, that nothing is untraced.',
-        'Add a row for each.');
+        'Add a row for each.',
+      );
   } else {
-    fail('coverage', 'docs/REQUIREMENTS-COVERAGE.md is missing', 'Traceability cannot be reviewed.', 'Restore the file.');
+    fail(
+      'coverage',
+      'docs/REQUIREMENTS-COVERAGE.md is missing',
+      'Traceability cannot be reviewed.',
+      'Restore the file.',
+    );
   }
 
   if (!failures.some((f) => f.check === 'prd' || f.check === 'coverage'))
@@ -268,45 +322,68 @@ if (prd && featureList) {
 
 if (effects) {
   const memoryEffectsDir = join(HARNESS, 'memory/effects');
-  const noteFiles = walk(memoryEffectsDir, (p) => p.endsWith('.md')).map((p) => posix(relative(HARNESS, p)));
+  const noteFiles = walk(memoryEffectsDir, (p) => p.endsWith('.md')).map((p) =>
+    posix(relative(HARNESS, p)),
+  );
   const referenced = new Set();
 
   for (const link of effects.links) {
     referenced.add(link.memory);
 
     if (!existsSync(join(HARNESS, link.memory)))
-      fail('effects', `${link.id} points at a missing memory note: ${link.memory}`,
+      fail(
+        'effects',
+        `${link.id} points at a missing memory note: ${link.memory}`,
         'The JSON says THAT B depends on A. The note says WHY — which is what lets the next person judge whether the link still holds.',
-        `Create .harness/${link.memory}.`);
+        `Create .harness/${link.memory}.`,
+      );
 
     if (link.guard === 'none' && link.severity === 'critical' && !link.feature)
-      fail('effects', `${link.id} is critical with guard "none" and no tracked feature`,
+      fail(
+        'effects',
+        `${link.id} is critical with guard "none" and no tracked feature`,
         'A recorded dependency that nothing checks helps the careful reader and does nothing for the careless one — which is the case that matters.',
-        `Add the guard, or set "feature": "F-0NN" naming the feature that will add it. Do NOT downgrade the severity.`);
+        `Add the guard, or set "feature": "F-0NN" naming the feature that will add it. Do NOT downgrade the severity.`,
+      );
 
     if (link.guard === 'none' && link.severity !== 'critical')
-      warn('effects', `${link.id} (${link.severity}) has no guard — the graph is carrying a check we owe`);
+      warn(
+        'effects',
+        `${link.id} (${link.severity}) has no guard — the graph is carrying a check we owe`,
+      );
 
     for (const target of [link.from, ...link.to]) {
       if (target.exists === false) continue;
       if (!['file', 'symbol', 'test', 'artifact', 'content'].includes(target.kind)) continue;
-      const filePart = target.ref.split('#')[0].replace(/\/\*+.*$/, '').replace(/\*+.*$/, '');
+      const filePart = target.ref
+        .split('#')[0]
+        .replace(/\/\*+.*$/, '')
+        .replace(/\*+.*$/, '');
       if (!filePart) continue;
       if (!existsSync(join(ROOT, filePart)))
-        fail('effects', `${link.id} references a path that does not exist: ${target.ref}`,
+        fail(
+          'effects',
+          `${link.id} references a path that does not exist: ${target.ref}`,
           'A link pointing at a deleted file is rot. Left unchecked, the graph slowly stops describing the codebase.',
-          `Update the reference, mark it "exists": false if it is planned, or set the link "status": "resolved".`);
+          `Update the reference, mark it "exists": false if it is planned, or set the link "status": "resolved".`,
+        );
     }
   }
 
   for (const note of noteFiles)
     if (!referenced.has(note))
-      fail('effects', `${note} is not referenced by any effect link`,
+      fail(
+        'effects',
+        `${note} is not referenced by any effect link`,
         'An orphaned note will drift out of date with nothing pointing at it.',
-        'Reference it from a link in effects.json, or delete it.');
+        'Reference it from a link in effects.json, or delete it.',
+      );
 
   if (!failures.some((f) => f.check === 'effects'))
-    pass('effects', `${effects.links.length} links, notes paired, paths resolve, critical links guarded`);
+    pass(
+      'effects',
+      `${effects.links.length} links, notes paired, paths resolve, critical links guarded`,
+    );
 }
 
 /* ============================================================== 5. memory index */
@@ -319,9 +396,12 @@ if (memoryIndex) {
 
   const uncovered = memoryFiles.filter((f) => !memoryIndex.includes(f));
   if (uncovered.length)
-    fail('memory', `${uncovered.length} memory file(s) absent from index.md: ${uncovered.slice(0, 6).join(', ')}`,
+    fail(
+      'memory',
+      `${uncovered.length} memory file(s) absent from index.md: ${uncovered.slice(0, 6).join(', ')}`,
       'The index is what a session reads to decide what is relevant. An unindexed memory is an unread memory.',
-      'Add a line for each to .harness/memory/index.md.');
+      'Add a line for each to .harness/memory/index.md.',
+    );
   else pass('memory', `${memoryFiles.length} memory files, all indexed`);
 
   // Wikilinks must resolve to a real memory file.
@@ -330,7 +410,10 @@ if (memoryIndex) {
     const text = readFileSync(file, 'utf8');
     for (const m of text.matchAll(/\[\[([a-z0-9-]+)\]\]/g))
       if (!slugs.has(m[1]))
-        warn('memory', `${posix(relative(HARNESS, file))} links to [[${m[1]}]], which does not exist yet`);
+        warn(
+          'memory',
+          `${posix(relative(HARNESS, file))} links to [[${m[1]}]], which does not exist yet`,
+        );
   }
 }
 
@@ -342,17 +425,24 @@ if (adrIndex) {
   const adrFiles = readdirSync(adrDir).filter((f) => /^\d{4}-.*\.md$/.test(f));
   const missing = adrFiles.filter((f) => !adrIndex.includes(f));
   if (missing.length)
-    fail('adr', `${missing.length} ADR(s) absent from the index: ${missing.join(', ')}`,
+    fail(
+      'adr',
+      `${missing.length} ADR(s) absent from the index: ${missing.join(', ')}`,
       'A decision nobody can find gets re-litigated, differently.',
-      'Add a row to docs/adr/README.md for each.');
+      'Add a row to docs/adr/README.md for each.',
+    );
 
   for (const m of adrIndex.matchAll(/\]\((\d{4}-[a-z0-9-]+\.md)\)/g))
     if (!existsSync(join(adrDir, m[1])))
-      fail('adr', `The index links to ${m[1]}, which does not exist`,
+      fail(
+        'adr',
+        `The index links to ${m[1]}, which does not exist`,
         'A broken index link means the decision cannot be read.',
-        'Restore the file, or remove the row.');
+        'Restore the file, or remove the row.',
+      );
 
-  if (!failures.some((f) => f.check === 'adr')) pass('adr', `${adrFiles.length} ADRs, index consistent`);
+  if (!failures.some((f) => f.check === 'adr'))
+    pass('adr', `${adrFiles.length} ADRs, index consistent`);
 }
 
 /* ========================================================== 7. gates ↔ CI mirror */
@@ -367,40 +457,56 @@ if (gates) {
     for (const gate of active) {
       if (gate.ciStep === false) continue;
       if (!ci.includes(gate.command))
-        fail('ci-mirror', `Active gate "${gate.id}" has no step in .github/workflows/ci.yml`,
+        fail(
+          'ci-mirror',
+          `Active gate "${gate.id}" has no step in .github/workflows/ci.yml`,
           'A gate that is declared but not run in CI is theatre — believed in, and not doing its job.',
-          `Add a step running: ${gate.command}  (or set "ciStep": false if it is deliberately covered by another step).`);
+          `Add a step running: ${gate.command}  (or set "ciStep": false if it is deliberately covered by another step).`,
+        );
     }
     if (!failures.some((f) => f.check === 'ci-mirror'))
       pass('ci-mirror', `${active.length} active gate(s) mirrored in CI`);
   } else {
-    fail('ci-mirror', '.github/workflows/ci.yml is missing',
+    fail(
+      'ci-mirror',
+      '.github/workflows/ci.yml is missing',
       'Gate 0 must run on every push, or the state files rot without anyone noticing.',
-      'Create the workflow.');
+      'Create the workflow.',
+    );
   }
 
   const pending = gates.gates.filter((g) => g.status === 'pending');
   for (const g of pending)
     if (!g.activatesWith)
-      fail('gates', `Gate "${g.id}" is pending with no activatesWith feature`,
+      fail(
+        'gates',
+        `Gate "${g.id}" is pending with no activatesWith feature`,
         'A gate with no activation trigger never activates, and nobody is reminded.',
-        'Set activatesWith to the feature id that makes it meaningful.');
+        'Set activatesWith to the feature id that makes it meaningful.',
+      );
 
   if (featureList) {
     const ids = new Set(featureList.features.map((f) => f.id));
     for (const g of gates.gates)
       if (g.activatesWith && !ids.has(g.activatesWith))
-        fail('gates', `Gate "${g.id}" activates with ${g.activatesWith}, which is not a feature`,
+        fail(
+          'gates',
+          `Gate "${g.id}" activates with ${g.activatesWith}, which is not a feature`,
           'The activation will never fire.',
-          'Point it at a real feature id.');
+          'Point it at a real feature id.',
+        );
     for (const f of featureList.features)
       for (const v of f.verification ?? [])
         if (!gates.gates.some((g) => g.id === v))
-          fail('gates', `${f.id} lists verification gate "${v}", which does not exist`,
+          fail(
+            'gates',
+            `${f.id} lists verification gate "${v}", which does not exist`,
             'The feature cannot be verified against a gate that is not defined.',
-            'Correct the id, or define the gate.');
+            'Correct the id, or define the gate.',
+          );
   }
-  if (!failures.some((f) => f.check === 'gates')) pass('gates', `${gates.gates.length} gates defined, ${active.length} active`);
+  if (!failures.some((f) => f.check === 'gates'))
+    pass('gates', `${gates.gates.length} gates defined, ${active.length} active`);
 }
 
 /* ============================================== 8. env contract (.env.example) */
@@ -415,12 +521,18 @@ if (envExample && existsSync(configDir)) {
 
   const undocumented = [...used].filter((v) => !documented.has(v));
   if (undocumented.length)
-    fail('env', `${undocumented.length} variable(s) read by config but absent from .env.example: ${undocumented.join(', ')}`,
+    fail(
+      'env',
+      `${undocumented.length} variable(s) read by config but absent from .env.example: ${undocumented.join(', ')}`,
       'An undocumented variable is a deployment that fails at boot in a way nobody predicted — and the VPS profile is configured entirely through environment variables.',
-      'Add each to .env.example with a placeholder and a comment.');
+      'Add each to .env.example with a placeholder and a comment.',
+    );
   else pass('env', `${documented.size} documented variables, all config reads covered`);
 } else if (envExample) {
-  pass('env', `${[...envExample.matchAll(/^(IRODORA_[A-Z0-9_]+)=/gm)].length} variables documented (config package not yet present)`);
+  pass(
+    'env',
+    `${[...envExample.matchAll(/^(IRODORA_[A-Z0-9_]+)=/gm)].length} variables documented (config package not yet present)`,
+  );
 }
 
 /* =========================================== 9. scoped rules vs golden rules */
@@ -444,9 +556,12 @@ if (agentsMd) {
     const text = readFileSync(file, 'utf8');
     for (const pattern of WEAKENING)
       if (pattern.test(text))
-        fail('scope', `${posix(relative(ROOT, file))} appears to relax a golden rule (matched ${pattern})`,
+        fail(
+          'scope',
+          `${posix(relative(ROOT, file))} appears to relax a golden rule (matched ${pattern})`,
           'More specific wins on conflict — but no scope may relax a golden rule. A local exemption silently disables a global guarantee.',
-          'Remove the exemption. A scope may be STRICTER, never looser. If the golden rule is genuinely wrong, that is an ADR.');
+          'Remove the exemption. A scope may be STRICTER, never looser. If the golden rule is genuinely wrong, that is an ADR.',
+        );
   }
   if (!failures.some((f) => f.check === 'scope'))
     pass('scope', `${scoped.length} scoped harnesses, none weakening a golden rule`);
@@ -475,23 +590,38 @@ for (const file of GOVERNED) {
     if (!existsSync(target)) {
       brokenLinks++;
       if (brokenLinks <= 15)
-        fail('links', `${posix(relative(ROOT, file))} → ${href} does not resolve`,
+        fail(
+          'links',
+          `${posix(relative(ROOT, file))} → ${href} does not resolve`,
           'A broken link in a governed document sends the next reader nowhere, usually mid-task.',
-          'Fix the path, or remove the link.');
+          'Fix the path, or remove the link.',
+        );
     }
   }
 }
 if (brokenLinks > 15)
-  fail('links', `… and ${brokenLinks - 15} further broken links`, 'Suppressed for readability.', 'Fix the ones above first.');
-if (brokenLinks === 0) pass('links', `${GOVERNED.length} governed documents, all relative links resolve`);
+  fail(
+    'links',
+    `… and ${brokenLinks - 15} further broken links`,
+    'Suppressed for readability.',
+    'Fix the ones above first.',
+  );
+if (brokenLinks === 0)
+  pass('links', `${GOVERNED.length} governed documents, all relative links resolve`);
 
 /* ==================================================================== output */
 
-const GREEN = '\x1b[32m', RED = '\x1b[31m', YELLOW = '\x1b[33m', DIM = '\x1b[2m', BOLD = '\x1b[1m', OFF = '\x1b[0m';
+const GREEN = '\x1b[32m',
+  RED = '\x1b[31m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  OFF = '\x1b[0m';
 
 console.log(`\n${BOLD}Irodora — gate 0: harness integrity${OFF}\n`);
 
-for (const c of checks) console.log(`  ${GREEN}✓${OFF} ${c.check.padEnd(14)} ${DIM}${c.detail}${OFF}`);
+for (const c of checks)
+  console.log(`  ${GREEN}✓${OFF} ${c.check.padEnd(14)} ${DIM}${c.detail}${OFF}`);
 
 if (warnings.length) {
   console.log(`\n${YELLOW}${warnings.length} warning(s)${OFF}`);
@@ -505,8 +635,12 @@ if (failures.length) {
     console.log(`    ${DIM}why:${OFF} ${f.why}`);
     console.log(`    ${DIM}fix:${OFF} ${f.fix}\n`);
   }
-  console.log(`${RED}${BOLD}Gate 0 FAILED.${OFF} The harness state is inconsistent; fix the causes above.\n`);
+  console.log(
+    `${RED}${BOLD}Gate 0 FAILED.${OFF} The harness state is inconsistent; fix the causes above.\n`,
+  );
   process.exit(1);
 }
 
-console.log(`\n${GREEN}${BOLD}Gate 0 passed.${OFF} ${DIM}${checks.length} checks${warnings.length ? `, ${warnings.length} warning(s)` : ''}.${OFF}\n`);
+console.log(
+  `\n${GREEN}${BOLD}Gate 0 passed.${OFF} ${DIM}${checks.length} checks${warnings.length ? `, ${warnings.length} warning(s)` : ''}.${OFF}\n`,
+);

@@ -31,6 +31,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-gate-that-errors-is-failing-open.md](lessons/a-gate-that-errors-is-failing-open.md) — a check that cannot run is not passing; the same shape appears in authorisation and tenancy.
 - [lessons/provenance-in-the-type-is-what-makes-honesty-structural.md](lessons/provenance-in-the-type-is-what-makes-honesty-structural.md) — ask what makes a guarantee impossible to violate, not what reminds people not to.
 
+- [lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md](lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md) — a rule that has never been watched fail is not enforcement, it is configuration that parses.
+
 ### Environment
 
 - [lessons/powershell-51-round-trips-utf8-into-mojibake.md](lessons/powershell-51-round-trips-utf8-into-mojibake.md) — read and write UTF-8 explicitly at both ends, or Japanese names and ΔE notation corrupt silently.

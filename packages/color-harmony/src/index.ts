@@ -6,8 +6,15 @@
  */
 
 export type HarmonyKind =
-  | 'monochromatic' | 'tonal' | 'analogous' | 'complementary'
-  | 'split' | 'triadic' | 'tetradic' | 'neutral' | 'editorial';
+  | 'monochromatic'
+  | 'tonal'
+  | 'analogous'
+  | 'complementary'
+  | 'split'
+  | 'triadic'
+  | 'tetradic'
+  | 'neutral'
+  | 'editorial';
 
 /** Implemented in F-014. */
 export const HARMONY_VERSION = '0.0.0' as const;
