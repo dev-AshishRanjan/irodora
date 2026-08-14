@@ -35,7 +35,8 @@
     "verify:guards": "node scripts/verify-guards.mjs",
     "verify:images": "node scripts/verify-image-nonroot.mjs",
     "security:staged": "gitleaks protect --staged --no-banner --redact --config .gitleaks.toml",
-    "verify:compose": "node scripts/verify-compose-portability.mjs"
+    "verify:compose": "node scripts/verify-compose-portability.mjs",
+    "verify:terraform": "node scripts/verify-terraform.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

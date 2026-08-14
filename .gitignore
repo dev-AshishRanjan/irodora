@@ -98,3 +98,11 @@ infra/terraform/**/.terraform.lock.hcl.local
 tmp/
 temp/
 scratch/
+backend.hcl
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl
+infra/terraform/backend.hcl
+*.tfstate
+*.tfstate.*
