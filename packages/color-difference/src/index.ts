@@ -44,6 +44,8 @@ export {
   type DeltaE94Weights,
 } from './deltae.js';
 
+export { WCAG_FLARE, wcagContrast } from './wcag.js';
+
 /** Which difference metric a caller asked for. */
 export type DifferenceMetric = 'de76' | 'de94' | 'de00' | 'deok';
 

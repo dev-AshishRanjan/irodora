@@ -1,0 +1,81 @@
+{
+  "id": "wcag",
+  "description": "WCAG 2.x contrast ratio. This dataset reproduces a specification rather than a model of perception — ADR-0021 records the decision to enforce WCAG anyway and report APCA alongside. The last entry is the one that justifies the whole design: substituting the engine's exact luminance for WCAG's rounded coefficients flips a real 8-bit colour from AA-failing to AA-passing, so the distinction is a conformance requirement and not pedantry.",
+  "entries": [
+    {
+      "id": "flare",
+      "source": "WCAG 2.x, contrast ratio definition — (L1 + 0.05) / (L2 + 0.05)",
+      "derivation": "published-value",
+      "input": "the viewing-flare term",
+      "expected": 0.05,
+      "tolerance": 0
+    },
+    {
+      "id": "white-on-black-is-21",
+      "source": "WCAG 2.x — the maximum possible contrast ratio, and the reason the flare term exists",
+      "derivation": "definitional",
+      "input": { "a": [1, 1, 1], "b": [0, 0, 0] },
+      "expected": 21,
+      "tolerance": 0
+    },
+    {
+      "id": "identical-colours-are-1",
+      "source": "WCAG 2.x — the minimum possible ratio, for any colour against itself",
+      "derivation": "definitional",
+      "input": { "a": [0, 0, 0], "b": [0, 0, 0] },
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "black-on-red-is-exactly-5252",
+      "source": "WCAG 2.x applied to sRGB red against black",
+      "derivation": "published-formula",
+      "derivationNote": "Pure red linearises to 1 on the R channel and 0 elsewhere, so L = 0.2126 exactly. (0.2126 + 0.05) / (0 + 0.05) = 0.2626 / 0.05 = 5.252, exactly, with no float64 residue. A useful anchor precisely because it is exact: it fails immediately if the coefficients are wrong.",
+      "input": { "a": [0, 0, 0], "b": [1, 0, 0] },
+      "expected": 5.252,
+      "tolerance": 0
+    },
+    {
+      "id": "767676-on-white",
+      "source": "WCAG 2.x — #767676 is the darkest grey commonly cited as passing AA (4.5:1) against white",
+      "derivation": "published-formula",
+      "derivationNote": "sRGB [118, 118, 118] / 255. A NEUTRAL, so WCAG's rounded coefficients and the exact sRGB Y row agree to the last bit — which is why greys are safe to check either way and chromatic colours are not.",
+      "input": {
+        "a": [0.4627450980392157, 0.4627450980392157, 0.4627450980392157],
+        "b": [1, 1, 1]
+      },
+      "expected": 4.542224959605253,
+      "tolerance": 0
+    },
+    {
+      "id": "red-on-white",
+      "source": "WCAG 2.x applied to sRGB red against white",
+      "derivation": "published-formula",
+      "derivationNote": "3.9984767707539985 — just under 4:1, and frequently quoted as '4:1'. With the exact sRGB Y row it is 3.9978829364 instead. Both are below 4; the pair is here because it is the simplest case where the two coefficient sets visibly differ.",
+      "input": { "a": [1, 0, 0], "b": [1, 1, 1] },
+      "expected": 3.9984767707539985,
+      "tolerance": 0
+    },
+    {
+      "id": "blue-on-white",
+      "source": "WCAG 2.x applied to sRGB blue against white",
+      "derivation": "published-formula",
+      "derivationNote": "sRGB blue carries only 7.22% of the luminance, so it contrasts strongly against white despite being a mid-tone to the eye. One of the pairings WCAG models poorly and APCA models better — reported alongside, per ADR-0021.",
+      "input": { "a": [0, 0, 1], "b": [1, 1, 1] },
+      "expected": 8.592471358428805,
+      "tolerance": 0
+    },
+    {
+      "id": "the-rounded-coefficients-flip-a-real-pass-fail",
+      "source": "WCAG 2.x §relative luminance versus the exact sRGB-to-XYZ Y row, at sRGB #1B819C on white",
+      "derivation": "published-formula",
+      "derivationNote": "rgb(27, 129, 156) against white. With WCAG's published coefficients the ratio is 4.49990508498675, which FAILS AA. With the engine's exact Y row it is 4.500078715444719, which PASSES. A sweep of 8-bit colours against white found 111 such flips across the 3:1, 4.5:1 and 7:1 thresholds. This is why wcag.ts carries its own constants instead of calling srgbToXyz, and why 'the difference is only 5e-4' is not a reason to simplify.",
+      "input": {
+        "a": [0.10588235294117647, 0.5058823529411764, 0.611764705882353],
+        "b": [1, 1, 1]
+      },
+      "expected": { "wcag": 4.49990508498675, "exactY": 4.500078715444719, "threshold": 4.5 },
+      "tolerance": 0
+    }
+  ]
+}
