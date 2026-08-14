@@ -96,7 +96,15 @@ importers:
 
   packages/color-spaces: {}
 
-  packages/config: {}
+  packages/config:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(yaml@2.9.0))
 
   packages/contracts:
     dependencies:

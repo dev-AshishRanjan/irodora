@@ -151,7 +151,8 @@
       "service": "infra",
       "release": "R0",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-005-deployment-profiles.md",
       "blockedBy": [
         "F-001"
       ],
