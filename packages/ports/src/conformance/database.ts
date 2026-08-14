@@ -49,15 +49,23 @@ export async function runDatabaseConformance(
     await runCase('the lock is released even when the body throws', async () => {
       // A migration that fails must not leave the lock held, or every subsequent boot skips
       // migrating and the schema silently stays behind.
-      const db = await create();
+      //
+      // The re-acquisition MUST come from a second, independent adapter. Postgres advisory
+      // locks are re-entrant within a session, so asking the same connection whether it can
+      // take the lock it already leaked always answers yes — a version of this case that
+      // reused one adapter passed against an implementation that never released at all.
+      const holder = await create();
+      const other = await create();
 
-      await db
+      await holder
         .withAdvisoryLock(LOCK_KEY, () => Promise.reject(new Error('migration failed')))
         .catch(() => undefined);
 
-      const after = await db.withAdvisoryLock(LOCK_KEY, () => Promise.resolve('ok'));
-      expectTrue(after.acquired, 'acquisition after a failed body');
-      await db.close();
+      const after = await other.withAdvisoryLock(LOCK_KEY, () => Promise.resolve('ok'));
+      expectTrue(after.acquired, 'acquisition by a DIFFERENT connection after a failed body');
+
+      await holder.close();
+      await other.close();
     }),
 
     await runCase('close is safe to call twice', async () => {

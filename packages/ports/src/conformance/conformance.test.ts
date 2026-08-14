@@ -5,7 +5,7 @@ import type { CachePort, TtlSeconds } from '../cache.js';
 import type { DatabasePort } from '../database.js';
 import { InMemoryBlobStore } from '../memory/blob.js';
 import { InMemoryCache } from '../memory/cache.js';
-import { InMemoryDatabase } from '../memory/database.js';
+import { InMemoryDatabase, InMemoryLockTable } from '../memory/database.js';
 import { runBlobConformance } from './blob.js';
 import { runCacheConformance } from './cache.js';
 import { runDatabaseConformance } from './database.js';
@@ -27,7 +27,10 @@ describe('the in-memory adapters conform', () => {
   });
 
   it('database', async () => {
-    const result = await runDatabaseConformance('in-memory', () => new InMemoryDatabase());
+    // One shared lock table across instances — the suite's release-on-throw case acquires
+    // from a second connection, and per-instance locks would make it pass vacuously.
+    const locks = new InMemoryLockTable();
+    const result = await runDatabaseConformance('in-memory', () => new InMemoryDatabase({ locks }));
 
     expect(failedCaseNames(result)).toStrictEqual([]);
     expect(result.cases.length).toBeGreaterThanOrEqual(5);
@@ -44,7 +47,13 @@ describe('the advisory-lock suite can fail', () => {
    * error days later, nowhere near the cause.
    */
   class LeakyLockDatabase implements DatabasePort {
-    readonly #held = new Set<bigint>();
+    // Server-side, like the real thing — the leak has to be visible to a SECOND connection
+    // or the decoy proves nothing.
+    readonly #held: Set<bigint>;
+
+    constructor(held: Set<bigint>) {
+      this.#held = held;
+    }
 
     ping(): Promise<boolean> {
       return Promise.resolve(true);
@@ -69,7 +78,11 @@ describe('the advisory-lock suite can fail', () => {
   }
 
   it('catches a lock that is not released when the migration fails', async () => {
-    const result = await runDatabaseConformance('broken:leaky-lock', () => new LeakyLockDatabase());
+    const held = new Set<bigint>();
+    const result = await runDatabaseConformance(
+      'broken:leaky-lock',
+      () => new LeakyLockDatabase(held),
+    );
 
     expect(allPassed(result)).toBe(false);
     expect(failedCaseNames(result)).toContain('the lock is released even when the body throws');

@@ -5,12 +5,31 @@
 
 import type { DatabasePort } from '../database.js';
 
+/**
+ * The lock table, held by the *server* rather than by a client.
+ *
+ * This exists because the naive in-memory adapter gets the topology wrong: it keeps locks
+ * per instance, so two "connections" never contend and every lock test passes vacuously.
+ * A real database has one lock table and many clients, and the conformance suite depends on
+ * that shape — its release-on-throw case acquires from a second connection precisely because
+ * a single one cannot detect a leak.
+ *
+ * Pass the same table to several `InMemoryDatabase` instances to model several containers
+ * talking to one server.
+ */
+export class InMemoryLockTable {
+  readonly held = new Set<bigint>();
+}
+
 export class InMemoryDatabase implements DatabasePort {
   #reachable: boolean;
-  readonly #held = new Set<bigint>();
+  readonly #locks: InMemoryLockTable;
 
-  constructor(options: { reachable?: boolean } = {}) {
+  constructor(options: { reachable?: boolean; locks?: InMemoryLockTable } = {}) {
     this.#reachable = options.reachable ?? true;
+    // Defaults to a private table so an isolated instance behaves sensibly; share one
+    // explicitly to model concurrent clients.
+    this.#locks = options.locks ?? new InMemoryLockTable();
   }
 
   /** Simulate the dependency going away, for readiness tests. */
@@ -26,13 +45,13 @@ export class InMemoryDatabase implements DatabasePort {
     lockKey: bigint,
     body: () => Promise<T>,
   ): Promise<{ acquired: true; value: T } | { acquired: false }> {
-    if (this.#held.has(lockKey)) return { acquired: false };
+    if (this.#locks.held.has(lockKey)) return { acquired: false };
 
-    this.#held.add(lockKey);
+    this.#locks.held.add(lockKey);
     try {
       return { acquired: true, value: await body() };
     } finally {
-      this.#held.delete(lockKey);
+      this.#locks.held.delete(lockKey);
     }
   }
 
