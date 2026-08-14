@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-13",
+  "updated": "2026-08-14",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -12,13 +12,30 @@
         "exists": false
       },
       "to": [
-        { "kind": "test", "ref": "packages/color-spaces/golden", "exists": false },
-        { "kind": "package", "ref": "@irodora/color-difference" },
-        { "kind": "content", "ref": "content/colors" },
-        { "kind": "doc", "ref": "docs/architecture/color-engine.md" }
+        {
+          "kind": "test",
+          "ref": "packages/color-spaces/golden",
+          "exists": false
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/color-difference"
+        },
+        {
+          "kind": "content",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/color-engine.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/color-spaces", "packages/color-difference", "content"],
+      "scope": [
+        "packages/color-spaces",
+        "packages/color-difference",
+        "content"
+      ],
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/srgb-xyz-is-the-root-of-every-derived-value.md",
@@ -35,13 +52,31 @@
         "exists": false
       },
       "to": [
-        { "kind": "package", "ref": "@irodora/contracts" },
-        { "kind": "doc", "ref": "docs/architecture/api-contract.md" },
-        { "kind": "doc", "ref": "docs/architecture/data-model.md" },
-        { "kind": "decision", "ref": "docs/adr/0005-measurement-provenance-is-a-type.md" }
+        {
+          "kind": "package",
+          "ref": "@irodora/contracts"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/api-contract.md"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/data-model.md"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0005-measurement-provenance-is-a-type.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/color-core", "packages/contracts", "apps/api", "apps/web", "apps/mobile"],
+      "scope": [
+        "packages/color-core",
+        "packages/contracts",
+        "apps/api",
+        "apps/web",
+        "apps/mobile"
+      ],
       "severity": "critical",
       "guard": "gate:typecheck",
       "memory": "memory/effects/the-color-type-reaches-every-surface.md",
@@ -58,13 +93,30 @@
         "exists": false
       },
       "to": [
-        { "kind": "package", "ref": "@irodora/color-naming" },
-        { "kind": "package", "ref": "@irodora/recommendation" },
-        { "kind": "test", "ref": "packages/color-difference/golden", "exists": false },
-        { "kind": "gate", "ref": "cvd" }
+        {
+          "kind": "package",
+          "ref": "@irodora/color-naming"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/color-difference/golden",
+          "exists": false
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/color-difference", "packages/color-naming", "packages/recommendation"],
+      "scope": [
+        "packages/color-difference",
+        "packages/color-naming",
+        "packages/recommendation"
+      ],
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/deltae00-is-the-ranking-authority.md",
@@ -81,14 +133,36 @@
         "exists": true
       },
       "to": [
-        { "kind": "artifact", "ref": "apps/api/openapi.json", "exists": false },
-        { "kind": "package", "ref": "@irodora/sdk" },
-        { "kind": "module", "ref": "apps/web" },
-        { "kind": "module", "ref": "apps/mobile" },
-        { "kind": "doc", "ref": "docs/architecture/api-contract.md" }
+        {
+          "kind": "artifact",
+          "ref": "apps/api/openapi.json",
+          "exists": false
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/sdk"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/web"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/api-contract.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/contracts", "apps/api", "apps/web", "apps/mobile", "apps/admin"],
+      "scope": [
+        "packages/contracts",
+        "apps/api",
+        "apps/web",
+        "apps/mobile",
+        "apps/admin"
+      ],
       "severity": "high",
       "guard": "gate:build",
       "memory": "memory/effects/contract-to-openapi-to-sdk-is-one-direction.md",
@@ -105,13 +179,30 @@
         "exists": false
       },
       "to": [
-        { "kind": "package", "ref": "@irodora/recommendation" },
-        { "kind": "module", "ref": "apps/web" },
-        { "kind": "artifact", "ref": "docs/design/design-system.manifest.json" },
-        { "kind": "gate", "ref": "cvd" }
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/web"
+        },
+        {
+          "kind": "artifact",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/cvd-engine", "packages/recommendation", "apps/web", "docs/design"],
+      "scope": [
+        "packages/cvd-engine",
+        "packages/recommendation",
+        "apps/web",
+        "docs/design"
+      ],
       "severity": "critical",
       "guard": "gate:cvd",
       "memory": "memory/effects/one-separation-definition-for-ui-and-engine.md",
@@ -127,13 +218,30 @@
         "ref": "content/colors"
       },
       "to": [
-        { "kind": "artifact", "ref": "apps/api/src/modules/catalog", "exists": false },
-        { "kind": "package", "ref": "@irodora/corpus" },
-        { "kind": "doc", "ref": "docs/content/color-corpus-spec.md" },
-        { "kind": "gate", "ref": "content" }
+        {
+          "kind": "artifact",
+          "ref": "apps/api/src/modules/catalog",
+          "exists": false
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/corpus"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/content/color-corpus-spec.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["content", "apps/api", "packages/corpus"],
+      "scope": [
+        "content",
+        "apps/api",
+        "packages/corpus"
+      ],
       "severity": "high",
       "guard": "gate:content",
       "memory": "memory/effects/corpus-version-pins-caches-and-envelopes.md",
@@ -149,13 +257,30 @@
         "ref": "docs/design/design-system.manifest.json"
       },
       "to": [
-        { "kind": "package", "ref": "@irodora/design-tokens" },
-        { "kind": "gate", "ref": "contrast" },
-        { "kind": "gate", "ref": "cvd" },
-        { "kind": "doc", "ref": "docs/design/DESIGN-SYSTEM.md" }
+        {
+          "kind": "package",
+          "ref": "@irodora/design-tokens"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/design/DESIGN-SYSTEM.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["docs/design", "packages/design-tokens", "apps/web", "apps/mobile"],
+      "scope": [
+        "docs/design",
+        "packages/design-tokens",
+        "apps/web",
+        "apps/mobile"
+      ],
       "severity": "high",
       "guard": "gate:contrast",
       "memory": "memory/effects/a-token-change-is-a-contrast-change-in-both-themes.md",
@@ -172,12 +297,25 @@
         "exists": false
       },
       "to": [
-        { "kind": "module", "ref": "apps/web" },
-        { "kind": "module", "ref": "apps/mobile" },
-        { "kind": "doc", "ref": "docs/architecture/color-engine.md" }
+        {
+          "kind": "module",
+          "ref": "apps/web"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/color-engine.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["packages/color-core", "apps/web", "apps/mobile"],
+      "scope": [
+        "packages/color-core",
+        "apps/web",
+        "apps/mobile"
+      ],
       "severity": "high",
       "guard": "test:packages/color-core/src/sampling.test.ts",
       "memory": "memory/effects/sampling-lives-in-the-engine-not-the-platform.md",
@@ -193,12 +331,26 @@
         "ref": "content/rules"
       },
       "to": [
-        { "kind": "package", "ref": "@irodora/recommendation" },
-        { "kind": "artifact", "ref": "apps/api/src/modules/recommendation", "exists": false },
-        { "kind": "decision", "ref": "docs/adr/0011-recommendation-rules-are-versioned-content.md" }
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/api/src/modules/recommendation",
+          "exists": false
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0011-recommendation-rules-are-versioned-content.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["content", "packages/recommendation", "apps/api"],
+      "scope": [
+        "content",
+        "packages/recommendation",
+        "apps/api"
+      ],
       "severity": "high",
       "guard": "none",
       "feature": "F-029",
@@ -216,17 +368,69 @@
         "exists": false
       },
       "to": [
-        { "kind": "artifact", "ref": "apps/api/drizzle", "exists": false },
-        { "kind": "doc", "ref": "docs/architecture/data-model.md" },
-        { "kind": "doc", "ref": "docs/architecture/security/threat-model.md" }
+        {
+          "kind": "artifact",
+          "ref": "apps/api/drizzle",
+          "exists": false
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/data-model.md"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/security/threat-model.md"
+        }
       ],
       "kind": "EFFECT_LINK",
-      "scope": ["apps/api"],
+      "scope": [
+        "apps/api"
+      ],
       "severity": "critical",
       "guard": "test:apps/api/test/tenancy-isolation.test.ts",
       "memory": "memory/effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md",
       "rationale": "Every table holding user data needs tenant_id, RLS with ENABLE and FORCE, and a policy reading the per-connection setting. A table added without them leaks across tenants, and the negative test that would catch it passes trivially unless the decoy tenant is populated with real data.",
       "confidence": 0.96,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-011",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ports/src",
+        "exists": true
+      },
+      "to": [
+        {
+          "kind": "package",
+          "ref": "@irodora/adapters"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ports/src/conformance/conformance.test.ts"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/api"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/worker"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ports",
+        "packages/adapters",
+        "apps/api",
+        "apps/worker"
+      ],
+      "severity": "high",
+      "guard": "gate:test",
+      "memory": "memory/effects/a-port-change-is-a-change-to-every-adapter.md",
+      "rationale": "A port interface is a promise that every adapter behaves the same way, and the conformance suite is the only thing that makes it true rather than aspirational. Adding a method without adding a case leaves the new behaviour unspecified in exactly the place two adapters will diverge — and the divergence appears in production, on the adapter nobody tests against locally.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

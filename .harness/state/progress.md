@@ -8,7 +8,153 @@ reader cannot reconstruct.
 
 ---
 
-## 2026-08-14 — F-005 IN PROGRESS · 3 of 8 increments · handoff
+## 2026-08-14 — F-005 DONE · the stack runs, and "portable" is a check rather than a claim
+
+**R0 is now complete except F-003**, which waits on the colour engine by design
+([ADR-0037](../../docs/adr/0037-design-tokens-wait-for-the-engine-r0-closes-incomplete.md)).
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 12 warnings (10 attested + E-009 + ...)
+  ✓ gate 1   typecheck      36 tasks
+  ✓ gate 2   lint           36 tasks + 10 boundary guards
+  ✓ gate 3   format
+  ✓ gate 4   test           184 tests — incl. real Postgres and real Valkey
+  ✓ gate 6   build          28 tasks
+  ✓ gate 15  security       gitleaks clean (history AND staged) · audit clean
+
+  ✓ mirror proof            7/7 active gates
+  ✓ compose portability     11 rules, all mutation-proven
+  ✓ image non-root          api + worker, uid 1000, proven to distinguish
+  ✓ terraform               fmt + validate, in a container, mutation-proven
+
+NOT run: color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf,
+         e2e-full — each activates with its own feature.
+```
+
+### The stack, verified by running it
+
+`docker compose -f infra/compose/docker-compose.prod.yml up` → **five services healthy**:
+api, worker, postgres, valkey, minio. Then torn down.
+
+**No ports are published.** On a VPS a published port bypasses the platform's TLS and is
+reachable from the internet — that is how a database ends up exposed. The API answers on the
+compose network; curl from the host is refused.
+
+**The health split, proven against a real outage** rather than a mocked one — Postgres
+actually stopped:
+
+```
+/healthz  200  {"status":"ok",...}                      the container stayed up
+/readyz   503  {"database":"unavailable","cache":"ok"}
+(postgres restarted)
+/readyz   200  {"database":"ok","cache":"ok"}           no restart needed
+```
+
+**Eight concurrent migrators against one Postgres**: exactly one ran, seven skipped for the
+right reason, the migration body never overlapped itself.
+
+### "Consumed unmodified by both platforms" became checkable
+
+This came out of a design challenge — *never depend on deployments in code; use Docker to
+simulate production*. Right in principle, and the interesting part was where it is **not**:
+Docker proves *behaviour*, and "consumed unmodified" is a *compatibility* claim. Substituting
+one for the other while keeping the wording would be ADR-0031's failure applied to our own
+process.
+
+So it was split, not substituted. Most of the residual risk turned out to be a **static
+property of the file**, and `verify-compose-portability.mjs` now checks eleven of them —
+`container_name`, host networking, published ports, bind mounts, unpinned images, missing
+restart policies, missing healthchecks, Swarm-only keys, `env_file`, undeclared volumes,
+and `depends_on` conditions with no healthcheck behind them. Each is something a platform
+rejects or silently reinterprets. All eleven mutation-proven, with a passing baseline.
+
+The deployment itself stays **attested** (ADR-0038) and gate 0 lists it every run.
+
+### Four checks that looked right and were not
+
+Every one found by running the mutation, never by reading the code.
+→ [[a-decoy-that-is-not-broken-proves-nothing]]
+
+1. **`AliasingBlob`** subclassed the in-memory store and delegated to `super.put`, which
+   copies. The "broken" adapter behaved correctly.
+2. **The Postgres lock-leak test re-used one pool.** Advisory locks are **re-entrant within a
+   session**, so it asked the same connection whether it could take the lock it had just
+   leaked — which always answers yes. The test could not detect the leak it was named after.
+3. Fixing that exposed **`InMemoryDatabase` keeping locks per instance**, so two
+   "connections" never contended. Locks now live in an `InMemoryLockTable` — the server, not
+   the client, which is the topology a real database has.
+4. **The compose proof harness matched `rule: X` against ANSI-coloured output** and reported
+   all eleven rules as broken when every one had fired.
+
+### Two bugs that would have shipped
+
+- **The Valkey adapter would have reported the cache down at boot.** With ioredis' offline
+  queue disabled, a command issued before the socket connects fails instantly with
+  `Stream isn't writeable`. `/readyz` is polled from the moment a process starts, so the
+  first probe would have said "unavailable" on a healthy cache and the orchestrator would
+  have held traffic off a ready container. The regression test pings with **no delay**;
+  adding one would hide it.
+- **`apps/api` only compiled by accident** — Fastify's `.d.ts` was transitively supplying
+  Node types, so its own `@types/node` was doing nothing. `apps/worker` has no Fastify and
+  failed outright. Both now declare `types: ["node"]`.
+
+### A red commit, and why
+
+`15ad3f5` was committed while gate 15 was red. The command was
+`pnpm security:secrets 2>&1 | tail -1 && git commit` — piping replaced the gate's exit status
+with `tail`'s, so `&&` saw success. **"Never commit red" was not overridden; it was lost to
+shell plumbing.** → [[a-pipe-discards-the-exit-status-a-gate-just-produced]]
+
+Every gate in this feature since is invoked with its exit status read directly. The finding
+itself was two invented test fixtures — fixed both ways, with the exemption verified narrow
+by planting a token in a sibling file and confirming it is still caught.
+
+### Delivered against acceptance
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Multi-stage Dockerfiles, non-root, pinned digests | **api + worker done.** `web` needs F-017 |
+| 2 | Compose boots; consumed unmodified by both platforms | **Boots: done.** Compatibility: gated statically, deployment attested |
+| 3 | `/healthz` process only; `/readyz` db + cache | **Done**, proven against a real outage |
+| 4 | Migrations under an advisory lock; no race | **Done**, 8 concurrent migrators |
+| 5 | Every dependency behind a port with a conformance suite | **Done** — cache, database, blob. E-011 |
+| 6 | Deployed on a real VPS via Coolify AND Dokploy | **Attested** — no VPS, no remote |
+| 7 | Terraform skeleton with remote state configured | Skeleton **done** and validated; remote state **attested** |
+
+### Honest gaps
+
+- **`Dockerfile.web` does not exist.** `apps/web` is a stub with no Next.js, so the image
+  cannot be built, and an unbuildable Dockerfile is a wish. It lands with F-017 — recorded in
+  `verify-image-nonroot.mjs`, in the compose file header, and in both runbooks.
+- **The blob port has one adapter.** The suite runs but has not discriminated between two
+  implementations; the S3 adapter arrives with F-042.
+- **The image non-root check does not run in CI** — it needs the images built, which belongs
+  with a release workflow.
+- **Both runbooks are marked unexercised.** Nobody has followed them end to end.
+
+### Watch out
+
+- **`gitleaks detect` scans committed history**, so running it before staging does not see
+  new files. That is why increment 4's scan passed and increment 5's failed on a file
+  increment 4 added. Use `pnpm security:staged` before committing.
+- **Terraform and gitleaks are not repo dependencies.** gitleaks is installed at `~/go/bin`;
+  Terraform runs in a pinned container and needs nothing installed.
+- **Postgres advisory locks are re-entrant per session.** Any future test of lock release
+  must re-acquire from a second connection.
+
+### Next
+
+**R0 is done except F-003.** The next eligible feature is **F-006** — colour spaces and
+conversion — the first R1 feature and the start of the colour engine. `/next-feature` →
+`/plan`.
+
+F-003 becomes eligible after F-007 and F-008.
+
+---
+
+## 2026-08-14 — F-005 IN PROGRESS · 3 of 8 increments · handoff (superseded)
 
 > **Updated after increment 3.** The entry below is the running handoff; read it top to
 > bottom. Increment 3 (`/healthz`, `/readyz`) is done and committed at `029314d`, plus

@@ -4,11 +4,25 @@
 |---|---|
 | **Profile** | `IRODORA_PROFILE=vps` |
 | **Decision** | [ADR-0016](../../adr/0016-deployment-profiles-local-vps-cloud.md) |
-| **Artefacts** | `infra/compose/docker-compose.prod.yml` · `infra/coolify/` — land with F-005 |
+| **Artefacts** | `infra/compose/docker-compose.prod.yml` · `infra/coolify/` |
 
 Coolify is a self-hosted PaaS: it manages Docker, Traefik, TLS and environment
 configuration on your own server. It is the recommended target when you want one dashboard
 across several servers or projects.
+
+> **Status as of F-005 (2026-08-14).** The artefacts below now exist and are verified
+> locally: `infra/compose/docker-compose.prod.yml` boots all five services healthy, the
+> images build and run as uid 1000, and `scripts/verify-compose-portability.mjs` checks the
+> compose file against eleven things Coolify rejects or silently reinterprets.
+>
+> **What has NOT happened is a deployment to a real VPS through Coolify.** That needs a
+> server and a git remote, and it is recorded as an attested obligation on F-005
+> ([ADR-0038](../../adr/0038-every-acceptance-criterion-names-its-check.md)) — it blocks a
+> release, not the feature. **Treat the steps below as unexercised** until someone runs them
+> and records the result here.
+>
+> **The `web` service is absent** from the compose file: `apps/web` is a stub with no
+> Next.js, so its image cannot be built until F-017.
 
 ---
 

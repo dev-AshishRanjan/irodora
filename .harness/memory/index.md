@@ -33,6 +33,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 - [lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md](lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md) — a rule that has never been watched fail is not enforcement, it is configuration that parses.
 - [lessons/mutual-assignability-does-not-catch-an-optional-field.md](lessons/mutual-assignability-does-not-catch-an-optional-field.md) — assignability in both directions is not shape equality; assert the key set too, and prove it by breaking the type.
+- [lessons/a-decoy-that-is-not-broken-proves-nothing.md](lessons/a-decoy-that-is-not-broken-proves-nothing.md) — four decoys in one feature were secretly correct or misread; assert the baseline in every mutation table.
 - [lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md](lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md) — a check is only as good as the weakest link between its answer and the decision it governs; never put a gate inside a pipeline.
 - [lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md](lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md) — a branded string is not assignable from a plain one, and the zero-dependency engine can never name our brands.
 
@@ -57,6 +58,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-token-change-is-a-contrast-change-in-both-themes.md](effects/a-token-change-is-a-contrast-change-in-both-themes.md) — **E-007** · dark is derived, and derivation does not preserve contrast.
 - [effects/sampling-lives-in-the-engine-not-the-platform.md](effects/sampling-lives-in-the-engine-not-the-platform.md) — **E-008** · a platform-side optimisation makes the same fabric measure differently.
 - [effects/rule-weights-change-every-answer-without-a-deploy.md](effects/rule-weights-change-every-answer-without-a-deploy.md) — **E-009** · `guard: none`, honestly recorded; closes with F-029.
+- [effects/a-port-change-is-a-change-to-every-adapter.md](effects/a-port-change-is-a-change-to-every-adapter.md) — **E-011** · one suite run against both adapters is the only thing making "interchangeable" true.
 - [effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md](effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md) — **E-010** · FORCE is the part that gets missed.
 
 ## Glossary

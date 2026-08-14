@@ -159,7 +159,7 @@
       "service": "infra",
       "release": "R0",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "plan": "plans/F-005-deployment-profiles.md",
       "blockedBy": [
         "F-001"
@@ -178,7 +178,7 @@
         "build",
         "security"
       ],
-      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite.",
+      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite. DELIVERED: config, ports+conformance, /healthz and /readyz, migrations under a Postgres advisory lock, Dockerfiles for api and worker (non-root, digest-pinned), the prod compose file with a static portability check, and a validated Terraform skeleton. NOT DELIVERED: Dockerfile.web and the web service, because apps/web is a stub with no Next.js — both land with F-017. Criteria 6 and 7 are attested (ADR-0038): no VPS, no git remote, no cloud backend.",
       "attested": [
         {
           "criterion": "The stack is deployed and verified on a real VPS through Coolify AND through Dokploy",
@@ -192,6 +192,9 @@
           "blocks": "release",
           "status": "outstanding"
         }
+      ],
+      "effects": [
+        "E-011"
       ]
     },
     {
