@@ -140,6 +140,14 @@
       "verification": [
         "state",
         "security"
+      ],
+      "attested": [
+        {
+          "criterion": "Branch protection requires all checks, one review, and linear history",
+          "verifiedBy": "Applying docs/operations/branch-protection.md to the repository once a remote exists",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -170,7 +178,21 @@
         "build",
         "security"
       ],
-      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite."
+      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite.",
+      "attested": [
+        {
+          "criterion": "The stack is deployed and verified on a real VPS through Coolify AND through Dokploy",
+          "verifiedBy": "A deployment to a real VPS through each platform, recorded in docs/operations/release-process.md. The compose file itself is gated by scripts/verify-compose-portability.mjs.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Terraform skeleton for the cloud profile exists with remote state configured",
+          "verifiedBy": "Running terraform init against a real backend once a cloud account and state bucket exist. The skeleton is gated by terraform validate.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-006",
@@ -406,7 +428,15 @@
         "state",
         "content"
       ],
-      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs."
+      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs.",
+      "attested": [
+        {
+          "criterion": "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
+          "verifiedBy": "A named Japanese editorial reviewer signing off each entry (OQ-5). The content gate proves the FIELDS are complete; it cannot prove the reviewer read it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-013",
@@ -1128,7 +1158,15 @@
         "typecheck",
         "test"
       ],
-      "notes": "A release blocker, not a nice-to-have. A personal-colour engine unvalidated across the full skin-tone range is not shippable."
+      "notes": "A release blocker, not a nice-to-have. A personal-colour engine unvalidated across the full skin-tone range is not shippable.",
+      "attested": [
+        {
+          "criterion": "Per-band accuracy published internally; a band that underperforms blocks release of the profile feature",
+          "verifiedBy": "A held-out validation run over an ITA-stratified sample, published internally. A release blocker on an ethical guarantee (NFR-23).",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-038",
@@ -1180,6 +1218,14 @@
         "state",
         "typecheck",
         "build"
+      ],
+      "attested": [
+        {
+          "criterion": "EAS Build produces installable builds from a Windows workstation",
+          "verifiedBy": "An EAS Build run producing an installable artefact, recorded in the release notes",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -1292,6 +1338,14 @@
         "state",
         "e2e",
         "perf"
+      ],
+      "attested": [
+        {
+          "criterion": "Median time to add an item 20 seconds or less, measured on device",
+          "verifiedBy": "Timed runs on physical devices from the reference matrix, recorded with the device and OS version",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -1536,6 +1590,14 @@
         "state",
         "test",
         "color-golden"
+      ],
+      "attested": [
+        {
+          "criterion": "Mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix",
+          "verifiedBy": "Measurement across the physical reference device matrix, recorded in the device colour lab table (F-063)",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -1610,6 +1672,14 @@
       "verification": [
         "state",
         "test"
+      ],
+      "attested": [
+        {
+          "criterion": "ASE round-trips through Adobe tooling",
+          "verifiedBy": "Opening a generated .ase in Adobe tooling and re-exporting it, recorded with the application version",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -1787,6 +1857,14 @@
       "verification": [
         "state",
         "test"
+      ],
+      "attested": [
+        {
+          "criterion": "Controlled measurement across the reference device matrix, all modes, all illuminants, 10 or more repeats per combination",
+          "verifiedBy": "Physical measurement sessions under controlled illumination, recorded row by row in the published table",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

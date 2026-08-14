@@ -64,6 +64,32 @@
           "items": { "type": "string" },
           "description": "Gate ids from .harness/verification/gates.json."
         },
+        "attested": {
+          "type": "array",
+          "description": "Acceptance criteria that no check in this repository could prove, because verifying them requires a system we do not control (ADR-0038). Each blocks the RELEASE rather than the feature. Attestation is not an escape hatch: 'hard to test' is not the bar. Where part of a criterion is checkable, that part stays gated.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criterion", "verifiedBy", "blocks", "status"],
+            "properties": {
+              "criterion": {
+                "type": "string",
+                "description": "VERBATIM text of the acceptance entry this covers. The state gate checks it appears exactly in `acceptance`, so a criterion cannot be quietly reworded into something easier once it is attested."
+              },
+              "verifiedBy": {
+                "type": "string",
+                "minLength": 12,
+                "description": "The activity that proves it — named specifically. 'Manual testing' is not an answer."
+              },
+              "blocks": { "enum": ["release", "nothing"] },
+              "status": { "enum": ["outstanding", "verified"] },
+              "evidence": {
+                "type": "string",
+                "description": "Where the verification is recorded. Required once status is `verified`."
+              }
+            }
+          }
+        },
         "effects": { "type": "array", "items": { "type": "string", "pattern": "^E-[0-9]{3}$" } },
         "openQuestions": {
           "type": "array",

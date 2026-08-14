@@ -14,6 +14,19 @@ A feature is `done` only when **every** item below is true. If any fails, it sta
       no less.** Extra scope is as much a failure as missing scope; it is work nobody
       reviewed against a requirement.
 
+- [ ] **Every criterion named its check** ([ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md)).
+      A criterion is either **gated** — a gate or a named script proves it — or **attested**,
+      declared in the feature's `attested` array with the activity that verifies it.
+
+      **Attestation is not an escape hatch.** The bar is *"no check in this repository could
+      prove it"*, not *"this would be awkward to test"*. Where part of a criterion is
+      checkable, that part stays gated. The state gate holds the `criterion` text to the
+      `acceptance` entry verbatim, so an attested criterion cannot be softened into
+      something easier.
+
+      A feature may be `done` with outstanding attested criteria. **A release may not** —
+      gate 0 lists them on every run.
+
 - [ ] **Gates green with evidence.** Every applicable gate in
       [`verification.md`](verification.md) passes, and the evidence — which ran, which did
       **not**, the commands, the result — is recorded in

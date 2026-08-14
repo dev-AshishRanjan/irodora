@@ -63,9 +63,21 @@ Which method answers which question
 Include the **negative** tests — and remember a negative test needs a decoy, not an empty
 fixture.
 
-### 6. Name the gates
+### 6. Name the gates — and check every criterion has one
 
 Exactly which gates apply, and what evidence you will capture.
+
+Then go through the feature's `acceptance` list one entry at a time and answer: **what runs
+to prove this?** If the answer for some entry is "a system we do not control" — a real VPS,
+a physical device, another company's tooling, a repository setting — that criterion is
+**attested**, not gated ([ADR-0038](../../../docs/adr/0038-every-acceptance-criterion-names-its-check.md)).
+Declare it in the feature's `attested` array **now**, in the plan, with the activity that
+will verify it.
+
+This check costs a minute and its absence cost three features in a row. F-003, F-004 and
+F-005 each reached implementation before anyone noticed a criterion nothing could prove —
+and the discovery is far more expensive there than here, because by then there is work in
+flight that cannot be finished.
 
 ### 7. Write it
 

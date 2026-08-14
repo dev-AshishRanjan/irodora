@@ -242,6 +242,27 @@ if (featureList) {
         );
     }
 
+    // ADR-0038: an attested criterion must quote a REAL acceptance entry, verbatim.
+    // Without this, attestation becomes a way to reword a criterion into something easier
+    // and then excuse the softened version — which is worse than not declaring it at all.
+    for (const att of f.attested ?? []) {
+      if (!(f.acceptance ?? []).includes(att.criterion))
+        fail(
+          'attested',
+          `${f.id} attests a criterion that is not in its acceptance list verbatim`,
+          'Attestation excuses a criterion from being gated. If the text has drifted, the thing being excused is no longer the thing that was agreed.',
+          `Make "attested[].criterion" exactly match an entry in ${f.id}.acceptance, or correct the acceptance entry.`,
+        );
+
+      if (att.status === 'verified' && !att.evidence)
+        fail(
+          'attested',
+          `${f.id} marks an attested criterion verified with no evidence`,
+          'A verification nobody can find is an assertion. This is the same rule gates follow.',
+          'Set "evidence" to where the verification is recorded.',
+        );
+    }
+
     if (f.status === 'in_progress') {
       const planPath = f.plan ? join(HARNESS, f.plan) : null;
       if (!planPath || !existsSync(planPath))
@@ -255,6 +276,22 @@ if (featureList) {
   }
   if (!failures.some((f) => f.check === 'blockers' || f.check === 'plan'))
     pass('workflow', 'blockers and plan-before-code satisfied');
+
+  if (!failures.some((f) => f.check === 'attested')) {
+    const entries = featureList.features.flatMap((f) =>
+      (f.attested ?? []).map((a) => ({ id: f.id, ...a })),
+    );
+    const outstanding = entries.filter((a) => a.status === 'outstanding' && a.blocks === 'release');
+
+    pass(
+      'attested',
+      `${entries.length} attested criterion(a); ${outstanding.length} outstanding and blocking release`,
+    );
+
+    // Reported every run rather than only on failure. An obligation nobody is reminded of
+    // is an obligation that gets discovered at release time (ADR-0038).
+    for (const a of outstanding) warn('attested', `${a.id} owes: ${a.criterion}`);
+  }
 }
 
 /* ============================================ 3. requirement traceability (PRD) */
