@@ -257,7 +257,8 @@
       "package": "@irodora/color-difference",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-007-colour-difference-and-contrast.md",
       "blockedBy": [
         "F-006"
       ],
