@@ -1,0 +1,179 @@
+# ---------------------------------------------------------------------------
+# Irodora — the full stack, for a VPS.
+#
+# ONE file, consumed UNMODIFIED by Coolify and by Dokploy. Both manage Docker and
+# Traefik themselves, so everything here is deliberately platform-neutral: no
+# Traefik labels, no platform annotations, no host paths. The platform attaches its
+# proxy to this network and terminates TLS; this file describes the stack, not the
+# ingress.
+#
+# `scripts/verify-compose-portability.mjs` enforces that neutrality — the rules are
+# not a style guide, each one is something a platform rejects or silently
+# reinterprets. Run it with `pnpm verify:compose`.
+#
+#   docker compose -f infra/compose/docker-compose.prod.yml up -d
+#
+# Ports are NOT published. On a VPS a published port bypasses the platform's TLS
+# termination and is reachable from the internet, which is how a database ends up
+# exposed. Services reach each other by name on this network; the platform's proxy
+# joins it to route public traffic.
+#
+# NOTE: the `web` service is absent. apps/web is a stub with no Next.js, so its
+# image cannot be built (F-017). A service referencing an unbuildable image would
+# make this file fail to boot, which is worse than it being honestly incomplete.
+# ---------------------------------------------------------------------------
+
+name: irodora
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+    restart: unless-stopped
+    environment:
+      IRODORA_PROFILE: ${IRODORA_PROFILE:-vps}
+      IRODORA_SERVICE_NAME: api
+      IRODORA_LOG_LEVEL: ${IRODORA_LOG_LEVEL:-info}
+      IRODORA_HTTP_HOST: 0.0.0.0
+      IRODORA_HTTP_PORT: 3000
+      IRODORA_PUBLIC_API_URL: ${IRODORA_PUBLIC_API_URL}
+      IRODORA_PUBLIC_WEB_URL: ${IRODORA_PUBLIC_WEB_URL}
+      IRODORA_DATABASE_URL: postgres://${POSTGRES_USER:-irodora}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-irodora}
+      IRODORA_DATABASE_MIGRATE_ON_BOOT: ${IRODORA_DATABASE_MIGRATE_ON_BOOT:-1}
+      IRODORA_REDIS_URL: redis://valkey:6379
+      IRODORA_BLOB_ENDPOINT: http://minio:9000
+      IRODORA_BLOB_REGION: ${IRODORA_BLOB_REGION:-us-east-1}
+      IRODORA_BLOB_BUCKET: ${IRODORA_BLOB_BUCKET:-irodora}
+      IRODORA_BLOB_ACCESS_KEY_ID: ${IRODORA_BLOB_ACCESS_KEY_ID}
+      IRODORA_BLOB_SECRET_ACCESS_KEY: ${IRODORA_BLOB_SECRET_ACCESS_KEY}
+      IRODORA_BLOB_FORCE_PATH_STYLE: 1
+      IRODORA_OIDC_ISSUER: ${IRODORA_OIDC_ISSUER}
+      IRODORA_OIDC_CLIENT_ID: ${IRODORA_OIDC_CLIENT_ID}
+      IRODORA_OIDC_CLIENT_SECRET: ${IRODORA_OIDC_CLIENT_SECRET}
+      IRODORA_OIDC_AUDIENCE: ${IRODORA_OIDC_AUDIENCE}
+      IRODORA_SESSION_SECRET: ${IRODORA_SESSION_SECRET}
+      IRODORA_SESSION_COOKIE_DOMAIN: ${IRODORA_SESSION_COOKIE_DOMAIN}
+      IRODORA_WEBAUTHN_RP_ID: ${IRODORA_WEBAUTHN_RP_ID}
+      IRODORA_WEBAUTHN_RP_NAME: ${IRODORA_WEBAUTHN_RP_NAME:-Irodora}
+      IRODORA_MAIL_FROM: ${IRODORA_MAIL_FROM}
+    expose:
+      - '3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      # /healthz, NOT /readyz. This is the LIVENESS probe: a failure here restarts the
+      # container, and restarting because Postgres blipped turns a dependency hiccup
+      # into an outage. Readiness is the platform proxy's concern, not the restarter's.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.worker
+    restart: unless-stopped
+    environment:
+      IRODORA_PROFILE: ${IRODORA_PROFILE:-vps}
+      IRODORA_SERVICE_NAME: worker
+      IRODORA_LOG_LEVEL: ${IRODORA_LOG_LEVEL:-info}
+      IRODORA_PUBLIC_API_URL: ${IRODORA_PUBLIC_API_URL}
+      IRODORA_PUBLIC_WEB_URL: ${IRODORA_PUBLIC_WEB_URL}
+      IRODORA_DATABASE_URL: postgres://${POSTGRES_USER:-irodora}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-irodora}
+      # The worker never migrates. Two processes racing for the lock is handled, but
+      # only one service SHOULD be trying — the API owns schema at boot.
+      IRODORA_DATABASE_MIGRATE_ON_BOOT: 0
+      IRODORA_REDIS_URL: redis://valkey:6379
+      IRODORA_BLOB_ENDPOINT: http://minio:9000
+      IRODORA_BLOB_REGION: ${IRODORA_BLOB_REGION:-us-east-1}
+      IRODORA_BLOB_BUCKET: ${IRODORA_BLOB_BUCKET:-irodora}
+      IRODORA_BLOB_ACCESS_KEY_ID: ${IRODORA_BLOB_ACCESS_KEY_ID}
+      IRODORA_BLOB_SECRET_ACCESS_KEY: ${IRODORA_BLOB_SECRET_ACCESS_KEY}
+      IRODORA_BLOB_FORCE_PATH_STYLE: 1
+      IRODORA_OIDC_ISSUER: ${IRODORA_OIDC_ISSUER}
+      IRODORA_OIDC_CLIENT_ID: ${IRODORA_OIDC_CLIENT_ID}
+      IRODORA_OIDC_CLIENT_SECRET: ${IRODORA_OIDC_CLIENT_SECRET}
+      IRODORA_OIDC_AUDIENCE: ${IRODORA_OIDC_AUDIENCE}
+      IRODORA_SESSION_SECRET: ${IRODORA_SESSION_SECRET}
+      IRODORA_SESSION_COOKIE_DOMAIN: ${IRODORA_SESSION_COOKIE_DOMAIN}
+      IRODORA_WEBAUTHN_RP_ID: ${IRODORA_WEBAUTHN_RP_ID}
+      IRODORA_WEBAUTHN_RP_NAME: ${IRODORA_WEBAUTHN_RP_NAME:-Irodora}
+      IRODORA_MAIL_FROM: ${IRODORA_MAIL_FROM}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      # The worker has no HTTP surface, so liveness is "the process is still there".
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  postgres:
+    image: postgres@sha256:d4bb0a8c1b7bb2e29f976d099e7bfb9a5d8858cffe9e46b35cd302cd1f1f8168
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-irodora}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-irodora}
+      # Deterministic collation. Text ordering affects colour-name search results, and a
+      # locale difference between a workstation and a server would make search assertions
+      # differ for reasons nobody would guess.
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=und-x-icu --encoding=UTF8'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-irodora} -d ${POSTGRES_DB:-irodora}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  valkey:
+    image: valkey/valkey@sha256:a038175878d66b9d274fbf8be73c0305e93798b83917647f167e18cef3c71eec
+    restart: unless-stopped
+    command: ['valkey-server', '--appendonly', 'yes', '--save', '60', '1']
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  minio:
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${IRODORA_BLOB_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${IRODORA_BLOB_SECRET_ACCESS_KEY}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'mc ready local || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  postgres-data:
+  valkey-data:
+  minio-data:

@@ -66,6 +66,13 @@ jobs:
       - name: 'Gate 0 — mirror proof'
         run: node scripts/verify-gate-mirror.mjs
 
+      # The compose file's portability across Coolify and Dokploy. Static, so it runs
+      # here rather than needing a VPS — the deployment itself is an attested obligation
+      # (ADR-0038), but "uses nothing a platform rejects" is checkable on every commit.
+      - name: 'Compose portability'
+        if: hashFiles('infra/compose/docker-compose.prod.yml') != ''
+        run: node scripts/verify-compose-portability.mjs
+
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
         if: hashFiles('pnpm-lock.yaml') != ''
