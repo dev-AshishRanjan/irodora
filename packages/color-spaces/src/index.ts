@@ -66,6 +66,17 @@ export {
 } from './rgb.js';
 
 export {
+  LAB_EPSILON,
+  LAB_KAPPA,
+  labToLch,
+  labToXyz,
+  lchToLab,
+  lchToXyz,
+  xyzToLab,
+  xyzToLch,
+} from './lab.js';
+
+export {
   linearToSrgb,
   srgbToLinear,
   SRGB_EOTF_CUTOFF,

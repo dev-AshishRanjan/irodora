@@ -1,0 +1,125 @@
+{
+  "id": "xyz-lab",
+  "description": "CIE XYZ (D65) to CIELAB and CIELCh, CIE 15:2018. Most entries are definitional with tolerance 0, because the constants of CIELAB are exact rationals chosen so the two branches of f meet exactly: kappa x epsilon is exactly 8, and (kappa x epsilon + 16)/116 is bit-identical to cbrt(epsilon). Writing them as decimals breaks that join and puts a step in the curve at the darkest end — which is the end this product lives at.",
+  "entries": [
+    {
+      "id": "epsilon",
+      "source": "CIE 15:2018, CIELAB — the actual CIE values, 216/24389",
+      "derivation": "published-value",
+      "input": "216/24389",
+      "expected": 0.008856451679035631,
+      "tolerance": 0
+    },
+    {
+      "id": "kappa",
+      "source": "CIE 15:2018, CIELAB — the actual CIE values, 24389/27",
+      "derivation": "published-value",
+      "input": "24389/27",
+      "expected": 903.2962962962963,
+      "tolerance": 0
+    },
+    {
+      "id": "kappa-times-epsilon-is-eight",
+      "source": "CIE 15:2018 — (24389/27) x (216/24389) = 216/27 = 8, exactly",
+      "derivation": "definitional",
+      "input": "kappa * epsilon",
+      "expected": 8,
+      "tolerance": 0
+    },
+    {
+      "id": "f-of-epsilon-is-six-twentyninths",
+      "source": "CIE 15:2018 — cbrt(216/24389) = 6/29, and (kappa x epsilon + 16)/116 = 24/116 = 6/29",
+      "derivation": "definitional",
+      "input": "f(epsilon), from both branches",
+      "expected": 0.20689655172413793,
+      "tolerance": 0
+    },
+    {
+      "id": "white-is-100-0-0",
+      "source": "CIE 15:2018 — the reference white has L* = 100 and no chromatic component, by construction",
+      "derivation": "definitional",
+      "input": { "xyz": "the D65 white point" },
+      "expected": [100, 0, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "black-is-0-0-0",
+      "source": "CIE 15:2018 — all ratios zero take the linear branch; f(0) = 16/116 for all three, so a* and b* vanish",
+      "derivation": "definitional",
+      "input": { "xyz": [0, 0, 0] },
+      "expected": [0, 0, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "lightness-at-the-epsilon-boundary",
+      "source": "CIE 15:2018 — at Y/Yn = epsilon the curve switches branches, and L* there is exactly kappa x epsilon = 8",
+      "derivation": "definitional",
+      "input": { "yRatio": 0.008856451679035631 },
+      "expected": [8, 0, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "lightness-below-the-boundary-is-linear",
+      "source": "CIE 15:2018, linear branch: L* = kappa x (Y/Yn) for Y/Yn <= epsilon",
+      "derivation": "published-formula",
+      "derivationNote": "Y/Yn = 0.004 <= epsilon, so L* = 903.2962962962963 x 0.004 = 3.6131851851851854. Tolerance is 2e-15 rather than 0 because the standard computes L* as 116 x f - 16 with f = (kappa x t + 16)/116, and 116 x ((x + 16)/116) - 16 is not bit-identical to x in float64 — the divide and the multiply each round. Following the standard's formulation is worth 1.3e-15; algebraically simplifying it to kappa x t would be an implementation that is no longer the published one.",
+      "input": { "yRatio": 0.004 },
+      "expected": [3.6131851851851854, 0, 0],
+      "tolerance": 2e-15
+    },
+    {
+      "id": "srgb-mid-grey",
+      "source": "CIE 15:2018 with the sRGB transfer function (IEC 61966-2-1)",
+      "derivation": "published-formula",
+      "derivationNote": "sRGB 0.5 linearises to 0.21404114048223255, which is the Y ratio for a neutral. Y/Yn > epsilon, so L* = 116 x cbrt(0.21404114048223255) - 16 = 53.38896474111432. A neutral has a* = b* = 0 exactly, because all three ratios are equal and f is applied to each.",
+      "input": { "srgb": [0.5, 0.5, 0.5] },
+      "expected": [53.38896474111432, 0, 0],
+      "tolerance": 1e-13
+    },
+    {
+      "id": "srgb-red-primary",
+      "source": "CIE 15:2018 against the chromaticity-derived D65 white point; sRGB red primary from IEC 61966-2-1",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [0.41239079926595934, 0.21263900587151027, 0.01933081871559182], white = [0.9504559270516716, 1, 1.0890577507598784]. NOTE: tables quoting Lab [53.2408, 80.0925, 67.2032] use the ROUNDED white point [0.95047, 1, 1.08883]; the two differ by 0.004 dE76 and the difference is entirely in the white point, not in the formula.",
+      "input": { "srgb": [1, 0, 0] },
+      "expected": [53.23711559542936, 80.09011352310385, 67.20326351172214],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-green-primary",
+      "source": "CIE 15:2018 against the chromaticity-derived D65 white point",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = column 1 of the sRGB matrix = [0.357584339383878, 0.715168678767756, 0.11919477979462598]",
+      "input": { "srgb": [0, 1, 0] },
+      "expected": [87.73551910966, -86.18159689039895, 83.18662027363],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "srgb-blue-primary",
+      "source": "CIE 15:2018 against the chromaticity-derived D65 white point",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = column 2 of the sRGB matrix = [0.1804807884018343, 0.07219231536073371, 0.9505321522496607]",
+      "input": { "srgb": [0, 0, 1] },
+      "expected": [32.30087290398018, 79.1952703074042, -107.85546553974265],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "lch-red-primary",
+      "source": "CIE 15:2018 — CIELCh is CIELAB in polar form; C* = hypot(a*, b*), h = atan2(b*, a*)",
+      "derivation": "published-formula",
+      "derivationNote": "From Lab [53.23711559542936, 80.09011352310385, 67.20326351172214]: C = hypot(80.0901, 67.2033) = 104.55001152926587, h = atan2(67.2033, 80.0901) in degrees = 39.99986515439815 — within 0.00014 degrees of 40, which is a fact about the sRGB primaries and not a rounding of ours.",
+      "input": { "srgb": [1, 0, 0] },
+      "expected": [53.23711559542936, 104.55001152926587, 39.99986515439815],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "lch-blue-primary",
+      "source": "CIE 15:2018 — CIELAB in polar form",
+      "derivation": "published-formula",
+      "derivationNote": "From Lab [32.30087290398018, 79.1952703074042, -107.85546553974265]: b* is negative, so the raw atan2 is negative and folds to 306.28880325729324 degrees. An implementation that forgets to fold reports -53.7 and every hue comparison against it is wrong.",
+      "input": { "srgb": [0, 0, 1] },
+      "expected": [32.30087290398018, 133.8084163491125, 306.28880325729324],
+      "tolerance": 1e-12
+    }
+  ]
+}
