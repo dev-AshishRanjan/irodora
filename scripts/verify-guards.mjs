@@ -59,6 +59,56 @@ const GUARDS = [
     source: `import { CORE_VERSION } from '@irodora/color-core/src/index.js';\nexport const v = CORE_VERSION;\n`,
   },
   {
+    name: 'the contract layer may not hand-write a type',
+    path: 'packages/contracts/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'A Zod schema in @irodora/contracts is the single source of validation, types and ' +
+      'OpenAPI (ADR-0012). An interface beside a schema compiles, looks correct, and ' +
+      'diverges the first time only one of the two is edited — invisibly, because nothing ' +
+      'compares them.',
+    source: `export interface WireColor {\n  space: string;\n  hex: string;\n}\n`,
+  },
+  {
+    name: 'the contract layer may not hand-write a union',
+    path: 'packages/contracts/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'This is the form that actually threatens this package. The two engine types it ' +
+      'duplicates — ColorSpace and MeasurementSource — are string unions, and a union is ' +
+      'not a type literal, so a selector written only for `type X = { … }` never sees one.',
+    source: `export type Space = 'srgb' | 'display-p3' | 'oklch';\n`,
+  },
+  {
+    name: 'the contract layer may not hide a type literal inside a wrapper',
+    path: 'packages/contracts/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'A `>` child selector is defeated by any wrapping — Readonly<{…}>, {…}[], {…} & {…}. ' +
+      'Readonly<{…}> is the natural thing to write in a repository whose engine types are ' +
+      'all readonly, so it is the one that would have slipped through.',
+    source: `export type Wire = Readonly<{ code: string }>;\n`,
+  },
+  {
+    name: 'the contract layer may not declare a TypeScript enum',
+    path: 'packages/contracts/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'An enum is neither an interface nor a type alias, so every selector written for ' +
+      'those misses it — and it looks more like a contract than either, while validating ' +
+      'nothing at the boundary.',
+    source: `export enum Space {\n  Srgb = 'srgb',\n}\n`,
+  },
+  {
+    name: 'the contract layer may not import a Node API',
+    path: 'packages/contracts/src/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      '@irodora/contracts is imported by apps/web (browser) and apps/mobile (React Native) ' +
+      'as well as the API. A node:* import in its src is a crash on a phone, found by a user.',
+    source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
+  },
+  {
     name: 'a floating promise is an error',
     path: 'packages/config/src/__guard__.ts',
     rule: '@typescript-eslint/no-floating-promises',

@@ -12,6 +12,8 @@ be deleted as no longer true.
 | 2026-08-13 | The env-contract check (`.env.example` ↔ `IRODORA_*` reads) cannot run until `packages/config` exists. It reports as "config package not yet present" rather than passing silently — but the contract is unverified until F-001. | gate not yet active | open |
 | 2026-08-13 | `E-009` (rule weights) carries `guard: "none"` with `feature: F-029`. The graph is honestly reporting a check we owe. It closes when F-029 builds publish-time weight validation. | missing guard | open |
 | 2026-08-13 | The claims copy lint (NFR-21) is specified but not implemented until F-025. Until then, claims discipline in copy, comments and identifiers rests on review — which is exactly the mechanism [ADR-0031](../../docs/adr/0031-measurement-claims-policy.md) says fails under launch pressure. | gate not yet active | open |
+| 2026-08-14 | `verify-state.mjs` only checks path existence for effect nodes whose `kind` is `file`, `symbol`, `test`, `artifact` or `content`. Nodes of kind `contract`, `package`, `module`, `doc` and `decision` are never checked, so their `exists` flag is bookkeeping with no enforcement — `E-004.from.exists: true` is a claim the gate does not verify. Found while closing F-002. | gate blind spot | open |
+| 2026-08-14 | A package's `typecheck` reads its dependencies' built `.d.ts`, so the ADR-0036 identity assertions only see engine-side drift **after a rebuild**. `pnpm typecheck` is sound because turbo's task declares `dependsOn: ["^build"]`; a bare `npx tsc -p packages/contracts/tsconfig.json` is not, and passes on drift. Anyone verifying a cross-package type pin by hand needs to build first. | verification footgun | open |
 
 ## How to use this file
 

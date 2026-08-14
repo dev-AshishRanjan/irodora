@@ -8,6 +8,156 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-14 — F-002 DONE · one definition, three uses — and the third one was lying
+
+**`@irodora/contracts` exists.** Zod 4 schemas are the single source of runtime validation,
+TypeScript types and JSON Schema. All six applicable gates green, plus ten boundary guards.
+
+### Evidence
+
+```
+node v24.19.0 · pnpm 11.21.0 · zod 4.4.3 · vitest 4.1.10
+
+  ✓ gate 0  state         13 checks, 1 known warning (E-009)
+  ✓ gate 1  typecheck     31 tasks
+  ✓ gate 2  lint          31 tasks + 10 boundary guards
+  ✓ gate 3  format
+  ✓ gate 4  test          31 tasks · 136 tests in 5 files
+  ✓ gate 6  build         23 tasks
+
+NOT run: color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf,
+         e2e-full, security — all still `pending` in gates.json; each activates
+         with its own feature (F-003, F-006, F-008, F-011, F-015, F-017, F-038,
+         F-044, F-004). None applicable here.
+```
+
+No new gate activated. F-002 adds no gate; it adds content to gates 1–4 and 6.
+
+### What the package contains
+
+Cross-cutting wire primitives only — colour and provenance, the error contract, cursor
+pagination, branded scalars, the JSON Schema bridge. **Endpoint schemas are deliberately not
+here**; they arrive with the routes at F-015/F-016, and a contract package full of shapes
+nothing serves is a contract package nobody trusts.
+
+### The decision this feature turned on — [ADR-0036](../../docs/adr/0036-wire-schema-and-engine-type-pinned-by-the-compiler.md)
+
+The colour engine has zero runtime dependencies (NFR-3), so **it cannot import Zod**, so it
+declares `Provenance`, `MeasurementSource` and `ReproducibilityEnvelope` in plain TypeScript.
+That is one shape defined twice — exactly what the TypeScript rules forbid, forced by a
+golden constraint.
+
+Resolved by keeping both and making the compiler prove they are the same shape.
+`color.test.ts` asserts key-set equality plus mutual assignability; drift fails gate 1.
+
+**This strengthens [E-002](../state/effects.json).** Its memory note previously ended *"it
+does not catch a semantic weakening — making a field optional typechecks fine. That is a
+review responsibility."* That is no longer true for these types, verified by breaking them:
+
+```
+Provenance.confidence made optional     typecheck FAILED   ← the exact weakening E-002 names
+Provenance.originSpace removed          typecheck FAILED
+MeasurementSource gains a member        typecheck FAILED
+baseline                                typecheck passed
+```
+
+**One relaxation, taken deliberately and recorded as one:** `Provenance.capturedAt` and
+`ReproducibilityEnvelope.profile` widened from `?: T` to `?: T | undefined`. Under
+`exactOptionalPropertyTypes` those differ, and only the wider one is what a validator can
+produce. Relaxing `Provenance` is precisely what E-002 exists to watch, so it is in the ADR
+with its reasoning rather than sitting in a diff.
+
+### Three checks that looked right and were not
+
+Every one was found by **writing the violation and watching the check stay green** — not by
+reading it. All three now fail on mutation, proven.
+
+**1. Mutual assignability is not shape equality.** The type pin above originally asserted
+assignability in both directions. Adding `device?: string` to `provenanceSchema` produced no
+error at all: an object with an extra *optional* property is assignable both ways. Removing
+one slips through identically. Adding a field is the most common drift there is, and the
+guard would have shipped documented as catching it.
+→ key set asserted separately. [[mutual-assignability-does-not-catch-an-optional-field]]
+
+**2. The OpenAPI leg published the wrong side of the wire.** `z.toJSONSchema` defaults to
+`io: 'output'`. `pageParamsSchema.limit` has a `.default()`, so the document marked `limit`
+**required** while the validator accepts `{}`. Every generated client would have been told to
+send a field the API does not need — wrong in the direction a client cannot work around.
+→ `io` is now a required argument with no default.
+
+This one is worth sitting with: the representability test was written specifically so
+contract defects land when the schema is written rather than at F-015. It did not catch this,
+because it only asserted *"does not throw"*. **A test aimed at the right risk can still be
+aimed at the wrong property.**
+
+**3. The self-enumerating schema scan could silently cover less.** It reads the barrel's own
+exports so it "cannot fall behind" — and deleting one `export *` line dropped coverage from
+18 schemas to 10 with every test green. The `length >= 10` floor did not notice.
+→ the export list is pinned explicitly.
+
+Also unpinned until review caught it: each error code's HTTP status. Changing
+`validation_failed` from 422 to 400 passed typecheck, lint and the full suite. Now pinned.
+
+### Independent verification found two of those three
+
+The [evaluator subagent](../../.claude/agents/) ran the gates cold (`--force`, 92/92 tasks,
+no cache), mutation-tested the type assertions 15 ways, and probed the new lint rule with
+seven duplication forms. It returned **FAIL** with two blockers and four significant
+findings. Defects 2 and 3 above are its findings, as is the discovery that the lint selector
+covered two of roughly seven duplication forms — **missing string unions, which is the form
+the two duplicated engine types actually take.**
+
+The separation earned its keep on its first real use. A self-check would have reported six
+green gates and stopped.
+
+### Boundaries: 5 → 10
+
+| New guard | Protects |
+|---|---|
+| contract layer may not hand-write a type | `interface X {}` |
+| …may not hand-write a union | `type X = 'a' \| 'b'` — the form that mattered |
+| …may not hide a type literal in a wrapper | `Readonly<{…}>`, `{…}[]`, `{…} & {…}` |
+| …may not declare a TypeScript enum | `enum X {}` — neither interface nor alias |
+| …may not import a Node API | `apps/web` and `apps/mobile` import this package |
+
+The Node-API guard is a scope addition and is flagged as one: it was not in the acceptance
+list. It exists because the alternative — giving the package `@types/node` for one test —
+would have introduced the risk and deferred the guard, which is the failing-open shape.
+
+### Watch out
+
+- **`@types/node` is deliberately absent from `packages/contracts`.** If a future test needs
+  to read a file, adding it is fine — the `node:*` lint rule already excludes tests and
+  protects `src`. Do not add it to make a `src` file compile.
+- **Cross-package type pins need a build.** `packages/contracts` typechecks against
+  `color-core`'s built `.d.ts`. `pnpm typecheck` is sound (turbo declares `dependsOn:
+  ["^build"]`); a bare `npx tsc -p packages/contracts/tsconfig.json` is **not**, and will
+  pass on engine-side drift. Recorded in `memory/observations.md`.
+- **Do not simplify the three assertions in `color.test.ts` into one.** `toEqualTypeOf`
+  fails forever (readonly); the mutual pair passes forever (optional fields). One of those
+  failure modes is silent.
+- `CONTRACTS_VERSION` was **removed**, not implemented. Reasoning is in `version.ts`.
+- The error-code enum is deliberately under-filled. Additive-only makes under-including the
+  cheap direction; `quota_exceeded` (F-057) and `corpus_version_unknown` (F-016) are absent
+  on purpose and have tripwire tests asserting so.
+
+### Honest limits
+
+- **Acceptance criterion 4 is enforced inside `packages/contracts` only.** A hand-written
+  duplicate in a *consumer* package is not caught. There are no consumers yet; the rule
+  lands with them at F-015. This is not full coverage of the criterion as written.
+- **The E-004 chain is one link long.** Schema → validation → types → JSON Schema is live.
+  OpenAPI, the SDK, and the regenerate-and-diff check do not exist and are F-015/F-057.
+- `E-004.from.exists: true` is bookkeeping the state gate does not verify — it only checks
+  path existence for `file|symbol|test|artifact|content` kinds. Recorded as a blind spot.
+
+### Next
+
+**F-003** — `@irodora/design-tokens` — and **F-004** and **F-005** are all now eligible
+(each blocked only by F-001). Lowest id first: **F-003**. `/next-feature` → `/plan`.
+
+---
+
 ## 2026-08-14 — F-001 DONE · the toolchain runs, and the boundaries are proven
 
 **Node 24.19.0 installed. `pnpm install` ran. All six applicable gates executed and passed.**

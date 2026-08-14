@@ -46,6 +46,29 @@ and nothing would flag it, because nothing would be broken.
 
 ## The guard
 
-`gate:typecheck` catches structural changes. It does **not** catch a semantic weakening —
-making a field optional typechecks fine. That is a review responsibility, and it is written
-down here because it is the one this link exists to prevent.
+`gate:typecheck` catches structural changes.
+
+**Updated 2026-08-14 (F-002).** This section used to end: *"It does not catch a semantic
+weakening — making a field optional typechecks fine. That is a review responsibility."*
+That is no longer true for the three types the contract layer pins.
+
+`packages/contracts/src/color.test.ts` asserts `Provenance`, `MeasurementSource`,
+`ReproducibilityEnvelope` and `ColorSpace` against their wire schemas at compile time
+([ADR-0036](../../../docs/adr/0036-wire-schema-and-engine-type-pinned-by-the-compiler.md)).
+Verified by deliberately breaking each, not by reading the code:
+
+```
+Provenance.confidence made optional     typecheck FAILED   ← the weakening above
+Provenance.originSpace removed          typecheck FAILED
+MeasurementSource gains a member        typecheck FAILED
+baseline                                typecheck passed
+```
+
+**Still a review responsibility, because the guard does not reach it:**
+
+- `Color` itself. It does not exist until F-010, and nothing pins it yet.
+- The database columns and the UI. No compile-time link runs from `Provenance` to a
+  migration or to a swatch component.
+- Semantics that keep the same shape — redefining what `confidence` *means* while it stays
+  a `number` in `[0,1]`. No type can see that, and it is a change to what the product
+  claims about itself, so it needs an ADR.

@@ -78,7 +78,7 @@
       "from": {
         "kind": "contract",
         "ref": "packages/contracts/src",
-        "exists": false
+        "exists": true
       },
       "to": [
         { "kind": "artifact", "ref": "apps/api/openapi.json", "exists": false },

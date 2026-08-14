@@ -118,7 +118,10 @@ Coolify/Dokploy, where the platform restarts on probe failure without much cerem
 
 ## 4. Request and response shapes
 
-Colours on the wire always carry provenance (FR-9):
+Colours on the wire always carry provenance (FR-9). `originSpace` is **required**, not
+convenience: round-tripping a value is only honest back to the space it arrived in, and a
+provenance without it cannot say what was actually measured (ADR-0005). The schema in
+`@irodora/contracts` rejects a provenance that omits it.
 
 ```jsonc
 // POST /v1/recommendations/pairings
@@ -127,7 +130,11 @@ Colours on the wire always carry provenance (FR-9):
     "color": {
       "space": "oklch",
       "components": [0.58, 0.06, 155],
-      "provenance": { "source": "estimated", "confidence": 0.81 }
+      "provenance": {
+        "source": "estimated",
+        "confidence": 0.81,
+        "originSpace": "display-p3"
+      }
     },
     "slot": "top"
   },

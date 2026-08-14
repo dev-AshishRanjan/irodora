@@ -59,6 +59,7 @@ Two rules that matter more than the format:
 | [0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md) | We own the token layer; primitives stay headless; Astryx is not adopted | Accepted |
 | [0034](0034-base-ui-over-radix-for-headless-primitives.md) | Base UI, not Radix, for headless primitives | Accepted |
 | [0035](0035-typescript-6-not-7-until-type-aware-linting-catches-up.md) | TypeScript 6, not 7, until type-aware linting catches up | Accepted |
+| [0036](0036-wire-schema-and-engine-type-pinned-by-the-compiler.md) | The wire schema and the engine type are two artefacts, pinned by the compiler | Accepted |
 
 ## Open questions awaiting an ADR
 

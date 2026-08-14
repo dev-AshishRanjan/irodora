@@ -7,6 +7,13 @@
 
 import type { ColorSpace } from '@irodora/color-spaces';
 
+/**
+ * Re-exported because `Provenance.originSpace` is typed with it. A consumer that can hold
+ * a Provenance must be able to name every type inside it, or it has to reach past this
+ * package to describe what this package returned.
+ */
+export type { ColorSpace } from '@irodora/color-spaces';
+
 /** How a colour value came to exist. Determines what may be claimed about it. */
 export type MeasurementSource = 'reference' | 'calibrated' | 'estimated' | 'declared';
 
@@ -16,7 +23,13 @@ export interface Provenance {
   readonly confidence: number;
   /** The space this value ARRIVED in. Round-tripping is only honest back to it. */
   readonly originSpace: ColorSpace;
-  readonly capturedAt?: string;
+  /**
+   * `| undefined` is not noise. Under `exactOptionalPropertyTypes`, `?: string` promises the
+   * key is either absent or a string, and never present-and-undefined — a promise nothing
+   * that arrives through a validator can keep. The wire schema in `@irodora/contracts`
+   * infers the wider shape, and ADR-0036 pins the two together at compile time.
+   */
+  readonly capturedAt?: string | undefined;
 }
 
 /** The version tuple stored with every result, so any answer can be replayed. */
@@ -24,7 +37,8 @@ export interface ReproducibilityEnvelope {
   readonly engine: string;
   readonly corpus: string;
   readonly rules: string;
-  readonly profile?: string;
+  /** `| undefined` for the same reason as `Provenance.capturedAt`. */
+  readonly profile?: string | undefined;
 }
 
 /** Implemented in F-010. */

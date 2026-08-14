@@ -41,6 +41,24 @@ CI regenerates and diffs; a stale committed document fails the build. That is th
 4. **Additive only inside `/v1`.** A break mints `/v2` with a ≥ 12-month sunset.
 5. Commit the regenerated document, so the contract diff is visible in review.
 
+## What exists today, and what does not — as of F-002 (2026-08-14)
+
+The `from` node is real now: `packages/contracts/src` holds the schemas. **The rest of the
+chain does not exist yet**, so the guard above describes an end state, not a running check.
+
+| Link | Status |
+|---|---|
+| Zod schema → runtime validation → inferred types | **live** — `pnpm typecheck`, `pnpm test` |
+| Zod schema → JSON Schema | **live** — every exported schema is asserted convertible to draft 2020-12, by a test that enumerates the barrel's own exports so it cannot fall behind |
+| JSON Schema → `openapi.json` | **not built** — needs routes (F-015) |
+| `openapi.json` → `@irodora/sdk` → consumers | **not built** — F-015, F-057 |
+| the regenerate-and-diff check | **not built** — F-015 |
+
+The middle row is the part worth knowing. A schema that validates perfectly can still be
+impossible to express as JSON Schema — a transform, a non-declarative refinement — and
+without that test the discovery would land at F-015, on top of a package's worth of schemas
+written under the wrong assumption. It now lands on the schema that caused it.
+
 ## One nuance
 
 **Generating the contract is not a deployment.** A regenerated `openapi.json` in the

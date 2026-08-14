@@ -63,7 +63,8 @@
       "package": "@irodora/contracts",
       "release": "R0",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
+      "plan": "plans/F-002-shared-contracts-package.md",
       "blockedBy": [
         "F-001"
       ],
