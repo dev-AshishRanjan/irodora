@@ -91,6 +91,10 @@ export default tseslint.config(
   {
     files: ['packages/color-*/**/*.ts', 'packages/cvd-engine/**/*.ts'],
     rules: {
+      // NOTE: a later config object REPLACES `no-restricted-imports` rather than
+      // merging with it, so the workspace-wide patterns are repeated here. Omitting
+      // them would silently disable deep-import protection in exactly the packages
+      // that need it most. Caught by tests/guards — see scripts/verify-guards.mjs.
       'no-restricted-imports': [
         'error',
         {
@@ -99,6 +103,16 @@ export default tseslint.config(
               group: ['node:*', 'fs', 'path', 'crypto', 'os'],
               message:
                 'The colour engine must run identically in Node, the browser and React Native. No platform APIs. See .harness/rules/color/color-science.md',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+            {
+              group: ['../../../*'],
+              message:
+                'Three levels up means you have crossed a boundary. Import through a package entry point instead.',
             },
           ],
         },

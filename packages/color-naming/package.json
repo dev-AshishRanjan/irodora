@@ -1,0 +1,27 @@
+{
+  "name": "@irodora/color-naming",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Nearest-match colour naming.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/color-spaces": "workspace:*",
+    "@irodora/color-difference": "workspace:*"
+  }
+}

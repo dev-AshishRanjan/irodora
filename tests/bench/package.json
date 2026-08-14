@@ -1,0 +1,14 @@
+{
+  "name": "@irodora/bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Backend performance benchmarks. From F-038.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rimraf dist *.tsbuildinfo"
+  }
+}

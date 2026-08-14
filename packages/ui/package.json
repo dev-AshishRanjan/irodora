@@ -1,0 +1,27 @@
+{
+  "name": "@irodora/ui",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Shared React primitives composed over Base UI.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/design-tokens": "workspace:*",
+    "@irodora/color-core": "workspace:*"
+  }
+}

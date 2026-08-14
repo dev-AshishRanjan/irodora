@@ -8,6 +8,90 @@ reader cannot reconstruct.
 
 ---
 
+## Handoff — 2026-08-14 · F-001 IN PROGRESS, BLOCKED ON NODE
+
+**Feature:** F-001 — Monorepo toolchain scaffold ·
+[plan](../plans/F-001-monorepo-toolchain-scaffold.md)
+
+### Blocked on
+
+**`pnpm install` cannot run on this workstation.** Node is **22.16.0**; `package.json`
+requires `>=24.19.0 <25`. nvm-windows holds only 16.13.2, 16.9.1 and 20.5.1.
+
+```
+Your Node version is incompatible with "E:\JCFIP".
+Expected version: >=24.19.0 <25
+Got: v22.16.0
+```
+
+**Unblock with:**
+
+```
+nvm install 24.19.0 && nvm use 24.19.0
+```
+
+**Not** by lowering `engines`. Node 22 is in maintenance, 24 is the active LTS the project is
+pinned to, and weakening a constraint so a command succeeds is the anti-pattern this harness
+exists to prevent. The refusal is the constraint working.
+
+### Done
+
+- **23 workspace members** scaffolded — 15 packages, 5 apps, 3 test packages. Each with
+  `package.json`, `tsconfig.json` (lint project: src + tests, `noEmit`) and
+  `tsconfig.build.json` (emit project: src only).
+- **Package index files carry real intent**, not empty stubs — `Provenance` and
+  `ReproducibilityEnvelope` shapes in `color-core`, the `RADIUS` scale with `swatch: 0` in
+  `design-tokens`, `MeasurementSource`, `Classification`, `DeploymentProfile`. Each names the
+  feature that implements it.
+- **`scripts/verify-guards.mjs`** — writes a deliberately violating file at the exact path each
+  ESLint rule targets, asserts the rule fires, deletes it. Five guards. Wired into
+  `pnpm lint`.
+- **Root dev dependencies** pinned.
+
+### A real bug the guards found before they ever ran
+
+Writing guard #3 surfaced a defect in `eslint.config.mjs`: **a later flat-config object
+replaces `no-restricted-imports` rather than merging with it.** The colour-engine override
+declared only the `node:*` patterns, which silently disabled deep-import protection in exactly
+the packages that need it most.
+
+Fixed, and guard #3 exists specifically to catch it recurring. This is the case for guard
+fixtures in one paragraph: the rule looked correct, parsed correctly, and did not do what it
+appeared to do.
+
+### Gates
+
+```
+Ran:      state ✓  — 13 checks, 1 known warning
+NOT run:  typecheck, lint, format, test, build — pnpm install is blocked on Node
+          color-golden, e2e, a11y, contrast, cvd, content, perf, web-perf, e2e-full, security
+```
+
+**Gates 1–4 and 6 were deliberately NOT activated in `gates.json`.** Activating a gate that
+has never been executed would make it theatre — the exact failure the verification protocol
+warns about. They activate when they have been run and seen to pass.
+
+### Next action
+
+1. `nvm install 24.19.0 && nvm use 24.19.0`
+2. `pnpm install` — expect the lockfile to be created; commit it
+3. `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build`
+4. `node scripts/verify-guards.mjs` — **all five guards must FAIL to lint**, i.e. report their
+   rule. If any guard passes silently, that boundary is not enforced.
+5. Only then: activate gates 1–4 and 6 in `gates.json`, and close F-001.
+
+### Watch out
+
+- **TypeScript 7** (`^7.0.2`) is the native port. Its behaviour under project references at this
+  scale is unproven here. If it misbehaves, dropping to 5.9 is an **ADR**, not a silent edit.
+- `verify-guards.mjs` shells out to `npx eslint`. On Windows it uses `npx.cmd`; if that path is
+  wrong in CI, the script throws rather than passing — deliberately, since a guard that cannot
+  run is a guard that is failing open.
+- The scaffold is committed but **unverified**. Nothing is broken — gate 0 is green and there is
+  no build to break — but do not treat these packages as working until step 3 has run.
+
+---
+
 ## 2026-08-14 — Phase 2c: R1 surface designs complete
 
 **Scope:** the remaining R1 surfaces designed on the approved system. No application code.

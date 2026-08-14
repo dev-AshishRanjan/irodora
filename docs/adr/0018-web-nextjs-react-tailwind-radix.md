@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted — **the primitive choice is superseded by
+[ADR-0034](0034-base-ui-over-radix-for-headless-primitives.md)** (Base UI, not Radix).
+Everything else in this record stands.
 
 ## Date
 

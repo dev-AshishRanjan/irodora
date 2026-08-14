@@ -17,7 +17,8 @@
       "service": "root",
       "release": "R0",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-001-monorepo-toolchain-scaffold.md",
       "acceptance": [
         "pnpm workspace with apps/*, packages/*, tests/* resolves and installs",
         "Turborepo pipeline runs typecheck, lint, format:check, test, build across the workspace",

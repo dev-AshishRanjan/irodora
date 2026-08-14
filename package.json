@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && node scripts/verify-guards.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
@@ -28,11 +28,19 @@
     "test:perf": "pnpm --filter @irodora/web-perf test",
     "bench": "pnpm --filter @irodora/bench test",
     "security:secrets": "gitleaks detect --no-banner --redact --config .gitleaks.toml",
-    "clean": "turbo run clean && rimraf node_modules"
+    "clean": "turbo run clean && rimraf node_modules",
+    "verify:guards": "node scripts/verify-guards.mjs"
   },
   "devDependencies": {
+    "@eslint/js": "^9.40.0",
+    "@types/node": "^24.9.2",
+    "eslint": "^9.40.0",
+    "eslint-plugin-import-x": "^4.18.0",
     "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
     "turbo": "^2.10.9",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.47.0",
+    "vitest": "^4.1.10"
   }
 }
