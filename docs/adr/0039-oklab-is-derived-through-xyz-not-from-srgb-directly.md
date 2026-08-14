@@ -2,7 +2,26 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0040](0040-oklab-uses-the-css-color-4-recalculated-matrices.md), the same
+day, on the evidence below being checked.**
+
+> **Its central factual claim is false.** This record asserted that `colorjs.io` and `culori`
+> reach OKLab through Ottosson's direct linear-sRGB matrix while we compose through XYZ, and
+> that the resulting 1.24e-4 disagreement was therefore structural and permanent.
+>
+> `colorjs.io` goes through XYZ exactly as we do — `base: XYZ_D65`, `fromBase(XYZ)`. The
+> disagreement had nothing to do with the path. It was that we carried Ottosson's original
+> ten-decimal matrices while both libraries carry CSS Color 4's recalculation of the same
+> transform. Adopting the recalculated constants removed it entirely: OKLab is now **bitwise
+> identical** to `colorjs.io` and agrees with `culori` to 1e-15.
+>
+> **Kept rather than deleted, because the reasoning error is the useful part.** Two
+> independent libraries disagreeing with us by an identical amount was read as proof of a
+> structural difference. It was equally consistent with both of them being right and us being
+> wrong in one place — which is what it was. "Both oracles agree with each other and not with
+> us" is evidence about *us*, and it was read as evidence about *them*.
+>
+> The decision that replaced it is [ADR-0040](0040-oklab-uses-the-css-color-4-recalculated-matrices.md).
 
 ## Date
 

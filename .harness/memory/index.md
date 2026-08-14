@@ -23,6 +23,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/the-adaptation-transform-is-a-product-decision-not-a-detail.md](lessons/the-adaptation-transform-is-a-product-decision-not-a-detail.md) — CAT16 and Bradford disagree by 8.6 ΔE76 on saturated blue, and blue is half this corpus.
 - [lessons/an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour.md](lessons/an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour.md) — culori read 10% low because our D65 Lab was tagged with its D50 mode; reproduce an oracle's own published values before trusting it.
 - [lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md](lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md) — three published decimals cannot see a 0.11% matrix error; measure the blind spot and aim a second check at it.
+- [lessons/two-oracles-agreeing-against-you-is-evidence-about-you.md](lessons/two-oracles-agreeing-against-you-is-evidence-about-you.md) — an identical disagreement from two independent libraries was written up as a structural difference; it was a wrong constant, and the ADR made the defect durable.
 
 ### Design
 

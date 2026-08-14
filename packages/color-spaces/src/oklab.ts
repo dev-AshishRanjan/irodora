@@ -6,17 +6,19 @@
  * perceptual distance as a 30° rotation from blue. Users notice even when they cannot say
  * why.
  *
- * **The route is XYZ → LMS → OKLab** (ADR-0039). Ottosson also publishes a direct
- * linear-sRGB → LMS matrix, tuned so that sRGB white lands exactly on `(1, 0, 0)`, and it is
- * what `culori`, `colorjs.io` and browsers use. We do not use it, because XYZ is canonical
- * (ADR-0003) and a second path for one input space is a second answer waiting to disagree
- * with the first.
+ * **The route is XYZ → LMS → OKLab**, because XYZ is canonical (ADR-0003) and a second path
+ * for one input space is a second answer waiting to disagree with the first.
  *
- * The cost is measured, not assumed: **1.24e-4 in OKLab components, 0.047 ΔE00 at worst,**
- * against both oracles by the same amount to within 1e-9 — which is the signature of a path
- * difference rather than of a defect. White through this route is `L = 0.9999988`,
- * `C = 1.25e-4` rather than exactly `(1, 0, 0)`. Asserted in the golden set and the oracle
- * suite rather than corrected; correcting it would mean using numbers no source publishes.
+ * **The constants are CSS Color 4's, not the ten decimals in Ottosson's article** (ADR-0040).
+ * Ottosson's originals were derived against a slightly different white point and leave D65
+ * white at chroma 1.25e-4; CSS Color 4 recalculated the same transform for a consistent
+ * reference white. With the recalculated values this package is **bitwise identical to
+ * `colorjs.io`** over 10 000 samples and agrees with `culori` to 1e-15 — and `culori` reaches
+ * OKLab by the direct linear-sRGB route, which is the evidence that the path never mattered.
+ *
+ * That last point is worth keeping: the first version of this file carried Ottosson's
+ * originals, disagreed with both oracles by an identical 1.24e-4, and concluded the path was
+ * responsible. Two libraries agreeing with each other and not with us was evidence about us.
  *
  * `Math.cbrt`, never `Math.pow(x, 1/3)`: LMS components go negative for colours outside the
  * gamut they came from, and `pow` returns `NaN` for a negative base.

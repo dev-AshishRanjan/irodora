@@ -127,64 +127,61 @@ describe('culori agrees to float64 rounding', () => {
   });
 });
 
-describe('OKLab: the one disagreement, and its size', () => {
+describe('OKLab — and the disagreement that used to be here', () => {
   /**
-   * Both oracles use Ottosson's **direct linear-sRGB → LMS** matrix. We compose
-   * XYZ → LMS → OKLab, because XYZ is canonical (ADR-0003) and a second path for one input
-   * space is a second answer waiting to disagree with the first.
+   * This block once asserted a 1.24e-4 disagreement with both oracles, attributed to a path
+   * difference: we compose XYZ → LMS → OKLab, and the theory was that both libraries use
+   * Ottosson's direct linear-sRGB matrix.
    *
-   * Both are Ottosson's published numbers. Neither is wrong. The choice costs what is
-   * measured here, and the number is pinned so it cannot drift unnoticed and cannot be
-   * rediscovered as a mystery.
+   * **The theory was wrong and the assertion was measuring our own defect.** `colorjs.io`
+   * goes through XYZ exactly as we do (`base: XYZ_D65`). The real cause was that we carried
+   * Ottosson's original ten-decimal matrices while both oracles carry CSS Color 4's
+   * recalculation of the same transform for a consistent reference white. Adopting the
+   * recalculated constants (ADR-0040) removed the disagreement entirely.
+   *
+   * Kept as a named block rather than deleted, because "the oracles disagree with us by a
+   * consistent amount, so it must be structural" is a comfortable conclusion that was
+   * available here and was false.
    */
-  it('differs from both oracles by the same 1.24e-4, which is the signature of a path difference', () => {
-    const againstCulori = worstOver((rgb) => {
-      const c = toCuloriOklab({ mode: 'rgb', r: rgb[0], g: rgb[1], b: rgb[2] });
-      return maxAbsDiff(xyzToOklab(srgbToXyz(rgb)), [c.l, c.a, c.b]);
-    });
-    const againstColorjs = worstOver((rgb) =>
+  it('is bitwise identical to colorjs.io', () => {
+    const { worst, at } = worstOver((rgb) =>
       maxAbsDiff(
         xyzToOklab(srgbToXyz(rgb)),
         new Color('srgb', [...rgb]).to('oklab').coords as Triple,
       ),
     );
-
-    expect(againstCulori.worst).toBeLessThan(2e-4);
-    expect(againstColorjs.worst).toBeLessThan(2e-4);
-
-    // The two oracles agree with each other and disagree with us by the SAME amount. That is
-    // what says this is one path difference rather than two independent implementation bugs.
-    expect(Math.abs(againstCulori.worst - againstColorjs.worst)).toBeLessThan(1e-9);
+    expect(worst, `worst at ${JSON.stringify(at)}`).toBe(0);
   });
 
-  it('is worth 0.047 ΔE00 at most, and the worst case is white', () => {
-    // The number that matters to the product rather than to the arithmetic. 0.047 ΔE00 is
-    // roughly a twentieth of a just-noticeable difference under ideal viewing, and two orders
-    // of magnitude below anything a phone camera can resolve.
-    //
-    // It does mean our OKLCh values differ slightly from what a browser computes for the same
-    // colour. That is worth knowing at F-003 and F-017, where tokens are OKLCh-native and are
-    // handed to the browser as `oklch()`.
-    let worst = 0;
-    let at: Triple = [0, 0, 0];
+  it('agrees with culori to float64 rounding, despite culori taking the direct path', () => {
+    // culori composes linear-sRGB → LMS in one matrix rather than going through XYZ. That the
+    // two compositions agree to 1e-15 is the evidence that the path genuinely does not matter
+    // — which is what the earlier version of this file asserted the opposite of.
+    const { worst, at } = worstOver((rgb) => {
+      const c = toCuloriOklab({ mode: 'rgb', r: rgb[0], g: rgb[1], b: rgb[2] });
+      return maxAbsDiff(xyzToOklab(srgbToXyz(rgb)), [c.l, c.a, c.b]);
+    });
+    expect(worst, `worst at ${JSON.stringify(at)}`).toBeLessThan(1e-14);
+  });
 
+  it('and the perceptual difference is zero, not merely small', () => {
+    let worst = 0;
     for (const { rgb } of SAMPLES) {
       const c = toCuloriOklab({ mode: 'rgb', r: rgb[0], g: rgb[1], b: rgb[2] });
       const ours = xyzToLab(oklabToXyz(xyzToOklab(srgbToXyz(rgb))));
       const theirs = xyzToLab(oklabToXyz([c.l, c.a, c.b]));
-      // ΔE00, tagged lab65 — the same instrument and the same tag as the round-trip
-      // criterion, so the two numbers are comparable. ΔE76 reads 0.069 for the same pair,
-      // which is why the metric has to be stated alongside the figure.
-      const delta = deltaE00(ours, theirs);
-      if (delta > worst) {
-        worst = delta;
-        at = rgb;
-      }
+      worst = Math.max(worst, deltaE00(ours, theirs));
     }
+    expect(worst).toBeLessThan(1e-9);
+  });
 
-    expect(worst).toBeLessThan(0.05);
-    expect(worst).toBeGreaterThan(0.01);
-    expect(at.every((c) => c > 0.99)).toBe(true);
+  it('D65 white is exactly neutral, which is what the recalculation was for', () => {
+    // With Ottosson's original constants this was chroma 1.25e-4 — a neutral that is very
+    // slightly not neutral, at the top of the lightness range. It was documented as an
+    // inherent property of OKLab. It was not; it was the matrices.
+    const white = xyzToOklab([0.9504559270516716, 1, 1.0890577507598784]);
+    expect(Math.hypot(white[1], white[2])).toBeLessThan(1e-15);
+    expect(white[0]).toBeCloseTo(1, 15);
   });
 });
 

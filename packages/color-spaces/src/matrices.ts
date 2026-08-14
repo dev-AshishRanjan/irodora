@@ -106,31 +106,42 @@ export const LMS_TO_XYZ_BRADFORD: Matrix3 = [
 ];
 
 /**
- * CIE XYZ (D65) → LMS, OKLab (Ottosson 2020).
+ * CIE XYZ (D65) → LMS, OKLab.
  *
- * Ottosson's M1. Published to ten decimal places, which is the precision the derivation was
- * done at; using more digits would be inventing precision the source does not have.
+ * **These are the CSS Color 4 matrices, not the ten-decimal ones in Ottosson's 2020 article,
+ * and the difference is not cosmetic** (ADR-0039). Ottosson derived his against a slightly
+ * different white point than the one the rest of the pipeline uses, so composing them here
+ * leaves D65 white at chroma **1.25e-4** instead of zero — a neutral that is very slightly
+ * not neutral, at the top of the lightness range where it is least forgivable. CSS Color 4
+ * recalculated the same transform for a consistent reference white
+ * (csswg-drafts issue 6642); with these values white lands on `(1, 0, 0)` to **5e-16**.
+ *
+ * Ottosson's published test table still reproduces to the three decimals he prints it at, so
+ * the golden set keeps its `published-value` entries — those check the transform, and these
+ * constants are a more precise statement of the same transform rather than a different one.
  */
 export const XYZ_TO_LMS_OKLAB: Matrix3 = [
-  0.8189330101, 0.3618667424, -0.1288597137, 0.032984543, 0.9293118715, 0.0361456387, 0.0482003018,
-  0.2643662691, 0.633851707,
+  0.819022437996703, 0.3619062600528904, -0.1288737815209879, 0.0329836539323885,
+  0.9292868615863434, 0.0361446663506424, 0.0481771893596242, 0.2642395317527308,
+  0.6335478284694309,
 ];
 
-/** LMS (cube-rooted) → OKLab. Ottosson's M2. */
+/** LMS (cube-rooted) → OKLab. CSS Color 4, recalculated for a consistent reference white. */
 export const LMS_TO_OKLAB: Matrix3 = [
-  0.2104542553, 0.793617785, -0.0040720468, 1.9779984951, -2.428592205, 0.4505937099, 0.0259040371,
-  0.7827717662, -0.808675766,
+  0.210454268309314, 0.7936177747023054, -0.0040720430116193, 1.9779985324311684,
+  -2.4285922420485799, 0.450593709617411, 0.0259040424655478, 0.7827717124575296,
+  -0.8086757549230774,
 ];
 
-/** OKLab → LMS (cube-rooted). Exact float64 inverse of M2; agrees with Ottosson's published inverse to 4.2e-10. */
+/** OKLab → LMS (cube-rooted). CSS Color 4's published inverse, which is the exact float64 inverse to 2.2e-16. */
 export const OKLAB_TO_LMS: Matrix3 = [
-  0.9999999984505199, 0.39633779217376786, 0.2158037580607588, 1.0000000088817607,
-  -0.10556134232365634, -0.0638541747717059, 1.000000054672411, -0.08948418209496577,
-  -1.291485537864092,
+  1, 0.3963377773761749, 0.2158037573099136, 1, -0.1055613458156586, -0.0638541728258133, 1,
+  -0.0894841775298119, -1.2914855480194092,
 ];
 
-/** LMS → CIE XYZ (D65). Exact float64 inverse of M1; agrees with Ottosson's published inverse to 4.1e-10. */
+/** LMS → CIE XYZ (D65). CSS Color 4's published inverse, which is the exact float64 inverse to 2.2e-16. */
 export const LMS_TO_XYZ_OKLAB: Matrix3 = [
-  1.227013850692864, -0.5577999804651378, 0.281256148872337, -0.04058017760442784, 1.11225686924458,
-  -0.07167667847790375, -0.07638128481600542, -0.4214819782769511, 1.586163220369668,
+  1.2268798758459243, -0.5578149944602171, 0.2813910456659647, -0.0405757452148008,
+  1.112286803280317, -0.0717110580655164, -0.0763729366746601, -0.4214933324022432,
+  1.5869240198367816,
 ];

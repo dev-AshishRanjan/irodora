@@ -80,7 +80,7 @@
       "id": "srgb-red-primary",
       "source": "CIE 15:2018 against the chromaticity-derived D65 white point; sRGB red primary from IEC 61966-2-1",
       "derivation": "published-formula",
-      "derivationNote": "XYZ = [0.41239079926595934, 0.21263900587151027, 0.01933081871559182], white = [0.9504559270516716, 1, 1.0890577507598784]. NOTE: tables quoting Lab [53.2408, 80.0925, 67.2032] use the ROUNDED white point [0.95047, 1, 1.08883]; the two differ by 0.004 dE76 and the difference is entirely in the white point, not in the formula.",
+      "derivationNote": "XYZ = [0.41239079926595934, 0.21263900587151027, 0.01933081871559182], white = [0.9504559270516716, 1, 1.0890577507598784]. NOTE: tables commonly quote Lab [53.2408, 80.0925, 67.2032]. Substituting only the rounded white point [0.95047, 1, 1.08883] into OUR formula gives [53.2371, 80.0882, 67.1996] — closer to the table but not equal to it, so the white point accounts for the 0.004 dE76 magnitude without accounting for every digit. The rest is the source table's own rounding and its sRGB matrix precision, which we cannot inspect. Recorded at that level of certainty deliberately.",
       "input": { "srgb": [1, 0, 0] },
       "expected": [53.23711559542936, 80.09011352310385, 67.20326351172214],
       "tolerance": 1e-12

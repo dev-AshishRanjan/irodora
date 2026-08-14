@@ -141,7 +141,8 @@
     {
       "id": "p3-red-in-srgb-is-out-of-gamut",
       "source": "SMPTE RP 431-2 and IEC 61966-2-1 — the P3 gamut strictly contains the sRGB gamut",
-      "derivation": "definitional",
+      "derivation": "published-formula",
+      "derivationNote": "P3 [1,0,0] through the P3 matrix, then the XYZ-to-sRGB matrix, then the OETF. Only the SIGNS are definitional — P3 red must fall outside sRGB — so the entry is classed by how its numbers were obtained, not by the property it demonstrates.",
       "input": { "space": "display-p3", "rgb": [1, 0, 0] },
       "expected": [1.0930663624351615, -0.22674197356975417, -0.15013458093711937],
       "tolerance": 1e-14
