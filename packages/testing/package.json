@@ -2,7 +2,7 @@
   "name": "@irodora/testing",
   "version": "0.0.0",
   "private": true,
-  "description": "Golden datasets, property helpers and fixtures.",
+  "description": "Golden datasets, property helpers and fixtures. Dev-only; never published.",
   "type": "module",
   "exports": {
     ".": {
@@ -22,7 +22,7 @@
     "test": "vitest run --passWithNoTests",
     "clean": "rimraf dist *.tsbuildinfo"
   },
-  "dependencies": {
-    "@irodora/color-core": "workspace:*"
+  "devDependencies": {
+    "vitest": "^4.1.10"
   }
 }

@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint && node scripts/verify-guards.mjs",
+    "lint": "turbo run lint && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
@@ -33,6 +33,8 @@
     "verify:mirror": "node scripts/verify-gate-mirror.mjs",
     "clean": "turbo run clean && rimraf node_modules",
     "verify:guards": "node scripts/verify-guards.mjs",
+    "verify:purity": "node scripts/verify-engine-purity.mjs",
+    "verify:purity:prove": "node scripts/verify-engine-purity.mjs --prove",
     "verify:images": "node scripts/verify-image-nonroot.mjs",
     "security:staged": "gitleaks protect --staged --no-banner --redact --config .gitleaks.toml",
     "verify:compose": "node scripts/verify-compose-portability.mjs",
