@@ -95,7 +95,9 @@
       "priority": "must",
       "status": "todo",
       "blockedBy": [
-        "F-001"
+        "F-001",
+        "F-007",
+        "F-008"
       ],
       "acceptance": [
         "design-system.manifest.json compiles to CSS custom properties, TypeScript, React Native styles and a Tailwind v4 theme",
@@ -110,7 +112,7 @@
         "test",
         "contrast"
       ],
-      "notes": "Concrete values arrive from the design deliverable. The structure and the pipeline land here."
+      "notes": "Concrete values arrive from the design deliverable. The structure and the pipeline land here. BLOCKED ON THE ENGINE (ADR-0037): two acceptance criteria — the contrast gate's WCAG/APCA check and the cvdPairs assertion — need @irodora/color-difference (F-007) and @irodora/cvd-engine (F-008). The manifest is `approved`, so gate 9 is blocking from the moment it activates and cannot ship as a stub. R0 therefore closes with F-003 outstanding; that is deliberate and recorded."
     },
     {
       "id": "F-004",
