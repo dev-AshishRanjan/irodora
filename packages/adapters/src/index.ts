@@ -14,3 +14,4 @@ export {
   type MigrateOptions,
   type MigrationOutcome,
 } from './migrate.js';
+export { ValkeyCache, type ValkeyOptions } from './valkey-cache.js';

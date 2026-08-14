@@ -38,6 +38,12 @@ regexes = [
   # the repository — any other high-entropy string is treated as a real secret.
   '''(?i)(replace-me|changeme|example|placeholder|your-[a-z-]+-here|xxxxxxxx)''',
   '''postgres://irodora:irodora@localhost''',
+  # "Valkey" ends in "key", so a phrase like `Valkey, S3-compatible storage` reads to the
+  # generic-api-key rule as key = "S3-compatible". Scoped to that exact product term rather
+  # than to a path, so a real credential in the same file is still caught. Added 2026-08-14
+  # (F-005); the phrase now lives in commit 1a9ceb2f's history even though the working tree
+  # was reworded.
+  '''^S3-compatible$''',
 ]
 
 # Colour hex values and OKLCH triples are high-entropy by nature and appear in

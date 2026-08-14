@@ -2,7 +2,7 @@
   "name": "@irodora/adapters",
   "version": "0.0.0",
   "private": false,
-  "description": "Real implementations of the infrastructure ports — Postgres, Valkey, S3-compatible storage.",
+  "description": "Driver-backed implementations of the infrastructure ports — Postgres, object storage, Valkey.",
   "type": "module",
   "exports": {
     ".": {
@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@irodora/ports": "workspace:*",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "ioredis": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

@@ -9,6 +9,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist *.tsbuildinfo"
+    "clean": "rimraf dist *.tsbuildinfo",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@irodora/adapters": "workspace:*",
+    "@irodora/config": "workspace:*",
+    "@irodora/ports": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "vitest": "^4.1.10"
   }
 }

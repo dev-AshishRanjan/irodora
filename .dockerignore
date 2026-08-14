@@ -1,0 +1,13 @@
+# Everything the image must not carry, and a few things that would break the build.
+**/node_modules
+**/dist
+**/.turbo
+**/.next
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+coverage
+playwright-report
+test-results

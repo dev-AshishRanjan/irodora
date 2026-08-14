@@ -1,0 +1,90 @@
+# syntax=docker/dockerfile:1.7
+# ---------------------------------------------------------------------------
+# @irodora/api — Fastify modular monolith.
+#
+# Build from the REPOSITORY ROOT, not from this directory:
+#   docker build -f infra/docker/Dockerfile.api -t irodora/api .
+#
+# The pnpm workspace means a package's dependencies live in the root lockfile
+# and its workspace siblings are real source, so a build context scoped to
+# apps/api could not resolve either.
+# ---------------------------------------------------------------------------
+
+# Pinned by DIGEST, not by tag. `node:24-alpine` moves; this does not, so an image
+# built today and one built in six months contain the same base — which is what
+# makes "it worked in staging" a statement about the artefact rather than a hope.
+#
+# The cost is real and named rather than discovered: a pinned base does not receive
+# security updates. Bumping it is a scheduled work item, and the diff is visible.
+FROM node@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS base
+ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
+RUN corepack enable
+
+# ---- dependencies --------------------------------------------------------
+# Manifests only, so this layer is cached until a dependency actually changes.
+# Copying the whole tree here would rebuild node_modules on every source edit.
+FROM base AS deps
+WORKDIR /repo
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/api/package.json                 apps/api/
+COPY packages/adapters/package.json        packages/adapters/
+COPY packages/config/package.json          packages/config/
+COPY packages/ports/package.json           packages/ports/
+COPY packages/contracts/package.json       packages/contracts/
+COPY packages/color-core/package.json      packages/color-core/
+COPY packages/color-spaces/package.json    packages/color-spaces/
+COPY packages/color-difference/package.json packages/color-difference/
+COPY packages/color-harmony/package.json   packages/color-harmony/
+COPY packages/color-naming/package.json    packages/color-naming/
+COPY packages/cvd-engine/package.json      packages/cvd-engine/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter @irodora/api...
+
+# ---- build ---------------------------------------------------------------
+FROM deps AS build
+WORKDIR /repo
+COPY tsconfig.base.json ./
+COPY apps/api      apps/api
+COPY packages      packages
+RUN pnpm --filter @irodora/api... build
+
+# Re-resolve with dev dependencies removed. `--prod` on its own would keep the
+# tree it already had; this produces the set that actually ships.
+#
+# CI=true is required, not cosmetic: pruning rewrites node_modules, and pnpm refuses
+# to do that non-interactively without it — the build fails with
+# ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY rather than silently keeping dev deps.
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    CI=true pnpm install --frozen-lockfile --filter @irodora/api... --prod
+
+# ---- runtime -------------------------------------------------------------
+FROM base AS runtime
+WORKDIR /repo
+
+ENV NODE_ENV=production \
+    IRODORA_SERVICE_NAME=api \
+    IRODORA_HTTP_HOST=0.0.0.0 \
+    IRODORA_HTTP_PORT=3000
+
+# `node` (uid 1000) ships with the base image. Creating our own would earn nothing
+# except a different number to remember.
+#
+# A USER line is a CLAIM. The fact is `docker run --rm <image> id -u`, and there is
+# a test that runs exactly that — see scripts/verify-image-nonroot.mjs.
+USER node
+
+COPY --from=build --chown=node:node /repo/node_modules            ./node_modules
+COPY --from=build --chown=node:node /repo/apps/api/node_modules   ./apps/api/node_modules
+COPY --from=build --chown=node:node /repo/apps/api/dist           ./apps/api/dist
+COPY --from=build --chown=node:node /repo/apps/api/package.json   ./apps/api/
+COPY --from=build --chown=node:node /repo/packages                ./packages
+
+EXPOSE 3000
+
+# No HEALTHCHECK here, deliberately. Coolify and Dokploy both drive health from the
+# compose file, and a Dockerfile healthcheck would run IN ADDITION — two probes with
+# two opinions, and the stricter one silently wins. /healthz and /readyz are declared
+# once, in infra/compose/docker-compose.prod.yml.
+
+WORKDIR /repo/apps/api
+CMD ["node", "dist/main.js"]
