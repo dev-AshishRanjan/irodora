@@ -1,0 +1,150 @@
+{
+  "id": "rgb-xyz",
+  "description": "sRGB and Display-P3 to CIE XYZ (D65). The chromaticity entries are the published primaries and white point; the test re-derives the matrix from them and asserts it matches the stored one, so the citation is checked rather than asserted. The primary entries are definitional: the XYZ of primary N is column N of the matrix, which is what makes a transposed matrix impossible to miss.",
+  "entries": [
+    {
+      "id": "srgb-chromaticities",
+      "source": "IEC 61966-2-1:1999, primaries and D65 white point; matrix as published in CSS Color Module Level 4 sample code",
+      "derivation": "published-value",
+      "input": {
+        "primaries": [
+          [0.64, 0.33],
+          [0.3, 0.6],
+          [0.15, 0.06]
+        ],
+        "white": [0.3127, 0.329]
+      },
+      "expected": [
+        0.41239079926595934, 0.357584339383878, 0.1804807884018343, 0.21263900587151027,
+        0.715168678767756, 0.07219231536073371, 0.01933081871559182, 0.11919477979462598,
+        0.9505321522496607
+      ],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "p3-chromaticities",
+      "source": "SMPTE RP 431-2 DCI-P3 primaries with D65 white; matrix as published in CSS Color Module Level 4 sample code",
+      "derivation": "published-value",
+      "input": {
+        "primaries": [
+          [0.68, 0.32],
+          [0.265, 0.69],
+          [0.15, 0.06]
+        ],
+        "white": [0.3127, 0.329]
+      },
+      "expected": [
+        0.4865709486482162, 0.26566769316909306, 0.1982172852343625, 0.2289745640697488,
+        0.6917385218365064, 0.079286914093745, 0, 0.04511338185890264, 1.043944368900976
+      ],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "d65-white-point",
+      "source": "CIE standard illuminant D65, 2 degree observer, x = 0.3127 y = 0.3290",
+      "derivation": "published-formula",
+      "derivationNote": "XYZ = [x/y, 1, (1 - x - y)/y] = [0.3127/0.3290, 1, 0.3583/0.3290]",
+      "input": [0.3127, 0.329],
+      "expected": [0.9504559270516716, 1, 1.0890577507598784],
+      "tolerance": 0
+    },
+    {
+      "id": "srgb-white",
+      "source": "IEC 61966-2-1:1999 — sRGB (1,1,1) is by construction the D65 white point",
+      "derivation": "definitional",
+      "input": { "space": "srgb", "rgb": [1, 1, 1] },
+      "expected": [0.9504559270516717, 1, 1.0890577507598784],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "srgb-black",
+      "source": "IEC 61966-2-1:1999 — the transfer function and the matrix are both zero-preserving",
+      "derivation": "definitional",
+      "input": { "space": "srgb", "rgb": [0, 0, 0] },
+      "expected": [0, 0, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "srgb-red-primary",
+      "source": "IEC 61966-2-1:1999 — the XYZ of the red primary is column 0 of the RGB-to-XYZ matrix",
+      "derivation": "definitional",
+      "input": { "space": "srgb", "rgb": [1, 0, 0] },
+      "expected": [0.41239079926595934, 0.21263900587151027, 0.01933081871559182],
+      "tolerance": 0
+    },
+    {
+      "id": "srgb-green-primary",
+      "source": "IEC 61966-2-1:1999 — column 1 of the RGB-to-XYZ matrix",
+      "derivation": "definitional",
+      "input": { "space": "srgb", "rgb": [0, 1, 0] },
+      "expected": [0.357584339383878, 0.715168678767756, 0.11919477979462598],
+      "tolerance": 0
+    },
+    {
+      "id": "srgb-blue-primary",
+      "source": "IEC 61966-2-1:1999 — column 2 of the RGB-to-XYZ matrix",
+      "derivation": "definitional",
+      "input": { "space": "srgb", "rgb": [0, 0, 1] },
+      "expected": [0.1804807884018343, 0.07219231536073371, 0.9505321522496607],
+      "tolerance": 0
+    },
+    {
+      "id": "srgb-mid-grey",
+      "source": "IEC 61966-2-1:1999, transfer function and matrix",
+      "derivation": "published-formula",
+      "derivationNote": "Each component 0.5 linearises to ((0.5 + 0.055)/1.055)^2.4 = 0.21404114048223255, then XYZ = white x 0.21404114048223255. The Y of 0.2140 is why 50% grey carries 21.4% of the light.",
+      "input": { "space": "srgb", "rgb": [0.5, 0.5, 0.5] },
+      "expected": [0.20343667060423742, 0.21404114048223255, 0.23310316302365935],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "srgb-near-black-grey",
+      "source": "IEC 61966-2-1:1999, linear segment and matrix",
+      "derivation": "published-formula",
+      "derivationNote": "8-bit code 3 on every channel: 3/255 = 0.011764705882352941, linearises to 0.0009105809506465125 on the LINEAR branch, then XYZ = white x that. A pure-power implementation returns roughly a 39th of this Y.",
+      "input": { "space": "srgb", "rgb": [0.011764705882352941, 0.011764705882352941, 0.011764705882352941] },
+      "expected": [0.0008654670616023235, 0.0009105809506465126, 0.0009916752419958828],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "p3-white",
+      "source": "SMPTE RP 431-2 with D65 white — P3 (1,1,1) is the same white as sRGB (1,1,1)",
+      "derivation": "definitional",
+      "input": { "space": "display-p3", "rgb": [1, 1, 1] },
+      "expected": [0.9504559270516717, 1.0000000000000002, 1.0890577507598787],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "p3-red-primary",
+      "source": "SMPTE RP 431-2 — column 0 of the P3-to-XYZ matrix; x + y = 1.000 exactly, so Z is exactly zero",
+      "derivation": "definitional",
+      "input": { "space": "display-p3", "rgb": [1, 0, 0] },
+      "expected": [0.4865709486482162, 0.2289745640697488, 0],
+      "tolerance": 0
+    },
+    {
+      "id": "p3-green-primary",
+      "source": "SMPTE RP 431-2 — column 1 of the P3-to-XYZ matrix",
+      "derivation": "definitional",
+      "input": { "space": "display-p3", "rgb": [0, 1, 0] },
+      "expected": [0.26566769316909306, 0.6917385218365064, 0.04511338185890264],
+      "tolerance": 0
+    },
+    {
+      "id": "p3-blue-primary",
+      "source": "SMPTE RP 431-2 — column 2 of the P3-to-XYZ matrix",
+      "derivation": "definitional",
+      "input": { "space": "display-p3", "rgb": [0, 0, 1] },
+      "expected": [0.1982172852343625, 0.079286914093745, 1.043944368900976],
+      "tolerance": 0
+    },
+    {
+      "id": "p3-red-in-srgb-is-out-of-gamut",
+      "source": "SMPTE RP 431-2 and IEC 61966-2-1 — the P3 gamut strictly contains the sRGB gamut",
+      "derivation": "definitional",
+      "input": { "space": "display-p3", "rgb": [1, 0, 0] },
+      "expected": [1.0930663624351615, -0.22674197356975417, -0.15013458093711937],
+      "tolerance": 1e-14
+    }
+  ]
+}

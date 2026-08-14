@@ -13,6 +13,14 @@
  * conversion would have to invent one.
  */
 
+/**
+ * Three coordinates, space unspecified.
+ *
+ * The type a function takes when it genuinely does not care which space it is in — a matrix
+ * multiply, a component-wise map. A conversion never takes one: it names its input space.
+ */
+export type Triple = readonly [number, number, number];
+
 /** CIE XYZ at the D65 white point. Canonical — everything else derives from it (ADR-0003). */
 export type Xyz = readonly [x: number, y: number, z: number];
 
