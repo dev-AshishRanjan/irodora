@@ -159,6 +159,39 @@ Gates named by the feature: `state`, `build`, `security`.
    an HTTP server. Increments are committed individually so an interrupted session leaves
    working state rather than a half-applied stack.
 
+## Revisions
+
+### 2026-08-14 — criteria 6 and 7 reclassified ([ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md))
+
+The plan originally recorded criteria 6 and 7 as "environment-blocked" and left them as prose
+in a table. They are now **attested** in `feature_list.json`, which makes them structural:
+gate 0 lists them on every run, and their wording is held verbatim against the acceptance
+entry so neither can be softened later.
+
+**The substantive change is what replaces them.** Docker simulating production is right for
+everything about *behaviour* — the stack boots, healthchecks go green in order, migrations do
+not race, images run non-root. It is **not** a substitute for *"consumed unmodified by both
+Coolify and Dokploy"*, which is a compatibility claim about two platforms, not a liveness
+claim. Swapping one for the other and calling the criterion met would downgrade the claim
+while keeping its wording — the ADR-0031 failure applied to our own process.
+
+So the compatibility claim is split rather than substituted:
+
+| Part | How |
+|---|---|
+| the compose file uses nothing the platforms reject | **gated** — `scripts/verify-compose-portability.mjs`, increment 6 |
+| the stack actually boots and behaves | **gated** — `docker compose up`, increments 5–6 |
+| TLS, ingress, the platforms' own env injection | **attested** — a real deployment, blocking the release |
+
+Most of the residual risk turns out to be a *static* property of the file, and therefore
+lintable: no host bind mounts, no `container_name`, no `network_mode: host`, no published
+ports on services behind Traefik, a healthcheck on every service another `depends_on`s, no
+`env_file` outside the repository. That check must be proven to fail on a real violation,
+like every other guard here.
+
+**Increment 6 grows** to include that script. Increment 7's Terraform skeleton is gated by
+`terraform validate`; only "remote state configured" is attested.
+
 ## Out of scope
 
 - The real API surface — routes, Zod type provider, OpenAPI, auth: **F-015**.
