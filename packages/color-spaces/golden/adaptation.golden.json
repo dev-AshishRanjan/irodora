@@ -1,0 +1,94 @@
+{
+  "id": "adaptation",
+  "description": "Chromatic adaptation, CAT16 (Li et al. 2017) and Bradford. The strongest entry here is the Bradford D65-to-D50 matrix: Lindbloom publishes it to seven decimals, and reproducing it to 4.4e-8 from the cone matrix plus the von Kries construction checks the cone matrix, the construction, and the composition all at once. It also has to be computed with LINDBLOOM'S white points to match, which is the entry's second job — it makes the white-point dependency explicit instead of leaving it to be discovered.",
+  "entries": [
+    {
+      "id": "bradford-d65-to-d50-lindbloom-whites",
+      "source": "Lindbloom, chromatic adaptation matrices, Bradford D65 to D50 (7 decimal places)",
+      "derivation": "published-value",
+      "input": {
+        "method": "bradford",
+        "from": [0.95047, 1, 1.08883],
+        "to": [0.96422, 1, 0.82521]
+      },
+      "expected": [
+        1.0478112, 0.0228866, -0.050127, 0.0295424, 0.9904844, -0.0170491, -0.0092345, 0.0150436,
+        0.7521316
+      ],
+      "tolerance": 5e-8
+    },
+    {
+      "id": "bradford-d65-to-d50-derived-whites",
+      "source": "Lindbloom's Bradford construction with white points derived from the CIE chromaticities rather than his rounded XYZ",
+      "derivation": "published-formula",
+      "derivationNote": "Same construction, white points [0.9504559270516716, 1, 1.0890577507598784] and [0.9642956764295677, 1, 0.8251046025104602]. Differs from the published matrix by 2.6e-4 — ENTIRELY because of the white points, not the transform. Recorded so the difference is attributed correctly if it ever shows up in a comparison against another tool.",
+      "input": {
+        "method": "bradford",
+        "from": [0.9504559270516716, 1, 1.0890577507598784],
+        "to": [0.9642956764295677, 1, 0.8251046025104602]
+      },
+      "expected": [
+        1.0479297925449969, 0.022946870601609708, -0.05019226628920527, 0.029627808770055993,
+        0.9904344267538801, -0.017073799063418826, -0.0092430406462045145, 0.015055191490298145,
+        0.7518742814281372
+      ],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "cat16-maps-source-white-to-destination-white",
+      "source": "Li, Luo, Hunt, Ohta et al. (2017), CAT16 — the defining property of any von Kries transform",
+      "derivation": "definitional",
+      "input": {
+        "method": "cat16",
+        "from": [0.9504559270516716, 1, 1.0890577507598784],
+        "to": [0.9642956764295677, 1, 0.8251046025104602],
+        "xyz": [0.9504559270516716, 1, 1.0890577507598784]
+      },
+      "expected": [0.9642956764295677, 1, 0.8251046025104602],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "bradford-maps-source-white-to-destination-white",
+      "source": "Lam (1985), Bradford — the same defining property",
+      "derivation": "definitional",
+      "input": {
+        "method": "bradford",
+        "from": [0.9504559270516716, 1, 1.0890577507598784],
+        "to": [0.9642956764295677, 1, 0.8251046025104602],
+        "xyz": [0.9504559270516716, 1, 1.0890577507598784]
+      },
+      "expected": [0.9642956764295677, 1, 0.8251046025104602],
+      "tolerance": 1e-15
+    },
+    {
+      "id": "cat16-d65-to-d50-matrix",
+      "source": "Li et al. (2017) CAT16 cone matrix with the von Kries construction, CIE-derived white points",
+      "derivation": "published-formula",
+      "derivationNote": "Minv x diag(coneDestination / coneSource) x M, with M the published CAT16 matrix. Recorded so a change to the cone matrix or the construction shows up as a diff here rather than as a small hue shift in an adapted corpus.",
+      "input": {
+        "method": "cat16",
+        "from": [0.9504559270516716, 1, 1.0890577507598784],
+        "to": [0.9642956764295677, 1, 0.8251046025104602]
+      },
+      "expected": [
+        1.0108543289379337, 0.040708610323500954, -0.034144582500686194, 0.005428142012307907,
+        0.9935819261930646, 0.0011559203885934, 0.0002507224681170424, -0.011491875891322778,
+        0.7679649469115444
+      ],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "black-is-fixed",
+      "source": "Any von Kries transform is linear, so it fixes the origin",
+      "derivation": "definitional",
+      "input": {
+        "method": "cat16",
+        "from": [0.9504559270516716, 1, 1.0890577507598784],
+        "to": [0.9642956764295677, 1, 0.8251046025104602],
+        "xyz": [0, 0, 0]
+      },
+      "expected": [0, 0, 0],
+      "tolerance": 0
+    }
+  ]
+}

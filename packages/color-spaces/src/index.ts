@@ -86,6 +86,13 @@ export {
 } from './oklab.js';
 
 export {
+  adapt,
+  adaptationMatrix,
+  DEFAULT_ADAPTATION,
+  type AdaptationMethod,
+} from './adaptation.js';
+
+export {
   linearToSrgb,
   srgbToLinear,
   SRGB_EOTF_CUTOFF,
