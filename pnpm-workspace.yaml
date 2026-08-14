@@ -14,3 +14,6 @@ packages:
 # artefact and no user.
 allowBuilds:
   unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - fastify@5.12.0

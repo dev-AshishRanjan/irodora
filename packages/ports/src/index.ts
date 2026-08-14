@@ -13,8 +13,11 @@
 
 export * from './cache.js';
 export * from './blob.js';
+export * from './database.js';
 export * from './conformance/runner.js';
 export * from './conformance/cache.js';
 export * from './conformance/blob.js';
+export * from './conformance/database.js';
 export * from './memory/cache.js';
 export * from './memory/blob.js';
+export * from './memory/database.js';

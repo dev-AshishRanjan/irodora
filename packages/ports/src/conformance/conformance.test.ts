@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import type { BlobMetadata, BlobStorePort } from '../blob.js';
 import type { CachePort, TtlSeconds } from '../cache.js';
+import type { DatabasePort } from '../database.js';
 import { InMemoryBlobStore } from '../memory/blob.js';
 import { InMemoryCache } from '../memory/cache.js';
+import { InMemoryDatabase } from '../memory/database.js';
 import { runBlobConformance } from './blob.js';
 import { runCacheConformance } from './cache.js';
+import { runDatabaseConformance } from './database.js';
 import { allPassed, failedCaseNames } from './runner.js';
 
 describe('the in-memory adapters conform', () => {
@@ -21,6 +24,55 @@ describe('the in-memory adapters conform', () => {
 
     expect(failedCaseNames(result)).toStrictEqual([]);
     expect(result.cases.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('database', async () => {
+    const result = await runDatabaseConformance('in-memory', () => new InMemoryDatabase());
+
+    expect(failedCaseNames(result)).toStrictEqual([]);
+    expect(result.cases.length).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe('the advisory-lock suite can fail', () => {
+  /**
+   * Holds the lock forever once the body throws.
+   *
+   * The realistic bug: an implementation that releases the lock after `await body()` instead
+   * of in a `finally`. A migration that fails then leaves the lock held, every subsequent
+   * boot skips migrating, and the schema silently stays behind — which surfaces as a query
+   * error days later, nowhere near the cause.
+   */
+  class LeakyLockDatabase implements DatabasePort {
+    readonly #held = new Set<bigint>();
+
+    ping(): Promise<boolean> {
+      return Promise.resolve(true);
+    }
+
+    async withAdvisoryLock<T>(
+      lockKey: bigint,
+      body: () => Promise<T>,
+    ): Promise<{ acquired: true; value: T } | { acquired: false }> {
+      if (this.#held.has(lockKey)) return { acquired: false };
+      this.#held.add(lockKey);
+
+      const value = await body(); // no finally — the leak
+      this.#held.delete(lockKey);
+
+      return { acquired: true, value };
+    }
+
+    close(): Promise<void> {
+      return Promise.resolve();
+    }
+  }
+
+  it('catches a lock that is not released when the migration fails', async () => {
+    const result = await runDatabaseConformance('broken:leaky-lock', () => new LeakyLockDatabase());
+
+    expect(allPassed(result)).toBe(false);
+    expect(failedCaseNames(result)).toContain('the lock is released even when the body throws');
   });
 });
 
