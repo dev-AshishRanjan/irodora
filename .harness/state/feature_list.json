@@ -316,7 +316,8 @@
       ],
       "effects": [
         "E-005"
-      ]
+      ],
+      "notes": "IN PROGRESS. DELIVERED: Machado anomalous trichromacy for all three deficiencies across CONTINUOUS severity (culori snaps to 0.1 steps because its interpolation weight is Math.round(t % 0.1), always 0 — we interpolate, and the oracle is consulted only at the 11 tabulated points); Vienot dichromacy for protan and deutan; one separation score in [0,100] (E-005); gate 10 ACTIVE after being watched fail. NOT DELIVERED — acceptance criterion 1 is only partly met: TRITAN DICHROMACY. Vienot's single-plane simplification is not accurate for tritanopia, whose two half-planes diverge, so simulateDichromacy THROWS for it rather than returning a plausible wrong answer that would feed the separation score. The full two-half-plane Brettel 1997 construction is the remaining work, and there is no oracle for it in either library — the check will have to be the confusion-line property, as it is for the other two. Criterion 2 is met for protan and deutan using the kernel of the published Vienot matrix; note that pairs built from the classic published COPUNCTAL POINTS only collapse to ~5.2 dE00, because those points and Vienot's matrices come from different cone fundamentals. Recorded as a golden entry."
     },
     {
       "id": "F-009",

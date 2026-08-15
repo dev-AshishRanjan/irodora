@@ -8,6 +8,132 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-15 — F-008 IN PROGRESS · the CVD engine, and a gate that could not fail
+
+**Gate 10 (`cvd`) is active.** Machado anomalous trichromacy works across continuous severity,
+Viénot dichromacy works for protan and deutan, and the separation score exists — one
+definition, which is what E-005 is about.
+
+**F-008 is NOT done.** Acceptance criterion 1 is partly met: tritan dichromacy is not
+implemented. Read "What is not delivered" before picking this up.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 12 warnings
+  ✓ gate 1   typecheck      37 tasks
+  ✓ gate 2   lint           37 tasks + 10 guards + engine purity (proven)
+  ✓ gate 3   format
+  ✓ gate 4   test           654 tests
+  ✓ gate 5   color-golden   298 tests
+  ✓ gate 10  cvd            12 tests — ACTIVE, after being watched fail
+  ✓ gate 6   build          25 tasks
+  ✓ mirror   9/9 active gates
+
+NOT run: e2e, a11y, contrast, content, perf, web-perf, e2e-full.
+```
+
+### The finding: gate 10's first decoy could not fail
+
+The gate was written, it passed, and the mutation proof said otherwise. **Deleting the
+lightness term from `separation.ts` entirely and re-running gate 10 passed.**
+
+The decoy pair — a navy against a pale olive — has both terms saturated, so removing one
+changed nothing. The test asserting "a score ignoring lightness would rate this pair lower"
+was comparing 100 against 100.
+
+Then I overcorrected: measuring one more pair suggested the lightness term was inert
+altogether, and I nearly recorded that as a design defect. **It is not.** The term binds
+whenever `lightnessTerm > differenceTerm`, which happens for roughly **9% of sampled pairs** —
+ΔE00 already contains the lightness difference, so the two are strongly correlated but not
+identical.
+
+Three things changed as a result:
+
+- the decoy uses the pair where the term contributes **14.6 points**;
+- the **binding frequency is asserted**, so the case is not a hand-picked anecdote;
+- the mutation proof is recorded in `gates.json`: term deleted → exit 1, restored → exit 0.
+
+[[a-decoy-that-is-not-broken-proves-nothing]], for the second time this session, and the first
+time where the decoy's failure was invisible until the mutation was actually run.
+
+### Transcription, stated precisely rather than implied
+
+`culori` carries all 33 Machado matrices on disk citing the Oliveira lab tables, so **it is
+the transcription source for 30 of them.** Asserting that ours match culori's would compare a
+value against a copy of itself — the failure shape of both previous features — and the module
+comment says so instead of implying a check that is not there.
+
+What is independent:
+
+1. **The three severity-1.0 matrices were reproduced from memory before the tables were
+   transcribed, and matched all 27 numbers.** That validates the transcription *channel*.
+2. **Severity 0 is exactly the identity** in all three tables.
+3. **All 99 rows sum to 1 within 1e-6.** A mistyped digit almost anywhere breaks it.
+
+The Hunt–Pointer–Estévez inverse was written from recall and was **wrong from the 8th digit**.
+The `M · M⁻¹ = I` check caught it — the third time that check has paid for itself.
+
+### Criterion 2, and the first attempt that failed it
+
+Confusion pairs built from the classic **published copunctal points** collapse from ΔE00 51.2
+to **5.2** — a tenfold collapse, and not the under-2 the criterion requires.
+
+The reason is a real finding: **the published copunctal points and Viénot's matrices come from
+different cone fundamentals**, and mixing them leaves a residual. Using the kernel of the
+published matrix itself — the confusion line those matrices actually define — gives
+**17.3 → 0.089** (protan) and **20.6 → 0.494** (deutan).
+
+Both halves are asserted, because a simulation returning a constant passes the collapse alone.
+The 5.2 figure is a golden entry so nobody re-derives it and concludes the simulation is broken.
+
+### Also settled before the comparison ran
+
+**culori's severity interpolation is dead code** — `Math.round(t % 0.1)` is always 0, so
+`filterDeficiencyDeuter(0.15)` returns the 0.1 result. This was written into the plan *before*
+the oracle test ran, so when the disagreement appeared it was already classified. The oracle is
+consulted only at the eleven tabulated severities, where it is a real check; ours interpolates,
+and a test asserts our 0.15 sits strictly between the neighbours while culori's equals one.
+
+### What is not delivered
+
+- **Tritan dichromacy.** `simulateDichromacy` **throws** for it. Viénot's single-plane
+  simplification is not accurate for tritanopia, whose two half-planes diverge substantially,
+  and a silently-wrong tritan simulation would feed the separation score and produce an
+  accessibility claim nobody could trace. A function that refuses is the honest shape while
+  the full two-half-plane Brettel 1997 construction is unwritten.
+
+  **That is the remaining work, and it has no oracle** — neither `culori` nor `colorjs.io`
+  implements Brettel. The check will have to be the confusion-line property, as it is for the
+  other two.
+
+- **The separation weights are not calibrated.** `SEPARATION_DELTA_E_CEILING`,
+  `SEPARATION_LIGHTNESS_CEILING` and `SEPARATION_LIGHTNESS_WEIGHT` are named constants with a
+  stated rationale and nothing asserts them as thresholds. F-029 moves them into versioned
+  content. Nothing in gate 10 should be read as a tuned figure.
+
+- **E-005 is guarded at the source end only**, like E-001 and E-003 before it. Its consumers —
+  F-030's recommendation scoring, F-032's CVD outfit mode, F-003's `cvdPairs` — do not exist.
+
+### Watch out
+
+- **Machado operates on ENCODED sRGB; Brettel/Viénot operates in LINEAR light.** The two
+  models differ on this deliberately — it is what each source specifies — and swapping either
+  is a plausible-looking change that alters every result.
+- **`simulateDichromacy` throws for tritan.** Any caller iterating all three deficiencies must
+  handle it; `hasDichromacySupport` exists for that.
+- **The separation score's lightness term binds for only ~9% of pairs.** A future change that
+  makes it bind for 0% will still pass most of gate 10 — the binding-frequency assertion is
+  what catches it.
+
+### Next
+
+Finish F-008: the two-half-plane Brettel construction for tritan, then close. After that,
+**F-003 becomes eligible** — and it carries the manifest defect this session found: 37 of 38
+opaque tokens have an `srgb` hex that contradicts their own `oklch`.
+
+---
+
 ## 2026-08-15 — F-007 DONE · ΔE00 is the ranking authority, and a rounding that decides accessibility
 
 **ΔE00 exists in code.** Every naming result, duplicate warning, CVD separation score and
