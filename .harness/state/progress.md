@@ -8,14 +8,16 @@ reader cannot reconstruct.
 
 ---
 
-## 2026-08-15 — F-008 IN PROGRESS · the CVD engine, and a gate that could not fail
+## 2026-08-15 — F-008 DONE · the CVD engine, and a gate that could not fail
 
 **Gate 10 (`cvd`) is active.** Machado anomalous trichromacy works across continuous severity,
 Viénot dichromacy works for protan and deutan, and the separation score exists — one
 definition, which is what E-005 is about.
 
-**F-008 is NOT done.** Acceptance criterion 1 is partly met: tritan dichromacy is not
-implemented. Read "What is not delivered" before picking this up.
+**F-008 is done, with criterion 1 partly ATTESTED** (ADR-0038). Machado for all three
+deficiencies and Vienot dichromacy for protan and deutan are gated; **tritan dichromacy is
+owed** and blocks release. Read "The Brettel construction was attempted and refuted" for why,
+and what discharges it.
 
 ### Evidence
 
@@ -97,7 +99,8 @@ and a test asserts our 0.15 sits strictly between the neighbours while culori's 
 
 ### What is not delivered
 
-- **Tritan dichromacy.** `simulateDichromacy` **throws** for it. Viénot's single-plane
+- **Tritan dichromacy — now an ATTESTED obligation (ADR-0038), not a silent gap.**
+  `simulateDichromacy` **throws** for it. Viénot's single-plane
   simplification is not accurate for tritanopia, whose two half-planes diverge substantially,
   and a silently-wrong tritan simulation would feed the separation score and produce an
   accessibility claim nobody could trace. A function that refuses is the honest shape while
@@ -185,8 +188,8 @@ is recorded here rather than taken quietly.
 
 ### Next
 
-Finish F-008: the two-half-plane Brettel construction for tritan, then close. After that,
-**F-003 becomes eligible** — and it carries the manifest defect this session found: 37 of 38
+**F-003 is now eligible** — F-008 closed with its tritan obligation attested rather than
+silently dropped. F-003 — and it carries the manifest defect this session found: 37 of 38
 opaque tokens have an `srgb` hex that contradicts their own `oklch`.
 
 ---
