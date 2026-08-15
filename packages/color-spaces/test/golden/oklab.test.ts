@@ -82,6 +82,27 @@ describe('the matrices match the published values digit for digit', () => {
 
 const OKLCH_IDS = new Set(['oklch-red-primary', 'oklch-blue-primary']);
 const MATRIX_IDS = new Set(MATRIX_ENTRIES.map(([id]) => id));
+const NEUTRAL_HUE_ID = 'oklch-of-a-neutral-has-a-meaningless-hue';
+
+describe('hue at zero chroma', () => {
+  it('a neutral gets an arbitrary hue, and it is 180° rather than 0°', () => {
+    // Found by review. D65 white leaves OKLab `a` at -5e-16 and `b` at +0, so `atan2` returns
+    // π and the hue reads 180 — not the 0 that CIELCh gives for black, and not anything a
+    // caller should act on.
+    //
+    // Harmless at C = 5e-16, and NOT harmless if it is read and re-applied: F-014 rotates hue
+    // in OKLCh, and a hue taken from a near-neutral and used at C = 0.1 produces cyan out of
+    // white. Pinned so the behaviour is a recorded fact. **Check chroma before hue.**
+    const golden = entry(NEUTRAL_HUE_ID);
+    const expected = golden.expected as { L: number; C: number; h: number };
+    const [l, c, h] = xyzToOklch(triple(golden.input));
+
+    expect(l).toBe(expected.L);
+    expect(c).toBe(expected.C);
+    expect(h).toBe(expected.h);
+    expect(c).toBeLessThan(1e-15);
+  });
+});
 
 describe('oklab golden set', () => {
   it('has the four values Ottosson prints, plus the four matrices', () => {
@@ -90,7 +111,7 @@ describe('oklab golden set', () => {
   });
 
   for (const golden of dataset.entries) {
-    if (MATRIX_IDS.has(golden.id)) continue;
+    if (MATRIX_IDS.has(golden.id) || golden.id === NEUTRAL_HUE_ID) continue;
 
     const input = triple(golden.input);
     const expected = triple(golden.expected);
@@ -155,7 +176,8 @@ describe('OKLab is not CIELAB with a decimal point moved', () => {
 describe('OKLab round trip', () => {
   it('returns the XYZ it was given for every golden input', () => {
     for (const golden of dataset.entries) {
-      if (OKLCH_IDS.has(golden.id) || MATRIX_IDS.has(golden.id)) continue;
+      if (OKLCH_IDS.has(golden.id) || MATRIX_IDS.has(golden.id) || golden.id === NEUTRAL_HUE_ID)
+        continue;
       const input = triple(golden.input);
       expectClose(oklabToXyz(xyzToOklab(input)), input, 1e-14, `${golden.id} round trip`);
     }

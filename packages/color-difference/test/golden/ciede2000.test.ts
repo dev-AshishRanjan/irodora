@@ -159,17 +159,88 @@ describe('the decoys: the two errors that produce plausible results', () => {
     expect(passing).toBeGreaterThan(pairs.length / 2);
   });
 
-  it('a naive hue difference fails the pairs built to catch it', () => {
-    // Pairs 9-15 straddle the ±180° boundary. Replacing the wrap with `h2 - h1` is the single
-    // most common CIEDE2000 error and it is invisible on ordinary colours.
-    const naiveHueDelta = (a: Lab, b: Lab): number => {
-      const h1 = radiansToDegrees(Math.atan2(a[2], a[1]));
-      const h2 = radiansToDegrees(Math.atan2(b[2], b[1]));
-      return h2 - h1;
-    };
+  /**
+   * ΔE00 with the hue-difference wrap removed. Everything else is untouched.
+   *
+   * The first version of this test asserted only that `|h2 − h1| > 180` for some pairs, and
+   * named pairs 9–15 as the ones that catch it. **Both were wrong**, and an independent review
+   * found it: the mutation was never actually run through ΔE00, and pairs 9–15 all *pass*
+   * under it. They have ΔC′ ≈ 0 and near-equal chroma, so the sign flip in ΔH′ is squared
+   * away and the `Rt` cross-term vanishes — they test the branch *selection* at exactly ±180°,
+   * not an unwrapped subtraction.
+   */
+  const withoutHueWrap = (a: Lab, b: Lab): number => {
+    const [l1, a1, b1] = a;
+    const [l2, a2, b2] = b;
+    const pow7 = (v: number): number => v ** 7;
+    const c1 = Math.hypot(a1, b1);
+    const c2 = Math.hypot(a2, b2);
+    const cBar = (c1 + c2) / 2;
+    const g = 0.5 * (1 - Math.sqrt(pow7(cBar) / (pow7(cBar) + 6103515625)));
+    const a1p = (1 + g) * a1;
+    const a2p = (1 + g) * a2;
+    const c1p = Math.hypot(a1p, b1);
+    const c2p = Math.hypot(a2p, b2);
+    const h1p = a1p === 0 && b1 === 0 ? 0 : radiansToDegrees(Math.atan2(b1, a1p));
+    const h2p = a2p === 0 && b2 === 0 ? 0 : radiansToDegrees(Math.atan2(b2, a2p));
+    const product = c1p * c2p;
+    const dhp = product === 0 ? 0 : h2p - h1p; // the mutation: no wrap
+    const dHp = 2 * Math.sqrt(product) * Math.sin(degreesToRadians(dhp) / 2);
+    const lBar = (l1 + l2) / 2;
+    const cBarP = (c1p + c2p) / 2;
+    let hBar: number;
+    if (product === 0) hBar = h1p + h2p;
+    else if (Math.abs(h1p - h2p) <= 180) hBar = (h1p + h2p) / 2;
+    else if (h1p + h2p < 360) hBar = (h1p + h2p + 360) / 2;
+    else hBar = (h1p + h2p - 360) / 2;
+    const t =
+      1 -
+      0.17 * Math.cos(degreesToRadians(hBar - 30)) +
+      0.24 * Math.cos(degreesToRadians(2 * hBar)) +
+      0.32 * Math.cos(degreesToRadians(3 * hBar + 6)) -
+      0.2 * Math.cos(degreesToRadians(4 * hBar - 63));
+    const dTheta = 30 * Math.exp(-(((hBar - 275) / 25) ** 2));
+    const rc = 2 * Math.sqrt(pow7(cBarP) / (pow7(cBarP) + 6103515625));
+    const dL = lBar - 50;
+    const sl = 1 + (0.015 * dL * dL) / Math.sqrt(20 + dL * dL);
+    const sc = 1 + 0.045 * cBarP;
+    const sh = 1 + 0.015 * cBarP * t;
+    const rt = -Math.sin(degreesToRadians(2 * dTheta)) * rc;
+    const tl = (l2 - l1) / sl;
+    const tc = (c2p - c1p) / sc;
+    const th = dHp / sh;
+    return Math.sqrt(tl * tl + tc * tc + th * th + rt * tc * th);
+  };
 
-    const straddling = pairs.slice(8, 15);
-    const wrong = straddling.filter(({ a, b }) => Math.abs(naiveHueDelta(a, b)) > 180);
-    expect(wrong.length).toBeGreaterThan(0);
+  it('an unwrapped hue difference is caught by pairs 16, 17 and 19 — not by 9–15', () => {
+    const failing = pairs
+      .map(({ entry: e, a, b, expected }, i) => ({
+        n: i + 1,
+        fails: Math.abs(withoutHueWrap(a, b) - expected) > e.tolerance,
+      }))
+      .filter((r) => r.fails)
+      .map((r) => r.n);
+
+    expect(failing).toEqual([16, 17, 19]);
+  });
+
+  it('and pair 19 catches it by 10.8 ΔE00, which is not a rounding difference', () => {
+    const { a, b, expected } = pairs[18]!;
+    expect(expected).toBe(31.903);
+    expect(Math.abs(withoutHueWrap(a, b) - expected)).toBeGreaterThan(10);
+  });
+
+  it('pairs 9–15 test the branch SELECTION at ±180°, which is a different defect', () => {
+    // Recorded so the next person does not re-derive the wrong conclusion. These pairs differ
+    // from each other by 1e-4 in b*, straddling the point where the wrap changes branch, and
+    // their published answers differ accordingly (7.1792 vs 7.2195, 4.8045 vs 4.7461). They
+    // are a boundary test, not an unwrapped-subtraction test.
+    for (const n of [9, 10, 11, 12, 13, 14, 15]) {
+      const { a, b, expected, entry: e } = pairs[n - 1]!;
+      expect(Math.abs(withoutHueWrap(a, b) - expected), `pair ${String(n)}`).toBeLessThanOrEqual(
+        e.tolerance,
+      );
+    }
+    expect(pairs[8]!.expected).not.toBe(pairs[10]!.expected);
   });
 });

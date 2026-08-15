@@ -15,7 +15,7 @@ By the end of F-007 this repository computes relative luminance three different 
 | Used by | Coefficients | Linearisation |
 |---|---|---|
 | `@irodora/color-spaces` | the exact sRGB→XYZ Y row, 17 digits | piecewise, IEC 61966-2-1 |
-| `wcagContrast` | `0.2126, 0.7152, 0.0722` | piecewise, WCAG's own cutoff `0.03928` |
+| `wcagContrast` | `0.2126, 0.7152, 0.0722` | piecewise, cutoff `0.04045` — same as IEC (ADR-0042) |
 | `apcaLc` | `0.2126729, 0.7151522, 0.072175` | **pure power 2.4, no linear segment** |
 
 Three transcriptions of the same physical quantity is the exact shape of the hazard
@@ -30,7 +30,7 @@ most precise.
 to four decimal places, and its worked examples are computed with them. Substituting the
 engine's exact Y row changes `rgb(27, 129, 156)` on white from **4.49990508** to
 **4.50007872** — from failing AA to passing it. A sweep of 8-bit colours against white found
-**111 such flips** across the 3:1, 4.5:1 and 7:1 thresholds. A WCAG conformance claim computed
+**984 such flips** across the 3:1, 4.5:1 and 7:1 thresholds — the full 16,777,216-colour sweep, verified by an independent review after this ADR first cited 111 from a partial one. A WCAG conformance claim computed
 with different coefficients is a claim the specification does not support, and "the difference
 is only 5e-4" is not an argument in a procurement questionnaire.
 
@@ -94,7 +94,7 @@ each is used only by the standard that mandates it.**
 ## Alternatives considered
 
 **Compute everything from the engine's exact Y row.** The precise, tidy option. Rejected on
-measurement: it breaks WCAG conformance for 111 colours in a partial sweep and changes APCA's
+measurement: it breaks WCAG conformance for 984 colours and changes APCA's
 answer for every dark colour. Precision is not the objective when the deliverable is
 reproducing a specification.
 

@@ -144,10 +144,11 @@ describe('the difference is a conformance requirement, not pedantry', () => {
   });
 
   it('and it is not a single lucky colour — a sweep finds many', () => {
-    // Coarse sweep, so this stays fast. The full 8-bit sweep against white finds 111 flips
-    // across the 3:1, 4.5:1 and 7:1 thresholds; this stride finds a smaller number of the
-    // same thing, and asserting "more than one" is what makes the previous test a rule
-    // rather than an anecdote.
+    // Coarse sweep, so this stays fast. The FULL 16,777,216-colour sweep against white finds
+    // 984 flips across the 3:1, 4.5:1 and 7:1 thresholds — measured, and corrected from an
+    // earlier claim of 111 that came from a partial sweep. This stride finds a smaller
+    // number of the same thing, and asserting "more than one" is what makes the previous
+    // test a rule rather than an anecdote.
     const white: Rgb = [1, 1, 1];
     let flips = 0;
 

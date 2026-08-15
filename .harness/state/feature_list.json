@@ -112,7 +112,7 @@
         "test",
         "contrast"
       ],
-      "notes": "Concrete values arrive from the design deliverable. The structure and the pipeline land here. BLOCKED ON THE ENGINE (ADR-0037): two acceptance criteria — the contrast gate's WCAG/APCA check and the cvdPairs assertion — need @irodora/color-difference (F-007) and @irodora/cvd-engine (F-008). The manifest is `approved`, so gate 9 is blocking from the moment it activates and cannot ship as a stub. R0 therefore closes with F-003 outstanding; that is deliberate and recorded."
+      "notes": "FOUND BY THE F-007 COLOUR-SCIENCE REVIEW, BEFORE THIS FEATURE STARTS: 37 of the 38 opaque tokens in design-system.manifest.json have an srgb hex that does NOT match their own oklch. Not marginal — color.dark.background is stated #141312 and its oklch resolves to #090807, a factor of more than 2 in Y. The engine and colorjs.io agree with each other on the conversion, so the two fields were produced by different means. The contrast gate reads this file, so whichever field it reads, the other is wrong. Resolve which field is authoritative BEFORE building the gate. Concrete values arrive from the design deliverable. The structure and the pipeline land here. BLOCKED ON THE ENGINE (ADR-0037): two acceptance criteria — the contrast gate's WCAG/APCA check and the cvdPairs assertion — need @irodora/color-difference (F-007) and @irodora/cvd-engine (F-008). The manifest is `approved`, so gate 9 is blocking from the moment it activates and cannot ship as a stub. R0 therefore closes with F-003 outstanding; that is deliberate and recorded."
     },
     {
       "id": "F-004",

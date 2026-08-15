@@ -9,10 +9,14 @@
  * It also has two failure modes that produce *plausible* results, which is why it is checked
  * against all 34 published test pairs rather than a handful:
  *
- * 1. **The hue difference has a discontinuity at ±180°.** A naive `h2 − h1` is wrong for
- *    every pair that straddles the boundary, and right for every pair that does not — so it
- *    passes a casual test suite and fails on greys and near-neutrals, which are half this
- *    corpus. Pairs 9–15 of the published set exist specifically for this.
+ * 1. **The hue difference has a discontinuity at ±180°.** A naive `h2 − h1` is right for every
+ *    pair that does not straddle the boundary, so it passes a casual test suite. In the
+ *    published set it is caught by **pairs 16, 17 and 19** — pair 19 by 10.8 ΔE00. It is *not*
+ *    caught by pairs 9–15, which is the intuitive guess and is wrong: those have ΔC′ ≈ 0 and
+ *    near-equal chroma, so the sign flip is squared away and the `Rt` cross-term vanishes.
+ *    They test the branch *selection* at exactly ±180°, which is a different defect. Both
+ *    facts are asserted in the golden test, because the first version of this comment had it
+ *    backwards and nothing in the suite disagreed.
  * 2. **`Rt` is easy to sign-wrong.** It only matters in the blue region around h ≈ 275°, so
  *    an implementation with the sign flipped is correct almost everywhere and wrong exactly
  *    where indigo lives.

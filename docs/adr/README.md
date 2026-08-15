@@ -65,6 +65,7 @@ Two rules that matter more than the format:
 | [0039](0039-oklab-is-derived-through-xyz-not-from-srgb-directly.md) | OKLab is derived through XYZ, and that costs 0.047 ΔE00 against every other implementation | Superseded by 0040 |
 | [0040](0040-oklab-uses-the-css-color-4-recalculated-matrices.md) | OKLab uses CSS Color 4's recalculated matrices, not Ottosson's original ten decimals | Accepted |
 | [0041](0041-three-luminance-definitions-coexist-deliberately.md) | Three definitions of relative luminance coexist, and none may be substituted for another | Accepted |
+| [0042](0042-wcag-luminance-cutoff-is-004045-not-003928.md) | The WCAG luminance cutoff is 0.04045; 0.03928 was superseded in 2021 | Accepted |
 
 ## Open questions awaiting an ADR
 

@@ -1,6 +1,6 @@
 {
   "id": "oklab",
-  "description": "OKLab and OKLCh. The transform is Ottosson (2020); the CONSTANTS are CSS Color 4's recalculation of it for a consistent reference white (csswg-drafts issue 6642), which is what makes D65 white land on (1, 0, 0) instead of at chroma 1.25e-4. See ADR-0040. The first entries are the matrix elements themselves, at tolerance 0: Ottosson's published test table is quoted to three decimals and cannot see a dropped digit in the tenth, which is exactly the defect that shipped here once and was found by review rather than by this gate.",
+  "description": "OKLab and OKLCh. The transform is Ottosson (2020); the CONSTANTS are CSS Color 4's recalculation of it for a consistent reference white (csswg-drafts issue 6642), which is what makes D65 white land on (1, 0, 0) instead of at chroma 1.25e-4. See ADR-0040. The first entries are the matrix elements themselves, at tolerance 0. That is where the real discrimination lives, and it is worth being precise about why: Ottosson's published test table passes with BOTH candidate constant sets — his original ten-decimal matrices AND CSS Color 4's recalculation — and on two of its four rows ours is the further away of the two. Those entries verify that the transform is the right transform; they cannot choose between the constant sets, and they already sit at 40% of their tolerance. What discriminates is the digit-for-digit matrix entries, the d65-white-is-exactly-neutral entry at 1e-15 (which Ottosson's originals fail by 1.25e-4), and bitwise agreement with colorjs.io.",
   "entries": [
     {
       "id": "matrix-xyz-to-lms",
@@ -8,8 +8,14 @@
       "derivation": "published-value",
       "input": "XYZ (D65) to LMS, row-major",
       "expected": [
-        0.819022437996703, 0.3619062600528904, -0.1288737815209879, 0.0329836539323885,
-        0.9292868615863434, 0.0361446663506424, 0.0481771893596242, 0.2642395317527308,
+        0.819022437996703,
+        0.3619062600528904,
+        -0.1288737815209879,
+        0.0329836539323885,
+        0.9292868615863434,
+        0.0361446663506424,
+        0.0481771893596242,
+        0.2642395317527308,
         0.6335478284694309
       ],
       "tolerance": 0
@@ -20,8 +26,14 @@
       "derivation": "published-value",
       "input": "LMS (cube-rooted) to OKLab, row-major",
       "expected": [
-        0.210454268309314, 0.7936177747023054, -0.0040720430116193, 1.9779985324311684,
-        -2.4285922420485799, 0.450593709617411, 0.0259040424655478, 0.7827717124575296,
+        0.210454268309314,
+        0.7936177747023054,
+        -0.0040720430116193,
+        1.9779985324311684,
+        -2.42859224204858,
+        0.450593709617411,
+        0.0259040424655478,
+        0.7827717124575296,
         -0.8086757549230774
       ],
       "tolerance": 0
@@ -32,8 +44,14 @@
       "derivation": "published-value",
       "input": "LMS to XYZ (D65), row-major",
       "expected": [
-        1.2268798758459243, -0.5578149944602171, 0.2813910456659647, -0.0405757452148008,
-        1.112286803280317, -0.0717110580655164, -0.0763729366746601, -0.4214933324022432,
+        1.2268798758459243,
+        -0.5578149944602171,
+        0.2813910456659647,
+        -0.0405757452148008,
+        1.112286803280317,
+        -0.0717110580655164,
+        -0.0763729366746601,
+        -0.4214933324022432,
         1.5869240198367816
       ],
       "tolerance": 0
@@ -44,8 +62,15 @@
       "derivation": "published-value",
       "input": "OKLab to LMS (cube-rooted), row-major",
       "expected": [
-        1, 0.3963377773761749, 0.2158037573099136, 1, -0.1055613458156586, -0.0638541728258133, 1,
-        -0.0894841775298119, -1.2914855480194092
+        1,
+        0.3963377773761749,
+        0.2158037573099136,
+        1,
+        -0.1055613458156586,
+        -0.0638541728258133,
+        1,
+        -0.0894841775298119,
+        -1.2914855480194092
       ],
       "tolerance": 0
     },
@@ -53,48 +78,96 @@
       "id": "ottosson-white",
       "source": "Ottosson, 'A perceptual color space for image processing' (2020), XYZ to OKLab reference table",
       "derivation": "published-value",
-      "input": [0.95, 1.0, 1.089],
-      "expected": [1.0, 0.0, 0.0],
+      "input": [
+        0.95,
+        1,
+        1.089
+      ],
+      "expected": [
+        1,
+        0,
+        0
+      ],
       "tolerance": 0.001
     },
     {
       "id": "ottosson-x",
       "source": "Ottosson (2020), XYZ to OKLab reference table",
       "derivation": "published-value",
-      "input": [1.0, 0.0, 0.0],
-      "expected": [0.45, 1.236, -0.019],
+      "input": [
+        1,
+        0,
+        0
+      ],
+      "expected": [
+        0.45,
+        1.236,
+        -0.019
+      ],
       "tolerance": 0.001
     },
     {
       "id": "ottosson-y",
       "source": "Ottosson (2020), XYZ to OKLab reference table",
       "derivation": "published-value",
-      "input": [0.0, 1.0, 0.0],
-      "expected": [0.922, -0.671, 0.263],
+      "input": [
+        0,
+        1,
+        0
+      ],
+      "expected": [
+        0.922,
+        -0.671,
+        0.263
+      ],
       "tolerance": 0.001
     },
     {
       "id": "ottosson-z",
       "source": "Ottosson (2020), XYZ to OKLab reference table",
       "derivation": "published-value",
-      "input": [0.0, 0.0, 1.0],
-      "expected": [0.153, -1.415, -0.449],
+      "input": [
+        0,
+        0,
+        1
+      ],
+      "expected": [
+        0.153,
+        -1.415,
+        -0.449
+      ],
       "tolerance": 0.001
     },
     {
       "id": "black",
       "source": "Ottosson (2020) — cbrt(0) is 0 and both matrices are linear, so black is fixed",
       "derivation": "definitional",
-      "input": [0, 0, 0],
-      "expected": [0, 0, 0],
+      "input": [
+        0,
+        0,
+        0
+      ],
+      "expected": [
+        0,
+        0,
+        0
+      ],
       "tolerance": 0
     },
     {
       "id": "d65-white-is-exactly-neutral",
       "source": "CSS Color Module Level 4 — the recalculation's stated purpose is that the reference white maps to L = 1 with zero chroma",
       "derivation": "definitional",
-      "input": [0.9504559270516716, 1, 1.0890577507598784],
-      "expected": [1, 0, 0],
+      "input": [
+        0.9504559270516716,
+        1,
+        1.0890577507598784
+      ],
+      "expected": [
+        1,
+        0,
+        0
+      ],
       "tolerance": 1e-15
     },
     {
@@ -102,8 +175,16 @@
       "source": "CSS Color 4 Oklab matrices applied to the sRGB red primary (IEC 61966-2-1)",
       "derivation": "published-formula",
       "derivationNote": "XYZ = [0.41239079926595934, 0.21263900587151027, 0.01933081871559182] through XYZtoLMS, cube root, LMStoOKLab. Bitwise identical to colorjs.io, which composes the same matrices along the same path.",
-      "input": [0.41239079926595934, 0.21263900587151027, 0.01933081871559182],
-      "expected": [0.6279553639214311, 0.2248630684262744, 0.125846277330585],
+      "input": [
+        0.41239079926595934,
+        0.21263900587151027,
+        0.01933081871559182
+      ],
+      "expected": [
+        0.6279553639214311,
+        0.2248630684262744,
+        0.125846277330585
+      ],
       "tolerance": 0
     },
     {
@@ -111,8 +192,16 @@
       "source": "CSS Color 4 Oklab matrices applied to the sRGB green primary",
       "derivation": "published-formula",
       "derivationNote": "XYZ = [0.357584339383878, 0.715168678767756, 0.11919477979462598]",
-      "input": [0.357584339383878, 0.715168678767756, 0.11919477979462598],
-      "expected": [0.8664396175234368, -0.23388758093655815, 0.1794984451609376],
+      "input": [
+        0.357584339383878,
+        0.715168678767756,
+        0.11919477979462598
+      ],
+      "expected": [
+        0.8664396175234368,
+        -0.23388758093655815,
+        0.1794984451609376
+      ],
       "tolerance": 0
     },
     {
@@ -120,8 +209,16 @@
       "source": "CSS Color 4 Oklab matrices applied to the sRGB blue primary",
       "derivation": "published-formula",
       "derivationNote": "XYZ = [0.1804807884018343, 0.07219231536073371, 0.9505321522496607]",
-      "input": [0.1804807884018343, 0.07219231536073371, 0.9505321522496607],
-      "expected": [0.45201371817442365, -0.03245697517079771, -0.3115281656775778],
+      "input": [
+        0.1804807884018343,
+        0.07219231536073371,
+        0.9505321522496607
+      ],
+      "expected": [
+        0.45201371817442365,
+        -0.03245697517079771,
+        -0.3115281656775778
+      ],
       "tolerance": 0
     },
     {
@@ -129,8 +226,16 @@
       "source": "CSS Color 4 Oklab matrices applied to 50% sRGB grey",
       "derivation": "published-formula",
       "derivationNote": "XYZ = [0.20343667060423742, 0.21404114048223255, 0.23310316302365935]. L = 0.598 against CIELAB's L* = 53.4 for the same colour: OKLab lightness is on [0,1] and is NOT CIELAB lightness divided by 100. a and b are at the float64 floor rather than exactly zero, because the XYZ input is a scaled white whose ratios are not bit-identical.",
-      "input": [0.20343667060423742, 0.21404114048223255, 0.23310316302365935],
-      "expected": [0.5981807305268477, -3.3306690738754696e-16, -5.551115123125783e-17],
+      "input": [
+        0.20343667060423742,
+        0.21404114048223255,
+        0.23310316302365935
+      ],
+      "expected": [
+        0.5981807305268477,
+        -3.3306690738754696e-16,
+        -5.551115123125783e-17
+      ],
       "tolerance": 1e-15
     },
     {
@@ -138,8 +243,16 @@
       "source": "Ottosson (2020) — OKLCh is OKLab in polar form; C = hypot(a, b), h = atan2(b, a)",
       "derivation": "published-formula",
       "derivationNote": "From OKLab [0.6279553639214311, 0.2248630684262744, 0.125846277330585]: C = 0.2576833038053608, h = 29.23388027962784 degrees",
-      "input": [0.41239079926595934, 0.21263900587151027, 0.01933081871559182],
-      "expected": [0.6279553639214311, 0.2576833038053608, 29.23388027962784],
+      "input": [
+        0.41239079926595934,
+        0.21263900587151027,
+        0.01933081871559182
+      ],
+      "expected": [
+        0.6279553639214311,
+        0.2576833038053608,
+        29.23388027962784
+      ],
       "tolerance": 0
     },
     {
@@ -147,8 +260,33 @@
       "source": "Ottosson (2020) — OKLab in polar form; b is negative so the raw angle folds",
       "derivation": "published-formula",
       "derivationNote": "From OKLab [0.45201371817442365, -0.03245697517079771, -0.3115281656775778]: C = 0.3132143886344849, raw atan2 is negative and folds to 264.0520226163699 degrees",
-      "input": [0.1804807884018343, 0.07219231536073371, 0.9505321522496607],
-      "expected": [0.45201371817442365, 0.3132143886344849, 264.0520226163699],
+      "input": [
+        0.1804807884018343,
+        0.07219231536073371,
+        0.9505321522496607
+      ],
+      "expected": [
+        0.45201371817442365,
+        0.3132143886344849,
+        264.0520226163699
+      ],
+      "tolerance": 0
+    },
+    {
+      "id": "oklch-of-a-neutral-has-a-meaningless-hue",
+      "source": "Ottosson (2020) — OKLCh is OKLab in polar form, and hue is undefined at zero chroma",
+      "derivation": "published-formula",
+      "derivationNote": "D65 white gives OKLab a = -4.996e-16, b = +0, so atan2(+0, -4.996e-16) is pi and the hue reads 180 degrees. Mid grey reads 189.46. Both are arbitrary and both are HARMLESS at C = 5e-16 — but F-014 rotates hue in OKLCh, and a caller that reads h from a near-neutral and re-applies it at C = 0.1 gets cyan out of white. Pinned so the behaviour is a recorded fact rather than a surprise, and so a future change to it is visible. CHECK CHROMA BEFORE HUE.",
+      "input": [
+        0.9504559270516716,
+        1,
+        1.0890577507598784
+      ],
+      "expected": {
+        "L": 1.0000000000000002,
+        "C": 4.996003610813204e-16,
+        "h": 180
+      },
       "tolerance": 0
     }
   ]

@@ -20,10 +20,10 @@
     },
     {
       "id": "wcag-transfer-constants",
-      "source": "WCAG 2.x, definition of relative luminance: cutoff, slope, offset, exponent",
+      "source": "WCAG 2.1/2.2, definition of relative luminance: cutoff, slope, offset, exponent. The cutoff is 0.04045 — 0.03928 is the original WCAG 2.0 text, superseded by W3C errata in May 2021 (ADR-0042).",
       "derivation": "published-value",
       "input": "cutoff, slope, offset, gamma",
-      "expected": [0.03928, 12.92, 0.055, 2.4],
+      "expected": [0.04045, 12.92, 0.055, 2.4],
       "tolerance": 0
     },
     {
@@ -105,9 +105,9 @@
     },
     {
       "id": "the-two-wcag-cutoffs-are-indistinguishable-for-8-bit-input",
-      "source": "WCAG 2.x publishes 0.03928; IEC 61966-2-1 publishes 0.04045",
+      "source": "WCAG 2.0 published 0.03928; WCAG 2.1/2.2 and IEC 61966-2-1 publish 0.04045 (ADR-0042)",
       "derivation": "published-formula",
-      "derivationNote": "0.03928 x 255 = 10.0164 and 0.04045 x 255 = 10.3148, so NO 8-bit code lies between them: code 10 is 0.039215686 (below both) and code 11 is 0.043137255 (above both). Over all 256 codes the maximum difference in linearised value is exactly 0. The constant used is WCAG's because this package reproduces WCAG; the choice has no numeric consequence for any colour WCAG contrast is ever applied to, and this entry is what says so rather than leaving it to be re-derived.",
+      "derivationNote": "0.03928 x 255 = 10.0164 and 0.04045 x 255 = 10.3148, so NO 8-bit code lies between them: code 10 is 0.039215686 (below both) and code 11 is 0.043137255 (above both). Over all 256 codes the maximum difference in linearised value is exactly 0. This entry is now the evidence that correcting the constant from the superseded 0.03928 to the current 0.04045 (ADR-0042) moved no published contrast figure — every worked example in the wcag dataset is 8-bit. For FLOAT input the two differ by up to 7.55e-7 in luminance, or 6.6e-5 in a contrast ratio, which is why the correction still mattered.",
       "input": "max |linearise(c/255, 0.03928) - linearise(c/255, 0.04045)| over c in 0..255",
       "expected": 0,
       "tolerance": 0

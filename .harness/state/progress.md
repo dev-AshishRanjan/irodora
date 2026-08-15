@@ -21,8 +21,8 @@ recommendation ranking the product will ever produce now has a function behind i
   ✓ gate 1   typecheck      37 tasks
   ✓ gate 2   lint           37 tasks + 10 boundary guards + engine purity (proven)
   ✓ gate 3   format
-  ✓ gate 4   test           621 tests
-  ✓ gate 5   color-golden   277 tests — 138 cited entries across 10 datasets, 2 identity digests
+  ✓ gate 4   test           624 tests
+  ✓ gate 5   color-golden   280 tests — 139 cited entries across 10 datasets, 2 identity digests
   ✓ gate 6   build          25 tasks
   ✓ gate 15  security       gitleaks clean · audit clean
 
@@ -127,11 +127,80 @@ rank a colour as marginally different from itself.
 | 4 | APCA Lc computed and reported alongside | **Done** — 0.0.98G-4g, bitwise against colorjs.io, version exported because "Lc 62" without one is not reproducible |
 | 5 | Property tests assert ΔE symmetry and identity | **Done**, in both directions |
 
-### Honest gaps
+### The colour-science review ran, and found six things
 
-- **The colour-science review is still owed.** It was launched during F-006, terminated on a
-  session limit before producing findings, and this feature extends the same maths. Two
-  features of colour science now have no domain review.
+Owed since F-006, and it did not come back clean. Verdict: **CHANGES REQUIRED, on a green
+board.**
+
+**What it could not break.** It transcribed the 34 Sharma–Wu–Dalal pairs independently and
+matched all 238 numbers; wrote a fresh CIEDE2000 from the paper's equations (agreement
+1.2e-14); and verified OKLab, the transfer function, CIELAB, adaptation, ΔE94 and APCA against
+`culori` and `colorjs.io`. **No trap on the list is present in any computed value.**
+
+**1. The WCAG cutoff was the superseded constant.** `0.03928` is the original WCAG 2.0 text;
+W3C corrected it by errata in May 2021, and WCAG 2.1 and 2.2 both publish `0.04045`. ADR-0021
+gates on WCAG 2.2 — so the version implemented and the version enforced were different
+documents. Corrected under **[ADR-0042](../../docs/adr/0042-wcag-luminance-cutoff-is-004045-not-003928.md)**,
+which exists because this is a golden value change.
+
+Worth exactly **0 for 8-bit input** — no integer code lies between the two — and up to
+**7.55e-7 in luminance** for float input, which is 6.6e-5 in a contrast ratio. The Lens
+produces float sRGB straight from camera samples, so it is not academic. No published contrast
+figure moved; the difference identity digest did, and was regenerated as the intended change
+its own docstring permits.
+
+**Nothing in this repository could have caught it.** The constant was pinned digit-for-digit,
+at tolerance 0, in a golden entry, with a citation — and every one of those compared the
+transcription against the same superseded source. **A digit-for-digit entry proves a
+transcription is faithful; it cannot prove the source is current.** The only thing that
+catches this class of error is someone going back to the published document.
+
+**2. A comment was wrong by 750×.** `luminance.ts` said the cutoff difference was "around
+1e-9". It is 7.55e-7. The 2.3e-9 figure is the *step between the two branches at the join* — a
+different quantity, which the engine's transfer module states correctly and separately. That
+conflation is precisely why nobody re-examined the constant.
+
+**3. ADR-0041's "111 flips" did not reproduce.** The full 16,777,216-colour sweep gives
+**984**. Mine came from a strided sweep and was written up as the full one. The direction of
+the argument is unharmed — 984 supports it more strongly than 111 — but an ADR whose entire
+authority is "rejected on measurement" must name a measurement that reproduces. Corrected in
+the ADR and in the test comment.
+
+**4. The naive-hue decoy named the wrong pairs and never ran the mutation.** The test asserted
+only that the raw hue difference exceeded 180° for pairs 9–15, and the source comment claimed
+those pairs catch an unwrapped hue difference. Both wrong: **pairs 9–15 all pass** under the
+mutation. It is caught by **16, 17 and 19** — pair 19 by 10.8 ΔE00. Pairs 9–15 have ΔC′ ≈ 0
+and near-equal chroma, so the sign flip is squared away and the `Rt` cross-term vanishes; they
+test the branch *selection* at exactly ±180°, which is a different defect.
+
+The test now builds the full mutated implementation, asserts exactly which pairs fail, and
+asserts that 9–15 do not. The wrap itself was always correct — this was a documentation and
+test-strength defect, in the file that teaches the next person which pairs guard what.
+
+**5. The Ottosson entries cannot discriminate between the candidate OKLab matrices.** They
+pass with **both** his original ten-decimal set and CSS Color 4's recalculation, and on two of
+the four rows ours is the *further* away. They verify the transform is the right transform.
+What actually discriminates is the digit-for-digit matrix entries, the exactly-neutral-white
+entry at 1e-15, and bitwise agreement with `colorjs.io`. The dataset description implied
+otherwise and now says this.
+
+**6. OKLCh of a neutral returns hue 180°, and nothing pinned it.** Harmless at C = 5e-16 — and
+not harmless if read and re-applied, since F-014 rotates hue in OKLCh and a hue taken from a
+near-neutral and used at C = 0.1 produces cyan out of white. Now a golden entry. **Check
+chroma before hue.**
+
+### Found outside this feature, and it blocks F-003
+
+**37 of the 38 opaque tokens in `design-system.manifest.json` have an `srgb` hex that does not
+match their own `oklch`.** Not marginal: `color.dark.background` is stated `#141312` and its
+`oklch` resolves to `#090807` — more than a factor of two in Y. The engine and `colorjs.io`
+agree with each other on the conversion, so the two fields were produced by different means.
+
+Verified independently before recording. The contrast gate reads this file, so whichever field
+it reads, the other is wrong. Recorded on F-003, which must resolve which field is
+authoritative **before** the gate is built.
+
+### Honest gaps
 - **E-003 is guarded at the source end only.** The consumers it names do not exist:
   `color-naming` is F-013, `recommendation` is F-030, the `cvd` gate activates with F-008.
 - **APCA is not a normative standard and is pinned to one revision.** ADR-0021 stands: reported
@@ -155,7 +224,7 @@ rank a colour as marginally different from itself.
 
 ### Next
 
-**F-008 — CVD engine and separation scoring**, blocked only by F-007. It consumes ΔE00 from
+**F-008 — CVD engine and separation scoring**, blocked only by F-007. Carry the F-003 manifest finding with it: F-003 unblocks after F-008. It consumes ΔE00 from
 here and activates gate 10. After it, **F-003 becomes eligible** and R0 can finally close.
 
 Nothing is `in_progress`.

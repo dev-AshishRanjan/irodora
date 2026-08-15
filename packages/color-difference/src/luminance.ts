@@ -51,15 +51,24 @@ export const WCAG_LUMINANCE_COEFFICIENTS: LuminanceCoefficients = [0.2126, 0.715
 export const APCA_LUMINANCE_COEFFICIENTS: LuminanceCoefficients = [0.2126729, 0.7151522, 0.072175];
 
 /**
- * WCAG 2.x transfer cutoff.
+ * WCAG 2.1/2.2 transfer cutoff — the **same** value IEC 61966-2-1 publishes.
  *
- * The specification publishes `0.03928` where IEC 61966-2-1 publishes `0.04045`. The two
- * differ only for encoded values inside a 1.17e-3-wide band, and the luminance difference
- * there is around 1e-9 — but the constant is the specification's, and this package's job is
- * to reproduce the specification rather than to improve it. Which value the worked examples
- * actually require is asserted in the golden set rather than assumed here.
+ * This was `0.03928` until ADR-0042. That is the original WCAG 2.0 text, superseded by W3C
+ * errata in May 2021; WCAG 2.1 and 2.2 as published both specify `0.04045`, and ADR-0021
+ * gates on WCAG 2.2. The code comment here previously stated the pre-2021 position as though
+ * it were current, and no check in this repository could catch that — every one of them
+ * compared the constant against a transcription of the same superseded source.
+ *
+ * The correction is worth **exactly 0 for 8-bit input** (no integer code lies between the two
+ * values) and up to **7.55e-7 in luminance** for float input, which is 6.6e-5 in a contrast
+ * ratio. Not negligible in principle: the Lens (F-022) produces float sRGB straight from
+ * camera samples rather than 8-bit codes.
+ *
+ * Do not confuse this with the ~2.3e-9 figure in `@irodora/color-spaces`' transfer module.
+ * That is the *step between the two branches* at the join, which is a different quantity;
+ * conflating them is what made this constant look too small to re-examine.
  */
-export const WCAG_TRANSFER_CUTOFF = 0.03928;
+export const WCAG_TRANSFER_CUTOFF = 0.04045;
 
 /** Slope of WCAG's linear segment. Same value as IEC 61966-2-1. */
 export const WCAG_LINEAR_SLOPE = 12.92;
