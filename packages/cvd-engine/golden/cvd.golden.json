@@ -7,16 +7,36 @@
       "source": "Machado, Oliveira & Fernandes (2009) — severity 0 is no deficiency, so the transform must be the identity",
       "derivation": "definitional",
       "input": "the first matrix of each of the three tables",
-      "expected": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+      "expected": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
       "tolerance": 0
     },
     {
       "id": "machado-protan-severity-one",
       "source": "Machado et al. (2009), protanopia. Reproduced independently from memory BEFORE this file was written and matched culori's on-disk copy on all nine numbers — that is what validates the transcription channel for the other thirty matrices.",
       "derivation": "published-value",
-      "input": { "deficiency": "protan", "severity": 1 },
+      "input": {
+        "deficiency": "protan",
+        "severity": 1
+      },
       "expected": [
-        0.152286, 1.052583, -0.204868, 0.114503, 0.786281, 0.099216, -0.003882, -0.048116,
+        0.152286,
+        1.052583,
+        -0.204868,
+        0.114503,
+        0.786281,
+        0.099216,
+        -0.003882,
+        -0.048116,
         1.051998
       ],
       "tolerance": 0
@@ -25,9 +45,20 @@
       "id": "machado-deutan-severity-one",
       "source": "Machado et al. (2009), deuteranopia. Independently reproduced; matched on all nine numbers.",
       "derivation": "published-value",
-      "input": { "deficiency": "deutan", "severity": 1 },
+      "input": {
+        "deficiency": "deutan",
+        "severity": 1
+      },
       "expected": [
-        0.367322, 0.860646, -0.227968, 0.280085, 0.672501, 0.047413, -0.01182, 0.04294, 0.968881
+        0.367322,
+        0.860646,
+        -0.227968,
+        0.280085,
+        0.672501,
+        0.047413,
+        -0.01182,
+        0.04294,
+        0.968881
       ],
       "tolerance": 0
     },
@@ -35,9 +66,20 @@
       "id": "machado-tritan-severity-one",
       "source": "Machado et al. (2009), tritanopia. Independently reproduced; matched on all nine numbers.",
       "derivation": "published-value",
-      "input": { "deficiency": "tritan", "severity": 1 },
+      "input": {
+        "deficiency": "tritan",
+        "severity": 1
+      },
       "expected": [
-        1.255528, -0.076749, -0.178779, -0.078411, 0.930809, 0.147602, 0.004733, 0.691367, 0.3039
+        1.255528,
+        -0.076749,
+        -0.178779,
+        -0.078411,
+        0.930809,
+        0.147602,
+        0.004733,
+        0.691367,
+        0.3039
       ],
       "tolerance": 0
     },
@@ -54,7 +96,17 @@
       "source": "Vienot, Brettel & Mollon (1999), single-plane protanopia matrix in LINEAR sRGB",
       "derivation": "published-value",
       "input": "protanopia projection, row-major",
-      "expected": [0.11238, 0.88762, 0, 0.11238, 0.88762, 0, 0.00401, -0.00401, 1],
+      "expected": [
+        0.11238,
+        0.88762,
+        0,
+        0.11238,
+        0.88762,
+        0,
+        0.00401,
+        -0.00401,
+        1
+      ],
       "tolerance": 0
     },
     {
@@ -62,7 +114,17 @@
       "source": "Vienot, Brettel & Mollon (1999), single-plane deuteranopia matrix in LINEAR sRGB",
       "derivation": "published-value",
       "input": "deuteranopia projection, row-major",
-      "expected": [0.29275, 0.70725, 0, 0.29275, 0.70725, 0, -0.02234, 0.02234, 1],
+      "expected": [
+        0.29275,
+        0.70725,
+        0,
+        0.29275,
+        0.70725,
+        0,
+        -0.02234,
+        0.02234,
+        1
+      ],
       "tolerance": 0
     },
     {
@@ -78,8 +140,20 @@
       "source": "Vienot et al. (1999) — the kernel of the published protan projection is (0.88762, -0.11238, 0) in linear sRGB, so colours differing along it are by construction indistinguishable to a protanope",
       "derivation": "published-formula",
       "derivationNote": "Base sRGB [0.45, 0.45, 0.30]; the pair is offset along the kernel vector by t = 0.15 in linear light. Unsimulated the pair is 17.269 dE00 apart; after simulation 0.0886. Acceptance criterion 2 asks for under 2, and BOTH halves are asserted — a simulation returning a constant would satisfy the collapse alone.",
-      "input": { "deficiency": "protan", "base": [0.45, 0.45, 0.3], "t": 0.15 },
-      "expected": { "before": 17.269, "after": 0.0886, "ceiling": 2 },
+      "input": {
+        "deficiency": "protan",
+        "base": [
+          0.45,
+          0.45,
+          0.3
+        ],
+        "t": 0.15
+      },
+      "expected": {
+        "before": 17.269,
+        "after": 0.0886,
+        "ceiling": 2
+      },
       "tolerance": 0.01
     },
     {
@@ -87,8 +161,20 @@
       "source": "Vienot et al. (1999) — kernel (0.70725, -0.29275, 0) in linear sRGB",
       "derivation": "published-formula",
       "derivationNote": "Base sRGB [0.45, 0.45, 0.30], offset t = 0.15. Before 20.579 dE00, after 0.4938.",
-      "input": { "deficiency": "deutan", "base": [0.45, 0.45, 0.3], "t": 0.15 },
-      "expected": { "before": 20.579, "after": 0.4938, "ceiling": 2 },
+      "input": {
+        "deficiency": "deutan",
+        "base": [
+          0.45,
+          0.45,
+          0.3
+        ],
+        "t": 0.15
+      },
+      "expected": {
+        "before": 20.579,
+        "after": 0.4938,
+        "ceiling": 2
+      },
       "tolerance": 0.01
     },
     {
@@ -96,9 +182,39 @@
       "source": "Classic published copunctal points in CIE xy: protan (0.747, 0.253), deutan (1.400, -0.400), tritan (0.171, -0.003)",
       "derivation": "published-formula",
       "derivationNote": "A FINDING, recorded rather than hidden. Constructing a confusion pair from the published copunctal points and simulating with the Vienot matrices leaves a residual of roughly 5 dE00 — a tenfold collapse from 51, but NOT the under-2 the criterion asks for. The copunctal points and Vienot's matrices come from different cone fundamentals, and mixing them is the error. The criterion is met using the kernel of the published matrix itself, which is the confusion line those matrices actually define. Recorded so nobody re-derives the 5 and concludes the simulation is broken.",
-      "input": { "deficiency": "protan", "copunctal": [0.747, 0.253] },
-      "expected": { "approximateResidual": 5.2 },
+      "input": {
+        "deficiency": "protan",
+        "copunctal": [
+          0.747,
+          0.253
+        ]
+      },
+      "expected": {
+        "approximateResidual": 5.2
+      },
       "tolerance": 1.5
+    },
+    {
+      "id": "hpe-does-not-reproduce-the-published-copunctal-points",
+      "source": "Hunt-Pointer-Estevez cone fundamentals versus the classic published copunctal points (Smith-Pokorny derived)",
+      "derivation": "published-formula",
+      "derivationNote": "A dichromat copunctal point IS the chromaticity of the missing cone fundamental, so it is derivable from column k of the LMS-to-XYZ matrix. Derived from HPE: protan (0.8374, 0.1626), deutan (2.3019, -1.3019), tritan (0.1680, 0.0000). Published: (0.747, 0.253), (1.400, -0.400), (0.171, -0.003). HPE reproduces TRITAN to 0.003 and misses protan by 0.090 and deutan by 0.902 — so the published protan and deutan points do not belong to HPE. This is why a confusion pair built from those points and simulated with the Vienot matrices leaves a 5.2 dE00 residual, and it is why the outstanding two-half-plane Brettel construction needs Smith-Pokorny fundamentals rather than the HPE matrix currently in brettel.ts. Recorded as a measurement so the next session starts from the answer rather than the symptom.",
+      "input": "chromaticity of each column of LMS_TO_XYZ_HPE",
+      "expected": {
+        "protan": [
+          0.8374,
+          0.1626
+        ],
+        "deutan": [
+          2.3019,
+          -1.3019
+        ],
+        "tritan": [
+          0.168,
+          0
+        ]
+      },
+      "tolerance": 0.001
     }
   ]
 }

@@ -107,6 +107,16 @@ and a test asserts our 0.15 sits strictly between the neighbours while culori's 
   implements Brettel. The check will have to be the confusion-line property, as it is for the
   other two.
 
+  **The blocker is identified and pinned as a golden entry.** A copunctal point is the
+  chromaticity of the missing cone fundamental, so it is derivable from the LMS→XYZ columns.
+  HPE gives tritan (0.1680, 0.0000) against the published (0.171, −0.003) — agreement to
+  0.003 — but protan (0.8374, 0.1626) against (0.747, 0.253), and deutan (2.3019, −1.3019)
+  against (1.400, −0.400). **`XYZ_TO_LMS_HPE` is the wrong fundamental set**; the published
+  points are Smith–Pokorny, which is also what Viénot derived from. That is the same reason
+  the copunctal-point pair leaves a 5.2 ΔE00 residual. The remaining construction needs
+  Smith–Pokorny plus the four anchor stimuli (475/575 nm for protan and deutan, 485/660 nm
+  for tritan) — 9 + 12 numbers with no oracle, checked only by the confusion-line property.
+
 - **The separation weights are not calibrated.** `SEPARATION_DELTA_E_CEILING`,
   `SEPARATION_LIGHTNESS_CEILING` and `SEPARATION_LIGHTNESS_WEIGHT` are named constants with a
   stated rationale and nothing asserts them as thresholds. F-029 moves them into versioned

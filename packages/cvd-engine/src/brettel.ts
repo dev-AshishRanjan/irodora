@@ -45,9 +45,26 @@ import type { Deficiency } from './machado.js';
 /**
  * Hunt–Pointer–Estévez, normalised to D65. XYZ → LMS.
  *
- * The cone fundamentals Brettel's construction is defined in. Smith–Pokorny is the other
- * common choice and gives visibly different anchors; the two are not interchangeable, and
- * which one a published confusion point belongs to matters.
+ * **These are NOT the fundamentals the outstanding Brettel construction should use**, and the
+ * golden set proves it rather than asserting it.
+ *
+ * A dichromat's copunctal point *is* the chromaticity of the missing cone's fundamental, so it
+ * is derivable from column *k* of the inverse matrix. Derived from HPE against the classic
+ * published points:
+ *
+ * | | derived from HPE | published | difference |
+ * |---|---|---|---|
+ * | protan (L) | (0.8374, 0.1626) | (0.747, 0.253) | **0.090** |
+ * | deutan (M) | (2.3019, −1.3019) | (1.400, −0.400) | **0.902** |
+ * | tritan (S) | (0.1680, 0.0000) | (0.171, −0.003) | 0.003 |
+ *
+ * HPE reproduces tritan and misses the other two badly. The published protan and deutan points
+ * are Smith–Pokorny, which is also what Viénot's matrices are derived from — so **the
+ * two-half-plane Brettel construction needs Smith–Pokorny fundamentals, not this matrix.**
+ *
+ * This is also the explanation for the ~5.2 ΔE00 residual recorded in the golden set when a
+ * confusion pair built from the published copunctal points is simulated with the Viénot
+ * matrices. Kept here because it is the answer the next session needs, not just the symptom.
  */
 export const XYZ_TO_LMS_HPE: Matrix3 = [
   0.4002, 0.7076, -0.0808, -0.2263, 1.1653, 0.0457, 0, 0, 0.9182,

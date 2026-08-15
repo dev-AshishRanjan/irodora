@@ -19,6 +19,7 @@ import { assertGoldenDataset } from '@irodora/testing';
 import raw from '../../golden/cvd.golden.json' with { type: 'json' };
 import {
   COPUNCTAL_POINTS,
+  LMS_TO_XYZ_HPE,
   MACHADO_STEPS,
   MACHADO_TABLES,
   simulateAnomalous,
@@ -272,5 +273,40 @@ describe('a finding, recorded rather than hidden', () => {
     expect(Math.abs(after - expected.approximateResidual)).toBeLessThanOrEqual(golden.tolerance);
     // Still a large collapse — the model is working, the two sources just do not match.
     expect(deltaE00(lab(a), lab(b))).toBeGreaterThan(after * 5);
+  });
+});
+
+describe('which cone fundamentals — the answer the outstanding work needs', () => {
+  it('HPE reproduces the tritan copunctal point and misses protan and deutan', () => {
+    // A copunctal point IS the chromaticity of the missing cone's fundamental, so it is
+    // derivable from column k of LMS -> XYZ. This is what identifies the fundamental set a
+    // published confusion point belongs to — and it is why the two-half-plane Brettel
+    // construction still owed for tritan needs Smith-Pokorny rather than this matrix.
+    const golden = entry('hpe-does-not-reproduce-the-published-copunctal-points');
+    const expected = golden.expected as Record<string, readonly number[]>;
+
+    const column = (k: number): readonly [number, number, number] => [
+      LMS_TO_XYZ_HPE[k]!,
+      LMS_TO_XYZ_HPE[3 + k]!,
+      LMS_TO_XYZ_HPE[6 + k]!,
+    ];
+    const chromaticity = ([x, y, z]: readonly [number, number, number]): readonly [number, number] => {
+      const sum = x + y + z;
+      return [x / sum, y / sum];
+    };
+
+    const keys: readonly Deficiency[] = ['protan', 'deutan', 'tritan'];
+    for (const [k, key] of keys.entries()) {
+      const [x, y] = chromaticity(column(k));
+      expect(Math.abs(x - expected[key]![0]!), key + ' x').toBeLessThanOrEqual(golden.tolerance);
+      expect(Math.abs(y - expected[key]![1]!), key + ' y').toBeLessThanOrEqual(golden.tolerance);
+    }
+
+    // The conclusion, asserted rather than left in a comment: tritan agrees, the others do not.
+    const [tx, ty] = chromaticity(column(2));
+    expect(Math.hypot(tx - COPUNCTAL_POINTS.tritan[0], ty - COPUNCTAL_POINTS.tritan[1])).toBeLessThan(0.01);
+
+    const [px, py] = chromaticity(column(0));
+    expect(Math.hypot(px - COPUNCTAL_POINTS.protan[0], py - COPUNCTAL_POINTS.protan[1])).toBeGreaterThan(0.1);
   });
 });
