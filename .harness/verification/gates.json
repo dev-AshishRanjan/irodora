@@ -134,7 +134,7 @@
     {
       "id": "cvd",
       "order": 10,
-      "status": "pending",
+      "status": "active",
       "activatesWith": "F-008",
       "command": "pnpm test:cvd",
       "requiredFor": [
@@ -142,7 +142,8 @@
         "recommendations"
       ],
       "ciStep": true,
-      "description": "Colour-vision-deficiency regression. Asserts that recommended outfits maintain the minimum separation score under protanopia, deuteranopia and tritanopia, and that the design system's own `cvdPairs` remain distinguishable at severity 1.0 — success and error especially. The product's interface is held to the standard it applies to outfits."
+      "description": "Colour-vision-deficiency regression, and the accessibility promise (NFR-10). Split from gate 5 deliberately: gate 5 asks whether the models reproduce their published values; this asks whether a pairing the product would recommend stays distinguishable — and that must be able to go red on its own. As of F-008 it covers the separation score shape: bounds, exact-zero identity, symmetry, severity clamping, severity-0 equivalence across deficiencies, monotonic degradation of a red-green pair, and the false negative the lightness term exists to avoid. ACTIVATED after being watched fail — deleting the lightness term from separation.ts makes it exit 1, restoring it exits 0. The FIRST version of that decoy did not discriminate: it used a pair where both terms saturate, and the gate passed with the term deleted. It was replaced with a pair where the term contributes 14.6 points, and the binding frequency (~9% of sampled pairs) is asserted so the case is not hand-picked. The design system cvdPairs assertion joins with F-003.",
+      "activatedAt": "2026-08-15"
     },
     {
       "id": "content",

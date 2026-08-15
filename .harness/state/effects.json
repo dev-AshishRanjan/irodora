@@ -171,8 +171,7 @@
       "id": "E-005",
       "from": {
         "kind": "symbol",
-        "ref": "packages/cvd-engine/src/separation.ts#separationScore",
-        "exists": false
+        "ref": "packages/cvd-engine/src/separation.ts#separationScore"
       },
       "to": [
         {

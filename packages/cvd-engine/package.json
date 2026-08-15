@@ -20,10 +20,19 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist *.tsbuildinfo"
+    "clean": "rimraf dist *.tsbuildinfo",
+    "test:golden": "vitest run --config vitest.golden.config.ts",
+    "test:cvd": "vitest run --config vitest.cvd.config.ts"
   },
   "dependencies": {
     "@irodora/color-spaces": "workspace:*",
     "@irodora/color-difference": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "@types/culori": "^4.0.1",
+    "culori": "^4.0.2",
+    "fast-check": "^4.9.0",
+    "vitest": "^4.1.10"
   }
 }
