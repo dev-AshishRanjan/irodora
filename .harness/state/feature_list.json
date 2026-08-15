@@ -294,7 +294,8 @@
       "package": "@irodora/cvd-engine",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-008-cvd-engine-and-separation-scoring.md",
       "blockedBy": [
         "F-007"
       ],
