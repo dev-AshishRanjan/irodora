@@ -125,6 +125,53 @@ and a test asserts our 0.15 sits strictly between the neighbours while culori's 
 - **E-005 is guarded at the source end only**, like E-001 and E-003 before it. Its consumers —
   F-030's recommendation scoring, F-032's CVD outfit mode, F-003's `cvdPairs` — do not exist.
 
+### The Brettel construction was attempted and refuted, not abandoned
+
+Finishing criterion 1 means the two-half-plane Brettel construction for tritan. It was tried,
+and two checks refuted it before anything shipped.
+
+**The fundamental set is now settled.** Smith–Pokorny reproduces **all three** published
+copunctal points — protan 0.0007, deutan 0.0002, tritan 0.0048 — where Hunt–Pointer–Estévez
+reproduces only tritan. That was the open question from earlier in this entry, and it is
+closed.
+
+**The anchor stimuli are the blocker.** Brettel needs the LMS coordinates of monochromatic
+lights at 475 and 575 nm (protan, deutan) and 485 and 660 nm (tritan). An implementation using
+recalled values was checked two ways:
+
+1. **Against Viénot** — which is the published *single-plane reduction of Brettel*, and
+   therefore a genuine oracle for protan and deutan, contrary to what this session earlier
+   assumed. Worst disagreement **32.5 ΔE00** (protan), **57.4 ΔE00** (deutan), concentrated on
+   blues.
+2. **The diagnostic that explains it.** Viénot's simplification is valid *because* the two
+   half-planes are nearly coplanar. With the recalled anchors the angle between the half-plane
+   normals is **88.4°**, where validity requires ≈0°.
+
+So the anchors are wrong, or in a normalisation inconsistent with this white point — and the
+second check says which, rather than leaving it as "the numbers disagree".
+
+**They cannot be derived in this repository.** LMS at a wavelength needs CIE colour-matching
+functions. There is no spectral data anywhere in the dependency tree, and neither `culori` nor
+`colorjs.io` implements Brettel.
+
+**Finishing this is a decision, not a coding task.** Three options, none of which should be
+taken by whoever picks this up next without saying so:
+
+- **Vendor CIE colour-matching functions.** A content and licensing question
+  ([`content/AGENTS.md`](../../content/AGENTS.md)), and it adds spectral data to a repository
+  that currently has none.
+- **Obtain a trustworthy transcription of Brettel's published anchor table** — which needs the
+  paper, and the same two checks above as acceptance.
+- **Attest criterion 1 under [ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md).**
+  Protan and deutan dichromacy are delivered and gated; tritan dichromacy becomes an
+  outstanding obligation with a named verification.
+
+The third is defensible: tritanopia is by far the rarest of the three, Machado tritanomaly
+*is* delivered across full severity, and the separation score covers all three deficiencies
+through the Machado path. But it is a scope decision about an accessibility guarantee, so it
+is recorded here rather than taken quietly.
+
+
 ### Watch out
 
 - **Machado operates on ENCODED sRGB; Brettel/Viénot operates in LINEAR light.** The two

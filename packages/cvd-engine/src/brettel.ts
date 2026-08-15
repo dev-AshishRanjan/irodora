@@ -24,6 +24,33 @@
  * answer — a silently-wrong tritan simulation would feed the separation score and produce an
  * accessibility claim nobody could trace back to its cause.
  *
+ * ## Why it is not written yet — a negative result, measured
+ *
+ * The construction needs the **anchor stimuli**: the LMS coordinates of monochromatic lights
+ * at 475 and 575 nm (protan, deutan) and 485 and 660 nm (tritan). An attempt was made using
+ * recalled values, and it was refuted by two checks rather than shipped:
+ *
+ * 1. **Against Viénot**, which is the published *single-plane reduction of Brettel* and
+ *    therefore a real oracle for protan and deutan: worst disagreement **32.5 ΔE00** (protan)
+ *    and **57.4 ΔE00** (deutan), concentrated on blues.
+ * 2. **The diagnostic that explains it.** Viénot's simplification is valid precisely because
+ *    the two half-planes are nearly coplanar. With the recalled anchors the angle between the
+ *    half-plane normals is **88.4°**, where the claim requires ≈0°. The anchors are wrong, or
+ *    in a normalisation inconsistent with this white point.
+ *
+ * **They cannot be derived here.** Computing LMS at a wavelength needs CIE colour-matching
+ * functions, and there is no spectral data anywhere in the dependency tree — nor any Brettel
+ * implementation in `culori` or `colorjs.io` to check against.
+ *
+ * So finishing this needs one of: vendoring CIE colour-matching functions (a content and
+ * licensing decision, `content/AGENTS.md`), a trustworthy transcription of Brettel's published
+ * anchor table, or attesting the criterion under ADR-0038. **That is a decision, not a coding
+ * task**, which is why the function refuses rather than approximating.
+ *
+ * The one thing now certain is the fundamental set: **Smith–Pokorny**, which reproduces all
+ * three published copunctal points (protan 0.0007, deutan 0.0002, tritan 0.0048) where
+ * Hunt–Pointer–Estévez reproduces only tritan.
+ *
  * ## What checks it
  *
  * Neither `culori` nor `colorjs.io` implements Brettel–Viénot, so there is no value oracle.
