@@ -39,8 +39,8 @@ export const DEFICIENCIES: readonly Deficiency[] = ['protan', 'deutan', 'tritan'
  * The obvious economy is to test the endpoint only, on the reasoning that a pair surviving
  * total deficiency survives every milder one. **That is false, and measurably so.** Machado's
  * tabulated matrices are not monotone in severity — the tritan table reverses direction
- * around 0.5–0.6 — and `light: status.warn / status.bad` under tritan scores **61.2 at
- * severity 0.90** against **65.8 at 1.0**. Nothing currently drops below the minimum, but the
+ * around 0.5–0.6 — and `light: status.warn / status.bad` under tritan scores **64.0 at
+ * severity 0.90** against **67.1 at 1.0**. Nothing currently drops below the minimum, but the
  * *reason* for testing one point did not hold, so a future nudge would have slipped through
  * a check that looked thorough.
  *

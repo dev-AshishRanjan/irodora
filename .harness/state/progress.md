@@ -25,16 +25,17 @@ the file. That is the headline, and it is the gate working.
   ✓ gate 1   typecheck      37 tasks
   ✓ gate 2   lint           37 tasks + guards + engine purity
   ✓ gate 3   format
-  ✓ gate 4   test           738 tests (design-tokens: 83 new)
-  ✓ gate 5   color-golden   312 tests
-  ✓ gate 9   contrast       48 pairings × 2 themes — ACTIVE, after being watched fail
-  ✓ gate 10  cvd            43 tests (design-tokens: 29 new), both models, all 11 severities
+  ✓ gate 4   test           738 tests (design-tokens: 96 new)
+  ✓ gate 5   color-golden   299 tests
+  ✓ gate 9   contrast       48 declared pairings across 2 themes — ACTIVE, watched fail
+  ✓ gate 10  cvd            41 tests (design-tokens: 29 new), both models, all 11 severities
   ✓ gate 6   build          25 tasks
   ✓ mirror   10/10 active gates
-  ✓ proof    scripts/verify-contrast-proof.mjs — 8 cases, baseline green in each:
-             7 red, plus report-only-under-placeholder which must stay green
+  ✓ gate 15  security       gitleaks 50 commits, no leaks; pnpm audit, no high/critical
+  ✓ proof    scripts/verify-contrast-proof.mjs — 9 cases, baseline green in each:
+             8 red, plus report-only-under-placeholder which must stay green
 
-NOT run: e2e, a11y, content, perf, web-perf, e2e-full, security.
+NOT run: e2e, a11y, content, perf, web-perf, e2e-full — all still `pending` in gates.json.
 ```
 
 ### Three defects in the approved manifest
@@ -93,8 +94,8 @@ Then `status.warn` moved for an unrelated reason and gained headroom, and re-run
 gave `baseline exit 0, mutated exit 0` — the mutation still applied, the gate still ran, and
 it no longer collapsed anything. A proof that passed when written and rotted afterwards.
 
-Replaced with a 48° hue rotation of success toward caution (65.2 → 30.0), which attacks the
-mechanism rather than the margin. The number is in the decoy's name so the next reader can see
+Replaced with a 48° hue rotation of success toward caution (**64.1 → 31.8**), which attacks
+the mechanism rather than the margin. The number is in the decoy's name so the next reader can see
 how much slack it has.
 [[a-decoy-written-against-old-values-quietly-stops-discriminating]]
 
@@ -108,13 +109,10 @@ how much slack it has.
 - **A human designer has still not seen the corrected palette.** Both reviews were by
   subagent. The manifest records that in `valuesChangedSinceApproval`, and ADR-0044 says it in
   its Bad consequences.
-- **INDEPENDENT VERIFICATION DID NOT COMPLETE.** The `evaluator` subagent was launched twice
-  and terminated on a session limit both times without producing a verdict. Every gate in the
-  evidence block above was therefore run by the implementer, which is exactly the separation
-  the harness exists to maintain — CLAUDE.md calls it "the highest-value guardrail". The
-  evidence is reproducible (every command is in the block, and `verify-contrast-proof.mjs`
-  re-runs the eight mutations on demand), but nobody but me has checked it. **Re-running
-  `/verify` with the evaluator is the first thing the next session should do.**
+- **Independent verification DID complete, on the third attempt**, and returned FAIL on the
+  record rather than on any gate. Everything it raised is fixed or recorded above. The two
+  earlier runs died on session limits; that is why this entry was first written claiming the
+  separation had not been achieved.
 - **`border.strong` does not meet 3:1** as an outlined control boundary. Now recorded as
   **F-070** with its measured ratios, and the token carries an `uncheckedReason` so the gate
   names it rather than passing over it in silence.
@@ -163,6 +161,94 @@ by nothing** — and said nothing, which reads as a pass. `swatch.well`, `swatch
 carries an `uncheckedReason` saying why it cannot be checked here. That turns "unchecked" from
 an absence into a statement a reviewer can disagree with, and it is the same silent-failure
 shape the status check already guarded one level down.
+
+### The independent evaluation returned FAIL, and found two blockers the gates could not
+
+The third `evaluator` run completed — the first two died on session limits — and it
+reproduced every gate green while failing the feature on the **record**, which is the part no
+gate reads.
+
+**BLOCKER 1 — ADR-0044's value table was not what shipped.** It recorded the *intermediate*
+correction and was never updated when the colour-science review forced a third pass. Three of
+six rows were wrong. The manifest's `valuesChangedSinceApproval` names ADR-0044 as *the*
+record for exactly those six tokens, so the one machine-readable pointer to the decision led
+to superseded numbers. **A decision record has no gate; its numbers go stale silently.** Fixed,
+with the failure kept in the ADR rather than tidied away.
+
+**BLOCKER 2 — a claim the code did not support.** `DESIGN-SYSTEM.md` said `foreground.3` "is
+emitted under a TypeScript brand that is not assignable where normal text is expected". It was
+not. `TextToken`/`LargeTextToken` were phantom brands — `string & { __text: unique symbol }` —
+that nothing produced, nothing applied, and the generated tokens ignored entirely. A consumer
+reading `COLOR.light['foreground.3']` got a plain string and no error anywhere. The test that
+"proved" the brands differ was true and **vacuous**.
+
+Now real: the TypeScript target emits `TEXT_TOKENS` and `LARGE_TEXT_TOKENS` derived from the
+manifest's own `usage` field, and the two types are literal unions of those names. The
+non-assignability is structural, cannot drift from the manifest, and the test asserts a
+genuine token IS assignable — the baseline the old version lacked.
+
+### The gap in the mutation proof, which is the finding I would keep
+
+**Nothing isolated `checkContrast`.** Case 1 ("a token nudged below AA") changes a token's
+`oklch`, which *also* breaks the ADR-0043 derived-hex check — so gate 9 went red either way.
+Verified by neutering it: with `passes: true` hard-coded, **gate 9 still exits 0**, and all
+eight mutations still held. There was also no unit test for `checkContrast`,
+`requirementFor` or `checkChromaCeiling` anywhere.
+
+The AA comparison — the single most load-bearing line in the feature — was indistinguishable
+from a no-op. Now covered by `test/check.test.ts` (11 assertions, including both directions of
+`passes` and an independently recomputed ratio) and by a ninth proof case that neuters the
+comparison and asserts the package tests catch what gate 9 cannot.
+
+### Also corrected
+
+- **`turbo.json` gave `test:contrast` `dependsOn: ["^build"]`** — its own build was not a
+  dependency, so `pnpm --filter @irodora/design-tokens test:contrast` validated whatever
+  `dist` happened to contain. Freshness held only incidentally. Now `["^build", "build"]`,
+  confirmed with `turbo run test:contrast --dry=json`.
+- **The severity-sweep decoy did not discriminate.** It filtered on `severity < 1`, which also
+  matches rows scoring 100 at *every* severity where index 0 wins the tie. It now requires a
+  row whose worst is strictly below its score at severity 1.0 — the same lesson as the gate-10
+  decoy, one level up.
+- **Stale measurements**, all re-measured: `CVD_SEVERITIES`' doc said 61.2/65.8 (actual
+  **64.0/67.1**); the test comment said a 4.6-point gap (actual **3.1**); `gates.json` and
+  `progress.md` said the replacement decoy takes the pair 65.2 → 30.0 (actual **64.1 → 31.8**,
+  which is what the decoy's own name already said — *the record of the re-measurement was not
+  itself re-measured*); `effects.json` said six mutations where there are nine cases.
+- **Evidence counts were overstated**: color-golden is **299**, not 312; cvd is **41**, not 43.
+  My summing double-counted. F-003 added no golden datasets.
+- **Gate 15 (security) is active and I listed it as NOT run.** It runs and passes: gitleaks
+  over 50 commits, no leaks; `pnpm audit`, nothing high or critical.
+
+### Two findings recorded rather than fixed
+
+**Coverage is per-token, not per-combination.** `uncheckedReason` catches a token nobody
+names, but says nothing about an undeclared *combination* between two covered tokens. The
+evaluator measured these, and they exist nowhere else:
+
+| undeclared combination | ratio | would need |
+|---|---|---|
+| `light foreground.3 / surface.3` | 2.97:1 | 3.0 |
+| `light foreground.3 / swatch.well` | 2.86:1 | 3.0 |
+| `light status.ok / surface.3` | 4.36:1 | 4.5 |
+| `light status.warn / surface.3` | 4.48:1 | 4.5 |
+| `light status.ok / swatch.well` | 4.21:1 | 4.5 |
+| `dark status.bad / swatch.well` | 4.00:1 | 4.5 |
+
+None is declared, so none is checked, and both tokens in each pair are "covered". Which
+combinations are real is a component question — **F-017** — but the numbers are now written
+down instead of being rediscovered.
+
+**`uncheckedReason` gives "cannot be checked" and "would fail" the same escape hatch.**
+`swatch.well` genuinely has no fixed second colour; `border.strong` simply does not meet 3:1.
+Both are declared loudly and `border.strong` has F-070, but the mechanism does not distinguish
+them, and it should.
+
+**Gate 4 is flaky, pre-existing.** `packages/testing` → `createPrng > stays inside [0, 1)`
+timed out at 5000 ms under the 37-task parallel run; passes in isolation in 1.8 s. A
+100k-iteration loop on the default timeout is a gate that can go red for a non-behavioural
+reason. Not F-003's, and not fixed here — recorded so the next red run is not mistaken for a
+regression.
 
 ### What that cost in values
 
@@ -234,9 +320,10 @@ and pushing is the human decision either way. The tree is clean.
 
 ### Next
 
-1. **Re-run `/verify` with the evaluator subagent.** It is the one step of the loop that did
-   not happen, and the gates were run by the implementer.
-2. Then R1 continues at **F-009** (gamut mapping) — `blockedBy: F-006`, which is done.
+R1 continues at **F-009** (gamut mapping) — `blockedBy: F-006`, which is done.
+
+Worth doing at some point, and not blocking: the gate-4 flake in `packages/testing`, and
+making `uncheckedReason` distinguish "cannot be checked here" from "does not pass".
 
 R0 is complete.
 

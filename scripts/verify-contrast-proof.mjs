@@ -32,6 +32,7 @@ const gate10 = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-t
 const typecheck = () =>
   run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens typecheck']);
 const emitTest = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens test']);
+const rebuild = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens build']);
 
 const cases = [
   {
@@ -108,6 +109,21 @@ const cases = [
     check: gate9,
   },
   {
+    // The gap the F-003 evaluation found. Case 1 changes a token's `oklch`, which ALSO
+    // breaks the ADR-0043 derived-hex check — so gate 9 went red either way, and a
+    // `checkContrast` that returned `passes: true` unconditionally would have left every
+    // gate and every other mutation green. This isolates the comparison itself.
+    //
+    // Note the check is the package test, NOT gate 9: with the comparison neutered gate 9
+    // still exits 0, which is the whole point of recording this one.
+    name: 'test — checkContrast neutered to always pass (gate 9 alone does NOT catch this)',
+    file: `${ROOT}/packages/design-tokens/src/check.ts`,
+    mutate: (s) =>
+      s.replace('          passes: worst.wcag >= requirement.required,', '          passes: true,'),
+    check: emitTest,
+    rebuild: true,
+  },
+  {
     name: 'test — an emitter changed without regenerating',
     file: `${ROOT}/packages/design-tokens/src/emit/css.ts`,
     mutate: (s) =>
@@ -129,6 +145,10 @@ for (const c of cases) {
   const baseline = c.check();
   try {
     writeFileSync(c.file, mutated, 'utf8');
+    // A mutation to package SOURCE only reaches the checks through dist, so it has to be
+    // rebuilt. Without this the mutation is written, nothing recompiles, and the case passes
+    // by measuring the unmutated build.
+    if (c.rebuild) rebuild();
     const after = c.check();
     // The baseline must be green in EVERY case. A decoy proves nothing if the gate was
     // already failing before it was applied. [[a-decoy-that-is-not-broken-proves-nothing]]
@@ -141,6 +161,7 @@ for (const c of cases) {
     );
   } finally {
     writeFileSync(c.file, original, 'utf8');
+    if (c.rebuild) rebuild();
     const restored = readFileSync(c.file, 'utf8');
     if (restored !== original) {
       console.log(`!! ${c.file} DID NOT RESTORE`);

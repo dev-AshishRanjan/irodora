@@ -100,9 +100,14 @@ it is invisible on a meter track.
 **`foreground.3` is `usage: "largeText"`** — it fails AA against every surface at small sizes,
 so micro-labels use `foreground.2`. Until F-003 this restriction was *claimed* to be gate-
 enforced while `foreground.3` appeared in no `pairsWith` list, so nothing checked it at all.
-It is now declared on the three surfaces that carry secondary text and checked at 3:1, and it
-is emitted under a TypeScript brand that is not assignable where normal text is expected. The
-remaining half — catching a 13 px label that uses it — needs components and lands with F-017.
+It is now declared on the three surfaces that carry secondary text and checked at 3:1, and the
+generated TypeScript emits `TEXT_TOKENS` and `LARGE_TEXT_TOKENS` **derived from the manifest's
+own `usage` field**, with `TextToken` and `LargeTextToken` as literal unions of those names —
+so `foreground.3` is not assignable where a `TextToken` is expected, structurally rather than
+by declaration. (The first attempt used phantom brands that nothing produced and nothing
+applied, so this sentence was false for as long as it stood. The F-003 evaluation caught it.)
+The remaining half — catching a 13 px label that uses it — needs components and lands with
+F-017.
 
 **Greyscale `chart.1…5`** — series are separated by lightness, marker shape and a direct
 label. A hue-coded chart would put five competing colours beside a sample the user is trying

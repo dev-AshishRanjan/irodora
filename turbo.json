@@ -39,7 +39,7 @@
       "cache": false
     },
     "test:contrast": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build"],
       "outputs": []
     },
     "dev": {

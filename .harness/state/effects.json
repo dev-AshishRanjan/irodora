@@ -287,7 +287,7 @@
       "severity": "high",
       "guard": "gate:contrast",
       "memory": "memory/effects/a-token-change-is-a-contrast-change-in-both-themes.md",
-      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts six mutations red with the baseline green in each.",
+      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

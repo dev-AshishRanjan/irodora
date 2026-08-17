@@ -71,6 +71,18 @@ export const RADIUS = {
 export const SPACING = [4, 8, 14, 20, 28, 40, 56, 96] as const;
 export const TAP_TARGET = 44 as const;
 
+/** Token names usable for normal-size text: AA 4.5:1 against their surfaces. */
+export const TEXT_TOKENS = ['foreground', 'foreground.2', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad'] as const;
+
+/** Token names restricted to >= 18.66px, or >= 24px bold. */
+export const LARGE_TEXT_TOKENS = ['foreground.3'] as const;
+
+/** A token name usable for normal-size text. DERIVED, so it cannot drift. */
+export type TextToken = (typeof TEXT_TOKENS)[number];
+
+/** Restricted to large text. Not assignable to TextToken — structurally, not by fiat. */
+export type LargeTextToken = (typeof LARGE_TEXT_TOKENS)[number];
+
 export const STATUS_PAIRING = {
   ok: { colorToken: 'status.ok', iconToken: 'icon.check', textRequired: true },
   warn: { colorToken: 'status.warn', iconToken: 'icon.alert', textRequired: true },

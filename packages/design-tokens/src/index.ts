@@ -57,20 +57,24 @@ export {
   type SeparationResult,
 } from './check.js';
 
-export {
-  statusPresentation,
-  type LargeTextToken,
-  type StatusKind,
-  type StatusPresentation,
-  type TextToken,
-} from './status.js';
+export { statusPresentation, type StatusKind, type StatusPresentation } from './status.js';
 
 export { emitCss, cssVarName } from './emit/css.js';
 export { emitTailwind } from './emit/tailwind.js';
 export { emitTypescript } from './emit/typescript.js';
 export { emitReactNative } from './emit/react-native.js';
 
-export { COLOR, RADIUS, SPACING, STATUS_PAIRING, TAP_TARGET } from './generated/tokens.js';
+export {
+  COLOR,
+  LARGE_TEXT_TOKENS,
+  RADIUS,
+  SPACING,
+  STATUS_PAIRING,
+  TAP_TARGET,
+  TEXT_TOKENS,
+  type LargeTextToken,
+  type TextToken,
+} from './generated/tokens.js';
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */
 export const TOKENS_VERSION = '0.1.0' as const;

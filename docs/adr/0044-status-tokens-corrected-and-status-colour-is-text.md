@@ -62,17 +62,26 @@ changing it is a decision with an ADR rather than a field edit.
 
 Hue and chroma held where possible; every value engine-derived per ADR-0043.
 
-| Token | Theme | Before | After |
+| Token | Theme | Approved 2026-08-14 | **Shipped** |
 |---|---|---|---|
 | `status.ok` | dark | L 0.760 C 0.090 H 158 | **L 0.730** C 0.090 H 158 → `#75B992` |
-| `status.warn` | dark | L 0.810 C 0.100 H 78 | **L 0.770 C 0.125 H 70** → `#E7A554` |
+| `status.warn` | dark | L 0.810 C 0.100 H 78 | **L 0.770 C 0.130 H 70** → `#E9A44E` |
 | `status.bad` | dark | L 0.700 C 0.140 H 26 | **L 0.640** C 0.140 H 26 → `#D4665E` |
-| `status.ok` | light | L 0.550 C 0.100 H 158 | **L 0.530** C 0.100 H 158 → `#2E7D55` |
+| `status.ok` | light | L 0.550 C 0.100 H 158 | **L 0.530 C 0.090** H 158 → `#387B58` |
 | `status.warn` | light | L 0.600 C 0.110 H 70 | **L 0.540** C 0.110 H 70 → `#976213` |
-| `status.bad` | light | L 0.550 C 0.160 H 26 | **L 0.410** C 0.160 H 26 → `#8D0B14` |
+| `status.bad` | light | L 0.550 C 0.160 H 26 | **L 0.400 C 0.150** H 26 → `#861116` |
 
-Result: every declared pairing passes in both themes, and the worst separation across all
-pairs × {protan, deutan, tritan} is **65.2** dark and **65.2** light, against a required 60.
+Result: every declared pairing passes in both themes, and the worst separation — across both
+simulation models, all eleven tabulated severities and every ground — is **64.1** dark and
+**63.2** light, against a required 60.
+
+> **This table was wrong once, and the way it was wrong is worth keeping.** It first recorded
+> an intermediate correction (dark warn C 0.125, light ok C 0.100, light bad L 0.410 C 0.160)
+> and was not updated when the colour-science review forced a third pass. Because the
+> manifest's `valuesChangedSinceApproval` names this ADR as *the* record for exactly these six
+> tokens, the one machine-readable pointer to the decision led to superseded numbers. Caught
+> by the F-003 evaluation, not by any check — **a decision record has no gate, so its numbers
+> go stale silently.** Anything quoting values here should quote the manifest instead.
 
 **The margin is deliberate.** A minimum-drift solution exists that clears 60 by about one
 point; it was rejected, because a design-system value sitting on a gate threshold is a value
@@ -86,9 +95,10 @@ of hue between them, distinguished from body text by chroma alone — so it read
 not as caution. It was also 2.5× louder than error.
 
 The replacement takes L back to 0.770 and buys the separation from hue (78 → 70) and chroma
-(0.100 → 0.125). Caution now sits **1.93:1** from the foreground. The hue change also
-**unifies warn across the themes** — light was already 70, and a semantic colour whose hue
-changes with the theme is two colours.
+(0.100 → 0.125, and then → 0.130 after the colour-science review forced a third pass).
+Caution now sits **1.93:1** from the foreground. The hue change also **unifies warn across the
+themes** — light was already 70, and a semantic colour whose hue changes with the theme is two
+colours.
 
 The general lesson, which came out of that review: **in this system lightness is
 triple-booked** — it sets WCAG contrast, salience rank against the ground, and gamut
@@ -119,11 +129,10 @@ deep oxblood where a brick red was signed off. That is a real cost and it is not
 here: what makes it defensible is that the approved values could not ship, not that the
 replacements are better taste.
 
-`light.status.bad` at L 0.41 C 0.16 also sits close to the sRGB gamut boundary (its green
-channel is ~11/255 as an **encoded byte**, which is 0.0032 in linear terms — about 0.8/255 of
-the linear range). It is in gamut and the gate proves it, but there is
-little room left in that direction, and clipping would be a silent hue shift that the
-authoritative OKLCh no longer describes.
+`light.status.bad` at L 0.40 C 0.15 also sits close to the sRGB gamut boundary — its green
+channel is a low **encoded byte**, and correspondingly near zero in linear terms. It is in
+gamut and the gate proves it, but there is little room left in that direction, and clipping
+would be a silent hue shift that the authoritative OKLCh no longer describes.
 
 **Neutral.** Dark and light still assert *opposite* salience hierarchies — measured against
 each theme's own ground, dark says caution is loudest and error quietest, light says error is

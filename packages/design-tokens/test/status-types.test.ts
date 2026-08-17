@@ -1,25 +1,37 @@
 /**
- * The compile-time half of NFR-9.
+ * The compile-time half of NFR-9, and the `largeText` restriction.
  *
  * `@ts-expect-error` is the assertion: the line under it MUST fail to type-check, and `tsc`
  * reports an *error* if it does not. So this file is a negative test the compiler runs —
  * delete the `iconToken` requirement from `StatusPresentation` and `pnpm typecheck` goes red
  * on the unused directive, not silently green.
  *
- * `expectTypeOf` carries the positive side. The two together are what make "a status
- * expressible only as colour cannot be constructed" a fact about the type rather than a
- * sentence in a document.
+ * ## What the first version of this file got wrong
+ *
+ * `TextToken` and `LargeTextToken` were declared as phantom brands — `string & { __text:
+ * unique symbol }` — and this file asserted the two types differ. That was true and
+ * **vacuous**: nothing produced a value of either type, the generated tokens were plain
+ * strings, and the only way to obtain one was the hand-written cast this test performed on
+ * itself. Meanwhile `DESIGN-SYSTEM.md` claimed `foreground.3` was "emitted under a
+ * TypeScript brand that is not assignable where normal text is expected", which no code
+ * anywhere supported.
+ *
+ * Both types are now **derived from the manifest** in `generated/tokens.ts` as literal
+ * unions of the real token names. The assertions below are against those, so they fail if
+ * the manifest changes `usage` — which is what makes them worth running.
  */
 
-import { describe, expectTypeOf, it } from 'vitest';
-import type { LargeTextToken, StatusPresentation, TextToken } from '../src/index.js';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import {
+  LARGE_TEXT_TOKENS,
+  TEXT_TOKENS,
+  type LargeTextToken,
+  type StatusPresentation,
+  type TextToken,
+} from '../src/index.js';
 
 describe('a status cannot be built from colour alone', () => {
   it('requires colour, icon and text together', () => {
-    expectTypeOf<StatusPresentation>().toHaveProperty('colorToken');
-    expectTypeOf<StatusPresentation>().toHaveProperty('iconToken');
-    expectTypeOf<StatusPresentation>().toHaveProperty('text');
-
     // Every channel is required, not optional. `toHaveProperty` alone would still pass if
     // one of them were `iconToken?: string`, which is exactly the shape someone reaches for
     // when a component has no icon to hand.
@@ -59,21 +71,36 @@ describe('a status cannot be built from colour alone', () => {
 });
 
 describe('largeText is not text', () => {
-  it('a LargeTextToken is not assignable where a TextToken is expected', () => {
-    // `foreground.3` meets 3:1 and not 4.5:1. Structurally both are `string`, so only the
-    // brand stops a 13 px label from taking it — a review comment would not.
-    const large = 'foreground.3' as LargeTextToken;
+  it('the two lists come from the manifest and do not overlap', () => {
+    // Runtime, so a `usage` edit that put a token in both lists fails here rather than in a
+    // component six months later.
+    const text = new Set<string>(TEXT_TOKENS);
+    for (const name of LARGE_TEXT_TOKENS) expect(text.has(name)).toBe(false);
+    expect(TEXT_TOKENS.length).toBeGreaterThan(0);
+    expect(LARGE_TEXT_TOKENS.length).toBeGreaterThan(0);
+  });
 
-    // @ts-expect-error — the whole point of the two brands.
+  it('a LargeTextToken is not assignable where a TextToken is expected', () => {
+    // `foreground.3` meets 3:1 and not 4.5:1. This is now a real literal union, so the
+    // error comes from the token NAME, not from a brand nobody applies.
+    const large: LargeTextToken = 'foreground.3';
+
+    // @ts-expect-error — the whole point. foreground.3 is not in TEXT_TOKENS.
     const asText: TextToken = large;
     void asText;
 
     expectTypeOf<LargeTextToken>().not.toEqualTypeOf<TextToken>();
   });
 
-  it('neither brand is reachable from a plain string', () => {
-    // @ts-expect-error — a bare string is not a checked token name.
-    const unchecked: TextToken = 'foreground';
+  it('an arbitrary string is not a token name', () => {
+    // @ts-expect-error — not a member of either union.
+    const unchecked: TextToken = 'foreground.9';
     void unchecked;
+  });
+
+  it('a genuine text token IS assignable — the baseline', () => {
+    // Without this, every assertion above would still pass if TextToken were `never`.
+    const ok: TextToken = 'foreground';
+    expectTypeOf(ok).toExtend<TextToken>();
   });
 });

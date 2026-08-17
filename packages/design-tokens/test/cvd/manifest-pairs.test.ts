@@ -50,10 +50,13 @@ describe('design-system cvdPairs', () => {
     expect(manifest.cvdPairs.pairs.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('simulates at severity 1.0 — the total case', () => {
-    // A pair that survives severity 1.0 survives every milder one, so this is the only
-    // severity worth gating on. Asserted so a future edit cannot quietly soften it.
+  it('names severity 1.0, but does NOT gate on it alone', () => {
+    // The reasoning this constant used to carry — "a pair that survives 1.0 survives every
+    // milder one" — is false; see CVD_SEVERITIES. The name is kept because the manifest note
+    // refers to severity 1.0, and asserted so it cannot drift, but the sweep is what gates.
     expect(CVD_SEVERITY).toBe(1);
+    expect(CVD_SEVERITIES).toContain(CVD_SEVERITY);
+    expect(CVD_SEVERITIES.length).toBeGreaterThan(1);
   });
 
   for (const result of results)
@@ -80,17 +83,22 @@ describe('what the separation check actually covers', () => {
   });
 
   it('evaluates every tabulated severity, because Machado is not monotone', () => {
-    // The decoy for CVD_SEVERITIES. If the sweep were dropped and only 1.0 checked, this
-    // pair would be reported 4.6 points higher than its true worst.
     expect(CVD_SEVERITIES).toHaveLength(11);
     expect(CVD_SEVERITIES.at(-1)).toBe(1);
 
-    const tritanWorst = results.filter((r) => r.deficiency === 'tritan' && r.severity < 1);
+    // The decoy, and the previous version of it was weak: filtering on `severity < 1` also
+    // matches rows that score 100 at EVERY severity, where index 0 wins the tie and means
+    // nothing. The real assertion is that some row's worst is strictly BELOW its score at
+    // severity 1.0 — which is the only thing that makes the sweep load-bearing.
+    const binding = results.filter((r) => r.severity < 1 && r.score < 99 && r.model === 'machado');
     expect(
-      tritanWorst.length,
-      'no tritan pair reported a worst case below severity 1.0 — if that is now genuinely ' +
-        'true the comment on CVD_SEVERITIES needs re-measuring, not deleting',
+      binding.length,
+      'no pair has its worst case strictly inside the severity range — if that is now ' +
+        'genuinely true, CVD_SEVERITIES needs re-measuring, not deleting',
     ).toBeGreaterThan(0);
+    // light warn/bad under tritan: 64.0 at 0.9 against 67.1 at 1.0, a 3.1-point difference
+    // the endpoint-only check would have missed.
+    expect(Math.min(...binding.map((r) => r.score))).toBeLessThan(65);
   });
 
   it('reports which model and severity produced each worst case', () => {

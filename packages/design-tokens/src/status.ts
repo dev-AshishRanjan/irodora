@@ -21,17 +21,18 @@ import type { StatusEntry } from './manifest.js';
 /** The three semantic states the manifest declares. */
 export type StatusKind = 'ok' | 'warn' | 'bad';
 
-/**
- * A token name that may be used for normal-size text.
- *
- * Branded so that `foreground.3` — which meets 3:1 but not 4.5:1 — cannot be passed where
- * body text is expected. The brand is erased at runtime; its whole job is to make the
- * `largeText` restriction a compile error rather than a review comment.
- */
-export type TextToken = string & { readonly __text: unique symbol };
-
-/** A token name restricted to text at 18.66 px and above. Not a `TextToken`. */
-export type LargeTextToken = string & { readonly __largeText: unique symbol };
+// `TextToken` and `LargeTextToken` are NOT defined here. They are derived in
+// `generated/tokens.ts` from the `usage` field of the manifest itself, as literal unions of
+// the actual token names.
+//
+// The first attempt declared them here as phantom brands — `string & { __text: unique
+// symbol }`. That version was rejected in review and deserved to be: nothing produced a
+// value of either type, so the only way to obtain one was a hand-written cast, the generated
+// tokens were plain strings, and a consumer reading `COLOR.light['foreground.3']` got no
+// error anywhere. The test that "proved" the brands differ was true and vacuous.
+//
+// Derived unions cost nothing, cannot drift from the manifest, and make the
+// non-assignability structural rather than declared.
 
 /**
  * A status as it may be presented. Three channels, all required.
