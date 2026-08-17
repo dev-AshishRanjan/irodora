@@ -436,6 +436,46 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-012",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/color-spaces/src/gamut.ts"
+      },
+      "to": [
+        {
+          "kind": "package",
+          "ref": "@irodora/color-harmony"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/color-core"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/web"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/color-spaces",
+        "packages/color-harmony",
+        "packages/color-core",
+        "apps/web",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:color-golden",
+      "memory": "memory/effects/one-gamut-mapping-defines-the-closest-displayable-colour.md",
+      "rationale": "gamutMap answers \"this colour does not fit the display, what do we show instead\" for every surface, with no import edge that shows the sharing — the same shape as E-003 and E-005. A second implementation does not look like a rival algorithm; it looks like an inline Math.min/max clip, which moves hue by up to 33.6 degrees, or a component that renders oklch() and lets the BROWSER map it, which disagrees with us by up to 5.21 dE00 and 11.97 degrees of hue (ADR-0045). Nothing breaks: the build stays green and the product shows two different colours for the same input depending on which path produced it.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

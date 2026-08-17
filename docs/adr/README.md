@@ -68,6 +68,7 @@ Two rules that matter more than the format:
 | [0042](0042-wcag-luminance-cutoff-is-004045-not-003928.md) | The WCAG luminance cutoff is 0.04045; 0.03928 was superseded in 2021 | Accepted |
 | [0043](0043-the-oklch-field-is-authoritative-and-srgb-is-derived.md) | The `oklch` field is authoritative; `srgb` is derived output, not an input | Accepted |
 | [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Accepted |
+| [0045](0045-gamut-mapping-is-chroma-bisection-without-minde.md) | Gamut mapping is OKLCh chroma bisection, without CSS Color 4 MINDE step | Accepted |
 
 ## Open questions awaiting an ADR
 

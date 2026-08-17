@@ -8,6 +8,124 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-15 — F-009 DONE · gamut mapping, and a deliberate break with CSS Color 4
+
+A colour that does not fit the display has to become one that does, and **which** one is a
+product decision. `gamutMap` reduces OKLCh chroma and holds lightness and hue — so a colour
+gets less vivid rather than becoming a different colour.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 13 warnings
+  ✓ gate 1   typecheck      37 tasks
+  ✓ gate 2   lint           37 tasks + guards + engine purity (6 packages)
+  ✓ gate 3   format
+  ✓ gate 4   test           433 tests (color-spaces: 345, +88 for F-009)
+  ✓ gate 5   color-golden   201 in color-spaces, incl. the 14-entry gamut dataset
+  ✓ gate 6   build          25 tasks
+  ✓ gate 9   contrast       unaffected, still green
+  ✓ gate 10  cvd            unaffected, still green
+  ✓ gate 15  security       gitleaks, no leaks
+  ✓ mirror   10/10 active gates
+
+NOT run: e2e, a11y, content, perf, web-perf, e2e-full — all still `pending` in gates.json.
+```
+
+### The decision, and the measurement that made it
+
+CSS Color 4 §13.2 is the documented default: chroma bisection **plus MINDE**, which stops
+early once the channel-clipped colour is within a just-noticeable difference in `deltaEok`
+and returns the *clipped* one. We implement the bisection and **not** the MINDE step.
+
+There were two reasons, and only the second one decided it.
+
+**The structural reason** was that `deltaEok` lives in `@irodora/color-difference`, which
+depends on `color-spaces` — so MINDE would have meant a second implementation of a shipped
+function. That is a real constraint but it is the kind of reason that should make you
+suspicious of your own conclusion, so the difference was **measured** before the ADR was
+written, exactly as the plan said it must be.
+
+**The measurement decided it.** Over 30 out-of-gamut colours, against `colorjs.io`:
+
+| | ours | CSS Color 4 MINDE |
+|---|---|---|
+| max hue drift | **2.6 × 10⁻⁵ °** | **11.97 °** |
+| ΔE00 between the two results | — | up to **5.21** |
+| `oklch(0.9 0.35 240)` | 240.00 → 240.00 | 240.00 → **228.03** |
+
+`deltaEok` tolerates hue movement, so MINDE trades hue for chroma. On a product whose claim
+is that the colour is right, that is the wrong trade — "less vivid" is a sentence a user
+accepts; "now yellow" is not.
+
+Our result agrees with **culori's `clampChroma`** — an independent implementation of the same
+algorithm — to **0.0063 ΔE00**. So the 5.21 gap is not our error; the two algorithms answer
+different questions. Recorded in **ADR-0045**, including the cost: we are not CSS-compliant,
+and a browser mapping the same `oklch()` itself will disagree with us.
+
+### The bound, stated rather than hoped for
+
+Acceptance criterion 1 says "within stated bounds", and the first version of the test asserted
+a bound I had guessed. It failed — at 23° of hue drift — and the investigation is the useful
+part:
+
+- **In OKLCh the preservation is exact**: 7 × 10⁻¹², which is round-trip noise. Only `C` moves.
+- **Rendering adds one thing**: a final clamp of at most `GAMUT_EPSILON` (10⁻⁷) per channel.
+- **Near the black point that tiny absolute movement is a large relative one**, and OKLCh hue
+  at chroma 10⁻³ is not a meaningful angle.
+
+| result `L` and `C` at least | max \|ΔL\| | max Δhue |
+|---|---|---|
+| 0.05 | 1.2 × 10⁻⁷ | 6.9 × 10⁻⁵ ° |
+| 0.01 | 3.9 × 10⁻⁶ | 7.6 × 10⁻³ ° |
+| unfiltered | 5.7 × 10⁻⁴ | **23 °** |
+
+The last row is in the test as a comment rather than deleted, because a bound that only holds
+where you looked is not a bound.
+
+### The decoy
+
+Per-channel clipping — what almost everything else does — implemented in the test and
+measured: **33.6° of hue shift**. Our own drift is asserted immediately beside it on the same
+colours, so the claim "we preserve hue" is a comparison rather than an assertion
+[[a-decoy-that-is-not-broken-proves-nothing]].
+
+The golden dataset needed the same care. There is no published table of gamut-mapped results,
+so the 14 entries are `definitional` and the test asserts the **definition**: the result is in
+gamut *and* one bisection step more chroma is not. An entry cannot pass by the implementation
+agreeing with itself.
+
+### Recorded, not fixed
+
+**F-071 — two flaky property tests, both pre-existing.** `oklab.test.ts` runs 5,000
+**unseeded** `fast-check` samples against a 1e-12 bound; it failed once during this feature at
+1.2477e-12 — a 25% overshoot, so it will recur — and then passed six consecutive full-suite
+runs. I confirmed it was not mine by stashing and re-running. The F-003 evaluation found a
+second, a `createPrng` timeout under the parallel run.
+
+Neither is F-009's, and neither is cosmetic: gates 4 and 5 are blocking, and **a blocking gate
+that can go red for a reason unrelated to the change teaches people to re-run it until it is
+green** — which is how a real regression gets waved through.
+
+### Effects
+
+**E-012 is new**, and it is the same shape as E-003 and E-005: `gamutMap` is a *definition*
+shared by many callers with no import edge that shows the sharing. A second implementation
+will not look like a rival algorithm — it will look like an inline `Math.min(1, Math.max(0,
+c))`, or a component that renders `oklch()` and lets the browser map it.
+
+### Where the work is
+
+Committed on **`feat/F-003-design-tokens`** (the branch now carries F-003 and F-009), **not
+pushed**. Tree clean.
+
+### Next
+
+R1 continues at **F-010** — the `Color` value type and reproducibility envelope,
+`blockedBy: F-006`, which is done.
+
+---
+
 ## 2026-08-15 — F-003 DONE · the token pipeline, and a design system that failed its own gates
 
 **Gate 9 (`contrast`) is active and blocking.** One manifest now compiles to CSS custom

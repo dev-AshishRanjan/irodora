@@ -1,0 +1,342 @@
+{
+  "id": "gamut",
+  "description": "Gamut mapping into sRGB by OKLCh chroma reduction (F-009). Every entry is `definitional`: the expected value is the largest chroma at the input lightness and hue whose sRGB rendering fits in [0,1], which any correct chroma-reduction mapper must reproduce. The test asserts that boundary property directly — the result is in gamut AND one step more chroma is not — so an entry cannot pass by the implementation merely agreeing with itself. Independently cross-checked against culori clampChroma, an implementation of the same algorithm. NOT the same as CSS Color 4 toGamut({method:\"css\"}), which adds a MINDE early stop and drifts hue up to 11.97 degrees; that deviation is deliberate and measured in ADR-0045.",
+  "entries": [
+    {
+      "id": "p3-red",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 red: the largest OKLCh chroma at L=0.648574075144298 H=28.9581327308039 whose sRGB rendering fits [0,1]. Chroma 0.299485286338369 -> 0.237532228251319. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.999979746063161, 0.203529144040024, 0.158811868634639].",
+      "input": {
+        "oklch": [
+          0.648574075144298,
+          0.29948528633837,
+          28.9581327308039
+        ]
+      },
+      "expected": {
+        "rgb": [
+          1,
+          0.203479943905748,
+          0.158771809898109
+        ],
+        "chromaAfter": 0.237532228251319,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "p3-green",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 green: the largest OKLCh chroma at L=0.848829292853247 H=145.644955586628 whose sRGB rendering fits [0,1]. Chroma 0.368527797681383 -> 0.261994579217455. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.00110427425309186, 0.968307784473506, 0.308431229538834].",
+      "input": {
+        "oklch": [
+          0.848829292853247,
+          0.368527797681382,
+          145.644955586628
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0,
+          0.968327618490053,
+          0.30830686063678
+        ],
+        "chromaAfter": 0.261994579217455,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "p3-blue",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 blue: the largest OKLCh chroma at L=0.466360540395478 H=264.05202261637 whose sRGB rendering fits [0,1]. Chroma 0.323155748752855 -> 0.274021573452298. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.0000140916665789226, 0.200462729904633, 0.937242505724651].",
+      "input": {
+        "oklch": [
+          0.466360540395478,
+          0.323155748752855,
+          264.05202261637
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0,
+          0.200428650348153,
+          0.937280033015577
+        ],
+        "chromaAfter": 0.274021573452298,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "p3-cyan",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 cyan: the largest OKLCh chroma at L=0.892901616194442 H=193.137687751383 whose sRGB rendering fits [0,1]. Chroma 0.205667459058255 -> 0.152889726265701. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.00112419163879269, 0.983340824901127, 0.970975401597114].",
+      "input": {
+        "oklch": [
+          0.892901616194442,
+          0.205667459058254,
+          193.137687751383
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0,
+          0.983354637363354,
+          0.970989654060969
+        ],
+        "chromaAfter": 0.152889726265701,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "p3-magenta",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 magenta: the largest OKLCh chroma at L=0.724979566997116 H=331.464435695764 whose sRGB rendering fits [0,1]. Chroma 0.360176499394588 -> 0.27148403256292. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.999964636012107, 0.297315104308379, 0.943841376904345].",
+      "input": {
+        "oklch": [
+          0.724979566997116,
+          0.360176499394589,
+          331.464435695764
+        ]
+      },
+      "expected": {
+        "rgb": [
+          1,
+          0.297231982057803,
+          0.943874795417032
+        ],
+        "chromaAfter": 0.27148403256292,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "p3-yellow",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "display-p3 yellow: the largest OKLCh chroma at L=0.964764119709696 H=110.229809555625 whose sRGB rendering fits [0,1]. Chroma 0.245031439040542 -> 0.210940728777502. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.991163105146807, 0.997336443186135, 0.000311710834836583].",
+      "input": {
+        "oklch": [
+          0.964764119709696,
+          0.245031439040542,
+          110.229809555625
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.991165078570924,
+          0.997337182201107,
+          0
+        ],
+        "chromaAfter": 0.210940728777502,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "oklch-0.3-0.3-30",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "oklch(0.3 0.3 30): the largest OKLCh chroma at L=0.3 H=30 whose sRGB rendering fits [0,1]. Chroma 0.3 -> 0.120317720761523. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.360423834521724, 0.0105684107302183, 0.0000331395396880856].",
+      "input": {
+        "oklch": [
+          0.3,
+          0.3,
+          30
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.360445563340157,
+          0.0105097765800413,
+          0
+        ],
+        "chromaAfter": 0.120317720761523,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "oklch-0.5-0.35-150",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "oklch(0.5 0.35 150): the largest OKLCh chroma at L=0.5 H=150 whose sRGB rendering fits [0,1]. Chroma 0.35 -> 0.137698593339883. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.000439042946536572, 0.46988045311141, 0.20715276699347].",
+      "input": {
+        "oklch": [
+          0.5,
+          0.35,
+          150
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0,
+          0.469900011365375,
+          0.207085043005347
+        ],
+        "chromaAfter": 0.137698593339883,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "oklch-0.7-0.3-270",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "oklch(0.7 0.3 270): the largest OKLCh chroma at L=0.7 H=270 whose sRGB rendering fits [0,1]. Chroma 0.3 -> 0.156375244678929. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.474700818157109, 0.591242537506753, 0.999992682502309].",
+      "input": {
+        "oklch": [
+          0.7,
+          0.3,
+          270
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.474698024826724,
+          0.591241264628166,
+          1
+        ],
+        "chromaAfter": 0.156375244678929,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "oklch-0.9-0.35-240",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "oklch(0.9 0.35 240): the largest OKLCh chroma at L=0.9 H=240 whose sRGB rendering fits [0,1]. Chroma 0.35 -> 0.0542953205876984. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.746643960546635, 0.892802501346448, 0.999917715266711].",
+      "input": {
+        "oklch": [
+          0.9,
+          0.35,
+          240
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.746558550761455,
+          0.892815429986816,
+          1
+        ],
+        "chromaAfter": 0.0542953205876984,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "oklch-0.5-0.4-0",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "oklch(0.5 0.4 0): the largest OKLCh chroma at L=0.5 H=0 whose sRGB rendering fits [0,1]. Chroma 0.4 -> 0.202695653494447. On the gamut boundary: one bisection step more chroma does not fit. Independently reproduced by culori clampChroma as [0.70837314768093, 0.0000881678462497193, 0.370494213659553].",
+      "input": {
+        "oklch": [
+          0.5,
+          0.4,
+          0
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.708386132093952,
+          0,
+          0.370493309303068
+        ],
+        "chromaAfter": 0.202695653494447,
+        "wasInGamut": false,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "in-gamut-mid",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "sRGB mid grey (already displayable): the largest OKLCh chroma at L=0.598180730526848 H=189.462322208026 whose sRGB rendering fits [0,1]. Chroma 4.57756679852224e-16 -> 4.57756679852224e-16. Already displayable, so returned untouched. Independently reproduced by culori clampChroma as [0.5, 0.5, 0.5].",
+      "input": {
+        "oklch": [
+          0.598180730526848,
+          3.37661150723213e-16,
+          189.462322208026
+        ]
+      },
+      "expected": {
+        "rgb": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "chromaAfter": 4.57756679852224e-16,
+        "wasInGamut": true,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "achromatic-white",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "white (chroma 0): the largest OKLCh chroma at L=1 H=180 whose sRGB rendering fits [0,1]. Chroma 8.32667268468867e-16 -> 8.32667268468867e-16. Already displayable, so returned untouched. Independently reproduced by culori clampChroma as [0.999999999999999, 1, 1].",
+      "input": {
+        "oklch": [
+          1,
+          4.9960036108132e-16,
+          180
+        ]
+      },
+      "expected": {
+        "rgb": [
+          1,
+          1,
+          1
+        ],
+        "chromaAfter": 8.32667268468867e-16,
+        "wasInGamut": true,
+        "lightnessOutOfRange": false
+      },
+      "tolerance": 1e-9
+    },
+    {
+      "id": "lightness-above-one",
+      "source": "CSS Color 4 §13.2 (gamut mapping by OKLCh chroma reduction); the gamut boundary itself is defined by the sRGB primaries of IEC 61966-2-1. See ADR-0045 for the deliberate omission of the MINDE step.",
+      "derivation": "definitional",
+      "derivationNote": "L 1.2 — outside in LIGHTNESS, not chroma: the largest OKLCh chroma at L=1.2 H=120 whose sRGB rendering fits [0,1]. Chroma 0.1 -> 0. Outside in LIGHTNESS: no chroma fits, so the result is the clamp. Independently reproduced by culori clampChroma as [1, 1, 1].",
+      "input": {
+        "oklch": [
+          1.2,
+          0.1,
+          120
+        ]
+      },
+      "expected": {
+        "rgb": [
+          1,
+          1,
+          1
+        ],
+        "chromaAfter": 0,
+        "wasInGamut": false,
+        "lightnessOutOfRange": true
+      },
+      "tolerance": 1e-9
+    }
+  ]
+}

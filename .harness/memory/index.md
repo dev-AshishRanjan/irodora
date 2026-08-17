@@ -70,6 +70,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/rule-weights-change-every-answer-without-a-deploy.md](effects/rule-weights-change-every-answer-without-a-deploy.md) — **E-009** · `guard: none`, honestly recorded; closes with F-029.
 - [effects/a-port-change-is-a-change-to-every-adapter.md](effects/a-port-change-is-a-change-to-every-adapter.md) — **E-011** · one suite run against both adapters is the only thing making "interchangeable" true.
 - [effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md](effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md) — **E-010** · FORCE is the part that gets missed.
+- [effects/one-gamut-mapping-defines-the-closest-displayable-colour.md](effects/one-gamut-mapping-defines-the-closest-displayable-colour.md) — **E-012** · a second implementation looks like an inline clip, and moves hue 33.6°.
 
 ## Glossary
 

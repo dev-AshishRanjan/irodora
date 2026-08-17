@@ -86,6 +86,17 @@ export {
 } from './oklab.js';
 
 export {
+  gamutMap,
+  gamutMapDetail,
+  GAMUT_BISECTION_STEPS,
+  GAMUT_EPSILON,
+  isInGamut,
+  isXyzInGamut,
+  type Gamut,
+  type GamutMapping,
+} from './gamut.js';
+
+export {
   adapt,
   adaptationMatrix,
   DEFAULT_ADAPTATION,

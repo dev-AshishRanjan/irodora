@@ -341,7 +341,7 @@
       "package": "@irodora/color-spaces",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-006"
       ],
@@ -356,7 +356,12 @@
         "test",
         "color-golden",
         "build"
-      ]
+      ],
+      "plan": "plans/F-009-gamut-mapping.md",
+      "effects": [
+        "E-012"
+      ],
+      "notes": "DONE. DELIVERED: gamutMap and gamutMapDetail in @irodora/color-spaces — OKLCh chroma bisection, 32 halvings, holding L and H, for sRGB and Display-P3. Zero new colour maths: every number is an existing engine conversion, and the feature is a search over a predicate. THE DECISION IS ADR-0045 AND IT IS A DELIBERATE DEVIATION FROM CSS COLOR 4. The standard adds a MINDE early stop that returns the CLIPPED colour once it is within a JND in dEok, and dEok tolerates hue movement — measured against colorjs.io toGamut({method:css}) over 30 out-of-gamut colours, CSS drifts hue up to 11.97 degrees where we drift 2.6e-5, and the two results differ by up to 5.21 dE00. Our implementation was cross-checked against culori clampChroma, an independent implementation of the SAME algorithm: agreement 0.0063 dE00. The MINDE step was also structurally unavailable — dEok lives in @irodora/color-difference, which depends on this package, so implementing it would have meant a second implementation of a shipped function. Both reasons are recorded; the measurement is the one that decided it. THE STATED BOUND, which acceptance criterion 1 asks for: L and H are preserved EXACTLY in OKLCh (7e-12, the round-trip noise). After rendering, a final clamp of at most GAMUT_EPSILON=1e-7 per channel applies, and near the black point that tiny absolute movement is a large relative one — hue drift reaches 23 degrees below result L,C=0.01 where OKLCh hue is not a meaningful angle, and is 6.9e-5 degrees above L,C=0.05. Tabulated in the test rather than asserted at one convenient cutoff. THREE CASES ARE NOT CHROMA REDUCTION and each is an explicit branch: already in gamut (the early return is what makes idempotence exact), achromatic, and out of gamut in LIGHTNESS where no chroma fits and lightnessOutOfRange says so rather than a loop returning whatever it last held. THE DECOY is per-channel clipping — the algorithm almost everything else uses — implemented in the test and measured at 33.6 degrees of hue shift, with our own drift asserted beside it as the baseline. FOUND AND RECORDED, NOT FIXED: F-071, two pre-existing flaky property tests. oklab.test.ts round-trips 5000 unseeded fast-check samples against a 1e-12 bound and failed once during this feature at 1.2477e-12 before passing six consecutive full-suite runs; the F-003 evaluation found a second in packages/testing. A blocking gate that can go red for a reason unrelated to the change teaches people to re-run until green."
     },
     {
       "id": "F-010",
@@ -2067,6 +2072,29 @@
         "contrast"
       ],
       "notes": "FOUND BY THE F-003 COLOUR-SCIENCE REVIEW. border.strong role is Outlined controls, which is a UI component boundary under WCAG 1.4.11 and therefore owes 3:1 — it is not the decorative-hairline exemption that covers border. MEASURED over its own declared grounds: dark 3.11:1 linear (worst ground surface.3) but only 1.41:1 encoded (over background); light 1.17:1 linear and 1.41:1 encoded (over surface.3). It fails under the encoded model in both themes, and the encoded model is what a browser and React Native actually draw. THE CONFLICT: reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line, and the design system states a border is a translucent overlay and NEVER a solid grey because depth must read as lift rather than outline. So this is a design decision, not a value tweak — either the outline stops being the only thing identifying the control (a filled or tinted control state would remove the 1.4.11 obligation), or the never-a-solid-grey rule is amended. F-003 made the token VISIBLE rather than fixing it: it carries an uncheckedReason with these ratios in it, and the gate now fails any token that is covered by nothing and does not declare why."
+    },
+    {
+      "id": "F-071",
+      "title": "The property-test gates are deterministic",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "tests",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "Every fast-check property runs from a recorded seed, so a failure is reproducible and a pass is not luck",
+        "No gate can go red for a reason unrelated to the change under test",
+        "A test whose tolerance is within a small factor of the true error bound states the measured margin"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "color-golden"
+      ],
+      "notes": "TWO FLAKES OBSERVED, both pre-existing and neither caused by the feature that hit them. (1) packages/color-spaces test/oklab.test.ts \"round-trips arbitrary OKLab values\" uses fc.assert with 5000 runs and NO seed, asserting max round-trip error below 1e-12. It failed once during F-009 at 1.2477e-12 — a 25 percent overshoot, so it will recur — and then passed six consecutive full-suite runs. An unseeded generator means the gate samples a different region every run, so a red is not reproducible and a green is not evidence. (2) FOUND BY THE F-003 EVALUATION: packages/testing createPrng \"stays inside [0, 1)\" timed out at 5000 ms under the 37-task parallel turbo run and passes in 1.8 s in isolation — a 100k-iteration loop on the default vitest timeout. THE POINT IS NOT TIDINESS: gate 4 and gate 5 are blocking, and a blocking gate that can go red for a reason unrelated to the change teaches people to re-run it until it is green, which is how a real regression gets waved through. The fix for (1) is a recorded seed plus a stated margin between the tolerance and the measured worst case; for (2) an explicit timeout or a smaller loop."
     }
   ]
 }
