@@ -1,0 +1,48 @@
+/*
+ * GENERATED — do not edit.
+ *   source: docs/design/design-system.manifest.json
+ *   regenerate: pnpm --filter @irodora/design-tokens generate
+ *
+ * IMPORT tokens.css FIRST. Every value here is a var() reference to a custom property
+ * that file defines; on its own this theme resolves to nothing.
+ */
+
+@theme {
+  --color-background: var(--irodora-color-background);
+  --color-surface-1: var(--irodora-color-surface-1);
+  --color-surface-2: var(--irodora-color-surface-2);
+  --color-surface-3: var(--irodora-color-surface-3);
+  --color-swatch-well: var(--irodora-color-swatch-well);
+  --color-swatch-hairline: var(--irodora-color-swatch-hairline);
+  --color-foreground: var(--irodora-color-foreground);
+  --color-foreground-2: var(--irodora-color-foreground-2);
+  --color-foreground-3: var(--irodora-color-foreground-3);
+  --color-border: var(--irodora-color-border);
+  --color-border-strong: var(--irodora-color-border-strong);
+  --color-inverse: var(--irodora-color-inverse);
+  --color-inverse-foreground: var(--irodora-color-inverse-foreground);
+  --color-ring: var(--irodora-color-ring);
+  --color-status-ok: var(--irodora-color-status-ok);
+  --color-status-warn: var(--irodora-color-status-warn);
+  --color-status-bad: var(--irodora-color-status-bad);
+  --color-chart-1: var(--irodora-color-chart-1);
+  --color-chart-2: var(--irodora-color-chart-2);
+  --color-chart-3: var(--irodora-color-chart-3);
+  --color-chart-4: var(--irodora-color-chart-4);
+  --color-chart-5: var(--irodora-color-chart-5);
+  --radius-xs: var(--irodora-radius-xs);
+  --radius-sm: var(--irodora-radius-sm);
+  --radius-md: var(--irodora-radius-md);
+  --radius-lg: var(--irodora-radius-lg);
+  --radius-xl: var(--irodora-radius-xl);
+  --radius-pill: var(--irodora-radius-pill);
+  --radius-swatch: var(--irodora-radius-swatch);
+  --spacing-1: var(--irodora-space-1);
+  --spacing-2: var(--irodora-space-2);
+  --spacing-3: var(--irodora-space-3);
+  --spacing-4: var(--irodora-space-4);
+  --spacing-5: var(--irodora-space-5);
+  --spacing-6: var(--irodora-space-6);
+  --spacing-7: var(--irodora-space-7);
+  --spacing-8: var(--irodora-space-8);
+}

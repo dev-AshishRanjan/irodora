@@ -17,6 +17,11 @@ docs/
 .claude/
 *.md
 
+# Design tokens are emitted from design-system.manifest.json and byte-compared by their
+# own tests. Reformatting them would make the comparison a test of Prettier.
+packages/design-tokens/generated/
+packages/design-tokens/src/generated/
+
 # Golden colour data is byte-significant
 packages/**/golden/
 content/colors/

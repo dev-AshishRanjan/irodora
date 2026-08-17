@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-14",
+  "updated": "2026-08-15",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -93,7 +93,8 @@
       "package": "@irodora/design-tokens",
       "release": "R0",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
+      "plan": "plans/F-003-oklch-native-design-token-package.md",
       "blockedBy": [
         "F-001",
         "F-007",
@@ -112,7 +113,10 @@
         "test",
         "contrast"
       ],
-      "notes": "FOUND BY THE F-007 COLOUR-SCIENCE REVIEW, BEFORE THIS FEATURE STARTS: 37 of the 38 opaque tokens in design-system.manifest.json have an srgb hex that does NOT match their own oklch. Not marginal — color.dark.background is stated #141312 and its oklch resolves to #090807, a factor of more than 2 in Y. The engine and colorjs.io agree with each other on the conversion, so the two fields were produced by different means. The contrast gate reads this file, so whichever field it reads, the other is wrong. Resolve which field is authoritative BEFORE building the gate. Concrete values arrive from the design deliverable. The structure and the pipeline land here. BLOCKED ON THE ENGINE (ADR-0037): two acceptance criteria — the contrast gate's WCAG/APCA check and the cvdPairs assertion — need @irodora/color-difference (F-007) and @irodora/cvd-engine (F-008). The manifest is `approved`, so gate 9 is blocking from the moment it activates and cannot ship as a stub. R0 therefore closes with F-003 outstanding; that is deliberate and recorded."
+      "notes": "DONE. DELIVERED: the manifest compiles to four targets (CSS custom properties with an @supports OKLCh upgrade, TypeScript constants, React Native styles, a Tailwind v4 theme), every output committed and BYTE-COMPARED by its tests; gate 9 (contrast) ACTIVE and BLOCKING after being watched fail on five real defects, with an eight-case mutation proof in CI (scripts/verify-contrast-proof.mjs) asserting the baseline green in each — seven that must go red, and one that must stay green (a placeholder manifest status with a real failure present, proving the report-only switch); the cvdPairs assertion in gate 10; the status/icon/text triple as a TYPE, so a colour-only status fails typecheck rather than review. THREE DEFECTS FOUND IN THE APPROVED MANIFEST: (1) 37 of 38 opaque tokens had an srgb hex that did not match their own oklch, up to 6.09 dE00 — settled by ADR-0043, srgb is now engine-derived and a hand-edited hex fails the gate; (2) a DUPLICATE JSON KEY meant the top-level \"status\": \"approved\" never survived parsing, so gate.contrast.blockingWhenStatus compared against an object and the gate could never block — the pairing block is renamed statusPairing; (3) five WCAG AA failures and five CVD separation failures in the approved values, corrected in ADR-0044, whose real content is the decision to classify status.* as usage:\"text\" (4.5:1) rather than nonText (3:1). NOT DELIVERED: the half of gate 9 that scans RENDERED surfaces for colour-only status indicators — no component exists until F-017, and the gate prints that on every run. THE COLOUR-SCIENCE REVIEW RETURNED CHANGES REQUIRED AND FOUND FOUR REAL DEFECTS IN THE GATE, ALL FIXED: (a) the comment justifying a single severity check was FALSE — Machado is not monotone, and light status.warn/status.bad under tritan scores 61.2 at severity 0.90 against 65.8 at 1.0, so all eleven tabulated severities are now checked; (b) the separation claim was model-dependent — under Vienot total dichromacy, which color-engine.md assigns to exactly this case, light status.ok/status.warn under protan scored 59.6, BELOW the declared 60, so both models are now checked and the worse taken, and the values moved again to clear it; (c) the alpha-compositing comment was factually INVERTED — for a light overlay on a dark ground the linear reading is 2.2x more PERMISSIVE, not stricter, and the encoded model is what browsers and React Native actually draw, so both are now computed and the worse taken; (d) gate coverage was driven entirely by pairsWith, so nine tokens per theme were checked by nothing while looking exactly like tokens that passed — a token covered by nothing now fails unless it declares an uncheckedReason. ALSO CORRECTED: a wrong unit in ADR-0044 (11/255 is the encoded byte, not the linear value), the chromaCeiling field name (surfaceAndText, when the rule had become universal, was an invitation to re-derive the exemption-by-classification bug from the field name), a missing Lab-illuminant statement on ADR-0043 dE00 column, and a factually wrong comment in packages/cvd-engine/src/machado.ts claiming every reference implementation applies the matrices in encoded sRGB — R colorspace and DaltonLens apply them in linear. The palette was recomputed under BOTH conventions and clears the minimum either way (61.9 linear, 64.0 encoded), which is now recorded there. INDEPENDENT VERIFICATION DID NOT COMPLETE: the evaluator subagent terminated on a session limit twice without a verdict, so every gate was run by the implementer. The evidence is reproducible and verify-contrast-proof.mjs re-runs the eight mutations on demand, but the checker-is-not-the-implementer separation was NOT achieved and re-running /verify is owed. NOT REVIEWED BY A HUMAN: the corrected palette was reviewed by the designer and colour-scientist subagents, not by the person who approved it; the manifest carries a valuesChangedSinceApproval field saying so, because status:approved is the one field a gate reads. All colour maths is delegated to @irodora/color-difference and @irodora/cvd-engine, so nothing here re-implements a metric. FOUND AND RECORDED RATHER THAN FIXED: F-067 (the two themes assert opposite salience hierarchies — pre-existing), F-068 (swatch edge against an arbitrary sample), F-069 (status colour adjacent to a sample). border.strong composited over a light surface reaches 1.17:1; it is in no pairsWith so nothing checks it, and that is recorded rather than silently widened.",
+      "effects": [
+        "E-007"
+      ]
     },
     {
       "id": "F-004",
@@ -1961,6 +1965,108 @@
         "e2e",
         "test"
       ]
+    },
+    {
+      "id": "F-067",
+      "title": "Cross-theme salience hierarchy for the status tokens, and the APCA floor for dark error",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "content",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-003"
+      ],
+      "acceptance": [
+        "The salience rank of status.ok, status.warn and status.bad against each theme own ground is the same in both themes",
+        "Every status token meets the APCA Lc 45 large-text floor against every surface it is declared on, or its restriction is recorded as a machine-checkable field",
+        "The chosen rank is recorded with its reason, not inferred from the values",
+        "The contrast gate asserts the rank, so it cannot drift back"
+      ],
+      "verification": [
+        "state",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "FOUND BY THE F-003 DESIGN AND COLOUR-SCIENCE REVIEWS. PRE-EXISTING — not introduced by F-003. TWO DRIVERS, ONE DECISION. (1) SALIENCE INVERSION: measured against each theme own background, the dark theme says caution is the loudest state and error the quietest, while the light theme says error is loudest by nearly 2x. A user toggling the theme gets an inverted status hierarchy. The cause is that the approved system holds the rank of OKLCh L constant across two grounds of OPPOSITE polarity, and L rank does not survive that flip — the invariant that makes the themes one system is rank of CONTRAST against own ground. (2) THE APCA FLOOR: dark.status.bad sits at APCA Lc -37.5 to -38.6 against its three declared surfaces — below the Lc 45 LARGE-text floor of 0.98G-4g — while WCAG reads 4.92 to 5.58 and passes. ADR-0044 classifies status.* as usage:text precisely because the product tints the label, so this is body copy below even the large-text floor in the DEFAULT theme. MEASURED AND INFEASIBLE SEPARATELY: holding status.ok and status.warn at their current values, NO value of status.bad reaches even Lc 40 while keeping CVD separation at or above 60 — the APCA floor and the separation minimum are in direct tension at the current lightness arrangement. A jointly feasible solution exists and was computed during F-003 — dark ok L0.67 C0.12 H158, warn L0.70 C0.14 H70, bad L0.82 C0.10 H18, worst separation 63.1, every token above Lc 45 — but it makes error the LIGHTEST token in the dark theme, which is exactly the salience re-arrangement in driver (1). That is a redesign larger than either defect and belongs to a person rather than to a gate-building task. Until it is decided, gate 9 prints the three pairings in a separate RED band on every run so they cannot be mistaken for the ordinary WCAG/APCA disagreements."
+    },
+    {
+      "id": "F-068",
+      "title": "Swatch edge treatment against an arbitrary sample",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "web",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-003",
+        "F-017"
+      ],
+      "acceptance": [
+        "A sample of ANY colour has a perceptible edge against the swatch.well beneath it",
+        "The treatment is verified against the worst-case sample, not a convenient one",
+        "swatch.hairline role text describes exactly what is verified"
+      ],
+      "verification": [
+        "state",
+        "contrast",
+        "a11y"
+      ],
+      "notes": "FOUND BY THE F-003 DESIGN REVIEW. swatch.hairline claimed its edge was perceptible against ANY value; a single-tone 16 percent white inset cannot deliver that against a light sample, by construction, and no fixed-token check can cover an arbitrary garment colour. The claim was softened in F-003 (golden rule 11 applies to the design system own claims) and the treatment that WOULD deliver it — a two-tone inset, or an inset ring plus an outer rule against the well — needs components. ALSO HERE: the review asks that a real dark garment colour be put on the corrected swatch.well (#2B2A28 dark, which is darker than the #383533 the design review saw, because the hex was the defect ADR-0043 fixed) and looked at. A navy or charcoal sample on that well is near 1:1 in luminance and the hairline becomes the only edge cue."
+    },
+    {
+      "id": "F-069",
+      "title": "Status colour may not sit beside a colour sample",
+      "requirements": [
+        "NFR-8",
+        "FR-18"
+      ],
+      "service": "web",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-017"
+      ],
+      "acceptance": [
+        "A status token adjacent to a colour sample without the swatch.well separator is a lint or gate failure",
+        "The rule is stated in DESIGN-SYSTEM.md beside the existing swatch.well rule"
+      ],
+      "verification": [
+        "state",
+        "contrast",
+        "a11y"
+      ],
+      "notes": "FOUND BY THE F-003 DESIGN REVIEW. Nothing in the manifest stops a saturated status colour sitting next to a sample, and simultaneous contrast means it pushes that sample the opposite way — a deep red beside a swatch makes the swatch read green. The Lens result is exactly where a low-confidence bad indicator wants to live, beside the colour. The swatch.well separator is already mandatory for decorative colour; this extends the same rule to the semantic tokens and makes it checkable."
+    },
+    {
+      "id": "F-070",
+      "title": "border.strong meets 3:1 as an outlined control boundary",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "web",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-003"
+      ],
+      "acceptance": [
+        "border.strong reaches 3:1 against every surface it can sit on, under BOTH the linear and the encoded compositing model",
+        "It is declared in pairsWith rather than carrying an uncheckedReason, so the gate checks it",
+        "The design rule that a border is never a solid grey is either met or deliberately amended"
+      ],
+      "verification": [
+        "state",
+        "contrast"
+      ],
+      "notes": "FOUND BY THE F-003 COLOUR-SCIENCE REVIEW. border.strong role is Outlined controls, which is a UI component boundary under WCAG 1.4.11 and therefore owes 3:1 — it is not the decorative-hairline exemption that covers border. MEASURED over its own declared grounds: dark 3.11:1 linear (worst ground surface.3) but only 1.41:1 encoded (over background); light 1.17:1 linear and 1.41:1 encoded (over surface.3). It fails under the encoded model in both themes, and the encoded model is what a browser and React Native actually draw. THE CONFLICT: reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line, and the design system states a border is a translucent overlay and NEVER a solid grey because depth must read as lift rather than outline. So this is a design decision, not a value tweak — either the outline stops being the only thing identifying the control (a filled or tinted control state would remove the 1.4.11 obligation), or the never-a-solid-grey rule is amended. F-003 made the token VISIBLE rather than fixing it: it carries an uncheckedReason with these ratios in it, and the gate now fails any token that is covered by nothing and does not declare why."
     }
   ]
 }

@@ -27,6 +27,11 @@ export default tseslint.config(
       '**/.expo/**',
       '**/coverage/**',
       '**/*.golden.json',
+      // Emitted from docs/design/design-system.manifest.json and byte-compared by
+      // packages/design-tokens/test/emit.test.ts. Linting generated output means editing
+      // the emitter to satisfy a style rule, and the byte comparison is what actually
+      // guards these files.
+      'packages/design-tokens/src/generated/**',
     ],
   },
 

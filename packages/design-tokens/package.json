@@ -2,24 +2,39 @@
   "name": "@irodora/design-tokens",
   "version": "0.0.0",
   "private": false,
-  "description": "OKLCh design tokens compiled to CSS, TS, React Native and Tailwind.",
+  "description": "OKLCh design tokens compiled to CSS, TypeScript, React Native and Tailwind.",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./tokens.css": "./generated/tokens.css",
+    "./tailwind.css": "./generated/tokens.tailwind.css"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "generated"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
+    "test:cvd": "vitest run --config vitest.cvd.config.ts",
+    "test:contrast": "node ../../scripts/verify-contrast.mjs",
+    "generate": "node ../../scripts/generate-design-tokens.mjs",
     "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/color-spaces": "workspace:*",
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/cvd-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "vitest": "^4.1.10"
   }
 }

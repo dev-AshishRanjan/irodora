@@ -119,9 +119,14 @@ jobs:
         if: hashFiles('apps/web/package.json') != ''
         run: pnpm test:e2e
 
+      # Unconditional. The `if:` this replaced was guarding on a build output, which means
+      # the gate would silently skip rather than fail if the build had not produced it — a
+      # gate that cannot run is failing open, and this one is blocking.
       - name: 'Gate 9 — contrast'
-        if: hashFiles('packages/design-tokens/dist') != ''
         run: pnpm test:contrast
+
+      - name: 'Gate 9 — contrast mutation proof'
+        run: node scripts/verify-contrast-proof.mjs
 
       - name: 'Gate 10 — cvd'
         if: hashFiles('packages/cvd-engine/dist') != ''

@@ -2,73 +2,82 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-08-14",
+  "updated": "2026-08-15",
   "approvedAt": "2026-08-14",
+  "valuesChangedSinceApproval": {
+    "date": "2026-08-15",
+    "adr": "0044",
+    "tokens": ["dark.status.ok", "dark.status.warn", "dark.status.bad", "light.status.ok", "light.status.warn", "light.status.bad"],
+    "reviewedBy": "designer and colour-scientist review, NOT the person who approved the palette on 2026-08-14",
+    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. Re-approval is owed."
+  },
   "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, exact colour — every radius is generous except the swatch, which is 0 forever.",
 
   "themes": ["dark", "light"],
   "defaultTheme": "dark",
 
   "notes": {
+    "authority": "`oklch` is the authoritative field. `srgb` is DERIVED from it by the engine and rewritten by `pnpm --filter @irodora/design-tokens generate` — never typed by hand, and a hand-edited value fails the contrast gate (ADR-0043).",
+    "usage": "Every colour token declares `usage`, because a contrast gate cannot pick a WCAG minimum without knowing whether it is looking at text, large text, a non-text component, or a surface. The default is the strictest, so an omission fails safe.",
     "surfaces": "Four tonal steps lifted from one ground, Material-3 style, rather than five arbitrary greys. The neutral carries a trace of warmth (hue 70-85) because a cold slate casts on every sample beside it.",
-    "chroma": "The interface is near-achromatic by rule. Chroma above 0.01 in any surface or text token requires a recorded exception. The single accent appears only in focus rings and selection.",
-    "foreground3": "`foreground.3` FAILS AA against every surface at small sizes and is therefore restricted to decorative use and text >= 18.66px. Micro-labels use `foreground.2`. This restriction is enforced by the contrast gate, not by convention."
+    "chroma": "The interface is near-achromatic by rule. Chroma above 0.01 in ANY token requires an entry in `exceptions` — every token, not only surface and text ones, so that the exception count is the real count (ADR-0044). The single accent appears only in focus rings and selection.",
+    "foreground3": "`foreground.3` FAILS AA against every surface at small sizes and is therefore restricted to decorative use and text >= 18.66px. Micro-labels use `foreground.2`. It is declared `usage: \"largeText\"`, checked at 3:1 against the surfaces that carry secondary text, and emitted under a TypeScript type that is not assignable where normal text is expected."
   },
 
   "color": {
     "dark": {
-      "background":    { "oklch": { "l": 0.135, "c": 0.004, "h": 70 }, "srgb": "#141312", "role": "The page.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.1":     { "oklch": { "l": 0.175, "c": 0.004, "h": 70 }, "srgb": "#1D1B1A", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.2":     { "oklch": { "l": 0.212, "c": 0.004, "h": 70 }, "srgb": "#262423", "role": "Raised — the confidence card, popovers.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.3":     { "oklch": { "l": 0.248, "c": 0.004, "h": 70 }, "srgb": "#2F2D2B", "role": "Meter tracks, inset wells.", "pairsWith": ["foreground"] },
-      "swatch.well":   { "oklch": { "l": 0.285, "c": 0.004, "h": 70 }, "srgb": "#383533", "role": "MANDATORY neutral ground beneath every colour sample. Functional, not decorative: whatever touches a sample changes how it reads.", "pairsWith": [] },
-      "swatch.hairline": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.16 }, "srgb": "rgba(255,255,255,0.16)", "role": "Inset hairline on a sample, so its edge is perceptible against any value.", "pairsWith": [] },
-      "foreground":    { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F7F4F0", "role": "Primary text. Warm off-white, never pure white.", "pairsWith": [] },
-      "foreground.2":  { "oklch": { "l": 0.715, "c": 0.006, "h": 80 }, "srgb": "#ADA79F", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
-      "foreground.3":  { "oklch": { "l": 0.600, "c": 0.006, "h": 80 }, "srgb": "#8B857E", "role": "Decorative and large text only. NOT for micro-labels.", "largeTextOnly": true, "pairsWith": [] },
-      "border":        { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(255,255,255,0.08)", "role": "Hairline. Translucent overlay, never a solid grey — depth reads as lift, not outline.", "pairsWith": [] },
-      "border.strong": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(255,255,255,0.14)", "role": "Outlined controls.", "pairsWith": [] },
-      "inverse":       { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F7F4F0", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
-      "inverse.foreground": { "oklch": { "l": 0.150, "c": 0.004, "h": 70 }, "srgb": "#171514", "role": "Text on inverse.", "pairsWith": [] },
-      "ring":          { "oklch": { "l": 0.680, "c": 0.075, "h": 246 }, "srgb": "#7096C4", "role": "Focus ring and selection. THE ONLY chromatic token in the chrome.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
-      "status.ok":     { "oklch": { "l": 0.760, "c": 0.090, "h": 158 }, "srgb": "#83C4A3", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.warn":   { "oklch": { "l": 0.810, "c": 0.100, "h": 78 },  "srgb": "#DCB878", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.bad":    { "oklch": { "l": 0.700, "c": 0.140, "h": 26 },  "srgb": "#DE8874", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "chart.1": { "oklch": { "l": 0.97, "c": 0, "h": 0 }, "srgb": "#F7F7F7", "role": "Data series 1.", "pairsWith": [] },
-      "chart.2": { "oklch": { "l": 0.78, "c": 0, "h": 0 }, "srgb": "#BEBEBE", "role": "Data series 2.", "pairsWith": [] },
-      "chart.3": { "oklch": { "l": 0.60, "c": 0, "h": 0 }, "srgb": "#8B8B8B", "role": "Data series 3.", "pairsWith": [] },
-      "chart.4": { "oklch": { "l": 0.44, "c": 0, "h": 0 }, "srgb": "#5E5E5E", "role": "Data series 4.", "pairsWith": [] },
-      "chart.5": { "oklch": { "l": 0.31, "c": 0, "h": 0 }, "srgb": "#3D3D3D", "role": "Data series 5.", "pairsWith": [] }
+      "background":    { "oklch": { "l": 0.135, "c": 0.004, "h": 70 }, "srgb": "#090807", "usage": "surface", "role": "The page.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.1":     { "oklch": { "l": 0.175, "c": 0.004, "h": 70 }, "srgb": "#12100F", "usage": "surface", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.2":     { "oklch": { "l": 0.212, "c": 0.004, "h": 70 }, "srgb": "#1A1817", "usage": "surface", "role": "Raised — the confidence card, popovers.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.3":     { "oklch": { "l": 0.248, "c": 0.004, "h": 70 }, "srgb": "#22211F", "usage": "surface", "role": "Meter tracks, inset wells.", "pairsWith": ["foreground"] },
+      "swatch.well":   { "oklch": { "l": 0.285, "c": 0.004, "h": 70 }, "srgb": "#2B2A28", "usage": "surface", "role": "MANDATORY neutral ground beneath every colour sample. Functional, not decorative: whatever touches a sample changes how it reads.", "uncheckedReason": "Its job is to sit under an ARBITRARY colour sample, so there is no fixed second colour to measure against and no pairing can express it. The requirement it really carries — that a sample of any colour keeps a perceptible edge — is F-068, and it needs the rendered component to be checkable at all.", "pairsWith": [] },
+      "swatch.hairline": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.16 }, "srgb": "rgba(255, 255, 255, 0.16)", "usage": "nonText", "compositeOver": ["swatch.well", "background", "surface.1", "surface.2", "surface.3"], "role": "Inset hairline between a sample and the well beneath it. NOT a guarantee of a perceptible edge against the SAMPLE — a single-tone inset cannot deliver that against an arbitrary colour, and the two-tone treatment that can is F-017 work.", "uncheckedReason": "Same reason as swatch.well: the other side of this line is an arbitrary garment colour. F-068.", "pairsWith": [] },
+      "foreground":    { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F6F4F1", "usage": "text", "role": "Primary text. Warm off-white, never pure white.", "pairsWith": [] },
+      "foreground.2":  { "oklch": { "l": 0.715, "c": 0.006, "h": 80 }, "srgb": "#A5A39F", "usage": "text", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
+      "foreground.3":  { "oklch": { "l": 0.600, "c": 0.006, "h": 80 }, "srgb": "#82807C", "usage": "largeText", "role": "Decorative and large text only. NOT for micro-labels.", "pairsWith": [] },
+      "border":        { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(255, 255, 255, 0.08)", "usage": "nonText", "compositeOver": ["background", "surface.1", "surface.2", "surface.3"], "role": "Hairline. Translucent overlay, never a solid grey — depth reads as lift, not outline.", "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.", "pairsWith": [] },
+      "border.strong": { "oklch": { "l": 1.0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(255, 255, 255, 0.14)", "usage": "nonText", "compositeOver": ["background", "surface.1", "surface.2", "surface.3"], "role": "Outlined controls.", "uncheckedReason": "NOT exempt, and NOT yet met: this is an outlined control boundary under WCAG 1.4.11, and composited over its own declared grounds it reaches only 3.11:1 (dark, linear, worst ground surface.3) / 1.41:1 (dark, encoded, over background) / 1.17:1 (light, linear, over surface.3). Reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line and contradicts the design rule that a border is never a solid grey. That conflict is a design decision, recorded as F-070 with the measured ratios rather than resolved inside a gate-building feature.", "pairsWith": [] },
+      "inverse":       { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F6F4F1", "usage": "surface", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
+      "inverse.foreground": { "oklch": { "l": 0.150, "c": 0.004, "h": 70 }, "srgb": "#0C0B09", "usage": "text", "role": "Text on inverse.", "pairsWith": [] },
+      "ring":          { "oklch": { "l": 0.680, "c": 0.075, "h": 246 }, "srgb": "#719DC4", "usage": "nonText", "role": "Focus ring and selection. The only chromatic token in the PERSISTENT chrome — the status tokens are chromatic too, but they appear only while a state is being reported.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
+      "status.ok":     { "oklch": { "l": 0.730, "c": 0.090, "h": 158 }, "srgb": "#75B992", "usage": "text", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.warn":   { "oklch": { "l": 0.770, "c": 0.130, "h": 70 },  "srgb": "#E9A44E", "usage": "text", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.bad":    { "oklch": { "l": 0.640, "c": 0.140, "h": 26 },  "srgb": "#D4665E", "usage": "text", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "chart.1": { "oklch": { "l": 0.97, "c": 0, "h": 0 }, "srgb": "#F5F5F5", "usage": "nonText", "role": "Data series 1.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.2": { "oklch": { "l": 0.78, "c": 0, "h": 0 }, "srgb": "#B7B7B7", "usage": "nonText", "role": "Data series 2.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.3": { "oklch": { "l": 0.60, "c": 0, "h": 0 }, "srgb": "#808080", "usage": "nonText", "role": "Data series 3.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.4": { "oklch": { "l": 0.44, "c": 0, "h": 0 }, "srgb": "#525252", "usage": "nonText", "role": "Data series 4.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.5": { "oklch": { "l": 0.31, "c": 0, "h": 0 }, "srgb": "#303030", "usage": "nonText", "role": "Data series 5.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] }
     },
 
     "light": {
-      "background":    { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCFA", "role": "The page.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.1":     { "oklch": { "l": 1.000, "c": 0, "h": 0 },      "srgb": "#FFFFFF", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.2":     { "oklch": { "l": 0.972, "c": 0.004, "h": 85 }, "srgb": "#F6F4F1", "role": "Raised.", "pairsWith": ["foreground", "foreground.2"] },
-      "surface.3":     { "oklch": { "l": 0.950, "c": 0.004, "h": 85 }, "srgb": "#EFECE8", "role": "Meter tracks.", "pairsWith": ["foreground"] },
-      "swatch.well":   { "oklch": { "l": 0.938, "c": 0.005, "h": 85 }, "srgb": "#EBE8E3", "role": "MANDATORY neutral ground beneath every colour sample.", "pairsWith": [] },
-      "swatch.hairline": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(0,0,0,0.14)", "role": "Inset hairline on a sample.", "pairsWith": [] },
-      "foreground":    { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#24211E", "role": "Primary text. Sumi-inspired, never pure black.", "pairsWith": [] },
-      "foreground.2":  { "oklch": { "l": 0.470, "c": 0.008, "h": 72 }, "srgb": "#6B6560", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
-      "foreground.3":  { "oklch": { "l": 0.635, "c": 0.006, "h": 75 }, "srgb": "#98928B", "role": "Decorative and large text only. NOT for micro-labels.", "largeTextOnly": true, "pairsWith": [] },
-      "border":        { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(0,0,0,0.08)", "role": "Hairline.", "pairsWith": [] },
-      "border.strong": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.15 }, "srgb": "rgba(0,0,0,0.15)", "role": "Outlined controls.", "pairsWith": [] },
-      "inverse":       { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#24211E", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
-      "inverse.foreground": { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCFA", "role": "Text on inverse.", "pairsWith": [] },
-      "ring":          { "oklch": { "l": 0.520, "c": 0.080, "h": 248 }, "srgb": "#4B6D9B", "role": "Focus ring and selection. THE ONLY chromatic token in the chrome.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
-      "status.ok":     { "oklch": { "l": 0.550, "c": 0.100, "h": 158 }, "srgb": "#3F8763", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.warn":   { "oklch": { "l": 0.600, "c": 0.110, "h": 70 },  "srgb": "#96703A", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.bad":    { "oklch": { "l": 0.550, "c": 0.160, "h": 26 },  "srgb": "#A64B37", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "chart.1": { "oklch": { "l": 0.20, "c": 0, "h": 0 }, "srgb": "#252525", "role": "Data series 1.", "pairsWith": [] },
-      "chart.2": { "oklch": { "l": 0.40, "c": 0, "h": 0 }, "srgb": "#545454", "role": "Data series 2.", "pairsWith": [] },
-      "chart.3": { "oklch": { "l": 0.58, "c": 0, "h": 0 }, "srgb": "#848484", "role": "Data series 3.", "pairsWith": [] },
-      "chart.4": { "oklch": { "l": 0.74, "c": 0, "h": 0 }, "srgb": "#B2B2B2", "role": "Data series 4.", "pairsWith": [] },
-      "chart.5": { "oklch": { "l": 0.87, "c": 0, "h": 0 }, "srgb": "#D8D8D8", "role": "Data series 5.", "pairsWith": [] }
+      "background":    { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCF9", "usage": "surface", "role": "The page.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.1":     { "oklch": { "l": 1.000, "c": 0, "h": 0 },      "srgb": "#FFFFFF", "usage": "surface", "role": "Cards, panels.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.2":     { "oklch": { "l": 0.972, "c": 0.004, "h": 85 }, "srgb": "#F7F6F3", "usage": "surface", "role": "Raised.", "pairsWith": ["foreground", "foreground.2", "foreground.3"] },
+      "surface.3":     { "oklch": { "l": 0.950, "c": 0.004, "h": 85 }, "srgb": "#F0EEEB", "usage": "surface", "role": "Meter tracks.", "pairsWith": ["foreground"] },
+      "swatch.well":   { "oklch": { "l": 0.938, "c": 0.005, "h": 85 }, "srgb": "#ECEAE7", "usage": "surface", "role": "MANDATORY neutral ground beneath every colour sample.", "uncheckedReason": "Its job is to sit under an ARBITRARY colour sample, so there is no fixed second colour to measure against and no pairing can express it. The requirement it really carries — that a sample of any colour keeps a perceptible edge — is F-068, and it needs the rendered component to be checkable at all.", "pairsWith": [] },
+      "swatch.hairline": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.14 }, "srgb": "rgba(0, 0, 0, 0.14)", "usage": "nonText", "compositeOver": ["swatch.well", "background", "surface.1", "surface.2", "surface.3"], "role": "Inset hairline between a sample and the well beneath it. See the dark-theme role note.", "uncheckedReason": "Same reason as swatch.well: the other side of this line is an arbitrary garment colour. F-068.", "pairsWith": [] },
+      "foreground":    { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#171411", "usage": "text", "role": "Primary text. Sumi-inspired, never pure black.", "pairsWith": [] },
+      "foreground.2":  { "oklch": { "l": 0.470, "c": 0.008, "h": 72 }, "srgb": "#5E5A56", "usage": "text", "role": "Secondary text AND all micro-labels.", "pairsWith": [] },
+      "foreground.3":  { "oklch": { "l": 0.635, "c": 0.006, "h": 75 }, "srgb": "#8D8A87", "usage": "largeText", "role": "Decorative and large text only. NOT for micro-labels.", "pairsWith": [] },
+      "border":        { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.08 }, "srgb": "rgba(0, 0, 0, 0.08)", "usage": "nonText", "compositeOver": ["background", "surface.1", "surface.2", "surface.3"], "role": "Hairline.", "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.", "pairsWith": [] },
+      "border.strong": { "oklch": { "l": 0, "c": 0, "h": 0, "alpha": 0.15 }, "srgb": "rgba(0, 0, 0, 0.15)", "usage": "nonText", "compositeOver": ["background", "surface.1", "surface.2", "surface.3"], "role": "Outlined controls.", "uncheckedReason": "NOT exempt, and NOT yet met: this is an outlined control boundary under WCAG 1.4.11, and composited over its own declared grounds it reaches only 3.11:1 (dark, linear, worst ground surface.3) / 1.41:1 (dark, encoded, over background) / 1.17:1 (light, linear, over surface.3). Reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line and contradicts the design rule that a border is never a solid grey. That conflict is a design decision, recorded as F-070 with the measured ratios rather than resolved inside a gate-building feature.", "pairsWith": [] },
+      "inverse":       { "oklch": { "l": 0.195, "c": 0.008, "h": 70 }, "srgb": "#171411", "usage": "surface", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
+      "inverse.foreground": { "oklch": { "l": 0.990, "c": 0.003, "h": 85 }, "srgb": "#FDFCF9", "usage": "text", "role": "Text on inverse.", "pairsWith": [] },
+      "ring":          { "oklch": { "l": 0.520, "c": 0.080, "h": 248 }, "srgb": "#426D95", "usage": "nonText", "role": "Focus ring and selection. The only chromatic token in the PERSISTENT chrome — the status tokens are chromatic too, but they appear only while a state is being reported.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
+      "status.ok":     { "oklch": { "l": 0.530, "c": 0.090, "h": 158 }, "srgb": "#387B58", "usage": "text", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.warn":   { "oklch": { "l": 0.540, "c": 0.110, "h": 70 },  "srgb": "#976213", "usage": "text", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.bad":    { "oklch": { "l": 0.400, "c": 0.150, "h": 26 },  "srgb": "#861116", "usage": "text", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "chart.1": { "oklch": { "l": 0.20, "c": 0, "h": 0 }, "srgb": "#161616", "usage": "nonText", "role": "Data series 1.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.2": { "oklch": { "l": 0.40, "c": 0, "h": 0 }, "srgb": "#484848", "usage": "nonText", "role": "Data series 2.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.3": { "oklch": { "l": 0.58, "c": 0, "h": 0 }, "srgb": "#7A7A7A", "usage": "nonText", "role": "Data series 3.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.4": { "oklch": { "l": 0.74, "c": 0, "h": 0 }, "srgb": "#ABABAB", "usage": "nonText", "role": "Data series 4.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
+      "chart.5": { "oklch": { "l": 0.87, "c": 0, "h": 0 }, "srgb": "#D4D4D4", "usage": "nonText", "role": "Data series 5.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] }
     }
   },
 
-  "status": {
-    "_note": "Every status token MUST pair with an icon token AND a text label. Three channels, always. A status expressible only as colour cannot be constructed — the pairing is enforced here so it cannot be forgotten in a component.",
+  "statusPairing": {
+    "_note": "Every status token MUST pair with an icon token AND a text label. Three channels, always. A status expressible only as colour cannot be constructed — the pairing is enforced here so it cannot be forgotten in a component. RENAMED from `status` in F-003: this object and the top-level approval field `status` were both spelled `status`, and JSON keeps only the last, so `\"status\": \"approved\"` never survived parsing and `gate.contrast.blockingWhenStatus` compared against an object.",
     "ok":    { "colorToken": "status.ok",   "iconToken": "icon.check", "textRequired": true },
     "warn":  { "colorToken": "status.warn", "iconToken": "icon.alert", "textRequired": true },
     "bad":   { "colorToken": "status.bad",  "iconToken": "icon.cross", "textRequired": true }
@@ -148,7 +157,40 @@
     "forbidden": ["background-color on a swatch", "cross-fade between samples", "width", "height", "top", "left"]
   },
 
-  "exceptions": [],
+  "exceptions": [
+    {
+      "rule": "chromaCeiling",
+      "token": "ring",
+      "reason": "The focus indicator must be findable at a glance, and a near-achromatic ring on a near-achromatic surface is not. Recorded rather than exempted by classification: the ceiling governs EVERY token, not only the ones whose usage happens to be `surface` or `text`, so that the exception count is the real count. See ADR-0044.",
+      "owner": "design",
+      "recordedAt": "2026-08-15",
+      "adr": "0044"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "status.ok",
+      "reason": "A semantic status colour cannot be near-achromatic and still read as success. The ceiling exists so the interface does not compete with the garment sample; a status indicator is the one place where the interface must assert itself, and it is always accompanied by an icon and a text label (statusPairing), so the chroma is a reinforcement rather than the channel.",
+      "owner": "design",
+      "recordedAt": "2026-08-15",
+      "adr": "0044"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "status.warn",
+      "reason": "As status.ok. Chroma is where this token buys its CVD separation, because lightness is already carrying contrast, salience rank and gamut headroom. The value is the output of the search recorded in ADR-0044, not a preference; the gate run in that ADR is the evidence.",
+      "owner": "design",
+      "recordedAt": "2026-08-15",
+      "adr": "0044"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "status.bad",
+      "reason": "As status.ok. Error carries the highest chroma in the system (0.14 dark, 0.16 light) because it is the one state that must survive being glanced at.",
+      "owner": "design",
+      "recordedAt": "2026-08-15",
+      "adr": "0044"
+    }
+  ],
 
   "gate": {
     "contrast": {
@@ -159,8 +201,8 @@
       "reportAPCA": true,
       "blockingWhenStatus": "approved",
       "chromaCeiling": {
-        "surfaceAndText": 0.01,
-        "_note": "Above this, a token needs a recorded exception. The interface is near-achromatic by rule so that the garment colour is the only chroma competing for the eye."
+        "maxChroma": 0.01,
+        "_note": "Above this, ANY token needs an entry in `exceptions` — the scope is every token, so a chromatic accent cannot escape the rule by being classified nonText. The interface is near-achromatic by rule so that the garment colour is the only chroma competing for the eye."
       }
     }
   }

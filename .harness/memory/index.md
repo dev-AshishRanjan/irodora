@@ -25,6 +25,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md](lessons/measure-what-a-golden-set-can-detect-before-trusting-it.md) — three published decimals cannot see a 0.11% matrix error; measure the blind spot and aim a second check at it.
 - [lessons/two-oracles-agreeing-against-you-is-evidence-about-you.md](lessons/two-oracles-agreeing-against-you-is-evidence-about-you.md) — an identical disagreement from two independent libraries was written up as a structural difference; it was a wrong constant, and the ADR made the defect durable.
 - [lessons/reproducing-a-standard-is-not-the-same-as-being-accurate.md](lessons/reproducing-a-standard-is-not-the-same-as-being-accurate.md) — WCAG s rounded coefficients flip 111 colours across an AA threshold; when the deliverable is conformance, precision is a different question.
+- [lessons/lightness-is-triple-booked-so-spend-the-margin-on-hue-and-chroma.md](lessons/lightness-is-triple-booked-so-spend-the-margin-on-hue-and-chroma.md) — L carries contrast, salience rank and gamut headroom at once; buy CVD separation from the axes that are free.
+- [lessons/a-gate-must-model-what-renders-not-what-is-physically-correct.md](lessons/a-gate-must-model-what-renders-not-what-is-physically-correct.md) — linear compositing was 2.2× more permissive than what a browser draws; when two models disagree and neither dominates, run both and take the worse.
 
 ### Design
 
@@ -42,6 +44,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md](lessons/a-pipe-discards-the-exit-status-a-gate-just-produced.md) — a check is only as good as the weakest link between its answer and the decision it governs; never put a gate inside a pipeline.
 - [lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md](lessons/brand-a-wire-scalar-only-where-the-engine-has-no-counterpart.md) — a branded string is not assignable from a plain one, and the zero-dependency engine can never name our brands.
 - [lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md](lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md) — gate 0 counted 13 scoped harnesses where 7 exist, and was scanning third-party files for golden-rule violations.
+- [lessons/a-duplicate-json-key-silently-deletes-the-earlier-one.md](lessons/a-duplicate-json-key-silently-deletes-the-earlier-one.md) — the manifest's `"status": "approved"` never survived parsing, so the contrast gate's blocking condition could not be true; assert types, not presence.
+- [lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md](lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md) — a mutation proof that passed when written rotted when unrelated values moved; keep proofs runnable and attack the mechanism, not the margin.
 
 ### Environment
 

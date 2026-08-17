@@ -8,6 +8,240 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-15 — F-003 DONE · the token pipeline, and a design system that failed its own gates
+
+**Gate 9 (`contrast`) is active and blocking.** One manifest now compiles to CSS custom
+properties, TypeScript, React Native styles and a Tailwind v4 theme, and two blocking gates
+read it. R0 is complete — F-003 was the last one outstanding (ADR-0037).
+
+**The approved design system failed both gates on the first run.** Five WCAG AA failures and
+five CVD separation failures, plus two structural defects nobody could have seen by reading
+the file. That is the headline, and it is the gate working.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 13 warnings
+  ✓ gate 1   typecheck      37 tasks
+  ✓ gate 2   lint           37 tasks + guards + engine purity
+  ✓ gate 3   format
+  ✓ gate 4   test           738 tests (design-tokens: 83 new)
+  ✓ gate 5   color-golden   312 tests
+  ✓ gate 9   contrast       48 pairings × 2 themes — ACTIVE, after being watched fail
+  ✓ gate 10  cvd            43 tests (design-tokens: 29 new), both models, all 11 severities
+  ✓ gate 6   build          25 tasks
+  ✓ mirror   10/10 active gates
+  ✓ proof    scripts/verify-contrast-proof.mjs — 8 cases, baseline green in each:
+             7 red, plus report-only-under-placeholder which must stay green
+
+NOT run: e2e, a11y, content, perf, web-perf, e2e-full, security.
+```
+
+### Three defects in the approved manifest
+
+**1. `srgb` and `oklch` disagreed on 37 of 38 opaque tokens** — up to 6.09 ΔE00, and
+`dark.background` was stated `#141312` where its own OKLCh resolves to `#090807`, a factor of
+more than two in luminance. The residual fits no single wrong-transform hypothesis, so the
+two columns were authored by different means and the hexes were chosen by eye. Whichever
+field the gate read, the other was wrong.
+
+**ADR-0043**: `oklch` is authoritative, `srgb` is engine-derived output, and a hand-edited
+hex fails gate 9. The class of defect is gone rather than fixed — the second value is no
+longer authored.
+
+**2. A duplicate JSON key made the gate's blocking condition unreachable.** The file carried
+`"status": "approved"` *and* `"status": { ok, warn, bad }`. JSON keeps the last, so the
+approval string never survived parsing, and `gate.contrast.blockingWhenStatus: "approved"`
+was comparing against an object. Valid JSON; no parser, formatter or schema we run says a
+word. Found by writing a loader that asserted the field's **type** rather than its presence.
+[[a-duplicate-json-key-silently-deletes-the-earlier-one]]
+
+**3. The values failed the standard the product sells.** Five pairings below AA (worst
+`light: status.warn on surface.2` at 3.72:1) and five CVD combinations below the declared
+minimum of 60 (worst `light: status.warn / status.bad` under tritan at 44.4). Three chromatic
+tokens spaced by hue and packed into a 0.11 band of lightness — when hue collapses, nothing
+is left. **ADR-0044** records the corrected values, and records that the decision which
+actually forced them was classifying `status.*` as `usage: "text"` (4.5:1) rather than
+`nonText` (3:1).
+
+### The design review changed the answer twice
+
+The `designer` subagent reviewed the first correction and rejected it. Dark `status.warn` at
+`L 0.88` passed every gate and sat **1.32:1 from the primary foreground with 7° of hue
+between them** — caution that reads as emphasised body text, and 2.5× louder than error.
+
+The general point is worth keeping: **lightness is triple-booked** — contrast, salience rank
+against the ground, and gamut headroom — while hue is booked for nothing and chroma for one
+thing, and those are the axes CVD separation actually keys on.
+[[lightness-is-triple-booked-so-spend-the-margin-on-hue-and-chroma]]
+
+The review also found two real weaknesses in the gate itself, both fixed:
+
+- **`compositeOver` checked the favourable ground.** A translucent token named one base, so a
+  black hairline was evaluated over white — the best it will ever look — while the same line
+  divides rows on `surface.2` and frames the `swatch.well`. It is now a list of every ground,
+  and the gate takes the worst.
+- **`swatch.hairline` claimed an edge "perceptible against any value"**, which a single-tone
+  16% inset cannot deliver against a light sample and no fixed-token check can cover. The
+  claim was softened to what is verified (golden rule 11 applies to our own documents), and
+  the treatment that would deliver it is **F-068**.
+
+### The mutation proof rotted mid-feature
+
+The gate-10 decoy pushed `dark.status.ok` from `L 0.730` to `L 0.800` and was watched go red.
+Then `status.warn` moved for an unrelated reason and gained headroom, and re-running the proof
+gave `baseline exit 0, mutated exit 0` — the mutation still applied, the gate still ran, and
+it no longer collapsed anything. A proof that passed when written and rotted afterwards.
+
+Replaced with a 48° hue rotation of success toward caution (65.2 → 30.0), which attacks the
+mechanism rather than the margin. The number is in the decoy's name so the next reader can see
+how much slack it has.
+[[a-decoy-written-against-old-values-quietly-stops-discriminating]]
+
+### What is NOT delivered
+
+- **The rendered-surface half of gate 9's charter** — scanning components for colour-only
+  status indicators. No component exists until F-017. The gate prints this on every run
+  rather than implying coverage by being green.
+- **A human designer has not seen the corrected palette.** The review was by subagent.
+  ADR-0044 states this plainly in its Bad consequences; it is not design approval.
+- **A human designer has still not seen the corrected palette.** Both reviews were by
+  subagent. The manifest records that in `valuesChangedSinceApproval`, and ADR-0044 says it in
+  its Bad consequences.
+- **INDEPENDENT VERIFICATION DID NOT COMPLETE.** The `evaluator` subagent was launched twice
+  and terminated on a session limit both times without producing a verdict. Every gate in the
+  evidence block above was therefore run by the implementer, which is exactly the separation
+  the harness exists to maintain — CLAUDE.md calls it "the highest-value guardrail". The
+  evidence is reproducible (every command is in the block, and `verify-contrast-proof.mjs`
+  re-runs the eight mutations on demand), but nobody but me has checked it. **Re-running
+  `/verify` with the evaluator is the first thing the next session should do.**
+- **`border.strong` does not meet 3:1** as an outlined control boundary. Now recorded as
+  **F-070** with its measured ratios, and the token carries an `uncheckedReason` so the gate
+  names it rather than passing over it in silence.
+
+### The colour-science review returned CHANGES REQUIRED, and it was right four times
+
+It verified every number I claimed — all 44 derived hexes against culori and colorjs.io, WCAG
+recomputed from the spec text, APCA bitwise against colorjs.io over 18 pairings, and ADR-0044's
+own figures. Then it found four defects **in the gate**, each of which made the gate assert
+something measurably false:
+
+**1. "Severity 1.0 is the worst case" is not true.** The comment justifying a single-point
+check said a pair surviving total deficiency survives every milder one. Machado's tabulated
+matrices are **not monotone** — the tritan table reverses direction around 0.5–0.6 — and
+`light: status.warn / status.bad` scores **61.2 at severity 0.90** against 65.8 at 1.0. Nothing
+was below the minimum, but the *reason* for checking one point did not hold. All eleven
+tabulated severities are now checked.
+
+**2. The separation claim was about the wrong model.**
+[`color-engine.md`](../../docs/architecture/color-engine.md) §7 assigns **total dichromacy to
+Brettel–Viénot** and anomalous trichromacy to Machado. Evaluating "separable at severity 1.0"
+only through Machado's extrapolation to its endpoint answers a different question — and under
+Viénot, `light: status.ok / status.warn` under protan scored **59.6, below the declared 60**.
+Both models are now evaluated and the worse taken; tritan stays Machado-only because
+`simulateDichromacy` throws for it rather than return a plausible wrong answer (F-008).
+
+**3. The alpha-compositing comment was inverted.** It claimed linear-light compositing was the
+stricter reading "for a light overlay on a dark ground, which is the direction that matters".
+Measured, that is backwards:
+
+| token | linear | encoded |
+|---|---|---|
+| `dark.border.strong` over `background` | 3.66:1 | **1.41:1** |
+| `light.border.strong` over `surface.3` | **1.17:1** | 1.41:1 |
+
+Linear is **2.2× more permissive** in the case the comment named, and neither model is
+uniformly stricter. The deeper error was conceptual: the engine's "average in linear light"
+rule is about combining measurements, but this is a **prediction of what the platform will
+draw**, and CSS and React Native both composite in the encoded space. A gate certifying the
+physically-correct value while the user sees the other one is certifying a colour that never
+renders. Both are now computed and the worse taken.
+
+**4. Gate coverage was driven entirely by `pairsWith`, so nine tokens per theme were checked
+by nothing** — and said nothing, which reads as a pass. `swatch.well`, `swatch.hairline`,
+`border`, `border.strong` and `chart.1…5`. A token covered by nothing now **fails** unless it
+carries an `uncheckedReason` saying why it cannot be checked here. That turns "unchecked" from
+an absence into a statement a reviewer can disagree with, and it is the same silent-failure
+shape the status check already guarded one level down.
+
+### What that cost in values
+
+Fixing (2) meant the palette had to move again — three small changes, all measured:
+`dark.status.warn` chroma 0.125 → 0.130, `light.status.ok` chroma 0.100 → 0.090,
+`light.status.bad` L 0.410 → 0.400 and chroma 0.160 → 0.150. Worst separation across **both
+models and all eleven severities** is now **64.1 dark / 63.2 light**, against a required 60.
+
+### The one finding I did not fix, and why
+
+**`dark.status.bad` sits at APCA Lc −37.5 to −38.6** — below the Lc 45 *large-text* floor —
+while WCAG reads 4.92:1 and passes. ADR-0044 classifies `status.*` as `text` precisely because
+the product tints the label, so this is body copy below even the large-text floor in the
+default theme.
+
+I measured whether it could be fixed in isolation: holding `ok` and `warn`, **no value of
+`bad` reaches even Lc 40 while keeping separation ≥ 60.** The APCA floor and the CVD minimum
+are in direct tension at the current lightness arrangement. A jointly feasible trio exists
+(dark ok L 0.67, warn L 0.70, bad L 0.82 — every token above Lc 45, worst separation 63.1) but
+it makes error the *lightest* token in the dark theme, which is the same wholesale
+re-arrangement as the cross-theme salience question. Folded into **F-067** with the numbers.
+Meanwhile gate 9 prints those three pairings in a separate **red** band on every run, so they
+cannot be mistaken for the ordinary WCAG/APCA disagreements.
+
+### Smaller corrections from the same review
+
+- **ADR-0044 had a wrong unit** — "11/255 in linear terms" is the *encoded* byte; linear is
+  0.0032.
+- **`chromaCeiling.surfaceAndText` kept its old name** after the rule became universal, which
+  is an invitation to re-derive the exemption-by-classification bug from the field name.
+  Renamed `maxChroma`.
+- **ADR-0043's ΔE00 column did not say which Lab.** It is D65 per ADR-0003; colorjs.io
+  defaults to D50 and reports up to 0.3 lower.
+- **`packages/cvd-engine/src/machado.ts` claimed** the matrices are applied in encoded sRGB
+  because "that is how every reference implementation applies them". That is false — R's
+  `colorspace` moved to linear RGB, and DaltonLens applies them in linear. The convention here
+  is still defensible (it matches the paper's illustrations and culori, our transcription
+  oracle), but the stated reason was wrong. Corrected, and the palette was recomputed under
+  **both** conventions: worst status pairing **61.9 linear / 64.0 encoded**, clearing 60 either
+  way. A conclusion that survives both readings does not depend on the fork.
+- **The manifest said `"status": "approved"` with `approvedAt: 2026-08-14`** while carrying six
+  tokens authored on the 15th that no human approved — in the one field a gate reads. It now
+  also carries `valuesChangedSinceApproval` naming the tokens, the ADR and who did review it.
+
+**F-070** records `border.strong` with its measured ratios: it is an outlined control boundary
+under WCAG 1.4.11, it fails under the encoded model in both themes, and reaching 3:1 needs
+~53% alpha — a solid grey line, which the design system explicitly forbids. That conflict is a
+design decision, not a value tweak.
+
+### Recorded as features
+
+- **F-067** — the two themes assert **opposite** salience hierarchies. Against its own ground
+  the dark theme says caution is loudest and error quietest; light says error is loudest by
+  nearly 2×. **Pre-existing**, not introduced here: it follows from holding OKLCh `L` rank
+  constant across two grounds of opposite polarity. A jointly feasible fix was computed and is
+  recorded in the feature, but it inverts the dark theme's lightness hierarchy wholesale,
+  which is a person's decision.
+- **F-068** — swatch edge treatment against an arbitrary sample. Also asks that a real dark
+  garment colour be put on the corrected `swatch.well` and looked at: `#2B2A28` is darker than
+  the `#383533` the design review saw, because that hex was the ADR-0043 defect.
+- **F-069** — a status colour may not sit beside a colour sample without the `swatch.well`
+  separator. Simultaneous contrast pushes the sample the opposite way, and the Lens result is
+  exactly where a low-confidence indicator wants to live.
+
+### Where the work is
+
+Committed on **`feat/F-003-design-tokens`**, two commits, **not pushed** — there is no remote,
+and pushing is the human decision either way. The tree is clean.
+
+### Next
+
+1. **Re-run `/verify` with the evaluator subagent.** It is the one step of the loop that did
+   not happen, and the gates were run by the implementer.
+2. Then R1 continues at **F-009** (gamut mapping) — `blockedBy: F-006`, which is done.
+
+R0 is complete.
+
+---
+
 ## 2026-08-15 — F-008 DONE · the CVD engine, and a gate that could not fail
 
 **Gate 10 (`cvd`) is active.** Machado anomalous trichromacy works across continuous severity,

@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Status** | **Approved** · 2026-08-14 |
+| **Status** | **Approved** · 2026-08-14 · **values corrected 2026-08-15** ([ADR-0044](../adr/0044-status-tokens-corrected-and-status-colour-is-text.md)) |
 | **Source of truth** | [`design-system.manifest.json`](design-system.manifest.json) |
-| **Decisions** | [ADR-0020](../adr/0020-design-tokens-are-oklch-native.md) · [ADR-0021](../adr/0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md) · [ADR-0033](../adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md) |
+| **Decisions** | [ADR-0020](../adr/0020-design-tokens-are-oklch-native.md) · [ADR-0021](../adr/0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md) · [ADR-0033](../adr/0033-frontend-foundation-own-the-token-layer-headless-primitives.md) · [ADR-0043](../adr/0043-the-oklch-field-is-authoritative-and-srgb-is-derived.md) · [ADR-0044](../adr/0044-status-tokens-corrected-and-status-colour-is-text.md) |
 | **Skills** | [`build-ui`](../../.harness/skills/build-ui/SKILL.md) · [`visual-taste`](../../.harness/skills/visual-taste/SKILL.md) · [`contrast-checker`](../../.harness/skills/contrast-checker/SKILL.md) · [`motion`](../../.harness/skills/motion/SKILL.md) |
 
 ---
@@ -83,11 +83,26 @@ exception. The interface is near-achromatic *by rule*, so the garment colour is 
 chroma competing for the eye.
 
 **`cvdPairs`** — semantic pairs asserted distinguishable under simulated CVD at severity 1.0.
-The product's own interface is held to the standard it applies to outfits.
+The product's own interface is held to the standard it applies to outfits. **The first time
+that was measured, in F-003, five of eighteen combinations failed** and the status values
+changed as a result ([ADR-0044](../adr/0044-status-tokens-corrected-and-status-colour-is-text.md)).
 
-**`foreground.3` is `largeTextOnly`** — it fails AA against every surface at small sizes, so
-micro-labels use `foreground.2`. Recorded as a machine-checkable restriction rather than left
-as a convention someone forgets.
+**`usage`** — every colour token declares whether it is `text`, `largeText`, `nonText` or a
+`surface`, because a contrast gate cannot pick a WCAG minimum without knowing which it is
+looking at. The default is the strictest, so an omission fails safe. For `status.*` the value
+is `text`, and that single classification — not the lightness values — is the decision
+ADR-0044 is really about.
+
+**`compositeOver`** — a translucent token names **every** ground it may sit on, and the gate
+judges it on the worst. Naming one ground lets a check pass a black hairline on white while
+it is invisible on a meter track.
+
+**`foreground.3` is `usage: "largeText"`** — it fails AA against every surface at small sizes,
+so micro-labels use `foreground.2`. Until F-003 this restriction was *claimed* to be gate-
+enforced while `foreground.3` appeared in no `pairsWith` list, so nothing checked it at all.
+It is now declared on the three surfaces that carry secondary text and checked at 3:1, and it
+is emitted under a TypeScript brand that is not assignable where normal text is expected. The
+remaining half — catching a 13 px label that uses it — needs components and lands with F-017.
 
 **Greyscale `chart.1…5`** — series are separated by lightness, marker shape and a direct
 label. A hue-coded chart would put five competing colours beside a sample the user is trying
@@ -121,7 +136,7 @@ Every component in `@irodora/ui` must:
 
 | Gate | Checks |
 |---|---|
-| `contrast` | Every `pairsWith` combination at AA, **both themes**; APCA reported; `largeTextOnly` respected; `chromaCeiling` on surfaces and text; a scan for colour-only status |
+| `contrast` | Every `pairsWith` combination at the AA minimum its `usage` selects, **both themes**; APCA reported, never substituted; every `srgb` recomputed from its own OKLCh (ADR-0043); `chromaCeiling` on **every** token, exceptions recorded in the manifest. **The scan for colour-only status is NOT implemented** — it needs rendered components and lands with F-017; the gate says so on every run |
 | `a11y` | axe WCAG 2.2 A/AA on every route, zero violations |
 | `cvd` | `cvdPairs` separable at severity 1.0 |
 | `web-perf` | First-load JS per route; LCP; CLS |

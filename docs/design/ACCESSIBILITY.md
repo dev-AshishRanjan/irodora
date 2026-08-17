@@ -74,6 +74,17 @@ The token set is held to the same standard: `cvdPairs` in
 that must remain distinguishable, and the `cvd` gate asserts them. Success and error must
 be separable at severity 1.0 for every deficiency type.
 
+**That assertion first ran in F-003, and the approved palette failed it** — five of the
+eighteen theme × pair × deficiency combinations were below the declared minimum of 60, the
+worst at 44.4. The status values changed
+([ADR-0044](../adr/0044-status-tokens-corrected-and-status-colour-is-text.md)). It is
+recorded here because the sentence above was true as an intention for a year before anything
+measured it, and the gap between the two is the thing this document exists to close.
+
+The score is `separationScore` from `@irodora/cvd-engine` — literally the same function the
+recommendation engine ranks with (E-005). "Held to the standard the product applies to
+outfits" is only true if it is the same function, not the same idea.
+
 ---
 
 ## 4. Never colour alone (A2)
