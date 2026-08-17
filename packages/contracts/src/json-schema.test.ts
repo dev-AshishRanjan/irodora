@@ -34,13 +34,22 @@ const exportedSchemas: readonly (readonly [string, z.ZodType])[] = (() => {
  * duplication is the check.** Adding a schema means adding a line here, deliberately.
  */
 const EXPECTED_SCHEMA_EXPORTS = [
+  // F-010 added the capture side of provenance. `provenanceSchema` is now a discriminated
+  // union, and its two members are exported in their own right because the engine-type pin
+  // has to assert them PER MEMBER — `keyof` on a union is the common keys only, so a
+  // whole-union check silently stops seeing a field added to one side.
+  'captureConditionsSchema',
+  'capturedProvenanceSchema',
+  'captureQualitySchema',
   'colorSpaceSchema',
   'colorValueSchema',
   'corpusVersionSchema',
   'cursorSchema',
+  'deviceProfileSchema',
   'errorCodeSchema',
   'errorResponseSchema',
   'hexSchema',
+  'illuminantSchema',
   'localeSchema',
   'localizedTextSchema',
   'measurementSourceSchema',
@@ -52,6 +61,7 @@ const EXPECTED_SCHEMA_EXPORTS = [
   'semanticVersionSchema',
   'slugSchema',
   'unitIntervalSchema',
+  'untrackedProvenanceSchema',
 ] as const;
 
 function schemaNamed(name: string): z.ZodType {

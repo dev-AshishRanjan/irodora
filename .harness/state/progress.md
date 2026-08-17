@@ -8,6 +8,114 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-15 — F-010 DONE · the Color value type, and a guard that broke while I was holding it
+
+A colour now carries how it came to exist, as a type. A component that accepts a `Color`
+**necessarily has** its provenance, because there is no way to build one without it.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks, 13 warnings
+  ✓ gate 1   typecheck      38 tasks
+  ✓ gate 2   lint           + guards, engine purity, unsafeFromHex census
+  ✓ gate 3   format
+  ✓ gate 4   test           750 tests (color-core 41 new, contracts 151)
+  ✓ gate 5   color-golden   299
+  ✓ gate 6   build          26 tasks
+  ✓ gate 9   contrast       unaffected
+  ✓ gate 10  cvd            unaffected
+  ✓ gate 15  security       gitleaks, no leaks
+  ✓ mirror   10/10
+  ✓ pin      scripts/verify-contract-pin.mjs — 4 probes, baseline green
+  ✓ unsafe   scripts/verify-unsafe-call-sites.mjs — 139 files, 0 call sites
+
+NOT run: e2e, a11y, content, perf, web-perf, e2e-full — all still `pending` in gates.json.
+```
+
+### The design decision
+
+`Provenance` is a **discriminated union on `source`**, not an interface with an optional
+`conditions` field. ADR-0005 says `conditions` is "required when source is `estimated` or
+`calibrated`", and there are two ways to write that:
+
+```ts
+interface Provenance { source: MeasurementSource; conditions?: CaptureConditions }  // asks nicely
+type Provenance = UntrackedProvenance | CapturedProvenance;                          // refuses
+```
+
+The first still compiles for an estimate that lost its capture conditions — which is exactly
+the object nobody should be able to build. The second is ADR-0005's own argument applied one
+level down [[provenance-in-the-type-is-what-makes-honesty-structural]].
+
+The plan flagged the risk that this might be over-engineering if `CaptureConditions` could
+only be given speculative fields. It could not: the fields are already specified in
+`color-engine.md` and match **FR-17** (illuminant) and **FR-18** (quality) exactly. So the
+union requires real data, not an empty object.
+
+### The pin broke, then broke differently, and the second one was silent
+
+**The good break.** Adding `conditions` turned the ADR-0036 compile-time pin red immediately,
+forcing the wire schema to move in the same commit. That is the mechanism working — it is
+precisely why the two artefacts are pinned.
+
+**The silent one.** Once `Provenance` became a union, the pin *weakened without failing*.
+`keyof` on a union returns only the keys **common to every member**, so:
+
+```
+optional field added to one union member  →  pnpm typecheck: PASSED
+```
+
+Verified by doing it, not reasoned about. That is the same hole the `keyof` assertion was
+added to close in F-002 — [[mutual-assignability-does-not-catch-an-optional-field]] — reopened
+by a change to the type's *shape* rather than its contents.
+
+The pin is now asserted **per member**, and `scripts/verify-contract-pin.mjs` is what says so:
+four probes, each adding an optional field to a different part of the schema, each asserted to
+turn typecheck red, with the baseline asserted green first.
+
+### "Every call site is reviewed", made countable
+
+ADR-0005 and `color-core/AGENTS.md` both say `unsafeFromHex`'s call sites are reviewed. That
+is a sentence about people, and a sentence about people is not a check.
+`scripts/verify-unsafe-call-sites.mjs` enumerates them and runs inside `pnpm lint`: a new call
+site fails the build until someone adds it to the reviewed list — **which is the moment the
+review actually happens**. Zero today, which is the correct state.
+
+It is a script rather than a test because the colour-engine ESLint zone forbids `node:`
+imports even in tests (NFR-3), and a directory walk needs `node:fs`. The choice was to weaken
+the strictest guard in the repository or move the census out of the engine. It is a
+repository-wide question anyway.
+
+### Three things the tests caught that I had wrong
+
+- **`assertProvenance` destructured blindly.** A JavaScript consumer or a `JSON.parse` result
+  reaching it with `undefined` got "Cannot destructure property 'confidence'". Now a
+  `ProvenanceError` that names what is missing and why.
+- **The replay fixture used the current version** in one entry. The fixture's own assertion —
+  that no entry may carry `CORE_VERSION` — caught it. A fixture written from today's versions
+  compares the code to itself and goes green for free.
+- **`@ts-expect-error` suppresses the next LINE**, and Prettier reflowing an object literal
+  moved the error away from the directive, turning a passing negative test into "Unused
+  '@ts-expect-error' directive". The directives now sit against the offending property.
+
+### Effects
+
+**E-002** is the link this exercised, and it behaved as documented: the guard is the compile-
+time pin, and it fired first.
+
+### Where the work is
+
+Committed on `feat/F-003-design-tokens`, **not pushed**. Tree clean.
+
+### Next
+
+**F-009 and F-010 have not had an independent evaluation.** An evaluator was launched for
+F-009 and had not reported when this was written. R1 continues at **F-011** (corpus schema,
+provenance and the content gate), `blockedBy: F-010`, now done.
+
+---
+
 ## 2026-08-15 — F-009 DONE · gamut mapping, and a deliberate break with CSS Color 4
 
 A colour that does not fit the display has to become one that does, and **which** one is a

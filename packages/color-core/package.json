@@ -28,5 +28,9 @@
     "@irodora/cvd-engine": "workspace:*",
     "@irodora/color-harmony": "workspace:*",
     "@irodora/color-naming": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "vitest": "^4.1.10"
   }
 }

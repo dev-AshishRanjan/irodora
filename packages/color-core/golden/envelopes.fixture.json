@@ -1,0 +1,35 @@
+{
+  "id": "historical-envelopes",
+  "description": "Reproducibility envelopes (FR-10) as they were written by past versions of the engine. NOT a golden dataset in the color-golden sense — it makes no claim about physical reality, so it needs no ADR to extend. It is a REGRESSION fixture: every one of these must still parse, still compare, and still serialise byte-identically after the code has moved on. The versions here are deliberately NOT the current ones. A fixture written from today's CORE_VERSION passes today for the wrong reason — it compares the current code to itself — and stops meaning anything the moment a version bumps.",
+  "entries": [
+    {
+      "id": "r0-no-profile",
+      "note": "The shape before personal profiles existed. `profile` absent, not null — an envelope without a profile must have ONE serialisation, not two.",
+      "envelope": { "engine": "0.0.1", "corpus": "2026.01.0", "rules": "2026.01.0" },
+      "serialised": "{\"engine\":\"0.0.1\",\"corpus\":\"2026.01.0\",\"rules\":\"2026.01.0\"}"
+    },
+    {
+      "id": "r0-with-profile",
+      "note": "The same versions with a profile. Key order is fixed by serialiseEnvelope rather than by insertion order, because two code paths building the same envelope can disagree about insertion order and JSON.stringify follows it.",
+      "envelope": {
+        "engine": "0.0.1",
+        "corpus": "2026.01.0",
+        "rules": "2026.01.0",
+        "profile": "prof_7Kq2"
+      },
+      "serialised": "{\"engine\":\"0.0.1\",\"corpus\":\"2026.01.0\",\"rules\":\"2026.01.0\",\"profile\":\"prof_7Kq2\"}"
+    },
+    {
+      "id": "prerelease-engine",
+      "note": "A pre-release engine version. Semver allows it and the parser must too, or a beta build writes envelopes nobody can replay.",
+      "envelope": { "engine": "0.1.0-rc.2", "corpus": "2026.03.1", "rules": "2026.02.0" },
+      "serialised": "{\"engine\":\"0.1.0-rc.2\",\"corpus\":\"2026.03.1\",\"rules\":\"2026.02.0\"}"
+    },
+    {
+      "id": "rules-behind-corpus",
+      "note": "Rule weights and the corpus version independently (F-029 ships rules from content/ on the same publish scheme). An envelope where they differ is normal and must round-trip.",
+      "envelope": { "engine": "0.0.2", "corpus": "2026.04.0", "rules": "2026.01.0" },
+      "serialised": "{\"engine\":\"0.0.2\",\"corpus\":\"2026.04.0\",\"rules\":\"2026.01.0\"}"
+    }
+  ]
+}

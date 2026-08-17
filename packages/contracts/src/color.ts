@@ -44,13 +44,65 @@ export const measurementSourceSchema = z.enum(['reference', 'calibrated', 'estim
  * defaulted, not inferred from context — an unclassified colour must be impossible to
  * construct, and `.optional()` here would be the one edit that makes it possible again.
  */
-export const provenanceSchema = z.object({
-  source: measurementSourceSchema,
+/** FR-17. Shown before the result, and it reduces reported confidence. */
+export const illuminantSchema = z.enum([
+  'daylight',
+  'warm-indoor',
+  'cool-indoor',
+  'mixed',
+  'low-light',
+  'unknown',
+]);
+
+/** FR-18. `poor` blocks a confident claim. */
+export const captureQualitySchema = z.enum(['excellent', 'good', 'fair', 'poor']);
+
+export const deviceProfileSchema = z.object({
+  model: z.string().min(1).optional(),
+  os: z.string().min(1).optional(),
+  /** The capture colour space, READ rather than assumed. Unknown caps the confidence. */
+  captureSpace: colorSpaceSchema.optional(),
+});
+
+export const captureConditionsSchema = z.object({
+  illuminant: illuminantSchema,
+  quality: captureQualitySchema,
+  sampleCount: z.int().positive(),
+  variance: z.number().nonnegative(),
+  device: deviceProfileSchema.optional(),
+});
+
+const provenanceCommon = {
   confidence: unitIntervalSchema,
   /** The space this value ARRIVED in. Round-tripping is only honest back to it. */
   originSpace: colorSpaceSchema,
   capturedAt: z.iso.datetime().optional(),
+};
+
+/**
+ * A published reference value, or a colour someone declared. No capture, no conditions.
+ *
+ * Split from the captured case because ADR-0005 requires `conditions` when the source is
+ * `estimated` or `calibrated`, and an OPTIONAL field would only ask nicely. A
+ * discriminated union refuses the object instead — matching the engine's `Provenance`,
+ * which is pinned to this at compile time (ADR-0036).
+ */
+export const untrackedProvenanceSchema = z.object({
+  source: z.enum(['reference', 'declared']),
+  ...provenanceCommon,
 });
+
+/** A capture. `conditions` is required, and that is the whole point of the union. */
+export const capturedProvenanceSchema = z.object({
+  source: z.enum(['calibrated', 'estimated']),
+  ...provenanceCommon,
+  conditions: captureConditionsSchema,
+});
+
+export const provenanceSchema = z.discriminatedUnion('source', [
+  untrackedProvenanceSchema,
+  capturedProvenanceSchema,
+]);
 
 /** A colour value as it appears in a request or a response. */
 export const colorValueSchema = z.object({
@@ -74,5 +126,11 @@ export const reproducibilityEnvelopeSchema = z.object({
 export type ColorSpaceWire = z.infer<typeof colorSpaceSchema>;
 export type MeasurementSourceWire = z.infer<typeof measurementSourceSchema>;
 export type ProvenanceWire = z.infer<typeof provenanceSchema>;
+export type UntrackedProvenanceWire = z.infer<typeof untrackedProvenanceSchema>;
+export type CapturedProvenanceWire = z.infer<typeof capturedProvenanceSchema>;
+export type CaptureConditionsWire = z.infer<typeof captureConditionsSchema>;
+export type IlluminantWire = z.infer<typeof illuminantSchema>;
+export type CaptureQualityWire = z.infer<typeof captureQualitySchema>;
+export type DeviceProfileWire = z.infer<typeof deviceProfileSchema>;
 export type ColorValue = z.infer<typeof colorValueSchema>;
 export type ReproducibilityEnvelopeWire = z.infer<typeof reproducibilityEnvelopeSchema>;

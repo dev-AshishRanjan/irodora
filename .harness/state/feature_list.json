@@ -374,7 +374,7 @@
       "package": "@irodora/color-core",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-006"
       ],
@@ -394,7 +394,9 @@
       ],
       "effects": [
         "E-002"
-      ]
+      ],
+      "plan": "plans/F-010-color-value-type-and-reproducibility-envelope.md",
+      "notes": "DONE. DELIVERED: the Color value type (canonical XYZ + required Provenance), fromXyz / fromSpace / unsafeFromHex / withProvenance, CaptureConditions, and the ReproducibilityEnvelope with a canonical serialisation and a historical replay fixture. No colour maths: this package is a facade and every conversion is @irodora/color-spaces. THE DESIGN DECISION: Provenance is a DISCRIMINATED UNION on source, not an interface with an optional conditions field. ADR-0005 says conditions is required when the source is estimated or calibrated, and an optional field only asks nicely — an estimate that lost its capture conditions would still compile, which is exactly the object nobody should be able to build. CaptureConditions was NOT invented for this: its fields are specified in docs/architecture/color-engine.md and match FR-17 (illuminant) and FR-18 (quality) exactly, so the union requires real data rather than an empty object. THE UNION BROKE THE WIRE PIN, AND THAT IS THE MECHANISM WORKING. ADR-0036 pins the engine type to the Zod schema at compile time; adding conditions turned it red immediately, which forced the contract to move in the same commit. But the union then WEAKENED the pin in a way that passed silently: keyof on a union returns only the keys COMMON to every member, so an optional field added to one member type-checked cleanly. Verified by doing it. The pin is now asserted PER MEMBER, and scripts/verify-contract-pin.mjs proves it — four probes, each adding an optional field to a different part of the schema, each asserted to turn typecheck red with the baseline asserted green first. EVERY CALL SITE IS REVIEWED, MADE COUNTABLE: scripts/verify-unsafe-call-sites.mjs enumerates unsafeFromHex call sites and runs inside pnpm lint; a new one fails the build until someone adds it to the reviewed list, which is the moment the review happens. It is a script rather than a test because the colour-engine ESLint zone forbids node: imports even in tests (NFR-3), and the alternative was weakening the strictest guard in the repository. THE REPLAY FIXTURE PINS HISTORICAL VERSIONS, not current ones, and asserts it: a fixture written from todays CORE_VERSION compares the code to itself and goes green for free. That assertion caught one of my own entries using 0.1.0."
     },
     {
       "id": "F-011",

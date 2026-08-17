@@ -1,8 +1,14 @@
 import type {
+  CaptureConditions,
+  CapturedProvenance,
+  CaptureQuality,
   ColorSpace,
+  DeviceProfile,
+  Illuminant,
   MeasurementSource,
   Provenance,
   ReproducibilityEnvelope,
+  UntrackedProvenance,
 } from '@irodora/color-core';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
@@ -12,10 +18,16 @@ import {
   measurementSourceSchema,
   provenanceSchema,
   reproducibilityEnvelopeSchema,
+  type CaptureConditionsWire,
+  type CapturedProvenanceWire,
+  type CaptureQualityWire,
   type ColorSpaceWire,
+  type DeviceProfileWire,
+  type IlluminantWire,
   type MeasurementSourceWire,
   type ProvenanceWire,
   type ReproducibilityEnvelopeWire,
+  type UntrackedProvenanceWire,
 } from './color.js';
 
 /**
@@ -55,10 +67,49 @@ describe('the wire schema and the engine type are one shape (asserted by tsc)', 
     expectTypeOf<ColorSpaceWire>().toEqualTypeOf<ColorSpace>();
   });
 
-  it('Provenance', () => {
-    expectTypeOf<keyof ProvenanceWire>().toEqualTypeOf<keyof Provenance>();
+  /**
+   * **`Provenance` is a discriminated union, and that broke this pin once already.**
+   *
+   * When it was a flat interface, `keyof ProvenanceWire` equality caught a field added,
+   * removed or renamed on either side. `keyof` on a UNION returns only the keys common to
+   * every member — so after F-010 made it a union, adding an optional field to one member
+   * passed `pnpm typecheck` in silence. That was verified by doing it, not assumed.
+   *
+   * So the pin is asserted **per member**, plus the discriminant, plus the member count via
+   * the union's own `source` values. Anything else keeps passing while checking less.
+   */
+  it('Provenance — the union as a whole', () => {
     expectTypeOf<ProvenanceWire>().toExtend<Provenance>();
     expectTypeOf<Provenance>().toExtend<ProvenanceWire>();
+    // The discriminant, which is what makes the union a union. If a member is added on one
+    // side only, this is where it shows.
+    expectTypeOf<ProvenanceWire['source']>().toEqualTypeOf<Provenance['source']>();
+    expectTypeOf<ProvenanceWire['source']>().toEqualTypeOf<MeasurementSource>();
+  });
+
+  it('Provenance — the untracked member', () => {
+    expectTypeOf<keyof UntrackedProvenanceWire>().toEqualTypeOf<keyof UntrackedProvenance>();
+    expectTypeOf<UntrackedProvenanceWire>().toExtend<UntrackedProvenance>();
+    expectTypeOf<UntrackedProvenance>().toExtend<UntrackedProvenanceWire>();
+  });
+
+  it('Provenance — the captured member, which is the one that owes conditions', () => {
+    expectTypeOf<keyof CapturedProvenanceWire>().toEqualTypeOf<keyof CapturedProvenance>();
+    expectTypeOf<CapturedProvenanceWire>().toExtend<CapturedProvenance>();
+    expectTypeOf<CapturedProvenance>().toExtend<CapturedProvenanceWire>();
+  });
+
+  it('CaptureConditions and its parts', () => {
+    expectTypeOf<keyof CaptureConditionsWire>().toEqualTypeOf<keyof CaptureConditions>();
+    expectTypeOf<CaptureConditionsWire>().toExtend<CaptureConditions>();
+    expectTypeOf<CaptureConditions>().toExtend<CaptureConditionsWire>();
+
+    expectTypeOf<IlluminantWire>().toEqualTypeOf<Illuminant>();
+    expectTypeOf<CaptureQualityWire>().toEqualTypeOf<CaptureQuality>();
+
+    expectTypeOf<keyof DeviceProfileWire>().toEqualTypeOf<keyof DeviceProfile>();
+    expectTypeOf<DeviceProfileWire>().toExtend<DeviceProfile>();
+    expectTypeOf<DeviceProfile>().toExtend<DeviceProfileWire>();
   });
 
   it('ReproducibilityEnvelope', () => {
@@ -103,6 +154,15 @@ describe('provenance is not optional', () => {
         confidence: 0.81,
         originSpace: 'display-p3',
         capturedAt: '2026-08-14T09:12:00Z',
+        // Required since F-010 made `provenance` a discriminated union: an ESTIMATE owes the
+        // conditions it was captured under (ADR-0005). This fixture failing the moment the
+        // union landed is the schema doing its job, not an inconvenience.
+        conditions: {
+          illuminant: 'warm-indoor',
+          quality: 'good',
+          sampleCount: 1200,
+          variance: 0.0041,
+        },
       },
     };
 
