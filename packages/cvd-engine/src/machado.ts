@@ -134,10 +134,28 @@ export function machadoMatrix(deficiency: Deficiency, severity: number): Matrix3
 /**
  * Simulate anomalous trichromacy on an **encoded** sRGB colour.
  *
- * Machado's matrices operate on encoded (gamma-corrected) sRGB, not on linear light — that is
- * how the paper derives them and how every reference implementation applies them.
- * Linearising first is a plausible-looking mistake that changes every result, and it is the
- * kind that reads as more correct.
+ * ## The convention here, and what is genuinely contested about it
+ *
+ * These matrices are applied to encoded (gamma-corrected) sRGB. That matches the paper's own
+ * illustrations and it matches `culori`, which is where our transcription is checked against
+ * — so it is the defensible choice, and changing it would change every published number in
+ * this package.
+ *
+ * **It is not, however, the only convention, and the claim that "every reference
+ * implementation applies them this way" was wrong** (corrected during F-003's colour-science
+ * review). R's `colorspace` applied them to gamma-corrected sRGB up to 2.0-3, following the
+ * paper's illustrations, and then *changed to linear RGB* because the derivation implicitly
+ * relies on linear RGB. DaltonLens also applies them in linear. So this is a real fork in the
+ * literature, not a settled fact.
+ *
+ * What makes our choice safe rather than merely conventional: the design system's `cvdPairs`
+ * were recomputed under **both** conventions during F-003, across all eleven tabulated
+ * severities, and the worst status pairing clears the declared minimum of 60 either way —
+ * **61.9** applying the matrices in linear RGB against **64.0** applying them here. A
+ * conclusion that survives both readings does not depend on which side of the fork we are on.
+ *
+ * Linearising first is still not a change to make casually: it changes every result, and it
+ * reads as more correct while silently invalidating the golden data.
  */
 export function simulateAnomalous(rgb: Rgb, deficiency: Deficiency, severity: number): Rgb {
   return applyMatrix3(machadoMatrix(deficiency, severity), rgb);
