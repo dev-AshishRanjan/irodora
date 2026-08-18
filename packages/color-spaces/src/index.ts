@@ -57,6 +57,7 @@ export {
   linearP3ToXyz,
   linearSrgbToSrgb,
   linearSrgbToXyz,
+  srgbToHex,
   srgbToLinearSrgb,
   srgbToXyz,
   xyzToDisplayP3,

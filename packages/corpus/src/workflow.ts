@@ -99,6 +99,65 @@ export type EditorRole = (typeof EDITOR_ROLES)[number];
 export type Roster = ReadonlyMap<string, Editor>;
 
 /**
+ * Parse `content/editors.json`.
+ *
+ * Two ids for one person is a legitimate state — someone can have a second account — so it is
+ * NOT rejected here. It is caught at the point it matters, in `checkEditorialIdentity`, where
+ * the question is whether *this* author and *this* reviewer are the same human. Rejecting it
+ * at load would also make the roster impossible to write a test fixture for.
+ */
+export function parseRoster(value: unknown, source: string): Roster {
+  if (!Array.isArray(value))
+    throw new CorpusError(source, '(root)', 'expected an array of editors');
+
+  const roster = new Map<string, Editor>();
+  for (const [i, raw] of value.entries()) {
+    const path = `[${String(i)}]`;
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw))
+      throw new CorpusError(source, path, 'expected an object');
+    const o = raw as Record<string, unknown>;
+
+    const id: unknown = o['id'];
+    if (typeof id !== 'string' || !/^ed-\d{3,}$/u.test(id))
+      throw new CorpusError(
+        source,
+        `${path}.id`,
+        `expected an id of the form "ed-001"; got ${JSON.stringify(id)}`,
+      );
+
+    const displayName: unknown = o['displayName'];
+    if (typeof displayName !== 'string' || displayName.trim().length === 0)
+      throw new CorpusError(source, `${path}.displayName`, 'expected a non-empty string');
+
+    const roles: unknown = o['roles'];
+    if (!Array.isArray(roles) || roles.length === 0)
+      throw new CorpusError(source, `${path}.roles`, 'expected a non-empty array of roles');
+    for (const role of roles)
+      if (typeof role !== 'string' || !(EDITOR_ROLES as readonly string[]).includes(role))
+        throw new CorpusError(
+          source,
+          `${path}.roles`,
+          `expected roles from ${EDITOR_ROLES.join(', ')}; got ${JSON.stringify(role)}`,
+        );
+
+    const active: unknown = o['active'];
+    if (typeof active !== 'boolean')
+      throw new CorpusError(source, `${path}.active`, 'expected a boolean');
+
+    if (roster.has(id)) throw new CorpusError(source, `${path}.id`, `"${id}" appears twice`);
+
+    roster.set(id, {
+      id,
+      displayName,
+      roles: roles as readonly EditorRole[],
+      active,
+    });
+  }
+
+  return roster;
+}
+
+/**
  * The identity check, in full.
  *
  * Four failures, each with its own message, because they are four different things having

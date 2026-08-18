@@ -89,3 +89,24 @@ export function displayP3ToXyz(rgb: Rgb): Xyz {
 export function xyzToDisplayP3(xyz: Xyz): Rgb {
   return linearP3ToDisplayP3(xyzToLinearP3(xyz));
 }
+
+/**
+ * Encoded sRGB → `#RRGGBB`, uppercase.
+ *
+ * **This is the boundary the file header names**, and the only place in the engine that
+ * clamps: a hex string has 256 values per channel and no way to express anything outside
+ * them. Everything upstream stays unclamped so `gamutMap` can see how far outside a colour
+ * really is; by the time a value reaches here that decision has already been made.
+ *
+ * It lives in the engine rather than in a consumer because two of them need it — the corpus
+ * derives a hex for every entry (F-011) and `@irodora/design-tokens` writes one into every
+ * generated artefact (ADR-0043) — and sRGB byte encoding is engine business. A second copy
+ * would be a second answer to "what colour is #526A6B", which is the whole subject.
+ */
+export function srgbToHex(rgb: Rgb): string {
+  const byte = (v: number): string =>
+    Math.round(Math.min(1, Math.max(0, v)) * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${byte(rgb[0])}${byte(rgb[1])}${byte(rgb[2])}`.toUpperCase();
+}

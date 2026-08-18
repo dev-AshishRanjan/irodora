@@ -21,7 +21,13 @@
  * then certify.
  */
 
-import { linearSrgbToSrgb, oklchToXyz, srgbToLinearSrgb, type Rgb } from '@irodora/color-spaces';
+import {
+  linearSrgbToSrgb,
+  oklchToXyz,
+  srgbToHex,
+  srgbToLinearSrgb,
+  type Rgb,
+} from '@irodora/color-spaces';
 import { xyzToSrgb } from '@irodora/color-spaces';
 import type { ColorToken, ManifestOklch } from './manifest.js';
 
@@ -146,9 +152,19 @@ export function resolveAll(
 
 const channelToByte = (v: number): number => Math.round(Math.min(1, Math.max(0, v)) * 255);
 
-/** `#RRGGBB`, uppercase. */
+/**
+ * `#RRGGBB`, uppercase.
+ *
+ * Delegates to `srgbToHex` in `@irodora/color-spaces` rather than formatting here. It moved
+ * there in F-011 because the corpus needs the same function for every derived entry hex, and
+ * two implementations of sRGB byte encoding would be two answers to the same question — the
+ * one question this product exists to answer consistently.
+ *
+ * The re-export stays so `derivedSrgb` and the emitters keep one import, and because gate 9
+ * plus `test/emit.test.ts`'s byte comparison are what proved the move changed nothing.
+ */
 export function toHex(rgb: Rgb): string {
-  return `#${rgb.map((v) => channelToByte(v).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+  return srgbToHex(rgb);
 }
 
 /** `rgba(r, g, b, a)` with integer channels — the CSS form of a translucent token. */

@@ -57,6 +57,7 @@ export {
   ENTRY_STATUSES,
   isEntryStatus,
   isPublishable,
+  parseRoster,
   requiresReviewer,
   type Editor,
   type EditorRole,
@@ -67,6 +68,8 @@ export {
 export { ISO_DATE_PATTERN, SLUG_PATTERN, VERSION_ID_PATTERN } from './primitives.js';
 
 export { parseProvenance, type RecordProvenance } from './provenance.js';
+
+export { deriveColor, hexToXyz, type DerivedColor } from './derive.js';
 
 export {
   ADAPTATIONS,
@@ -100,6 +103,15 @@ export {
   type PaletteName,
   type PaletteRole,
 } from './palette.js';
+
+export { checkCorpus, FIXTURE_PREFIX, type CorpusInput, type Sourced } from './corpus.js';
+
+export {
+  checkSourceRegistered,
+  parseRegister,
+  type RegisterRow,
+  type SourceRegister,
+} from './register.js';
 
 /**
  * The schema version an entry is authored against.
