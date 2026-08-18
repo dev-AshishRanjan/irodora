@@ -120,6 +120,32 @@ Rate limiting per IP and per identifier on auth routes. There are no auth routes
 what ships is the **plugin plus its configuration surface**, applied to the foundation routes,
 with the per-identifier path tested against a decoy identifier rather than left unexercised.
 
+> **DISCOVERED DURING INCREMENT 5, AND IT CHANGES INCREMENT 6'S SHAPE.**
+>
+> `CachePort`'s own comment says `setIfAbsent` is *"the primitive behind idempotency keys and
+> rate limits"*. It is sufficient for the first and **not for the second.** A counter needs an
+> atomic read-modify-write; `setIfAbsent` + `get` + `set` is a race two concurrent requests win
+> together, and the failure direction is **under-counting** — the limiter admits more than its
+> limit, silently, exactly under the load a limiter exists for.
+>
+> Idempotency was fine because its primitive genuinely is "claim once". Rate limiting is not the
+> same shape, and the comment conflates them.
+>
+> **So increment 6 begins with a port change: `CachePort.increment(key, ttlSeconds): Promise<number>`.**
+> Per E-011 that is a change to *every* adapter and to the conformance suite:
+>
+> - `packages/ports/src/cache.ts` — the method, and why `setIfAbsent` cannot stand in for it
+> - `packages/ports/src/memory/cache.ts` — Map-backed, honouring the existing injectable clock
+> - `packages/adapters/src/valkey-cache.ts` — `INCR` plus `EXPIRE` on first write; Valkey has
+>   this natively, which is part of why the port can afford to require it
+> - `packages/ports/src/conformance/cache.ts` — a case for it, **and at least one case verified
+>   to fail against a deliberately broken adapter**, which is this repository's standing rule for
+>   port suites
+>
+> Only then the limiter. **Shipping the racy version and recording the gap was considered and
+> rejected**: a rate limiter is a security control, and one that under-enforces under concurrency
+> is worse than none because it reports a protection it does not provide.
+
 ### D5 — OpenAPI generated at build time
 
 `z.toJSONSchema` over the registered routes → `apps/api/openapi.json`, written by a script and
@@ -139,18 +165,39 @@ blip turns a hiccup into a restart loop.
 
 ## Increments
 
-| # | Increment | Verified by |
-|---|---|---|
-| 0 | This plan; `feature_list.json` gains `plan` | `state` |
-| 1 | Dependencies; `ApiError`, the error handler, the request-id plugin | `typecheck`, `lint`, `test` |
-| 2 | `route()` wrapper + the ESLint ban + boundary guard; the boot-time assertion | `lint`, `verify:guards`, `test` |
-| 3 | The decoy routes: missing response schema, raw throw with a secret, oversized limit | `test` |
-| 4 | Idempotency port, in-memory adapter, conformance suite with its broken-adapter case | `test` |
-| 5 | Pagination helpers and the hard-limit rejection | `test` |
-| 6 | Rate limiting, per-IP and per-identifier | `test` |
-| 7 | OpenAPI generation + `--check` + the hand-edit decoy | `build`, `test` |
-| 8 | e2e suite via `app.inject`; **activate gate 7**; CI step; mirror proof | `e2e`, `state`, `verify:mirror` |
-| 9 | Docs, effects (E-004), memory, `progress.md` | `state` |
+| # | Increment | Verified by | Status |
+|---|---|---|---|
+| 0 | This plan; `feature_list.json` gains `plan` | `state` | **done** |
+| 1 | Dependencies; `ApiError` and the error mapper | `typecheck`, `lint`, `test` | **done** |
+| 2 | `route()` wrapper, the boot-time assertion, and the 2020-12 validator | `lint`, `test` | **done** |
+| 3 | The ESLint ban + boundary guard #12; health moved onto the wrapper | `lint`, `verify:guards` | **done** |
+| 4 | Idempotency over the **existing** `CachePort` — no new port was needed | `test` | **done** |
+| 5 | Pagination: the hard limit, and the AJV-does-not-apply-defaults seam | `test` | **done** |
+| 6a | **`CachePort.increment`** — port, both adapters, conformance case + broken-adapter case (E-011) | `test` | next |
+| 6b | Rate limiting on top of it, per-IP and per-identifier | `test` | |
+| 7 | OpenAPI generation + `--check` + the hand-edit decoy | `build`, `test` | |
+| 8 | e2e suite via `app.inject`; **activate gate 7**; CI step; mirror proof | `e2e`, `state`, `verify:mirror` | |
+| 9 | Docs, effects (E-004), memory, `progress.md` | `state` | |
+
+**Where increments 1–5 landed**, so a fresh session need not go looking:
+
+```
+apps/api/src/http/errors.ts        ApiError, mapError — only an ApiError's message is shown
+apps/api/src/http/route.ts         route(), assertRoutesDeclared, the per-app registry
+apps/api/src/http/validation.ts    the 2020-12 AJV, and the query/body coercion split
+apps/api/src/http/health-routes.ts /healthz and /readyz, on the wrapper like everything else
+apps/api/src/http/idempotency.ts   claim / replay / conflict, over CachePort.setIfAbsent
+apps/api/src/http/pagination.ts    parsePageParams — the hard limit, and the Zod-lens argument
+```
+
+**Three findings from those increments that later work depends on:**
+
+1. **AJV is the gate, Zod is the lens.** AJV does not apply Zod's `.default()` or produce its
+   brands, so a handler needing either must parse the already-validated input. Pinned in
+   `pagination.test.ts`.
+2. **Coercion is per request part**, not global: querystring and params coerce, body and headers
+   never do. `z.coerce` in a contract schema does **not** run at the server.
+3. **`requestId` is branded**, so anything constructing an error response must have parsed one.
 
 ---
 
@@ -173,7 +220,7 @@ over-limit page request, a rate-limited burst, `/healthz` and `/readyz`.
 | 1 | A route registered without a response schema | be rejected at boot, naming the route |
 | 2 | A raw `app.get` outside `src/http/` | fail lint, proven by a boundary guard |
 | 3 | A handler throwing an `Error` containing a secret string | return 500 with the secret absent from the body |
-| 4 | The same idempotency key with a different body | return `idempotency_key_reused`, not the stored response |
+| 4 | The same idempotency key with a different body | return `idempotency_key_conflict` (the real code; the plan first named it `idempotency_key_reused`), not the stored response |
 | 5 | `limit=10000` | 422, not a large page |
 | 6 | A hand-edited `openapi.json` | fail the `--check` |
 | 7 | `/healthz` with the database down | still 200 |
