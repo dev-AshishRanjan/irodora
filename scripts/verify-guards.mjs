@@ -121,6 +121,21 @@ const GUARDS = [
     source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
   },
   {
+    name: 'a route may not be registered outside the route wrapper',
+    path: 'apps/api/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'A bare app.get bypasses route(), and therefore bypasses the requirement to declare a ' +
+      'schema for every response status. Nothing breaks visibly — the route works and the ' +
+      'tests pass — but the generated OpenAPI document silently omits it, so every consumer ' +
+      'generated from that document has no type for the response.',
+    source:
+      `import type { FastifyInstance } from 'fastify';\n` +
+      `export function bad(app: FastifyInstance): void {\n` +
+      `  app.get('/v1/smuggled', () => ({ ok: true }));\n` +
+      `}\n`,
+  },
+  {
     name: 'a floating promise is an error',
     path: 'packages/config/src/__guard__.ts',
     rule: '@typescript-eslint/no-floating-promises',

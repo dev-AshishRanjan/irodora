@@ -18,9 +18,14 @@ function serverWith(overrides: {
   });
 }
 
+/** The Fastify instance alone, for the many tests that only inject. */
+function serverAppWith(overrides: Parameters<typeof serverWith>[0]) {
+  return serverWith(overrides).app;
+}
+
 describe('/healthz answers about the process only', () => {
   it('is 200 when everything is healthy', async () => {
-    const app = serverWith({});
+    const app = serverAppWith({});
     const response = await app.inject({ method: 'GET', url: '/healthz' });
 
     expect(response.statusCode).toBe(200);
@@ -36,7 +41,7 @@ describe('/healthz answers about the process only', () => {
     const database = new InMemoryDatabase();
     database.setReachable(false);
 
-    const app = serverWith({ database });
+    const app = serverAppWith({ database });
     const response = await app.inject({ method: 'GET', url: '/healthz' });
 
     expect(response.statusCode).toBe(200);
@@ -45,7 +50,7 @@ describe('/healthz answers about the process only', () => {
 
   it('reports uptime from a real clock rather than a constant', async () => {
     let clock = 1_000_000;
-    const app = serverWith({ now: () => clock });
+    const app = serverAppWith({ now: () => clock });
 
     clock += 42_000;
     const response = await app.inject({ method: 'GET', url: '/healthz' });
@@ -57,7 +62,7 @@ describe('/healthz answers about the process only', () => {
 
 describe('/readyz answers about dependencies', () => {
   it('is 200 and ready when database and cache both answer', async () => {
-    const app = serverWith({});
+    const app = serverAppWith({});
     const response = await app.inject({ method: 'GET', url: '/readyz' });
 
     expect(response.statusCode).toBe(200);
@@ -74,7 +79,7 @@ describe('/readyz answers about dependencies', () => {
     const database = new InMemoryDatabase();
     database.setReachable(false);
 
-    const app = serverWith({ database });
+    const app = serverAppWith({ database });
     const response = await app.inject({ method: 'GET', url: '/readyz' });
 
     expect(response.statusCode).toBe(503);
@@ -96,7 +101,7 @@ describe('/readyz answers about dependencies', () => {
       ping: () => Promise.resolve(false),
     };
 
-    const app = serverWith({ cache });
+    const app = serverAppWith({ cache });
     const response = await app.inject({ method: 'GET', url: '/readyz' });
 
     expect(response.json()).toStrictEqual({
@@ -117,7 +122,7 @@ describe('/readyz answers about dependencies', () => {
       ping: () => Promise.reject(new Error('ECONNREFUSED')),
     };
 
-    const app = serverWith({ cache });
+    const app = serverAppWith({ cache });
     const response = await app.inject({ method: 'GET', url: '/readyz' });
 
     expect(response.statusCode).toBe(503);
@@ -129,7 +134,7 @@ describe('/readyz answers about dependencies', () => {
     // The point of readiness: the container is not broken, it was waiting. A probe that
     // cannot recover would make every dependency blip a permanent removal from the pool.
     const database = new InMemoryDatabase();
-    const app = serverWith({ database });
+    const app = serverAppWith({ database });
 
     database.setReachable(false);
     expect((await app.inject({ method: 'GET', url: '/readyz' })).statusCode).toBe(503);

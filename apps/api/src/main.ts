@@ -27,7 +27,7 @@ async function main(): Promise<void> {
   });
   const cache = new ValkeyCache({ url: env.IRODORA_REDIS_URL });
 
-  const app = buildServer({
+  const { app, routesVerified } = buildServer({
     database,
     cache,
     serviceName: env.IRODORA_SERVICE_NAME,
@@ -37,6 +37,10 @@ async function main(): Promise<void> {
   // Redacted, and the redaction is the function's job rather than this call site's — most
   // "it works locally" incidents are a variable that is not what someone believes.
   app.log.info({ config: redactEnvironment(env) }, 'configuration resolved');
+
+  // Printed rather than assumed. Until F-016 lands the catalog this is the two health routes —
+  // and saying the number out loud is what stops a clean boot reading as route coverage.
+  app.log.info({ routesVerified }, 'route schemas verified');
 
   // No migrations exist yet; the schema arrives with F-034. The LOCK is infrastructure and
   // belongs here — retrofitting it after the first migration has raced is data recovery.

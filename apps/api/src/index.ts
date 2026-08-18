@@ -5,7 +5,7 @@
  * start without it, and answers `/healthz` and `/readyz`. The API surface itself is F-015.
  */
 
-export { buildServer, type ServerOptions } from './server.js';
+export { buildServer, type BuiltServer, type ServerOptions } from './server.js';
 export {
   buildHealthReport,
   buildReadinessReport,

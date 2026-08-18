@@ -1,21 +1,47 @@
 /**
- * The smallest server that satisfies the deployment contract.
+ * The server, assembled.
  *
- * Health endpoints only. No routing, no Zod type provider, no OpenAPI, no auth — those are
- * F-015, and building them here would be scope creep dressed as momentum. What lands now is
- * what a container orchestrator needs on day one, because F-015 is blocked by F-005 and
- * cannot supply it.
+ * Order matters here and is not incidental:
+ *
+ * 1. **The validator compiler goes on first.** Fastify compiles a route's schema at
+ *    registration time, so a compiler installed after a route would not apply to it — and the
+ *    failure mode is a *subset* of routes silently validating under the wrong dialect, which is
+ *    worse than none of them working.
+ * 2. **Routes register through `route()`**, never through a bare `app.get`. ESLint bans the
+ *    bare form outside `src/http/` and boundary guard #12 proves that rule fires.
+ * 3. **`assertRoutesDeclared` runs last**, over the assembled table, and returns the count so a
+ *    caller can print it. It is the only check that can catch a route a plugin built
+ *    dynamically.
+ *
+ * F-005 built this as health-only and said routing, the type provider and OpenAPI were F-015's.
+ * They are now here; the health endpoints moved onto the same wrapper as everything else rather
+ * than keeping the exemption they had while they were the only routes.
  */
 
 import Fastify, { type FastifyInstance } from 'fastify';
 
-import { buildHealthReport, buildReadinessReport, type HealthDependencies } from './health.js';
+import type { HealthDependencies } from './health.js';
+import { registerHealthRoutes } from './http/health-routes.js';
+import { assertRoutesDeclared } from './http/route.js';
+import { useContractValidation } from './http/validation.js';
 
 export interface ServerOptions extends HealthDependencies {
   readonly logLevel?: string;
 }
 
-export function buildServer(options: ServerOptions): FastifyInstance {
+export interface BuiltServer {
+  readonly app: FastifyInstance;
+  /**
+   * How many routes were verified as declaring their schemas.
+   *
+   * Returned rather than logged so a caller decides where it goes — and returned *at all*
+   * because "the route table is fine" over zero routes has said nothing. F-016 is what makes
+   * this number interesting; until then it is the honest small one.
+   */
+  readonly routesVerified: number;
+}
+
+export function buildServer(options: ServerOptions): BuiltServer {
   const app = Fastify({
     logger: { level: options.logLevel ?? 'info' },
     // Trust the proxy: Coolify and Dokploy both put Traefik in front, so the client address
@@ -24,19 +50,10 @@ export function buildServer(options: ServerOptions): FastifyInstance {
     trustProxy: true,
   });
 
+  useContractValidation(app);
+
   const startedAt = (options.now ?? Date.now)();
+  registerHealthRoutes(app, { ...options, startedAt });
 
-  app.get('/healthz', () => buildHealthReport({ ...options, startedAt }));
-
-  app.get('/readyz', async (_request, reply) => {
-    const report = await buildReadinessReport(options);
-
-    // 503, not 500. "Not ready" is a normal state during boot and during a dependency blip;
-    // 500 would tell the orchestrator this container is broken.
-    if (report.status !== 'ready') return reply.code(503).send(report);
-
-    return report;
-  });
-
-  return app;
+  return { app, routesVerified: assertRoutesDeclared(app) };
 }
