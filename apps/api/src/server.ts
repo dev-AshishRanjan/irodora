@@ -18,10 +18,18 @@
  * than keeping the exemption they had while they were the only routes.
  */
 
+import { randomUUID } from 'node:crypto';
+
 import Fastify, { type FastifyInstance } from 'fastify';
 
 import type { HealthDependencies } from './health.js';
 import { registerHealthRoutes } from './http/health-routes.js';
+import {
+  generateRequestId,
+  useErrorHandling,
+  useIdempotency,
+  useRateLimiting,
+} from './http/lifecycle.js';
 import { assertRoutesDeclared } from './http/route.js';
 import { useContractValidation } from './http/validation.js';
 
@@ -48,12 +56,27 @@ export function buildServer(options: ServerOptions): BuiltServer {
     // arrives in X-Forwarded-For. Without this, every rate limit and audit entry records the
     // proxy's address and per-IP limiting silently becomes global limiting.
     trustProxy: true,
+    // The correlation id, honoured from the edge when it is well formed. Fastify's default is a
+    // per-process counter — `req-1` from two containers is two different requests with one name,
+    // which is worse than useless in an aggregated log.
+    genReqId: (request) =>
+      generateRequestId(headerValue(request.headers['x-request-id']), () => randomUUID()),
   });
 
   useContractValidation(app);
+  // Before the routes: an error handler installed afterwards would still apply, but a HOOK would
+  // not — Fastify binds hooks to the encapsulation context they are added in, and adding them
+  // after registration is the shape that silently covers a subset.
+  useErrorHandling(app);
+  useRateLimiting(app, { cache: options.cache });
+  useIdempotency(app, { cache: options.cache });
 
   const startedAt = (options.now ?? Date.now)();
   registerHealthRoutes(app, { ...options, startedAt });
 
   return { app, routesVerified: assertRoutesDeclared(app) };
+}
+
+function headerValue(raw: string | string[] | undefined): string | undefined {
+  return Array.isArray(raw) ? raw[0] : raw;
 }

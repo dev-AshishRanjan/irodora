@@ -197,7 +197,7 @@ blip turns a hiccup into a restart loop.
 | 6a | **`CachePort.increment`** — port, both adapters, conformance case + broken-adapter case (E-011) | `test` | **done** |
 | 6b | Rate limiting on top of it, per-IP and per-identifier | `test` | **done** |
 | 7 | OpenAPI generation + `--check` + the hand-edit decoy | `build`, `test` | **done** |
-| 8 | e2e suite via `app.inject`; **activate gate 7**; CI step; mirror proof | `e2e`, `state`, `verify:mirror` | |
+| 8 | e2e suite via `app.inject`; **activate gate 7**; CI step; mirror proof | `e2e`, `state`, `verify:mirror` | **done** |
 | 9 | Docs, effects (E-004), memory, `progress.md` | `state` | |
 
 **Where increments 1–5 landed**, so a fresh session need not go looking:
@@ -221,6 +221,30 @@ apps/api/src/http/pagination.ts    parsePageParams — the hard limit, and the Z
 3. **`requestId` is branded**, so anything constructing an error response must have parsed one.
 
 ---
+
+> **INCREMENT 8 FOUND THE LARGEST DEFECT IN THIS FEATURE, AND IT WAS THE PLAN'S FAULT.**
+>
+> Increments 1–6 built the error mapper, the idempotency store and the limiter. All three were
+> unit-tested and green. **None of them was attached to the server.** Nothing in the increment
+> table said "wire them in", so `buildServer` installed the validator compiler and the health
+> routes and stopped: a thrown `Error` went out as Fastify's default 500 **carrying its own
+> message**, a mutation with no `Idempotency-Key` succeeded, and nothing counted a request.
+>
+> Writing the e2e suite is what surfaced it, on the first run, which is the whole argument for
+> having one. A unit test proves a function behaves; only a request through the whole stack
+> proves the function runs.
+>
+> So increment 8 begins with `src/http/lifecycle.ts` — the error handler, the not-found handler,
+> the correlation id, and the rate-limit and idempotency hooks — and the order of those hooks is
+> written down rather than incidental. Three things it decided along the way:
+>
+> - **The limiter fails OPEN** when the cache is unreachable. Failing closed turns a cache blip
+>   into a total outage. The consequence — no rate limiting while the cache is down — is
+>   asserted in the suite so it is recorded rather than discovered during an incident.
+> - **A 5xx releases the idempotency key** instead of storing it. Storing would replay a
+>   transient failure for 24 hours, which is the opposite of what a retry is asking for.
+> - **`x-request-id` is honoured from the edge, after validation.** An unvalidated client string
+>   reaches every log line, and one with a newline in it is log injection.
 
 ## Test plan
 

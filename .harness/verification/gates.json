@@ -97,14 +97,14 @@
     {
       "id": "e2e",
       "order": 7,
-      "status": "pending",
+      "status": "active",
       "activatesWith": "F-015",
       "command": "pnpm test:e2e",
       "requiredFor": [
         "user-facing"
       ],
       "ciStep": true,
-      "description": "End-to-end per surface. API runs HTTP-surface e2e via app.inject. Web runs Playwright against its own server, including axe WCAG 2.2 A/AA assertions, a keyboard-only journey, a simulated-CVD journey, and a NETWORK assertion proving that a Lens scan transmits no image bytes (NFR-12). Tenancy negative tests run with a populated decoy tenant — against an empty one they pass whether or not the policy works."
+      "description": "End-to-end per surface. API runs HTTP-surface e2e via app.inject. Web runs Playwright against its own server, including axe WCAG 2.2 A/AA assertions, a keyboard-only journey, a simulated-CVD journey, and a NETWORK assertion proving that a Lens scan transmits no image bytes (NFR-12). Tenancy negative tests run with a populated decoy tenant — against an empty one they pass whether or not the policy works. ACTIVATED WITH F-015 FOR THE API HALF ONLY, and the gate says so on every run: scripts/e2e-scope.mjs prints each charter item as covered or NOT COVERED with the file that would supply it, so a green gate cannot be read as web coverage that does not exist — 6 of 7 items are uncovered today, because apps/web arrives with F-017 and tenancy with F-034. That is gate 9's precedent for a gate whose charter outruns its subject. It also FAILS if no package declares a test:e2e script: before F-015 the command was `turbo run test:e2e` with nothing in the workspace declaring that task, which would have been a green gate over zero suites. THE PROBLEM THIS GATE HAD ON DAY ONE: F-015 ships the machinery and F-016 ships the domain routes, so an e2e run over the shipped route table would exercise two health endpoints and never touch the error envelope, idempotency, pagination or the limiter. It runs against FIXTURE ROUTES registered through the same route() wrapper and served by the same hooks, living in apps/api/e2e/ which tsconfig.build.json does not include — so they cannot compile into dist, cannot be served by the process main.ts starts, and the suite asserts both that a server built the production way carries only /healthz and /readyz and that openapi.json contains no fixture path. Activated after the suite was watched fail: unwiring useErrorHandling turns 13 of 26 cases red (including the decoy that asserts a thrown Error's connection string never reaches the body), useRateLimiting turns 3 red, useIdempotency turns 3 red, with the baseline asserted green before and after each. WRITING THIS SUITE IS WHAT FOUND THE FEATURE'S LARGEST DEFECT: increments 1-6 built the error mapper, the idempotency store and the limiter, all unit-tested and green, and NONE of them was attached to the server — a thrown Error went out as Fastify's default 500 carrying its own message. A unit test proves a function behaves; only a request through the whole stack proves it runs. The fail-open case for an unreachable cache initially did NOT discriminate — a 200 with no rate-limit headers is exactly what a server with no limiter produces — and now counts the attempted increments so it goes red when the hook is removed."
     },
     {
       "id": "a11y",

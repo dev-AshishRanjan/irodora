@@ -126,8 +126,17 @@ jobs:
         if: hashFiles('apps/web/package.json') != ''
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: 'Gate 7 — e2e (includes gate 8, a11y)'
-        if: hashFiles('apps/web/package.json') != ''
+      # Unconditional, and the `if: hashFiles('apps/web/package.json') != ''` this replaced is
+      # exactly the F-072 hazard: gate 0's mirror check compares `run:` commands and does not
+      # read `if:`, so the gate would have been "active" in gates.json and never once run in CI
+      # for the whole of R1 — apps/web does not exist until F-017. A gate that cannot run is
+      # failing open, and this one is blocking.
+      #
+      # Safe to run without apps/web: `pnpm test:e2e` starts with scripts/e2e-scope.mjs, which
+      # FAILS if no package declares a test:e2e script and otherwise prints each charter item as
+      # covered or NOT COVERED. A green gate here means the API surface passed; it says out loud
+      # that it does not mean the web surface was checked.
+      - name: 'Gate 7 — e2e (API half; scope printed on every run)'
         run: pnpm test:e2e
 
       # Unconditional. The `if:` this replaced was guarding on a build output, which means

@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "generate:openapi": "node ../../scripts/generate-openapi.mjs",
     "check:openapi": "node ../../scripts/generate-openapi.mjs --check",
     "clean": "rimraf dist *.tsbuildinfo",

@@ -21,7 +21,7 @@
     "test:cvd": "turbo run test:cvd",
     "test:content": "node scripts/verify-content.mjs",
     "build": "turbo run build",
-    "test:e2e": "turbo run test:e2e",
+    "test:e2e": "node scripts/e2e-scope.mjs && turbo run test:e2e",
     "test:a11y": "turbo run test:a11y",
     "test:contrast": "turbo run test:contrast",
     "test:e2e:full": "pnpm --filter @irodora/e2e-full test",
