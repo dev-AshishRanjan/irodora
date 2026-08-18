@@ -46,6 +46,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md](lessons/a-directory-walk-that-enters-node-modules-is-checking-someone-elses-repository.md) — gate 0 counted 13 scoped harnesses where 7 exist, and was scanning third-party files for golden-rule violations.
 - [lessons/a-duplicate-json-key-silently-deletes-the-earlier-one.md](lessons/a-duplicate-json-key-silently-deletes-the-earlier-one.md) — the manifest's `"status": "approved"` never survived parsing, so the contrast gate's blocking condition could not be true; assert types, not presence.
 - [lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md](lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md) — a mutation proof that passed when written rotted when unrelated values moved; keep proofs runnable and attack the mechanism, not the margin.
+- [lessons/a-gate-that-ships-before-its-data-must-carry-its-own-fixtures.md](lessons/a-gate-that-ships-before-its-data-must-carry-its-own-fixtures.md) — gate 11 activated over an empty corpus; the fixtures caught two defects in themselves within an hour.
+- [lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md](lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md) — gate 0 compares `run:` and never reads `if:`, so an "active" gate can run nowhere for a whole release.
 
 ### Environment
 
@@ -54,6 +56,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 ### Content and licensing
 
 - [lessons/wada-public-domain-is-not-the-same-as-free-to-ingest.md](lessons/wada-public-domain-is-not-the-same-as-free-to-ingest.md) — the source work's status says nothing about a digitiser's dataset.
+- [lessons/an-identity-check-a-typo-can-satisfy-is-not-a-check.md](lessons/an-identity-check-a-typo-can-satisfy-is-not-a-check.md) — "these two must differ" fails OPEN on any corruption of either value; compare roster ids, and reject an unknown one.
 
 ## Effects
 
@@ -71,6 +74,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-port-change-is-a-change-to-every-adapter.md](effects/a-port-change-is-a-change-to-every-adapter.md) — **E-011** · one suite run against both adapters is the only thing making "interchangeable" true.
 - [effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md](effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md) — **E-010** · FORCE is the part that gets missed.
 - [effects/one-gamut-mapping-defines-the-closest-displayable-colour.md](effects/one-gamut-mapping-defines-the-closest-displayable-colour.md) — **E-012** · a second implementation looks like an inline clip, and moves hue 33.6°.
+- [effects/the-entry-schema-is-a-contract-with-every-authored-file.md](effects/the-entry-schema-is-a-contract-with-every-authored-file.md) — **E-013** · the destination nobody thinks of is the spec document, and it was already wrong three ways.
+- [effects/canonicalisation-decides-what-a-checksum-means.md](effects/canonicalisation-decides-what-a-checksum-means.md) — **E-014** · change it and every recorded digest is wrong, self-consistently, with no test able to notice.
 
 ## Glossary
 

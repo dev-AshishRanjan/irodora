@@ -46,9 +46,16 @@ describe('the five classifications', () => {
     expect(OUR_OWN_CURATION).toEqual(['japanese-inspired', 'editorial']);
   });
 
-  it('classifies every value as ours or not ours, with no gaps', () => {
-    const ours = CLASSIFICATIONS.filter(isOurOwnCuration);
-    expect(ours).toEqual([...OUR_OWN_CURATION]);
+  it('treats exactly the other three as claims about the world, not about our judgement', () => {
+    // The previous version of this asserted `CLASSIFICATIONS.filter(isOurOwnCuration)` equals
+    // OUR_OWN_CURATION — true by construction for ANY subset, since `isOurOwnCuration` is
+    // `OUR_OWN_CURATION.includes`. It could not fail. This asserts the complement literally,
+    // so adding a classification to one list and not the other goes red.
+    expect(CLASSIFICATIONS.filter((c) => !isOurOwnCuration(c))).toEqual([
+      'historical',
+      'traditional',
+      'modern-japanese',
+    ]);
   });
 });
 
@@ -101,6 +108,20 @@ describe('our own curation cannot be marked historical', () => {
           'fixture-invented.json',
         );
       }).not.toThrow();
+  });
+
+  it('also refuses "traditional" and "modern-japanese" for an editorial source', () => {
+    // The quieter half of the same dishonesty, and the one the first version of this rule
+    // allowed: `traditional` claims an established name in the received canon and
+    // `modern-japanese` claims documented current practice. Neither is ours to assert from our
+    // own judgement — ADR-0007 gives a positive list, not a single forbidden value.
+    for (const classification of ['traditional', 'modern-japanese'] as const)
+      expect(() => {
+        checkClassification(
+          { classification, sourceType: 'editorial', publishedYear: 1908 },
+          'fixture-invented.json',
+        );
+      }).toThrow(/OUR OWN CURATION and cannot be classified/u);
   });
 });
 

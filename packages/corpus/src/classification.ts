@@ -37,10 +37,16 @@ export const SOURCE_TYPES = [
 export type SourceType = (typeof SOURCE_TYPES)[number];
 
 /**
- * The two classifications that mean "this is ours".
+ * The classifications that mean "this is ours".
  *
- * Written as a derived subset rather than a second literal list, so adding a classification
- * forces a decision here instead of silently landing outside every rule.
+ * `satisfies readonly Classification[]` rather than a bare array, so adding a classification
+ * and mistyping it here is a compile error.
+ *
+ * **It is load-bearing.** `checkClassification` requires a record with
+ * `sourceType: "editorial"` to carry one of these — a positive list, not a single forbidden
+ * value — which is what makes the constant a rule rather than documentation. An evaluation
+ * found it previously exported, documented as forcing exactly that decision, and consumed by
+ * nothing but its own tests.
  */
 export const OUR_OWN_CURATION = [
   'japanese-inspired',
@@ -98,14 +104,27 @@ export interface ClassificationEvidence {
 export function checkClassification(evidence: ClassificationEvidence, source: string): void {
   const { classification, sourceType, publishedYear } = evidence;
 
-  if (classification === 'historical' && sourceType === 'editorial')
+  // Our own curation may only wear one of OUR OWN labels — not merely "not historical".
+  //
+  // The rule was originally written as `classification === 'historical' && sourceType ===
+  // 'editorial'`, which let an editorial source call itself `traditional` or
+  // `modern-japanese`. Those are claims about the received canon and about documented current
+  // practice; making either from our own judgement is the same dishonesty as `historical`,
+  // just quieter. ADR-0007 says our work is `japanese-inspired` or `editorial` — a positive
+  // list, and this is that list rather than a single forbidden value.
+  //
+  // Written against OUR_OWN_CURATION so that adding a sixth classification forces a decision
+  // here. An evaluation found the constant was previously exported, documented as doing
+  // exactly that, and consumed by nothing.
+  if (sourceType === 'editorial' && !isOurOwnCuration(classification))
     throw new CorpusError(
       source,
       'classification',
-      'an entry whose sourceType is "editorial" is OUR OWN CURATION and cannot be ' +
-        'classified "historical". Our work is "japanese-inspired" or "editorial" ' +
-        '(ADR-0007; content/AGENTS.md rule 3). Presenting our curation as historical is ' +
-        'the same dishonesty as ingesting someone else’s data, pointed the other way.',
+      `a record whose sourceType is "editorial" is OUR OWN CURATION and cannot be classified ` +
+        `"${classification}". Our work is ${OUR_OWN_CURATION.map((c) => `"${c}"`).join(' or ')} ` +
+        '(ADR-0007; content/AGENTS.md rule 3). Presenting our curation as attested history — ' +
+        'or as an established canonical name, or as documented current practice — is the same ' +
+        'dishonesty as ingesting someone else’s data, pointed the other way.',
     );
 
   if (classification === 'historical' && publishedYear === null)

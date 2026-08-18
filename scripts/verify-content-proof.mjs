@@ -21,7 +21,7 @@
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './corpus-io.mjs';
+import { loadCorpusPackage, ROOT, sha256 } from './corpus-io.mjs';
 
 const GREEN = '[32m';
 const RED = '[31m';
@@ -57,6 +57,28 @@ function editEntry(change) {
     change(entry);
     writeEntry(entry);
   };
+}
+
+// --- the published bundle ---------------------------------------------------------------
+
+const BUNDLE = join(VALID, 'versions', '2026.08.1.json');
+const LEDGER = join(VALID, 'versions', 'index.json');
+const MATRICES = join(ROOT, 'packages', 'color-spaces', 'src', 'matrices.ts');
+
+const readBundle = () => JSON.parse(readFileSync(BUNDLE, 'utf8'));
+const writeBundle = (b) => writeFileSync(BUNDLE, `${JSON.stringify(b)}\n`, 'utf8');
+const readLedger = () => JSON.parse(readFileSync(LEDGER, 'utf8'));
+const writeLedger = (l) => writeFileSync(LEDGER, `${JSON.stringify(l, null, 2)}\n`, 'utf8');
+
+/** Rebuild the two packages the gate imports. Used by the engine-perturbation case. */
+function rebuild() {
+  for (const pkg of ['@irodora/color-spaces', '@irodora/corpus']) {
+    // One command string rather than an args array: with `shell: true` Node concatenates
+    // rather than escapes, and passing args that way is deprecated for exactly that reason.
+    // The shell is needed at all because `pnpm` is a `.cmd` shim on Windows.
+    const r = spawnSync(`pnpm --filter ${pkg} build`, { encoding: 'utf8', shell: true });
+    if (r.status !== 0) throw new Error(`rebuild of ${pkg} failed:\n${r.stdout}${r.stderr}`);
+  }
 }
 
 /**
@@ -217,6 +239,90 @@ const CASES = [
     },
     cleanup: () => {
       rmSync(join(ROOT, 'content', 'colors', 'fixture-a.json'), { force: true });
+    },
+  },
+  // --- the published bundle -------------------------------------------------------------
+  //
+  // These five exist because the evaluation found gate 11's entire bundle block UNREACHABLE:
+  // there are no real bundles until F-012, no fixture carried one, and not one proof case
+  // touched a checksum. `gates.json` claimed the gate enforced checksums and the E-001
+  // destination re-check, and the code that did so never ran. Correct code that never executes
+  // is indistinguishable from absent code.
+  {
+    name: 'a published entry edited in the bundle',
+    expect: 'red',
+    matching: /checksum mismatch.*SEV1/su,
+    apply: () => {
+      const b = readBundle();
+      b.entries[0].entry.name.en = 'Tampered Slate';
+      writeBundle(b);
+    },
+  },
+  {
+    name: 'a derived value edited in the bundle',
+    expect: 'red',
+    matching: /checksum mismatch/u,
+    apply: () => {
+      // Proves the digest covers the DERIVED block, not only the authored record — the hole a
+      // test found mid-build, where a tampered hex loaded clean and would have been served.
+      const b = readBundle();
+      b.entries[0].derived.hex = '#000000';
+      writeBundle(b);
+    },
+  },
+  {
+    name: 'the ledger checksum altered',
+    expect: 'red',
+    matching: /root checksum mismatch|checksum mismatch/u,
+    apply: () => {
+      const l = readLedger();
+      l[0].checksum = 'deadbeef';
+      writeLedger(l);
+    },
+  },
+  {
+    name: 'the ledger row removed — a bundle with nothing vouching for it',
+    expect: 'red',
+    matching: /has no row in the ledger/u,
+    apply: () => {
+      writeLedger([]);
+    },
+  },
+  {
+    name: 'an entry removed from the bundle — every survivor still hashes correctly',
+    expect: 'red',
+    matching: /root checksum mismatch.*the SET that changed/su,
+    apply: () => {
+      // The case per-entry digests CANNOT catch, which is why there are two levels.
+      const b = readBundle();
+      b.entries = b.entries.slice(0, 1);
+      writeBundle(b);
+    },
+  },
+  {
+    // THE E-001 DESTINATION CHECK, as its effect-link rationale describes it. This case did
+    // not exist when that rationale was written — the claim was false, and the evaluation
+    // caught it by running exactly this experiment and watching the gate stay green.
+    //
+    // It is the slowest case by far (two package rebuilds), and it is the only one that
+    // exercises what E-001 is actually about: the engine moving underneath stored values.
+    name: 'an OKLab matrix element perturbed, engine rebuilt (E-001 destination)',
+    expect: 'red',
+    matching: /the CURRENT engine derives.*publish a NEW corpus version/su,
+    apply: () => {
+      const src = readFileSync(MATRICES, 'utf8');
+      const m = /(export const XYZ_TO_LMS_OKLAB[^=]*=\s*\[\s*)(-?[\d.]+)/u.exec(src);
+      if (m === null) throw new Error('XYZ_TO_LMS_OKLAB first element not found in matrices.ts');
+      // +0.01 on the first coefficient: far above any tolerance, far below anything that would
+      // make a conversion throw. The point is a plausible edit, not a broken engine.
+      const perturbed = (Number(m[2]) + 0.01).toString();
+      writeFileSync(MATRICES, src.replace(m[0], `${m[1]}${perturbed}`), 'utf8');
+      rebuild();
+    },
+    cleanup: () => {
+      // Restore happens through git, then rebuild so later cases see the real engine again.
+      spawnSync('git', ['checkout', '--', MATRICES], { encoding: 'utf8' });
+      rebuild();
     },
   },
   {

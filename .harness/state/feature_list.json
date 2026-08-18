@@ -411,7 +411,7 @@
       "service": "content",
       "release": "R1",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-010"
       ],
@@ -431,7 +431,9 @@
       ],
       "effects": [
         "E-001",
-        "E-006"
+        "E-006",
+        "E-013",
+        "E-014"
       ],
       "plan": "plans/F-011-corpus-schema-provenance-and-content-gate.md",
       "attested": [
@@ -440,8 +442,16 @@
           "verifiedBy": "The colour-detail surface (F-018) rendering classification on every entry, asserted in its e2e and a11y run. The ENFORCED half is gated here — parseEntry rejects any other value and the mutation proof watches a japanese-inspired entry marked historical go red — but nothing in this repository can prove a field is DISPLAYED before a surface exists.",
           "blocks": "release",
           "status": "outstanding"
+        },
+        {
+          "criterion": "Editorial workflow draft to review to verified to published to superseded; author and reviewer must differ",
+          "verifiedBy": "F-062 (editorial review workflow) driving an entry through the states with stored prior state, so a transition can be compared against one. The AUTHOR-AND-REVIEWER half is fully gated here and proven by three mutation cases (same id, same person under two ids, unknown id), as is every per-status obligation. The SEQUENCE half is not enforceable in a file-based corpus: nothing on disk records what status an entry held before this commit, so assertTransition has no caller and cannot have one until something stores that.",
+          "blocks": "release",
+          "status": "outstanding"
         }
-      ]
+      ],
+      "package": "@irodora/corpus",
+      "notes": "DONE. DELIVERED: the corpus schema as a parser (@irodora/corpus), the editorial workflow and identity rule, canonical JSON and the two-level checksum, the published-version bundle with verify-at-load, scripts/generate-corpus.mjs, and GATE 11 ACTIVE AND BLOCKING with a 19-case mutation proof. 211 tests. NO COLOUR WAS ADDED — content/colors/ is still empty, which is F-012. DERIVED VALUES ARE UNAUTHORABLE, not merely regenerated: parseEntry rejects lab, lch, oklch, rgb, hex and gamut BY NAME. That is one step stronger than ADR-0043, which must regenerate-and-compare because the design manifest keeps its srgb for browsers; nothing reads a hex out of a source entry, so the stronger form was available. The rejection points at color.sourceHex, because the spec section 1 example showed those keys and an editor would have copied it. THE GATE SHIPPED BEFORE ITS DATA, which is the hard part. F-011 builds the gate and F-012 supplies the entries, so on activation the corpus is EMPTY and a gate that passes over nothing is failing open for the whole of R1. Four answers: it FAILS if it cannot locate its inputs; it runs 1 valid + 18 invalid FIXTURE corpora every invocation so the rules exercised are never zero; the fixtures cannot become content (outside content/, the scan globs content/ only, and a fixture- slug under content/ is itself a failure); and verify-content-proof.mjs mutates the VALID corpus 19 ways asserting the gate goes red AND NAMES THE RIGHT FIELD, baseline green either side, with ONE case that must stay GREEN. The authored-entry count (0) prints beside the fixture count on every run. THE CI CONDITION WAS THE WHOLE BALLGAME: gate 11 step carried `if: hashFiles(content/colors) != ''`, and gate 0 compares `run:` commands without reading `if:` — so the gate would have been \"active\" and never once run in CI for the rest of R1, with nothing able to say so. Removed. The general case is F-072. THREE DOCUMENTS DISAGREED about required provenance: the spec section 1 list omitted sourceLicence, publisher, rightsHolder and editorialNotes; ADR-0007 section 1 requires them and NFR-20 names the licence. The accepted decision won and the spec was corrected. IDENTITY IS A ROSTER ID (ADR-0047) because the rule was UNENFORCEABLE — the schema had no author field at all, so \"author and reviewer must differ\" could not run. Free text would have passed \"A. Ranjan\" against \"Ashish Ranjan\", and an UNKNOWN id must FAIL rather than count as a third person, which is the half that matters. THE REGISTER CROSS-CHECK existed only as a sentence: licensing-and-provenance.md section 5 stated the content gate performs it. It did not. Now it does, and an unparseable table is a FAILURE rather than an absence of constraint. TWO DEFECTS FOUND BY TESTS DURING THE BUILD. (1) The per-entry checksum covered only the authored record, so a tampered derived hex LOADED CLEAN and apps/api would have served it (F-016); it now covers the derived block too. (2) The bundle serialised xyz as a tuple while parseEntry requires the authored {x,y,z}, so a bundle could not load its own output. AND TWO DEFECTS THE FIXTURES FOUND IN THEMSELVES: duplicate-slug was broken in two ways and failed for the wrong rule; then, filenames coming from slugs, both entries wrote to one file and it stopped being invalid at all. Both caught by the gate, not by review — which is the argument for generating fixtures rather than hand-maintaining eighteen copies. THE HUE BOUND WAS GUESSED AND WRONG. A CIELAB bound of 6 degrees for a gamut-mapped corpus hex failed at 7.97. Measured over the six Display-P3 corners: OKLCh drift ours 0.167 vs clipping 3.150; CIELAB ours 7.966 vs clipping 5.206. IN CIELAB CLIPPING LOOKS BETTER THAN WE DO — not an algorithm failure but CIELAB and OKLab disagreeing about hue exactly where the P3 primaries sit, which is why OKLab exists. gamutMap holds OKLCh hue by construction (ADR-0045), so OKLCh is the metric that describes it; the CIELAB row is asserted as a NON-claim, because picking the flattering ruler is the failure mode here. srgbToHex moved into @irodora/color-spaces and design-tokens.toHex delegates — proven safe by 96 design-tokens tests, gate 9 and all 9 contrast mutation proofs. E-001 DESTINATION HALF IS NOW GUARDED, which it has never been: the gate recomputes every derived value in the LATEST bundle under the CURRENT engine. Older versions are checksum-verified only and the gate PRINTS that it skipped them, because asserting today's engine reproduces yesterday's answer is the claim FR-10 forbids. EVALUATION FINDINGS, FIXED IN THE SAME FEATURE. (1) E-001's rationale claimed the mutation proof watched a perturbed OKLab matrix go red. IT DID NOT — there was no such case, and the evaluator ran the experiment and watched the gate stay green. The case now exists (rebuilds color-spaces and corpus, asserts gate 11 red, restores). (2) GATE 11'S ENTIRE PUBLISHED-BUNDLE BLOCK WAS UNREACHABLE: zero real bundles until F-012, no fixture carried one, and not one proof case touched a checksum — so the charter claimed checksum and E-001 destination enforcement by code that never ran. The valid fixture corpus now carries a published version and five proof cases attack it (edited entry, edited derived value, altered ledger checksum, removed ledger row, removed entry). 25 cases now, was 19. (3) E-014 recorded guard:gate:content while the real guard was gate:test — true before the fixture had a bundle, and now genuinely both. (4) The paired memory notes for E-001 and E-006 were left stale while effects.json was updated, in direct contradiction; both rewritten. (5) OUR_OWN_CURATION was exported, documented as forcing a decision, and consumed by nothing — the rule keyed on sourceType alone, which let an editorial source call itself \"traditional\" or \"modern-japanese\". Both are claims about the received canon and neither is ours to make; the rule is now a positive list and the constant is load-bearing. (6) A test asserting CLASSIFICATIONS.filter(isOurOwnCuration) equals OUR_OWN_CURATION was true by construction and could not fail; replaced with the literal complement. ONE FINDING RECORDED RATHER THAN FIXED: the workflow STATE MACHINE (assertTransition / canTransition) has no non-test call site, so criterion 4's \"draft to review to verified to published to superseded\" is not enforced as a sequence. It cannot be, in a file-based corpus: there is no previous status on disk to compare a new one against. What IS enforced is every per-status obligation — a reviewer is required from `verified` onward and forbidden before it, only published|superseded enter a bundle, and author must differ from reviewer. Sequence enforcement needs stored prior state and belongs to F-062 (editorial review workflow); the machine is built and tested here so F-062 inherits it rather than reinventing it. Recorded as an attested criterion rather than claimed."
     },
     {
       "id": "F-012",
@@ -473,7 +483,7 @@
         "state",
         "content"
       ],
-      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs.",
+      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs. F-011 NOW SUPPLIES: the schema, the roster mechanism (content/editors.json), the register cross-check that this feature's \"every source appears in the register\" criterion depends on, and gate 11 blocking. What F-012 still owes beyond entries: adding real rows to licensing-and-provenance.md section 5 BEFORE any entry can cite one (with no registered sources, every citing entry fails — the correct direction), and real editors in content/editors.json. Note that gate 11 proves two distinct roster identities, NOT that either person read the entry; the attested criterion here is the only thing covering that.",
       "attested": [
         {
           "criterion": "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
@@ -2106,6 +2116,49 @@
         "color-golden"
       ],
       "notes": "TWO FLAKES OBSERVED, both pre-existing and neither caused by the feature that hit them. (1) packages/color-spaces test/oklab.test.ts \"round-trips arbitrary OKLab values\" uses fc.assert with 5000 runs and NO seed, asserting max round-trip error below 1e-12. It failed once during F-009 at 1.2477e-12 — a 25 percent overshoot, so it will recur — and then passed six consecutive full-suite runs. An unseeded generator means the gate samples a different region every run, so a red is not reproducible and a green is not evidence. (2) FOUND BY THE F-003 EVALUATION: packages/testing createPrng \"stays inside [0, 1)\" timed out at 5000 ms under the 37-task parallel turbo run and passes in 1.8 s in isolation — a 100k-iteration loop on the default vitest timeout. THE POINT IS NOT TIDINESS: gate 4 and gate 5 are blocking, and a blocking gate that can go red for a reason unrelated to the change teaches people to re-run it until it is green, which is how a real regression gets waved through. The fix for (1) is a recorded seed plus a stated margin between the tolerance and the measured worst case; for (2) an explicit timeout or a smaller loop."
+    },
+    {
+      "id": "F-072",
+      "title": "Gate 0 sees a CI step that is conditioned out",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "An active gate whose CI step carries an `if:` fails gate 0, naming the gate",
+        "verify-gate-mirror.mjs proves that check by adding a condition to a real step and watching gate 0 go red",
+        "Every remaining conditional step for an active gate is either unconditional or justified in gates.json"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FOUND IN F-011, WHERE IT NEARLY SHIPPED. scripts/verify-state.mjs compares whole `run:` commands and never reads `if:`. Gate 11's step carried `if: hashFiles(content/colors) != ''`, so once the gate went active it would have been skipped on every push for the rest of R1 — F-011 ships the gate, F-012 ships the entries — while gates.json said \"active\" and gate 0 said \"mirrored in CI\". Both true; neither meaning the gate ran. verify-gate-mirror.mjs does not catch it either: it deletes steps and asserts gate 0 fails, which is exactly what a conditional step still has. Gate 11's own condition was removed in F-011; gates 7, 10 and 12 still carry guards and are the reason this is a feature rather than a note. The guarded-step pattern is CORRECT for a pending gate and a trap at the moment of activation, so the check needs to key on gate status rather than banning `if:` outright. Lesson: memory/lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md"
+    },
+    {
+      "id": "F-073",
+      "title": "Engine purity follows @irodora/* dependency edges",
+      "requirements": [
+        "NFR-3",
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R1",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "A package outside the engine zone that an engine package depends on is held to the same platform-API and runtime-dependency rules, transitively",
+        "scripts/verify-engine-purity.mjs --prove plants exactly that violation and watches the check fail"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FOUND IN F-011. scripts/verify-engine-purity.mjs scopes the platform-API ban by package NAME (color-* and cvd-engine) and allows any @irodora/* specifier inside an engine package WITHOUT following the edge. So an engine package may depend on a workspace package that imports node:fs or declares a runtime dependency, and every gate stays green while NFR-3 is broken — byte-identical output in Node, the browser and React Native is the one guarantee that cannot bend. THE CASE IS NOT HYPOTHETICAL: F-013 (colour naming) lives in packages/color-naming, is blocked by F-011, and will import @irodora/corpus, which is NOT in the engine zone. F-011 mitigated that one instance by giving packages/corpus/src the portability override plus boundary guard #11 — proven to fire — but that is one package handled by hand, not a rule. The general check belongs here rather than in F-011 because it changes a repository-wide guard rather than that feature's subject."
     }
   ]
 }

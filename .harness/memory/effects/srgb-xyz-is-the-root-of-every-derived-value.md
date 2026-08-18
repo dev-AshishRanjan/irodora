@@ -41,27 +41,39 @@ starts disagreeing with itself. None of it looks like a conversion bug.
    envelopes must still resolve (FR-10).
 4. Re-run the `color-golden` gate, which includes the derived-value consistency check.
 
-## The guard, and the half of it that does not exist yet
+## The guard — both ends, as of F-011
 
-**As of F-006 this link is half-guarded, and it is worth being precise about which half.**
-
-`srgbToXyz` now exists (`packages/color-spaces/src/rgb.ts`) and `gate:color-golden` is
-**active**. The *source* end is covered:
+**The *source* end, since F-006.** `srgbToXyz` (`packages/color-spaces/src/rgb.ts`) is covered
+by `gate:color-golden`:
 
 - 71 golden entries, each citing its source, across six datasets;
 - a 300 000-value determinism digest that fails on a change of one bit
   (`cross-platform-identity.fixture.json`);
 - bitwise agreement with `colorjs.io` on XYZ, Lab-D65, P3 and linear sRGB over 10 000 samples.
 
-Anything that alters this transform now fails the build immediately.
+Anything that alters this transform fails the build immediately.
 
-The *destination* end — **that the stored corpus values still agree with the changed engine**
-— is what `gate:content` does, and it activates with **F-011**. Until then there is no corpus
-to invalidate, so the missing half costs nothing today and would cost everything the first
-time a colour is published against an engine that has since moved.
+**The *destination* end, since F-011.** `gate:content` recomputes every derived value in the
+**latest** published bundle from its own `xyz` under the **current** engine and fails naming
+the entry. `scripts/verify-content-proof.mjs` proves it: one case perturbs
+`XYZ_TO_LMS_OKLAB[0]` by 0.01, rebuilds `color-spaces` and `corpus`, and asserts gate 11 goes
+red — then restores and rebuilds.
 
-**What that means for F-011:** the derived-value consistency check is not an extra; it is the
-half of this link that is currently owed.
+> That proof case did not exist when this link was first marked guarded. The rationale in
+> `effects.json` claimed it did, an evaluation ran exactly that experiment, watched the gate
+> stay **green**, and reported the claim as false. It is a real case now. The general lesson —
+> a guard is only guarded once someone has watched it fail — is
+> [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]].
+
+**Older versions are deliberately NOT re-checked** against the current engine; they were
+derived by an engine we no longer have, and asserting that today's engine reproduces
+yesterday's answer is precisely the claim FR-10 forbids. Gate 11 prints which versions it
+skipped, on every run.
+
+**The honest limit today:** `content/colors/` is empty until F-012, so the destination check
+currently runs against a *fixture* corpus carrying a published bundle. That is what makes the
+rules executable at all; it is not evidence that any real colour has passed them, and the gate
+says so every run.
 
 ## Related
 

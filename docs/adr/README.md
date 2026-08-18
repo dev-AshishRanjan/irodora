@@ -69,6 +69,8 @@ Two rules that matter more than the format:
 | [0043](0043-the-oklch-field-is-authoritative-and-srgb-is-derived.md) | The `oklch` field is authoritative; `srgb` is derived output, not an input | Accepted |
 | [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Accepted |
 | [0045](0045-gamut-mapping-is-chroma-bisection-without-minde.md) | Gamut mapping is OKLCh chroma bisection, without CSS Color 4 MINDE step | Accepted |
+| [0046](0046-published-corpus-is-an-immutable-generated-bundle.md) | A published corpus version is one immutable generated bundle, vouched for by a ledger | Accepted |
+| [0047](0047-editorial-identity-is-a-roster-id-not-a-name.md) | Editorial identity is a roster id, and every record records its author | Accepted |
 
 ## Open questions awaiting an ADR
 

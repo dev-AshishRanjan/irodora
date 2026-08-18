@@ -108,7 +108,25 @@ before each corpus release.
 | — | *No sources registered yet. Corpus entries begin at F-012.* | — | — | — | — | — |
 
 **A source not in this table cannot appear in a published entry.** The `content` gate
-cross-checks `provenance.source` against this register.
+cross-checks `provenance.source` against this register — **as of F-011 it actually does**;
+before that this sentence described a check nobody had built.
+
+How the check reads this table, because the shape is now load-bearing:
+
+- **`ID`** is what an entry cites in `provenance.sourceId`. It is matched exactly.
+- **`Source`** must equal the entry's `provenance.source` text. Both are compared, not just the
+  id: an id pointing at a different row than the entry claims would leave the entry displaying
+  one provenance and licensed under another.
+- The **column names and their order** are read by the parser. Renaming or reordering one stops
+  the gate rather than letting it guess.
+- The em-dash placeholder row is skipped, never registered — so an entry cannot cite `—` and
+  resolve against it.
+- **An unparseable table is a failure**, never an absence of constraint. A missing heading, a
+  short row or a duplicate id fails the build.
+
+With no sources registered, **any entry citing one fails.** That is the correct direction: this
+table is a legal safeguard reviewed by a person before each corpus version ships, and it stays
+a human-reviewed document rather than generated data precisely so that review keeps happening.
 
 ---
 

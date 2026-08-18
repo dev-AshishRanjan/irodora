@@ -45,6 +45,32 @@ Corrections publish a **new version**. The superseded entry is marked, not delet
 4. Checksums verified **at load**, not only at write — a restored backup or a swapped file
    on a self-hosted box never passes through the write path.
 
+## What F-011 built, and what it did not
+
+**Built.** `content/versions/<label>.json` is a generated, immutable bundle; the expected root
+checksum lives in the **ledger** (`versions/index.json`) and never inside the bundle, because a
+file checked against a checksum it carries verifies itself. `loadPublishedVersion` takes that
+digest as a required argument and throws on mismatch — no options object, no warn mode. The
+per-entry digest covers the authored record **and** its derived block, so a tampered `hex`
+cannot load. `scripts/generate-corpus.mjs` refuses to overwrite a published version, and
+`--check` regenerates in memory and compares. Five mutation-proof cases attack this directly:
+an edited entry, an edited derived value, an altered ledger checksum, a removed ledger row, and
+a removed entry — that last one being the case per-entry digests cannot catch, which is why
+there are two digest levels.
+
+> Those five cases did not exist at first, and neither did any bundle. The gate's entire
+> published-version block was **unreachable code** while `gates.json` claimed it enforced
+> checksums; an evaluation found it by putting a `throw` at the top of the loop and watching
+> the gate stay green. The valid fixture corpus now carries a published version, which is the
+> only thing that makes these rules executable before F-012.
+
+**Not built, and it must not be implied.** Immutability here is enforced against *accident* and
+**detected** against *intent*. A committer who edits an entry **and** updates its ledger row in
+the same commit passes every check in this repository. The controls that close it are review of
+a two-file diff and, in production, the audit-logged admin publish path — which does not exist
+until F-061. Gate 11 prints this on every run
+([ADR-0046](../../../docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md)).
+
 ## The related risk
 
 **Content is a trust boundary.** Whoever can write here changes what every user is told

@@ -21,7 +21,7 @@
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './corpus-io.mjs';
+import { loadCorpusPackage, ROOT, sha256 } from './corpus-io.mjs';
 
 const OUT = join(ROOT, 'packages', 'corpus', 'test', 'fixtures');
 
@@ -312,7 +312,66 @@ rmSync(join(OUT, 'valid'), { recursive: true, force: true });
 rmSync(join(OUT, 'invalid'), { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
-writeCorpus(join(OUT, 'valid'), baseCorpus());
+const valid = baseCorpus();
+writeCorpus(join(OUT, 'valid'), valid);
+
+// --- the valid corpus gets a PUBLISHED VERSION ------------------------------------------
+//
+// Without this, gate 11's entire published-bundle half — checksum verification, the ledger,
+// and the E-001 destination re-check against the current engine — is unreachable code. There
+// are no real bundles until F-012, so a fixture is the only thing that can execute those
+// rules, and the mutation proof is the only thing that can attack them.
+{
+  const {
+    publishVersion,
+    bundleRootDigest,
+    serialiseBundle,
+    parseEntry,
+    parsePalette,
+    CORPUS_SCHEMA_VERSION,
+  } = await loadCorpusPackage();
+  const { ENGINE_VERSION } = await import(
+    (await import('node:url')).pathToFileURL(
+      join(ROOT, 'packages', 'color-spaces', 'dist', 'index.js'),
+    ).href
+  );
+
+  const label = '2026.08.1';
+  const bundle = publishVersion(
+    label,
+    valid.entries.map((e) => parseEntry(e, `${e.slug}.json`)),
+    valid.palettes.map((p) => parsePalette(p, `${p.slug}.json`)),
+    {
+      engine: ENGINE_VERSION,
+      corpusSchemaVersion: CORPUS_SCHEMA_VERSION,
+      // Fixed, never `new Date()`: a generated fixture whose bytes change every run would make
+      // its own checksum meaningless and every diff noise.
+      publishedAt: '2026-08-18',
+    },
+    sha256,
+  );
+
+  const versions = join(OUT, 'valid', 'versions');
+  mkdirSync(versions, { recursive: true });
+  writeFileSync(join(versions, `${label}.json`), serialiseBundle(bundle), 'utf8');
+  writeFileSync(
+    join(versions, 'index.json'),
+    `${JSON.stringify(
+      [
+        {
+          label,
+          checksum: bundleRootDigest(bundle, sha256),
+          engine: ENGINE_VERSION,
+          publishedAt: '2026-08-18',
+          entryCount: bundle.entries.length,
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
+}
 
 const expected = {};
 for (const { dir, expect, apply } of MUTATIONS) {

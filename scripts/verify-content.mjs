@@ -117,70 +117,96 @@ rulesExercised += 1;
 
 // --- published bundles: checksum, and agreement with the current engine -------------------
 
-const versionsDir = join(CONTENT, 'versions');
-const bundleFiles = existsSync(versionsDir)
-  ? readdirSync(versionsDir)
-      .filter((n) => n.endsWith('.json') && n !== 'index.json')
-      .sort()
-  : [];
+/**
+ * Verify every published bundle under one corpus root.
+ *
+ * **This is a function, and takes a root, because the real corpus has no bundles yet.** The
+ * first version of this gate inlined the loop over `content/versions/` — and with zero bundles
+ * on disk and no fixture carrying one, the entire block was unreachable while
+ * `gates.json` claimed the gate enforced checksums and the E-001 destination check. The code
+ * was correct and ran nowhere, which is the same failure this gate's own lesson note describes
+ * for the entry rules: a guard with nothing to guard.
+ *
+ * The valid fixture corpus now carries a published version, so these rules execute on every
+ * invocation and the mutation proof can attack them.
+ */
+function checkBundles(root, ledger, { label: rootLabel, report }) {
+  const versionsDir = join(root, 'versions');
+  const bundleFiles = existsSync(versionsDir)
+    ? readdirSync(versionsDir)
+        .filter((n) => n.endsWith('.json') && n !== 'index.json')
+        .sort()
+    : [];
 
-const latest = bundleFiles.at(-1) ?? null;
+  const latest = bundleFiles.at(-1) ?? null;
+  const found = [];
+  const record = (detail) => found.push(detail);
 
-for (const file of bundleFiles) {
-  const label = file.replace(/\.json$/u, '');
-  let bundle;
-  try {
-    const row = ledgerRowFor(real.ledger, label, 'content/versions/index.json');
-    bundle = loadPublishedVersion(
-      readFileSync(join(versionsDir, file), 'utf8'),
-      row.checksum,
-      sha256,
-      `content/versions/${file}`,
-    );
-  } catch (error) {
-    fail(error instanceof CorpusError ? error.message : String(error));
-    continue;
-  }
+  for (const file of bundleFiles) {
+    const label = file.replace(/\.json$/u, '');
+    const where = `${rootLabel}/versions/${file}`;
+    let bundle;
+    try {
+      const row = ledgerRowFor(ledger, label, `${rootLabel}/versions/index.json`);
+      bundle = loadPublishedVersion(
+        readFileSync(join(versionsDir, file), 'utf8'),
+        row.checksum,
+        sha256,
+        where,
+      );
+    } catch (error) {
+      record(error instanceof CorpusError ? error.message : String(error));
+      continue;
+    }
 
-  // E-001, DESTINATION END. Only the latest version is compared against the current engine:
-  // an older one was derived by an engine we no longer have, and re-deriving it here would be
-  // asserting that today's engine should reproduce yesterday's answer — which is exactly the
-  // claim FR-10 says we must NOT make. Skipping is printed rather than implied.
-  if (file !== latest) {
-    notes.push(
-      `content/versions/${file} — checksum verified; derived values NOT re-checked against ` +
-        'the current engine, because it was produced by a different one and reproducing it ' +
-        'is not something we claim (FR-10).',
-    );
-    continue;
-  }
+    // E-001, DESTINATION END. Only the latest version is compared against the current engine:
+    // an older one was derived by an engine we no longer have, and re-deriving it here would be
+    // asserting that today's engine should reproduce yesterday's answer — which is exactly the
+    // claim FR-10 says we must NOT make. Skipping is printed rather than implied.
+    if (file !== latest) {
+      report?.(
+        `${where} — checksum verified; derived values NOT re-checked against the current ` +
+          'engine, because it was produced by a different one and reproducing it is not ' +
+          'something we claim (FR-10).',
+      );
+      continue;
+    }
 
-  for (const { entry, derived } of bundle.entries) {
-    const fresh = deriveColor(entry.color.xyz);
-    for (const key of ['hex', 'inSrgbGamut', 'lightnessOutOfRange'])
-      if (fresh[key] !== derived[key])
-        fail(
-          `content/versions/${file}: entries.${entry.slug}.derived.${key} is ` +
-            `${JSON.stringify(derived[key])} but the CURRENT engine derives ` +
-            `${JSON.stringify(fresh[key])} from the same xyz. The engine moved (E-001): ` +
-            'publish a NEW corpus version — never edit a published one (FR-10, ADR-0046).',
-        );
-    for (const key of ['lab', 'lch', 'oklch', 'rgb'])
-      for (const [i, value] of fresh[key].entries())
-        if (Math.abs(value - derived[key][i]) > 1e-12)
-          fail(
-            `content/versions/${file}: entries.${entry.slug}.derived.${key}[${String(i)}] is ` +
-              `${String(derived[key][i])} but the CURRENT engine derives ${String(value)}. ` +
-              'The engine moved (E-001): publish a NEW corpus version.',
+    for (const { entry, derived } of bundle.entries) {
+      const fresh = deriveColor(entry.color.xyz);
+      for (const key of ['hex', 'inSrgbGamut', 'lightnessOutOfRange'])
+        if (fresh[key] !== derived[key])
+          record(
+            `${where}: entries.${entry.slug}.derived.${key} is ${JSON.stringify(derived[key])} ` +
+              `but the CURRENT engine derives ${JSON.stringify(fresh[key])} from the same xyz. ` +
+              'The engine moved (E-001): publish a NEW corpus version — never edit a published ' +
+              'one (FR-10, ADR-0046).',
           );
-  }
-  rulesExercised += 1;
+      for (const key of ['lab', 'lch', 'oklch', 'rgb'])
+        for (const [i, value] of fresh[key].entries())
+          if (Math.abs(value - derived[key][i]) > 1e-12)
+            record(
+              `${where}: entries.${entry.slug}.derived.${key}[${String(i)}] is ` +
+                `${String(derived[key][i])} but the CURRENT engine derives ${String(value)}. ` +
+                'The engine moved (E-001): publish a NEW corpus version.',
+            );
+    }
 
-  const recomputedRoot = bundleRootDigest(bundle, sha256);
-  const row = real.ledger.find((r) => r.label === label);
-  if (row !== undefined && row.checksum !== recomputedRoot)
-    fail(`content/versions/${file}: recomputed root ${recomputedRoot} != ledger ${row.checksum}`);
+    const recomputedRoot = bundleRootDigest(bundle, sha256);
+    const row = ledger.find((r) => r.label === label);
+    if (row !== undefined && row.checksum !== recomputedRoot)
+      record(`${where}: recomputed root ${recomputedRoot} != ledger ${row.checksum}`);
+  }
+
+  return { failures: found, bundleCount: bundleFiles.length };
 }
+
+const realBundles = checkBundles(CONTENT, real.ledger, {
+  label: 'content',
+  report: (note) => notes.push(note),
+});
+for (const failure of realBundles.failures) fail(failure);
+rulesExercised += 1;
 
 // --- an authored sourceHex must agree with its own xyz ------------------------------------
 
@@ -219,6 +245,10 @@ function checkFixtureCorpus(root, { expectFailure, matching }) {
   const found = [...result.failures, ...checkCorpus(result, { allowFixtureSlugs: true })].map(
     (error) => error.message,
   );
+
+  // The bundle rules run here too. Without this the whole published-version half of the gate
+  // is unreachable until F-012 ships a real corpus — correct code that never executes.
+  found.push(...checkBundles(root, result.ledger, { label: root }).failures);
 
   if (!expectFailure) {
     for (const message of found) fail(`the VALID fixture corpus was rejected: ${message}`);
@@ -260,7 +290,7 @@ rulesExercised += 1;
 
 console.log(
   `${DIM}  ${String(real.entries.length)} authored entr${real.entries.length === 1 ? 'y' : 'ies'}, ` +
-    `${String(real.palettes.length)} palette(s), ${String(bundleFiles.length)} published ` +
+    `${String(real.palettes.length)} palette(s), ${String(realBundles.bundleCount)} published ` +
     `version(s), ${String(real.register.size)} registered source(s)${OFF}`,
 );
 console.log(

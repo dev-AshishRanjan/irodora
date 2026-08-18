@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-14",
+  "updated": "2026-08-18",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -24,6 +24,14 @@
           "ref": "content/colors"
         },
         {
+          "kind": "artifact",
+          "ref": "content/versions"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
           "kind": "doc",
           "ref": "docs/architecture/color-engine.md"
         }
@@ -37,7 +45,7 @@
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/srgb-xyz-is-the-root-of-every-derived-value.md",
-      "rationale": "Every corpus entry's lab, oklch and hex columns are computed from xyz by this transform at build time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it. As of F-006 the transform exists and gate:color-golden is active, so the SOURCE end of this link is now guarded: 64 cited golden entries across five datasets plus a 300,000-value determinism digest fail on any change. The DESTINATION end — that the stored corpus values still agree with the changed engine — needs the content gate, which activates with F-011. Until then this link is half-guarded, and that half is the half that matters least, because there is no corpus to invalidate yet.",
+      "rationale": "Every corpus entry's lab, lch, oklch, rgb and hex are computed from xyz by this transform at publish time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it. BOTH ENDS ARE NOW GUARDED. The SOURCE end since F-006: 64 cited golden entries across five datasets plus a 300,000-value determinism digest fail on any change. The DESTINATION end since F-011: gate:content recomputes every derived value in the LATEST published bundle from its own xyz under the CURRENT engine and fails naming the entry, and scripts/verify-content-proof.mjs watches it go red on a perturbed OKLab matrix: one case adds 0.01 to XYZ_TO_LMS_OKLAB[0], rebuilds color-spaces and corpus, asserts gate 11 exits 1, then restores and rebuilds. THAT CASE DID NOT EXIST WHEN THIS SENTENCE WAS FIRST WRITTEN — an evaluation ran exactly that experiment, watched the gate stay GREEN, and reported the claim as false. It is true now because the case was built, not because the wording was softened. The remedy is always to PUBLISH A NEW VERSION, never to edit a published one (FR-10, ADR-0046) — the gate message says so. Older versions are checksum-verified only and the gate PRINTS that it skipped them: they were derived by an engine we no longer have, and asserting that today's engine reproduces yesterday's answer is exactly the claim FR-10 says we must not make.",
       "confidence": 0.98,
       "origin": "manual",
       "status": "active"
@@ -240,7 +248,7 @@
       "severity": "high",
       "guard": "gate:content",
       "memory": "memory/effects/corpus-version-pins-caches-and-envelopes.md",
-      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog.",
+      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog. AS OF F-011 THE GUARD IS REAL RATHER THAN PROMISED: the bundle is generated and checksummed, loadPublishedVersion verifies at load against a root digest taken from the LEDGER (never from the bundle — a file checked against a checksum it carries verifies itself), and the generator refuses to overwrite a published version. THE HONEST LIMIT, which gate 11 prints on every run: this is enforced against accident and DETECTED against intent. A committer who edits an entry AND its ledger row in one commit passes; the two-file diff and human review are the control until the audit-logged admin publish path lands in F-061 (ADR-0046).",
       "confidence": 0.92,
       "origin": "manual",
       "status": "active"
@@ -474,6 +482,87 @@
       "memory": "memory/effects/one-gamut-mapping-defines-the-closest-displayable-colour.md",
       "rationale": "gamutMap answers \"this colour does not fit the display, what do we show instead\" for every surface, with no import edge that shows the sharing — the same shape as E-003 and E-005. A second implementation does not look like a rival algorithm; it looks like an inline Math.min/max clip, which moves hue by up to 33.6 degrees, or a component that renders oklch() and lets the BROWSER map it, which disagrees with us by up to 5.21 dE00 and 11.97 degrees of hue (ADR-0045). Nothing breaks: the build stays green and the product shows two different colours for the same input depending on which path produced it.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-013",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/corpus/src/entry.ts#parseEntry"
+      },
+      "to": [
+        {
+          "kind": "content",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "content",
+          "ref": "content/palettes"
+        },
+        {
+          "kind": "artifact",
+          "ref": "content/versions"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/content/color-corpus-spec.md"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/api/src/modules/catalog",
+          "exists": false
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/corpus",
+        "content",
+        "docs/content",
+        "apps/api"
+      ],
+      "severity": "high",
+      "guard": "gate:content",
+      "memory": "memory/effects/the-entry-schema-is-a-contract-with-every-authored-file.md",
+      "rationale": "parseEntry IS the corpus schema: adding a required field, tightening a pattern or renaming a key invalidates every authored file at once, and the spec document that describes it to editors goes stale in the same moment. The gate catches it only because it re-parses EVERY entry on every run rather than trusting a stored validity flag — a cached \"this one was fine\" would make a schema change invisible until someone touched the file. The destination nobody sees is the SPEC: the schema and docs/content/color-corpus-spec.md are two descriptions of one thing, and only one of them is executed. F-011 already found them disagreeing three ways about required provenance fields.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-014",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/corpus/src/canonical.ts#canonicalize"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "content/versions"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/corpus/golden"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/corpus",
+        "content"
+      ],
+      "severity": "critical",
+      "guard": "gate:content",
+      "memory": "memory/effects/canonicalisation-decides-what-a-checksum-means.md",
+      "rationale": "canonicalize decides what a checksum IS. Change key ordering, number formatting, string escaping or null handling and every digest ever recorded becomes wrong — in the version bundles, in the ledger, and later in Postgres and every cache key. THE REASON THIS IS CRITICAL RATHER THAN HIGH: there is no import edge from canonicalize to the stored data, and both sides of every fresh comparison move together, so a publish after the change is self-consistent and disagrees only with history. TWO GUARDS, and they cover different halves. gate:content catches a change to canonicalize itself, because the valid fixture corpus carries a PUBLISHED BUNDLE whose stored digests were computed under the old rules — verified by neutering canonicalize and watching gate 11 exit 1 with a checksum mismatch. That only became true once the fixture gained a bundle; before it, the gate had no bundle to compare against and the real guard was gate:test alone, which an evaluation caught. gate:test carries the rest: packages/corpus/golden/canonical-digest.fixture.json pins the exact canonical strings and their SHA-256, with expected values produced by node:crypto over the strings AS WRITTEN IN THE FILE and never by running this package — hashing our own output would make every row agree by construction. It is also the only thing that catches assertSha256 being neutered, which gate:content cannot see because the injected hasher is still really SHA-256.",
+      "confidence": 0.97,
       "origin": "manual",
       "status": "active"
     }
