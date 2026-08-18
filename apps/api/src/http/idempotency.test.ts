@@ -151,6 +151,7 @@ describe('claiming a key', () => {
       set: () => Promise.resolve(),
       delete: () => Promise.resolve(),
       setIfAbsent: () => Promise.resolve(false),
+      increment: () => Promise.resolve(1),
       ping: () => Promise.resolve(true),
     };
 

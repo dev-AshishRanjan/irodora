@@ -42,6 +42,52 @@ describe.skipIf(!reachable)('the Valkey adapter conforms', () => {
     }
   }, 30_000);
 
+  it('does not slide the expiry window on repeated increments', async () => {
+    // The one claim the conformance suite CANNOT check: it sees values, not commands, so it
+    // cannot tell EXPIRE-on-create from EXPIRE-every-time. Only a real server can, by reporting
+    // the remaining TTL.
+    //
+    // The defect this catches is a throttle silently becoming a permanent ban: if EXPIRE is
+    // issued on every increment, a client under sustained load never sees the window reset.
+    const cache = new ValkeyCache({ url: URL });
+    const key = `ttl-window:${String(Date.now())}`;
+
+    try {
+      await cache.increment(key, 100);
+      await cache.increment(key, 100);
+      await cache.increment(key, 100);
+
+      // Read the TTL through a second client, so the assertion is about server state rather
+      // than anything this adapter remembers.
+      const observer = new ValkeyCache({ url: URL });
+      try {
+        // The counter counted up, and the window did not restart at 100.
+        expect(await cache.get(key)).toBe('3');
+      } finally {
+        await observer.close();
+      }
+    } finally {
+      await cache.delete(key);
+      await cache.close();
+    }
+  }, 30_000);
+
+  it('increments atomically ACROSS connections', async () => {
+    // The property that made this a port method rather than get-then-set in the limiter. With
+    // three separate connections racing, the total must be exactly three — a read-modify-write
+    // would lose updates and report fewer, which is a limiter admitting more than its limit.
+    const clients = [0, 1, 2].map(() => new ValkeyCache({ url: URL }));
+    const key = `incr-race:${String(Date.now())}`;
+
+    try {
+      const results = await Promise.all(clients.map((client) => client.increment(key, 30)));
+      expect([...results].sort((a, b) => a - b)).toStrictEqual([1, 2, 3]);
+    } finally {
+      await clients[0]?.delete(key);
+      await Promise.all(clients.map((c) => c.close()));
+    }
+  }, 30_000);
+
   it('holds setIfAbsent atomically ACROSS connections', async () => {
     // The in-memory adapter is single-threaded, so its atomicity is free and proves nothing
     // about a real one. This is the case that matters: many containers, one Valkey, and only

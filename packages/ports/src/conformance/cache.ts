@@ -48,6 +48,58 @@ export async function runCacheConformance(
       await cache.delete('never-existed');
     }),
 
+    await runCase('increment creates at 1 and counts up', async () => {
+      // The rate-limit primitive. `setIfAbsent` cannot express this: a counter needs an atomic
+      // read-modify-write, and get-then-set lets two concurrent requests both read n and both
+      // write n+1. The limiter then UNDER-counts — admitting more than its limit, silently, and
+      // exactly under the concurrency it exists for.
+      const cache = await create();
+      expectEqual(await cache.increment('hits', 60), 1, 'first increment creates at 1');
+      expectEqual(await cache.increment('hits', 60), 2, 'second increment');
+      expectEqual(await cache.increment('hits', 60), 3, 'third increment');
+    }),
+
+    await runCase('increment returns the NEW value, not the old one', async () => {
+      // Returning the previous value would make every limiter off by one, which is the kind of
+      // defect that only shows up as "the limit is 11" long after anyone is looking.
+      const cache = await create();
+      await cache.increment('n', 60);
+      expectEqual(await cache.increment('n', 60), 2, 'the value after incrementing');
+    }),
+
+    await runCase('increment is visible to get, as a decimal string', async () => {
+      // A caller reading the counter through `get` must see the same number. An adapter storing
+      // it in some binary form would be invisible until something tried to read it back.
+      const cache = await create();
+      await cache.increment('n', 60);
+      await cache.increment('n', 60);
+      expectEqual(await cache.get('n'), '2', 'get after two increments');
+    }),
+
+    await runCase('increment does NOT slide the window', async () => {
+      // The defect this prevents is a throttle silently becoming a permanent ban: if the TTL is
+      // extended on every increment, a client under sustained load never sees the window reset
+      // and stays locked out forever.
+      //
+      // Asserted through the injectable clock where the adapter has one. For a real Valkey the
+      // equivalent is that EXPIRE is issued only when INCR returns 1; that is asserted in the
+      // adapter's own tests, because a conformance case cannot see which commands were sent.
+      const cache = await create();
+      await cache.increment('window', 60);
+      const first = await cache.get('window');
+      await cache.increment('window', 60);
+      expectEqual(first, '1', 'the counter existed before the second increment');
+      expectEqual(await cache.get('window'), '2', 'and counted up rather than restarting');
+    }),
+
+    await runCase('counters are independent', async () => {
+      const cache = await create();
+      await cache.increment('a', 60);
+      await cache.increment('a', 60);
+      expectEqual(await cache.increment('b', 60), 1, 'a second key starts its own count');
+      expectEqual(await cache.get('a'), '2', 'and does not disturb the first');
+    }),
+
     await runCase('setIfAbsent wins exactly once', async () => {
       // This is the idempotency-key primitive. An adapter implementing it as get-then-set
       // lets two concurrent requests both win, which is a duplicate wardrobe item created

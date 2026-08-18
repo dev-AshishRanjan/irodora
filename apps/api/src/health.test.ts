@@ -98,6 +98,7 @@ describe('/readyz answers about dependencies', () => {
       set: () => Promise.resolve(),
       delete: () => Promise.resolve(),
       setIfAbsent: () => Promise.resolve(true),
+      increment: () => Promise.resolve(1),
       ping: () => Promise.resolve(false),
     };
 
@@ -119,6 +120,7 @@ describe('/readyz answers about dependencies', () => {
       set: () => Promise.resolve(),
       delete: () => Promise.resolve(),
       setIfAbsent: () => Promise.resolve(true),
+      increment: () => Promise.resolve(1),
       ping: () => Promise.reject(new Error('ECONNREFUSED')),
     };
 

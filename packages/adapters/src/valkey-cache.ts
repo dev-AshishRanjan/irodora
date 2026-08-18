@@ -84,6 +84,30 @@ export class ValkeyCache implements CachePort {
     return result === 'OK';
   }
 
+  async increment(key: string, ttlSeconds: TtlSeconds): Promise<number> {
+    if (ttlSeconds <= 0) {
+      // Consistent with `set`: Valkey rejects EX 0, and a zero TTL means "already expired".
+      // Counting into a key that must not persist would leave an immortal counter behind.
+      await this.#client.del(key);
+      return 0;
+    }
+
+    // INCR is atomic and creates the key at 1 — that is the whole reason this method exists
+    // rather than being GET then SET, which two concurrent requests both win.
+    const value = await this.#client.incr(key);
+
+    // Expire ONLY on creation. `INCR` does not set a TTL, and calling EXPIRE unconditionally
+    // would slide the window forward on every request, so a client under sustained load would
+    // never see it reset — a throttle silently becoming a permanent ban.
+    //
+    // `value === 1` is the create signal, and it is exact: INCR returns 1 only when the key was
+    // absent. A key that expired between requests also returns 1, which is correct — that is a
+    // new window.
+    if (value === 1) await this.#client.expire(key, Math.ceil(ttlSeconds));
+
+    return value;
+  }
+
   async ping(): Promise<boolean> {
     try {
       // The command RESOLVING is the signal — ioredis types the reply as the literal 'PONG',

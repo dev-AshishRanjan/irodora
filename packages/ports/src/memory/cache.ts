@@ -59,6 +59,26 @@ export class InMemoryCache implements CachePort {
     return Promise.resolve(true);
   }
 
+  increment(key: string, ttlSeconds: TtlSeconds): Promise<number> {
+    const live = this.#live(key);
+
+    // The window does NOT slide. `expiresAt` is set when the counter is created and preserved
+    // on every subsequent increment — a limiter whose window extends on each request never
+    // resets under sustained load, so a client that keeps knocking stays locked out forever.
+    // That turns a throttle into a ban nobody chose.
+    const expiresAt = live?.expiresAt ?? this.#now() + ttlSeconds * 1000;
+
+    // A non-numeric existing value restarts the count rather than producing NaN. It means the
+    // key was used for something else, which is a bug — but NaN would then propagate into
+    // every comparison a limiter makes, and `NaN > limit` is false, so the limiter would admit
+    // everything. Restarting is wrong in a way that fails closed.
+    const next = Number.parseInt(live?.value ?? '0', 10);
+    const value = String((Number.isFinite(next) ? next : 0) + 1);
+
+    this.#entries.set(key, { value, expiresAt });
+    return Promise.resolve(Number(value));
+  }
+
   ping(): Promise<boolean> {
     return Promise.resolve(true);
   }

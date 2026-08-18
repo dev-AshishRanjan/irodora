@@ -128,6 +128,71 @@ describe('the suites can fail', () => {
       await this.#inner.set(key, value, ttl);
       return true;
     }
+    increment(key: string, ttl: TtlSeconds): Promise<number> {
+      return this.#inner.increment(key, ttl);
+    }
+    ping(): Promise<boolean> {
+      return this.#inner.ping();
+    }
+  }
+
+  /**
+   * Returns the value *before* incrementing.
+   *
+   * Written the way it actually gets written — a `getAndIncrement` habit carried over from
+   * other APIs. Every limiter built on it is off by one, which surfaces as "the limit is
+   * eleven" long after anyone is looking at it.
+   */
+  class OffByOneCache implements CachePort {
+    readonly #inner = new InMemoryCache();
+
+    get(key: string): Promise<string | undefined> {
+      return this.#inner.get(key);
+    }
+    set(key: string, value: string, ttl: TtlSeconds): Promise<void> {
+      return this.#inner.set(key, value, ttl);
+    }
+    delete(key: string): Promise<void> {
+      return this.#inner.delete(key);
+    }
+    setIfAbsent(key: string, value: string, ttl: TtlSeconds): Promise<boolean> {
+      return this.#inner.setIfAbsent(key, value, ttl);
+    }
+    async increment(key: string, ttl: TtlSeconds): Promise<number> {
+      const next = await this.#inner.increment(key, ttl);
+      return next - 1; // the defect
+    }
+    ping(): Promise<boolean> {
+      return this.#inner.ping();
+    }
+  }
+
+  /**
+   * Restarts the counter instead of counting up.
+   *
+   * The realistic version of this bug is an adapter that calls `set(key, '1', ttl)` when it
+   * cannot find an atomic increment — which is exactly what someone reaches for when the port
+   * has only `get`, `set` and `setIfAbsent`. A rate limiter built on it never limits anything.
+   */
+  class ResettingCache implements CachePort {
+    readonly #inner = new InMemoryCache();
+
+    get(key: string): Promise<string | undefined> {
+      return this.#inner.get(key);
+    }
+    set(key: string, value: string, ttl: TtlSeconds): Promise<void> {
+      return this.#inner.set(key, value, ttl);
+    }
+    delete(key: string): Promise<void> {
+      return this.#inner.delete(key);
+    }
+    setIfAbsent(key: string, value: string, ttl: TtlSeconds): Promise<boolean> {
+      return this.#inner.setIfAbsent(key, value, ttl);
+    }
+    async increment(key: string, ttl: TtlSeconds): Promise<number> {
+      await this.#inner.set(key, '1', ttl); // the defect
+      return 1;
+    }
     ping(): Promise<boolean> {
       return this.#inner.ping();
     }
@@ -171,6 +236,22 @@ describe('the suites can fail', () => {
 
     expect(allPassed(result)).toBe(false);
     expect(failedCaseNames(result)).toContain('an empty string is a value, not a miss');
+  });
+
+  it('catches an increment that returns the value before incrementing', async () => {
+    const result = await runCacheConformance('broken:off-by-one', () => new OffByOneCache());
+
+    expect(allPassed(result)).toBe(false);
+    expect(failedCaseNames(result)).toContain('increment creates at 1 and counts up');
+  });
+
+  it('catches an increment that restarts the counter instead of counting up', async () => {
+    // The bug someone reaches for when the port has only get, set and setIfAbsent — which is
+    // exactly the state this port was in before F-015. A limiter on it never limits anything.
+    const result = await runCacheConformance('broken:resetting', () => new ResettingCache());
+
+    expect(allPassed(result)).toBe(false);
+    expect(failedCaseNames(result)).toContain('increment creates at 1 and counts up');
   });
 
   it('catches a cache whose setIfAbsent is not atomic', async () => {
