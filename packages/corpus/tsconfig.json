@@ -1,5 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "rootDir": "." },
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    // Declared rather than inherited. Other packages pick @types/node up by accident, through
+    // a `/// <reference types="node" />` inside a vitest config file that happens to be in
+    // their program; this package has no such file, and relying on that would be a typecheck
+    // that breaks when an unrelated file is deleted.
+    //
+    // This does NOT license `node:` imports in src/. The ESLint portability override forbids
+    // them there and boundary guard #11 proves it fires — types being AVAILABLE and imports
+    // being ALLOWED are different questions, and only the second one is NFR-3's.
+    "types": ["node"]
+  },
   "include": ["src/**/*", "test/**/*", "*.config.ts"]
 }

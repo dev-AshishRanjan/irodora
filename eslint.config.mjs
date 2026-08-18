@@ -221,6 +221,53 @@ export default tseslint.config(
     },
   },
 
+  // `@irodora/corpus` is NOT in the colour-engine zone — `packages/color-*` and
+  // `packages/cvd-engine` are, and `corpus` matches neither. It carries the same obligation
+  // anyway, and the reason is F-013: colour naming is blocked by F-011, lives in
+  // `packages/color-naming`, and will import this package. At that moment a `node:fs` inside
+  // corpus is a `node:fs` inside the engine, and NFR-3 is the one guarantee that cannot bend.
+  //
+  // The override lands BEFORE there is a consumer to break, because the alternative is
+  // discovering it from a React Native crash. `scripts/verify-engine-purity.mjs` does not
+  // follow `@irodora/*` dependency edges out of an engine package, so nothing else would
+  // catch it — that gap is recorded as F-073 rather than papered over here.
+  //
+  // Tests are excluded: they run in Node by definition, and a fixture that needs to read a
+  // file should not have to fight the rule protecting the shipped bundle. Nothing in src is
+  // exempt — the gate script in `scripts/` is where the filesystem lives.
+  {
+    files: ['packages/corpus/src/**/*.ts'],
+    ignores: ['packages/corpus/src/**/*.test.ts'],
+    rules: {
+      // NOTE: the workspace-wide patterns are repeated. A later flat-config object REPLACES
+      // `no-restricted-imports` rather than merging with it, so omitting them here would
+      // silently legalise deep imports in this package. Guard #11 lints this exact directory
+      // and is what proves the statement above is still true.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*', 'fs', 'path', 'crypto', 'os'],
+              message:
+                'The corpus schema is imported by the colour engine (F-013), which must be byte-identical in Node, the browser and React Native. No platform APIs in src — read files in scripts/, and take the text as an argument.',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+            {
+              group: ['../../../*'],
+              message:
+                'Three levels up means you have crossed a boundary. Import through a package entry point instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // --- Tests -------------------------------------------------------------
   {
     files: ['**/*.test.ts', '**/*.spec.ts', 'tests/**/*.ts'],

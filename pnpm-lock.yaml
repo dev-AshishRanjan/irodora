@@ -228,6 +228,22 @@ importers:
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../color-core
+      '@irodora/color-spaces':
+        specifier: workspace:*
+        version: link:../color-spaces
+    devDependencies:
+      '@irodora/testing':
+        specifier: workspace:*
+        version: link:../testing
+      '@types/node':
+        specifier: ^24.13.3
+        version: 24.13.3
+      fast-check:
+        specifier: ^4.9.0
+        version: 4.9.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(yaml@2.9.0))
 
   packages/cvd-engine:
     dependencies:

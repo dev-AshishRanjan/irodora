@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-15",
+  "updated": "2026-08-18",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -411,7 +411,7 @@
       "service": "content",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-010"
       ],
@@ -432,6 +432,15 @@
       "effects": [
         "E-001",
         "E-006"
+      ],
+      "plan": "plans/F-011-corpus-schema-provenance-and-content-gate.md",
+      "attested": [
+        {
+          "criterion": "Five classifications enforced and displayed; our own curation cannot be marked historical",
+          "verifiedBy": "The colour-detail surface (F-018) rendering classification on every entry, asserted in its e2e and a11y run. The ENFORCED half is gated here — parseEntry rejects any other value and the mutation proof watches a japanese-inspired entry marked historical go red — but nothing in this repository can prove a field is DISPLAYED before a surface exists.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

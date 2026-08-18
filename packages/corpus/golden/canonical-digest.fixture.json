@@ -1,0 +1,74 @@
+{
+  "$note": [
+    "Golden fixture for canonicalisation and the corpus digest (E-014).",
+    "",
+    "WHAT IT IS FOR. `canonicalize` decides what a checksum MEANS. Change it and every digest",
+    "ever recorded becomes wrong — in these files, in the version ledger, and later in Postgres",
+    "— with no import edge to the data and no test that would notice, because both sides of",
+    "every comparison would move together. With zero authored entries there is nothing else in",
+    "the repository that could catch it. This fixture is that check.",
+    "",
+    "HOW THE EXPECTED VALUES WERE PRODUCED. Each `sha256` is `createHash('sha256')` from",
+    "node:crypto over the UTF-8 bytes of the `canonical` string EXACTLY as written here. They",
+    "were NOT produced by running this package's code over the `input` — that would compare the",
+    "implementation to itself and go green for free. The test asserts two separate things:",
+    "canonicalize(input) === canonical, and sha256(canonical) === sha256.",
+    "",
+    "THE HASHER ITSELF is checked against the published SHA-256 vectors in src/digest.ts",
+    "(SHA256_VECTORS), so a hasher that is not SHA-256 fails before it reaches these rows.",
+    "",
+    "CHANGING A VALUE HERE is changing what a corpus checksum means and requires an ADR."
+  ],
+  "$schemaVersion": "1.0.0",
+  "cases": [
+    {
+      "name": "empty-object",
+      "note": "The degenerate case. If this moves, the serialiser changed shape entirely.",
+      "input": {},
+      "canonical": "{}",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "name": "empty-array",
+      "note": "Distinct from the empty object, and must hash differently.",
+      "input": [],
+      "canonical": "[]",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "keys-sorted",
+      "note": "Written out of order on purpose: the canonical form must be b-after-a regardless.",
+      "input": { "b": 2, "a": 1 },
+      "canonical": "{\"a\":1,\"b\":2}",
+      "sha256": "43258cff783fe7036d8a43033f830adfc60ec037382473548ac742b888292777"
+    },
+    {
+      "name": "kanji-and-kana",
+      "note": "Non-ASCII stays as characters, never \\u escapes, and the hash is over UTF-8 bytes. A serialiser that escaped them, or a hasher that encoded UTF-16, changes this row.",
+      "input": { "kanji": "藍鼠", "kana": "あいねずみ" },
+      "canonical": "{\"kana\":\"あいねずみ\",\"kanji\":\"藍鼠\"}",
+      "sha256": "f104dcf1b5691b05b62553b94d0fd0d950872502bc8b8538e195f8b1d4a202e7"
+    },
+    {
+      "name": "tristimulus-triple",
+      "note": "Array order is data and is preserved. Number formatting is shortest round-trip.",
+      "input": { "xyz": [0.1284, 0.1421, 0.1657] },
+      "canonical": "{\"xyz\":[0.1284,0.1421,0.1657]}",
+      "sha256": "1dac4fe74df0c2315a4652e4745c4ce92822dc735d789f175096eccb2811d43c"
+    },
+    {
+      "name": "explicit-null",
+      "note": "FR-21 makes null a value with meaning, so it must be serialised and hashed, not skipped.",
+      "input": { "family": "blue-grey", "era": null },
+      "canonical": "{\"era\":null,\"family\":\"blue-grey\"}",
+      "sha256": "6208445ba3d5a10994cb807f8b4420bcd1e05fe83996f678d74562983ba757db"
+    },
+    {
+      "name": "fractional-weight",
+      "note": "0.9 is not exactly representable in binary64; the canonical form is the shortest string that round-trips to the same double.",
+      "input": { "weight": 0.9 },
+      "canonical": "{\"weight\":0.9}",
+      "sha256": "6b456d830883e440164f58f1ad8c44fe227a2023d76988a7bfc19c538015fdb2"
+    }
+  ]
+}

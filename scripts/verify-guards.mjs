@@ -109,6 +109,18 @@ const GUARDS = [
     source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
   },
   {
+    name: 'the corpus schema may not import a Node API',
+    path: 'packages/corpus/src/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      '@irodora/corpus is imported by packages/color-naming (F-013), which is inside the ' +
+      'colour-engine zone and must produce byte-identical output in Node, the browser and ' +
+      'React Native (NFR-3). verify-engine-purity.mjs does not follow @irodora/* edges out ' +
+      'of an engine package, so this rule is the only thing standing between a node:fs in ' +
+      'corpus and a node:fs in the engine.',
+    source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
+  },
+  {
     name: 'a floating promise is an error',
     path: 'packages/config/src/__guard__.ts',
     rule: '@typescript-eslint/no-floating-promises',

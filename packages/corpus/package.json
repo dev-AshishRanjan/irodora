@@ -2,7 +2,7 @@
   "name": "@irodora/corpus",
   "version": "0.0.0",
   "private": false,
-  "description": "Typed corpus access and version pinning.",
+  "description": "The corpus schema, provenance rules, derivation and the content gate checks.",
   "type": "module",
   "exports": {
     ".": {
@@ -20,9 +20,17 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist *.tsbuildinfo"
+    "clean": "rimraf dist *.tsbuildinfo",
+    "generate": "node ../../scripts/generate-corpus.mjs"
   },
   "dependencies": {
-    "@irodora/color-core": "workspace:*"
+    "@irodora/color-core": "workspace:*",
+    "@irodora/color-spaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "@types/node": "^24.13.3",
+    "fast-check": "^4.9.0",
+    "vitest": "^4.1.10"
   }
 }
