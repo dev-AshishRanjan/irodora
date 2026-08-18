@@ -55,12 +55,18 @@ importers:
       '@irodora/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@irodora/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@irodora/ports':
         specifier: workspace:*
         version: link:../../packages/ports
       fastify:
         specifier: ^5.12.0
         version: 5.12.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^24.13.3
