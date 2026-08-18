@@ -31,6 +31,14 @@
  * — so the wrapper **adds them**. What an author declares is the domain: the 200, the 404, the
  * 409. What the framework can produce, the framework documents.
  *
+ * ## A path parameter must be declared, by name
+ *
+ * Added when the OpenAPI document was first generated, which is what made the hole visible:
+ * Fastify serves `/v1/x/:slug` with no `params` schema perfectly happily and validates nothing,
+ * so the published document would have had to invent a type for a parameter the server never
+ * checks. The names are compared too — `:slug` against a schema naming `id` is a rename that
+ * validates nothing and publishes a phantom.
+ *
  * ## `input` for requests, `output` for responses
  *
  * Not interchangeable, and F-002 already found out why: `pageParamsSchema` has a `.default()`,
@@ -89,7 +97,17 @@ export interface RouteDefinition {
 export interface RegisteredRoute {
   readonly method: RouteMethod;
   readonly url: string;
+  /** What the author declared. */
   readonly schema: RouteSchemas;
+  /**
+   * What the route can actually return — the author's map plus what the framework added.
+   *
+   * Stored rather than recomputed. The OpenAPI generator needs a schema for *every* status,
+   * including the ones `route()` injected, and the alternative was for it to guess that an
+   * undeclared status must be the error envelope. A guess that is right today is a document
+   * that quietly becomes wrong the moment this function injects something else.
+   */
+  readonly responses: Readonly<Record<number, z.ZodType>>;
   readonly statuses: readonly number[];
   readonly requiresIdempotencyKey: boolean;
 }
@@ -118,6 +136,55 @@ function isSuccess(status: number): boolean {
   return status >= 200 && status < 300;
 }
 
+/** Every path parameter a URL declares, in order. */
+export function pathParameterNames(url: string): readonly string[] {
+  return [...url.matchAll(/:([A-Za-z0-9_]+)/gu)].map((match) => match[1] ?? '');
+}
+
+/**
+ * A path parameter with no schema is an unvalidated input, and generating the document is what
+ * made that visible.
+ *
+ * OpenAPI requires every template parameter to be described. Fastify does not: `/v1/x/:slug`
+ * with no `params` schema serves happily and validates nothing, so the published document would
+ * either omit the parameter or invent `{ type: 'string' }` for it. Both describe a server that
+ * is not the one running.
+ *
+ * Names are checked, not just presence. `/v1/colors/:slug` with `params: { id: string }`
+ * type-checks today, validates nothing, and publishes a phantom parameter beside an
+ * undocumented one — the near-miss a rename produces and nothing else here would catch.
+ */
+function assertPathParametersDeclared(
+  method: RouteMethod,
+  url: string,
+  params: z.ZodType | undefined,
+): void {
+  const names = pathParameterNames(url);
+  if (names.length === 0) return;
+
+  if (params === undefined)
+    throw new RouteDeclarationError(
+      method,
+      url,
+      `declares path parameter(s) ${names.join(', ')} with no \`params\` schema. A path ` +
+        'parameter without one is an unvalidated input, and the generated document has nothing ' +
+        'to publish for it.',
+    );
+
+  const json = toJsonSchema(params, 'input') as { properties?: Record<string, unknown> };
+  const described = Object.keys(json.properties ?? {});
+  const missing = names.filter((name) => !described.includes(name));
+
+  if (missing.length > 0)
+    throw new RouteDeclarationError(
+      method,
+      url,
+      `has path parameter(s) ${missing.join(', ')} that the \`params\` schema does not name ` +
+        `(it names: ${described.length === 0 ? 'nothing' : described.join(', ')}). A renamed ` +
+        'parameter validates nothing and publishes a phantom one beside an undocumented one.',
+    );
+}
+
 /**
  * Register a route, or refuse to.
  *
@@ -139,6 +206,8 @@ export function route(app: FastifyInstance, definition: RouteDefinition): void {
         'generated OpenAPI document describes a route that can only fail, and the SDK gives ' +
         'consumers no type for what they actually receive.',
     );
+
+  assertPathParametersDeclared(method, url, schema.params);
 
   if (
     isMutating(method) &&
@@ -163,6 +232,7 @@ export function route(app: FastifyInstance, definition: RouteDefinition): void {
     method,
     url,
     schema,
+    responses,
     statuses: Object.keys(responses)
       .map(Number)
       .sort((a, b) => a - b),

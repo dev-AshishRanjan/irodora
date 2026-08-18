@@ -318,3 +318,97 @@ describe('the route actually serves', () => {
     ).toBe(200);
   });
 });
+
+describe('a path parameter must be declared, by name', () => {
+  // Added when the OpenAPI document was first generated — which is exactly what made the hole
+  // visible. Fastify serves `/v1/x/:slug` with no `params` schema and validates nothing, so the
+  // published document would have had to invent a type for an input the server never checks.
+
+  it('the decoy — a path parameter with no params schema at all is rejected', () => {
+    expect(() => {
+      route(newApp(), {
+        method: 'GET',
+        url: '/v1/colors/:slug',
+        schema: { response: { 200: ok } },
+        handler: () => ({ ok: true }),
+      });
+    }).toThrow(/is an unvalidated input/u);
+  });
+
+  it('the decoy that matters — a params schema naming the WRONG parameter is rejected', () => {
+    // The near-miss a rename produces: this type-checks, validates nothing, and would publish a
+    // phantom `id` beside an undocumented `slug`.
+    expect(() => {
+      route(newApp(), {
+        method: 'GET',
+        url: '/v1/colors/:slug',
+        schema: { params: z.object({ id: z.string() }), response: { 200: ok } },
+        handler: () => ({ ok: true }),
+      });
+    }).toThrow(/path parameter\(s\) slug that the `params` schema does not name/u);
+  });
+
+  it('names every missing parameter, not just the first', () => {
+    expect(() => {
+      route(newApp(), {
+        method: 'GET',
+        url: '/v1/a/:one/b/:two',
+        schema: { params: z.object({ three: z.string() }), response: { 200: ok } },
+        handler: () => ({ ok: true }),
+      });
+    }).toThrow(/one, two/u);
+  });
+
+  it('THE CASE THAT MUST STAY GREEN — a correctly declared path parameter is accepted', () => {
+    // A rule that rejects everything is indistinguishable from a rule that works.
+    const instance = newApp();
+    expect(() => {
+      route(instance, {
+        method: 'GET',
+        url: '/v1/colors/:slug',
+        schema: { params: z.object({ slug: z.string() }), response: { 200: ok } },
+        handler: () => ({ ok: true }),
+      });
+    }).not.toThrow();
+    expect(registeredRoutes(instance)).toHaveLength(1);
+  });
+
+  it('leaves routes with no path parameters alone', () => {
+    const instance = newApp();
+    expect(() => {
+      route(instance, {
+        method: 'GET',
+        url: '/v1/colors',
+        schema: { response: { 200: ok } },
+        handler: () => ({ ok: true }),
+      });
+    }).not.toThrow();
+    expect(registeredRoutes(instance)).toHaveLength(1);
+  });
+});
+
+describe('the registry records what the route can actually return', () => {
+  it('carries a schema for every status, including the ones the framework added', () => {
+    // The OpenAPI generator reads this. Before it existed, that module would have had to guess
+    // that an undeclared status must be the error envelope — a guess that is right today and
+    // wrong the moment `route()` injects something else.
+    const instance = newApp();
+    route(instance, {
+      method: 'GET',
+      url: '/v1/with-query',
+      schema: { query: z.object({ q: z.string() }), response: { 200: ok } },
+      handler: () => ({ ok: true }),
+    });
+
+    const registered = registeredRoutes(instance)[0]!;
+    expect(
+      Object.keys(registered.responses)
+        .map(Number)
+        .sort((a, b) => a - b),
+    ).toEqual([200, 422, 500]);
+    expect(registered.responses[422]).toBe(errorResponseSchema);
+    expect(registered.responses[500]).toBe(errorResponseSchema);
+    // And the author's own map is untouched — it is what they declared, not what we added.
+    expect(Object.keys(registered.schema.response)).toEqual(['200']);
+  });
+});

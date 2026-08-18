@@ -154,6 +154,27 @@ hand-edited document fails; a route added without regenerating fails.
 
 E-004 already says contract → OpenAPI → SDK is one direction. This makes the first arrow real.
 
+> **THREE THINGS INCREMENT 7 DECIDED THAT THE PLAN DID NOT ANTICIPATE.**
+>
+> 1. **A path parameter must now be declared, by name.** Generating the document is what made
+>    the hole visible: Fastify serves `/v1/x/:slug` with no `params` schema and validates
+>    nothing, so the document would have had to invent `{ type: 'string' }` for an input the
+>    server never checks. `route()` now refuses it, and refuses a schema naming the *wrong*
+>    parameter — the near-miss a rename produces. Four decoys, one of which must stay green.
+> 2. **The health routes are IN the document, tagged `operations`.** `health-routes.ts` argues
+>    they are not the client contract, and the obvious reading of that was to omit them — which
+>    would have produced a document with **zero paths** until F-016, so `--check` would compare
+>    nothing. Included and labelled instead: the distinction is stated in the artefact rather
+>    than implied by an absence, and the check has something to check. Same problem, fourth
+>    costume, same answer.
+> 3. **`apps/api/openapi.json` is Prettier-ignored.** It is generated and compared byte for
+>    byte; Prettier collapses short arrays, which would leave `format:check` and the staleness
+>    check permanently demanding different files with neither of them wrong. Same reasoning
+>    already written down for the design tokens and the published corpus.
+>
+> Also: `$schema` is stripped from each embedded schema and declared once as the document's
+> `jsonSchemaDialect`, which is what OpenAPI 3.1 defines that field for.
+
 ### D6 — Health endpoints stay different
 
 `/healthz` checks the process and nothing external. `/readyz` checks database, cache and content
@@ -173,9 +194,9 @@ blip turns a hiccup into a restart loop.
 | 3 | The ESLint ban + boundary guard #12; health moved onto the wrapper | `lint`, `verify:guards` | **done** |
 | 4 | Idempotency over the **existing** `CachePort` — no new port was needed | `test` | **done** |
 | 5 | Pagination: the hard limit, and the AJV-does-not-apply-defaults seam | `test` | **done** |
-| 6a | **`CachePort.increment`** — port, both adapters, conformance case + broken-adapter case (E-011) | `test` | next |
-| 6b | Rate limiting on top of it, per-IP and per-identifier | `test` | |
-| 7 | OpenAPI generation + `--check` + the hand-edit decoy | `build`, `test` | |
+| 6a | **`CachePort.increment`** — port, both adapters, conformance case + broken-adapter case (E-011) | `test` | **done** |
+| 6b | Rate limiting on top of it, per-IP and per-identifier | `test` | **done** |
+| 7 | OpenAPI generation + `--check` + the hand-edit decoy | `build`, `test` | **done** |
 | 8 | e2e suite via `app.inject`; **activate gate 7**; CI step; mirror proof | `e2e`, `state`, `verify:mirror` | |
 | 9 | Docs, effects (E-004), memory, `progress.md` | `state` | |
 

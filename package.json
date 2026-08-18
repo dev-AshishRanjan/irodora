@@ -40,7 +40,9 @@
     "verify:compose": "node scripts/verify-compose-portability.mjs",
     "verify:terraform": "node scripts/verify-terraform.mjs",
     "verify:unsafe": "node scripts/verify-unsafe-call-sites.mjs",
-    "verify:pin": "node scripts/verify-contract-pin.mjs"
+    "verify:pin": "node scripts/verify-contract-pin.mjs",
+    "openapi": "node scripts/generate-openapi.mjs",
+    "openapi:check": "node scripts/generate-openapi.mjs --check"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

@@ -33,5 +33,12 @@ tests/color-lab/
 content/versions/*.json
 packages/corpus/test/fixtures/
 
+# The OpenAPI document is GENERATED from the route registry and compared BYTE FOR BYTE by
+# `pnpm openapi:check` and by apps/api/src/openapi.test.ts. Prettier collapses short arrays,
+# which would put the two tools permanently at odds: format:check demanding one shape, the
+# staleness check demanding the other, and neither of them wrong. Same reasoning as the
+# design tokens and the published corpus above.
+apps/api/openapi.json
+
 # Terraform has its own formatter (terraform fmt)
 infra/terraform/

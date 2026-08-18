@@ -9,6 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
+    "generate:openapi": "node ../../scripts/generate-openapi.mjs",
+    "check:openapi": "node ../../scripts/generate-openapi.mjs --check",
     "clean": "rimraf dist *.tsbuildinfo",
     "start": "node dist/main.js"
   },
