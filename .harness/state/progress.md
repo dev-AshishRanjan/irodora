@@ -8,6 +8,148 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-18 — F-011 DONE · the corpus schema, and a gate that had to be given something to check
+
+The corpus has a shape, a provenance contract, an identity rule and an immutable publish path.
+**Gate 11 is active and blocking.** No colour was added — `content/colors/` is still empty, and
+that is F-012.
+
+### Evidence
+
+```
+  ✓ gate 0   state            14 checks, 14 warnings
+  ✓ gate 1   typecheck        37 tasks
+  ✓ gate 2   lint             + 11 guards, engine purity, unsafeFromHex census
+  ✓ gate 3   format
+  ✓ gate 4   test             corpus 212 new
+  ✓ gate 5   color-golden
+  ✓ gate 6   build            25 tasks
+  ✓ gate 9   contrast         + 9/9 mutation proofs
+  ✓ gate 10  cvd
+  ✓ gate 11  content          NEW — 5 rule groups + 19 fixture corpora
+  ✓ proof    verify-content-proof.mjs — 25/25 discriminate, one deliberately green
+  ✓ gate 15  security         gitleaks, no leaks
+  ✓ mirror   11/11 active gates proven mirrored
+
+NOT run: e2e, a11y, perf, web-perf, e2e-full — still `pending` in gates.json.
+```
+
+### The hard part was that the gate ships before its data
+
+F-011 builds the `content` gate; F-012 supplies the entries. So on the day it activates the
+corpus is **empty**, and a gate that passes over nothing is failing open for the whole of R1.
+
+Four answers, and the first three matter as much as the fourth: it **fails if it cannot locate
+its inputs** rather than passing over an empty set; it runs **1 valid + 18 invalid fixture
+corpora** every invocation so the rules exercised are never zero; those fixtures **cannot become
+content** (outside `content/`, the scan globs `content/` only, and a `fixture-` slug under
+`content/` is itself a failure); and a mutation proof attacks the valid corpus, asserting the
+gate goes red **and names the right field**, baseline green either side, with one case that must
+stay green. The authored-entry count (`0`) prints beside the fixture count on every run.
+
+**The CI condition was the whole ballgame.** The gate 11 step carried
+`if: hashFiles('content/colors') != ''`. Gate 0's mirror check compares `run:` commands and
+never reads `if:` — so the gate would have been "active" in `gates.json`, reported as "mirrored
+in CI", and never once run for the rest of R1. Both statements true; neither meaning it ran.
+Removed. The general defect is **F-072**.
+
+### What the evaluation found, and it was right
+
+**The bundle half of the gate was unreachable code.** No real bundles until F-012, no fixture
+carried one, and not one of the 19 proof cases touched a checksum — while `gates.json` claimed
+checksum and E-001 destination enforcement. Found by putting a `throw` at the top of the loop
+and watching the gate stay green. This is the *same failure* as the CI condition, one level in:
+answered for the entry rules and left unanswered for the bundle rules. The valid fixture now
+carries a published version and five cases attack it.
+
+**And a false claim I wrote.** E-001's rationale said the proof "watches it go red on a
+perturbed OKLab matrix". There was no such case. The evaluator ran the experiment, watched the
+gate stay green, and reported it. The case exists now — it perturbs the matrix, rebuilds two
+packages, asserts red, restores — so the claim is true because the case was built, not because
+the wording was softened. **Third feature running to ship a claim of this shape.**
+
+Also: `E-014` recorded `guard: gate:content` while the real guard was `gate:test` (fixing the
+bundle gap made the recorded guard true, verified by neutering `canonicalize`); the paired
+memory notes for E-001 and E-006 were left stale while `effects.json` moved, in direct
+contradiction; `OUR_OWN_CURATION` was exported, documented as forcing a decision, and consumed
+by nothing; and one test could not fail.
+
+### Three decisions
+
+**Derived values are unauthorable, not merely regenerated.** `parseEntry` rejects `lab`, `lch`,
+`oklch`, `rgb`, `hex` and `gamut` by name. One step stronger than ADR-0043, which must
+regenerate-and-compare because the design manifest keeps its `srgb` for browsers; nothing reads
+a hex out of a source entry, so the stronger form was available.
+
+**Identity is a roster id ([ADR-0047](../../docs/adr/0047-editorial-identity-is-a-roster-id-not-a-name.md)).**
+The rule was *unenforceable*: the schema had no author field, so "author and reviewer must
+differ" could not run at all. Free text would have passed `"A. Ranjan"` against
+`"Ashish Ranjan"` — and an **unknown id must FAIL**, not count as a third person, which is the
+half that matters.
+
+**One immutable bundle plus a ledger ([ADR-0046](../../docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md)).**
+A directory per version makes immutability a property of files, which is stronger — and makes a
+one-entry correction a 200-file diff nobody can review. Since review *is* the control on a
+content trust boundary, a layout that defeats review defeats the control.
+
+### Two defects found by tests, one by measurement
+
+The per-entry checksum covered only the authored record, so a **tampered derived hex loaded
+clean** and `apps/api` would have served it. It now covers the derived block. And the bundle
+serialised `xyz` as a tuple while `parseEntry` requires the authored `{x,y,z}` — **a bundle
+could not load its own output.**
+
+**A hue bound I guessed was wrong, and the investigation was the useful part.** A CIELAB bound
+of 6° for a gamut-mapped corpus hex failed at 7.97°. Measured over the six Display-P3 corners:
+
+| max hue drift | ours | per-channel clipping |
+|---|---|---|
+| OKLCh | **0.167°** | 3.150° |
+| CIELAB | **7.966°** | 5.206° |
+
+**In CIELAB, clipping looks better than we do.** Not an algorithm failure — CIELAB and OKLab
+disagree about hue exactly where the P3 primaries sit, which is why OKLab exists. `gamutMap`
+holds OKLCh hue by construction (ADR-0045), so OKLCh is the metric that describes it; the CIELAB
+row is asserted as a **non-claim**, because picking the flattering ruler is the failure here.
+
+### Three documents disagreed about "complete provenance"
+
+The spec §1 list omitted `sourceLicence`, `publisher`, `rightsHolder` and `editorialNotes`;
+ADR-0007 §1 requires them; NFR-20 names the licence. The accepted decision won and the spec was
+the outlier. That disagreement had existed since the documents were written and nothing could
+notice — which is E-013.
+
+And `licensing-and-provenance.md` §5 *stated* the content gate cross-checks sources against the
+register. It did not. Now it does, and an unparseable table is a **failure**, never an absence
+of constraint.
+
+### Recorded, not fixed
+
+- **Criterion 4 is PARTIAL and now attested.** `assertTransition` has no non-test call site: a
+  file-based corpus stores no prior status, so a *sequence* cannot be checked. Every per-status
+  obligation is enforced. Sequence enforcement belongs to F-062, which inherits the machine.
+- **F-072** — gate 0 cannot see a CI step conditioned out. Gates 7, 10, 12 still carry `if:`.
+- **F-073** — `verify-engine-purity.mjs` does not follow `@irodora/*` edges, so an engine
+  package may depend on one that imports `node:fs`. F-013 is the live case; F-011 mitigated that
+  one instance by hand with an ESLint override and guard #11.
+- **Scope, flagged honestly:** `srgbToHex` moved into `@irodora/color-spaces` and
+  `design-tokens.toHex` now delegates. That touches a package belonging to a closed feature
+  under `wip_limit: 1`. Justified — two implementations of sRGB byte encoding would be two
+  answers to the one question this product exists to answer — and proven output-identical over
+  20,180 inputs plus gate 9 and its 9 proofs. Recorded because it was not on the acceptance list.
+
+### Where the work is
+
+Committed on **`feat/F-011-corpus-schema`**, five commits, **not pushed**. Tree clean.
+
+### Next
+
+R1 continues at **F-012** — the Japanese colour atlas seed corpus — which is **blocked by OQ-4
+(seed size) and OQ-5 (Japanese editorial reviewer)**. Both must close as ADRs first. F-013
+(colour naming) is also unblocked and is where F-073 becomes live.
+
+---
+
 ## 2026-08-15 — F-010 DONE · the Color value type, and a guard that broke while I was holding it
 
 A colour now carries how it came to exist, as a type. A component that accepts a `Color`
