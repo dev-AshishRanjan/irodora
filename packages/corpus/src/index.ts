@@ -78,6 +78,7 @@ export {
   MEASURED_UNDER,
   parseEntry,
   SEASONS,
+  serialiseEntry,
   TEMPERATURES,
   type Adaptation,
   type ChromaBand,
@@ -112,6 +113,19 @@ export {
   type RegisterRow,
   type SourceRegister,
 } from './register.js';
+
+export {
+  bundleRootDigest,
+  publishVersion,
+  serialiseBundle,
+  type Ledger,
+  type LedgerRow,
+  type PublishedEntry,
+  type PublishedPalette,
+  type VersionBundle,
+} from './version.js';
+
+export { ledgerRowFor, loadPublishedVersion, parseLedger } from './load.js';
 
 /**
  * The schema version an entry is authored against.

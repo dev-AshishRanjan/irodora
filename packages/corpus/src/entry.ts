@@ -448,3 +448,28 @@ export function parseEntry(value: unknown, source: string): CorpusEntry {
 
   return entry;
 }
+
+/**
+ * A parsed entry back in its authoring shape.
+ *
+ * `parseEntry` turns `color.xyz` from `{x, y, z}` — readable, and what an editor writes — into
+ * the `Triple` the engine consumes. Everything else passes through unchanged, so this is the
+ * only field that needs converting back.
+ *
+ * **Two things depend on this being exact.** The published bundle stores entries in this shape
+ * so `loadPublishedVersion` can parse them with the same `parseEntry` an author's file goes
+ * through; and the per-entry checksum is taken over this form, so the digest covers what a
+ * reviewer reads in a diff rather than an internal representation. `parse → serialise → parse`
+ * being a fixed point is asserted, not assumed — a round trip that quietly loses a field would
+ * make every stored digest a digest of something other than the entry.
+ */
+export function serialiseEntry(entry: CorpusEntry): Record<string, unknown> {
+  const { color, ...rest } = entry;
+  return {
+    ...rest,
+    color: {
+      ...color,
+      xyz: { x: color.xyz[0], y: color.xyz[1], z: color.xyz[2] },
+    },
+  };
+}

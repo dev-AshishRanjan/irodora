@@ -28,5 +28,10 @@ content/colors/
 content/palettes/
 tests/color-lab/
 
+# Published corpus versions are GENERATED and CHECKSUMMED. Reformatting one would change
+# bytes a digest is compared against, turning a SEV1 into a formatting run.
+content/versions/*.json
+packages/corpus/test/fixtures/
+
 # Terraform has its own formatter (terraform fmt)
 infra/terraform/

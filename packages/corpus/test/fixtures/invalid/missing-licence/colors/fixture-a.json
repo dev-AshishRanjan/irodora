@@ -1,0 +1,71 @@
+{
+  "slug": "fixture-a",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "静石",
+    "kana": "しずいし",
+    "romaji": "shizu-ishi",
+    "en": "Fixture Slate"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.1284,
+      "y": 0.1421,
+      "z": 0.1657
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "blue-grey",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "A fixture colour, present so the content gate has something to check.",
+    "description_ja": "ゲートを検証するための試験用の色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation, fixture set",
+    "sourceId": "FIX-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceUrl": null,
+    "derivation": "Editorial: a fixture value, chosen to exercise the gate rather than to be a colour.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-11",
+    "verifiedBy": "ed-002",
+    "verifiedAt": "2026-08-13",
+    "editorialNotes": "A fixture. Not a colour claim, and never published."
+  },
+  "relations": {
+    "related": [],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "measured under D65, so no adaptation was applied",
+    "color.sourceHex": "a fixture value, not transcribed from a source",
+    "taxonomy.era": "a fixture, so it belongs to no era",
+    "taxonomy.material": "a fixture, tied to no material",
+    "taxonomy.season": "not assigned for a fixture",
+    "editorial.historicalNote_en": "no history is claimed for a fixture",
+    "editorial.contemporaryNote_en": "not written for a fixture",
+    "editorial.fashionUse": "not assigned for a fixture",
+    "provenance.publisher": "our own work, so there is no external publisher",
+    "provenance.publishedYear": "our own work, so there is no publication date",
+    "provenance.sourceUrl": "not published externally"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "fixture-quiet",
+  "name": {
+    "en": "Fixture Quiet",
+    "ja": "試験用の静かな色"
+  },
+  "classification": "japanese-inspired",
+  "category": "contemporary",
+  "colors": [
+    {
+      "slug": "fixture-a",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "fixture-b",
+      "role": "neutral",
+      "rank": 2,
+      "weight": 0.9
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation, fixture set",
+    "sourceId": "FIX-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial: a fixture value, chosen to exercise the gate rather than to be a colour.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-11",
+    "verifiedBy": "ed-002",
+    "verifiedAt": "2026-08-13",
+    "editorialNotes": "A fixture. Not a colour claim, and never published."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own work, so there is no external publisher",
+    "provenance.publishedYear": "our own work, so there is no publication date",
+    "provenance.sourceUrl": "not published externally"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

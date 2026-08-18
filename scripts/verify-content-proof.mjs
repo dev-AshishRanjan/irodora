@@ -1,0 +1,319 @@
+/**
+ * Gate 11 — the discrimination proof.
+ *
+ * A gate nobody has watched fail is not a gate. Gate 11 is worse-placed than most: F-011 ships
+ * it and F-012 ships the entries, so on the day it activates `content/colors/` is empty and it
+ * would go green over nothing at all.
+ *
+ * This mutates the **valid fixture corpus** — one that genuinely passes before each mutation —
+ * and asserts gate 11 exits non-zero *and names the right thing*. The baseline is asserted
+ * green **before and after every mutation** [[a-decoy-that-is-not-broken-proves-nothing]], so a
+ * mutation cannot appear to work because the corpus was already broken.
+ *
+ * One case must stay **GREEN**: reordering and reformatting an entry. A proof where every
+ * mutation is red cannot tell a working gate from one that fails on everything.
+ *
+ * ```bash
+ * node scripts/verify-content-proof.mjs
+ * ```
+ */
+
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from './corpus-io.mjs';
+
+const GREEN = '[32m';
+const RED = '[31m';
+const DIM = '[2m';
+const BOLD = '[1m';
+const OFF = '[0m';
+
+const GATE = join(ROOT, 'scripts', 'verify-content.mjs');
+const FIXTURES = join(ROOT, 'packages', 'corpus', 'test', 'fixtures');
+const VALID = join(FIXTURES, 'valid');
+const BACKUP = join(FIXTURES, '.valid-backup');
+const ENTRY_A = join(VALID, 'colors', 'fixture-a.json');
+const PALETTE = join(VALID, 'palettes', 'fixture-quiet.json');
+const EDITORS = join(VALID, 'editors.json');
+
+/** Run gate 11. Note the exit status is read directly — never through a pipe. */
+function runGate() {
+  const result = spawnSync(process.execPath, [GATE], { encoding: 'utf8' });
+  return { code: result.status ?? -1, output: `${result.stdout}${result.stderr}` };
+}
+
+function readEntry() {
+  return JSON.parse(readFileSync(ENTRY_A, 'utf8'));
+}
+
+function writeEntry(entry) {
+  writeFileSync(ENTRY_A, `${JSON.stringify(entry, null, 2)}\n`, 'utf8');
+}
+
+function editEntry(change) {
+  return () => {
+    const entry = readEntry();
+    change(entry);
+    writeEntry(entry);
+  };
+}
+
+/**
+ * The mutations.
+ *
+ * `expect: 'red'` — the gate must exit non-zero AND its output must match `matching`. Asserting
+ * only the exit code would let a mutation "pass" by breaking something unrelated, which is how
+ * the duplicate-slug FIXTURE quietly stopped discriminating twice while this was being built.
+ */
+const CASES = [
+  {
+    name: 'a required provenance field deleted',
+    expect: 'red',
+    matching: /provenance\.derivation/u,
+    apply: editEntry((e) => {
+      delete e.provenance.derivation;
+    }),
+  },
+  {
+    name: 'the source licence deleted (NFR-20)',
+    expect: 'red',
+    matching: /provenance\.sourceLicence/u,
+    apply: editEntry((e) => {
+      delete e.provenance.sourceLicence;
+    }),
+  },
+  {
+    name: 'a published entry with no reviewer',
+    expect: 'red',
+    matching: /without a recorded reviewer/u,
+    apply: editEntry((e) => {
+      e.provenance.verifiedBy = null;
+    }),
+  },
+  {
+    name: 'author and reviewer the same id',
+    expect: 'red',
+    matching: /author and reviewer are the same identity/u,
+    apply: editEntry((e) => {
+      e.provenance.verifiedBy = e.provenance.authoredBy;
+    }),
+  },
+  {
+    name: 'author and reviewer the same PERSON under two ids',
+    expect: 'red',
+    matching: /different ids for the same person/u,
+    apply: editEntry((e) => {
+      e.provenance.verifiedBy = 'ed-003';
+    }),
+  },
+  {
+    name: 'our own curation marked historical (criterion 2)',
+    expect: 'red',
+    matching: /OUR OWN CURATION and cannot be classified "historical"/u,
+    apply: editEntry((e) => {
+      e.classification = 'historical';
+    }),
+  },
+  {
+    name: 'a historical claim with no dated source',
+    expect: 'red',
+    matching: /DATED primary source/u,
+    apply: editEntry((e) => {
+      e.classification = 'historical';
+      e.provenance.sourceType = 'publication';
+    }),
+  },
+  {
+    name: 'a derived value typed into a source entry',
+    expect: 'red',
+    matching: /is a DERIVED value and cannot be authored/u,
+    apply: editEntry((e) => {
+      e.color.hex = '#526A6B';
+    }),
+  },
+  {
+    name: 'the palette anchor removed',
+    expect: 'red',
+    matching: /without an anchor is a colour list/u,
+    apply: () => {
+      const p = JSON.parse(readFileSync(PALETTE, 'utf8'));
+      p.colors[0].role = 'accent';
+      writeFileSync(PALETTE, `${JSON.stringify(p, null, 2)}\n`, 'utf8');
+    },
+  },
+  {
+    name: 'a relation pointing at a missing slug',
+    expect: 'red',
+    matching: /is not a colour in this corpus/u,
+    apply: editEntry((e) => {
+      e.relations.related = ['fixture-gone'];
+    }),
+  },
+  {
+    name: 'a duplicate slug across two files',
+    expect: 'red',
+    matching: /is already used by/u,
+    apply: () => {
+      const e = readEntry();
+      e.slug = 'fixture-b';
+      writeEntry(e);
+    },
+  },
+  {
+    name: 'a source that is not in the register (licensing §5)',
+    expect: 'red',
+    matching: /is not in the source register/u,
+    apply: editEntry((e) => {
+      e.provenance.sourceId = 'FIX-ED-999';
+    }),
+  },
+  {
+    name: 'a source id whose register row names a different source',
+    expect: 'red',
+    matching: /would display one provenance and be licensed under another/u,
+    apply: editEntry((e) => {
+      e.provenance.source = 'Something else entirely';
+    }),
+  },
+  {
+    name: 'a null with no stated reason (FR-21)',
+    expect: 'red',
+    matching: /is null with no reason/u,
+    apply: editEntry((e) => {
+      delete e.unknowns['taxonomy.material'];
+    }),
+  },
+  {
+    name: 'a reason whose field is not null (FR-21, the stale half)',
+    expect: 'red',
+    matching: /but that field is not null/u,
+    apply: editEntry((e) => {
+      e.unknowns['taxonomy.family'] = 'we never looked';
+    }),
+  },
+  {
+    name: 'an unknown reviewer id',
+    expect: 'red',
+    matching: /is not in content\/editors\.json/u,
+    apply: editEntry((e) => {
+      e.provenance.verifiedBy = 'ed-404';
+    }),
+  },
+  {
+    name: 'the roster deleted — the identity check cannot run',
+    expect: 'red',
+    matching: /cannot run|missing/u,
+    apply: () => {
+      rmSync(EDITORS);
+    },
+  },
+  {
+    name: 'a fixture slug placed under content/',
+    expect: 'red',
+    matching: /fixture slug and must not appear under content/u,
+    apply: () => {
+      copyFileSync(ENTRY_A, join(ROOT, 'content', 'colors', 'fixture-a.json'));
+    },
+    cleanup: () => {
+      rmSync(join(ROOT, 'content', 'colors', 'fixture-a.json'), { force: true });
+    },
+  },
+  {
+    // The one that must stay GREEN. A proof where every mutation is red cannot distinguish a
+    // working gate from a gate that fails on everything.
+    name: 'an entry reordered and reformatted — must stay GREEN',
+    expect: 'green',
+    apply: () => {
+      const e = readEntry();
+      const reversed = Object.fromEntries(Object.entries(e).reverse());
+      writeFileSync(ENTRY_A, JSON.stringify(reversed, null, 8), 'utf8');
+    },
+  },
+];
+
+// --- run -------------------------------------------------------------------------------
+
+console.log(`\n${BOLD}Irodora — gate 11 discrimination proof${OFF}\n`);
+
+rmSync(BACKUP, { recursive: true, force: true });
+cpSync(VALID, BACKUP, { recursive: true });
+
+const restore = () => {
+  rmSync(VALID, { recursive: true, force: true });
+  cpSync(BACKUP, VALID, { recursive: true });
+};
+
+const problems = [];
+
+try {
+  const first = runGate();
+  if (first.code !== 0) {
+    console.log(
+      `${RED}${BOLD}The baseline is not green.${OFF} Nothing below would prove anything.\n`,
+    );
+    console.log(first.output);
+    process.exit(1);
+  }
+  console.log(`  ${GREEN}OK${OFF}  baseline: gate 11 exits 0 before any mutation`);
+
+  for (const testCase of CASES) {
+    restore();
+    testCase.apply();
+    const { code, output } = runGate();
+    testCase.cleanup?.();
+    restore();
+
+    const after = runGate();
+    if (after.code !== 0) {
+      problems.push(`${testCase.name}: the baseline did not recover after restoring`);
+      continue;
+    }
+
+    if (testCase.expect === 'green') {
+      if (code === 0) console.log(`  ${GREEN}OK${OFF}  ${testCase.name} ${DIM}(exit 0)${OFF}`);
+      else
+        problems.push(
+          `${testCase.name}: expected the gate to STAY GREEN, got exit ${String(code)}. ` +
+            'Canonicalisation is what makes a reformat indistinguishable from no change; if ' +
+            'this goes red, a formatting run now reads as tampering.',
+        );
+      continue;
+    }
+
+    if (code === 0) {
+      problems.push(`${testCase.name}: gate 11 exited 0 — the mutation was ACCEPTED`);
+      continue;
+    }
+    if (!testCase.matching.test(output)) {
+      problems.push(
+        `${testCase.name}: gate 11 failed, but not for this reason. Expected ` +
+          `${String(testCase.matching)}. A mutation that goes red for the wrong reason proves ` +
+          'nothing about the rule it was written for.',
+      );
+      continue;
+    }
+    console.log(`  ${GREEN}OK${OFF}  ${testCase.name} ${DIM}(exit ${String(code)})${OFF}`);
+  }
+} finally {
+  restore();
+  rmSync(BACKUP, { recursive: true, force: true });
+}
+
+const final = runGate();
+if (final.code !== 0) {
+  console.log(`\n${RED}${BOLD}The fixture corpus did not survive the proof.${OFF}\n`);
+  console.log(final.output);
+  process.exit(1);
+}
+
+if (problems.length > 0) {
+  console.log(`\n${RED}${BOLD}${String(problems.length)} case(s) did not discriminate.${OFF}\n`);
+  for (const problem of problems) console.log(`  ${RED}x${OFF} ${problem}\n`);
+  process.exit(1);
+}
+
+console.log(
+  `\n${GREEN}${BOLD}All ${String(CASES.length)} cases discriminate.${OFF} ` +
+    `${DIM}Baseline green before and after each one.${OFF}\n`,
+);

@@ -132,9 +132,26 @@ jobs:
         if: hashFiles('packages/cvd-engine/dist') != ''
         run: pnpm test:cvd
 
+      # Unconditional, and that is the point. The `if: hashFiles('content/colors') != ''` this
+      # replaced would have skipped the gate for the whole of R1, because F-011 ships the gate
+      # and F-012 ships the entries — the gate would have been "active" in gates.json and never
+      # once run in CI. Gate 0's mirror check compares `run:` commands and does not read `if:`,
+      # so nothing would have said so. A gate that cannot run is failing open, and this one is
+      # blocking.
+      #
+      # It is safe to run with an empty corpus because it does not depend on one: it exercises
+      # 1 valid and 18 invalid fixture corpora on every invocation, and FAILS if it cannot find
+      # them. See the gate's own output, which prints the authored-entry count beside the
+      # fixture count so a green run cannot be mistaken for coverage.
       - name: 'Gate 11 — content'
-        if: hashFiles('content/colors') != ''
         run: pnpm test:content
+
+      # Not a gate — the proof that gate 11 can fail. Mutates the VALID fixture corpus 19 ways
+      # and asserts the gate goes red and names the right field, with the baseline asserted
+      # green either side. One case must stay GREEN (a reformat), because a proof where
+      # everything is red cannot distinguish a working gate from one that fails on everything.
+      - name: 'Gate 11 — content mutation proof'
+        run: node scripts/verify-content-proof.mjs
 
       # ---- gates 12-14: release -------------------------------------------
       - name: 'Gate 12 — perf'

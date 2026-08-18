@@ -1,0 +1,20 @@
+{
+  "missing-derivation": "provenance\\.derivation",
+  "missing-licence": "provenance\\.sourceLicence",
+  "published-without-reviewer": "cannot reach \"published\" without a recorded reviewer",
+  "author-is-reviewer": "author and reviewer are the same identity",
+  "reviewer-is-the-same-person": "different ids for the same person",
+  "our-curation-marked-historical": "OUR OWN CURATION and cannot be classified \"historical\"",
+  "historical-without-a-date": "DATED primary source",
+  "authored-derived-value": "is a DERIVED value and cannot be authored",
+  "palette-without-an-anchor": "A palette without an anchor is a colour list",
+  "dangling-relation": "is not a colour in this corpus",
+  "duplicate-slug": "is already used by",
+  "unregistered-source": "is not in the source register",
+  "source-text-disagrees-with-the-register": "would display one provenance and be licensed under another",
+  "null-with-no-reason": "is null with no reason",
+  "reason-for-a-field-that-is-not-null": "but that field is not null",
+  "unknown-field": "unknown field",
+  "classification-outside-the-five": "required and displayed \\(FR-23\\)",
+  "negative-tristimulus": "XYZ cannot be negative"
+}
