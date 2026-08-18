@@ -579,7 +579,7 @@
       "service": "api",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-002",
         "F-005"
@@ -604,7 +604,8 @@
       ],
       "effects": [
         "E-004"
-      ]
+      ],
+      "plan": "plans/F-015-api-foundation.md"
     },
     {
       "id": "F-016",
