@@ -503,7 +503,7 @@
       "package": "@irodora/color-naming",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-007",
         "F-011"
@@ -520,6 +520,15 @@
         "lint",
         "test",
         "build"
+      ],
+      "plan": "plans/F-013-colour-naming-engine.md",
+      "attested": [
+        {
+          "criterion": "Output language is closest digital reference, never an assertion of identity; enforced by the claims lint",
+          "verifiedBy": "F-025 (claims copy lint), which owns the banned-construction list repo-wide. F-013 delivers the STRUCTURAL half and that half is gated here: limit < 3 throws and buildNamingIndex refuses fewer than 3 records, because a single answer is an identification (ADR-0031); and no field in NamingCandidate or NamingResult can be read as an identity claim, asserted as an exact key set with a decoy carrying exactMatch. What F-013 cannot do is lint copy — the enforcement half is a repository-wide lint whose subject is every UI string, and building a second banned-construction list here would be the duplication defect. F-025 is NOT added to blockedBy: that inverts the dependency, since F-025 wants real copy to lint and this feature produces some of it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

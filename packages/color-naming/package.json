@@ -2,7 +2,7 @@
   "name": "@irodora/color-naming",
   "version": "0.0.0",
   "private": false,
-  "description": "Nearest-match colour naming.",
+  "description": "Nearest-match colour naming: two-stage retrieval, exact ΔE00 ranking.",
   "type": "module",
   "exports": {
     ".": {
@@ -23,7 +23,14 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@irodora/color-spaces": "workspace:*",
-    "@irodora/color-difference": "workspace:*"
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/color-spaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "@types/culori": "^4.0.1",
+    "culori": "^4.0.2",
+    "fast-check": "^4.9.0",
+    "vitest": "^4.1.10"
   }
 }
