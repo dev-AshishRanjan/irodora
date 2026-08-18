@@ -1,5 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "rootDir": "." },
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    // Declared, not inherited, for the same reason as @irodora/corpus: other packages pick
+    // @types/node up by accident through a vitest config file in their program, and this one has
+    // none. It gives the TESTS a typed `console` so measurements can be printed.
+    //
+    // It does NOT license `node:` imports. The colour-engine ESLint override forbids them here
+    // — in src AND in tests, unlike the contracts and corpus zones — and boundary guards #1 and
+    // #2 prove that rule fires. Types being AVAILABLE and imports being ALLOWED are different
+    // questions, and only the second is NFR-3's.
+    "types": ["node"]
+  },
   "include": ["src/**/*", "test/**/*", "*.config.ts"]
 }

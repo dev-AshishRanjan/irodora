@@ -29,6 +29,7 @@
   "devDependencies": {
     "@irodora/testing": "workspace:*",
     "@types/culori": "^4.0.1",
+    "@types/node": "^24.13.3",
     "culori": "^4.0.2",
     "fast-check": "^4.9.0",
     "vitest": "^4.1.10"

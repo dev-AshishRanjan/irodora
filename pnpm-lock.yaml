@@ -185,6 +185,9 @@ importers:
       '@types/culori':
         specifier: ^4.0.1
         version: 4.0.1
+      '@types/node':
+        specifier: ^24.13.3
+        version: 24.13.3
       culori:
         specifier: ^4.0.2
         version: 4.0.2

@@ -27,6 +27,28 @@ export { NamingError } from './errors.js';
 
 export type { NamingRecord, PublishedLabSource } from './record.js';
 
+export { similarityPercent, SIMILARITY_HALF_LIFE_DELTA_E } from './similarity.js';
+
+export {
+  assertLimit,
+  compareScored,
+  MINIMUM_CANDIDATES,
+  rankScored,
+  scoreRecord,
+  type NamingCandidate,
+  type ScoredRecord,
+} from './rank.js';
+
+export {
+  buildNamingIndex,
+  DEFAULT_BUCKET_STEP,
+  type BuildOptions,
+  type NamingBucket,
+  type NamingIndex,
+} from './buckets.js';
+
+export { nameColor, nameColorExhaustive, type NameOptions, type NamingResult } from './name.js';
+
 export {
   boxLowerBoundDeltaE00,
   boxOf,
