@@ -53,3 +53,23 @@ rendering, a final clamp of at most `GAMUT_EPSILON` per channel applies, and nea
 point that tiny absolute movement is a large relative one — hue drift reaches 23° for results
 below `L, C = 0.01`, where OKLCh hue is not a meaningful angle. Above `L, C = 0.05` it is
 6.9 × 10⁻⁵°. Anything quoting a hue-preservation figure must say which regime it means.
+
+## The consumer that depends on more than the result (F-014)
+
+`@irodora/color-harmony` does not merely *call* `gamutMap` — it **depends on the property**
+ADR-0045 chose. Criterion 4 requires every generated colour to be mapped; FR-6 requires each
+generator to hold its relationship to a stated tolerance. Those coexist only because mapping
+reduces chroma and holds hue.
+
+Measured after mapping: a complementary pair stays 180° apart to **6.2 × 10⁻⁵ °**, a triad
+120° apart to 5.3 × 10⁻⁵ °.
+
+**If gamut mapping ever adopted MINDE** — up to 11.97° of hue drift, the alternative ADR-0045
+rejected — every hue-based generator would quietly return something that is no longer the
+relationship it claims. A triad that is not a triad, with nothing thrown and no test failing
+unless one measures the drift. `packages/color-harmony/test/harmony.test.ts` is that test.
+
+Chroma relationships are different and the difference is stated rather than hidden:
+`chroma-contrast` asks for a ratio, and mapping may reduce one end and not the other. Its
+tolerance is weaker, and every generated colour reports `wasGamutMapped` and `gamutDeltaE00`
+so the cost is a number rather than a phrase.

@@ -546,7 +546,7 @@
       "package": "@irodora/color-harmony",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-009"
       ],
@@ -562,7 +562,12 @@
         "test",
         "color-golden",
         "build"
-      ]
+      ],
+      "plan": "plans/F-014-harmony-engine.md",
+      "effects": [
+        "E-012"
+      ],
+      "notes": "DONE. DELIVERED: @irodora/color-harmony — all twelve FR-6 generators in OKLCh, every output gamut-mapped and reporting what that cost, the geometric/editorial split with attribution enforced both ways, and an adapter from a published corpus bundle. 33 tests. NO PALETTES EXIST — F-012 is blocked on OQ-4/OQ-5 — so the editorial suite runs on generated bundles and prints that it did. THE STUB WAS WRONG AGAINST ITS OWN ACCEPTANCE LIST: nine kinds where FR-6 requires twelve (missing near-neutral, warm-cool, value-contrast, chroma-contrast) AND it carried `editorial` as a KIND, which conflates two axes and makes criterion 3 unexpressible — an editorial harmony is a family, not a relationship. THE PLAN WAS ALSO WRONG, and is corrected in place: it said \"an editorial harmony still stands in some relationship\". Not in general — a curator assembling Quiet Neutrals is not obliged to have picked a triad, and labelling it afterwards would invent a geometric claim they never made. So `kind` is null for editorial. THE MEASUREMENT THAT JUSTIFIES THE WHOLE DESIGN. color-engine.md asserted that HSL hue rotation is perceptually inconsistent and never measured it. Over the hue circle a 30-degree HSL rotation moves the colour by ΔE00 5.0 to 35.9 — a 7.2x SPREAD. The same rotation in OKLCh ranges 9.7 to 14.5, a 1.5x spread. Asserted on the SPREAD rather than either end, because inconsistency is the claim; and OKLab is NOT asserted to be ΔE00-uniform, which would be its own over-claim. CRITERION 4 AND FR-6 PULL AGAINST EACH OTHER, AND ADR-0045 RESOLVES IT. Mapping changes a colour, so it could break the relationship just built. It does not for HUE — gamutMap holds L and h — measured here at 6.2e-5 degrees for a complementary pair and 5.3e-5 for a triad. It DOES for chroma, so chroma-contrast has a weaker tolerance and every colour reports wasGamutMapped and gamutDeltaE00. That makes E-012 a sharper link than it was: harmony depends on the PROPERTY ADR-0045 chose, not just on the function. ADR-0049: warm and cool are a stated convention anchored to the corpus taxonomy, because every other generator is derivable and this one is not — and if the engine picked its own anchors the product would contradict `taxonomy.temperature`. The ADR is blunt about the cost: two numbers cannot express a convention that varies by culture, and this product's subject is Japanese colour. PLANNED WITHOUT THE PLANNER SUBAGENT, recorded as a deviation: AGENTS.md recommends it, and it was used for F-011 and F-013 — both plans contained a factual error about this repository (F-013's asserted \"no cycle\" when color-core is the facade). Direct authorship after building both adjacent packages was the more reliable path here. Not a licence to skip planning: the plan exists and gate 0 enforced it."
     },
     {
       "id": "F-015",

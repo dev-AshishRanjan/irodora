@@ -2,7 +2,7 @@
   "name": "@irodora/color-harmony",
   "version": "0.0.0",
   "private": false,
-  "description": "Harmony generators, geometric and editorial.",
+  "description": "Harmony generation in OKLCh, with every output gamut-mapped.",
   "type": "module",
   "exports": {
     ".": {
@@ -23,6 +23,15 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@irodora/color-difference": "workspace:*",
     "@irodora/color-spaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@irodora/testing": "workspace:*",
+    "@types/culori": "^4.0.1",
+    "@types/node": "^24.13.3",
+    "culori": "^4.0.2",
+    "fast-check": "^4.9.0",
+    "vitest": "^4.1.10"
   }
 }

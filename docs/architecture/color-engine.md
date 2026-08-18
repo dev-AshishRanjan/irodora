@@ -276,6 +276,12 @@ Generators operate in **OKLCh**, because rotating hue in HSL produces perceptual
 inconsistent results (a 30° rotation from yellow and from blue are not the same
 perceptual step, and users notice even when they cannot say why).
 
+**That claim is now measured rather than asserted.** Over the hue circle at fixed HSL saturation
+and lightness, a 30° HSL rotation moves the colour by anywhere from **ΔE00 5.0 to 35.9** — a
+**7.2×** spread. The same rotation in OKLCh ranges 9.7 to 14.5, a 1.5× spread. OKLab is not
+claimed to be ΔE00-uniform, and pretending it were would be its own over-claim; the design claim
+is that it is *far* more consistent, and that is the number behind it.
+
 Two families, kept explicitly distinct:
 
 - **Geometric** — monochromatic, tonal, analogous, complementary, split, triadic,
@@ -285,8 +291,29 @@ Two families, kept explicitly distinct:
   derivable from geometry, which is exactly why they are valuable. Sourced, versioned and
   attributed.
 
+**Family and kind are separate axes.** `editorial` is not a *relationship* — a curated palette
+still has to be some set of colours, and a geometric harmony is geometric whatever its kind. So a
+result carries both, and an editorial harmony has **`kind: null`**: a curator assembling Quiet
+Neutrals was not obliged to pick a triad, and labelling it as one afterwards would invent a claim
+they never made. Attribution is **required** on editorial and **forbidden** on geometric, both
+enforced — an editorial harmony without its source is our curation offered as fact (ADR-0007).
+
+`warm-cool` is the one generator with no geometric answer. Its anchors are a **stated
+convention** matching the corpus's own `taxonomy.temperature`, so the product does not contradict
+itself ([ADR-0049](../adr/0049-warm-and-cool-are-a-stated-convention.md)).
+
 Every generated colour passes gamut mapping (FR-8) before it is returned, so nothing
 suggests a colour the display cannot show and the user could never buy.
+
+**Criterion 4 and FR-6's "stated tolerance" pull against each other, and ADR-0045 resolves it.**
+Mapping changes a colour, so it could break the relationship the generator just built. It does
+not for hue: `gamutMap` reduces OKLCh chroma and holds L and h, so a complementary pair is still
+180° apart after both ends are mapped — **measured at 6.2 × 10⁻⁵ °**, a triad at 5.3 × 10⁻⁵ °.
+
+It *does* for chroma: `chroma-contrast` asks for a ratio and mapping is free to reduce one end
+and not the other, so its tolerance is necessarily weaker. Every colour therefore reports
+`wasGamutMapped` and `gamutDeltaE00` — the number that makes "less vivid" a measurement rather
+than a disclaimer (ADR-0031).
 
 ---
 

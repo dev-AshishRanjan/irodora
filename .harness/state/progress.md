@@ -8,6 +8,122 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-18 — F-014 DONE · the harmony engine, and the measurement that justifies OKLCh
+
+Twelve generators, all in OKLCh, every output gamut-mapped and carrying what that cost. The
+geometric and editorial families are structurally distinct, with attribution enforced in both
+directions.
+
+**No palettes exist.** `content/palettes/` is empty (F-012, blocked on OQ-4/OQ-5), so the
+editorial suite runs on generated bundles and prints that it did. Third feature in a row with
+that shape — the pattern is now applied deliberately rather than rediscovered.
+
+### Evidence
+
+```
+  ✓ gate 0   state            15 links, 50 ADRs, 229 governed docs
+  ✓ gate 1   typecheck        37 tasks
+  ✓ gate 2   lint             + 11 guards, engine purity, unsafe census
+  ✓ gate 3   format
+  ✓ gate 4   test             color-harmony 33 new
+  ✓ gate 5   color-golden
+  ✓ gate 6   build            25 tasks
+  ✓ gate 9   contrast         + 9/9 mutation proofs
+  ✓ gate 10  cvd
+  ✓ gate 11  content          + 25/25 mutation proofs
+  ✓ gate 15  security
+  ✓ mirror · purity · guards
+
+NOT run: e2e, a11y, perf, web-perf, e2e-full — still `pending` in gates.json.
+```
+
+### The stub was wrong against its own acceptance list
+
+`HarmonyKind` had **nine** members where FR-6 requires twelve — missing `near-neutral`,
+`warm-cool`, `value-contrast` and `chroma-contrast` — and it carried **`editorial` as a kind**.
+
+That last one matters more than the count. `editorial` is a **family**, not a relationship, and
+conflating the two axes makes criterion 3 ("kept distinct from geometric ones") literally
+unexpressible, because there is nothing to compare. Family and kind are now separate.
+
+**The plan was wrong too, and is corrected in place.** It said "an editorial harmony still
+stands in some relationship". Not in general: a curator assembling Quiet Neutrals was not
+obliged to pick a triad, and labelling it as one afterwards would invent a geometric claim they
+never made. So `kind` is **`null`** for editorial harmonies.
+
+### The measurement that justifies the whole design
+
+`color-engine.md` asserted that HSL hue rotation is perceptually inconsistent, and never
+measured it. Over the hue circle at fixed HSL saturation and lightness:
+
+| 30° rotation | ΔE00 range | spread |
+|---|---|---|
+| **HSL** | 5.0 – 35.9 | **7.2 ×** |
+| **OKLCh** | 9.7 – 14.5 | 1.5 × |
+
+Asserted on the **spread** rather than either end, because inconsistency is the claim. And
+OKLab is deliberately **not** asserted to be ΔE00-uniform — that would be its own over-claim.
+The design claim is that it is far more consistent, and 7.2× versus 1.5× is the number behind it.
+
+### Criterion 4 and FR-6 pull against each other, and ADR-0045 resolves it
+
+Criterion 4 says every generated colour is gamut-mapped. FR-6 says each generator holds its
+relationship *to a stated tolerance*. Mapping changes a colour, so it could break the
+relationship the generator just built.
+
+**It does not, for hue.** `gamutMap` reduces OKLCh chroma and holds L and h, so a complementary
+pair is still 180° apart after both ends are mapped — measured at **6.2 × 10⁻⁵ °**, a triad at
+5.3 × 10⁻⁵ °.
+
+**It does, for chroma.** `chroma-contrast` asks for a ratio and mapping may reduce one end and
+not the other, so its tolerance is necessarily weaker. Every colour therefore reports
+`wasGamutMapped` and `gamutDeltaE00` — the number that makes "less vivid" a measurement rather
+than a disclaimer.
+
+**This makes E-012 a sharper link than it was.** Harmony does not merely *call* `gamutMap`; it
+**depends on the property ADR-0045 chose**. If mapping ever adopted CSS Color 4's MINDE — up to
+11.97° of hue drift, the alternative that ADR rejected — every hue-based generator would quietly
+return something that is no longer the relationship it claims. A triad that is not a triad, with
+nothing thrown. Recorded in E-012's rationale and its memory note.
+
+### ADR-0049 — warm and cool are a convention, not a fact
+
+Every other generator is derivable: a triad is 120°, a complement is 180°. **Warm and cool are
+not**, and the decision is forced because the corpus already commits to an answer —
+`taxonomy.temperature` is required on every entry. If the engine picked its own anchors, a colour
+the corpus calls warm could land on the cool side of its own harmony.
+
+The ADR is blunt about the cost: **two numbers cannot express a convention that varies by
+culture**, and this product's subject is Japanese colour. The mitigation — defer to
+`taxonomy.temperature` — only works for colours that *are* corpus entries, and the Lens's whole
+job is arbitrary scanned ones.
+
+### A deviation from the loop, recorded
+
+**Planned without the planner subagent.** `AGENTS.md` §2 recommends it, and it was used for
+F-011 and F-013 — both plans contained a factual error about this repository, F-013's being an
+asserted "no cycle" when `color-core` is the facade and depends on `color-naming`. Direct
+authorship after building both adjacent packages was the more reliable path here.
+
+Not a licence to skip planning: the plan exists, gate 0 enforced it before any source was
+written, and it was corrected in place when it turned out to be wrong about editorial kinds.
+
+### Where the work is
+
+Committed on **`feat/F-011-corpus-schema`**, nine commits, **not pushed**. Tree clean.
+
+### Next
+
+R1's eligible set is **F-015** (API foundation), **F-025** (claims copy lint), and the smaller
+F-067/F-070/F-071/F-072/F-073.
+
+**F-012 remains the bottleneck, and it needs a person.** OQ-4 (seed corpus size at launch) and
+OQ-5 (how a Japanese editorial reviewer is engaged) close as ADRs, not as decisions made in
+passing. Three features now print "0 real entries/palettes" on every run because of it, and
+F-016, F-017 and everything downstream of the Atlas wait behind it.
+
+---
+
 ## 2026-08-18 — F-013 DONE · colour naming, and a shortlist that is provably not a guess
 
 `nameColor` returns the nearest corpus entries ranked by ΔE00 — and the ranking is **provably

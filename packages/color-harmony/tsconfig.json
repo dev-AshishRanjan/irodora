@@ -1,5 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "rootDir": "." },
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    // Declared, not inherited — same reason as @irodora/corpus and @irodora/color-naming. It
+    // gives the TESTS a typed `console` for printing measurements. It does NOT license `node:`
+    // imports: the colour-engine ESLint override forbids those here, in src AND in tests, and
+    // boundary guards #1 and #2 prove that rule fires.
+    "types": ["node"]
+  },
   "include": ["src/**/*", "test/**/*", "*.config.ts"]
 }
