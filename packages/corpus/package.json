@@ -29,6 +29,7 @@
     "@irodora/color-spaces": "workspace:*"
   },
   "devDependencies": {
+    "@irodora/color-naming": "workspace:*",
     "@irodora/testing": "workspace:*",
     "@types/node": "^24.13.3",
     "fast-check": "^4.9.0",

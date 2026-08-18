@@ -8,6 +8,150 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-18 — F-013 DONE · colour naming, and a shortlist that is provably not a guess
+
+`nameColor` returns the nearest corpus entries ranked by ΔE00 — and the ranking is **provably
+identical** to the one a full scan would produce. That proof is the feature.
+
+**No colour was added.** `content/colors/` is still empty (F-012, blocked on OQ-4/OQ-5), so the
+suite runs on generated corpora and prints that it did.
+
+### Evidence
+
+```
+  ✓ gate 0   state            15 links, 47 memory files, 49 ADRs
+  ✓ gate 1   typecheck        37 tasks
+  ✓ gate 2   lint             + 11 guards, engine purity (6 packages), unsafe census
+  ✓ gate 3   format
+  ✓ gate 4   test             color-naming 59 new · corpus 216 (4 new)
+  ✓ gate 5   color-golden
+  ✓ gate 6   build            25 tasks
+  ✓ gate 9   contrast         + 9/9 mutation proofs
+  ✓ gate 10  cvd
+  ✓ gate 11  content          + 25/25 mutation proofs
+  ✓ gate 15  security         gitleaks, no leaks
+  ✓ mirror   11/11
+  ✓ purity · guards
+
+NOT run: e2e, a11y, perf, web-perf, e2e-full — still `pending` in gates.json.
+```
+
+### The correctness argument, which is the whole feature
+
+Criterion 2 says "coarse Lab-bucket shortlist". The natural reading is **a fixed radius**, and
+it is wrong in the way that survives review: **ΔE00 is not a metric**, so Euclidean distance in
+Lab does not bound it. A radius sufficient for one corpus is insufficient for another, and
+adding one entry can change an answer — a test written against the corpus of the day would
+prove the radius correct *for that corpus*, which is precisely what will not survive F-012.
+
+Measured: **a radius of 10 Lab units is wrong on 317 of 360 queries**, first failing at 45
+records.
+
+Instead: a **provable lower bound** per bucket, visit in increasing bound, stop when the next
+bucket cannot beat the k-th best held. Correctness is then **independent of bucket size** —
+which the invariance test is what proves, asserting identical results from one Lab unit per cell
+up to a single bucket holding everything.
+
+**The bound was built first, out of plan order**, because it was the cheapest possible moment to
+find out the algebra was wrong. Four facts re-derived rather than cited — the
+`ΔC′²+ΔH′² = Δa′²+Δb′²` identity, `|Rt| ≤ √3`, `S_H ≤ S_C`, and `S_L`'s monotonicity — then
+130k+ property samples concentrated where each could fail, plus a 200k-iteration run against an
+unsound decoy which is caught while ours has zero violations.
+
+### What it actually costs, measured rather than claimed
+
+| corpus | n | mean examined | worst |
+|---|---|---|---|
+| small | 45 | 40.8 % | 36 |
+| medium | 416 | 12.9 % | 163 |
+| large | 4,203 | **2.1 %** | 796 |
+
+The plan warned the bound might be loose enough to examine ~100 % at R1 sizes. It is not, and
+the fraction *falls* as the corpus grows. Asserted as a **trend, never a threshold** — a
+threshold at these sizes would flake and then get deleted.
+
+### Three things the tests found that I had wrong
+
+**A property test disproved an ADR on run 1.** ADR-0048's first draft said similarity is
+"strictly decreasing, therefore rank-identical to ΔE00". fast-check produced a counterexample
+immediately: the curve is **not injective in float64**. The claim is now the weaker, true one —
+monotone non-increasing, never inverting — and it turns out to be an argument *for* the design:
+had similarity been the sort key, near-identical candidates would reorder with input order.
+ΔE00 ranks; the percentage presents. The non-injectivity is now itself asserted.
+
+**A test bug that looked like an engine bug.** The culori cross-check disagreed by 0.81 ΔE00 —
+because culori's `lab` mode is **D50** and ours is D65. `color-difference` already calls it as
+`lab65`. A cross-check against a second implementation is only a check if both are asked the
+same question.
+
+**A bucket test assumed one bucket and got three**: `floor(-30/1000)` is `-1`, so negative
+coordinates land in the cell below zero. Correct behaviour, wrong expectation — now documented
+rather than rediscovered.
+
+### A plan correction made by `typecheck` in under a minute
+
+The plan specified a `Color` query carrying `Provenance`, and asserted "no cycle". Wrong:
+**`@irodora/color-core` is the facade and already depends on `color-naming`**, so depending back
+is a cycle by construction — and the `@irodora/corpus` devDependency closed it again through
+core.
+
+`color-naming` now depends on `color-spaces` and `color-difference` only. The query is a Lab
+triple; provenance-aware wrapping belongs in the facade that already imports this package. The
+`VersionBundle` assignability guard moved into `packages/corpus`, which is the better home
+anyway — the schema is that package's contract to keep.
+
+**A consequence worth naming: F-073 is neither discharged nor needed.** The engine-to-non-engine
+edge does not exist rather than being contained, so `verify-engine-purity.mjs` passes for the
+real reason. The general rule is still owed.
+
+### Criterion 4 ships half-gated, declared rather than discovered
+
+The **structural** half is enforced here: `limit < 3` throws rather than clamping, an index of
+fewer than three records is refused at build, and the exact key sets of `NamingCandidate` and
+`NamingResult` are asserted with an `exactMatch` decoy so that *adding* a field breaks the test.
+FR-7's "at least 3" and ADR-0031's "never asserts identity" are the same mechanism: a single
+answer is an identification.
+
+The **lint** half is F-025's, recorded as an attested criterion. F-025 is not added to
+`blockedBy` — that inverts the dependency, since F-025 wants real copy to lint.
+
+### Documents corrected
+
+`color-engine.md` §8 said *"candidate retrieval from the corpus (spatially indexed for speed)"*.
+Defensible — the retrieval is indexed, not the ranking — but it is the exact phrasing that
+invites the fixed radius, in a document the rules tell an implementer to read in full. It now
+says so explicitly and carries the 317/360 measurement.
+
+`E-003`'s memory note said its consumers *"do not exist yet"*. That became false in this feature
+and was rewritten — the same class of stale note F-011's evaluation caught.
+
+### Recorded, not fixed
+
+- **`separation.ts` conflates two metrics.** Its ceiling is justified as "well above the ~2.3
+  just-noticeable difference"; 2.3 is the classic **ΔE\*ab** JND attached to a **ΔE00**
+  threshold, whose usual figure is nearer 1. Nothing computed is wrong — the constant is
+  uncalibrated — but the rationale is. ADR-0048 deliberately does not inherit it.
+- **Nothing re-runs the equivalence suite over real entries when F-012 lands.** Recorded in
+  F-012's notes: a synthetic corpus is adversarial where a real one is clustered, and the
+  shortlist fractions will differ.
+- **E-015's unguarded destination.** ADR-0008 puts the coarse narrowing in Postgres, so an
+  F-047 or F-016 SQL bucket predicate would be a second implementation of `labBucketKey` with no
+  import edge. The obligation is written into E-015's note so it is inherited, not rediscovered.
+
+### Where the work is
+
+Committed on **`feat/F-011-corpus-schema`**, eight commits, **not pushed**. Tree clean.
+
+### Next
+
+R1's eligible set is **F-014** (harmony engine), **F-015** (API foundation), **F-025** (claims
+copy lint), plus the smaller F-067/F-070/F-071/F-072/F-073. **F-012 remains blocked on OQ-4 and
+OQ-5**, and both are decisions for a person: how large the seed corpus is at launch, and how a
+Japanese editorial reviewer is engaged. Until they close, no colour can be authored — and
+F-016, F-017 and everything downstream of the Atlas wait behind F-012.
+
+---
+
 ## 2026-08-18 — F-011 DONE · the corpus schema, and a gate that had to be given something to check
 
 The corpus has a shape, a provenance contract, an identity rule and an immutable publish path.

@@ -76,6 +76,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/one-gamut-mapping-defines-the-closest-displayable-colour.md](effects/one-gamut-mapping-defines-the-closest-displayable-colour.md) — **E-012** · a second implementation looks like an inline clip, and moves hue 33.6°.
 - [effects/the-entry-schema-is-a-contract-with-every-authored-file.md](effects/the-entry-schema-is-a-contract-with-every-authored-file.md) — **E-013** · the destination nobody thinks of is the spec document, and it was already wrong three ways.
 - [effects/canonicalisation-decides-what-a-checksum-means.md](effects/canonicalisation-decides-what-a-checksum-means.md) — **E-014** · change it and every recorded digest is wrong, self-consistently, with no test able to notice.
+- [effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md](effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md) — **E-015** · a fixed radius is wrong on 317 of 360 queries, and looks right every time.
 
 ## Glossary
 

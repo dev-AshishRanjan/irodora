@@ -483,7 +483,7 @@
         "state",
         "content"
       ],
-      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs. F-011 NOW SUPPLIES: the schema, the roster mechanism (content/editors.json), the register cross-check that this feature's \"every source appears in the register\" criterion depends on, and gate 11 blocking. What F-012 still owes beyond entries: adding real rows to licensing-and-provenance.md section 5 BEFORE any entry can cite one (with no registered sources, every citing entry fails — the correct direction), and real editors in content/editors.json. Note that gate 11 proves two distinct roster identities, NOT that either person read the entry; the attested criterion here is the only thing covering that.",
+      "notes": "Blocked until OQ-4 (seed size: verified depth over breadth) and OQ-5 (Japanese editorial reviewer) close as ADRs. F-011 NOW SUPPLIES: the schema, the roster mechanism (content/editors.json), the register cross-check that this feature's \"every source appears in the register\" criterion depends on, and gate 11 blocking. What F-012 still owes beyond entries: adding real rows to licensing-and-provenance.md section 5 BEFORE any entry can cite one (with no registered sources, every citing entry fails — the correct direction), and real editors in content/editors.json. Note that gate 11 proves two distinct roster identities, NOT that either person read the entry; the attested criterion here is the only thing covering that. F-013 NOW DEPENDS ON THIS FEATURE FOR ITS ONLY REAL DATA: the naming equivalence suite runs on generated corpora and prints \"Real corpus entries available: 0\". NOTHING AUTOMATICALLY RE-RUNS IT OVER REAL ENTRIES when they land — worth doing deliberately as part of F-012, because a synthetic corpus is adversarial where a real one is clustered, and the shortlist fractions (40.8% / 12.9% / 2.1%) will differ.",
       "attested": [
         {
           "criterion": "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
@@ -503,7 +503,7 @@
       "package": "@irodora/color-naming",
       "release": "R1",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-007",
         "F-011"
@@ -529,7 +529,12 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "effects": [
+        "E-003",
+        "E-015"
+      ],
+      "notes": "DONE. DELIVERED: @irodora/color-naming — a Lab bucket index, a provable lower bound on ΔE00 to any box, an expanding search with a stopping rule, the ΔE00 ranking with a total comparator, the ADR-0048 similarity scale, and an adapter from a published corpus bundle. 59 tests here plus 4 in @irodora/corpus. NO CORPUS ENTRIES EXIST — F-012 is blocked on OQ-4/OQ-5 — so the suite runs on generated corpora and prints that it did. CRITERION 3 HOLDS: two-stage is byte-identical to brute force over 4,664 synthetic records x 120 adversarial queries, at four limits, at bucket steps 1/2/5/25/1e6, cross-checked against culori. MEASURED PRUNING, printed not claimed: n=45 examines 40.8%, n=416 12.9%, n=4203 2.1%. The plan warned the bound might examine ~100% at R1 sizes; it does not, and the fraction FALLS as the corpus grows. Asserted as a trend, never a threshold — a threshold at these sizes would flake and then get deleted. THE CORRECTNESS ARGUMENT IS THE FEATURE. A fixed radius — the design criterion 2 most naturally reads as — is wrong on 317 of 360 queries, first at n=45, because ΔE00 is not a metric and Lab distance does not bound it. Instead: a sound lower bound per bucket, visit in increasing bound, stop when the next cannot beat the k-th best. Correctness is then INDEPENDENT of bucket size, which the invariance test is what proves. The bound was built FIRST, out of plan order, because it was the cheapest moment to discover the algebra was wrong; four facts re-derived rather than cited, and 130k+ property samples concentrated where each could fail — plus a 200k-iteration decoy run where an unsound bound is caught and ours has zero violations. THREE THINGS TESTS FOUND THAT I HAD WRONG. (1) A property test disproved ADR-0048 on run 1: similarity is NOT strictly decreasing, because the curve is not injective in float64. The ADR now claims only monotone non-increasing — and this is an argument FOR the design, since sorting by similarity would tie where ΔE00 does not and reorder with input order. (2) The culori cross-check disagreed by 0.81 ΔE00 because culori lab is D50 and ours is D65; color-difference already calls it as lab65. A cross-check is only a check if both are asked the same question. (3) A bucket-box test assumed one bucket and got three: floor(-30/1000) is -1, so negatives land in the cell below zero. Correct behaviour, wrong expectation. A PLAN CORRECTION MADE BY typecheck IN UNDER A MINUTE: the plan specified a Color query and asserted no cycle. @irodora/color-core is the FACADE and already depends on color-naming, so depending back is a cycle by construction, and the corpus devDependency closed it again via core. The query is a Lab triple; provenance-aware wrapping belongs in the facade. The VersionBundle assignability guard moved into packages/corpus, which is the better home — the schema is that package’s contract to keep. AS A RESULT F-073 IS NOT DISCHARGED AND NOT NEEDED: the engine-to-non-engine edge does not exist rather than being contained. CRITERION 4 SHIPS HALF-GATED, declared as attested rather than discovered at the end. The structural half is enforced here — limit < 3 throws, an index of fewer than 3 records is refused, and the exact key sets of NamingCandidate and NamingResult are asserted with an exactMatch decoy so ADDING a field breaks the test. The lint half is F-025’s. DOCS CORRECTED: color-engine.md section 8 said \"candidate retrieval from the corpus (spatially indexed for speed)\" — defensible but the exact phrasing that invites the fixed radius, in a document the rules tell an implementer to read in full. It now states that retrieval is indexed and ranking cannot be, and carries the 317/360 measurement. E-003’s memory note said its consumers \"do not exist yet\"; that became false here and was rewritten."
     },
     {
       "id": "F-014",

@@ -254,6 +254,9 @@ importers:
         specifier: workspace:*
         version: link:../color-spaces
     devDependencies:
+      '@irodora/color-naming':
+        specifier: workspace:*
+        version: link:../color-naming
       '@irodora/testing':
         specifier: workspace:*
         version: link:../testing

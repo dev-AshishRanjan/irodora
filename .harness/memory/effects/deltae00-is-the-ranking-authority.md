@@ -46,11 +46,27 @@ implementation also reproduces is a row whose seven numbers are internally consi
 That addition came from F-006, where a transcribed constant was wrong and six golden datasets
 could not see it. [[measure-what-a-golden-set-can-detect-before-trusting-it]]
 
-**The consumers this link names do not exist yet.** `@irodora/color-naming` is F-013,
-`@irodora/recommendation` is F-030, and the `cvd` gate activates with F-008. Until they land,
-the guard protects the source end only — the same shape as
-[[srgb-xyz-is-the-root-of-every-derived-value]], and worth stating rather than letting
-"critical link, guarded" imply more coverage than exists.
+**The first consumer now exists.** `@irodora/color-naming` landed with F-013 and calls
+`deltaE00` as the sole ranking authority: a two-stage search narrows *which* candidates are
+examined and never *how* they are ordered. `@irodora/recommendation` (F-030) is still to come,
+and the `cvd` gate activated with F-008.
+
+Two things F-013 added that this link should be read alongside:
+
+- **Ranking on distance alone is not a total order.** Two records can share a Lab, and
+  `Array.prototype.sort` is stable — so a comparator that ranked only on `deltaE00` inherits
+  input order, and two code paths enumerating in different orders would disagree on ties,
+  intermittently. `compareScored` breaks ties on `id`. A defect here would not look like a
+  metric error; it would look like flakiness.
+- **The similarity percentage is not a second ranking authority and must never become one.**
+  ADR-0048's curve is monotone but **not injective in float64**, so sorting by it would tie
+  where `deltaE00` does not. It is presentation; this is the number that orders.
+
+The guard remains `gate:color-golden` at the source end. At the destination end,
+`packages/color-naming/test/equivalence.test.ts` asserts the two-stage result is identical to a
+full scan over thousands of adversarial records, and cross-checks against `culori` — which is
+what would catch the whole suite agreeing with a defect in our own `deltaE00`, since both paths
+call it.
 
 ## What must happen on a change
 

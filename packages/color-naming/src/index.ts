@@ -49,6 +49,8 @@ export {
 
 export { nameColor, nameColorExhaustive, type NameOptions, type NamingResult } from './name.js';
 
+export { namingRecordsFrom, type CorpusRecords } from './corpus.js';
+
 export {
   boxLowerBoundDeltaE00,
   boxOf,

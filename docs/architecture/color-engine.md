@@ -225,12 +225,31 @@ consumer is the recommendation engine, which scores separation for every candida
 
 ```
 input Color
-  → CIELAB and OKLCh
-  → candidate retrieval from the corpus (spatially indexed for speed)
-  → rank by ΔE00
+  → CIELAB
+  → candidate retrieval: Lab buckets visited in increasing LOWER BOUND on ΔE00,
+    stopping once the next bucket cannot beat the k-th best found  (@irodora/color-naming)
+  → rank by ΔE00, ties broken by id
   → contextual filter (family, era, classification per request)
-  → return ranked candidates with ΔE00 and similarity
+  → return ≥ 3 ranked candidates with ΔE00 and similarity
 ```
+
+**The retrieval is indexed. The ranking is not, and cannot be.** ΔE00 is not a metric, so no
+spatial structure can order by it — what is indexed is *position in CIELAB*, and every candidate
+that survives retrieval is then ranked by the real thing.
+
+The distinction is not pedantic, because the natural implementation of "spatially indexed for
+speed" — a fixed radius — is wrong in a way that passes its own test: a radius sufficient for one
+corpus is insufficient for another, and adding one entry can change an answer. Measured, a radius
+of 10 Lab units returns the wrong answer on **317 of 360** queries.
+
+What makes the two-stage result **provably identical to a full scan** is the lower bound plus the
+stopping rule, not the bucket size: `bucketStep` affects speed only, and the test suite asserts
+identical results from one Lab unit per cell up to a single bucket holding the whole corpus. See
+[E-015](../../.harness/state/effects.json), which is the link to read before changing any of it.
+
+**A filter must not be applied to the result.** Filtering after the search silently breaks the
+stopping rule, because the k-th best that terminated it may not survive the filter. Build the
+index over a filtered record set, or test the predicate inside the candidate loop.
 
 **Language is a hard constraint.** Output is *always* "closest digital reference", never
 "this is 藍鼠". A rendered hex is a modern approximation of a colour that was historically
@@ -239,7 +258,15 @@ disrespectful to the material. This is enforced by the claims copy lint (NFR-21,
 not by reviewer memory.
 
 Similarity is reported as a percentage derived from ΔE00 against a stated scale, and the
-ΔE00 value itself is always available — a percentage alone invites over-reading.
+ΔE00 value itself is always available — a percentage alone invites over-reading. The scale is
+[ADR-0048](../adr/0048-similarity-percentage-is-a-stated-scale.md): `100 × 2^(−ΔE00/10)`,
+uncalibrated and labelled as such. It is **monotone but not injective**, so it can never invert
+the ranking and must never *be* the ranking — ΔE00 sorts, the percentage presents.
+
+**Three candidates is a floor, enforced structurally.** `limit < 3` throws, and an index of fewer
+than three records is refused at build. FR-7's "at least 3" and ADR-0031's "never asserts
+identity" are the same requirement: a single answer is an identification, whatever the surface
+calls it.
 
 ---
 

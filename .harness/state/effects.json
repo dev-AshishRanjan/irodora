@@ -124,7 +124,7 @@
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/deltae00-is-the-ranking-authority.md",
-      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only.",
+      "rationale": "Every naming result, every duplicate-detection decision, every CVD separation score and every recommendation ranking derives from this one function. Its known failure modes — the hue discontinuity at plus or minus 180 degrees and a sign-wrong Rt term — produce plausible results, so a defect here changes every answer in the product without producing a single visible error. As of F-007 the function exists and gate:color-golden covers it with all 34 Sharma-Wu-Dalal pairs to four decimal places, each ALSO computed independently by culori so a transcription error in the reference data is caught separately from an implementation error, plus decoys proving the set rejects both known failure modes. The consumers named in this link do not exist yet: color-naming is F-013, recommendation is F-030, and the cvd gate activates with F-008. Until they do, the guard protects the source end only. AS OF F-013 THE FIRST CONSUMER EXISTS: @irodora/color-naming ranks with deltaE00 and nothing else — its two-stage search narrows WHICH candidates are examined, never HOW they are ordered, and packages/color-naming/test/equivalence.test.ts asserts the two are identical over thousands of adversarial records with a culori cross-check (which is what would catch the whole suite agreeing with a defect in our own deltaE00, since both paths call it). TWO THINGS F-013 ADDED. Ranking on distance ALONE is not a total order: two records can share a Lab and Array.prototype.sort is stable, so a comparator on distance only inherits input order and two paths enumerating differently disagree on ties — intermittently, looking like flakiness rather than a metric error. compareScored breaks ties on id. And the ADR-0048 similarity percentage must NEVER become a second ranking authority: it is monotone but NOT injective in float64, so sorting by it ties where deltaE00 does not.",
       "confidence": 0.97,
       "origin": "manual",
       "status": "active"
@@ -563,6 +563,45 @@
       "memory": "memory/effects/canonicalisation-decides-what-a-checksum-means.md",
       "rationale": "canonicalize decides what a checksum IS. Change key ordering, number formatting, string escaping or null handling and every digest ever recorded becomes wrong — in the version bundles, in the ledger, and later in Postgres and every cache key. THE REASON THIS IS CRITICAL RATHER THAN HIGH: there is no import edge from canonicalize to the stored data, and both sides of every fresh comparison move together, so a publish after the change is self-consistent and disagrees only with history. TWO GUARDS, and they cover different halves. gate:content catches a change to canonicalize itself, because the valid fixture corpus carries a PUBLISHED BUNDLE whose stored digests were computed under the old rules — verified by neutering canonicalize and watching gate 11 exit 1 with a checksum mismatch. That only became true once the fixture gained a bundle; before it, the gate had no bundle to compare against and the real guard was gate:test alone, which an evaluation caught. gate:test carries the rest: packages/corpus/golden/canonical-digest.fixture.json pins the exact canonical strings and their SHA-256, with expected values produced by node:crypto over the strings AS WRITTEN IN THE FILE and never by running this package — hashing our own output would make every row agree by construction. It is also the only thing that catches assertSha256 being neutered, which gate:content cannot see because the injected hasher is still really SHA-256.",
       "confidence": 0.97,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-015",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/color-naming/src/bound.ts#boxLowerBoundDeltaE00"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/color-naming/src/name.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/color-naming/test"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/api/src/modules/catalog",
+          "exists": false
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/color-engine.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/color-naming",
+        "apps/api",
+        "apps/web"
+      ],
+      "severity": "critical",
+      "guard": "gate:test",
+      "memory": "memory/effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md",
+      "rationale": "nameColor does not examine the whole corpus: it bounds each Lab bucket below, visits them in increasing bound, and stops when the next bucket cannot beat the k-th best found. That stopping rule is sound ONLY IF boxLowerBoundDeltaE00 never overestimates. Overestimate it — tighten a constant, drop the S_C divisor, simplify the Rt floor — and the search skips a bucket that held a better candidate, returning three plausible colours in a sensible order with nothing thrown. THE OBVIOUS DESIGN IS THE WRONG ONE: a fixed radius is defeated by deltaE00 not being a metric, and measured wrong on 317 of 360 queries, first failing at 45 records. GUARD, in three parts, none sufficient alone: a soundness property over 130k+ seeded samples concentrated where each step of the derivation could fail; the equivalence suite (4,664 records x 120 queries, four limits, bucket steps 1 to 1e6, culori cross-check); and the two decoys — an unsound bound the property must catch and the fixed radius the suite must reject — without which the first two are tests nobody has watched fail. bucketStep INVARIANCE is the load-bearing assertion: identical results at every step, including one bucket for the whole corpus, is what proves correctness does not depend on the tuning parameter. THE DESTINATION WITH NO GUARD: ADR-0008 puts the coarse narrowing in Postgres, so an F-047 or F-016 SQL bucket predicate would be a second implementation of labBucketKey with no import edge — recorded in the memory note so the obligation is inherited rather than rediscovered.",
+      "confidence": 0.96,
       "origin": "manual",
       "status": "active"
     }
