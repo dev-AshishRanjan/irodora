@@ -44,6 +44,18 @@ regexes = [
   # (F-005); the phrase now lives in commit 1a9ceb2f's history even though the working tree
   # was reworded.
   '''^S3-compatible$''',
+  # An idempotency-key fixture. `api-contract.md` §2 documents the header as `<uuid>`, so the
+  # test uses one — and `const KEY = '<uuid>'` is exactly the shape generic-api-key looks for.
+  #
+  # There is NO SECRET HERE TO ROTATE: the value was invented for the test, names nothing, and
+  # opens nothing. This is the false-positive path the header of this file describes, not the
+  # leak path — a real finding is rotated and never allowlisted.
+  #
+  # Added 2026-08-19 (F-015 increment 4's value, commit c67be7f). Scoped to the exact literal
+  # rather than to the file, so a real credential pasted into `idempotency.test.ts` is still
+  # caught. THE COST: this one string can never again indicate a leak, which is acceptable
+  # because it cannot be one.
+  '''^0f9a3c1e-7b2d-4c6a-9e18-5d0b7c2a4f31$''',
 ]
 
 # Colour hex values and OKLCH triples are high-entropy by nature and appear in

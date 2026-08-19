@@ -8,6 +8,166 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-19 — F-015 DONE · the API foundation, and the machinery nobody had connected
+
+A Fastify 5 surface where a route cannot exist without declaring its schemas, errors are a closed
+set that never leak internals, mutations are idempotent, lists are hard-limited, requests are
+counted, and `openapi.json` is generated from the route registry rather than written. Gate 7
+activates for the API half.
+
+**No domain routes ship here.** The catalog is F-016. What ships is the machinery plus enough
+surface to prove it — fourth feature in a row with that shape.
+
+### Evidence
+
+```
+  ✓ gate 0   state            15 links, 51 ADRs, 233 governed docs, 49 memory files
+  ✓ gate 1   typecheck        38 tasks
+  ✓ gate 2   lint             + 12 guards, engine purity, unsafe census
+  ✓ gate 3   format
+  ✓ gate 4   test             38 tasks · apps/api 119
+  ✓ gate 5   color-golden     16 tasks
+  ✓ gate 6   build            25 tasks
+  ✓ gate 7   e2e              ACTIVATED · apps/api 26 · 1 of 7 charter items covered
+  ✓ gate 9   contrast         + 9/9 mutation proofs
+  ✓ gate 10  cvd              15 tasks
+  ✓ gate 11  content          + 25/25 mutation proofs
+  ✓ gate 15  security         73 commits scanned, no leaks — SEE BELOW
+  ✓ mirror (12 gates) · purity · guards · openapi:check
+
+NOT run: a11y, perf, web-perf, e2e-full — still `pending` in gates.json.
+```
+
+### The defect this feature had, and the plan caused it
+
+Increments 1–6 built the error mapper, the route wrapper, idempotency, pagination and the
+limiter. Every one landed with passing tests. **None of them was attached to the server.**
+
+`buildServer` installed the validator compiler and the health routes and stopped. So a thrown
+`Error` went out as Fastify's default 500 **carrying its own message** — the e2e decoy throws a
+connection string and it came straight back. A mutation with no `Idempotency-Key` succeeded.
+Nothing counted a request. Three acceptance criteria had passing tests and were false.
+
+Nothing in the increment table said "wire them in", so nothing did, and no gate could notice:
+gate 4 runs the units and the units were fine. **Writing the e2e suite found it on the first
+run**, two increments after the last mechanism landed — which is exactly how long the defect
+lived.
+
+`src/http/lifecycle.ts` connects them, hook order written down rather than incidental. Recorded
+as [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]: decompose by behaviour, not by
+module; put the integration test in the same increment as the part; prove wiring by removing it.
+
+Unwiring each hook turns cases red — `useErrorHandling` 13 of 26, `useRateLimiting` 3,
+`useIdempotency` 3 — baseline green before and after each. The fail-open case **initially did not
+discriminate**: a 200 with no rate-limit headers is exactly what a server with no limiter
+produces, so it passed against the unwired app. It now counts attempted increments.
+
+### The OpenAPI document, and a guard that was never a guard
+
+E-004 named `gate:build` as its guard. **A build has never compared anything** — it overwrites.
+The link read as guarded while nothing watched. The guard is now
+`test:apps/api/src/openapi.test.ts`, which reads the committed file from source under gate 4, and
+`pnpm openapi:check` runs the same comparison from `dist` in CI.
+[[generating-an-artefact-is-not-checking-it]]
+
+Watched red on three hand-edits of the real document — a reworded description, a deleted path, a
+corrupted file — baseline green either side; six more asserted in the suite, each against the
+**reason** reported rather than the fact.
+
+Three things generating it decided:
+
+1. **A path parameter must be declared, by name.** Fastify serves `/v1/x/:slug` with no `params`
+   schema and validates nothing, so the document would have had to invent a type for an input the
+   server never checks — and `:slug` against a schema naming `id` is a rename that validates
+   nothing and publishes a phantom. `route()` refuses both. Four decoys, one green.
+2. **The health routes are IN the document, tagged `operations`.** Omitting them was the obvious
+   reading of "they are not the client contract" and would have left zero paths until F-016 — a
+   `--check` comparing nothing.
+3. **It is Prettier-ignored**, like the design tokens and the published corpus: Prettier collapses
+   short arrays, and a byte-compared artefact it also formats leaves two checks demanding
+   different files with neither wrong.
+
+`RegisteredRoute` now carries the augmented response map, so the generator reads what a route can
+actually return instead of guessing that an undeclared status must be the error envelope.
+
+### Gate 7, activated honestly
+
+Its charter names Playwright, axe, a keyboard journey, a CVD journey and NFR-12 — **all `apps/web`,
+which arrives with F-017**. `scripts/e2e-scope.mjs` prints every charter item as covered or NOT
+COVERED with the file that would supply it (6 of 7 uncovered today, and each line flips on its own
+when that file lands), and **fails if no package declares a `test:e2e` script** — which was the
+workspace's actual state: `pnpm test:e2e` was `turbo run test:e2e` over nothing.
+
+The CI step is unconditional. The `if: hashFiles('apps/web/package.json')` it replaced is the
+F-072 hazard exactly: gate 0 compares `run:` and never reads `if:`, so an "active" gate would have
+run nowhere for the whole of R1. [[a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check]]
+
+The suite runs against **fixture routes** through the same `route()` wrapper and the same hooks,
+in `apps/api/e2e/` — which `tsconfig.build.json` does not include, so they cannot compile into
+`dist`. The suite asserts a production-built server carries only `/healthz` and `/readyz`, and
+that `openapi.json` contains no fixture path.
+
+### Gate 15 had been red since increment 4, and I did not run it
+
+`generic-api-key` matched `const KEY = '0f9a3c1e-…'` in `idempotency.test.ts`, committed in
+`c67be7f`. **Four commits shipped with gate 15 failing and no run to say so.** Gate 15 is
+`requiredFor: ["always"]`; F-015's `verification` list does not name it, and I verified against
+the list rather than against the gate's own scope. The list is the weaker of the two and I used
+it.
+
+The finding itself is a false positive — a fabricated UUID naming nothing, in the `<uuid>` shape
+`api-contract.md` §2 documents for the header. There is no secret to rotate, so it took the
+narrow path `.gitleaks.toml` already describes: an exemption scoped to **the exact literal**, not
+to the file, so a real credential pasted into that test is still caught. The cost is stated in
+the config.
+
+### Two decisions that deviate from a documented default
+
+**[ADR-0050](../../docs/adr/0050-rate-limiting-is-a-fixed-window-that-fails-open.md).**
+`api-contract.md` §8 specifies a sliding window; F-015 ships a **fixed** one, whose worst case
+over any sliding interval is **twice the limit** — asserted in the suite so the number a limiter
+appears to enforce and the number it enforces cannot be confused. And it **fails open**: while
+the cache is down there is no rate limiting, because failing closed turns a cache blip into a
+total outage and this limiter is a mitigation, not an authorisation decision. A per-plan quota
+must not be built on this hook. §8 is amended to say all of it.
+
+Also recorded in the contract: a **5xx releases the idempotency key** rather than storing it —
+storing would freeze a transient failure into a 24-hour answer — and the key is claimed **after**
+validation, so a client's own correction cannot become a 409.
+
+### Uncalibrated, and saying so
+
+`RATE_LIMIT_PER_IP = 300/min` and `RATE_LIMIT_PER_IDENTIFIER = 10/min` are the shape §8 describes.
+**No measurement produced them.** They move to configuration with F-036. The e2e suite exercises
+the *shipped* numbers rather than a convenient small rule, so what is tested is what is enforced.
+
+### Known and recorded, not fixed
+
+- **Cursors are opaque but not signed.** Nothing issues one until F-016 builds the catalog, and
+  signing a value nothing creates needs a key whose only other user is F-033. Recorded in
+  `api-contract.md` §7 as F-016's obligation.
+- **The SDK arrow does not exist.** E-004's headline property — *a contract change breaks the SDK
+  build first* — is still an end state. What is true today is narrower: a contract change not
+  reflected in the committed document fails gate 4. F-057.
+- **Idempotency keys are globally scoped.** Two clients presenting the same key collide. Correct
+  while nothing is authenticated; the key builder takes a `scope` for F-033.
+- **The per-identifier rule protects nothing yet.** No auth routes until F-033; exercised against
+  a decoy identifier so the mechanism has been watched work.
+- **F-072** (gate 0 cannot see a CI step conditioned out) and **F-073** (engine purity does not
+  follow `@irodora/*` edges) remain open.
+
+### Next
+
+1. **F-016 — catalog routes.** It is what turns the fixture surface into a real one, and it owes
+   cursor signing.
+2. **F-012 is still blocked** on OQ-4 (seed corpus size) and OQ-5 (Japanese editorial reviewer).
+   Both are decisions for the human, and both close as ADRs.
+
+Nothing is `in_progress`. Twenty commits sit on `feat/F-011-corpus-schema`, a branch now carrying
+five features under a name that describes the first. **Nothing has been pushed.**
+
+---
+
 ## 2026-08-18 — F-014 DONE · the harmony engine, and the measurement that justifies OKLCh
 
 Twelve generators, all in OKLCh, every output gamut-mapped and carrying what that cost. The

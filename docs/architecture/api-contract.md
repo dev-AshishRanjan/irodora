@@ -223,11 +223,30 @@ response are stored for 24 hours:
 This is not optional politeness. Mobile clients retry on flaky networks, and a duplicate
 wardrobe item created by a retry is a data-quality bug the user has to clean up manually.
 
+**A 5xx releases the key rather than storing it** (F-015). Storing a server failure would replay
+it for the full 24 hours — a transient outage frozen into a permanent answer, which is the
+opposite of what a client retrying with the same key is asking for. A 4xx *is* stored: it is a
+deterministic answer to that exact request, and repeating it is correct.
+
+**The key is claimed after validation, not before.** A client whose body failed validation, was
+told which field, and fixed it must be able to retry with the same key; claiming first would turn
+the client's own correction into a `409`.
+
+**The key space is global until F-033.** There is no authenticated identity to scope by, so two
+different clients presenting the same key would collide. The cache key builder takes a scope
+argument for exactly that reason and every caller passes the same one today.
+
 ---
 
 ## 7. Pagination
 
 Cursor-based only. Opaque, signed cursors encoding the sort key and direction.
+
+> **As of F-015 cursors are opaque but NOT signed.** They are branded, so a caller cannot
+> construct one in typed code — but nothing issues a cursor until F-016 builds the catalog, and
+> signing a value nothing creates would need a key whose only other user is F-033. Recorded as
+> F-016's obligation rather than half-built. `limit` is enforced server-side against
+> `PAGE_LIMIT_MAX = 100`: a request for 10 000 is a `422`, not a large page.
 
 ```
 GET /v1/colors?limit=50&cursor=eyJrIjoi...
@@ -253,8 +272,27 @@ the cursor rather than silently reinterpreting it against a different ordering.
 | Export / report generation | 5/hour per user |
 | API keys | Per-plan quota with monthly metering |
 
-Sliding window in Valkey. Limits are per-tenant as well as per-user, so one user cannot
-exhaust an organisation's budget.
+Limits are per-tenant as well as per-user, so one user cannot exhaust an organisation's budget.
+
+> **What F-015 actually ships, and how it differs**
+> ([ADR-0050](../adr/0050-rate-limiting-is-a-fixed-window-that-fails-open.md)):
+>
+> - **A fixed window, not a sliding one.** The window index is part of the cache key, so a new
+>   window is a new counter. Its known weakness is the boundary — a client may spend its budget
+>   at the end of one window and again at the start of the next, so the worst case over any
+>   sliding interval is **twice the limit**. Asserted in the test suite rather than left for
+>   somebody to discover.
+> - **It fails open.** If the cache is unreachable the request is allowed and a warning logged.
+>   *While the cache is down there is no rate limiting.* Failing closed would turn a cache blip
+>   into a total outage, and this limiter is a mitigation rather than an authorisation decision.
+>   **A per-plan quota must not be built on this hook** — an entitlement has to fail closed.
+> - **Health probes are exempt.** A liveness probe that receives a 429 is a container the
+>   orchestrator restarts.
+> - **The classes above are not all implemented.** There is no authenticated identity until F-033
+>   and no tenant until F-034. What runs today is the per-IP rule on every route, at 300/min,
+>   plus a per-identifier rule at 10/min exercised against a decoy identifier so the mechanism is
+>   one that has been watched work. **Neither number is calibrated**; they move to configuration
+>   with F-036.
 
 ---
 
@@ -281,3 +319,19 @@ implementation. Three consequences:
   their production.
 - The dashboard and mobile app consume the SDK, so they are the first users of every
   contract change ([E-004](../../.harness/state/effects.json)).
+
+> **Half of this is live as of F-015, and half is not.**
+>
+> `apps/api/openapi.json` is now generated from the route registry, committed, and compared byte
+> for byte — by `apps/api/src/openapi.test.ts` under the test gate and by `pnpm openapi:check` in
+> CI. A hand-edited document fails; a route added without regenerating fails. That is the first
+> arrow.
+>
+> **Nothing generates `@irodora/sdk` yet (F-057).** So the second consequence above — *a contract
+> change breaks the SDK build first* — is still an end state rather than a running check. What is
+> true today is narrower: a contract change not reflected in the committed document fails the
+> test gate.
+>
+> The document describes `/healthz` and `/readyz` as well as `/v1`, tagged `operations` and
+> labelled as carrying no compatibility promise. Omitting them would have left the document with
+> zero paths until F-016 — a comparison with nothing to compare.

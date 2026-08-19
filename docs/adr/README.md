@@ -73,6 +73,7 @@ Two rules that matter more than the format:
 | [0047](0047-editorial-identity-is-a-roster-id-not-a-name.md) | Editorial identity is a roster id, and every record records its author | Accepted |
 | [0048](0048-similarity-percentage-is-a-stated-scale.md) | The similarity percentage is a stated scale, not a measurement | Accepted |
 | [0049](0049-warm-and-cool-are-a-stated-convention.md) | Warm and cool are a stated convention, anchored to the corpus taxonomy | Accepted |
+| [0050](0050-rate-limiting-is-a-fixed-window-that-fails-open.md) | Rate limiting is a fixed window, and it fails open | Accepted |
 
 ## Open questions awaiting an ADR
 

@@ -139,8 +139,7 @@
       "to": [
         {
           "kind": "artifact",
-          "ref": "apps/api/openapi.json",
-          "exists": false
+          "ref": "apps/api/openapi.json"
         },
         {
           "kind": "package",
@@ -168,9 +167,9 @@
         "apps/admin"
       ],
       "severity": "high",
-      "guard": "gate:build",
+      "guard": "test:apps/api/src/openapi.test.ts",
       "memory": "memory/effects/contract-to-openapi-to-sdk-is-one-direction.md",
-      "rationale": "The OpenAPI document is generated from the schemas and the SDK from the document, so a contract change that breaks a consumer breaks the SDK build in our CI before it reaches anyone else's production. That property only holds while the direction stays one-way; a hand-edited OpenAPI document silently severs it.",
+      "rationale": "The OpenAPI document is generated from the schemas and the SDK from the document, so a contract change that breaks a consumer breaks the SDK build in our CI before it reaches anyone else's production. That property only holds while the direction stays one-way; a hand-edited OpenAPI document silently severs it. F-015 made the FIRST arrow real: apps/api/openapi.json is derived from the route registry and compared BYTE FOR BYTE, by openapi.test.ts under gate 4 (from source, so no build is needed) and by `pnpm openapi:check` in CI after gate 6 (from dist, the same compiled code the server runs). The guard names the test rather than gate:build, because BUILDING the document is not CHECKING it — gate:build was this link's guard while the document did not exist, and a build has never compared anything. Watched go red on a reworded description, a deleted path and a corrupted file, with the baseline green either side. THE SECOND ARROW IS STILL NOT BUILT: nothing generates @irodora/sdk from the document, so 'a contract change breaks the SDK build first' remains an end state rather than a running check until F-057.",
       "confidence": 0.93,
       "origin": "manual",
       "status": "active"

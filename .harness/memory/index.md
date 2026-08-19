@@ -48,6 +48,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md](lessons/a-decoy-written-against-old-values-quietly-stops-discriminating.md) — a mutation proof that passed when written rotted when unrelated values moved; keep proofs runnable and attack the mechanism, not the margin.
 - [lessons/a-gate-that-ships-before-its-data-must-carry-its-own-fixtures.md](lessons/a-gate-that-ships-before-its-data-must-carry-its-own-fixtures.md) — gate 11 activated over an empty corpus; the fixtures caught two defects in themselves within an hour.
 - [lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md](lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md) — gate 0 compares `run:` and never reads `if:`, so an "active" gate can run nowhere for a whole release.
+- [lessons/a-tested-module-nobody-wired-up-passes-every-test-it-has.md](lessons/a-tested-module-nobody-wired-up-passes-every-test-it-has.md) — F-015's error mapper, limiter and idempotency store were all green and none was attached to the server; decompose by behaviour, not by module.
+- [lessons/generating-an-artefact-is-not-checking-it.md](lessons/generating-an-artefact-is-not-checking-it.md) — E-004 named `gate:build` as its guard, and a build overwrites rather than compares; the guard is the `--check`, in a gate that is not the build.
 
 ### Environment
 

@@ -3,9 +3,10 @@ kind: effect
 id: E-004
 title: The contract → OpenAPI → SDK chain only works while it stays one-way
 severity: high
-guard: gate:build
+guard: test:apps/api/src/openapi.test.ts
 confidence: 0.93
 created: 2026-08-13
+updated: 2026-08-19
 scope: [packages/contracts, apps/api, apps/web, apps/mobile, apps/admin]
 links: [[the-color-type-reaches-every-surface]]
 ---
@@ -31,7 +32,10 @@ exercised rather than assumed.
 describe something the implementation does not do, and from that moment the SDK is generated
 from a fiction.
 
-CI regenerates and diffs; a stale committed document fails the build. That is the guard.
+CI regenerates and compares; a stale committed document fails. That is the guard — and note
+what it is *not*: it was recorded as `gate:build` for eighteen months of plan time, and a build
+has never compared anything. Generating an artefact and checking it are different acts, and
+naming the wrong one made the graph look guarded while nothing was watching.
 
 ## What must happen on a contract change
 
@@ -41,23 +45,32 @@ CI regenerates and diffs; a stale committed document fails the build. That is th
 4. **Additive only inside `/v1`.** A break mints `/v2` with a ≥ 12-month sunset.
 5. Commit the regenerated document, so the contract diff is visible in review.
 
-## What exists today, and what does not — as of F-002 (2026-08-14)
-
-The `from` node is real now: `packages/contracts/src` holds the schemas. **The rest of the
-chain does not exist yet**, so the guard above describes an end state, not a running check.
+## What exists today, and what does not — as of F-015 (2026-08-19)
 
 | Link | Status |
 |---|---|
 | Zod schema → runtime validation → inferred types | **live** — `pnpm typecheck`, `pnpm test` |
 | Zod schema → JSON Schema | **live** — every exported schema is asserted convertible to draft 2020-12, by a test that enumerates the barrel's own exports so it cannot fall behind |
-| JSON Schema → `openapi.json` | **not built** — needs routes (F-015) |
-| `openapi.json` → `@irodora/sdk` → consumers | **not built** — F-015, F-057 |
-| the regenerate-and-diff check | **not built** — F-015 |
+| JSON Schema → `openapi.json` | **live since F-015** — built from the route registry by `apps/api/src/openapi.ts`, written by `scripts/generate-openapi.mjs` |
+| the regenerate-and-compare check | **live since F-015** — `openapi.test.ts` under gate 4 and `pnpm openapi:check` in CI |
+| `openapi.json` → `@irodora/sdk` → consumers | **still not built** — F-057 |
 
-The middle row is the part worth knowing. A schema that validates perfectly can still be
-impossible to express as JSON Schema — a transform, a non-declarative refinement — and
-without that test the discovery would land at F-015, on top of a package's worth of schemas
-written under the wrong assumption. It now lands on the schema that caused it.
+**The second arrow is the one still missing**, and it carries the property this link exists for.
+"A contract change breaks the SDK build before it reaches anyone else's production" is not yet
+true, because nothing generates the SDK. What *is* true today is narrower and worth stating
+exactly: a contract change that is not reflected in the committed document fails gate 4.
+
+Two things F-015 learned while making the third arrow real:
+
+- **The `io` argument earns its keep at the document boundary.** A field with a `.default()`
+  published as `output` is *required*, which is a contract wrong in the one direction clients
+  cannot work around. Requests are `input`, responses are `output`, and the generator is where
+  getting that backwards becomes visible to every consumer at once.
+- **A route with a path parameter and no `params` schema was legal.** Fastify serves it and
+  validates nothing; the document would have had to invent a type for an input the server never
+  checks. Generating the document is what surfaced it — the third leg of ADR-0012 finding a hole
+  the first two could not see. `route()` now refuses it, and refuses a schema naming the *wrong*
+  parameter.
 
 ## One nuance
 

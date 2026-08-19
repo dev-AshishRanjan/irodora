@@ -41,6 +41,43 @@ appear in the generated OpenAPI document, so the contract silently omits it.
 Schemas live in `@irodora/contracts`, so the web app, mobile app and SDK import what the
 server validates against.
 
+**Register through `route()` in `src/http/`, never through a bare `app.get`.** The wrapper is
+what enforces all of this; ESLint bans the bare form outside `src/http/`, and boundary guard #12
+proves that rule fires rather than assuming it. The wrapper refuses, with a message naming the
+route:
+
+- a route declaring **no 2xx** — the document would describe an endpoint that can only fail
+- a **path parameter with no `params` schema**, or one the schema does not name. Fastify serves
+  `/v1/x/:slug` without a schema and validates nothing, so the document would have to invent a
+  type for an input the server never checks — and `:slug` against a schema naming `id` is a
+  rename that validates nothing and publishes a phantom
+- a **mutating method with no body schema and no stated `idempotencyExemptBecause`** — an
+  unexplained exemption is one nobody can evaluate later
+
+It **adds** 500 to every route, and 422 wherever there is input to validate, rather than making
+each author write them out. What an author declares is the domain; what the framework can
+produce, the framework documents.
+
+## Cross-cutting behaviour belongs to the assembled server, not to a module
+
+The error handler, the correlation id, the rate limiter and the idempotency hooks live in
+`src/http/lifecycle.ts` and are installed by `buildServer`. That is not organisation — it is
+the lesson F-015 paid for. Increments 1–6 built every one of those mechanisms with passing
+tests, and **none of them was attached to the server**: a thrown `Error` went out as the
+framework's default 500 carrying its own message.
+
+A unit test proves a function behaves; only a request through the whole stack proves it runs.
+So anything cross-cutting is **exercised through `app.inject` in `e2e/`**, and the proof is that
+unwiring it turns cases red.
+[[a-tested-module-nobody-wired-up-passes-every-test-it-has]]
+
+## `openapi.json` is derived, never edited
+
+`apps/api/openapi.json` is generated from the route registry and compared byte for byte, by
+`src/openapi.test.ts` and by `pnpm openapi:check`. Change a schema, run
+`pnpm --filter @irodora/api generate:openapi`, commit the result. Editing the document by hand
+makes the SDK generated from it a fiction ([E-004](../../.harness/state/effects.json)).
+
 ## Additive only inside `/v1`
 
 New endpoints, new optional request fields, new response fields. **Never** removing or
