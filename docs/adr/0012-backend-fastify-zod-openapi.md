@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is no API. Zod remains the
+validation primitive at the local storage boundary; nothing generates an OpenAPI document.
 
 ## Date
 

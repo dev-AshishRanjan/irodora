@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+**Retired with the server tier — see [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** Kept for the
+reasoning, which outlived the code: a limiter that fails open is a availability choice, and
+saying so in the record is why nobody had to rediscover it.
 
 ## Date
 

@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted, **amended by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)**. One repository still holds
+the engine, the content and the app. The *extraction triggers* are void: there are no
+services to extract to.
 
 ## Date
 

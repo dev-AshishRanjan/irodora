@@ -2,9 +2,18 @@
 
 ## Status
 
-Accepted — **the primitive choice is superseded by
-[ADR-0034](0034-base-ui-over-radix-for-headless-primitives.md)** (Base UI, not Radix).
-Everything else in this record stands.
+**Superseded by
+[ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is no
+web surface. The first release is a mobile application only.
+
+Previously: the primitive choice had been superseded by
+[ADR-0034](0034-base-ui-over-radix-for-headless-primitives.md) (Base UI, not Radix). Both
+records are retained for the reasoning; neither describes anything we now build.
+
+**What survives into the mobile app** is the layer this record chose *below* the framework:
+we own the token layer, and component behaviour comes from a headless primitive rather than
+a styled kit ([ADR-0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md)).
+The React Native equivalent of that choice is made when `@irodora/ui` is built.
 
 ## Date
 

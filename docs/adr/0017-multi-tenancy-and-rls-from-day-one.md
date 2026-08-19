@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** One device, one user, one database
+file. There is no tenant boundary because there is no shared store.
 
 ## Date
 

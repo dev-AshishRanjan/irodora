@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is nothing to deploy. The
+release path is EAS Build and the app stores.
 
 ## Date
 

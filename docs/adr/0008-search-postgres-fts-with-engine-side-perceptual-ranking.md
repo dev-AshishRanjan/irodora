@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+Accepted in part — **superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)**. Postgres is gone; candidate narrowing is
+now SQLite FTS5 on the device. **The other half of this record stands unchanged**: the
+database narrows, and the engine ranks perceptually. That separation was the decision, and
+it survives the change of database.
 
 ## Date
 

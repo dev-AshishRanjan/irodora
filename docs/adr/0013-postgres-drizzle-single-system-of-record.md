@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** The system of record is the SQLite
+database on the device. Drizzle survives as the query layer, now over `expo-sqlite`.
 
 ## Date
 

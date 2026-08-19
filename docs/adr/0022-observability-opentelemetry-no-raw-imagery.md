@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is no telemetry backend and no
+collector. The prohibition this record carried — **never log raw imagery or biometric-adjacent
+data** — is retained as a standing rule, and is now satisfied by construction: nothing leaves
+the device.
 
 ## Date
 

@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is no account and no
+authentication. The rule this record actually protected — *we implement no password or
+crypto primitive ourselves* — is preserved and strengthened: at-rest encryption is SQLCipher
+with the key in the platform keystore.
 
 ## Date
 

@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** There is no public API and no generated
+SDK. The principle that a contract is generated from the implementation rather than
+hand-written survives where it still applies: the design token outputs and the corpus bundle.
 
 ## Date
 

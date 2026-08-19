@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).** The first release is free in full.
+Tiers are not deferred to a later release; they are withdrawn until there is usage data to
+price against. The commitment that **accessibility is never paywalled** is retained and is
+now trivially true.
 
 ## Date
 

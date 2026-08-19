@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted, **amended by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)**. SQLite as the local store is
+confirmed and is now the *only* store. The outbox, field-level clocks and merge rules are
+**not built**, because there is nothing to sync to. The schema still carries client-generated
+UUIDv7 ids, `updated_at`, tombstones and a `change_log` so this record can be implemented
+later as a feature rather than a migration.
 
 ## Date
 
