@@ -1012,7 +1012,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "Expo SDK 57 / RN 0.86 on the New Architecture, building for iOS and Android through EAS",
@@ -1029,13 +1029,35 @@
       ],
       "attested": [
         {
+          "criterion": "The colour engine runs on device, unmodified, and reproduces the committed identity digest — the React Native leg of NFR-3, attested since F-006 and finally executable",
+          "verifiedBy": "Running the identity fixture through apps/mobile on a physical device under Hermes. The Node leg is gated by apps/mobile/test/engine.test.ts and by F-006; Node and Chromium both run V8, so their agreement is weaker evidence than it looks, and Hermes is the interesting engine.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Every core journey completes with the device in airplane mode, from a cold start, on a device that has never been online",
+          "verifiedBy": "The e2e offline suite on a device, once journeys exist (F-018, F-040). Gate 7 is pending and its activatesWith points here; it flips when the first journey lands.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The app opens no socket during any core journey, asserted by the e2e offline suite rather than by inspection",
+          "verifiedBy": "The same suite. The build-time half IS gated now: app.config.ts blocks android.permission.INTERNET and requests no network permission on either platform, so the app cannot open a socket even if a dependency tried.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
           "criterion": "EAS Build produces installable builds from a Windows workstation",
-          "verifiedBy": "An EAS Build run producing an installable artefact, recorded in the release notes",
+          "verifiedBy": "An EAS build run against this repository from the Windows workstation.",
           "blocks": "release",
           "status": "outstanding"
         }
       ],
-      "notes": "Merged with the former F-024 (\"Local-only mode and the offline engine\") by ADR-0051. F-024 described local-only as a MODE the product also supported; it is now the only mode there is, and the shell is what provides it — so the two were one feature wearing two names. This is also where NFR-3's React Native leg stops being attested and starts being gated: the identity fixture has asserted Node and Chromium since F-006, and the interesting engine is Hermes, which needs a device."
+      "notes": "DONE. The first feature that produces something a person could hold — apps/mobile is a real Expo app: SDK 57.0.14, React Native 0.86.2, React 19.2.3, Expo Router, development client rather than Expo Go because VisionCamera is a native module and F-040 needs frame processors. Versions verified with expo install --check rather than guessed; it flagged one (react-native-screens 4.20 -> ~4.26) and now reports Dependencies are up to date. THE ENGINE IS WIRED AND EXECUTING, not merely listed: apps/mobile/src/engine.ts is the single import site, the screen computes every hex and the dE00 figure at render time, and nothing on it is a typed colour value. A dependency nobody imports passes every gate and ships nothing, which this repository has already lost six increments to. FOUND WHILE WIRING IT: @irodora/design-tokens GENERATED a React Native target and never re-exported it — nativeColors was unreachable from outside the package. Byte-compared by its own test the whole time, and importable by nobody. F-039 is its first consumer, which is why it surfaced now. A DECOY THAT MATTERS: dE00 is defined on CIELAB, and OKLCh triples are the SAME TYPE, so handing them straight to deltaE00 typechecks and returns a plausible meaningless number. The first draft of engine.ts did exactly that. The test now pins the Lab route AND asserts the wrong route differs by more than 1 dE00, so the assertion discriminates. NFR-12 AS A BUILD-TIME FACT: app.config.ts requests no network permission on either platform and BLOCKS android.permission.INTERNET, because a library that declares it would otherwise have it merged in silently. Adding it back would falsify a requirement and needs an ADR. There is no newArchEnabled flag and its absence is correct — the New Architecture has been mandatory with no opt-out since SDK 55, so the field is not part of ExpoConfig. A LINT SUPPRESSION I KEPT RATHER THAN OBEYED: no-unnecessary-condition flags the ?? guard on useColorScheme(). react-native types it as null | undefined | ColorSchemeName and tsc agrees the guard is needed — assigning null to its ReturnType compiles. The rule resolves the module differently. The guard stays, with the evidence in the comment: deleting a guard because a linter overruled a measurement is the wrong way round. THREE OF SIX CRITERIA ARE ATTESTED, and the plan says so in its own section rather than leaving a reader to work out which half is checked. The Hermes execution, the airplane-mode journey and the no-socket assertion all need a device — and the last two also need journeys, which arrive with F-018/F-040. Gates e2e and a11y stay PENDING for exactly that reason: their subject is a journey and this feature ships a floor.",
+      "plan": "plans/F-039-app-foundation.md",
+      "effects": [
+        "E-002"
+      ]
     },
     {
       "id": "F-040",

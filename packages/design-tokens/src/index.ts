@@ -77,5 +77,13 @@ export {
   type TextToken,
 } from './generated/tokens.js';
 
+/**
+ * The React Native target. Generated from the same manifest as every other target and
+ * byte-compared by its own test — but it was NOT re-exported until F-039 became its first
+ * consumer, so nothing could reach it. A generated artefact nobody can import is a build step
+ * with no output [[generating-an-artefact-is-not-checking-it]].
+ */
+export { nativeColors, nativeRadius, nativeSpacing, nativeTapTarget } from './generated/native.js';
+
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */
 export const TOKENS_VERSION = '0.1.0' as const;

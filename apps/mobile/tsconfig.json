@@ -1,5 +1,22 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "rootDir": "." },
-  "include": ["src/**/*", "test/**/*", "*.config.ts"]
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+
+    // React Native resolves through Metro, not Node. `bundler` is the resolution mode that
+    // matches it — extensionless relative imports, package `exports` honoured, no `.js`
+    // suffix required on a `.tsx` sibling. The rest of the workspace stays on NodeNext,
+    // because the engine packages must resolve the way Node does (NFR-3).
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+
+    // The DOM is NOT here on purpose. React Native has no `window` and no `document`, and
+    // including the DOM lib would let a screen reference one and still typecheck — which is
+    // precisely the platform assumption the engine's purity rules exist to prevent leaking in.
+    "lib": ["ES2023"],
+    "types": ["react", "node"]
+  },
+  "include": ["src/**/*", "app/**/*", "test/**/*", "*.config.ts"]
 }

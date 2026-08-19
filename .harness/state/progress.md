@@ -8,6 +8,80 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-039 DONE · there is an app now
+
+R0 and R1 built an engine nobody could use. This is the first feature that produces something a
+person could hold.
+
+`apps/mobile` is a real Expo app — SDK 57.0.14, React Native 0.86.2, React 19.2.3, Expo Router,
+**development client rather than Expo Go**, because VisionCamera is a native module and F-040
+needs frame processors. Choosing that here avoids a migration on the feature that can least
+afford one. Versions came from `expo install --check` rather than from guessing; it flagged one
+(`react-native-screens` 4.20 → ~4.26) and now reports *Dependencies are up to date*.
+
+### The engine is wired and executing, not merely listed
+
+`apps/mobile/src/engine.ts` is the single import site. The screen computes every hex and the
+ΔE00 figure **at render time** — nothing on it is a typed colour value. A dependency nobody
+imports passes every gate and ships nothing, and this repository has already lost six increments
+to exactly that.
+
+### Three things it found
+
+**`@irodora/design-tokens` generated a React Native target and never re-exported it.**
+`nativeColors` was unreachable from outside the package — byte-compared by its own test the
+whole time, and importable by nobody. F-039 is its first consumer, which is why it surfaced now.
+
+**A decoy that matters.** ΔE00 is defined on CIELAB, and OKLCh triples are the *same TypeScript
+type*, so handing them straight to `deltaE00` typechecks and returns a plausible, meaningless
+number. The first draft of `engine.ts` did exactly that. The test now pins the Lab route **and**
+asserts the wrong route differs by more than 1 ΔE00, so the assertion discriminates.
+
+**A lint suppression I kept rather than obeyed.** `no-unnecessary-condition` flags the `??`
+guard on `useColorScheme()`. React Native types it as `null | undefined | ColorSchemeName` and
+`tsc` agrees the guard is needed — assigning `null` to its `ReturnType` compiles. The rule
+resolves the module differently. The guard stays, with the evidence in the comment: deleting a
+guard because a linter overruled a measurement is the wrong way round.
+
+### NFR-12 is now a build-time fact
+
+`app.config.ts` requests **no network permission on either platform** and explicitly BLOCKS
+`android.permission.INTERNET`, because a library that declares it would otherwise have it merged
+in silently. Adding it back would falsify a requirement and needs an ADR.
+
+There is no `newArchEnabled` flag, and its absence is correct rather than an omission — the New
+Architecture has been mandatory with no opt-out since SDK 55, so the field is not part of
+`ExpoConfig` any more.
+
+### Three of six criteria are ATTESTED
+
+The Hermes execution, the airplane-mode journey and the no-socket assertion all need a device —
+and the last two also need journeys, which arrive with F-018/F-040. Gates `e2e` and `a11y` stay
+**pending** for exactly that reason: their subject is a journey, and this feature ships a floor.
+
+The plan says which half is checked in its own section, rather than leaving a reader to work it
+out.
+
+### Evidence
+
+```
+  ✓ state 14      ✓ typecheck 26   ✓ lint 26       ✓ build 16
+  ✓ test 26       ✓ golden 13      ✓ cvd 12        ✓ contrast 17
+  ✓ content       ✓ format         ✓ mirror 22     ✓ purity + prove
+  ✓ guards 11     ✓ claims + proof
+
+  NOT run: e2e, a11y, perf (pending) · security (gitleaks not installed here)
+```
+
+### Next
+
+**F-041** (`@irodora/store` — SQLite, SQLCipher, sync-shaped schema) and **F-017** (design
+system) are both unblocked. F-012 remains blocked on a second editorial identity.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-20 — F-067 DONE · R1 closes, and error is pale pink in the dark theme now
 
 The last open R1 feature, and the only one that needed a person rather than a gate. Approved by

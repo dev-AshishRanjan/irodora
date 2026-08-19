@@ -2,13 +2,38 @@
   "name": "@irodora/mobile",
   "version": "0.0.0",
   "private": true,
-  "description": "Expo + VisionCamera. From F-039.",
-  "type": "module",
+  "description": "Irodora — the app. Expo SDK 57 / React Native 0.86, New Architecture, development client. The only surface (ADR-0051).",
+  "main": "expo-router/entry",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild --clean",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "clean": "rimraf dist *.tsbuildinfo"
+    "build": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist .expo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/color-core": "workspace:*",
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/color-naming": "workspace:*",
+    "@irodora/color-spaces": "workspace:*",
+    "@irodora/contracts": "workspace:*",
+    "@irodora/corpus": "workspace:*",
+    "@irodora/design-tokens": "workspace:*",
+    "expo": "~57.0.14",
+    "expo-router": "~57.0.14",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.0",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
   }
 }
