@@ -45,7 +45,7 @@ noise.
 ## Boundaries are real
 
 - Package boundaries are lint-enforced. Import the entry point, never an internal path.
-- Module boundaries inside `apps/api` are Fastify plugin scopes. Cross-module access goes
+- Module boundaries are package boundaries, enforced by `lint`. Cross-package access goes
   through a declared interface.
 - **`packages/color-*` may not import a platform API.** No `node:*`, no DOM, no `process`.
   This is what makes NFR-3 achievable.

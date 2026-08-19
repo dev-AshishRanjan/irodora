@@ -124,7 +124,7 @@ the product into uselessness is not a control; it is a fee.
 
 Fulfilled within 30 days; typically minutes, since both are automated jobs.
 
-**Erasure must de-index, not just delete.** A row deleted from Postgres while its text
+**Erasure must reclaim, not just delete.** A row deleted from SQLite while its text
 remains in a search index, its key in a cache, or its id in a sync tombstone has not been
 erased. The erasure job enumerates every store and is verified by a re-query returning
 nothing from each.

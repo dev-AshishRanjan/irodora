@@ -2,139 +2,120 @@
 
 | | |
 |---|---|
-| **Status** | Baseline · schema lands with F-011 (corpus) and F-034 (tenancy) |
-| **Implements** | FR-21, FR-25, FR-39, FR-59, NFR-13, NFR-15 |
-| **Decisions** | [ADR-0013](../adr/0013-postgres-drizzle-single-system-of-record.md) · [ADR-0017](../adr/0017-multi-tenancy-and-rls-from-day-one.md) |
+| **Status** | Baseline for R2 · schema lands with F-041 (`@irodora/store`) |
+| **Version** | 2.0 · 2026-08-19 |
+| **Implements** | FR-21, FR-25, FR-30, FR-39, FR-56, FR-58, NFR-7, NFR-13, NFR-22 |
+| **Decisions** | [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) · [ADR-0014](../adr/0014-offline-first-sqlite-outbox-and-merge-policy.md) (amended) · [ADR-0046](../adr/0046-published-corpus-is-an-immutable-generated-bundle.md) |
+| **Supersedes** | Version 1.0 — a PostgreSQL schema with tenancy, row-level security and an audit table, retired with the server tier |
 
 ---
 
 ## 1. Shape of the data
 
-Three regions with different rules:
+**One SQLite database file on one device.** It is the system of record; there is no other
+copy ([ARCHITECTURE §7](ARCHITECTURE.md#7-data)).
 
-| Region | Tables | Mutability | Tenancy |
-|---|---|---|---|
-| **Content** | colours, palettes, rules, sources, versions | Immutable once published | Global |
-| **Identity** | tenants, orgs, workspaces, users, memberships, sessions | Mutable | Owns tenancy |
-| **User data** | profiles, garments, outfits, recommendations, feedback | Mutable | `tenant_id` + RLS |
+| Region | Where it lives | Mutability |
+|---|---|---|
+| **Content** | The corpus bundle shipped inside the app | Immutable per version, never written by the app |
+| **User data** | The encrypted SQLite database | Mutable, owned entirely by the person holding the phone |
 
-Content is global and immutable; user data is tenant-scoped and mutable. Keeping them
-apart is what lets the entire catalog be cached at the edge indefinitely while user data
-never leaves its tenant.
+Version 1.0 had a third region — Identity — and a tenancy column on every user table. Both
+are gone. **There is one user, so there is nothing to isolate them from.** That is not a
+weakening of the old model; a `tenant_id` on a single-tenant database is a column that can
+only ever hold one value, and a row-level-security policy over it is a check that can never
+fail. Keeping either would have been security theatre.
+
+Content stays out of the database deliberately. It is read-only, it is versioned, and it is
+verified by digest at load — so putting it in a mutable store would add a way for it to
+become wrong without adding anything.
 
 ---
 
 ## 2. Conventions
 
-- **Identifiers** — UUIDv7 primary keys. Time-ordered, so index locality is good and
-  insert order is meaningful without a separate sequence.
-- **Timestamps** — `timestamptz`, always UTC. `created_at`, `updated_at` everywhere;
-  `deleted_at` where soft deletion is needed.
+- **Identifiers** — UUIDv7, **generated on the device**. Time-ordered, so index locality is
+  good and insert order is meaningful without a sequence. Client-generated because that is
+  the half of sync that cannot be retrofitted: a database written with rowid keys cannot be
+  merged with another one later without every user reinstalling.
+- **Timestamps** — integer milliseconds since epoch, UTC. `created_at`, `updated_at`
+  everywhere; `deleted_at` where a tombstone is needed.
 - **Money** — integer minor units plus an ISO-4217 currency column. Never a float.
-- **Colour storage** — canonical `xyz_x/y/z` as `double precision`, **plus** materialised
-  `lab_*`, `oklch_*` and `hex` for query and display. The derived columns are generated
-  by the engine at write time, never by the database, so there is exactly one
-  implementation of the maths ([E-001](../../.harness/state/effects.json)).
-- **Enums** — Postgres enums for closed sets that change with a migration; lookup tables
-  for sets content editors change.
-- **Soft delete** — only where recovery has genuine value. Anything under a data-subject
-  erasure request is hard-deleted and de-indexed (FR-58).
+- **Colour storage** — canonical `xyz_x/y/z` as `REAL`, **plus** materialised `lab_*`,
+  `oklch_*` and `hex` for query and display. The derived columns are written by the engine,
+  never computed in SQL, so there is exactly one implementation of the maths
+  ([E-001](../../.harness/state/effects.json)).
+- **Enums** — `TEXT` with a `CHECK` constraint. SQLite has no enum type, and a check
+  constraint is the honest equivalent: it fails the write rather than the review.
+- **Soft delete** — used wherever a row is user-visible, because a tombstone is what makes
+  a later sync able to distinguish "deleted" from "never existed". A hard delete is
+  reserved for erasure (§7).
+- **Foreign keys** — `PRAGMA foreign_keys = ON`, always. SQLite defaults it **off**, which
+  means a schema full of `REFERENCES` clauses enforces nothing unless the pragma is set on
+  every connection. This is the single most common way a SQLite schema turns out to have no
+  referential integrity at all.
 
 ---
 
-## 3. Content
+## 3. Sync-shaped, though sync is not built
+
+Every user-data table carries:
 
 ```
-color_source
-  id · name · source_type · publisher · published_year · licence
-  licence_url · rights_holder · notes · verified_by · verified_at
-     ▲
-     │  every colour cites at least one
-     │
-japanese_color                                    color_version
-  id · slug · classification                        id · label ('2026.08.1')
-  name_kanji · name_kana · name_romaji · name_en    published_at · immutable
-  xyz_x/y/z · lab_l/a/b · oklch_l/c/h · hex         checksum · notes
-  family · temperature · era · material · season
-  fashion_use · contemporary_note
-  editorial_status · version_id ─────────────────────┘
-     │
-     ├── color_relation (related · complementary · historical-variant)
-     └── palette_color (role: anchor|neutral|light|accent, rank, weight)
-              │
-           palette
-             id · slug · name_en · name_ja · description
-             category · aesthetic · classification
-             source_id · version_id · editorial_status
+id            TEXT    UUIDv7, generated on device
+created_at    INTEGER
+updated_at    INTEGER
+deleted_at    INTEGER NULL          -- tombstone, not a hard delete
 ```
 
-**`classification`** (FR-23) is a required, displayed field: `historical` ·
-`traditional` · `modern-japanese` · `japanese-inspired` · `editorial`. The UI cannot
-present an inspired palette as historical because the field is not optional and the
-renderer switches on it.
+and every write appends to:
 
-**`editorial_status`**: `draft` → `review` → `verified` → `published` → `superseded`.
-Only `published` is served. Reaching `published` requires complete provenance and a
-recorded reviewer — enforced by the `content` gate (NFR-20), not by process discipline.
+```
+change_log
+  seq         INTEGER PRIMARY KEY AUTOINCREMENT
+  table_name  TEXT
+  row_id      TEXT
+  op          TEXT CHECK (op IN ('insert','update','delete'))
+  at          INTEGER
+```
+
+**Nothing reads `change_log` today.** It exists because
+[ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) draws a
+line between what can be added later and what cannot: a sync protocol can be designed at any
+time, but a database written without stable ids and tombstones cannot be reconciled
+afterwards. Roughly forty lines now, against a migration on every user's device that has no
+server to coordinate it.
+
+It is deliberately **not** an outbox. An outbox implies a destination and a delivery
+guarantee, and building either before there is a second device is the mistake this rehaul
+corrected.
+
+---
+
+## 4. Content
+
+Shipped as an immutable bundle, not stored in the database
+([ADR-0046](../adr/0046-published-corpus-is-an-immutable-generated-bundle.md)):
+
+```
+colour entry   slug · names (kanji, kana, romaji, en) · xyz · lab · lch · oklch · hex
+               family · temperature · era · material · season[] · classification
+               related[] · complementary[] · fashion use
+               provenance: source · sourceType · sourceLicence · derivation
+                           authoredBy · verifiedBy · verifiedAt
+palette        slug · name · classification · roles (anchor|neutral|light|accent)
+               editorial provenance
+version        id · digest · ledger of per-entry digests
+```
+
+The digest is verified at load **even though the app shipped the file**. "We built it" is a
+claim about the build, not about the bytes on this device.
 
 ### Rules as content (FR-67)
 
-```
-rule_version        id · label · published_at · immutable · checksum
-recommendation_weight   rule_version_id · factor · weight · context
-harmony_rule            rule_version_id · from_family · to_family · score
-                        context[] · source · rationale
-```
-
-A weight change publishes a new `rule_version`. Recommendations record which one they
-used, so a ranking that changed can be explained rather than guessed at.
-
----
-
-## 4. Identity and tenancy
-
-```
-tenant ──< organization ──< workspace ──< membership >── user
-                                              │
-                                           role: owner | admin | editor | member | viewer
-```
-
-Even the single-brand consumer product carries the full hierarchy from day one. A
-consumer user is a tenant with one organisation, one workspace and one member. Retrofitting
-tenancy onto a live schema means backfilling every table and every query — the cost of
-carrying it now is a column and a policy.
-
-```
-user      id · tenant_id · email_hash · display_name · locale
-          preferences · created_at
-identity  id · user_id · provider · subject · linked_at
-session   id · user_id · device_id · issued_at · expires_at · revoked_at
-```
-
-Passwords do not appear. Authentication is OIDC and passkeys
-([ADR-0015](../adr/0015-auth-oidc-passkeys-no-homegrown-crypto.md)); we store no
-credential material.
-
-`email_hash` alongside the encrypted address supports lookup without exposing plaintext
-in indexes or query logs.
-
-### Row-level security
-
-Every table holding user data carries `tenant_id NOT NULL` and:
-
-```sql
-ALTER TABLE <t> ENABLE ROW LEVEL SECURITY;
-ALTER TABLE <t> FORCE ROW LEVEL SECURITY;
-CREATE POLICY tenant_isolation ON <t>
-  USING (tenant_id = current_setting('irodora.tenant_id')::uuid);
-```
-
-`FORCE` matters: without it the table owner bypasses the policy, and the application's
-migration role is usually the owner.
-
-The setting is established per connection from the authenticated session, never from a
-request parameter. A missing setting causes an error, not an empty result — failing open
-on a tenancy boundary is the worst possible default.
+Recommendation weights and harmony rules ship in the same bundle and carry the same
+versioning. Changing a weight changes rankings without a code change; every change mints a
+version, and that version is recorded in every envelope it produced.
 
 ---
 
@@ -142,7 +123,7 @@ on a tenancy boundary is the worst possible default.
 
 ```
 personal_color_profile
-  id · tenant_id · user_id · version
+  id · version
   lightness_min/max · temperature_bias · chroma_min/max · contrast_preference
   confidence_lightness · confidence_temperature · confidence_chroma · confidence_contrast
   method: guided | photo-assisted | professional
@@ -150,98 +131,86 @@ personal_color_profile
 ```
 
 **Ranges, not points, with per-dimension confidence** (FR-30). There is no `skin_color`
-column and there never will be — a schema check rejects a migration that adds one
-(NFR-22). The field cannot exist, so the false precision it would imply cannot be built on
-top of it.
+column and there never will be — a schema check rejects a migration that adds one (NFR-22).
+The field cannot exist, so the false precision it would imply cannot be built on top of it.
 
 ```
 garment
-  id · tenant_id · user_id · type · name
+  id · type · name
   primary_color_id · pattern · material · formality · season[]
   brand · size · purchase_date · cost_minor · currency
-  image_key · image_encrypted · wear_count · created_at · updated_at
-  device_id · revision · updated_by_device_at        ← sync metadata
+  image_path · wear_count · created_at · updated_at · deleted_at
 
 garment_color   garment_id · role (primary|secondary|accent) · xyz · lab · oklch
                 proportion · provenance_source · provenance_confidence
 
-outfit          id · tenant_id · user_id · name · occasion · created_at
+outfit          id · name · occasion · created_at · updated_at · deleted_at
 outfit_item     outfit_id · slot · garment_id · locked
 
-recommendation  id · tenant_id · user_id · input_color · context
+recommendation  id · input_color · context
                 envelope_engine · envelope_corpus · envelope_rules · envelope_profile
-                results (jsonb) · created_at
+                results (JSON) · created_at
 recommendation_feedback  recommendation_id · result_index · verdict · created_at
 ```
 
-`image_key` points at object storage; the bytes never live in Postgres.
-`image_encrypted` records that the object is under envelope encryption and which data key
-version applies (NFR-13).
+`image_path` points into the app's private, OS-protected storage. There is no `image_encrypted`
+column and no data-key version, because there is no envelope encryption to describe: the
+**whole database and the image directory are covered by the device's own protection plus
+SQLCipher**, with the key in the Keychain / Keystore (NFR-13). Version 1.0's per-tenant data
+keys protected images from the operator of a shared store. There is no operator and no shared
+store.
 
 The reproducibility envelope is stored as **four separate columns**, not one JSON blob, so
-"which recommendations used rule version 2026.08.4?" is an indexed query rather than a
-table scan — and that question gets asked every time a ranking change is investigated.
+"which recommendations used rule version 2026.08.4?" is an indexed query rather than a table
+scan — and that question gets asked every time a ranking change is investigated.
 
 ---
 
-## 6. Audit (NFR-15)
-
-```
-audit_event
-  id · tenant_id · actor_id · actor_type · action · subject_type · subject_id
-  before (jsonb) · after (jsonb) · ip_hash · user_agent_hash · occurred_at
-```
-
-Append-only: no `UPDATE` or `DELETE` grant exists for the application role. Covers content
-publication, entitlement changes, role changes, data exports and erasures.
-
-Chronological only — deliberately no user-facing column sorting. An audit trail that can
-be re-ordered invites reading it as a ranking rather than a sequence, and sequence is the
-entire evidentiary value.
-
----
-
-## 7. Indexing
+## 6. Indexing
 
 | Need | Index |
 |---|---|
-| Colour name search | GIN on `to_tsvector` over the name columns |
-| Fuzzy / romaji match | `pg_trgm` GIN on `name_romaji`, `name_en` |
-| Perceptual nearest | Coarse B-tree on `(lab_l, lab_a, lab_b)` buckets; exact ΔE00 in the engine over the shortlist |
-| Wardrobe listing | `(tenant_id, user_id, type, created_at DESC)` |
+| Colour name search | FTS5 virtual table over the name columns |
+| Fuzzy / romaji match | FTS5 prefix tokens; trigram fallback in the engine for short queries |
+| Perceptual nearest | Coarse index on `(lab_l, lab_a, lab_b)` buckets; exact ΔE00 in the engine over the shortlist |
+| Wardrobe listing | `(type, created_at DESC) WHERE deleted_at IS NULL` |
 | Recommendation replay | `(envelope_rules)`, `(envelope_corpus)` |
-| Audit | `(tenant_id, occurred_at DESC)`, `(subject_type, subject_id)` |
 
-**Perceptual nearest-neighbour is not a database problem.** ΔE00 is not a metric distance
-(it violates the triangle inequality), so no spatial index can answer it correctly. The
-database narrows by Lab bucket; the engine ranks exactly. Trying to make Postgres rank by
-ΔE00 would produce subtly wrong ordering that nobody would catch.
+**Perceptual nearest-neighbour is not a database problem.** ΔE00 is not a metric distance —
+it violates the triangle inequality — so no spatial index can answer it correctly. The
+database narrows by Lab bucket; the engine ranks exactly. This is
+[ADR-0008](../adr/0008-search-postgres-fts-with-engine-side-perceptual-ranking.md) with
+Postgres swapped for FTS5 and its actual decision untouched, because the decision was never
+about which database.
 
----
-
-## 8. Migrations
-
-Drizzle. Forward-only; a mistake is corrected by a compensating migration, never by
-editing a shipped one.
-
-Applied at boot under `pg_advisory_lock`, so several containers starting simultaneously on
-a VPS cannot race — which is the normal case under Coolify and Dokploy, not an edge case.
-
-**Expand/contract for anything destructive.** Add the new column, backfill, dual-write,
-switch reads, then drop — across separate releases. A migration that drops a column in the
-same release that stops writing it cannot be rolled back.
+The **shortlist bound is what makes the two-stage search equal a full scan.** Too small and
+the ranking is wrong in a way no test notices; it is a correctness parameter, not a
+performance knob.
 
 ---
 
-## 9. Retention
+## 7. Migrations, retention and erasure
 
-| Data | Retention |
-|---|---|
-| Wardrobe images | Until deleted by the user; hard-deleted and de-indexed on erasure |
-| Recommendations | 24 months, then aggregated |
-| Audit events | 7 years |
-| Sessions | Until expiry + 30 days |
-| Analytics events | 25 months, pseudonymous |
-| Corpus versions | Indefinitely — reproducibility requires it |
+**Migrations.** Drizzle, forward-only, applied at app start. No advisory lock — there is
+exactly one process, and the concurrent-boot race that lock existed for cannot occur.
 
-Full policy: [`../compliance/data-governance.md`](../compliance/data-governance.md).
+A failed migration **leaves the previous database intact** and surfaces an actionable error.
+An app that opens a half-migrated database is worse than one that refuses to start, because
+the first destroys data quietly and the second only inconveniences someone. Migrations ship
+in store builds only, never as an OTA update
+([incident-response.md](../operations/incident-response.md)).
+
+Expand/contract still applies to anything destructive: add, backfill, dual-write, switch
+reads, then drop — across separate releases.
+
+**Retention.** Everything is kept until the person deletes it. There is no operator-side
+retention schedule because there is no operator-side copy. Corpus versions are kept
+indefinitely; reproducibility requires it.
+
+**Erasure (FR-58).** Immediate, local, and complete: rows are hard-deleted, image files are
+removed, and the database is `VACUUM`ed so the pages are actually released rather than left
+readable in free space. A soft delete is not erasure, and a tombstone that survives erasure
+would defeat it — so erasure clears `change_log` too.
+
+**Backup is the user's export**, and it is the entire durability story. Full policy:
+[`../compliance/data-governance.md`](../compliance/data-governance.md).

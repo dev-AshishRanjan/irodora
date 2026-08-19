@@ -99,7 +99,7 @@ degrades the product into uselessness is not a control; it is a fee.
 
 ## Deletion means de-indexing
 
-A row deleted from Postgres while its text remains in a search index, its key in a cache,
+A row deleted from SQLite while its text remains in the FTS5 index, its bytes in a freed page,
 or its id in a sync tombstone **has not been erased**.
 
 The erasure job enumerates every store — database, blob storage, search index, cache,

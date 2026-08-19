@@ -49,7 +49,6 @@ Applies to session signing keys, API keys, and encryption keys.
 | Session signing | 90 days |
 | Database credentials | 180 days |
 | Blob storage keys | 180 days |
-| OIDC client secret | 365 days |
 | KMS data keys | Per policy, automated |
 | **Anything exposed** | **Immediately** |
 

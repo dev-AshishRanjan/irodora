@@ -97,7 +97,7 @@ alert. A retention policy that depends on someone remembering is not a policy.
 | Objection | Analytics opt-out | Immediate |
 | Automated decision-making | Not applicable — no profiling with legal effect. Recommendations are deterministic, explainable, and advisory | — |
 
-**Erasure de-indexes, it does not merely delete.** A row deleted from Postgres while its
+**Erasure reclaims, it does not merely delete.** A row deleted from SQLite while its
 text remains in a search index, its key in a cache, or its id in a sync tombstone has not
 been erased. The erasure job enumerates every store — database, blob storage, search index,
 cache, tombstones, backups within the restore window — and a re-query against each is what

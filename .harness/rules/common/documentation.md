@@ -54,7 +54,7 @@ Someone reading a runbook is usually mid-incident. Someone reading a rule is usu
 
 Per [`../../governance/adr-policy.md`](../../governance/adr-policy.md).
 
-- **Title the decision, not the topic.** "Postgres is the single system of record", not
+- **Title the decision, not the topic.** "The device is the single system of record", not
   "Database choice".
 - **Fill in the Bad consequences.** An ADR with no downsides is describing a preference.
   Every real decision costs something, and the next person needs to know what.

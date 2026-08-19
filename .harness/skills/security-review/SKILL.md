@@ -24,40 +24,55 @@ invisible to conventional monitoring.
 
 ## The checklist
 
-### Input
+> **The hard part of reviewing a local-first app**: everything looks internal, so nothing
+> feels like input. It still is. Work the boundaries below rather than your intuition about
+> what is "ours".
 
-- [ ] Every request parsed by a schema. The handler sees only the parsed type.
-- [ ] Nothing trusted from a client: tenant, user, price, entitlement, role, resource id.
-- [ ] Content type by **magic bytes**, not the supplied header.
+### Input — every boundary, not just the obvious one
+
+- [ ] Every one of these parsed by a `@irodora/contracts` schema, never cast:
+      **a SQLite row** (an older build wrote it) · **an imported backup** (another program
+      wrote it) · **the corpus bundle** (shipped ≠ verified) · **native module output**
+      (camera, keystore) · **a deep link or share intent** (arrives from outside).
+- [ ] `as` on data crossing any of those is the defect this checklist exists to catch.
+- [ ] Content type by **magic bytes**, not the supplied extension.
 - [ ] Hard limits **before** full decode: bytes, pixels, wall-clock.
+- [ ] Import is **transactional** — a bad record rolls the whole import back rather than
+      leaving a half-populated database.
 
-### Tenancy
+### Storage
 
-- [ ] `tenant_id` from the **session**, never a request field.
-- [ ] RLS with `FORCE` on the table.
-- [ ] Missing tenant context **raises**; it does not fall through to an unscoped query.
-- [ ] **404, not 403**, for another tenant's resource.
-- [ ] A negative test proves isolation — **with a decoy**. Against an empty tenant B it
-      passes whether or not the policy works.
+- [ ] Parameterised queries via Drizzle. **No string-built SQL** — a local database makes
+      injection worse, not better: the attacker's input and the data share one file and
+      there is no second tier to stop at.
+- [ ] `PRAGMA foreign_keys = ON` on every connection. SQLite defaults it **off**, so a
+      schema full of `REFERENCES` enforces nothing without it.
+- [ ] Schema version checked before open; a **newer** database is refused, not guessed at.
+- [ ] A failed migration leaves the previous database intact.
+- [ ] Erasure **reclaims**: rows hard-deleted, image files removed, FTS index updated,
+      `VACUUM` run. A soft delete is not erasure.
 
-### Auth
+### The key
 
-- [ ] Token signature, issuer and audience validated.
-- [ ] Session id rotates on privilege change.
-- [ ] Refresh rotation with reuse detection.
-- [ ] Entitlements checked **server-side**; client state is a hint.
+- [ ] SQLCipher key generated on-device, held in Keychain/Keystore via `expo-secure-store`.
+- [ ] **Never** in the bundle, an environment variable, a log, a crash report or a backup
+      file. The key is the whole of at-rest security — exposure is an S1.
+- [ ] No crypto primitive implemented by us.
 
 ### Data
 
-- [ ] Parameterised queries. No string-built SQL.
-- [ ] No secret in code, comment, fixture, log, or task definition.
+- [ ] No secret in code, comment, fixture, or log.
 - [ ] EXIF stripped on ingest — a wardrobe photo taken at home contains a home address.
-- [ ] Images decoded **in the worker**, never in the API process.
-- [ ] **No fetch-by-URL.** Uploads only. No SSRF surface.
+- [ ] Image decoding is bounded and **off the UI thread**. There is no worker process to
+      sacrifice; the blast radius of a decoder bomb is the user's app.
+- [ ] **No fetch-by-URL.** There is no fetch at all — if a change adds one, that is the
+      review.
+- [ ] Nothing written to any sink that could carry a camera frame, an image buffer, a
+      skin-tone estimate or a profile dimension.
 
 ### Content
 
-- [ ] Publication only through the admin path.
+- [ ] Corpus digest verified **at load on the device**, not only at build.
 - [ ] Checksum verified **at load**, not only at write — a restored backup or a swapped
       file on a self-hosted box never passes through the write path.
 - [ ] Every publish audit-logged with actor and diff.

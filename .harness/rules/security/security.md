@@ -15,28 +15,46 @@ job payloads, and anything read from `content/`.
 
 ---
 
-## Trust nothing from a client
+## Trust nothing that crosses a boundary
 
-Never trust a client-supplied: tenant id · user id · price · entitlement · role ·
-timestamp used for ordering · resource id without an authorisation check.
+There is no network boundary any more ([ADR-0051](../../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)),
+and the temptation that creates is the whole of this section: **when everything is "internal",
+nothing feels like input.** It still is.
 
-**`tenant_id` comes from the authenticated session, never from a request field.** A missing
-tenant context **raises**; it does not fall through to an unscoped query. Failing open on a
-tenancy boundary is the worst available default.
+Never trust, without validating it through a `@irodora/contracts` schema:
 
-**404, not 403, for another tenant's resource.** A 403 confirms the id exists.
+| Boundary | Why it is not ours |
+|---|---|
+| A row read from SQLite | Written by an **older build of the app**, with different assumptions. Hostile input in exactly the way a request body was |
+| An imported backup | The strongest case — another program produced it, or a person edited it by hand |
+| The corpus bundle | Digest-checked, then parsed. "We shipped it" is a claim about the build, not the bytes on this device |
+| Output from a native module | The camera, the filesystem, the keystore. Numbers from another runtime |
+| A deep link or share intent | Attacker-controlled, arrives from outside the app entirely |
+
+**Parse, never cast.** A column is `unknown` until a schema says otherwise. `as` on data
+crossing any row above is the same defect as trusting a request body, wearing a costume that
+makes it look like a type annotation.
+
+**Prepared statements only.** String-concatenated SQL is not less dangerous because the
+database is local — it is more dangerous, because the attacker's input and the data are in
+the same file and there is no second tier to stop at.
 
 ---
 
 ## Authentication
 
-- OIDC and passkeys. **We implement no password primitive**
-  ([ADR-0015](../../../docs/adr/0015-auth-oidc-passkeys-no-homegrown-crypto.md)).
-- Short-lived access tokens. Refresh tokens rotate on use, **with reuse detection** — a
-  replayed refresh token revokes the whole family.
-- Session id rotates on privilege change.
-- Cookies: `httpOnly`, `Secure`, `SameSite`.
-- Revocation propagates within 60 s.
+**There is none, and that is the design.** No account, no session, no token, no password
+primitive ([ADR-0015](../../../docs/adr/0015-auth-oidc-passkeys-no-homegrown-crypto.md),
+superseded). The device's own lock screen is the authentication boundary, and it is not ours
+to reimplement.
+
+The rule ADR-0015 actually protected survives and is now easier to keep: **we implement no
+crypto primitive ourselves.** At-rest encryption is SQLCipher; the key lives in the iOS
+Keychain / Android Keystore through `expo-secure-store`.
+
+**The database key is the whole of at-rest security.** A key that reaches a log, a crash
+report, an environment variable or a backup file defeats SQLCipher completely. Treat any
+such exposure as an S1 incident.
 
 ---
 
