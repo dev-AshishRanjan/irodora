@@ -1,5 +1,11 @@
 # Colour Science Rules
 
+**The zone is a GRAPH, not a name (F-073).** These rules bind `packages/color-*` and
+`packages/cvd-engine` — and **every workspace package they depend on, transitively**.
+`scripts/verify-engine-purity.mjs` computes that closure and holds each member to the same
+platform-API and runtime-dependency rules, because an engine package depending on a package
+that imports `node:fs` breaks NFR-3 just as surely as importing it directly.
+
 **Mandatory for `packages/color-*`, `packages/cvd-engine`, and anything computing a colour
 value.**
 

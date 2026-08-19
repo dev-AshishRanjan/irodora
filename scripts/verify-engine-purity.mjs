@@ -20,6 +20,11 @@
  *   2. No file under an engine package's `src/` imports a specifier that is neither
  *      relative nor `@irodora/*`.
  *
+ * **Both run over a COMPUTED zone, not a naming convention (F-073).** The zone is the
+ * transitive closure of `@irodora/*` dependency edges from the declared engine roots, because
+ * scoping by package name allowed an engine package to depend on a workspace package that
+ * imports `node:fs` with every gate staying green. See `engineZone` below.
+ *
  * Import extraction uses the TypeScript compiler's own preprocessor rather than a regular
  * expression, because a regex over source text disagrees with the compiler at exactly the
  * moments that matter — inside a comment, inside a template literal, across a line break.
@@ -42,8 +47,53 @@ const GREEN = '\x1b[32m',
   BOLD = '\x1b[1m',
   OFF = '\x1b[0m';
 
-/** A package is in the engine zone if the ESLint colour-engine override matches it. */
-const isEngine = (name) => name.startsWith('color-') || name === 'cvd-engine';
+/** The DECLARED engine — the packages the ESLint colour-engine override matches by name. */
+const isEngineRoot = (name) => name.startsWith('color-') || name === 'cvd-engine';
+
+/**
+ * The engine zone is a GRAPH, not a naming convention (F-073).
+ *
+ * This check used to scope itself by package name and treat every `@irodora/*` specifier
+ * inside those packages as allowed **without following the edge**. So an engine package could
+ * depend on a workspace package that imports `node:fs`, or that declares a third-party runtime
+ * dependency, and every gate stayed green while NFR-3 was broken — byte-identical output in
+ * Node, the browser and React Native is the one guarantee that cannot bend, and a transitive
+ * `node:fs` is exactly what breaks it.
+ *
+ * The hazard is not hypothetical. F-011 expected `color-naming` to import `@irodora/corpus`,
+ * which is not a root, and handled it by giving `packages/corpus/src` a portability override
+ * plus boundary guard #11. That is one package handled by hand. This is the rule.
+ *
+ * Returns the closure plus, for each non-root member, the edge that pulled it in — so a
+ * package that is in the zone because something depends on it is visible without reading the
+ * graph by hand.
+ */
+function engineZone(allPackages) {
+  const manifestOf = (name) => {
+    const p = join(PACKAGES, name, 'package.json');
+    return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null;
+  };
+
+  const roots = allPackages.filter(isEngineRoot);
+  const zone = new Map(roots.map((r) => [r, null]));
+  const queue = [...roots];
+
+  while (queue.length > 0) {
+    const name = queue.shift();
+    const manifest = manifestOf(name);
+    if (!manifest) continue;
+
+    for (const dep of Object.keys(manifest.dependencies ?? {})) {
+      if (!dep.startsWith('@irodora/')) continue;
+      const target = dep.slice('@irodora/'.length);
+      if (zone.has(target) || !allPackages.includes(target)) continue;
+      zone.set(target, name);
+      queue.push(target);
+    }
+  }
+
+  return zone;
+}
 
 /** Relative, or a workspace sibling. Everything else is a third party. */
 const isAllowedSpecifier = (spec) =>
@@ -67,9 +117,12 @@ function tsFilesUnder(dir) {
  */
 function check() {
   const problems = [];
-  const engines = readdirSync(PACKAGES, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && isEngine(e.name))
+  const allPackages = readdirSync(PACKAGES, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
     .map((e) => e.name);
+
+  const zone = engineZone(allPackages);
+  const engines = [...zone.keys()];
 
   if (engines.length === 0)
     problems.push({
@@ -80,6 +133,11 @@ function check() {
 
   for (const name of engines) {
     const dir = join(PACKAGES, name);
+    const pulledInBy = zone.get(name);
+
+    // A package reached through a dependency edge is held to the SAME rules, and its message
+    // names the edge — otherwise the failure reads as "why is corpus an engine package?"
+    const via = pulledInBy ? ` (in the engine zone via @irodora/${pulledInBy})` : '';
 
     const manifestPath = join(dir, 'package.json');
     if (existsSync(manifestPath)) {
@@ -87,7 +145,7 @@ function check() {
       for (const dep of Object.keys(manifest.dependencies ?? {}))
         if (!dep.startsWith('@irodora/'))
           problems.push({
-            where: `packages/${name}/package.json`,
+            where: `packages/${name}/package.json${via}`,
             what: `runtime dependency "${dep}"`,
             why: 'The engine ships with zero runtime dependencies (NFR-3, ADR-0004). A dev-only oracle belongs in devDependencies; anything else belongs outside the engine.',
           });
@@ -101,23 +159,37 @@ function check() {
       for (const spec of specifiers)
         if (!isAllowedSpecifier(spec))
           problems.push({
-            where: relative(ROOT, file).replaceAll('\\', '/'),
+            where: relative(ROOT, file).replaceAll('\\', '/') + via,
             what: `imports "${spec}"`,
             why: 'The engine must produce byte-identical results in Node, the browser and React Native, and port to WASM without a rewrite. Every import here is either a platform API or a third party inside our correctness claim.',
           });
     }
   }
 
-  return { engines, problems };
+  return { engines, problems, zone };
 }
 
-function report({ engines, problems }) {
+function report({ engines, problems, zone }) {
   console.log(`\n${BOLD}Irodora — colour engine purity${OFF}\n`);
 
   if (problems.length === 0) {
+    const roots = engines.filter((n) => zone.get(n) === null);
+    const reached = engines.filter((n) => zone.get(n) !== null);
+
     console.log(
-      `  ${GREEN}✓${OFF} purity        ${DIM}${engines.length} engine package(s): ${engines.join(', ')}${OFF}`,
+      `  ${GREEN}✓${OFF} purity        ${DIM}${String(roots.length)} declared engine package(s): ${roots.join(', ')}${OFF}`,
     );
+    // Said either way. A bare count cannot distinguish "nothing transitive" from "did not look".
+    if (reached.length === 0)
+      console.log(
+        `  ${GREEN}✓${OFF} closure       ${DIM}no package is pulled into the zone by a dependency edge — the graph closes over the declared engine${OFF}`,
+      );
+    else
+      for (const n of reached)
+        console.log(
+          `  ${GREEN}✓${OFF} closure       ${DIM}${n} is held to engine rules, pulled in via @irodora/${zone.get(n)}${OFF}`,
+        );
+
     console.log(`\n${GREEN}${BOLD}Engine purity verified.${OFF}\n`);
     return 0;
   }
@@ -141,6 +213,7 @@ function prove() {
   const fixtureSrc = join(PACKAGES, 'color-spaces', 'src', '__purity_fixture__.ts');
   const manifestPath = join(PACKAGES, 'color-spaces', 'package.json');
   const manifestBefore = readFileSync(manifestPath, 'utf8');
+  const transitiveSrc = join(PACKAGES, 'recommendation', 'src', '__purity_transitive__.ts');
 
   const cases = [
     {
@@ -159,6 +232,31 @@ function prove() {
       },
       clean: () => writeFileSync(manifestPath, manifestBefore),
       expect: /runtime dependency "culori"/,
+    },
+    {
+      // F-073. THE CASE THE OLD CHECK COULD NOT SEE. `@irodora/*` was allowed unconditionally
+      // inside an engine package and the edge was never followed, so an engine package could
+      // depend on a workspace package that imports `node:fs` with every gate green. Plants
+      // exactly that: color-spaces gains a dependency on @irodora/recommendation, which is not
+      // an engine root, and that package's src gains a node:fs import.
+      name: 'a TRANSITIVE violation is caught — a non-engine package pulled into the zone',
+      plant: () => {
+        const m = JSON.parse(manifestBefore);
+        m.dependencies = {
+          ...(m.dependencies ?? {}),
+          '@irodora/recommendation': 'workspace:*',
+        };
+        writeFileSync(manifestPath, `${JSON.stringify(m, null, 2)}\n`);
+        writeFileSync(
+          transitiveSrc,
+          `import { readFileSync } from 'node:fs';\nexport const y = readFileSync;\n`,
+        );
+      },
+      clean: () => {
+        writeFileSync(manifestPath, manifestBefore);
+        unlinkSync(transitiveSrc);
+      },
+      expect: /imports "node:fs"/,
     },
   ];
 

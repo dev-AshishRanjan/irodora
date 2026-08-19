@@ -1680,7 +1680,7 @@
       "service": "tests",
       "release": "R1",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "acceptance": [
         "A package outside the engine zone that an engine package depends on is held to the same platform-API and runtime-dependency rules, transitively",
         "scripts/verify-engine-purity.mjs --prove plants exactly that violation and watches the check fail"
@@ -1689,7 +1689,8 @@
         "state",
         "lint"
       ],
-      "notes": "FOUND IN F-011. scripts/verify-engine-purity.mjs scopes the platform-API ban by package NAME (color-* and cvd-engine) and allows any @irodora/* specifier inside an engine package WITHOUT following the edge. So an engine package may depend on a workspace package that imports node:fs or declares a runtime dependency, and every gate stays green while NFR-3 is broken — byte-identical output in Node, the browser and React Native is the one guarantee that cannot bend. THE CASE IS NOT HYPOTHETICAL: F-013 (colour naming) lives in packages/color-naming, is blocked by F-011, and will import @irodora/corpus, which is NOT in the engine zone. F-011 mitigated that one instance by giving packages/corpus/src the portability override plus boundary guard #11 — proven to fire — but that is one package handled by hand, not a rule. The general check belongs here rather than in F-011 because it changes a repository-wide guard rather than that feature's subject."
+      "notes": "DONE. The engine zone is now a GRAPH rather than a naming convention. verify-engine-purity.mjs scoped itself by package NAME (color-* and cvd-engine) and treated every @irodora/* specifier inside those as allowed WITHOUT FOLLOWING THE EDGE — so an engine package could depend on a workspace package that imports node:fs, or that declares a third-party runtime dependency, and every gate stayed green while NFR-3 was broken. A transitive node:fs breaks byte-identical output in Node, the browser and React Native exactly as directly as a local one. The zone is now the transitive closure of @irodora/* dependency edges from the declared roots, and every member is held to both existing rules. NOTHING WAS VIOLATING IT: today the closure equals the roots exactly, and the check SAYS SO on every run rather than printing a bare count — a count cannot distinguish \"no transitive packages\" from \"did not look\". That is a fact about this commit, not a property anyone was maintaining: F-011 already hit the hazard once, expecting color-naming to import @irodora/corpus, and handled it by hand with a portability override plus boundary guard #11. One package, not a rule. PROVEN: --prove now runs three planted violations rather than two. The new one is the case the old check COULD NOT SEE — color-spaces gains a dependency on @irodora/recommendation, which is not a root, and that package src gains a node:fs import. Caught, with the clean baseline asserted first and last, and every fixture verified removed. A failure message now NAMES THE EDGE that pulled a package in, so it reads as \"corpus is in the zone via @irodora/color-naming\" rather than leaving someone to ask why corpus is an engine package. THE COST, stated rather than discovered: a package pulled into the zone inherits the whole constraint set, so wanting an engine package to use a helper that reads a file is now a design decision rather than an accident.",
+      "plan": "plans/F-073-engine-purity-follows-dependency-edges.md"
     }
   ]
 }

@@ -1,4 +1,4 @@
-# AGENTS.md — `packages/color-*` and `packages/cvd-engine`
+# AGENTS.md — `packages/color-*`, `packages/cvd-engine`, and their dependency closure
 
 > **Scoped harness. Extends [`../../AGENTS.md`](../../AGENTS.md), which still applies in
 > full.** This scope is **stricter**, never looser — no scope may relax a golden rule, and
