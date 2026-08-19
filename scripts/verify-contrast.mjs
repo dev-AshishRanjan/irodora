@@ -34,8 +34,15 @@ const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 
 // pathToFileURL, not the bare path: on Windows an absolute path starts with a drive letter,
 // which the ESM loader reads as a URL scheme and rejects.
-const { parseManifest, derivedSrgb, checkContrast, checkChromaCeiling, checkStructure, THEMES } =
-  await import(pathToFileURL(join(ROOT, 'packages', 'design-tokens', 'dist', 'index.js')).href);
+const {
+  parseManifest,
+  derivedSrgb,
+  checkContrast,
+  checkChromaCeiling,
+  checkStructure,
+  checkSalience,
+  THEMES,
+} = await import(pathToFileURL(join(ROOT, 'packages', 'design-tokens', 'dist', 'index.js')).href);
 
 const c = {
   reset: '[0m',
@@ -124,6 +131,10 @@ for (const r of results) {
 
 failures.push(...checkChromaCeiling(manifest));
 failures.push(...checkStructure(manifest));
+// F-067. The salience rank is RECORDED in the manifest and asserted here, so it cannot drift
+// back to the state where the two themes ranked the status colours in opposite orders and
+// nothing in the build had an opinion about it (ADR-0053).
+failures.push(...checkSalience(manifest));
 
 // --- report --------------------------------------------------------------------------
 

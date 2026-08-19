@@ -76,6 +76,7 @@ Two rules that matter more than the format:
 | [0050](0050-rate-limiting-is-a-fixed-window-that-fails-open.md) | Rate limiting is a fixed window, and it fails open | Retired with the server tier ([ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)) |
 | [0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) | Irodora is a local-first mobile app; there is no server tier | Accepted |
 | [0052](0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md) | The OKLab round-trip tolerance is conditioned on LMS, and 1e-12 was wrong | Accepted |
+| [0053](0053-dark-status-salience-matches-light-and-error-gets-lighter.md) | Dark-theme status salience matches light, and error gets lighter to reach it | Accepted |
 
 ## Open questions awaiting an ADR
 

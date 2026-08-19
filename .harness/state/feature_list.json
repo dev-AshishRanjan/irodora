@@ -1531,7 +1531,7 @@
       "service": "content",
       "release": "R1",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-003"
       ],
@@ -1546,7 +1546,11 @@
         "contrast",
         "cvd"
       ],
-      "notes": "FOUND BY THE F-003 DESIGN AND COLOUR-SCIENCE REVIEWS. PRE-EXISTING — not introduced by F-003. TWO DRIVERS, ONE DECISION. (1) SALIENCE INVERSION: measured against each theme own background, the dark theme says caution is the loudest state and error the quietest, while the light theme says error is loudest by nearly 2x. A user toggling the theme gets an inverted status hierarchy. The cause is that the approved system holds the rank of OKLCh L constant across two grounds of OPPOSITE polarity, and L rank does not survive that flip — the invariant that makes the themes one system is rank of CONTRAST against own ground. (2) THE APCA FLOOR: dark.status.bad sits at APCA Lc -37.5 to -38.6 against its three declared surfaces — below the Lc 45 LARGE-text floor of 0.98G-4g — while WCAG reads 4.92 to 5.58 and passes. ADR-0044 classifies status.* as usage:text precisely because the product tints the label, so this is body copy below even the large-text floor in the DEFAULT theme. MEASURED AND INFEASIBLE SEPARATELY: holding status.ok and status.warn at their current values, NO value of status.bad reaches even Lc 40 while keeping CVD separation at or above 60 — the APCA floor and the separation minimum are in direct tension at the current lightness arrangement. A jointly feasible solution exists and was computed during F-003 — dark ok L0.67 C0.12 H158, warn L0.70 C0.14 H70, bad L0.82 C0.10 H18, worst separation 63.1, every token above Lc 45 — but it makes error the LIGHTEST token in the dark theme, which is exactly the salience re-arrangement in driver (1). That is a redesign larger than either defect and belongs to a person rather than to a gate-building task. Until it is decided, gate 9 prints the three pairings in a separate RED band on every run so they cannot be mistaken for the ordinary WCAG/APCA disagreements."
+      "notes": "FOUND BY THE F-003 DESIGN AND COLOUR-SCIENCE REVIEWS. PRE-EXISTING — not introduced by F-003. TWO DRIVERS, ONE DECISION. (1) SALIENCE INVERSION: measured against each theme own background, the dark theme says caution is the loudest state and error the quietest, while the light theme says error is loudest by nearly 2x. A user toggling the theme gets an inverted status hierarchy. The cause is that the approved system holds the rank of OKLCh L constant across two grounds of OPPOSITE polarity, and L rank does not survive that flip — the invariant that makes the themes one system is rank of CONTRAST against own ground. (2) THE APCA FLOOR: dark.status.bad sits at APCA Lc -37.5 to -38.6 against its three declared surfaces — below the Lc 45 LARGE-text floor of 0.98G-4g — while WCAG reads 4.92 to 5.58 and passes. ADR-0044 classifies status.* as usage:text precisely because the product tints the label, so this is body copy below even the large-text floor in the DEFAULT theme. MEASURED AND INFEASIBLE SEPARATELY: holding status.ok and status.warn at their current values, NO value of status.bad reaches even Lc 40 while keeping CVD separation at or above 60 — the APCA floor and the separation minimum are in direct tension at the current lightness arrangement. A jointly feasible solution exists and was computed during F-003 — dark ok L0.67 C0.12 H158, warn L0.70 C0.14 H70, bad L0.82 C0.10 H18, worst separation 63.1, every token above Lc 45 — but it makes error the LIGHTEST token in the dark theme, which is exactly the salience re-arrangement in driver (1). That is a redesign larger than either defect and belongs to a person rather than to a gate-building task. Until it is decided, gate 9 prints the three pairings in a separate RED band on every run so they cannot be mistaken for the ordinary WCAG/APCA disagreements.",
+      "plan": "plans/F-067-cross-theme-salience-hierarchy.md",
+      "effects": [
+        "E-007"
+      ]
     },
     {
       "id": "F-068",

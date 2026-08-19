@@ -23,9 +23,9 @@
   --irodora-color-inverse: #F6F4F1;
   --irodora-color-inverse-foreground: #0C0B09;
   --irodora-color-ring: #719DC4;
-  --irodora-color-status-ok: #75B992;
-  --irodora-color-status-warn: #E9A44E;
-  --irodora-color-status-bad: #D4665E;
+  --irodora-color-status-ok: #49AB79;
+  --irodora-color-status-warn: #D58D25;
+  --irodora-color-status-bad: #FEAAAC;
   --irodora-color-chart-1: #F5F5F5;
   --irodora-color-chart-2: #B7B7B7;
   --irodora-color-chart-3: #808080;
@@ -74,9 +74,9 @@
     --irodora-color-inverse: oklch(0.968 0.005 85);
     --irodora-color-inverse-foreground: oklch(0.15 0.004 70);
     --irodora-color-ring: oklch(0.68 0.075 246);
-    --irodora-color-status-ok: oklch(0.73 0.09 158);
-    --irodora-color-status-warn: oklch(0.77 0.13 70);
-    --irodora-color-status-bad: oklch(0.64 0.14 26);
+    --irodora-color-status-ok: oklch(0.67 0.12 158);
+    --irodora-color-status-warn: oklch(0.7 0.14 70);
+    --irodora-color-status-bad: oklch(0.82 0.1 18);
     --irodora-color-chart-1: oklch(0.97 0 0);
     --irodora-color-chart-2: oklch(0.78 0 0);
     --irodora-color-chart-3: oklch(0.6 0 0);

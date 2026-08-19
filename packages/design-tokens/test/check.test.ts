@@ -20,6 +20,7 @@ import { describe, expect, it } from 'vitest';
 import {
   checkChromaCeiling,
   checkContrast,
+  checkSalience,
   parseManifest,
   requirementFor,
   THEMES,
@@ -193,5 +194,70 @@ describe('checkChromaCeiling', () => {
     });
     const findings = checkChromaCeiling(parseManifest(probe));
     expect(findings.some((f) => f.detail.includes('no longer exceeds'))).toBe(true);
+  });
+});
+
+describe('checkSalience — the rank holds in every theme', () => {
+  it('the shipped manifest passes, in both themes', () => {
+    expect(checkSalience(manifest)).toEqual([]);
+  });
+
+  /**
+   * The decoy. Without it, `checkSalience` returning `[]` unconditionally would look exactly
+   * like a passing check — which is the shape this repository has shipped twice
+   * [[a-decoy-that-is-not-broken-proves-nothing]].
+   */
+  it('a rank that disagrees with the measurements is caught, and names both tokens', () => {
+    const inverted: Manifest = {
+      ...manifest,
+      salience: { ...manifest.salience, rank: ['status.ok', 'status.warn', 'status.bad'] },
+    };
+    const findings = checkSalience(inverted);
+    expect(findings.length).toBeGreaterThan(0);
+    expect(findings.every((f) => f.check === 'salience')).toBe(true);
+    // It must name what it compared, or a reader cannot tell which theme is wrong.
+    expect(findings.some((f) => f.detail.includes('status.ok'))).toBe(true);
+    expect(findings.some((f) => f.detail.includes('status.bad'))).toBe(true);
+    expect(findings.some((f) => /light|dark/.test(f.detail))).toBe(true);
+  });
+
+  it('catches an inversion in ONE theme only — which is the defect F-067 existed for', () => {
+    // The pre-F-067 dark values: light ranked bad > warn > ok while dark ranked warn > ok > bad,
+    // and nothing in the build had an opinion about it.
+    const before: Manifest = {
+      ...manifest,
+      color: {
+        ...manifest.color,
+        dark: {
+          ...manifest.color.dark,
+          'status.ok': {
+            ...manifest.color.dark['status.ok']!,
+            oklch: { l: 0.73, c: 0.09, h: 158 },
+          },
+          'status.warn': {
+            ...manifest.color.dark['status.warn']!,
+            oklch: { l: 0.77, c: 0.13, h: 70 },
+          },
+          'status.bad': {
+            ...manifest.color.dark['status.bad']!,
+            oklch: { l: 0.64, c: 0.14, h: 26 },
+          },
+        },
+      },
+    };
+    const findings = checkSalience(before);
+    expect(findings.length).toBeGreaterThan(0);
+    // Light is unchanged and must NOT be reported — a check that fires on both themes is not
+    // localising the defect.
+    expect(findings.every((f) => f.detail.startsWith('dark:'))).toBe(true);
+  });
+
+  it('a token named in the rank but absent from a theme is a finding, not a silent skip', () => {
+    const bogus: Manifest = {
+      ...manifest,
+      salience: { ...manifest.salience, rank: [...manifest.salience.rank, 'status.nonexistent'] },
+    };
+    const findings = checkSalience(bogus);
+    expect(findings.some((f) => f.detail.includes('status.nonexistent'))).toBe(true);
   });
 });

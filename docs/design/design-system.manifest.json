@@ -5,11 +5,12 @@
   "updated": "2026-08-15",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
-    "date": "2026-08-15",
-    "adr": "0044",
-    "tokens": ["dark.status.ok", "dark.status.warn", "dark.status.bad", "light.status.ok", "light.status.warn", "light.status.bad"],
-    "reviewedBy": "designer and colour-scientist review, NOT the person who approved the palette on 2026-08-14",
-    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. Re-approval is owed."
+    "date": "2026-08-19",
+    "adr": "0053",
+    "tokens": ["dark.status.ok", "dark.status.warn", "dark.status.bad"],
+    "reviewedBy": "Decision approved by the product owner on 2026-08-19 after the measurements were reproduced independently against the shipped engine. The VALUES were computed during F-003 by the design and colour-science reviews, NOT by the person who approved the palette on 2026-08-14.",
+    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate — worst |APCA Lc| 46.5 against a floor of 45, worst CVD separation 63.1 against a floor of 60. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. Re-approval is owed. SUPERSEDES the 2026-08-15 / ADR-0044 entry: the light values it corrected still stand, and only the three dark status tokens moved.",
+    "supersedes": { "date": "2026-08-15", "adr": "0044" }
   },
   "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
 
@@ -40,9 +41,9 @@
       "inverse":       { "oklch": { "l": 0.968, "c": 0.005, "h": 85 }, "srgb": "#F6F4F1", "usage": "surface", "role": "Primary button fill.", "pairsWith": ["inverse.foreground"] },
       "inverse.foreground": { "oklch": { "l": 0.150, "c": 0.004, "h": 70 }, "srgb": "#0C0B09", "usage": "text", "role": "Text on inverse.", "pairsWith": [] },
       "ring":          { "oklch": { "l": 0.680, "c": 0.075, "h": 246 }, "srgb": "#719DC4", "usage": "nonText", "role": "Focus ring and selection. The only chromatic token in the PERSISTENT chrome — the status tokens are chromatic too, but they appear only while a state is being reported.", "pairsWith": ["background", "surface.1", "surface.2", "surface.3"] },
-      "status.ok":     { "oklch": { "l": 0.730, "c": 0.090, "h": 158 }, "srgb": "#75B992", "usage": "text", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.warn":   { "oklch": { "l": 0.770, "c": 0.130, "h": 70 },  "srgb": "#E9A44E", "usage": "text", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
-      "status.bad":    { "oklch": { "l": 0.640, "c": 0.140, "h": 26 },  "srgb": "#D4665E", "usage": "text", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.ok":     { "oklch": { "l": 0.670, "c": 0.120, "h": 158 }, "srgb": "#49AB79", "usage": "text", "role": "Success.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.warn":   { "oklch": { "l": 0.700, "c": 0.140, "h": 70 },  "srgb": "#D58D25", "usage": "text", "role": "Caution.", "pairsWith": ["background", "surface.1", "surface.2"] },
+      "status.bad":    { "oklch": { "l": 0.820, "c": 0.100, "h": 18 },  "srgb": "#FEAAAC", "usage": "text", "role": "Error.", "pairsWith": ["background", "surface.1", "surface.2"] },
       "chart.1": { "oklch": { "l": 0.97, "c": 0, "h": 0 }, "srgb": "#F5F5F5", "usage": "nonText", "role": "Data series 1.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
       "chart.2": { "oklch": { "l": 0.78, "c": 0, "h": 0 }, "srgb": "#B7B7B7", "usage": "nonText", "role": "Data series 2.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
       "chart.3": { "oklch": { "l": 0.60, "c": 0, "h": 0 }, "srgb": "#808080", "usage": "nonText", "role": "Data series 3.", "uncheckedReason": "A data series is separated from its neighbours by lightness, marker shape and a direct label, not by contrast against a surface — the greyscale ramp exists precisely so hue is not the channel. The requirement is series-to-series separation inside a chart component, which is F-017 work and cannot be expressed as a token pairing.", "pairsWith": [] },
@@ -92,6 +93,14 @@
       ["status.ok", "status.warn"],
       ["ring", "border.strong"]
     ]
+  },
+
+  "salience": {
+    "_note": "The salience rank of the status tokens, measured as |APCA Lc| against each theme's own `background`. RECORDED, not inferred: a rank read back out of the values can never disagree with them, and the F-067 defect was precisely that no order had been stated. Asserted by gate 9 via checkSalience.",
+    "metric": "absolute APCA Lc against the theme's own `background` token, background passed first",
+    "rank": ["status.bad", "status.warn", "status.ok"],
+    "why": "Error is the loudest state in both themes. Holding this rank ACROSS the two themes is the invariant that makes them one system — and it is a rank of CONTRAST, not of OKLCh lightness, because the two grounds have opposite polarity and L rank does not survive that flip (ADR-0053).",
+    "adr": "0053"
   },
 
   "radius": {

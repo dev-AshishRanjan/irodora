@@ -8,6 +8,108 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-067 DONE · R1 closes, and error is pale pink in the dark theme now
+
+The last open R1 feature, and the only one that needed a person rather than a gate. Approved by
+the product owner after the measurements were reproduced.
+
+### The two defects
+
+**Salience inverted between themes.** Measured as |APCA Lc| against each theme's own ground:
+
+```
+light:  bad 89.3  >  warn 73.4  >  ok 72.7      error loudest
+dark:   warn 60.8 >  ok   56.8  >  bad 38.6     error QUIETEST
+```
+
+**`dark.status.bad` sat at |Lc| 37.5** against the Lc 45 large-text floor, while WCAG read 4.92
+and passed — body copy under even the large-text floor, in the default theme.
+
+One cause: the system held the rank of OKLCh **L** constant across two grounds of *opposite
+polarity*, and L rank does not survive that flip.
+
+> The invariant that makes two themes one system is the rank of CONTRAST against own ground,
+> not the rank of lightness.
+
+### There was no third option
+
+Against a dark ground APCA contrast **rises with lightness**. A deep red error cannot reach
+Lc 45 there — geometry, not preference. Either error gets lighter or it stays under the floor.
+
+Adopted ([ADR-0053](../../docs/adr/0053-dark-status-salience-matches-light-and-error-gets-lighter.md)):
+
+| | from | to |
+|---|---|---|
+| `dark.status.ok` | `#75B992` | `#49AB79` |
+| `dark.status.warn` | `#E9A44E` | `#D58D25` |
+| `dark.status.bad` | `#D4665E` | **`#FEAAAC`** |
+| worst \|Lc\| | 37.5 ✗ | **46.5** ✓ |
+| worst CVD separation | 65.2 | **63.1** ✓ |
+| dark salience | warn > ok > bad | **bad > warn > ok** |
+
+**Headroom is 1.5 Lc, not more.** `ok` and `warn` sit within 3 Lc of the floor. Any future
+darkening of the dark background needs re-measuring rather than eyeballing.
+
+The rank is now **recorded in the manifest and asserted by gate 9** — read, not derived, because
+a rank derived from the values can never disagree with them, which is the state the defect
+shipped in.
+
+### I mis-measured, and the record was right
+
+The first re-measurement used `apcaLc(foreground, background)`. **APCA is directional and takes
+the background FIRST**, so every number came out reverse-polarity: the defect read as 39.5
+rather than 37.5, the fix as 48.3 rather than 46.5, and I quoted the wrong margin — 3.3 Lc when
+it is 1.5.
+
+The conclusion survived, but two things are worth keeping. **F-067's original record already
+said −37.5 to −38.6, and it was correct** — the fresh measurement was the wrong one. And a
+directional metric returns a plausible number when its arguments are swapped, which is why
+`checkSalience` takes the magnitude. Recorded in ADR-0053 rather than quietly corrected.
+
+### And I reformatted a file I should not have
+
+Writing the manifest with `JSON.stringify(m, null, 2)` produced **751 insertions for a 3-token
+change**. That file is deliberately hand-formatted — one aligned line per token, so the palette
+reads as a table — and it is Prettier-ignored to keep it that way.
+
+**The mutation proof caught it**, reporting `MUTATION DID NOT APPLY — the anchor text has moved`
+for two unrelated cases. A proof that only checked exit codes would have gone green on a
+mutation that never applied. Reverted; redone as surgical text edits, 17 insertions.
+
+Also re-measured a decoy label that had gone stale for the same reason: the gate 10 case said
+`64.1 -> 31.8` and now says `70.7 -> 3.6`, because the token it rotates is one of the three that
+moved [[a-decoy-written-against-old-values-quietly-stops-discriminating]].
+
+### Evidence
+
+```
+  ✓ state 14      ✓ typecheck 25   ✓ lint 25        ✓ build 16
+  ✓ test 25       ✓ golden 12      ✓ cvd 11         ✓ contrast 17
+  ✓ content       ✓ format         ✓ mirror 22      ✓ purity + prove (3)
+  ✓ guards 11     ✓ claims + proof (14)   ✓ contrast proof (10)
+
+  NOT run: e2e, a11y, perf (pending) · security (gitleaks not installed here)
+```
+
+New: 4 `checkSalience` unit tests including a decoy that inverts the rank, one that reproduces
+the pre-F-067 dark values and asserts **only `dark:` is reported** — a check that fires on both
+themes is not localising the defect — and a tenth contrast mutation case.
+
+### R1 IS CLOSED except for the corpus
+
+```
+F-012  BLOCKED   seed corpus — needs a second editorial identity (OQ-5)
+```
+
+Every other R1 feature is done. **F-012 is the critical path to a usable product** and it is
+waiting on a person, not on code.
+
+R2 is next: F-039 (Expo shell) → F-041 (`@irodora/store`) → F-017 → F-035 → the surfaces.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-19 — F-072 and F-073 DONE · the two ways a gate stops guarding
 
 Both were blind spots found during F-011 and recorded rather than fixed. Both had the same

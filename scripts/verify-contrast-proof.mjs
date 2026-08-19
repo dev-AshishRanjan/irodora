@@ -36,6 +36,19 @@ const rebuild = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-
 
 const cases = [
   {
+    // F-067. Without this the `salience` block is documentation: `checkSalience` returning []
+    // unconditionally would look exactly like a passing check, which is the shape this
+    // repository has shipped twice. Swapping two entries in the RECORDED rank must go red.
+    name: 'gate 9 — the recorded salience rank swapped (F-067)',
+    file: MANIFEST,
+    mutate: (s) =>
+      s.replace(
+        '"rank": ["status.bad", "status.warn", "status.ok"]',
+        '"rank": ["status.warn", "status.bad", "status.ok"]',
+      ),
+    check: gate9,
+  },
+  {
     name: 'gate 9 — a token nudged below AA',
     file: MANIFEST,
     mutate: (s) =>
@@ -62,12 +75,12 @@ const cases = [
     check: gate9,
   },
   {
-    name: 'gate 10 — success rotated 48 degrees toward caution (64.1 -> 31.8)',
+    name: 'gate 10 — success rotated 84 degrees toward caution (70.7 -> 3.6)',
     file: MANIFEST,
     mutate: (s) =>
       s.replace(
-        '"status.ok":     { "oklch": { "l": 0.730, "c": 0.090, "h": 158 }',
-        '"status.ok":     { "oklch": { "l": 0.780, "c": 0.090, "h": 110 }',
+        '"status.ok":     { "oklch": { "l": 0.670, "c": 0.120, "h": 158 }',
+        '"status.ok":     { "oklch": { "l": 0.700, "c": 0.140, "h": 74 }',
       ),
     check: gate10,
   },

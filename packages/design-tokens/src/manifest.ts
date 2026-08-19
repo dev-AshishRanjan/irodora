@@ -123,11 +123,25 @@ export interface Manifest {
   readonly color: Readonly<Record<Theme, Readonly<Record<string, ColorToken>>>>;
   readonly statusPairing: Readonly<Record<string, StatusEntry>>;
   readonly cvdPairs: CvdPairs;
+  readonly salience: Salience;
   readonly radius: Readonly<Record<string, number>>;
   readonly spacing: { readonly base: number; readonly scale: readonly number[] };
   readonly size: { readonly tapTarget: number };
   readonly exceptions: readonly ChromaException[];
   readonly gate: { readonly contrast: ContrastGateConfig };
+}
+
+/**
+ * The RECORDED salience rank of the status tokens (F-067, ADR-0053).
+ *
+ * Recorded rather than inferred. A rank read back out of the values can never disagree with
+ * them, and the defect this exists to catch was precisely that no order had been stated — the
+ * dark theme ranked warn > ok > bad while light ranked bad > warn > ok, and nothing noticed.
+ */
+export interface Salience {
+  /** Loudest first. Token names without a theme prefix; the rank must hold in EVERY theme. */
+  readonly rank: readonly string[];
+  readonly why: string;
 }
 
 /** Thrown with the path of the offending field. The path is the whole value of the message. */
@@ -325,6 +339,15 @@ export function parseManifest(input: unknown): Manifest {
     ] as const;
   });
 
+  const salienceRaw = requireRecord(root['salience'], 'salience');
+  const rankRaw = salienceRaw['rank'];
+  if (!Array.isArray(rankRaw) || rankRaw.length < 2)
+    throw new ManifestError('salience.rank', 'expected an array of at least two token names');
+  const salience: Salience = {
+    rank: rankRaw.map((r, i) => requireString(r, `salience.rank[${String(i)}]`)),
+    why: requireString(salienceRaw['why'], 'salience.why'),
+  };
+
   const gate = requireRecord(root['gate'], 'gate');
   const contrastRaw = requireRecord(gate['contrast'], 'gate.contrast');
   const ceiling = requireRecord(contrastRaw['chromaCeiling'], 'gate.contrast.chromaCeiling');
@@ -374,6 +397,7 @@ export function parseManifest(input: unknown): Manifest {
       minSeparation: requireNumber(cvdRaw['minSeparation'], 'cvdPairs.minSeparation'),
       pairs,
     },
+    salience,
     radius,
     spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale: scale as number[] },
     size: {

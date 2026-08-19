@@ -333,6 +333,98 @@ export function checkChromaCeiling(manifest: Manifest): readonly Finding[] {
  * Kept apart from the contrast results because they answer a different question: not "is
  * this pairing legible" but "does the manifest still say what it claims to say".
  */
+/**
+ * The salience rank holds in every theme (F-067, NFR-8, [ADR-0053]).
+ *
+ * ## Why this is a check and not a comment
+ *
+ * The approved system held the rank of OKLCh **L** constant across the two themes. The two
+ * grounds have **opposite polarity** — against a light ground contrast rises as L falls,
+ * against a dark ground it rises as L climbs — so L rank does not survive the flip. Measured,
+ * light ranked `bad 93.5 > warn 78.6 > ok 77.8` while dark ranked `warn 62.5 > ok 58.6 >
+ * bad 41.0`. A person toggling the theme got an inverted status hierarchy, and nothing in the
+ * build had an opinion about it.
+ *
+ * > The invariant that makes two themes one system is the rank of CONTRAST against own ground,
+ * > not the rank of lightness.
+ *
+ * ## Why the rank is READ rather than derived
+ *
+ * `manifest.salience.rank` is compared against the measured order. Deriving the expected rank
+ * from the values would make this tautological — it could never disagree with them, which is
+ * exactly the state the defect shipped in.
+ *
+ * Ties are a failure, not a pass. Two states equally loud is not a hierarchy, and it is the
+ * shape a rank drifts through on its way to inverting.
+ */
+export function checkSalience(manifest: Manifest): readonly Finding[] {
+  const findings: Finding[] = [];
+  const declared = manifest.salience.rank;
+
+  for (const theme of THEMES) {
+    const tokens = manifest.color[theme];
+    const lookup = (base: string): ColorToken => {
+      const t = tokens[base];
+      if (t === undefined) throw new Error(`${theme}.${base} is not a token`);
+      return t;
+    };
+
+    const groundToken = tokens['background'];
+    if (groundToken === undefined) {
+      findings.push({
+        check: 'salience',
+        detail: `${theme} has no \`background\` token, so salience cannot be measured against its own ground.`,
+      });
+      continue;
+    }
+    const grounds = resolveAll('background', groundToken, lookup);
+
+    const measured: { name: string; lc: number }[] = [];
+    let missing = false;
+    for (const name of declared) {
+      const token = tokens[name];
+      if (token === undefined) {
+        findings.push({
+          check: 'salience',
+          detail: `${theme}.${name} is named in \`salience.rank\` but is not a token in this theme.`,
+        });
+        missing = true;
+        continue;
+      }
+      // Worst appearance, for the same reason checkContrast takes it: a token that is loud
+      // over one ground and quiet over another has not established a rank.
+      let lc = Infinity;
+      for (const g of grounds)
+        for (const a of resolveAll(name, token, lookup))
+          lc = Math.min(lc, Math.abs(apcaLc(g.rgb, a.rgb)));
+      measured.push({ name, lc });
+    }
+    if (missing) continue;
+
+    // Pairwise over adjacent entries. Destructuring the slice avoids a non-null assertion,
+    // which the zone forbids: an assertion is a claim the compiler cannot check, and the
+    // whole point of this check is that unchecked claims are how the rank inverted.
+    for (const [louder, quieter] of measured.slice(0, -1).map((m, i) => [m, measured[i + 1]])) {
+      if (louder === undefined || quieter === undefined) continue;
+      if (louder.lc > quieter.lc) continue;
+      findings.push({
+        check: 'salience',
+        detail:
+          `${theme}: \`salience.rank\` says ${louder.name} is louder than ${quieter.name}, but ` +
+          `measured against ${theme}.background they are ${louder.lc.toFixed(1)} and ` +
+          `${quieter.lc.toFixed(1)} APCA Lc. ` +
+          (louder.lc === quieter.lc
+            ? 'Equal is a failure: two states equally loud is not a hierarchy, and it is the shape a rank drifts through on its way to inverting.'
+            : 'The rank is inverted here.') +
+          ' A rank that differs between themes means a person toggling the theme is told a' +
+          ' different thing is urgent (ADR-0053).',
+      });
+    }
+  }
+
+  return findings;
+}
+
 export function checkStructure(manifest: Manifest): readonly Finding[] {
   const findings: Finding[] = [];
 

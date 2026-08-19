@@ -47,6 +47,7 @@ export {
   checkChromaCeiling,
   checkContrast,
   checkSeparation,
+  checkSalience,
   checkStructure,
   CVD_SEVERITIES,
   CVD_SEVERITY,
