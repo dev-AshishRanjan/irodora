@@ -6,7 +6,7 @@ severity: critical
 guard: gate:test
 confidence: 0.96
 created: 2026-08-18
-scope: [packages/color-naming, apps/api, apps/web]
+scope: [packages/color-naming, apps/mobile]
 links: [[deltae00-is-the-ranking-authority]], [[deltae00-is-not-a-metric-and-cannot-be-indexed]], [[a-decoy-that-is-not-broken-proves-nothing]], [[measure-what-a-golden-set-can-detect-before-trusting-it]]
 ---
 

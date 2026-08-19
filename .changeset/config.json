@@ -7,12 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@irodora/admin",
-    "@irodora/api",
-    "@irodora/mobile",
-    "@irodora/web",
-    "@irodora/worker",
-    "@irodora/testing"
-  ]
+  "ignore": ["@irodora/mobile", "@irodora/testing"]
 }

@@ -4,7 +4,7 @@ title: Generating an artefact is not checking it, so a build is never the guard
 category: convention
 confidence: 1.0
 created: 2026-08-19
-scope: [root, packages/design-tokens, packages/corpus, apps/api]
+scope: [root, packages/design-tokens, packages/corpus]
 links: [[a-gate-that-errors-is-failing-open]], [[canonicalisation-decides-what-a-checksum-means]], [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]]
 ---
 

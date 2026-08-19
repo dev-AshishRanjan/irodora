@@ -4,7 +4,7 @@ title: A gate must model what renders, not what is physically correct
 created: 2026-08-15
 feature: F-003
 severity: high
-scope: [packages/design-tokens, apps/web, apps/mobile, .harness/verification]
+scope: [packages/design-tokens, apps/mobile, .harness/verification]
 links: [[averaging-non-linear-srgb-reads-too-dark]], [[a-gate-that-errors-is-failing-open]]
 ---
 

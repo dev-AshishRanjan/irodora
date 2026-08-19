@@ -6,7 +6,7 @@ severity: high
 guard: gate:content
 confidence: 0.95
 created: 2026-08-18
-scope: [packages/corpus, content, docs/content, apps/api]
+scope: [packages/corpus, content, docs/content]
 links: [[srgb-xyz-is-the-root-of-every-derived-value]], [[corpus-version-pins-caches-and-envelopes]], [[canonicalisation-decides-what-a-checksum-means]]
 ---
 

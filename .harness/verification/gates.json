@@ -14,7 +14,7 @@
         "always"
       ],
       "ciStep": true,
-      "description": "Harness integrity. Validates feature_list.json and effects.json against their schemas; every E-### has a memory note and every memory note is referenced; every effect `to` path exists on disk; every critical link names a guard; wikilinks resolve; wip_limit is respected; blockers are done before a feature is in_progress; an in-flight feature has a plan; every PRD FR/NFR is claimed by a feature and appears in REQUIREMENTS-COVERAGE.md; the ADR index matches the ADR files; gates.json mirrors the CI workflow; every IRODORA_* variable read by config is documented in .env.example; scoped rules do not weaken a golden rule; governed-doc relative links resolve."
+      "description": "Harness integrity. Validates feature_list.json and effects.json against their schemas; every E-### has a memory note and every memory note is referenced; every effect `to` path exists on disk; every critical link names a guard; wikilinks resolve; wip_limit is respected; blockers are done before a feature is in_progress; an in-flight feature has a plan; every PRD FR/NFR is claimed by a feature and appears in REQUIREMENTS-COVERAGE.md; the ADR index matches the ADR files; gates.json mirrors the CI workflow; scoped rules do not weaken a golden rule; governed-doc relative links resolve."
     },
     {
       "id": "typecheck",
@@ -65,7 +65,7 @@
         "code"
       ],
       "ciStep": true,
-      "description": "Unit, integration and property-based tests (Vitest + fast-check), including every port's adapter conformance suite. Each conformance suite contains at least one case verified to fail against a deliberately broken adapter — a conformance case that cannot fail launders every adapter through it.",
+      "description": "Unit, integration and property-based tests (Vitest + fast-check). Adapter conformance suites went with the ports they conformed to (ADR-0051); the principle they carried survives and applies to the storage layer — a conformance case that cannot fail launders every implementation through it, so each suite must contain at least one case verified to fail against a deliberately broken implementation.",
       "activatedAt": "2026-08-14"
     },
     {
@@ -97,14 +97,14 @@
     {
       "id": "e2e",
       "order": 7,
-      "status": "active",
-      "activatesWith": "F-015",
+      "status": "pending",
+      "activatesWith": "F-039",
       "command": "pnpm test:e2e",
       "requiredFor": [
         "user-facing"
       ],
-      "ciStep": true,
-      "description": "End-to-end per surface. API runs HTTP-surface e2e via app.inject. Web runs Playwright against its own server, including axe WCAG 2.2 A/AA assertions, a keyboard-only journey, a simulated-CVD journey, and a NETWORK assertion proving that a Lens scan transmits no image bytes (NFR-12). Tenancy negative tests run with a populated decoy tenant — against an empty one they pass whether or not the policy works. ACTIVATED WITH F-015 FOR THE API HALF ONLY, and the gate says so on every run: scripts/e2e-scope.mjs prints each charter item as covered or NOT COVERED with the file that would supply it, so a green gate cannot be read as web coverage that does not exist — 6 of 7 items are uncovered today, because apps/web arrives with F-017 and tenancy with F-034. That is gate 9's precedent for a gate whose charter outruns its subject. It also FAILS if no package declares a test:e2e script: before F-015 the command was `turbo run test:e2e` with nothing in the workspace declaring that task, which would have been a green gate over zero suites. THE PROBLEM THIS GATE HAD ON DAY ONE: F-015 ships the machinery and F-016 ships the domain routes, so an e2e run over the shipped route table would exercise two health endpoints and never touch the error envelope, idempotency, pagination or the limiter. It runs against FIXTURE ROUTES registered through the same route() wrapper and served by the same hooks, living in apps/api/e2e/ which tsconfig.build.json does not include — so they cannot compile into dist, cannot be served by the process main.ts starts, and the suite asserts both that a server built the production way carries only /healthz and /readyz and that openapi.json contains no fixture path. Activated after the suite was watched fail: unwiring useErrorHandling turns 13 of 26 cases red (including the decoy that asserts a thrown Error's connection string never reaches the body), useRateLimiting turns 3 red, useIdempotency turns 3 red, with the baseline asserted green before and after each. WRITING THIS SUITE IS WHAT FOUND THE FEATURE'S LARGEST DEFECT: increments 1-6 built the error mapper, the idempotency store and the limiter, all unit-tested and green, and NONE of them was attached to the server — a thrown Error went out as Fastify's default 500 carrying its own message. A unit test proves a function behaves; only a request through the whole stack proves it runs. The fail-open case for an unreachable cache initially did NOT discriminate — a 200 with no rate-limit headers is exactly what a server with no limiter produces — and now counts the attempted increments so it goes red when the hook is removed."
+      "ciStep": false,
+      "description": "End-to-end against the running app. The API half of this charter was retired with the server tier (ADR-0051); the app half lands with apps/mobile and covers the human journeys, a simulated-CVD journey, and the assertion that a Lens scan transmits no bytes at all (NFR-12) — which on a local-first app is checkable as \"the process opens no socket\" rather than \"the request carried no image\". `pnpm test:e2e` runs scripts/e2e-scope.mjs FIRST, which FAILS if no package declares a test:e2e script and otherwise prints each charter item as covered or NOT COVERED with the file that would supply it. That report is what stops a green gate being read as coverage that does not exist. NOTE the reason this gate is `pending` with ciStep:false: nothing declares test:e2e today, and e2e-scope.mjs exits non-zero on that by design. A gate that cannot pass is not the same as a gate that fails open, but it still stops the build, so the CI step is withdrawn until its subject exists rather than being guarded by an `if:` — which is the F-072 hazard, and would leave the gate reading `active` in gates.json while never once running. ciStep:false and status:pending both flip back with F-039, together, and the mirror check enforces that pairing."
     },
     {
       "id": "a11y",
@@ -113,10 +113,10 @@
       "activatesWith": "F-017",
       "command": "pnpm test:a11y",
       "requiredFor": [
-        "web"
+        "app"
       ],
       "ciStep": false,
-      "description": "Accessibility (axe, WCAG 2.2 AA) for every web route — zero violations, not warnings. Asserted inside the web Playwright run, so CI's e2e step covers it; ciStep is false deliberately and the ci-mirror check knows that. Listed separately for traceability against NFR-8."
+      "description": "Accessibility for every app screen — zero violations, not warnings. React Native exposes this through the platform accessibility APIs rather than the DOM, so the check is accessibility-role, label and state coverage plus focus order, asserted inside the app e2e run. ciStep is false deliberately and the ci-mirror check knows that. Listed separately for traceability against NFR-8."
     },
     {
       "id": "contrast",
@@ -125,7 +125,7 @@
       "activatesWith": "F-003",
       "command": "pnpm test:contrast",
       "requiredFor": [
-        "web",
+        "app",
         "tokens"
       ],
       "ciStep": true,
@@ -169,31 +169,7 @@
         "release"
       ],
       "ciStep": true,
-      "description": "Backend performance against ABSOLUTE committed thresholds (NFR-4), never baseline deltas — CI hardware varies, and a delta gate flakes until someone disables it. Boots the real Local runtime over a versioned deterministic corpus. Asserts recommendation p95 ≤ 200 ms, API p95 ≤ 300 ms, local analysis p95 ≤ 200 ms, capsule solve (40 garments) p95 ≤ 3 s. A miss is a tracked work item, never an edited threshold."
-    },
-    {
-      "id": "web-perf",
-      "order": 13,
-      "status": "pending",
-      "activatesWith": "F-038",
-      "command": "pnpm test:perf",
-      "requiredFor": [
-        "web"
-      ],
-      "ciStep": true,
-      "description": "Frontend budgets (NFR-5). First-load JS per route, measured over the wire and gzipped, captured at the `load` event so lazily-imported chunks are correctly excluded — that exclusion IS the definition of the budget. Core Web Vitals measured by PerformanceObserver under prefers-reduced-motion with CPU throttling, median of 3 runs: LCP ≤ 2.0 s, CLS ≤ 0.05, TBT reported. Not Lighthouse: with animation running, TBT scales with the observation window rather than with the page. The honest limit: this does not measure what a motion-enabled visitor experiences. Requires the build gate to have run first."
-    },
-    {
-      "id": "e2e-full",
-      "order": 14,
-      "status": "pending",
-      "activatesWith": "F-044",
-      "command": "pnpm test:e2e:full",
-      "requiredFor": [
-        "release"
-      ],
-      "ciStep": true,
-      "description": "Full-stack end-to-end against ONE live deployment — real API, real Postgres, real object storage, the production web build proxied at the live API. Runs the human journeys (J1 first value, J4 CVD check, J5 wardrobe) and the offline-to-online sync journey. Serialized with zero retries: a flaky full-stack gate is a lie, because it reports a state of the world it did not observe."
+      "description": "Performance against ABSOLUTE committed thresholds (NFR-4), never baseline deltas — hardware varies, and a delta gate flakes until someone disables it. Every threshold is now on-device: live pick <= 50 ms perceived, local analysis p95 <= 200 ms, recommendation p95 <= 200 ms, capsule solve (40 garments) p95 <= 3 s. The API p95 <= 300 ms budget went with the API (ADR-0051). A miss is a tracked work item, never an edited threshold."
     },
     {
       "id": "security",

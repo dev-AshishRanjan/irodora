@@ -4,8 +4,8 @@ title: A negative test needs a decoy, not an empty fixture
 category: convention
 confidence: 1.0
 created: 2026-08-13
-scope: [apps/api, tests]
-links: [[a-new-user-data-table-needs-tenancy-and-a-decoy-test]], [[a-gate-that-errors-is-failing-open]]
+scope: [tests, packages]
+links: [[a-decoy-that-is-not-broken-proves-nothing]], [[a-gate-that-errors-is-failing-open]]
 ---
 
 # A negative test needs a decoy

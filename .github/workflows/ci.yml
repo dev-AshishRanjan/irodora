@@ -66,13 +66,6 @@ jobs:
       - name: 'Gate 0 — mirror proof'
         run: node scripts/verify-gate-mirror.mjs
 
-      # The compose file's portability across Coolify and Dokploy. Static, so it runs
-      # here rather than needing a VPS — the deployment itself is an attested obligation
-      # (ADR-0038), but "uses nothing a platform rejects" is checkable on every commit.
-      - name: 'Compose portability'
-        if: hashFiles('infra/compose/docker-compose.prod.yml') != ''
-        run: node scripts/verify-compose-portability.mjs
-
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
         if: hashFiles('pnpm-lock.yaml') != ''
@@ -107,37 +100,22 @@ jobs:
         if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm build
 
-      # Not a gate — the proof that apps/api/openapi.json is DERIVED rather than maintained.
-      # Runs after the build because it imports apps/api/dist, which is the same compiled code
-      # the server runs. Unconditional: it fails loudly if dist is missing, and a check that
-      # skips when its input is absent is a check failing open.
-      #
-      # `openapi.test.ts` asserts the same thing from source under gate 4, so a stale document
-      # is caught without waiting for a build. This step is what catches a divergence between
-      # the compiled output and the source the test used.
-      - name: 'OpenAPI document is current'
-        run: pnpm openapi:check
-
       # ---- gates 7-11: surfaces and content -------------------------------
-      # Gate 8 (a11y) is asserted INSIDE the web Playwright run, so it has no
-      # step of its own. gates.json records that as ciStep:false and the mirror
-      # check knows the omission is deliberate.
-      - name: Install Playwright browsers
-        if: hashFiles('apps/web/package.json') != ''
-        run: pnpm exec playwright install --with-deps chromium
+      # Gate 8 (a11y) is asserted INSIDE the app's e2e run, so it has no step of
+      # its own. gates.json records that as ciStep:false and the mirror check
+      # knows the omission is deliberate.
 
-      # Unconditional, and the `if: hashFiles('apps/web/package.json') != ''` this replaced is
-      # exactly the F-072 hazard: gate 0's mirror check compares `run:` commands and does not
-      # read `if:`, so the gate would have been "active" in gates.json and never once run in CI
-      # for the whole of R1 — apps/web does not exist until F-017. A gate that cannot run is
-      # failing open, and this one is blocking.
+      # Gate 7 (e2e) has NO STEP HERE, deliberately, and gates.json records it as
+      # status:pending + ciStep:false so the mirror check knows the omission is intentional.
       #
-      # Safe to run without apps/web: `pnpm test:e2e` starts with scripts/e2e-scope.mjs, which
-      # FAILS if no package declares a test:e2e script and otherwise prints each charter item as
-      # covered or NOT COVERED. A green gate here means the API surface passed; it says out loud
-      # that it does not mean the web surface was checked.
-      - name: 'Gate 7 — e2e (API half; scope printed on every run)'
-        run: pnpm test:e2e
+      # The API surface it used to run went with the server tier (ADR-0051); the app surface
+      # arrives with F-039. Nothing declares `test:e2e` in between, and scripts/e2e-scope.mjs
+      # exits non-zero on that rather than reporting an empty set as coverage.
+      #
+      # Withdrawing the step is the honest option. Keeping it behind `if: hashFiles(...)` is
+      # the F-072 hazard: the mirror check compares `run:` commands and does not read `if:`,
+      # so the gate would read as covered in CI while never once running. Both flags flip back
+      # together with F-039.
 
       # Unconditional. The `if:` this replaced was guarding on a build output, which means
       # the gate would silently skip rather than fail if the build had not produced it — a
@@ -177,14 +155,6 @@ jobs:
       - name: 'Gate 12 — perf'
         if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''
         run: pnpm bench
-
-      - name: 'Gate 13 — web-perf'
-        if: github.event_name == 'push' && hashFiles('tests/web-perf/package.json') != ''
-        run: pnpm test:perf
-
-      - name: 'Gate 14 — e2e-full'
-        if: github.event_name == 'push' && hashFiles('tests/e2e-full/package.json') != ''
-        run: pnpm test:e2e:full
 
       # ---- gate 15: security ----------------------------------------------
       # gitleaks is installed and then invoked through `pnpm security:secrets` — the SAME

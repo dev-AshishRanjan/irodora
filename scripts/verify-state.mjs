@@ -625,28 +625,39 @@ if (gates) {
 
 /* ============================================== 8. env contract (.env.example) */
 
+// Scans the whole workspace rather than one package. It used to read packages/config/src only,
+// which was correct while a single package owned every environment read — but that package went
+// with the server tier (ADR-0051), and a check scoped to a directory that no longer exists is a
+// check that passes by finding nothing. A local-first app should read almost no environment at
+// all, so the honest form of this check is: find every IRODORA_* read ANYWHERE, and require each
+// to be documented. An empty result is then a real result rather than an absent one.
 const envExample = readText(join(ROOT, '.env.example'));
-const configDir = join(ROOT, 'packages/config/src');
-if (envExample && existsSync(configDir)) {
+if (envExample) {
   const documented = new Set([...envExample.matchAll(/^(IRODORA_[A-Z0-9_]+)=/gm)].map((m) => m[1]));
-  const used = new Set();
-  for (const file of walk(configDir, (p) => p.endsWith('.ts')))
-    for (const m of readFileSync(file, 'utf8').matchAll(/IRODORA_[A-Z0-9_]+/g)) used.add(m[0]);
+  const used = new Map();
 
-  const undocumented = [...used].filter((v) => !documented.has(v));
+  for (const group of ['apps', 'packages', 'scripts']) {
+    const dir = join(ROOT, group);
+    if (!existsSync(dir)) continue;
+    for (const file of walk(
+      dir,
+      (p) => /\.(ts|tsx|mjs|js)$/.test(p) && !p.includes('node_modules'),
+    ))
+      for (const m of readFileSync(file, 'utf8').matchAll(/IRODORA_[A-Z0-9_]+/g))
+        if (!used.has(m[0])) used.set(m[0], relative(ROOT, file));
+  }
+
+  const undocumented = [...used.keys()].filter((v) => !documented.has(v));
   if (undocumented.length)
     fail(
       'env',
-      `${undocumented.length} variable(s) read by config but absent from .env.example: ${undocumented.join(', ')}`,
-      'An undocumented variable is a deployment that fails at boot in a way nobody predicted — and the VPS profile is configured entirely through environment variables.',
-      'Add each to .env.example with a placeholder and a comment.',
+      `${undocumented.length} variable(s) read in the workspace but absent from .env.example: ${undocumented.map((v) => `${v} (${used.get(v)})`).join(', ')}`,
+      'An undocumented variable is a build or a launch that fails in a way nobody predicted, and .env.example is the only place a reviewer looks to find out what configuration exists.',
+      'Add each to .env.example with a placeholder and a comment naming what reads it and what happens when it is absent.',
     );
-  else pass('env', `${documented.size} documented variables, all config reads covered`);
-} else if (envExample) {
-  pass(
-    'env',
-    `${[...envExample.matchAll(/^(IRODORA_[A-Z0-9_]+)=/gm)].length} variables documented (config package not yet present)`,
-  );
+  else if (used.size === 0)
+    pass('env', 'no IRODORA_* variable is read anywhere — the contract is empty and enforced');
+  else pass('env', `${String(used.size)} variable(s) read, all documented`);
 }
 
 /* =========================================== 9. scoped rules vs golden rules */

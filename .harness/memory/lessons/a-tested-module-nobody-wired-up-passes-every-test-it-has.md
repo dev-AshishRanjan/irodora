@@ -4,7 +4,7 @@ title: A tested module nobody wired up passes every test it has, and does nothin
 category: convention
 confidence: 1.0
 created: 2026-08-19
-scope: [root, apps/api]
+scope: [root]
 links: [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]], [[a-gate-that-errors-is-failing-open]], [[a-negative-test-needs-a-decoy-not-an-empty-fixture]]
 ---
 

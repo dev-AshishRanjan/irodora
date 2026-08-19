@@ -4,7 +4,7 @@ title: ΔE00 is not a metric, so no spatial index can rank by it correctly
 category: convention
 confidence: 1.0
 created: 2026-08-13
-scope: [packages/color-difference, apps/api]
+scope: [packages/color-difference]
 links: [[deltae00-is-the-ranking-authority]]
 ---
 

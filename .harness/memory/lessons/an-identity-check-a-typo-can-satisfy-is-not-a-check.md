@@ -4,7 +4,7 @@ title: An identity check that a typo can satisfy is not a check — compare ids,
 category: convention
 confidence: 1.0
 created: 2026-08-18
-scope: [content, packages/corpus, apps/admin]
+scope: [content, packages/corpus]
 links: [[a-negative-test-needs-a-decoy-not-an-empty-fixture]], [[the-entry-schema-is-a-contract-with-every-authored-file]]
 ---
 

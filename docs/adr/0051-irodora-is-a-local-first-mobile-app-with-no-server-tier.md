@@ -16,9 +16,9 @@ produced the observation that forced this decision:
 - **`apps/api` is 4,269 lines** of Fastify carrying an error envelope, idempotency keys, a
   fixed-window rate limiter, cursor pagination and a generated OpenAPI document. Its
   published contract is two paths: `/healthz` and `/readyz`. The e2e suite exercises
-  *fixture* routes, and [`apps/api/e2e/surface.ts`](../../apps/api/e2e/surface.ts) explains
-  at length why they must never become real ones — because there are no domain routes for
-  the machinery to act on.
+  *fixture* routes, and `apps/api/e2e/surface.ts` (readable at the `pre-rehaul-server` tag)
+  explains at length why they must never become real ones — because there are no domain
+  routes for the machinery to act on.
 - **`content/colors/` contains one file: `.gitkeep`.** Zero corpus entries. Meanwhile
   [ADR-0007](0007-colour-corpus-provenance-and-licensing.md),
   [ADR-0046](0046-published-corpus-is-an-immutable-generated-bundle.md) and

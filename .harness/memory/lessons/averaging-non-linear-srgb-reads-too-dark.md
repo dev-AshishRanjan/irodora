@@ -4,7 +4,7 @@ title: Averaging non-linear sRGB reads too dark
 category: convention
 confidence: 1.0
 created: 2026-08-13
-scope: [packages/color-core, packages/color-spaces, apps/web, apps/mobile]
+scope: [packages/color-core, packages/color-spaces, apps/mobile]
 links: [[sampling-lives-in-the-engine-not-the-platform]], [[srgb-transfer-function-has-a-linear-segment]]
 ---
 

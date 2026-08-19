@@ -6,7 +6,7 @@ severity: high
 guard: test:packages/color-core/src/sampling.test.ts
 confidence: 0.88
 created: 2026-08-13
-scope: [packages/color-core, apps/web, apps/mobile]
+scope: [packages/color-core, apps/mobile]
 links: [[srgb-xyz-is-the-root-of-every-derived-value]], [[averaging-non-linear-srgb-reads-too-dark]]
 ---
 

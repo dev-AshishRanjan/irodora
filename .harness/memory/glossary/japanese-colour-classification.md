@@ -3,7 +3,7 @@ kind: glossary
 title: The five colour classifications, and why conflating them is the failure to avoid
 confidence: 1.0
 created: 2026-08-13
-scope: [content, apps/web]
+scope: [content, apps/mobile]
 links: [[wada-public-domain-is-not-the-same-as-free-to-ingest]]
 ---
 

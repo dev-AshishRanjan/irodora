@@ -6,7 +6,7 @@ severity: high
 guard: gate:color-golden
 confidence: 0.9
 created: 2026-08-15
-scope: [packages/color-spaces, packages/color-harmony, packages/color-core, apps/web, apps/mobile]
+scope: [packages/color-spaces, packages/color-harmony, packages/color-core, apps/mobile]
 links: [[deltae00-is-the-ranking-authority]], [[one-separation-definition-for-ui-and-engine]]
 ---
 

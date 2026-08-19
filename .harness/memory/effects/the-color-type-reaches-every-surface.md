@@ -6,7 +6,7 @@ severity: critical
 guard: gate:typecheck
 confidence: 0.95
 created: 2026-08-13
-scope: [packages/color-core, packages/contracts, apps/api, apps/web, apps/mobile]
+scope: [packages/color-core, packages/contracts, apps/mobile]
 links: [[srgb-xyz-is-the-root-of-every-derived-value]], [[provenance-in-the-type-is-what-makes-honesty-structural]]
 ---
 

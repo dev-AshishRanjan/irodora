@@ -6,7 +6,7 @@ severity: critical
 guard: gate:cvd
 confidence: 0.94
 created: 2026-08-13
-scope: [packages/cvd-engine, packages/recommendation, apps/web, docs/design]
+scope: [packages/cvd-engine, packages/recommendation, apps/mobile, docs/design]
 links: [[deltae00-is-the-ranking-authority]], [[cvd-is-scoring-not-rendering]]
 ---
 

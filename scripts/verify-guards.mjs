@@ -104,8 +104,8 @@ const GUARDS = [
     path: 'packages/contracts/src/__guard__.ts',
     rule: 'no-restricted-imports',
     must:
-      '@irodora/contracts is imported by apps/web (browser) and apps/mobile (React Native) ' +
-      'as well as the API. A node:* import in its src is a crash on a phone, found by a user.',
+      '@irodora/contracts is imported by apps/mobile (React Native) and by the engine packages. ' +
+      'A node:* import in its src is a crash on a phone, found by a user.',
     source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
   },
   {
@@ -121,25 +121,13 @@ const GUARDS = [
     source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
   },
   {
-    name: 'a route may not be registered outside the route wrapper',
-    path: 'apps/api/src/__guard__.ts',
-    rule: 'no-restricted-syntax',
-    must:
-      'A bare app.get bypasses route(), and therefore bypasses the requirement to declare a ' +
-      'schema for every response status. Nothing breaks visibly — the route works and the ' +
-      'tests pass — but the generated OpenAPI document silently omits it, so every consumer ' +
-      'generated from that document has no type for the response.',
-    source:
-      `import type { FastifyInstance } from 'fastify';\n` +
-      `export function bad(app: FastifyInstance): void {\n` +
-      `  app.get('/v1/smuggled', () => ({ ok: true }));\n` +
-      `}\n`,
-  },
-  {
     name: 'a floating promise is an error',
-    path: 'packages/config/src/__guard__.ts',
+    path: 'packages/recommendation/src/__guard__.ts',
     rule: '@typescript-eslint/no-floating-promises',
-    must: 'A dropped await on an async port is a bug the compiler cannot see',
+    must:
+      'A dropped await is a bug the compiler cannot see. The rule is workspace-wide; this ' +
+      'guard plants its violation in a package that survives, since packages/config went with ' +
+      'the server tier (ADR-0051) and a guard at a path that does not exist proves nothing.',
     source: `async function work(): Promise<void> {}\nexport function go(): void {\n  work();\n}\n`,
   },
 ];

@@ -22,8 +22,6 @@ skills say how to get there.
 | Skill | For |
 |---|---|
 | [coding-standards](coding-standards/SKILL.md) | The habits that make code production-grade |
-| [api-design](api-design/SKILL.md) | Add or change an endpoint |
-| [db-migration](db-migration/SKILL.md) | Write a migration that can be rolled back |
 | [security-review](security-review/SKILL.md) | Review a change for the failures that happen here |
 | [perf-budget](perf-budget/SKILL.md) | Measure against absolute budgets |
 

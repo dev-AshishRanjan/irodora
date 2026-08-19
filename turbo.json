@@ -2,11 +2,11 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
   "globalDependencies": ["tsconfig.base.json", ".nvmrc", "content/schemas/**"],
-  "globalEnv": ["NODE_ENV", "IRODORA_PROFILE"],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
@@ -31,7 +31,7 @@
     },
     "test:e2e": {
       "dependsOn": ["build"],
-      "outputs": ["playwright-report/**", "test-results/**"],
+      "outputs": ["test-results/**"],
       "cache": false
     },
     "test:a11y": {

@@ -1,18 +1,22 @@
 /**
  * Say what gate 7 actually covers, on every run.
  *
- * Gate 7's charter is broader than what exists. It names Playwright, axe WCAG 2.2 A/AA, a
- * keyboard-only journey, a simulated-CVD journey, and the NFR-12 assertion that a Lens scan
- * transmits no image bytes — **all of which are the web surface**, and `apps/web` does not exist
- * until F-017. F-015 activates the gate for the API half.
+ * Gate 7's charter is broader than what exists. It names the human journeys, the accessibility
+ * assertions, a simulated-CVD journey, the NFR-12 assertion that a Lens scan transmits nothing,
+ * and the two things a local-first app cannot ship without — that data survives a restart, and
+ * that an export can be re-imported.
+ *
+ * **The API half of this charter was retired with the server tier** ([ADR-0051](
+ * ../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)). What replaced
+ * it is not smaller: on a device, "no image left the phone" is a stronger claim than "the
+ * request carried no image", and it is checkable as *the process opened no socket*.
  *
  * A gate whose charter outruns its subject has two honest options: leave it pending until the
- * whole charter is met, or activate it and say on every run what it does not cover. The first
- * means the API surface ships with no e2e gate at all for the whole of R1. So: the second, which
- * is gate 9's precedent — it prints, on every run, that the half of its charter scanning rendered
- * surfaces is not implemented.
+ * whole charter is met, or activate it and say on every run what it does not cover. Gate 7 is
+ * **pending** today for a reason this file enforces: nothing in the workspace declares a
+ * `test:e2e` task, so there is no surface to run. It activates with F-039, the Expo app.
  *
- * It also **fails if it finds no surface to run**. `pnpm test:e2e` was `turbo run test:e2e` with
+ * It **fails if it finds no surface to run**. `pnpm test:e2e` was once `turbo run test:e2e` with
  * nothing in the workspace declaring that task: a green gate over zero suites, which is the
  * failing-open shape this repository keeps finding and keeps answering the same way.
  */
@@ -50,33 +54,38 @@ function surfacesWithE2e() {
  * The charter items, and the FILE that supplies each.
  *
  * A file rather than a package, so an item cannot read as covered because its owner happens to
- * exist for another reason. `apps/api` exists today and covers the HTTP surface; it does not
- * cover tenancy, and it will not until F-034 writes the suite named here. When that file lands
- * the line flips on its own.
+ * exist for another reason. When the file lands, the line flips on its own.
  */
 const CHARTER = [
   {
-    item: 'HTTP surface end to end (app.inject)',
-    requires: 'apps/api/e2e/http.e2e.test.ts',
-    feature: 'F-015',
+    item: 'human journeys against the running app',
+    requires: 'apps/mobile/e2e',
+    feature: 'F-039',
   },
   {
-    item: 'Playwright journeys against a real web server',
-    requires: 'apps/web/e2e',
-    feature: 'F-017',
-  },
-  { item: 'axe WCAG 2.2 A/AA assertions (gate 8)', requires: 'apps/web/e2e', feature: 'F-017' },
-  { item: 'keyboard-only journey', requires: 'apps/web/e2e', feature: 'F-017' },
-  { item: 'simulated-CVD journey', requires: 'apps/web/e2e', feature: 'F-017' },
-  {
-    item: 'NFR-12: a Lens scan transmits no image bytes',
-    requires: 'apps/web/e2e',
-    feature: 'F-020',
+    item: 'accessibility assertions — roles, labels, focus order (gate 8)',
+    requires: 'apps/mobile/e2e/a11y',
+    feature: 'F-039',
   },
   {
-    item: 'tenancy negatives against a POPULATED decoy tenant',
-    requires: 'apps/api/e2e/tenancy.e2e.test.ts',
-    feature: 'F-034',
+    item: 'simulated-CVD journey',
+    requires: 'apps/mobile/e2e/cvd',
+    feature: 'F-039',
+  },
+  {
+    item: 'NFR-12: a Lens scan opens no socket',
+    requires: 'apps/mobile/e2e/offline',
+    feature: 'F-040',
+  },
+  {
+    item: 'local data survives a cold restart',
+    requires: 'apps/mobile/e2e/persistence',
+    feature: 'F-041',
+  },
+  {
+    item: 'an export re-imports to a byte-identical database',
+    requires: 'apps/mobile/e2e/backup',
+    feature: 'F-041',
   },
 ];
 
@@ -87,7 +96,11 @@ console.log('\nGate 7 — e2e scope\n');
 if (surfaces.length === 0) {
   console.error(
     '  NO surface declares a `test:e2e` script. Gate 7 would pass over an empty set, which is\n' +
-      '  a gate failing open. Refusing to report that as coverage.\n',
+      '  a gate failing open. Refusing to report that as coverage.\n\n' +
+      '  This is expected while gate 7 is `pending`: the API surface it used to run went with\n' +
+      '  the server tier (ADR-0051) and the app surface arrives with F-039. gates.json records\n' +
+      '  the gate as pending with ciStep:false, so CI does not invoke this script yet. If you\n' +
+      '  are seeing this from CI, the gate was activated without a surface to run.\n',
   );
   process.exit(1);
 }
@@ -106,8 +119,7 @@ if (unmet.length > 0) {
     console.log(`  NOT COVERED  ${item} — needs ${requires} (${feature})`);
   console.log(
     `\n  ${String(unmet.length)} of ${String(CHARTER.length)} charter items are not covered by this run.\n` +
-      '  A green gate 7 today means the API surface passed. It does not mean the web surface\n' +
-      '  was checked, because there is no web surface yet.\n',
+      '  A green gate 7 means what the covered lines above say it means, and nothing more.\n',
   );
 } else {
   console.log('\n  Every charter item is covered.\n');

@@ -3,7 +3,7 @@ kind: lesson
 title: A decoy that is not actually broken proves nothing, and it looks exactly like one that works
 created: 2026-08-14
 feature: F-005
-scope: [packages/ports, packages/adapters, scripts]
+scope: [scripts]
 links: [[a-negative-test-needs-a-decoy-not-an-empty-fixture]], [[mutual-assignability-does-not-catch-an-optional-field]], [[a-pipe-discards-the-exit-status-a-gate-just-produced]]
 ---
 

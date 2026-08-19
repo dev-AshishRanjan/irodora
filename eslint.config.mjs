@@ -268,33 +268,6 @@ export default tseslint.config(
     },
   },
 
-  // A route registered with a bare `app.get` bypasses `route()` — and therefore bypasses the
-  // requirement that it declare a schema for every response status. Nothing breaks visibly: the
-  // route works, the tests pass, and the generated OpenAPI document silently omits it, so the
-  // SDK gives consumers no type for what they receive (`apps/api/AGENTS.md`).
-  //
-  // `src/http/` is exempt because that is where `route()` itself calls `app.route`. Everything
-  // else goes through the wrapper. Guard #12 plants a violation at a real path outside that
-  // directory and asserts this rule fires — a rule nobody has watched fail is configuration
-  // that parses, not a boundary.
-  {
-    files: ['apps/api/src/**/*.ts'],
-    ignores: ['apps/api/src/http/**/*.ts'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            'CallExpression[callee.type="MemberExpression"][callee.property.name=/^(get|post|put|patch|delete|route|head|options|all)$/][callee.object.name=/^(app|server|fastify|instance)$/]',
-          message:
-            'Register routes with `route()` from src/http/route.ts, not directly on the ' +
-            'instance. A bare app.get skips the requirement to declare a schema for every ' +
-            'response status, and the only symptom is a route missing from the OpenAPI document.',
-        },
-      ],
-    },
-  },
-
   // --- Tests -------------------------------------------------------------
   {
     files: ['**/*.test.ts', '**/*.spec.ts', 'tests/**/*.ts'],

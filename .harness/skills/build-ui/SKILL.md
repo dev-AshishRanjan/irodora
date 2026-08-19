@@ -5,7 +5,7 @@ description: Build a surface that meets the accessibility gates, respects colour
 
 # Skill: build-ui
 
-Rules: [`frontend.md`](../../rules/frontend/frontend.md) ·
+Rules: [`mobile.md`](../../rules/mobile/mobile.md) ·
 [`contrast.md`](../../rules/frontend/contrast.md) ·
 [`motion.md`](../../rules/frontend/motion.md) ·
 Manifest: [`design-system.manifest.json`](../../../docs/design/design-system.manifest.json) ·

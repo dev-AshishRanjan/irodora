@@ -4,7 +4,7 @@ title: A constraint is a design direction, not a licence to be austere
 category: user-correction
 confidence: 0.95
 created: 2026-08-14
-scope: [apps/web, apps/mobile, docs/design]
+scope: [apps/mobile, docs/design]
 links: [[provenance-in-the-type-is-what-makes-honesty-structural]], [[cvd-is-scoring-not-rendering]]
 ---
 

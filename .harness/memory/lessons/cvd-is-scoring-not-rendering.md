@@ -4,7 +4,7 @@ title: CVD support is a scoring problem, not a rendering one
 category: user-correction
 confidence: 0.95
 created: 2026-08-13
-scope: [packages/cvd-engine, packages/recommendation, apps/web]
+scope: [packages/cvd-engine, packages/recommendation, apps/mobile]
 links: [[one-separation-definition-for-ui-and-engine]]
 ---
 

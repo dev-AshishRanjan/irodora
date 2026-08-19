@@ -79,8 +79,6 @@
       "scope": [
         "packages/color-core",
         "packages/contracts",
-        "apps/api",
-        "apps/web",
         "apps/mobile"
       ],
       "severity": "critical",
@@ -130,51 +128,6 @@
       "status": "active"
     },
     {
-      "id": "E-004",
-      "from": {
-        "kind": "contract",
-        "ref": "packages/contracts/src",
-        "exists": true
-      },
-      "to": [
-        {
-          "kind": "artifact",
-          "ref": "apps/api/openapi.json"
-        },
-        {
-          "kind": "package",
-          "ref": "@irodora/sdk"
-        },
-        {
-          "kind": "module",
-          "ref": "apps/web"
-        },
-        {
-          "kind": "module",
-          "ref": "apps/mobile"
-        },
-        {
-          "kind": "doc",
-          "ref": "docs/architecture/api-contract.md"
-        }
-      ],
-      "kind": "EFFECT_LINK",
-      "scope": [
-        "packages/contracts",
-        "apps/api",
-        "apps/web",
-        "apps/mobile",
-        "apps/admin"
-      ],
-      "severity": "high",
-      "guard": "test:apps/api/src/openapi.test.ts",
-      "memory": "memory/effects/contract-to-openapi-to-sdk-is-one-direction.md",
-      "rationale": "The OpenAPI document is generated from the schemas and the SDK from the document, so a contract change that breaks a consumer breaks the SDK build in our CI before it reaches anyone else's production. That property only holds while the direction stays one-way; a hand-edited OpenAPI document silently severs it. F-015 made the FIRST arrow real: apps/api/openapi.json is derived from the route registry and compared BYTE FOR BYTE, by openapi.test.ts under gate 4 (from source, so no build is needed) and by `pnpm openapi:check` in CI after gate 6 (from dist, the same compiled code the server runs). The guard names the test rather than gate:build, because BUILDING the document is not CHECKING it — gate:build was this link's guard while the document did not exist, and a build has never compared anything. Watched go red on a reworded description, a deleted path and a corrupted file, with the baseline green either side. THE SECOND ARROW IS STILL NOT BUILT: nothing generates @irodora/sdk from the document, so 'a contract change breaks the SDK build first' remains an end state rather than a running check until F-057.",
-      "confidence": 0.93,
-      "origin": "manual",
-      "status": "active"
-    },
-    {
       "id": "E-005",
       "from": {
         "kind": "symbol",
@@ -184,10 +137,6 @@
         {
           "kind": "package",
           "ref": "@irodora/recommendation"
-        },
-        {
-          "kind": "module",
-          "ref": "apps/web"
         },
         {
           "kind": "artifact",
@@ -202,7 +151,7 @@
       "scope": [
         "packages/cvd-engine",
         "packages/recommendation",
-        "apps/web",
+        "apps/mobile",
         "docs/design"
       ],
       "severity": "critical",
@@ -221,11 +170,6 @@
       },
       "to": [
         {
-          "kind": "artifact",
-          "ref": "apps/api/src/modules/catalog",
-          "exists": false
-        },
-        {
           "kind": "package",
           "ref": "@irodora/corpus"
         },
@@ -241,7 +185,6 @@
       "kind": "EFFECT_LINK",
       "scope": [
         "content",
-        "apps/api",
         "packages/corpus"
       ],
       "severity": "high",
@@ -288,7 +231,6 @@
       "scope": [
         "docs/design",
         "packages/design-tokens",
-        "apps/web",
         "apps/mobile"
       ],
       "severity": "high",
@@ -309,10 +251,6 @@
       "to": [
         {
           "kind": "module",
-          "ref": "apps/web"
-        },
-        {
-          "kind": "module",
           "ref": "apps/mobile"
         },
         {
@@ -323,7 +261,6 @@
       "kind": "EFFECT_LINK",
       "scope": [
         "packages/color-core",
-        "apps/web",
         "apps/mobile"
       ],
       "severity": "high",
@@ -346,11 +283,6 @@
           "ref": "@irodora/recommendation"
         },
         {
-          "kind": "artifact",
-          "ref": "apps/api/src/modules/recommendation",
-          "exists": false
-        },
-        {
           "kind": "decision",
           "ref": "docs/adr/0011-recommendation-rules-are-versioned-content.md"
         }
@@ -358,8 +290,7 @@
       "kind": "EFFECT_LINK",
       "scope": [
         "content",
-        "packages/recommendation",
-        "apps/api"
+        "packages/recommendation"
       ],
       "severity": "high",
       "guard": "none",
@@ -367,80 +298,6 @@
       "memory": "memory/effects/rule-weights-change-every-answer-without-a-deploy.md",
       "rationale": "Weights are content, so a publish changes what every user is told with no code change and no deployment. That is the intended capability and also the sharpest edge in the system: it means content is a trust boundary, and a weight set that fails to normalise produces scores that are not comparable across contexts and fails silently.",
       "confidence": 0.95,
-      "origin": "manual",
-      "status": "active"
-    },
-    {
-      "id": "E-010",
-      "from": {
-        "kind": "schema",
-        "ref": "apps/api/src/db/schema",
-        "exists": false
-      },
-      "to": [
-        {
-          "kind": "artifact",
-          "ref": "apps/api/drizzle",
-          "exists": false
-        },
-        {
-          "kind": "doc",
-          "ref": "docs/architecture/data-model.md"
-        },
-        {
-          "kind": "doc",
-          "ref": "docs/architecture/security/threat-model.md"
-        }
-      ],
-      "kind": "EFFECT_LINK",
-      "scope": [
-        "apps/api"
-      ],
-      "severity": "critical",
-      "guard": "test:apps/api/test/tenancy-isolation.test.ts",
-      "memory": "memory/effects/a-new-user-data-table-needs-tenancy-and-a-decoy-test.md",
-      "rationale": "Every table holding user data needs tenant_id, RLS with ENABLE and FORCE, and a policy reading the per-connection setting. A table added without them leaks across tenants, and the negative test that would catch it passes trivially unless the decoy tenant is populated with real data.",
-      "confidence": 0.96,
-      "origin": "manual",
-      "status": "active"
-    },
-    {
-      "id": "E-011",
-      "from": {
-        "kind": "contract",
-        "ref": "packages/ports/src",
-        "exists": true
-      },
-      "to": [
-        {
-          "kind": "package",
-          "ref": "@irodora/adapters"
-        },
-        {
-          "kind": "test",
-          "ref": "packages/ports/src/conformance/conformance.test.ts"
-        },
-        {
-          "kind": "module",
-          "ref": "apps/api"
-        },
-        {
-          "kind": "module",
-          "ref": "apps/worker"
-        }
-      ],
-      "kind": "EFFECT_LINK",
-      "scope": [
-        "packages/ports",
-        "packages/adapters",
-        "apps/api",
-        "apps/worker"
-      ],
-      "severity": "high",
-      "guard": "gate:test",
-      "memory": "memory/effects/a-port-change-is-a-change-to-every-adapter.md",
-      "rationale": "A port interface is a promise that every adapter behaves the same way, and the conformance suite is the only thing that makes it true rather than aspirational. Adding a method without adding a case leaves the new behaviour unspecified in exactly the place two adapters will diverge — and the divergence appears in production, on the adapter nobody tests against locally.",
-      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     },
@@ -461,10 +318,6 @@
         },
         {
           "kind": "module",
-          "ref": "apps/web"
-        },
-        {
-          "kind": "module",
           "ref": "apps/mobile"
         }
       ],
@@ -473,7 +326,6 @@
         "packages/color-spaces",
         "packages/color-harmony",
         "packages/color-core",
-        "apps/web",
         "apps/mobile"
       ],
       "severity": "high",
@@ -506,19 +358,13 @@
         {
           "kind": "doc",
           "ref": "docs/content/color-corpus-spec.md"
-        },
-        {
-          "kind": "artifact",
-          "ref": "apps/api/src/modules/catalog",
-          "exists": false
         }
       ],
       "kind": "EFFECT_LINK",
       "scope": [
         "packages/corpus",
         "content",
-        "docs/content",
-        "apps/api"
+        "docs/content"
       ],
       "severity": "high",
       "guard": "gate:content",
@@ -581,11 +427,6 @@
           "ref": "packages/color-naming/test"
         },
         {
-          "kind": "artifact",
-          "ref": "apps/api/src/modules/catalog",
-          "exists": false
-        },
-        {
           "kind": "doc",
           "ref": "docs/architecture/color-engine.md"
         }
@@ -593,8 +434,7 @@
       "kind": "EFFECT_LINK",
       "scope": [
         "packages/color-naming",
-        "apps/api",
-        "apps/web"
+        "apps/mobile"
       ],
       "severity": "critical",
       "guard": "gate:test",

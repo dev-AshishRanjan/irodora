@@ -4,7 +4,7 @@ title: A gate that errors is failing open, and so is an authorisation check that
 category: convention
 confidence: 1.0
 created: 2026-08-13
-scope: [root, apps/api]
+scope: [root]
 links: [[a-negative-test-needs-a-decoy-not-an-empty-fixture]]
 ---
 

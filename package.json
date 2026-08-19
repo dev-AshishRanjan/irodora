@@ -24,8 +24,6 @@
     "test:e2e": "node scripts/e2e-scope.mjs && turbo run test:e2e",
     "test:a11y": "turbo run test:a11y",
     "test:contrast": "turbo run test:contrast",
-    "test:e2e:full": "pnpm --filter @irodora/e2e-full test",
-    "test:perf": "pnpm --filter @irodora/web-perf test",
     "bench": "pnpm --filter @irodora/bench test",
     "security:secrets": "gitleaks detect --no-banner --redact --config .gitleaks.toml",
     "changeset": "changeset",
@@ -35,14 +33,9 @@
     "verify:guards": "node scripts/verify-guards.mjs",
     "verify:purity": "node scripts/verify-engine-purity.mjs",
     "verify:purity:prove": "node scripts/verify-engine-purity.mjs --prove",
-    "verify:images": "node scripts/verify-image-nonroot.mjs",
     "security:staged": "gitleaks protect --staged --no-banner --redact --config .gitleaks.toml",
-    "verify:compose": "node scripts/verify-compose-portability.mjs",
-    "verify:terraform": "node scripts/verify-terraform.mjs",
     "verify:unsafe": "node scripts/verify-unsafe-call-sites.mjs",
-    "verify:pin": "node scripts/verify-contract-pin.mjs",
-    "openapi": "node scripts/generate-openapi.mjs",
-    "openapi:check": "node scripts/generate-openapi.mjs --check"
+    "verify:pin": "node scripts/verify-contract-pin.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

@@ -703,8 +703,7 @@
         "state",
         "e2e",
         "a11y",
-        "contrast",
-        "web-perf"
+        "contrast"
       ]
     },
     {
@@ -817,8 +816,7 @@
         "test",
         "e2e",
         "a11y",
-        "contrast",
-        "web-perf"
+        "contrast"
       ],
       "effects": [
         "E-008"
@@ -1267,8 +1265,7 @@
       ],
       "verification": [
         "state",
-        "perf",
-        "web-perf"
+        "perf"
       ]
     },
     {
@@ -1450,8 +1447,7 @@
       "verification": [
         "state",
         "typecheck",
-        "test",
-        "e2e-full"
+        "test"
       ]
     },
     {
@@ -1521,8 +1517,7 @@
         "The fallback path is exercised in e2e-full, not assumed"
       ],
       "verification": [
-        "state",
-        "e2e-full"
+        "state"
       ]
     },
     {

@@ -6,7 +6,7 @@ severity: high
 guard: gate:content
 confidence: 0.92
 created: 2026-08-13
-scope: [content, apps/api, packages/corpus]
+scope: [content, packages/corpus]
 links: [[srgb-xyz-is-the-root-of-every-derived-value]], [[rule-weights-change-every-answer-without-a-deploy]]
 ---
 

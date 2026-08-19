@@ -7,7 +7,7 @@ guard: none
 feature: F-029
 confidence: 0.95
 created: 2026-08-13
-scope: [content, packages/recommendation, apps/api]
+scope: [content, packages/recommendation]
 links: [[corpus-version-pins-caches-and-envelopes]]
 ---
 

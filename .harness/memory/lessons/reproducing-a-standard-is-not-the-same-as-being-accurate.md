@@ -3,7 +3,7 @@ kind: lesson
 title: Reproducing a standard is not the same as being accurate
 severity: high
 created: 2026-08-15
-scope: [packages/color-difference, packages/design-tokens, apps/web]
+scope: [packages/color-difference, packages/design-tokens, apps/mobile]
 links: [[measure-what-a-golden-set-can-detect-before-trusting-it]], [[two-oracles-agreeing-against-you-is-evidence-about-you]], [[the-adaptation-transform-is-a-product-decision-not-a-detail]]
 ---
 

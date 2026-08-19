@@ -7,7 +7,7 @@ guard: gate:contrast
 confidence: 0.95
 created: 2026-08-13
 updated: 2026-08-15
-scope: [docs/design, packages/design-tokens, apps/web, apps/mobile]
+scope: [docs/design, packages/design-tokens, apps/mobile]
 links: [[one-separation-definition-for-ui-and-engine]]
 ---
 

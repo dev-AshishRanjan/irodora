@@ -4,7 +4,7 @@ title: Provenance in the type is what makes honesty structural rather than cultu
 category: convention
 confidence: 1.0
 created: 2026-08-13
-scope: [packages/color-core, apps/web, apps/mobile]
+scope: [packages/color-core, apps/mobile]
 links: [[the-color-type-reaches-every-surface]], [[wada-public-domain-is-not-the-same-as-free-to-ingest]]
 ---
 

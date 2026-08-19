@@ -116,8 +116,7 @@ initialize → select feature → plan → implement → verify → trace effect
 **Global** (this file) applies everywhere. **Scoped** harnesses extend it:
 
 ```
-apps/api/AGENTS.md · apps/web/AGENTS.md · apps/mobile/AGENTS.md
-apps/worker/AGENTS.md · apps/admin/AGENTS.md
+apps/mobile/AGENTS.md              ← the app; the only surface
 packages/color-core/AGENTS.md      ← strictest zone in the repository
 content/AGENTS.md                  ← provenance and licensing rules
 ```
@@ -133,10 +132,10 @@ The checker is never the implementer.
 ## 5. Tech cheat-sheet
 
 - **Node 24 LTS** ([`.nvmrc`](.nvmrc)) · **pnpm 11** · **Turborepo**
-- API: Fastify 5 + Zod 4 → OpenAPI · Postgres 17 + Drizzle · Valkey
-- Web: Next.js 16 + React 19 + Tailwind v4 + Radix · Mobile: Expo 57 + VisionCamera
+- App: **Expo 57 · React Native 0.86 · New Architecture** · iOS and Android · VisionCamera
+- Storage: **`expo-sqlite` + SQLCipher, via Drizzle** — the device is the system of record
 - Engine: `@irodora/color-*` — **zero runtime dependencies, no platform APIs**
-- Local services: `docker compose up -d`
+- **No server, no API, no account** ([ADR-0051](docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md))
 - Harness gate: `node scripts/verify-state.mjs`
 - Gates: [`.harness/verification/gates.json`](.harness/verification/gates.json)
 

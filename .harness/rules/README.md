@@ -14,11 +14,9 @@ the split is for.
 | [`common/git.md`](common/git.md) | Committing |
 | [`common/agent-first.md`](common/agent-first.md) | Always — how to work here as an agent |
 | [`typescript/typescript.md`](typescript/typescript.md) | Any TypeScript |
-| [`api/api.md`](api/api.md) | `apps/api`, `apps/worker`, contracts |
-| [`frontend/frontend.md`](frontend/frontend.md) | `apps/web`, `apps/admin`, `packages/ui` |
 | [`frontend/contrast.md`](frontend/contrast.md) | Anything visual |
 | [`frontend/motion.md`](frontend/motion.md) | Any animation |
-| [`mobile/mobile.md`](mobile/mobile.md) | `apps/mobile` |
+| [`mobile/mobile.md`](mobile/mobile.md) | `apps/mobile`, `packages/ui` — **the app is the only surface** |
 | [`color/color-science.md`](color/color-science.md) | **`packages/color-*`, `packages/cvd-engine` — mandatory** |
 | [`content/content-provenance.md`](content/content-provenance.md) | **`content/` — mandatory** |
 | [`security/security.md`](security/security.md) | Auth, input, storage, secrets |
