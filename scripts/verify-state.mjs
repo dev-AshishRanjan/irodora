@@ -524,10 +524,34 @@ const ci = readText(ciPath);
  * mirrored, which matters here because the workflow names every gate in prose.
  *
  * Handles both `run: cmd` and block scalars (`run: |` followed by indented lines).
+ *
+ * **It also carries each step's `if:` (F-072).** This check used to walk straight past the
+ * condition, which meant a gate could read `active` in gates.json, have a step here, pass this
+ * check, and never once execute. That nearly shipped in F-011: gate 11's step carried
+ * `if: hashFiles('content/colors') != ''` and `content/colors/` is empty until F-012, so the
+ * gate would have been skipped on every push for the rest of R1 with nothing saying so.
  */
 function ciRunCommands(yaml) {
   const commands = [];
   const lines = yaml.split('\n');
+
+  /** The `if:` belonging to the step that contains line `i`, or null. */
+  const conditionFor = (i, indent) => {
+    for (let j = i - 1; j >= 0; j--) {
+      const l = lines[j];
+      if (!l.trim() || l.trim().startsWith('#')) continue;
+      const ind = /^(\s*)/.exec(l)[1].length;
+      // A new list item at or above the step's own indent ends the step we are inside.
+      if (/^\s*-\s/.test(l) && ind <= indent.length) {
+        const own = /^\s*-\s+if:\s*(.*)$/.exec(l);
+        return own ? own[1].trim() : null;
+      }
+      if (ind < indent.length) return null;
+      const cond = /^\s*if:\s*(.*)$/.exec(l);
+      if (cond && ind === indent.length) return cond[1].trim();
+    }
+    return null;
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -535,8 +559,10 @@ function ciRunCommands(yaml) {
     if (!inline) continue;
 
     const [, indent, value] = inline;
+    const condition = conditionFor(i, indent);
+
     if (value !== '|' && value !== '>' && value !== '|-' && value !== '>-') {
-      if (value.trim()) commands.push(value.trim());
+      if (value.trim()) commands.push({ command: value.trim(), condition });
       continue;
     }
 
@@ -546,7 +572,7 @@ function ciRunCommands(yaml) {
       if (!body.trim()) continue;
       const bodyIndent = /^(\s*)/.exec(body)[1];
       if (bodyIndent.length <= indent.length) break;
-      commands.push(body.trim());
+      commands.push({ command: body.trim(), condition });
     }
   }
 
@@ -564,19 +590,50 @@ if (gates) {
       // A step counts as running the gate if its command IS the gate command, or begins
       // with it followed by a shell boundary — `pnpm lint && something` still runs the gate,
       // `pnpm lint:fix` does not.
-      const mirrored = runCommands.some((cmd) => {
-        if (!cmd.startsWith(gate.command)) return false;
-        const rest = cmd.slice(gate.command.length);
+      const steps = runCommands.filter(({ command }) => {
+        if (!command.startsWith(gate.command)) return false;
+        const rest = command.slice(gate.command.length);
         return rest === '' || /^[\s&|;]/.test(rest);
       });
 
-      if (!mirrored)
+      if (steps.length === 0) {
         fail(
           'ci-mirror',
           `Active gate "${gate.id}" has no step in .github/workflows/ci.yml`,
           'A gate that is declared but not run in CI is theatre — believed in, and not doing its job.',
           `Add a step running: ${gate.command}  (or set "ciStep": false if it is deliberately covered by another step).`,
         );
+        continue;
+      }
+
+      // F-072. A step is mirrored AND runs only if nothing conditions it out. An `if:` on a
+      // blocking gate is how a gate reads active, passes this check, and never executes.
+      for (const { condition } of steps) {
+        if (condition === null) continue;
+
+        const declared = gate.ciCondition;
+        if (!declared)
+          fail(
+            'ci-mirror',
+            `Active gate "${gate.id}" has a CI step guarded by \`if: ${condition}\``,
+            'A condition can silently skip a blocking gate on every push, and this check compares run-commands — it would keep reporting the gate as mirrored. That is how gate 11 nearly shipped skipped for the whole of R1.',
+            `Remove the condition, or declare it in gates.json as "ciCondition": { "condition": ${JSON.stringify(condition)}, "why": "..." }.`,
+          );
+        else if (declared.condition !== condition)
+          fail(
+            'ci-mirror',
+            `Active gate "${gate.id}" declares ciCondition ${JSON.stringify(declared.condition)} but its step carries ${JSON.stringify(condition)}`,
+            'A stale declaration is worse than none: it reads as reviewed while describing something that is no longer there.',
+            'Update gates.json to match the workflow, or change the workflow back.',
+          );
+        else if (!declared.why || declared.why.trim().length < 20)
+          fail(
+            'ci-mirror',
+            `Active gate "${gate.id}" declares a ciCondition with no real reason`,
+            'An exemption nobody had to justify is not an exemption — it is a way to turn a blocking gate off quietly.',
+            'Give ciCondition.why at least 20 characters saying why skipping this gate is ever correct.',
+          );
+      }
     }
     if (!failures.some((f) => f.check === 'ci-mirror'))
       pass('ci-mirror', `${active.length} active gate(s) mirrored in CI`);

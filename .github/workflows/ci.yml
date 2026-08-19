@@ -68,20 +68,16 @@ jobs:
 
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
-        if: hashFiles('pnpm-lock.yaml') != ''
         uses: pnpm/action-setup@v4
 
       - name: Install
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm install --frozen-lockfile
 
       # ---- gates 1-6: code ------------------------------------------------
       - name: 'Gate 1 — typecheck'
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm typecheck
 
       - name: 'Gate 2 — lint'
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm lint
 
       # Not a gate — the proof that the claims lint inside gate 2 can fail (NFR-21, F-025).
@@ -94,19 +90,15 @@ jobs:
         run: node scripts/verify-claims-proof.mjs
 
       - name: 'Gate 3 — format'
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm format:check
 
       - name: 'Gate 4 — test'
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm test
 
       - name: 'Gate 5 — color-golden'
-        if: hashFiles('packages/color-spaces/package.json') != ''
         run: pnpm test:golden
 
       - name: 'Gate 6 — build'
-        if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm build
 
       # ---- gates 7-11: surfaces and content -------------------------------
@@ -136,7 +128,6 @@ jobs:
         run: node scripts/verify-contrast-proof.mjs
 
       - name: 'Gate 10 — cvd'
-        if: hashFiles('packages/cvd-engine/dist') != ''
         run: pnpm test:cvd
 
       # Unconditional, and that is the point. The `if: hashFiles('content/colors') != ''` this
@@ -185,7 +176,6 @@ jobs:
         run: pnpm security:secrets
 
       - name: 'Gate 15 — security (dependency audit)'
-        if: hashFiles('pnpm-lock.yaml') != ''
         # --audit-level high blocks on High AND Critical. Moderate and below are reported by
         # the scheduled audit rather than blocking a pull request on a transitive advisory
         # nobody can action today.

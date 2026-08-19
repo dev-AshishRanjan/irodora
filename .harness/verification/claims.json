@@ -193,7 +193,7 @@
     "$measuredComment": "EMPTY, and that is the correct state. A `measured` entry exempts an actual accuracy claim, and requires `claim`, `measurement` (a link to the device-lab row) and `why`. There are no measurements yet — the device colour lab is F-063 — so there can be no permitted claim. The lint prints this count on every run so an empty allowlist cannot be mistaken for a thorough one.",
     "inlineMarker": {
       "token": "claims-ok:",
-      "$comment": "For a line that FORBIDS a construction or records its deliberate absence — `no isExactMatch`, `never say \"exact colour\"`. Requires a reason after the token on the same line; a bare marker is itself a failure, because an exemption nobody had to justify is not an exemption."
+      "$comment": "For a line that FORBIDS a construction or records its deliberate absence — `no isExactMatch`, `never say \"exact colour\"`. Requires a reason after the token on the same line; a bare marker is itself a failure, because an exemption nobody had to justify is not an exemption. NOTE for prose ABOUT this mechanism: the token includes the colon deliberately, so write `claims-ok` without it when discussing the marker rather than using it. Otherwise every document explaining the marker trips the bare-marker check and the policySource list grows one entry per author. Found the first time a plan described it."
     }
   }
 }

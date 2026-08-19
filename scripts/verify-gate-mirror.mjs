@@ -83,6 +83,36 @@ function removeStepRunning(yaml, command) {
   return [...lines.slice(0, start), ...lines.slice(end)].join('\n');
 }
 
+/**
+ * Add `if: false` to the step that runs `command` (F-072).
+ *
+ * The step keeps its `run:`, so the mirror check's command comparison still matches it — which
+ * is exactly the situation being tested. A check that only notices a DELETED step cannot tell
+ * a running gate from one that is skipped on every push.
+ *
+ * Returns null when no step matches, or when the step already carries a condition.
+ */
+function conditionOutStepRunning(yaml, command) {
+  const lines = yaml.split('\n');
+
+  const runIndex = lines.findIndex((line) => {
+    const m = /^\s*-?\s*run:\s*(.*)$/.exec(line);
+    if (!m) return false;
+    const value = m[1].trim();
+    if (!value.startsWith(command)) return false;
+    const rest = value.slice(command.length);
+    return rest === '' || /^[\s&|;]/.test(rest);
+  });
+  if (runIndex === -1) return null;
+
+  const indent = /^(\s*)/.exec(lines[runIndex])[1];
+  return [
+    ...lines.slice(0, runIndex),
+    `${indent}if: false # planted by verify-gate-mirror.mjs`,
+    ...lines.slice(runIndex),
+  ].join('\n');
+}
+
 console.log(`\n${BOLD}Irodora — gate ↔ CI mirror proof${OFF}\n`);
 
 const original = readFileSync(CI, 'utf8');
@@ -131,6 +161,43 @@ try {
 
     console.log(`  ${GREEN}✓${OFF} removing the "${gate.id}" step fails gate 0`);
     console.log(`    ${DIM}${gate.command}${OFF}`);
+  }
+
+  // ---- F-072: the second way a gate stops running -------------------------------------
+  //
+  // Deleting a step is the loud failure. CONDITIONING IT OUT is the quiet one: the step is
+  // still there, this proof's first half still passes, and the gate never executes. That is
+  // how gate 11 nearly shipped skipped for the whole of R1 behind
+  // `if: hashFiles('content/colors') != ''`.
+  console.log('');
+  for (const gate of active) {
+    const mutated = conditionOutStepRunning(original, gate.command);
+    if (mutated === null) {
+      couldNotRun.push({ gate, reason: `could not add a condition to the "${gate.id}" step` });
+      continue;
+    }
+
+    writeFileSync(CI, mutated, 'utf8');
+    const result = runStateGate();
+    writeFileSync(CI, original, 'utf8');
+
+    if (!result.failed) {
+      notEnforced.push({
+        gate,
+        reason:
+          'gate 0 stayed GREEN with the step conditioned out — the gate can be silently skipped',
+      });
+      continue;
+    }
+    if (!result.output.includes(`"${gate.id}"`)) {
+      notEnforced.push({
+        gate,
+        reason: `gate 0 failed on the condition, but did not name "${gate.id}"`,
+      });
+      continue;
+    }
+
+    console.log(`  ${GREEN}✓${OFF} conditioning out the "${gate.id}" step fails gate 0`);
   }
 } finally {
   writeFileSync(CI, original, 'utf8');

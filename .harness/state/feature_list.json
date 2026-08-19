@@ -1658,7 +1658,7 @@
       "service": "tests",
       "release": "R1",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "acceptance": [
         "An active gate whose CI step carries an `if:` fails gate 0, naming the gate",
         "verify-gate-mirror.mjs proves that check by adding a condition to a real step and watching gate 0 go red",
@@ -1667,7 +1667,8 @@
       "verification": [
         "state"
       ],
-      "notes": "FOUND IN F-011, WHERE IT NEARLY SHIPPED. scripts/verify-state.mjs compares whole `run:` commands and never reads `if:`. Gate 11's step carried `if: hashFiles(content/colors) != ''`, so once the gate went active it would have been skipped on every push for the rest of R1 — F-011 ships the gate, F-012 ships the entries — while gates.json said \"active\" and gate 0 said \"mirrored in CI\". Both true; neither meaning the gate ran. verify-gate-mirror.mjs does not catch it either: it deletes steps and asserts gate 0 fails, which is exactly what a conditional step still has. Gate 11's own condition was removed in F-011; gates 7, 10 and 12 still carry guards and are the reason this is a feature rather than a note. The guarded-step pattern is CORRECT for a pending gate and a trap at the moment of activation, so the check needs to key on gate status rather than banning `if:` outright. Lesson: memory/lessons/a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check.md"
+      "notes": "DONE. Gate 0 compared whole run-commands and NEVER READ `if:`, so a gate could read active, have a step, pass the mirror check, and never once execute. FOUND SEVEN OF ELEVEN ACTIVE GATES CONDITIONED OUT: typecheck, lint, format, test and build on hashFiles(pnpm-lock.yaml); color-golden on a package.json; and — the worst — cvd on hashFiles(packages/cvd-engine/dist), A BUILD OUTPUT, so a build that produced nothing would have silently skipped the gate rather than failing. None was skipping yet; all seven were one rename away, with nothing to report it. All seven now unconditional: `pnpm install --frozen-lockfile` already fails the job when the lockfile is missing, so the hashFiles guards protected nothing that was not already protected. Also removed the same condition from the Set up pnpm, Install and dependency-audit steps. THE ESCAPE HATCH: a conditional step is not always wrong — a push-only benchmark is a cadence choice — so gates.json may declare ciCondition {condition, why}, with why required at 20+ characters for the same reason F-025 requires a reason on claims-ok: an exemption nobody had to justify is a way to turn a blocking gate off. PROVEN IN ALL THREE DIRECTIONS, by hand and recorded: declared + real reason stays GREEN (the hatch works, which matters because an untested escape hatch is a wall for whoever first needs it); declared + trivial reason goes RED; declared condition not matching the workflow goes RED, because a stale declaration reads as reviewed while describing something no longer there. verify-gate-mirror.mjs now runs 22 cases rather than 11: it REMOVES each active gate step and, separately, CONDITIONS IT OUT with `if: false` while leaving the run: in place — the quiet failure the loud one hides. SCOPE, stated rather than left to be wondered about: the check applies to ACTIVE gates only. Gate 12 (perf) is pending and keeps its push-only condition; blocking a pending gate from being staged conditionally would make the check hostile to its own purpose.",
+      "plan": "plans/F-072-gate-0-sees-a-conditioned-out-ci-step.md"
     },
     {
       "id": "F-073",

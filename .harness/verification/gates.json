@@ -14,7 +14,7 @@
         "always"
       ],
       "ciStep": true,
-      "description": "Harness integrity. Validates feature_list.json and effects.json against their schemas; every E-### has a memory note and every memory note is referenced; every effect `to` path exists on disk; every critical link names a guard; wikilinks resolve; wip_limit is respected; blockers are done before a feature is in_progress; an in-flight feature has a plan; every PRD FR/NFR is claimed by a feature and appears in REQUIREMENTS-COVERAGE.md; the ADR index matches the ADR files; gates.json mirrors the CI workflow; scoped rules do not weaken a golden rule; governed-doc relative links resolve."
+      "description": "Harness integrity. Validates feature_list.json and effects.json against their schemas; every E-### has a memory note and every memory note is referenced; every effect `to` path exists on disk; every critical link names a guard; wikilinks resolve; wip_limit is respected; blockers are done before a feature is in_progress; an in-flight feature has a plan; every PRD FR/NFR is claimed by a feature and appears in REQUIREMENTS-COVERAGE.md; the ADR index matches the ADR files; gates.json mirrors the CI workflow AND no active gate is conditioned out of it (F-072) — an `if:` on an active gate fails unless gates.json declares a matching ciCondition with a reason of 20+ characters, because this check compares run-commands and used to walk straight past the condition, which is how gate 11 nearly shipped skipped for the whole of R1; scoped rules do not weaken a golden rule; governed-doc relative links resolve."
     },
     {
       "id": "typecheck",
