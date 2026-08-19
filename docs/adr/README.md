@@ -75,6 +75,7 @@ Two rules that matter more than the format:
 | [0049](0049-warm-and-cool-are-a-stated-convention.md) | Warm and cool are a stated convention, anchored to the corpus taxonomy | Accepted |
 | [0050](0050-rate-limiting-is-a-fixed-window-that-fails-open.md) | Rate limiting is a fixed window, and it fails open | Retired with the server tier ([ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)) |
 | [0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) | Irodora is a local-first mobile app; there is no server tier | Accepted |
+| [0052](0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md) | The OKLab round-trip tolerance is conditioned on LMS, and 1e-12 was wrong | Accepted |
 
 ## Open questions awaiting an ADR
 

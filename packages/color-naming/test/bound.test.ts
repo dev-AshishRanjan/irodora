@@ -69,7 +69,7 @@ describe('the derived constants', () => {
           );
         },
       ),
-      { numRuns: 2000, seed: 20260818 },
+      { numRuns: 2000, seed: 20260823 },
     );
   });
 

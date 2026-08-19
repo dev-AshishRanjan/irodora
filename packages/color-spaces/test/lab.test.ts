@@ -54,7 +54,7 @@ describe('XYZ ↔ CIELAB', () => {
       fc.property(labArb(), (lab) => {
         expect(maxAbsDiff(xyzToLab(labToXyz(lab)), lab)).toBeLessThan(1e-11);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260843 },
     );
   });
 
@@ -73,7 +73,7 @@ describe('XYZ ↔ CIELAB', () => {
           expect(upper).toBeGreaterThan(lower);
         },
       ),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260844 },
     );
   });
 
@@ -120,7 +120,7 @@ describe('CIELAB ↔ CIELCh', () => {
       fc.property(labArb(), (lab) => {
         expect(maxAbsDiff(lchToLab(labToLch(lab)), lab)).toBeLessThan(1e-12);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260845 },
     );
   });
 
@@ -141,7 +141,7 @@ describe('CIELAB ↔ CIELCh', () => {
         expect(hue).toBeGreaterThanOrEqual(0);
         expect(hue).toBeLessThan(360);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260846 },
     );
   });
 
@@ -166,7 +166,7 @@ describe('CIELAB ↔ CIELCh', () => {
         expect(folded).toBeLessThan(360);
         expect(folded).toBeGreaterThanOrEqual(0);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260847 },
     );
   });
 
@@ -181,7 +181,7 @@ describe('CIELAB ↔ CIELCh', () => {
           expect(delta).toBeLessThanOrEqual(180);
         },
       ),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260848 },
     );
   });
 });

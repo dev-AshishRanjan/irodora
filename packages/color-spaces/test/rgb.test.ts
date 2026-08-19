@@ -41,7 +41,7 @@ describe('sRGB ↔ XYZ', () => {
       fc.property(rgbArb(), (rgb) => {
         expect(maxAbsDiff(xyzToSrgb(srgbToXyz(rgb)), rgb)).toBeLessThan(1e-12);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260854 },
     );
   });
 
@@ -61,7 +61,7 @@ describe('sRGB ↔ XYZ', () => {
           expect(maxAbsDiff(xyzToSrgb(srgbToXyz(rgb)), rgb)).toBeLessThan(1e-12);
         },
       ),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260855 },
     );
   });
 
@@ -78,7 +78,7 @@ describe('sRGB ↔ XYZ', () => {
         })();
         expect(maxAbsDiff(linearSrgbToXyz(mid), meanOfXyz)).toBeLessThan(1e-15);
       }),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260856 },
     );
   });
 
@@ -100,7 +100,7 @@ describe('Display-P3 ↔ XYZ', () => {
       fc.property(rgbArb(), (rgb) => {
         expect(maxAbsDiff(xyzToDisplayP3(displayP3ToXyz(rgb)), rgb)).toBeLessThan(1e-12);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260857 },
     );
   });
 
@@ -125,7 +125,7 @@ describe('linear sRGB ↔ XYZ', () => {
       fc.property(rgbArb(), (rgb) => {
         expect(maxAbsDiff(xyzToLinearSrgb(linearSrgbToXyz(rgb)), rgb)).toBeLessThan(1e-15);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260858 },
     );
   });
 

@@ -83,7 +83,7 @@ describe('range', () => {
         expect(s).toBeGreaterThan(0);
         expect(s).toBeLessThanOrEqual(100);
       }),
-      { numRuns: 5000, seed: 20260827 },
+      { numRuns: 5000, seed: 20260871 },
     );
   });
 

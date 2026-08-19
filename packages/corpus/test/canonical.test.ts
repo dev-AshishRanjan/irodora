@@ -198,7 +198,7 @@ describe('properties', () => {
         const shuffled = Object.fromEntries(Object.entries(o).reverse());
         expect(canonicalize(shuffled)).toBe(canonicalize(o));
       }),
-      { numRuns: 500 },
+      { numRuns: 500, seed: 20260865 },
     );
   });
 
@@ -208,7 +208,7 @@ describe('properties', () => {
         const once = canonicalize(v);
         expect(canonicalize(JSON.parse(once))).toBe(once);
       }),
-      { numRuns: 500 },
+      { numRuns: 500, seed: 20260866 },
     );
   });
 
@@ -217,7 +217,7 @@ describe('properties', () => {
       fc.property(jsonValue, (v) => {
         expect(entryDigest(v, sha256)).toBe(entryDigest(v, sha256));
       }),
-      { numRuns: 300 },
+      { numRuns: 300, seed: 20260867 },
     );
   });
 
@@ -227,7 +227,7 @@ describe('properties', () => {
         fc.pre(a !== b);
         expect(canonicalize({ k: a })).not.toBe(canonicalize({ k: b }));
       }),
-      { numRuns: 500 },
+      { numRuns: 500, seed: 20260868 },
     );
   });
 });

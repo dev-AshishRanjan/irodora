@@ -63,7 +63,7 @@ describe('identity — every metric is exactly 0 for a colour against itself', (
       fc.property(labArb(), (c) => {
         expect(deltaE76(c, c)).toBe(0);
       }),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260830 },
     );
   });
 
@@ -73,7 +73,7 @@ describe('identity — every metric is exactly 0 for a colour against itself', (
         expect(deltaE94(c, c)).toBe(0);
         expect(deltaE94(c, c, DELTAE94_TEXTILES)).toBe(0);
       }),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260831 },
     );
   });
 
@@ -86,7 +86,7 @@ describe('identity — every metric is exactly 0 for a colour against itself', (
       fc.property(labArb(), (c) => {
         expect(deltaE00(c, c)).toBe(0);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260832 },
     );
   });
 
@@ -95,7 +95,7 @@ describe('identity — every metric is exactly 0 for a colour against itself', (
       fc.property(oklabArb(), (c) => {
         expect(deltaEok(c, c)).toBe(0);
       }),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260833 },
     );
   });
 
@@ -118,7 +118,7 @@ describe('symmetry — where it holds', () => {
       fc.property(labArb(), labArb(), (a, b) => {
         expect(deltaE76(a, b)).toBe(deltaE76(b, a));
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260834 },
     );
   });
 
@@ -131,7 +131,7 @@ describe('symmetry — where it holds', () => {
       fc.property(labArb(), labArb(), (a, b) => {
         expect(deltaE00(a, b)).toBe(deltaE00(b, a));
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260835 },
     );
   });
 
@@ -140,7 +140,7 @@ describe('symmetry — where it holds', () => {
       fc.property(oklabArb(), oklabArb(), (a, b) => {
         expect(deltaEok(a, b)).toBe(deltaEok(b, a));
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260836 },
     );
   });
 
@@ -149,7 +149,7 @@ describe('symmetry — where it holds', () => {
       fc.property(rgbArb(), rgbArb(), (a, b) => {
         expect(wcagContrast(a, b)).toBe(wcagContrast(b, a));
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260837 },
     );
   });
 });
@@ -183,7 +183,7 @@ describe('symmetry — where it does not hold, and must not be asserted', () => 
         fc.pre(Math.abs(apcaLc(a, b)) > 1);
         expect(apcaLc(a, b)).not.toBe(-apcaLc(b, a));
       }),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260838 },
     );
   });
 });
@@ -197,7 +197,7 @@ describe('bounds', () => {
           expect(Number.isFinite(value)).toBe(true);
         }
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260839 },
     );
   });
 
@@ -219,7 +219,7 @@ describe('bounds', () => {
         expect(Number.isFinite(deltaE00([l, 0, 0], other))).toBe(true);
         expect(Number.isFinite(deltaE00(other, [l, 0, 0]))).toBe(true);
       }),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260840 },
     );
   });
 
@@ -230,7 +230,7 @@ describe('bounds', () => {
         expect(ratio).toBeGreaterThanOrEqual(1);
         expect(ratio).toBeLessThanOrEqual(21);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260841 },
     );
   });
 
@@ -241,7 +241,7 @@ describe('bounds', () => {
         expect(lc).toBeGreaterThan(-108);
         expect(lc).toBeLessThan(107);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260842 },
     );
   });
 });

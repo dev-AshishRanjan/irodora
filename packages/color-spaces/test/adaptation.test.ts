@@ -53,7 +53,7 @@ describe('adaptation', () => {
               expect(maxAbsDiff(a, [b[0] * k, b[1] * k, b[2] * k])).toBeLessThan(1e-14);
             },
           ),
-          { numRuns: 2_000 },
+          { numRuns: 2_000, seed: 20260864 },
         );
       });
 

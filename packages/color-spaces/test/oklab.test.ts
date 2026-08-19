@@ -46,12 +46,72 @@ describe('XYZ ↔ OKLab', () => {
     }
   });
 
-  it('round-trips arbitrary OKLab values', () => {
+  /**
+   * The tolerance here is **1e-6, not 1e-12**, and the six orders of magnitude are the
+   * point. See [ADR-0052](../../../docs/adr/0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md).
+   *
+   * `1e-12` stood here until F-071 and was **wrong by five orders of magnitude**. It passed
+   * because 5,000 unseeded samples almost never reach the tail. Measured over **2,000,000**
+   * cases from this exact generator, the worst round-trip error is **5.422e-8**.
+   *
+   * The mechanism is conditioning, not a defect. `oklabToXyz` cubes LMS′ and `xyzToOklab`
+   * cube-roots it back, and `d/dx x^(1/3) → ∞` as `x → 0`. When one LMS′ component lands
+   * near zero while the others do not, its cube underflows toward the noise floor and the
+   * inverse amplifies that noise. The worst case found — OKLab `[0.0447, 0.1818, 0.4]` —
+   * has LMS′ = `[0.203, -3.7e-5, -0.488]`, whose cubes span a ratio of 2.3e12.
+   *
+   * The error tracks the conditioning exactly, over 2,000,000 samples:
+   *
+   * | `min|LMS′|` ≥ | worst round-trip error |
+   * |---|---|
+   * | anything | 5.422e-8 |
+   * | 1e-5 | 3.174e-10 |
+   * | 1e-4 | 1.169e-10 |
+   * | 1e-3 | 6.457e-12 |
+   * | 1e-2 | 4.607e-14 |
+   *
+   * **No real colour goes near this.** Every input in this generator's declared range is far
+   * outside any physical gamut; the stratified sRGB test above round-trips actual colours to
+   * **1e-14**, and that is the guarantee the product depends on. This property exists to
+   * assert the transform stays *sane* — finite, invertible, no NaN — where nothing real
+   * lives, and 1e-6 gives 18× margin over the measured worst case.
+   *
+   * Widening a tolerance to make a red test green is the thing this repository most
+   * consistently refuses. This is the opposite: the test was **green and wrong**, and the
+   * new number is measured rather than chosen.
+   */
+  it('round-trips arbitrary OKLab values, to a bound set by LMS conditioning', () => {
     fc.assert(
       fc.property(oklabArb(), (oklab) => {
+        expect(maxAbsDiff(xyzToOklab(oklabToXyz(oklab)), oklab)).toBeLessThan(1e-6);
+      }),
+      { numRuns: 5_000, seed: 20260849 },
+    );
+  });
+
+  /**
+   * The half of the old claim that IS true, kept as its own property so it cannot be lost
+   * inside the loosened bound above. Where LMS′ is well conditioned, the round trip is
+   * essentially exact — 4.607e-14 measured worst case, asserted at 1e-12 for 21× margin.
+   */
+  it('round-trips to 1e-12 wherever LMS is well conditioned', () => {
+    const wellConditioned = (oklab: OkLab): boolean => {
+      const [l, a, b] = oklab;
+      return (
+        Math.min(
+          Math.abs(l + 0.3963377774 * a + 0.2158037573 * b),
+          Math.abs(l - 0.1055613458 * a - 0.0638541728 * b),
+          Math.abs(l - 0.0894841775 * a - 1.291485548 * b),
+        ) >= 1e-2
+      );
+    };
+
+    fc.assert(
+      fc.property(oklabArb(), (oklab) => {
+        fc.pre(wellConditioned(oklab));
         expect(maxAbsDiff(xyzToOklab(oklabToXyz(oklab)), oklab)).toBeLessThan(1e-12);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260872 },
     );
   });
 
@@ -71,7 +131,7 @@ describe('XYZ ↔ OKLab', () => {
           for (const c of oklab) expect(Number.isFinite(c)).toBe(true);
         },
       ),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260850 },
     );
   });
 
@@ -90,7 +150,7 @@ describe('XYZ ↔ OKLab', () => {
           expect(upper).toBeGreaterThan(lower);
         },
       ),
-      { numRuns: 3_000 },
+      { numRuns: 3_000, seed: 20260851 },
     );
   });
 });
@@ -101,7 +161,7 @@ describe('OKLab ↔ OKLCh', () => {
       fc.property(oklabArb(), (oklab) => {
         expect(maxAbsDiff(oklchToOklab(oklabToOklch(oklab)), oklab)).toBeLessThan(1e-15);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260852 },
     );
   });
 
@@ -122,7 +182,7 @@ describe('OKLab ↔ OKLCh', () => {
         expect(hue).toBeGreaterThanOrEqual(0);
         expect(hue).toBeLessThan(360);
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260853 },
     );
   });
 });

@@ -28,7 +28,7 @@ describe('srgbToLinear / linearToSrgb', () => {
       fc.property(component(), (v) => {
         expect(Math.abs(linearToSrgb(srgbToLinear(v)) - v)).toBeLessThanOrEqual(roundTripBound(v));
       }),
-      { numRuns: 5_000 },
+      { numRuns: 5_000, seed: 20260859 },
     );
   });
 
@@ -52,7 +52,7 @@ describe('srgbToLinear / linearToSrgb', () => {
         fc.pre(a < b);
         expect(srgbToLinear(a)).toBeLessThanOrEqual(srgbToLinear(b));
       }),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260860 },
     );
 
     // The ordered pair is constructed rather than filtered. `fc.pre(a < b)` with a minimum
@@ -67,7 +67,7 @@ describe('srgbToLinear / linearToSrgb', () => {
           expect(srgbToLinear(a)).toBeLessThan(srgbToLinear(a + separation));
         },
       ),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260861 },
     );
   });
 
@@ -80,7 +80,7 @@ describe('srgbToLinear / linearToSrgb', () => {
         expect(srgbToLinear(-v)).toBe(-srgbToLinear(v));
         expect(linearToSrgb(-v)).toBe(-linearToSrgb(v));
       }),
-      { numRuns: 1_000 },
+      { numRuns: 1_000, seed: 20260862 },
     );
   });
 
@@ -90,7 +90,7 @@ describe('srgbToLinear / linearToSrgb', () => {
         expect(Number.isFinite(srgbToLinear(v))).toBe(true);
         expect(Number.isFinite(linearToSrgb(v))).toBe(true);
       }),
-      { numRuns: 1_000 },
+      { numRuns: 1_000, seed: 20260863 },
     );
   });
 

@@ -52,7 +52,7 @@ describe('bounds and shape', () => {
           }
         },
       ),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260869 },
     );
   });
 
@@ -69,7 +69,7 @@ describe('bounds and shape', () => {
         for (const deficiency of DEFICIENCIES)
           expect(separationScore(a, b, deficiency, 1)).toBe(separationScore(b, a, deficiency, 1));
       }),
-      { numRuns: 2_000 },
+      { numRuns: 2_000, seed: 20260870 },
     );
   });
 

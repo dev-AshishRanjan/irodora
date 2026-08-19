@@ -8,6 +8,106 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-19 — F-071 DONE · the property gates are deterministic, and one of them was lying
+
+Gates 4 and 5 are blocking. Both could go red for a reason unrelated to the change under
+test, and both could go green by luck. Neither can now.
+
+### Two corrections to what I told you earlier in this session
+
+**1. Node 24 was never missing.** I reported that it needed installing. It was already
+installed at `C:\Users\ASUS\AppData\Roaming\nvm\v24.19.0` — nvm simply had 22.16.0
+selected. Every gate is verified green on 24.
+
+Worse than the mistake was the reasoning: I probed `Math.pow` and `Math.cbrt` at two inputs,
+found them bit-identical on both runtimes, and treated that as evidence against my own
+diagnosis. The correct move — running the failing test on the other runtime — takes the same
+time and actually answers the question. **A probe at inputs you chose is not a test at inputs
+that fail.** The diagnosis was right; the reasoning that nearly overturned it was not.
+
+**2. The baseline red set I held constant was 6 tests. On Node 24 it is zero** — and a
+seventh flake existed that the Node-22 run never reached, because turbo bails on first
+failure. Holding the set constant was still the right method; it just could not see past the
+runtime error.
+
+### What was actually wrong
+
+| | Recorded | Measured |
+|---|---|---|
+| Unseeded properties | "some" | **41 of 48**, across 8 files |
+| Heavy tests on the 5 s default | 1 known | **30**, and 3 observed flaking |
+| `oklab` tolerance overshoot | "25 percent" | **a factor of 54,000** |
+
+That last row is the one that matters. F-071's own notes said `oklab.test.ts` failed once at
+`1.2477e-12` against a `1e-12` bound — "a 25 percent overshoot, so it will recur". Measured
+over **2,000,000 cases** drawn from that generator, the worst error is **5.422e-8**.
+
+It passed because 5,000 unseeded samples almost never reach the tail. **Seeding it without
+measuring first would have frozen that luck in place permanently** — a green run proving
+nothing, forever, and no way to tell.
+
+The cause is conditioning, not a defect. `oklabToXyz` cubes LMS′ and `xyzToOklab` cube-roots
+it back; `d/dx x^(1/3) → ∞` at zero. The worst case has LMS′ `[0.203, -3.7e-5, -0.488]`,
+whose cubes span a ratio of `2.3e12`. Settled by
+[ADR-0052](../../docs/adr/0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md): `1e-6`
+over the full declared range, `1e-12` where LMS is well conditioned, each stating its
+measured worst case. Real colours are untouched — the stratified sRGB test holds at `1e-14`.
+
+### A defect I introduced, and what caught it
+
+The batch script rewriting the vitest configs printed `updated 5 existing` having updated
+**two**. Three files used a single-line body its regex missed and were left importing a helper
+they never called while calling one they no longer imported.
+
+**The contrast mutation proof caught it** — not by detecting the mutation, but because its
+*baseline* went to exit 2. A proof that asserts the baseline is green either side of each
+mutation catches things that have nothing to do with the mutation.
+
+Recorded as `memory/lessons/a-batch-edit-that-reports-its-own-success-is-not-evidence.md`.
+
+### Rejected, and recorded so it is not retried
+
+A shared `vitest.shared.ts` at the root: every package `tsconfig.json` sets `rootDir: "."`
+and deliberately includes `*.config.ts`, so importing it fails with TS6059. Moving it into
+`@irodora/testing` would typecheck — every package already depends on it — but would make
+every package's *config file* fail to load whenever that package's build broke, turning a
+build error into a confusing config error. The timeout is repeated in 12 files instead, with
+the reasoning in each.
+
+### Evidence — the first fully green suite of this session
+
+```
+  ✓ gate 0   state            14 checks, 14 warnings
+  ✓ gate 1   typecheck        25 tasks
+  ✓ gate 2   lint             25 tasks + 11 guards, engine purity, unsafe census
+  ✓ gate 3   format
+  ✓ gate 4   test             25 tasks — FIVE consecutive --force runs, 25/25 each
+  ✓ gate 5   color-golden     12 tasks
+  ✓ gate 6   build            16 tasks
+  ✓ gate 9   contrast         17 tasks · 9/9 mutation proofs hold
+  ✓ gate 10  cvd              11 tasks
+  ✓ gate 11  content          25/25 cases discriminate
+  ✓ mirror   11 active gates proven mirrored
+
+  NOT run:  e2e, a11y (pending — no app yet) · perf (pending) · security (gitleaks
+            not installed on this workstation)
+```
+
+**Discrimination proven, not assumed.** A 1e-5 perturbation of `XYZ_TO_LMS_OKLAB[0][0]` turns
+both new seeded properties red. A seed that cannot be watched to fail has narrowed coverage to
+nothing, and this repository already has three recorded cases of a decoy that proved nothing.
+
+### Next
+
+1. **Stale feature references** — the rehaul left comments pointing at F-016, F-022, F-047,
+   F-057 and F-061, all deleted. A reader following one finds nothing.
+2. **F-012** (seed corpus, ~120 entries) — the schedule risk, and now unblocked.
+3. Then R2: F-039 (Expo shell) → F-041 (`@irodora/store`) → F-017 → F-035 → the surfaces.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-19 — THE REHAUL · the server tier is gone; Irodora is a local-first app
 
 Not a feature. A change to what the product is, recorded in
