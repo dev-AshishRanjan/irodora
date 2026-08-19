@@ -8,6 +8,104 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-19 — F-072 and F-073 DONE · the two ways a gate stops guarding
+
+Both were blind spots found during F-011 and recorded rather than fixed. Both had the same
+shape: **a check that reads as passing while the thing it guards is unprotected.**
+
+### F-072 — a gate can be conditioned out, and gate 0 could not see it
+
+The mirror check compared whole `run:` commands and never read `if:`. A gate could read
+`active`, have a step, pass the check, and never once execute.
+
+**Seven of eleven active gates were conditioned out:**
+
+| gate | condition |
+|---|---|
+| `cvd` | `hashFiles('packages/cvd-engine/dist')` — **a build output** |
+| `typecheck` `lint` `format` `test` `build` | `hashFiles('pnpm-lock.yaml')` |
+| `color-golden` | `hashFiles('packages/color-spaces/package.json')` |
+
+The `cvd` one is the worst: a build that produced nothing would have **silently skipped the
+gate** rather than failing. None was skipping yet; all seven were one rename away, with nothing
+to report it.
+
+All now unconditional. `pnpm install --frozen-lockfile` already fails the job when the lockfile
+is missing, so the `hashFiles` guards protected nothing that was not already protected.
+
+**The escape hatch is real and was tested in all three directions**, because an untested escape
+hatch is a wall for whoever first needs it:
+
+```
+declared + real reason        -> GREEN   the hatch works
+declared + trivial reason     -> RED
+declared, condition mismatch  -> RED     a stale declaration reads as reviewed
+```
+
+`verify-gate-mirror.mjs` now runs **22 cases**: it removes each gate's step, and separately
+**conditions it out with `if: false` while leaving the `run:` in place** — the quiet failure the
+loud one hides.
+
+### F-073 — engine purity stopped at the package name
+
+`verify-engine-purity.mjs` scoped the zone by name and treated every `@irodora/*` specifier as
+allowed **without following the edge**. An engine package could depend on a workspace package
+that imports `node:fs` with every gate green — and a transitive `node:fs` breaks NFR-3 exactly
+as directly as a local one.
+
+The zone is now the **transitive closure** of `@irodora/*` dependency edges from the declared
+roots.
+
+**Nothing is violating it today** — the closure equals the roots exactly, and the check *says
+so* rather than printing a bare count, because a count cannot distinguish "no transitive
+packages" from "did not look". That is a fact about this commit, not a property anyone was
+maintaining: F-011 hit this once with `color-naming` → `@irodora/corpus` and handled it by
+hand.
+
+`--prove` now plants three violations. The new one is the case the old check **could not see**.
+
+### The claims lint caught my own plan, one feature after shipping it
+
+The F-072 plan described the `claims-ok` marker in prose, and the lint read it as a bare marker
+with no reason. Real edge case, same class as the banned phrases appearing in the policy that
+bans them. Fixed by writing the token without its colon in prose — the colon is part of the
+token precisely so it is unambiguous — and recorded in `claims.json`, because otherwise the
+exemption list grows one entry per author who writes about the mechanism.
+
+### Evidence
+
+```
+  ✓ state 14 checks   ✓ mirror 22 cases      ✓ purity + --prove (3 cases)
+  ✓ typecheck 25      ✓ lint 25              ✓ build 16
+  ✓ test 25           ✓ color-golden 12      ✓ cvd 11
+  ✓ contrast 17       ✓ content              ✓ claims + proof (14 cases)
+  ✓ format
+
+  NOT run: e2e, a11y, perf (pending) · security (gitleaks not installed here)
+```
+
+### R1 is now one feature from closed
+
+```
+F-012  BLOCKED   seed corpus — needs a second editorial identity (OQ-5)
+F-067  todo      cross-theme salience hierarchy — NEEDS A DESIGN DECISION
+```
+
+**F-067 is not gate work.** Its own record says the fix "belongs to a person rather than to a
+gate-building task": the dark theme says caution is the loudest state and error the quietest,
+while the light theme says error is loudest by nearly 2×, so a user toggling the theme gets an
+inverted status hierarchy. A jointly feasible palette exists — dark ok L0.67 C0.12 H158, warn
+L0.70 C0.14 H70, bad L0.82 C0.10 H18, worst separation 63.1, every token above APCA Lc 45 — but
+it makes **error the lightest token in the dark theme**, which is a deliberate salience
+re-arrangement rather than a correction.
+
+Until it is decided, gate 9 prints the three failing pairings in a separate red band on every
+run so they cannot be mistaken for ordinary WCAG/APCA disagreement.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-19 — F-025 DONE · golden rule 11 is a gate now, and it caught the design system
 
 > **Never overstate accuracy.**
