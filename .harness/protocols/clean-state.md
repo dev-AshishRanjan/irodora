@@ -67,7 +67,7 @@ Next:       <the single next concrete action>
 ### 5. Startup still works
 
 The documented start path works from a clean clone. If you changed setup, you changed
-[`../../docs/operations/deployment/local.md`](../../docs/operations/deployment/local.md)
+the [README](../../README.md)
 too.
 
 ---

@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-18",
+  "updated": "2026-08-19",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -152,53 +152,6 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
-    },
-    {
-      "id": "F-005",
-      "title": "Deployment profiles: local, VPS, cloud",
-      "requirements": [
-        "NFR-18"
-      ],
-      "service": "infra",
-      "release": "R0",
-      "priority": "must",
-      "status": "done",
-      "plan": "plans/F-005-deployment-profiles.md",
-      "blockedBy": [
-        "F-001"
-      ],
-      "acceptance": [
-        "Multi-stage Dockerfiles for api, worker and web; non-root, pinned base digests",
-        "infra/compose/docker-compose.prod.yml boots the full stack and is consumed unmodified by both Coolify and Dokploy",
-        "/healthz checks the process only; /readyz checks database and cache",
-        "Migrations run at boot under a Postgres advisory lock; simultaneous container starts do not race",
-        "Every infrastructure dependency sits behind a port with a conformance suite every adapter passes",
-        "The stack is deployed and verified on a real VPS through Coolify AND through Dokploy",
-        "Terraform skeleton for the cloud profile exists with remote state configured"
-      ],
-      "verification": [
-        "state",
-        "build",
-        "security"
-      ],
-      "notes": "The deployment story is R0, not R4. Retrofitted after twenty features it becomes a rewrite. DELIVERED: config, ports+conformance, /healthz and /readyz, migrations under a Postgres advisory lock, Dockerfiles for api and worker (non-root, digest-pinned), the prod compose file with a static portability check, and a validated Terraform skeleton. NOT DELIVERED: Dockerfile.web and the web service, because apps/web is a stub with no Next.js — both land with F-017. Criteria 6 and 7 are attested (ADR-0038): no VPS, no git remote, no cloud backend.",
-      "attested": [
-        {
-          "criterion": "The stack is deployed and verified on a real VPS through Coolify AND through Dokploy",
-          "verifiedBy": "A deployment to a real VPS through each platform, recorded in docs/operations/release-process.md. The compose file itself is gated by scripts/verify-compose-portability.mjs.",
-          "blocks": "release",
-          "status": "outstanding"
-        },
-        {
-          "criterion": "Terraform skeleton for the cloud profile exists with remote state configured",
-          "verifiedBy": "Running terraform init against a real backend once a cloud account and state bucket exist. The skeleton is gated by terraform validate.",
-          "blocks": "release",
-          "status": "outstanding"
-        }
-      ],
-      "effects": [
-        "E-011"
       ]
     },
     {
@@ -406,7 +359,8 @@
         "FR-23",
         "FR-24",
         "FR-25",
-        "NFR-20"
+        "NFR-20",
+        "FR-68"
       ],
       "service": "content",
       "release": "R1",
@@ -570,90 +524,20 @@
       "notes": "DONE. DELIVERED: @irodora/color-harmony — all twelve FR-6 generators in OKLCh, every output gamut-mapped and reporting what that cost, the geometric/editorial split with attribution enforced both ways, and an adapter from a published corpus bundle. 33 tests. NO PALETTES EXIST — F-012 is blocked on OQ-4/OQ-5 — so the editorial suite runs on generated bundles and prints that it did. THE STUB WAS WRONG AGAINST ITS OWN ACCEPTANCE LIST: nine kinds where FR-6 requires twelve (missing near-neutral, warm-cool, value-contrast, chroma-contrast) AND it carried `editorial` as a KIND, which conflates two axes and makes criterion 3 unexpressible — an editorial harmony is a family, not a relationship. THE PLAN WAS ALSO WRONG, and is corrected in place: it said \"an editorial harmony still stands in some relationship\". Not in general — a curator assembling Quiet Neutrals is not obliged to have picked a triad, and labelling it afterwards would invent a geometric claim they never made. So `kind` is null for editorial. THE MEASUREMENT THAT JUSTIFIES THE WHOLE DESIGN. color-engine.md asserted that HSL hue rotation is perceptually inconsistent and never measured it. Over the hue circle a 30-degree HSL rotation moves the colour by ΔE00 5.0 to 35.9 — a 7.2x SPREAD. The same rotation in OKLCh ranges 9.7 to 14.5, a 1.5x spread. Asserted on the SPREAD rather than either end, because inconsistency is the claim; and OKLab is NOT asserted to be ΔE00-uniform, which would be its own over-claim. CRITERION 4 AND FR-6 PULL AGAINST EACH OTHER, AND ADR-0045 RESOLVES IT. Mapping changes a colour, so it could break the relationship just built. It does not for HUE — gamutMap holds L and h — measured here at 6.2e-5 degrees for a complementary pair and 5.3e-5 for a triad. It DOES for chroma, so chroma-contrast has a weaker tolerance and every colour reports wasGamutMapped and gamutDeltaE00. That makes E-012 a sharper link than it was: harmony depends on the PROPERTY ADR-0045 chose, not just on the function. ADR-0049: warm and cool are a stated convention anchored to the corpus taxonomy, because every other generator is derivable and this one is not — and if the engine picked its own anchors the product would contradict `taxonomy.temperature`. The ADR is blunt about the cost: two numbers cannot express a convention that varies by culture, and this product's subject is Japanese colour. PLANNED WITHOUT THE PLANNER SUBAGENT, recorded as a deviation: AGENTS.md recommends it, and it was used for F-011 and F-013 — both plans contained a factual error about this repository (F-013's asserted \"no cycle\" when color-core is the facade). Direct authorship after building both adjacent packages was the more reliable path here. Not a licence to skip planning: the plan exists and gate 0 enforced it."
     },
     {
-      "id": "F-015",
-      "title": "API foundation",
-      "requirements": [
-        "NFR-4",
-        "NFR-14"
-      ],
-      "service": "api",
-      "release": "R1",
-      "priority": "must",
-      "status": "done",
-      "blockedBy": [
-        "F-002",
-        "F-005"
-      ],
-      "acceptance": [
-        "Fastify 5 with Zod schemas generating the OpenAPI document at build time",
-        "Every route declares schemas for params, query, body and every response status",
-        "Closed error-code enum; no internal detail ever serialised to a client",
-        "Idempotency-Key required on every non-idempotent mutation",
-        "Cursor pagination with hard limits",
-        "Rate limiting per IP and per identifier on auth routes",
-        "/healthz and /readyz behave per the deployment contract",
-        "Gate 7 (e2e) activates"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "test",
-        "e2e",
-        "build"
-      ],
-      "effects": [
-        "E-004"
-      ],
-      "plan": "plans/F-015-api-foundation.md",
-      "notes": "DONE. DELIVERED: the HTTP surface every later feature hangs off — a route() wrapper that makes an undeclared schema unrepresentable, a closed error set that never leaks internals, idempotency over CachePort, cursor pagination with a hard limit, per-IP and per-identifier rate limiting, and apps/api/openapi.json GENERATED from the route registry. 119 unit tests + 26 e2e. Gate 7 ACTIVATED for the API half. THE DEFECT THIS FEATURE HAD, AND THE PLAN CAUSED IT. Increments 1-6 built the error mapper, the route wrapper, idempotency, pagination and the limiter, every one with passing tests, and NONE OF THEM WAS ATTACHED TO THE SERVER. buildServer installed the validator compiler and the health routes and stopped: a thrown Error went out as Fastify’s default 500 CARRYING ITS OWN MESSAGE (the decoy throws a connection string and it came straight back), a mutation with no Idempotency-Key succeeded, and nothing counted a request. Three acceptance criteria had passing tests and were false. No increment said \"wire them in\", so nothing did, and no gate could notice — gate 4 runs the units and the units were fine. The e2e suite found it on the FIRST RUN, two increments after the last mechanism landed, which is how long it lived. src/http/lifecycle.ts connects them, with hook order written down rather than incidental. Proven by removal: unwiring useErrorHandling turns 13 of 26 cases red, useRateLimiting 3, useIdempotency 3, baseline green either side. The fail-open case INITIALLY DID NOT DISCRIMINATE — a 200 with no rate-limit headers is exactly what a server with no limiter produces — and now counts attempted increments. E-004 NAMED gate:build AS ITS GUARD AND A BUILD HAS NEVER COMPARED ANYTHING; it overwrites. The link read as guarded while nothing watched. The guard is now test:apps/api/src/openapi.test.ts, which reads the committed file from source under gate 4, plus `pnpm openapi:check` from dist in CI. Watched red on a reworded description, a deleted path and a corrupted file, baseline green either side; six more asserted in the suite, each against the REASON reported rather than the fact of staleness. THE SECOND ARROW IS STILL NOT BUILT: nothing generates @irodora/sdk, so \"a contract change breaks the SDK build first\" remains an end state until F-057. GENERATING THE DOCUMENT FOUND A HOLE THE OTHER TWO LEGS OF ADR-0012 COULD NOT SEE: a route with a path parameter and no params schema was legal. Fastify serves /v1/x/:slug and validates nothing, so the document would have had to invent a type for an input the server never checks — and :slug against a schema naming id is a rename that validates nothing and publishes a phantom beside an undocumented one. route() refuses both; four decoys, one that must stay green. The health routes are IN the document, tagged `operations` with the tag saying they carry no compatibility promise: omitting them was the obvious reading of \"they are not the client contract\" and would have left ZERO PATHS until F-016, a --check comparing nothing. The document is Prettier-ignored for the reason already recorded for the design tokens and the published corpus — it is byte-compared, and Prettier collapses short arrays. RegisteredRoute now carries the AUGMENTED response map so the generator reads what a route can actually return rather than guessing that an undeclared status is the error envelope. GATE 7 ACTIVATED HONESTLY. Its charter names Playwright, axe, keyboard and CVD journeys and NFR-12 — all apps/web, which arrives with F-017. scripts/e2e-scope.mjs prints every charter item as covered or NOT COVERED with the FILE that would supply it (6 of 7 uncovered today; each line flips on its own when that file lands) and FAILS if no package declares test:e2e — which was the workspace’s actual state, since `pnpm test:e2e` was `turbo run test:e2e` over nothing. The CI step is unconditional; the if: hashFiles(apps/web/package.json) it replaced is the F-072 hazard exactly, and would have left an \"active\" gate running nowhere for the whole of R1. The suite runs against FIXTURE routes through the same wrapper and the same hooks, in apps/api/e2e/ which tsconfig.build.json does not include — they cannot compile into dist, and the suite asserts a production-built server carries only /healthz and /readyz and that openapi.json contains no fixture path. GATE 15 HAD BEEN RED SINCE INCREMENT 4 AND I DID NOT RUN IT. generic-api-key matched a UUID fixture in idempotency.test.ts (commit c67be7f); four commits shipped with the gate failing and no run to say so. Gate 15 is requiredFor:[\"always\"] and this feature’s verification list does not name it — I verified against the list rather than against the gate’s own scope, and the list is the weaker of the two. The finding itself is a false positive: a fabricated UUID that names nothing, in the <uuid> shape api-contract.md §2 documents for the header. Nothing to rotate, so it took the narrow path .gitleaks.toml already describes — an exemption scoped to the EXACT LITERAL rather than to the file, so a real credential pasted into that test is still caught, with the cost stated in the config. ADR-0050 — TWO DEVIATIONS FROM A DOCUMENTED DEFAULT. api-contract.md §8 specifies a sliding window; this ships a FIXED one, whose worst case over any sliding interval is TWICE the limit — asserted in the suite so the number a limiter appears to enforce and the number it actually enforces cannot be confused. And it FAILS OPEN: while the cache is down there is no rate limiting, because failing closed turns a cache blip into a total outage and this limiter is a mitigation rather than an authorisation decision. A per-plan quota must not be built on this hook. §8 is amended to say all of it. Also recorded in the contract: a 5xx RELEASES the idempotency key rather than storing it (storing would freeze a transient failure into a 24-hour answer), and the key is claimed AFTER validation so a client’s own correction cannot become a 409. UNCALIBRATED, AND SAYING SO: 300/min per IP and 10/min per identifier are the shape §8 describes and no measurement produced them; they move to configuration with F-036. The e2e suite exercises the SHIPPED numbers rather than a convenient small rule, so what is tested is what is enforced. RECORDED, NOT FIXED: cursors are opaque but NOT signed — nothing issues one until F-016 builds the catalog, and signing a value nothing creates needs a key whose only other user is F-033, so api-contract.md §7 records it as F-016’s obligation; idempotency keys are globally scoped, so two clients presenting the same key collide, which is correct while nothing is authenticated and is why the key builder takes a scope for F-033; the per-identifier rule protects nothing until F-033 and is exercised against a decoy identifier rather than left dormant. PLANNED WITHOUT THE PLANNER SUBAGENT, as F-014 was and for the same recorded reason. The plan exists before any source was edited and gate 0 enforced it."
-    },
-    {
-      "id": "F-016",
-      "title": "Catalog read API and caching",
-      "requirements": [
-        "FR-20",
-        "FR-47",
-        "NFR-7"
-      ],
-      "service": "api",
-      "release": "R1",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [
-        "F-012",
-        "F-015"
-      ],
-      "acceptance": [
-        "GET /v1/colors, /colors/{slug}, /palettes, /palettes/{slug}, /search",
-        "Immutable cache headers with the corpus version and the locale in the cache key",
-        "A corpus publish mints a new version rather than invalidating; a half-updated catalog is not servable",
-        "Postgres FTS plus pg_trgm for text; perceptual ranking in the engine, never in SQL"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test",
-        "e2e",
-        "build"
-      ]
-    },
-    {
       "id": "F-017",
-      "title": "Web foundation: design system, accessibility, i18n",
+      "title": "App design system, accessibility and i18n",
       "requirements": [
-        "NFR-5",
         "NFR-8",
         "NFR-9",
         "NFR-11"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "must",
       "status": "todo",
       "blockedBy": [
         "F-003",
-        "F-016"
+        "F-039"
       ],
       "acceptance": [
         "Next.js 16 App Router, React 19, Tailwind v4 consuming @irodora/design-tokens, Radix primitives",
@@ -679,18 +563,19 @@
     },
     {
       "id": "F-018",
-      "title": "Web Colour Atlas and colour detail",
+      "title": "Colour Atlas and colour detail",
       "requirements": [
         "FR-20",
         "FR-21",
         "FR-24"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "must",
       "status": "todo",
       "blockedBy": [
-        "F-017"
+        "F-017",
+        "F-039"
       ],
       "acceptance": [
         "Every corpus entry reachable in 3 interactions or fewer from the atlas root",
@@ -708,16 +593,17 @@
     },
     {
       "id": "F-019",
-      "title": "Web Colour Compare",
+      "title": "Colour Compare",
       "requirements": [
         "FR-48"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "must",
       "status": "todo",
       "blockedBy": [
-        "F-018"
+        "F-018",
+        "F-039"
       ],
       "acceptance": [
         "DeltaE00, per-axis differences, OKLCh delta, CVD separation and contrast, each with its units and computation space",
@@ -736,12 +622,13 @@
       "requirements": [
         "FR-49"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "should",
       "status": "todo",
       "blockedBy": [
-        "F-018"
+        "F-018",
+        "F-039"
       ],
       "acceptance": [
         "Build, edit, reorder and save palettes with anchor, neutral, light and accent roles",
@@ -760,13 +647,13 @@
       "requirements": [
         "FR-47"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "must",
       "status": "todo",
       "blockedBy": [
-        "F-016",
-        "F-018"
+        "F-018",
+        "F-039"
       ],
       "acceptance": [
         "Search by English name, Japanese name, kanji, romaji, hex, or natural phrase",
@@ -781,59 +668,18 @@
       ]
     },
     {
-      "id": "F-022",
-      "title": "Web Colour Lens",
-      "requirements": [
-        "FR-12",
-        "FR-13",
-        "FR-14",
-        "FR-15",
-        "FR-17",
-        "FR-18",
-        "NFR-12"
-      ],
-      "service": "web",
-      "release": "R1",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [
-        "F-013",
-        "F-014",
-        "F-017"
-      ],
-      "acceptance": [
-        "getUserMedia into an OffscreenCanvas with an explicit colour space",
-        "Live pick sustains 15 or more updates per second on the reference set",
-        "Precision pick samples 1000 or more pixels on a jittered grid, rejects specular highlights, extreme shadows and chromatic outliers, and averages in linear light",
-        "Returns median, trimmed mean, variance and confidence",
-        "Illumination class and capture quality shown BEFORE the colour value",
-        "Poor quality blocks a confident claim and returns a specific instruction",
-        "An e2e network assertion proves no image bytes are transmitted"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test",
-        "e2e",
-        "a11y",
-        "contrast"
-      ],
-      "effects": [
-        "E-008"
-      ]
-    },
-    {
       "id": "F-023",
       "title": "Shareable colour cards",
       "requirements": [
         "FR-50"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "should",
       "status": "todo",
       "blockedBy": [
-        "F-018"
+        "F-018",
+        "F-039"
       ],
       "acceptance": [
         "A rendered card with name, kanji, hex, attribution and corpus version",
@@ -844,32 +690,6 @@
         "state",
         "e2e",
         "contrast"
-      ]
-    },
-    {
-      "id": "F-024",
-      "title": "Local-only mode and the offline engine",
-      "requirements": [
-        "FR-12",
-        "FR-55",
-        "NFR-17"
-      ],
-      "service": "web",
-      "release": "R1",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [
-        "F-022"
-      ],
-      "acceptance": [
-        "Lens, atlas, harmony, compare and a local wardrobe work signed-out",
-        "An e2e run with the network disabled completes journeys J1 and J4",
-        "No account prompt blocks any core journey"
-      ],
-      "verification": [
-        "state",
-        "e2e",
-        "a11y"
       ]
     },
     {
@@ -903,12 +723,12 @@
         "FR-26",
         "FR-30"
       ],
-      "service": "web",
-      "release": "R2",
+      "service": "mobile",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
-        "F-024"
+        "F-039"
       ],
       "acceptance": [
         "Swatch-comparison flow completes in 90 seconds median, with no camera",
@@ -931,10 +751,10 @@
         "FR-27",
         "NFR-23"
       ],
-      "service": "web",
-      "release": "R2",
+      "service": "mobile",
+      "release": "R3",
       "priority": "should",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-026"
       ],
@@ -959,9 +779,9 @@
       ],
       "service": "packages",
       "package": "@irodora/recommendation",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-026"
       ],
@@ -986,9 +806,9 @@
         "FR-67"
       ],
       "service": "content",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-011"
       ],
@@ -1017,9 +837,9 @@
       ],
       "service": "packages",
       "package": "@irodora/recommendation",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-028",
         "F-029"
@@ -1047,9 +867,9 @@
       ],
       "service": "packages",
       "package": "@irodora/recommendation",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-030"
       ],
@@ -1071,10 +891,10 @@
       "requirements": [
         "FR-35"
       ],
-      "service": "web",
-      "release": "R2",
+      "service": "mobile",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-031"
       ],
@@ -1092,82 +912,15 @@
       ]
     },
     {
-      "id": "F-033",
-      "title": "Authentication and account management",
-      "requirements": [
-        "FR-53",
-        "FR-54"
-      ],
-      "service": "api",
-      "release": "R2",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [
-        "F-015"
-      ],
-      "openQuestions": [
-        "OQ-1"
-      ],
-      "acceptance": [
-        "OIDC, passkeys, Apple and Google; no password primitive exists in our code",
-        "Refresh token rotation with reuse detection; a replayed token revokes the family",
-        "Session revocation takes effect within 60 seconds across devices",
-        "Local-only mode remains fully functional signed-out"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test",
-        "e2e",
-        "security"
-      ],
-      "notes": "Blocked until OQ-1 (self-hosted vs managed OIDC provider) closes as an ADR."
-    },
-    {
-      "id": "F-034",
-      "title": "Multi-tenancy and row-level security",
-      "requirements": [
-        "FR-59"
-      ],
-      "service": "api",
-      "release": "R2",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [
-        "F-033"
-      ],
-      "acceptance": [
-        "tenant to organization to workspace to membership hierarchy in the schema",
-        "Every user-data table has tenant_id NOT NULL with RLS ENABLE and FORCE",
-        "irodora.tenant_id is set per connection from the session, never from a request field",
-        "A missing setting raises rather than returning rows",
-        "A negative test with a POPULATED decoy tenant proves cross-tenant reads return nothing",
-        "404, never 403, for another tenant's resource"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test",
-        "e2e",
-        "security"
-      ],
-      "effects": [
-        "E-010"
-      ]
-    },
-    {
       "id": "F-035",
-      "title": "Data subject rights: export and erasure",
+      "title": "Backup, export and import — the durability story",
       "requirements": [
         "FR-58"
       ],
-      "service": "api",
+      "service": "mobile",
       "release": "R2",
       "priority": "must",
       "status": "todo",
-      "blockedBy": [
-        "F-034"
-      ],
       "acceptance": [
         "POST /v1/me/export produces a machine-readable archive of every personal record",
         "DELETE /v1/me hard-deletes AND de-indexes: database, blob storage, search index, cache, sync tombstones",
@@ -1178,31 +931,10 @@
         "state",
         "test",
         "e2e"
-      ]
-    },
-    {
-      "id": "F-036",
-      "title": "Observability baseline",
-      "requirements": [
-        "NFR-16"
       ],
-      "service": "api",
-      "release": "R2",
-      "priority": "must",
-      "status": "todo",
       "blockedBy": [
-        "F-015"
-      ],
-      "acceptance": [
-        "OpenTelemetry traces, metrics and structured logs across api, worker and web, exported over OTLP",
-        "Image buffers and profile dimensions are carried in types with no serialiser; passing one to a log or span attribute is a type error",
-        "A redaction test attempts to reach a sink from every path holding such data and fails the build if any succeeds",
-        "Measurement outcomes are recorded instead of measurement inputs"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test"
+        "F-039",
+        "F-041"
       ]
     },
     {
@@ -1214,9 +946,9 @@
       ],
       "service": "packages",
       "package": "@irodora/recommendation",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-027",
         "F-028"
@@ -1246,13 +978,12 @@
       "id": "F-038",
       "title": "Performance budgets and gates",
       "requirements": [
-        "NFR-4",
-        "NFR-5"
+        "NFR-4"
       ],
       "service": "tests",
-      "release": "R2",
+      "release": "R3",
       "priority": "must",
-      "status": "todo",
+      "status": "backlog",
       "blockedBy": [
         "F-030"
       ],
@@ -1270,22 +1001,24 @@
     },
     {
       "id": "F-039",
-      "title": "Mobile foundation: Expo development client",
+      "title": "App foundation: Expo shell, navigation, and offline as the only mode",
       "requirements": [
-        "NFR-18"
+        "FR-12",
+        "FR-55",
+        "NFR-17"
       ],
       "service": "mobile",
-      "release": "R3",
+      "release": "R2",
       "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-024"
-      ],
+      "status": "todo",
+      "blockedBy": [],
       "acceptance": [
-        "Expo SDK 57 with a development client and the New Architecture",
-        "ios/ and android/ are generated and gitignored; native config lives in app.config.ts and plugins",
-        "EAS Build produces installable builds from a Windows workstation",
-        "The shared colour engine is imported, never ported"
+        "Expo SDK 57 / RN 0.86 on the New Architecture, building for iOS and Android through EAS",
+        "The colour engine runs on device, unmodified, and reproduces the committed identity digest — the React Native leg of NFR-3, attested since F-006 and finally executable",
+        "Every core journey completes with the device in airplane mode, from a cold start, on a device that has never been online",
+        "No account prompt exists anywhere in the app, because there is no account",
+        "The app opens no socket during any core journey, asserted by the e2e offline suite rather than by inspection",
+        "EAS Build produces installable builds from a Windows workstation"
       ],
       "verification": [
         "state",
@@ -1299,12 +1032,15 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "notes": "Merged with the former F-024 (\"Local-only mode and the offline engine\") by ADR-0051. F-024 described local-only as a MODE the product also supported; it is now the only mode there is, and the shell is what provides it — so the two were one feature wearing two names. This is also where NFR-3's React Native leg stops being attested and starts being gated: the identity fixture has asserted Node and Chromium since F-006, and the interesting engine is Hermes, which needs a device."
     },
     {
       "id": "F-040",
-      "title": "Mobile Colour Lens",
+      "title": "Colour Lens: live pick, garment scan, precision pick",
       "requirements": [
+        "FR-12",
+        "NFR-12",
         "FR-13",
         "FR-14",
         "FR-15",
@@ -1312,9 +1048,9 @@
         "FR-18"
       ],
       "service": "mobile",
-      "release": "R3",
+      "release": "R2",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
         "F-039"
       ],
@@ -1330,19 +1066,21 @@
         "typecheck",
         "test",
         "e2e"
-      ]
+      ],
+      "notes": "Merged with the former F-022 (Web Colour Lens) by ADR-0051 — there is one surface now, so there is one Lens. It carries NFR-12 outright: on a device the claim is not \"the request contained no image\" but \"nothing was sent\", which the e2e charter checks as the process opening no socket."
     },
     {
       "id": "F-041",
-      "title": "Offline local storage",
+      "title": "@irodora/store — SQLite, SQLCipher, migrations, sync-shaped schema",
       "requirements": [
         "FR-56",
-        "NFR-17"
+        "NFR-17",
+        "NFR-7"
       ],
-      "service": "mobile",
-      "release": "R3",
+      "service": "packages",
+      "release": "R2",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
         "F-039"
       ],
@@ -1360,19 +1098,16 @@
     },
     {
       "id": "F-042",
-      "title": "Wardrobe model, API and image encryption",
+      "title": "Wardrobe model and encrypted local storage",
       "requirements": [
         "FR-39",
         "FR-41",
         "NFR-13"
       ],
-      "service": "api",
-      "release": "R3",
+      "service": "packages",
+      "release": "R4",
       "priority": "must",
       "status": "backlog",
-      "blockedBy": [
-        "F-034"
-      ],
       "acceptance": [
         "Only colour and type required at creation; every other field progressively enriched",
         "Colour grouping uses perceptual distance, not hex string sorting",
@@ -1386,6 +1121,9 @@
         "test",
         "e2e",
         "security"
+      ],
+      "blockedBy": [
+        "F-041"
       ]
     },
     {
@@ -1395,7 +1133,7 @@
         "FR-40"
       ],
       "service": "mobile",
-      "release": "R3",
+      "release": "R4",
       "priority": "must",
       "status": "backlog",
       "blockedBy": [
@@ -1422,42 +1160,13 @@
       ]
     },
     {
-      "id": "F-044",
-      "title": "Sync protocol",
-      "requirements": [
-        "FR-57"
-      ],
-      "service": "api",
-      "release": "R3",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-041",
-        "F-042"
-      ],
-      "acceptance": [
-        "Field-level change records with per-field logical clocks; wall-clock time is advisory only",
-        "Deterministic tiebreak so every device converges to the SAME state",
-        "Typed merge rules: wear_count sums, outfit items union, preference weights merge and renormalise, deletion beats update",
-        "Push and pull in one round trip; idempotent on changeId",
-        "A property test applies a random permutation of a change set and asserts an identical final state",
-        "Tombstones retained 90 days; a device offline longer is forced to full resync",
-        "Gate 14 (e2e-full) activates"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test"
-      ]
-    },
-    {
       "id": "F-045",
       "title": "Outfit builder",
       "requirements": [
         "FR-33"
       ],
       "service": "mobile",
-      "release": "R3",
+      "release": "R4",
       "priority": "must",
       "status": "backlog",
       "blockedBy": [
@@ -1482,7 +1191,7 @@
       ],
       "service": "packages",
       "package": "@irodora/recommendation",
-      "release": "R3",
+      "release": "R4",
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
@@ -1496,28 +1205,6 @@
       "verification": [
         "state",
         "test"
-      ]
-    },
-    {
-      "id": "F-047",
-      "title": "Availability and graceful degradation",
-      "requirements": [
-        "NFR-6"
-      ],
-      "service": "web",
-      "release": "R3",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-044"
-      ],
-      "acceptance": [
-        "A 503 from the API causes the client to fall back entirely to the local engine",
-        "Degraded-mode success rate measured and 95 percent or better",
-        "The fallback path is exercised in e2e-full, not assumed"
-      ],
-      "verification": [
-        "state"
       ]
     },
     {
@@ -1599,7 +1286,7 @@
         "FR-46"
       ],
       "service": "mobile",
-      "release": "R4",
+      "release": "R5",
       "priority": "could",
       "status": "backlog",
       "blockedBy": [
@@ -1620,7 +1307,7 @@
         "FR-52"
       ],
       "service": "mobile",
-      "release": "R4",
+      "release": "R5",
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
@@ -1643,7 +1330,7 @@
         "NFR-2"
       ],
       "service": "mobile",
-      "release": "R4",
+      "release": "R5",
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
@@ -1678,7 +1365,7 @@
         "FR-36"
       ],
       "service": "mobile",
-      "release": "R4",
+      "release": "R5",
       "priority": "could",
       "status": "backlog",
       "blockedBy": [
@@ -1697,13 +1384,13 @@
     },
     {
       "id": "F-055",
-      "title": "Professional workspace",
+      "title": "Professional surfaces: Lab/LCh, dE tables, batch compare",
       "requirements": [
         "FR-28",
         "FR-61"
       ],
-      "service": "web",
-      "release": "R4",
+      "service": "mobile",
+      "release": "R5",
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
@@ -1722,13 +1409,13 @@
     },
     {
       "id": "F-056",
-      "title": "Exports and PDF reports",
+      "title": "Local exports: CSS, JSON, ASE, design tokens, PDF",
       "requirements": [
         "FR-51",
         "FR-65"
       ],
-      "service": "worker",
-      "release": "R4",
+      "service": "packages",
+      "release": "R5",
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
@@ -1751,159 +1438,6 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
-    },
-    {
-      "id": "F-057",
-      "title": "Public API, keys and quotas",
-      "requirements": [
-        "FR-62",
-        "FR-63"
-      ],
-      "service": "api",
-      "release": "R4",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [
-        "F-034"
-      ],
-      "acceptance": [
-        "OpenAPI generated from the implementation, never hand-written",
-        "@irodora/sdk generated from OpenAPI and consumed by our own clients",
-        "API keys with scopes; quota exhaustion returns a documented error with a reset time",
-        "Usage metering is auditable"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "test",
-        "e2e",
-        "security"
-      ],
-      "effects": [
-        "E-004"
-      ]
-    },
-    {
-      "id": "F-058",
-      "title": "Billing and entitlements",
-      "requirements": [
-        "FR-60"
-      ],
-      "service": "api",
-      "release": "R4",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [
-        "F-057"
-      ],
-      "openQuestions": [
-        "OQ-2"
-      ],
-      "acceptance": [
-        "Free, Pro, Studio and API tiers with server-side entitlement enforcement",
-        "A test proves a client cannot unlock a tier feature",
-        "Accessibility features are unconditionally in the free tier"
-      ],
-      "verification": [
-        "state",
-        "test",
-        "e2e",
-        "security"
-      ]
-    },
-    {
-      "id": "F-059",
-      "title": "Audit trail",
-      "requirements": [
-        "NFR-15"
-      ],
-      "service": "api",
-      "release": "R4",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-034"
-      ],
-      "acceptance": [
-        "Append-only; the application role has no UPDATE or DELETE grant",
-        "Every corpus publish, entitlement change and role change queryable with actor, time and before/after",
-        "Chronological only; no user-facing column sorting"
-      ],
-      "verification": [
-        "state",
-        "test",
-        "e2e"
-      ]
-    },
-    {
-      "id": "F-060",
-      "title": "Scale and load validation",
-      "requirements": [
-        "NFR-7"
-      ],
-      "service": "tests",
-      "release": "R4",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [
-        "F-038"
-      ],
-      "acceptance": [
-        "100k corpus entries, 10k wardrobe items per user, 1000 rps catalog reads sustained within NFR-4",
-        "Origin-to-edge request ratio measured; a rise signals a broken cache key"
-      ],
-      "verification": [
-        "state",
-        "perf"
-      ]
-    },
-    {
-      "id": "F-061",
-      "title": "Admin content application",
-      "requirements": [
-        "FR-66"
-      ],
-      "service": "admin",
-      "release": "R5",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [
-        "F-059"
-      ],
-      "acceptance": [
-        "Colours, palettes, translations, rules, sources and licences managed here",
-        "No corpus change is possible outside this application in production",
-        "Every publish is audit-logged with actor and diff"
-      ],
-      "verification": [
-        "state",
-        "e2e",
-        "security"
-      ]
-    },
-    {
-      "id": "F-062",
-      "title": "Editorial review workflow",
-      "requirements": [
-        "FR-68"
-      ],
-      "service": "admin",
-      "release": "R5",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [
-        "F-061"
-      ],
-      "acceptance": [
-        "draft to review to verified to published to superseded",
-        "An entry cannot reach published without a recorded reviewer distinct from the author",
-        "A published entry is never edited; corrections publish a new version"
-      ],
-      "verification": [
-        "state",
-        "content",
-        "e2e"
       ]
     },
     {
@@ -1986,29 +1520,6 @@
       ]
     },
     {
-      "id": "F-066",
-      "title": "Team workspaces",
-      "requirements": [
-        "FR-64"
-      ],
-      "service": "web",
-      "release": "R5",
-      "priority": "could",
-      "status": "backlog",
-      "blockedBy": [
-        "F-058"
-      ],
-      "acceptance": [
-        "Roles and shared palette libraries within a workspace",
-        "Role changes take effect immediately and are audit-logged"
-      ],
-      "verification": [
-        "state",
-        "e2e",
-        "test"
-      ]
-    },
-    {
       "id": "F-067",
       "title": "Cross-theme salience hierarchy for the status tokens, and the APCA floor for dark error",
       "requirements": [
@@ -2041,8 +1552,8 @@
       "requirements": [
         "NFR-8"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "should",
       "status": "todo",
       "blockedBy": [
@@ -2068,8 +1579,8 @@
         "NFR-8",
         "FR-18"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "should",
       "status": "todo",
       "blockedBy": [
@@ -2092,8 +1603,8 @@
       "requirements": [
         "NFR-8"
       ],
-      "service": "web",
-      "release": "R1",
+      "service": "mobile",
+      "release": "R2",
       "priority": "should",
       "status": "todo",
       "blockedBy": [
@@ -2120,7 +1631,6 @@
       "release": "R1",
       "priority": "should",
       "status": "todo",
-      "blockedBy": [],
       "acceptance": [
         "Every fast-check property runs from a recorded seed, so a failure is reproducible and a pass is not luck",
         "No gate can go red for a reason unrelated to the change under test",
@@ -2143,7 +1653,6 @@
       "release": "R1",
       "priority": "should",
       "status": "todo",
-      "blockedBy": [],
       "acceptance": [
         "An active gate whose CI step carries an `if:` fails gate 0, naming the gate",
         "verify-gate-mirror.mjs proves that check by adding a condition to a real step and watching gate 0 go red",
@@ -2165,7 +1674,6 @@
       "release": "R1",
       "priority": "should",
       "status": "todo",
-      "blockedBy": [],
       "acceptance": [
         "A package outside the engine zone that an engine package depends on is held to the same platform-API and runtime-dependency rules, transitively",
         "scripts/verify-engine-purity.mjs --prove plants exactly that violation and watches the check fail"

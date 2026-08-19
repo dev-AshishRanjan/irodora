@@ -61,7 +61,8 @@ Consequences that fall out of this, which are the reason for the design:
    `source: 'declared'`, `confidence: 0.5`, and whose every call site is reviewed. The
    name is deliberately unpleasant.
 4. Provenance crosses the wire. API responses carry it (see
-   [`api-contract.md`](../architecture/api-contract.md)); a client cannot receive a colour
+   `api-contract.md`, retired with the API — readable at the `pre-rehaul-server` tag); a
+   consumer cannot receive a colour
    without it.
 5. Provenance persists. `garment_color` stores `provenance_source` and
    `provenance_confidence` as columns.

@@ -66,7 +66,12 @@ logical clocks for ordering. Typed merge rules where LWW would lose data.**
    upload. A garment is fully usable with the upload still pending, because the colour was
    captured locally.
 
-Full protocol: [`../architecture/sync-protocol.md`](../architecture/sync-protocol.md).
+The full protocol was specified in `docs/architecture/sync-protocol.md`, retired with the
+server tier and readable at the `pre-rehaul-server` tag. **Nothing implements it, and the
+specification is not the debt — the schema shape is.** What this repository carries forward
+is the part that cannot be retrofitted: client-generated UUIDv7 ids, `updated_at`,
+tombstones, and an append-only `change_log`. Sync can be designed again; a database written
+without stable ids cannot be repaired without every user reinstalling.
 
 ## Consequences
 

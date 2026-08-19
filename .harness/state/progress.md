@@ -8,6 +8,119 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-19 — THE REHAUL · the server tier is gone; Irodora is a local-first app
+
+Not a feature. A change to what the product is, recorded in
+[ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)
+before any code moved.
+
+### What forced it
+
+`apps/api` was 4,269 lines of Fastify — error envelope, idempotency keys, fixed-window
+limiter, cursor pagination, generated OpenAPI — and its published contract was `/healthz` and
+`/readyz`. Its e2e suite ran against **fixture routes** because no domain route existed for
+the machinery to act on. Meanwhile `content/colors/` held one file, `.gitkeep`, under a
+complete provenance schema and a mutation-proofed content gate. And `feature_list.json`
+carried 73 features, 28 of them backlog for multi-tenancy, RLS, OIDC, billing and an admin
+CMS, for a product with no users.
+
+One pattern, not three: **the infrastructure was built before the product.**
+
+What made the server removable rather than merely premature is that the PRD had already
+committed to the properties that make it redundant — FR-12 (engine client-side, no network),
+FR-55 (full value, no account), NFR-3 (byte-identical offline everywhere), NFR-12 (no image
+ever transmitted). If the engine is authoritative offline, the server was never the authority
+on any answer.
+
+### What went
+
+```
+apps/api, apps/worker, apps/admin, apps/web       6,900 lines
+packages/ports, packages/adapters, packages/config, packages/telemetry
+infra/ (Dockerfiles, prod compose, Terraform + AWS provider), docker-compose.yml
+tests/e2e-full
+4 scripts, 2 skills, 2 rule files, 2 architecture docs, 5 operations docs
+13 features deleted · 2 delivered-then-decommissioned (F-005, F-015)
+14 requirements withdrawn · 11 ADRs superseded, 2 amended
+```
+
+**The colour engine is untouched.** Not one line. It already had zero runtime dependencies,
+no `node:*` and no DOM — it was client-ready before we decided it needed to be.
+
+### What the harness did, which is the part worth reading
+
+The harness was not left to rot behind the deletion, and it **caught every dangling
+reference** rather than letting them ship:
+
+- effects graph 15 → 12 links; E-004, E-010, E-011 deleted with their paired memory notes,
+  the other 12 rescoped `apps/web` → `apps/mobile`
+- gates 16 → 14; `web-perf` and `e2e-full` described infrastructure that no longer exists
+- **the env-contract check was scoped to `packages/config/src`**, which no longer exists — a
+  check scoped to a missing directory passes by finding nothing. Rewritten to scan the whole
+  workspace, so an empty result is now a real result
+- guards 12 → 11; the route-wrapper guard died with its eslint zone, but the floating-promise
+  guard **moved** to `packages/recommendation` rather than being deleted — the rule is
+  workspace-wide, and a guard planted at a path that does not exist proves nothing
+- gate 0 found 19 broken links across ADRs, harness protocols, skills, rules and the README
+- the PRD release column was **wrong in 38 rows** and is now derived from `feature_list.json`
+
+### The e2e gate, and why its CI step was withdrawn rather than guarded
+
+Gate 7 ran against the API surface. That surface is gone and the app surface does not exist
+yet, so nothing declares `test:e2e` and `e2e-scope.mjs` exits non-zero rather than reporting
+an empty set as coverage.
+
+The tempting fix — `if: hashFiles('apps/mobile/package.json') != ''` — is **exactly the F-072
+hazard**: gate 0's mirror check compares `run:` commands and does not read `if:`, so the gate
+would read `active` in `gates.json` while never once running. Instead the step is removed and
+`ciStep: false` records why. Both flags flip back with F-039, together, and the mirror check
+enforces the pairing.
+
+### Roadmap
+
+73 → 56 features. R0 and R1 keep their delivered history; **R2 is now the app**, which is the
+first release a person can hold. R0 and R1 built an engine nobody can use yet.
+
+### Evidence
+
+```
+Ran:
+  ✓ gate 0   state          14 checks, 14 warnings
+  ✓ mirror   proof          11 active gates, each watched to fail
+  ✓ gate 1   typecheck      25 tasks
+  ✓ gate 2   lint           25 tasks + 11 guards, engine purity, unsafe census
+  ✓ gate 3   format
+  ✓ gate 6   build          16 tasks
+  ✗ gate 4   test           RED — 6 pre-existing failures, unchanged before and after
+
+NOT run: color-golden, cvd, contrast, content (Node 22; see below), e2e (pending), a11y,
+         perf (pending), security (gitleaks not installed on this workstation)
+```
+
+**The test gate cannot go green on this workstation, and the reason is not this change.**
+Node 22.16.0 is installed; `.nvmrc` pins 24.19.0. `Math.pow` and `Math.cbrt` are
+implementation-approximated in ECMAScript and V8 differs between the versions by 1–2 ulp, so
+5 tests fail across `color-spaces` (identity digest) and `color-difference` (WCAG goldens) —
+the identity test's own header predicts this exact scenario. The 6th is F-071 flake (2)
+verbatim: a 100k-iteration loop on vitest's default 5 s timeout that passes in 2.4 s in
+isolation.
+
+**The red set was held constant and compared before and after every commit.** That is the
+only reason it can be said that nothing here broke anything.
+
+### Next
+
+1. **Install Node 24.19.0.** Nothing else should start first — until then there is no green
+   signal to work against, and four engine gates cannot run at all.
+2. Then **F-012** (seed corpus, ~120 entries) — it is the schedule risk, not the code, and it
+   is the least parallelisable work in the plan.
+3. Then **R2**: F-039 (Expo shell) → F-041 (`@irodora/store`) → F-017 (design system) →
+   F-035 (backup) → the surfaces.
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-19 — F-015 DONE · the API foundation, and the machinery nobody had connected
 
 A Fastify 5 surface where a route cannot exist without declaring its schemas, errors are a closed

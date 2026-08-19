@@ -37,7 +37,8 @@ string.
    a completeness check fails the build on a missing translation in either locale. A
    missing key is a build error, not a rendered key name in production.
 2. **Server responses carry message keys, never prose**
-   ([`api-contract.md`](../architecture/api-contract.md) §4). Explanation objects use
+   (`api-contract.md` §4, retired with the API — the rule now applies at the storage and
+   render boundaries instead). Explanation objects use
    `detail: 'explain.lightness.strong'`, and the client renders it. A server that returns a
    sentence has made the locale decision on the client's behalf, wrongly.
 3. **Corpus names are structured**, not translated: `name_kanji`, `name_kana`,

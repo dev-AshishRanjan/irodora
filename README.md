@@ -58,12 +58,21 @@ plan before code, verification is the proof, trace your effects, leave a clean s
 # 1. Node 24 LTS + pnpm 11 (see .nvmrc)
 corepack enable
 
-# 2. Backing services for local development
-docker compose up -d
-
-# 3. Harness integrity — the gate that runs from day one
+# 2. Harness integrity — the gate that runs from day one, before any install
 node scripts/verify-state.mjs
+
+# 3. Everything else
+pnpm install
 ```
+
+**There is no step for backing services.** No database, no cache, no object store, nothing
+to `docker compose up`. The app is local-first and the engine is dependency-free
+([ADR-0051](docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)).
+
+> **Node 24 is not optional.** `.nvmrc` pins 24.19.0, and on Node 22 six engine tests fail:
+> `Math.pow` and `Math.cbrt` are implementation-approximated in ECMAScript and V8 differs
+> between the versions by 1–2 ulp, which the cross-platform identity fixture is built to
+> detect. They are not flaky — they are correctly reporting that you are on the wrong runtime.
 
 Full bootstrap: [`scripts/init.ps1`](scripts/init.ps1) (Windows) or
 [`scripts/init.sh`](scripts/init.sh) (POSIX).
@@ -76,34 +85,34 @@ CLAUDE.md      Claude Code entry point (imports AGENTS.md)
 .harness/      the working system: rules, skills, protocols, state, memory, gates
 .claude/       thin Claude Code adapter over .harness/
 docs/          PRD, architecture, ADRs, design, content, compliance, operations
-apps/          api · worker · web · mobile · admin
-packages/      the colour engine and shared libraries (@irodora/*)
+apps/mobile    the app — the only surface
+packages/      the colour engine, the store, and shared libraries (@irodora/*)
 content/       the colour corpus, palettes, rules, locales — versioned content
-infra/         docker · compose · coolify · dokploy · terraform
-tests/         e2e-full · bench · color-lab
+tests/         bench · color-lab
 scripts/       verification and bootstrap
 ```
 
-## Platforms
+## Platform
 
-Web first ([Next.js](docs/adr/0018-web-nextjs-react-tailwind-radix.md)), mobile close
-behind ([Expo](docs/adr/0019-mobile-expo-dev-client-new-architecture.md)). The colour
-engine is one shared TypeScript implementation used identically by every surface —
-that identity is the point, and it is enforced at compile time by the monorepo
-([ADR-0001](docs/adr/0001-monorepo-modular-monolith-with-extraction-triggers.md)).
+**iOS and Android, from one Expo codebase**
+([ADR-0019](docs/adr/0019-mobile-expo-dev-client-new-architecture.md)) — SDK 57, React
+Native 0.86, New Architecture. There is no web surface and no desktop build.
 
-## Deployment
+The colour engine is one TypeScript implementation with zero runtime dependencies, no
+`node:*`, no DOM. That is not tidiness: it is what lets the same code produce byte-identical
+results in Node, in a browser and on Hermes, which is the guarantee the whole product rests
+on (NFR-3). A cross-boundary import fails `lint`, and
+[`verify-guards.mjs`](scripts/verify-guards.mjs) plants a deliberate violation at each
+boundary to prove the rule fires.
 
-Plain containers. Three profiles, one image set:
+## Distribution
 
-| Profile | Target | Guide |
-|---|---|---|
-| `local` | Docker Compose on your machine | [local.md](docs/operations/deployment/local.md) |
-| `vps` | Coolify or Dokploy on a single VPS | [coolify.md](docs/operations/deployment/coolify.md) · [dokploy.md](docs/operations/deployment/dokploy.md) |
-| `cloud` | AWS via Terraform | [aws.md](docs/operations/deployment/aws.md) |
+There is nothing to deploy. Builds come from EAS and ship to the App Store and Google Play;
+JS-only changes, including corpus corrections, can ship as an Expo OTA update.
 
-Cloud services sit behind ports, so the VPS profile is not a degraded mode — it is a
-first-class target ([ADR-0016](docs/adr/0016-deployment-profiles-local-vps-cloud.md)).
+The trade this makes is worth stating plainly: **there is no instant rollback.** A staged
+rollout halt is the fastest lever, and release discipline is what substitutes for a
+redeploy. See [incident-response.md](docs/operations/incident-response.md).
 
 ## Accessibility
 

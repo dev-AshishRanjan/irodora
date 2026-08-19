@@ -5,7 +5,7 @@ description: Measure against committed absolute budgets, and treat a miss as a w
 
 # Skill: perf-budget
 
-Budgets: [`slo.md`](../../../docs/operations/slo.md).
+Budgets: [PRD NFR-4](../../../docs/PRD.md#6-non-functional-requirements) · gate definitions in [`gates.json`](../../verification/gates.json).
 
 ## The rule
 

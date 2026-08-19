@@ -2,10 +2,11 @@
 
 | | |
 |---|---|
-| **Status** | Baseline for R0 |
-| **Version** | 1.0 · 2026-08-13 |
+| **Status** | Baseline for R2 — the app |
+| **Version** | 2.0 · 2026-08-19 |
 | **Implements** | [`../PRD.md`](../PRD.md) |
 | **Decisions** | [`../adr/`](../adr/) |
+| **Supersedes** | Version 1.0, which described a Fastify/Postgres tier retired by [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) |
 
 ---
 
@@ -16,117 +17,75 @@ One constraint drives nearly every decision below:
 > **The colour engine must produce byte-identical results on every surface, offline,
 > forever.**
 
-A trouser recommendation computed in the browser, in the mobile app, in the API and in a
-background worker must be the same recommendation. If they can diverge, the product's
-central claim — that its answers are reproducible and explainable — is false.
-
 That single requirement (NFR-3) is why the engine is one TypeScript implementation in a
 monorepo rather than a service; why it is dependency-free and platform-free; why it is
 validated against golden datasets rather than snapshots of itself; and why the version
 tuple travels with every result.
+
+**The rehaul made this constraint load-bearing rather than aspirational.** In version 1.0
+the engine ran on the client *and* on a server, and "identical everywhere" was a property
+we had to maintain across two runtimes that could drift. Now there is one runtime. If a
+result is wrong, there is exactly one place it came from.
 
 ---
 
 ## 2. System context
 
 ```
-                         ┌──────────────────────────────────┐
-                         │            Visitors               │
-                         │  no account · offline capable     │
-                         └────────────────┬─────────────────┘
-                                          │
-        ┌─────────────────────────────────┼─────────────────────────────────┐
-        │                                 │                                 │
-┌───────▼────────┐              ┌─────────▼─────────┐            ┌──────────▼────────┐
-│   apps/web     │              │   apps/mobile     │            │  API consumers    │
-│   Next.js 16   │              │  Expo · RN 0.86   │            │  Studio · partners│
-└───────┬────────┘              └─────────┬─────────┘            └──────────┬────────┘
-        │                                 │                                 │
-        │   ┌─────────────────────────────┴─────────────────────────────┐   │
-        │   │        @irodora/color-* — THE ENGINE, RUNNING LOCALLY      │   │
-        │   │  spaces · difference · cvd · harmony · naming · core       │   │
-        │   │  Identical code. No network. No platform APIs.             │   │
-        │   └───────────────────────────────────────────────────────────┘   │
-        │                                 │                                 │
-        └─────────────────────────────────┼─────────────────────────────────┘
-                                          │  HTTPS · OpenAPI · versioned
-                              ┌───────────▼────────────┐
-                              │      apps/api          │
-                              │  Fastify · modular     │
-                              │  monolith              │
-                              │                        │
-                              │  auth · tenancy        │
-                              │  catalog · corpus      │
-                              │  profile · wardrobe    │
-                              │  recommendation        │
-                              │  content · billing     │
-                              └───┬────────┬───────┬───┘
-                                  │        │       │
-              ┌───────────────────┘        │       └──────────────┐
-    ┌─────────▼─────────┐        ┌─────────▼────────┐   ┌─────────▼────────┐
-    │   PostgreSQL 17   │        │  Valkey / Redis  │   │  S3-compatible   │
-    │  system of record │        │  cache · queue   │   │  blob storage    │
-    └───────────────────┘        └─────────┬────────┘   └──────────────────┘
-                                           │
-                                 ┌─────────▼─────────┐
-                                 │   apps/worker     │
-                                 │ image · reports   │
-                                 │ corpus builds     │
-                                 │ optimisation jobs │
-                                 └───────────────────┘
+                        ┌────────────────────────────┐
+                        │          A person          │
+                        │  no account · no network   │
+                        └─────────────┬──────────────┘
+                                      │
+                        ┌─────────────▼──────────────┐
+                        │        apps/mobile         │
+                        │   Expo 57 · RN 0.86 · New  │
+                        │   Architecture · iOS+Android│
+                        └─────────────┬──────────────┘
+                                      │
+        ┌─────────────────────────────┼─────────────────────────────┐
+        │                             │                             │
+┌───────▼────────┐          ┌─────────▼─────────┐        ┌──────────▼────────┐
+│  @irodora/     │          │   @irodora/store  │        │  corpus bundle    │
+│  color-*       │          │  expo-sqlite +    │        │  shipped in the   │
+│  THE ENGINE    │          │  SQLCipher, via   │        │  app, digest-     │
+│                │          │  Drizzle          │        │  checked at load  │
+│  no deps       │          │                   │        │                   │
+│  no platform   │          │  THE SYSTEM OF    │        │  immutable per    │
+│  APIs          │          │  RECORD           │        │  version          │
+└────────────────┘          └─────────┬─────────┘        └───────────────────┘
+                                      │
+                            ┌─────────▼─────────┐
+                            │  the device's     │
+                            │  encrypted        │
+                            │  filesystem       │
+                            │  key in Keychain/ │
+                            │  Keystore         │
+                            └───────────────────┘
+
+                    ── no network boundary anywhere in this diagram ──
 ```
 
-**What the API is *not* for.** Colour identification, harmony, CVD simulation, naming and
-personal compatibility never require a round trip. The API serves the catalog, persists
-your data, and does the work that genuinely needs a server. This is why the product works
-in airplane mode and why our hosting bill does not scale with scans.
+**There is nothing above the app.** No API, no database server, no cache, no object store,
+no identity provider, no telemetry collector. The absence is the architecture
+([ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)).
 
 ---
 
-## 3. Repository and deployment topology
+## 3. Topology
 
-Repository layout and deployment topology are **separate decisions**
-([ADR-0001](../adr/0001-monorepo-modular-monolith-with-extraction-triggers.md)):
+**One repository, one deployable artefact.** The repository holds the engine, the content
+and the app; the artefact is an app-store build.
 
-- **One repository** — because the engine must be one artefact at one version everywhere.
-  Cross-repo version drift would turn NFR-3 into a release-coordination problem.
-- **Three deployable units** — `api`, `worker`, `web`. Not twelve. There is no scaling
-  profile, deploy cadence or team boundary today that justifies a network hop inside a
-  single user request.
+[ADR-0001](../adr/0001-monorepo-modular-monolith-with-extraction-triggers.md) separated
+repository layout from deployment topology and named extraction triggers for pulling
+modules into services. **Those triggers are void** — there are no services to extract to.
+What survives from that decision is the reason for one repository: the engine must be one
+artefact at one version everywhere, and cross-repo drift would turn NFR-3 into a release
+coordination problem.
 
-### Modules inside the API
-
-```
-apps/api/src/modules/
-  auth/          identity, sessions, passkeys
-  tenancy/       tenant · organisation · workspace · membership
-  catalog/       colours, palettes — read-heavy, cache-fronted
-  corpus/        content versions, provenance, publication
-  profile/       personal colour profiles
-  wardrobe/      garments, images, outfits
-  recommendation/ scoring orchestration (the maths lives in packages/)
-  content/       rules, weights, editorial state
-  billing/       subscriptions, entitlements, metering
-  platform/      health, config, telemetry, errors
-```
-
-Modules communicate through **explicit interfaces only**. Reaching into another module's
-internals fails `lint`, not code review — a boundary that depends on vigilance is not a
-boundary.
-
-### Extraction triggers
-
-A module becomes its own service when **at least two** of these are true. Not before:
-
-1. Its scaling profile diverges materially from the rest of the API.
-2. Its deploy cadence must decouple (regulatory, risk or velocity).
-3. A distinct team owns it end to end.
-4. Its failure must be isolated from the rest of the platform.
-5. Its runtime needs differ (a different language, GPU, or a long-running process).
-
-The likely first candidates are `recommendation` (CPU-bound, burst-shaped) and `corpus`
-(read-only, globally cacheable). Because both already sit behind an interface and hold no
-other module's state, extraction is a deployment change.
+The module boundaries did not go away with the server. They moved into packages, where
+`lint` enforces them — a boundary that depends on vigilance is not a boundary.
 
 ---
 
@@ -140,18 +99,24 @@ other module's state, extraction is a deployment change.
 | **Garment** | Wardrobe items, images, materials | Outfit rules |
 | **Outfit** | Slots, combinations, scores, explanations | Persistence |
 | **Recommendation** | Weighting, ranking, envelopes | Colour maths, corpus storage |
-| **Identity** | Users, tenants, sessions, entitlements | Everything else |
-| **Content ops** | Editorial state, rules, weights, review | Runtime scoring |
+| **Storage** | Schema, migrations, encryption, backup | Any domain rule |
 
 The **Colour** context knowing nothing about fashion is deliberate. It is what makes the
-engine independently testable against physical reference data, publishable as an API, and
-correct in a way that has nothing to do with our opinions about trousers.
+engine independently testable against physical reference data and correct in a way that has
+nothing to do with our opinions about trousers.
+
+Two contexts left with the server: **Identity** (users, tenants, sessions, entitlements) has
+nothing to own when there is one user and no account, and **Content ops** collapsed into the
+build — editorial state is now git state, enforced by the `content` gate.
 
 ---
 
 ## 5. Packages
 
 ```
+apps/
+  mobile/             the app — Expo Router, screens, camera, navigation
+
 packages/
   color-spaces/       conversions. Pure. Zero dependencies. WASM-portable.
   color-difference/   ΔE76 · ΔE94 · ΔE00 · ΔEok · WCAG · APCA
@@ -159,146 +124,164 @@ packages/
   color-harmony/      harmony generators
   color-naming/       nearest-match and naming
   color-core/         facade · the Color value type · provenance · envelopes
-  corpus/             typed corpus access, version pinning
+  corpus/             typed corpus access, version pinning, digest verification
   recommendation/     rules, weights, scoring, explanation objects
   optimization/       capsule and coverage solvers
-  contracts/          shared schemas and types — the wire-format source of truth
-  design-tokens/      OKLCH tokens → CSS · TS · RN · Tailwind
-  ui/                 shared React primitives
-  telemetry/          OpenTelemetry wrappers
-  config/             env schema, deployment profiles
+  contracts/          Zod schemas — validation at every trust boundary
+  design-tokens/      OKLCH tokens → CSS · TS · RN
+  store/              SQLite schema, migrations, repositories, backup
+  ui/                 shared React Native primitives over the tokens
   testing/            golden datasets, property helpers, fixtures
 ```
 
 **Dependency direction is strictly one-way.** `color-spaces` depends on nothing.
 `color-core` depends on the colour packages. `recommendation` depends on `color-core` and
-`corpus`. Applications depend on packages. **No package ever imports an application.**
-A cycle fails `lint`.
+`corpus`. `store` depends on `contracts`. The app depends on packages. **No package ever
+imports the app.** A cycle fails `lint`.
 
 The colour packages additionally may not import `node:*`, touch `window`, `document` or
 `process`, or add a runtime dependency. Those are lint rules in
-[`eslint.config.mjs`](../../eslint.config.mjs), and they exist so the engine cannot
-accidentally become platform-specific — which is the failure mode that would quietly
-break NFR-3.
+[`eslint.config.mjs`](../../eslint.config.mjs), proven by
+[`verify-guards.mjs`](../../scripts/verify-guards.mjs) — which plants a deliberate violation
+at each boundary and asserts the rule fires. They exist so the engine cannot accidentally
+become platform-specific, which is the failure mode that would quietly break NFR-3.
+
+**`store` is the one new boundary the rehaul created**, and it is deliberately thin: one
+interface, one implementation, one conformance suite. Not a port/adapter hierarchy — that
+was version 1.0's answer to a question (which database?) that no longer has two answers.
 
 ---
 
-## 6. Request paths
+## 6. Paths through the system
 
-### 6.1 A colour scan (no network at all)
+### 6.1 A colour scan — the path that defines the product
 
 ```
-camera frame
+camera frame  (worklet thread, YUV — never the UI thread)
   → colour-space metadata (P3 or sRGB, from the platform)
   → exposure / white-balance assessment          ─┐
   → sampling region                               │ FR-17, FR-18
-  → spatial pixel sampling (≥1000 px)             │ all local
-  → outlier rejection (specular, shadow, edge)    │
-  → robust average IN LINEAR LIGHT                │
-  → XYZ → Lab / OKLCh                             │
+  → spatial pixel sampling (≥1000 px)             │
+  → outlier rejection (specular, shadow, edge)    │ all on-device,
+  → robust average IN LINEAR LIGHT                │ all synchronous,
+  → XYZ → Lab / OKLCh                             │ no await on anything
   → nearest corpus match (ΔE00)                   │
   → harmony + personal compatibility              │
   → recommendation with explanation              ─┘
   → frame discarded
 ```
 
-Nothing leaves the device (NFR-12). The frame is discarded, not cached. This is asserted
-in e2e by a network interceptor that fails the test if any image bytes are transmitted.
+Nothing leaves the device (NFR-12). The frame is discarded, not cached.
 
-### 6.2 A catalog read
+**How this is asserted changed, and got stronger.** Version 1.0 checked it with a network
+interceptor that failed if image bytes were transmitted — which proves the request carried
+no image, not that nothing was sent. The e2e charter now asserts that the process **opens no
+socket** during the journey. That is a claim about the whole app rather than about one
+request.
+
+**Averaging happens in linear light.** Averaging non-linear sRGB is the most common colour
+bug there is, and it always makes the result too dark. It is written here because it is the
+step most likely to be reimplemented incorrectly by someone optimising the sampling loop.
+
+### 6.2 A corpus read
 
 ```
-client → CDN (immutable, version-keyed) → API → Valkey → Postgres
+screen → @irodora/corpus → the bundle shipped inside the app
 ```
 
-The corpus is effectively immutable per version, so cache keys include the corpus version
-and entries are cached indefinitely. A corpus publish mints a new version rather than
-invalidating a cache — which means a publish can never serve a half-updated catalog.
+There is no cache tier because there is no fetch. The corpus is an immutable, digest-checked
+bundle ([ADR-0046](../adr/0046-published-corpus-is-an-immutable-generated-bundle.md)) loaded
+from app assets. A corpus correction ships as an app release or an Expo OTA update.
 
-### 6.3 A wardrobe write (offline-first)
+**The digest is still verified even though we shipped the file.** "We built it" is a claim
+about the build, not about the bytes on this device.
+
+### 6.3 A wardrobe write
 
 ```
-local write → local DB (source of truth for the client) → outbox
-                                                            │  when online
-                                                            ▼
-                                        sync API → conflict resolution → Postgres
-                                                            │
-                                                            ▼
-                                                    other devices
+user action → validate (Zod) → SQLite transaction → UI reads back from the database
+                                      │
+                                      └→ change_log row (append-only)
 ```
 
-Detail in [`sync-protocol.md`](sync-protocol.md).
+There is no outbox and no sync target. The `change_log` table exists anyway: it is the
+difference between sync being a *feature we can add* and a *migration we cannot run*, and it
+costs about forty lines
+([ADR-0014](../adr/0014-offline-first-sqlite-outbox-and-merge-policy.md), amended).
+
+**The UI reads back from the database rather than from memory.** An optimistic in-memory
+update that diverges from what was persisted is the bug class that makes local-first apps
+feel haunted, and reading back is cheap when the database is a file.
 
 ---
 
 ## 7. Data
 
-PostgreSQL 17 is the single system of record
-([ADR-0013](../adr/0013-postgres-drizzle-single-system-of-record.md)). The colour catalog
-is highly relational — colours, palettes, roles, sources, versions — and introducing a
-second store because the domain is "about colour" would buy nothing and cost consistency.
+**The SQLite database on the device is the system of record.** There is no other copy.
 
-- **Tenancy** — every user-data table carries `tenant_id` with a row-level-security
-  policy. Application code is the second line of defence, not the first
-  ([ADR-0017](../adr/0017-multi-tenancy-and-rls-from-day-one.md)).
-- **Content versioning** — corpus and rule versions are immutable once published.
-- **Search** — Postgres full-text plus `pg_trgm` for fuzzy name matching, and perceptual
-  nearest-neighbour computed in the engine over a cached index. No search engine until
-  the catalog demonstrably outgrows this.
-- **Migrations** — Drizzle, forward-only, reversible by a compensating migration, applied
-  under an advisory lock so concurrent boots on a VPS cannot race.
+- **Engine** — `expo-sqlite` with SQLCipher, accessed through Drizzle. Prepared statements
+  only.
+- **Encryption at rest** — the key is generated on-device at first run and held in the iOS
+  Keychain / Android Keystore via `expo-secure-store`. It is never in the bundle, never in
+  an environment variable, never in a log. NFR-13.
+- **Sync-shaped schema** — every row carries a client-generated UUIDv7 `id`, `updated_at`,
+  and a `deleted_at` tombstone; every write appends to `change_log`. Sync is not built.
+- **Search** — SQLite FTS5 narrows candidates; perceptual ranking happens in the engine.
+  This is [ADR-0008](../adr/0008-search-postgres-fts-with-engine-side-perceptual-ranking.md)
+  with Postgres swapped out and its actual decision intact: **the database narrows, the
+  engine ranks.** ΔE00 is not a metric and cannot be indexed, which is why a two-stage
+  shortlist is the only thing making naming fast at 100k entries.
+- **Migrations** — Drizzle, forward-only, applied at app start. No advisory lock, because
+  there is exactly one process. A migration that fails leaves the previous version intact
+  and surfaces an error the user can act on — an app that silently opens a half-migrated
+  database is worse than one that says it cannot start.
+- **Backup** — user-initiated export of the whole database, re-importable to a byte-identical
+  state. **With no server this is the entire durability story** (FR-58).
 
 Full schema: [`data-model.md`](data-model.md).
 
 ---
 
-## 8. Deployment profiles
+## 8. Distribution
 
-One image set, three profiles, selected by `IRODORA_PROFILE`
-([ADR-0016](../adr/0016-deployment-profiles-local-vps-cloud.md)):
+There is nothing to deploy. There is something to ship.
 
-| Profile | Blob | Cache/queue | Database | Secrets | Proxy |
-|---|---|---|---|---|---|
-| `local` | MinIO | Valkey container | Postgres container | `.env` | none |
-| `vps` | MinIO / Garage / R2 | Valkey container | Postgres container or managed | platform env | Traefik (Coolify/Dokploy) |
-| `cloud` | S3 | ElastiCache | Aurora Serverless v2 | Secrets Manager + KMS | CloudFront + WAF + ALB |
+| | |
+|---|---|
+| **Build** | EAS Build — iOS and Android, from a Windows workstation (attested in F-039) |
+| **Release** | App Store and Google Play |
+| **Updates** | App releases; Expo OTA for JS-only changes including corpus corrections |
+| **Rollback** | A prior OTA update, or a store rollout halt. **There is no instant rollback** — this is the largest operational difference from a server, and release discipline is what substitutes for it |
+| **Signing** | EAS-managed credentials, never in this repository under any name |
 
-Every cloud service sits behind a **port** — `BlobStore`, `Cache`, `Queue`, `Mailer`,
-`Secrets`, `KeyManagement` — with an adapter per profile and one conformance suite that
-every adapter must pass. This is what makes the VPS profile a first-class target rather
-than a degraded mode: the same tests prove the same behaviour on both.
-
-**VPS requirements** (Coolify / Dokploy): containers expose `/healthz` (liveness) and
-`/readyz` (readiness, including database reachability), run as non-root, accept
-configuration entirely through environment variables, tolerate being restarted at any
-moment, and declare their volumes. Migrations run at boot under an advisory lock, so
-there is no separate migration step to orchestrate.
+The three deployment profiles, the port/adapter conformance suites, the Dockerfiles, the
+compose file and the Terraform skeleton are retired
+([ADR-0016](../adr/0016-deployment-profiles-local-vps-cloud.md), superseded).
 
 ---
 
-## 9. Observability
+## 9. Observability — what we gave up
 
-OpenTelemetry throughout — traces, metrics, structured JSON logs
-([ADR-0022](../adr/0022-observability-opentelemetry-no-raw-imagery.md)).
+**There is none, and this is the most expensive consequence of the rehaul.**
 
-**Never logged, never traced, never sent to telemetry:** raw camera frames, wardrobe
-images, image buffers, skin-tone estimates, and any personal-colour profile dimension. A
-redaction test asserts these cannot reach a sink; it fails the build if a new code path
-makes them reachable.
+No traces, no metrics, no error aggregation, no funnel, no measure of whether a
+recommendation was accepted. Product decisions rest on qualitative feedback and store
+reviews. [ADR-0022](../adr/0022-observability-opentelemetry-no-raw-imagery.md) is superseded,
+and every dashboard and analytics event it specified is withdrawn with it.
 
-**Dashboards:** API latency by route · engine computation time · recommendation latency ·
-5xx rate · database latency · cache hit rate · sync conflict rate · scan failure rate by
-cause · mobile crash rate · corpus publish events.
+That is a deliberate trade for NFR-12, which becomes **absolute rather than conditional** —
+the privacy claim needs no qualifier about what telemetry does or does not include, because
+there is no telemetry.
 
-### Analytics events
+The prohibition that decision carried is retained and strengthened: **raw camera frames,
+wardrobe images, image buffers, skin-tone estimates and personal-colour profile dimensions
+may never be written to any sink.** Version 1.0 enforced this with a redaction test against
+a telemetry pipeline. It is now satisfied by construction — there is no sink — but the rule
+stays written down, because the first time someone adds crash reporting is exactly when it
+will matter and exactly when nobody will remember.
 
-Product events only, never imagery: `color_scanned` · `color_saved` ·
-`recommendation_viewed` · `recommendation_accepted` · `recommendation_rejected` ·
-`outfit_created` · `outfit_saved` · `wardrobe_item_added` · `palette_opened` ·
-`cvd_mode_enabled` · `profile_completed` · `profile_corrected` · `export_generated`.
-
-Every metric in [PRD §8](../PRD.md#8-success-metrics) derives from an event in this list
-or from a named gate. A metric with no instrumentation behind it does not get published.
+**Adding any diagnostic requires an ADR.** Opt-in, on-device, user-inspectable, and never
+carrying the data listed above. It will not arrive quietly.
 
 ---
 
@@ -306,34 +289,51 @@ or from a named gate. A metric with no instrumentation behind it does not get pu
 
 Full analysis: [`security/threat-model.md`](security/threat-model.md).
 
-The two domain-specific concerns worth stating at architecture level:
+The rehaul removed most of the attack surface rather than defending it. No tokens, no
+sessions, no CORS, no tenancy isolation, no secrets in the bundle — because there is no
+boundary to cross. Whole classes of vulnerability became unreachable.
 
-**Content is a trust boundary.** The recommendation engine is content-driven — corpus,
-palettes and rule weights determine what every user is told. Someone who can write to
-content changes the product's behaviour without touching code. Content therefore lives
-behind the admin application only, is versioned immutably, is integrity-checked at load,
-and every publish is audit-logged with actor and diff.
+Three concerns survive, and one of them got harder:
 
-**Images are hostile input.** Decoding happens in the worker under hard limits on bytes,
-pixel count and wall-clock time — never in the API process, so a decoder bomb costs one
-worker rather than the platform. Ordinary colour detection uploads no image at all, which
-means the largest attack surface is one most users never touch.
+**Content is still a trust boundary.** The recommendation engine is content-driven — corpus,
+palettes and rule weights determine what every user is told. Version 1.0 put content behind
+an admin application with audit logging. It now lives in this repository, which means the
+boundary is **the pull request and the `content` gate**: provenance completeness, roster-id
+review identity ([ADR-0047](../adr/0047-editorial-identity-is-a-roster-id-not-a-name.md)),
+and a digest verified at load on the device. That is checked on every commit rather than
+only in production, which is stronger — but it also means repository write access is now
+product write access, and branch protection is a security control rather than hygiene.
+
+**Images are hostile input, and there is no worker to sacrifice.** Version 1.0 decoded
+images in a worker process under hard limits, so a decoder bomb cost one worker rather than
+the platform. On a device the blast radius is the user's app. Decoding therefore happens
+with explicit bounds on pixel count and wall-clock time, off the UI thread, and a failure
+must surface as a handled error rather than a crash.
+
+**The database key is the whole of at-rest security.** It lives in the platform keystore.
+A key that reaches a log, a crash report or a backup file defeats SQLCipher entirely, which
+is why §9's prohibition list is not optional.
 
 ---
 
 ## 11. Performance strategy
 
+Every budget is now a device budget (NFR-4). There is no network to blame and no server to
+scale.
+
 | Concern | Approach |
 |---|---|
 | Engine hot paths | Typed arrays, precomputed matrices, no allocation in inner loops; WASM only if a measured budget miss demands it |
-| Catalog reads | Immutable version-keyed cache at CDN, Valkey and client |
+| Frame processing | Worklet thread, YUV rather than RGB (~2.6× less bandwidth); the UI thread never blocks on colour maths |
+| Corpus reads | An immutable bundle in memory; no fetch, no cache invalidation |
+| Naming at scale | FTS5 narrows, engine ranks — the shortlist bound is what makes two-stage equal a full scan |
 | Recommendation | Candidate generation bounded before scoring; the search space is pruned, not the maths |
 | Capsule optimisation | Branch-and-bound with a heuristic seed, hard time budget, best-so-far returned on expiry — a deterministic answer within budget beats an optimal one that never arrives |
-| Web | Server components by default; the engine is loaded on the routes that use it, not globally |
-| Mobile | Frame processing on a worklet thread; the UI thread never blocks on colour maths |
+| Cold start | The engine is pure computation with no I/O; the corpus bundle is the only load-time cost, and it is memory-mapped rather than parsed eagerly |
 
-Budgets are absolute and committed (NFR-4, NFR-5), never baseline deltas — CI hardware
-varies, and a delta gate flakes until someone disables it.
+Budgets are absolute and committed, never baseline deltas — hardware varies, and a delta
+gate flakes until someone disables it. They are measured on the **slowest** device in the
+support matrix, because that is the one that fails.
 
 ---
 
@@ -341,10 +341,12 @@ varies, and a delta gate flakes until someone disables it.
 
 | Refused | Why |
 |---|---|
-| Microservices at day one | No scaling, ownership or cadence pressure exists; the cost is real and immediate |
-| A second database "for colour" | The catalog is relational; a second store buys nothing and costs consistency |
-| A search engine at R1 | Postgres FTS + trigram covers the catalog by an order of magnitude |
-| Server-side colour computation for scans | Slower, costlier, less private, and offline-incapable |
+| A server of any kind | Nothing this product does requires one. [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) names the conditions that would reopen it |
+| Sync, for now | The schema is shaped for it and it is not built. Building sync before one device's worth of data exists is the mistake the rehaul corrected |
+| A port/adapter layer over SQLite | There is one database and there will be one database. Abstraction over a choice nobody is making is the pattern that produced 4,269 lines serving two health endpoints |
+| A second surface (web, desktop) | Until the app earns retention, a second surface is a second maintenance burden and a second storage driver |
+| Telemetry that ships anywhere | §9. An opt-in on-device diagnostic needs its own ADR |
+| Server-side colour computation | Slower, costlier, less private, offline-incapable — and there is no server |
 | A vendor SDK inside the colour engine | Would break WASM portability and platform identity — the one thing that cannot break |
-| Lambda for everything | The engine is CPU-bound and latency-sensitive; cold starts are the wrong trade |
 | An ML model in the trust path | [ADR-0002](../adr/0002-deterministic-core-tiered-capability-policy.md) |
+| Entitlement checks | [PRD §7](../PRD.md#7-monetisation). A lock that does not lock is worse than no lock |

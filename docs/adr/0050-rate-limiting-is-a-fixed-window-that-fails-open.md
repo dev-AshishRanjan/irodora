@@ -12,7 +12,7 @@ saying so in the record is why nobody had to rediscover it.
 
 ## Context
 
-[`api-contract.md` §8](../architecture/api-contract.md#8-rate-limiting) specifies a **sliding
+`api-contract.md` §8 specified a **sliding
 window in Valkey**. F-015 ships a **fixed window**, and it ships one that **allows the request
 when the cache is unreachable**. Both are deviations from a documented default, so both are
 recorded here rather than left in a source comment somebody has to go and find.

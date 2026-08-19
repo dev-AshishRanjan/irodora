@@ -16,7 +16,7 @@ Per [ADR-0022](../../docs/adr/0022-observability-opentelemetry-no-raw-imagery.md
   external calls, image work.
 - **Structured log** on entry to and exit from a critical path, with `trace_id` and
   `request_id`.
-- A **metric** for anything with a budget in [`slo.md`](../../docs/operations/slo.md).
+- A **metric** for anything with a budget in [PRD NFR-4](../../docs/PRD.md#6-non-functional-requirements) — measured by the `perf` gate on device, never shipped anywhere.
 - **Full context on error** — what failed, with what inputs (redacted), and what the caller
   should do.
 

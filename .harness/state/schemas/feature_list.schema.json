@@ -40,7 +40,7 @@
         },
         "service": {
           "type": "string",
-          "enum": ["root", "api", "worker", "web", "mobile", "admin", "packages", "content", "infra", "tests"]
+          "enum": ["root", "mobile", "packages", "content", "tests"]
         },
         "package": { "type": "string" },
         "release": { "type": "string", "pattern": "^R[0-9]+$" },

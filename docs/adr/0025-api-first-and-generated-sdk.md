@@ -52,7 +52,7 @@ apps/web · apps/mobile · apps/admin · external developers
    auth and retry are small and explicit.
 4. **CI regenerates and diffs.** A contract change with a stale committed document fails
    the build.
-5. **Additive-only inside a version** ([`api-contract.md`](../architecture/api-contract.md) §9).
+5. **Additive-only inside a version** (`api-contract.md` §9, retired with the API).
    Clients ignore unknown response fields, and the generated SDK does.
 6. **The generation chain is an effect link** ([E-004](../../.harness/state/effects.json)):
    changing a contract requires regenerating OpenAPI and the SDK and updating consumers —

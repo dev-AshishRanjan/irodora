@@ -30,7 +30,7 @@ matters.
 
 ## 3. Get it running (15 minutes)
 
-[`../../docs/operations/deployment/local.md`](../../docs/operations/deployment/local.md).
+the [README](../../README.md). There are no local services to start — no database, no cache, no object store — so the whole of setup is `pnpm install` and an Expo dev client.
 
 ```bash
 corepack enable

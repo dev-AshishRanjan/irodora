@@ -60,7 +60,7 @@ without being asked.**
 ### 6. Confirm the start path
 
 The documented start still works from a clean clone. If you changed setup, you changed
-[`local.md`](../../../docs/operations/deployment/local.md) too.
+the [README](../../../README.md) too.
 
 ## If you cannot reach a clean state
 

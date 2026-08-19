@@ -102,7 +102,7 @@ Adding one is a decision with a cost. Before you do:
 ## Performance
 
 - **Measure before optimising.** Then measure after.
-- Budgets are absolute and committed ([`slo.md`](../../../docs/operations/slo.md)).
+- Budgets are absolute and committed ([PRD NFR-4](../../../docs/PRD.md#6-non-functional-requirements)).
 - No allocation in an inner loop in the engine. Typed arrays, precomputed matrices.
 - **Never optimise before the behaviour is verified.** Optimising unverified code moves the
   boundary between what is known-correct and what is not, in the wrong direction.

@@ -1,137 +1,106 @@
-# Incident Response
+# Incident response
 
 | | |
 |---|---|
-| **Status** | Baseline |
-| **Related** | [`../architecture/security/threat-model.md`](../architecture/security/threat-model.md) · [`../compliance/data-governance.md`](../compliance/data-governance.md) |
+| **Status** | Baseline for R2 |
+| **Version** | 2.0 · 2026-08-19 |
+| **Supersedes** | Version 1.0, which described paging, error budgets and a rollback of a running service — none of which exist after [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) |
+
+---
+
+## What changed, and why this document still exists
+
+A local-first app cannot have an outage. There is no service to be down, no error budget to
+burn, no dashboard to watch and nobody to page at 3am. Version 1.0 of this document is void
+in every particular.
+
+It would be a mistake to conclude that incidents went away. **They got slower, more
+permanent, and harder to see.**
+
+| | A server incident | An app incident |
+|---|---|---|
+| Detection | Alert, within minutes | A store review, days later — **we have no telemetry** ([ARCHITECTURE §9](../architecture/ARCHITECTURE.md#9-observability--what-we-gave-up)) |
+| Blast radius | Everyone, until fixed | Only users who updated — but them, until *they* update |
+| Rollback | Redeploy, minutes | Store review, hours to days. OTA is faster but JS-only |
+| Data loss | Restore from backup | **Irrecoverable.** There is no backup but the user's own export |
+
+That last row is the one that matters. On a server, a bug that corrupts data is bad. On this
+product, a bug that corrupts the database destroys data that exists nowhere else.
 
 ---
 
 ## Severity
 
-| | Definition | Response | Comms |
-|---|---|---|---|
-| **SEV1** | Data breach · complete outage · **content compromise** · auth bypass | Immediate, all hands | Status page within 30 min; regulator within 72 h if personal data |
-| **SEV2** | Major feature unavailable · severe degradation · error budget burning fast | Within 1 h | Status page |
-| **SEV3** | Partial degradation · a workaround exists | Next business day | In-app if user-visible |
-| **SEV4** | Minor, cosmetic, low impact | Backlog | None |
+| | Definition | Response |
+|---|---|---|
+| **S1** | Data loss or corruption, or the encryption key is exposed or lost | Halt rollout immediately. Stop-the-line: nothing else ships until it is understood |
+| **S2** | The app crashes on launch, or a core journey is broken, for a identifiable group of devices | Halt rollout. Fix forward or OTA-revert within one working day |
+| **S3** | A feature is broken, with a workaround; a wrong colour value ships | Fix in the next release. Correct the record if a colour value was wrong |
+| **S4** | Cosmetic, or affects a rare path | Normal backlog |
 
-**Content compromise is SEV1**, and this is the classification most likely to be got wrong.
-Nothing is down, no data has leaked, and every dashboard is green — but if someone can edit
-the corpus or the rule weights, they change what every user is told without touching a line
-of code. It is silent, product-wide, and invisible to conventional monitoring.
-
----
-
-## The loop
-
-```
-detect → triage → contain → communicate → eradicate → recover → learn
-```
-
-**Detect.** Alerts, synthetic probes, error rates, user reports, security disclosures
-([`SECURITY.md`](../../SECURITY.md)).
-
-**Triage.** Assign severity and an incident lead. The lead **coordinates and does not
-debug** — an incident lead with their head in a stack trace is not leading.
-
-**Contain.** Stop the bleeding before understanding it. Roll back, disable a feature flag,
-revoke a credential, pin a content version. Understanding comes after containment; the
-reverse order is how a five-minute incident becomes an hour.
-
-**Communicate.** Status page for SEV1 and SEV2. Say what is affected, what is not, and when
-the next update comes — then send that update even if there is nothing new, because silence
-is read as absence.
-
-**Eradicate.** Fix the root cause, not the symptom.
-
-**Recover.** Restore service. Verify with the gates, not by looking at a dashboard and
-feeling reassured.
-
-**Learn.** Blameless postmortem within 5 working days for SEV1 and SEV2.
+**A wrong colour value is at least S3, never S4**, even though it looks cosmetic. The
+product's claim is that its answers are reproducible and sourced. A wrong value shipped
+under that claim is a correctness failure, and it stays visible until an update ships.
 
 ---
 
-## Runbook — content compromise
+## The first hour
 
-The unusual one, because the reflex responses do not apply.
-
-```
-1. PIN every client to the last known-good corpus version.
-      Set IRODORA_CONTENT_VERSION and IRODORA_RULES_VERSION explicitly.
-      This is why version pinning exists (ADR-0011).
-
-2. VERIFY checksums across the whole version history.
-      Which versions differ from their recorded checksum?
-
-3. AUDIT every publish since the suspected compromise.
-      audit_event holds actor, timestamp and a before/after diff.
-
-4. IDENTIFY the vector — credential, admin bypass, database write, backup restore.
-
-5. REVOKE and rotate. Every editorial credential, not only the suspected one.
-
-6. REPUBLISH from verified source with a new version label.
-      NEVER edit the compromised version — old envelopes must still resolve (FR-10).
-
-7. ASSESS user impact. Which recommendations used the compromised version?
-      This is an indexed query, because envelope.rules is its own column (data-model §5).
-
-8. NOTIFY if recommendations were materially affected.
-```
-
-**Rolling back the application does nothing here.** The code is fine; the data it reads is
-not. That is precisely why this runbook exists separately and is rehearsed separately.
+1. **Establish which builds are affected.** Version, platform, OTA update id. Without
+   telemetry this comes from store reviews, direct reports, and reproducing locally on the
+   device matrix.
+2. **Halt the rollout** before diagnosing. A staged rollout is the only lever that works in
+   minutes; use it first and think second. This is the reverse of server practice, where
+   diagnosis usually precedes action, and it is correct here because exposure grows while
+   you think.
+3. **Decide OTA or store.** An Expo OTA update ships JS in minutes. Anything touching native
+   code, permissions or the SQLCipher configuration needs a store build.
+4. **If data is involved, say so before fixing.** An in-app notice telling users to export
+   before updating is worth more than a fast fix that silently loses records.
 
 ---
 
-## Runbook — data breach
+## Data-loss incidents
 
-1. Contain: revoke credentials, isolate the affected system, preserve evidence before
-   changing anything.
-2. Scope: what data, whose, how much, over what period. The audit trail is the source.
-3. Assess risk to individuals.
-4. Notify: supervisory authority within 72 h if required; individuals without undue delay
-   if high risk ([data-governance §8](../compliance/data-governance.md)).
-5. Remediate and verify.
-6. Postmortem, including what monitoring should have caught it sooner.
+Handle these differently from everything else.
 
-## Runbook — full outage
-
-1. Confirm scope with synthetic probes — is it us, the provider, or DNS?
-2. Check the last deploy. Roll back first, diagnose second.
-3. **Confirm clients have fallen back to the local engine** (NFR-6). If they have not, the
-   fallback is broken and that is a second incident.
-4. Status page within 30 minutes.
-5. Restore, verify with gates, then write up.
+- **Never ship a migration as an OTA update.** OTA carries JS, and a schema change delivered
+  without a native build can meet a database it was not written for. Migrations ship in
+  store builds only.
+- **A failed migration must leave the previous database intact** and surface an actionable
+  error. An app that opens a half-migrated database is worse than one that refuses to start
+  ([ARCHITECTURE §7](../architecture/ARCHITECTURE.md#7-data)).
+- **The recovery path is the user's export.** That is the whole plan, which is why FR-58 is a
+  first-release feature and why the app prompts for an export before destructive actions. If
+  an incident reveals people were not exporting, the finding is about the export flow, not
+  about the bug.
 
 ---
 
-## Postmortem
+## Security disclosure
 
-Blameless. **The subject is the system, not the person.** If a single person's action could
-cause this, the system permitted it, and that is the finding.
+See [`../../SECURITY.md`](../../SECURITY.md) for the reporting channel.
 
-```
-What happened          timeline, in UTC, with evidence
-Impact                 users, duration, data
-Root cause             the actual cause, not the trigger
-Detection              how we found out, and how long it took
-Response               what we did, and what did not work
-What went well         name it — it is how good practice survives
-Action items           each with an owner and a date
-```
+Two classes matter most here:
 
-**Every postmortem produces at least one of:**
+- **The database key leaking** into a log, a crash report or a backup file defeats SQLCipher
+  entirely. Treat as S1 — encryption at rest is the whole of the at-rest guarantee.
+- **A dependency advisory** reaching the shipped bundle. The `security` gate blocks Critical
+  and High before merge; anything already shipped needs a release, since there is no server
+  to patch.
 
-- a new **gate** or test that would have caught it;
-- a new **effect link** with its guard
-  ([ADR-0030](../adr/0030-effects-graph-is-a-committed-artifact.md));
-- a **lesson** in [`.harness/memory/lessons/`](../../.harness/memory/lessons/);
-- a **rule** or ADR change.
+**A finding rotates the secret; it never earns an allowlist entry.** Unchanged from version
+1.0, and the only line of it worth keeping.
 
-> **Replay the original miss through any new gate.** A gate added after an incident that
-> would not have caught that incident is a gate that makes us feel better without making us
-> safer. Prove it fails against the original condition before trusting it.
+---
 
-A postmortem whose only output is "be more careful" has not found the cause.
+## Afterwards
+
+A blameless write-up for every S1 and S2, recorded as a lesson in
+[`.harness/memory/lessons/`](../../.harness/memory/lessons/) when it is reusable, and as a
+feature in [`feature_list.json`](../../.harness/state/feature_list.json) when it needs a
+guard.
+
+The question that closes an incident is not "is it fixed" but **"what check would have
+caught it, and does that check exist now?"** An incident that produces a fix and no gate has
+taught us nothing, and the same class will return.
