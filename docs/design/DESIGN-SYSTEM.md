@@ -11,7 +11,7 @@
 
 ## The thesis
 
-> **Soft chrome, exact colour.**
+> **Soft chrome, unaltered colour.**
 
 Everything is generous — 20 px cards, 28 px containers, full pills, 44 px targets, warm
 neutrals. Except the swatch, which is `radius: 0` at every size, forever.

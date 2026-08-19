@@ -53,10 +53,10 @@ export interface DerivedColor {
    */
   readonly rgb: Triple;
   readonly hex: string;
-  /** Whether the true colour fits in sRGB. False means `hex` is an approximation. */
+  /** Whether the specified colour fits in sRGB. False means `hex` is an approximation. */
   readonly inSrgbGamut: boolean;
   /**
-   * ΔE00 between the true colour and what `hex` will render — `0` when it fits.
+   * ΔE00 between the specified colour and what `hex` will render — `0` when it fits.
    *
    * This is the number behind "closest digital reference". Without it the phrase is a
    * disclaimer, and ADR-0031 exists because disclaimers are not measurements.
@@ -75,7 +75,7 @@ export function deriveColor(xyz: Triple): DerivedColor {
   const mapping = gamutMapDetail(xyz, 'srgb');
   const hex = srgbToHex(mapping.rgb);
 
-  // The comparison is between the TRUE colour and the colour that will actually be drawn —
+  // The comparison is between the SPECIFIED colour and the colour that will actually be drawn —
   // measured after the round trip through the hex, not after gamut mapping. Rounding to a
   // byte per channel is part of what the viewer sees, and leaving it out would understate the
   // gap by exactly the amount the display introduces.

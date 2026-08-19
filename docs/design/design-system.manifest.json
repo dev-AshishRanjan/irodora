@@ -11,7 +11,7 @@
     "reviewedBy": "designer and colour-scientist review, NOT the person who approved the palette on 2026-08-14",
     "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. Re-approval is owed."
   },
-  "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, exact colour — every radius is generous except the swatch, which is 0 forever.",
+  "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
 
   "themes": ["dark", "light"],
   "defaultTheme": "dark",

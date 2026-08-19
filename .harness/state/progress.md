@@ -8,6 +8,122 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-19 — F-025 DONE · golden rule 11 is a gate now, and it caught the design system
+
+> **Never overstate accuracy.**
+
+One of three product-specific golden rules, and the only one with no gate behind it.
+[ADR-0031](../../docs/adr/0031-measurement-claims-policy.md) said it must be *"enforced by a
+copy lint, not by review"*, and the governance document said why: the pressure to overstate
+comes from everywhere, every instance seems reasonable, and reviewer vigilance does not survive
+a launch week. It had been enforced by review for the whole of R0 and R1.
+
+### F-012 is blocked, which is why this came first
+
+F-012 (seed corpus) is the lowest-id eligible feature and **cannot be done by me**. Its
+acceptance is a corpus *published* with a named reviewer per entry; `verified`, `published`
+and `superseded` all require author != reviewer compared as **roster ids**
+([ADR-0047](../../docs/adr/0047-editorial-identity-is-a-roster-id-not-a-name.md)), and
+`content/editors.json` holds exactly one identity. Inventing a second would defeat the single
+check that makes review mean anything.
+
+**OQ-5 (Japanese editorial reviewer — engagement model) is what unblocks it**, and it is a
+hiring decision, not a technical one. Marked `blocked` with the groundwork that *can* proceed
+recorded on it: `draft` and `review` need no reviewer, and the licensing register needs real
+rows before any entry can cite one.
+
+### The problem this gate has, and the whole of its design
+
+**The banned phrases must appear in this repository.** ADR-0031 lists them; so do the
+governance document, three skills and two rule files. A naive scan flags **eighteen files**, and
+most are the policy rather than a violation of it.
+
+A blanket exemption for "documents that discuss the policy" would then *be* the gate — every
+real claim in `docs/` sits inside it. So exemptions are three kinds that are **not**
+interchangeable:
+
+| kind | covers | must carry |
+|---|---|---|
+| `policySource` | files that DEFINE the ban | an explicit path, never a glob, and a reason |
+| inline `claims-ok:` | ONE line that forbids the phrase or records its absence | a reason, 12+ chars, on that line |
+| `measured` | a real claim with a measurement | a link to a device-lab row (NFR-2) |
+
+`measured` is **empty**, and the count is printed on every run. The device colour lab is F-063;
+no number may exist without a row.
+
+A bare marker is **itself a finding**. An exemption nobody had to justify is not an exemption,
+it is a way to turn the gate off — and the proof checks both directions, because one that only
+tested the suppressing direction would not notice.
+
+### What it found on activation
+
+**The design system's own thesis was "soft chrome, exact colour."** A two-word tagline asserting
+exactness, in a product whose central commitment is that capture is an estimate.
+
+It *meant* the swatch is drawn at `radius: 0` so no sampled area is lost — rendering geometry,
+not accuracy. But a thesis migrates into marketing faster than an identifier migrates into a
+field, and "unaltered" says what actually happens while claiming nothing. Reworded in
+`DESIGN-SYSTEM.md` and the manifest.
+
+Also corrected: three "the true colour" comments in `@irodora/corpus` `derive.ts` → "specified",
+which is more precise anyway, since the value is specified by a corpus entry rather than true in
+any absolute sense.
+
+### A false positive I introduced, and caught before activation
+
+The `actual-colour` pattern had no determiner, so it fired on **its own ADR-0052** — "covers
+actual colours" meaning real colours as against synthetic test values, which is ordinary English
+and not a claim. Now requires `the|its|their|your|a`. Written down in `claims.json` next to the
+pattern, because the next person to tighten a pattern will be tempted by the same shortcut.
+
+`docs/archive/` is excluded from the scan, and that is the one judgement call in the skip list:
+those documents contain the banned constructions **because they are what the product decided not
+to say**. Linting them would mean editing a record of what was superseded.
+
+### Evidence
+
+```
+  ✓ gate 0   state          14 checks
+  ✓ gate 1   typecheck      25 tasks
+  ✓ gate 2   lint           25 tasks + 11 guards, purity, unsafe census, CLAIMS
+  ✓           claims proof   14 cases discriminate, baseline green either side
+  ✓ gate 3   format
+  ✓ gate 4   test           25 tasks
+  ✓ gate 5   color-golden   12 tasks
+  ✓ gate 6   build          16 tasks
+  ✓ gate 9   contrast       17 tasks
+  ✓ gate 10  cvd            11 tasks
+  ✓ gate 11  content        passed
+  ✓ mirror   11 active gates proven mirrored
+
+  NOT run: e2e, a11y, perf (pending) · security (gitleaks not installed here)
+```
+
+**12 cases must go red** — one per banned construction, plus a bare marker — and each asserts the
+output *names the right construction*, so red-for-the-wrong-reason fails. **Two must stay green**:
+a marker carrying a reason, and the clean fixture. A proof where everything is red cannot
+distinguish a working gate from one that fails on everything, and this repository has shipped a
+non-discriminating decoy twice.
+
+### Not delivered, printed on every run
+
+ADR-0031 §1 binds permissible language to `Provenance.source` — "measured" is legal for a
+calibrated value and a lie for an estimated one. Deciding that statically needs the render tree,
+which arrives with F-017. The table is already in `claims.json` as data. Gate 9 set the
+precedent for a gate that prints what it does not cover.
+
+### Next
+
+R1 has three open: **F-067** (cross-theme salience hierarchy), **F-072** (gate 0 sees a CI step
+conditioned out), **F-073** (engine purity follows `@irodora/*` edges). All three are
+self-contained and none needs a second person.
+
+**F-012 stays blocked until OQ-5 closes.**
+
+Nothing is `in_progress`.
+
+---
+
 ## 2026-08-19 — F-071 DONE · the property gates are deterministic, and one of them was lying
 
 Gates 4 and 5 are blocking. Both could go red for a reason unrelated to the change under

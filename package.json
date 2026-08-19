@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs",
+    "lint": "turbo run lint && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
@@ -35,7 +35,9 @@
     "verify:purity:prove": "node scripts/verify-engine-purity.mjs --prove",
     "security:staged": "gitleaks protect --staged --no-banner --redact --config .gitleaks.toml",
     "verify:unsafe": "node scripts/verify-unsafe-call-sites.mjs",
-    "verify:pin": "node scripts/verify-contract-pin.mjs"
+    "verify:pin": "node scripts/verify-contract-pin.mjs",
+    "verify:claims": "node scripts/verify-claims.mjs",
+    "verify:claims:prove": "node scripts/verify-claims-proof.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

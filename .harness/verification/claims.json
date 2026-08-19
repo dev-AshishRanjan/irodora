@@ -1,0 +1,199 @@
+{
+  "$comment": "The claims copy lint (NFR-21, F-025, ADR-0031). Patterns live here rather than in scripts/verify-claims.mjs for the same reason recommendation weights are content: this list will grow, and growing it should not be a code change. Read by scripts/verify-claims.mjs and exercised by scripts/verify-claims-proof.mjs.",
+  "version": 1,
+  "updated": "2026-08-19",
+  "banned": [
+    {
+      "id": "exact-colour",
+      "pattern": "exact colou?r",
+      "why": "A camera estimate is not exact. The word promises a precision the hardware cannot deliver, and it is the single most common overstatement in this product category."
+    },
+    {
+      "id": "true-colour",
+      "pattern": "(the|its|their) true colou?r",
+      "why": "Implies one authoritative answer exists and we found it. A rendered hex is a modern approximation of a colour a dye produced on a fibre under daylight. Use 'specified' for a colorimetric value, 'estimated' for a capture."
+    },
+    {
+      "id": "actual-colour",
+      "pattern": "(the|its|their|your|an?) actual colou?r",
+      "why": "Same claim as 'true colour' wearing a plainer word; ADR-0031 bans it for the estimated source. The determiner is REQUIRED in the pattern: 'covers actual colours' means real-world colours as against synthetic test values, which is ordinary English and not a claim. Without it the gate fires on its own ADR."
+    },
+    {
+      "id": "percent-accurate",
+      "pattern": "\\b(100|99(\\.\\d+)?|9[0-8])\\s*%\\s*accurate",
+      "why": "A percentage with no device, no illuminant, no sample size and no dE00 distribution behind it. No number without a row (NFR-2)."
+    },
+    {
+      "id": "perfect-match",
+      "pattern": "perfect match",
+      "why": "Naming returns a closest reference ranked by dE00. There is no match, perfect or otherwise (FR-7)."
+    },
+    {
+      "id": "lab-accurate",
+      "pattern": "lab.?accurate",
+      "why": "Borrows the authority of a laboratory instrument for a phone camera."
+    },
+    {
+      "id": "professional-grade",
+      "pattern": "professional.?grade",
+      "why": "Permitted only inside calibrated mode with a measurement behind it. Everywhere else it is a claim about hardware we do not control."
+    },
+    {
+      "id": "guaranteed-accuracy",
+      "pattern": "guarantee(d|s)?\\s+(colou?r|accuracy|match|result)",
+      "why": "Nothing about consumer camera capture is guaranteed. Note this pattern is deliberately narrow: 'guaranteed' about a deterministic property of the ENGINE is true and permitted."
+    },
+    {
+      "id": "ai-powered",
+      "pattern": "ai.?powered",
+      "why": "The core is colour science and explicit rules (ADR-0002). The phrase is both inaccurate here and the category's standard evasion."
+    },
+    {
+      "id": "measures-the-colour",
+      "pattern": "measures the colou?r",
+      "why": "'Measured' is reserved for the calibrated and reference sources. An estimate is estimated."
+    },
+    {
+      "id": "is-exact-match-identifier",
+      "pattern": "isExactMatch|exactMatch|EXACT_MATCH",
+      "why": "An identifier is as much a violation as a button label. A name propagates into a field, then into a stored record, then into copy — and by then nobody remembers it was a shorthand."
+    }
+  ],
+  "provenanceLanguage": {
+    "$comment": "ADR-0031 section 1. NOT YET ENFORCED — deciding whether 'measured' sits near an estimated value needs the render tree, which arrives with F-017/F-039. Recorded here as data so the check has its table when it can run, and the lint prints on every run that this half is unenforced.",
+    "enforced": false,
+    "activatesWith": "F-017",
+    "table": {
+      "reference": {
+        "may": [
+          "reference value",
+          "standard"
+        ],
+        "never": []
+      },
+      "calibrated": {
+        "may": [
+          "calibrated measurement",
+          "measured"
+        ],
+        "never": [
+          "exact",
+          "perfect"
+        ]
+      },
+      "estimated": {
+        "may": [
+          "estimated",
+          "approximately",
+          "closest reference"
+        ],
+        "never": [
+          "measured",
+          "exact",
+          "actual colour"
+        ]
+      },
+      "declared": {
+        "may": [
+          "selected",
+          "entered"
+        ],
+        "never": [
+          "measured",
+          "detected"
+        ]
+      }
+    }
+  },
+  "allowlist": {
+    "$comment": "Three KINDS, deliberately not interchangeable. A blanket path exemption for 'docs that discuss the policy' would swallow every real claim in docs/, so policySource is an explicit file list and nothing else.",
+    "policySource": [
+      {
+        "path": "docs/adr/0031-measurement-claims-policy.md",
+        "why": "The decision record that bans these constructions. It must state them."
+      },
+      {
+        "path": ".harness/governance/measurement-claims.md",
+        "why": "The governance document implementing ADR-0031."
+      },
+      {
+        "path": ".harness/verification/claims.json",
+        "why": "This file. The patterns are its content."
+      },
+      {
+        "path": "scripts/verify-claims.mjs",
+        "why": "The lint. It reports what it found, which means printing it."
+      },
+      {
+        "path": "scripts/verify-claims-proof.mjs",
+        "why": "The mutation proof. It plants each construction deliberately."
+      },
+      {
+        "path": ".harness/skills/measurement-claims/SKILL.md",
+        "why": "The skill teaching the policy."
+      },
+      {
+        "path": ".harness/skills/i18n-copy/SKILL.md",
+        "why": "Teaches copy discipline in both locales; quotes the banned list."
+      },
+      {
+        "path": ".harness/skills/color-math/SKILL.md",
+        "why": "Quotes the accuracy-claim rule for engine work."
+      },
+      {
+        "path": ".harness/rules/color/color-science.md",
+        "why": "Binding rules for packages/color-*; restates the claims discipline."
+      },
+      {
+        "path": ".harness/rules/common/documentation.md",
+        "why": "Restates the rule for comments and identifiers."
+      },
+      {
+        "path": ".claude/agents/color-scientist.md",
+        "why": "Subagent brief carrying the same prohibition."
+      },
+      {
+        "path": "packages/color-core/AGENTS.md",
+        "why": "Scoped harness for the strictest zone; restates the rule."
+      },
+      {
+        "path": ".harness/plans/F-025-claims-copy-lint.md",
+        "why": "This feature's plan. Names the constructions it bans."
+      },
+      {
+        "path": ".harness/state/progress.md",
+        "why": "Append-only history. Records where the rule was applied and why, including the phrases corrected."
+      },
+      {
+        "path": ".harness/plans/F-013-colour-naming-engine.md",
+        "why": "Records the naming-is-never-identity decision and the language it rejected."
+      },
+      {
+        "path": "docs/PRD.md",
+        "why": "NFR-21 states the banned constructions as its own acceptance condition."
+      },
+      {
+        "path": "docs/design/BRAND.md",
+        "why": "The voice guide. Its whole table is a never-say list with replacements."
+      },
+      {
+        "path": "docs/design/DESIGN-BRIEF.md",
+        "why": "Constraint C11 enumerates the claims the product may not make."
+      },
+      {
+        "path": ".harness/skills/camera-lab/SKILL.md",
+        "why": "Teaches never to convert a dE distribution into a percentage; must quote the norm it rejects."
+      },
+      {
+        "path": ".harness/memory/product/competitor-landscape.md",
+        "why": "Records the category norm we differentiate against by refusing it."
+      }
+    ],
+    "measured": [],
+    "$measuredComment": "EMPTY, and that is the correct state. A `measured` entry exempts an actual accuracy claim, and requires `claim`, `measurement` (a link to the device-lab row) and `why`. There are no measurements yet — the device colour lab is F-063 — so there can be no permitted claim. The lint prints this count on every run so an empty allowlist cannot be mistaken for a thorough one.",
+    "inlineMarker": {
+      "token": "claims-ok:",
+      "$comment": "For a line that FORBIDS a construction or records its deliberate absence — `no isExactMatch`, `never say \"exact colour\"`. Requires a reason after the token on the same line; a bare marker is itself a failure, because an exemption nobody had to justify is not an exemption."
+    }
+  }
+}

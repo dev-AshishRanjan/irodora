@@ -106,3 +106,6 @@ infra/terraform/.terraform.lock.hcl
 infra/terraform/backend.hcl
 *.tfstate
 *.tfstate.*
+
+# Created and removed by scripts/verify-claims-proof.mjs. Never committed.
+docs/__claims_proof__.md

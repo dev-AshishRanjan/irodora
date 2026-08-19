@@ -84,6 +84,15 @@ jobs:
         if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm lint
 
+      # Not a gate — the proof that the claims lint inside gate 2 can fail (NFR-21, F-025).
+      # Plants each banned construction into a real scanned path and asserts the lint goes red
+      # AND names the right one, with the baseline asserted green either side. TWO cases must
+      # stay GREEN: a `claims-ok:` marker carrying a reason, and the clean fixture — because a
+      # proof where everything is red cannot distinguish a working gate from one that fails on
+      # everything.
+      - name: 'Gate 2 — claims mutation proof'
+        run: node scripts/verify-claims-proof.mjs
+
       - name: 'Gate 3 — format'
         if: hashFiles('pnpm-lock.yaml') != ''
         run: pnpm format:check

@@ -175,12 +175,12 @@ describe('criterion 4, structural half — the output cannot assert identity', (
     ]);
   });
 
-  it('the decoy — an object carrying exactMatch is rejected by the same helper', () => {
+  it('the decoy — an object carrying an exact-match flag is rejected by the same helper', () => {
     // Without this the two assertions above could be passing because `keysOf` is broken rather
     // than because the shape is right [[a-decoy-that-is-not-broken-proves-nothing]].
-    const withClaim = { ...result.candidates[0]!, exactMatch: true };
+    const withClaim = { ...result.candidates[0]!, exactMatch: true }; // claims-ok: the decoy constructs the banned field to prove rejection
     expect(keysOf(withClaim)).not.toEqual(['deltaE00', 'id', 'lab', 'rank', 'similarityPercent']);
-    expect(keysOf(withClaim)).toContain('exactMatch');
+    expect(keysOf(withClaim)).toContain('exactMatch'); // claims-ok: asserts the banned field is present on the decoy, i.e. the check discriminates
   });
 
   it('exposes an id rather than a name — joining it is the API projection', () => {

@@ -39,7 +39,8 @@ export interface NamingResult {
   readonly query: { readonly lab: Triple };
   /**
    * Ranked nearest references. **Never an identification** — see `rank.ts`. There is no `name`
-   * field and no `isExactMatch`: joining an id to an entry's names is the API's projection, and
+   * field and no `isExactMatch` — claims-ok: records the deliberate absence of that field,
+   * which is the ADR-0031 rule being kept, not broken. Joining an id to an entry's names is the API's projection, and
    * a boolean "this is it" is the claim ADR-0031 forbids.
    */
   readonly candidates: readonly NamingCandidate[];
