@@ -62,8 +62,9 @@ sensitive to bucket geometry and the bound is wrong.
 
 ## The destination that has no guard
 
-**ADR-0008 puts the coarse narrowing in Postgres.** If F-047 (text search) or F-016 (catalog
-API) writes a SQL bucket predicate, it is a **second implementation of `labBucketKey`** with no
+**ADR-0008 puts the coarse narrowing in the database** — now SQLite FTS5 rather than Postgres
+(ADR-0051), which changes nothing here. If F-041 (`@irodora/store`) writes a SQL bucket
+predicate, it is a **second implementation of `labBucketKey`** with no
 import edge to this one. Nothing would notice them diverging, and the guarantee proven here
 would silently stop transferring to the API path.
 

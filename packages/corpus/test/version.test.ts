@@ -229,8 +229,8 @@ describe('loading verifies, or refuses', () => {
     //
     // This case is why the per-entry digest covers the DERIVED block as well as the authored
     // record. It did not, at first, on the reasoning that derived values are regenerable — and
-    // this test loaded a tampered hex without complaint, which `apps/api` would then have
-    // served (F-016).
+    // this test loaded a tampered hex without complaint, which the app would then have
+    // rendered.
     expect(() => loadPublishedVersion(stale, root, sha256)).toThrow(/mismatch/u);
   });
 

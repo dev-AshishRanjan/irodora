@@ -60,7 +60,7 @@ describe('the error-code enum is closed', () => {
   });
 
   it('rejects a plausible code we deliberately did not mint', () => {
-    // `quota_exceeded` belongs to F-057 and `corpus_version_unknown` to F-016. Under an
+    // Codes are added by the feature that raises them, never in advance. Under an
     // additive-only rule they cost nothing to add later and cannot be removed once added,
     // so they are absent until something returns them.
     expect(errorCodeSchema.safeParse('quota_exceeded').success).toBe(false);

@@ -61,7 +61,7 @@ export const APCA_LUMINANCE_COEFFICIENTS: LuminanceCoefficients = [0.2126729, 0.
  *
  * The correction is worth **exactly 0 for 8-bit input** (no integer code lies between the two
  * values) and up to **7.55e-7 in luminance** for float input, which is 6.6e-5 in a contrast
- * ratio. Not negligible in principle: the Lens (F-022) produces float sRGB straight from
+ * ratio. Not negligible in principle: the Lens (F-040) produces float sRGB straight from
  * camera samples rather than 8-bit codes.
  *
  * Do not confuse this with the ~2.3e-9 figure in `@irodora/color-spaces`' transfer module.

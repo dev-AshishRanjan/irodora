@@ -66,9 +66,10 @@ there are two digest levels.
 
 **Not built, and it must not be implied.** Immutability here is enforced against *accident* and
 **detected** against *intent*. A committer who edits an entry **and** updates its ledger row in
-the same commit passes every check in this repository. The controls that close it are review of
-a two-file diff and, in production, the audit-logged admin publish path — which does not exist
-until F-061. Gate 11 prints this on every run
+the same commit passes every check in this repository. The control that closes it is review of
+a two-file diff, and **nothing else is coming** — the audit-logged admin publish path was
+withdrawn with the server tier ([ADR-0051](../../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)),
+so repository write access is product write access. Gate 11 prints this on every run
 ([ADR-0046](../../../docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md)).
 
 ## The related risk

@@ -53,7 +53,7 @@ someone is obliged to open the document.
 1. Change `parseEntry` **and** `color-corpus-spec.md` §1 in the same commit. Not the next one.
 2. Run `pnpm test:content`. Every authored entry is re-parsed.
 3. If the change adds or removes a **required** field, write an ADR — it is a contract change
-   that F-012, F-016 and F-061 all build on.
+   that F-012 and every consumer of the shipped bundle build on.
 4. Update the fixture corpora via `node scripts/build-corpus-fixtures.mjs`, and re-run
    `node scripts/verify-content-proof.mjs`. A schema change can quietly stop a mutation from
    discriminating [[a-decoy-written-against-old-values-quietly-stops-discriminating]].

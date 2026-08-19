@@ -8,7 +8,7 @@ import type { Triple } from '@irodora/color-spaces';
  * One indexable record: an identifier and its CIELAB coordinates.
  *
  * **`id`, not a name.** Joining an id back to an entry's kanji, kana and English name is the
- * API's wire projection (F-016). Putting `EntryName` in here would drag the corpus schema into
+ * render layer's job. Putting `EntryName` in here would drag the corpus schema into
  * a package that must produce byte-identical output in Node, the browser and React Native
  * (NFR-3), for no gain — and the ranking does not depend on any of it.
  */

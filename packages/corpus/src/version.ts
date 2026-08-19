@@ -28,8 +28,10 @@
  *
  * Enforced against accident, DETECTED against intent. A committer who edits an entry *and*
  * updates the ledger in the same commit passes; the two-file diff and review are the control,
- * and the audit-logged admin publish path arrives with F-061. Saying so is the point — the
- * word must not imply more than it delivers.
+ * and there is no publish path beyond it: the corpus is authored in this repository and the
+ * admin application was withdrawn with the server tier (ADR-0051). That makes repository write
+ * access product write access, so branch protection is the control here rather than hygiene.
+ * Saying so is the point — the word must not imply more than it delivers.
  */
 
 import { canonicalize } from './canonical.js';
@@ -86,9 +88,10 @@ export type Ledger = readonly LedgerRow[];
  *
  * The first version covered only the authored half, on the reasoning that the derived block is
  * regenerable and the authored one is what immutability is about. A test found the hole that
- * argument leaves: a tampered `hex` in a published bundle loaded clean, and `apps/api` would
- * have served it (F-016). The derived values ARE what a consumer renders, so they are part of
- * the artefact whose integrity is being claimed.
+ * argument leaves: a tampered `hex` in a published bundle loaded clean, and the app would
+ * have rendered it. The derived values ARE what a consumer renders, so they are part of the
+ * artefact whose integrity is being claimed — which is why the digest is verified at load on
+ * the device and not only at build (ADR-0051).
  *
  * The consequence is intended: regenerating a bundle under a changed engine produces different
  * digests, so it is a new version rather than a quiet in-place correction — which is what

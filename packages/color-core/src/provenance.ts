@@ -52,7 +52,7 @@ export type CaptureQuality = 'excellent' | 'good' | 'fair' | 'poor';
  *
  * Deliberately minimal and deliberately all-optional: the fields that can be read reliably
  * differ by platform, and inventing a field the Lens cannot fill would be inviting a
- * placeholder. F-022 and F-040 add what they can actually measure.
+ * placeholder. F-040 (the Lens) adds what it can actually measure.
  */
 export interface DeviceProfile {
   readonly model?: string | undefined;

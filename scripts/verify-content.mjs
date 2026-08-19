@@ -39,8 +39,9 @@
  *
  * Immutability is enforced against accident and DETECTED against intent. A committer who edits
  * an entry *and* updates the ledger in the same commit passes here; the two-file diff and
- * review are the control, and the audit-logged publish path arrives with F-061. That line is
- * printed on every run rather than left for someone to discover.
+ * review are the control, and there is no publish path beyond them — the admin application
+ * was withdrawn with the server tier (ADR-0051), which makes repository write access product
+ * write access. That line is printed on every run rather than left for someone to discover.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -309,8 +310,8 @@ console.log(
   `${DIM}  NOT CHECKED HERE: that a human reviewed an entry (the gate proves two distinct ` +
     `roster identities, not that either read it — F-012 owes that as an attested criterion); ` +
     `and an edit to a published entry made together with a matching ledger update, which is a ` +
-    `two-file diff caught by review and, in production, by the audit-logged publish path ` +
-    `(F-061).${OFF}\n`,
+    `two-file diff caught by review and by nothing else — there is no publish path beyond the ` +
+    `pull request (ADR-0051).${OFF}\n`,
 );
 
 for (const note of notes) console.log(`  ${YELLOW}!${OFF} ${note}\n`);

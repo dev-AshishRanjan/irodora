@@ -24,7 +24,7 @@
  * It catches any edit to a published entry, a reformat that changed a value, a restored
  * backup, and a swapped file. It does **not** catch an editor who changes an entry *and*
  * updates the ledger in the same commit — that is a two-file diff caught by review, and in
- * production by the audit-logged admin publish path (F-061). Saying so here is the point:
+ * review, since the corpus is authored in this repository (ADR-0051). Saying so is the point:
  * "immutable" must not imply more than it delivers (ADR-0046).
  */
 

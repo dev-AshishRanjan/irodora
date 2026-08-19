@@ -10,8 +10,9 @@
  * ## What it is not
  *
  * - **Not a wire schema.** A corpus source entry never crosses a process boundary; it is read
- *   from disk at build time. `@irodora/contracts` owns what the API serves, and F-016 defines
- *   that projection. That is also why there is no Zod here — see `entry.ts`.
+ *   from disk at build time and shipped inside the app as an immutable bundle (ADR-0051).
+ *   `@irodora/contracts` owns validation at the trust boundaries the app still has. That is
+ *   also why there is no Zod here — see `entry.ts`.
  * - **Not a place colour maths lives.** Every derived value is computed by
  *   `@irodora/color-spaces` through `derive.ts`. A conversion written here would be a second
  *   implementation, which `AGENTS.md` §7 calls a defect by definition.

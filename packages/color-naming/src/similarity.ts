@@ -68,7 +68,7 @@ export const SIMILARITY_HALF_LIFE_DELTA_E = 10;
  *   around 150, giving ≈ 0.003 %). It underflows to 0 only far outside that range, which is
  *   noted rather than guarded — a guard would be dead code pretending to be a safety net.
  *
- * Rounding for display is the caller's, and F-022's.
+ * Rounding for display is the caller's, and F-040's.
  */
 export function similarityPercent(deltaE00Value: number): number {
   if (!Number.isFinite(deltaE00Value) || deltaE00Value < 0)

@@ -9,8 +9,13 @@
  *
  * The set below is deliberately small. Under an additive-only rule, under-including is the
  * cheap direction and over-including is the expensive one, so every code here is traceable
- * to a line in `docs/architecture/api-contract.md`. Codes for features that do not exist yet
- * — `quota_exceeded` (F-057), `corpus_version_unknown` (F-016) — are absent on purpose.
+ * closed and versioned. Seven members are now unreachable — `unauthorized`,
+ * `entitlement_required`, `idempotency_key_required`, `idempotency_key_conflict`,
+ * `invalid_cursor`, `rate_limited`, `service_unavailable` — all HTTP concepts retired with the
+ * server tier (ADR-0051). They are deliberately NOT removed yet: the codes a local-first app
+ * needs (`storage_unavailable`, `import_invalid`, `corpus_digest_mismatch`,
+ * `migration_failed`) should be written by the code that raises them, not invented ahead of
+ * it. Revised with the storage layer, under an ADR. See `memory/observations.md`.
  */
 
 import { z } from 'zod';
