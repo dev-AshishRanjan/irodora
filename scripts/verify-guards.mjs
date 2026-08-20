@@ -156,6 +156,19 @@ const GUARDS = [
     source: `export const brand = '#526A6B';\n`,
   },
   {
+    name: 'the store may not reach a Node API from its shipped entry',
+    path: 'packages/store/src/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      'apps/mobile BUNDLES @irodora/store. A node:sqlite or node:fs import reachable from ' +
+      'src/index.ts is a CRASH ON A PHONE, and it is invisible to every gate here — the ' +
+      'tests run in Node, where it resolves perfectly. The Node driver is deliberately behind ' +
+      'its own export (@irodora/store/node) which the app never imports; src/drivers/node.ts ' +
+      'is exempted by explicit path in eslint.config.mjs, never by glob. This is the one ' +
+      'place this package can produce a runtime failure that a green CI run would not see.',
+    source: `import { DatabaseSync } from 'node:sqlite';\nexport const x = DatabaseSync;\n`,
+  },
+  {
     name: 'a component may not hard-code a functional colour notation',
     path: 'packages/ui/src/__guard__.ts',
     rule: 'no-restricted-syntax',

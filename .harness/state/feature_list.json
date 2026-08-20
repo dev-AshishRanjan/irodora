@@ -1136,7 +1136,7 @@
       "service": "packages",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-039"
       ],
@@ -1148,9 +1148,12 @@
       "verification": [
         "state",
         "typecheck",
+        "lint",
+        "format",
         "test",
-        "e2e"
-      ]
+        "build"
+      ],
+      "plan": "plans/F-041-store-sqlite-sqlcipher-sync-shaped-schema.md"
     },
     {
       "id": "F-042",

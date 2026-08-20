@@ -281,6 +281,41 @@ export default tseslint.config(
     },
   },
 
+  // --- The store ships to a phone, so its entry may not reach Node ---------
+  //
+  // `apps/mobile` bundles `@irodora/store`. A `node:*` import reachable from `src/index.ts`
+  // resolves perfectly in every test here — they run in Node — and crashes on a device. It is
+  // the one failure in this package that a fully green CI run would not see.
+  //
+  // `src/drivers/node.ts` is exempted BY EXPLICIT PATH below, never by glob: the Node driver
+  // exists precisely to import `node:sqlite`, and a glob over `drivers/` would exempt whatever
+  // else lands there.
+  {
+    files: ['packages/store/src/**/*.ts'],
+    ignores: ['packages/store/src/drivers/node.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*', 'fs', 'path', 'crypto', 'os', 'better-sqlite3'],
+              message:
+                'apps/mobile bundles this package. A Node API reachable from the store entry ' +
+                'is a crash on a phone that no test here can see. Put it behind a driver ' +
+                'export the app does not import (@irodora/store/node).',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // --- A colour value comes from the manifest, never from a keyboard -------
   //
   // The `contrast` and `cvd` gates read `design-system.manifest.json`. A hex typed into a
