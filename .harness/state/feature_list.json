@@ -1117,17 +1117,19 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-039",
         "F-077"
       ],
       "acceptance": [
-        "VisionCamera frame processors on a worklet thread; the UI thread never blocks on colour maths",
-        "yuv pixel format with conversion in the processor; every frame explicitly disposed",
-        "Capture colour space is read, never assumed; unknown caps the confidence",
-        "Only a small numeric result crosses the bridge; frames are discarded and never written to a file",
-        "All four capture modes, each calling the engine and computing no colour of its own"
+        "Capture colour space is read, never assumed; an unrecognised space is unknown and caps the confidence rather than falling back to sRGB",
+        "Only a bounded numeric sample crosses the bridge; the frame is disposed on the worklet thread and never written to a file",
+        "All four capture modes, each calling the engine and computing no colour of its own, enforced by a lint rather than by review",
+        "VisionCamera frame processors run on a worklet thread and the UI thread never blocks on colour maths",
+        "yuv pixel format with conversion in the processor; every frame explicitly disposed and the pipeline does not stall",
+        "Live pick sustains at least 15 updates per second on the reference device set",
+        "No socket opens during a scan"
       ],
       "verification": [
         "state",
@@ -1137,8 +1139,34 @@
         "test",
         "build"
       ],
-      "notes": "SCOPE CORRECTED WHILE SELECTING IT AFTER F-035. F-040 conflated two features with different verification stories: the SAMPLING MATHS (robust statistics, rejection rules, illumination and quality classification, the confidence rules) and the CAMERA PLUMBING. The maths is fully gateable and belongs in the engine — apps/mobile/AGENTS.md: \"The engine is imported, never ported. Sampling logic, rejection rules and averaging live there\" — and E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, which NO single-platform test can see. Building the camera half first would have forced the maths into the app or stubbed it. Split to F-077, which this now depends on. ALSO CORRECTED: docs/PRD.md scheduled FR-13, FR-14 and FR-15 as \"R1 web · R3 mobile\" — a retired surface AND a release that disagreed with this feature being R2 and must. The feature list is the scope authority (AGENTS.md section 1), so the PRD columns were the stale half. F-074 could not catch this: it matches vocabulary, and a release column is neither a banned word nor a gate id.",
-      "plan": "plans/F-040-colour-lens.md"
+      "notes": "SCOPE CORRECTED WHILE SELECTING IT AFTER F-035. F-040 conflated two features with different verification stories: the SAMPLING MATHS (robust statistics, rejection rules, illumination and quality classification, the confidence rules) and the CAMERA PLUMBING. The maths is fully gateable and belongs in the engine — apps/mobile/AGENTS.md: \"The engine is imported, never ported. Sampling logic, rejection rules and averaging live there\" — and E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, which NO single-platform test can see. Building the camera half first would have forced the maths into the app or stubbed it. Split to F-077, which this now depends on. ALSO CORRECTED: docs/PRD.md scheduled FR-13, FR-14 and FR-15 as \"R1 web · R3 mobile\" — a retired surface AND a release that disagreed with this feature being R2 and must. The feature list is the scope authority (AGENTS.md section 1), so the PRD columns were the stale half. F-074 could not catch this: it matches vocabulary, and a release column is neither a banned word nor a gate id. DONE, with four of seven criteria attested — a property of the feature, not a shortcoming of the work, and stated up front in the plan rather than discovered at the end. THE GATED CORE IS THE PART THAT COULD OTHERWISE ROT: only numbers cross the bridge, enforced by the TYPE (LensReading has no field a frame, buffer, path or URI could be assigned to, asserted with ts-expect-error so it fails on the unused directive if that stops being true); the colour space is read and an unrecognised value is unknown rather than sRGB; all four modes call the engine, proven by recomputing the value independently through @irodora/color-sampling and requiring an exact match. TWO LINTS DO WHAT NO TEST HERE COULD. Colour maths may not drift into the app — E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, both pass their own tests, and nothing runs both. And a frame may not reach disk: a debug write during development is how \"nothing is stored\" stops being true, and it survives review as a one-line change. Both planted and watched firing; 17 boundaries. THE OPEN QUESTION IS RECORDED AT THE SEAM rather than left to whoever first has a phone: can the engine run inside a worklet? Sampling in the worklet and aggregating on the JS thread is what ships; compiling the engine for the worklet runtime is strictly better if it works. Both share this seam. Reimplementing the arithmetic there is forbidden and lint-enforced. A FIXTURE LESSON WORTH KEEPING: three separate tests in this feature initially failed because the ILLUMINATION ceiling for `unknown` (0.6) bound before the thing under test. A region with no highlights classifies unknown, and 0.6 is low enough to mask a mode ceiling of 0.7 and equal to the unknown-space ceiling. Every one of those was the classifier being right and the fixture being wrong — but it also shows that `unknown` illumination is a strong default cap doing real work.",
+      "plan": "plans/F-040-colour-lens.md",
+      "attested": [
+        {
+          "criterion": "VisionCamera frame processors run on a worklet thread and the UI thread never blocks on colour maths",
+          "verifiedBy": "A device run with the frame processor active, watching the UI thread stay responsive under load. THE OPEN QUESTION THIS SETTLES: a worklet cannot call arbitrary JavaScript, so it may not be able to reach @irodora/color-sampling. Two honest answers — sample in the worklet and aggregate on the JS thread (what src/lens/camera.ts does now), or compile the engine for the worklet runtime (strictly better, and it needs a device to find out). Both share the same seam, so choosing the second later is an optimisation rather than a rewrite. The third option — reimplementing the arithmetic in the worklet — is forbidden and there is a lint that fails the build on it.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "yuv pixel format with conversion in the processor; every frame explicitly disposed and the pipeline does not stall",
+          "verifiedBy": "A device run. A retained frame stalls the pipeline within a second or two, so the symptom is obvious once a camera exists and is invisible until then. yuv is roughly 2.6x less bandwidth than rgb, which is why it is the negotiated format rather than a preference.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Live pick sustains at least 15 updates per second on the reference device set",
+          "verifiedBy": "Measured on the reference device set (FR-13). Nothing off-device can measure it, and it is the criterion most likely to force a design change once measured — it is what would push the aggregation into the worklet.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "No socket opens during a scan",
+          "verifiedBy": "The e2e offline suite on a device (NFR-12). The BUILD-TIME half is already gated and has been since F-039: app.config.ts requests no network permission on either platform and explicitly blocks android.permission.INTERNET, so the app cannot open a socket even if a dependency tried. Gate 7 activates with this feature and F-018.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-041",

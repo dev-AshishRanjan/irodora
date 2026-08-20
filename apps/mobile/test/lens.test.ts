@@ -23,6 +23,7 @@ import {
   type CaptureSpace,
   type LensReading,
 } from '../src/lens/reading.js';
+import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera.js';
 import { aggregate, partition, type Region, type Sample } from '@irodora/color-sampling';
 
 const px = (r: number, g: number, b: number): Sample => ({ r, g, b, alpha: 1 });
@@ -163,5 +164,54 @@ describe('only numbers cross the bridge', () => {
     // mean the criterion no longer describes the code.
     const bad: CaptureMode = 'burst';
     void bad;
+  });
+});
+
+describe('the capture colour space is read, never assumed', () => {
+  it('recognises what it knows, and refuses to guess at what it does not', () => {
+    expect(readCaptureSpace('display-p3')).toBe('display-p3');
+    expect(readCaptureSpace('Display P3')).toBe('display-p3');
+    expect(readCaptureSpace('srgb')).toBe('srgb');
+    // Rec.2020 and Adobe RGB are real values a real device can report. Neither is sRGB, and
+    // falling back to sRGB would give a confident answer that is wrong in exactly the
+    // saturated colours this product exists for.
+    expect(readCaptureSpace('rec2020')).toBe('unknown');
+    expect(readCaptureSpace('adobe-rgb')).toBe('unknown');
+    expect(readCaptureSpace(null)).toBe('unknown');
+    expect(readCaptureSpace(undefined)).toBe('unknown');
+    expect(readCaptureSpace('')).toBe('unknown');
+  });
+
+  it('costs confidence when it is unknown, rather than being silently sRGB', () => {
+    // LIT, not GOOD: on a region with no highlights the ILLUMINATION ceiling is also 0.6,
+    // so it binds first and the space ceiling becomes invisible. Third time that has caught a
+    // fixture in this feature — 'unknown' illumination is a strong default cap doing real work.
+    const unknown = read('precision', { region: LIT, space: readCaptureSpace('rec2020') });
+    const known = read('precision', { region: LIT, space: readCaptureSpace('srgb') });
+    expect(unknown.space).toBe('unknown');
+    expect(unknown.confidence).toBeLessThan(known.confidence);
+  });
+});
+
+describe('the sample that crosses the bridge is bounded', () => {
+  it('never returns a stride of zero, which would hang the camera pipeline', () => {
+    // A stride of 0 loops forever on the WORKLET thread. That is not a hang anyone can
+    // debug — the preview simply stops, with no error anywhere.
+    for (const pixels of [0, 1, 999, 2000, 2_073_600]) {
+      expect(`${String(pixels)}:${String(sampleStride(pixels) >= 1)}`).toMatch(/:true$/u);
+    }
+  });
+
+  it('keeps a 1080p frame under the cap', () => {
+    // ~2 million pixels down to at most 2000 — three orders of magnitude, and what crosses is
+    // a flat array of numbers with no reference to the buffer it came from.
+    const pixels = 1920 * 1080;
+    expect(Math.floor(pixels / sampleStride(pixels))).toBeLessThanOrEqual(MAX_SAMPLES_PER_FRAME);
+  });
+
+  it('leaves headroom above FR-15 floor, because rejection happens AFTER the crossing', () => {
+    // Sending exactly 1000 would leave fewer than 1000 usable once specular and shadow
+    // pixels are discarded on the other side.
+    expect(MAX_SAMPLES_PER_FRAME).toBeGreaterThan(1000);
   });
 });

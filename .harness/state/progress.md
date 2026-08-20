@@ -8,6 +8,60 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-040 DONE · the Lens, with four of seven criteria attested
+
+Four of seven attested is a property of this feature, not a shortcoming of the work — none of
+the camera behaviour runs without a device. The plan said which half was which **up front**,
+which is what [ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md)
+exists for.
+
+### Two lints do what no test here could
+
+**Colour maths may not drift into the app.** [E-008](../state/effects.json) records exactly why
+testing cannot catch it: a mobile-only re-implementation makes the same fabric measure
+differently on two surfaces, **both pass their own tests, and nothing runs both.** The
+temptation is specific — a worklet cannot call arbitrary JavaScript, so when the engine will not
+run there, inlining the arithmetic is the easy fix.
+
+**A frame may not reach disk.** A debug write during development is how *"nothing is stored"*
+stops being true, and it survives review as a one-line change.
+
+Both planted and watched firing. 17 boundaries.
+
+### The open question is recorded at the seam
+
+**Can the engine run inside a worklet?** What ships samples in the worklet and aggregates on the
+JS thread; compiling the engine for the worklet runtime is strictly better *if it works*, and
+only a device can say. **Both share the same seam**, so choosing the second later is an
+optimisation rather than a rewrite — which is why the seam is drawn now rather than after
+someone has a phone. The third option, reimplementing the arithmetic there, is forbidden and
+lint-enforced.
+
+### A fixture lesson worth keeping
+
+**Three separate tests in this feature failed because the `unknown` illumination ceiling bound
+before the thing under test.** A region with no highlights classifies `unknown`, and its 0.6
+ceiling is low enough to mask a mode ceiling of 0.7 and exactly equal to the unknown-space
+ceiling. Every one was the classifier being right and the fixture being wrong — and it shows
+that `unknown` illumination is a strong default cap doing real work.
+
+### State
+
+```
+Done:       F-040. Nothing in progress, tree clean.
+Gates:      state 15 (28 warn) · typecheck 29 · lint 30 · format · test 29 · golden
+            build 18 · a11y 18 · contrast 18 · purity · guards 17 · mirror 12 · secrets
+Attested:   4 — worklet threading, yuv and frame disposal, 15 updates/sec, no socket.
+            The build-time half of the last one has been gated since F-039: the app
+            requests no network permission and blocks android.permission.INTERNET.
+Next:       F-068, F-069, F-070 — three small, fully gateable design-system debts that
+            F-017 unblocked. Then F-075 and F-076, both filed this session. F-018 and
+            everything behind it stays blocked on F-012 → OQ-5, a second editorial
+            identity, which is a person rather than a commit.
+```
+
+---
+
 ## 2026-08-20 — F-077 DONE · sampling in the engine, and two flaws its own tests found
 
 Split out of F-040 first, and for a structural reason: F-040 mixed the sampling **maths** with
