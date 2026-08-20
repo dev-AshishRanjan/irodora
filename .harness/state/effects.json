@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-18",
+  "updated": "2026-08-20",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -225,18 +225,27 @@
         {
           "kind": "artifact",
           "ref": "packages/design-tokens/src/generated/tokens.ts"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/ui"
+        },
+        {
+          "kind": "artifact",
+          "ref": "packages/design-tokens/src/generated/native.ts"
         }
       ],
       "kind": "EFFECT_LINK",
       "scope": [
         "docs/design",
         "packages/design-tokens",
-        "apps/mobile"
+        "apps/mobile",
+        "packages/ui"
       ],
       "severity": "high",
       "guard": "gate:contrast",
       "memory": "memory/effects/a-token-change-is-a-contrast-change-in-both-themes.md",
-      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green.",
+      "rationale": "The manifest compiles to CSS, TypeScript, React Native and Tailwind, and BOTH blocking gates read it directly. A token edit therefore changes four build outputs and can break a declared pairing or a semantic CVD pair in either theme — and the two themes are authored independently here, so a change that is safe in light is not automatically safe in dark. As of F-003 the guard is real rather than planned: gate 9 is active and blocking, gate 10 covers the design-system cvdPairs, and scripts/verify-contrast-proof.mjs asserts nine cases with the baseline green in each — eight red, one that must stay green. AS OF F-017 THE MANIFEST REACHES COMPONENTS, and that adds a break the import graph cannot show: a token RENAME now breaks @irodora/ui and apps/mobile with no import edge moving, because components index the generated theme object by string key. The parser also now reads typography, elevation, motion and defaultTheme, which it ignored entirely before — so a manifest edit changes five build outputs rather than four. THE RENDERED HALF OF GATE 9 IS THE NEW GUARD: the conformance suite resolves every colour a component actually paints back to a token and reports an unresolvable one as a FAILURE rather than skipping it, and it caught the home screen rendering light tokens when asked for dark on its first run. The checks read LARGE_TEXT_TOKENS and statusPairing from the generated exports rather than naming tokens, so a newly-classified token is covered without anyone editing them.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -441,6 +450,79 @@
       "memory": "memory/effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md",
       "rationale": "nameColor does not examine the whole corpus: it bounds each Lab bucket below, visits them in increasing bound, and stops when the next bucket cannot beat the k-th best found. That stopping rule is sound ONLY IF boxLowerBoundDeltaE00 never overestimates. Overestimate it — tighten a constant, drop the S_C divisor, simplify the Rt floor — and the search skips a bucket that held a better candidate, returning three plausible colours in a sensible order with nothing thrown. THE OBVIOUS DESIGN IS THE WRONG ONE: a fixed radius is defeated by deltaE00 not being a metric, and measured wrong on 317 of 360 queries, first failing at 45 records. GUARD, in three parts, none sufficient alone: a soundness property over 130k+ seeded samples concentrated where each step of the derivation could fail; the equivalence suite (4,664 records x 120 queries, four limits, bucket steps 1 to 1e6, culori cross-check); and the two decoys — an unsound bound the property must catch and the fixed radius the suite must reject — without which the first two are tests nobody has watched fail. bucketStep INVARIANCE is the load-bearing assertion: identical results at every step, including one bucket for the whole corpus, is what proves correctness does not depend on the tuning parameter. THE DESTINATION WITH NO GUARD: ADR-0008 puts the coarse narrowing in the database — now SQLite FTS5 rather than Postgres (ADR-0051), which changes nothing about this hazard. An F-041 SQL bucket predicate in @irodora/store would be a second implementation of labBucketKey with no import edge — recorded in the memory note so the obligation is inherited rather than rediscovered.",
       "confidence": 0.96,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-016",
+      "from": {
+        "kind": "contract",
+        "ref": "apps/mobile/src/i18n/en.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Home.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/i18n.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:typecheck",
+      "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
+      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-017",
+      "from": {
+        "kind": "content",
+        "ref": "content/colors"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "script:verify-font-coverage.mjs",
+      "memory": "memory/effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md",
+      "rationale": "A corpus publish that introduces a rare kanji — 蘇芳, 纁, 苅安 — produces TOFU on the product's most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS BUILT AND PROVEN BUT NOT YET BLOCKING: verify-font-coverage.mjs parses cmap formats 4 and 12 and its --prove mode builds a synthetic TTF to watch it report a present glyph as covered and an absent one as missing. It exits 1 today because no font asset exists, which is why it is NOT wired into gate:content — wiring a check that cannot pass would make gate 11 permanently red. F-076 carries the asset and the wiring, and until then this link is honestly reporting a check we owe rather than hiding it behind a lowered severity.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

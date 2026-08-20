@@ -23,14 +23,14 @@ It is an argument that we do not believe our own thesis.
 
 | # | Commitment | Enforced by |
 |---|---|---|
-| **A1** | WCAG 2.2 **AA** on every route, web and mobile | `a11y` gate — zero axe A/AA violations |
+| **A1** | WCAG 2.2 **AA** on every component and every screen | `a11y` gate — zero violations over the rendered accessibility tree. Not axe: there is no DOM ([ADR-0055](../adr/0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md)) |
 | **A2** | Colour is **never** the sole channel for any meaning | `contrast` gate + token structure |
 | **A3** | Every colour swatch has an accessible name **and** its numeric value | Component contract + axe |
-| **A4** | Every journey completes by keyboard alone, including the Lens | `e2e` |
+| **A4** | Every journey completes **without touch precision** — VoiceOver and TalkBack gestures, Switch Control, and an external keyboard where the platform supports one | `e2e` on a device. **Rewritten in F-017:** "by keyboard alone" is unsatisfiable on a phone, and an unsatisfiable commitment gets quietly dropped rather than met |
 | **A5** | Every journey completes under simulated CVD | `e2e` with CVD simulation |
-| **A6** | `prefers-reduced-motion` fully honoured; every duration collapses to 0 | Token layer |
+| **A6** | Reduced motion fully honoured; every duration collapses to 0. On a device that is `AccessibilityInfo.isReduceMotionEnabled`, not a CSS media query | Token layer |
 | **A7** | Dynamic Type and text scaling to 200 % without loss of content or function | `e2e` |
-| **A8** | Screen readers: VoiceOver, TalkBack, NVDA verified per release | Release checklist |
+| **A8** | Screen readers: VoiceOver and TalkBack verified per release. NVDA is a Windows screen reader and there is no Windows surface | Release checklist |
 | **A9** | Accessibility features are **never** behind a paywall | [ADR-0027](../adr/0027-monetisation-tiers.md) |
 | **A10** | Real CVD users test the product before every major release | Release checklist |
 
@@ -143,7 +143,7 @@ The hardest surface, and it must work for everyone:
 
 ## 7. Testing
 
-**Automated, every build:** axe on every route (`a11y` gate) · token and surface contrast
+**Automated, every build:** the accessibility tree of every component and screen (`a11y` gate) · token and surface contrast
 (`contrast` gate) · CVD separation of semantic pairs (`cvd` gate) · keyboard journey
 completion (`e2e`) · simulated-CVD journey completion (`e2e`).
 

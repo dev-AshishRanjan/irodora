@@ -121,12 +121,18 @@ the correct-perception answer are the same answer.
 Every component in `@irodora/ui` must:
 
 1. Consume tokens. No literal values.
-2. Define all states: default · hover · **focus-visible** · active · disabled · loading ·
-   error · empty.
-3. Take behaviour from a headless primitive (Radix or Base UI — decided before F-017) rather
-   than reimplementing focus management, keyboard handling or ARIA.
+2. Define every state its **kind** requires — `interactive` (default · focus · active ·
+   disabled · loading), `data` (default · loading · error · empty), `static` (default).
+   The kind is the only lever: a component cannot shorten its own list. There is no
+   `hover` on a touch surface, and the conformance suite asserts that two declared states
+   **render differently**, because a state that returns an identical tree exists in name only.
+3. Take behaviour from **React Native's own primitives** — `Pressable`, `Text`, `Modal`,
+   `FlatList` ([ADR-0054](../adr/0054-react-native-core-primitives-and-ui-stays-a-package.md)).
+   There is no headless library: ADR-0033's argument was ARIA and focus management, and on
+   React Native the accessibility tree *is* the platform's.
 4. Work in both themes and both locales.
-5. Ship with axe assertions in its tests.
+5. Be registered in the conformance registry, or rendered by something that is —
+   `scripts/a11y-scope.mjs` fails on a component reachable from neither.
 6. **Never rely on colour alone** to convey state.
 
 ### Colour components carry two more
@@ -141,22 +147,31 @@ Every component in `@irodora/ui` must:
 
 | Gate | Checks |
 |---|---|
-| `contrast` | Every `pairsWith` combination at the AA minimum its `usage` selects, **both themes**; APCA reported, never substituted; every `srgb` recomputed from its own OKLCh (ADR-0043); `chromaCeiling` on **every** token, exceptions recorded in the manifest. **The scan for colour-only status is NOT implemented** — it needs rendered components and lands with F-017; the gate says so on every run |
-| `a11y` | axe WCAG 2.2 A/AA on every route, zero violations |
+| `contrast` | Every `pairsWith` combination at the AA minimum its `usage` selects, **both themes**; APCA reported, never substituted; every `srgb` recomputed from its own OKLCh (ADR-0043); `chromaCeiling` on **every** token, exceptions recorded in the manifest. The **rendered** half landed in F-017: every colour a component paints must resolve to a token — an unresolvable one is a failure, never a skip — and a `largeText`-only token used below the size floor is reported. Each half prints which one it is, because neither can do the other's job |
+| `a11y` | WCAG 2.2 A/AA over the rendered **accessibility tree**, every component and every screen, zero violations. Not axe — there is no DOM ([ADR-0055](../adr/0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md)). It proves the tree, **not the pixels**: clipping at 200 %, overflow and measured tap-target size stay attested |
 | `cvd` | `cvdPairs` separable at severity 1.0 |
-| `web-perf` | First-load JS per route; LCP; CLS |
+| ~~`web-perf`~~ | Retired with the web surface ([ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)). It was still listed here, and still named in F-017 and F-038, nine months after the gate stopped existing — see F-074 |
 | `lint` | No raw colour literals; no hard-coded user-facing strings; no arbitrary z-index |
 
 ---
 
 ## Still open
 
-- **Primitives:** Radix or Base UI. Base UI is the Radix / MUI Base / Floating UI convergence
-  and is what coss.com/ui is built on. Settle before F-017.
+- ~~**Primitives**~~ — settled: React Native's own
+  ([ADR-0054](../adr/0054-react-native-core-primitives-and-ui-stays-a-package.md)).
 - **Perceptual Atlas arrangement** — colours positioned by hue and lightness rather than in
   rows. Possibly the most distinctive thing on the site, possibly an unnavigable novelty.
   Needs a prototype.
-- **Default theme on first visit** — dark is the primary design; light is the harder case.
+- ~~**Default theme on first visit**~~ — settled: the manifest's `defaultTheme` (`dark`),
+  applied when the platform expresses **no preference**. `unspecified` counts as no
+  preference; a stated `light` is honoured. It had been decided three ways at once —
+  a fallback in a screen, `dark` in the manifest, and "open" here.
 - **The mark** — in-product, or app icon only.
-- **Fonts:** Geist and Geist Mono are intended. Licensing and self-hosting to confirm; the
-  fallback stack is in the manifest.
+- **Fonts:** the Japanese face is a bundled Noto Sans JP subset generated from the corpus
+  ([ADR-0057](../adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md));
+  **F-076** carries the asset. Latin is the platform face — Geist was "intended, licensing to
+  confirm" and nobody confirmed it, and Latin has no tofu failure mode, so the script that can
+  fail silently gets the bundled font and the script that cannot, does not.
+  **The manifest's `families` are CSS stacks and React Native has no fallback cascade**, so
+  the RN target deliberately emits no family name until the asset exists — naming a face the
+  bundle does not carry fails over to the system font silently.

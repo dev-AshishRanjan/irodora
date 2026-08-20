@@ -8,7 +8,99 @@ reader cannot reconstruct.
 
 ---
 
-## 2026-08-20 — F-017 IN PROGRESS · the contract was describing a product we decided not to build
+## 2026-08-20 — F-017 DONE · the interface can no longer express the things it forbids
+
+Eleven increments. The entry below this one covers 1–6; this closes 7–11 and the feature.
+
+### Increments 7 to 11
+
+**7 — i18n.** The catalogue is total by type: `ja: Record<MessageKey, string>` with
+`MessageKey = keyof typeof en`, so a missing **and** an extra key are both `tsc` failures.
+The runtime tests do only what the type cannot see, and the review gap is printed:
+`ja review: 0/9 reviewed, 9 OUTSTANDING (OQ-5)`. Twelfth boundary guard: `JSXText` in screens.
+
+**8 — the colour-literal lint.** Two guards, 14 now. `transparent` is deliberately allowed and
+the config says why. What it cannot catch is written into the config rather than discovered
+later, and the rendered check covers that half.
+
+**9 — the font.** `verify-font-coverage.mjs` parses `cmap` formats 4 and 12; `--prove` builds a
+synthetic TTF so it is watched discriminating today. **It exits 1**, because there is no asset —
+a green exit would claim coverage the app does not have. F-076 carries the asset.
+
+**10 — gate 8 activates, last.** Six real defects planted in real components, each caught, each
+restored. The CI step's removal was watched turning gate 0 red.
+
+**11 — record and close.** E-007 extended, E-016 and E-017 recorded with their notes,
+DESIGN-SYSTEM.md and ACCESSIBILITY.md corrected, `claims.json` moved to F-040.
+
+### What the checks caught, almost all of it in my own work
+
+| | |
+|---|---|
+| CSS `line-height: 1.65` copied to RN | a 15 pt line with **1.65 points** of leading |
+| `icon.check` / `alert` / `cross` | resolved to **nothing** — NFR-9 true of the type, unproven of the render |
+| my own `Swatch` | no `disabled`, no `loading`, `focus` and `active` rendering identically |
+| the home screen | five predicted `foreground.3` findings **and nine unpredicted** |
+| `a11y-scope.mjs` | `Status` and `Icon` in no registry — and a bug of its own skipping generics |
+| `tsc` | `textBreakStrategy` is camelCase; `ColorSchemeName` includes `'unspecified'` |
+| the claims lint | rejected a doc comment of mine that quoted two banned phrases as examples |
+
+**The nine unpredicted findings are the ones worth remembering.** The home screen called
+`useColorScheme()` itself instead of receiving a theme, so asked to render dark it rendered
+**light**. Both themes look correct in isolation and the app only ever asks for one at a time,
+so no amount of looking would have shown it.
+
+### Two mutation runs that changed the design rather than confirming it
+
+**Deleting the RN text-inheritance model turned only ONE of two tests red.** Without the model
+the node falls back to RN's default 14 px — *also* below the large-text floor — so the check was
+right by accident and would have stayed that way. The 22 px counterpart fixture exists because
+that experiment was run.
+
+**One a11y proof case stayed green, and the case was wrong, not the gate.** React Native
+*derives* `accessibilityState.disabled` from the `disabled` prop, so removing only our explicit
+copy leaves the component correct. Worth knowing: our explicit state is belt-and-braces on a
+`Pressable` and load-bearing on anything that is not one.
+
+### Gate 8 activated last, and only after being watched fire
+
+`gates.json` had it as `ciStep: false` with *"asserted inside the app e2e run"*, and
+`verify-state.mjs` **skips the CI-mirror check entirely** for `ciStep: false`. Activating it in
+that shape gives a gate that reads `active`, mirrors nothing and never executes — the F-072
+hazard in a different costume, on the gate carrying NFR-8. `pnpm test:a11y` had also been
+exiting 0 over **zero test files**.
+
+### State
+
+```
+Done:       F-017, all 11 increments, committed and verified
+Gates:      15 GREEN — state · typecheck 26 · lint 27 · format · test 26 · build 16
+                  a11y 18 · contrast 18 · golden · cvd · content · guards 14
+                  purity · mirror 12 · font:prove · security:secrets
+            NOT run — e2e (`pnpm test:e2e` exits 1 by design while no surface declares
+                      the script; removed from F-017's verification for that reason)
+                    · perf (pending, activates with F-038)
+            EXITS 1 BY DESIGN — verify:font, until F-076 lands the asset
+Attested:   3 — the Japanese being reviewed (OQ-5, as F-012), on-device kinsoku,
+            VoiceOver/TalkBack at 200 %
+Split out:  F-074 (gate 0 sees a retired-surface criterion) · F-075 (motion may not
+            animate a colour) · F-076 (the font asset)
+Next:       F-018 (Colour Atlas) and F-041 (@irodora/store) are both unblocked.
+            F-068, F-069 and F-070 also unblock now that F-017 is done.
+```
+
+### For whoever picks this up
+
+- **`content/colors/` is still empty.** The font check, the corpus gate and the naming engine
+  all run over nothing, and each of them says so on every run. F-012 is blocked on OQ-5.
+- **Two test runners.** `packages/ui` and `apps/mobile` are Jest (ADR-0055); everything else is
+  Vitest. Turbo invokes each package's own script, so `pnpm test` covers both.
+- **`scripts/*.mjs` is still unlinted** — `turbo run lint` never reaches it because it lives in
+  no package. Recorded in `observations.md`; it now covers ~22 files including every gate script.
+
+---
+
+## 2026-08-20 — F-017 increments 1–6 · the contract was describing a product we decided not to build
 
 Claimed the lowest-id eligible R2 feature and found that implementing its acceptance criteria
 as written would have built a **Next.js web app**.

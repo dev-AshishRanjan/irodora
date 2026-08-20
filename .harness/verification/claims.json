@@ -60,9 +60,9 @@
     }
   ],
   "provenanceLanguage": {
-    "$comment": "ADR-0031 section 1. NOT YET ENFORCED — deciding whether 'measured' sits near an estimated value needs the render tree, which arrives with F-017/F-039. Recorded here as data so the check has its table when it can run, and the lint prints on every run that this half is unenforced.",
+    "$comment": "ADR-0031 section 1. NOT YET ENFORCED, and F-017 moved this from F-017 to F-040 rather than enforcing it. The render tree now exists, so the mechanism is no longer the blocker — the DATA is. This table is conditional on Provenance.source, and every colour any surface can render today is `declared`: the home screen's samples are declared constants and the corpus is empty. A check whose interesting branches — calibrated, estimated, unknown — cannot be reached would be green because nothing exercises it, which is indistinguishable from being green because the copy is correct. The Lens (F-040) is what first produces an estimated value with a confidence beside it, and that is when the check can discriminate. Recorded here as data so the table exists before the check does, and the lint prints on every run that this half is unenforced.",
     "enforced": false,
-    "activatesWith": "F-017",
+    "activatesWith": "F-040",
     "table": {
       "reference": {
         "may": [
