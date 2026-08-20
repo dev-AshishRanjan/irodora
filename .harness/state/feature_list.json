@@ -1112,24 +1112,22 @@
         "FR-12",
         "NFR-12",
         "FR-13",
-        "FR-14",
-        "FR-15",
-        "FR-17",
-        "FR-18"
+        "FR-14"
       ],
       "service": "mobile",
       "release": "R2",
       "priority": "must",
       "status": "todo",
       "blockedBy": [
-        "F-039"
+        "F-039",
+        "F-077"
       ],
       "acceptance": [
         "VisionCamera frame processors on a worklet thread; the UI thread never blocks on colour maths",
         "yuv pixel format with conversion in the processor; every frame explicitly disposed",
         "Capture colour space is read, never assumed; unknown caps the confidence",
-        "Only a small numeric result crosses the bridge; frames are discarded",
-        "All four capture modes"
+        "Only a small numeric result crosses the bridge; frames are discarded and never written to a file",
+        "All four capture modes, each calling the engine and computing no colour of its own"
       ],
       "verification": [
         "state",
@@ -1137,7 +1135,7 @@
         "test",
         "e2e"
       ],
-      "notes": "Merged with the former F-022 (Web Colour Lens) by ADR-0051 — there is one surface now, so there is one Lens. It carries NFR-12 outright: on a device the claim is not \"the request contained no image\" but \"nothing was sent\", which the e2e charter checks as the process opening no socket."
+      "notes": "SCOPE CORRECTED WHILE SELECTING IT AFTER F-035. F-040 conflated two features with different verification stories: the SAMPLING MATHS (robust statistics, rejection rules, illumination and quality classification, the confidence rules) and the CAMERA PLUMBING. The maths is fully gateable and belongs in the engine — apps/mobile/AGENTS.md: \"The engine is imported, never ported. Sampling logic, rejection rules and averaging live there\" — and E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, which NO single-platform test can see. Building the camera half first would have forced the maths into the app or stubbed it. Split to F-077, which this now depends on. ALSO CORRECTED: docs/PRD.md scheduled FR-13, FR-14 and FR-15 as \"R1 web · R3 mobile\" — a retired surface AND a release that disagreed with this feature being R2 and must. The feature list is the scope authority (AGENTS.md section 1), so the PRD columns were the stale half. F-074 could not catch this: it matches vocabulary, and a release column is neither a banned word nor a gate id."
     },
     {
       "id": "F-041",
@@ -1856,6 +1854,39 @@
         "test"
       ],
       "notes": "SPLIT OUT OF F-017 INCREMENT 9. THE CHECK IS BUILT AND PROVEN; ONLY THE ASSET IS MISSING. scripts/verify-font-coverage.mjs parses cmap formats 4 and 12, collects required codepoints from the corpus and the ja catalogue, and `--prove` builds a synthetic TTF in memory to watch it report a present glyph as covered and an absent one as missing — so it discriminates today rather than being trusted until the day it matters. It currently EXITS 1 with 'no bundled font asset', which is deliberate: the app falls back to the platform face right now, so 'every kanji renders' is unverified rather than verified, and a green exit would say the opposite. It is therefore NOT yet wired into gate:content — wiring a check that cannot pass would make gate 11 permanently red. WHY IT IS A SEPARATE FEATURE: acquiring and committing a multi-megabyte font binary, plus the subsetting pipeline that regenerates it, is not something the F-017 session could do, and faking it would have been worse than recording it. THE DECOY IS 纁 U+7E81 (sohi), a real traditional colour name outside JIS X 0208 Level 1+2 — verified rather than assumed, because the first draft used U+7E41, which is 繁, a common kanji, and a decoy that is not the thing it claims to be is one nobody will re-examine."
+    },
+    {
+      "id": "F-077",
+      "title": "Colour sampling and capture assessment in the engine",
+      "requirements": [
+        "FR-15",
+        "FR-17",
+        "FR-18"
+      ],
+      "service": "packages",
+      "release": "R2",
+      "priority": "must",
+      "status": "in_progress",
+      "blockedBy": [],
+      "acceptance": [
+        "Robust statistics over a sampling region: median, trimmed mean, variance and a confidence, over at least 1000 samples",
+        "Rejection rules for specular highlights, extreme shadows, transparent and background pixels, each with a test that a rejected pixel would have changed the answer",
+        "Illumination is classified as daylight, warm indoor, cool indoor, mixed, low light or unknown, and mixed or low light reduces the reported confidence",
+        "Capture quality is classified excellent, good, fair or poor from exposure, blur, illumination uniformity, sample area and colour variance; poor blocks a confident claim and returns an actionable instruction",
+        "Averaging happens in linear light, and a golden case proves the non-linear route is measurably darker",
+        "Zero runtime dependencies, no node: imports, no platform APIs — the engine purity rules apply in full"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "color-golden",
+        "build"
+      ],
+      "notes": "SPLIT OUT OF F-040 WHILE SELECTING IT. F-040 mixed the sampling MATHS with the camera PLUMBING, and the two have opposite verification stories: this half is fully gateable with no device, and the other half is almost entirely a device attestation. Keeping them together would have meant either stubbing the maths or writing it in apps/mobile — which apps/mobile/AGENTS.md forbids in terms (\"the engine is imported, never ported\") and which E-008 records as the defect no single-platform test can see, because the same fabric would measure differently on two surfaces. THE TRAP THIS FEATURE MUST NOT FALL INTO is recorded in memory already: averaging non-linear sRGB is the most common colour bug there is and it always makes the result too dark [[averaging-non-linear-srgb-reads-too-dark]]. That is why a golden case proving the wrong route is measurably darker is an acceptance criterion rather than a test someone might write.",
+      "plan": "plans/F-077-colour-sampling-and-capture-assessment.md"
     }
   ]
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@irodora/color-sampling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pixels to one colour, with an honest confidence. Engine zone: zero runtime dependencies, no platform APIs.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:golden": "vitest run --config vitest.golden.config.ts",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/color-spaces": "workspace:*",
+    "@irodora/color-core": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  }
+}

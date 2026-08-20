@@ -165,15 +165,15 @@ retired, not reused.
 | **FR-9** | Every colour value carries `{space, source, confidence, conditions}` where source ∈ estimated \| calibrated \| declared \| reference | The type system makes an unclassified colour unrepresentable; a UI component cannot render a colour without also having its provenance | R1 |
 | **FR-10** | Every derived result carries its reproducibility envelope: engine, corpus, rules, profile versions | Re-running a stored envelope against the same inputs reproduces the result byte-identically; asserted in a regression test | R1 |
 | **FR-11** | Every score carries a structured explanation of the factors that produced it | Explanation objects are data (factor, direction, magnitude), rendered by the UI and asserted in tests — never free text generated at display time | R3 |
-| **FR-12** | The full engine runs offline, client-side, with no network | Web and mobile execute Lens, harmony, naming, CVD and compatibility with the network disabled; asserted in e2e | R2 |
+| **FR-12** | The full engine runs offline, client-side, with no network | The app executes Lens, harmony, naming, CVD and compatibility with the network disabled; asserted in e2e | R2 |
 
 ### 5.2 Colour capture — the Lens
 
 | ID | Requirement | Accepts when | R |
 |---|---|---|---|
-| **FR-13** | **Live pick** — continuous colour under a crosshair | Sustains ≥ 15 updates/sec on the reference device set; shows name, hex and OKLCH live | R1 web · R3 mobile |
-| **FR-14** | **Garment scan** — capture a garment, user selects the fabric region | Region selection is required before a result is shown when automatic region confidence is below threshold | R1 web · R3 mobile |
-| **FR-15** | **Precision pick** — robust statistics over a sampling region, not one pixel | Samples ≥ 1 000 pixels; rejects specular highlights, extreme shadows, transparent and background pixels; returns median, trimmed mean, variance and confidence | R1 web · R3 mobile |
+| **FR-13** | **Live pick** — continuous colour under a crosshair | Sustains ≥ 15 updates/sec on the reference device set; shows name, hex and OKLCH live | R2 |
+| **FR-14** | **Garment scan** — capture a garment, user selects the fabric region | Region selection is required before a result is shown when automatic region confidence is below threshold | R2 |
+| **FR-15** | **Precision pick** — robust statistics over a sampling region, not one pixel | Samples ≥ 1 000 pixels; rejects specular highlights, extreme shadows, transparent and background pixels; returns median, trimmed mean, variance and confidence | R2 |
 | **FR-16** | **Calibrated scan** — correction from a physical reference card | With a supported card in frame, mean ΔE00 against reference patches improves by ≥ 50 % versus uncalibrated on the device test matrix; result is labelled `calibrated` | R5 |
 | **FR-17** | Assess illumination: daylight, warm indoor, cool indoor, mixed, low light, unknown | Classification is shown before the result and reduces reported confidence in mixed and low-light conditions | R2 |
 | **FR-18** | Classify capture quality (excellent/good/fair/poor) from exposure, blur, illumination uniformity, sample area and colour variance | Poor quality blocks a confident claim and returns a specific, actionable instruction ("move closer; avoid mixed lighting") | R2 |

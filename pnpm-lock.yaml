@@ -236,6 +236,19 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(terser@5.50.0)(yaml@2.9.0))
 
+  packages/color-sampling:
+    dependencies:
+      '@irodora/color-core':
+        specifier: workspace:*
+        version: link:../color-core
+      '@irodora/color-spaces':
+        specifier: workspace:*
+        version: link:../color-spaces
+    devDependencies:
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(terser@5.50.0)(yaml@2.9.0))
+
   packages/color-spaces:
     devDependencies:
       '@irodora/testing':
