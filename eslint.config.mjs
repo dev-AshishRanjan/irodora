@@ -281,6 +281,52 @@ export default tseslint.config(
     },
   },
 
+  // --- A colour value comes from the manifest, never from a keyboard -------
+  //
+  // The `contrast` and `cvd` gates read `design-system.manifest.json`. A hex typed into a
+  // component is outside both of them, and it looks exactly like a value that passed —
+  // which is the whole reason ADR-0043 made `srgb` derived rather than authored.
+  //
+  // Scoped to what SHIPS. `test/` is excluded on purpose and by explicit path rather than by
+  // glob: the harness fixtures exist to render a hand-typed hex so the rendered check can be
+  // watched catching one, and a glob would exempt whatever else drifts into `test/` later.
+  //
+  // WHAT THIS DOES NOT CATCH, stated so a green run is not read as more than it is: a colour
+  // assembled at runtime (`'#' + value`), a named CSS colour outside the short list below,
+  // and anything arriving through a variable. The rendered conformance check is what covers
+  // those — it resolves what was actually painted, and reports an unresolvable value as a
+  // failure rather than skipping it.
+  {
+    files: [
+      'packages/ui/src/**/*.{ts,tsx}',
+      'apps/mobile/app/**/*.tsx',
+      'apps/mobile/src/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$/]',
+          message:
+            'A hex colour belongs in docs/design/design-system.manifest.json, not in source. ' +
+            'The contrast and cvd gates read the manifest; a value typed here is checked by ' +
+            'neither and is indistinguishable from one that passed. Import it from ' +
+            '@irodora/design-tokens.',
+        },
+        {
+          // `transparent` is deliberately absent: it is the absence of a colour, it makes no
+          // claim a gate could check, and RN's border-triangle trick has no alternative.
+          selector:
+            'Literal[value=/^(?:rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color-mix)\\(/], Literal[value=/^(?:red|green|blue|black|white|gray|grey|yellow|orange|purple|pink|cyan|magenta)$/]',
+          message:
+            'A colour value belongs in docs/design/design-system.manifest.json, not in ' +
+            'source. Import it from @irodora/design-tokens. (`transparent` is allowed — it ' +
+            'is the absence of a colour and makes no claim a gate could check.)',
+        },
+      ],
+    },
+  },
+
   // --- User-facing copy lives in the catalogue, never in a screen ----------
   //
   // NFR-11: "no hard-coded user-facing string". The catalogue is the mechanism (ADR-0056) and

@@ -144,6 +144,27 @@ const GUARDS = [
       'what stops a screen going around it.',
     source: `export function Guard(): React.JSX.Element {\n  return <>Hard-coded copy</>;\n}\n`,
   },
+  {
+    name: 'a component may not hard-code a hex colour',
+    path: 'packages/ui/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'The contrast and cvd gates read design-system.manifest.json. A hex typed into a ' +
+      'component is checked by neither, and looks exactly like a value that passed — which ' +
+      'is why ADR-0043 made the srgb field derived rather than authored. F-039 found the ' +
+      'mirror image of this: a generated target nobody could import.',
+    source: `export const brand = '#526A6B';\n`,
+  },
+  {
+    name: 'a component may not hard-code a functional colour notation',
+    path: 'packages/ui/src/__guard__.ts',
+    rule: 'no-restricted-syntax',
+    must:
+      'The hex form is the obvious one to ban and the easy one to route around. rgba() is ' +
+      'what a translucent value is actually written as, and the manifest already emits both ' +
+      'the rgba() form and the pre-composited hex precisely so a component never has to.',
+    source: `export const veil = 'rgba(0, 0, 0, 0.14)';\n`,
+  },
 ];
 
 const GREEN = '\x1b[32m',

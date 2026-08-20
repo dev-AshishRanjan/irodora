@@ -1763,6 +1763,32 @@
         "state"
       ],
       "notes": "FOUND WHILE CLAIMING F-017, whose own acceptance still named Next.js 16, Server Components, axe and a `web-perf` gate nine months after ADR-0051 retired the web surface and four features after apps/mobile shipped. The R2 criteria were rewritten in F-017 and docs/PRD.md FR-20 and FR-50 were corrected with them. THIS FEATURE IS THE PART THAT MATTERS: nothing failed. Gate 0 checks that every requirement id resolves, that every path exists and that the ADR index is consistent — and passed green the whole time, because a criterion naming a surface that no longer exists is still a well-formed string. A feature list is the scope subsystem; a stale criterion in it is not cosmetic, it is a contract that would have had F-017 build a Next.js app. The guard belongs on gate 0 for the same reason the golden-rule scan does: prose in a state file rots silently and nothing else reads it. SCOPE CONFIRMED BY THE F-017 EVALUATION: the first sweep claimed exactly three survivors and missed two more — F-041 still said \"Tokens and keys in SecureStore\" on the line above one the same commit rewrote, and docs/PRD.md still measured accessibility as \"axe A/AA violations in the gate\", a live metric bound to the gate F-017 owns. Both are fixed now, and both are exactly what this guard must catch: a human sweeping by eye missed two of five. The check must cover the PRD metrics table and every acceptance array, not only the criteria a reader happens to be looking at."
+    },
+    {
+      "id": "F-075",
+      "title": "Motion may not animate a colour, and a gate can see it",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R2",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-017"
+      ],
+      "acceptance": [
+        "An animated backgroundColor, borderColor or tintColor on a colour sample fails a check, naming the component and the property",
+        "The check proves itself by planting exactly that animation and watching it go red, then restoring",
+        "motion.forbidden in the manifest is the source of the banned list, never a copy of it in the checker"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "SPLIT OUT OF F-017 INCREMENT 8 RATHER THAN LEFT AS A NOTE. The colour-literal lint landed; this did not, and the reason is that it is not a lint. `motion.forbidden` says 'background-color on a swatch' and 'cross-fade between samples' — both require knowing that the animated node IS a sample, which static analysis cannot see: the component is `Animated.View`, the property is a variable, and whether it is a swatch depends on composition. A rule matching every animated colour anywhere would fire on a legitimate opacity cross-fade of chrome and be switched off within a week, which is worse than no rule. THE REASON IT MATTERS: intermediate frames of a colour transition are PLAUSIBLE colours that never existed, so a user reads a value the engine never produced — and for a colour product that is a correctness defect, not a polish one. The likely shape is a rendered check in the conformance suite rather than a lint: the tree walkers already resolve what a node paints, and an Animated node carries its driver in props. `nativeMotion.forbidden` is already emitted to the app for exactly this, so the checker reads the manifest rather than carrying its own copy."
     }
   ]
 }
