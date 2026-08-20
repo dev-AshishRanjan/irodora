@@ -8,6 +8,68 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-041 IN PROGRESS · the store, and the pragma that enforces nothing by default
+
+Increments 1–4 of 6 committed and green: schema, migrations, repository, Node driver,
+conformance suite, import guard.
+
+### The decision it turns on
+
+**The database cannot be tested on the thing it ships on.** `expo-sqlite` needs a device; CI is
+a Windows runner with none. So: one repository interface, **two drivers**, one conformance suite
+run against both — `node:sqlite` in CI (built into Node 24, SQLite 3.53.3, zero dependencies)
+and `expo-sqlite` on the device, attested.
+
+The limit is stated as **data**, not as a comment: the driver carries `encryptsAtRest: false`,
+the suite prints which driver it ran, and a test asserts it. SQLCipher is not in `node:sqlite`,
+so a green CI run says nothing at all about encryption at rest.
+
+### `PRAGMA foreign_keys` is the subject of the suite
+
+SQLite defaults it **off**, and it is **per connection**. A schema full of `REFERENCES` clauses
+enforces nothing unless the pragma runs every time — it looks correct in the DDL, passes every
+test that does not deliberately violate a key, and accumulates orphans silently. So the check
+watches a bad write **fail**, never reads the pragma back: reading it back only asserts a line
+executed.
+
+**Writing that test found the trap underneath it.** `PRAGMA foreign_keys` is a **no-op inside a
+transaction**. My first mutation turned it off right after the `user_version` bump — which is
+inside the migration's transaction — so it did nothing, and the test failed for a reason
+unrelated to the check. A codebase that sets the pragma somewhere harmless has foreign keys off
+and no way to notice.
+
+### The guard no test could replace
+
+`apps/mobile` **bundles** this package, so a `node:sqlite` import reachable from `src/index.ts`
+is a crash on a phone — and it is invisible to every gate here, because the tests run in Node
+where it resolves perfectly. The Node driver is behind `@irodora/store/node`, and
+`src/drivers/node.ts` is exempted **by explicit path, never by glob**.
+
+### State
+
+```
+Done:       F-041 increments 1–4 of 6; nothing half-finished, tree clean
+Gates:      state 15 · typecheck 27 · lint 28 · format · test 27 · build 17
+            a11y 18 · contrast 18 · content · guards 15 · purity · mirror 12 · secrets
+Next:       increment 5 — the expo-sqlite driver and expo-secure-store key handling,
+            wired into apps/mobile and running the SAME suite. Gated: no key value
+            reaches the database or the bundle. Attested: SQLCipher actually
+            encrypting, and a write surviving a force-quit mid-transaction.
+```
+
+### Two things deliberately not done
+
+**Drizzle is named in ADR-0051 §2 and is not here.** It is a query builder over a driver, and
+adding it before the repository interface existed would have settled the interface by accident.
+If it earns its place it is a follow-up; if it does not, that is a deviation from ADR-0051
+needing a record.
+
+**`change_log` is written and read by nothing.** ADR-0051 §6 is explicit that it is not an
+outbox — an outbox implies a destination and a delivery guarantee, and building either before
+there is a second device is the mistake the rehaul corrected.
+
+---
+
 ## 2026-08-20 — F-074 DONE · gate 0 reads the prose now, not only the structure
 
 The guard F-017 filed against itself. Every check in gate 0 read **structure**; this one reads
