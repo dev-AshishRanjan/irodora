@@ -21,5 +21,8 @@ export {
 export { Text, type ColorFor, type LargeTypeSize, type TextProps, type TypeSize } from './Text.js';
 export { Icon, ICON_TOKENS, type IconProps, type IconToken } from './Icon.js';
 export { Status, type StatusProps } from './Status.js';
+export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
+export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
+export { Swatch, swatchAccessibleName, type SwatchProps } from './Swatch.js';
 
 export const UI_VERSION = '0.0.0' as const;

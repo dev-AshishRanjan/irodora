@@ -20,3 +20,13 @@ export {
 } from './tree.js';
 
 export { isStatusToken, resolveColor, tokensForValue, type ColorResolution } from './tokens.js';
+
+export {
+  checkAll,
+  checkSubject,
+  formatFindings,
+  REQUIRED_STATES,
+  type ComponentKind,
+  type ConformanceSubject,
+  type Finding,
+} from './conformance.js';

@@ -138,3 +138,38 @@ export function NoFontScaling(): React.JSX.Element {
     </Text>
   );
 }
+
+/**
+ * DECOY 7 — declares every state and renders the same tree for all of them.
+ *
+ * This is the one the conformance suite exists for. It has a role, a real accessible name, a
+ * declared tap target, tokens for every colour — it passes every other check in the suite —
+ * and its `disabled` state is byte-identical to its `default`. A state defined in name only
+ * is the failure a checklist review never catches, because the checklist item is ticked.
+ */
+export function BadStates(): React.JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Save this palette"
+      style={{ minWidth: 44, minHeight: 44, backgroundColor: t['surface.2'] }}
+      onPress={() => undefined}
+    >
+      <Text style={{ fontSize: 22, color: t.foreground }}>Save</Text>
+    </Pressable>
+  );
+}
+
+/** DECOY 8 — a pressable whose accessible name is its own type. See `TypeNamedPressable`. */
+export function GenericName(): React.JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Swatch"
+      style={{ minWidth: 44, minHeight: 44, backgroundColor: t['swatch.well'] }}
+      onPress={() => undefined}
+    >
+      <Text style={{ fontSize: 22, color: t.foreground }}>Ai-nezumi</Text>
+    </Pressable>
+  );
+}
