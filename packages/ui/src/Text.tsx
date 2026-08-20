@@ -64,12 +64,26 @@ export function Text<S extends TypeSize>({
 }: TextProps<S>): React.JSX.Element {
   const { colors } = useTheme();
   const step = nativeType[script][size];
+  const japanese = script === 'japanese';
   return (
     <RNText
       // Dynamic Type is never disabled, and the multiplier is never capped below 2 — A7
       // requires text to scale to 200% without loss of content or function.
       allowFontScaling
       maxFontSizeMultiplier={2}
+      // KINSOKU SHORI — Japanese line-breaking rules: a line may not begin with 、。」or a
+      // small kana, and may not end with 「. React Native does not implement this; it asks
+      // the PLATFORM text engine to. So what is checkable here is that we asked, in the form
+      // each platform understands, and nothing more:
+      //   iOS     `lineBreakStrategyIOS: 'push-out'` enables Core Text's Japanese strategy
+      //   Android `textBreakStrategy: 'highQuality'` selects the ICU line breaker. NOTE the
+      //           camelCase — RN's prop is NOT the Android native constant `high_quality`,
+      //           and the type caught that here rather than a device doing so later.
+      // Whether the result is CORRECT is a device attestation on F-017, because a JS render
+      // tree has no text engine in it at all.
+      {...(japanese
+        ? { lineBreakStrategyIOS: 'push-out' as const, textBreakStrategy: 'highQuality' as const }
+        : {})}
       {...rest}
       style={{ ...step, color: colors[color] }}
     >

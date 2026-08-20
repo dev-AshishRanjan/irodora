@@ -37,7 +37,9 @@
     "verify:unsafe": "node scripts/verify-unsafe-call-sites.mjs",
     "verify:pin": "node scripts/verify-contract-pin.mjs",
     "verify:claims": "node scripts/verify-claims.mjs",
-    "verify:claims:prove": "node scripts/verify-claims-proof.mjs"
+    "verify:claims:prove": "node scripts/verify-claims-proof.mjs",
+    "verify:font": "node scripts/verify-font-coverage.mjs",
+    "verify:font:prove": "node scripts/verify-font-coverage.mjs --prove"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

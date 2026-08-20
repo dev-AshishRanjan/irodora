@@ -251,3 +251,50 @@ describe('Text applies the scale and cannot express the pairing that fails AA', 
     void bad;
   });
 });
+
+describe('Japanese line breaking is REQUESTED, which is all a render tree can prove', () => {
+  it('passes both platform strategies for Japanese', () => {
+    // Kinsoku shori — a line may not begin with a Japanese comma or a small kana. React
+    // Native does not implement it; it asks the PLATFORM text engine to. So the gated half
+    // is that we asked, in the form each platform understands.
+    const json = JSON.stringify(
+      tree(
+        wrap(
+          <Text size="body" color="foreground" script="japanese">
+            藍鼠、それから
+          </Text>,
+          'light',
+        ),
+      ),
+    );
+    expect(json).toContain('push-out');
+    expect(json).toContain('highQuality');
+  });
+
+  it('does NOT pass them for Latin, where they do not apply', () => {
+    // Without this, the assertion above would pass on a component that sets them
+    // unconditionally — which would be wrong, not merely wasteful: `push-out` changes
+    // justification behaviour for Latin text too.
+    const json = JSON.stringify(
+      tree(
+        wrap(
+          <Text size="body" color="foreground">
+            Ai-nezumi
+          </Text>,
+          'light',
+        ),
+      ),
+    );
+    expect(json).not.toContain('push-out');
+    expect(json).not.toContain('highQuality');
+  });
+
+  // WHETHER THE BREAKING IS CORRECT IS NOT KNOWABLE HERE. There is no text engine in a JS
+  // render tree, so no assertion in this file can see where a line actually broke. F-017
+  // carries "Kinsoku line breaking is correct on a device, on iOS and on Android" as an
+  // ATTESTED criterion for exactly that reason.
+  //
+  // Written as a comment rather than as a passing test. `expect(true).toBe(true)` under a
+  // descriptive name reads as coverage in a test report and is worth nothing — which is one
+  // of the six assertion shapes this feature's plan lists as grounds for rejection.
+});
