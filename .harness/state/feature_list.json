@@ -1862,21 +1862,25 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-017"
       ],
       "acceptance": [
-        "An animated backgroundColor, borderColor or tintColor on a colour sample fails a check, naming the component and the property",
+        "An animated style property outside motion.animatable fails a check, naming the file, the component and the property",
         "The check proves itself by planting exactly that animation and watching it go red, then restoring",
-        "motion.forbidden in the manifest is the source of the banned list, never a copy of it in the checker"
+        "motion.animatable in the manifest is the source of the allowed list, never a copy of it in the checker"
       ],
       "verification": [
         "state",
+        "typecheck",
         "lint",
-        "test"
+        "format",
+        "test",
+        "build"
       ],
-      "notes": "SPLIT OUT OF F-017 INCREMENT 8 RATHER THAN LEFT AS A NOTE. The colour-literal lint landed; this did not, and the reason is that it is not a lint. `motion.forbidden` says 'background-color on a swatch' and 'cross-fade between samples' — both require knowing that the animated node IS a sample, which static analysis cannot see: the component is `Animated.View`, the property is a variable, and whether it is a swatch depends on composition. A rule matching every animated colour anywhere would fire on a legitimate opacity cross-fade of chrome and be switched off within a week, which is worse than no rule. THE REASON IT MATTERS: intermediate frames of a colour transition are PLAUSIBLE colours that never existed, so a user reads a value the engine never produced — and for a colour product that is a correctness defect, not a polish one. The likely shape is a rendered check in the conformance suite rather than a lint: the tree walkers already resolve what a node paints, and an Animated node carries its driver in props. `nativeMotion.forbidden` is already emitted to the app for exactly this, so the checker reads the manifest rather than carrying its own copy."
+      "notes": "DONE. TWO FINDINGS SHAPED THIS BEFORE A LINE WAS WRITTEN, and both came from probing rather than reasoning. FIRST: THE RENDERED TREE CANNOT SEE IT. An Animated.View with an interpolated backgroundColor renders to { style: { backgroundColor: \"rgba(0, 0, 0, 1)\" } } — a CONCRETE RESOLVED VALUE, indistinguishable from a static colour. The conformance suite, which sees everything else in this product, is structurally blind here. So it had to be source analysis, and the F-040 plan's guess that \"an Animated node carries its driver in props\" was simply wrong. SECOND: motion.forbidden CANNOT BE THE SOURCE OF THE LIST. Its entries are prose — \"background-color on a swatch\", \"cross-fade between samples\" — and nothing mechanical derives from them. But motion.animatable IS a property list, and it is the same rule stated POSITIVELY: only these may be animated. So the allowlist is genuinely derived from the manifest after all, which is what the acceptance criterion was reaching for. The criterion was rewritten to name `animatable` rather than `forbidden`, because that is the one that can be true. THE CHECK REFUSES TO FALL BACK. If @irodora/design-tokens is not built it THROWS rather than using a hard-coded list, because a copy of the manifest beside the manifest is exactly what this check exists to avoid. PROVEN IN FOUR CASES, and the two that must NOT fire are the ones that keep it usable: an animated backgroundColor and an animated width are rejected; an animated opacity and transform are allowed. A check that flagged all animation would be switched off within a week. The baseline is asserted clean before anything is planted, because a plant proves nothing otherwise. ITS LIMITS PRINT ON EVERY RUN: a style assembled at runtime, spread from a variable, or built by a helper is invisible to it. That is the difference between a check and a claim, and it matters more here than usual because the rendered tree — the thing that would normally cover the gap — cannot see this at all. WHY IT MATTERS: the intermediate frames of a colour transition are PLAUSIBLE colours that never existed, so a user reads a value the engine never produced. For this product that is a correctness defect, not a polish one.",
+      "plan": "plans/F-075-motion-may-not-animate-a-colour.md"
     },
     {
       "id": "F-076",
