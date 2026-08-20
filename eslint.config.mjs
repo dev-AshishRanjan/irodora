@@ -281,6 +281,65 @@ export default tseslint.config(
     },
   },
 
+  // --- The Lens may not compute colour, and may not keep a frame ------------
+  //
+  // Two rules, and NEITHER is checkable by any test that runs here, which is why they are
+  // lints rather than assertions.
+  //
+  // 1. COLOUR MATHS MAY NOT DRIFT INTO THE APP. apps/mobile/AGENTS.md: "The engine is
+  //    imported, never ported." E-008 records why it cannot be caught by testing: a
+  //    mobile-only re-implementation makes the same fabric measure differently on two
+  //    surfaces, both surfaces pass their own tests, and nothing runs both. The temptation is
+  //    specific — a worklet cannot call arbitrary JavaScript, so when the engine will not run
+  //    there the easy fix is to inline the arithmetic.
+  //
+  // 2. A FRAME MAY NOT REACH DISK. NFR-12 and ADR-0026: ordinary colour detection never
+  //    transmits or stores imagery. A debug write during development is how that stops being
+  //    true, and it would survive review as a one-line change.
+  {
+    files: ['apps/mobile/src/lens/**/*.{ts,tsx}', 'apps/mobile/app/**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['expo-file-system', 'expo-media-library', 'node:fs', 'fs'],
+              message:
+                'A camera frame may never be written to a file (NFR-12, ADR-0026). The frame ' +
+                'is disposed on the worklet thread and only a small numeric result crosses ' +
+                'the bridge. If a surface here genuinely needs the filesystem, it is not the ' +
+                'Lens and it does not belong in this directory.',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'cbrt',
+          message:
+            'Colour maths belongs in @irodora/color-sampling, never in the app. The engine is ' +
+            'imported, never ported (apps/mobile/AGENTS.md) — a mobile-only implementation ' +
+            'makes the same fabric measure differently on two surfaces, and E-008 records ' +
+            'that no single-platform test can see it.',
+        },
+        {
+          object: 'Math',
+          property: 'pow',
+          message:
+            'A gamma curve in the app is a second colour engine. Import @irodora/color-spaces.',
+        },
+      ],
+    },
+  },
+
   // --- The store ships to a phone, so its entry may not reach Node ---------
   //
   // `apps/mobile` bundles `@irodora/store`. A `node:*` import reachable from `src/index.ts`

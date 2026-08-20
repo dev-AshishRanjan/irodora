@@ -21,6 +21,7 @@
     "@irodora/color-core": "workspace:*",
     "@irodora/color-difference": "workspace:*",
     "@irodora/color-naming": "workspace:*",
+    "@irodora/color-sampling": "workspace:*",
     "@irodora/color-spaces": "workspace:*",
     "@irodora/contracts": "workspace:*",
     "@irodora/corpus": "workspace:*",
@@ -36,7 +37,8 @@
     "react": "19.2.3",
     "react-native": "0.86.2",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0"
+    "react-native-screens": "~4.26.0",
+    "react-native-vision-camera": "^5.2.2"
   },
   "devDependencies": {
     "@testing-library/react-native": "13.3.3",

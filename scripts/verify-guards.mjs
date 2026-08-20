@@ -156,6 +156,32 @@ const GUARDS = [
     source: `export const brand = '#526A6B';\n`,
   },
   {
+    name: 'the Lens may not write a frame to a file',
+    path: 'apps/mobile/src/lens/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      'NFR-12 and ADR-0026: ordinary colour detection never transmits or stores imagery. The ' +
+      'frame is disposed on the worklet thread and only a small numeric result crosses the ' +
+      'bridge. A debug write during development is how that stops being true, and it would ' +
+      'survive review as a one-line change.',
+    source: `import * as FileSystem from 'expo-file-system';
+export const x = FileSystem;
+`,
+  },
+  {
+    name: 'the Lens may not compute colour itself',
+    path: 'apps/mobile/src/lens/__guard__.ts',
+    rule: 'no-restricted-properties',
+    must:
+      'apps/mobile/AGENTS.md: "The engine is imported, never ported." E-008 records why no ' +
+      'test can catch this — a mobile-only re-implementation makes the same fabric measure ' +
+      'differently on two surfaces, both pass their own tests, and nothing runs both. The ' +
+      'temptation is specific: a worklet cannot call arbitrary JavaScript, so when the engine ' +
+      'will not run there the easy fix is to inline the arithmetic.',
+    source: `export const linear = (v: number): number => Math.pow((v + 0.055) / 1.055, 2.4);
+`,
+  },
+  {
     name: 'the store may not reach a Node API from its shipped entry',
     path: 'packages/store/src/__guard__.ts',
     rule: 'no-restricted-imports',

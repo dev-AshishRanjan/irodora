@@ -1117,7 +1117,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-039",
         "F-077"
@@ -1132,10 +1132,13 @@
       "verification": [
         "state",
         "typecheck",
+        "lint",
+        "format",
         "test",
-        "e2e"
+        "build"
       ],
-      "notes": "SCOPE CORRECTED WHILE SELECTING IT AFTER F-035. F-040 conflated two features with different verification stories: the SAMPLING MATHS (robust statistics, rejection rules, illumination and quality classification, the confidence rules) and the CAMERA PLUMBING. The maths is fully gateable and belongs in the engine — apps/mobile/AGENTS.md: \"The engine is imported, never ported. Sampling logic, rejection rules and averaging live there\" — and E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, which NO single-platform test can see. Building the camera half first would have forced the maths into the app or stubbed it. Split to F-077, which this now depends on. ALSO CORRECTED: docs/PRD.md scheduled FR-13, FR-14 and FR-15 as \"R1 web · R3 mobile\" — a retired surface AND a release that disagreed with this feature being R2 and must. The feature list is the scope authority (AGENTS.md section 1), so the PRD columns were the stale half. F-074 could not catch this: it matches vocabulary, and a release column is neither a banned word nor a gate id."
+      "notes": "SCOPE CORRECTED WHILE SELECTING IT AFTER F-035. F-040 conflated two features with different verification stories: the SAMPLING MATHS (robust statistics, rejection rules, illumination and quality classification, the confidence rules) and the CAMERA PLUMBING. The maths is fully gateable and belongs in the engine — apps/mobile/AGENTS.md: \"The engine is imported, never ported. Sampling logic, rejection rules and averaging live there\" — and E-008 records that a mobile-only re-implementation makes the same fabric measure differently on two surfaces, which NO single-platform test can see. Building the camera half first would have forced the maths into the app or stubbed it. Split to F-077, which this now depends on. ALSO CORRECTED: docs/PRD.md scheduled FR-13, FR-14 and FR-15 as \"R1 web · R3 mobile\" — a retired surface AND a release that disagreed with this feature being R2 and must. The feature list is the scope authority (AGENTS.md section 1), so the PRD columns were the stale half. F-074 could not catch this: it matches vocabulary, and a release column is neither a banned word nor a gate id.",
+      "plan": "plans/F-040-colour-lens.md"
     },
     {
       "id": "F-041",
