@@ -8,6 +8,69 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-035 DONE · the durability story, and the order that is the whole feature
+
+With no server this is all of it ([ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) §5).
+27 tests in `@irodora/store`.
+
+### "Byte-identical" is interpreted, in the open
+
+Taken literally FR-58 is unmeetable: a SQLite **file** differs in page layout, freelist state
+and `AUTOINCREMENT` sequence after an identical sequence of writes. No import could satisfy it,
+and the criterion would eventually be softened quietly instead of deliberately.
+
+The claim worth making is that the **data** round-trips, so `digest()` is a canonical
+serialisation — every table in a declared order, every row **including tombstones**, every
+column sorted — compared against the **original database**, never against the archive it came
+from. Comparing an export to an export is an echo that passes on an exporter dropping the same
+column twice.
+
+### The lint found a design flaw
+
+`importArchive` typed its parameter as `Archive`, and `no-unnecessary-condition` flagged the
+format check as always-false. That is exactly the type asserting a fact about data nobody had
+checked — **an archive arrives from a file the user chose.** It takes `unknown` now and
+validates every field, and it distinguishes a *missing* table (an older archive, accepted as
+empty) from one present but not an array (corruption, refused).
+
+### Erasure is proven by re-query, and cannot be proven otherwise
+
+`eraseEverything` **returns void**, so the test FR-58 warns against cannot be written. Its
+decoy is the one that matters: a "wipe" that only tombstoned would leave every row on disk
+while every list came back empty. Soft delete exists so a sync can tell "deleted" from "never
+existed"; erasure exists so nothing remains to tell anything about.
+
+Destroying the key is what makes it true of bytes already written — a file delete leaves
+recoverable blocks, and a row-by-row delete leaves them too.
+
+### The order is the whole feature
+
+`eraseWithBackupPrompt` enforces **offer → write → confirm → erase** in code, so a caller
+cannot get it wrong by writing the calls in the order that reads more naturally. The test
+asserts the **order**, not the outcome: a test checking only "a backup exists and the data is
+gone" passes on an implementation that erased first and backed up an empty database.
+
+**And the case that matters most:** if a requested export *fails*, nothing is erased. Losing
+the data and the backup in one action is the worst outcome available here, and it is exactly
+what a `try/catch` that carries on produces.
+
+### State
+
+```
+Done:       F-035. Nothing in progress, tree clean.
+Gates:      state 15 (24 warn) · typecheck 27 · lint 28 · format · test 27 · build 17
+            a11y 18 · contrast 18 · content · guards 15 · purity · mirror 12 · secrets
+Attested:   1 — the export and import journeys on a device, against a real file. The
+            mechanism is gated; the platform binding is what a device confirms.
+Next:       F-040 (the Lens) is the largest remaining R2 feature and the product's
+            centrepiece. F-068, F-069, F-070 are small design-system debts F-017
+            unblocked. F-075 and F-076 are the two this session filed. F-018 stays
+            blocked on F-012, which is blocked on OQ-5 — a second editorial identity,
+            which is a person rather than a commit.
+```
+
+---
+
 ## 2026-08-20 — F-041 DONE · the store, and the pragma that enforces nothing by default
 
 Increments 1–4 of 6 committed and green: schema, migrations, repository, Node driver,

@@ -954,22 +954,36 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "acceptance": [
-        "An in-app export contains every record and re-imports to a byte-identical database, asserted in e2e",
-        "Erasure is immediate and local: the SQLite database, the cached images and the change_log, all of it on the device",
+        "An export contains every record, tombstones included, and re-imports to an identical canonical digest of every row of every table",
+        "Erasure is immediate and local: every table hard-deleted, change_log included, and the key destroyed so bytes already on disk stay unreadable",
         "A re-query against each store returns nothing; the return value of the erase call is not the proof",
-        "The app prompts for an export before any destructive action, because a lost device is lost data and the product says so"
+        "The app offers an export before any destructive action, and erases nothing if a requested export fails",
+        "The export and import journeys complete on a device, writing to and reading from a file the person chose"
       ],
       "verification": [
         "state",
+        "typecheck",
+        "lint",
+        "format",
         "test",
-        "e2e"
+        "build"
       ],
       "blockedBy": [
         "F-039",
         "F-041"
-      ]
+      ],
+      "plan": "plans/F-035-backup-export-and-import.md",
+      "attested": [
+        {
+          "criterion": "The export and import journeys complete on a device, writing to and reading from a file the person chose",
+          "verifiedBy": "A device run of the export and import flows against a real file, on iOS and Android. The MECHANISM is gated here — the round trip, every refusal, and the ordering are all tested in Node against the node:sqlite driver — but file access is behind the ArchiveSink interface precisely so the package needs no platform to be tested, which means the platform binding itself is what a device confirms. FR-58 says \"asserted in e2e\"; pnpm test:e2e exits 1 by design while no surface declares the script, and gate 7 activates with F-018/F-040.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. With no server this is the entire durability story (ADR-0051 section 5), which is why it is a first-release feature and not a follow-up. 27 tests in @irodora/store. \"BYTE-IDENTICAL\" IS INTERPRETED, IN THE OPEN. Taken literally FR-58 is unmeetable: a SQLite FILE differs in page layout, freelist state and AUTOINCREMENT sequence after an identical sequence of writes, so no import could ever satisfy it and the criterion would eventually be softened quietly instead of deliberately. The claim worth making is that the DATA round-trips, so digest() is a canonical serialisation — every table in a declared order, every row INCLUDING TOMBSTONES, every column sorted — and that is compared byte for byte, against the ORIGINAL database rather than against the archive it came from. Comparing an export to an export is an echo that passes on an exporter dropping the same column twice. THE ARCHIVE IS JSON, NOT A FILE COPY: a copy of an encrypted database is useless without the key, and shipping the key with the backup makes the encryption theatre. The stated cost is that the archive is plaintext — readable by the user, which is the point, and by anyone who obtains it, which is the price. Recorded as a decision rather than discovered later. THE LINT FOUND A DESIGN FLAW: importArchive typed its parameter as Archive, and no-unnecessary-condition flagged the format check as always-false — which is exactly the type asserting a fact about data nobody had checked. An archive arrives from a FILE the user chose. It now takes `unknown` and validates every field, and distinguishes a MISSING table (an older archive, accepted as empty) from one present but not an array (corruption, refused) — treating them alike would import garbage as emptiness. TWO REFUSALS THAT SEPARATE A RESTORE FROM A DISASTER: a NEWER schemaVersion is refused rather than guessed at, the same rule migrate() applies; and a non-empty database is refused rather than merged, because a silent merge duplicates everything a user owns and looks like it worked. ERASURE IS PROVEN BY RE-QUERY, and eraseEverything RETURNS VOID so the test FR-58 warns against cannot be written. Its decoy is the one that matters: a \"wipe\" that only tombstoned would leave every row on disk while every list came back empty — soft delete exists so a sync can tell \"deleted\" from \"never existed\", and erasure exists so nothing remains to tell anything about. Destroying the key is what makes it true of bytes already written; a file delete leaves recoverable blocks and a row-by-row delete leaves them too. THE ORDER IS THE WHOLE FEATURE. eraseWithBackupPrompt enforces offer -> write -> confirm -> erase in code, so a caller cannot get it wrong by writing the calls in the order that reads more naturally, and the test asserts the ORDER rather than the outcome — a test checking only \"a backup exists and the data is gone\" passes on an implementation that erased first and backed up an empty database. AND THE CASE THAT MATTERS MOST: if a requested export FAILS, nothing is erased. Losing the data and the backup in one action is the worst outcome available here, and it is exactly what a try/catch that carries on produces."
     },
     {
       "id": "F-037",

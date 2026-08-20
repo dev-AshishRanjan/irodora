@@ -15,6 +15,24 @@ export {
 } from './schema.js';
 export { applyPragmas, migrate } from './migrate.js';
 export { createRepository } from './createRepository.js';
+export {
+  ARCHIVE_TABLES,
+  ArchiveError,
+  digest,
+  eraseEverything,
+  exportArchive,
+  importArchive,
+  type Archive,
+  parseArchive,
+} from './archive.js';
+export {
+  archiveFileName,
+  eraseWithBackupPrompt,
+  serialiseArchive,
+  type ArchiveSink,
+  type DestructiveConfirm,
+  type EraseOutcome,
+} from './backup.js';
 export { uuidv7 } from './id.js';
 export {
   DATABASE_KEY_NAME,

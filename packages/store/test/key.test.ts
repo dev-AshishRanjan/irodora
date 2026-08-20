@@ -23,8 +23,12 @@ const fakeStore = (): SecureKeyStore & { readonly seen: Map<string, string> } =>
   return {
     seen,
     get: (n) => seen.get(n) ?? null,
-    set: (n, v) => void seen.set(n, v),
-    remove: (n) => void seen.delete(n),
+    set: (n, v) => {
+      seen.set(n, v);
+    },
+    remove: (n) => {
+      seen.delete(n);
+    },
   };
 };
 
