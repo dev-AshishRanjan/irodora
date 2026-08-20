@@ -173,3 +173,49 @@ export function GenericName(): React.JSX.Element {
     </Pressable>
   );
 }
+
+/**
+ * DECOY 9 — a status colour sitting directly beside a colour sample.
+ *
+ * Simultaneous contrast: the red chip changes how the fabric reads, and the person is looking
+ * at the fabric to decide something about it. Every component here is individually correct;
+ * the COMPOSITION is the defect, which is why only a rendered tree can see it.
+ */
+export function StatusBesideSample({
+  theme = 'light',
+}: {
+  readonly theme?: 'light' | 'dark';
+}): React.JSX.Element {
+  // Theme-parameterised, unlike the other fixtures: this check resolves colours AGAINST a
+  // theme, so a fixture hard-coding light-theme values would silently resolve to nothing in
+  // dark and the dark case would pass by finding no status token at all.
+  const c = nativeColors[theme];
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: c.background }}>
+      <View style={{ width: 72, height: 72, backgroundColor: '#526A6B' }} />
+      <View style={{ width: 12, height: 12, backgroundColor: c['status.bad'] }} />
+    </View>
+  );
+}
+
+/**
+ * NOT a decoy — the pair that proves the rule is narrow enough to be useful.
+ *
+ * The SAME status colour beside the SAME sample, with the mandated `swatch.well` as their
+ * shared ground. Without this, the rule could be "flag any status colour near anything" and
+ * would pass every negative test while being useless — and it would be switched off within a
+ * week, which is worse than no rule at all.
+ */
+export function StatusBesideSampleInWell({
+  theme = 'light',
+}: {
+  readonly theme?: 'light' | 'dark';
+}): React.JSX.Element {
+  const c = nativeColors[theme];
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: c['swatch.well'] }}>
+      <View style={{ width: 72, height: 72, backgroundColor: '#526A6B' }} />
+      <View style={{ width: 12, height: 12, backgroundColor: c['status.bad'] }} />
+    </View>
+  );
+}

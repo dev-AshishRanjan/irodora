@@ -23,6 +23,7 @@ export { isStatusToken, resolveColor, tokensForValue, type ColorResolution } fro
 
 export {
   checkAll,
+  checkStatusAdjacency,
   checkSubject,
   formatFindings,
   REQUIRED_STATES,

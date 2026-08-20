@@ -12,6 +12,7 @@ import { fromSpace } from '@irodora/color-core';
 import { Button, Status, Surface, Swatch, Text, ThemeProvider } from '../src/index.js';
 import {
   checkAll,
+  checkStatusAdjacency,
   checkSubject,
   formatFindings,
   REQUIRED_STATES,
@@ -19,7 +20,13 @@ import {
   type Finding,
   type TestNode,
 } from '../src/testing/index.js';
-import { BadStates, GenericName, LiteralColour } from './fixtures/subjects.js';
+import {
+  BadStates,
+  GenericName,
+  LiteralColour,
+  StatusBesideSample,
+  StatusBesideSampleInWell,
+} from './fixtures/subjects.js';
 
 /** Render inside a forced theme, and hand back the walkable tree. */
 function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
@@ -229,5 +236,49 @@ describe('the swatch carries what ACCESSIBILITY.md section 5 requires', () => {
     );
     expect(off).not.toContain('✓');
     expect(on).toContain('✓');
+  });
+});
+
+describe('a status colour may not sit beside a colour sample (F-069)', () => {
+  const SAMPLE_VALUES = ['#526A6B'];
+  const check = (theme: 'light' | 'dark', inWell = false): readonly string[] =>
+    checkStatusAdjacency(
+      draw(
+        inWell ? <StatusBesideSampleInWell theme={theme} /> : <StatusBesideSample theme={theme} />,
+        theme,
+      ),
+      theme,
+      SAMPLE_VALUES,
+    );
+
+  it('flags a status chip touching a bare sample', () => {
+    // Simultaneous contrast. The chip changes how the fabric reads, and the fabric is what
+    // the person is deciding about.
+    const findings = check('light');
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatch(/swatch\.well/u);
+  });
+
+  it('ALLOWS the same pair when swatch.well is their shared ground', () => {
+    // THE HALF THAT MAKES THE RULE USABLE. Without it the rule could be "flag any status
+    // colour anywhere near anything", which would pass the negative above and be switched
+    // off within a week — worse than no rule.
+    expect(check('light', true)).toEqual([]);
+  });
+
+  it('does not flag the real components, which is asserted FIRST for a reason', () => {
+    // A negative case means nothing if the check fires on everything.
+    for (const subject of SUBJECTS)
+      for (const state of REQUIRED_STATES[subject.kind]) {
+        const tree = subject.render(state, 'light');
+        if (tree === null) continue;
+        expect(checkStatusAdjacency(tree, 'light', subject.sampleValues ?? [])).toEqual([]);
+      }
+  });
+
+  it('holds in both themes', () => {
+    // The two themes are authored independently; a status token's value differs between them.
+    expect(check('dark')).toHaveLength(1);
+    expect(check('dark', true)).toEqual([]);
   });
 });

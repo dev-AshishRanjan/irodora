@@ -76,6 +76,21 @@ reason to encode.
 Functional, not decorative: simultaneous contrast means whatever touches a sample changes how
 it reads.
 
+**No status colour beside a sample** — the same physics, one step out. A saturated `status.*`
+token adjacent to a colour sample changes how that sample reads, and the person is looking at
+the sample in order to decide something about it. A red "poor quality" chip beside a green
+fabric makes the fabric look different from the same fabric beside a grey one.
+
+The rule is narrow so that it survives: **siblings**, and `swatch.well` on their shared parent
+is the escape — if the sample is already in its well, the status colour is not touching it. A
+rule that flagged a status chip in a header and a sample three screens down would be switched
+off within a week, which is worse than no rule.
+
+**Every component involved can be individually correct while the composition is wrong**, which
+is why this is checked over the rendered tree (`checkStatusAdjacency`, F-069) rather than by a
+token pairing. No `pairsWith` can express it: the other side of the adjacency is an arbitrary
+garment colour.
+
 **`radius.swatch: 0`** — an inviolable rule, sitting inside an otherwise generous radius scale.
 
 **`chromaCeiling`** — surfaces and text may not exceed chroma 0.01 without a recorded

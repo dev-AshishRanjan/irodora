@@ -31,6 +31,7 @@
 import type { Theme } from '@irodora/design-tokens';
 import { LARGE_TEXT_TOKENS, nativeLargeTextMinPx, nativeTapTarget } from '@irodora/design-tokens';
 import { paintedColors, pressableNodes, resolveTextNodes, type TestNode } from './tree.js';
+import { isStatusToken } from './tokens.js';
 
 export type ComponentKind = 'interactive' | 'data' | 'static';
 
@@ -250,4 +251,84 @@ export function formatFindings(findings: readonly Finding[]): string {
   return findings
     .map((f) => `  ${f.subject} [${f.theme}/${f.state}] ${f.rule}: ${f.detail}`)
     .join('\n');
+}
+
+/**
+ * A status colour may not sit beside a colour sample (F-069, NFR-8).
+ *
+ * ## Why this is a composition rule and not a token rule
+ *
+ * A saturated status colour next to a garment sample **changes how the sample reads** —
+ * simultaneous contrast, the same physics `swatch.well` exists for. A red "poor quality" chip
+ * beside a green fabric makes the fabric look different from the same fabric beside a grey
+ * chip, and the person is looking at the fabric to decide something about it.
+ *
+ * Every component involved can be individually correct while the composition is wrong, which
+ * is why nothing short of the rendered tree can see it.
+ *
+ * ## The rule, narrowed on purpose
+ *
+ * **Siblings**, not "anywhere in the tree". A status chip in a header and a sample three
+ * screens down are not adjacent in any sense a person perceives, and a rule that flagged them
+ * would be switched off within a week — which is worse than no rule.
+ *
+ * **`swatch.well` on the shared parent is the escape**, because it is precisely the mandated
+ * neutral ground: if the sample is already in its well, the status colour is not touching it.
+ */
+export function checkStatusAdjacency(
+  tree: TestNode,
+  theme: Theme,
+  sampleValues: readonly string[],
+): readonly string[] {
+  const samples = new Set(sampleValues.map((v) => v.toLowerCase()));
+  const findings: string[] = [];
+
+  /** Does this subtree paint a status token / a declared sample? */
+  const paints = (node: TestNode): { status: boolean; sample: boolean } => {
+    let status = false;
+    let sample = false;
+    const visit = (n: TestNode): void => {
+      for (const painted of paintedColors(n, theme)) {
+        if (painted.resolution.kind === 'token' && painted.resolution.tokens.some(isStatusToken))
+          status = true;
+        if (
+          painted.resolution.kind === 'unresolved' &&
+          samples.has(painted.resolution.value.toLowerCase())
+        )
+          sample = true;
+      }
+      for (const child of n.children ?? []) if (typeof child !== 'string') visit(child);
+    };
+    visit(node);
+    return { status, sample };
+  };
+
+  const walk = (node: TestNode, path: readonly string[]): void => {
+    const here = path.concat(node.type);
+    const children = (node.children ?? []).filter((c): c is TestNode => typeof c !== 'string');
+
+    if (children.length > 1) {
+      const marks = children.map(paints);
+      const hasStatus = marks.some((m) => m.status);
+      const hasSample = marks.some((m) => m.sample);
+      // Both present among siblings, and NOT separated: the shared parent is not the well.
+      if (hasStatus && hasSample) {
+        const parentIsWell = paintedColors(
+          { type: node.type, props: node.props, children: null },
+          theme,
+        ).some((p) => p.resolution.kind === 'token' && p.resolution.tokens.includes('swatch.well'));
+        if (!parentIsWell)
+          findings.push(
+            `${here.join('>')} places a status colour beside a colour sample with no ` +
+              'swatch.well between them — simultaneous contrast changes how the sample reads, ' +
+              'which is the thing the well exists to prevent',
+          );
+      }
+    }
+
+    for (const child of children) walk(child, here);
+  };
+
+  walk(tree, []);
+  return findings;
 }

@@ -1710,7 +1710,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-017"
       ],
@@ -1720,10 +1720,15 @@
       ],
       "verification": [
         "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
         "contrast",
-        "a11y"
+        "build"
       ],
-      "notes": "FOUND BY THE F-003 DESIGN REVIEW. Nothing in the manifest stops a saturated status colour sitting next to a sample, and simultaneous contrast means it pushes that sample the opposite way — a deep red beside a swatch makes the swatch read green. The Lens result is exactly where a low-confidence bad indicator wants to live, beside the colour. The swatch.well separator is already mandatory for decorative colour; this extends the same rule to the semantic tokens and makes it checkable."
+      "notes": "DONE. THE SAME PHYSICS AS swatch.well, ONE STEP OUT: a saturated status token adjacent to a colour sample changes how the sample reads, and the person is looking at the sample in order to decide something about it. A red \"poor quality\" chip beside a green fabric makes the fabric look different from the same fabric beside a grey one. THIS IS THE ONE PLACE WHERE EVERY COMPONENT CAN BE INDIVIDUALLY CORRECT AND THE COMPOSITION WRONG, which is why it is checked over the RENDERED TREE rather than by a token pairing — no pairsWith can express it, because the other side of the adjacency is an arbitrary garment colour. THE RULE IS NARROWED ON PURPOSE: siblings, not \"anywhere in the tree\", and swatch.well on the shared parent is the escape. A rule that flagged a status chip in a header and a sample three screens down would be switched off within a week, which is worse than no rule — so the narrowing is what makes it survive rather than a weakening of it. THE PAIR IS WHAT PROVES IT: the same status colour beside the same sample fails without the well and passes with it. Without the second half the rule could be \"flag any status colour near anything\", which would pass every negative test while being useless. The real components are asserted clean FIRST, because a negative case means nothing if the check fires on everything. A FIXTURE LESSON: the dark-theme case initially passed for the wrong reason. The fixtures hard-code nativeColors.light, so in dark theme the light status value resolved to no token at all and the check found nothing to flag — a pass that proved the opposite of what it looked like. Both fixtures are theme-parameterised now, which is the only way a check that RESOLVES AGAINST A THEME can be tested in both.",
+      "plan": "plans/F-069-status-colour-may-not-sit-beside-a-sample.md"
     },
     {
       "id": "F-070",
