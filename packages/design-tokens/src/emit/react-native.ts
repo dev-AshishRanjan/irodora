@@ -150,6 +150,33 @@ export function emitReactNative(manifest: Manifest): string {
   out.push('} as const;');
   out.push('');
 
+  // Which steps of the scale clear the WCAG large-text floor.
+  //
+  // DERIVED, never listed. `@irodora/ui`'s `Text` uses this to make
+  // `<Text size="small" color="foreground.3">` a TYPE ERROR, so the pairing that fails AA
+  // cannot be written rather than being caught later by a gate. Deriving it means a step
+  // whose size changes, or a new step, is classified correctly with nobody remembering to —
+  // and a hand-written list is exactly how `foreground.3` went unchecked before F-003.
+  const floor = manifest.gate.contrast.largeTextMinPx;
+  const large = Object.entries(scale)
+    .filter(([, step]) => step.size >= floor)
+    .map(([name]) => name);
+  const small = Object.entries(scale)
+    .filter(([, step]) => step.size < floor)
+    .map(([name]) => name);
+  if (large.length === 0 || small.length === 0)
+    throw new Error(
+      `the type scale does not straddle the large-text floor of ${String(floor)}px ` +
+        `(${String(large.length)} at or above, ${String(small.length)} below) — a split with ` +
+        "an empty side makes the Text component's type constraint vacuous",
+    );
+  out.push(`/** Scale steps at or above the ${String(floor)}px WCAG large-text floor. */`);
+  out.push(`export const nativeLargeTextSizes = [${large.map(quote).join(', ')}] as const;`);
+  out.push('/** Scale steps BELOW it. A largeText-only token may never be used at these. */');
+  out.push(`export const nativeSmallTextSizes = [${small.map(quote).join(', ')}] as const;`);
+  out.push(`export const nativeLargeTextMinPx = ${String(floor)} as const;`);
+  out.push('');
+
   // NOTE: `typography.families` is NOT emitted here. The manifest states them as CSS font
   // stacks, and React Native has no fallback cascade — it takes ONE family name. Emitting a
   // resolved name before the font asset exists would name a face the bundle does not carry,

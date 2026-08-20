@@ -208,6 +208,9 @@
       "largeText": 3.0,
       "nonText": 3.0,
       "reportAPCA": true,
+    "largeTextMinPx": 18.66,
+    "largeTextMinBoldPx": 24,
+    "_largeTextNote": "The px floor that makes `usage: \"largeText\"` mean something. WCAG 2.2 defines large text as >= 18.66px, or >= 24px bold (14pt/18pt at 96dpi). It lived only in prose and doc comments until F-017, while the rendered small-text check and the Text component's types both depend on it — a number three things agree about by copying it is a number that will eventually disagree.",
       "blockingWhenStatus": "approved",
       "chromaCeiling": {
         "maxChroma": 0.01,

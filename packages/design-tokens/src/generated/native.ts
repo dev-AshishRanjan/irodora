@@ -94,6 +94,12 @@ export const nativeType = {
   },
 } as const;
 
+/** Scale steps at or above the 18.66px WCAG large-text floor. */
+export const nativeLargeTextSizes = ['display.1', 'display.2', 'title'] as const;
+/** Scale steps BELOW it. A largeText-only token may never be used at these. */
+export const nativeSmallTextSizes = ['body', 'small', 'xs', 'label'] as const;
+export const nativeLargeTextMinPx = 18.66 as const;
+
 export const nativeNumericFeature = 'tabular-nums' as const;
 
 /** Tonal. Each level names the surface token it resolves to; there is no shadow. */

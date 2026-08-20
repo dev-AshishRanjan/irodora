@@ -112,6 +112,16 @@ export interface ContrastGateConfig {
   readonly largeText: number;
   readonly nonText: number;
   readonly reportAPCA: boolean;
+  /**
+   * The px floor that makes `usage: "largeText"` mean something.
+   *
+   * WCAG 2.2 defines large text as >= 18.66 px, or >= 24 px bold. Until F-017 this number
+   * lived only in prose and in three doc comments, while the rendered small-text check and
+   * the `Text` component's types both depended on it. A number that three places agree about
+   * by copying it is a number that will eventually disagree.
+   */
+  readonly largeTextMinPx: number;
+  readonly largeTextMinBoldPx: number;
   readonly blockingWhenStatus: string;
   readonly chromaCeiling: { readonly maxChroma: number };
 }
@@ -594,6 +604,14 @@ export function parseManifest(input: unknown): Manifest {
         largeText: requireNumber(contrastRaw['largeText'], 'gate.contrast.largeText'),
         nonText: requireNumber(contrastRaw['nonText'], 'gate.contrast.nonText'),
         reportAPCA: contrastRaw['reportAPCA'] === true,
+        largeTextMinPx: requireNumber(
+          contrastRaw['largeTextMinPx'],
+          'gate.contrast.largeTextMinPx',
+        ),
+        largeTextMinBoldPx: requireNumber(
+          contrastRaw['largeTextMinBoldPx'],
+          'gate.contrast.largeTextMinBoldPx',
+        ),
         blockingWhenStatus: requireString(
           contrastRaw['blockingWhenStatus'],
           'gate.contrast.blockingWhenStatus',

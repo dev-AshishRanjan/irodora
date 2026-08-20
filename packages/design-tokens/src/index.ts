@@ -97,6 +97,9 @@ export {
   nativeElevation,
   nativeMotion,
   nativeDefaultTheme,
+  nativeLargeTextSizes,
+  nativeSmallTextSizes,
+  nativeLargeTextMinPx,
 } from './generated/native.js';
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */
