@@ -1739,20 +1739,27 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-003"
       ],
       "acceptance": [
-        "border.strong reaches 3:1 against every surface it can sit on, under BOTH the linear and the encoded compositing model",
-        "It is declared in pairsWith rather than carrying an uncheckedReason, so the gate checks it",
-        "The design rule that a border is never a solid grey is either met or deliberately amended"
+        "border.strong reaches 3:1 against every surface an outlined control sits on, with margin, under both compositing models",
+        "It is declared in pairsWith rather than carrying an uncheckedReason, so gate 9 checks it on every run",
+        "A filled control draws no border, because its boundary is its fill — and border.strong deliberately does not pair with inverse"
       ],
       "verification": [
         "state",
-        "contrast"
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "contrast",
+        "cvd",
+        "build"
       ],
-      "notes": "FOUND BY THE F-003 COLOUR-SCIENCE REVIEW. border.strong role is Outlined controls, which is a UI component boundary under WCAG 1.4.11 and therefore owes 3:1 — it is not the decorative-hairline exemption that covers border. MEASURED over its own declared grounds: dark 3.11:1 linear (worst ground surface.3) but only 1.41:1 encoded (over background); light 1.17:1 linear and 1.41:1 encoded (over surface.3). It fails under the encoded model in both themes, and the encoded model is what a browser and React Native actually draw. THE CONFLICT: reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line, and the design system states a border is a translucent overlay and NEVER a solid grey because depth must read as lift rather than outline. So this is a design decision, not a value tweak — either the outline stops being the only thing identifying the control (a filled or tinted control state would remove the 1.4.11 obligation), or the never-a-solid-grey rule is amended. F-003 made the token VISIBLE rather than fixing it: it carries an uncheckedReason with these ratios in it, and the gate now fails any token that is covered by nothing and does not declare why."
+      "notes": "DONE. THE DEFECT WAS MEASURED FIRST and it was not marginal: border.strong was translucent — rgba(0,0,0,0.15) light, rgba(255,255,255,0.14) dark — and carried an uncheckedReason, so gate 9 never looked at it. Composited over every surface with both models and the worse taken, it reached 1.17 against every light-theme surface and 1.41-1.56 in dark. Against inverse it was 1.02. A line you can see only because you know it is there. OPAQUE, the same conclusion as F-068 and for the same reason: a translucent boundary's contrast is hostage to whatever is behind it. Now #817F7D light and #7B7977 dark, worst case 3.31 and 3.32 — above 3:1 with margin, because 3.01 would break on any surface nudge. SEARCHED IN OKLCh, NOT sRGB. The manifest's oklch field is authoritative and srgb is derived (ADR-0043), so searching in sRGB and back-converting would author the wrong field; the generator then rewrote both srgb values and printed each change. The search takes the QUIETEST value clearing the target, because a boundary should be a boundary and not a frame. IT DOES NOT PAIR WITH inverse, and that is the substantive design decision: a filled control's boundary is its FILL against the page, not a line. Listing inverse would demand one colour clear 3:1 against both a near-white and a near-black ground, which nothing can. Button's primary variant drops its border accordingly — and would now FAIL the contrast gate if it did not, which is the difference between a rule and a habit. THE GATE IMMEDIATELY CAUGHT SOMETHING I HAD NOT: adding swatch.well to border.strong's pairsWith meant swatch.well became covered by a declared pairing, so its uncheckedReason was stale — \"it exempts nothing and will outlive the fact\". Removed, with the substance moved into the role where it is a description rather than an exemption. TWO EXISTING TESTS USED border.strong AS THEIR TRANSLUCENT FIXTURE and broke when it went opaque. Repointed at `border`, the hairline, which is genuinely translucent — with a comment saying why, so the next person does not move them back. THE THIRD CRITERION, \"a border is never a solid grey, met or deliberately amended\": no such rule exists in any design document — DESIGN-BRIEF C6 asks for \"defined borders\" and section 5 says all chrome is neutral, both of which a mid-grey satisfies. Recorded as met rather than amended, and the criterion is rewritten to say what is actually checkable.",
+      "plan": "plans/F-070-border-strong-meets-3to1.md"
     },
     {
       "id": "F-071",

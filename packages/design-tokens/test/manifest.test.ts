@@ -135,14 +135,14 @@ describe('what the loader refuses', () => {
   });
 
   it('a translucent token that names no compositeOver base', () => {
-    expect(() =>
-      parseManifest(without(['color', 'dark', 'border.strong', 'compositeOver'])),
-    ).toThrow(/compositeOver/u);
+    expect(() => parseManifest(without(['color', 'dark', 'border', 'compositeOver']))).toThrow(
+      /compositeOver/u,
+    );
   });
 
   it('a compositeOver naming a token that does not exist', () => {
     expect(() =>
-      parseManifest(withValue(['color', 'dark', 'border.strong', 'compositeOver'], ['surface.9'])),
+      parseManifest(withValue(['color', 'dark', 'border', 'compositeOver'], ['surface.9'])),
     ).toThrow(/surface\.9/u);
   });
 
@@ -150,13 +150,13 @@ describe('what the loader refuses', () => {
     // The single-ground form is what let the gate check the favourable case. It is not
     // accepted quietly and coerced — it is refused, so the migration cannot be half done.
     expect(() =>
-      parseManifest(withValue(['color', 'dark', 'border.strong', 'compositeOver'], 'surface.1')),
+      parseManifest(withValue(['color', 'dark', 'border', 'compositeOver'], 'surface.1')),
     ).toThrow(/every ground it may sit on/u);
   });
 
   it('a compositeOver that is an empty list', () => {
     expect(() =>
-      parseManifest(withValue(['color', 'dark', 'border.strong', 'compositeOver'], [])),
+      parseManifest(withValue(['color', 'dark', 'border', 'compositeOver'], [])),
     ).toThrow(/every ground it may sit on/u);
   });
 

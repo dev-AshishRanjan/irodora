@@ -100,8 +100,7 @@
         },
         "srgb": "#2B2A28",
         "usage": "surface",
-        "role": "MANDATORY neutral ground beneath every colour sample. Functional, not decorative: whatever touches a sample changes how it reads.",
-        "uncheckedReason": "Its job is to sit under an ARBITRARY colour sample, so there is no fixed second colour to measure against and no pairing can express it. The requirement it really carries — that a sample of any colour keeps a perceptible edge — is the two-tone keyline on swatch.hairline, delivered and gamut-checked in F-068.",
+        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
         "pairsWith": []
       },
       "swatch.hairline": {
@@ -170,22 +169,20 @@
       },
       "border.strong": {
         "oklch": {
-          "l": 1,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.14
+          "l": 0.578,
+          "c": 0.004,
+          "h": 70
         },
-        "srgb": "rgba(255, 255, 255, 0.14)",
+        "srgb": "#7B7977",
         "usage": "nonText",
-        "compositeOver": [
+        "role": "The boundary of an OUTLINED control, where the border IS the boundary — so WCAG 1.4.11 applies to it directly and 3:1 is not optional. Opaque and mid-neutral, deliberately: the translucent version it replaces reached 1.17 against every surface in light theme and 1.56 at best in dark, which is a line you can see only because you know it is there. It does NOT sit on `inverse`: a filled control's boundary is its fill against the page, not a border, so listing inverse would demand one colour clear 3:1 against both a near-white and a near-black ground, which nothing can.",
+        "pairsWith": [
           "background",
           "surface.1",
           "surface.2",
-          "surface.3"
-        ],
-        "role": "Outlined controls.",
-        "uncheckedReason": "NOT exempt, and NOT yet met: this is an outlined control boundary under WCAG 1.4.11, and composited over its own declared grounds it reaches only 3.11:1 (dark, linear, worst ground surface.3) / 1.41:1 (dark, encoded, over background) / 1.17:1 (light, linear, over surface.3). Reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line and contradicts the design rule that a border is never a solid grey. That conflict is a design decision, recorded as F-070 with the measured ratios rather than resolved inside a gate-building feature.",
-        "pairsWith": []
+          "surface.3",
+          "swatch.well"
+        ]
       },
       "inverse": {
         "oklch": {
@@ -412,8 +409,7 @@
         },
         "srgb": "#ECEAE7",
         "usage": "surface",
-        "role": "MANDATORY neutral ground beneath every colour sample.",
-        "uncheckedReason": "Its job is to sit under an ARBITRARY colour sample, so there is no fixed second colour to measure against and no pairing can express it. The requirement it really carries — that a sample of any colour keeps a perceptible edge — is the two-tone keyline on swatch.hairline, delivered and gamut-checked in F-068.",
+        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
         "pairsWith": []
       },
       "swatch.hairline": {
@@ -482,22 +478,20 @@
       },
       "border.strong": {
         "oklch": {
-          "l": 0,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.15
+          "l": 0.598,
+          "c": 0.004,
+          "h": 85
         },
-        "srgb": "rgba(0, 0, 0, 0.15)",
+        "srgb": "#817F7D",
         "usage": "nonText",
-        "compositeOver": [
+        "role": "The boundary of an OUTLINED control, where the border IS the boundary — so WCAG 1.4.11 applies to it directly and 3:1 is not optional. Opaque and mid-neutral, deliberately: the translucent version it replaces reached 1.17 against every surface in light theme and 1.56 at best in dark, which is a line you can see only because you know it is there. It does NOT sit on `inverse`: a filled control's boundary is its fill against the page, not a border, so listing inverse would demand one colour clear 3:1 against both a near-white and a near-black ground, which nothing can.",
+        "pairsWith": [
           "background",
           "surface.1",
           "surface.2",
-          "surface.3"
-        ],
-        "role": "Outlined controls.",
-        "uncheckedReason": "NOT exempt, and NOT yet met: this is an outlined control boundary under WCAG 1.4.11, and composited over its own declared grounds it reaches only 3.11:1 (dark, linear, worst ground surface.3) / 1.41:1 (dark, encoded, over background) / 1.17:1 (light, linear, over surface.3). Reaching 3:1 needs roughly 53 percent alpha, which is a solid grey line and contradicts the design rule that a border is never a solid grey. That conflict is a design decision, recorded as F-070 with the measured ratios rather than resolved inside a gate-building feature.",
-        "pairsWith": []
+          "surface.3",
+          "swatch.well"
+        ]
       },
       "inverse": {
         "oklch": {

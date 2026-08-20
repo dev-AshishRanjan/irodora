@@ -137,13 +137,16 @@ describe('compositing', () => {
       if (t === undefined) throw new Error(`no token ${name}`);
       return t;
     };
-    const border = lookup('border.strong');
+    // `border`, the hairline — NOT `border.strong`, which F-070 made OPAQUE because a
+    // translucent boundary reached only 1.17 against every surface. This test needs a token
+    // that is genuinely translucent, and moving it is the point rather than a workaround.
+    const border = lookup('border');
     const grounds = border.compositeOver ?? [];
     expect(grounds.length).toBeGreaterThan(1);
 
     // Two per ground: the linear blend and the encoded one. Neither model is uniformly
     // stricter, so both are produced and the caller takes the worst.
-    const appearances = resolveAll('border.strong', border, lookup);
+    const appearances = resolveAll('border', border, lookup);
     expect(appearances).toHaveLength(grounds.length * 2);
     expect(new Set(appearances.map((a) => a.model))).toEqual(new Set(['linear', 'encoded']));
 

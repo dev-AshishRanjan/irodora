@@ -60,8 +60,13 @@ export function Button({
         // surface.2 pairsWith foreground. A component pairing tokens the manifest does not
         // declare together is a contrast-gate failure, so the choice is not free.
         backgroundColor: variant === 'primary' ? colors.inverse : colors['surface.2'],
-        borderWidth: 1,
-        borderColor: colors['border.strong'],
+        // The border belongs to the OUTLINED variant only. A filled control's boundary is its
+        // FILL against the page, not a line — and `border.strong` deliberately does not pair
+        // with `inverse` (F-070), because no single colour clears 3:1 against both a
+        // near-white and a near-black ground. Drawing it there would have been a pairing the
+        // contrast gate now rejects.
+        borderWidth: variant === 'secondary' ? 1 : 0,
+        ...(variant === 'secondary' ? { borderColor: colors['border.strong'] } : {}),
         // Every declared state renders DIFFERENTLY. A component that returns the same tree
         // for default and disabled has defined the state in name only, and the conformance
         // suite rejects exactly that.
