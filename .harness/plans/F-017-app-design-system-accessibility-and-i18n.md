@@ -127,9 +127,16 @@ is the evidence and is captured before the fix.
    asserted against the em value, not against itself.
    → `pnpm --filter @irodora/design-tokens test && pnpm test:contrast && pnpm build`
 3. **The render harness, proven before any component exists.** `packages/ui` retargeted; the
-   bridge; tree walkers (`resolveTextNodes` modelling RN text-style inheritance,
+   **`jest-expo` stack pinned by [ADR-0055](../../docs/adr/0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md)**
+   — `jest@29.7.0 · jest-expo@57.0.4 · RNTL@13.3.3 · react-test-renderer@19.2.3`, as a unit;
+   tree walkers (`resolveTextNodes` modelling RN text-style inheritance,
    `resolveColor -> token | UNRESOLVED`, `pressableNodes`); fixtures — one compliant, four decoys
    — and the assertions that separate them. → `pnpm --filter @irodora/ui test`
+
+   > This step said "the Vitest/RNTL bridge" when the plan was written, because ADR-0055 had
+   > not been decided yet. It was, against that option and with the reasons recorded. Corrected
+   > here rather than left to mislead — see
+   > [[prose-in-a-state-file-rots-and-no-schema-can-see-it]].
 4. **`ThemeProvider`, `Text`, `Icon` + registry, `Status`.** `Text` takes `size` and `color`
    under a conditional type so `<Text size="small" color="foreground.3">` **does not compile**.
    The icon registry must cover every `iconToken` in the manifest, asserted **in both

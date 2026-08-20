@@ -270,7 +270,7 @@ export default tseslint.config(
 
   // --- Tests -------------------------------------------------------------
   {
-    files: ['**/*.test.ts', '**/*.spec.ts', 'tests/**/*.ts'],
+    files: ['**/*.test.ts', '**/*.spec.ts', '**/*.test.tsx', 'tests/**/*.ts'],
     rules: {
       // Tests may assert on shapes the production types forbid, but they may
       // not silently opt out of the contract. See
@@ -279,5 +279,19 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
     },
+  },
+
+  // --- Plain-JavaScript config files ---------------------------------------
+  //
+  // A `.mjs` config is not in any tsconfig project, so the type-aware rules cannot parse it
+  // and the whole file errors out. It is still LINTED — for undefined variables, unreachable
+  // code and the rest — just not type-aware.
+  //
+  // Ignoring it outright was the alternative and was rejected: `scripts/*.mjs` is already
+  // effectively unlinted (it lives in no package, so `turbo run lint` never reaches it), and
+  // a second unlinted zone is how the first one stops being noticed.
+  {
+    files: ['**/*.config.mjs', '**/*.config.js'],
+    ...tseslint.configs.disableTypeChecked,
   },
 );
