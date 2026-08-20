@@ -74,6 +74,9 @@ importers:
       expo:
         specifier: ~57.0.14
         version: 57.0.14(e19eaf0d8dc5d50b02c20d8b969649ec)
+      expo-localization:
+        specifier: ^57.0.1
+        version: 57.0.1(expo@57.0.14)(react@19.2.3)
       expo-router:
         specifier: ~57.0.14
         version: 57.0.14(7850af53c18e951d9c907d76ca51e686)
@@ -2911,6 +2914,12 @@ packages:
       react: '*'
       react-native: '*'
 
+  expo-localization@57.0.1:
+    resolution: {integrity: sha512-8Ffl4UTbOsQeGT0v5fxMbyPHyPMPnhSPDFQJa8p9rjJrthFoAtNi+fL6Ssmrvf1/7dmPq1mVY52MEt0TMEfgjA==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+
   expo-modules-autolinking@57.0.10:
     resolution: {integrity: sha512-jNqLswMx8QHN8VXRgud+xT+9q+J9U63CEGlx+k4V/IE9Qyt9HrKbWp+pIDma0fOquta5HBfSfsShcI+NkEpTiA==}
     hasBin: true
@@ -4537,6 +4546,9 @@ packages:
     resolution: {integrity: sha512-rSr7irW0K7QRWzjdJXqZowkcRdDtjRduh43rBltnVKd0VFq839l1lJoDvGJb6gl7+4rTTCrPWu+YfujUL8Ug7w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  rtl-detect@1.1.2:
+    resolution: {integrity: sha512-PGMBq03+TTG/p/cRB7HCLKJ1MgDIi07+QU1faSjiYRfmY5UsAttV9Hs08jDAHVwcOwmVLcSJkpwyfXszVjWfIQ==}
 
   safe-array-concat@1.1.4:
     resolution: {integrity: sha512-wtZlHyOje6OZTGqAoaDKxFkgRtkF9CnHAVnCHKfuj200wAgL+bSJhdsCD2l0Qx/2ekEXjPWcyKkfGb5CPboslg==}
@@ -8345,6 +8357,12 @@ snapshots:
       - expo
       - supports-color
 
+  expo-localization@57.0.1(expo@57.0.14)(react@19.2.3):
+    dependencies:
+      expo: 57.0.14(e19eaf0d8dc5d50b02c20d8b969649ec)
+      react: 19.2.3
+      rtl-detect: 1.1.2
+
   expo-modules-autolinking@57.0.10(supports-color@8.1.1)(typescript@6.0.3):
     dependencies:
       '@expo/require-utils': 57.0.4(supports-color@8.1.1)(typescript@6.0.3)
@@ -10469,6 +10487,8 @@ snapshots:
       '@rolldown/binding-openharmony-arm64': 1.2.4
       '@rolldown/binding-win32-arm64-msvc': 1.2.4
       '@rolldown/binding-win32-x64-msvc': 1.2.4
+
+  rtl-detect@1.1.2: {}
 
   safe-array-concat@1.1.4:
     dependencies:

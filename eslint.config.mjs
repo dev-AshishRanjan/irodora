@@ -281,6 +281,33 @@ export default tseslint.config(
     },
   },
 
+  // --- User-facing copy lives in the catalogue, never in a screen ----------
+  //
+  // NFR-11: "no hard-coded user-facing string". The catalogue is the mechanism (ADR-0056) and
+  // this is what stops a screen bypassing it. Scoped to the surfaces that RENDER — the
+  // component library takes its copy as props and has none of its own, and a test fixture
+  // must be able to write literal text or it cannot be a fixture.
+  //
+  // `JSXText` only: a bare string between tags. Strings passed as props are not caught here
+  // and cannot be — `testID`, `accessibilityRole` and every style value are strings too, and a
+  // rule that flagged them would be turned off within a week. The catalogue's own
+  // unused-key and identical-value tests cover the rest.
+  {
+    files: ['apps/mobile/app/**/*.tsx', 'apps/mobile/src/screens/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXText[value=/[A-Za-z\\u3040-\\u30ff\\u4e00-\\u9fff]/]',
+          message:
+            'User-facing text belongs in the message catalogue (src/i18n), not in a screen. ' +
+            'NFR-11 requires en and ja from the first release with no hard-coded string, and ' +
+            'ADR-0028 forbids falling back to English — a literal here can never be Japanese.',
+        },
+      ],
+    },
+  },
+
   // --- Plain-JavaScript config files ---------------------------------------
   //
   // A `.mjs` config is not in any tsconfig project, so the type-aware rules cannot parse it

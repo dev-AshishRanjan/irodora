@@ -130,6 +130,20 @@ const GUARDS = [
       'the server tier (ADR-0051) and a guard at a path that does not exist proves nothing.',
     source: `async function work(): Promise<void> {}\nexport function go(): void {\n  work();\n}\n`,
   },
+  {
+    name: 'a screen may not hard-code user-facing text',
+    // Must live under a path the rule's `files` glob actually covers, or the guard proves
+    // that the rule is off rather than that it is on.
+    path: 'apps/mobile/src/screens/__guard__.tsx',
+    rule: 'no-restricted-syntax',
+    must:
+      'NFR-11 requires English and Japanese from the first release with no hard-coded ' +
+      'user-facing string, and ADR-0028 forbids falling back to English — so a literal in a ' +
+      'screen can never be Japanese, and the failure is a Japanese user reading English ' +
+      'rather than a build error. ADR-0056 makes the catalogue total by type; this rule is ' +
+      'what stops a screen going around it.',
+    source: `export function Guard(): React.JSX.Element {\n  return <>Hard-coded copy</>;\n}\n`,
+  },
 ];
 
 const GREEN = '\x1b[32m',

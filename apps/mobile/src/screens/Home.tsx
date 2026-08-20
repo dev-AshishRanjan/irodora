@@ -1,6 +1,8 @@
 import { View } from 'react-native';
 import { Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import { differenceOklch, displayFromOklch } from '../engine.js';
+import { useMessages } from '../i18n/useMessages.js';
+import type { MessageKey } from '../i18n/index.js';
 import type { Triple } from '@irodora/color-spaces';
 
 /**
@@ -23,60 +25,61 @@ import type { Triple } from '@irodora/color-spaces';
  * accept that token, and the failure is a compile error at the call site.
  *
  * Every value here is still computed by the engine at render time. Nothing on this screen is a
- * typed colour.
+ * typed colour, and after F-017 nothing on it is a typed user-facing string either.
  */
 
 /** Two colours a person could actually be deciding between. Declared, not measured. */
 const INDIGO: Triple = [0.42, 0.09, 264];
 const BLUE_BLACK: Triple = [0.32, 0.05, 268];
-const SAMPLES: readonly { readonly label: string; readonly oklch: Triple }[] = [
-  { label: 'Indigo', oklch: INDIGO },
-  { label: 'Blue-black', oklch: BLUE_BLACK },
+const SAMPLES: readonly { readonly nameKey: MessageKey; readonly oklch: Triple }[] = [
+  { nameKey: 'sample.indigo', oklch: INDIGO },
+  { nameKey: 'sample.blueBlack', oklch: BLUE_BLACK },
 ];
 
 export function Home(): React.JSX.Element {
   const { colors } = useTheme();
+  const { t, script } = useMessages();
   const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
   const difference = differenceOklch(INDIGO, BLUE_BLACK);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, padding: 20, gap: 20 }}>
-      <Text size="title" color="foreground">
-        The engine is running on this device
+      <Text size="title" color="foreground" script={script}>
+        {t('home.title')}
       </Text>
 
-      {swatches.map(({ label, display }) => (
-        <Surface key={label} level="1" padding={12}>
+      {swatches.map(({ nameKey, display }) => (
+        <Surface key={nameKey} level="1" padding={12}>
           <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
             {/*
               The Swatch requires a `Color`, not a hex — provenance is in the type, so a
               sample whose origin nobody recorded cannot be rendered (ADR-0005).
             */}
-            <Swatch name={label} hex={display.hex} color={display.color} size={72} />
+            <Swatch name={t(nameKey)} hex={display.hex} color={display.color} size={72} />
             <View style={{ gap: 2, flexShrink: 1 }}>
               {/*
                 `foreground.2`, not `foreground.3`. At `size="small"` the type will not accept
                 a largeText-only token, so this is a compile error rather than a review note.
               */}
-              <Text size="small" color="foreground.2">
-                {display.hex}
+              <Text size="small" color="foreground.2" script={script}>
+                {`${t('colour.hex')} ${display.hex}`}
               </Text>
-              <Text size="small" color="foreground.2">
-                {`OKLCh ${display.oklch.map((n) => n.toFixed(3)).join(' ')}`}
+              <Text size="small" color="foreground.2" script={script}>
+                {`${t('colour.coordinates')} ${display.oklch.map((n) => n.toFixed(3)).join(' ')}`}
               </Text>
-              <Text size="small" color="foreground.2">
-                {`source: ${display.color.provenance.source}`}
+              <Text size="small" color="foreground.2" script={script}>
+                {`${t('colour.source')}: ${display.color.provenance.source}`}
               </Text>
             </View>
           </View>
         </Surface>
       ))}
 
-      <Text size="small" color="foreground.2">
-        {`ΔE00 between them: ${difference.toFixed(2)}`}
+      <Text size="small" color="foreground.2" script={script}>
+        {`${t('colour.difference')} ${t('colour.differenceUnit')} ${difference.toFixed(2)}`}
       </Text>
-      <Text size="small" color="foreground.2">
-        Computed here, offline. Nothing was sent anywhere.
+      <Text size="small" color="foreground.2" script={script}>
+        {t('home.offline')}
       </Text>
     </View>
   );
