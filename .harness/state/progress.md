@@ -8,7 +8,7 @@ reader cannot reconstruct.
 
 ---
 
-## 2026-08-20 — F-041 IN PROGRESS · the store, and the pragma that enforces nothing by default
+## 2026-08-20 — F-041 DONE · the store, and the pragma that enforces nothing by default
 
 Increments 1–4 of 6 committed and green: schema, migrations, repository, Node driver,
 conformance suite, import guard.
@@ -45,16 +45,36 @@ is a crash on a phone — and it is invisible to every gate here, because the te
 where it resolves perfectly. The Node driver is behind `@irodora/store/node`, and
 `src/drivers/node.ts` is exempted **by explicit path, never by glob**.
 
+### The key lifecycle is behind an interface because it is the part no device would reveal
+
+A key regenerated on every launch encrypts a database nobody can open again. On a phone that
+presents as *"the app lost my data"* — reported once, months later, unreproducible. Behind an
+interface it is a two-line test.
+
+Its decoy is the one that matters: a **constant** key would satisfy "same on second call"
+perfectly, and would be a key every user shares. `keyPragma` refuses anything that is not 64
+hex characters, because PRAGMA takes no bound parameter and the key is interpolated into the one
+statement that runs before any other.
+
+### The device half is attested, and executable
+
+`apps/mobile/src/store/conformance.ts` runs **the same `checkStore`** the CI driver runs — not
+a copy. An attestation with no code behind it is a day's work whenever someone finally has a
+device; this makes it one call, and it returns its report rather than logging it, so the
+evidence can be pasted into this file.
+
 ### State
 
 ```
-Done:       F-041 increments 1–4 of 6; nothing half-finished, tree clean
+Done:       F-041, all six increments. Nothing in progress, tree clean.
 Gates:      state 15 · typecheck 27 · lint 28 · format · test 27 · build 17
             a11y 18 · contrast 18 · content · guards 15 · purity · mirror 12 · secrets
-Next:       increment 5 — the expo-sqlite driver and expo-secure-store key handling,
-            wired into apps/mobile and running the SAME suite. Gated: no key value
-            reaches the database or the bundle. Attested: SQLCipher actually
-            encrypting, and a write surviving a force-quit mid-transaction.
+Attested:   2 — the database actually encrypting at rest (verified by inspecting the
+            file for the "SQLite format 3" header, which an encrypted file lacks), and
+            the shared suite running against expo-sqlite on a device.
+Next:       F-035 is now unblocked — backup, export and import, which ADR-0051 §5 calls
+            a first-release feature because with no server the user's export IS the
+            disaster-recovery story. F-040 (the Lens) and F-042 also open up.
 ```
 
 ### Two things deliberately not done

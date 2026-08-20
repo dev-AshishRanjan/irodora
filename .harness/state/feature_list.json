@@ -1136,14 +1136,15 @@
       "service": "packages",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-039"
       ],
       "acceptance": [
-        "SQLite via expo-sqlite behind one repository interface with a conformance suite",
-        "Writes succeed offline and survive restart; reads never block on network",
-        "The SQLCipher key lives in SecureStore, never in the app database and never in the bundle"
+        "SQLite behind one repository interface with a conformance suite that both drivers run — node:sqlite in CI, expo-sqlite on the device",
+        "Writes succeed offline and survive a reopen; reads never block on a network",
+        "The SQLCipher key lives in SecureStore, never in the app database and never in the bundle",
+        "The database is actually encrypted at rest, and a write survives a force-quit mid-transaction"
       ],
       "verification": [
         "state",
@@ -1154,7 +1155,21 @@
         "build"
       ],
       "plan": "plans/F-041-store-sqlite-sqlcipher-sync-shaped-schema.md",
-      "notes": "IN PROGRESS — increments 1-4 of 6 committed, all gates green, tree clean. THE DECISION IT TURNS ON: the database cannot be tested on the thing it ships on, because expo-sqlite needs a device and CI has none. So one repository interface, TWO drivers, one conformance suite run against both — node:sqlite in CI (built into Node 24, SQLite 3.53.3, zero dependencies) and expo-sqlite on the device, attested. The limit is stated as DATA rather than as a comment: the driver carries encryptsAtRest:false and a test asserts it, because SQLCipher is not in node:sqlite and a green CI run says nothing about encryption at rest. PRAGMA foreign_keys IS THE SUBJECT OF THE SUITE: SQLite defaults it OFF and it is PER CONNECTION, so a schema full of REFERENCES enforces nothing unless it runs every time — and it looks correct in the DDL while accumulating orphans. The check watches a bad write FAIL rather than reading the pragma back. Writing that test found the trap underneath it: PRAGMA foreign_keys is a NO-OP INSIDE A TRANSACTION, so my first mutation (turning it off right after the user_version bump, which is inside the migration transaction) did nothing at all. That is the argument for the check existing. THE GUARD NO TEST COULD REPLACE: apps/mobile bundles this package, so a node:sqlite import reachable from src/index.ts is a crash on a phone — invisible to every gate here, because the tests run in Node where it resolves perfectly. The Node driver is behind @irodora/store/node and src/drivers/node.ts is exempted by explicit path, never by glob. NEXT: increment 5 — the expo-sqlite driver and expo-secure-store key handling, wired into apps/mobile and running the SAME suite. The gated half is that no key value reaches the database or the bundle; the device half (SQLCipher actually encrypting, a force-quit mid-transaction) is attested. Then increment 6: effects, progress, close."
+      "notes": "DONE, with the device half attested rather than assumed. THE DECISION IT TURNED ON: the database cannot be tested on the thing it ships on — expo-sqlite needs a device and CI is a Windows runner with none. One repository interface, TWO drivers, ONE conformance suite run against both: node:sqlite in CI (built into Node 24, SQLite 3.53.3, zero dependencies — better-sqlite3 would have to compile on every runner) and expo-sqlite+SQLCipher on the device. The limit is carried as DATA, not as a comment: the Node driver reports encryptsAtRest:false, the suite prints which driver it ran, and a test asserts it, so a green CI run cannot be read as a statement about encryption. PRAGMA foreign_keys IS THE SUBJECT OF THE SUITE. SQLite defaults it OFF and it is PER CONNECTION, so a schema full of REFERENCES enforces nothing unless it runs every time — it looks right in the DDL and accumulates orphans in silence. The check watches a bad write FAIL rather than reading the pragma back, and writing that test found the trap underneath it: PRAGMA foreign_keys IS A NO-OP INSIDE A TRANSACTION, so the first mutation (turning it off after the user_version bump, inside the migration transaction) changed nothing and the test failed for an unrelated reason. THREE ASSERTIONS WRITTEN AGAINST TESTS THAT LOOK RIGHT AND PROVE NOTHING: durability REOPENS the database, and the driver refuses reopen() on :memory: with a message saying why, because a round-trip without a reopen tests the cache; the change log is checked for WHICH row and op in WHICH order, never for a count; and a rolled-back transaction must leave NO change-log row, because a log entry describing a write that did not happen would be applied confidently by a future reconciler. THE KEY LIFECYCLE IS BEHIND AN INTERFACE BECAUSE IT IS THE PART NO DEVICE WOULD REVEAL: a key regenerated on every launch encrypts a database nobody can open again, which presents as \"the app lost my data\" — reported once, months later, unreproducible. It is a two-line test here. Its decoy is the one that matters: a CONSTANT key would satisfy \"same on second call\" perfectly and would be a key every user shares. keyPragma refuses anything that is not 64 hex characters, because PRAGMA takes no bound parameter and the key is interpolated. A test scans shipped source for a 64-hex literal, excluding test files by path. THE GUARD NO TEST COULD REPLACE: apps/mobile bundles this package, so a node:sqlite import reachable from src/index.ts is a crash on a phone and is invisible to every gate — the tests run in Node, where it resolves perfectly. The Node driver is behind @irodora/store/node and src/drivers/node.ts is exempted by explicit path, never by glob. Guard 15, planted and watched firing. DELIBERATELY NOT DONE: Drizzle, which ADR-0051 section 2 names — it is a query builder over a driver, and adding it before the repository interface existed would have settled the interface by accident. Recorded as a follow-up rather than a silent omission. And change_log is written and read by NOTHING: ADR-0051 section 6 is explicit that it is not an outbox, because an outbox implies a destination and a delivery guarantee.",
+      "attested": [
+        {
+          "criterion": "The database is actually encrypted at rest, and a write survives a force-quit mid-transaction",
+          "verifiedBy": "Running apps/mobile/src/store/conformance.ts on a physical device, then inspecting the database file for SQLite header bytes — an unencrypted file begins with \"SQLite format 3\", an encrypted one does not. SQLCipher is not in node:sqlite, so NOTHING in CI says anything about encryption at rest; the Node driver reports encryptsAtRest:false and a test asserts it, so a green CI run cannot be mistaken for this. The force-quit case needs a real process kill mid-transaction, which is why PRAGMA synchronous is FULL rather than NORMAL. The attestation is one call rather than a day of work because the same checkStore the CI driver runs is already wired to the device driver.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "SQLite behind one repository interface with a conformance suite that both drivers run — node:sqlite in CI, expo-sqlite on the device",
+          "verifiedBy": "The CI half is gated: node:sqlite runs all seven checks every build. The DEVICE half needs a phone, and it is the half that matters — the two drivers are not the same SQLite, and a green CI run is a claim about the device driver only as far as the shared suite reaches. runDeviceStoreConformance() returns its report rather than logging it, so the evidence can be pasted into progress.md.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-042",

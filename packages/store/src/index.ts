@@ -16,6 +16,13 @@ export {
 export { applyPragmas, migrate } from './migrate.js';
 export { createRepository } from './createRepository.js';
 export { uuidv7 } from './id.js';
+export {
+  DATABASE_KEY_NAME,
+  forgetDatabaseKey,
+  getOrCreateDatabaseKey,
+  keyPragma,
+  type SecureKeyStore,
+} from './key.js';
 export type {
   ChangeLogRow,
   Driver,
