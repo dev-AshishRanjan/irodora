@@ -16,7 +16,7 @@
     // including the DOM lib would let a screen reference one and still typecheck — which is
     // precisely the platform assumption the engine's purity rules exist to prevent leaking in.
     "lib": ["ES2023"],
-    "types": ["react", "node"]
+    "types": ["react", "node", "jest"]
   },
   "include": ["src/**/*", "app/**/*", "test/**/*", "*.config.ts"]
 }

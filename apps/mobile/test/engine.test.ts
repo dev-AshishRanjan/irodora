@@ -17,7 +17,6 @@
  * one.
  */
 
-import { describe, expect, it } from 'vitest';
 import { deltaE00 } from '@irodora/color-difference';
 import { oklchToXyz, xyzToLab, xyzToSrgb, srgbToHex } from '@irodora/color-spaces';
 import { differenceOklch, displayFromOklch } from '../src/engine.js';

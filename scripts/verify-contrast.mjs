@@ -18,11 +18,17 @@
  * and `@irodora/cvd-engine`. A gate that carries its own copy of the rules is checking
  * itself.
  *
- * ## What this gate does NOT do yet
+ * ## The rendered half, and where it lives
  *
- * Its charter in `gates.json` also covers scanning rendered surfaces for colour-only status
- * indicators. There are no rendered surfaces: `apps/web` is a stub until F-017. That half is
- * recorded as outstanding rather than quietly implied by a green gate.
+ * Its charter in `gates.json` also covers **rendered surfaces** — colour-only status
+ * indicators, and largeText-only tokens used below the size floor. That half needs a render
+ * tree, which did not exist here until F-017; the sentence this replaces still named
+ * `apps/web`, a directory ADR-0051 retired.
+ *
+ * It now runs, and it runs where the trees are: the conformance suite in
+ * `@irodora/ui/testing`, executed by `packages/ui` and by `apps/mobile` over its screens.
+ * This file checks the MANIFEST; that suite checks the PIXELS' declarations. Both are gate 9's
+ * charter, and neither can do the other's half — so this gate prints which one it is.
  */
 
 import { readFileSync } from 'node:fs';
@@ -144,8 +150,10 @@ console.log(
     `${manifest.exceptions.length} recorded exception(s).${c.reset}`,
 );
 console.log(
-  `${c.dim}  NOT CHECKED HERE: rendered surfaces, for colour-only status indicators. ` +
-    'No component exists until F-017.' +
+  `${c.dim}  NOT CHECKED HERE: rendered surfaces. That half of gate 9's charter — ` +
+    'colour-only status, and largeText-only tokens below the size floor — runs in the ' +
+    'conformance suite (@irodora/ui/testing), over packages/ui and apps/mobile screens. ' +
+    'This file checks the manifest; it cannot see a component.' +
     c.reset,
 );
 

@@ -1,7 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
-import { nativeColors } from '@irodora/design-tokens';
+import { ThemeProvider, useTheme } from '@irodora/ui';
 
 /**
  * The root layout.
@@ -12,31 +11,35 @@ import { nativeColors } from '@irodora/design-tokens';
  * lightness constant across two grounds of opposite polarity
  * ([ADR-0053](../../../docs/adr/0053-dark-status-salience-matches-light-and-error-gets-lighter.md)).
  *
+ * The theme now comes from **`ThemeProvider`**, not from a `useColorScheme()` call in each
+ * screen. This file used to write `useColorScheme() ?? 'light'` — a no-preference fallback
+ * nobody recorded, disagreeing with the manifest's `"defaultTheme": "dark"`. Worse, a screen
+ * that reads the platform directly renders light colours when asked to render dark, which is
+ * exactly what the conformance suite caught on the home screen in F-017.
+ *
  * Colours come from the generated token module. **No literal may appear in a screen** — that is
  * what makes the contrast gate's guarantee reach the pixels rather than stopping at a JSON file.
  */
-export default function RootLayout() {
-  /*
-   * react-native types useColorScheme as `null | undefined | ColorSchemeName`, and the platform
-   * genuinely returns null before the first appearance event. `tsc` agrees the guard is needed —
-   * assigning null to ReturnType<typeof useColorScheme> compiles. This rule resolves the module
-   * differently and disagrees; deleting a guard because a linter overruled a measurement is the
-   * wrong way round.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const scheme = useColorScheme() ?? 'light';
-  const theme = scheme === 'dark' ? nativeColors.dark : nativeColors.light;
-
+function Chrome(): React.JSX.Element {
+  const { name, colors } = useTheme();
   return (
     <>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: theme.background },
-          headerTintColor: theme.foreground,
-          contentStyle: { backgroundColor: theme.background },
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.foreground,
+          contentStyle: { backgroundColor: colors.background },
         }}
       />
     </>
+  );
+}
+
+export default function RootLayout(): React.JSX.Element {
+  return (
+    <ThemeProvider>
+      <Chrome />
+    </ThemeProvider>
   );
 }
