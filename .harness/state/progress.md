@@ -8,6 +8,71 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-077 DONE · sampling in the engine, and two flaws its own tests found
+
+Split out of F-040 first, and for a structural reason: F-040 mixed the sampling **maths** with
+the camera **plumbing**, and the two have opposite verification stories. Keeping them together
+meant either stubbing the maths or writing it in `apps/mobile` — which `apps/mobile/AGENTS.md`
+forbids in terms, and which [E-008](../state/effects.json) records as the defect **no
+single-platform test can see**.
+
+Also corrected: `docs/PRD.md` scheduled FR-13/14/15 as *"R1 web · R3 mobile"* — a retired
+surface **and** a release contradicting F-040 being R2 `must`. F-074's check cannot catch that,
+and says so on every run: it matches vocabulary, and a release column is neither.
+
+### Two design flaws the tests found, both in code just written
+
+**The shadow threshold rejected the garment.** The draft cut at 0.02 *linear* — about sRGB 0.14
+— and an ordinary navy, `rgb(0.10, 0.10, 0.12)`, was discarded as shadow. This corpus is full
+of very dark traditional colours (藍墨茶, 藍鼠), so a cut placed at *"looks dark"* rejects the
+subject rather than the shadow. It is now the **sensor noise floor**, where hue actually stops
+being recoverable.
+
+**The illumination classifier was structurally blind to warm light** — and this one is worth
+remembering. It read the illuminant from the pixels the *material* rule rejected as specular,
+which sounds elegant. But that rule cuts at 0.9 linear luminance, and a warm highlight is
+red-weighted: green carries 0.7152 of luminance, so a tungsten highlight tops out near 0.87 and
+is **never rejected**. The classifier only ever saw highlights that were already near-white, so
+it could not classify the one condition it most needed to.
+
+Two rules, two different questions. It now takes the brightest quantile of the region itself —
+with a separate test that those pixels are genuinely brighter than the region median, because
+pale fabric has a brightest 5% too, and reading the illuminant off it describes **the material
+as the light**.
+
+### The golden case asserts the error as a number
+
+0.2354 of full scale between the linear-light mean and the encoded one — 60 levels on an 8-bit
+channel. `averageEncoded()` is exported *because it is wrong*: it is the implementation almost
+everyone writes first [[averaging-non-linear-srgb-reads-too-dark]].
+
+**My hand-computed expected value was wrong and the code was right** (1.055 inside the power
+instead of outside, off by 0.024). That is exactly what an independent recomputation is for.
+
+### Confidence is capped, never asserted
+
+Mixed and low light do not make a reading wrong; they make it less trustworthy (ADR-0031,
+NFR-21). The two ceilings combine as a **minimum**, not a product — a capture that is excellent
+under mixed light is still under mixed light, and multiplying would produce a number lower than
+either assessment said.
+
+Quality **blocks** a claim rather than decorating one, and names the **first** thing to fix: an
+instruction naming the second-most-important problem gets followed and does not help.
+
+### State
+
+```
+Done:       F-077. Nothing in progress, tree clean.
+Gates:      state 15 · typecheck 28 · lint 29 · format · test 28 · golden · build 18
+            purity (7 engine packages, closure clean) · guards 15 · mirror 12 · secrets
+Next:       F-040 is now unblocked and is the camera plumbing only — VisionCamera frame
+            processors, yuv, disposal, the bridge, four capture modes, each calling the
+            engine and computing no colour of its own. Most of it will be attested.
+            F-068/069/070 are small, fully gateable design-system debts.
+```
+
+---
+
 ## 2026-08-20 — F-035 DONE · the durability story, and the order that is the whole feature
 
 With no server this is all of it ([ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) §5).

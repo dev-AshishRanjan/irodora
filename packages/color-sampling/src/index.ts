@@ -27,3 +27,21 @@ export {
   channelTrimmedMean,
   type Aggregate,
 } from './statistics.js';
+
+export {
+  assessIllumination,
+  ILLUMINATION_CEILING,
+  type Illumination,
+  type IlluminationAssessment,
+} from './illumination.js';
+
+export {
+  assessQuality,
+  confidenceCeiling,
+  QUALITY_CEILING,
+  QUALITY_THRESHOLDS,
+  type CaptureQuality,
+  type QualityAssessment,
+  type QualityMetrics,
+  type Region,
+} from './quality.js';
