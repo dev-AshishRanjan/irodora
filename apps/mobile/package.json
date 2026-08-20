@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "test": "jest --config jest.config.mjs",
     "test:contrast": "jest --config jest.config.mjs --testPathPattern screens",
+    "test:a11y": "jest --config jest.config.mjs --testPathPattern screens",
     "build": "tsc -p tsconfig.json --noEmit",
     "clean": "rimraf dist .expo *.tsbuildinfo"
   },

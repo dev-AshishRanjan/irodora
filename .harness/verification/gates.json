@@ -109,14 +109,14 @@
     {
       "id": "a11y",
       "order": 8,
-      "status": "pending",
+      "status": "active",
       "activatesWith": "F-017",
       "command": "pnpm test:a11y",
       "requiredFor": [
         "app"
       ],
-      "ciStep": false,
-      "description": "Accessibility for every app screen — zero violations, not warnings. React Native exposes this through the platform accessibility APIs rather than the DOM, so the check is accessibility-role, label and state coverage plus focus order, asserted inside the app e2e run. ciStep is false deliberately and the ci-mirror check knows that. Listed separately for traceability against NFR-8."
+      "ciStep": true,
+      "description": "Accessibility for every component and every screen — zero violations, not warnings. React Native exposes this through the platform accessibility APIs rather than the DOM, so axe cannot run (ADR-0051 retired the web surface; ADR-0055 chose what replaces it). The check renders under jest-expo and asserts over the accessibility TREE: roles, accessible names, states, tap-target DECLARATIONS, font scaling, and that every rendered colour resolves to a manifest token. scripts/a11y-scope.mjs runs first and fails if any component is unreachable from a conformance registry, because a suite that passes over a component nobody registered proves nothing about it. IT DOES NOT PROVE THE PIXELS: there is no Yoga layout in a JS render tree, so clipping at 200%, overflow, occlusion and measured tap-target size are invisible to it and stay attested on F-017."
     },
     {
       "id": "contrast",

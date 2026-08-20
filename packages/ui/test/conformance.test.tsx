@@ -9,7 +9,7 @@
 
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { Button, Surface, Swatch, Text, ThemeProvider } from '../src/index.js';
+import { Button, Status, Surface, Swatch, Text, ThemeProvider } from '../src/index.js';
 import {
   checkAll,
   checkSubject,
@@ -66,6 +66,15 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         />,
         theme,
       ),
+  },
+  {
+    // Added because `a11y-scope.mjs` found it unreached on its first run: Status had unit
+    // tests but was in no conformance registry and reachable from nothing that was — so it
+    // had never been checked in BOTH themes, or against the colour-literal and font-scaling
+    // rules. Registering it pulls `Icon` into the closure too, since Status renders one.
+    name: 'Status',
+    kind: 'static',
+    render: (_state, theme) => draw(<Status kind="bad" text="Could not read this colour" />, theme),
   },
   {
     name: 'Swatch',

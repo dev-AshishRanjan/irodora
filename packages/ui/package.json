@@ -25,6 +25,7 @@
     "lint": "eslint .",
     "test": "jest --config jest.config.mjs",
     "test:contrast": "jest --config jest.config.mjs --testPathPattern conformance",
+    "test:a11y": "jest --config jest.config.mjs --testPathPattern \"(conformance|components)\"",
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {

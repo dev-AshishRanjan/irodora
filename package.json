@@ -22,7 +22,7 @@
     "test:content": "node scripts/verify-content.mjs",
     "build": "turbo run build",
     "test:e2e": "node scripts/e2e-scope.mjs && turbo run test:e2e",
-    "test:a11y": "turbo run test:a11y",
+    "test:a11y": "node scripts/a11y-scope.mjs && turbo run test:a11y",
     "test:contrast": "turbo run test:contrast",
     "bench": "pnpm --filter @irodora/bench test",
     "security:secrets": "gitleaks detect --no-banner --redact --config .gitleaks.toml",
@@ -39,7 +39,9 @@
     "verify:claims": "node scripts/verify-claims.mjs",
     "verify:claims:prove": "node scripts/verify-claims-proof.mjs",
     "verify:font": "node scripts/verify-font-coverage.mjs",
-    "verify:font:prove": "node scripts/verify-font-coverage.mjs --prove"
+    "verify:font:prove": "node scripts/verify-font-coverage.mjs --prove",
+    "verify:a11y:prove": "node scripts/verify-a11y-proof.mjs",
+    "a11y:scope": "node scripts/a11y-scope.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

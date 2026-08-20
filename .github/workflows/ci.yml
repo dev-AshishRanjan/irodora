@@ -102,9 +102,12 @@ jobs:
         run: pnpm build
 
       # ---- gates 7-11: surfaces and content -------------------------------
-      # Gate 8 (a11y) is asserted INSIDE the app's e2e run, so it has no step of
-      # its own. gates.json records that as ciStep:false and the mirror check
-      # knows the omission is deliberate.
+
+      # Gate 8 runs the scope reporter FIRST — a suite that passes over a component
+      # nobody registered proves nothing about that component, and `test:a11y` exited
+      # 0 over zero test files until F-017 gave it subjects and a refusal.
+      - name: 'Gate 8 — a11y'
+        run: pnpm test:a11y
 
       # Gate 7 (e2e) has NO STEP HERE, deliberately, and gates.json records it as
       # status:pending + ciStep:false so the mirror check knows the omission is intentional.
