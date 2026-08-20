@@ -1,0 +1,51 @@
+{
+  "$comment": "Vocabulary that describes systems this product no longer has. Gate 0 fails on a criterion or a PRD verification column that uses one. GATE IDS ARE NOT LISTED HERE — they are derived from gates.json, so retiring a gate needs no edit to this file. This list exists only for words that are not symbols anywhere: 'tenant' cannot be derived from anything. Every entry cites the record that retired it, and the citation is printed on a failure, so an entry nobody can justify shows up as an entry with a weak one.",
+  "version": 1,
+  "updated": "2026-08-20",
+  "terms": [
+    {
+      "pattern": "\\bPOST /|\\bGET /|\\bDELETE /|\\bPUT /|\\bPATCH /",
+      "name": "an HTTP route",
+      "retiredBy": "ADR-0051",
+      "why": "There is no server and no API. A criterion naming a route describes work nobody can do."
+    },
+    {
+      "pattern": "\\bIndexedDB\\b",
+      "name": "a web-only store",
+      "retiredBy": "ADR-0051",
+      "why": "There is no web surface. Storage is expo-sqlite with SQLCipher on the device."
+    },
+    {
+      "pattern": "\\bper-tenant\\b|\\bmulti-tenanc|\\btenant id\\b|\\brow-level security\\b",
+      "name": "tenancy",
+      "retiredBy": "ADR-0051",
+      "why": "Single-user, on-device, no account. ADR-0051: 'No tokens, no sessions, no CORS, no tenancy.'"
+    },
+    {
+      "pattern": "\\bNext\\.js\\b|\\bServer Component|\\bserver-render|\\bserver-side render",
+      "name": "the web surface",
+      "retiredBy": "ADR-0051",
+      "why": "ADR-0018 is superseded. apps/mobile is the only surface."
+    },
+    {
+      "pattern": "\\baxe\\b",
+      "name": "axe",
+      "retiredBy": "ADR-0055",
+      "why": "axe walks a DOM. The a11y gate renders React Native and asserts over the accessibility tree."
+    },
+    {
+      "pattern": "\\bOpenAPI\\b",
+      "name": "the generated OpenAPI document",
+      "retiredBy": "ADR-0051",
+      "why": "packages/contracts records the OpenAPI leg as removed; there is no contract to generate."
+    },
+    {
+      "pattern": "\\bAccept-Language\\b",
+      "name": "content negotiation",
+      "retiredBy": "ADR-0056",
+      "why": "The locale comes from the device via expo-localization. There are no responses to negotiate."
+    }
+  ],
+  "allowMarker": "retired-ok:",
+  "$allowComment": "A criterion may NAME a retired surface in order to forbid it, or to describe correcting it — F-074's own criteria name web-perf and per-tenant keys, and so does ADR-0051. Put `retired-ok: <reason>` in the same string. This is the same escape hatch shape as claims-ok in claims.json and ciCondition in gates.json: visible, countable, and requiring a reason. A check that could not express its own feature would be switched off within a week."
+}

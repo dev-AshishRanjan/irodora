@@ -69,7 +69,7 @@
         "F-001"
       ],
       "acceptance": [
-        "Zod schemas are the single source of runtime validation, TypeScript types and OpenAPI",
+        "Zod schemas are the single source of runtime validation and of the TypeScript types derived from them",
         "A schema change propagates to inferred types with no hand-written duplicate",
         "The error-code enum is closed and versioned",
         "No hand-written type duplicates a schema"
@@ -423,7 +423,6 @@
         "F-011"
       ],
       "openQuestions": [
-        "OQ-4",
         "OQ-5"
       ],
       "acceptance": [
@@ -437,7 +436,7 @@
         "state",
         "content"
       ],
-      "notes": "BLOCKED — not on engineering, on a person. The acceptance criterion is a corpus PUBLISHED with a named reviewer per entry. `verified`, `published` and `superseded` all require complete provenance AND author != reviewer, compared as roster ids against content/editors.json (ADR-0047). That roster holds exactly ONE identity, ed-001. No entry can reach `published` until a second real editorial identity exists, and inventing one would defeat the single check that makes review mean anything. OQ-5 (Japanese editorial reviewer — engagement model) is the open question that unblocks this, and it is a hiring or engagement decision, not a technical one. OQ-4 is closed: ~120 entries, depth over breadth. WHAT CAN PROCEED WITHOUT THE REVIEWER, and is worth doing first: `draft` and `review` statuses require no reviewer (workflow.ts REVIEWED_STATUSES), so entries can be authored and sourced now and promoted later. Before ANY entry can cite a source, real rows must be added to docs/content/licensing-and-provenance.md section 5 — with no registered sources every citing entry fails, which is the correct direction. ALSO OWED HERE, and easy to forget: F-013 has never run against real data. Its naming equivalence suite prints \"Real corpus entries available: 0\" and NOTHING re-runs it when entries land. A synthetic corpus is adversarial where a real one is clustered, so the recorded shortlist fractions (40.8% / 12.9% / 2.1%) will move.",
+      "notes": "OQ-4 REMOVED IN F-074: docs/PRD.md records it as closed — \"OQ-4 is settled at ~120 entries — depth over breadth\" — while this feature still listed it as blocking. OQ-5 remains and is the real blocker, and it is not a code problem: content/editors.json holds ONE editor, and the content gate requires two DISTINCT roster identities for a published entry (ADR-0047). No entry can be published until a second editorial identity exists, and inventing one would fabricate the provenance the roster exists to guarantee.",
       "attested": [
         {
           "criterion": "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
@@ -605,13 +604,14 @@
       "priority": "must",
       "status": "todo",
       "blockedBy": [
+        "F-012",
         "F-017",
         "F-039"
       ],
       "acceptance": [
         "Every corpus entry reachable in 3 interactions or fewer from the atlas root",
         "Reads the signed corpus bundle at a pinned version with its digest verified at load, and renders with no network access",
-        "The Atlas bundle contains no colour engine code",
+        "Browsing renders values read from the published bundle; the engine is called for derived answers, never to recompute a value the bundle already carries",
         "Colour detail shows names in four forms, every coordinate system, provenance, relations, palettes and CVD appearance",
         "Every swatch has an accessible name and its numeric value"
       ],
@@ -620,7 +620,8 @@
         "e2e",
         "a11y",
         "contrast"
-      ]
+      ],
+      "notes": "BLOCKEDBY F-012 ADDED IN F-074. It was missing, and F-018 cannot meet its own second criterion without it: content/versions/index.json is [], so there is no signed bundle at any version to read or to verify a digest against. Found while selecting the next feature after F-017 — the same class of defect as the retired-surface criteria, and one the F-074 check CANNOT see, because it is a missing field rather than a wrong word."
     },
     {
       "id": "F-019",
@@ -1025,7 +1026,7 @@
         "Backend bench boots the real runtime over a versioned deterministic corpus",
         "Frontend measured over the wire, gzipped, at the load event, under prefers-reduced-motion with CPU throttling, median of 3",
         "Each gate self-tests its own arithmetic every run",
-        "Gates 12 (perf) and 13 (web-perf) activate"
+        "Gate perf activates"
       ],
       "verification": [
         "state",
@@ -1166,7 +1167,7 @@
       "acceptance": [
         "Only colour and type required at creation; every other field progressively enriched",
         "Colour grouping uses perceptual distance, not hex string sorting",
-        "Wardrobe images under envelope encryption with per-tenant data keys; key rotation exercised in a test",
+        "Wardrobe images are encrypted with a device key held in the platform keystore; key rotation is exercised in a test",
         "EXIF stripped on ingest; images decoded only in the worker under hard limits",
         "No documentation or copy describes this as end-to-end encryption"
       ],
@@ -1758,17 +1759,18 @@
       "service": "tests",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
-        "An acceptance criterion or a PRD verification column naming a retired surface — an HTTP route, a web-only store, a per-tenant key, or a gate id absent from gates.json — fails gate 0, naming the feature and the phrase",
+        "An acceptance criterion or a PRD verification column naming a retired surface — an HTTP route, a web-only store, a per-tenant key, or a gate id absent from gates.json — fails gate 0, naming the feature and the phrase (retired-ok: this criterion enumerates what the check must catch)",
         "The check proves itself by planting exactly that phrase into a real feature and watching gate 0 go red, then restoring it",
-        "The survivors outside R2 are corrected: F-002's OpenAPI leg, which packages/contracts already records as removed; F-038's `web-perf` gate, which is not in gates.json; and F-042's per-tenant data keys, which ADR-0051 retired along with multi-tenancy"
+        "The survivors outside R2 are corrected: F-002's OpenAPI leg, which packages/contracts already records as removed; F-038's retired web performance gate, which is not in gates.json; and F-042's per-tenant data keys, which ADR-0051 retired along with multi-tenancy (retired-ok: this criterion names the defects it exists to correct)"
       ],
       "verification": [
         "state"
       ],
-      "notes": "FOUND WHILE CLAIMING F-017, whose own acceptance still named Next.js 16, Server Components, axe and a `web-perf` gate nine months after ADR-0051 retired the web surface and four features after apps/mobile shipped. The R2 criteria were rewritten in F-017 and docs/PRD.md FR-20 and FR-50 were corrected with them. THIS FEATURE IS THE PART THAT MATTERS: nothing failed. Gate 0 checks that every requirement id resolves, that every path exists and that the ADR index is consistent — and passed green the whole time, because a criterion naming a surface that no longer exists is still a well-formed string. A feature list is the scope subsystem; a stale criterion in it is not cosmetic, it is a contract that would have had F-017 build a Next.js app. The guard belongs on gate 0 for the same reason the golden-rule scan does: prose in a state file rots silently and nothing else reads it. SCOPE CONFIRMED BY THE F-017 EVALUATION: the first sweep claimed exactly three survivors and missed two more — F-041 still said \"Tokens and keys in SecureStore\" on the line above one the same commit rewrote, and docs/PRD.md still measured accessibility as \"axe A/AA violations in the gate\", a live metric bound to the gate F-017 owns. Both are fixed now, and both are exactly what this guard must catch: a human sweeping by eye missed two of five. The check must cover the PRD metrics table and every acceptance array, not only the criteria a reader happens to be looking at."
+      "notes": "FOUND WHILE CLAIMING F-017, whose own acceptance still named Next.js 16, Server Components, axe and a `web-perf` gate nine months after ADR-0051 retired the web surface and four features after apps/mobile shipped. The R2 criteria were rewritten in F-017 and docs/PRD.md FR-20 and FR-50 were corrected with them. THIS FEATURE IS THE PART THAT MATTERS: nothing failed. Gate 0 checks that every requirement id resolves, that every path exists and that the ADR index is consistent — and passed green the whole time, because a criterion naming a surface that no longer exists is still a well-formed string. A feature list is the scope subsystem; a stale criterion in it is not cosmetic, it is a contract that would have had F-017 build a Next.js app. The guard belongs on gate 0 for the same reason the golden-rule scan does: prose in a state file rots silently and nothing else reads it. SCOPE CONFIRMED BY THE F-017 EVALUATION: the first sweep claimed exactly three survivors and missed two more — F-041 still said \"Tokens and keys in SecureStore\" on the line above one the same commit rewrote, and docs/PRD.md still measured accessibility as \"axe A/AA violations in the gate\", a live metric bound to the gate F-017 owns. Both are fixed now, and both are exactly what this guard must catch: a human sweeping by eye missed two of five. The check must cover the PRD metrics table and every acceptance array, not only the criteria a reader happens to be looking at. DONE. THE CHECK IS TWO MECHANISMS AND THE DIFFERENCE IS THE POINT: gate ids are DERIVED from gates.json, so retiring a gate needs no edit anywhere and every criterion still naming it fails on the next run; surface vocabulary is DECLARED, because \"tenant\" is not a symbol anywhere, and each term cites the record that retired it so the citation prints on failure. IT CAUGHT ALL THREE KNOWN SURVIVORS IMMEDIATELY — F-002 OpenAPI, F-038 web-perf, F-042 per-tenant — plus two deliberate mentions in F-074 itself. A GATE-ID BUG FOUND BY RUNNING IT: the first pattern anchored on the word \"Gate\" and so read \"Gates 12 (perf) and 13 (web-perf)\" as naming only `perf`, walking straight past the one that was actually retired. Now the string is first qualified as being about gates, then every `N (id)` in it is checked. THE DECOY THAT KEEPS IT USABLE: a criterion may name a retired surface in order to FORBID it — F-074's own two criteria do, and so does ADR-0051 — so `retired-ok: <reason>` is the escape hatch, the same visible-and-reasoned shape as claims-ok and ciCondition. Proven by planting an HTTP route, a per-tenant IndexedDB cache and a dead gate id and watching each reported by feature and phrase, then planting a criterion that FORBIDS a retired store and watching it stay silent. WHAT IT CANNOT SEE, printed on every run: it matches vocabulary. F-018 lacking blockedBy F-012 while being unable to read a corpus bundle is the same CLASS of defect and no word-matcher finds it — that one was fixed by hand and recorded on F-018. ALSO CORRECTED: F-012 listed OQ-4 as blocking while docs/PRD.md records it closed (\"settled at ~120 entries\"). OQ-5 remains, and it is not a code problem — content/editors.json holds ONE editor and the content gate requires two distinct roster identities, so no corpus entry can be published until a second editorial identity exists.",
+      "plan": "plans/F-074-gate-0-catches-a-retired-surface-criterion.md"
     },
     {
       "id": "F-075",

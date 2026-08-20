@@ -317,6 +317,131 @@ if (featureList) {
   }
 }
 
+/* ============================================ 2b. retired surfaces (F-074)
+
+   Every check above this one reads STRUCTURE. This one reads PROSE, because the defect it
+   exists for is a criterion that is perfectly well-formed and describes a system that no
+   longer exists.
+
+   That is not hypothetical. F-017's contract said to build a Next.js app with Server
+   Components, axe, and a `web-perf` gate — nine months after ADR-0051 retired the web surface
+   and four features after apps/mobile shipped. Gate 0 was green the whole time, correctly by
+   its own rules, because `"Next.js 16 App Router..."` is a fine string in a fine array.
+
+   SIX defects of this class were found by hand. Three of them were found AFTER a sweep that
+   was specifically looking for them. That is the argument for a checker.
+
+   TWO MECHANISMS, and the difference matters:
+
+     · GATE IDS ARE DERIVED from gates.json. Retire a gate and every criterion naming it fails
+       on the next run, with nothing to maintain. This half needs no judgement at all.
+     · SURFACE VOCABULARY IS DECLARED, because "tenant" is not a symbol anywhere — it is a
+       word. Each term cites the record that retired it, and the citation prints on failure.
+
+   WHAT IT CANNOT SEE, said here so a green run is not read as "the state is true": it matches
+   vocabulary. F-018 lacking `blockedBy: F-012` while being unable to read a corpus bundle is
+   the same CLASS of defect — state that does not describe reality — and no word-matcher finds
+   it. */
+
+const retiredPath = join(ROOT, '.harness/verification/retired-surface.json');
+const retiredRaw = readText(retiredPath);
+
+if (featureList && retiredRaw) {
+  /** @type {{terms: {pattern: string, name: string, retiredBy: string, why: string}[], allowMarker: string}} */
+  let retired;
+  try {
+    retired = JSON.parse(retiredRaw);
+  } catch {
+    retired = null;
+  }
+
+  if (retired === null || !Array.isArray(retired.terms) || retired.terms.length === 0) {
+    fail(
+      'retired-surface',
+      'retired-surface.json is missing, unparseable, or declares no terms',
+      'A vocabulary check with no vocabulary passes over everything and reports coverage.',
+      'Restore .harness/verification/retired-surface.json.',
+    );
+  } else {
+    // Read directly rather than reusing the module-level `gates` and `prd`, which are defined
+    // further down this file. A check that silently depends on declaration order is a check
+    // that breaks when someone reorders the sections, and it breaks by passing.
+    const gatesHere = readJson(join(HARNESS, 'verification/gates.json'));
+    const prdHere = readText(join(ROOT, 'docs/PRD.md'));
+
+    // Gate ids, derived. A criterion naming `Gate N (x)` where x is not a gate in gates.json.
+    const knownGates = new Set((gatesHere?.gates ?? []).map((g) => g.id));
+    const marker = retired.allowMarker ?? 'retired-ok:';
+
+    /** Every prose string gate 0 owns, with a label naming where it came from. */
+    const subjects = [];
+    for (const f of featureList.features) {
+      for (const [i, a] of (f.acceptance ?? []).entries())
+        subjects.push({ where: `${f.id}.acceptance[${i}]`, text: a });
+      for (const [i, a] of (f.attested ?? []).entries())
+        subjects.push({ where: `${f.id}.attested[${i}].criterion`, text: a.criterion });
+    }
+    if (prdHere)
+      for (const line of prdHere.split('\n'))
+        if (/^\|\s*\*\*(?:FR|NFR)-\d+\*\*/.test(line))
+          subjects.push({ where: `docs/PRD.md ${line.slice(0, 40).trim()}`, text: line });
+
+    let hits = 0;
+    let exempt = 0;
+
+    for (const { where, text } of subjects) {
+      // The escape hatch, checked FIRST. A criterion may name a retired surface in order to
+      // forbid it or to describe correcting it — F-074's own criteria do, and so does
+      // ADR-0051. A check that could not express its own feature gets switched off.
+      if (text.includes(marker)) {
+        exempt += 1;
+        continue;
+      }
+
+      for (const term of retired.terms) {
+        if (!new RegExp(term.pattern, 'iu').test(text)) continue;
+        hits += 1;
+        fail(
+          'retired-surface',
+          `${where} names ${term.name}`,
+          `${term.why} Retired by ${term.retiredBy}.`,
+          `Rewrite the criterion for the surface that exists, or add "${marker} <reason>" ` +
+            'to it if it names the retired thing in order to forbid it.',
+        );
+      }
+
+      // A gate id that is not a gate. Derived — nothing to maintain when a gate is retired.
+      //
+      // Two steps rather than one pattern, because "Gates 12 (perf) and 13 (web-perf)" names
+      // TWO gates and only the first is preceded by the word. A single regex anchored on
+      // "Gate" caught `perf` and walked straight past `web-perf`, which is the one that was
+      // actually retired — so the string is first qualified as being ABOUT gates, then every
+      // `N (id)` in it is checked.
+      if (!/\bgates?\b/iu.test(text)) continue;
+      for (const m of text.matchAll(/\d+\s*\(([a-z][a-z-]*)\)/gu)) {
+        const id = m[1];
+        if (knownGates.has(id)) continue;
+        hits += 1;
+        fail(
+          'retired-surface',
+          `${where} names gate "${id}", which is not in gates.json`,
+          'A criterion cannot be satisfied by a gate that does not exist, and it reads as ' +
+            'though it can.',
+          `Name a gate from gates.json, or drop the clause.`,
+        );
+      }
+    }
+
+    if (hits === 0)
+      pass(
+        'retired-surface',
+        `${subjects.length} criteria and requirement rows scanned; ${retired.terms.length} ` +
+          `retired term(s), gate ids derived from gates.json; ${exempt} deliberate mention(s). ` +
+          'Vocabulary only — it cannot see a missing blockedBy',
+      );
+  }
+}
+
 /* ============================================ 3. requirement traceability (PRD) */
 
 const prd = readText(join(ROOT, 'docs/PRD.md'));

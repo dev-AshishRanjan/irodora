@@ -8,6 +8,88 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-074 DONE · gate 0 reads the prose now, not only the structure
+
+The guard F-017 filed against itself. Every check in gate 0 read **structure**; this one reads
+**prose**, because the defect it exists for is a criterion that is perfectly well-formed and
+describes a system that no longer exists.
+
+### The argument, which is a count
+
+Six defects of this class were found by hand. **Three of them after a sweep that was
+specifically looking for them** — two by the F-017 evaluation, one while selecting the next
+feature. A careful human reading missed half.
+
+### Two mechanisms, and the difference is the point
+
+- **Gate ids are DERIVED** from `gates.json`. Retire a gate and every criterion still naming it
+  fails on the next run, with nothing to maintain.
+- **Surface vocabulary is DECLARED**, because "tenant" is not a symbol anywhere — it is a word.
+  Each term cites the record that retired it, and the citation prints on failure.
+
+It caught all three known survivors immediately: F-002's OpenAPI leg, F-038's `web-perf`,
+F-042's per-tenant keys.
+
+### A bug in the checker, found by running it
+
+The gate-id pattern anchored on the word "Gate", so it read *"Gates 12 (perf) and 13
+(web-perf)"* as naming only `perf` — **walking straight past the one that was actually
+retired.** The string is now first qualified as being about gates, then every `N (id)` in it is
+checked.
+
+### The decoy that keeps it usable
+
+A criterion may name a retired surface **in order to forbid it** — F-074's own two criteria do,
+and so does ADR-0051. `retired-ok: <reason>` is the escape hatch, the same visible-and-reasoned
+shape as `claims-ok` and `ciCondition`. A check that could not express its own feature would be
+switched off within a week.
+
+Proven by planting an HTTP route, a per-tenant IndexedDB cache and a dead gate id, watching
+each reported by feature and phrase — then planting a criterion that *forbids* a retired store
+and watching it stay silent.
+
+### Two things it cannot see, fixed by hand and recorded
+
+**F-018 had no `blockedBy: F-012`** while being unable to meet its own second criterion —
+`content/versions/index.json` is `[]`, so there is no signed bundle at any version to read.
+Same class of defect, invisible to a word-matcher: a missing field, not a wrong word. The check
+says so on every run rather than letting a green line read as "the state is true".
+
+**F-012 listed OQ-4 as blocking** while `docs/PRD.md` records it closed — *"settled at ~120
+entries — depth over breadth."*
+
+### Why the corpus is empty, stated plainly
+
+Not a broken pipeline — an unstaffed one. `content/editors.json` holds **one** editor, and the
+content gate requires two **distinct** roster identities for a published entry (ADR-0047). No
+entry can be published until a second editorial identity exists. That is OQ-5, it needs a
+person, and inventing a second editor would fabricate exactly the provenance the roster exists
+to guarantee.
+
+The gate already reports this honestly on every run:
+
+```
+0 authored entries, 0 palette(s), 0 published version(s), 0 registered source(s)
+5 corpus rule group(s) + 19 fixture corpora exercised
+! content/colors/ holds NO authored entries. Everything green above came from the
+  fixtures — this gate proves the RULES work, not that any colour passed them.
+```
+
+### State
+
+```
+Done:       F-074. Gate 0 now runs 15 checks.
+Gates:      state 15 · typecheck 26 · lint 27 · format · test 26 · build 16 · a11y 18
+            contrast 18 · content · guards 14 · mirror 12 · security:secrets
+Next:       F-018 is now correctly BLOCKED on F-012. The lowest-id eligible R2 feature
+            is F-040 (the Lens) — but F-041 (@irodora/store) is the better next move:
+            self-contained, needs no corpus and no device, and it unblocks F-035, which
+            ADR-0051 §5 calls a first-release feature because with no server the user's
+            export IS the disaster-recovery story.
+```
+
+---
+
 ## 2026-08-20 — F-017 DONE · the interface can no longer express the things it forbids
 
 Eleven increments. The entry below this one covers 1–6; this closes 7–11 and the feature.
