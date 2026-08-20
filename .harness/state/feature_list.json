@@ -1945,6 +1945,52 @@
       ],
       "notes": "SPLIT OUT OF F-040 WHILE SELECTING IT. F-040 mixed the sampling MATHS with the camera PLUMBING, and the two have opposite verification stories: this half is fully gateable with no device, and the other half is almost entirely a device attestation. Keeping them together would have meant either stubbing the maths or writing it in apps/mobile — which apps/mobile/AGENTS.md forbids in terms (\"the engine is imported, never ported\") and which E-008 records as the defect no single-platform test can see, because the same fabric would measure differently on two surfaces. THE TRAP THIS FEATURE MUST NOT FALL INTO is recorded in memory already: averaging non-linear sRGB is the most common colour bug there is and it always makes the result too dark [[averaging-non-linear-srgb-reads-too-dark]]. That is why a golden case proving the wrong route is measurably darker is an acceptance criterion rather than a test someone might write. DONE. TWO DESIGN FLAWS THE TESTS FOUND, both in code I had just written and both invisible to a reader. FIRST: the shadow threshold rejected the garment. The draft cut at 0.02 LINEAR — about sRGB 0.14 — and an ordinary navy, rgb(0.10, 0.10, 0.12), was discarded as shadow. This corpus is full of very dark traditional colours, so a cut placed at \"looks dark\" rejects the subject rather than the shadow. It is now 0.0015 linear, the SENSOR NOISE FLOOR, where hue actually stops being recoverable; relative darkness is the background rule's job and that one is median-relative. SECOND, AND WORSE: the illumination classifier was STRUCTURALLY BLIND TO WARM LIGHT. It read the illuminant from the pixels the material rule rejected as specular — which sounds elegant and is wrong, because that rule cuts at 0.9 linear luminance and a warm highlight is red-weighted. Green carries 0.7152 of luminance, so a tungsten highlight tops out near 0.87 and is never rejected. The classifier therefore only ever saw highlights that were already near-white, and could not classify the one condition it most needed to. It now takes the brightest quantile of the region itself, with a separate test that those pixels are genuinely brighter than the region median — because pale fabric has a brightest 5% too, and reading the illuminant off it describes the MATERIAL as the light, which is the exact failure the module header says it refuses to commit. Cut points recalibrated to ratios a real highlight produces, computed rather than guessed. THE GOLDEN CASE ASSERTS THE ERROR AS A NUMBER: 0.2354 of full scale, 60 levels on an 8-bit channel, between the linear-light mean and the encoded one. averageEncoded() is exported because it is wrong — it is the implementation almost everyone writes first. And my hand-computed expected value was wrong while the code was right (1.055 inside the power instead of outside), which is exactly what an independent recomputation is for. EVERY REJECTION RULE IS PROVEN BY THE PIXEL IT REJECTS — each case asserts the rejected pixel WOULD HAVE CHANGED THE ANSWER — with a clean-region baseline beside them, without which every case would pass on a rule that rejects everything. CONFIDENCE IS CAPPED, NEVER ASSERTED (ADR-0031, NFR-21): mixed and low light do not make a reading wrong, they make it less trustworthy, and the two ceilings combine as a MINIMUM rather than a product — a capture that is excellent under mixed light is still under mixed light. Quality blocks a claim rather than decorating one, and names the FIRST thing to fix, because an instruction naming the second-most-important problem gets followed and does not help. BLUR AND UNIFORMITY TAKE A REGION WITH DIMENSIONS, not a flat list: they are spatial properties, and a function taking `blur` as a parameter someone else computed is the self-declared-metric shape — a caller that computed it wrongly would be invisible to every check. Uniformity is measured across QUADRANTS rather than per-pixel, because per-pixel variance cannot tell a shadow across the frame from a patterned fabric and only the first is a lighting problem. ALL THRESHOLDS ARE DECLARED DATA WITH A STATED BASIS. NFR-2: no number without a row. F-063 produces the rows and is R5, so until then these are stated conventions and the confidence they produce is capped rather than asserted.",
       "plan": "plans/F-077-colour-sampling-and-capture-assessment.md"
+    },
+    {
+      "id": "F-078",
+      "title": "The gate scripts are linted",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R2",
+      "priority": "should",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-078-the-gate-scripts-are-linted.md",
+      "acceptance": [
+        "Every file under scripts/ is linted, and a planted violation there fails pnpm lint",
+        "The gate scripts pass that lint, with any finding fixed rather than suppressed",
+        "The observation recording this gap is closed, naming what closed it"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "notes": "FILED FROM AN OBSERVATION RECORDED THIS SESSION while wiring packages/ui, whose own jest.config.mjs hit the same parse error. `pnpm lint` is `turbo run lint`, which invokes each PACKAGE's `eslint .` — and scripts/ is in no package, so nothing reaches it. Confirmed directly: `npx eslint scripts/verify-state.mjs` fails to parse because `project: true` finds no tsconfig covering it. That is 23 files including verify-state, verify-contrast, verify-guards, verify-engine-purity, verify-claims, verify-content, verify-motion and verify-font-coverage — THE CODE THAT DECIDES WHETHER EVERYTHING ELSE IS ALLOWED TO SHIP. Same class as F-071, F-072, F-073 and F-074: a defect in the verification apparatus itself, filed as a `tests` feature on that precedent rather than pulled from a later release."
+    },
+    {
+      "id": "F-079",
+      "title": "Gate 15 has a disposition for an advisory with no fix",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "pnpm audit --audit-level high exits 0, or the advisory is allowlisted with an expiry and a named owner",
+        "Whichever is chosen is recorded in an ADR, because it is a deviation from the documented default that High blocks",
+        "The choice is proven: the gate is watched going red on a DIFFERENT high advisory, so an allowlist entry cannot become a blanket exemption"
+      ],
+      "verification": [
+        "state",
+        "security"
+      ],
+      "notes": "FOUND DURING F-078 while running the CI step list, not by a failing build. `pnpm audit --audit-level high` exits 1: two HIGH advisories, both `image-size <=2.0.2` (GHSA-5p2g-fcmc-qvqq, ICNS parser infinite loop), plus one moderate. ALL 200 REPORTED PATHS route through `apps__mobile>expo>...` — metro depends on image-size@1.2.1 — so it arrived with F-039 and has been failing gate 15 unconditionally ever since; `progress.md` last recorded this gate green before Expo existed. THERE IS NO FIXED VERSION TO UPGRADE TO: the latest published image-size is 2.0.2 and the advisory covers <=2.0.2, so a pnpm `overrides` entry cannot resolve it and attempting one will waste the next person an hour. That leaves three real options — wait for an upstream fix and pin when it lands, allowlist the GHSA via `auditConfig.ignoreGhsas` with an expiry, or accept a red step — and choosing among them is a security-policy decision, which is why this is a feature with an ADR rather than a commit. The reachability question is worth answering first: image-size parses ICNS inside metro, the DEV bundler, which never runs in the shipped app."
     }
   ]
 }

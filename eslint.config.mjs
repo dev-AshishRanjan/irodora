@@ -16,6 +16,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import-x';
+import globals from 'globals';
 
 export default tseslint.config(
   {
@@ -448,15 +449,47 @@ export default tseslint.config(
     },
   },
 
+  // --- The gate scripts ----------------------------------------------------
+  //
+  // `scripts/` is in NO package, so `turbo run lint` — which walks packages — structurally
+  // cannot reach it. For 23 files, including every gate script, that meant the code deciding
+  // whether everything else may ship was itself checked by nothing (F-078).
+  //
+  // Linted WITHOUT type-awareness: they are plain `.mjs` in no tsconfig project, so the
+  // type-aware rules cannot parse them at all. Everything that does not need a type checker
+  // still applies — undefined variables, unreachable code, unused values.
+  {
+    files: ['scripts/**/*.mjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      // `globals.node` rather than a hand-written list. The first draft of this block
+      // enumerated eight names and was already wrong twice: it carried `TextEncoder` and
+      // `TextDecoder`, which appear nowhere under `scripts/`, and it would have reported a
+      // spurious `no-undef` for the next script to use `setTimeout` or `AbortController` —
+      // whose tempting fix is a disable comment, in the directory this zone exists to protect.
+      // A remembered copy of a list that already exists is the same defect as a remembered
+      // copy of the manifest.
+      globals: globals.node,
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      // These are build tools: reporting to a terminal IS their output. `no-console` is not
+      // enabled anywhere in this config today, so this is stated rather than needed — it is
+      // here so that turning it on repository-wide later does not silently gag the gates.
+      'no-console': 'off',
+    },
+  },
+
   // --- Plain-JavaScript config files ---------------------------------------
   //
   // A `.mjs` config is not in any tsconfig project, so the type-aware rules cannot parse it
   // and the whole file errors out. It is still LINTED — for undefined variables, unreachable
   // code and the rest — just not type-aware.
   //
-  // Ignoring it outright was the alternative and was rejected: `scripts/*.mjs` is already
-  // effectively unlinted (it lives in no package, so `turbo run lint` never reaches it), and
-  // a second unlinted zone is how the first one stops being noticed.
+  // Ignoring it outright was the alternative and was rejected: an unlinted zone is how the
+  // NEXT one stops being noticed. `scripts/**/*.mjs` was exactly that for 23 files until
+  // F-078 — this comment used to cite it as a live example, which it no longer is.
   {
     files: ['**/*.config.mjs', '**/*.config.js'],
     ...tseslint.configs.disableTypeChecked,

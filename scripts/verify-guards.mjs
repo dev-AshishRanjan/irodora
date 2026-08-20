@@ -15,7 +15,7 @@
  * Windows under Node 20+, and a guard that cannot run is a guard that is failing open.
  */
 
-import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
@@ -204,6 +204,20 @@ export const x = FileSystem;
       'the rgba() form and the pre-composited hex precisely so a component never has to.',
     source: `export const veil = 'rgba(0, 0, 0, 0.14)';\n`,
   },
+  {
+    // F-078. `scripts/` is in no package, so `turbo run lint` never walked it — 23 files,
+    // including every gate script, linted by nothing. A blind spot is worst exactly where
+    // the checkers live, because every other gate’s green depends on code nothing checked.
+    // The zone exists now; this is what keeps it existing.
+    name: 'the gate scripts are linted at all',
+    path: 'scripts/__guard__.mjs',
+    rule: 'no-undef',
+    must:
+      'F-078 — scripts/ holds verify-state, verify-guards, verify-engine-purity, verify-claims ' +
+      'and the rest: the code that decides whether everything else is allowed to ship.',
+    source: `export const x = window.innerWidth;
+`,
+  },
 ];
 
 const GREEN = '\x1b[32m',
@@ -258,6 +272,32 @@ for (const guard of GUARDS) {
   }
 }
 
+/**
+ * The guards above prove the RULES fire. None of them proves anything RUNS them.
+ *
+ * `pnpm lint` is the only thing that walks `scripts/`, and the ci-mirror check compares gate
+ * COMMANDS — it sees `pnpm lint` and never reads what that script contains. Deleting
+ * `eslint scripts` from the root package.json would reopen F-078 in full, 23 files at once,
+ * with every gate still green. So the wiring is asserted rather than assumed.
+ */
+const lintScript =
+  JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).scripts?.lint ?? '';
+if (lintScript.includes('eslint scripts')) {
+  console.log(`  ${GREEN}✓${OFF} something actually runs those rules over scripts/`);
+  console.log(`    ${DIM}the root "lint" script invokes eslint over scripts/${OFF}`);
+} else {
+  notEnforced.push({
+    guard: {
+      name: 'something actually runs those rules over scripts/',
+      rule: 'package.json -> scripts.lint',
+      must:
+        'F-078 — the zone in eslint.config.mjs is inert unless a command walks the directory. ' +
+        'turbo run lint walks PACKAGES, and scripts/ is not one.',
+    },
+    reason: `the root lint script is "${lintScript}", which never walks scripts/`,
+  });
+}
+
 if (couldNotRun.length) {
   console.log(`\n${RED}${BOLD}${couldNotRun.length} guard(s) COULD NOT RUN${OFF}\n`);
   for (const { guard, reason } of couldNotRun) {
@@ -289,4 +329,6 @@ if (couldNotRun.length || notEnforced.length) {
   process.exit(1);
 }
 
-console.log(`\n${GREEN}${BOLD}All ${GUARDS.length} boundaries enforced.${OFF}\n`);
+console.log(
+  `\n${GREEN}${BOLD}All ${GUARDS.length} boundaries enforced, and the wiring that runs them.${OFF}\n`,
+);

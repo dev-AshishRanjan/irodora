@@ -34,6 +34,55 @@ const typecheck = () =>
 const emitTest = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens test']);
 const rebuild = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens build']);
 
+/**
+ * A manifest mutation stated as a PATH and an EXPECTED value, not as source text.
+ *
+ * The four cases that use this used to match the manifest's text. F-068 and F-070 reformatted
+ * that file from compact to expanded JSON and the anchors stopped matching. Three said so
+ * loudly — "MUTATION DID NOT APPLY" is the right behaviour and it worked. **The fourth was the
+ * dangerous one:** its first replace (approved -> placeholder) still applied, so the case never
+ * reported a miss, while the half that plants the REAL FAILURE quietly did nothing. It spent
+ * that time proving "a placeholder status is report-only" with nothing to report.
+ * [[a-decoy-that-is-not-broken-proves-nothing]]
+ *
+ * Asserting the CURRENT value is the part that matters. A path that still resolves after the
+ * token behind it was retuned would otherwise plant a different change than the one the case
+ * name describes — drifting from loud breakage to a silent lie. The manifest round-trips
+ * byte-identically through `JSON.stringify(_, null, 2)`, so the runner's own
+ * "did the mutation apply" comparison keeps working unchanged.
+ */
+const jsonEdit = (source, path, expected, next) => {
+  const root = JSON.parse(source);
+  let node = root;
+  for (const key of path.slice(0, -1)) {
+    node = node?.[key];
+    if (node === undefined || node === null)
+      throw new Error(
+        `verify-contrast-proof: path ${path.join('.')} does not exist in the manifest`,
+      );
+  }
+  const last = path.at(-1);
+  if (JSON.stringify(node[last]) !== JSON.stringify(expected))
+    throw new Error(
+      `verify-contrast-proof: ${path.join('.')} holds ${JSON.stringify(node[last])}, ` +
+        `expected ${JSON.stringify(expected)} — the manifest was retuned and this mutation is no ` +
+        `longer the change its name describes. Re-derive it rather than deleting the case.`,
+    );
+  node[last] = next;
+  return JSON.stringify(root, null, 2) + '\n';
+};
+
+const RANK = ['salience', 'rank'];
+const RANK_NOW = ['status.bad', 'status.warn', 'status.ok'];
+/** Light theme: the one whose warn sits closest to the AA floor against a pale ground. */
+const WARN = ['color', 'light', 'status.warn', 'oklch'];
+const WARN_NOW = { l: 0.54, c: 0.11, h: 70 };
+const WARN_TOO_LIGHT = { l: 0.64, c: 0.11, h: 70 };
+/** Dark theme: where success and caution are furthest apart, so a rotation is a real move. */
+const OK_DARK = ['color', 'dark', 'status.ok', 'oklch'];
+const OK_DARK_NOW = { l: 0.67, c: 0.12, h: 158 };
+const OK_DARK_ROTATED = { l: 0.7, c: 0.14, h: 74 };
+
 const cases = [
   {
     // F-067. Without this the `salience` block is documentation: `checkSalience` returning []
@@ -41,21 +90,13 @@ const cases = [
     // repository has shipped twice. Swapping two entries in the RECORDED rank must go red.
     name: 'gate 9 — the recorded salience rank swapped (F-067)',
     file: MANIFEST,
-    mutate: (s) =>
-      s.replace(
-        '"rank": ["status.bad", "status.warn", "status.ok"]',
-        '"rank": ["status.warn", "status.bad", "status.ok"]',
-      ),
+    mutate: (s) => jsonEdit(s, RANK, RANK_NOW, ['status.warn', 'status.bad', 'status.ok']),
     check: gate9,
   },
   {
     name: 'gate 9 — a token nudged below AA',
     file: MANIFEST,
-    mutate: (s) =>
-      s.replace(
-        '"status.warn":   { "oklch": { "l": 0.540, "c": 0.110, "h": 70 }',
-        '"status.warn":   { "oklch": { "l": 0.640, "c": 0.110, "h": 70 }',
-      ),
+    mutate: (s) => jsonEdit(s, WARN, WARN_NOW, WARN_TOO_LIGHT),
     check: gate9,
   },
   {
@@ -77,11 +118,7 @@ const cases = [
   {
     name: 'gate 10 — success rotated 84 degrees toward caution (70.7 -> 3.6)',
     file: MANIFEST,
-    mutate: (s) =>
-      s.replace(
-        '"status.ok":     { "oklch": { "l": 0.670, "c": 0.120, "h": 158 }',
-        '"status.ok":     { "oklch": { "l": 0.700, "c": 0.140, "h": 74 }',
-      ),
+    mutate: (s) => jsonEdit(s, OK_DARK, OK_DARK_NOW, OK_DARK_ROTATED),
     check: gate10,
   },
   {
@@ -98,13 +135,11 @@ const cases = [
     // looks exactly like a passing build.
     name: 'gate 9 — report-only under a placeholder status, WITH a real failure present',
     file: MANIFEST,
+    // BOTH halves must land. This case asserts that a placeholder status is REPORT-ONLY, and
+    // it only means that if a real failure is present to be report-only ABOUT. When the second
+    // half silently stopped applying, the case went on passing while asserting nothing.
     mutate: (s) =>
-      s
-        .replace('"status": "approved",', '"status": "placeholder",')
-        .replace(
-          '"status.warn":   { "oklch": { "l": 0.540, "c": 0.110, "h": 70 }',
-          '"status.warn":   { "oklch": { "l": 0.640, "c": 0.110, "h": 70 }',
-        ),
+      jsonEdit(jsonEdit(s, ['status'], 'approved', 'placeholder'), WARN, WARN_NOW, WARN_TOO_LIGHT),
     check: gate9,
     expect: 'green',
   },

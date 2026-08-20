@@ -54,7 +54,7 @@ export function readJsonDir(dir) {
       try {
         value = JSON.parse(text);
       } catch (error) {
-        throw new Error(`${name}: is not valid JSON — ${error.message}`);
+        throw new Error(`${name}: is not valid JSON — ${error.message}`, { cause: error });
       }
       return { file: name, value, text };
     });

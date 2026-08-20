@@ -56,7 +56,7 @@ const outputs = [
 
 const stale = [];
 for (const [path, content] of outputs) {
-  let current = null;
+  let current;
   try {
     current = readFileSync(path, 'utf8');
   } catch {

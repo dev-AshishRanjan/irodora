@@ -271,7 +271,7 @@ function prove() {
 
   for (const c of cases) {
     c.plant();
-    let caught = false;
+    let caught;
     try {
       caught = check().problems.some((p) => c.expect.test(`${p.what}`));
     } finally {

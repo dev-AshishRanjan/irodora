@@ -173,7 +173,9 @@ for (const file of files) {
 console.log(`\n${BOLD}Irodora — claims copy lint${OFF}`);
 console.log(
   `${DIM}  ${String(files.length)} file(s) scanned · ${String(banned.length)} banned construction(s) · ` +
-    `${String(policyPaths.size)} policy source(s) exempt · ${String(markerUses)} inline marker(s)${OFF}`,
+    `${String(policyPaths.size)} policy source(s) exempt · ${String(markerUses)} inline marker(s)` +
+    (bareMarkers > 0 ? ` · ${String(bareMarkers)} REJECTED for having no reason` : '') +
+    OFF,
 );
 
 if (violations.length > 0) {

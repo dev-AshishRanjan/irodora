@@ -8,6 +8,163 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-078 DONE · 31 tasks green while a gate script did not parse
+
+`pnpm lint` was `turbo run lint`. Turborepo runs each **package's** `lint`, each of which is
+`eslint .` rooted in that package — and `scripts/` is in no package. **No invocation of eslint
+had ever had it in scope.** Not a misconfigured rule: a directory nothing walked. 23 files,
+including `verify-state`, `verify-guards`, `verify-engine-purity`, `verify-claims`,
+`verify-content`, `verify-motion` and `verify-font-coverage`, which is the code that decides
+whether everything else is allowed to ship.
+
+### The gap, watched rather than asserted
+
+Two errors planted in `verify-state.mjs` — an unused binding and a reference to `window`:
+
+```
+Tasks:    31 successful, 31 total
+Cached:   31 cached, 31 total
+  Time:   184ms >>> FULL TURBO
+```
+
+Fully green, fully cached. The new segment then caught both. **This is what the plan required
+instead of "eslint now runs on scripts", asserted by the config existing** — the same mistake
+`verify-guards.mjs` exists to prevent. Baseline re-run clean after removal.
+
+### Nine findings, reproduced rather than recalled
+
+Measured by restoring the six edited scripts to HEAD and re-linting under the new zone:
+**9 problems in 7 files.**
+
+| count | rule | where |
+|---|---|---|
+| 2 | `no-undef` | `structuredClone`, both in `build-corpus-fixtures.mjs` |
+| 4 | `no-unused-vars` | `verify-claims`, `verify-content-proof` ×2, `verify-state` |
+| 2 | `no-useless-assignment` | `generate-design-tokens`, `verify-engine-purity` |
+| 1 | `preserve-caught-error` | `corpus-io` |
+
+**One was live rather than tidiness.** `verify-claims.mjs` incremented `bareMarkers` for every
+inline marker rejected for having no reason, then printed only `markerUses` — a run could report
+*"3 inline marker(s)"* while describing a different set than the one it had counted. It reports
+both now. Pass/fail is unchanged: those markers already pushed a violation.
+
+An earlier draft of this entry said *"three Node globals (`structuredClone`, `TextEncoder`,
+`TextDecoder`)"*. `TextEncoder` and `TextDecoder` appear **nowhere under `scripts/`** — they were
+in the first globals list on my say-so, not because anything needed them. The evaluation caught
+it, and the list is derived now rather than remembered: `globals.node`, a root devDependency.
+The hand-written version would also have produced a spurious `no-undef` for the next script to
+use `setTimeout` — whose tempting fix is a disable comment, in the directory this zone exists to
+protect.
+
+### The gap can now reopen only loudly
+
+The plant-and-watch above was a one-time experiment, so it guarded nothing afterwards. Two
+durable checks replace it, both watched failing:
+
+- **Boundary 18** — a violating `scripts/__guard__.mjs` must make `no-undef` fire. Disarmed by
+  redirecting the zone's glob: the runner reports *"parse error: project was set to `true` but
+  couldn't find any tsconfig"* under COULD NOT RUN — which is the original F-078 symptom exactly,
+  and the runner is right to separate a tooling failure from a boundary failure.
+- **The wiring** — `eslint scripts` must still be in the root `lint` script. The ci-mirror check
+  compares gate *commands* (`pnpm lint`) and never reads what that script contains, so deleting
+  the segment would reopen all 23 files with every gate green. Disarmed: boundary guards fail
+  naming the script that no longer walks `scripts/`.
+
+### What was deliberately not done
+
+**Type-aware linting for `scripts/`**, which needs a tsconfig covering it and is a larger
+decision than this defect warrants — the zone uses `tseslint.configs.disableTypeChecked`, the
+same shape `packages/ui`'s `jest.config.mjs` already uses. No `eslint-disable`, no rule
+downgraded: every finding was fixed.
+
+CI needed no change: `.github/workflows/ci.yml` gate 2 already runs `pnpm lint`, and gates.json
+records that command, so the mirror check still pairs.
+
+### Out of band: gate 9's mutation proof had been failing since F-070
+
+Found by the evaluation, not by me, and **I caused it.** F-068 and F-070 reformatted
+`design-system.manifest.json` from compact to expanded JSON, and four cases in
+`verify-contrast-proof.mjs` — an unconditional CI step — anchored on the old text. Three
+announced it as `MUTATION DID NOT APPLY`. **The fourth chained two replaces**: the first still
+matched, so the case never reported a miss while the half that plants the real failure did
+nothing. Its name is *"report-only under a placeholder status, WITH a real failure present"*, and
+it had been asserting that with no failure present, printing `OK`.
+
+Fixed rather than recorded, because it is a red CI step in the verification apparatus and golden
+rule 5 does not allow leaving it. The four cases now state a **path and an expected value**
+instead of matching text; the assertion throws if the manifest was retuned, naming the path, both
+values and what to do. Watched: planted a retune of `color.light.status.warn.oklch`, saw it
+throw; restored; all ten proofs hold and the manifest restores byte-identical.
+[[a-compound-mutation-reports-a-miss-only-if-every-part-misses]]
+
+### And one that could NOT be fixed here: gate 15's dependency audit
+
+Also found by walking the CI step list rather than by a failing build. `pnpm audit
+--audit-level high` exits 1 on two HIGH advisories, both `image-size <=2.0.2`. **All 200
+reported paths run through `apps__mobile>expo>…>metro>image-size`**, so it arrived with F-039
+and that unconditional CI step has been red ever since — `progress.md` last recorded this gate
+green before Expo existed.
+
+**There is no fixed version to upgrade to.** The latest published `image-size` is 2.0.2 and the
+advisory covers `<=2.0.2`, so a pnpm `overrides` entry cannot resolve it. What remains — wait
+for upstream, allowlist the GHSA with an expiry, or accept a red step — is a security-policy
+decision that deviates from the documented default, so it needs an ADR. **Filed as F-079** and
+recorded in `observations.md` rather than quietly fixed or quietly ignored (golden rule 5).
+
+### State
+
+```
+Done:       F-078. Nothing in progress, tree clean.
+Gates:      state 15 (28 warn) · typecheck 31 · lint (+scripts) · format · test 31 · golden
+            build · a11y · contrast · cvd · content · purity · guards 18 + wiring
+            mirror 12 · claims · motion · font · secrets
+Proofs:     purity --prove · claims-proof · content-proof · a11y-proof · font --prove
+            motion --prove · CONTRAST-PROOF, red before this session and green now
+NOT RUN:    e2e — gate 7 is `pending` with `ciStep:false` and FAILS BY DESIGN: no surface
+            declares `test:e2e`, and `e2e-scope.mjs` exits non-zero rather than passing
+            over an empty set. Confirmed pre-existing; both flags flip with its successor.
+Next:       F-018 and everything behind it remains blocked on F-012 → OQ-5, a second
+            editorial identity, which is a person rather than a commit.
+```
+
+---
+
+## 2026-08-20 — F-068, F-069, F-070, F-075, F-076 DONE · recorded late
+
+**These five closed and were committed without a `progress.md` entry.** The commit messages
+carry the full detail; this entry exists because the history file is what a fresh session reads,
+and five features missing from it is the record failing at exactly the job it has.
+
+- **F-068 — the hairline that was invisible.** Measured before it was fixed: the single
+  translucent line scored **1.00** at its worst case over the sRGB gamut — not a faint edge, no
+  edge at all. Two translucent tones do not rescue it, because both composite over the *same*
+  sample. Opaque two-tone keyline instead: 4.23 worst-case against any sample, the two tones
+  17.9:1 apart. **The decoy is the design that shipped** — four cases assert the old treatment
+  fails.
+- **F-069 — a status colour may not sit beside a sample.** The one place where every component
+  is individually correct and the *composition* is wrong, so it is checked over the rendered
+  tree. Narrowed to siblings on purpose; a rule that flagged a chip three screens away would be
+  switched off within a week. The dark-theme case initially passed **for the wrong reason** —
+  hard-coded `nativeColors.light` meant the check found nothing to flag and called that success.
+- **F-068 and F-070 together broke gate 9’s mutation proof**, by reformatting the manifest out
+  from under four text anchors in `verify-contrast-proof.mjs`. Neither noticed. Repaired in
+  F-078 and described there; the case that failed in SILENCE is the part worth reading.
+- **F-070 — the border that was never checked.** `border.strong` was translucent and carried an
+  `uncheckedReason`, so gate 9 never looked: 1.17 against every light surface. Now opaque,
+  searched in OKLCh because that field is authoritative (ADR-0043). **The gate immediately
+  caught something I had not** — a newly stale `uncheckedReason` on `swatch.well`.
+- **F-075 — the animation the rendered tree cannot see.** An interpolated `backgroundColor`
+  renders to a concrete `rgba(0, 0, 0, 1)`, indistinguishable from a static colour, so the
+  conformance suite is structurally blind here — contradicting what F-040's plan had assumed.
+  Source analysis instead, allowlist derived from `motion.animatable`, and its limits print on
+  every run.
+- **F-076 — the font ships.** 451,012 bytes from 9,589,900 via harfbuzz WASM (no Python here, so
+  no pyftsubset). **E-017 finally has its guard, proven rather than assumed:** planted a corpus
+  entry containing 纁, watched gate 11 fail, removed it — ADR-0057's argument demonstrated on the
+  exact character it names.
+
+---
+
 ## 2026-08-20 — F-040 DONE · the Lens, with four of seven criteria attested
 
 Four of seven attested is a property of this feature, not a shortcoming of the work — none of

@@ -21,7 +21,7 @@
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadCorpusPackage, ROOT, sha256 } from './corpus-io.mjs';
+import { ROOT } from './corpus-io.mjs';
 
 const GREEN = '[32m';
 const RED = '[31m';
