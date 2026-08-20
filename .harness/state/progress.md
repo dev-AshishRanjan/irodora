@@ -108,6 +108,71 @@ Next:       increment 3 — the render harness, proven before any component exis
             land one compliant fixture plus four decoys that the assertions separate.
 ```
 
+### The evaluation returned FAIL, and it was right
+
+An independent evaluator ran every gate forced (no cache), reproduced the planted-bug
+experiment, and found **eight** things. Three constituted the failure; all eight are now fixed
+or recorded.
+
+**The sweep claim was falsified — by the same commit that made it.** The commit asserted
+*exactly three* survivors outside R2. There were five:
+
+- **`F-041` still said "Tokens and keys in SecureStore"** — on a line directly above one this
+  commit rewrote. ADR-0051 says *"No tokens, no sessions, no CORS, no tenancy"*, and F-039's own
+  criterion is *"No account prompt exists anywhere in the app, because there is no account."*
+  The *keys* half is correct and load-bearing (the SQLCipher key, ADR-0051 §2); only "Tokens"
+  was stale. Now: *"The SQLCipher key lives in SecureStore, never in the app database and never
+  in the bundle."*
+- **`docs/PRD.md` still measured accessibility as `axe A/AA violations in the gate`** — a live
+  success metric, bound to the gate F-017 owns, naming the exact tool ADR-0055 spends a page
+  explaining cannot run. I corrected FR-20 and FR-50 and never looked at the metrics table.
+
+**ADR-0028 was amended in one direction only.** ADR-0056 retired three of its clauses; ADR-0028
+carried no back-reference and the index still read plain `Accepted`. `adr-policy.md` requires
+updating the old record's status with a link — which I did correctly for ADR-0034 and not at all
+for ADR-0028. **That is the exact rot F-074 exists to catch, reintroduced by the commit that
+discovered it.** Now amended, with a table of what is history and what is current.
+
+**A doc comment said the opposite of the code it pointed at.** `manifest.ts` described
+`emitReactNative` as resolving the CSS font stacks — while the emitter documents at length that
+it deliberately does not, and a test asserts that it does not. Future state from ADR-0057,
+written in the present tense at the one place a consumer would look.
+
+### Two fail-open defects found in code written this session
+
+**The elevation check accepted inherited properties.** `token in themes[theme]` walks the
+prototype chain, so `elevation.2 = "toString"` **parsed cleanly** and resolved to a `Function`
+at runtime — while the comment above it claimed the level must name a real token. Now
+`Object.hasOwn`, with a test that plants `constructor`, `toString` and `valueOf`; reverting the
+fix turns it red, watched. The paired assertion used `toBeDefined()`, which passes on a
+`Function` too — replaced with own-property plus a real token shape.
+
+**`motion.easing` was the same trap this increment exists to disarm, left undisarmed.** Parsed,
+typed, emitted by nothing — and its values are `cubic-bezier(0.16, 1, 0.3, 1)`, as unusable on
+React Native as the CSS font stacks the commit makes a set-piece of. RN's `Easing` takes a
+function, so the CSS string would typecheck and animate nothing. Now emitted as control points:
+`out: [0.16, 1, 0.3, 1]`, and a consumer writes `Easing.bezier(...nativeEasing.out)`.
+
+### Corrections to my own claims
+
+- **`gitleaks` is installed** at `/c/Users/ASUS/go/bin/gitleaks` and `security:secrets` passes
+  (90 commits, no leaks). Three commit messages say it is not installed. That is false as
+  written — an under-claim rather than an over-claim, but false. **All 14 gates pass.**
+- Criterion 9 said the contrast gate records *two* owed halves. It records **one** (the
+  colour-only status scan). The small-text half is real — `apps/mobile/app/index.tsx` renders
+  `foreground.3` at 13 px and 14 px — but the gate never prints it. Criterion reworded.
+- F-035's store enumeration came from `docs/architecture/data-model.md`, not from FR-58 as the
+  commit said. Grounded and correct; just not from where I claimed.
+
+### Recorded, not fixed
+
+`a11y` remains in F-017's `verification` while `pnpm test:a11y` exits **0 over zero test
+files** — passing vacuously. Unlike `test:e2e`, nothing refuses the empty set. It is disclosed
+as NOT run in every commit, but increment 10 must give it the same refusal `e2e-scope.mjs` has,
+or a future green sweep will be misread as coverage. **E-016 and E-017** are named in an
+Accepted ADR and in the plan but are not yet in `effects.json`; they land at increment 11, and
+would be unrecorded if this feature stalled.
+
 ### Three things the next session should not have to rediscover
 
 1. **`apps/mobile/app/index.tsx` already violates the rule F-017 is building.** `styles.mono`

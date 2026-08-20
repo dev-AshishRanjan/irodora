@@ -38,6 +38,27 @@ function emRatio(tracking: string): number {
   return Number(tracking.slice(0, -2));
 }
 
+/**
+ * `cubic-bezier(0.16, 1, 0.3, 1)` as its four control points.
+ *
+ * The same shape of trap as the unitless line-height: the manifest states easing in CSS
+ * syntax, and React Native's `Easing` takes a **function**, not a string. Passing the CSS
+ * string through would be accepted by the type system and produce no animation at all.
+ * `Easing.bezier(...nativeEasing.out)` is what the consumer writes.
+ */
+function bezierPoints(easing: string, name: string): readonly number[] {
+  const match = /^cubic-bezier\(([^)]*)\)$/u.exec(easing);
+  if (match === null)
+    throw new Error(
+      `motion.easing.${name}: expected cubic-bezier(...), got "${easing}" — React Native ` +
+        'takes control points, not a CSS easing keyword',
+    );
+  const points = (match[1] ?? '').split(',').map((p) => Number(p.trim()));
+  if (points.length !== 4 || points.some((p) => !Number.isFinite(p)))
+    throw new Error(`motion.easing.${name}: expected four numeric control points`);
+  return points;
+}
+
 export function emitReactNative(manifest: Manifest): string {
   const out: string[] = [
     '/**',
@@ -152,6 +173,13 @@ export function emitReactNative(manifest: Manifest): string {
   out.push('  durations: {');
   for (const [name, ms] of Object.entries(manifest.motion.durations))
     out.push(`    ${key(name)}: ${String(ms)},`);
+  out.push('  },');
+  // Control points, not the CSS string — RN's Easing takes a function, and the consumer
+  // writes `Easing.bezier(...nativeEasing.out)`. Emitting the string would typecheck and
+  // animate nothing.
+  out.push('  easing: {');
+  for (const [name, value] of Object.entries(manifest.motion.easing))
+    out.push(`    ${key(name)}: [${bezierPoints(value, name).join(', ')}],`);
   out.push('  },');
   // The forbidden list travels with the tokens deliberately: a component author reaching for
   // an animated background-color should find the prohibition next to the value, not in a doc.

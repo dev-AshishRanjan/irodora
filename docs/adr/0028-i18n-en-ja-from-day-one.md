@@ -2,7 +2,24 @@
 
 ## Status
 
-Accepted
+**Accepted — amended by
+[ADR-0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md).**
+
+The substance stands: both languages from the first release, **no fallback**, no retrofit.
+That no-fallback rule is what selects the mechanism in ADR-0056, and it is the reason a runtime
+i18n framework was rejected there.
+
+Three clauses below describe a system
+[ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) retired, and
+ADR-0056 replaces them:
+
+| Clause | Now |
+|---|---|
+| §2 — server responses carry message keys, never prose | **Retired.** There are no responses. |
+| §5 — `Accept-Language` negotiation | The **device locale**, via `expo-localization`. |
+| §6 — locale is part of the cache key | **Moot.** There is no cache tier. |
+
+Read those three as history. Everything else here is current.
 
 ## Date
 

@@ -40,6 +40,28 @@ const manifest: Manifest = parseManifest(raw);
 const clone = (): Record<string, unknown> =>
   JSON.parse(JSON.stringify(raw)) as Record<string, unknown>;
 
+/**
+ * Every loop below walks the manifest's own scale, so an empty or shrunken scale would make
+ * the assertions vacuous rather than false. This is the minimum-subject guard for all of
+ * them, asserted once: a check that ran over nothing has not passed
+ * [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]].
+ */
+const STEP_NAMES = Object.keys(manifest.typography.scale);
+
+describe('the emitted target covers exactly the manifest scale', () => {
+  it('has steps to check at all', () => {
+    expect(STEP_NAMES.length).toBeGreaterThan(0);
+  });
+
+  it('emits the same key set as the manifest, in both scripts — no extra, none missing', () => {
+    // Equality rather than a subset check: an EXTRA emitted step is a style nothing declared,
+    // and it would be invisible to every other assertion here, all of which iterate the
+    // manifest rather than the output.
+    for (const script of SCRIPTS)
+      expect(Object.keys(nativeType[script]).sort()).toEqual([...STEP_NAMES].sort());
+  });
+});
+
 describe('line height crosses from CSS ratio to React Native points', () => {
   it('is a length, not the ratio — the whole point of the target', () => {
     for (const script of SCRIPTS)
@@ -146,11 +168,50 @@ describe('elevation, motion and the default theme reach the target', () => {
     const levels = Object.entries(nativeElevation);
     expect(levels.length).toBeGreaterThan(0);
     for (const theme of THEMES)
-      for (const [level, token] of levels)
+      for (const [level, token] of levels) {
+        // `toBeDefined()` would pass on an INHERITED property — `color[theme]['toString']`
+        // is a Function, which is very much defined. Own-property plus a real token shape is
+        // what "resolves to a token" actually means.
         expect(
-          manifest.color[theme][token],
-          `elevation.${level} -> ${token} missing in ${theme}`,
-        ).toBeDefined();
+          Object.hasOwn(manifest.color[theme], token),
+          `elevation.${level} -> ${token} is not an own token of color.${theme}`,
+        ).toBe(true);
+        expect(manifest.color[theme][token]?.oklch.l, `${theme}.${token}.oklch.l`).toBeTypeOf(
+          'number',
+        );
+      }
+  });
+
+  it('emits easing as control points, not as the CSS string', () => {
+    // The same shape of trap as the unitless line-height. RN's Easing takes a FUNCTION;
+    // `Easing.bezier(...nativeEasing.out)` is what a consumer writes, and passing the CSS
+    // string through would typecheck and animate nothing.
+    const entries = Object.entries(nativeMotion.easing);
+    expect(entries.length).toBe(Object.keys(manifest.motion.easing).length);
+    expect(entries.length).toBeGreaterThan(0);
+    for (const [name, points] of entries) {
+      expect(points, name).toHaveLength(4);
+      for (const p of points) expect(typeof p).toBe('number');
+      // Recomputed from the manifest rather than compared to what the emitter produced.
+      const declared = manifest.motion.easing[name];
+      expect(declared).toBeDefined();
+      const expected = /cubic-bezier\(([^)]*)\)/u
+        .exec(declared ?? '')?.[1]
+        ?.split(',')
+        .map((v) => Number(v.trim()));
+      expect(points).toEqual(expected);
+    }
+  });
+
+  it('rejects an elevation level naming an inherited property, not just a missing one', () => {
+    // `"constructor" in {}` is TRUE — the prototype chain — so an `in` check accepts
+    // `elevation.2 = "toString"` and the level then resolves to a Function at runtime.
+    // This is the fail-open case, and it is distinct from "the token is absent".
+    for (const inherited of ['constructor', 'toString', 'valueOf']) {
+      const m = clone();
+      (m['elevation'] as Record<string, unknown>)['2'] = inherited;
+      expect(() => parseManifest(m), inherited).toThrow(/is not a token in color\./u);
+    }
   });
 
   it('carries the forbidden list to where a component author will meet it', () => {

@@ -134,8 +134,12 @@ export type Script = (typeof SCRIPTS)[number];
 export interface Typography {
   /**
    * CSS font stacks, one per family. **These are unusable on React Native**, which takes a
-   * single family name and has no fallback cascade — see `emitReactNative`, which resolves
-   * them, and ADR-0057, which decides what it resolves them to.
+   * single family name and has no fallback cascade.
+   *
+   * `emitReactNative` therefore does **not** emit them, and a test asserts that it does not:
+   * naming a face the bundle does not carry fails over to the system font silently, which is
+   * tofu on exactly the rare kanji the corpus is made of. They are resolved when the font
+   * asset lands (ADR-0057 §5, F-017 increment 9) — not before.
    */
   readonly families: Readonly<Record<string, string>>;
   readonly scale: Readonly<Record<string, TypeStep>>;
@@ -509,9 +513,15 @@ export function parseManifest(input: unknown): Manifest {
     );
   // Every level must name a real token, in every theme, or a surface resolves to undefined
   // on whichever theme the author was not looking at.
+  //
+  // `Object.hasOwn`, NOT `in`: `in` walks the prototype chain, so `"constructor"`,
+  // `"toString"` and `"valueOf"` all pass an `in` check against a plain object and then
+  // resolve to a Function at runtime. A check that accepts `elevation.2 = "toString"` is
+  // failing open on the exact class of input it exists to reject
+  // [[a-gate-that-errors-is-failing-open]].
   for (const theme of THEMES)
     for (const [level, token] of Object.entries(levels))
-      if (!(token in (themes[theme] ?? {})))
+      if (!Object.hasOwn(themes[theme] ?? {}, token))
         throw new ManifestError(
           `elevation.${level}`,
           `"${token}" is not a token in color.${theme}`,

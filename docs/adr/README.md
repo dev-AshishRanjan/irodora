@@ -51,7 +51,7 @@ Two rules that matter more than the format:
 | [0025](0025-api-first-and-generated-sdk.md) | The implementation generates the contract; the contract generates the SDK | Superseded by ADR-0051 |
 | [0026](0026-privacy-on-device-by-default.md) | Ordinary colour detection transmits no image, ever | Accepted |
 | [0027](0027-monetisation-tiers.md) | Four tiers, and accessibility is never behind any of them | Superseded by ADR-0051 |
-| [0028](0028-i18n-en-ja-from-day-one.md) | English and Japanese ship together, from the first release | Accepted |
+| [0028](0028-i18n-en-ja-from-day-one.md) | English and Japanese ship together, from the first release | Amended by ADR-0056 |
 | [0029](0029-harness-agnostic-core-thin-adapter.md) | Tool-agnostic `.harness/`; `.claude/` is a thin adapter | Accepted |
 | [0030](0030-effects-graph-is-a-committed-artifact.md) | The effect graph is committed, and every link names its guard | Accepted |
 | [0031](0031-measurement-claims-policy.md) | Every accuracy claim must have a measurement behind it | Accepted |

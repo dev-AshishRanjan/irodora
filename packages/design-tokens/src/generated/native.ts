@@ -110,6 +110,10 @@ export const nativeMotion = {
     local: 180,
     view: 260,
   },
+  easing: {
+    out: [0.16, 1, 0.3, 1],
+    inOut: [0.65, 0, 0.35, 1],
+  },
   animatable: ['opacity', 'transform'],
   forbidden: ['background-color on a swatch', 'cross-fade between samples', 'width', 'height', 'top', 'left'],
 } as const;

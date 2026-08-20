@@ -341,7 +341,7 @@ commitment was load-bearing when there were tiers; it is a promise about the fut
 | **CVD success** | CVD users correctly identifying a colour unaided | ≥ 90 % |
 | **Retention** | W4 users performing scan + recommend + wardrobe action | ≥ 25 % |
 | **Wardrobe efficiency** | Valid outfits per garment | ≥ 2.5 at 20 garments |
-| **Accessibility** | axe A/AA violations in the gate | 0 |
+| **Accessibility** | WCAG 2.2 A/AA violations in the `a11y` gate, over the rendered accessibility tree | 0 |
 | **Content integrity** | Corpus entries with complete provenance | 100 % (gate) |
 
 Every metric above has a named event in
