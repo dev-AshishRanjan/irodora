@@ -71,3 +71,48 @@ export const nativeRadius = {
 
 export const nativeSpacing = [4, 8, 14, 20, 28, 40, 56, 96] as const;
 export const nativeTapTarget = 44 as const;
+
+/** Absolute points, NOT the manifest ratios — RN lineHeight is a length. */
+export const nativeType = {
+  latin: {
+    'display.1': { fontSize: 72, lineHeight: 70.56, letterSpacing: -2.88, fontWeight: '500' },
+    'display.2': { fontSize: 34, lineHeight: 35.7, letterSpacing: -1.02, fontWeight: '500' },
+    title: { fontSize: 22, lineHeight: 26.4, letterSpacing: -0.44, fontWeight: '600' },
+    body: { fontSize: 15, lineHeight: 24.75, letterSpacing: 0, fontWeight: '400' },
+    small: { fontSize: 13, lineHeight: 20.15, letterSpacing: 0, fontWeight: '400' },
+    xs: { fontSize: 11.5, lineHeight: 17.25, letterSpacing: 0, fontWeight: '400' },
+    label: { fontSize: 10, lineHeight: 14, letterSpacing: 1.6, fontWeight: '600', textTransform: 'uppercase' },
+  },
+  japanese: {
+    'display.1': { fontSize: 72, lineHeight: 79.11, letterSpacing: -2.88, fontWeight: '500' },
+    'display.2': { fontSize: 34, lineHeight: 40.03, letterSpacing: -1.02, fontWeight: '500' },
+    title: { fontSize: 22, lineHeight: 29.6, letterSpacing: -0.44, fontWeight: '600' },
+    body: { fontSize: 15, lineHeight: 27.75, letterSpacing: 0, fontWeight: '400' },
+    small: { fontSize: 13, lineHeight: 22.59, letterSpacing: 0, fontWeight: '400' },
+    xs: { fontSize: 11.5, lineHeight: 19.34, letterSpacing: 0, fontWeight: '400' },
+    label: { fontSize: 10, lineHeight: 15.7, letterSpacing: 1.6, fontWeight: '600', textTransform: 'uppercase' },
+  },
+} as const;
+
+export const nativeNumericFeature = 'tabular-nums' as const;
+
+/** Tonal. Each level names the surface token it resolves to; there is no shadow. */
+export const nativeElevation = {
+  '0': 'background',
+  '1': 'surface.1',
+  '2': 'surface.2',
+  '3': 'surface.3',
+} as const;
+
+export const nativeMotion = {
+  durations: {
+    micro: 120,
+    local: 180,
+    view: 260,
+  },
+  animatable: ['opacity', 'transform'],
+  forbidden: ['background-color on a swatch', 'cross-fade between samples', 'width', 'height', 'top', 'left'],
+} as const;
+
+/** Used when the platform expresses no preference — NOT a hard-coded light. */
+export const nativeDefaultTheme = 'dark' as const;

@@ -116,10 +116,53 @@ export interface ContrastGateConfig {
   readonly chromaCeiling: { readonly maxChroma: number };
 }
 
+/** One step of the type scale. `lineHeight` and `tracking` are RATIOS, not lengths. */
+export interface TypeStep {
+  readonly size: number;
+  /** Unitless multiple of `size`, as CSS means it. React Native does NOT mean this. */
+  readonly lineHeight: number;
+  /** CSS `em` string, e.g. `-0.04em`. Relative to `size`. */
+  readonly tracking: string;
+  readonly weight: number;
+  readonly transform?: string;
+}
+
+/** The scripts the type scale is defined for. Japanese is not Latin with different glyphs. */
+export const SCRIPTS = ['latin', 'japanese'] as const;
+export type Script = (typeof SCRIPTS)[number];
+
+export interface Typography {
+  /**
+   * CSS font stacks, one per family. **These are unusable on React Native**, which takes a
+   * single family name and has no fallback cascade — see `emitReactNative`, which resolves
+   * them, and ADR-0057, which decides what it resolves them to.
+   */
+  readonly families: Readonly<Record<string, string>>;
+  readonly scale: Readonly<Record<string, TypeStep>>;
+  /** Base leading per script. Japanese needs more at the same size. */
+  readonly lineHeight: Readonly<Record<Script, number>>;
+  readonly numeric: { readonly fontFeature: string };
+}
+
+/** Tonal elevation: each level names the surface token it resolves to. Never a shadow. */
+export interface Elevation {
+  readonly levels: Readonly<Record<string, string>>;
+  readonly shadow: string;
+}
+
+export interface Motion {
+  readonly durations: Readonly<Record<string, number>>;
+  readonly easing: Readonly<Record<string, string>>;
+  readonly animatable: readonly string[];
+  readonly forbidden: readonly string[];
+}
+
 export interface Manifest {
   readonly version: number;
   /** The approval lifecycle: `placeholder` makes the contrast gate report-only. */
   readonly status: string;
+  /** The theme used when the platform expresses no preference. */
+  readonly defaultTheme: Theme;
   readonly color: Readonly<Record<Theme, Readonly<Record<string, ColorToken>>>>;
   readonly statusPairing: Readonly<Record<string, StatusEntry>>;
   readonly cvdPairs: CvdPairs;
@@ -127,6 +170,9 @@ export interface Manifest {
   readonly radius: Readonly<Record<string, number>>;
   readonly spacing: { readonly base: number; readonly scale: readonly number[] };
   readonly size: { readonly tapTarget: number };
+  readonly typography: Typography;
+  readonly elevation: Elevation;
+  readonly motion: Motion;
   readonly exceptions: readonly ChromaException[];
   readonly gate: { readonly contrast: ContrastGateConfig };
 }
@@ -388,9 +434,118 @@ export function parseManifest(input: unknown): Manifest {
         'from exactly the region the eye uses to judge a flat colour.',
     );
 
+  // --- typography ---------------------------------------------------------------------
+  //
+  // Parsed rather than ignored as of F-017. Until then the manifest declared a type scale
+  // that no target emitted, so "the manifest is the single source of truth" was true of
+  // colour and aspirational of everything else.
+  const typoRaw = requireRecord(root['typography'], 'typography');
+  const familiesRaw = requireRecord(typoRaw['families'], 'typography.families');
+  const families: Record<string, string> = {};
+  for (const [name, value] of Object.entries(familiesRaw)) {
+    if (name.startsWith('_')) continue;
+    families[name] = requireString(value, `typography.families.${name}`);
+  }
+
+  const scaleRaw = requireRecord(typoRaw['scale'], 'typography.scale');
+  const typeScale: Record<string, TypeStep> = {};
+  for (const [name, value] of Object.entries(scaleRaw)) {
+    if (name.startsWith('_')) continue;
+    const o = requireRecord(value, `typography.scale.${name}`);
+    const tracking = requireString(o['tracking'], `typography.scale.${name}.tracking`);
+    // `em` or the bare string "0". A length in px here would be silently wrong on both
+    // targets: CSS would honour it and React Native would multiply it by the font size.
+    if (tracking !== '0' && !/^-?\d*\.?\d+em$/u.test(tracking))
+      throw new ManifestError(
+        `typography.scale.${name}.tracking`,
+        `expected an em value or "0", got "${tracking}" — tracking is relative to the font size`,
+      );
+    const step: TypeStep = {
+      size: requireNumber(o['size'], `typography.scale.${name}.size`),
+      lineHeight: requireNumber(o['lineHeight'], `typography.scale.${name}.lineHeight`),
+      tracking,
+      weight: requireNumber(o['weight'], `typography.scale.${name}.weight`),
+    };
+    typeScale[name] =
+      o['transform'] === undefined
+        ? step
+        : {
+            ...step,
+            transform: requireString(o['transform'], `typography.scale.${name}.transform`),
+          };
+  }
+
+  const leadingRaw = requireRecord(typoRaw['lineHeight'], 'typography.lineHeight');
+  const latinLeading = requireNumber(leadingRaw['latin'], 'typography.lineHeight.latin');
+  const japaneseLeading = requireNumber(leadingRaw['japanese'], 'typography.lineHeight.japanese');
+  // The whole reason the manifest carries two is that they differ. If they are ever equal,
+  // the Japanese layout is Latin layout that nobody checked in Japanese.
+  if (japaneseLeading <= latinLeading)
+    throw new ManifestError(
+      'typography.lineHeight.japanese',
+      `must exceed latin (${String(latinLeading)}); Japanese needs more leading at the same ` +
+        'size, and a single value for both is a layout only ever checked in one language',
+    );
+  const leading: Readonly<Record<Script, number>> = {
+    latin: latinLeading,
+    japanese: japaneseLeading,
+  };
+
+  // --- elevation ----------------------------------------------------------------------
+  const elevationRaw = requireRecord(root['elevation'], 'elevation');
+  const levels: Record<string, string> = {};
+  for (const [name, value] of Object.entries(elevationRaw)) {
+    if (name.startsWith('_') || name === 'shadow') continue;
+    levels[name] = requireString(value, `elevation.${name}`);
+  }
+  // Tonal, never shadow — a shadow tints what it surrounds, which is disqualifying next to
+  // a colour sample. Enforced here so it cannot be relaxed in a component.
+  const shadow = requireString(elevationRaw['shadow'], 'elevation.shadow');
+  if (shadow !== 'none')
+    throw new ManifestError(
+      'elevation.shadow',
+      `expected "none", got "${shadow}" — elevation is tonal here, because a shadow tints ` +
+        'what it surrounds and the swatch rule forbids that next to a sample',
+    );
+  // Every level must name a real token, in every theme, or a surface resolves to undefined
+  // on whichever theme the author was not looking at.
+  for (const theme of THEMES)
+    for (const [level, token] of Object.entries(levels))
+      if (!(token in (themes[theme] ?? {})))
+        throw new ManifestError(
+          `elevation.${level}`,
+          `"${token}" is not a token in color.${theme}`,
+        );
+
+  // --- motion -------------------------------------------------------------------------
+  const motionRaw = requireRecord(root['motion'], 'motion');
+  const durationsRaw = requireRecord(motionRaw['durations'], 'motion.durations');
+  const durations: Record<string, number> = {};
+  for (const [name, value] of Object.entries(durationsRaw)) {
+    if (name.startsWith('_')) continue;
+    durations[name] = requireNumber(value, `motion.durations.${name}`);
+  }
+  const easingRaw = requireRecord(motionRaw['easing'], 'motion.easing');
+  const easing: Record<string, string> = {};
+  for (const [name, value] of Object.entries(easingRaw)) {
+    if (name.startsWith('_')) continue;
+    easing[name] = requireString(value, `motion.easing.${name}`);
+  }
+  const animatable = motionRaw['animatable'];
+  const forbidden = motionRaw['forbidden'];
+  if (!Array.isArray(animatable) || animatable.some((a) => typeof a !== 'string'))
+    throw new ManifestError('motion.animatable', 'expected an array of strings');
+  if (!Array.isArray(forbidden) || forbidden.some((f) => typeof f !== 'string'))
+    throw new ManifestError('motion.forbidden', 'expected an array of strings');
+
+  const defaultTheme = requireString(root['defaultTheme'], 'defaultTheme');
+  if (!(THEMES as readonly string[]).includes(defaultTheme))
+    throw new ManifestError('defaultTheme', `expected one of ${THEMES.join(', ')}`);
+
   return {
     version: requireNumber(root['version'], 'version'),
     status: approvalStatus,
+    defaultTheme: defaultTheme as Theme,
     color: themes as Manifest['color'],
     statusPairing: statusEntries,
     cvdPairs: {
@@ -402,6 +557,24 @@ export function parseManifest(input: unknown): Manifest {
     spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale: scale as number[] },
     size: {
       tapTarget: requireNumber(requireRecord(root['size'], 'size')['tapTarget'], 'size.tapTarget'),
+    },
+    typography: {
+      families,
+      scale: typeScale,
+      lineHeight: leading,
+      numeric: {
+        fontFeature: requireString(
+          requireRecord(typoRaw['numeric'], 'typography.numeric')['fontFeature'],
+          'typography.numeric.fontFeature',
+        ),
+      },
+    },
+    elevation: { levels, shadow },
+    motion: {
+      durations,
+      easing,
+      animatable: animatable as string[],
+      forbidden: forbidden as string[],
     },
     exceptions,
     gate: {

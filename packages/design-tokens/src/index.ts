@@ -26,6 +26,10 @@ export {
   type ManifestOklch,
   type StatusEntry,
   type Theme,
+  type Typography,
+  type TypeStep,
+  type Script,
+  SCRIPTS,
   type Usage,
 } from './manifest.js';
 
@@ -83,7 +87,17 @@ export {
  * consumer, so nothing could reach it. A generated artefact nobody can import is a build step
  * with no output [[generating-an-artefact-is-not-checking-it]].
  */
-export { nativeColors, nativeRadius, nativeSpacing, nativeTapTarget } from './generated/native.js';
+export {
+  nativeColors,
+  nativeRadius,
+  nativeSpacing,
+  nativeTapTarget,
+  nativeType,
+  nativeNumericFeature,
+  nativeElevation,
+  nativeMotion,
+  nativeDefaultTheme,
+} from './generated/native.js';
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */
 export const TOKENS_VERSION = '0.1.0' as const;

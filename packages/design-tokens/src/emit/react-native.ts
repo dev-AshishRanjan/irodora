@@ -14,10 +14,29 @@
  */
 
 import { compositeOver, derivedSrgb, toHex, tokenRgb } from '../derive.js';
-import { THEMES, type Manifest } from '../manifest.js';
+import { SCRIPTS, THEMES, type Manifest } from '../manifest.js';
 
 const quote = (v: string): string => `'${v.replace(/'/gu, "\\'")}'`;
 const key = (name: string): string => (/^[A-Za-z_$][\w$]*$/u.test(name) ? name : quote(name));
+
+/**
+ * Round to 2dp, and normalise `-0`.
+ *
+ * The emitted file is byte-compared by its own test, so an unrounded float would make the
+ * comparison hostage to the last bit of an IEEE double. `-0` is included because
+ * `Math.round(-0.001)` is `-0`, which stringifies as `"-0"` and would flip a byte comparison
+ * for a value that is numerically zero.
+ */
+const round2 = (n: number): number => {
+  const r = Math.round(n * 100) / 100;
+  return r === 0 ? 0 : r;
+};
+
+/** `-0.04em` (or `"0"`) as a multiple of the font size. */
+function emRatio(tracking: string): number {
+  if (tracking === '0') return 0;
+  return Number(tracking.slice(0, -2));
+}
 
 export function emitReactNative(manifest: Manifest): string {
   const out: string[] = [
@@ -73,6 +92,76 @@ export function emitReactNative(manifest: Manifest): string {
   out.push('');
   out.push(`export const nativeSpacing = [${manifest.spacing.scale.join(', ')}] as const;`);
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
+  out.push('');
+
+  // --- typography -----------------------------------------------------------------------
+  //
+  // THE TRAP THIS EXISTS TO DISARM: CSS `line-height: 1.65` is a MULTIPLE of the font size.
+  // React Native's `lineHeight` is an ABSOLUTE value in points. Copying the manifest's number
+  // across gives a 15pt line 1.65 POINTS of leading — lines drawn on top of each other — and
+  // it fails silently, because it is a valid number in a valid field. The same applies to
+  // `letterSpacing`, which RN also takes in points while the manifest states it in `em`.
+  //
+  // JAPANESE LEADING is derived, not declared per step. The manifest gives a base ratio per
+  // script (latin 1.65, japanese 1.85) and a per-step ratio tuned for Latin. Japanese scales
+  // each step by japanese/latin, which preserves the display-size tightening while giving
+  // Japanese proportionally more leading everywhere. Because the parser requires
+  // japanese > latin, this is strictly greater than Latin at every step, and the test asserts
+  // that rather than trusting the arithmetic.
+  const { scale, lineHeight: leading } = manifest.typography;
+  out.push('/** Absolute points, NOT the manifest ratios — RN lineHeight is a length. */');
+  out.push('export const nativeType = {');
+  for (const script of SCRIPTS) {
+    const factor = leading[script] / leading.latin;
+    out.push(`  ${script}: {`);
+    for (const [name, step] of Object.entries(scale)) {
+      const parts = [
+        `fontSize: ${String(step.size)}`,
+        `lineHeight: ${String(round2(step.size * step.lineHeight * factor))}`,
+        `letterSpacing: ${String(round2(step.size * emRatio(step.tracking)))}`,
+        `fontWeight: ${quote(String(step.weight))}`,
+      ];
+      if (step.transform !== undefined) parts.push(`textTransform: ${quote(step.transform)}`);
+      out.push(`    ${key(name)}: { ${parts.join(', ')} },`);
+    }
+    out.push('  },');
+  }
+  out.push('} as const;');
+  out.push('');
+
+  // NOTE: `typography.families` is NOT emitted here. The manifest states them as CSS font
+  // stacks, and React Native has no fallback cascade — it takes ONE family name. Emitting a
+  // resolved name before the font asset exists would name a face the bundle does not carry,
+  // which fails over to the system font silently and produces tofu for exactly the rare kanji
+  // the corpus is made of. The families land with the font asset (ADR-0057, F-017 increment 9).
+
+  out.push(
+    `export const nativeNumericFeature = ${quote(manifest.typography.numeric.fontFeature)} as const;`,
+  );
+  out.push('');
+
+  // --- elevation, motion, default theme -------------------------------------------------
+  out.push('/** Tonal. Each level names the surface token it resolves to; there is no shadow. */');
+  out.push('export const nativeElevation = {');
+  for (const [level, token] of Object.entries(manifest.elevation.levels))
+    out.push(`  ${key(level)}: ${quote(token)},`);
+  out.push('} as const;');
+  out.push('');
+
+  out.push('export const nativeMotion = {');
+  out.push('  durations: {');
+  for (const [name, ms] of Object.entries(manifest.motion.durations))
+    out.push(`    ${key(name)}: ${String(ms)},`);
+  out.push('  },');
+  // The forbidden list travels with the tokens deliberately: a component author reaching for
+  // an animated background-color should find the prohibition next to the value, not in a doc.
+  out.push(`  animatable: [${manifest.motion.animatable.map(quote).join(', ')}],`);
+  out.push(`  forbidden: [${manifest.motion.forbidden.map(quote).join(', ')}],`);
+  out.push('} as const;');
+  out.push('');
+
+  out.push('/** Used when the platform expresses no preference — NOT a hard-coded light. */');
+  out.push(`export const nativeDefaultTheme = ${quote(manifest.defaultTheme)} as const;`);
   out.push('');
   return out.join('\n');
 }
