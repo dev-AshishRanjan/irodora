@@ -14,7 +14,7 @@ export const COLOR = {
     'surface.2': { srgb: '#1A1817', oklch: { l: 0.212, c: 0.004, h: 70 }, usage: 'surface' },
     'surface.3': { srgb: '#22211F', oklch: { l: 0.248, c: 0.004, h: 70 }, usage: 'surface' },
     'swatch.well': { srgb: '#2B2A28', oklch: { l: 0.285, c: 0.004, h: 70 }, usage: 'surface' },
-    'swatch.hairline': { srgb: 'rgba(255, 255, 255, 0.16)', oklch: { l: 1, c: 0, h: 0, alpha: 0.16 }, usage: 'nonText' },
+    'swatch.hairline': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
     foreground: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'text' },
     'foreground.2': { srgb: '#A5A39F', oklch: { l: 0.715, c: 0.006, h: 80 }, usage: 'text' },
     'foreground.3': { srgb: '#82807C', oklch: { l: 0.6, c: 0.006, h: 80 }, usage: 'largeText' },
@@ -31,6 +31,7 @@ export const COLOR = {
     'chart.3': { srgb: '#808080', oklch: { l: 0.6, c: 0, h: 0 }, usage: 'nonText' },
     'chart.4': { srgb: '#525252', oklch: { l: 0.44, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#303030', oklch: { l: 0.31, c: 0, h: 0 }, usage: 'nonText' },
+    'swatch.hairline.inverse': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
   },
   light: {
     background: { srgb: '#FDFCF9', oklch: { l: 0.99, c: 0.003, h: 85 }, usage: 'surface' },
@@ -38,7 +39,7 @@ export const COLOR = {
     'surface.2': { srgb: '#F7F6F3', oklch: { l: 0.972, c: 0.004, h: 85 }, usage: 'surface' },
     'surface.3': { srgb: '#F0EEEB', oklch: { l: 0.95, c: 0.004, h: 85 }, usage: 'surface' },
     'swatch.well': { srgb: '#ECEAE7', oklch: { l: 0.938, c: 0.005, h: 85 }, usage: 'surface' },
-    'swatch.hairline': { srgb: 'rgba(0, 0, 0, 0.14)', oklch: { l: 0, c: 0, h: 0, alpha: 0.14 }, usage: 'nonText' },
+    'swatch.hairline': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
     foreground: { srgb: '#171411', oklch: { l: 0.195, c: 0.008, h: 70 }, usage: 'text' },
     'foreground.2': { srgb: '#5E5A56', oklch: { l: 0.47, c: 0.008, h: 72 }, usage: 'text' },
     'foreground.3': { srgb: '#8D8A87', oklch: { l: 0.635, c: 0.006, h: 75 }, usage: 'largeText' },
@@ -55,6 +56,7 @@ export const COLOR = {
     'chart.3': { srgb: '#7A7A7A', oklch: { l: 0.58, c: 0, h: 0 }, usage: 'nonText' },
     'chart.4': { srgb: '#ABABAB', oklch: { l: 0.74, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#D4D4D4', oklch: { l: 0.87, c: 0, h: 0 }, usage: 'nonText' },
+    'swatch.hairline.inverse': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
   },
 } as const;
 

@@ -1677,7 +1677,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-003",
         "F-017"
@@ -1689,10 +1689,16 @@
       ],
       "verification": [
         "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
         "contrast",
-        "a11y"
+        "cvd",
+        "build"
       ],
-      "notes": "FOUND BY THE F-003 DESIGN REVIEW. swatch.hairline claimed its edge was perceptible against ANY value; a single-tone 16 percent white inset cannot deliver that against a light sample, by construction, and no fixed-token check can cover an arbitrary garment colour. The claim was softened in F-003 (golden rule 11 applies to the design system own claims) and the treatment that WOULD deliver it — a two-tone inset, or an inset ring plus an outer rule against the well — needs components. ALSO HERE: the review asks that a real dark garment colour be put on the corrected swatch.well (#2B2A28 dark, which is darker than the #383533 the design review saw, because the hex was the defect ADR-0043 fixed) and looked at. A navy or charcoal sample on that well is near 1:1 in luminance and the hairline becomes the only edge cue."
+      "notes": "DONE. THE DEFECT WAS MEASURED BEFORE IT WAS FIXED, and it was worse than \"weak\": scanning the sRGB gamut with both compositing models and taking the worse, the single translucent hairline scored 1.00 at its worst case — rgba(0,0,0,0.14) against a BLACK sample in light theme, rgba(255,255,255,0.16) against a WHITE one in dark. 1.00 is not a faint edge, it is no edge at all, and the token's own uncheckedReason had been pointing at this feature while nothing measured how bad it was. TWO TRANSLUCENT TONES DO NOT RESCUE IT, which is the non-obvious part: both halves composite over the SAME sample, so their difference compresses to 1.15 against white. Reaching 3:1 that way needs alpha around 0.6 — a line heavy enough to compete with the sample, which is exactly what the design forbids. THE TREATMENT IS AN OPAQUE TWO-TONE KEYLINE, what print and every OS selection ring already do. Measured over the gamut at 0.05 steps: the better of the two tones reaches 4.23 against the worst possible sample — above the 3:1 non-text floor for EVERY colour — and the two tones differ from each other by 17.9:1 whatever sits behind them. Being opaque also removes the linear-versus-encoded compositing ambiguity entirely, because nothing composites. THE DECOY IS THE DESIGN THAT SHIPPED. Four negative cases assert the old treatment FAILS: the light-theme single line at 1.00 against black, the dark-theme one at 1.00 against white, and the two-translucent-tone variant below 3:1. A check the new design passes proves nothing unless the old one demonstrably does not. THE CHECK SCANS 9261 SAMPLES rather than one convenient colour, and it uses wcagContrast from @irodora/color-difference — the same function gate 9 uses, so the two cannot disagree with nobody knowing which is right. srgb WAS REGENERATED FROM oklch, never authored (ADR-0043): the generator rewrote all four values and printed each change. THE ROLE TEXT NOW DESCRIBES EXACTLY WHAT IS VERIFIED, which was the third acceptance criterion, and swatch.well's uncheckedReason no longer points at this feature as future work.",
+      "plan": "plans/F-068-swatch-edge-treatment.md"
     },
     {
       "id": "F-069",

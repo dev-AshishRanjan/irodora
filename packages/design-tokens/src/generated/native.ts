@@ -15,7 +15,7 @@ export const nativeColors = {
     'surface.2': '#1A1817',
     'surface.3': '#22211F',
     'swatch.well': '#2B2A28',
-    'swatch.hairline': 'rgba(255, 255, 255, 0.16)', 'swatch.hairline.on.swatch.well': '#767575', 'swatch.hairline.on.background': '#707070', 'swatch.hairline.on.surface.1': '#717171', 'swatch.hairline.on.surface.2': '#727272', 'swatch.hairline.on.surface.3': '#747373',
+    'swatch.hairline': '#F6F5F3',
     foreground: '#F6F4F1',
     'foreground.2': '#A5A39F',
     'foreground.3': '#82807C',
@@ -32,6 +32,7 @@ export const nativeColors = {
     'chart.3': '#808080',
     'chart.4': '#525252',
     'chart.5': '#303030',
+    'swatch.hairline.inverse': '#131110',
   },
   light: {
     background: '#FDFCF9',
@@ -39,7 +40,7 @@ export const nativeColors = {
     'surface.2': '#F7F6F3',
     'surface.3': '#F0EEEB',
     'swatch.well': '#ECEAE7',
-    'swatch.hairline': 'rgba(0, 0, 0, 0.14)', 'swatch.hairline.on.swatch.well': '#DDDBD8', 'swatch.hairline.on.background': '#ECEBE9', 'swatch.hairline.on.surface.1': '#EFEFEF', 'swatch.hairline.on.surface.2': '#E7E6E3', 'swatch.hairline.on.surface.3': '#E0DFDC',
+    'swatch.hairline': '#131110',
     foreground: '#171411',
     'foreground.2': '#5E5A56',
     'foreground.3': '#8D8A87',
@@ -56,6 +57,7 @@ export const nativeColors = {
     'chart.3': '#7A7A7A',
     'chart.4': '#ABABAB',
     'chart.5': '#D4D4D4',
+    'swatch.hairline.inverse': '#F6F5F3',
   },
 } as const;
 

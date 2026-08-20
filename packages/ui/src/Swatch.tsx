@@ -10,7 +10,9 @@
  *    writing `0`, so the rule has one home.
  * 2. **A `swatch.well` beneath every sample.** Functional, not decorative: simultaneous
  *    contrast means whatever touches a sample changes how it reads.
- * 3. **A hairline edge**, so the sample's boundary is perceptible against any surface.
+ * 3. **A TWO-TONE OPAQUE keyline**, so the boundary is perceptible against any SAMPLE — not
+ *    against any surface, which is the easier problem. A single line is invisible at its
+ *    worst case, and F-068 measured that worst case at 1.00 before fixing it.
  * 4. **Provenance is required.** The prop is a `Color`, not a hex, and a `Color` cannot exist
  *    without provenance ([ADR-0005](../../../docs/adr/0005-measurement-provenance-is-a-type.md)).
  *    A caller cannot render a sample whose origin nobody recorded — not because a reviewer
@@ -107,16 +109,39 @@ export function Swatch({
         opacity: inert ? 0.5 : 1,
       }}
     >
+      {/*
+        THE TWO-TONE KEYLINE (F-068). Two opaque 1px borders, nested.
+
+        A SINGLE line cannot work: the other side of it is an arbitrary garment colour, and a
+        single translucent hairline measured 1.00 against its own colour — a black sample on a
+        black line, which is not a weak edge but NO EDGE AT ALL. Two translucent tones do not
+        rescue it either, because both composite over the same sample and their difference
+        compresses to 1.15 against white.
+
+        Opaque and two-tone: scanning the sRGB gamut, the better of the two tones reaches 4.23
+        against the worst possible sample, and the tones differ from each other by ~18:1
+        whatever sits behind them. Verified in packages/design-tokens/test/swatch-edge.test.ts.
+      */}
       <View
         style={{
-          width: size,
-          height: size,
-          backgroundColor: hex,
+          padding: 1,
+          backgroundColor: colors['swatch.hairline.inverse'],
           borderRadius: nativeRadius.swatch,
-          borderWidth: 1,
-          borderColor: colors['swatch.hairline'],
         }}
-      />
+      >
+        <View
+          style={{
+            width: size,
+            height: size,
+            backgroundColor: hex,
+            // radius 0, forever — and it must be 0 on BOTH nested views, or the keyline
+            // would round while the sample beneath it did not.
+            borderRadius: nativeRadius.swatch,
+            borderWidth: 1,
+            borderColor: colors['swatch.hairline'],
+          }}
+        />
+      </View>
       <Text size="small" color="foreground">
         {loading ? `${name}…` : selected ? `✓ ${name}` : name}
       </Text>

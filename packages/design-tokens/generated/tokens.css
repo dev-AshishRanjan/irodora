@@ -14,7 +14,7 @@
   --irodora-color-surface-2: #1A1817;
   --irodora-color-surface-3: #22211F;
   --irodora-color-swatch-well: #2B2A28;
-  --irodora-color-swatch-hairline: rgba(255, 255, 255, 0.16);
+  --irodora-color-swatch-hairline: #F6F5F3;
   --irodora-color-foreground: #F6F4F1;
   --irodora-color-foreground-2: #A5A39F;
   --irodora-color-foreground-3: #82807C;
@@ -31,6 +31,7 @@
   --irodora-color-chart-3: #808080;
   --irodora-color-chart-4: #525252;
   --irodora-color-chart-5: #303030;
+  --irodora-color-swatch-hairline-inverse: #131110;
 }
 
 [data-theme="light"] {
@@ -39,7 +40,7 @@
   --irodora-color-surface-2: #F7F6F3;
   --irodora-color-surface-3: #F0EEEB;
   --irodora-color-swatch-well: #ECEAE7;
-  --irodora-color-swatch-hairline: rgba(0, 0, 0, 0.14);
+  --irodora-color-swatch-hairline: #131110;
   --irodora-color-foreground: #171411;
   --irodora-color-foreground-2: #5E5A56;
   --irodora-color-foreground-3: #8D8A87;
@@ -56,6 +57,7 @@
   --irodora-color-chart-3: #7A7A7A;
   --irodora-color-chart-4: #ABABAB;
   --irodora-color-chart-5: #D4D4D4;
+  --irodora-color-swatch-hairline-inverse: #F6F5F3;
 }
 
 @supports (color: oklch(0 0 0)) {
@@ -65,7 +67,7 @@
     --irodora-color-surface-2: oklch(0.212 0.004 70);
     --irodora-color-surface-3: oklch(0.248 0.004 70);
     --irodora-color-swatch-well: oklch(0.285 0.004 70);
-    --irodora-color-swatch-hairline: oklch(1 0 0 / 0.16);
+    --irodora-color-swatch-hairline: oklch(0.97 0.003 85);
     --irodora-color-foreground: oklch(0.968 0.005 85);
     --irodora-color-foreground-2: oklch(0.715 0.006 80);
     --irodora-color-foreground-3: oklch(0.6 0.006 80);
@@ -82,6 +84,7 @@
     --irodora-color-chart-3: oklch(0.6 0 0);
     --irodora-color-chart-4: oklch(0.44 0 0);
     --irodora-color-chart-5: oklch(0.31 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.18 0.004 70);
   }
   [data-theme="light"] {
     --irodora-color-background: oklch(0.99 0.003 85);
@@ -89,7 +92,7 @@
     --irodora-color-surface-2: oklch(0.972 0.004 85);
     --irodora-color-surface-3: oklch(0.95 0.004 85);
     --irodora-color-swatch-well: oklch(0.938 0.005 85);
-    --irodora-color-swatch-hairline: oklch(0 0 0 / 0.14);
+    --irodora-color-swatch-hairline: oklch(0.18 0.004 70);
     --irodora-color-foreground: oklch(0.195 0.008 70);
     --irodora-color-foreground-2: oklch(0.47 0.008 72);
     --irodora-color-foreground-3: oklch(0.635 0.006 75);
@@ -106,6 +109,7 @@
     --irodora-color-chart-3: oklch(0.58 0 0);
     --irodora-color-chart-4: oklch(0.74 0 0);
     --irodora-color-chart-5: oklch(0.87 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.97 0.003 85);
   }
 }
 
