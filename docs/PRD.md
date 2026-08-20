@@ -183,7 +183,7 @@ retired, not reused.
 
 | ID | Requirement | Accepts when | R |
 |---|---|---|---|
-| **FR-20** | **Colour Atlas** — browse, filter and search the corpus by family, season, temperature, lightness, chroma and era | Every corpus entry is reachable in ≤ 3 interactions from the atlas root; server-rendered and indexable | R1 |
+| **FR-20** | **Colour Atlas** — browse, filter and search the corpus by family, season, temperature, lightness, chroma and era | Every corpus entry is reachable in ≤ 3 interactions from the atlas root; served from the signed in-app corpus bundle with no network access | R1 |
 | **FR-21** | A colour record carries name (kanji, kana, romaji, English), hex, RGB, Lab, LCh, OKLCH, family, temperature, era, material, season, related and complementary colours, and fashion use | Every field present or explicitly `null` with a reason; no silent blanks | R1 |
 | **FR-22** | Curated contemporary palette systems (Quiet Neutrals, Indigo Studies, Forest/Mineral, Earth/Clay, Seasonal) | Each palette has editorial provenance and named roles (anchor, neutral, light, accent); no algorithmically generated palette ships without editorial sign-off | R1 |
 | **FR-23** | Distinguish historical Japanese colour · traditional colour · modern Japanese palette · Japanese-inspired palette · editorial palette | The classification is a required, displayed field; the UI never presents an inspired palette as historical | R1 |
@@ -233,7 +233,7 @@ retired, not reused.
 | **FR-47** | **Colour finder** — search by natural phrase ("dark muted green"), Japanese name, romaji, English name, or hex | A hex query returns its nearest entries; a phrase query maps to a lightness/chroma/hue region deterministically | R2 |
 | **FR-48** | **Colour compare** — two colours with ΔE00, per-axis differences, OKLCH delta, CVD separation and contrast | All metrics shown with their units and the space they were computed in | R2 |
 | **FR-49** | **Palette Studio** — build, edit, reorder and save palettes with roles | Palettes validate against the same schema as corpus palettes | R2 |
-| **FR-50** | **Shareable colour cards** — a rendered card with name, kanji, hex and attribution | Card renders identically server-side and client-side; includes corpus version | R2 |
+| **FR-50** | **Shareable colour cards** — a rendered card with name, kanji, hex and attribution | The same entry at the same corpus version renders the same card on both platforms; includes corpus version | R2 |
 | **FR-51** | Export: CSV, JSON, CSS custom properties, ASE, design tokens, PDF report | Every export embeds engine and corpus versions; ASE round-trips through Adobe tooling | R5 |
 | **FR-52** | **Shopping check** — outfits unlocked, personal compatibility, duplicate warning, investment signal | Runs against the local wardrobe offline | R5 |
 

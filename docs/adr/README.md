@@ -57,7 +57,7 @@ Two rules that matter more than the format:
 | [0031](0031-measurement-claims-policy.md) | Every accuracy claim must have a measurement behind it | Accepted |
 | [0032](0032-design-in-claude-wireframes-before-visual-before-code.md) | Design happens in Claude; wireframes before visual design, both before code | Accepted |
 | [0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md) | We own the token layer; primitives stay headless; Astryx is not adopted | Accepted |
-| [0034](0034-base-ui-over-radix-for-headless-primitives.md) | Base UI, not Radix, for headless primitives | Accepted |
+| [0034](0034-base-ui-over-radix-for-headless-primitives.md) | Base UI, not Radix, for headless primitives | Superseded by ADR-0054 |
 | [0035](0035-typescript-6-not-7-until-type-aware-linting-catches-up.md) | TypeScript 6, not 7, until type-aware linting catches up | Accepted |
 | [0036](0036-wire-schema-and-engine-type-pinned-by-the-compiler.md) | The wire schema and the engine type are two artefacts, pinned by the compiler | Accepted |
 | [0037](0037-design-tokens-wait-for-the-engine-r0-closes-incomplete.md) | The design token package waits for the colour engine; R0 closes incomplete | Accepted |
@@ -77,6 +77,10 @@ Two rules that matter more than the format:
 | [0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) | Irodora is a local-first mobile app; there is no server tier | Accepted |
 | [0052](0052-oklab-round-trip-tolerance-is-conditioned-on-lms.md) | The OKLab round-trip tolerance is conditioned on LMS, and 1e-12 was wrong | Accepted |
 | [0053](0053-dark-status-salience-matches-light-and-error-gets-lighter.md) | Dark-theme status salience matches light, and error gets lighter to reach it | Accepted |
+| [0054](0054-react-native-core-primitives-and-ui-stays-a-package.md) | Component behaviour comes from React Native’s own primitives; `@irodora/ui` stays a package | Accepted |
+| [0055](0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md) | The `a11y` gate renders under jest-expo, and proves the accessibility tree rather than the pixels | Accepted |
+| [0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md) | The message catalogue is enumerated TypeScript; a missing key is a typecheck error | Accepted |
+| [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Accepted |
 
 ## Open questions awaiting an ADR
 

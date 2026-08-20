@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-19",
+  "updated": "2026-08-20",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -534,32 +534,56 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-003",
         "F-039"
       ],
       "acceptance": [
-        "Next.js 16 App Router, React 19, Tailwind v4 consuming @irodora/design-tokens, Radix primitives",
-        "Server Components by default; the colour engine loads only on routes that use it",
-        "Enumerated en/ja message catalogue; a missing translation fails the build",
-        "Japanese line-height scale and kinsoku line breaking verified; font fallback covers every kanji in the corpus",
-        "Zero axe WCAG 2.2 A/AA violations on every route",
-        "Gates 8 (a11y) and 13 (web-perf) activate"
+        "@irodora/ui ships React Native components that consume @irodora/design-tokens; no colour literal appears in any component, and the lint fails on one",
+        "Every component declares its kind and defines every state that kind requires, carrying accessibilityRole, accessibilityLabel and accessibilityState rather than reimplementing them",
+        "Enumerated en/ja message catalogue; a missing or an extra key fails the build, and a hard-coded user-facing string fails lint",
+        "The Japanese is written and reviewed by a competent speaker, never machine-translated",
+        "The Japanese line-height scale is applied, and every kanji the corpus can render is covered by the declared font",
+        "Kinsoku line breaking is correct on a device, on iOS and on Android",
+        "Zero WCAG 2.2 A/AA violations across every screen, asserted against the rendered accessibility tree rather than by inspection",
+        "VoiceOver and TalkBack complete every screen, and text scaled to 200 percent loses no content or function",
+        "Gate a11y activates with a CI step that actually executes, and the contrast gate gains the two halves it has been recording as owed to F-017: the colour-only status scan, and the small-text check on largeText-only tokens"
       ],
       "verification": [
         "state",
         "typecheck",
         "lint",
+        "format",
         "test",
-        "e2e",
         "a11y",
         "contrast",
         "build"
       ],
       "effects": [
         "E-007"
-      ]
+      ],
+      "attested": [
+        {
+          "criterion": "The Japanese is written and reviewed by a competent speaker, never machine-translated",
+          "verifiedBy": "Review by a competent speaker recorded against a roster id (ADR-0047), the same identity mechanism the corpus uses. BLOCKED ON OQ-5, exactly as F-012 is: the engagement model for a Japanese editorial reviewer is unresolved. The catalogue MECHANISM is gated now — a missing or extra key is a typecheck failure — and the unreviewed count prints on every run so \"a missing translation fails the build\" cannot quietly become \"an unreviewed translation passes silently\".",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Kinsoku line breaking is correct on a device, on iOS and on Android",
+          "verifiedBy": "A device run on both platforms against a fixed string set — a line ending in a Japanese comma, a small kana at a line start, a long katakana loanword. React Native delegates line breaking to the platform text engine, so the JS render tree cannot see it: the gated half is that lineBreakStrategyIOS and textBreakStrategy are passed, not that they worked.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "VoiceOver and TalkBack complete every screen, and text scaled to 200 percent loses no content or function",
+          "verifiedBy": "A device pass with each screen reader, per the release checklist. The gate proves the accessibility TREE, not the pixels — there is no Yoga layout in a JS render tree, so clipping, overflow and occlusion are invisible to it. The gated half is that no component disables font scaling and every text permits a multiplier of at least 2.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "plan": "plans/F-017-app-design-system-accessibility-and-i18n.md"
     },
     {
       "id": "F-018",
@@ -579,7 +603,7 @@
       ],
       "acceptance": [
         "Every corpus entry reachable in 3 interactions or fewer from the atlas root",
-        "Server-rendered and statically generated per corpus version; indexable",
+        "Reads the signed corpus bundle at a pinned version with its digest verified at load, and renders with no network access",
         "The Atlas bundle contains no colour engine code",
         "Colour detail shows names in four forms, every coordinate system, provenance, relations, palettes and CVD appearance",
         "Every swatch has an accessible name and its numeric value"
@@ -683,7 +707,7 @@
       ],
       "acceptance": [
         "A rendered card with name, kanji, hex, attribution and corpus version",
-        "Renders identically server-side and client-side",
+        "Renders deterministically: the same entry at the same corpus version produces the same card on both platforms",
         "Readable at thumbnail size"
       ],
       "verification": [
@@ -924,10 +948,10 @@
       "priority": "must",
       "status": "todo",
       "acceptance": [
-        "POST /v1/me/export produces a machine-readable archive of every personal record",
-        "DELETE /v1/me hard-deletes AND de-indexes: database, blob storage, search index, cache, sync tombstones",
-        "A re-query against each store returns nothing; the job's exit code is not the proof",
-        "Both complete well within 30 days"
+        "An in-app export contains every record and re-imports to a byte-identical database, asserted in e2e",
+        "Erasure is immediate and local: the SQLite database, the cached images and the change_log, all of it on the device",
+        "A re-query against each store returns nothing; the return value of the erase call is not the proof",
+        "The app prompts for an export before any destructive action, because a lost device is lost data and the product says so"
       ],
       "verification": [
         "state",
@@ -1109,7 +1133,7 @@
         "F-039"
       ],
       "acceptance": [
-        "SQLite on mobile and IndexedDB on web behind one repository interface with a shared conformance suite",
+        "SQLite via expo-sqlite behind one repository interface with a conformance suite",
         "Writes succeed offline and survive restart; reads never block on network",
         "Tokens and keys in SecureStore, never the app database"
       ],
@@ -1717,6 +1741,27 @@
       ],
       "notes": "DONE. The engine zone is now a GRAPH rather than a naming convention. verify-engine-purity.mjs scoped itself by package NAME (color-* and cvd-engine) and treated every @irodora/* specifier inside those as allowed WITHOUT FOLLOWING THE EDGE — so an engine package could depend on a workspace package that imports node:fs, or that declares a third-party runtime dependency, and every gate stayed green while NFR-3 was broken. A transitive node:fs breaks byte-identical output in Node, the browser and React Native exactly as directly as a local one. The zone is now the transitive closure of @irodora/* dependency edges from the declared roots, and every member is held to both existing rules. NOTHING WAS VIOLATING IT: today the closure equals the roots exactly, and the check SAYS SO on every run rather than printing a bare count — a count cannot distinguish \"no transitive packages\" from \"did not look\". That is a fact about this commit, not a property anyone was maintaining: F-011 already hit the hazard once, expecting color-naming to import @irodora/corpus, and handled it by hand with a portability override plus boundary guard #11. One package, not a rule. PROVEN: --prove now runs three planted violations rather than two. The new one is the case the old check COULD NOT SEE — color-spaces gains a dependency on @irodora/recommendation, which is not a root, and that package src gains a node:fs import. Caught, with the clean baseline asserted first and last, and every fixture verified removed. A failure message now NAMES THE EDGE that pulled a package in, so it reads as \"corpus is in the zone via @irodora/color-naming\" rather than leaving someone to ask why corpus is an engine package. THE COST, stated rather than discovered: a package pulled into the zone inherits the whole constraint set, so wanting an engine package to use a helper that reads a file is now a design decision rather than an accident.",
       "plan": "plans/F-073-engine-purity-follows-dependency-edges.md"
+    },
+    {
+      "id": "F-074",
+      "title": "Gate 0 catches an acceptance criterion that names a retired surface",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R2",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "An acceptance criterion or a PRD verification column naming a retired surface — an HTTP route, a web-only store, a per-tenant key, or a gate id absent from gates.json — fails gate 0, naming the feature and the phrase",
+        "The check proves itself by planting exactly that phrase into a real feature and watching gate 0 go red, then restoring it",
+        "The three known survivors outside R2 are corrected: F-002's OpenAPI leg, which packages/contracts already records as removed; F-038's `web-perf` gate, which is not in gates.json; and F-042's per-tenant data keys, which ADR-0051 retired along with multi-tenancy"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FOUND WHILE CLAIMING F-017, whose own acceptance still named Next.js 16, Server Components, axe and a `web-perf` gate nine months after ADR-0051 retired the web surface and four features after apps/mobile shipped. The R2 criteria were rewritten in F-017 and docs/PRD.md FR-20 and FR-50 were corrected with them. THIS FEATURE IS THE PART THAT MATTERS: nothing failed. Gate 0 checks that every requirement id resolves, that every path exists and that the ADR index is consistent — and passed green the whole time, because a criterion naming a surface that no longer exists is still a well-formed string. A feature list is the scope subsystem; a stale criterion in it is not cosmetic, it is a contract that would have had F-017 build a Next.js app. The guard belongs on gate 0 for the same reason the golden-rule scan does: prose in a state file rots silently and nothing else reads it."
     }
   ]
 }

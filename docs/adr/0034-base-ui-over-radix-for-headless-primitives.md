@@ -2,7 +2,16 @@
 
 ## Status
 
-Accepted
+**Superseded by
+[ADR-0054](0054-react-native-core-primitives-and-ui-stays-a-package.md).** Base UI composes DOM
+elements and manages ARIA; [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)
+retired the web surface, so there is no DOM for it to compose.
+
+**What does not survive is the premise, not the reasoning.** This record chose between two
+libraries whose value was ARIA and focus management. On React Native the accessibility tree is
+the platform's — `accessibilityRole`, `accessibilityLabel` and `accessibilityState` are read
+directly by VoiceOver and TalkBack — so the layer both candidates occupied does not exist.
+The record is retained for the comparison, which would still hold on a web surface.
 
 ## Date
 
