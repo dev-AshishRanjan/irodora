@@ -100,6 +100,7 @@ export {
   nativeLargeTextSizes,
   nativeSmallTextSizes,
   nativeLargeTextMinPx,
+  nativeFamilies,
 } from './generated/native.js';
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */

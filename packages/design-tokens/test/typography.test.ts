@@ -29,6 +29,7 @@ import {
   nativeMotion,
   nativeNumericFeature,
   nativeType,
+  nativeFamilies,
 } from '../src/generated/native.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -232,14 +233,27 @@ describe('elevation, motion and the default theme reach the target', () => {
   });
 });
 
-describe('what this target deliberately does NOT carry', () => {
-  it('emits no font family, because the manifest states CSS stacks', () => {
-    // React Native takes ONE family name and has no fallback cascade, so a CSS stack cannot
-    // be emitted as-is, and a resolved name would point at a font the bundle does not carry
-    // until ADR-0057's asset lands — which fails over to the system face silently and
-    // produces tofu for exactly the rare kanji the corpus is made of.
-    const emitted = readFileSync(join(HERE, '..', 'src', 'generated', 'native.ts'), 'utf8');
-    expect(emitted).not.toMatch(/nativeFamilies/u);
-    expect(emitted).not.toMatch(/Hiragino|Geist|sans-serif/u);
+describe('the font family is ONE name per script, never a CSS stack', () => {
+  it('emits a single family for jp, because RN has no fallback cascade', () => {
+    // F-017 deliberately emitted NOTHING here and a test asserted that, because naming a face
+    // the bundle does not carry fails over to the system font SILENTLY and produces tofu for
+    // exactly the rare kanji the corpus is made of. F-076 shipped the asset, so the name is
+    // true now — and that earlier test correctly failed the moment it stopped being true.
+    expect(nativeFamilies.jp).toBe('NotoSansJP');
+    expect(typeof nativeFamilies.jp).toBe('string');
+    // A CSS stack would contain a comma. React Native takes ONE family and has no cascade,
+    // so a stack here silently resolves to nothing.
+    expect(nativeFamilies.jp).not.toContain(',');
+  });
+
+  it('emits NO Latin family, which is a decision rather than an omission', () => {
+    // ADR-0057 §6: Latin has no tofu failure mode, so the script that can fail silently gets
+    // the bundled font and the script that cannot, does not. DESIGN-SYSTEM.md still says
+    // "Geist ... licensing and self-hosting to confirm", which nobody has confirmed.
+    expect(Object.keys(nativeFamilies)).toEqual(['jp']);
+  });
+
+  it('the manifest still carries CSS stacks, for the target that has a cascade', () => {
+    expect(manifest.typography.families['jp']).toContain(',');
   });
 });

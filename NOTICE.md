@@ -75,6 +75,32 @@ Recorded here when adopted, with the licence under which each is used. Irodora's
 marks, wordmark and generated illustration are proprietary and covered by
 [LICENSE](LICENSE).
 
+### Noto Sans JP
+
+| | |
+|---|---|
+| **Licence** | SIL Open Font License, Version 1.1 |
+| **Copyright** | © 2014–2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source' |
+| **Version** | `Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603` |
+| **Source** | `google/fonts`, `ofl/notosansjp/NotoSansJP[wght].ttf` |
+| **Shipped as** | `apps/mobile/assets/fonts/NotoSansJP-Subset.ttf` — 440 KB |
+
+**We ship a subset, and the OFL permits it.** §2 of the licence allows modification and
+redistribution provided the Reserved Font Name is not used and the licence travels with the
+font; the subset carries the original name table and this notice is that licence record.
+
+**The subset is generated from our own content, not from a standard character set**
+([ADR-0057](docs/adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md)).
+Subsetting to JIS X 0208 Level 1+2 would have been the conventional choice and a *guess about
+our content*: 纁 (sohi) is not in it, and a corpus of traditional colour names is exactly where
+such characters live. `scripts/generate-font-subset.mjs` takes the union of the published
+corpus, the Japanese catalogue, kana, Japanese punctuation and Latin;
+`scripts/verify-font-coverage.mjs` fails the `content` gate if the shipped subset does not
+cover it, naming the entry and the codepoint.
+
+The 9.6 MB source is **not committed** — it is a downloaded build input, cached under
+`.cache/`. What is committed is the subset, and the gate checks the subset.
+
 ---
 
 ## 5. Harness methodology

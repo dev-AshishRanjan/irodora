@@ -109,3 +109,7 @@ infra/terraform/backend.hcl
 
 # Created and removed by scripts/verify-claims-proof.mjs. Never committed.
 docs/__claims_proof__.md
+
+# Build inputs that are downloaded, not authored. The SUBSET is committed; its 9.6MB
+# source is not — see scripts/generate-font-subset.mjs.
+.cache/

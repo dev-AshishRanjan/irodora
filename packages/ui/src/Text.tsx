@@ -26,6 +26,7 @@
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 import {
   type nativeLargeTextSizes,
+  nativeFamilies,
   nativeType,
   type LargeTextToken,
   type TextToken,
@@ -85,7 +86,14 @@ export function Text<S extends TypeSize>({
         ? { lineBreakStrategyIOS: 'push-out' as const, textBreakStrategy: 'highQuality' as const }
         : {})}
       {...rest}
-      style={{ ...step, color: colors[color] }}
+      // The bundled face for Japanese ONLY (ADR-0057 §6). Latin keeps the platform font:
+      // Latin has no tofu failure mode, so the script that can fail silently gets the
+      // bundled font and the script that cannot, does not.
+      style={{
+        ...step,
+        color: colors[color],
+        ...(japanese ? { fontFamily: nativeFamilies.jp } : {}),
+      }}
     >
       {children}
     </RNText>

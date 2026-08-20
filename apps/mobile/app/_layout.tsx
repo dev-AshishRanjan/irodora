@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
 import { ThemeProvider, useTheme } from '@irodora/ui';
 
 /**
@@ -37,6 +39,20 @@ function Chrome(): React.JSX.Element {
 }
 
 export default function RootLayout(): React.JSX.Element {
+  /*
+   * The bundled Japanese subset (ADR-0057, F-076). Its coverage over the corpus and the
+   * message catalogue is checked by `gate:content`, so a corpus publish that introduces a
+   * character this face lacks fails the build rather than showing a tofu box on a device.
+   *
+   * Rendering is held until it loads. A frame drawn before the face is ready falls back to
+   * the platform font, which is the silent failure the whole decision exists to avoid — it
+   * would look like a font that simply differs rather than one that is missing.
+   */
+  const [loaded] = useFonts({
+    NotoSansJP,
+  });
+  if (!loaded) return <></>;
+
   return (
     <ThemeProvider>
       <Chrome />

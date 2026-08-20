@@ -177,11 +177,24 @@ export function emitReactNative(manifest: Manifest): string {
   out.push(`export const nativeLargeTextMinPx = ${String(floor)} as const;`);
   out.push('');
 
-  // NOTE: `typography.families` is NOT emitted here. The manifest states them as CSS font
-  // stacks, and React Native has no fallback cascade — it takes ONE family name. Emitting a
-  // resolved name before the font asset exists would name a face the bundle does not carry,
-  // which fails over to the system font silently and produces tofu for exactly the rare kanji
-  // the corpus is made of. The families land with the font asset (ADR-0057, F-017 increment 9).
+  // --- families -------------------------------------------------------------------------
+  //
+  // F-017 deliberately emitted NOTHING here, because naming a face the bundle does not carry
+  // fails over to the system font SILENTLY and produces tofu for exactly the rare kanji the
+  // corpus is made of. F-076 shipped the asset, so the name is now true.
+  //
+  // ONE name per script, not a stack: React Native has no fallback cascade — `fontFamily`
+  // takes a single family and there is no second chance. The manifest's CSS stacks stay for
+  // the CSS target, where a cascade exists.
+  //
+  // `jp` only. The Latin face is deliberately still the platform's (ADR-0057 §6): Latin has
+  // no tofu failure mode, so the script that can fail silently gets the bundled font and the
+  // script that cannot, does not.
+  out.push(
+    '/** ONE family per script — RN has no fallback cascade. jp is bundled; Latin is the platform. */',
+  );
+  out.push("export const nativeFamilies = { jp: 'NotoSansJP' } as const;");
+  out.push('');
 
   out.push(
     `export const nativeNumericFeature = ${quote(manifest.typography.numeric.fontFeature)} as const;`,
