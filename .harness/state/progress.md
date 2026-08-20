@@ -8,6 +8,134 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-20 — F-017 IN PROGRESS · the contract was describing a product we decided not to build
+
+Claimed the lowest-id eligible R2 feature and found that implementing its acceptance criteria
+as written would have built a **Next.js web app**.
+
+### The finding is that nothing failed
+
+F-017's criteria named "Next.js 16 App Router … Tailwind v4 … Radix primitives", "Server
+Components by default", "axe on every route", and "Gates 8 (a11y) and 13 (**web-perf**)
+activate". ADR-0018 has been *Superseded by ADR-0051* since 2026-08-19, there is no `web-perf`
+gate in `gates.json`, and axe needs a DOM this product no longer has. Four features had shipped
+into `apps/mobile` since.
+
+**Gate 0 passed green throughout.** It verifies that every requirement id resolves, every path
+exists, the ADR index is consistent and all 233 governed documents' links resolve — and a
+criterion naming a surface that no longer exists is still a well-formed string. That is
+**F-074**: a criterion or PRD verification column naming an HTTP route, a web-only store, a
+per-tenant key, or a gate id absent from `gates.json` should fail gate 0.
+
+### The rot was wider than the feature list
+
+`docs/PRD.md` had only been **half** swept after the rehaul. FR-58 and NFR-7 were rewritten for
+the device — FR-58 even says *"with no server, this is the entire durability story"* — while
+**FR-20 and FR-50 still said "server-rendered and indexable"**. Correcting only the feature list
+would have desynced it from the requirement it traces to, so both moved. F-035's four criteria
+were replaced by **FR-58's own current text** rather than by anything invented.
+
+Swept: F-017, F-018, F-023, F-035, F-041. F-019/020/021 were already surface-neutral. Three
+survivors outside R2 (F-002's OpenAPI leg, F-038's `web-perf`, F-042's per-tenant keys) are left
+**for F-074** rather than hand-patched, because the guard is the point.
+
+### Four decisions, one of them measured rather than argued
+
+- **ADR-0054** — behaviour comes from React Native's own primitives. ADR-0034 chose Base UI,
+  which composes DOM and manages ARIA; on RN the accessibility tree *is* the platform's, so the
+  layer both candidates occupied does not exist. **ADR-0034 superseded**, reasoning retained
+  because it would still hold on a web surface.
+- **ADR-0055** — the `a11y` gate renders under `jest-expo`. **This was run, not reasoned:** a
+  spike rendered a `Pressable`, resolved `getByRole('button', { name })`, read
+  `accessibilityState.disabled === true`, and read back `{ fontSize: 13, color: '#8A8A8A' }` —
+  the exact shape the small-text contrast check needs. Two version facts came out of running it:
+  `jest-expo@57` is built on **Jest 29** internals and dies against `jest@30` with
+  `clearMocksOnScope` before running a test; and `RNTL@14` peers on `test-renderer@1` while
+  jest-expo ships `react-test-renderer`, so they are **not aligned**. Pinned:
+  `jest@29.7.0 · jest-expo@57.0.4 · RNTL@13.3.3 · react-test-renderer@19.2.3`.
+  The ADR states plainly that the `vitest-native` alternative was **not executed** — rejected on
+  its published contract and on ADR-0033 §3 precedent, which is a weaker basis, and saying so is
+  the point.
+- **ADR-0056** — the catalogue is enumerated TypeScript. ADR-0028 forbids fallback, and fallback
+  is the *core* behaviour of every mainstream runtime i18n library; suppressing it is a config
+  flag, and a guarantee that depends on a flag staying false is a reminder.
+- **ADR-0057** — a bundled Noto Sans JP subset generated **from the corpus**. The corpus is an
+  immutable signed bundle at a pinned version, so the renderable codepoint set is knowable at
+  *build* time — which is what makes coverage checkable and criterion 4a **gated** rather than
+  attested. Subsetting to JIS X 0208 would have been a guess about our own content: 纁 is not in
+  it, and traditional colour names are exactly where such characters live.
+
+### The type scale reaches React Native (increment 2)
+
+`parseManifest` read **none** of `typography`, `elevation`, `motion`, `defaultTheme` — so "the
+manifest is the single source of truth" was true of colour and aspirational of everything else.
+
+**The trap:** CSS `line-height: 1.65` is a multiple of the font size; RN's `lineHeight` is an
+absolute length in points. Copying it across gives a 15 pt line 1.65 points of leading, and it
+fails silently because 1.65 is a valid number in a valid field. `body` now emits **24.75**, and
+`display.1` emits `letterSpacing` **-2.88** rather than -0.04.
+
+Planted that exact bug and watched three tests go red before restoring — the conversions are
+recomputed from the manifest in the test rather than compared against what the emitter produced,
+so it is a second opinion and not an echo.
+
+**Japanese leading is derived, and the owner may want to overturn it:** each step scales by
+`japanese/latin` (1.85/1.65). The parser now *refuses* a manifest where `japanese <= latin`, so
+"strictly greater at every step" is structural. If per-step Japanese values should be declared
+instead, that is a manifest change and the emitter is the seam.
+
+`typography.families` is deliberately **not** emitted: RN has no fallback cascade, and naming a
+face the bundle does not carry fails over to the system font silently — tofu on exactly the rare
+kanji the corpus is made of. A test asserts the generated file contains no family name.
+
+### State
+
+```
+Done:       increments 1 and 2 of 11, both committed and verified
+In flight:  nothing half-finished; the tree is clean
+Gates:      ran — state 14 (20 warn) · typecheck 26 · lint 26 · format · test 26
+                  build 16 · golden 13 · cvd 12 · contrast 17 · content · mirror 11
+                  guards 11 · purity
+            NOT run — e2e (pending; `pnpm test:e2e` exits 1 by design while no surface
+                      declares the script, which is why `e2e` was REMOVED from F-017's
+                      verification list — it would have made the feature uncloseable)
+                    · a11y (pending until increment 10, by design: a gate activates after
+                      it has been executed and seen to fire)
+                    · perf (pending) · security (gitleaks not installed on this workstation)
+Next:       increment 3 — the render harness, proven before any component exists.
+            Install the ADR-0055 version set into packages/ui, build the tree walkers
+            (resolveTextNodes, resolveColor -> token | UNRESOLVED, pressableNodes), and
+            land one compliant fixture plus four decoys that the assertions separate.
+```
+
+### Three things the next session should not have to rediscover
+
+1. **`apps/mobile/app/index.tsx` already violates the rule F-017 is building.** `styles.mono`
+   (`fontSize: 13`) and `styles.body` (`fontSize: 14`) render with `theme['foreground.3']`, a
+   `largeText` token restricted to ≥ 18.66 px. **The decoy for increment 6's check is production
+   code** — build the check first, capture the red, then fix, and keep a synthetic decoy behind.
+2. **`icon.check`, `icon.alert` and `icon.cross` resolve to nothing.** They appear only in
+   `statusPairing`. NFR-9's structural guarantee currently stops at a string in a JSON file.
+3. **Gate 8 has `ciStep: false`** and a description saying it is "asserted inside the app e2e
+   run", and `verify-state.mjs` skips the CI-mirror check entirely for `ciStep: false`.
+   Activating it in that shape gives a gate that reads `active` and never executes — the F-072
+   hazard in a different costume, on the gate carrying NFR-8. It needs `ciStep: true` and a real
+   step.
+
+### Environment
+
+The workstation shell still defaults to **Node 22.16.0 / pnpm 9.3.0**, which fails the engine
+check. Node 24.19.0 *is* installed under nvm. Every gate above was run with:
+
+```
+PATH="$APPDATA/nvm/v24.19.0:$PATH"  →  node 24.19.0, corepack pnpm 11.21.0
+```
+
+This is already recorded and closed in `memory/observations.md` (2026-08-19); it is repeated
+here only because it bit again at the start of this session.
+
+---
+
 ## 2026-08-20 — F-039 DONE · there is an app now
 
 R0 and R1 built an engine nobody could use. This is the first feature that produces something a
