@@ -88,25 +88,101 @@ instead, that is a manifest change and the emitter is the seam.
 face the bundle does not carry fails over to the system font silently — tofu on exactly the rare
 kanji the corpus is made of. A test asserts the generated file contains no family name.
 
+### Increments 3 to 6 — the harness, the components, and what they caught
+
+**Increment 3 — the render harness, before any component existed.** Deliberately in that
+order: a suite written after the components it judges tends to agree with them.
+
+The defect it exists to catch: React Native's `<Text>` inherits text style from an ancestor
+`<Text>` and **not** through a `<View>`, so the ordinary way to write a caption renders a
+`largeText`-only token at 13 px while the inner node declares no size at all. A flat walk sees
+`undefined` and reports nothing.
+
+**The mutation run changed the design.** Deleted the inheritance model expecting two tests to
+go red; **only one did**. The "catches the inherited case" assertion kept passing because
+without the model the node falls back to RN's default of 14 px, which is *also* below the
+floor — flagged for the wrong reason, and it would have kept passing forever. Added
+`InheritedLargeText` (the same token at 22 px, which is legitimate), re-ran, and now it fails
+in **both** directions. A check that over-reports gets switched off, so that half matters as
+much as the under-reporting one.
+
+**Increment 4 — `ThemeProvider`, `Text`, `Icon` + registry, `Status`.**
+`<Text size="small" color="foreground.3">` **does not compile**. Proven by widening the
+constraint and watching `typecheck` fail on the now-unused `@ts-expect-error`.
+
+`18.66` existed nowhere as data — only in prose and three doc comments, while the rendered
+check, the `Text` types and the gate all depended on it. It is `gate.contrast.largeTextMinPx`
+in the manifest now, and the size split is *derived* from it.
+
+**`icon.check`, `icon.alert` and `icon.cross` resolved to nothing** — three strings in a JSON
+file. NFR-9 was true of the *type* and unproven of the *render*. The registry closes it, checked
+in both directions, and the shape test compares the three glyphs with every hex replaced by
+`"COLOUR"` so a **different shape** has to carry the distinction.
+
+`tsc` then rejected my own theme resolver: RN's `ColorSchemeName` includes `'unspecified'`,
+which is *literally* the no-preference case the fallback exists for, and I had not handled it.
+
+**Increment 5 — `Surface`, `Button`, `Swatch`, and the conformance suite.** Its load-bearing
+assertion is that **rendered trees must differ between declared states**; everything else can
+be satisfied by a component that declares five states and renders one.
+
+It immediately rejected my own `Swatch`: no `disabled`, no `loading`, and `active`/`focus`
+rendering identically. Fixed in the component — focus uses the `ring` token, selection uses
+`border.strong`, because focus is where the cursor is and selection is what was chosen.
+
+It also flagged the swatch's **own sample** as a colour literal, which needed a real decision: an
+arbitrary sample is by definition not a token. The exemption is `sampleValues`, declared **in the
+registry, not on the component** (a marker prop is self-fulfilling — a component that forgets it
+becomes invisible to the check) and **exact-match on the value**, so chrome painted with a
+literal is still caught. Forgetting to declare it produces a finding.
+
+**Increment 6 — the rendered half of gate 9, and the screen it was written for.**
+
+```
+screens/Home [light] small-text-large-token: Text at 13px uses foreground.3   (x4)
+screens/Home [light] small-text-large-token: Text at 14px uses foreground.3   (x1)
+screens/Home [dark]  colour-literal: RCTScrollView backgroundColor = #FDFCF9  (x9)
+```
+
+The five were predicted. **The nine were not, and are worse:** the screen called
+`useColorScheme()` itself instead of receiving a theme, so asked to render dark it rendered
+**light** — every token unresolvable in the theme it was told to be in. Nothing else would have
+caught it: both themes look correct in isolation, and the app only ever asks for one at a time.
+
+`app/index.tsx` is now the route and nothing else; `src/screens/Home.tsx` is the content —
+`Stack.Screen` throws outside a navigator, so a screen that sets its own options can only be
+tested by mounting expo-router around it, and the suite would then be testing expo-router.
+
 ### State
 
 ```
-Done:       increments 1 and 2 of 11, both committed and verified
+Done:       increments 1-6 of 11, each committed and independently verified
 In flight:  nothing half-finished; the tree is clean
-Gates:      ran — state 14 (20 warn) · typecheck 26 · lint 26 · format · test 26
-                  build 16 · golden 13 · cvd 12 · contrast 17 · content · mirror 11
-                  guards 11 · purity
-            NOT run — e2e (pending; `pnpm test:e2e` exits 1 by design while no surface
-                      declares the script, which is why `e2e` was REMOVED from F-017's
+Gates:      ALL 14 GREEN — state · typecheck 26 · lint 26 · format · test 26 · build 16
+                  contrast 18 (three packages now) · golden · cvd · content
+                  guards 11 · purity · mirror 11 · security:secrets
+            NOT run — e2e (`pnpm test:e2e` exits 1 by design while no surface declares
+                      the script, which is why `e2e` was REMOVED from F-017's
                       verification list — it would have made the feature uncloseable)
-                    · a11y (pending until increment 10, by design: a gate activates after
-                      it has been executed and seen to fire)
-                    · perf (pending) · security (gitleaks not installed on this workstation)
-Next:       increment 3 — the render harness, proven before any component exists.
-            Install the ADR-0055 version set into packages/ui, build the tree walkers
-            (resolveTextNodes, resolveColor -> token | UNRESOLVED, pressableNodes), and
-            land one compliant fixture plus four decoys that the assertions separate.
+                    · a11y (pending until increment 10, by design: a gate activates
+                      after it has been executed and seen to fire)
+                    · perf (pending)
+Next:       increment 7 — i18n. The enumerated en/ja catalogue per ADR-0056, the
+            device-locale resolver, the unused-key and identical-value scans, the
+            raw-string lint with its guard, and every string on Home migrated.
 ```
+
+### Two runners now, and why that is not drift
+
+`packages/ui` and `apps/mobile` run **Jest**; everything else runs Vitest. ADR-0055 decided it
+and the cost is real, but turbo invokes each package's own `test` script, so `pnpm test` fans
+out to both with no root change. `apps/mobile` moved wholesale rather than running both — two
+configs inside one package would fight over one `test/` directory.
+
+The pinned set moves as a unit: `jest@29.7.0 · jest-expo@57.0.4 · RNTL@13.3.3 ·
+react-test-renderer@19.2.3`. Both configs need a `moduleNameMapper` stripping `.js` from
+relative specifiers, because the repo compiles with `module: NodeNext` and Jest resolves those
+literally.
 
 ### The evaluation returned FAIL, and it was right
 
