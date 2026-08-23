@@ -41,6 +41,8 @@ const PROVENANCE = {
   authoredAt: '2026-08-11',
   verifiedBy: 'ed-002',
   verifiedAt: '2026-08-13',
+  // F-084: absence must never read as "independent", so every fixture states it.
+  reviewIndependence: 'independent',
   editorialNotes: 'A fixture. Not a colour claim, and never published.',
 };
 
@@ -157,6 +159,35 @@ const MUTATIONS = [
     expect: 'cannot reach "published" without a recorded reviewer',
     apply: (c) => {
       c.entries[0].provenance.verifiedBy = null;
+    },
+  },
+  {
+    // F-084, the generous direction. Two real editors recorded as a self-review understates a
+    // check that actually happened; mislabelling is mislabelling whichever way it leans.
+    dir: 'self-review-claimed-by-two-people',
+    expect: 'is "self", but "ed-001" authored and "ed-002" reviewed',
+    apply: (c) => {
+      c.entries[0].provenance.reviewIndependence = 'self';
+    },
+  },
+  {
+    // F-084. "self" narrows what is checked; it does not switch the check off. ed-003 is a
+    // second id for the same human as ed-001, which is a ROSTER defect — and a declaration
+    // cannot make it correct. If this ever stops failing, ADR-0047 is dead.
+    dir: 'self-review-cannot-hide-one-person-twice',
+    expect: 'is "self", but "ed-001" authored and "ed-003" reviewed',
+    apply: (c) => {
+      c.entries[0].provenance.verifiedBy = 'ed-003';
+      c.entries[0].provenance.reviewIndependence = 'self';
+    },
+  },
+  {
+    // F-084. The absence itself. An entry reaching "published" without saying how it was
+    // reviewed must fail rather than defaulting to the stronger claim.
+    dir: 'published-without-declaring-review-independence',
+    expect: 'provenance\\.reviewIndependence',
+    apply: (c) => {
+      c.entries[0].provenance.reviewIndependence = null;
     },
   },
   {
@@ -278,7 +309,20 @@ const MUTATIONS = [
 
 function baseCorpus() {
   return {
-    entries: [entry('fixture-a'), entry('fixture-b')],
+    entries: [
+      entry('fixture-a'),
+      entry('fixture-b'),
+      // F-084. Authored and reviewed by ed-001, and SAYING SO. This is the entry that proves
+      // a single editor can publish honestly rather than only that they can be refused.
+      entry('fixture-self-reviewed', {
+        provenance: {
+          ...PROVENANCE,
+          authoredBy: 'ed-001',
+          verifiedBy: 'ed-001',
+          reviewIndependence: 'self',
+        },
+      }),
+    ],
     palettes: [structuredClone(PALETTE)],
     editors: structuredClone(EDITORS),
   };

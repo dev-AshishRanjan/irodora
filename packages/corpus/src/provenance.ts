@@ -46,6 +46,19 @@ export interface RecordProvenance {
   readonly authoredAt: string;
   readonly verifiedBy: string | null;
   readonly verifiedAt: string | null;
+  /**
+   * Whether the reviewer was somebody other than the author (F-084, ADR-0060).
+   *
+   * **Not optional, and not defaulted.** A field that meant `independent` when absent would
+   * let every entry claim an independent review by saying nothing — which is precisely the
+   * silence this exists to break. `null` before review completes, one of the two values
+   * after.
+   *
+   * `self` is what a single-editor project can honestly claim. It is a weaker statement than
+   * `independent`, it is publishable, and it says so. Nothing here makes author-review
+   * *equivalent* to independent review; it makes it *visible*.
+   */
+  readonly reviewIndependence: ReviewIndependence | null;
   readonly editorialNotes: string;
 }
 
@@ -63,8 +76,18 @@ const PROVENANCE_KEYS = [
   'authoredAt',
   'verifiedBy',
   'verifiedAt',
+  'reviewIndependence',
   'editorialNotes',
 ] as const;
+
+/** Who checked the entry, relative to who wrote it. See `RecordProvenance`. */
+export const REVIEW_INDEPENDENCE = ['independent', 'self'] as const;
+
+export type ReviewIndependence = (typeof REVIEW_INDEPENDENCE)[number];
+
+export function isReviewIndependence(v: unknown): v is ReviewIndependence {
+  return typeof v === 'string' && (REVIEW_INDEPENDENCE as readonly string[]).includes(v);
+}
 
 /**
  * The shortest `derivation` that can carry an epistemic claim.
@@ -82,13 +105,13 @@ const MIN_DERIVATION = 20;
  * asking an editor to write "not reviewed yet" beside `status: "draft"` would make the reasons
  * mechanical — at which point nobody reads any of them.
  */
-function requireReviewField(
+function requireReviewField<T>(
   v: unknown,
   path: string,
   src: string,
   status: EntryStatus,
-  parse: (value: unknown) => string,
-): string | null {
+  parse: (value: unknown) => T,
+): T | null {
   if (requiresReviewer(status)) {
     if (v === null || v === undefined)
       throw new CorpusError(
@@ -186,6 +209,25 @@ export function parseProvenance(
     ),
     verifiedAt: requireReviewField(o['verifiedAt'], 'provenance.verifiedAt', src, status, (value) =>
       requireMatch(value, ISO_DATE_PATTERN, 'provenance.verifiedAt', src, 'expected YYYY-MM-DD'),
+    ),
+    // Same null-before-review rule as the two fields above, deliberately: whether the review
+    // was independent is part of the review, so it appears and disappears with it.
+    reviewIndependence: requireReviewField(
+      o['reviewIndependence'],
+      'provenance.reviewIndependence',
+      src,
+      status,
+      (value) => {
+        if (!isReviewIndependence(value))
+          throw new CorpusError(
+            src,
+            'provenance.reviewIndependence',
+            `is ${JSON.stringify(value)}; expected ${REVIEW_INDEPENDENCE.map((r) => `"${r}"`).join(' or ')}. ` +
+              'It is required rather than defaulted, because a field that meant "independent" ' +
+              'when absent would let an entry claim a review nobody performed (ADR-0060).',
+          );
+        return value;
+      },
     ),
     editorialNotes: requireString(o['editorialNotes'], 'provenance.editorialNotes', src),
   };

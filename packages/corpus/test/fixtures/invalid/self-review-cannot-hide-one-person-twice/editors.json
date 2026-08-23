@@ -1,0 +1,36 @@
+[
+  {
+    "id": "ed-001",
+    "displayName": "Fixture Author",
+    "roles": [
+      "author",
+      "reviewer"
+    ],
+    "active": true
+  },
+  {
+    "id": "ed-002",
+    "displayName": "Fixture Reviewer",
+    "roles": [
+      "author",
+      "reviewer"
+    ],
+    "active": true
+  },
+  {
+    "id": "ed-003",
+    "displayName": "Fixture Author",
+    "roles": [
+      "reviewer"
+    ],
+    "active": true
+  },
+  {
+    "id": "ed-004",
+    "displayName": "Fixture Draftsman",
+    "roles": [
+      "author"
+    ],
+    "active": true
+  }
+]

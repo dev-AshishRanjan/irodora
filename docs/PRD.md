@@ -386,8 +386,11 @@ honestly and cheap to build dishonestly — and the difference is visible.
 | ID | Question | Needed by |
 |---|---|---|
 | OQ-3 | Reference card: manufacture or partner? | R5 |
-| OQ-5 | Japanese editorial reviewer — engagement model | R1 |
 | OQ-6 | Apple Developer Program enrolment — individual or organisation, and who holds the certificates | R3 |
+
+**OQ-5 is closed by [ADR-0060](adr/0060-one-editor-and-self-review-is-declared-rather-than-assumed.md).** The product ships with one editor, and `provenance.reviewIndependence` records
+whether an entry was reviewed by somebody other than its author. That is a weaker control than
+two people and it is labelled as such rather than hidden.
 
 **Closed, not answered.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which
 vendor to choose for capabilities the product no longer has. **OQ-4 is settled at ~120

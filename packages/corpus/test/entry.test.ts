@@ -58,6 +58,7 @@ const valid = {
     authoredBy: 'ed-001',
     authoredAt: '2026-08-11',
     verifiedBy: 'ed-002',
+    reviewIndependence: 'independent',
     verifiedAt: '2026-08-13',
     editorialNotes:
       'English name is a judgement about what communicates, not a translation of 静石.',
@@ -303,11 +304,52 @@ describe('the reviewer field tracks the status', () => {
         const p = d['provenance'] as Record<string, unknown>;
         p['verifiedBy'] = null;
         p['verifiedAt'] = null;
+        // F-084: the declaration is part of the review, so it appears and disappears with it.
+        p['reviewIndependence'] = null;
       }),
       'x.json',
     );
     expect(entry.provenance.verifiedBy).toBeNull();
+    expect(entry.provenance.reviewIndependence).toBeNull();
     expect(entry.unknowns['provenance.verifiedBy']).toBeUndefined();
+    expect(entry.unknowns['provenance.reviewIndependence']).toBeUndefined();
+  });
+
+  it('rejects a declared review independence before review completes (F-084)', () => {
+    // The mirror of the rule above. Recording HOW an entry was reviewed, on an entry that has
+    // not been reviewed, is the same class of claim as recording WHO reviewed it.
+    expectRejection(
+      mutate((d) => {
+        d['status'] = 'draft';
+        const p = d['provenance'] as Record<string, unknown>;
+        p['verifiedBy'] = null;
+        p['verifiedAt'] = null;
+        p['reviewIndependence'] = 'self';
+      }),
+      'provenance.reviewIndependence',
+      /before review completes/u,
+    );
+  });
+
+  it('rejects a review independence outside the two values, rather than coercing it', () => {
+    expectRejection(
+      mutate((d) => {
+        (d['provenance'] as Record<string, unknown>)['reviewIndependence'] = 'peer';
+      }),
+      'provenance.reviewIndependence',
+      /expected "independent" or "self"/u,
+    );
+  });
+
+  it('rejects an entry that reaches published without declaring how it was reviewed', () => {
+    // This is the case the whole feature turns on: absence must not read as "independent".
+    expectRejection(
+      mutate((d) => {
+        (d['provenance'] as Record<string, unknown>)['reviewIndependence'] = null;
+      }),
+      'provenance.reviewIndependence',
+      /cannot reach "published" without a recorded reviewer/u,
+    );
   });
 
   it('rejects a verification date that is not YYYY-MM-DD', () => {

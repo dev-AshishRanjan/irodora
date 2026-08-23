@@ -69,6 +69,19 @@ ago must still be explainable (FR-10), and that requires the values it used to s
 
 **Author and reviewer must be different identities.** Enforced.
 
+**And when they are not, the entry says so.** `provenance.reviewIndependence` is
+`"independent"` or `"self"`, required from `verified` onward and never defaulted
+([ADR-0060](../docs/adr/0060-one-editor-and-self-review-is-declared-rather-than-assumed.md)).
+Irodora has one editor today, so `"self"` is what an honest entry records.
+
+This is enforced in **both** directions and is not a way around the rule above: `"self"`
+*requires* author and reviewer to be the same id, two ids naming one person still fails under
+it, and the reviewer still has to hold the `reviewer` role and be active.
+
+**Write down what it costs.** One person checking their own work catches less than two, and a
+single non-native editor cannot self-check a Japanese mistranslation at all. `"self"` makes
+that visible. It does not make it equivalent.
+
 ---
 
 ## Rules and weights are content too

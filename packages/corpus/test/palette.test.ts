@@ -33,6 +33,7 @@ const valid = {
     authoredBy: 'ed-001',
     authoredAt: '2026-08-11',
     verifiedBy: 'ed-002',
+    reviewIndependence: 'independent',
     verifiedAt: '2026-08-13',
     editorialNotes: 'Assembled for outerwear layering rather than from a historical grouping.',
   },

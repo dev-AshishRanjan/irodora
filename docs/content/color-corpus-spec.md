@@ -69,6 +69,7 @@ from**, which is the thing nobody else can show.
     "authoredAt": "2026-08-11",
     "verifiedBy": "ed-002",      // null before `verified`; required from `verified` onward
     "verifiedAt": "2026-08-13",
+    "reviewIndependence": "independent",  // or "self". Required, never defaulted (ADR-0060)
     "editorialNotes": "What was decided and why."
   },
 
@@ -101,7 +102,8 @@ taxonomy.family · taxonomy.temperature
 provenance.source · provenance.sourceId · provenance.sourceType · provenance.sourceLicence
 provenance.derivation · provenance.editorialNotes
 provenance.authoredBy · provenance.authoredAt
-provenance.verifiedBy · provenance.verifiedAt   (from `verified` onward)
+provenance.verifiedBy · provenance.verifiedAt · provenance.reviewIndependence
+                                                (from `verified` onward)
 editorial.description_en · editorial.description_ja
 status · versionId
 ```
@@ -222,8 +224,29 @@ author   a DIFFERENT  provenance   immutable
 
 1. **`draft`** — the author adds the entry with sources and derivation, recording themselves
    in `provenance.authoredBy`.
-2. **`review`** — a different person checks provenance, derivation, translation and
-   classification. Author and reviewer must not be the same identity; enforced.
+2. **`review`** — someone checks provenance, derivation, translation and classification,
+   and the entry records **whether that someone was the author**.
+
+   `provenance.reviewIndependence` is `"independent"` or `"self"`, required from
+   `verified` onward and **never defaulted**
+   ([ADR-0060](../adr/0060-one-editor-and-self-review-is-declared-rather-than-assumed.md)) —
+   a field meaning `independent` when absent would let an entry claim a review nobody
+   performed. Irodora has one editor today, so `"self"` is what an honest entry says.
+
+   It is checked **in both directions.** `"independent"` still refuses the same identity
+   twice. `"self"` *requires* `authoredBy` to equal `verifiedBy` — recording two real
+   editors as a self-review understates a check that actually happened.
+
+   **`"self"` narrows what is checked; it does not switch the check off.** Two ids naming one
+   person still fails under it: that is a roster defect, and a declaration cannot make it
+   correct. The reviewer must still hold the `reviewer` role and be active — being your own
+   reviewer does not exempt you from being a reviewer.
+
+   **What `"self"` costs, stated plainly.** One person checking their own work catches less
+   than two. For the Japanese half it is sharper still: a single non-native editor cannot
+   self-check a mistranslation at all, and `"self"` does not distinguish *"I checked my own
+   arithmetic"* from *"nobody competent read the Japanese"*. That is the reason to keep
+   looking for a reviewer rather than treat the question as settled.
 
    **Identity is a roster id, not a name**
    ([ADR-0047](../adr/0047-editorial-identity-is-a-roster-id-not-a-name.md)). `authoredBy` and
@@ -236,7 +259,8 @@ author   a DIFFERENT  provenance   immutable
    What this proves is narrow, and the gate says so on every run: **two distinct roster
    identities were recorded. Not that either person read the entry.** F-012 carries that as an
    attested obligation.
-3. **`verified`** — provenance complete, `verifiedBy` and `verifiedAt` recorded.
+3. **`verified`** — provenance complete; `verifiedBy`, `verifiedAt` and
+   `reviewIndependence` recorded.
 4. **`published`** — included in a version. **Immutable from this point.**
 5. **`superseded`** — corrected by a newer entry. The old one is retained, because
    reproducibility requires that an old envelope still resolves (FR-10).
@@ -307,9 +331,12 @@ says so.
 Fails the build on any of:
 
 - a required field missing from any entry;
-- `verifiedBy` or `verifiedAt` absent on a `verified` or `published` entry;
-- author and reviewer being the same identity — **or two ids naming the same person**, or an
-  id that is not in the roster at all;
+- `verifiedBy`, `verifiedAt` or `reviewIndependence` absent on a `verified` or
+  `published` entry — absence never reads as `"independent"`;
+- author and reviewer being the same identity **without declaring `reviewIndependence:
+  "self"`** — or two ids naming the same person, which `"self"` does NOT excuse, or an id
+  that is not in the roster at all;
+- `reviewIndependence: "self"` on an entry whose author and reviewer are different editors;
 - a `historical` classification without a dated primary source;
 - a record whose `sourceType` is `editorial` carrying **any** classification other than
   `japanese-inspired` or `editorial` — not merely `historical`. `traditional` claims an

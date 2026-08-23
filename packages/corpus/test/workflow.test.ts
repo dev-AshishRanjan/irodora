@@ -110,13 +110,13 @@ describe('transitions', () => {
 describe('author and reviewer must be different identities', () => {
   it('accepts two genuinely different people', () => {
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-002', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-002', 'independent', roster, 'x.json');
     }).not.toThrow();
   });
 
   it('rejects the same id twice', () => {
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-001', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-001', 'independent', roster, 'x.json');
     }).toThrow(/author and reviewer are the same identity/u);
   });
 
@@ -124,7 +124,7 @@ describe('author and reviewer must be different identities', () => {
     // ed-001 and ed-004 are different strings, different ids, and one human being. This is
     // the entire argument for ADR-0047; if it ever stops failing, the id scheme is decorative.
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-004', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-004', 'independent', roster, 'x.json');
     }).toThrow(/different ids for the same person \("Ashish Ranjan"\)/u);
   });
 
@@ -132,22 +132,22 @@ describe('author and reviewer must be different identities', () => {
     // Failing OPEN here would be the worst outcome available: a typo in verifiedBy would
     // satisfy "the two differ" and launder an unreviewed entry.
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-999', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-999', 'independent', roster, 'x.json');
     }).toThrow(/"ed-999" is not in content\/editors\.json/u);
     expect(() => {
-      checkEditorialIdentity('ed-999', 'ed-001', roster, 'x.json');
+      checkEditorialIdentity('ed-999', 'ed-001', 'independent', roster, 'x.json');
     }).toThrow(/unknown id is a FAILURE/u);
   });
 
   it('rejects a reviewer who does not hold the reviewer role', () => {
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-003', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-003', 'independent', roster, 'x.json');
     }).toThrow(/does not hold the "reviewer" role/u);
   });
 
   it('rejects an inactive reviewer', () => {
     expect(() => {
-      checkEditorialIdentity('ed-001', 'ed-005', roster, 'x.json');
+      checkEditorialIdentity('ed-001', 'ed-005', 'independent', roster, 'x.json');
     }).toThrow(/marked inactive/u);
   });
 
@@ -160,12 +160,56 @@ describe('author and reviewer must be different identities', () => {
       ['ed-001', 'ed-003'],
     ] as const) {
       try {
-        checkEditorialIdentity(author, reviewer, roster, 'x.json');
+        checkEditorialIdentity(author, reviewer, 'independent', roster, 'x.json');
         expect.unreachable(`${author}/${reviewer} must be rejected`);
       } catch (error) {
         expect(error).toBeInstanceOf(CorpusError);
-        expect((error as CorpusError).path).toMatch(/^provenance\.(authoredBy|verifiedBy)$/u);
+        expect((error as CorpusError).path).toMatch(
+          /^provenance\.(authoredBy|verifiedBy|reviewIndependence)$/u,
+        );
       }
     }
+  });
+});
+
+describe('self-review is a declaration, and it is checked in both directions (F-084)', () => {
+  it('accepts an entry whose author reviewed it, when it says so', () => {
+    // The whole point of the feature: with one editor, this must be publishable.
+    expect(() => {
+      checkEditorialIdentity('ed-001', 'ed-001', 'self', roster, 'x.json');
+    }).not.toThrow();
+  });
+
+  it('rejects the same id twice when the entry claims an independent review', () => {
+    // Unchanged behaviour, and the message now points at the fix rather than just refusing.
+    expect(() => {
+      checkEditorialIdentity('ed-001', 'ed-001', 'independent', roster, 'x.json');
+    }).toThrow(/set provenance\.reviewIndependence to "self"/u);
+  });
+
+  it('rejects "self" claimed by two distinct editors', () => {
+    // Mislabelling in the GENEROUS direction is still mislabelling: it records a weaker check
+    // than the one that happened, and it would let a real review be hidden.
+    expect(() => {
+      checkEditorialIdentity('ed-001', 'ed-002', 'self', roster, 'x.json');
+    }).toThrow(/is "self", but "ed-001" authored and "ed-002" reviewed/u);
+  });
+
+  it('does NOT let "self" excuse two ids for one person', () => {
+    // ed-004 is a second id for the same human as ed-001. That is a roster defect, and a
+    // declaration cannot make it correct — if "self" swallowed this, ADR-0047 would be dead.
+    expect(() => {
+      checkEditorialIdentity('ed-001', 'ed-004', 'self', roster, 'x.json');
+    }).toThrow(/"ed-001" authored and "ed-004" reviewed/u);
+  });
+
+  it('still requires the reviewer role and an active identity under "self"', () => {
+    // Being your own reviewer does not exempt you from being a reviewer.
+    expect(() => {
+      checkEditorialIdentity('ed-003', 'ed-003', 'self', roster, 'x.json');
+    }).toThrow(/does not hold the "reviewer" role/u);
+    expect(() => {
+      checkEditorialIdentity('ed-005', 'ed-005', 'self', roster, 'x.json');
+    }).toThrow(/marked inactive/u);
   });
 });

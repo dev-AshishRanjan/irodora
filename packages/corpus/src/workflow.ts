@@ -25,6 +25,7 @@
  */
 
 import { CorpusError } from './errors.js';
+import type { ReviewIndependence } from './provenance.js';
 
 /** Spec §5. Order matters: it is the permitted forward path. */
 export const ENTRY_STATUSES = ['draft', 'review', 'verified', 'published', 'superseded'] as const;
@@ -160,17 +161,25 @@ export function parseRoster(value: unknown, source: string): Roster {
 /**
  * The identity check, in full.
  *
- * Four failures, each with its own message, because they are four different things having
- * gone wrong and an editor needs to know which:
+ * Six failures, each with its own message, because they are six different things having gone
+ * wrong and an editor needs to know which:
  *
  *   1. an id that is not in the roster — the check cannot run, so it fails;
- *   2. the same id twice — the rule everyone expects;
+ *   2. the same id twice **without declaring it** — the rule everyone expects;
  *   3. two ids naming the same person — the rule the id scheme exists for;
- *   4. a reviewer who does not hold the `reviewer` role.
+ *   4. `reviewIndependence: "self"` with two distinct editors — the same mislabelling in the
+ *      generous direction, which understates a review that actually happened;
+ *   5. a reviewer who does not hold the `reviewer` role;
+ *   6. a reviewer marked inactive.
+ *
+ * **`self` narrows what is checked; it does not switch the check off** (F-084, ADR-0060).
+ * Case 3 in particular is NOT covered by it: two ids for one person is a roster defect, and a
+ * declaration cannot make it correct.
  */
 export function checkEditorialIdentity(
   authoredBy: string,
   verifiedBy: string,
+  independence: ReviewIndependence,
   roster: Roster,
   source: string,
 ): void {
@@ -192,23 +201,42 @@ export function checkEditorialIdentity(
       `"${verifiedBy}" is not in content/editors.json.`,
     );
 
-  if (author.id === reviewer.id)
-    throw new CorpusError(
-      source,
-      'provenance.verifiedBy',
-      `author and reviewer are the same identity ("${author.id}"). The reviewer checks ` +
-        'provenance, derivation, translation and classification; reviewing your own entry ' +
-        'checks none of them (FR-68).',
-    );
+  // `self` is a DECLARATION, not an escape hatch (F-084, ADR-0060). It is checked in both
+  // directions: an entry that declares it must actually be self-reviewed, and an entry that
+  // does not declare it must actually be independently reviewed. Mislabelling in the generous
+  // direction — two real editors recorded as `self` — is still mislabelling, and it would
+  // understate a review that genuinely happened.
+  if (independence === 'self') {
+    if (author.id !== reviewer.id)
+      throw new CorpusError(
+        source,
+        'provenance.reviewIndependence',
+        `is "self", but "${author.id}" authored and "${reviewer.id}" reviewed. A self-reviewed ` +
+          'entry is one the author checked; recording two distinct editors as self-review ' +
+          'describes a weaker check than the one performed.',
+      );
+  } else {
+    if (author.id === reviewer.id)
+      throw new CorpusError(
+        source,
+        'provenance.verifiedBy',
+        `author and reviewer are the same identity ("${author.id}"). The reviewer checks ` +
+          'provenance, derivation, translation and classification; reviewing your own entry ' +
+          'checks none of them (FR-68). If that is what happened, say so: set ' +
+          'provenance.reviewIndependence to "self" rather than leaving the entry claiming an ' +
+          'independent review (ADR-0060).',
+      );
 
-  if (author.displayName === reviewer.displayName)
-    throw new CorpusError(
-      source,
-      'provenance.verifiedBy',
-      `"${author.id}" and "${reviewer.id}" are different ids for the same person ` +
-        `("${author.displayName}"). This is exactly the case a free-text comparison would ` +
-        'have passed, and it is why identity is a roster id (ADR-0047).',
-    );
+    if (author.displayName === reviewer.displayName)
+      throw new CorpusError(
+        source,
+        'provenance.verifiedBy',
+        `"${author.id}" and "${reviewer.id}" are different ids for the same person ` +
+          `("${author.displayName}"). This is exactly the case a free-text comparison would ` +
+          'have passed, and it is why identity is a roster id (ADR-0047). Note that "self" ' +
+          'does NOT cover this: two ids for one person is a roster defect, not a declaration.',
+      );
+  }
 
   if (!reviewer.roles.includes('reviewer'))
     throw new CorpusError(

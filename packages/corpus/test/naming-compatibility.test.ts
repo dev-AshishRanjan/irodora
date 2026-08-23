@@ -64,6 +64,7 @@ function entryJson(slug: string, xyz: { x: number; y: number; z: number }): unkn
       authoredAt: '2026-08-11',
       verifiedBy: 'ed-002',
       verifiedAt: '2026-08-13',
+      reviewIndependence: 'independent',
       editorialNotes: 'A fixture. Not a colour claim.',
     },
     relations: { related: [], complementary: [], historicalVariants: [] },

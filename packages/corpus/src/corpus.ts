@@ -134,13 +134,13 @@ export function checkCorpus(
   // --- editorial identity ------------------------------------------------------------
   for (const { file, record } of [...entries, ...palettes]) {
     if (!requiresReviewer(record.status)) continue;
-    const { authoredBy, verifiedBy } = record.provenance;
+    const { authoredBy, verifiedBy, reviewIndependence } = record.provenance;
     // `verifiedBy` is non-null at these statuses — `parseProvenance` enforced it — but the
     // narrowing is done rather than asserted, because a parser change is exactly the thing
     // that would make a `!` here silently wrong.
-    if (verifiedBy === null) continue;
+    if (verifiedBy === null || reviewIndependence === null) continue;
     collect(() => {
-      checkEditorialIdentity(authoredBy, verifiedBy, roster, file);
+      checkEditorialIdentity(authoredBy, verifiedBy, reviewIndependence, roster, file);
     }, failures);
   }
 

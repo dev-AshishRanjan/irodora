@@ -8,6 +8,102 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-23 — F-084 DONE · one editor, and the entry says so
+
+Irodora has one editor. The content gate required two distinct roster identities, so nothing
+could be published, so F-012 was blocked — and with it F-018, F-019, F-020, F-021 and F-023.
+**Five features and the entire R2 interface waited on a second person existing.**
+
+### The offer I declined
+
+The maintainer offered to make me the second editorial reviewer. Refused: an agent signing as
+the independent reviewer of a Japanese colour corpus fabricates exactly the provenance the
+roster exists to guarantee. ADR-0028 already rejected machine translation with human review
+because *"the errors are invisible to a reviewer who does not read Japanese"* — an agent
+signing as the reviewer is that failure with the last safeguard removed.
+
+### Declared, not dropped
+
+Dropping `author ≠ reviewer` is one line and was rejected. `verifiedBy` would keep naming a
+reviewer and the schema would keep implying independent review, so an entry the author checked
+alone would be indistinguishable from one two people checked. Golden rule 12 says never ship a
+colour value without its provenance, and **a provenance record asserting a review that did not
+happen is worse than one asserting nothing, because it is believed.**
+
+`provenance.reviewIndependence` — `"independent"` or `"self"`, required from `verified`
+onward, **never defaulted**. A field meaning `independent` when absent would let every entry
+claim independence by saying nothing, which is the silence the whole feature exists to break.
+`null` before review completes, exactly like `verifiedBy`, because *how* an entry was
+reviewed is part of the review.
+
+**Checked in both directions**, which is what makes it a declaration rather than an escape
+hatch:
+
+```
+independent + same id            -> refused, and the message now names the fix
+self        + two editors        -> refused: it understates a check that happened
+self        + two ids one person -> refused: a roster defect, not a declaration
+self        + non-reviewer role  -> refused: being your own reviewer is still being a reviewer
+```
+
+`checkEditorialIdentity` went from four failure modes to six.
+
+### Watched, not asserted
+
+The valid fixture corpus now carries a **self-reviewed entry alongside an independently
+reviewed one** — because a proof where the new branch is only ever red would show that a
+one-editor project can be *refused*, not that it can *publish*, which is the entire point.
+
+Three new invalid corpora, 19 → 22. Neutering the `self` branch and rebuilding makes gate 11
+report both self-review fixtures as ACCEPTED and exit 1:
+
+```
+x the invalid fixture at ...\self-review-claimed-by-two-people was ACCEPTED
+x the invalid fixture at ...\self-review-cannot-hide-one-person-twice was ACCEPTED
+```
+
+**Deliberately not added:** a `self-review-undeclared` fixture. `author-is-reviewer` already
+IS that case, and a second fixture doing the same thing is a decoy that tests nothing — the
+failure this fixture set exists to avoid.
+
+### What this costs, and it is not nothing
+
+One person checking their own work catches less than two, and no gate closes that gap. **The
+Japanese half is where it hurts**: a reviewer's job includes catching a mistranslation or a
+cultural claim that does not hold, a single non-native editor cannot self-check that at all,
+and `"self"` does not distinguish *"I checked my own arithmetic"* from *"nobody competent
+read the Japanese"*. F-012's attested criterion is now **further from discharged than it was**,
+and its `verifiedBy` says so, so that publishing under `self` is never mistaken for meeting
+it.
+
+The label also has to reach a reader. If F-018 renders it as small grey text nobody looks at,
+the honesty is confined to a JSON field and this bought nothing over dropping the rule.
+Attested on this feature, discharged by F-018.
+
+### Corrected while here
+
+`content/AGENTS.md` said *"Author and reviewer must be different identities. Enforced."*
+unconditionally. That stopped being true, and a scoped rule contradicting the code is worse
+than no rule. Gate 0's scope check confirms the replacement does not weaken a golden rule.
+
+### Gates
+
+```
+Ran:      state ✓  typecheck ✓  lint ✓  format ✓  test ✓ (224 in @irodora/corpus)
+          color-golden ✓  build ✓  a11y ✓  contrast ✓  cvd ✓  content ✓ (22 corpora)
+          security ✓  guards ✓ 18/18  content mutation proof ✓ 25/25
+          the two new fixtures watched failing with the rule neutered
+NOT run:  e2e (7) and perf (12), both still pending
+          gate 4 in CI is RED on F-083 and unrelated to this work
+```
+
+### Next
+
+**F-012** is `todo` and no longer blocked. It is the lowest-id eligible feature, it needs
+~120 seed entries with complete provenance, and it unblocks the entire R2 interface.
+
+---
+
 ## 2026-08-23 — the first CI runs on a real remote, and NFR-3 does not hold
 
 The repository was pushed. Three gates had never run outside this workstation, and all three

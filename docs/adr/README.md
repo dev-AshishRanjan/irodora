@@ -83,6 +83,7 @@ Two rules that matter more than the format:
 | [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Accepted |
 | [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
 | [0059](0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md) | A blocking advisory with no fix is accepted with an expiry, not ignored and not left red | Accepted |
+| [0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) | Irodora ships with one editor, and self-review is declared rather than assumed | Accepted |
 
 ## Open questions awaiting an ADR
 
@@ -92,13 +93,16 @@ feature that depends on it and closes as an ADR, not as a conversation.
 | ID | Question | Needed by |
 |---|---|---|
 | OQ-3 | Reference card — manufacture or partner | M3 |
-| OQ-5 | Japanese editorial reviewer — engagement model | M1 |
 | OQ-6 | Apple Developer Program enrolment — individual or organisation | M3 |
 
 **Closed by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md), not
 by an answer.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which vendor to pick
 for capabilities the product no longer has. There is no account and no monetisation in the
 first release, so both questions are void rather than open.
+
+**OQ-5 is closed by [ADR-0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) as a DECISION, not an answer.** Irodora ships with one editor and an entry declares whether
+its reviewer was its author. A Japanese editorial reviewer is still wanted; when one joins
+they are a roster entry and no code changes.
 
 **OQ-4 (corpus seed size) is settled at ~120 entries**, depth over breadth — recorded in
 [`../../.harness/state/feature_list.json`](../../.harness/state/feature_list.json) against

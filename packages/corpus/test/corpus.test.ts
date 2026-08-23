@@ -97,6 +97,7 @@ function entryJson(slug: string, over: Record<string, unknown> = {}): unknown {
       authoredBy: 'ed-001',
       authoredAt: '2026-08-11',
       verifiedBy: 'ed-002',
+      reviewIndependence: 'independent',
       verifiedAt: '2026-08-13',
       editorialNotes: 'The English name is a judgement about what communicates.',
     },
@@ -381,6 +382,7 @@ describe('editorial identity across the corpus', () => {
           provenance: {
             ...(entryJson('fixture-a') as { provenance: Record<string, unknown> }).provenance,
             verifiedBy: 'ed-001',
+            reviewIndependence: 'independent',
           },
         }),
       ],
@@ -394,6 +396,7 @@ describe('editorial identity across the corpus', () => {
     const draftProvenance = {
       ...(entryJson('fixture-a') as { provenance: Record<string, unknown> }).provenance,
       verifiedBy: null,
+      reviewIndependence: null,
       verifiedAt: null,
     };
     const input = {
