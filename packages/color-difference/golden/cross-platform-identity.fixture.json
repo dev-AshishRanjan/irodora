@@ -24,6 +24,16 @@
   "count": 10000,
   "valuesPerSample": 8,
   "digest": "31d18557233bbe42",
+  "metricDigests": [
+    "51e5921b2f88658c",
+    "f14c888ca9b77b71",
+    "83f514d2f007014e",
+    "b23abde28d5003dc",
+    "2737af0263264aee",
+    "ca4855321c8e2a2c",
+    "099a768b165bac12",
+    "48540f95082f2834"
+  ],
   "probes": [
     {
       "index": 0,

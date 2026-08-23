@@ -104,7 +104,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 |---|---|---|---|
 | NFR-1 Engine accuracy | F-006 | golden | R1 |
 | NFR-2 Measured capture accuracy | F-053, F-063 | review | R5 |
-| NFR-3 Determinism | F-006, F-073 | golden, test | R1 |
+| NFR-3 Determinism | F-006, F-073, F-083 | golden, test | R1 |
 | NFR-4 Latency | F-038 | perf | R3 |
 | NFR-7 Scale | F-041 | perf, review | R2 |
 | NFR-8 WCAG 2.2 AA | F-003, F-017, F-067, F-068, F-069, F-070 | a11y | R0 |

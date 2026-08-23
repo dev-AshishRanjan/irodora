@@ -2111,6 +2111,32 @@
         "build"
       ],
       "notes": "WITHDRAWN 2026-08-23, the day after it was filed, and the reason is worth keeping. It was created during F-080 on the observation that `pnpm audit --audit-level high` exits 1 — WITHOUT READING F-079, which had already recorded the same finding, the same two GHSAs, the same dependency path, and the sentence \"THERE IS NO FIXED VERSION TO UPGRADE TO ... attempting one will waste the next person an hour\". F-082 then proposed exactly that dead end: a pnpm overrides entry for image-size@^2.0.3. Confirmed against the registry afterwards — the latest published image-size is 2.0.2 and both advisories cover <=2.0.2 with first_patched_version null, so every published version is affected and no override exists that helps. THE LESSON, recorded in memory: before filing a feature for a failing gate, search the feature list for the gate name. The state file is the system of record precisely so a finding is made once."
+    },
+    {
+      "id": "F-083",
+      "title": "NFR-3 is violated: the difference metrics are not bit-identical across platforms",
+      "requirements": [
+        "NFR-3"
+      ],
+      "service": "packages",
+      "package": "@irodora/color-difference",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "The diverging metric is named, and the diverging samples are identified by index and input",
+        "The specific ECMAScript operation responsible is identified, with the two platforms values recorded side by side",
+        "A decision is recorded in an ADR: either the engine stops depending on the divergent operation, or NFR-3 is restated as what it can actually guarantee",
+        "Whatever is decided, gate 5 asserts it on both platforms rather than on the one that generated the fixture",
+        "The fixture is NOT regenerated to make the build green unless an intended engine change is what moved it"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "color-golden"
+      ],
+      "notes": "FOUND 2026-08-23 on the FIRST CI run that ever reached gate 4, in run 32650792928 on commit e7c0391. packages/color-difference/test/golden/identity.test.ts \"the Node execution > reproduces the committed digest, bit for bit\": expected 31d18557233bbe42 (generated on Windows), received 9801fa1ab561ec61 on ubuntu-latest. SAME NODE VERSION — both 24.19.0, pinned by .nvmrc and installed by actions/setup-node — so this is Windows vs Linux on the same V8, not a version skew. THIS IS NOT A TEST DEFECT. NFR-3 is the guarantee AGENTS.md calls \"the one guarantee that cannot bend\", and the fixture description written during F-007 predicted exactly this: \"these functions use more transcendentals than the conversions do — pow, atan2, exp, sin, cos — and ECMAScript specifies all of them as implementation-approximated, so this is where a cross-engine divergence is most likely to appear first\". THREE FACTS NARROW IT SHARPLY. (1) @irodora/color-spaces PASSED on the same run: its 30-value digest over the conversions is identical on both platforms, so the seeded PRNG, the sample set, srgbToXyz, the matrices, cbrt and the sRGB transfer function all agree — the inputs to the metrics are byte-identical. (2) The probe assertion PASSED: the six recorded samples (indices 0, 1, 2, 3, 5000, 9999) match bit for bit in all eight metrics, so the divergence is RARE — a handful of samples out of 10,000, not a systematic offset. (3) That leaves the operations the metrics use and the conversions do not: atan2, sin, cos and exp in CIEDE2000, and pow in APCA. NEXT STEP IS ALREADY WIRED: metricDigests landed in the fixture and gate 5 now asserts one digest per metric, so the next CI run names the column. deltaE00 alone would point at atan2/sin/cos/exp; apcaLc at pow; deltaE76 at nothing transcendental, which would be far worse because it would mean the divergence is upstream of the metrics in a place fact (1) says is clean. DO NOT REGENERATE THE FIXTURE TO GO GREEN — that is the single thing it exists to prevent, and it would convert a discovered violation of the product central guarantee into a silent one. CI STAYS RED UNTIL THIS IS DECIDED, and that red is correct: it is reporting a real defect, unlike the gate 15 red that F-079 cleared. It does block releases, and that is the honest cost. WIDER CONSEQUENCE worth stating: F-006 attests \"Node, browser and React Native produce bitwise-identical output\" and notes that Node and Chromium are both V8 so their agreement is weak evidence. This is stronger evidence in the opposite direction — the same V8 on two operating systems already disagrees, which makes the Hermes leg (F-039) much less likely to hold and raises the question of whether bit-identical is achievable at all without shipping our own implementations of the transcendentals CIEDE2000 uses."
     }
   ]
 }

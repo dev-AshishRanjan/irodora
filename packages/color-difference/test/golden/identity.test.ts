@@ -60,6 +60,27 @@ describe('the Node execution', () => {
     expect(run.digest).toBe(fixture.digest);
   });
 
+  /*
+   * Per metric, because the whole-run digest cannot say WHERE.
+   *
+   * The first Linux CI run (2026-08-23) disagreed with `digest` while every recorded probe
+   * matched exactly — so a handful of samples out of 10,000 diverge, somewhere in eight
+   * metrics, and a single hash names none of them. These assertions name one.
+   *
+   * Which metric it is, is the whole diagnosis: `deltaE00` alone would point at `atan2`,
+   * `sin`, `cos` and `exp`; `apcaLc` at `pow`; `deltaE76` at nothing transcendental at all,
+   * which would mean the divergence is upstream in the conversions and something much worse
+   * than a last-ulp disagreement.
+   */
+  it.each(fixture.metrics.map((metric, index) => ({ metric, index })))(
+    'reproduces the committed digest for $metric',
+    ({ metric, index }) => {
+      expect(run.perValueDigests[index], `metric "${metric}" (column ${String(index)})`).toBe(
+        fixture.metricDigests[index],
+      );
+    },
+  );
+
   it('and the probes match, so a mismatch names a colour rather than a hash', () => {
     expect(run.probes).toHaveLength(fixture.probes.length);
     for (const [i, probe] of run.probes.entries()) {

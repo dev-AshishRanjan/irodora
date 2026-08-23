@@ -175,6 +175,16 @@ const differenceFixture = {
   count: differenceRun.count,
   valuesPerSample: differenceRun.valuesPerSample,
   digest: differenceRun.digest,
+  /*
+   * One digest per metric, in `metrics` order. The whole-run digest says "something changed";
+   * this says WHICH metric, which is the question the first Linux CI run raised and could not
+   * answer — it disagreed with `digest` while every recorded probe matched exactly, so the
+   * divergence is a handful of samples out of 10,000 somewhere in eight metrics.
+   *
+   * Adding these does NOT change `digest`. If it ever appears to, the fixture was regenerated
+   * against a changed engine and that is the defect the fixture exists to catch.
+   */
+  metricDigests: differenceRun.perValueDigests,
   probes: differenceRun.probes,
 };
 

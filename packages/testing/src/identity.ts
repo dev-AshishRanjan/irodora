@@ -33,6 +33,17 @@ export interface IdentityRun {
   /** Numbers produced per sample. Part of the fixture: a change here changes the digest for a reason that is not a defect. */
   readonly valuesPerSample: number;
   readonly digest: string;
+  /**
+   * One digest per output column, across every sample.
+   *
+   * The whole-run digest answers *"did anything change"*. This answers **which metric**, and
+   * that turned out to be the question that matters: the first Linux CI run disagreed with
+   * the committed difference digest while every recorded probe matched exactly, so a handful
+   * of samples out of 10,000 diverge somewhere in eight metrics and the digest alone cannot
+   * say where. A column digest costs one hash per metric and localises a transcendental
+   * disagreement to the function that produced it.
+   */
+  readonly perValueDigests: readonly string[];
   readonly probes: readonly IdentityProbe[];
 }
 
@@ -59,6 +70,8 @@ export function runIdentityVectors(options: IdentityOptions): IdentityRun {
 
   const probes: IdentityProbe[] = [];
   const all: number[] = [];
+  /** Column-major, for the per-metric digests. Built alongside rather than by transposing. */
+  const columns: number[][] = [];
   let valuesPerSample = -1;
 
   for (const { index, rgb } of samples) {
@@ -70,7 +83,13 @@ export function runIdentityVectors(options: IdentityOptions): IdentityRun {
         `identity run: sample ${String(index)} produced ${String(output.length)} values, expected ${String(valuesPerSample)}`,
       );
 
-    for (const value of output) all.push(value);
+    for (const [j, value] of output.entries()) {
+      all.push(value);
+      // `??=` rather than pre-allocating and indexing: the column count is only known after
+      // the first sample, and a non-null assertion here would be a claim the type system
+      // cannot check on a hot path that runs 80,000 times.
+      (columns[j] ??= []).push(value);
+    }
 
     if (probeSet.has(index))
       probes.push({
@@ -80,5 +99,12 @@ export function runIdentityVectors(options: IdentityOptions): IdentityRun {
       });
   }
 
-  return { seed, count, valuesPerSample, digest: float64Digest(all), probes };
+  return {
+    seed,
+    count,
+    valuesPerSample,
+    digest: float64Digest(all),
+    perValueDigests: columns.map((column) => float64Digest(column)),
+    probes,
+  };
 }
