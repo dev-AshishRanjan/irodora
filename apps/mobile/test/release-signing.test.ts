@@ -66,6 +66,8 @@ describe('addReleaseSigning', () => {
     expect(out).toContain('System.getenv("IRODORA_ANDROID_KEYSTORE_PASSWORD")');
     expect(out).toContain('System.getenv("IRODORA_ANDROID_KEY_ALIAS")');
     expect(out).toContain('System.getenv("IRODORA_ANDROID_KEY_PASSWORD")');
+    // Optional: a PKCS#12 keystore made with openssl rather than a JKS made with keytool.
+    expect(out).toContain('System.getenv("IRODORA_ANDROID_KEYSTORE_TYPE")');
     // A literal password anywhere in the generated project is a password in a build log.
     expect(out).not.toMatch(/storePassword\s+'(?!android')/);
   });

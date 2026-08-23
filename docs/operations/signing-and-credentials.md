@@ -38,22 +38,51 @@ with the wrong key fails before it can be published.
 
 ---
 
-## 1. Generate the keystore
+## 1. Generate the keystore — with `openssl`, because there is no JDK here
 
-On a machine you control, with a JDK installed. **Not in CI, not in this repository's
-directory, and not with an agent driving the terminal.**
+The usual instruction is `keytool -genkeypair`, and `keytool` ships with a JDK. **This project
+is maintained on a machine with no Java installed and no intention of installing it**, so the
+usual instruction is not available. `openssl` — already in Git Bash on Windows, and everywhere
+on macOS and Linux — produces a **PKCS#12** keystore, which is what modern Java reads by
+default anyway.
+
+Run these on a machine you control. **Not in CI, not inside this repository's directory, and
+not with an agent driving the terminal** — see the section above for why.
 
 ```bash
-keytool -genkeypair -v -keystore irodora-release.keystore -alias irodora -keyalg RSA -keysize 4096 -validity 10000
+openssl req -x509 -newkey rsa:4096 -sha256 -days 10000 -keyout irodora.key -out irodora.crt -subj "/CN=Irodora/O=Irodora/C=IN"
+```
+
+```bash
+openssl pkcs12 -export -inkey irodora.key -in irodora.crt -name irodora -out irodora-release.p12
+```
+
+Then delete the loose private key — the `.p12` contains it:
+
+```bash
+rm irodora.key
 ```
 
 - **4096-bit RSA**, not the 2048 most tutorials use. This key has a 27-year life.
-- **`-validity 10000`** (≈27 years). Google Play requires a certificate valid past 2033; an
+- **`-days 10000`** (≈27 years). Google Play requires a certificate valid past 2033, and an
   expired signing certificate cannot be replaced without replacing the app.
-- **The password**: generate it in a password manager. It is never typed into a chat, a
-  commit, an issue, or a CI log.
-- Answer the distinguished-name prompts with the real publishing identity. It appears in the
-  certificate and cannot be changed later.
+- **The passwords** — `openssl` will prompt three times: a passphrase for the key, and an
+  export password for the `.p12`. Generate them in a password manager. They are never typed
+  into a chat, a commit, an issue, or a CI log. For a PKCS#12 keystore the store password and
+  the key password are the same value; use it for both `ANDROID_KEYSTORE_PASSWORD` and
+  `ANDROID_KEY_PASSWORD`.
+- **`-subj`** is the publishing identity. It appears in the certificate, it is visible to
+  anyone who inspects an installed app, and it cannot be changed later. Change the values
+  above if `CN=Irodora / O=Irodora / C=IN` is not what should be on the record.
+- **`-name irodora`** is the alias, and it is the value of `ANDROID_KEY_ALIAS`.
+
+Because this is PKCS#12 rather than JKS, set the repository variable
+`ANDROID_KEYSTORE_TYPE` to `PKCS12` in step 4. AGP would probably default to it — probably is
+not a thing to find out at the end of a twenty-minute build.
+
+> **If a JDK is ever installed**, `keytool -genkeypair -v -keystore irodora-release.keystore
+> -alias irodora -keyalg RSA -keysize 4096 -validity 10000` produces an equivalent JKS, and
+> `ANDROID_KEYSTORE_TYPE` is then left unset. Either format works; the pipeline does not care.
 
 ## 2. Store it where losing it is hard
 
@@ -71,8 +100,12 @@ This is public information — it is what gate 16 compares against, and publishi
 anyone verify a download came from us.
 
 ```bash
-keytool -list -v -keystore irodora-release.keystore -alias irodora | grep 'SHA256:'
+openssl x509 -in irodora.crt -noout -fingerprint -sha256
 ```
+
+That prints `SHA256 Fingerprint=AB:CD:…`. It is the SHA-256 of the certificate's DER
+encoding, which is exactly what `apksigner verify --print-certs` reports for a signed APK and
+exactly what `scripts/verify-apk.mjs` computes. Colons are optional — gate 16 strips them.
 
 ## 4. Put it into the repository's settings
 
@@ -82,16 +115,17 @@ Repository → Settings → Secrets and variables → Actions.
 
 | Name | Value |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 irodora-release.keystore` |
-| `ANDROID_KEYSTORE_PASSWORD` | the store password |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w0 irodora-release.p12` |
+| `ANDROID_KEYSTORE_PASSWORD` | the `.p12` export password |
 | `ANDROID_KEY_ALIAS` | `irodora` |
-| `ANDROID_KEY_PASSWORD` | the key password |
+| `ANDROID_KEY_PASSWORD` | the same value as the store password, for PKCS#12 |
 
-**Variable** (visible, and should be):
+**Variables** (visible, and they should be):
 
 | Name | Value |
 |---|---|
 | `ANDROID_SIGNER_SHA256` | the SHA-256 from step 3 — colons optional, gate 16 strips them |
+| `ANDROID_KEYSTORE_TYPE` | `PKCS12` for an openssl-made keystore; leave unset for a keytool-made JKS |
 
 The fingerprint is a *variable* rather than a secret on purpose. It is not confidential, it is
 the thing users verify against, and a masked value would be unreadable in exactly the log

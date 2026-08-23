@@ -67,6 +67,17 @@ const RELEASE_SIGNING_CONFIG = `        // Irodora — the release key, read fro
                 storePassword System.getenv("IRODORA_ANDROID_KEYSTORE_PASSWORD")
                 keyAlias System.getenv("IRODORA_ANDROID_KEY_ALIAS")
                 keyPassword System.getenv("IRODORA_ANDROID_KEY_PASSWORD")
+
+                // Optional, and it exists because the maintainer's machine has no JDK: a
+                // keystore can be generated with openssl as PKCS#12 instead of with keytool
+                // as JKS. AGP falls back to KeyStore.getDefaultType(), which IS pkcs12 on
+                // JDK 9+ — but "works because of a default that changed once already" is a
+                // guess, and this one only fails at the very end of a twenty-minute build.
+                // Stating it costs four lines.
+                def irodoraStoreType = System.getenv("IRODORA_ANDROID_KEYSTORE_TYPE")
+                if (irodoraStoreType) {
+                    storeType irodoraStoreType
+                }
             }
             enableV1Signing false
             enableV2Signing true

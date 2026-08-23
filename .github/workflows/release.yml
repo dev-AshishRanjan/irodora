@@ -150,6 +150,11 @@ jobs:
           IRODORA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           IRODORA_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           IRODORA_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          # Unset for a keytool-made JKS; set to PKCS12 for an openssl-made keystore, which
+          # is the documented path here because this project is maintained on a machine with
+          # no JDK. Empty is falsy in the injected Groovy, so an unset variable means "let
+          # AGP decide" rather than "set it to nothing".
+          IRODORA_ANDROID_KEYSTORE_TYPE: ${{ vars.ANDROID_KEYSTORE_TYPE }}
         run: ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
 
       - name: Collect the artefacts
