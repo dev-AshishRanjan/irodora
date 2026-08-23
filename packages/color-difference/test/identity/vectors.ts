@@ -13,7 +13,7 @@
  * The output order is part of the fixture, and so is the reference colour.
  */
 
-import { srgbToXyz, xyzToLab, xyzToOklab, type Rgb } from '@irodora/color-spaces';
+import { srgbToLinear, srgbToXyz, xyzToLab, xyzToOklab, type Rgb } from '@irodora/color-spaces';
 import { apcaLc, deltaE00, deltaE76, deltaE94, deltaEok, wcagContrast } from '../../src/index.js';
 
 /** The seed and size the committed fixture was produced with. */
@@ -45,5 +45,70 @@ export function computeDifferenceVector(rgb: Rgb): readonly number[] {
     wcagContrast(rgb, BLACK),
     apcaLc(WHITE, rgb),
     apcaLc(BLACK, rgb),
+  ];
+}
+
+/* ======================================================= the stage vector (F-083) */
+
+/**
+ * The intermediate values every metric is built on, so a divergence can be located.
+ *
+ * **Why this exists.** The first Linux CI run disagreed with the committed digest in *all
+ * eight* metrics — including `deltaE76`, which is a Euclidean distance in Lab and uses no
+ * implementation-approximated operation at all: subtraction, multiplication, addition and
+ * `Math.sqrt`, every one of them exactly specified by IEEE-754. A metric that cannot itself
+ * diverge, diverging, means **its inputs did**.
+ *
+ * There is one operation upstream of all eight. `srgbToLinear` is `Math.pow(x, 2.4)` above
+ * the cutoff, and it feeds `srgbToXyz` (hence Lab, hence ΔE76/94/00, hence Oklab and ΔEok)
+ * *and* the relative luminance inside `wcagContrast` *and* the exponentiation inside
+ * `apcaLc`. ECMAScript specifies `Math.pow` as implementation-approximated.
+ *
+ * So this vector digests each stage separately, and the first column that disagrees names
+ * the operation:
+ *
+ * | column | if it diverges |
+ * |---|---|
+ * | `linear*` | `Math.pow` — the sRGB EOTF, and the whole engine rests on it |
+ * | `xyz*` with `linear*` clean | the matrix multiply, which would be *impossible*: plain `+` and `*` on doubles are exactly specified, so this would mean something far stranger |
+ * | `lab*` with `xyz*` clean | `Math.cbrt` |
+ * | `ok*` with `xyz*` clean | `Math.cbrt` in the Oklab path |
+ *
+ * Same seed and same samples as `computeDifferenceVector`, so the two are directly
+ * comparable — a sample that diverges here is a sample that diverges there.
+ */
+export const STAGE_NAMES: readonly string[] = [
+  'linearR',
+  'linearG',
+  'linearB',
+  'X',
+  'Y',
+  'Z',
+  'L*',
+  'a*',
+  'b*',
+  'okL',
+  'oka',
+  'okb',
+];
+
+export function computeStageVector(rgb: Rgb): readonly number[] {
+  const xyz = srgbToXyz(rgb);
+  const lab = xyzToLab(xyz);
+  const oklab = xyzToOklab(xyz);
+
+  return [
+    srgbToLinear(rgb[0]),
+    srgbToLinear(rgb[1]),
+    srgbToLinear(rgb[2]),
+    xyz[0],
+    xyz[1],
+    xyz[2],
+    lab[0],
+    lab[1],
+    lab[2],
+    oklab[0],
+    oklab[1],
+    oklab[2],
   ];
 }

@@ -15,11 +15,13 @@ import { float64Digest, runIdentityVectors } from '@irodora/testing';
 import fixture from '../../golden/cross-platform-identity.fixture.json' with { type: 'json' };
 import {
   computeDifferenceVector,
+  computeStageVector,
   IDENTITY_COUNT,
   IDENTITY_PROBE_INDICES,
   IDENTITY_SEED,
   IDENTITY_VALUES_PER_SAMPLE,
   REFERENCE_SRGB,
+  STAGE_NAMES,
 } from '../identity/vectors.js';
 import { APCA_VERSION, DIFFERENCE_VERSION } from '../../src/index.js';
 import type { Rgb } from '@irodora/color-spaces';
@@ -28,6 +30,14 @@ const run = runIdentityVectors({
   seed: IDENTITY_SEED,
   count: IDENTITY_COUNT,
   compute: computeDifferenceVector,
+  probeIndices: IDENTITY_PROBE_INDICES,
+});
+
+/** The same samples, digested one conversion stage at a time. See `computeStageVector`. */
+const stageRun = runIdentityVectors({
+  seed: IDENTITY_SEED,
+  count: IDENTITY_COUNT,
+  compute: computeStageVector,
   probeIndices: IDENTITY_PROBE_INDICES,
 });
 
@@ -77,6 +87,26 @@ describe('the Node execution', () => {
     ({ metric, index }) => {
       expect(run.perValueDigests[index], `metric "${metric}" (column ${String(index)})`).toBe(
         fixture.metricDigests[index],
+      );
+    },
+  );
+});
+
+/**
+ * The stage digests, which locate a divergence rather than merely detecting one (F-083).
+ *
+ * All eight metric digests disagreed on Linux — including `deltaE76`, which is a Euclidean
+ * distance and contains no implementation-approximated operation. A metric that cannot
+ * diverge, diverging, means its INPUTS did, and these assertions say at which stage.
+ *
+ * Read them in order and stop at the first failure: it names the operation.
+ */
+describe('the stages every metric is built on', () => {
+  it.each(STAGE_NAMES.map((stage, index) => ({ stage, index })))(
+    'reproduces the committed digest for $stage',
+    ({ stage, index }) => {
+      expect(stageRun.perValueDigests[index], `stage "${stage}" (column ${String(index)})`).toBe(
+        fixture.stageDigests[index],
       );
     },
   );

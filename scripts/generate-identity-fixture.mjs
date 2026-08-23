@@ -112,7 +112,7 @@ const {
   DIFFERENCE_VERSION,
   APCA_VERSION,
 } = difference;
-const { xyzToLab, xyzToOklab } = spaces;
+const { xyzToLab, xyzToOklab, srgbToLinear } = spaces;
 
 /** A fixed reference every sample is measured against. Mid grey, so it is not a special case. */
 const REFERENCE_SRGB = [0.5, 0.5, 0.5];
@@ -151,6 +151,35 @@ const differenceRun = runIdentityVectors({
   probeIndices: [0, 1, 2, 3, 5_000, 9_999],
 });
 
+/** MUST stay identical to `computeStageVector` in the test-side vectors module (F-083). */
+const computeStages = (rgb) => {
+  const xyz = srgbToXyz(rgb);
+  const lab = xyzToLab(xyz);
+  const oklab = xyzToOklab(xyz);
+
+  return [
+    srgbToLinear(rgb[0]),
+    srgbToLinear(rgb[1]),
+    srgbToLinear(rgb[2]),
+    xyz[0],
+    xyz[1],
+    xyz[2],
+    lab[0],
+    lab[1],
+    lab[2],
+    oklab[0],
+    oklab[1],
+    oklab[2],
+  ];
+};
+
+const stageRun = runIdentityVectors({
+  seed: 'irodora/f-007/identity',
+  count: 10_000,
+  compute: computeStages,
+  probeIndices: [0, 1, 2, 3, 5_000, 9_999],
+});
+
 const differenceFixture = {
   id: 'cross-platform-identity',
   description:
@@ -185,6 +214,15 @@ const differenceFixture = {
    * against a changed engine and that is the defect the fixture exists to catch.
    */
   metricDigests: differenceRun.perValueDigests,
+  /*
+   * F-083. The intermediate values every metric is built on, digested one stage at a time,
+   * over the SAME samples. All eight metric digests disagreed on Linux — including deltaE76,
+   * which is a Euclidean distance and contains no implementation-approximated operation — so
+   * the inputs diverged and these say where. MUST stay identical to STAGE_NAMES and
+   * computeStageVector in packages/color-difference/test/identity/vectors.ts.
+   */
+  stages: ['linearR', 'linearG', 'linearB', 'X', 'Y', 'Z', 'L*', 'a*', 'b*', 'okL', 'oka', 'okb'],
+  stageDigests: stageRun.perValueDigests,
   probes: differenceRun.probes,
 };
 

@@ -34,6 +34,34 @@
     "099a768b165bac12",
     "48540f95082f2834"
   ],
+  "stages": [
+    "linearR",
+    "linearG",
+    "linearB",
+    "X",
+    "Y",
+    "Z",
+    "L*",
+    "a*",
+    "b*",
+    "okL",
+    "oka",
+    "okb"
+  ],
+  "stageDigests": [
+    "af09a47a7a2e7853",
+    "f618b85dda681751",
+    "35e4e4ebead7e552",
+    "fb1bd82a0348c0a2",
+    "fc288a095ea5dd5b",
+    "f630a457672d9267",
+    "826b56c36f7916ca",
+    "aebcfe83ede3e331",
+    "58ec18c813830ec6",
+    "e7f419764e175551",
+    "b86a42cf50d9c02c",
+    "dfa5bf1975647c84"
+  ],
   "probes": [
     {
       "index": 0,
