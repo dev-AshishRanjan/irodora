@@ -11,16 +11,18 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { float64Digest, runIdentityVectors } from '@irodora/testing';
+import { float64Digest, float64ToHex, runIdentityVectors } from '@irodora/testing';
 import fixture from '../../golden/cross-platform-identity.fixture.json' with { type: 'json' };
 import {
   computeDifferenceVector,
+  computeConstants,
   computeStageVector,
   IDENTITY_COUNT,
   IDENTITY_PROBE_INDICES,
   IDENTITY_SEED,
   IDENTITY_VALUES_PER_SAMPLE,
   REFERENCE_SRGB,
+  CONSTANT_NAMES,
   STAGE_NAMES,
 } from '../identity/vectors.js';
 import { APCA_VERSION, DIFFERENCE_VERSION } from '../../src/index.js';
@@ -90,6 +92,16 @@ describe('the Node execution', () => {
       );
     },
   );
+
+  it('and the probes match, so a mismatch names a colour rather than a hash', () => {
+    expect(run.probes).toHaveLength(fixture.probes.length);
+    for (const [i, probe] of run.probes.entries()) {
+      const expected = fixture.probes[i]!;
+      expect(probe.index).toBe(expected.index);
+      expect(probe.rgb).toEqual(expected.rgb);
+      expect(probe.output).toEqual(expected.output);
+    }
+  });
 });
 
 /**
@@ -110,16 +122,23 @@ describe('the stages every metric is built on', () => {
       );
     },
   );
+});
 
-  it('and the probes match, so a mismatch names a colour rather than a hash', () => {
-    expect(run.probes).toHaveLength(fixture.probes.length);
-    for (const [i, probe] of run.probes.entries()) {
-      const expected = fixture.probes[i]!;
-      expect(probe.index).toBe(expected.index);
-      expect(probe.rgb).toEqual(expected.rgb);
-      expect(probe.output).toEqual(expected.output);
-    }
-  });
+/**
+ * Exact doubles, so a failure names the value rather than a hash (F-083, round 3).
+ *
+ * A digest says *something* differs. These say *what*, in IEEE-754 hex, which reduces the
+ * whole investigation to a line anybody can paste into a REPL on either platform.
+ */
+describe('the constants every measurement is taken against', () => {
+  const actual = computeConstants().map(float64ToHex);
+
+  it.each(CONSTANT_NAMES.map((name, index) => ({ name, index })))(
+    'reproduces $name exactly',
+    ({ name, index }) => {
+      expect(actual[index], `constant "${name}"`).toBe(fixture.constants[index]);
+    },
+  );
 });
 
 describe('the digest can fail', () => {

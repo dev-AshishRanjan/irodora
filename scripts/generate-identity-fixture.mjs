@@ -36,7 +36,7 @@ const engine = await import(pathToFileURL(resolve(PACKAGE, 'dist/index.js')).hre
 const testing = await import(pathToFileURL(resolve(ROOT, 'packages/testing/dist/index.js')).href);
 
 const { adapt, convert, CONVERTIBLE_SPACES, D50, D65, srgbToXyz, ENGINE_VERSION } = engine;
-const { runIdentityVectors } = testing;
+const { runIdentityVectors, float64ToHex } = testing;
 
 const ADAPTATIONS = ['cat16', 'bradford'];
 
@@ -223,6 +223,49 @@ const differenceFixture = {
    */
   stages: ['linearR', 'linearG', 'linearB', 'X', 'Y', 'Z', 'L*', 'a*', 'b*', 'okL', 'oka', 'okb'],
   stageDigests: stageRun.perValueDigests,
+  /*
+   * F-083 round 3. Exact doubles rather than digests, because a digest says something
+   * differs and these say WHAT. Round 2 narrowed the divergence to `linearR` and only
+   * `linearR`, which does not reconcile with X/Y/Z reproducing — unless very few samples
+   * diverge and it is the REFERENCE, computed once from mid grey, that moves every ΔE.
+   * MUST stay identical to CONSTANT_NAMES / computeConstants in the test-side vectors module.
+   */
+  constantNames: [
+    'srgbToLinear(0)',
+    'srgbToLinear(0.0031308)',
+    'srgbToLinear(0.04045)',
+    'srgbToLinear(0.05)',
+    'srgbToLinear(0.1)',
+    'srgbToLinear(1/3)',
+    'srgbToLinear(0.5)',
+    'srgbToLinear(0.8)',
+    'srgbToLinear(0.999)',
+    'srgbToLinear(1)',
+    'REFERENCE_LAB.L',
+    'REFERENCE_LAB.a',
+    'REFERENCE_LAB.b',
+    'REFERENCE_OKLAB.L',
+    'REFERENCE_OKLAB.a',
+    'REFERENCE_OKLAB.b',
+  ],
+  constants: [
+    srgbToLinear(0),
+    srgbToLinear(0.003_130_8),
+    srgbToLinear(0.040_45),
+    srgbToLinear(0.05),
+    srgbToLinear(0.1),
+    srgbToLinear(1 / 3),
+    srgbToLinear(0.5),
+    srgbToLinear(0.8),
+    srgbToLinear(0.999),
+    srgbToLinear(1),
+    REFERENCE_LAB[0],
+    REFERENCE_LAB[1],
+    REFERENCE_LAB[2],
+    REFERENCE_OKLAB[0],
+    REFERENCE_OKLAB[1],
+    REFERENCE_OKLAB[2],
+  ].map(float64ToHex),
   probes: differenceRun.probes,
 };
 

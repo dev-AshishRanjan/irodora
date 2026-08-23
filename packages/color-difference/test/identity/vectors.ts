@@ -92,6 +92,67 @@ export const STAGE_NAMES: readonly string[] = [
   'okb',
 ];
 
+/* =================================================== the constants (F-083, round 3) */
+
+/**
+ * Fixed inputs and fixed outputs — exact doubles, not digests.
+ *
+ * Round 2 narrowed the divergence to `linearR` and, surprisingly, **only** `linearR`:
+ * `linearG`, `linearB`, `X`, `Y`, `Z`, `L*a*b*` and Oklab all reproduce per sample. That is
+ * hard to reconcile, because `X`, `Y` and `Z` are linear combinations of all three linear
+ * channels — a divergent `linearR` should carry into them.
+ *
+ * Unless very few samples diverge, and the reference is what moves the metrics. All four ΔE
+ * columns are measured against `REFERENCE_LAB` / `REFERENCE_OKLAB`, computed **once** from
+ * mid grey. If those constants differ by an ulp, every one of 10,000 ΔE values shifts while
+ * every per-sample Lab stays identical — which is exactly the pattern observed. And
+ * `wcagContrast` and `apcaLc` take `rgb` directly and linearise internally, so they would
+ * see a `Math.pow` disagreement without any per-sample XYZ moving at all.
+ *
+ * Digests cannot test that hypothesis: they say *something* differs, not *what*. These are
+ * exact values, so a failure prints the two doubles side by side and the whole investigation
+ * reduces to one line anybody can paste into a REPL on either operating system.
+ */
+export const CONSTANT_NAMES: readonly string[] = [
+  'srgbToLinear(0)',
+  'srgbToLinear(0.0031308)',
+  'srgbToLinear(0.04045)',
+  'srgbToLinear(0.05)',
+  'srgbToLinear(0.1)',
+  'srgbToLinear(1/3)',
+  'srgbToLinear(0.5)',
+  'srgbToLinear(0.8)',
+  'srgbToLinear(0.999)',
+  'srgbToLinear(1)',
+  'REFERENCE_LAB.L',
+  'REFERENCE_LAB.a',
+  'REFERENCE_LAB.b',
+  'REFERENCE_OKLAB.L',
+  'REFERENCE_OKLAB.a',
+  'REFERENCE_OKLAB.b',
+];
+
+export function computeConstants(): readonly number[] {
+  return [
+    srgbToLinear(0),
+    srgbToLinear(0.003_130_8),
+    srgbToLinear(0.040_45),
+    srgbToLinear(0.05),
+    srgbToLinear(0.1),
+    srgbToLinear(1 / 3),
+    srgbToLinear(0.5),
+    srgbToLinear(0.8),
+    srgbToLinear(0.999),
+    srgbToLinear(1),
+    REFERENCE_LAB[0],
+    REFERENCE_LAB[1],
+    REFERENCE_LAB[2],
+    REFERENCE_OKLAB[0],
+    REFERENCE_OKLAB[1],
+    REFERENCE_OKLAB[2],
+  ];
+}
+
 export function computeStageVector(rgb: Rgb): readonly number[] {
   const xyz = srgbToXyz(rgb);
   const lab = xyzToLab(xyz);
