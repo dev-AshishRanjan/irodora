@@ -1,0 +1,270 @@
+name: Release
+
+# A tag becomes a published, signed, verified Android artefact — or it becomes nothing.
+#
+# The order is the argument: every gate first, then build, then check the artefact, then
+# publish. A release that skips the gates to save eight minutes is the release that ships the
+# defect the gates exist to catch, and the only reliable way to prevent that is for the
+# publish step to be unreachable except through them.
+#
+# `gates` CALLS `.github/workflows/ci.yml` rather than repeating it. A copied gate list drifts
+# — both files keep looking correct, and the release is gated by whichever was edited last
+# (ADR-0024). Gate 0's mirror check reads `ci.yml`, so what a release runs is what is declared.
+#
+# See docs/operations/release-process.md and docs/operations/signing-and-credentials.md.
+
+on:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false # a half-published release is worse than a slow one
+
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------------------------------------------ 1. the gates
+  gates:
+    name: Verification gates
+    uses: ./.github/workflows/ci.yml
+
+  # ------------------------------------------------------------------ 2. the version
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      name: ${{ steps.derive.outputs.name }}
+      code: ${{ steps.derive.outputs.code }}
+      prerelease: ${{ steps.derive.outputs.prerelease }}
+    steps:
+      - name: Derive the version from the tag
+        id: derive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$TAG' is not vMAJOR.MINOR.PATCH[-prerelease]. The version is derived"
+            echo "::error::from the tag and nothing else, so an unparseable tag has no version."
+            exit 1
+          fi
+
+          MAJOR="${BASH_REMATCH[1]}"; MINOR="${BASH_REMATCH[2]}"; PATCH="${BASH_REMATCH[3]}"
+          SUFFIX="${BASH_REMATCH[4]:-}"
+
+          # versionCode is what Android compares to decide whether an install is an upgrade,
+          # and it is monotonic FOREVER — a code published to a store can never be reused.
+          # Deriving it from the tag rather than incrementing a committed integer is what
+          # stops two branches minting the same one.
+          #
+          # 1000 minors and 1000 patches per major. A patch above 999 is a release cadence
+          # problem, and failing here is better than silently colliding with the next minor.
+          if (( MINOR > 999 || PATCH > 999 )); then
+            echo "::error::minor and patch must each stay under 1000 for the versionCode scheme"
+            exit 1
+          fi
+          CODE=$(( MAJOR * 1000000 + MINOR * 1000 + PATCH ))
+
+          # A pre-release shares its final release's code. That is fine for sideloading and
+          # WRONG for a store, so pre-release artefacts are marked and must not be uploaded
+          # to Play — the release is flagged `prerelease` and the summary says so.
+          PRERELEASE=false
+          [[ -n "$SUFFIX" ]] && PRERELEASE=true
+
+          {
+            echo "name=${MAJOR}.${MINOR}.${PATCH}${SUFFIX}"
+            echo "code=${CODE}"
+            echo "prerelease=${PRERELEASE}"
+          } >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------------------------ 3. the artefact
+  android:
+    name: Android artefacts
+    needs: [gates, version]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: release # so a required reviewer can be attached to the secrets, not to a comment
+    permissions:
+      contents: read
+      id-token: write # provenance attestation
+      attestations: write
+
+    env:
+      IRODORA_VERSION_NAME: ${{ needs.version.outputs.name }}
+      IRODORA_VERSION_CODE: ${{ needs.version.outputs.code }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-android-build
+
+      # Fail here, with a sentence a person can act on, rather than 20 minutes later inside
+      # Gradle with "storeFile not set". Nothing is echoed: the check is on emptiness.
+      - name: Check the signing credentials are present
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SIGNER_SHA256: ${{ vars.ANDROID_SIGNER_SHA256 }}
+        run: |
+          set -euo pipefail
+          MISSING=()
+          [[ -z "$KEYSTORE" ]]          && MISSING+=("secret ANDROID_KEYSTORE_BASE64")
+          [[ -z "$KEYSTORE_PASSWORD" ]] && MISSING+=("secret ANDROID_KEYSTORE_PASSWORD")
+          [[ -z "$KEY_ALIAS" ]]         && MISSING+=("secret ANDROID_KEY_ALIAS")
+          [[ -z "$KEY_PASSWORD" ]]      && MISSING+=("secret ANDROID_KEY_PASSWORD")
+          [[ -z "$SIGNER_SHA256" ]]     && MISSING+=("variable ANDROID_SIGNER_SHA256")
+          if (( ${#MISSING[@]} )); then
+            printf '::error::missing: %s\n' "${MISSING[*]}"
+            echo "::error::See docs/operations/signing-and-credentials.md. These are steps only"
+            echo "::error::a person can take, and a release cannot be signed without them."
+            exit 1
+          fi
+
+      # Into RUNNER_TEMP, which is destroyed with the runner — never into the workspace,
+      # where a later step could archive it into an artefact by accident.
+      - name: Materialise the keystore
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          test -s "$RUNNER_TEMP/release.keystore"
+
+      - name: Generate the native project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+
+      # The APK is what a person sideloads; the AAB is what a store ingests. Both come from
+      # ONE Gradle invocation over one merged manifest, which is why checking the APK's
+      # permission set below is a statement about the AAB as well.
+      - name: Build
+        working-directory: apps/mobile/android
+        env:
+          IRODORA_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          IRODORA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          IRODORA_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          IRODORA_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
+
+      - name: Collect the artefacts
+        id: artefacts
+        env:
+          VERSION: ${{ needs.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          APK=$(find apps/mobile/android/app/build/outputs/apk/release -name '*.apk' | head -1)
+          AAB=$(find apps/mobile/android/app/build/outputs/bundle/release -name '*.aab' | head -1)
+          test -n "$APK" && test -n "$AAB"
+          cp "$APK" "dist/irodora-${VERSION}.apk"
+          cp "$AAB" "dist/irodora-${VERSION}.aab"
+          ( cd dist && sha256sum ./*.apk ./*.aab > SHA256SUMS.txt )
+          echo "apk=dist/irodora-${VERSION}.apk" >> "$GITHUB_OUTPUT"
+
+      # The cryptographic half. apksigner answers "is this correctly signed"; gate 16 below
+      # answers "and was it signed by us". They are different questions and both are asked.
+      - name: Verify the signature
+        run: |
+          set -euo pipefail
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          "$APKSIGNER" verify --verbose --print-certs "${{ steps.artefacts.outputs.apk }}"
+
+      - name: 'Gate 16 — artifact'
+        run: node scripts/verify-apk.mjs --apk "${{ steps.artefacts.outputs.apk }}" --expect-package com.irodora.app --expect-version-code "${{ needs.version.outputs.code }}" --expect-version-name "${{ needs.version.outputs.name }}" --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
+
+      - name: Generate an SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dist/irodora-${{ needs.version.outputs.name }}.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      # Signed provenance: which workflow, from which commit, produced these exact bytes.
+      # `gh attestation verify` checks it afterwards, from anywhere.
+      - name: Attest the build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/*.apk, dist/*.aab'
+
+      - name: Upload for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artefacts
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # ------------------------------------------------------------------ 4. publish
+  publish:
+    name: Publish the release
+    needs: [version, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # the only job that can write, and it builds nothing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-artefacts
+          path: dist
+
+      - name: Write the release notes
+        env:
+          VERSION: ${{ needs.version.outputs.name }}
+          CODE: ${{ needs.version.outputs.code }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+          SIGNER: ${{ vars.ANDROID_SIGNER_SHA256 }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Irodora ${VERSION}"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| package | \`com.irodora.app\` |"
+            echo "| versionCode | \`${CODE}\` |"
+            echo "| commit | \`${GITHUB_SHA}\` |"
+            echo "| signing certificate (SHA-256) | \`${SIGNER}\` |"
+            echo
+            echo "### What was checked before this was published"
+            echo
+            echo "- Every verification gate in \`.harness/verification/gates.json\`, in order."
+            echo "- \`apksigner verify\` — the signature is cryptographically valid."
+            echo "- Gate 16 — the APK declares **no network permission**, carries this version,"
+            echo "  and is signed by the certificate above and not by a debug key."
+            echo "- Build provenance is attested: \`gh attestation verify <file> --repo ${GITHUB_REPOSITORY}\`"
+            echo
+            echo "### Installing"
+            echo
+            echo "The \`.apk\` is for sideloading (\`adb install -r\`). The \`.aab\` is the store"
+            echo "artefact and cannot be installed directly."
+            if [[ "$PRERELEASE" == "true" ]]; then
+              echo
+              echo "> **Pre-release.** It shares a \`versionCode\` with its final release, so it"
+              echo "> must not be uploaded to a store."
+            fi
+          } > NOTES.md
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "Irodora ${VERSION}" \
+            --notes-file NOTES.md \
+            --generate-notes \
+            ${{ needs.version.outputs.prerelease == 'true' && '--prerelease' || '' }} \
+            dist/*

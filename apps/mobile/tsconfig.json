@@ -18,5 +18,5 @@
     "lib": ["ES2023"],
     "types": ["react", "node", "jest"]
   },
-  "include": ["src/**/*", "app/**/*", "test/**/*", "*.config.ts"]
+  "include": ["src/**/*", "app/**/*", "test/**/*", "plugins/**/*", "*.config.ts"]
 }

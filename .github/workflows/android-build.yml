@@ -1,0 +1,105 @@
+name: Android build (test)
+
+# An installable APK, on demand, with no secrets involved.
+#
+# THIS LANE EXISTS FOR THE DEVICE ATTESTATIONS. A dozen acceptance criteria across F-006,
+# F-017, F-035, F-039, F-040 and F-041 say some version of "verified on a physical device",
+# and every one of them has been outstanding since the day it was written because there was
+# no way to get the app onto a phone. See `.harness/state/feature_list.json` — the `attested`
+# entries are the checklist this lane unblocks.
+#
+# WHAT IT PRODUCES IS NOT A RELEASE. The APK is signed with the React Native debug keystore,
+# which is public, so it is fine for a phone you control and unfit for anyone else's. It is
+# uploaded as a workflow artefact — never to a GitHub Release, and never to a store. The
+# release lane is `release.yml`, and it requires a real key.
+#
+# Gate 16 runs here anyway: the artefact must still declare no network permission. A debug
+# build is exactly where a dependency's `INTERNET` would first show up.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name to stamp on the build (cosmetic; not a release)'
+        required: false
+        default: '0.0.0-dev'
+      variant:
+        description: 'Gradle variant'
+        required: false
+        default: debug
+        type: choice
+        options: [debug, debugOptimized]
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      IRODORA_VERSION_NAME: ${{ inputs.version_name }}
+      # Deliberately 1, and deliberately not derived from anything. A test build must never
+      # mint a version code that a real release might later want: codes are monotonic
+      # forever, and a phone that has installed code 500 will refuse code 400 as a downgrade.
+      IRODORA_VERSION_CODE: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-android-build
+
+      # The native project is generated, never committed (apps/mobile/AGENTS.md). `--clean`
+      # rather than incremental: a prebuild layered onto a stale android/ is how a config
+      # plugin appears to have run when it has not.
+      - name: Generate the native project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+
+      - name: Assemble
+        working-directory: apps/mobile/android
+        run: ./gradlew assemble${{ inputs.variant == 'debugOptimized' && 'DebugOptimized' || 'Debug' }} --no-daemon
+
+      - name: Locate the APK
+        id: apk
+        run: |
+          FOUND=$(find apps/mobile/android/app/build/outputs/apk -name '*.apk' | head -1)
+          test -n "$FOUND" || { echo "no APK was produced"; exit 1; }
+          echo "path=$FOUND" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "$FOUND" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      # No --expect-signer-sha256: this build is signed with the public debug key, and
+      # asserting that would be asserting the thing the lane is documented as not providing.
+      # Everything else is checked, and the permission assertion is the point.
+      - name: 'Gate 16 — artifact'
+        run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code 1 --expect-version-name "${{ inputs.version_name }}"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: irodora-${{ inputs.variant }}-${{ github.sha }}
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summary
+        run: |
+          {
+            echo "### Irodora — test build"
+            echo
+            echo "**Not for distribution.** Signed with the public React Native debug key."
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| commit | \`${{ github.sha }}\` |"
+            echo "| variant | \`${{ inputs.variant }}\` |"
+            echo "| sha256 | \`${{ steps.apk.outputs.sha256 }}\` |"
+            echo
+            echo "Download the artefact above, then: \`adb install -r <file>.apk\`"
+          } >> "$GITHUB_STEP_SUMMARY"

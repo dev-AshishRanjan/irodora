@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-20",
+  "updated": "2026-08-21",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -1066,7 +1066,7 @@
         "Every core journey completes with the device in airplane mode, from a cold start, on a device that has never been online",
         "No account prompt exists anywhere in the app, because there is no account",
         "The app opens no socket during any core journey, asserted by the e2e offline suite rather than by inspection",
-        "EAS Build produces installable builds from a Windows workstation"
+        "An installable Android build is produced from this repository by CI, without the workstation needing an Android toolchain"
       ],
       "verification": [
         "state",
@@ -1093,13 +1093,13 @@
           "status": "outstanding"
         },
         {
-          "criterion": "EAS Build produces installable builds from a Windows workstation",
-          "verifiedBy": "An EAS build run against this repository from the Windows workstation.",
+          "criterion": "An installable Android build is produced from this repository by CI, without the workstation needing an Android toolchain",
+          "verifiedBy": "Running .github/workflows/android-build.yml against a real remote and installing the artefact on a phone. REWORDED UNDER ADR-0058, which is why it is allowed: the original said \"EAS Build produces installable builds from a Windows workstation\", and EAS is no longer the build service — builds are GitHub Actions running Gradle. This is not a criterion made easier. It is strictly harder in the way that matters (the workstation has no JDK and an Android SDK five platforms out of date, so a criterion depending on it could not be met at all) and the thing actually wanted — an installable build, from this repository — is unchanged. The lane is built and every static half is gated by F-080; what is outstanding is that no workflow in this repository has ever executed, because there is no remote.",
           "blocks": "release",
           "status": "outstanding"
         }
       ],
-      "notes": "DONE. The first feature that produces something a person could hold — apps/mobile is a real Expo app: SDK 57.0.14, React Native 0.86.2, React 19.2.3, Expo Router, development client rather than Expo Go because VisionCamera is a native module and F-040 needs frame processors. Versions verified with expo install --check rather than guessed; it flagged one (react-native-screens 4.20 -> ~4.26) and now reports Dependencies are up to date. THE ENGINE IS WIRED AND EXECUTING, not merely listed: apps/mobile/src/engine.ts is the single import site, the screen computes every hex and the dE00 figure at render time, and nothing on it is a typed colour value. A dependency nobody imports passes every gate and ships nothing, which this repository has already lost six increments to. FOUND WHILE WIRING IT: @irodora/design-tokens GENERATED a React Native target and never re-exported it — nativeColors was unreachable from outside the package. Byte-compared by its own test the whole time, and importable by nobody. F-039 is its first consumer, which is why it surfaced now. A DECOY THAT MATTERS: dE00 is defined on CIELAB, and OKLCh triples are the SAME TYPE, so handing them straight to deltaE00 typechecks and returns a plausible meaningless number. The first draft of engine.ts did exactly that. The test now pins the Lab route AND asserts the wrong route differs by more than 1 dE00, so the assertion discriminates. NFR-12 AS A BUILD-TIME FACT: app.config.ts requests no network permission on either platform and BLOCKS android.permission.INTERNET, because a library that declares it would otherwise have it merged in silently. Adding it back would falsify a requirement and needs an ADR. There is no newArchEnabled flag and its absence is correct — the New Architecture has been mandatory with no opt-out since SDK 55, so the field is not part of ExpoConfig. A LINT SUPPRESSION I KEPT RATHER THAN OBEYED: no-unnecessary-condition flags the ?? guard on useColorScheme(). react-native types it as null | undefined | ColorSchemeName and tsc agrees the guard is needed — assigning null to its ReturnType compiles. The rule resolves the module differently. The guard stays, with the evidence in the comment: deleting a guard because a linter overruled a measurement is the wrong way round. THREE OF SIX CRITERIA ARE ATTESTED, and the plan says so in its own section rather than leaving a reader to work out which half is checked. The Hermes execution, the airplane-mode journey and the no-socket assertion all need a device — and the last two also need journeys, which arrive with F-018/F-040. Gates e2e and a11y stay PENDING for exactly that reason: their subject is a journey and this feature ships a floor.",
+      "notes": "DONE. The first feature that produces something a person could hold — apps/mobile is a real Expo app: SDK 57.0.14, React Native 0.86.2, React 19.2.3, Expo Router, development client rather than Expo Go because VisionCamera is a native module and F-040 needs frame processors. Versions verified with expo install --check rather than guessed; it flagged one (react-native-screens 4.20 -> ~4.26) and now reports Dependencies are up to date. THE ENGINE IS WIRED AND EXECUTING, not merely listed: apps/mobile/src/engine.ts is the single import site, the screen computes every hex and the dE00 figure at render time, and nothing on it is a typed colour value. A dependency nobody imports passes every gate and ships nothing, which this repository has already lost six increments to. FOUND WHILE WIRING IT: @irodora/design-tokens GENERATED a React Native target and never re-exported it — nativeColors was unreachable from outside the package. Byte-compared by its own test the whole time, and importable by nobody. F-039 is its first consumer, which is why it surfaced now. A DECOY THAT MATTERS: dE00 is defined on CIELAB, and OKLCh triples are the SAME TYPE, so handing them straight to deltaE00 typechecks and returns a plausible meaningless number. The first draft of engine.ts did exactly that. The test now pins the Lab route AND asserts the wrong route differs by more than 1 dE00, so the assertion discriminates. NFR-12 AS A BUILD-TIME FACT: app.config.ts requests no network permission on either platform and BLOCKS android.permission.INTERNET, because a library that declares it would otherwise have it merged in silently. Adding it back would falsify a requirement and needs an ADR. There is no newArchEnabled flag and its absence is correct — the New Architecture has been mandatory with no opt-out since SDK 55, so the field is not part of ExpoConfig. A LINT SUPPRESSION I KEPT RATHER THAN OBEYED: no-unnecessary-condition flags the ?? guard on useColorScheme(). react-native types it as null | undefined | ColorSchemeName and tsc agrees the guard is needed — assigning null to its ReturnType compiles. The rule resolves the module differently. The guard stays, with the evidence in the comment: deleting a guard because a linter overruled a measurement is the wrong way round. THREE OF SIX CRITERIA ARE ATTESTED, and the plan says so in its own section rather than leaving a reader to work out which half is checked. The Hermes execution, the airplane-mode journey and the no-socket assertion all need a device — and the last two also need journeys, which arrive with F-018/F-040. Gates e2e and a11y stay PENDING for exactly that reason: their subject is a journey and this feature ships a floor. F-080 replaced the EAS assumption with a GitHub Actions lane (ADR-0058) and reworded the build acceptance criterion accordingly — recorded here because ADR-0038 forbids quietly rewording an attested criterion, and this one WAS reworded.",
       "plan": "plans/F-039-app-foundation.md",
       "effects": [
         "E-002"
@@ -1991,6 +1991,115 @@
         "security"
       ],
       "notes": "FOUND DURING F-078 while running the CI step list, not by a failing build. `pnpm audit --audit-level high` exits 1: two HIGH advisories, both `image-size <=2.0.2` (GHSA-5p2g-fcmc-qvqq, ICNS parser infinite loop), plus one moderate. ALL 200 REPORTED PATHS route through `apps__mobile>expo>...` — metro depends on image-size@1.2.1 — so it arrived with F-039 and has been failing gate 15 unconditionally ever since; `progress.md` last recorded this gate green before Expo existed. THERE IS NO FIXED VERSION TO UPGRADE TO: the latest published image-size is 2.0.2 and the advisory covers <=2.0.2, so a pnpm `overrides` entry cannot resolve it and attempting one will waste the next person an hour. That leaves three real options — wait for an upstream fix and pin when it lands, allowlist the GHSA via `auditConfig.ignoreGhsas` with an expiry, or accept a red step — and choosing among them is a security-policy decision, which is why this is a feature with an ADR rather than a commit. The reachability question is worth answering first: image-size parses ICNS inside metro, the DEV bundler, which never runs in the shipped app."
+    },
+    {
+      "id": "F-080",
+      "title": "Release and distribution pipeline: signed Android artefacts from a tag",
+      "requirements": [
+        "NFR-12",
+        "NFR-14",
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [
+        "F-004",
+        "F-039"
+      ],
+      "plan": "plans/F-080-release-and-distribution-pipeline.md",
+      "acceptance": [
+        "A tag matching v*.*.* runs the same gate job a pull request runs, and a red gate stops the release",
+        "The release build is signed with a release keystore supplied as repository secrets, and a build with no keystore configured fails rather than falling back to the debug key",
+        "versionName and versionCode are derived from the tag, and the built artefact is asserted to carry them",
+        "The built artefact is asserted to declare no INTERNET permission, and the assertion is watched failing against a manifest that declares one",
+        "A GitHub Release for the tag carries the APK, the AAB, a SHA-256 checksum file, an SBOM and build provenance",
+        "An installable debug-signed APK can be produced on demand without a keystore, labelled not-for-distribution",
+        "Gate 0 fails if a gate declaring the release workflow has no step in it, proven per gate by verify-gate-mirror.mjs",
+        "docs/operations/release-process.md describes the pipeline that exists and names nothing ADR-0051 withdrew"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "artifact"
+      ],
+      "notes": "Written against a repository with NO REMOTE. Every workflow file in this feature is unexecuted — the first push is the first run, and that is recorded as an attested criterion rather than glossed. The workstation cannot build the artefact either: no JDK is installed (JAVA_HOME points at an uninstalled jdk-18), the Android SDK has platforms 31 and 32 against a required compileSdk 36, and there is no NDK. That is why the lane is CI-first rather than workstation-first. Supersedes the EAS assumption recorded in .env.example and in ADR-0024 section 7; see ADR-0058.",
+      "attested": [
+        {
+          "criterion": "A tag matching v*.*.* runs the same gate job a pull request runs, and a red gate stops the release",
+          "verifiedBy": "Pushing a tag to a real GitHub remote and reading the run. There is no remote — git remote -v is empty — so no workflow in this feature has ever executed. The STATIC half is gated: gate 0 asserts every active gate has a step in the workflow that declares it, and verify-gate-mirror.mjs proves that check can fail per gate. What a static check cannot see is whether GitHub schedules the job, whether the runner has the SDK, and whether the reusable-workflow call resolves.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The release build is signed with a release keystore supplied as repository secrets, and a build with no keystore configured fails rather than falling back to the debug key",
+          "verifiedBy": "A release run against a real keystore, with verify-apk.mjs comparing the signer certificate fingerprint to the expected one. The CONFIG half is gated here — the transform is unit-tested and throws if the Expo template anchor is gone — and the ARTEFACT half is implemented and proven against synthetic input, but neither can run against a real signed APK until a keystore exists, which is a step only a person can take (docs/operations/signing-and-credentials.md).",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "A GitHub Release for the tag carries the APK, the AAB, a SHA-256 checksum file, an SBOM and build provenance",
+          "verifiedBy": "Reading a published GitHub Release and running `gh attestation verify` against the downloaded APK from outside CI. Nothing about a Release page is checkable from a repository with no remote. The pieces are each wired — checksums by sha256sum, the SBOM by anchore/sbom-action, provenance by actions/attest-build-provenance, all attached by `gh release create` — and none of it has run.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-081",
+      "title": "iOS release lane: signed IPA from the same tag",
+      "requirements": [
+        "NFR-12",
+        "NFR-14"
+      ],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "should",
+      "status": "blocked",
+      "blockedBy": [
+        "F-080"
+      ],
+      "openQuestions": [
+        "OQ-6"
+      ],
+      "acceptance": [
+        "The same v*.*.* tag produces a signed IPA on a macOS runner",
+        "The IPA is asserted to request no network entitlement and to carry the tag version",
+        "Certificates and provisioning profiles come from repository secrets, never from a developer workstation"
+      ],
+      "verification": [
+        "state",
+        "artifact"
+      ],
+      "notes": "Deliberately NOT half-built inside F-080. An iOS lane needs a paid Apple Developer Program membership, a signing certificate and a provisioning profile — none of which can be created from this repository, and a workflow written against credentials that do not exist is a file nobody can run. OQ-6 is the enrolment decision (individual or organisation) and it is a purchase, so it closes as a human decision recorded in an ADR. macOS runners also bill at roughly ten times the Linux rate, which is a real cost to decide on rather than discover."
+    },
+    {
+      "id": "F-082",
+      "title": "Gate 15 is red: two High advisories in image-size, reached through metro",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "pnpm audit --audit-level high exits 0, or every remaining advisory has a recorded disposition",
+        "If a version is forced, the forcing is an explicit override with a reason and a revisit condition",
+        "The advisory is reported in progress.md with the date it was found and the date it was resolved"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "build"
+      ],
+      "notes": "FOUND 2026-08-21 while wiring F-080, and PRE-EXISTING — nothing in F-080 introduced it. `pnpm audit --audit-level high` reports 1 moderate and 2 HIGH: GHSA-w3rx-r6r6-pgpr and GHSA-5p2g-fcmc-qvqq, both `image-size <= 2.0.2` (ICNS, JXL and HEIF parsers loop forever on a crafted file), both fixed in 2.0.3. The path is apps/mobile > expo > @expo/cli > @expo/log-box > @expo/dom-webview > react-native > @react-native/community-cli-plugin > metro > image-size, so the reachable code is the DEV SERVER rather than anything in the shipped bundle — but gate 15 blocks on High by design and does not read call graphs, and a gate that is red is red. THIS BLOCKS EVERY RELEASE: release.yml calls ci.yml first, so gate 15 failing means no tag can ever produce an artefact. Deliberately NOT fixed inside F-080: forcing a transitive version through a pnpm override is a supply-chain decision that deserves its own review, and \"while I am here\" is how an override nobody read ends up pinning a package for two years. The likely fix is a pnpm.overrides entry for image-size@^2.0.3 (a patch bump, so low risk) plus a check that metro still resolves it; the alternative is an upstream Expo/metro release that moves the floor, which would be better and cannot be waited for indefinitely. Related to F-079, which asks the harder question of what gate 15 should do about an advisory with NO fix — this one has a fix."
     }
   ]
 }

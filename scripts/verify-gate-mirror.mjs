@@ -16,8 +16,8 @@
  * `pnpm test:e2e`, `pnpm test:contrast` and five more — so deleting the real `pnpm test`
  * step left the check green. Gate `e2e` had the same hole via `pnpm test:e2e:full`.
  *
- * The workflow is restored in a `finally` and the restore is verified byte-for-byte. If this
- * script is interrupted, `git diff .github/workflows/ci.yml` is the recovery.
+ * Each workflow is restored in a `finally` and the restore is verified byte-for-byte. If this
+ * script is interrupted, `git diff .github/workflows/` is the recovery.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -26,8 +26,16 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const CI = resolve(ROOT, '.github/workflows/ci.yml');
+const CI_WORKFLOW = '.github/workflows/ci.yml';
 const GATES = resolve(ROOT, '.harness/verification/gates.json');
+
+/**
+ * A gate is mirrored in the workflow it declares, defaulting to `ci.yml` — the same rule
+ * `verify-state.mjs` applies. Gate 16 lives in `release.yml` because there is no APK on a
+ * pull request, and a proof that only ever mutated `ci.yml` would report that gate as
+ * COULD NOT RUN forever, which reads like a broken proof rather than a covered gate.
+ */
+const workflowOf = (gate) => gate.workflow ?? CI_WORKFLOW;
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -115,9 +123,21 @@ function conditionOutStepRunning(yaml, command) {
 
 console.log(`\n${BOLD}Irodora — gate ↔ CI mirror proof${OFF}\n`);
 
-const original = readFileSync(CI, 'utf8');
 const gates = JSON.parse(readFileSync(GATES, 'utf8'));
 const active = gates.gates.filter((g) => g.status === 'active' && g.ciStep !== false);
+
+/**
+ * Every workflow this run will mutate, with its bytes as found.
+ *
+ * Read up front, so the `finally` can restore all of them whatever happens in between — a
+ * proof that leaves a workflow half-mutated has broken the thing it was checking.
+ */
+const workflows = new Map(
+  [...new Set(active.map(workflowOf))].map((w) => {
+    const path = resolve(ROOT, w);
+    return [w, { path, original: readFileSync(path, 'utf8') }];
+  }),
+);
 
 const notEnforced = [];
 const couldNotRun = [];
@@ -137,15 +157,17 @@ try {
   console.log(`  ${DIM}baseline: gate 0 green with the workflow intact${OFF}\n`);
 
   for (const gate of active) {
+    const workflow = workflowOf(gate);
+    const { path, original } = workflows.get(workflow);
     const mutated = removeStepRunning(original, gate.command);
     if (mutated === null) {
-      couldNotRun.push({ gate, reason: `no step in ci.yml runs "${gate.command}"` });
+      couldNotRun.push({ gate, reason: `no step in ${workflow} runs "${gate.command}"` });
       continue;
     }
 
-    writeFileSync(CI, mutated, 'utf8');
+    writeFileSync(path, mutated, 'utf8');
     const result = runStateGate();
-    writeFileSync(CI, original, 'utf8');
+    writeFileSync(path, original, 'utf8');
 
     if (!result.failed) {
       notEnforced.push({ gate, reason: 'gate 0 stayed GREEN with the step removed' });
@@ -160,7 +182,7 @@ try {
     }
 
     console.log(`  ${GREEN}✓${OFF} removing the "${gate.id}" step fails gate 0`);
-    console.log(`    ${DIM}${gate.command}${OFF}`);
+    console.log(`    ${DIM}${gate.command}  —  ${workflow}${OFF}`);
   }
 
   // ---- F-072: the second way a gate stops running -------------------------------------
@@ -171,15 +193,16 @@ try {
   // `if: hashFiles('content/colors') != ''`.
   console.log('');
   for (const gate of active) {
+    const { path, original } = workflows.get(workflowOf(gate));
     const mutated = conditionOutStepRunning(original, gate.command);
     if (mutated === null) {
       couldNotRun.push({ gate, reason: `could not add a condition to the "${gate.id}" step` });
       continue;
     }
 
-    writeFileSync(CI, mutated, 'utf8');
+    writeFileSync(path, mutated, 'utf8');
     const result = runStateGate();
-    writeFileSync(CI, original, 'utf8');
+    writeFileSync(path, original, 'utf8');
 
     if (!result.failed) {
       notEnforced.push({
@@ -200,12 +223,14 @@ try {
     console.log(`  ${GREEN}✓${OFF} conditioning out the "${gate.id}" step fails gate 0`);
   }
 } finally {
-  writeFileSync(CI, original, 'utf8');
-  if (readFileSync(CI, 'utf8') !== original) {
-    console.log(
-      `\n${RED}${BOLD}ci.yml was NOT restored cleanly. Run: git checkout .github/workflows/ci.yml${OFF}\n`,
-    );
-    process.exit(1);
+  for (const [workflow, { path, original }] of workflows) {
+    writeFileSync(path, original, 'utf8');
+    if (readFileSync(path, 'utf8') !== original) {
+      console.log(
+        `\n${RED}${BOLD}${workflow} was NOT restored cleanly. Run: git checkout ${workflow}${OFF}\n`,
+      );
+      process.exit(1);
+    }
   }
 }
 

@@ -73,6 +73,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-color-type-reaches-every-surface.md](effects/the-color-type-reaches-every-surface.md) — **E-002** · and making Provenance optional would compile.
 - [effects/the-message-key-set-is-a-contract-with-every-render-site.md](effects/the-message-key-set-is-a-contract-with-every-render-site.md) — **E-016** · the compiler is the completeness check, and a copy-pasted translation satisfies the type perfectly.
 - [effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md](effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md) — **E-017** · a rare kanji becomes an empty box on the corpus entries the product exists for, with every gate green.
+- [effects/the-permission-set-is-decided-by-the-manifest-merger-not-by-us.md](effects/the-permission-set-is-decided-by-the-manifest-merger-not-by-us.md) — **E-018** · `blockedPermissions` is an input to a merge; the artefact is the output, and only one of them ships.
 - [effects/deltae00-is-the-ranking-authority.md](effects/deltae00-is-the-ranking-authority.md) — **E-003** · a defect changes every answer and produces no error.
 - [effects/one-separation-definition-for-ui-and-engine.md](effects/one-separation-definition-for-ui-and-engine.md) — **E-005** · a second definition means a claimed accessibility property nobody delivers.
 - [effects/corpus-version-pins-caches-and-envelopes.md](effects/corpus-version-pins-caches-and-envelopes.md) — **E-006** · why publishing mints rather than invalidates.

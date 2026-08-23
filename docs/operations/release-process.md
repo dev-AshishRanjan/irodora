@@ -2,84 +2,140 @@
 
 | | |
 |---|---|
-| **Status** | Baseline · pipeline lands with F-004 |
-| **Decision** | [ADR-0024](../adr/0024-ci-cd-github-actions-trunk-based.md) |
+| **Status** | Implemented in CI, **never executed** — there is no remote yet |
+| **Decisions** | [ADR-0024](../adr/0024-ci-cd-github-actions-trunk-based.md) · [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) · [ADR-0058](../adr/0058-release-builds-are-github-actions-and-gradle-not-eas.md) |
+| **Feature** | F-080 |
+
+> **This document was wrong for a whole release cycle.** Until F-080 it described a container
+> pipeline — multi-arch images, a registry, a staging environment, a deploy to a real VPS,
+> `/readyz`, a 5xx rollback trigger. [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)
+> withdrew the server tier and nobody rewrote this. A runbook describing infrastructure that
+> does not exist is worse than no runbook: it is read under pressure and believed.
+>
+> Irodora is an app on a phone. There is nothing to deploy, nothing to roll back, and no
+> production to be down. A release is **an artefact somebody installs.**
 
 ---
 
 ## Branching
 
 Trunk-based on `main`. Short-lived branches, small merges, `main` always releasable.
-
-Branch protection: all required checks green · at least one review · linear history · no
-force-push.
-
 Conventional Commits. Changesets for versioning publishable packages.
+
+Branch protection is specified in [`branch-protection.md`](branch-protection.md) and **not
+applied**, because applying it requires a remote that does not exist yet.
 
 ---
 
 ## The gates
 
 Run in order, stop at the first failure. Defined in
-[`.harness/verification/gates.json`](../../.harness/verification/gates.json) and mirrored
-by `.github/workflows/ci.yml` — **the mirror is machine-checked by the `state` gate**, so a
-gate cannot exist in one file and not the other.
+[`../../.harness/verification/gates.json`](../../.harness/verification/gates.json) and
+mirrored by the workflow each gate declares — **the mirror is machine-checked by the `state`
+gate**, and [`verify-gate-mirror.mjs`](../../scripts/verify-gate-mirror.mjs) proves that check
+can fail, per gate, by deleting each step and watching gate 0 go red.
 
 ```
-0  state          harness integrity
-1  typecheck      2  lint           3  format
-4  test           5  color-golden   6  build
-7  e2e            8  a11y           9  contrast
-10 cvd            11 content        12 perf
-13 web-perf       14 e2e-full       15 security
+0  state         1  typecheck    2  lint        3  format
+4  test          5  color-golden 6  build       7  e2e (pending)
+8  a11y          9  contrast    10  cvd        11  content
+12 perf (pending)                              15  security
+16 artifact  ← release.yml, not ci.yml
 ```
 
-> **Never disable a failing gate to unblock a merge.** A gate that is genuinely wrong is
-> changed deliberately, with an ADR. A gate that is flaky is fixed, or quarantined with a
-> tracked feature. It is never silently deleted — that is how a gate becomes theatre.
+Gate 16 is the only one that runs somewhere other than `ci.yml`, because there is no APK on a
+pull request. `gates.json` records that with a `workflow` field so the omission cannot be
+mistaken for a gap.
+
+> **Never disable a failing gate to unblock a release.** A gate that is genuinely wrong is
+> changed deliberately, with an ADR. A flaky gate is fixed, or quarantined with a tracked
+> feature. It is never silently deleted — that is how a gate becomes theatre.
 
 ---
 
-## Release
+## Two lanes
+
+### A test build — [`android-build.yml`](../../.github/workflows/android-build.yml)
+
+Run it from the Actions tab (`workflow_dispatch`). It produces a **debug-signed APK** as a
+workflow artefact, with no secrets involved.
+
+**This is the lane the device attestations run through.** Every `attested` entry in
+[`feature_list.json`](../../.harness/state/feature_list.json) whose `verifiedBy` says
+*"on a physical device"* is discharged from a build this lane produced — the engine identity
+digest under Hermes (F-006, F-039), the store conformance suite and encryption-at-rest
+(F-041), TalkBack and 200 % text scaling (F-017), kinsoku line breaking (F-017), the Lens
+frame-processor questions (F-040), and export/import against a real file (F-035).
+
+It is **not a release**: the debug keystore is public, so the artefact is fine for a phone you
+control and unfit for anyone else's.
+
+```bash
+adb install -r irodora-debug.apk
+```
+
+### A release — [`release.yml`](../../.github/workflows/release.yml)
 
 ```
 tag vX.Y.Z
-   ↓  full gate run
-   ↓  build multi-arch images, pinned base digests, non-root
-   ↓  scan images
-   ↓  generate SBOM
-   ↓  push to registry
-   ↓  deploy STAGING
-   ↓  automated verification against staging
-   ↓  DEPLOY TO A REAL VPS via Coolify or Dokploy      ← required, every release
-   ↓  manual release checklist
-   ↓  deploy PRODUCTION (required reviewer)
-   ↓  post-deploy verification
+   ↓  every gate, by CALLING ci.yml — not a copy of it
+   ↓  derive versionName and versionCode from the tag
+   ↓  expo prebuild --clean, then gradlew assembleRelease bundleRelease
+   ↓  apksigner verify        — the signature is cryptographically valid
+   ↓  gate 16                 — and it is OUR certificate, and no network permission
+   ↓  SBOM · SHA-256 sums · attested build provenance
+   ↓  GitHub Release, artefacts attached
 ```
 
-**The VPS step is not optional and not a smoke test.** A container-portable deployment
-story that is only ever exercised in cloud CI stops being true within a few releases — an
-AWS-only assumption creeps in, and nobody notices until a self-hosted customer cannot boot
-it. Deploying every release on a real VPS is what keeps NFR-18 an actual property.
+Nothing is deployed anywhere. Publication is the last step and the only one that can write.
+
+---
+
+## Versioning
+
+| Artefact | Scheme |
+|---|---|
+| The app | `vMAJOR.MINOR.PATCH`, optionally `-prerelease` |
+| Published packages | Semver via Changesets |
+| Corpus | `YYYY.MM.N`, immutable |
+| Rules | `YYYY.MM.N`, immutable |
+
+`versionCode = major × 1 000 000 + minor × 1 000 + patch`, derived from the tag and nothing
+else. It is **monotonic forever**: a code published to a store can never be reused, and a
+phone holding code 500 refuses code 400 as a downgrade. Deriving it from the tag rather than
+incrementing a committed integer is what stops two branches minting the same one.
+
+A pre-release tag shares its final release's code. That is fine for sideloading and wrong for
+a store, so pre-releases are flagged and must not be uploaded to Play.
+
+The colour engine's version is part of every reproducibility envelope (FR-10). **A change
+that alters engine output is a MAJOR version**, even if no API changed — downstream, an
+envelope that no longer reproduces is a broken contract regardless of what the types say.
 
 ---
 
 ## Release checklist
 
-Before production:
+Automated — the workflow fails rather than asking:
 
-- [ ] All gates green, evidence recorded in [`progress.md`](../../.harness/state/progress.md)
-- [ ] Migrations reviewed — **expand/contract**, backward-compatible with the previous
-      release
-- [ ] Rollback verified: the previous image runs against the new schema
-- [ ] Any new `IRODORA_*` variable is in `.env.example` (the `state` gate checks this)
+- [x] Every gate green, in order
+- [x] The artefact declares no network permission (gate 16, NFR-12)
+- [x] The artefact carries the tag's version
+- [x] The artefact is signed by the expected certificate, not the debug key
+- [x] Checksums, SBOM and provenance published
+
+A person still does these, and no gate can:
+
+- [ ] **Screen-reader pass on a device** — TalkBack on Android, VoiceOver on iOS
+- [ ] **Both locales rendered** on every changed surface, on a device
+- [ ] Text scaled to 200 % loses no content or function
+- [ ] Any new `IRODORA_*` variable is in `.env.example` (gate 0 checks the contract; that it
+      is *described correctly* is a person's job)
 - [ ] Corpus and rule versions pinned, or intentionally latest with the reason recorded
 - [ ] Effect graph updated; no critical link without a guard
-- [ ] Screen-reader pass: VoiceOver, TalkBack, NVDA
-- [ ] Both locales rendered on the changed surfaces
 - [ ] Threat model reviewed if a trust boundary changed
-- [ ] Sub-processor list current if a dependency was added
-- [ ] Status page ready; rollback command to hand
+- [ ] Every `attested` criterion that `blocks: release` is either `verified` with evidence, or
+      consciously accepted for this release and said out loud in the release notes
 
 **Major releases additionally:**
 
@@ -89,37 +145,30 @@ Before production:
 
 ---
 
-## Post-deploy
+## After a release
 
-Within 15 minutes: error rate normal · p95 latency within budget · `/readyz` green on every
-instance · corpus checksum verified · a synthetic run of journeys J1 and J4.
+There is no dashboard to watch, because there is no server to watch it on. What replaces the
+old post-deploy checklist:
 
-**Rollback triggers, decided in advance so nobody has to decide during:**
+1. **Install the published APK on a real device from the Release page** — not the one left in
+   the build directory. A release nobody installed is a release nobody tested.
+2. **Verify the provenance from outside CI:**
+   ```bash
+   gh attestation verify irodora-X.Y.Z.apk --repo <owner>/<repo>
+   ```
+3. **Check the checksum** published in `SHA256SUMS.txt` against the downloaded file.
 
-| Trigger | Action |
+### If a release is bad
+
+**There is no rollback**, and pretending otherwise is the dangerous version of this section.
+An artefact somebody has installed stays installed. What can actually be done:
+
+| Situation | Action |
 |---|---|
-| 5xx rate > 2 % | Roll back immediately |
-| p95 above budget for 10 min | Roll back |
-| Corpus checksum mismatch | Roll back **and** open a SEV1 |
-| Any auth or tenancy failure | Roll back immediately |
-| A journey fails synthetically | Roll back |
+| Not yet distributed | Delete the GitHub Release and the tag; fix; tag a new patch |
+| Distributed, defect is not harmful | Fix; tag a patch; the higher `versionCode` upgrades over it |
+| Distributed, defect is harmful (data loss, a false accuracy claim, a privacy regression) | Mark the release as pre-release so it is not the "latest" download, publish a patch, and say plainly in both releases' notes what was wrong |
 
-Deciding these before the deploy is the point. Deciding them at 2 a.m. while a graph climbs
-produces worse decisions and slower ones.
-
----
-
-## Versioning
-
-| Artefact | Scheme |
-|---|---|
-| Applications | `vMAJOR.MINOR.PATCH` |
-| Published packages | Semver via Changesets |
-| API surface | `/v1`, additive only; a break mints `/v2` with a ≥ 12-month sunset |
-| Corpus | `YYYY.MM.N`, immutable |
-| Rules | `YYYY.MM.N`, immutable |
-
-The colour engine's version is part of every reproducibility envelope (FR-10). **A change
-that alters engine output is a MAJOR version**, even if the API is unchanged — because
-downstream, an envelope that no longer reproduces is a broken contract regardless of what
-the types say.
+A privacy regression is the case worth naming: if an artefact shipped with a network
+permission, gate 16 failed to run or was bypassed, and the incident is about the pipeline as
+much as the build. See [`incident-response.md`](incident-response.md).

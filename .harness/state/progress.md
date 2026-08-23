@@ -8,6 +8,153 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-21 — F-080 DONE · the app can finally reach a phone, and the artefact is what gets checked
+
+Eleven acceptance criteria across F-006, F-017, F-035, F-039, F-040 and F-041 say some
+version of *"verified on a physical device"*. Every one of them has been outstanding since
+the day it was written, and not because they were hard — **because there was no way to get
+the app onto a phone.** That is what this feature is for. The signing, the provenance and the
+SBOM are the part that makes it publishable; the lane itself is the part that unblocks work.
+
+### The workstation was never going to do it
+
+Recorded because the next session should not spend an hour rediscovering it:
+
+| | |
+|---|---|
+| JDK | **none installed.** `JAVA_HOME` points at `C:\Program Files\Java\jdk-18.0.2.1\`, which does not exist |
+| Android SDK | platforms **31, 32**; build-tools ≤ **33.0.1**; **no NDK** |
+| Required | `compileSdk` **36**, build-tools **36.0.0**, NDK **27.1.12297006** (react-native 0.86's version catalog) |
+| Node | 22.16.0 on PATH against `.nvmrc` 24.19.0 — the 24 build is at `~/AppData/Roaming/nvm/v24.19.0` and every gate in this session ran under it |
+
+`./gradlew --version` fails before Gradle starts. So the lane is CI-first, and that is a
+consequence rather than a preference.
+
+### EAS was an assumption, never a decision — ADR-0058
+
+Three places recorded it as though it had been decided: ADR-0024 §7 (which still described a
+**container** release — images, a registry, a staging environment, a VPS — for a tier
+ADR-0051 withdrew), `.env.example` ("signing credentials live in EAS"), and F-039's
+acceptance criterion. Replaced with GitHub Actions running Gradle: no account in the path of
+building the product, no hosted service, reproducible from the repository.
+
+**F-039's criterion was reworded, and that is recorded rather than done quietly** — ADR-0038
+forbids the quiet version. *"EAS Build produces installable builds from a Windows
+workstation"* became *"An installable Android build is produced from this repository by CI,
+without the workstation needing an Android toolchain"*. It is not an easier criterion: the
+original depended on a machine that cannot build Android at all.
+
+### The check that matters is on the artefact, not the config
+
+`app.config.ts` blocks `INTERNET` and lists `CAMERA`. That is a statement about **our**
+manifest. The one that ships is the **merged** manifest, and Android's merger folds in every
+dependency's manifest silently and by design — so a library added for an unrelated reason
+puts a network permission into the build with no source file here changing and every gate
+green. NFR-12 is the product's central claim and it is phrased as an impossibility; until now
+nothing checked the output.
+
+Gate 16 (`scripts/verify-apk.mjs`) reads the APK: ZIP central directory → binary
+`AndroidManifest.xml` → `uses-permission`, package, versionCode, versionName; then the APK
+Signing Block → the signer certificate's SHA-256. When `aapt2` is present it is used as an
+**independent oracle** and a disagreement is a failure — a hand-written parser agreeing with
+itself is the shape of a check that passes on a file it misread.
+
+**`--prove` found a real defect on its first run.** The signing-block sequence walker treated
+a zero-length element as the end of the sequence. `signed data` is
+`[digests][certificates][additional attributes]`, so an empty first element truncated the walk
+before the certificates and **a correctly signed APK read as unsigned**. It surfaced only
+because one case is required to stay *green*: the eight red cases all passed for the wrong
+reason (they went red on "unsigned"), and a proof made entirely of red cases could not have
+told the difference.
+
+Fixtures are built by the real `aapt2` (2.19, from the workstation's build-tools 33.0.1)
+rather than by an encoder written next to the parser — which would have proved the two agree
+with each other.
+
+### Ten cases, watched
+
+```
+✓ the clean fixture (must stay GREEN)
+✓ a manifest that declares INTERNET            → network permission present
+✓ ACCESS_NETWORK_STATE, which is the quieter one → network permission present
+✓ somebody else's package id                   → package id
+✓ a versionCode that never reached the build   → versionCode
+✓ a versionName from the previous release      → versionName
+✓ an unsigned APK where a signature is required → unsigned
+✓ a signing block read, fingerprint matched (must stay GREEN)
+✓ signed by an unexpected certificate          → signer certificate
+✓ the clean fixture again (the baseline either side)
+```
+
+### The mirror now reaches a second workflow
+
+Gate 16 cannot live in `ci.yml` — there is no APK on a pull request. The options were a gate
+that fails on every push (which gets deleted within a week) or a mirror check that can look
+somewhere else. `gates.json` gained a `workflow` field, defaulting to `ci.yml`, and both
+`verify-state.mjs` and `verify-gate-mirror.mjs` read it. **All 13 active gates are proven
+mirrored**, each by deletion *and* by `if: false`, in whichever workflow declares them.
+
+### Signing, and the failure that had to be impossible
+
+The React Native template signs `release` with a debug keystore whose password is `android`
+and which is checked into every React Native project in existence. A config plugin —
+`apps/mobile/plugins/withReleaseSigning.ts`, because `apps/mobile/AGENTS.md` forbids editing
+the generated project — replaces it with a config reading the keystore from the environment.
+With no keystore there is **no `storeFile`**, so AGP fails the release packaging task; there
+is no path back to the debug key. Debug builds do not read the block and still need no
+secrets at all.
+
+The transform **throws** if the template anchor is gone, because the silent version of an
+Expo upgrade is a release signed with the public debug key. Verified end to end: `expo
+prebuild --clean` under `IRODORA_VERSION_NAME=0.1.0 IRODORA_VERSION_CODE=100` produced
+`versionCode 100`, `versionName "0.1.0"` and `signingConfig signingConfigs.release`.
+
+### Gate 15 is RED, and it was red before this — F-082
+
+`pnpm audit --audit-level high`: **1 moderate, 2 high**. Both high are `image-size <= 2.0.2`
+(GHSA-w3rx-r6r6-pgpr, GHSA-5p2g-fcmc-qvqq — parsers that loop forever on a crafted file),
+fixed upstream in 2.0.3, reached through `expo > @expo/cli > … > metro > image-size`. That is
+dev-server code rather than anything in the shipped bundle, and gate 15 blocks on High by
+design and does not read call graphs.
+
+**This blocks every release**, because `release.yml` calls `ci.yml` first. It is NOT fixed
+here: forcing a transitive version through a `pnpm.overrides` entry is a supply-chain
+decision that deserves its own review, and "while I am here" is how an override nobody read
+pins a package for two years. Filed as **F-082**.
+
+### Gates
+
+```
+Ran:      state ✓  typecheck ✓  lint ✓  format ✓  test ✓  color-golden ✓  build ✓
+          a11y ✓  contrast ✓  cvd ✓  content ✓  artifact ✓ (--prove, 10/10 discriminate)
+          gate-mirror proof ✓ (13/13, two mutations each)
+          security: gitleaks ✓ (116 commits, no leaks)
+FAILED:   security: pnpm audit ✗ — 2 High. Pre-existing. F-082.
+NOT run:  e2e (gate 7, still pending — no journeys yet)
+          perf (gate 12, pending — F-038)
+          Every workflow in this feature. THERE IS NO REMOTE. `git remote -v` is empty, so
+          ci.yml, android-build.yml and release.yml have never executed and cannot until the
+          repository is pushed. Three attested criteria say exactly this.
+```
+
+### What a person must do next, in order
+
+1. **Create the remote and push.** Nothing in this feature has run.
+2. **Apply branch protection** — `docs/operations/branch-protection.md` (F-004 owes it).
+3. **Run `android-build.yml`** and install the APK. That is the first real test of any of it,
+   and it is what discharges the device attestations.
+4. **Generate the release keystore** — `docs/operations/signing-and-credentials.md`. Every
+   step in that file is a step only a person can take, deliberately.
+5. **F-082**, or no tag will ever produce an artefact.
+
+### Next feature
+
+**F-018** (Colour Atlas) is the lowest-id eligible R2 feature, and it is what makes the app
+worth installing — today it is one screen showing two swatches and a ΔE. F-012 (the corpus)
+remains blocked on **OQ-5**, which is still the bottleneck and still needs a person.
+
+---
+
 ## 2026-08-20 — F-078 DONE · 31 tasks green while a gate script did not parse
 
 `pnpm lint` was `turbo run lint`. Turborepo runs each **package's** `lint`, each of which is

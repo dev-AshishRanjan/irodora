@@ -22,10 +22,52 @@ import type { ExpoConfig } from 'expo/config';
  * this app. Choosing the dev client here rather than at F-040 avoids a migration on the feature
  * that can least afford one.
  */
+
+/**
+ * The version, from the tag that is building — not from a number edited by hand.
+ *
+ * `IRODORA_VERSION_NAME` and `IRODORA_VERSION_CODE` are set by `.github/workflows/release.yml`
+ * from the git tag, and both are documented in `.env.example` (the `state` gate enforces
+ * that). Absent — a workstation run, or the on-demand test build — the defaults below make an
+ * obviously-not-a-release `0.0.0` build code 1, which is what should appear on a phone
+ * somebody handed a debug APK to.
+ *
+ * `versionCode` is the number Android compares when deciding whether an install is an
+ * upgrade, and it is **monotonic forever**: a release published with a code is a code that can
+ * never be reused. Deriving it from the tag rather than incrementing a committed integer is
+ * what stops two branches minting the same one.
+ *
+ * Gate 16 reads the built APK and fails if either value did not reach it, because an
+ * environment variable that silently defaulted looks exactly like one that was set.
+ */
+/**
+ * One environment read, narrowed at runtime rather than trusted.
+ *
+ * `process.env` is typed here and NOT typed under the linter's program — they disagree, and
+ * a cast to make the disagreement go away would be asserting something neither tool checked.
+ * A `typeof` narrowing is true in both, and it is also the honest description of an
+ * environment variable: a string if something set it, and nothing otherwise.
+ */
+function readEnvironment(key: string): string | undefined {
+  const value: unknown = process.env[key];
+  return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
+const versionName = readEnvironment('IRODORA_VERSION_NAME') ?? '0.0.0';
+const rawVersionCode = readEnvironment('IRODORA_VERSION_CODE');
+const versionCode = Number.parseInt(rawVersionCode ?? '1', 10);
+
+if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2_100_000_000)
+  throw new Error(
+    `IRODORA_VERSION_CODE must be an integer in 1..2100000000, got ${String(rawVersionCode)}. ` +
+      'Google Play rejects anything outside that range, and a build that fails here is cheaper ' +
+      'than one that fails at upload.',
+  );
+
 const config: ExpoConfig = {
   name: 'Irodora',
   slug: 'irodora',
-  version: '0.0.0',
+  version: versionName,
   orientation: 'portrait',
   scheme: 'irodora',
   userInterfaceStyle: 'automatic',
@@ -48,6 +90,7 @@ const config: ExpoConfig = {
 
   android: {
     package: 'com.irodora.app',
+    versionCode,
     // NFR-12, as a build-time fact rather than a promise. `INTERNET` is absent from the
     // permission list AND blocked, because a library that declares it would otherwise have it
     // merged in silently.
@@ -60,7 +103,13 @@ const config: ExpoConfig = {
     ],
   },
 
-  plugins: ['expo-router'],
+  /*
+   * `withReleaseSigning` is what stops a `release` build being signed with the debug key that
+   * ships in every React Native template (F-080). It is a plugin rather than an edit to
+   * `android/` because that directory is regenerated — see the file's own header, and
+   * `AGENTS.md`: hand-edited native projects lose the edit silently on the next prebuild.
+   */
+  plugins: ['expo-router', './plugins/withReleaseSigning'],
 
   experiments: {
     typedRoutes: true,

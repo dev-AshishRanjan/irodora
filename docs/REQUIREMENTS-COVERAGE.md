@@ -18,6 +18,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | `perf` | on-device latency budgets |
 | `e2e` | journeys against the running app |
 | `sec` | secret scan, dependency audit |
+| `artifact` | the BUILT APK — permissions, version and signer read out of the file that ships |
 | `review` | human sign-off recorded against the feature — used only where no automated check can decide |
 
 > **Half of this table is derived.** The **feature** and **release** columns are computed
@@ -110,11 +111,11 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-9 Never colour alone | F-003, F-017, F-067 | contrast, a11y | R0 |
 | NFR-10 CVD usability | F-008 | cvd, e2e | R1 |
 | NFR-11 en/ja i18n | F-017 | test, e2e | R2 |
-| NFR-12 On-device privacy | F-040 | e2e | R2 |
+| NFR-12 On-device privacy | F-040, F-080 | e2e, artifact | R2 |
 | NFR-13 Data protection | F-042 | test, sec | R4 |
-| NFR-14 Security baseline | F-004 | sec, test | R0 |
+| NFR-14 Security baseline | F-004, F-080 | sec, test, artifact | R0 |
 | NFR-17 Offline capability | F-039, F-041 | e2e | R2 |
-| NFR-19 Testability | F-004, F-006, F-071 | test, state | R0 |
+| NFR-19 Testability | F-004, F-006, F-071, F-080 | test, state | R0 |
 | NFR-20 Content provenance | F-011 | content | R1 |
 | NFR-21 Claims discipline | F-025 | lint | R1 |
 | NFR-22 Ethical guardrails | F-037 | test, typecheck | R3 |

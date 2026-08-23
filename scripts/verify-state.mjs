@@ -633,8 +633,23 @@ if (adrIndex) {
 /* ========================================================== 7. gates ↔ CI mirror */
 
 const gates = readJson(join(HARNESS, 'verification/gates.json'));
-const ciPath = join(ROOT, '.github/workflows/ci.yml');
+const CI_WORKFLOW = '.github/workflows/ci.yml';
+const ciPath = join(ROOT, CI_WORKFLOW);
 const ci = readText(ciPath);
+
+/**
+ * The workflow a gate is mirrored in.
+ *
+ * Almost every gate runs on every push, so `ci.yml` is the default and stays unwritten in
+ * gates.json. A RELEASE gate is different: gate 16 reads a built APK, and there is no APK on
+ * a pull request. Mirroring it against `ci.yml` would fail on every run, and the way that
+ * failure actually gets resolved under deadline is by deleting the gate — so the check has to
+ * be able to look somewhere else rather than the gate having to move.
+ *
+ * The declaration is the gate's, not this file's: a gate that names no workflow is checked
+ * against CI, and one that names a missing file is a failure rather than an exemption.
+ */
+const workflowOf = (gate) => gate.workflow ?? CI_WORKFLOW;
 
 /**
  * Every shell command the workflow actually runs.
@@ -707,10 +722,30 @@ function ciRunCommands(yaml) {
 if (gates) {
   const active = gates.gates.filter((g) => g.status === 'active');
   if (ci) {
-    const runCommands = ciRunCommands(ci);
+    /** Parsed once per workflow file, not once per gate. */
+    const commandsByWorkflow = new Map([[CI_WORKFLOW, ciRunCommands(ci)]]);
+    const commandsIn = (workflow) => {
+      if (!commandsByWorkflow.has(workflow)) {
+        const text = readText(join(ROOT, workflow));
+        commandsByWorkflow.set(workflow, text === null ? null : ciRunCommands(text));
+      }
+      return commandsByWorkflow.get(workflow);
+    };
 
     for (const gate of active) {
       if (gate.ciStep === false) continue;
+
+      const workflow = workflowOf(gate);
+      const runCommands = commandsIn(workflow);
+      if (runCommands === null) {
+        fail(
+          'ci-mirror',
+          `Active gate "${gate.id}" declares workflow ${workflow}, which does not exist`,
+          'A gate pointed at a missing file is unmirrored in the one way that looks deliberate.',
+          `Create ${workflow}, or remove the "workflow" field so the gate is checked against ${CI_WORKFLOW}.`,
+        );
+        continue;
+      }
 
       // A step counts as running the gate if its command IS the gate command, or begins
       // with it followed by a shell boundary — `pnpm lint && something` still runs the gate,
@@ -724,7 +759,7 @@ if (gates) {
       if (steps.length === 0) {
         fail(
           'ci-mirror',
-          `Active gate "${gate.id}" has no step in .github/workflows/ci.yml`,
+          `Active gate "${gate.id}" has no step in ${workflow}`,
           'A gate that is declared but not run in CI is theatre — believed in, and not doing its job.',
           `Add a step running: ${gate.command}  (or set "ciStep": false if it is deliberately covered by another step).`,
         );
@@ -760,8 +795,13 @@ if (gates) {
           );
       }
     }
-    if (!failures.some((f) => f.check === 'ci-mirror'))
-      pass('ci-mirror', `${active.length} active gate(s) mirrored in CI`);
+    if (!failures.some((f) => f.check === 'ci-mirror')) {
+      const workflows = new Set(active.filter((g) => g.ciStep !== false).map(workflowOf));
+      pass(
+        'ci-mirror',
+        `${active.length} active gate(s) mirrored across ${String(workflows.size)} workflow(s)`,
+      );
+    }
   } else {
     fail(
       'ci-mirror',

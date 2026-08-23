@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-20",
+  "updated": "2026-08-21",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -523,6 +523,39 @@
       "memory": "memory/effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md",
       "rationale": "A corpus publish that introduces a rare kanji — 蘇芳, 纁, 苅安 — produces TOFU on the product's most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS BUILT AND PROVEN BUT NOT YET BLOCKING: verify-font-coverage.mjs parses cmap formats 4 and 12 and its --prove mode builds a synthetic TTF to watch it report a present glyph as covered and an absent one as missing. It exits 1 today because no font asset exists, which is why it is NOT wired into gate:content — wiring a check that cannot pass would make gate 11 permanently red. F-076 carries the asset and the wiring, and until then this link is honestly reporting a check we owe rather than hiding it behind a lowered severity.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-018",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app.config.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/plugins/withReleaseSigning.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0058-release-builds-are-github-actions-and-gradle-not-eas.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "root"
+      ],
+      "severity": "critical",
+      "guard": "script:verify-apk.mjs",
+      "memory": "memory/effects/the-permission-set-is-decided-by-the-manifest-merger-not-by-us.md",
+      "rationale": "app.config.ts lists CAMERA and BLOCKS INTERNET, and that is a statement about OUR manifest. The manifest that ships is the MERGED one, and Android's manifest merger folds in every dependency's manifest silently and by design — so a library added for an unrelated reason can put a network permission into the artefact with no source file in this repository changing and every gate green. NFR-12 is not a feature; it is the product's central claim, phrased as an impossibility (the app CANNOT transmit), and until F-080 nothing checked the output — only the input. THE GENERAL SHAPE, which is the reusable part: a property asserted in configuration is not the same property as the one in the artefact whenever anything between them can add to it. THE GUARD IS REAL AND PROVEN: gate 16 reads the APK's ZIP directory, decodes the binary AndroidManifest.xml and fails on INTERNET, ACCESS_NETWORK_STATE or ACCESS_WIFI_STATE; when aapt2 is present it is used as an INDEPENDENT ORACLE and a disagreement is a failure, because a hand-written parser agreeing with itself is the shape of a check that passes on a file it misread. --prove builds ten fixtures with the real aapt2 and watches each assertion fail with a clean fixture green either side, and it found a defect in the signing-block walker on its first run. NOT COVERED: the AAB (protobuf manifest, different parser — same Gradle run and same merged manifest, so the APK check covers the merge but not a bundletool difference), and the runtime half, which is gate 7 on a device and stays attested on F-039.",
+      "confidence": 0.95,
       "origin": "manual",
       "status": "active"
     }

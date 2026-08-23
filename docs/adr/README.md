@@ -81,6 +81,7 @@ Two rules that matter more than the format:
 | [0055](0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md) | The `a11y` gate renders under jest-expo, and proves the accessibility tree rather than the pixels | Accepted |
 | [0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md) | The message catalogue is enumerated TypeScript; a missing key is a typecheck error | Accepted |
 | [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Accepted |
+| [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
 
 ## Open questions awaiting an ADR
 
@@ -91,6 +92,7 @@ feature that depends on it and closes as an ADR, not as a conversation.
 |---|---|---|
 | OQ-3 | Reference card — manufacture or partner | M3 |
 | OQ-5 | Japanese editorial reviewer — engagement model | M1 |
+| OQ-6 | Apple Developer Program enrolment — individual or organisation | M3 |
 
 **Closed by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md), not
 by an answer.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which vendor to pick

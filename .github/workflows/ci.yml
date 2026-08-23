@@ -26,6 +26,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Called by release.yml, so a release runs THIS job rather than a copy of it. A second
+  # gate list is exactly the drift ADR-0024 exists to prevent, and it would be invisible:
+  # both files would look correct, and the release would be gated by whichever was edited
+  # last. Gate 0's mirror check reads this file, so the gates a release runs are the gates
+  # that are declared.
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}

@@ -387,6 +387,7 @@ honestly and cheap to build dishonestly — and the difference is visible.
 |---|---|---|
 | OQ-3 | Reference card: manufacture or partner? | R5 |
 | OQ-5 | Japanese editorial reviewer — engagement model | R1 |
+| OQ-6 | Apple Developer Program enrolment — individual or organisation, and who holds the certificates | R3 |
 
 **Closed, not answered.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which
 vendor to choose for capabilities the product no longer has. **OQ-4 is settled at ~120

@@ -1,8 +1,8 @@
 {
   "$schemaRef": "../state/schemas/gates.schema.json",
   "version": 1,
-  "updated": "2026-08-14",
-  "description": "Ordered verification gates. Run in order; stop at the first failure. A gate activates with the feature that makes it meaningful — never earlier (a gate that cannot fail teaches nothing) and never later (a gate added after the fact finds a backlog instead of a regression). Gates 1-4 and 6 went active with F-001, after being executed and seen to pass; they were deliberately NOT activated while pnpm install was blocked, because a gate that has never run is theatre. `ciStep: false` means the gate is deliberately covered inside another CI step; the ci-mirror check in verify-state.mjs knows that is intentional.",
+  "updated": "2026-08-21",
+  "description": "Ordered verification gates. Run in order; stop at the first failure. A gate activates with the feature that makes it meaningful — never earlier (a gate that cannot fail teaches nothing) and never later (a gate added after the fact finds a backlog instead of a regression). Gates 1-4 and 6 went active with F-001, after being executed and seen to pass; they were deliberately NOT activated while pnpm install was blocked, because a gate that has never run is theatre. `ciStep: false` means the gate is deliberately covered inside another CI step; the ci-mirror check in verify-state.mjs knows that is intentional. `workflow` names the workflow file a gate is mirrored in, defaulting to .github/workflows/ci.yml — a RELEASE gate runs only when a tag is pushed, and mirroring it against ci.yml would either fail forever or, worse, be dropped from gates.json to make the failure go away.",
   "gates": [
     {
       "id": "state",
@@ -183,6 +183,21 @@
       "ciStep": true,
       "description": "Secret scanning (gitleaks 8.30.1, pinned) and dependency audit. A Critical or High advisory blocks release (`pnpm audit --audit-level high`). A gitleaks finding ROTATES the secret — it never earns an allowlist entry, because a secret in git history is compromised regardless of whether the commit was pushed. CI installs the pinned binary and invokes THIS command rather than using gitleaks-action, so a workstation scan and a CI scan are the same scan. Activated after being executed (7 commits, no leaks) AND after its ruleset was watched fire on planted secrets outside git history — 3 of 4 shapes detected, exit 1. Note that gitleaks' default rules deliberately allowlist published example credentials such as AWS's AKIAIOSFODNN7EXAMPLE; a scan that stays green on those is correct, not broken.",
       "activatedAt": "2026-08-14"
+    },
+    {
+      "id": "artifact",
+      "order": 16,
+      "status": "active",
+      "activatesWith": "F-080",
+      "command": "node scripts/verify-apk.mjs",
+      "requiredFor": [
+        "release",
+        "app"
+      ],
+      "ciStep": true,
+      "workflow": ".github/workflows/release.yml",
+      "description": "The BUILT ARTEFACT must prove its own claims, rather than the configuration that produced it being trusted to have produced them. Reads the APK directly — the ZIP central directory, the binary AndroidManifest.xml resource chunk, and the v2/v3 APK Signing Block — and asserts: android.permission.INTERNET is ABSENT (NFR-12 as a property of the shipped file), the package id is com.irodora.app, versionCode and versionName match what the tag asked for, and for a release build the signer certificate SHA-256 matches the fingerprint the workflow expects. THE REASON THIS IS A GATE AND NOT A COMMENT IN THE WORKFLOW: app.config.ts blocks INTERNET today, and a config plugin, a dependency, or an Expo template change can put it back — the manifest merger adds permissions silently and by design. Every other check in this repository looks at source; this one is the only thing that looks at what a person would actually install. It runs in release.yml rather than ci.yml because there is no APK on a pull request; gates.json records that with `workflow`, and gate 0 mirrors it there, so deleting the step fails gate 0 exactly as deleting a ci.yml step does. PROVEN by scripts/verify-apk.mjs --prove, which assembles synthetic APKs — one declaring INTERNET, one with a wrong package id, one with a mismatched versionCode, one unsigned — and watches each go red, with a clean synthetic APK asserted GREEN before and after, because a proof where everything is red cannot distinguish a working checker from one that fails on everything. NOT CHECKED HERE, and printed on every run: that the app opens no socket at RUNTIME. A permission it does not hold is a stronger fact than a promise, but it is not the same fact — that half is gate 7 on a device, and stays attested on F-039.",
+      "activatedAt": "2026-08-21"
     }
   ]
 }
