@@ -141,6 +141,46 @@ describe('the constants every measurement is taken against', () => {
   );
 });
 
+/**
+ * How MANY samples diverge — the question that separates two different defects (F-083).
+ *
+ * Round 3 left a contradiction. `linearR` disagrees on Linux while `X`, `Y` and `Z` — linear
+ * combinations of it — do not. All four ΔE columns disagree while their only inputs, the
+ * per-sample Lab and a reference now confirmed byte-identical, do not. Both cannot be true of
+ * the same set of samples.
+ *
+ * Counting is the way out. **One** failing chunk in the stage run and **many** in the metric
+ * run would mean two unrelated causes. The same handful in both would mean one cause and a
+ * mistake in the reasoning above. Reported as counts rather than as a hundred assertions,
+ * because the number is the finding.
+ */
+describe('how much of the run diverges', () => {
+  const mismatched = (actual: readonly string[], expected: readonly string[]): number[] =>
+    expected.flatMap((d, i) => (actual[i] === d ? [] : [i]));
+
+  it('the metric run reproduces in every 100-sample chunk', () => {
+    const bad = mismatched(run.chunkDigests, fixture.metricChunkDigests);
+    expect(
+      bad.length,
+      `metric chunks that differ: ${String(bad.length)} of ${String(fixture.metricChunkDigests.length)} — first few at sample indices ${bad
+        .slice(0, 8)
+        .map((c) => `${String(c * fixture.chunkSize)}..${String((c + 1) * fixture.chunkSize - 1)}`)
+        .join(', ')}`,
+    ).toBe(0);
+  });
+
+  it('the stage run reproduces in every 100-sample chunk', () => {
+    const bad = mismatched(stageRun.chunkDigests, fixture.stageChunkDigests);
+    expect(
+      bad.length,
+      `stage chunks that differ: ${String(bad.length)} of ${String(fixture.stageChunkDigests.length)} — first few at sample indices ${bad
+        .slice(0, 8)
+        .map((c) => `${String(c * fixture.chunkSize)}..${String((c + 1) * fixture.chunkSize - 1)}`)
+        .join(', ')}`,
+    ).toBe(0);
+  });
+});
+
 describe('the digest can fail', () => {
   it('a one-ulp change in any of 80,000 values moves it', () => {
     const perturbed = runIdentityVectors({

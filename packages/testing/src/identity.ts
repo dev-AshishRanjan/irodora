@@ -44,8 +44,25 @@ export interface IdentityRun {
    * disagreement to the function that produced it.
    */
   readonly perValueDigests: readonly string[];
+  /**
+   * One digest per block of {@link CHUNK_SIZE} consecutive samples.
+   *
+   * Answers *how many* samples diverge, which is the question that separates two completely
+   * different defects. One failing chunk means a single unlucky input — a last-ulp
+   * disagreement in one transcendental. Ninety failing chunks means the divergence is
+   * everywhere and the cause is structural.
+   *
+   * F-083 needs exactly that distinction: `linearR` disagrees on Linux while `X`, `Y` and `Z`
+   * — which are linear combinations of it — do not, and all four ΔE columns disagree while
+   * their only inputs (per-sample Lab, and a reference confirmed identical) do not. Those
+   * cannot both be true of the same number of samples, so counting them is the way out.
+   */
+  readonly chunkDigests: readonly string[];
   readonly probes: readonly IdentityProbe[];
 }
+
+/** Samples per chunk digest. 100 gives 100 chunks over the standard 10,000-sample run. */
+export const CHUNK_SIZE = 100;
 
 export interface IdentityOptions {
   readonly seed: string;
@@ -99,12 +116,18 @@ export function runIdentityVectors(options: IdentityOptions): IdentityRun {
       });
   }
 
+  const chunkDigests: string[] = [];
+  const perChunk = CHUNK_SIZE * Math.max(valuesPerSample, 1);
+  for (let start = 0; start < all.length; start += perChunk)
+    chunkDigests.push(float64Digest(all.slice(start, start + perChunk)));
+
   return {
     seed,
     count,
     valuesPerSample,
     digest: float64Digest(all),
     perValueDigests: columns.map((column) => float64Digest(column)),
+    chunkDigests,
     probes,
   };
 }

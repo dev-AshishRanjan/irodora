@@ -223,6 +223,10 @@ const differenceFixture = {
    */
   stages: ['linearR', 'linearG', 'linearB', 'X', 'Y', 'Z', 'L*', 'a*', 'b*', 'okL', 'oka', 'okb'],
   stageDigests: stageRun.perValueDigests,
+  /* F-083 round 4: how MANY samples diverge. One failing chunk is one unlucky input; ninety is structural. */
+  chunkSize: 100,
+  metricChunkDigests: differenceRun.chunkDigests,
+  stageChunkDigests: stageRun.chunkDigests,
   /*
    * F-083 round 3. Exact doubles rather than digests, because a digest says something
    * differs and these say WHAT. Round 2 narrowed the divergence to `linearR` and only
