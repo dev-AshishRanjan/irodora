@@ -16,6 +16,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Colour science
 
+- [lessons/a-truncated-report-reads-exactly-like-a-passing-one.md](lessons/a-truncated-report-reads-exactly-like-a-passing-one.md) — GitHub caps failure annotations at 10; absence of a failure is not evidence of a pass.
 - [lessons/a-failing-gate-is-usually-already-filed.md](lessons/a-failing-gate-is-usually-already-filed.md) — the feature list is an index of known problems, not only a scheduler; grep it for the failure’s vocabulary before filing.
 - [lessons/averaging-non-linear-srgb-reads-too-dark.md](lessons/averaging-non-linear-srgb-reads-too-dark.md) — pixel aggregation must happen in linear light; the error is systematic, not noise.
 - [lessons/srgb-transfer-function-has-a-linear-segment.md](lessons/srgb-transfer-function-has-a-linear-segment.md) — below 0.04045 sRGB is linear, and half this corpus lives there.
