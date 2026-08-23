@@ -8,6 +8,123 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-23 — the first CI runs on a real remote, and NFR-3 does not hold
+
+The repository was pushed. Three gates had never run outside this workstation, and all three
+were broken. Two are fixed. The third is not a bug — it is a requirement the product cannot
+meet as written.
+
+### Gate 2, fixed and confirmed green on Linux — F-079's sibling
+
+Eighteen boundary guards shared one `ESLint` instance. Type-aware linting needs a TypeScript
+program; typescript-eslint caches one per TSConfig with the `include` globs expanded once, so
+a fixture written into a directory *after* that program was built is not in its file list.
+Whether the cached program notices depends on TypeScript's directory watchers, which differ
+by platform and are racy against a file written and linted microseconds later. Six guards
+share one fixture path, writing, linting and deleting it in turn.
+
+Each guard now runs in its own process — 38.7 s for eighteen, *faster* than the shared
+instance was. Both failure modes watched after the rewrite, because a rewritten proof runner
+is an unproven one.
+
+**Not reproduced locally** (no Docker, no WSL). The mechanism was fixed rather than the
+diagnosed cause, and CI is the evidence. It is green.
+
+### Gate 15, fixed — F-079, ADR-0059
+
+Red on **every run since F-039**, unseen because nobody had run CI. Two HIGH `image-size`
+advisories with `first_patched_version: null` against a latest published 2.0.2: no upgrade,
+no override, and since F-080 made `release.yml` call `ci.yml` first, no tag could ever
+produce an artefact.
+
+A blocking advisory now either stops the build or sits in
+`.harness/verification/advisories.json` with a reachability argument, an owner, an ADR and an
+**expiry that fails by itself**. Register committed empty first and watched failing on both
+real advisories; `--prove` asserts 11 cases including *a different high advisory still
+blocking while an accepted one is in force*.
+
+### Gate 4: NFR-3 is not achievable as written
+
+```
+whole-run digest  9801fa1ab561ec61 (Linux)  vs  31d18557233bbe42 (Windows), same Node 24.19.0
+metrics           8 of 8 differ
+stages           12 of 12 differ
+metric chunks    19 of 100 differ
+stage chunks     13 of 100 differ
+constants        all 16 reproduce
+probes           all 6 inputs and outputs reproduce
+```
+
+Roughly **0.2% of inputs** diverge. One divergent linear channel propagates through the
+matrix into XYZ, Lab, Oklab and every metric for that sample — which is why all twelve stages
+and all eight metrics move while ten fixed constants and six probe colours do not: they are
+simply not among the unlucky ones. The metric run diverges in more chunks than the stage run
+because `wcagContrast` and `apcaLc` linearise independently and CIEDE2000 adds `atan2`,
+`sin`, `cos` and `exp` on top.
+
+**This is not a defect in our code.** ECMAScript specifies those functions as
+implementation-approximated, and Node ships Windows builds from MSVC and Linux builds from
+GCC/Clang. NFR-3 says *"identical outputs on every platform"*. No JavaScript engine built on
+`Math.pow` can deliver that.
+
+It also undercuts F-006's attestation, which hoped the Hermes leg would hold. If the same V8
+on two operating systems disagrees, a different engine almost certainly will.
+
+The decision — ship deterministic transcendentals, or restate NFR-3 as identity after
+canonical rounding at the boundaries where determinism is load-bearing — is an ADR needing
+the colour-science review this repository requires for engine work. F-083 carries it with a
+recommendation and both options costed.
+
+### Four wrong diagnoses, and why
+
+Rounds 2, 3 and 4 each produced a confident finding, and each was withdrawn. **GitHub
+publishes at most ten failure annotations per check run.** Every run returned exactly ten. I
+read those ten as the complete result and inferred that everything unlisted had passed —
+"only `linearR` diverges", "all sixteen constants reproduce", "the chunk counts are clean".
+Two whole rounds went into reconciling a contradiction that was an artefact of the cap.
+
+The tell was there: **exactly ten, four times, while the assertion count went from nine to
+thirty-nine.** A count that will not move when the thing it counts moves is a cap.
+
+Thirty-nine assertions are now one, carrying the whole comparison in a single message, proven
+by mutating six fixture values and watching all six come back together.
+[[a-truncated-report-reads-exactly-like-a-passing-one]].
+
+### F-082, withdrawn the day after it was filed
+
+Filed during F-080 on the observation that gate 15 was red, **without reading F-079** — which
+already recorded the same finding and warned that the `overrides` fix F-082 proposed *"will
+waste the next person an hour"*. It did. [[a-failing-gate-is-usually-already-filed]].
+
+### Gates
+
+```
+Ran locally:  state ✓  typecheck ✓  lint ✓  format ✓  test ✓  color-golden ✓  build ✓
+              a11y ✓  contrast ✓  cvd ✓  content ✓  security ✓  guards ✓ 18/18
+              gate-mirror ✓ 13/13   audit disposition ✓ 11/11   artifact ✓ 10/10
+Ran in CI:    gate 0 ✓  1 ✓  2 ✓  3 ✓   4 ✗ (NFR-3, F-083)
+              gate 16 ✓ against a real APK, aapt2 cross-checking the parser
+NOT run:      gates 5-15 in CI — gate 4 stops the job before them
+              e2e (7) and perf (12), both still pending
+```
+
+**The Android build lane works.** `android-build.yml` succeeded first time: an installable
+debug APK, 89.7 MB, with gate 16 asserting no network permission on the shipped file.
+
+### Next
+
+1. **F-083.** CI is red and that red is correct. It blocks releases; the debug APK lane is
+   unaffected.
+2. **The corpus self-review change** — chosen and designed, not built. `reviewIndependence`
+   on provenance, required at reviewed statuses, enforced in `workflow.ts`, with the
+   two-ids-one-person check untouched. Unblocks F-012 and with it the whole R2 interface.
+3. **Branch protection** — the remote exists, so F-004's attested criterion is now only a
+   decision.
+4. **The release keystore** — `docs/operations/signing-and-credentials.md`, openssl rather
+   than keytool because this workstation has no JDK.
+
+---
+
 ## 2026-08-23 — F-079 DONE · the first CI run on a real remote, and two gates that had never worked
 
 The repository was pushed to GitHub. **The first CI run failed at gate 2**, and the first
