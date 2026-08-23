@@ -16,6 +16,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Colour science
 
+- [lessons/a-failing-gate-is-usually-already-filed.md](lessons/a-failing-gate-is-usually-already-filed.md) — the feature list is an index of known problems, not only a scheduler; grep it for the failure’s vocabulary before filing.
 - [lessons/averaging-non-linear-srgb-reads-too-dark.md](lessons/averaging-non-linear-srgb-reads-too-dark.md) — pixel aggregation must happen in linear light; the error is systematic, not noise.
 - [lessons/srgb-transfer-function-has-a-linear-segment.md](lessons/srgb-transfer-function-has-a-linear-segment.md) — below 0.04045 sRGB is linear, and half this corpus lives there.
 - [lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md](lessons/deltae00-is-not-a-metric-and-cannot-be-indexed.md) — ΔE00 violates the triangle inequality, so every spatial index ranks it subtly wrong and silently.

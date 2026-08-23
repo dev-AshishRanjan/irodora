@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Specified, **not applied** — there is no remote repository yet |
+| **Status** | Specified, **not applied**. The remote exists as of 2026-08-23; applying it is a decision for the maintainer |
 | **Implements** | NFR-14, NFR-19 · F-004 acceptance criterion 3 |
 | **Applies to** | `main` |
 
@@ -10,10 +10,10 @@
 
 ## Why this file exists rather than a green checkbox
 
-`git remote -v` is empty. Branch protection is a setting on a GitHub repository, and this
-one has never been pushed anywhere. The rules below are the deliverable; **applying them is
-a decision for whoever creates the repository**, because creating a remote and configuring
-it is publication, not local bookkeeping.
+Branch protection is a setting on a GitHub repository. The repository now exists and CI has
+run against it, so the blocker is no longer technical: the rules below are the deliverable,
+and **applying them is a decision for the maintainer**, because changing who can write to
+`main` is not local bookkeeping.
 
 Recorded as a specification so that the day the repository exists, the settings are not
 reconstructed from memory or from what someone thinks CI is called.

@@ -1,0 +1,31 @@
+{
+  "$comment": "Dependency advisories accepted with an expiry. Judged by scripts/verify-audit.mjs, which is the second half of gate 15. THIS IS NOT AN IGNORE LIST: an entry expires by itself, and an entry that no longer matches a reported advisory fails the build as stale. Adding one requires a reachability argument of at least 80 characters, a named owner, and an ADR. Read docs/adr/0059 before you add anything.",
+  "version": 1,
+  "updated": "2026-08-23",
+  "accepted": [
+    {
+      "id": "GHSA-w3rx-r6r6-pgpr",
+      "package": "image-size",
+      "severity": "high",
+      "title": "ICNS parser allows denial of service through an infinite loop",
+      "reachability": "image-size is reached only through metro, the React Native bundler, which runs at BUILD time and is never in the shipped bundle — an APK contains metro's output, not metro. Triggering the loop needs a crafted ICNS file to be parsed as a bundled asset, and apps/mobile/assets holds exactly one file, NotoSansJP-Subset.ttf, with no images at all. Anyone able to add a malicious image to this repository already has write access and better options than hanging a build. The worst outcome is a CI runner that stalls until its 30-minute timeout; the exposure to a person holding the app is nil, because this code is not in it.",
+      "owner": "Ashish Ranjan (maintainer)",
+      "decidedOn": "2026-08-23",
+      "expires": "2026-11-21",
+      "removeWhen": "image-size publishes a release outside the advisory range, or metro stops depending on it. Neither needs watching: this gate fails the entry as STALE the moment the advisory stops being reported.",
+      "adr": "docs/adr/0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md"
+    },
+    {
+      "id": "GHSA-5p2g-fcmc-qvqq",
+      "package": "image-size",
+      "severity": "high",
+      "title": "JXL and HEIF parsers allow denial of service through infinite loops",
+      "reachability": "The same package, the same build-time-only path through metro, and the same absence of any image asset in this repository — JXL and HEIF rather than ICNS. It is listed separately rather than folded into the entry above because the register is keyed by advisory: one entry per GHSA is what makes a stale entry detectable, and an entry that quietly covered 'whatever else turns up in image-size' would be the blanket exemption this mechanism exists to prevent.",
+      "owner": "Ashish Ranjan (maintainer)",
+      "decidedOn": "2026-08-23",
+      "expires": "2026-11-21",
+      "removeWhen": "image-size publishes a release outside the advisory range, or metro stops depending on it. Neither needs watching: this gate fails the entry as STALE the moment the advisory stops being reported.",
+      "adr": "docs/adr/0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md"
+    }
+  ]
+}

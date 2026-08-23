@@ -181,11 +181,20 @@ jobs:
           sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
           gitleaks version
 
-      - name: 'Gate 15 — security (secrets)'
-        run: pnpm security:secrets
+      # ONE step, because gate 15's command is now one command. The two halves used to be
+      # two steps, and only the first was mirrored against gates.json — the audit step could
+      # have been deleted with every gate still reading as covered, which is F-078's defect
+      # in a different directory.
+      #
+      # High and Critical block; moderate and low are reported. That bar has not moved. What
+      # changed (F-079) is that a blocking advisory with NO FIXED VERSION can be accepted with
+      # a written reachability argument, a named owner and an expiry, rather than leaving the
+      # gate permanently red — which is how a security gate stops being read.
+      - name: 'Gate 15 — security'
+        run: pnpm security
 
-      - name: 'Gate 15 — security (dependency audit)'
-        # --audit-level high blocks on High AND Critical. Moderate and below are reported by
-        # the scheduled audit rather than blocking a pull request on a transitive advisory
-        # nobody can action today.
-        run: pnpm audit --audit-level high
+      # Not a gate — the proof that the disposition cannot become a blanket exemption. A
+      # DIFFERENT high advisory must still stop the build while an accepted one is in force,
+      # and an accepted entry must expire by itself and fail when it goes stale.
+      - name: 'Gate 15 — advisory disposition proof'
+        run: node scripts/verify-audit.mjs --prove

@@ -82,6 +82,7 @@ Two rules that matter more than the format:
 | [0056](0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md) | The message catalogue is enumerated TypeScript; a missing key is a typecheck error | Accepted |
 | [0057](0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md) | The Japanese face is a bundled Noto Sans JP subset, generated from the corpus it must render | Accepted |
 | [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
+| [0059](0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md) | A blocking advisory with no fix is accepted with an expiry, not ignored and not left red | Accepted |
 
 ## Open questions awaiting an ADR
 

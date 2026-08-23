@@ -8,6 +8,119 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-23 — F-079 DONE · the first CI run on a real remote, and two gates that had never worked
+
+The repository was pushed to GitHub. **The first CI run failed at gate 2**, and the first
+release-blocking truth of the day is that two separate gates had never worked outside this
+workstation.
+
+### Gate 2: eighteen guards sharing one TypeScript program
+
+`verify-guards.mjs` reported *"the Lens may not write a frame to a file"* as a parse error
+saying the fixture was in no TSConfig. It passes on Windows, in a clean clone, and under
+forced polling watchers — every repro I could build here.
+
+The cause is structural rather than mysterious: **one `ESLint` instance was shared across all
+eighteen guards.** Type-aware linting needs a TypeScript program, typescript-eslint caches one
+per TSConfig in module-level state with the `include` globs expanded once, and a fixture
+written into a directory *after* that program was built is not in its file list. Whether the
+cached program notices depends on TypeScript's directory watchers, which differ by platform
+and are racy against a file written and linted microseconds later. Six guards share
+`packages/contracts/src/__guard__.ts`, each writing, linting and deleting the same path in
+turn — the worst possible input to a watcher.
+
+**Each guard now runs in its own process.** Not because the cache was understood, but because
+out-caching someone else's invalidation on two operating systems is not a thing to build a
+boundary proof on. One process, one fixture, one program: 38.7 s for all eighteen, which is
+*faster* than the shared-instance run inside `pnpm lint` was.
+
+Both failure modes were watched after the rewrite, because a rewritten proof runner is an
+unproven one:
+
+```
+rule that cannot fire  -> "1 boundary(ies) NOT enforced"  (expected "no-with"; ESLint reported ...)
+fixture outside any tsconfig -> "1 guard(s) COULD NOT RUN" (parse error: project was set to true ...)
+```
+
+The COULD NOT RUN line now carries the raw message, the path and the platform. The first
+Linux failure reached me as *"a file not being found in project"*, which is three plausible
+bugs at once, and a diagnostic that needs a second round trip is half a diagnostic.
+
+**Gate 0 caught my own marker string.** The child prints its result behind a sentinel; I
+named it `__IRODORA_GUARD_RESULT__`, and the env-contract check — a text scan for
+`IRODORA_[A-Z0-9_]+` — correctly reported an undocumented variable. Renamed rather than
+documented: the honest fix for a false positive caused by a name is the name.
+
+### Gate 15: red since F-039, and F-079 already said why
+
+`pnpm audit --audit-level high` has exited 1 on **every run since F-039**. Nobody saw it
+because nobody had run CI. Two HIGH advisories against `image-size`, both
+`vulnerable_version_range: "<= 2.0.2"` with **`first_patched_version: null`**; npm dist-tags
+are `latest: 2.0.2`, `legacy: 1.2.1`; installed is 1.2.1 via metro, which pins `^1.0.2`.
+**Every published version is affected.** No upgrade, no override.
+
+Since F-080 made `release.yml` call `ci.yml` first, that meant **no tag could ever produce an
+artefact.**
+
+The rule now: a blocking advisory either stops the build, or it is in
+`.harness/verification/advisories.json` with a reachability argument of 80+ characters, a
+named owner, an ADR and an expiry. **Not** pnpm's `auditConfig.ignoreGhsas` — one line, no
+expiry, no owner, no reason, and an entry added at 6pm under pressure would be
+indistinguishable from one that was thought about.
+
+Three ways it goes red, and the third is the point:
+
+1. a blocking advisory absent from the register;
+2. an entry past its `expires` — **the exception stops working by itself**;
+3. an entry matching nothing in today's report, because a dead exception is how a live one
+   gets waved through later.
+
+The register was committed **empty first** and watched failing on both real advisories. Then
+`--prove`: 11 cases, 8 red and 3 green, including *a different high advisory still stopping
+the build while an accepted one is in force* — which is acceptance criterion 3, and the thing
+that stops an entry becoming a blanket exemption.
+
+Gate 15 also became **one command**. It was two CI steps and only the first was mirrored
+against `gates.json`; the audit step could have been deleted with every gate still reading as
+covered. That is F-078's defect in a different directory.
+
+### I filed the same bug twice — F-082, withdrawn
+
+F-082 was created during F-080 on the observation that gate 15 was red, **without reading
+F-079**, which already recorded the same finding, the same two GHSAs and the sentence *"a
+pnpm `overrides` entry cannot resolve it and attempting one will waste the next person an
+hour."* F-082 proposed exactly that. I was the next person.
+
+F-079 was in the todo list I had printed to the user forty minutes earlier, one line above.
+Seeing an id is not reading its notes. Withdrawn rather than deleted, because `progress.md`
+already referenced the id. Lesson recorded:
+[[a-failing-gate-is-usually-already-filed]] — grep the state file for the *failure's*
+vocabulary, not for what you plan to call the fix.
+
+### Gates
+
+```
+Ran:      state ✓  typecheck ✓  lint ✓  format ✓  test ✓  color-golden ✓  build ✓
+          a11y ✓  contrast ✓  cvd ✓  content ✓  security ✓ (gitleaks + advisories)
+          guards ✓ 18/18, both failure modes watched
+          gate-mirror ✓ 13/13, two mutations each
+          audit disposition ✓ 11/11 discriminate
+NOT run:  e2e (gate 7, pending), perf (gate 12, pending), artifact (gate 16 — needs an APK,
+          and no release has been built)
+          THE FIX ITSELF IS UNPROVEN ON LINUX. It could not be reproduced here — no Docker,
+          no WSL distribution — so the guard rewrite removes the most plausible cause rather
+          than a diagnosed one. The next CI run is the evidence, and if it is still red the
+          new diagnostic says which of the three it is.
+```
+
+### Next
+
+The remote exists, so **branch protection** (F-004's attested criterion) is now only a
+decision. `docs/operations/branch-protection.md` and `release-process.md` had their
+"there is no remote yet" statuses corrected.
+
+---
+
 ## 2026-08-21 — F-080 DONE · the app can finally reach a phone, and the artefact is what gets checked
 
 Eleven acceptance criteria across F-006, F-017, F-035, F-039, F-040 and F-041 say some

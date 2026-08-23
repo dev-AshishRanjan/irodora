@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Implemented in CI, **never executed** — there is no remote yet |
-| **Decisions** | [ADR-0024](../adr/0024-ci-cd-github-actions-trunk-based.md) · [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) · [ADR-0058](../adr/0058-release-builds-are-github-actions-and-gradle-not-eas.md) |
+| **Status** | Implemented in CI. The remote exists as of 2026-08-23 and `ci.yml` has run; `release.yml` has not |
+| **Decisions** | [ADR-0024](../adr/0024-ci-cd-github-actions-trunk-based.md) · [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) · [ADR-0058](../adr/0058-release-builds-are-github-actions-and-gradle-not-eas.md) · [ADR-0059](../adr/0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md) |
 | **Feature** | F-080 |
 
 > **This document was wrong for a whole release cycle.** Until F-080 it described a container
@@ -22,8 +22,9 @@
 Trunk-based on `main`. Short-lived branches, small merges, `main` always releasable.
 Conventional Commits. Changesets for versioning publishable packages.
 
-Branch protection is specified in [`branch-protection.md`](branch-protection.md) and **not
-applied**, because applying it requires a remote that does not exist yet.
+Branch protection is specified in [`branch-protection.md`](branch-protection.md) and **not yet
+applied**. The remote now exists, so nothing blocks it but the decision to apply it — it is
+F-004's outstanding attested criterion.
 
 ---
 
@@ -123,6 +124,7 @@ Automated — the workflow fails rather than asking:
 - [x] The artefact carries the tag's version
 - [x] The artefact is signed by the expected certificate, not the debug key
 - [x] Checksums, SBOM and provenance published
+- [x] No accepted dependency advisory has expired, and none has gone stale (gate 15, [ADR-0059](../adr/0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md))
 
 A person still does these, and no gate can:
 

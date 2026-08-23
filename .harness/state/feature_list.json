@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-21",
+  "updated": "2026-08-23",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -1978,8 +1978,8 @@
       ],
       "service": "root",
       "release": "R2",
-      "priority": "should",
-      "status": "todo",
+      "priority": "must",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "pnpm audit --audit-level high exits 0, or the advisory is allowlisted with an expiry and a named owner",
@@ -1988,9 +1988,20 @@
       ],
       "verification": [
         "state",
+        "lint",
+        "format",
         "security"
       ],
-      "notes": "FOUND DURING F-078 while running the CI step list, not by a failing build. `pnpm audit --audit-level high` exits 1: two HIGH advisories, both `image-size <=2.0.2` (GHSA-5p2g-fcmc-qvqq, ICNS parser infinite loop), plus one moderate. ALL 200 REPORTED PATHS route through `apps__mobile>expo>...` — metro depends on image-size@1.2.1 — so it arrived with F-039 and has been failing gate 15 unconditionally ever since; `progress.md` last recorded this gate green before Expo existed. THERE IS NO FIXED VERSION TO UPGRADE TO: the latest published image-size is 2.0.2 and the advisory covers <=2.0.2, so a pnpm `overrides` entry cannot resolve it and attempting one will waste the next person an hour. That leaves three real options — wait for an upstream fix and pin when it lands, allowlist the GHSA via `auditConfig.ignoreGhsas` with an expiry, or accept a red step — and choosing among them is a security-policy decision, which is why this is a feature with an ADR rather than a commit. The reachability question is worth answering first: image-size parses ICNS inside metro, the DEV bundler, which never runs in the shipped app."
+      "notes": "FOUND DURING F-078 while running the CI step list, not by a failing build. `pnpm audit --audit-level high` exits 1: two HIGH advisories, both `image-size <=2.0.2` (GHSA-5p2g-fcmc-qvqq, ICNS parser infinite loop), plus one moderate. ALL 200 REPORTED PATHS route through `apps__mobile>expo>...` — metro depends on image-size@1.2.1 — so it arrived with F-039 and has been failing gate 15 unconditionally ever since; `progress.md` last recorded this gate green before Expo existed. THERE IS NO FIXED VERSION TO UPGRADE TO: the latest published image-size is 2.0.2 and the advisory covers <=2.0.2, so a pnpm `overrides` entry cannot resolve it and attempting one will waste the next person an hour. That leaves three real options — wait for an upstream fix and pin when it lands, allowlist the GHSA via `auditConfig.ignoreGhsas` with an expiry, or accept a red step — and choosing among them is a security-policy decision, which is why this is a feature with an ADR rather than a commit. The reachability question is worth answering first: image-size parses ICNS inside metro, the DEV bundler, which never runs in the shipped app. CONFIRMED 2026-08-23 against the GitHub advisory API and the npm registry: both GHSAs report vulnerable_version_range \"<= 2.0.2\" with first_patched_version NULL, dist-tags are latest=2.0.2 and legacy=1.2.1, and the installed version is 1.2.1 through metro 0.84.4 and 0.87.0, both of which constrain image-size to ^1.0.2. So there is nothing to upgrade to, nothing to override to, and the whole 1.x line is in range. Raised to `must` from `should` because F-080 made it a release blocker: release.yml calls ci.yml first, so a red gate 15 means no tag can ever produce an artefact. CLOSED 2026-08-23. Chose the disposition (ADR-0059) over the two alternatives the notes listed. Deliberately NOT pnpm auditConfig.ignoreGhsas: it is one line and carries no expiry, no owner and no reason, so an entry added under deadline pressure would be indistinguishable from one that was thought about. Gate 15 also became ONE command (`pnpm security`) — it was two CI steps of which only the first was mirrored against gates.json, so the audit step could have been deleted with every gate still reading as covered, which is F-078’s defect in another directory.",
+      "plan": "plans/F-079-a-disposition-for-an-advisory-with-no-fix.md",
+      "attested": [
+        {
+          "criterion": "pnpm audit --audit-level high exits 0, or the advisory is allowlisted with an expiry and a named owner",
+          "verifiedBy": "The MECHANISM is fully gated and proven — the register was committed EMPTY first and watched failing on both real advisories, and verify-audit.mjs --prove asserts 11 cases including a DIFFERENT high advisory still stopping the build while an accepted one is in force. What no check here can decide is whether the REACHABILITY ARGUMENT IS TRUE: that image-size is only ever reached through metro at build time rests on reading the dependency graph, not on call-graph analysis, and the gate prints that limitation on every run. A person accepting the entry is accepting that argument. It expires 2026-11-21 and the gate fails by itself on that date.",
+          "blocks": "nothing",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-080",
@@ -2080,26 +2091,26 @@
     },
     {
       "id": "F-082",
-      "title": "Gate 15 is red: two High advisories in image-size, reached through metro",
+      "title": "WITHDRAWN — duplicate of F-079 (gate 15 red on image-size)",
       "requirements": [
         "NFR-14"
       ],
       "service": "root",
       "release": "R2",
-      "priority": "must",
-      "status": "todo",
-      "blockedBy": [],
+      "priority": "wont",
+      "status": "backlog",
+      "blockedBy": [
+        "F-079"
+      ],
       "acceptance": [
-        "pnpm audit --audit-level high exits 0, or every remaining advisory has a recorded disposition",
-        "If a version is forced, the forcing is an explicit override with a reason and a revisit condition",
-        "The advisory is reported in progress.md with the date it was found and the date it was resolved"
+        "Nothing. This feature is withdrawn; F-079 carries the work"
       ],
       "verification": [
         "state",
         "test",
         "build"
       ],
-      "notes": "FOUND 2026-08-21 while wiring F-080, and PRE-EXISTING — nothing in F-080 introduced it. `pnpm audit --audit-level high` reports 1 moderate and 2 HIGH: GHSA-w3rx-r6r6-pgpr and GHSA-5p2g-fcmc-qvqq, both `image-size <= 2.0.2` (ICNS, JXL and HEIF parsers loop forever on a crafted file), both fixed in 2.0.3. The path is apps/mobile > expo > @expo/cli > @expo/log-box > @expo/dom-webview > react-native > @react-native/community-cli-plugin > metro > image-size, so the reachable code is the DEV SERVER rather than anything in the shipped bundle — but gate 15 blocks on High by design and does not read call graphs, and a gate that is red is red. THIS BLOCKS EVERY RELEASE: release.yml calls ci.yml first, so gate 15 failing means no tag can ever produce an artefact. Deliberately NOT fixed inside F-080: forcing a transitive version through a pnpm override is a supply-chain decision that deserves its own review, and \"while I am here\" is how an override nobody read ends up pinning a package for two years. The likely fix is a pnpm.overrides entry for image-size@^2.0.3 (a patch bump, so low risk) plus a check that metro still resolves it; the alternative is an upstream Expo/metro release that moves the floor, which would be better and cannot be waited for indefinitely. Related to F-079, which asks the harder question of what gate 15 should do about an advisory with NO fix — this one has a fix."
+      "notes": "WITHDRAWN 2026-08-23, the day after it was filed, and the reason is worth keeping. It was created during F-080 on the observation that `pnpm audit --audit-level high` exits 1 — WITHOUT READING F-079, which had already recorded the same finding, the same two GHSAs, the same dependency path, and the sentence \"THERE IS NO FIXED VERSION TO UPGRADE TO ... attempting one will waste the next person an hour\". F-082 then proposed exactly that dead end: a pnpm overrides entry for image-size@^2.0.3. Confirmed against the registry afterwards — the latest published image-size is 2.0.2 and both advisories cover <=2.0.2 with first_patched_version null, so every published version is affected and no override exists that helps. THE LESSON, recorded in memory: before filing a feature for a failing gate, search the feature list for the gate name. The state file is the system of record precisely so a finding is made once."
     }
   ]
 }

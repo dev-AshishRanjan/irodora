@@ -11,16 +11,43 @@
  * would pass whether or not the rule works.
  *
  * Fixtures are written and deleted in the same run — nothing violating is ever committed.
- * Uses ESLint's Node API rather than shelling out: spawning `npx.cmd` throws EINVAL on
- * Windows under Node 20+, and a guard that cannot run is a guard that is failing open.
+ *
+ * ## Every guard runs in its own process, and that is the whole design
+ *
+ * This script used to share ONE `ESLint` instance across all eighteen guards. It passed on
+ * Windows and **failed on Linux CI** on the first push, reporting the Lens guard as a parse
+ * error saying the fixture was not in any TSConfig.
+ *
+ * The reason is that type-aware linting needs a TypeScript *program*, and typescript-eslint
+ * caches one per TSConfig in module-level state, with the `include` globs expanded once. A
+ * fixture written into a directory **after** that program was built is not in its file list.
+ * Whether the cached program notices depends on TypeScript's directory watchers, which
+ * differ by platform and are inherently racy against a file written and linted microseconds
+ * later. Several guards also share a path (`packages/contracts/src/__guard__.ts` is used by
+ * six), so each one writes, lints and deletes the same file in turn — the worst possible
+ * input to a watcher.
+ *
+ * Trying to out-cache that would mean reasoning about someone else's cache invalidation on
+ * two operating systems. A fresh process per guard has no shared state to reason about: one
+ * process, one fixture, one program. It costs roughly three seconds a guard, and a boundary
+ * proof that is right on one OS is not a proof.
+ *
+ * `process.execPath` is spawned directly with `execFileSync` — no shell and no `.cmd`
+ * wrapper, so the EINVAL that `npx.cmd` throws on Windows under Node 20+ does not apply.
+ * That hazard is the reason the original used the Node API in-process; it is worth naming so
+ * nobody re-derives it and reverts this.
  */
 
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ESLint } from 'eslint';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const SELF = fileURLToPath(import.meta.url);
+
+/** Prefixes the child's one line of machine-readable output, so log noise cannot be parsed. */
+const RESULT_MARKER = '__GUARD_RESULT__';
 
 /**
  * Each guard places a violation at a REAL path so the rule's `files` glob matches.
@@ -226,49 +253,119 @@ const GREEN = '\x1b[32m',
   BOLD = '\x1b[1m',
   OFF = '\x1b[0m';
 
-console.log(`\n${BOLD}Irodora — boundary guards${OFF}\n`);
+/* ========================================================== child: one guard, alone */
 
-const eslint = new ESLint({ cwd: ROOT, errorOnUnmatchedPattern: false });
-const notEnforced = [];
-const couldNotRun = [];
-
-for (const guard of GUARDS) {
+const guardFlag = process.argv.indexOf('--guard');
+if (guardFlag !== -1) {
+  const guard = GUARDS[Number(process.argv[guardFlag + 1])];
   const abs = resolve(ROOT, guard.path);
-  mkdirSync(dirname(abs), { recursive: true });
 
-  let results;
+  // Imported here rather than at the top so the PARENT never loads ESLint or builds a
+  // TypeScript program. The parent's job is to spawn and collate.
+  const { ESLint } = await import('eslint');
+
+  mkdirSync(dirname(abs), { recursive: true });
+  let payload;
   try {
     writeFileSync(abs, guard.source, 'utf8');
-    results = await eslint.lintFiles([abs]);
+    const results = await new ESLint({ cwd: ROOT, errorOnUnmatchedPattern: false }).lintFiles([
+      abs,
+    ]);
+    payload = {
+      linted: results.length,
+      rules: [...new Set(results.flatMap((r) => r.messages.map((m) => m.ruleId).filter(Boolean)))],
+      fatal: results.flatMap((r) => r.messages.filter((m) => m.fatal).map((m) => m.message)),
+    };
   } catch (error) {
-    couldNotRun.push({ guard, reason: error.message });
-    continue;
+    payload = { threw: error instanceof Error ? error.message : String(error) };
   } finally {
-    // Always remove the fixture, even if linting threw.
+    // Always remove the fixture, even if linting threw. The parent sweeps again afterwards,
+    // because a fixture left behind by a hard crash would break the next ordinary lint run.
     if (existsSync(abs)) unlinkSync(abs);
   }
 
-  const reported = new Set(results.flatMap((r) => r.messages.map((m) => m.ruleId).filter(Boolean)));
+  process.stdout.write(`${RESULT_MARKER}${JSON.stringify(payload)}\n`);
+  process.exit(0);
+}
 
-  // A fatal parse error means the file never reached the rules — that is a tooling
-  // failure, not a boundary failure, and conflating them would send the next person
-  // to fix the wrong thing.
-  const fatal = results.flatMap((r) => r.messages.filter((m) => m.fatal));
-  if (fatal.length) {
-    couldNotRun.push({ guard, reason: `parse error: ${fatal[0].message}` });
-    continue;
+/* ============================================================ parent: collate them */
+
+console.log(`\n${BOLD}Irodora — boundary guards${OFF}\n`);
+
+const notEnforced = [];
+const couldNotRun = [];
+
+/**
+ * Everything the next person needs to tell a tooling failure from a boundary failure.
+ *
+ * The first Linux CI failure was reported to a human as *"a file not being found in
+ * project"*, which is three plausible bugs at once. A COULD NOT RUN line should not need a
+ * second round trip to act on, so it carries the platform, the path and the raw message.
+ */
+const diagnose = (abs, reason) =>
+  `${reason}\n         ${DIM}fixture: ${relative(ROOT, abs)} · ${process.platform} · node ${process.version}${OFF}`;
+
+try {
+  for (const [index, guard] of GUARDS.entries()) {
+    const abs = resolve(ROOT, guard.path);
+
+    let payload;
+    try {
+      const stdout = execFileSync(process.execPath, [SELF, '--guard', String(index)], {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        maxBuffer: 32 * 1024 * 1024,
+      });
+      const line = stdout.split('\n').find((l) => l.startsWith(RESULT_MARKER));
+      if (!line) throw new Error(`the child printed no result line. It said:\n${stdout.trim()}`);
+      payload = JSON.parse(line.slice(RESULT_MARKER.length));
+    } catch (error) {
+      const detail = `${error.message}${error.stderr ? `\n${String(error.stderr).trim()}` : ''}`;
+      couldNotRun.push({ guard, reason: diagnose(abs, detail) });
+      continue;
+    }
+
+    if (payload.threw) {
+      couldNotRun.push({ guard, reason: diagnose(abs, `ESLint threw: ${payload.threw}`) });
+      continue;
+    }
+
+    // A fatal parse error means the file never reached the rules — that is a tooling
+    // failure, not a boundary failure, and conflating them would send the next person
+    // to fix the wrong thing.
+    if (payload.fatal.length) {
+      couldNotRun.push({ guard, reason: diagnose(abs, `parse error: ${payload.fatal[0]}`) });
+      continue;
+    }
+
+    // Zero results means the path matched no configuration at all. Distinct from "the rule
+    // did not fire", and it would otherwise be reported as an unenforced boundary — sending
+    // someone to rewrite a rule that was never consulted.
+    if (payload.linted === 0) {
+      couldNotRun.push({
+        guard,
+        reason: diagnose(abs, 'ESLint linted 0 files — the fixture path matched no config'),
+      });
+      continue;
+    }
+
+    if (payload.rules.includes(guard.rule)) {
+      console.log(`  ${GREEN}✓${OFF} ${guard.name}`);
+      console.log(`    ${DIM}${guard.rule} fired at ${relative(ROOT, abs)}${OFF}`);
+    } else {
+      notEnforced.push({
+        guard,
+        reason: `expected "${guard.rule}"; ESLint reported ${
+          payload.rules.length ? payload.rules.map((r) => `"${r}"`).join(', ') : 'nothing'
+        }`,
+      });
+    }
   }
-
-  if (reported.has(guard.rule)) {
-    console.log(`  ${GREEN}✓${OFF} ${guard.name}`);
-    console.log(`    ${DIM}${guard.rule} fired at ${relative(ROOT, abs)}${OFF}`);
-  } else {
-    notEnforced.push({
-      guard,
-      reason: `expected "${guard.rule}"; ESLint reported ${
-        reported.size ? [...reported].map((r) => `"${r}"`).join(', ') : 'nothing'
-      }`,
-    });
+} finally {
+  for (const guard of GUARDS) {
+    const abs = resolve(ROOT, guard.path);
+    if (existsSync(abs)) unlinkSync(abs);
   }
 }
 
