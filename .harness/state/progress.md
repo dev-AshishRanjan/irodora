@@ -147,11 +147,22 @@ NOT run:  e2e (gate 7, still pending — no journeys yet)
    step in that file is a step only a person can take, deliberately.
 5. **F-082**, or no tag will ever produce an artefact.
 
-### Next feature
+### Next feature — and the sentence a first draft of this entry got wrong
 
-**F-018** (Colour Atlas) is the lowest-id eligible R2 feature, and it is what makes the app
-worth installing — today it is one screen showing two swatches and a ΔE. F-012 (the corpus)
-remains blocked on **OQ-5**, which is still the bottleneck and still needs a person.
+An earlier draft said *"F-018 is the lowest-id eligible R2 feature"*. **It is not eligible.**
+F-018 is `blockedBy` F-012, F-012 is `blocked` on **OQ-5**, and F-019, F-020, F-021 and F-023
+are all `blockedBy` F-018. So **five of the seven `todo` features — the entire R2 user
+interface — are transitively blocked on one human decision**: the engagement model for a
+Japanese editorial reviewer.
+
+The only two features that can be claimed today are **F-082** (gate 15 is red) and **F-079**
+(what gate 15 should do about an advisory with no fix). Both are gate maintenance, and F-082
+is a hard prerequisite for any release at all.
+
+That is the real state of the project: the engine is built, the app shell is built, the
+pipeline is built, and the product is one screen showing two swatches and a ΔE — because the
+thing that makes it a colour atlas is a corpus that cannot be published until a second
+editorial identity exists. **OQ-5 is the bottleneck, and it has been the bottleneck since R1.**
 
 ---
 
