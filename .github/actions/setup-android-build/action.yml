@@ -19,6 +19,21 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile
 
+    # WITHOUT THIS THE BUNDLE CANNOT BE BUILT, and the failure looks nothing like its cause.
+    #
+    # The app imports ten workspace packages, every one of which declares `main` and `exports`
+    # pointing at `dist/`. `dist/` is generated, gitignored, and produced by `pnpm build` —
+    # not by `pnpm install`. Without it Metro resolves `@irodora/ui`'s package.json fine, then
+    # fails on the `main` it names, and reports it as an *invalid package.json configuration*
+    # in a workspace package rather than as a missing build step.
+    #
+    # `release.yml` runs `pnpm build` too, in its `gates` job — on a DIFFERENT RUNNER. Jobs do
+    # not share a filesystem, so that build never reaches the one doing the bundling. Putting
+    # it in the shared setup is what makes both lanes correct at once.
+    - name: Build the workspace packages
+      shell: bash
+      run: pnpm build
+
     # AGP 8.12 (pinned by react-native 0.86's version catalog) requires JDK 17 or newer.
     # 17 rather than 21: it is what the React Native and Expo toolchains are tested against,
     # and a newer JDK is where Gradle plugin incompatibilities show up first.
