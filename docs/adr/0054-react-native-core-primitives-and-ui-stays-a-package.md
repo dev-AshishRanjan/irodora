@@ -2,7 +2,15 @@
 
 ## Status
 
-Accepted
+**Superseded in part by [ADR-0062](0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md).**
+
+The first half — *component behaviour comes from React Native's core primitives; we add no
+component library* — is retired. HeroUI Native supplies component behaviour, behind the
+`@irodora/ui` boundary.
+
+The second half stands unchanged, and ADR-0062 reinforces it: `@irodora/ui` remains a private
+package, and every component in it is either consumed by a real screen or registered in the
+conformance registry, with the scope reporter failing on one that is neither.
 
 ## Date
 
