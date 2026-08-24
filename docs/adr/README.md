@@ -84,6 +84,7 @@ Two rules that matter more than the format:
 | [0058](0058-release-builds-are-github-actions-and-gradle-not-eas.md) | Release builds are GitHub Actions running Gradle, not EAS Build | Accepted |
 | [0059](0059-a-blocking-advisory-with-no-fix-is-accepted-with-an-expiry.md) | A blocking advisory with no fix is accepted with an expiry, not ignored and not left red | Accepted |
 | [0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) | Irodora ships with one editor, and self-review is declared rather than assumed | Accepted |
+| [0061](0061-nfr-3-guarantees-the-observable-value-not-the-double.md) | NFR-3 guarantees the observable value, not the double | Accepted |
 
 ## Open questions awaiting an ADR
 

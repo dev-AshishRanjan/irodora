@@ -168,6 +168,44 @@ export function computeConstants(): readonly number[] {
   ];
 }
 
+/* ================================================== the canonical vector (F-083) */
+
+/**
+ * What the product actually shows, and the only form NFR-3 can promise to be identical.
+ *
+ * **Raw doubles are not identical across platforms and cannot be made so.** ECMAScript
+ * specifies `pow`, `cbrt`, `atan2`, `sin`, `cos` and `exp` as implementation-approximated,
+ * and Node ships Windows builds from MSVC and Linux builds from GCC/Clang. Measured: **2 to 4
+ * ULP on roughly 0.2 % of inputs** — the fifteenth significant digit.
+ *
+ * So the guarantee moves to the value a person can observe. Two decimal places is the
+ * product's display precision for a ΔE or a contrast ratio, and it is **eleven orders of
+ * magnitude coarser than the noise**, which is what makes a digest over it reproduce.
+ *
+ * ## Why coarse rounding works and fine rounding does not
+ *
+ * Rounding does not eliminate a disagreement, it moves it: two values `d` apart differ after
+ * rounding to a grid of `g` only if they straddle a boundary, with probability `d/g`. At
+ * 2 dp that is 4e-15/1e-2 ≈ 4e-13 per value, or 3e-8 over the whole run. At 12 significant
+ * digits — the "obvious" choice — it would be 1e-3 per value and the digest would differ
+ * constantly. **Precision here is a correctness property, not a taste.**
+ *
+ * `-0` is normalised to `0`. The byte encoding distinguishes them deliberately, and a value
+ * within four ULP of zero could round to `-0` on one platform and `0` on the other, which
+ * would be a difference in a digit nobody can see.
+ */
+export const CANONICAL_DECIMALS = 2;
+
+const canonicalise = (value: number): number => {
+  const scale = 10 ** CANONICAL_DECIMALS;
+  const rounded = Math.round(value * scale) / scale;
+  return rounded === 0 ? 0 : rounded;
+};
+
+export function computeCanonicalVector(rgb: Rgb): readonly number[] {
+  return computeDifferenceVector(rgb).map(canonicalise);
+}
+
 export function computeStageVector(rgb: Rgb): readonly number[] {
   const xyz = srgbToXyz(rgb);
   const lab = xyzToLab(xyz);

@@ -177,6 +177,24 @@ const computeStages = (rgb) => {
 
 const PROBE_INDICES = Array.from({ length: 500 }, (_, i) => i * 20);
 
+/**
+ * MUST stay identical to `computeCanonicalVector` in the test-side vectors module.
+ *
+ * Two decimal places, and `-0` normalised to `0`. See that module for why the precision is a
+ * correctness property rather than a preference.
+ */
+const canonicalise = (value) => {
+  const rounded = Math.round(value * 100) / 100;
+  return rounded === 0 ? 0 : rounded;
+};
+
+const canonicalRun = runIdentityVectors({
+  seed: 'irodora/f-007/identity',
+  count: 10_000,
+  compute: (rgb) => computeDifference(rgb).map(canonicalise),
+  probeIndices: [],
+});
+
 const stageRun = runIdentityVectors({
   seed: 'irodora/f-007/identity',
   count: 10_000,
@@ -281,6 +299,22 @@ const differenceFixture = {
    * that turns "something diverges" into a diagnosis.
    */
   stageProbes: stageRun.probes,
+  /*
+   * THE GUARANTEE (F-083, ADR-0061). `digest` above is the RAW double digest and it does NOT
+   * reproduce across platforms — measured at 2 to 4 ULP on ~0.2 % of inputs, which no engine
+   * built on Math.pow can avoid. This one is over the values rounded to the product's display
+   * precision, and it is what NFR-3 now promises: what a person can observe is identical
+   * everywhere.
+   */
+  canonicalDecimals: 2,
+  canonicalDigest: canonicalRun.digest,
+  /*
+   * The magnitude tripwire. Every probe on every platform must agree with the committed value
+   * to within this many ULP. Observed worst is 4 (apcaLc, one probe in 500); the bound is 16,
+   * which leaves room for a different libm without leaving room for anything a person could
+   * see — 16 ULP of a ΔE near 50 is about 1e-13.
+   */
+  maxProbeUlp: 16,
 };
 
 writeFileSync(DIFFERENCE_OUT, `${JSON.stringify(differenceFixture, null, 2)}\n`);

@@ -22,6 +22,7 @@ import fixture from '../../golden/cross-platform-identity.fixture.json' with { t
 import {
   computeDifferenceVector,
   computeConstants,
+  computeCanonicalVector,
   computeStageVector,
   IDENTITY_COUNT,
   IDENTITY_PROBE_INDICES,
@@ -39,6 +40,14 @@ const run = runIdentityVectors({
   count: IDENTITY_COUNT,
   compute: computeDifferenceVector,
   probeIndices: IDENTITY_PROBE_INDICES,
+});
+
+/** The same samples at the product's display precision. See `computeCanonicalVector`. */
+const canonicalRun = runIdentityVectors({
+  seed: IDENTITY_SEED,
+  count: IDENTITY_COUNT,
+  compute: computeCanonicalVector,
+  probeIndices: [],
 });
 
 /** The same samples, digested one conversion stage at a time. See `computeStageVector`. */
@@ -92,12 +101,47 @@ describe('the fixture describes the run it was generated from', () => {
  */
 describe('the Node execution', () => {
   it('reproduces the committed fixture on this platform', () => {
+    /** What fails the build. */
     const findings: string[] = [];
+    /**
+     * What is reported and never asserted (ADR-0061).
+     *
+     * Raw-double differences across platforms go here. They are worth SEEING — a change is
+     * interesting even when it is not a defect — and asserting them meant a permanently red
+     * gate, which is the same outcome as deleting it and takes longer.
+     */
+    const notes: string[] = [];
 
-    // The headline. Regenerating the fixture to make this green is the one thing it exists
-    // to prevent.
+    /*
+     * THE GUARANTEE (ADR-0061). Every metric rounded to the product's display precision, then
+     * digested. This is what NFR-3 promises now — what a person can observe is identical on
+     * every platform — and it is asserted exactly. Regenerating the fixture to make THIS one
+     * green is the single thing it exists to prevent.
+     */
+    if (canonicalRun.digest !== fixture.canonicalDigest)
+      findings.push(
+        `canonical digest (${String(fixture.canonicalDecimals)} dp): got ${canonicalRun.digest}, ` +
+          `committed ${fixture.canonicalDigest} — a value the product SHOWS differs, which is a ` +
+          'real engine change and not platform noise',
+      );
+
+    /*
+     * The RAW double digest is recorded and NOT asserted, and that is the whole of ADR-0061.
+     *
+     * It does not reproduce across platforms and no engine built on `Math.pow` can make it:
+     * ECMAScript specifies the transcendentals as implementation-approximated, and Node ships
+     * Windows builds from MSVC and Linux from GCC/Clang. Measured at 2–4 ULP on ~0.2 % of
+     * inputs. Asserting it meant a permanently red gate, which is the same outcome as deleting
+     * the gate and takes longer.
+     *
+     * What stops this being a shrug: the canonical digest above catches anything a person
+     * could observe, and the probe ULP bound below catches the magnitude growing.
+     */
     if (run.digest !== fixture.digest)
-      findings.push(`whole-run digest: got ${run.digest}, committed ${fixture.digest}`);
+      notes.push(
+        `raw double digest differs: got ${run.digest}, committed ${fixture.digest}. NOT a ` +
+          'failure — see ADR-0061.',
+      );
 
     const differing = (
       label: string,
@@ -107,7 +151,10 @@ describe('the Node execution', () => {
     ): void => {
       const bad = names.flatMap((name, i) => (actual[i] === committed[i] ? [] : [name]));
       if (bad.length)
-        findings.push(`${label}: ${String(bad.length)}/${String(names.length)} differ — ${bad.join(', ')}`);
+        // A note, not a finding: these are digests over RAW doubles, and raw doubles are not
+        // identical across platforms (ADR-0061). They say WHERE; the ULP bound says whether
+        // it matters.
+        notes.push(`${label}: ${String(bad.length)}/${String(names.length)} differ — ${bad.join(', ')}`);
     };
 
     // Which METRIC. deltaE00 alone would point at atan2/sin/cos/exp; apcaLc at pow;
@@ -117,11 +164,25 @@ describe('the Node execution', () => {
     // Which STAGE, so the fault names an operation rather than a metric.
     differing('stages', STAGE_NAMES, stageRun.perValueDigests, fixture.stageDigests);
 
-    // Exact doubles, so a constant that moved prints both values rather than a hash.
+    /*
+     * The references and the transfer function at fixed inputs, in exact hex — judged by the
+     * SAME ULP bound as everything else, because they are raw doubles too. They reproduce on
+     * every platform measured so far, and that is luck rather than a property: nothing makes
+     * srgbToLinear(0.5) more portable than srgbToLinear(x) for any other x.
+     */
     const constants = computeConstants().map(float64ToHex);
-    for (const [i, name] of CONSTANT_NAMES.entries())
-      if (constants[i] !== fixture.constants[i])
-        findings.push(`constant ${name}: got ${String(constants[i])}, committed ${String(fixture.constants[i])}`);
+    for (const [i, name] of CONSTANT_NAMES.entries()) {
+      const got = constants[i];
+      const want = fixture.constants[i];
+      if (got === undefined || want === undefined || got === want) continue;
+      const distance = ulpDistance(hexToFloat64(got), hexToFloat64(want));
+      (distance > fixture.maxProbeUlp ? findings : notes).push(
+        `constant ${name}: got ${got}, committed ${want} (${String(distance)} ulp)` +
+          (distance > fixture.maxProbeUlp
+            ? ` — EXCEEDS the ${String(fixture.maxProbeUlp)} ulp bound (ADR-0061).`
+            : ''),
+      );
+    }
 
     // HOW MANY samples, which separates one unlucky input from a structural difference.
     const chunks = (
@@ -131,7 +192,7 @@ describe('the Node execution', () => {
     ): void => {
       const bad = committed.flatMap((d, i) => (actual[i] === d ? [] : [i]));
       if (bad.length)
-        findings.push(
+        notes.push(
           `${label} chunks: ${String(bad.length)}/${String(committed.length)} differ — samples ` +
             bad
               .slice(0, 6)
@@ -207,15 +268,28 @@ describe('the Node execution', () => {
 
       for (const [j, w] of worst.entries())
         if (w.n)
-          findings.push(
+          // Under the bound this is platform noise and belongs in the log. Over it, something
+          // changed that measurement does not explain, and that stops the build.
+          (w.ulp > fixture.maxProbeUlp ? findings : notes).push(
             `${label} ${String(names[j])}: ${String(w.n)}/${String(actual.length)} probes differ, ` +
               `worst ${String(w.ulp)} ulp at sample ${String(w.at)} (rgb ${w.rgb}) — ` +
-              `got ${w.got}, committed ${w.want}`,
+              `got ${w.got}, committed ${w.want}` +
+              (w.ulp > fixture.maxProbeUlp
+                ? ` — EXCEEDS the ${String(fixture.maxProbeUlp)} ulp bound. Platform noise is ` +
+                  'measured at 2-4 ulp; this is larger and needs explaining before it is ' +
+                  'accepted (ADR-0061).'
+                : ''),
           );
     };
 
     magnitude('metric', fixture.metrics, run.probes, fixture.probes);
     magnitude('stage', STAGE_NAMES, stageRun.probes, fixture.stageProbes);
+
+    if (notes.length)
+      console.info(
+        '  raw-double differences, reported and NOT asserted (ADR-0061):\n    ' +
+          notes.join('\n    '),
+      );
 
     expect(
       findings,

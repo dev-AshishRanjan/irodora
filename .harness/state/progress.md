@@ -8,6 +8,98 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-083 DONE · NFR-3 promised something no JavaScript engine can deliver
+
+Six rounds. The first five answered *where*; the sixth asked the question that decided it.
+
+### The measurement
+
+```
+apcaLc(white, c)   worst 4 ULP at sample 6780
+apcaLc(black, c)   worst 2 ULP at sample 9040
+everything else    no probe differs, out of 500
+```
+
+Four ULP at an Lc near 26.5 is **1.4 × 10⁻¹⁴** — the fifteenth significant digit. That is the
+whole of it: ~0.2 % of inputs, two to four ULP, on the same Node 24.19.0 between its Windows
+and Linux builds.
+
+### The repository had already answered this, correctly, somewhere else
+
+`verify-content.mjs` compares a published corpus bundle against the current engine:
+
+```js
+for (const key of ['hex', 'inSrgbGamut', 'lightnessOutOfRange'])   // quantised: EXACT
+  if (fresh[key] !== derived[key]) …
+for (const key of ['lab', 'lch', 'oklch', 'rgb'])                  // continuous: 1e-12
+  if (Math.abs(value - derived[key][i]) > 1e-12) …
+```
+
+A thousand times the measured noise. **Gate 11 passes on Linux and the corpus was never at
+risk.** The codebase had made exactly the right split once; NFR-3's wording never caught up.
+
+### ADR-0061
+
+The **canonical digest** — every metric at the product's two-decimal display precision — is
+asserted exactly, and is what NFR-3 promises now. The **raw double digest is recorded and
+reported, never asserted**. A **16 ULP bound** over 500 probes is the magnitude tripwire,
+against an observed worst of 4.
+
+**Two decimals is a correctness property, not a preference.** Rounding does not remove a
+disagreement, it moves it: two values `d` apart differ after rounding to a grid `g` with
+probability `d/g`. At 2 dp that is 3 × 10⁻⁸ across the run. At **12 significant digits — the
+instinctive choice — it would be 10⁻³ per value and the digest would differ constantly.** I
+recommended "canonical rounding" twice before working that out, and the recommendation was
+right only because the precision happened to be coarse.
+
+**Accuracy is not weakened.** Gate 5's six cited datasets still check the engine against
+published references. A change too small to move a displayed value is caught *there* — which
+is the right place, because those compare against published reality and this compares against
+ourselves.
+
+### Watched
+
+```
+canonical digest mutated      -> FAILS, naming both digests
+raw digest mutated            -> stays GREEN, reported as a note
+a probe moved 40 ULP (bound 16) -> FAILS, naming sample, input and both values
+baseline                      -> green either side
+```
+
+`ulpDistance` lands in `@irodora/testing`. It deliberately does **not** use the textbook
+`INT64_MIN - bits` mapping, which collapses `-0` onto `+0`: the digest already treats a sign
+flip as a divergence, so a distance function calling it zero would report agreement with a run
+that had disagreed. Tested across zero, across a binade boundary, on subnormals, and on
+NaN/Infinity — which report NOT COMPARABLE rather than a large finite number somebody might
+average into a meaningless mean.
+
+### Six rounds, and what they cost
+
+Rounds 2–4 produced three confident diagnoses, all withdrawn, all read off a **ten-annotation
+cap** ([[a-truncated-report-reads-exactly-like-a-passing-one]]). Two of those rounds were spent
+reconciling a contradiction that never existed. The tell was there from the second run —
+*exactly ten, every time, while the assertion count went from nine to thirty-nine.*
+
+The lesson generalises past this feature: **a result arriving through a channel that can drop
+entries needs the question "what could it not have said", not just "what does it say".**
+
+### Gates
+
+```
+Ran:      state ✓  typecheck ✓  lint ✓  format ✓  test ✓ (--force 31/31)
+          color-golden ✓  build ✓  content ✓  security ✓
+NOT run:  e2e (7), perf (12) — both still pending
+          The browser and Hermes legs. Two V8 builds disagree by 4 ULP; a different engine
+          may exceed 16, and the bound is what will say so. F-006 and F-039 re-scoped.
+```
+
+### What this unblocks
+
+**CI should now be green, and `release.yml` can reach a build.** Gate 4 was the only thing
+between a tag and an artefact.
+
+---
+
 ## 2026-08-24 — F-085 DONE · the lane was building an artefact that could not run
 
 The APK from `android-build.yml` was installed on a phone and did not start:

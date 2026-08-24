@@ -20306,5 +20306,8 @@
         "bfb37ed243a07e70"
       ]
     }
-  ]
+  ],
+  "canonicalDecimals": 2,
+  "canonicalDigest": "5a74342ff5e85d88",
+  "maxProbeUlp": 16
 }
