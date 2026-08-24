@@ -2274,7 +2274,7 @@
       "acceptance": [
         "heroui-native and uniwind build and bundle in apps/mobile, with react-native-worklets and react-native-reanimated pinned by pnpm.overrides to the versions VisionCamera resolves, and a single copy of each in the app tree",
         "@irodora/design-tokens emits HeroUI global.css from design-system.manifest.json; the manifest remains the only source of colour and a hand-written colour in that stylesheet fails the build",
-        "The manifest declares the five tokens HeroUI requires and it lacked — backdrop, status.ok.foreground, status.warn.foreground, status.bad.foreground and link — each with its pairings, and the contrast and cvd gates cover them",
+        "Every HeroUI theme variable the manifest lacked is covered by a declared, gate-checked pairing: `backdrop` and `link` are new tokens, and the three status foregrounds resolve to the existing `inverse.foreground`, which measures 6.94/7.17/10.82 dark and 4.90/5.04/9.66 light on the status fills. Written as five new tokens; three of them proved unnecessary once measured, and inventing them would have been three duplicate values to keep in step",
         "Every colour HeroUI would derive with color-mix is computed by the generator and checked by checkContrast and checkSeparation; the emitted stylesheet contains literal values and no color-mix call",
         "apps/mobile cannot import heroui-native; the boundary guard fails on one, as it already does for other forbidden specifiers",
         "A HeroUI-backed component renders under the a11y harness with its colours resolved in the tree, and the conformance suite fails a registered subject whose tree carries no resolved colour",

@@ -2,7 +2,7 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-08-15",
+  "updated": "2026-08-24",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
     "date": "2026-08-19",
@@ -148,6 +148,22 @@
         "role": "Decorative and large text only. NOT for micro-labels.",
         "pairsWith": []
       },
+      "link": {
+        "oklch": {
+          "l": 0.968,
+          "c": 0.005,
+          "h": 85
+        },
+        "srgb": "#F6F4F1",
+        "usage": "text",
+        "role": "Link text. Deliberately IDENTICAL to `foreground` — the underline is the channel, not the colour.",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ]
+      },
       "border": {
         "oklch": {
           "l": 1,
@@ -165,6 +181,25 @@
         ],
         "role": "Hairline. Translucent overlay, never a solid grey — depth reads as lift, not outline.",
         "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.",
+        "pairsWith": []
+      },
+      "backdrop": {
+        "oklch": {
+          "l": 0,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.6
+        },
+        "srgb": "rgba(0, 0, 0, 0.6)",
+        "usage": "nonText",
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "role": "The scrim behind a dialog or bottom sheet. Heavier than light, because dimming a near-black page needs more of it to read as dimmed at all.",
+        "uncheckedReason": "A scrim dims; it does not identify. WCAG 1.4.11 governs visual information REQUIRED to identify a component, and the dialog above it is identified by its own surface tint and its elevation — the same argument `border` makes. Contrast between the scrim and what it covers is not a thing the standard asks for, and inventing a pairing for it would assert a requirement nobody has.",
         "pairsWith": []
       },
       "border.strong": {
@@ -205,8 +240,12 @@
         },
         "srgb": "#0C0B09",
         "usage": "text",
-        "role": "Text on inverse.",
-        "pairsWith": []
+        "role": "Text on inverse — and, since F-087, the text on a FILLED status surface, which is what HeroUI's --success/--warning/--danger-foreground resolve to. It clears 4.5:1 on all three fills in both themes, so no separate token was needed. But in DARK it lands at APCA Lc 49.6 and 51.0 on status.ok and status.warn — a WCAG pass below the Lc 60 body-text floor, reported by gate 9. Read that as the measurement agreeing with ADR-0044: status colour belongs on the words, not behind them, and a filled status surface is a pattern to avoid rather than one this pairing endorses.",
+        "pairsWith": [
+          "status.ok",
+          "status.warn",
+          "status.bad"
+        ]
       },
       "ring": {
         "oklch": {
@@ -457,6 +496,22 @@
         "role": "Decorative and large text only. NOT for micro-labels.",
         "pairsWith": []
       },
+      "link": {
+        "oklch": {
+          "l": 0.195,
+          "c": 0.008,
+          "h": 70
+        },
+        "srgb": "#171411",
+        "usage": "text",
+        "role": "Link text. Deliberately IDENTICAL to `foreground` — the underline is the channel, not the colour.",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ]
+      },
       "border": {
         "oklch": {
           "l": 0,
@@ -474,6 +529,25 @@
         ],
         "role": "Hairline.",
         "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.",
+        "pairsWith": []
+      },
+      "backdrop": {
+        "oklch": {
+          "l": 0,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.4
+        },
+        "srgb": "rgba(0, 0, 0, 0.4)",
+        "usage": "nonText",
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "role": "The scrim behind a dialog or bottom sheet. Lighter than dark, because the same alpha over a pale page reads far heavier.",
+        "uncheckedReason": "A scrim dims; it does not identify. WCAG 1.4.11 governs visual information REQUIRED to identify a component, and the dialog above it is identified by its own surface tint and its elevation — the same argument `border` makes. Contrast between the scrim and what it covers is not a thing the standard asks for, and inventing a pairing for it would assert a requirement nobody has.",
         "pairsWith": []
       },
       "border.strong": {
@@ -514,8 +588,12 @@
         },
         "srgb": "#FDFCF9",
         "usage": "text",
-        "role": "Text on inverse.",
-        "pairsWith": []
+        "role": "Text on inverse — and, since F-087, the text on a FILLED status surface, which is what HeroUI's --success/--warning/--danger-foreground resolve to. It clears 4.5:1 on all three fills in both themes, so no separate token was needed. But in DARK it lands at APCA Lc 49.6 and 51.0 on status.ok and status.warn — a WCAG pass below the Lc 60 body-text floor, reported by gate 9. Read that as the measurement agreeing with ADR-0044: status colour belongs on the words, not behind them, and a filled status surface is a pattern to avoid rather than one this pairing endorses.",
+        "pairsWith": [
+          "status.ok",
+          "status.warn",
+          "status.bad"
+        ]
       },
       "ring": {
         "oklch": {

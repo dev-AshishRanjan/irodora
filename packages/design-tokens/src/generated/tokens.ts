@@ -18,7 +18,9 @@ export const COLOR = {
     foreground: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'text' },
     'foreground.2': { srgb: '#A5A39F', oklch: { l: 0.715, c: 0.006, h: 80 }, usage: 'text' },
     'foreground.3': { srgb: '#82807C', oklch: { l: 0.6, c: 0.006, h: 80 }, usage: 'largeText' },
+    link: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'text' },
     border: { srgb: 'rgba(255, 255, 255, 0.08)', oklch: { l: 1, c: 0, h: 0, alpha: 0.08 }, usage: 'nonText' },
+    backdrop: { srgb: 'rgba(0, 0, 0, 0.6)', oklch: { l: 0, c: 0, h: 0, alpha: 0.6 }, usage: 'nonText' },
     'border.strong': { srgb: '#7B7977', oklch: { l: 0.578, c: 0.004, h: 70 }, usage: 'nonText' },
     inverse: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#0C0B09', oklch: { l: 0.15, c: 0.004, h: 70 }, usage: 'text' },
@@ -43,7 +45,9 @@ export const COLOR = {
     foreground: { srgb: '#171411', oklch: { l: 0.195, c: 0.008, h: 70 }, usage: 'text' },
     'foreground.2': { srgb: '#5E5A56', oklch: { l: 0.47, c: 0.008, h: 72 }, usage: 'text' },
     'foreground.3': { srgb: '#8D8A87', oklch: { l: 0.635, c: 0.006, h: 75 }, usage: 'largeText' },
+    link: { srgb: '#171411', oklch: { l: 0.195, c: 0.008, h: 70 }, usage: 'text' },
     border: { srgb: 'rgba(0, 0, 0, 0.08)', oklch: { l: 0, c: 0, h: 0, alpha: 0.08 }, usage: 'nonText' },
+    backdrop: { srgb: 'rgba(0, 0, 0, 0.4)', oklch: { l: 0, c: 0, h: 0, alpha: 0.4 }, usage: 'nonText' },
     'border.strong': { srgb: '#817F7D', oklch: { l: 0.598, c: 0.004, h: 85 }, usage: 'nonText' },
     inverse: { srgb: '#171411', oklch: { l: 0.195, c: 0.008, h: 70 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#FDFCF9', oklch: { l: 0.99, c: 0.003, h: 85 }, usage: 'text' },
@@ -74,7 +78,7 @@ export const SPACING = [4, 8, 14, 20, 28, 40, 56, 96] as const;
 export const TAP_TARGET = 44 as const;
 
 /** Token names usable for normal-size text: AA 4.5:1 against their surfaces. */
-export const TEXT_TOKENS = ['foreground', 'foreground.2', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad'] as const;
+export const TEXT_TOKENS = ['foreground', 'foreground.2', 'link', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad'] as const;
 
 /** Token names restricted to >= 18.66px, or >= 24px bold. */
 export const LARGE_TEXT_TOKENS = ['foreground.3'] as const;

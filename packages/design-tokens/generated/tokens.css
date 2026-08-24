@@ -18,7 +18,9 @@
   --irodora-color-foreground: #F6F4F1;
   --irodora-color-foreground-2: #A5A39F;
   --irodora-color-foreground-3: #82807C;
+  --irodora-color-link: #F6F4F1;
   --irodora-color-border: rgba(255, 255, 255, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
   --irodora-color-border-strong: #7B7977;
   --irodora-color-inverse: #F6F4F1;
   --irodora-color-inverse-foreground: #0C0B09;
@@ -44,7 +46,9 @@
   --irodora-color-foreground: #171411;
   --irodora-color-foreground-2: #5E5A56;
   --irodora-color-foreground-3: #8D8A87;
+  --irodora-color-link: #171411;
   --irodora-color-border: rgba(0, 0, 0, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
   --irodora-color-border-strong: #817F7D;
   --irodora-color-inverse: #171411;
   --irodora-color-inverse-foreground: #FDFCF9;
@@ -71,7 +75,9 @@
     --irodora-color-foreground: oklch(0.968 0.005 85);
     --irodora-color-foreground-2: oklch(0.715 0.006 80);
     --irodora-color-foreground-3: oklch(0.6 0.006 80);
+    --irodora-color-link: oklch(0.968 0.005 85);
     --irodora-color-border: oklch(1 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.6);
     --irodora-color-border-strong: oklch(0.578 0.004 70);
     --irodora-color-inverse: oklch(0.968 0.005 85);
     --irodora-color-inverse-foreground: oklch(0.15 0.004 70);
@@ -96,7 +102,9 @@
     --irodora-color-foreground: oklch(0.195 0.008 70);
     --irodora-color-foreground-2: oklch(0.47 0.008 72);
     --irodora-color-foreground-3: oklch(0.635 0.006 75);
+    --irodora-color-link: oklch(0.195 0.008 70);
     --irodora-color-border: oklch(0 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.4);
     --irodora-color-border-strong: oklch(0.598 0.004 85);
     --irodora-color-inverse: oklch(0.195 0.008 70);
     --irodora-color-inverse-foreground: oklch(0.99 0.003 85);

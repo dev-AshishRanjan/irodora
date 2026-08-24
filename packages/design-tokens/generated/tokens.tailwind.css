@@ -17,7 +17,9 @@
   --color-foreground: var(--irodora-color-foreground);
   --color-foreground-2: var(--irodora-color-foreground-2);
   --color-foreground-3: var(--irodora-color-foreground-3);
+  --color-link: var(--irodora-color-link);
   --color-border: var(--irodora-color-border);
+  --color-backdrop: var(--irodora-color-backdrop);
   --color-border-strong: var(--irodora-color-border-strong);
   --color-inverse: var(--irodora-color-inverse);
   --color-inverse-foreground: var(--irodora-color-inverse-foreground);
