@@ -13,6 +13,7 @@ import {
   createPrng,
   float64Digest,
   float64ToHex,
+  ulpDistance,
   hexToFloat64,
   sampleSrgb,
 } from '../src/index.js';
@@ -208,5 +209,47 @@ describe('assertGoldenDataset', () => {
 
   it('rejects a dataset loaded under the wrong id', () => {
     expect(() => assertGoldenDataset(fresh(), 'other')).toThrow(/declares id/);
+  });
+});
+
+describe('ulpDistance', () => {
+  it('is zero for identical values and one for adjacent ones', () => {
+    expect(ulpDistance(1, 1)).toBe(0);
+    expect(ulpDistance(1, 1 + Number.EPSILON)).toBe(1);
+    expect(ulpDistance(0.1, 0.1 + Number.EPSILON / 8)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('is symmetric', () => {
+    const a = 0.214_041_140_482_232_55;
+    const b = a * (1 + Number.EPSILON);
+    expect(ulpDistance(a, b)).toBe(ulpDistance(b, a));
+  });
+
+  it('counts across zero rather than treating the sign as a jump', () => {
+    // The smallest positive and the smallest negative subnormal are three steps apart:
+    // -min, -0, +0, +min. If this ever returns something enormous, the negative branch is
+    // ordering backwards, which is the bug the reflection exists to prevent.
+    expect(ulpDistance(Number.MIN_VALUE, -Number.MIN_VALUE)).toBe(3);
+  });
+
+  it('separates -0 from +0, because a sign flip across platforms is a real divergence', () => {
+    expect(ulpDistance(0, -0)).toBe(1);
+  });
+
+  it('crosses a binade boundary without a discontinuity', () => {
+    // 1 and the largest double below it are adjacent, even though the exponent changes.
+    const justBelowOne = 1 - Number.EPSILON / 2;
+    expect(ulpDistance(1, justBelowOne)).toBe(1);
+  });
+
+  it('handles subnormals, which are contiguous with the normals in this encoding', () => {
+    expect(ulpDistance(Number.MIN_VALUE, Number.MIN_VALUE * 2)).toBe(1);
+  });
+
+  it('reports NaN and Infinity as NOT COMPARABLE rather than as a large number', () => {
+    // Returning a big finite number would let a caller average it into a summary and report
+    // a meaningless mean. These are not "far apart"; they are incomparable.
+    expect(ulpDistance(Number.NaN, 1)).toBe(Number.POSITIVE_INFINITY);
+    expect(ulpDistance(Number.POSITIVE_INFINITY, Number.MAX_VALUE)).toBe(Number.POSITIVE_INFINITY);
   });
 });

@@ -148,7 +148,9 @@ const differenceRun = runIdentityVectors({
   seed: 'irodora/f-007/identity',
   count: 10_000,
   compute: computeDifference,
-  probeIndices: [0, 1, 2, 3, 5_000, 9_999],
+  // Widened from six to five hundred in F-083. Probes are RECORDED, never digested, so this
+  // cannot move `digest` — asserted byte-identical across the regeneration, as every round.
+  probeIndices: Array.from({ length: 500 }, (_, i) => i * 20),
 });
 
 /** MUST stay identical to `computeStageVector` in the test-side vectors module (F-083). */
@@ -173,11 +175,13 @@ const computeStages = (rgb) => {
   ];
 };
 
+const PROBE_INDICES = Array.from({ length: 500 }, (_, i) => i * 20);
+
 const stageRun = runIdentityVectors({
   seed: 'irodora/f-007/identity',
   count: 10_000,
   compute: computeStages,
-  probeIndices: [0, 1, 2, 3, 5_000, 9_999],
+  probeIndices: PROBE_INDICES,
 });
 
 const differenceFixture = {
@@ -271,6 +275,12 @@ const differenceFixture = {
     REFERENCE_OKLAB[2],
   ].map(float64ToHex),
   probes: differenceRun.probes,
+  /*
+   * The same samples through the conversion stages, in exact hex. The metric probes say which
+   * OUTPUT moved; these say which STAGE it moved at, for the same colour, which is the pair
+   * that turns "something diverges" into a diagnosis.
+   */
+  stageProbes: stageRun.probes,
 };
 
 writeFileSync(DIFFERENCE_OUT, `${JSON.stringify(differenceFixture, null, 2)}\n`);

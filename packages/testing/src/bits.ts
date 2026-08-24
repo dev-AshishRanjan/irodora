@@ -57,3 +57,49 @@ export function float64Digest(values: Iterable<number>): string {
 
   return hash.toString(16).padStart(16, '0');
 }
+
+/**
+ * How many representable doubles lie between `a` and `b`.
+ *
+ * The honest unit for a platform disagreement. A relative epsilon flatters values near zero
+ * and punishes values near a binade edge, so "1e-16 apart" says almost nothing while "1 ulp
+ * apart" says exactly what happened: the two runtimes rounded the same real number to
+ * adjacent representable neighbours.
+ *
+ * IEEE-754 doubles are **ordered by their bit patterns when read as signed magnitudes**, which
+ * is what makes this a subtraction at all. Negative values are not ordered that way, so they
+ * are mapped: for a negative, the distance from the most-negative pattern. That handles the
+ * `-0`/`+0` pair correctly too — they are adjacent, distance 1, not equal, because a `-0`
+ * appearing on one platform and not another is a real divergence.
+ *
+ * Subnormals need no special case: they are contiguous with the normals in this encoding,
+ * which is the property the format was designed to have.
+ *
+ * Returns `Number.POSITIVE_INFINITY` when either side is NaN or Infinity. Those are not
+ * "very far apart", they are **not comparable**, and returning a large finite number would let
+ * a caller average them into a summary and report a meaningless mean.
+ */
+export function ulpDistance(a: number, b: number): number {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return Number.POSITIVE_INFINITY;
+
+  const SIGN_BIT = 1n << 63n;
+
+  const ordered = (value: number): bigint => {
+    SCRATCH.setFloat64(0, value, false);
+    const bits = SCRATCH.getBigUint64(0, false);
+    const magnitude = bits & ~SIGN_BIT;
+    // A negative double's magnitude grows as its pattern grows, i.e. it is ordered backwards.
+    // Mapping it to `-(magnitude + 1)` puts every double on one monotonic line AND leaves -0
+    // at -1 with +0 at 0, so they are adjacent rather than equal.
+    //
+    // The textbook version is `INT64_MIN - asSigned(bits)`, which collapses -0 onto +0 —
+    // correct for "are these numerically close", wrong here. A `-0` on one platform and a
+    // `+0` on another is a real divergence and the digest already treats it as one; a
+    // distance function that called it zero would report the fixture as agreeing with a run
+    // that had disagreed with it.
+    return bits & SIGN_BIT ? -(magnitude + 1n) : magnitude;
+  };
+
+  const difference = ordered(a) - ordered(b);
+  return Number(difference < 0n ? -difference : difference);
+}

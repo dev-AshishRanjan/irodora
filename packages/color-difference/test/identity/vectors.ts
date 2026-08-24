@@ -19,7 +19,22 @@ import { apcaLc, deltaE00, deltaE76, deltaE94, deltaEok, wcagContrast } from '..
 /** The seed and size the committed fixture was produced with. */
 export const IDENTITY_SEED = 'irodora/f-007/identity';
 export const IDENTITY_COUNT = 10_000;
-export const IDENTITY_PROBE_INDICES: readonly number[] = [0, 1, 2, 3, 5_000, 9_999];
+/**
+ * Every twentieth sample (F-083).
+ *
+ * It was six — 0, 1, 2, 3, 5000, 9999 — and all six reproduce on Linux while the whole-run
+ * digest does not, which told us the divergence is rare and nothing more. Probes are the only
+ * part of this fixture that records EXACT VALUES rather than a hash, so they are the only part
+ * that can answer **by how much**, and six of them landed on none of the unlucky samples.
+ *
+ * 13 of 100 chunks contain a divergence, so five probes per chunk lands several. They are
+ * RECORDED, never digested, so widening the set cannot move `digest` — which is what keeps
+ * this distinguishable from regenerating a fixture to make a red test green.
+ */
+export const IDENTITY_PROBE_INDICES: readonly number[] = Array.from(
+  { length: 500 },
+  (_, i) => i * 20,
+);
 export const IDENTITY_VALUES_PER_SAMPLE = 8;
 
 /** Mid grey — a reference chosen for being ordinary rather than for being a special case. */

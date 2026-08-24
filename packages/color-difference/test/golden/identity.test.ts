@@ -11,7 +11,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { float64Digest, float64ToHex, runIdentityVectors } from '@irodora/testing';
+import {
+  float64Digest,
+  float64ToHex,
+  hexToFloat64,
+  runIdentityVectors,
+  ulpDistance,
+} from '@irodora/testing';
 import fixture from '../../golden/cross-platform-identity.fixture.json' with { type: 'json' };
 import {
   computeDifferenceVector,
@@ -140,15 +146,76 @@ describe('the Node execution', () => {
     chunks('metric', run.chunkDigests, fixture.metricChunkDigests);
     chunks('stage', stageRun.chunkDigests, fixture.stageChunkDigests);
 
-    // The recorded samples, in full hex, so a mismatch names a colour.
-    for (const [i, probe] of run.probes.entries()) {
-      const expected = fixture.probes[i];
-      if (!expected) continue;
-      if (probe.rgb.join(',') !== expected.rgb.join(','))
-        findings.push(`probe ${String(probe.index)} input differs — the SAMPLES are not identical`);
-      else if (probe.output.join(',') !== expected.output.join(','))
-        findings.push(`probe ${String(probe.index)} output differs: ${probe.output.join(' ')}`);
-    }
+    /*
+     * BY HOW MUCH (F-083). Every round so far has answered "where" and none has answered
+     * "how far", and those are the same red gate for completely different products: a
+     * last-ulp disagreement between two libm implementations is a labelling problem, and a
+     * visible colour difference is a broken engine.
+     *
+     * ULP rather than a relative epsilon, because a relative measure flatters values near
+     * zero and punishes values near a binade edge. "1 ulp" says exactly what happened: two
+     * runtimes rounded the same real number to adjacent representable neighbours.
+     *
+     * Aggregated per column rather than per probe — there are 500 probes, and 500 findings
+     * in one message is the unreadable wall the annotation cap already taught us about.
+     */
+    const magnitude = (
+      label: string,
+      names: readonly string[],
+      actual: readonly { index: number; rgb: readonly string[]; output: readonly string[] }[],
+      committed: readonly { index: number; rgb: readonly string[]; output: readonly string[] }[],
+    ): void => {
+      const worst = names.map(() => ({ n: 0, ulp: 0, at: -1, got: '', want: '', rgb: '' }));
+      let inputsDiffer = 0;
+
+      for (const [i, probe] of actual.entries()) {
+        const want = committed[i];
+        if (!want) continue;
+
+        // If the INPUTS differ, the sample sets are not the same and nothing below means
+        // anything. Nothing has shown this yet, and it would be far bigger news than a
+        // divergent engine — it would be a divergent PRNG.
+        if (probe.rgb.join(',') !== want.rgb.join(',')) {
+          inputsDiffer++;
+          continue;
+        }
+
+        for (const [j] of names.entries()) {
+          const got = probe.output[j];
+          const committedHex = want.output[j];
+          if (got === undefined || committedHex === undefined || got === committedHex) continue;
+
+          const distance = ulpDistance(hexToFloat64(got), hexToFloat64(committedHex));
+          const w = worst[j];
+          if (!w) continue;
+          w.n++;
+          if (distance > w.ulp) {
+            w.ulp = distance;
+            w.at = probe.index;
+            w.got = got;
+            w.want = committedHex;
+            w.rgb = want.rgb.join(' ');
+          }
+        }
+      }
+
+      if (inputsDiffer)
+        findings.push(
+          `${label}: ${String(inputsDiffer)} probe INPUTS differ — the sample sets are not ` +
+            'identical, which would be a divergent PRNG rather than a divergent engine',
+        );
+
+      for (const [j, w] of worst.entries())
+        if (w.n)
+          findings.push(
+            `${label} ${String(names[j])}: ${String(w.n)}/${String(actual.length)} probes differ, ` +
+              `worst ${String(w.ulp)} ulp at sample ${String(w.at)} (rgb ${w.rgb}) — ` +
+              `got ${w.got}, committed ${w.want}`,
+          );
+    };
+
+    magnitude('metric', fixture.metrics, run.probes, fixture.probes);
+    magnitude('stage', STAGE_NAMES, stageRun.probes, fixture.stageProbes);
 
     expect(
       findings,

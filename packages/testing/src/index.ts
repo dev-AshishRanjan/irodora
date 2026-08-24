@@ -12,7 +12,7 @@
 
 export { createPrng, type Prng } from './prng.js';
 export { sampleSrgb, STRATA_CYCLE, type Sample, type Stratum, type Triple } from './sampling.js';
-export { float64ToHex, hexToFloat64, float64Digest } from './bits.js';
+export { float64ToHex, hexToFloat64, float64Digest, ulpDistance } from './bits.js';
 export {
   runIdentityVectors,
   type IdentityOptions,
