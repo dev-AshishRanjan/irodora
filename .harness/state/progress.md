@@ -8,6 +8,163 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-012 · the corpus is ours, and every part of it says the same thing
+
+`content/colors/` is no longer empty. **2026.08.1 publishes 120 entries and 5 palettes**, root
+checksum `c177a55f…`, engine 0.1.0. R2 is unblocked.
+
+### The constraint decided the feature, and one thing was still open
+
+There is no colorimeter and no cleared primary source. So `sourceType` can only be `editorial`,
+and `checkClassification` then permits only `japanese-inspired` or `editorial` — `historical`,
+`traditional` and `modern-japanese` are unavailable by construction, not by choice.
+
+What was **not** already decided was the names, and
+[ADR-0065](../../docs/adr/0065-the-seed-corpus-is-coined-not-canonical-and-constructed-not-measured.md)
+decides it. Attaching 藍鼠 to a value that is ours would leave every field technically true and
+still mislead: a reader who recognises the name concludes the **value** is the traditional
+colour's, and the classification label sits three lines below and loses. That is ADR-0007's
+dishonesty pointed sideways, and it is easier to commit than copying because it requires no
+external action.
+
+**So the seed names are Irodora coinages**, built from ordinary Japanese vocabulary, hyphenated
+in romaji to mark them as constructed, and saying so in `editorialNotes` on every entry rather
+than only in the ADR. The Indigo entries are named from water, sky and night rather than from
+the dye, for the same reason — the palette carries the indigo framing and states its limit;
+naming the entries after the vat would have made a material claim in 24 places that
+`taxonomy.material: null` denies in the same file.
+
+The ADR also settles two conventions that would otherwise have been invented while authoring.
+`taxonomy.temperature` comes from **ADR-0049's `WARM_HUE = 55` / `COOL_HUE = 245`** — the
+constants that ADR put in the engine _specifically_ so this field could not contradict it — with
+the bisector left `neutral` rather than forced to a side. That is why 16 entries, including every
+mid-green, read `neutral`: it is the region ADR-0049 refused to draw a boundary through because
+sources disagree there. The bands come from the same OKLCh the value was specified in, so they
+cannot drift out of agreement with the colour they describe.
+
+Every entry records `era`, `material` and `historicalNote_en` as `null` **with a reason**. 120
+nulls in three columns is an honest corpus, and those columns are where a measurement lands the
+day one exists — by superseding, never by editing.
+
+### E-017 fired, and it is the best evidence in the feature
+
+With the corpus in place and **every other gate green**, `verify-font-coverage` reported
+
+```
+183 codepoint(s) not in the font
+  ✗ U+8D64 赤   ✗ U+571F 土   ✗ U+9244 鉄   ✗ U+96E8 雨   ✗ U+77F3 石   ✗ U+9752 青
+```
+
+Tofu on the colour names themselves — the exact failure
+[ADR-0057](../../docs/adr/0057-the-japanese-face-is-a-bundled-noto-sans-jp-subset-generated-from-the-corpus.md)
+chose a generated subset to surface at build time instead of on a device, in front of the
+audience least likely to be in the room. Subset regenerated: **272 required codepoints against
+639 in the face**, 451 KB → 547 KB.
+
+**And E-017's own rationale was stale.** It said the guard was _"built and proven but not yet
+blocking"_ and that the script _"exits 1 today because no font asset exists"_ — untrue since
+F-076, and still written down through F-087 and F-088. It was caught by **running** the guard
+rather than by reading about it. Gate 0 passed the whole time, because a rationale describing a
+world that no longer exists is still a well-formed string on a valid path.
+
+That is the same defect class F-074 fixed for acceptance criteria and the PRD metrics table,
+aimed at a file it was never extended to. Rationale and memory note corrected, lesson recorded,
+and the gap filed as **F-089** rather than left as an observation. The sharp version: _the
+rationale is where the honest admissions live, so a promise kept turns its own record into a
+lie._
+
+### A new effect link, and it did not exist until there was content
+
+**E-021 — `docs/content/licensing-and-provenance.md` §5 → every record.** `parseRegister` reads
+the table's **column names and their order**, and all 125 records cite its single row
+`IRO-ED-001`. A tidy-up of a document that reads like prose now unpublishes the corpus, and the
+diff looks harmless. It binds in both directions and both were watched failing: an unregistered
+id is rejected, and — the case that matters — an entry keeping the registered id while changing
+its `source` **text** is rejected too, because that entry would display one provenance and be
+licensed under another.
+
+The register's first row is **rank 5 of our own source hierarchy**, the lowest rank that is a
+source at all, and §5 now says so. A reader auditing the corpus finds one source behind all 125
+records. That is thin, and it is visible in one place rather than spread across 125 plausible
+rows.
+
+### What measurement found that authoring could not
+
+A pairwise ΔE00 scan over all 120 caught two **cross-group** near-duplicates:
+
+| Pair                                                    | ΔE00     |           |
+| ------------------------------------------------------- | -------- | --------- |
+| `usu-mizu` (Indigo) / `usu-rai` (Seasonal winter)       | **1.51** | separated |
+| `sabi-suna` (Earth) / `chiri-ba` (Seasonal autumn)      | **2.40** | separated |
+
+Two unrelated names, descriptions and editorial arguments attached to what a reader would call
+one colour — invisible per file and per group, because nobody designs the winter colours while
+looking at the indigo ladder. Caught before publishing, which mattered: a published version is
+immutable, so the alternative was superseding 120 entries to move two. The two pairs still under
+ΔE00 3.0 are both inside the Quiet Neutrals ramp, where fine spacing is the point.
+
+All 120 are in sRGB gamut, so `renderDeltaE00` is 0 on every entry and no seed swatch is an
+approximation of anything.
+
+### Gates run, and what they said
+
+| Gate                                     | Result                                                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `state`                                  | **passed** — 15 checks, 18 effect links, notes paired                                       |
+| `content`                                | **passed** — 120 entries · 5 palettes · 1 published version · 1 registered source · 22 fixture corpora |
+| font coverage · subset `--check`         | **passed** — 272 required, 639 in the face; subset current                                  |
+| `verify-content-proof`                   | **passed** — 25 cases discriminate, baseline green either side                              |
+| **10 mutations against the REAL corpus** | **each red, naming the right field**; the decoy stayed green                                |
+| `typecheck` · `lint` · `format` · `build` | **passed** — 31 tasks                                                                      |
+| `test`                                   | **passed**                                                                                  |
+| `color-golden`                           | **passed** — 17 tasks; run because this feature is E-001's destination end                  |
+
+**Not run:** `contrast`, `cvd`, `a11y`, `security`, `e2e`, `perf` — none in F-012's set, no
+surface touched and no dependency changed.
+
+The mutation run is the part worth keeping. `verify-content-proof.mjs` exercises the rules over
+**fixtures under `packages/`**, and the corpus scan globs `content/` only — two different code
+paths, so a rule proven on one is not thereby proven on the other. Ten cases against real files:
+a `fixture-` slug in `content/`, a dangling relation, a palette without its anchor, an
+unregistered `sourceId`, a registered id with altered source text, our own curation calling
+itself `traditional`, a self-review claiming to be independent, a hex typed into a source entry,
+a null that lost its reason, and a duplicate slug.
+
+### Recorded honestly
+
+- **All 125 records are `reviewIndependence: "self"`, by one non-native editor.** That is the
+  largest single use of ADR-0060 so far, and it is a fact about the release rather than a detail
+  of each entry.
+- **The attested criterion got sharper, not closer to discharged.** Every Japanese name is a
+  coinage, and a coinage can **collide with a traditional colour name we do not know exists** —
+  which would recreate ADR-0065's own target failure, silently, on 120 entries at once. Nothing
+  here can detect that; `self` labels the review as weak but does not look for a collision.
+- **Gate 0 refused a second attestation** for a criterion that was not in the acceptance list —
+  correctly. Attestation excuses a criterion from being gated, and one nobody agreed to cannot be
+  excused. The Japanese-quality obligation is F-017's, and F-012 has enlarged it by 120 strings;
+  that is said in F-017's criterion rather than invented as a new one here.
+- **Authored, not generated, and the line is stated.** Names, descriptions, coinage notes and
+  palette reasoning were written. The mechanical assembly — OKLCh → XYZ, bands, temperature,
+  proximity relations — ran from a one-shot script that was **not committed**, because the entry
+  files are the authored artefacts and each re-derives its own `xyz` from the OKLCh in its own
+  `derivation` string.
+- **62 entries carry `complementary: []` and say why**: below chroma 0.04 the hue is not a
+  reliable enough statement to oppose. "No complementary colours" must not be readable as "nobody
+  looked".
+- **The corpus is less interesting than one of traditional colours would be.** 藍鼠 has a
+  history; a coinage has a construction. This is a well-provenanced set of colours, not a document
+  of Japanese colour tradition, and ADR-0065 says so in its own consequences.
+
+### Next
+
+**F-018 — Colour Atlas and colour detail.** It has data now, and it also carries two obligations
+that only a surface can discharge: F-084's (a self-reviewed entry shows that it was reviewed by
+its author) and FR-24's (provenance on the detail surface, not on a legal page). With the seed
+corpus being what it is, the classification and the coinage note are the two things that most
+need to reach a reader.
+
+---
+
 ## 2026-08-24 — F-088 · the comparison was worth more than the wrapper would have been
 
 Written as *"rebuild `Text`, `Icon`, `Status` and `Surface` as HeroUI wrappers"*. Reading

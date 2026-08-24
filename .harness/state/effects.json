@@ -45,7 +45,7 @@
       "severity": "critical",
       "guard": "gate:color-golden",
       "memory": "memory/effects/srgb-xyz-is-the-root-of-every-derived-value.md",
-      "rationale": "Every corpus entry's lab, lch, oklch, rgb and hex are computed from xyz by this transform at publish time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it. BOTH ENDS ARE NOW GUARDED. The SOURCE end since F-006: 64 cited golden entries across five datasets plus a 300,000-value determinism digest fail on any change. The DESTINATION end since F-011: gate:content recomputes every derived value in the LATEST published bundle from its own xyz under the CURRENT engine and fails naming the entry, and scripts/verify-content-proof.mjs watches it go red on a perturbed OKLab matrix: one case adds 0.01 to XYZ_TO_LMS_OKLAB[0], rebuilds color-spaces and corpus, asserts gate 11 exits 1, then restores and rebuilds. THAT CASE DID NOT EXIST WHEN THIS SENTENCE WAS FIRST WRITTEN — an evaluation ran exactly that experiment, watched the gate stay GREEN, and reported the claim as false. It is true now because the case was built, not because the wording was softened. The remedy is always to PUBLISH A NEW VERSION, never to edit a published one (FR-10, ADR-0046) — the gate message says so. Older versions are checksum-verified only and the gate PRINTS that it skipped them: they were derived by an engine we no longer have, and asserting that today's engine reproduces yesterday's answer is exactly the claim FR-10 says we must not make.",
+      "rationale": "Every corpus entry's lab, lch, oklch, rgb and hex are computed from xyz by this transform at publish time, and nothing recomputes them on read. A change here silently invalidates thousands of stored values with no compiler error and no failing test unless one exists specifically for it. BOTH ENDS ARE NOW GUARDED. The SOURCE end since F-006: 64 cited golden entries across five datasets plus a 300,000-value determinism digest fail on any change. The DESTINATION end since F-011: gate:content recomputes every derived value in the LATEST published bundle from its own xyz under the CURRENT engine and fails naming the entry, and scripts/verify-content-proof.mjs watches it go red on a perturbed OKLab matrix: one case adds 0.01 to XYZ_TO_LMS_OKLAB[0], rebuilds color-spaces and corpus, asserts gate 11 exits 1, then restores and rebuilds. THAT CASE DID NOT EXIST WHEN THIS SENTENCE WAS FIRST WRITTEN — an evaluation ran exactly that experiment, watched the gate stay GREEN, and reported the claim as false. It is true now because the case was built, not because the wording was softened. The remedy is always to PUBLISH A NEW VERSION, never to edit a published one (FR-10, ADR-0046) — the gate message says so. AS OF F-012 THE DESTINATION END GUARDS REAL DATA: 2026.08.1 carries 120 entries whose lab, lch, oklch, rgb and hex are recomputed from their own xyz on every gate run, where before it guarded a five-record fixture bundle. Older versions are checksum-verified only and the gate PRINTS that it skipped them: they were derived by an engine we no longer have, and asserting that today's engine reproduces yesterday's answer is exactly the claim FR-10 says we must not make.",
       "confidence": 0.98,
       "origin": "manual",
       "status": "active"
@@ -190,7 +190,7 @@
       "severity": "high",
       "guard": "gate:content",
       "memory": "memory/effects/corpus-version-pins-caches-and-envelopes.md",
-      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog. AS OF F-011 THE GUARD IS REAL RATHER THAN PROMISED: the bundle is generated and checksummed, loadPublishedVersion verifies at load against a root digest taken from the LEDGER (never from the bundle — a file checked against a checksum it carries verifies itself), and the generator refuses to overwrite a published version. THE HONEST LIMIT, which gate 11 prints on every run: this is enforced against accident and DETECTED against intent. A committer who edits an entry AND its ledger row in one commit passes; the two-file diff and human review are the control, and nothing else is coming — the admin publish path was withdrawn with the server tier, so repository write access is product write access and branch protection is a security control rather than hygiene (ADR-0046, ADR-0051).",
+      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog. THE GUARD BECAME REAL IN F-011 AND WAS EXERCISED FOR THE FIRST TIME IN F-012: 2026.08.1 holds 120 entries and 5 palettes under root checksum c177a55ff003c7e1cc73dda5677e5719e5ed742c02760b6a1c81963dbd3a70fb, loadPublishedVersion verifies at load against a digest taken from the LEDGER (never from the bundle — a file checked against a checksum it carries verifies itself), and the generator refuses to overwrite a published version. Ten mutations were also run against the REAL corpus rather than the fixtures, because the two are reached by different code paths: the fixtures live under packages/ and the corpus scan globs content/ only, so a rule could in principle bind one and not the other. THE HONEST LIMIT, which gate 11 prints on every run: this is enforced against accident and DETECTED against intent. A committer who edits an entry AND its ledger row in one commit passes; the two-file diff and human review are the control, and nothing else is coming — the admin publish path was withdrawn with the server tier, so repository write access is product write access and branch protection is a security control rather than hygiene (ADR-0046, ADR-0051).",
       "confidence": 0.92,
       "origin": "manual",
       "status": "active"
@@ -378,7 +378,7 @@
       "severity": "high",
       "guard": "gate:content",
       "memory": "memory/effects/the-entry-schema-is-a-contract-with-every-authored-file.md",
-      "rationale": "parseEntry IS the corpus schema: adding a required field, tightening a pattern or renaming a key invalidates every authored file at once, and the spec document that describes it to editors goes stale in the same moment. The gate catches it only because it re-parses EVERY entry on every run rather than trusting a stored validity flag — a cached \"this one was fine\" would make a schema change invisible until someone touched the file. The destination nobody sees is the SPEC: the schema and docs/content/color-corpus-spec.md are two descriptions of one thing, and only one of them is executed. F-011 already found them disagreeing three ways about required provenance fields.",
+      "rationale": "parseEntry IS the corpus schema: adding a required field, tightening a pattern or renaming a key invalidates every authored file at once, and the spec document that describes it to editors goes stale in the same moment. The gate catches it only because it re-parses EVERY entry on every run rather than trusting a stored validity flag — a cached \"this one was fine\" would make a schema change invisible until someone touched the file. The destination nobody sees is the SPEC: the schema and docs/content/color-corpus-spec.md are two descriptions of one thing, and only one of them is executed. F-011 already found them disagreeing three ways about required provenance fields. SINCE F-012 THE BLAST RADIUS IS 125 AUTHORED FILES rather than 5 fixtures, and every one of them was written against the schema by a script that no longer exists — so a tightened field would have to be fixed by hand, 125 times, or by superseding the version.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -521,7 +521,7 @@
       "severity": "high",
       "guard": "script:verify-font-coverage.mjs",
       "memory": "memory/effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md",
-      "rationale": "A corpus publish that introduces a rare kanji — 蘇芳, 纁, 苅安 — produces TOFU on the product's most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS BUILT AND PROVEN BUT NOT YET BLOCKING: verify-font-coverage.mjs parses cmap formats 4 and 12 and its --prove mode builds a synthetic TTF to watch it report a present glyph as covered and an absent one as missing. It exits 1 today because no font asset exists, which is why it is NOT wired into gate:content — wiring a check that cannot pass would make gate 11 permanently red. F-076 carries the asset and the wiring, and until then this link is honestly reporting a check we owe rather than hiding it behind a lowered severity.",
+      "rationale": "A corpus publish that introduces a rare kanji produces TOFU on the product’s most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS NOW BLOCKING AND HAS FIRED FOR REAL. F-076 shipped the asset and wired verify-font-coverage.mjs into `pnpm test:content`, and F-012 is the first publish it could actually judge: with 120 entries in place and every other gate green, it reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, on the colour names themselves. The subset was regenerated (272 required codepoints, 639 in the face; 451KB to 547KB). THE EARLIER TEXT HERE SAID THE GUARD WAS \"BUILT AND PROVEN BUT NOT YET BLOCKING\" and that it exits 1 because no font asset exists. Both stopped being true when F-076 landed, and the sentence survived two features past its expiry — which is the ordinary way an effect note rots, since nothing executes a rationale. The remedy is never to relax the check: a codepoint the app can render and the font cannot is a tofu box, and a widened tolerance would only make it a silent one.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -635,6 +635,44 @@
       "memory": "memory/effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md",
       "rationale": "@irodora/ui is now built on heroui-native, which styles through className, and Uniwind resolves className in its METRO plugin. Jest never runs Metro. So a component that routes colour through a class renders in the a11y harness with NO COLOURS IN ITS TREE, and every colour check in the conformance suite iterates over an empty list — reporting nothing, printing as a pass, indistinguishable from a component whose every colour resolved. Measured, not feared: a real heroui-native Button came back with className, a transform, and backgroundColor: \"invalid\". THE GENERAL SHAPE, which is the reusable part: build-time style resolution buys runtime performance by moving work to where the test runner is not, and the second half of that trade is never in the library's documentation. THE GUARDS ARE REAL AND PROVEN: lint rejects a colour utility class or an arbitrary colour value inside a className in packages/ui, with two decoys in verify-guards.mjs; the conformance suite fails a registered subject whose tree carries no resolved colour at all, with a fixture that is the exact HeroUI tree plus a control that passes; and verify-motion rejects a component that allows HeroUI's highlight or ripple, which animate backgroundColor inside a dependency the style scan cannot read. NOT COVERED: a component that paints SOME colours through style and routes others through a class — lint is the only defence there — and a class name assembled at runtime.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-021",
+      "from": {
+        "kind": "doc",
+        "ref": "docs/content/licensing-and-provenance.md"
+      },
+      "to": [
+        {
+          "kind": "content",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "content",
+          "ref": "content/palettes"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/corpus/src/register.ts#parseRegister"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "docs/content",
+        "packages/corpus"
+      ],
+      "severity": "high",
+      "guard": "gate:content",
+      "memory": "memory/effects/the-source-register-is-a-markdown-table-that-125-records-depend-on.md",
+      "rationale": "THIS LINK DID NOT MATTER UNTIL F-012, AND NOW EVERY PUBLISHED RECORD RESTS ON IT. Section 5 of licensing-and-provenance.md is a hand-edited markdown table, and parseRegister reads its COLUMN NAMES AND THEIR ORDER: renaming a heading, reordering one, or losing the \"## 5. Source register\" line stops the gate rather than letting it guess, and deleting or renaming a row fails every entry citing it. All 120 entries and all 5 palettes of 2026.08.1 cite the single row IRO-ED-001, so one careless edit to a document that reads like prose invalidates the entire corpus. IT BINDS IN BOTH DIRECTIONS AND BOTH WERE WATCHED FAILING against the real corpus, not only the fixtures: an entry citing an unregistered id is rejected, and — the case that actually matters — an entry keeping the registered id while changing its `source` TEXT is rejected too, because that entry would display one provenance and be licensed under another. THE DOCUMENT STAYS PROSE ON PURPOSE. Generating this table from JSON would remove the brittleness and also remove the human review it exists for: it is a legal safeguard read by a person before each corpus version ships (ADR-0007). The brittleness is handled the only honest way — an unparseable table is a FAILURE, never an absence of constraint.",
+      "confidence": 0.93,
       "origin": "manual",
       "status": "active"
     }

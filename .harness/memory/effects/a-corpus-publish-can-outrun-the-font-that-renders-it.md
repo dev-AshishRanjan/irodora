@@ -2,8 +2,9 @@
 kind: effect
 title: A corpus publish can outrun the font that renders it, and the failure is a silent empty box
 category: contract
-confidence: 0.9
+confidence: 0.95
 created: 2026-08-20
+updated: 2026-08-24
 scope: [content, apps/mobile]
 links: [[the-message-key-set-is-a-contract-with-every-render-site]], [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]], [[corpus-version-pins-caches-and-envelopes]]
 ---
@@ -35,7 +36,7 @@ That single property is what made ADR-0057 choose a bundled subset over the plat
 the platform font — iOS Hiragino Sans, Android Noto Sans CJK — the same claim is verifiable
 only on a device, on every OS version, forever.
 
-## The guard is built and proven, and is not yet blocking
+## The guard is blocking, and it has fired
 
 `scripts/verify-font-coverage.mjs` parses `cmap` formats 4 and 12, collects required codepoints
 from the corpus and the `ja` catalogue, and names the entry and the codepoint on a miss. Two
@@ -50,14 +51,24 @@ things it refuses to do:
 `--prove` builds a synthetic TTF in memory, so it is watched discriminating today rather than
 trusted until the day it matters [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]].
 
-**It exits 1 right now**, because there is no font asset: the app falls back to the platform
-face, so *"every kanji renders"* is unverified rather than verified, and a green exit would say
-the opposite. It is deliberately **not** wired into `gate:content` — wiring a check that cannot
-pass would make gate 11 permanently red. **F-076** carries the asset, the subsetting pipeline,
-the `NOTICE.md` licence entry and the wiring.
+**F-076 shipped the asset and wired it into `pnpm test:content`. F-012 is the first publish it
+could actually judge, and it caught one.** With 120 entries in place and every other gate green,
+it reported **183 codepoints missing** from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among
+them, which is to say the colour names themselves. The subset was regenerated: 272 required
+codepoints against 639 in the face, and the asset grew from 451 KB to 547 KB.
 
-Recorded this way on purpose: the link honestly reports a check we owe, rather than hiding the
-gap behind a lowered severity. That is the same posture E-009 takes on rule weights.
+That is the whole value of the link, delivered: the corpus went in, everything else stayed
+green, and the one check that could see the problem saw it at build time rather than a reader
+seeing empty boxes on a device.
+
+### What this note said before, and why that is worth recording
+
+Until F-012 this section was headed *"built and proven, and is not yet blocking"*, and said the
+script exits 1 because no font asset exists. **Both stopped being true when F-076 landed, and
+the wording survived two features past its expiry.** Nothing executes a rationale, so an effect
+note goes stale exactly the way a comment does — the difference is that this one is the thing a
+future session reads to decide whether a check can be trusted. Re-read the note against the
+gate, not the gate against the note.
 
 ## The remedy is never to relax the check
 

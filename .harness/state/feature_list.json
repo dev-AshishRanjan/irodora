@@ -418,7 +418,7 @@
       "service": "content",
       "release": "R1",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-011",
         "F-084"
@@ -434,16 +434,23 @@
         "state",
         "content"
       ],
-      "notes": "OQ-4 REMOVED IN F-074: docs/PRD.md records it as closed — \"OQ-4 is settled at ~120 entries — depth over breadth\" — while this feature still listed it as blocking. OQ-5 remains and is the real blocker, and it is not a code problem: content/editors.json holds ONE editor, and the content gate requires two DISTINCT roster identities for a published entry (ADR-0047). No entry can be published until a second editorial identity exists, and inventing one would fabricate the provenance the roster exists to guarantee. UNBLOCKED 2026-08-23 by F-084 and ADR-0060: OQ-5 is closed as a decision rather than an answer. content/editors.json still holds ONE editor, and an entry now DECLARES whether its reviewer was its author — provenance.reviewIndependence, required from `verified` onward, \"independent\" or \"self\". A seed entry may therefore be authored and reviewed by ed-001 provided it says so. THE OBLIGATION DID NOT GO AWAY, it changed shape: the attested criterion below still stands, and for the Japanese half it is now sharper rather than softer — a single non-native editor cannot self-check a mistranslation at all, and `self` does not distinguish \"I checked my own arithmetic\" from \"nobody competent read the Japanese\". That is the reason to keep looking for a reviewer.",
+      "notes": "DONE. 2026.08.1 published: 120 entries, 5 palettes, root checksum c177a55ff003c7e1cc73dda5677e5719e5ed742c02760b6a1c81963dbd3a70fb, engine 0.1.0. THE CONSTRAINT DECIDED THE FEATURE: there is no colorimeter and no cleared primary source, so sourceType can only be `editorial`, and checkClassification then permits only `japanese-inspired` or `editorial`. What was NOT already decided was the names, and ADR-0065 decides it — the seed names are Irodora coinages, not the received canon. Attaching 藍鼠 to a value that is ours would let a reader conclude the VALUE is the traditional colour’s: ADR-0007’s dishonesty pointed sideways, and easier to commit because it needs no external action. Every entry says in editorialNotes that its name is a coinage. ADR-0065 also settles two conventions that would otherwise have been invented while authoring: taxonomy.temperature is assigned from ADR-0049’s WARM_HUE=55 / COOL_HUE=245 — the constants that ADR put in the engine SPECIFICALLY so this field could not contradict it — with the bisector left `neutral` rather than forced to a side, which is why 16 entries including every mid-green read neutral; and the bands come from the same OKLCh the value was specified in, so they cannot drift. E-017 FIRED FOR REAL AND IT IS THE BEST EVIDENCE IN THE FEATURE: with the corpus in and every other gate green, verify-font-coverage reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, which is tofu on the colour names themselves. That is precisely the failure ADR-0057 chose a generated subset to surface at build time. Subset regenerated: 272 required against 639 in the face, 451KB to 547KB. E-017’S OWN RATIONALE AND MEMORY NOTE WERE STALE — they claimed the guard was \"not yet blocking\" for two features after F-076 wired it, and it was caught by RUNNING the guard rather than reading about it. Both corrected; the general lesson is a memory note and the gap is F-089. A NEW EFFECT LINK, E-021: the source register is a hand-edited markdown table whose COLUMN NAMES AND ORDER parseRegister reads, and all 125 records cite its single row IRO-ED-001 — so a tidy-up of a prose document unpublishes the corpus, and the diff looks harmless. It binds both ways and both were watched failing. TEN MUTATIONS RUN AGAINST THE REAL CORPUS, not only the 22 fixture corpora, because the two are reached by different code paths — fixtures live under packages/ and the corpus scan globs content/ only. Each went red naming the right field; the decoy — an entry reformatted and its keys reordered — stayed green. MEASUREMENT FOUND WHAT AUTHORING COULD NOT: a pairwise ΔE00 scan across all 120 caught two CROSS-GROUP near-duplicates, usu-mizu/usu-rai at 1.51 and sabi-suna/chiri-ba at 2.40 — two unrelated names for what a reader would call one colour, invisible per-file and per-group. Both separated before publishing, which mattered because a published version is immutable. The two pairs still under ΔE00 3.0 are both inside the Quiet Neutrals ramp, where fine spacing is the point. All 120 are in sRGB gamut, so renderDeltaE00 is 0 on every entry and no seed swatch is an approximation. AUTHORED, NOT GENERATED, AND THE DISTINCTION IS STATED: names, descriptions, coinage notes and palette reasoning were written; the mechanical assembly (OKLCh→XYZ, bands, temperature, proximity relations) ran from a one-shot script that was NOT committed, because the entry files are the authored artefacts and each re-derives its own xyz from the OKLCh in its own derivation string. 62 entries carry `complementary: []` and say why — at chroma below 0.04 the hue is not a reliable enough statement to oppose — so \"no complementary colours\" cannot be read as \"nobody looked\".",
       "attested": [
         {
           "criterion": "Seed corpus published with 100 percent complete provenance and a named reviewer per entry",
-          "verifiedBy": "A named Japanese editorial reviewer signing off each entry. The content gate proves the FIELDS are complete and, since F-084, that an entry which was self-reviewed SAYS SO — it still cannot prove the reviewer read it, and under ADR-0060 it cannot even prove a second person existed. For a Japanese corpus reviewed by one non-native editor this criterion is further from discharged than it was, not closer, and it is recorded here so that publishing under `self` is never mistaken for meeting it.",
+          "verifiedBy": "A competent Japanese speaker reading each entry and signing it against a roster id (ADR-0047). The content gate proves the FIELDS are complete and, since F-084, that a self-reviewed entry SAYS SO — it cannot prove the reviewer read it, and under ADR-0060 it cannot prove a second person existed. ALL 125 RECORDS OF 2026.08.1 ARE reviewIndependence: \"self\", by one non-native editor, which is the largest single use of ADR-0060 so far. F-012 MADE THIS CRITERION SHARPER RATHER THAN CLOSER TO DISCHARGED, and in a new way: under ADR-0065 every Japanese name in the seed corpus is an Irodora COINAGE. A coinage can be awkward, can read as an error, or can COLLIDE WITH A TRADITIONAL COLOUR NAME WE DO NOT KNOW EXISTS — which would recreate exactly the dishonesty ADR-0065 was written to prevent, silently, on 120 entries at once. No check in this repository can detect that; `reviewIndependence: \"self\"` labels the review as weak but does not look for a collision. The corpus is immutable, so the remedy is superseding entries in a new version, never editing 2026.08.1. This is recorded here so that publishing under `self` is never mistaken for meeting the criterion. THE SAME READING DISCHARGES PART OF F-017’S OWN ATTESTED CRITERION, which F-012 has made much larger: every description_ja here was WRITTEN, never machine-translated (ADR-0028 rejects that outright), but \"written by a non-native editor\" and \"idiomatic\" are different claims and only the first is true. The descriptions were kept short and factual to reduce the surface for error, which is a mitigation and not a verification.",
           "blocks": "release",
           "status": "outstanding"
         }
       ],
-      "plan": "plans/F-012-the-seed-corpus-is-our-own-work-and-says-so.md"
+      "plan": "plans/F-012-the-seed-corpus-is-our-own-work-and-says-so.md",
+      "effects": [
+        "E-001",
+        "E-006",
+        "E-013",
+        "E-017",
+        "E-021"
+      ]
     },
     {
       "id": "F-013",
@@ -2337,6 +2344,28 @@
       "effects": [],
       "notes": "RE-SCOPED after reading HeroUI's equivalents. Written as \"rebuild Text, Icon, Status and Surface as HeroUI wrappers\"; the comparison found no behaviour to inherit. HeroUI ships no Icon; its Alert is a banner rather than an inline status and cannot carry ADR-0044's three channels; its Surface adds a ThemeBackground/GlassView blur layer that would have to stay permanently disabled, because a blur tints what it surrounds and that is the simultaneous-contrast hazard swatch.well exists to prevent; and everything its Text offers over ours — accessibilityRole=\"header\", dynamicTypeRamp — are native React Native Text props. Button DID gain from HeroUI and was rebuilt in F-087. HeroUI is used where it has behaviour to give: the R2 components, each arriving with the screen that consumes it.",
       "plan": "plans/F-088-the-affordances-the-comparison-surfaced.md"
+    },
+    {
+      "id": "F-089",
+      "title": "Gate 0 catches an effect rationale that describes a world that no longer exists",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R2",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A rationale or memory note asserting a guard is absent, unbuilt or not blocking fails gate 0 when the named guard is in fact wired and running",
+        "A link whose guard is genuinely \"none\" still passes, because that is the honest case the graph is designed to carry",
+        "The check is proven by planting a discharged obligation in a rationale and watching gate 0 report it by link id and phrase",
+        "An escape hatch in the same visible-and-reasoned shape as retired-ok, for a rationale that describes a past state on purpose"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FOUND IN F-012. E-017 said its guard was \"built and proven but NOT YET BLOCKING\" and that verify-font-coverage.mjs \"exits 1 today because no font asset exists\". F-076 shipped the asset and wired the script into pnpm test:content; the rationale and its paired memory note kept saying the opposite through F-076, F-087 and F-088. It was caught by RUNNING the guard, not by reading about it — the script immediately reported 183 missing codepoints over the new corpus. THIS IS THE SAME DEFECT CLASS F-074 FIXED FOR ACCEPTANCE CRITERIA AND THE PRD METRICS TABLE, aimed at a different file. Gate 0 already checks that every link path resolves, that every critical link names a guard, and that every link has a paired memory note — and all three passed the whole time, because a rationale describing a world that no longer exists is still a well-formed string on a valid path. WHY IT MATTERS MORE HERE THAN IN A CODE COMMENT: the rationale is where the honest admissions live — \"guard: none\", \"not yet blocking\", \"detected against intent rather than enforced\" — so a promise kept turns its own record into a lie, and the reader it misleads is one deciding whether to skip a verification. THE HARD PART IS NOT THE PATTERN, IT IS THE INVERSE: the check must fire only when the claim disagrees with gates.json and package.json, never on a link that honestly reports a check we owe (E-009). A word-matcher that flags every \"not yet\" would be deleted within a release."
     }
   ]
 }
