@@ -34,6 +34,20 @@ apps/mobile/android/
 *.keystore
 !debug.keystore
 
+# Signing key material. *.keystore and *.key were already here; PKCS#12 was NOT,
+# and on 2026-08-24 a release keystore generated in the repository root was committed
+# and pushed to a PUBLIC repository by a `git add -A`. The key had to be destroyed and
+# regenerated. scripts/verify-no-key-material.mjs now fails the build on any of these
+# being TRACKED, because a .gitignore entry only helps for a file nobody force-added.
+*.p12
+*.pfx
+*.jks
+*.crt
+*.cer
+*.der
+*.p8
+*.mobileprovision
+
 # Environment & secrets
 .env
 .env.*
