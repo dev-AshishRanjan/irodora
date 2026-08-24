@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Button, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import { differenceOklch, displayFromOklch } from '../engine';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -36,7 +36,18 @@ const SAMPLES: readonly { readonly nameKey: MessageKey; readonly oklch: Triple }
   { nameKey: 'sample.blueBlack', oklch: BLUE_BLACK },
 ];
 
-export function Home(): React.JSX.Element {
+export interface HomeProps {
+  /**
+   * Open the Atlas. Supplied by the route, absent in the conformance suite.
+   *
+   * Home is where a person lands, so an Atlas with no route to it would be the shape of
+   * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] — 120 colours, every gate
+   * green, and nothing on screen leading to any of them.
+   */
+  readonly onOpenAtlas?: () => void;
+}
+
+export function Home({ onOpenAtlas }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
   const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
@@ -87,6 +98,13 @@ export function Home(): React.JSX.Element {
       <Text size="small" color="foreground.2" script={script}>
         {t('home.offline')}
       </Text>
+
+      <Button
+        label={t('home.openAtlas')}
+        onPress={() => {
+          onOpenAtlas?.();
+        }}
+      />
     </View>
   );
 }

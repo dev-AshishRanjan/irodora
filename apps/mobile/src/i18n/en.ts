@@ -37,6 +37,7 @@ export const en = {
   'sample.blueBlack': 'Blue-black',
 
   'atlas.title': 'Colour Atlas',
+  'home.openAtlas': 'Browse the colours',
   'atlas.corpus': 'Corpus',
   'atlas.colours': 'colours',
   'atlas.palettes': 'palettes',

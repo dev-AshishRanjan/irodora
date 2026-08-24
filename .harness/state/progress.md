@@ -8,6 +8,168 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-018 · the corpus reaches a reader, and three checks found what review would not
+
+The Atlas lists all 120 colours from its root with no filter, and a detail screen shows
+everything an entry carries. `2026.08.1` is verified before the first frame is drawn.
+
+### Verification at load, and the two things that made it possible
+
+`loadPublishedVersion` has no warn mode — *"an option to skip verification is a verification
+nobody performs on the day it matters"* — so holding a `VersionBundle` means having verified
+one. What was missing was any way to call it on a device.
+[ADR-0066](../../docs/adr/0066-the-app-verifies-the-corpus-with-noble-hashes-and-ships-the-bundle-as-generated-text.md)
+settles both halves.
+
+**The digest function has to be synchronous.** `expo-crypto` offers `digestStringAsync` and
+nothing else, and moving verification behind a promise means the first frame can be drawn from
+an unverified bundle — at which point *"verified at load"* has quietly become *"verified shortly
+after we started drawing"*. `@noble/hashes` is audited, zero-dependency and synchronous, **and
+is not trusted on arrival**: `assertSha256` runs it against the published vectors first,
+including 藍鼠, which catches a hasher encoding UTF-16 rather than UTF-8 — the failure that
+survives an ASCII test and then breaks on precisely this corpus.
+
+**The bundle ships as generated text with the ledger's digest beside it**, two exports from two
+files. A bundle checked against a checksum it carries verifies itself, so the generator reads
+the text from `<label>.json` and the expected value from `index.json`, and a test asserts the
+bundle carries **no** self-describing root digest a careless call site could pass instead.
+
+Five mutations over the **real** pinned bundle, not a fixture: an edited entry, an edited
+*derived* value, an entry removed where every survivor still hashes, and the right bundle
+against a wrong digest. The unmutated pair loads.
+
+### The conformance suite found something structural
+
+The filter chips and the search box were a `Pressable` and a `TextInput` written inside
+`Atlas.tsx` — and **nothing checks a control that lives in a screen**:
+
+| Suite | Covers | Misses |
+|---|---|---|
+| `packages/ui` | registered components | anything not in the library |
+| `apps/mobile` | screens, as `static` subjects | states a screen does not have |
+
+A control in a screen file falls between them. Declaring the *screen* `interactive` is the
+tempting fix and the wrong one: it demands five states a screen does not have, the render
+ignores its state argument, and the pressure is then to claim `static` to make the noise stop —
+and the kind is the one lever a component has over its own required list.
+
+So `Chip` and `SearchField` are `@irodora/ui` components now, and the Atlas is `static`. The
+move produced two more findings immediately:
+
+- **the chips declared no `minWidth`.** A chip is content-width, so "All" and "Warm" sit under
+  44 px. WCAG asks for the target, not the text.
+- **the suite's own model of "interactive" was press-only.** `SearchField` was reported as
+  *"declares kind interactive but nothing in the tree responds"* — a text field responds to
+  typing. Until now every interactive control here was a button or a swatch, so "responds" and
+  "responds to a press" were the same set and nothing separated them. `pressableNodes` counts
+  `onChangeText` now.
+
+That third one is the reusable part, and it is a lesson: **when a check objects, ask whether its
+model is the thing that is wrong.** The first two were the screen's fault. The third was the
+suite's, and the fix was to widen a definition rather than add an exemption.
+
+### Two bugs the source caught before any test could
+
+**`simulateDichromacy` takes RGB, not XYZ.** Both are `Triple`, so `entry.color.xyz` type-checks
+perfectly and returns a plausible wrong colour — the same trap as handing OKLCh to ΔE00.
+
+**And it throws for `tritan`, by design.** `VIENOT_1999` has no tritan entry because Viénot's
+single-plane simplification is not accurate for it and publishing one anyway would invent a
+value the source does not. So the block uses Machado's `simulateAnomalous` at severity 1 over
+the bundle's own encoded sRGB — and the copy says **"red-weak"** rather than "protanopia",
+because those are different conditions and the label has to match the model that drew the
+swatch.
+
+### Boundary #24, and the decoy that keeps it usable
+
+> *Browsing renders values read from the published bundle; the engine is called for derived
+> answers, never to recompute a value the bundle already carries.*
+
+A screen may not import `xyzTo*` or `gamutMap*`. Recomputing a bundled value looks identical,
+passes every test, and returns **today's** engine's answer for a version published under an
+older one (FR-10, E-001).
+
+`srgbToHex` is deliberately **not** banned — the colour-vision block encodes a *simulated*
+triple, which is a derived answer the bundle does not carry. That distinction is a **silent
+decoy**: source the rule must accept. `verify-guards.mjs` had no such concept, so it gained one,
+and overreach is now its own failure with its own fix — *a rule that blocks correct code is a
+rule somebody turns off, and then the boundary is gone entirely*. **25 boundaries, 1 decoy.**
+
+### The catalogue nearly quadrupled, and its own tests caught two design errors
+
+9 keys to 103. Both findings were design errors rather than typos:
+
+- **`atlas.of` was an English sentence pattern forced onto Japanese.** "Showing 24 of 120"
+  reorders completely in Japanese. Deleted rather than translated; the screen renders digits and
+  a solidus.
+- **`IDENTICAL_BY_DESIGN` is capped at three deliberately**, and five colour-space names wanted
+  in. Lengthening the list would have made the cap a number to edit, so the names became
+  `NOTATION_KEYS` — a category governed by an anchored shape and a length cap rather than by a
+  longer list of favours. **The ad-hoc list is now empty.** Its decoy immediately caught the
+  first shape admitting "Not recorded", twelve characters of ordinary prose.
+
+### Effects
+
+**E-022 is new.** The app does not read `content/versions/` — it reads a **copy**. Publish a new
+version without regenerating and the app stays on the old one, silently, with every gate green:
+the old pair still verifies, because it is a valid bundle against its own valid ledger row.
+Guarded by `--check` inside gate 11, watched failing on a hand-edited count first.
+
+**E-017 fired a second time, from the other input.** Font coverage reads the `ja` catalogue as
+well as the corpus, and 94 new UI strings introduced **105 uncovered codepoints** — 一, 覧, 収,
+録, 版. The link is not only about rare kanji in colour names; ordinary UI Japanese outruns the
+subset just as easily, and on the chrome every screen renders. Subset regenerated: 386 required
+against 744 in the face.
+
+**E-016** now costs about eleven times what it did: every one of 103 keys needs a written
+Japanese string, and F-017's attested criterion grew with it.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 19 effect links, notes paired |
+| `typecheck` · `lint` · `format` · `build` | **passed** — 31 tasks; lint includes 25 boundaries, 1 of them a decoy |
+| `test` | **passed** — 31 tasks; 86 in `mobile`, 65 in `ui` |
+| `a11y` | **passed** — 3/3 screens reached, 12 components, all reachable from a registry |
+| `contrast` | **passed** — both themes |
+| `content` | **passed** — 120 entries · font 386/744 · the app's corpus module current |
+
+**Not run:** `e2e`, `color-golden`, `cvd`, `perf`, `security`.
+
+**`e2e` is in this feature's verification list and could not be run**, which is the part worth
+saying plainly rather than in a footnote. Gate 7 is `pending`, its `activatesWith` names F-039 —
+which is *done* — and nothing in the workspace declares a `test:e2e` task, so `e2e-scope.mjs`
+fails for want of a surface. **F-091 is filed** so the same "not run" does not quietly repeat
+across F-019, F-020, F-021 and F-023.
+
+### Recorded honestly
+
+- **The network half of criterion 2 is not discharged**, and it is now this feature's attested
+  criterion. "Renders with no network access" is a claim about what the process does, and no
+  render-tree assertion can see a socket. The checksum half *is* discharged and proven.
+- **`F-084`'s attested criterion is discharged.** A self-reviewed entry says *"Checked by its own
+  author"*, in words, asserted over the render — not as a code a reader would have to decode.
+- **The Atlas shows `blue-grey` in both locales.** The corpus has no translated taxonomy
+  vocabulary, and a lookup table in the app would put words in the editor's mouth *and* be an
+  enumerated table against a set the corpus controls. **F-090** carries it; the family is
+  content, so its Japanese form belongs in content.
+- **Home now links to the Atlas.** Without that the whole feature would have been the shape of
+  [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] — 120 colours, every gate green,
+  and nothing on screen leading to any of them.
+- **450 KB of bundle text is in the JS bundle, parsed and hashed on the startup path.** That is
+  the price of ADR-0051's no-network guarantee and of verifying rather than trusting. It is not
+  measured yet, and if it is visible on a cold start it is a work item, never a reason to defer
+  the check.
+
+### Next
+
+**F-019 — Colour Compare.** It is the first surface that needs two entries at once and the first
+consumer of `deltaE00` between corpus values, which is the distinction boundary #24 draws
+between a stored value and a derived answer.
+
+---
+
 ## 2026-08-24 — F-012 · the corpus is ours, and every part of it says the same thing
 
 `content/colors/` is no longer empty. **2026.08.1 publishes 120 entries and 5 palettes**, root

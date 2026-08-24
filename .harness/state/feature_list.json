@@ -608,7 +608,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-012",
         "F-017",
@@ -628,8 +628,22 @@
         "a11y",
         "contrast"
       ],
-      "notes": "BLOCKEDBY F-012 ADDED IN F-074. It was missing, and F-018 cannot meet its own second criterion without it: content/versions/index.json is [], so there is no signed bundle at any version to read or to verify a digest against. Found while selecting the next feature after F-017 — the same class of defect as the retired-surface criteria, and one the F-074 check CANNOT see, because it is a missing field rather than a wrong word.",
-      "plan": "plans/F-018-the-atlas-reads-the-bundle-and-trusts-nothing-else.md"
+      "notes": "DONE. The corpus reaches a reader. THE ATLAS ROOT LISTS ALL 120 WITH NO FILTER, which is what makes criterion 1 checkable by walking the rendered tree rather than counting interactions by hand — a design where a family must be chosen first would make \"reachable\" depend on a filter set nobody enumerated. The detail screen carries all four names, every coordinate system, provenance, relations, palettes and colour vision, and it renders the FR-21 `unknowns` reason where a value is null, which is the only place those reasons mean anything. F-084’S ATTESTED CRITERION IS DISCHARGED HERE: a self-reviewed entry says \"Checked by its own author\" in words, asserted over the render. TWO DECISIONS IN ADR-0066. The digest function must be SYNCHRONOUS — expo-crypto is async only, and verification behind a promise can be outrun by the first render, at which point \"verified at load\" has become \"verified shortly after we started drawing\". @noble/hashes is audited and still not trusted on arrival: assertSha256 runs it against published vectors first, including 藍鼠, which catches a hasher encoding UTF-16. And the bundle ships as generated TEXT with the LEDGER’s digest beside it as two exports from two files, because a bundle checked against a checksum it carries verifies itself. WHAT THE CONFORMANCE SUITE CAUGHT WAS STRUCTURAL. The filter chips and the search box were a Pressable and a TextInput inside Atlas.tsx, where NOTHING checks them — the component suite covers the library, the screen suite covers screens as `static` subjects, and an interactive control in a screen file falls between the two. Chip and SearchField are now @irodora/ui components and the Atlas is `static`. The move immediately produced two more findings: the chips declared no minWidth (a chip is content-width, so \"All\" sits under 44px), and the suite’s OWN model of \"interactive\" was press-only, so a SearchField was reported as \"nothing in the tree responds\" — which would have pushed it to claim a kind it does not have. pressableNodes now counts onChangeText. That third one is the reusable lesson: when a check objects, ask whether its model is the thing that is wrong. TWO BUGS THE SOURCE CAUGHT BEFORE ANY TEST COULD. simulateDichromacy takes RGB, not XYZ — both are Triple, so passing entry.color.xyz type-checks and returns a plausible wrong colour, the same trap as handing OKLCh to ΔE00. And it THROWS for tritan by design, because VIENOT_1999 has no tritan entry and publishing one would invent a value the source does not. The block uses Machado’s simulateAnomalous at severity 1 over the bundle’s encoded sRGB, and the copy says \"red-weak\" rather than \"protanopia\" — different conditions, and the label has to match the model that produced the swatch. BOUNDARY #24 ENFORCES CRITERION 3: a screen may not import xyzTo* or gamutMap*, because recomputing a bundled value looks identical, passes every test, and returns TODAY’s engine’s answer for a version published under an older one (FR-10, E-001). srgbToHex is deliberately NOT banned — the CVD block encodes a simulated triple — and that distinction is a SILENT DECOY the rule must accept. verify-guards gained the concept and now reports overreach as its own failure with its own fix: 25 boundaries, 1 decoy. 93 NEW MESSAGE KEYS, and the existing i18n tests caught two design errors on the way in. `atlas.of` was an English sentence pattern forced onto Japanese and was DELETED rather than translated. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the colour-space names became NOTATION_KEYS — a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY, and its decoy caught the first shape admitting \"Not recorded\". E-017 FIRED A SECOND TIME, from the ja catalogue rather than the corpus: 105 uncovered codepoints of ordinary UI Japanese. The link is not only about rare kanji in colour names. E-022 IS NEW: the app reads a COPY of the bundle, so a publish without a regenerate ships a stale corpus with every gate green. Guarded by `--check` in gate 11, watched failing first. HOME NOW LINKS TO THE ATLAS. Without it the whole feature would have been the shape of a tested module nobody wired up — 120 colours, every gate green, and nothing on screen leading to any of them. F-090 (Japanese taxonomy vocabulary) and F-091 (the e2e harness) filed rather than left as comments; the Atlas shows `blue-grey` in both locales today and says so.",
+      "plan": "plans/F-018-the-atlas-reads-the-bundle-and-trusts-nothing-else.md",
+      "effects": [
+        "E-006",
+        "E-016",
+        "E-017",
+        "E-022"
+      ],
+      "attested": [
+        {
+          "criterion": "Reads the signed corpus bundle at a pinned version with its digest verified at load, and renders with no network access",
+          "verifiedBy": "THE FIRST HALF IS DISCHARGED AND THE SECOND IS NOT. Verification at load is real and proven: loadPublishedVersion has no warn mode, the app is its single call site, the text comes from the generated module and the expected digest from the LEDGER, and five mutations over the real pinned bundle are watched being refused — an edited entry, an edited derived value, an entry removed where every survivor still hashes, and the right bundle against a wrong digest. THE NETWORK CLAIM IS NOT CHECKED ANYWHERE. \"renders with no network access\" is a statement about what the process does, and a render-tree assertion cannot see a socket. Gate 7 is `pending`, nothing declares a test:e2e task, and e2e-scope fails for want of a surface to run — so `e2e` was listed in this feature’s verification and could not be run. F-091 carries the harness; F-039 already carries the matching attested criterion for the offline journey. Nothing in F-018 makes the network half of this criterion true, and it is recorded here rather than allowed to pass on the strength of the half that is.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-019",
@@ -2367,6 +2381,54 @@
         "state"
       ],
       "notes": "FOUND IN F-012. E-017 said its guard was \"built and proven but NOT YET BLOCKING\" and that verify-font-coverage.mjs \"exits 1 today because no font asset exists\". F-076 shipped the asset and wired the script into pnpm test:content; the rationale and its paired memory note kept saying the opposite through F-076, F-087 and F-088. It was caught by RUNNING the guard, not by reading about it — the script immediately reported 183 missing codepoints over the new corpus. THIS IS THE SAME DEFECT CLASS F-074 FIXED FOR ACCEPTANCE CRITERIA AND THE PRD METRICS TABLE, aimed at a different file. Gate 0 already checks that every link path resolves, that every critical link names a guard, and that every link has a paired memory note — and all three passed the whole time, because a rationale describing a world that no longer exists is still a well-formed string on a valid path. WHY IT MATTERS MORE HERE THAN IN A CODE COMMENT: the rationale is where the honest admissions live — \"guard: none\", \"not yet blocking\", \"detected against intent rather than enforced\" — so a promise kept turns its own record into a lie, and the reader it misleads is one deciding whether to skip a verification. THE HARD PART IS NOT THE PATTERN, IT IS THE INVERSE: the check must fire only when the claim disagrees with gates.json and package.json, never on a link that honestly reports a check we owe (E-009). A word-matcher that flags every \"not yet\" would be deleted within a release."
+    },
+    {
+      "id": "F-090",
+      "title": "Taxonomy vocabulary is readable in Japanese, not only in English",
+      "requirements": [
+        "FR-20",
+        "NFR-11"
+      ],
+      "service": "content",
+      "release": "R2",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Every taxonomy.family in a published corpus version has a Japanese form that a reader sees in the ja locale",
+        "A family with no Japanese form fails a check rather than rendering its English slug",
+        "The Japanese form is authored where the family is authored, never inferred from the slug"
+      ],
+      "verification": [
+        "state",
+        "content",
+        "a11y"
+      ],
+      "notes": "FOUND IN F-018. The Atlas filters by taxonomy.family and shows the value the corpus authored — \"blue-grey\", \"off-white\", \"mineral-green\" — IN BOTH LOCALES. On a Japanese colour product that is a wart on the screen the product exists for. IT WAS NOT FIXED IN F-018 ON PURPOSE, and the reason is the interesting part: a lookup table in the app would be putting words in the editor’s mouth, and it would be an ENUMERATED table against a set the CORPUS controls — so a family introduced by a future publish would render blank or fall back to English, and ADR-0028 forbids fallback precisely because it makes a gap invisible. The catalogue is the wrong home for this: ADR-0056 makes it an enumerated TypeScript record whose completeness tsc checks, and tsc cannot check a key set that comes from JSON data. THE FAMILY IS CONTENT, so its Japanese form belongs in content — most likely a taxonomy vocabulary file beside editors.json, with the content gate rejecting a family that has no entry, which is the same shape as the source register (E-021). The same question applies to `era` and `material` the day a measured entry carries them."
+    },
+    {
+      "id": "F-091",
+      "title": "The e2e harness that lets gate 7 run at all",
+      "requirements": [
+        "NFR-12",
+        "FR-20"
+      ],
+      "service": "mobile",
+      "release": "R2",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A surface declares a test:e2e task, so e2e-scope stops failing for want of anything to run",
+        "The Atlas journey completes on a device or emulator: launch, browse, filter, open a colour, read its provenance",
+        "The app opens no socket during that journey, asserted by the suite rather than by inspection",
+        "Gate 7 moves from pending to active with a real CI step, and removing that step turns gate 0 red"
+      ],
+      "verification": [
+        "state",
+        "e2e"
+      ],
+      "notes": "GATE 7 SAYS activatesWith: F-039, AND F-039 IS DONE — but the gate is still `pending`, nothing in the workspace declares a `test:e2e` task, and e2e-scope.mjs fails for want of a surface to run. So the activation is owed by F-039’s attested criterion (\"the app opens no socket during any core journey, asserted by the e2e offline suite rather than by inspection\") and by nothing that is scheduled. FILED IN F-018 because F-018 lists `e2e` in its own verification and could not run it: reporting that as \"not run\" is honest for one feature and would become a habit across F-019, F-020, F-021 and F-023, each of which will list it and each of which will skip it. WHAT F-018 DOES ASSERT INSTEAD, so the gap is sized rather than waved at: the criterion-1 walk over the rendered tree proves every entry is present from the root, and the criterion-4 assertions prove the detail screen renders what the record carries. What no render-tree assertion can reach: real navigation between routes, a real gesture, a cold start, and whether a socket opened. The last one is the reason this is `must` rather than `should` — NFR-12 is a claim about the network, and a claim about the network cannot be checked without running the app."
     }
   ]
 }

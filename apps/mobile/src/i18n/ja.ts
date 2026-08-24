@@ -33,6 +33,7 @@ export const ja: Record<MessageKey, string> = {
   'sample.blueBlack': '藍墨茶',
 
   'atlas.title': '色の一覧',
+  'home.openAtlas': '色を見る',
   'atlas.corpus': '収録版',
   'atlas.colours': '色',
   'atlas.palettes': '配色',

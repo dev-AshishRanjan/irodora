@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Home } from '../src/screens/Home';
 
 /**
@@ -8,10 +8,15 @@ import { Home } from '../src/screens/Home';
  * checked — without mounting a navigator around it.
  */
 export default function Index(): React.JSX.Element {
+  const router = useRouter();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Home />
+      <Home
+        onOpenAtlas={() => {
+          router.push('/atlas');
+        }}
+      />
     </>
   );
 }

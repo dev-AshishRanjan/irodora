@@ -190,7 +190,7 @@
       "severity": "high",
       "guard": "gate:content",
       "memory": "memory/effects/corpus-version-pins-caches-and-envelopes.md",
-      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog. THE GUARD BECAME REAL IN F-011 AND WAS EXERCISED FOR THE FIRST TIME IN F-012: 2026.08.1 holds 120 entries and 5 palettes under root checksum c177a55ff003c7e1cc73dda5677e5719e5ed742c02760b6a1c81963dbd3a70fb, loadPublishedVersion verifies at load against a digest taken from the LEDGER (never from the bundle — a file checked against a checksum it carries verifies itself), and the generator refuses to overwrite a published version. Ten mutations were also run against the REAL corpus rather than the fixtures, because the two are reached by different code paths: the fixtures live under packages/ and the corpus scan globs content/ only, so a rule could in principle bind one and not the other. THE HONEST LIMIT, which gate 11 prints on every run: this is enforced against accident and DETECTED against intent. A committer who edits an entry AND its ledger row in one commit passes; the two-file diff and human review are the control, and nothing else is coming — the admin publish path was withdrawn with the server tier, so repository write access is product write access and branch protection is a security control rather than hygiene (ADR-0046, ADR-0051).",
+      "rationale": "A corpus publish mints a new immutable version rather than invalidating anything, because the version is part of every cache key and every reproducibility envelope. Editing a published entry in place would make a stored recommendation unreproducible and could let a cache serve a half-updated catalog. THE GUARD BECAME REAL IN F-011 AND WAS EXERCISED FOR THE FIRST TIME IN F-012: 2026.08.1 holds 120 entries and 5 palettes under root checksum c177a55ff003c7e1cc73dda5677e5719e5ed742c02760b6a1c81963dbd3a70fb, loadPublishedVersion verifies at load against a digest taken from the LEDGER (never from the bundle — a file checked against a checksum it carries verifies itself), and the generator refuses to overwrite a published version. Ten mutations were also run against the REAL corpus rather than the fixtures, because the two are reached by different code paths: the fixtures live under packages/ and the corpus scan globs content/ only, so a rule could in principle bind one and not the other. THE HONEST LIMIT, which gate 11 prints on every run: this is enforced against accident and DETECTED against intent. A committer who edits an entry AND its ledger row in one commit passes; the two-file diff and human review are the control, and nothing else is coming — the admin publish path was withdrawn with the server tier, so repository write access is product write access and branch protection is a security control rather than hygiene (ADR-0046, ADR-0051). F-018 IS THE FIRST CONSUMER OUTSIDE THE GATE. The app calls loadPublishedVersion at startup with a digest that came from the ledger, so \"checksum verified at load\" is now executable on a device rather than only in a script — and the mutations that prove it bind run over the REAL pinned bundle rather than a fixture, including the case where an entry is removed and every survivor still hashes correctly.",
       "confidence": 0.92,
       "origin": "manual",
       "status": "active"
@@ -488,7 +488,7 @@
       "severity": "high",
       "guard": "gate:typecheck",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
-      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger.",
+      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -521,7 +521,7 @@
       "severity": "high",
       "guard": "script:verify-font-coverage.mjs",
       "memory": "memory/effects/a-corpus-publish-can-outrun-the-font-that-renders-it.md",
-      "rationale": "A corpus publish that introduces a rare kanji produces TOFU on the product’s most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS NOW BLOCKING AND HAS FIRED FOR REAL. F-076 shipped the asset and wired verify-font-coverage.mjs into `pnpm test:content`, and F-012 is the first publish it could actually judge: with 120 entries in place and every other gate green, it reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, on the colour names themselves. The subset was regenerated (272 required codepoints, 639 in the face; 451KB to 547KB). THE EARLIER TEXT HERE SAID THE GUARD WAS \"BUILT AND PROVEN BUT NOT YET BLOCKING\" and that it exits 1 because no font asset exists. Both stopped being true when F-076 landed, and the sentence survived two features past its expiry — which is the ordinary way an effect note rots, since nothing executes a rationale. The remedy is never to relax the check: a codepoint the app can render and the font cannot is a tofu box, and a widened tolerance would only make it a silent one.",
+      "rationale": "A corpus publish that introduces a rare kanji produces TOFU on the product’s most important content, for exactly the audience whose judgement matters most, with every other gate green. It is checkable only because the corpus is an immutable signed bundle at a pinned version (ADR-0046, ADR-0051 section 4), so the set of codepoints the app CAN render is knowable at build time; that property is what made ADR-0057 choose a bundled subset over the platform face. THE GUARD IS NOW BLOCKING AND HAS FIRED FOR REAL. F-076 shipped the asset and wired verify-font-coverage.mjs into `pnpm test:content`, and F-012 is the first publish it could actually judge: with 120 entries in place and every other gate green, it reported 183 codepoints missing from the committed subset — 赤, 土, 鉄, 雨, 石, 青 among them, on the colour names themselves. The subset was regenerated (272 required codepoints, 639 in the face; 451KB to 547KB). THE EARLIER TEXT HERE SAID THE GUARD WAS \"BUILT AND PROVEN BUT NOT YET BLOCKING\" and that it exits 1 because no font asset exists. Both stopped being true when F-076 landed, and the sentence survived two features past its expiry — which is the ordinary way an effect note rots, since nothing executes a rationale. The remedy is never to relax the check: a codepoint the app can render and the font cannot is a tofu box, and a widened tolerance would only make it a silent one. IT FIRED A SECOND TIME IN F-018, AND FROM THE OTHER INPUT: verify-font-coverage reads the ja catalogue as well as the corpus, and 94 new UI strings introduced 105 uncovered codepoints — 一, 覧, 収, 録, 版 among them. So the link is not only about rare kanji in colour names; ordinary UI Japanese outruns the subset just as easily, and it does so on the chrome every screen renders rather than on one entry. Subset regenerated: 386 required codepoints against 744 in the face, 547KB to 596KB.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -673,6 +673,43 @@
       "memory": "memory/effects/the-source-register-is-a-markdown-table-that-125-records-depend-on.md",
       "rationale": "THIS LINK DID NOT MATTER UNTIL F-012, AND NOW EVERY PUBLISHED RECORD RESTS ON IT. Section 5 of licensing-and-provenance.md is a hand-edited markdown table, and parseRegister reads its COLUMN NAMES AND THEIR ORDER: renaming a heading, reordering one, or losing the \"## 5. Source register\" line stops the gate rather than letting it guess, and deleting or renaming a row fails every entry citing it. All 120 entries and all 5 palettes of 2026.08.1 cite the single row IRO-ED-001, so one careless edit to a document that reads like prose invalidates the entire corpus. IT BINDS IN BOTH DIRECTIONS AND BOTH WERE WATCHED FAILING against the real corpus, not only the fixtures: an entry citing an unregistered id is rejected, and — the case that actually matters — an entry keeping the registered id while changing its `source` TEXT is rejected too, because that entry would display one provenance and be licensed under another. THE DOCUMENT STAYS PROSE ON PURPOSE. Generating this table from JSON would remove the brittleness and also remove the human review it exists for: it is a legal safeguard read by a person before each corpus version ships (ADR-0007). The brittleness is handled the only honest way — an unparseable table is a FAILURE, never an absence of constraint.",
       "confidence": 0.93,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-022",
+      "from": {
+        "kind": "artifact",
+        "ref": "content/versions"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/src/corpus/generated/bundle.ts"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/corpus"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0066-the-app-verifies-the-corpus-with-noble-hashes-and-ships-the-bundle-as-generated-text.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "script:generate-corpus-bundle.mjs --check",
+      "memory": "memory/effects/the-app-pins-a-corpus-version-and-a-publish-can-leave-it-behind.md",
+      "rationale": "THE APP DOES NOT READ content/versions/; IT READS A COPY. ADR-0066 ships the pinned bundle as a generated TypeScript module carrying the bundle TEXT and the LEDGER’S root digest as two separate exports, because content/ sits outside apps/mobile and loadPublishedVersion takes text. So publishing a new corpus version without regenerating leaves the app on the OLD one, silently and with every other gate green: the old pair still verifies, because it is a valid bundle against its own valid ledger row. Nothing about the app would look wrong. THE GUARD IS `--check` INSIDE gate:content, and it was watched failing on a hand-edited count before being trusted. It compares the file on disk against what the CURRENT ledger’s last row produces, so a publish that forgets this step fails the build rather than shipping a stale corpus. THE SEPARATION OF TEXT AND DIGEST IS PART OF THE LINK, not a detail: a bundle carrying its own expected checksum verifies itself, so the generator reads the digest from index.json and never from the bundle, and a test asserts the bundle contains no self-describing root digest that a careless call site could pass instead.",
+      "confidence": 0.95,
       "origin": "manual",
       "status": "active"
     }
