@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-21",
+  "updated": "2026-08-24",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -556,6 +556,85 @@
       "memory": "memory/effects/the-permission-set-is-decided-by-the-manifest-merger-not-by-us.md",
       "rationale": "app.config.ts lists CAMERA and BLOCKS INTERNET, and that is a statement about OUR manifest. The manifest that ships is the MERGED one, and Android's manifest merger folds in every dependency's manifest silently and by design — so a library added for an unrelated reason can put a network permission into the artefact with no source file in this repository changing and every gate green. NFR-12 is not a feature; it is the product's central claim, phrased as an impossibility (the app CANNOT transmit), and until F-080 nothing checked the output — only the input. THE GENERAL SHAPE, which is the reusable part: a property asserted in configuration is not the same property as the one in the artefact whenever anything between them can add to it. THE GUARD IS REAL AND PROVEN: gate 16 reads the APK's ZIP directory, decodes the binary AndroidManifest.xml and fails on INTERNET, ACCESS_NETWORK_STATE or ACCESS_WIFI_STATE; when aapt2 is present it is used as an INDEPENDENT ORACLE and a disagreement is a failure, because a hand-written parser agreeing with itself is the shape of a check that passes on a file it misread. --prove builds ten fixtures with the real aapt2 and watches each assertion fail with a clean fixture green either side, and it found a defect in the signing-block walker on its first run. NOT COVERED: the AAB (protobuf manifest, different parser — same Gradle run and same merged manifest, so the APK check covers the merge but not a bundletool difference), and the runtime half, which is gate 7 on a device and stays attested on F-039.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-019",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/global.css"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/emit/heroui.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/design-tokens/test/heroui.test.ts"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/design-tokens"
+      ],
+      "severity": "critical",
+      "guard": "test:packages/design-tokens/test/heroui.test.ts + emitHeroui throws",
+      "memory": "memory/effects/the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md",
+      "rationale": "apps/mobile/global.css is GENERATED from the manifest and is the only place HeroUI's 64 theme values come from. Two distinct failures ride on it. FIRST: 29 of those values are ones HeroUI would otherwise compute with color-mix(in oklab, ...) at runtime, and four of them CARRY TEXT — Alert tints its title with --color-success-soft-foreground. A colour the stylesheet computes is a colour the contrast gate never measured, so the generator computes them and emitHeroui REFUSES TO EMIT when a checked pairing fails. SECOND, and less obvious: uniwind normalises every CSS variable through culori.parse then formatHex ON DEVICE, and implements colorMix with culori.interpolate. So a non-hex value in this file hands the OKLCh-to-sRGB conversion that ADR-0043 makes ours to a third party, while the gate holds a number our own implementation derived — two implementations of one conversion, disagreeing in the fifth decimal, invisible until someone photographed two devices. THE GENERAL SHAPE: a generated artefact consumed by a dependency's runtime is only as authoritative as the notation it is written in; expressiveness in the file is authority handed away. THE GUARD IS REAL AND PROVEN: emitHeroui scans its own output and throws on any declaration carrying oklch(, color-mix(, rgb(, hsl(, lab( or lch(, and the pairing check has a decoy that drives status.ok onto the background and asserts the failure names --color-success-soft-foreground before asserting the throw. NOT COVERED: the values HeroUI reads that we do not override, and any future Uniwind feature that only accepts a colour function.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-020",
+      "from": {
+        "kind": "package",
+        "ref": "packages/ui"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "eslint.config.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-guards.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/conformance.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-motion.mjs"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "root"
+      ],
+      "severity": "critical",
+      "guard": "lint:no-restricted-syntax + script:verify-guards.mjs + test:conformance colour-invisible + script:verify-motion.mjs",
+      "memory": "memory/effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md",
+      "rationale": "@irodora/ui is now built on heroui-native, which styles through className, and Uniwind resolves className in its METRO plugin. Jest never runs Metro. So a component that routes colour through a class renders in the a11y harness with NO COLOURS IN ITS TREE, and every colour check in the conformance suite iterates over an empty list — reporting nothing, printing as a pass, indistinguishable from a component whose every colour resolved. Measured, not feared: a real heroui-native Button came back with className, a transform, and backgroundColor: \"invalid\". THE GENERAL SHAPE, which is the reusable part: build-time style resolution buys runtime performance by moving work to where the test runner is not, and the second half of that trade is never in the library's documentation. THE GUARDS ARE REAL AND PROVEN: lint rejects a colour utility class or an arbitrary colour value inside a className in packages/ui, with two decoys in verify-guards.mjs; the conformance suite fails a registered subject whose tree carries no resolved colour at all, with a fixture that is the exact HeroUI tree plus a control that passes; and verify-motion rejects a component that allows HeroUI's highlight or ripple, which animate backgroundColor inside a dependency the style scan cannot read. NOT COVERED: a component that paints SOME colours through style and routes others through a class — lint is the only defence there — and a class name assembled at runtime.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

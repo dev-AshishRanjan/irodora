@@ -8,6 +8,118 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-087 · HeroUI Native goes in behind the boundary, and the gates keep seeing colour
+
+`@irodora/ui` is now built on `heroui-native` ([ADR-0062](../../docs/adr/0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md)),
+which supersedes ADR-0054's "we add no component library" half and reinforces its other half.
+The decision was taken against measurement, not preference — 27 of HeroUI's 35 required theme
+variables map to existing tokens, and every implied text pairing clears WCAG 2.2 AA from
+**5.90:1 to 18.30:1** in both themes.
+
+### The finding that shaped everything
+
+**A HeroUI tree renders with no colours in it.** HeroUI styles through `className`, Uniwind
+resolves `className` in its **Metro plugin**, and jest never runs Metro. The spike got this
+back from a real `Button` under our own harness:
+
+```json
+{ "className": "button__root button__root--variant-primary",
+  "style": [{ "borderCurve": "continuous" }, { "transform": [{ "scale": 1 }] }] }
+```
+
+The one colour present read literally `"backgroundColor": "invalid"`. The `contrast` and `cvd`
+gates would have gone on passing **over an empty set** — green, and more convincing with every
+screen added.
+
+So the rule is: **colour reaches a component through `style`, never `className`.** Proven, not
+asserted — the same Button with a resolved token now shows `backgroundColor: #F6F4F1` resolving
+to `inverse`, and `accessibilityState` carrying `busy` as well as `disabled`.
+
+### Three defects found while building the guards, two of them pre-existing
+
+1. **The colour-literal ban had been disabled on every screen.** `apps/mobile/src/screens/**`
+   was covered by two zones both naming `no-restricted-syntax`, and ESLint flat config
+   *replaces* a rule's options rather than merging them — so the copy rule silently disarmed
+   the hex ban on exactly the files most likely to contain a hex. Nothing reported it; the
+   guard table simply had no entry pointed there. Found because `verify-guards.mjs` caught me
+   making the identical mistake, and I went looking for whether it already existed.
+2. **The HeroUI import ban landed in the workspace-wide rules**, banning HeroUI in
+   `packages/ui` — the one package that must import it. The anchor text it was spliced against
+   appears twice, and `String.replace` took the first.
+3. **`mixOklab`'s premultiplication test proved nothing.** A mutation run deleting the
+   premultiply left all fourteen tests green: `transparent` is *black* at zero alpha, so its
+   contribution is the zero vector either way, and the un-premultiply divide restores the
+   colour regardless. The step is invisible in precisely the case it was written for. Fixed
+   with a translucent operand that has a colour of its own.
+
+### What was built
+
+- **A fifth emit target.** `apps/mobile/global.css`, generated from the manifest: 35 base
+  variables per theme plus the **29** HeroUI would otherwise compute with `color-mix` at
+  runtime. Four of those carry text, so they are composited over each ground and measured, and
+  `emitHeroui` **throws rather than emitting** a stylesheet that fails.
+- **Hex only, enforced by the emitter.** `uniwind` normalises every variable through
+  `culori.parse` → `formatHex` on device, so a colour *function* there would hand the OKLCh
+  conversion ADR-0043 makes ours to a third party ([ADR-0063](../../docs/adr/0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md)).
+- **Two manifest tokens, not five.** `link` and `backdrop`. `inverse.foreground` already
+  clears 4.5:1 on all three status fills in both themes, so the three status foregrounds map to
+  it and the pairing is *declared* rather than assumed. `link` is deliberately identical to
+  `foreground` — the underline is the channel, not the colour.
+- **Five guards, each with a decoy**: the import ban, the className colour ban, the
+  arbitrary-value ban, the `colour-invisible` conformance rule, and `verify-motion`'s prop
+  scan for HeroUI's `backgroundColor`-animating highlight. 23 boundaries enforced, up from 18.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 17 effect links, 60 memory files |
+| `typecheck` · `lint` · `format` | **passed** — 31 tasks |
+| `test` | **passed** — 162 in `design-tokens`, 60 in `ui`, 42 in `mobile` |
+| `contrast` (gate 9) | **passed** — two new APCA notes, recorded below |
+| `cvd` (gate 10) · `a11y` | **passed** |
+| `build` | **passed** |
+| `verify-guards --prove` | **passed** — 23 boundaries, each watched failing |
+| `verify-motion --prove` | **passed** — 8 cases, both polarities |
+| **`expo export --platform android`** | **passed** — 2453 modules, 5.0 MB Hermes bundle |
+
+**Not run:** `e2e`, `perf`, `security`, `content`, `color-golden`. None are in F-087's
+verification set and nothing here touches their subjects. **No device attestation** — the
+bundle was produced, not installed, so nothing here discharges F-039's airplane-mode or
+socket criteria.
+
+**Verified by the implementer, not by the evaluator subagent.** Stated because the harness
+prefers the checker not to be the implementer, and that separation did not happen here.
+
+### Recorded honestly
+
+- **Gate 9 gained two APCA notes.** `inverse.foreground` on `status.ok` and `status.warn` in
+  dark land at Lc 49.6 and 51.0 — a WCAG pass below the Lc 60 body-text floor. That is the
+  measurement agreeing with ADR-0044: status colour belongs on the words, not behind them. The
+  manifest says so at the token.
+- **`culori` is in the shipped bundle**, confirmed by string table, not by inference. It is a
+  transitive of `uniwind`. `packages/color-*` remain zero-dependency and
+  `verify-engine-purity` still proves it; `NOTICE.md` said culori was not shipped and no longer
+  does.
+- **`react-native-gesture-handler` is a knowingly unmet peer** — 3.2.1 here via `expo-router`
+  against HeroUI's declared `^2.28.0`. Accepted in ADR-0062, and it cost a jest mock.
+- **`packages/ui` now resolves as a bundler does** ([ADR-0064](../../docs/adr/0064-irodora-ui-resolves-the-way-metro-does-not-the-way-node-does.md)).
+  HeroUI's declarations re-export extensionlessly, which NodeNext ESM cannot resolve, so the
+  barrel appeared to export nothing at all. The package is private and Metro is its only
+  consumer, so NodeNext had been describing a resolver that does not participate.
+- **The jest harness gained three pieces of glue** — pnpm-aware `transformIgnorePatterns`, the
+  worklets resolver, and a gesture-handler mock. Each can silently stop being right; the
+  `colour-invisible` rule is what fails loudly if the tree stops carrying colours.
+
+### Next
+
+1. **F-088** — rebuild `Text`, `Icon`, `Status` and `Surface` as HeroUI-backed wrappers.
+   `Swatch` and everything carrying provenance stay on React Native primitives.
+2. Then the R2 screens (F-018 … F-023), each bringing the wrappers it consumes. **No wrapper
+   without a consumer** — a package with none passes every gate and ships nothing.
+
+---
+
 ## 2026-08-24 — Gate 16 · both failures on the first real artefact were mine, not the build's
 
 The first genuinely signed release APK failed gate 16 twice, on two findings that read as

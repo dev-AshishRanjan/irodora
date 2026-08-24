@@ -88,6 +88,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-entry-schema-is-a-contract-with-every-authored-file.md](effects/the-entry-schema-is-a-contract-with-every-authored-file.md) — **E-013** · the destination nobody thinks of is the spec document, and it was already wrong three ways.
 - [effects/canonicalisation-decides-what-a-checksum-means.md](effects/canonicalisation-decides-what-a-checksum-means.md) — **E-014** · change it and every recorded digest is wrong, self-consistently, with no test able to notice.
 - [effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md](effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md) — **E-015** · a fixed radius is wrong on 317 of 360 queries, and looks right every time.
+- [effects/the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md](effects/the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md) — **E-019** · a generated file a dependency evaluates at runtime is only as authoritative as the notation it is written in.
+- [effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md](effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md) — **E-020** · HeroUI styles in Metro, jest never runs Metro, and the contrast gate measured an empty set.
 
 ## Glossary
 

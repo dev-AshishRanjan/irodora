@@ -2269,7 +2269,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "heroui-native and uniwind build and bundle in apps/mobile, with react-native-worklets and react-native-reanimated pinned by pnpm.overrides to the versions VisionCamera resolves, and a single copy of each in the app tree",
@@ -2292,7 +2292,10 @@
         "cvd",
         "build"
       ],
-      "effects": [],
+      "effects": [
+        "E-019",
+        "E-020"
+      ],
       "notes": "ADR-0062. The spike proved the shape: className is resolved by Uniwind in Metro, which jest never runs, so a HeroUI tree renders with no colours in it and the contrast gate would pass vacuously. Colour reaches a component through style, from a resolved token, and that is what the lint rule and the conformance assertion enforce.",
       "plan": "plans/F-087-heroui-native-foundation-and-the-token-bridge.md"
     },
