@@ -13,7 +13,7 @@
  */
 
 import { checkStore, formatStoreFindings } from '@irodora/store/testing';
-import { openDeviceDriver } from './index.js';
+import { openDeviceDriver } from './index';
 
 export interface DeviceConformanceResult {
   readonly driver: string;

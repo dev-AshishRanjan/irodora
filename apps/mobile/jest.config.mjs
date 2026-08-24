@@ -15,7 +15,23 @@ export default {
   preset: 'jest-expo',
   testEnvironment: 'node',
   testMatch: ['**/test/**/*.test.tsx', '**/test/**/*.test.ts'],
-  // NodeNext source writes `./engine.js` for `./engine.ts`; jest resolves that literally.
-  moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
+  // There WAS a `moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' }` here, commented "NodeNext
+  // source writes `./engine.js` for `./engine.ts`; jest resolves that literally". It is gone,
+  // and its removal is the point rather than tidying.
+  //
+  // This app resolves through **Metro**, and `tsconfig.json` says so: `moduleResolution:
+  // "bundler"`, whose own comment reads *"extensionless relative imports … no `.js` suffix
+  // required on a `.tsx` sibling"*. The source was written in the other convention anyway —
+  // the NodeNext style `packages/*` correctly uses — and three checks accommodated it instead
+  // of catching it. `typecheck` permits both forms under `bundler`. Lint has no extension
+  // rule. And this mapper made jest permit it too.
+  //
+  // Metro does not. It resolves literally, it was the only consumer that would ever object,
+  // and it had never run — so the first bundle, fifteen minutes into a Gradle build, was
+  // where it surfaced. Somebody had noticed the mismatch, written a workaround and documented
+  // it, which removed the last signal that would have shown it earlier.
+  //
+  // Without the mapper, jest resolves what Metro resolves, and a reintroduced `.js` fails in
+  // seconds rather than in a device build. `scripts/verify-app-imports.mjs` is the guard.
   passWithNoTests: false,
 };

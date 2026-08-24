@@ -7,8 +7,8 @@
  */
 
 import { useMemo } from 'react';
-import { deviceLocale, t, type Locale } from './index.js';
-import type { MessageKey } from './en.js';
+import { deviceLocale, t, type Locale } from './index';
+import type { MessageKey } from './en';
 
 export interface Messages {
   readonly locale: Locale;

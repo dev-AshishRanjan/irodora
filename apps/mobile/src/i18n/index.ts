@@ -16,8 +16,8 @@
  */
 
 import { getLocales } from 'expo-localization';
-import { en, type MessageKey } from './en.js';
-import { ja } from './ja.js';
+import { en, type MessageKey } from './en';
+import { ja } from './ja';
 
 /** The locales that ship. Both from the first release; neither is a fallback for the other. */
 export const LOCALES = ['en', 'ja'] as const;
@@ -64,6 +64,6 @@ export function t(locale: Locale, key: MessageKey): string {
   return CATALOGUES[locale][key];
 }
 
-export { en, type MessageKey } from './en.js';
-export { ja, IDENTICAL_BY_DESIGN, JA_REVIEWED } from './ja.js';
-export { MESSAGE_KEYS } from './en.js';
+export { en, type MessageKey } from './en';
+export { ja, IDENTICAL_BY_DESIGN, JA_REVIEWED } from './ja';
+export { MESSAGE_KEYS } from './en';

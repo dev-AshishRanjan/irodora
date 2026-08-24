@@ -19,7 +19,7 @@ import {
   type ConformanceSubject,
   type TestNode,
 } from '@irodora/ui/testing';
-import { Home } from '../src/screens/Home.js';
+import { Home } from '../src/screens/Home';
 
 function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
   const json = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>).toJSON();

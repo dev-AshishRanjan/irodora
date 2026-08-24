@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs",
+    "lint": "turbo run lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
@@ -46,6 +46,7 @@
     "verify:font:prove": "node scripts/verify-font-coverage.mjs --prove",
     "verify:motion": "node scripts/verify-motion.mjs",
     "verify:motion:prove": "node scripts/verify-motion.mjs --prove",
+    "verify:app-imports:prove": "node scripts/verify-app-imports.mjs --prove",
     "verify:a11y:prove": "node scripts/verify-a11y-proof.mjs",
     "a11y:scope": "node scripts/a11y-scope.mjs"
   },

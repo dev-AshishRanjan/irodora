@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { Home } from '../src/screens/Home.js';
+import { Home } from '../src/screens/Home';
 
 /**
  * The route. Navigation options only.

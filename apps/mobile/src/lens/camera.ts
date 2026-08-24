@@ -37,7 +37,7 @@
  * That is why the seam is drawn here rather than after someone has a phone.
  */
 
-import type { CaptureSpace } from './reading.js';
+import type { CaptureSpace } from './reading';
 import type { Sample } from '@irodora/color-sampling';
 
 /**

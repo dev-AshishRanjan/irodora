@@ -9,21 +9,15 @@
  * modes calling the engine, and the shape of what crosses the bridge.
  */
 
-import {
-  CAPTURE_MODES,
-  MODE_CEILING,
-  read,
-  readManual,
-  type CaptureMode,
-} from '../src/lens/modes.js';
+import { CAPTURE_MODES, MODE_CEILING, read, readManual, type CaptureMode } from '../src/lens/modes';
 import {
   CAPTURE_SPACES,
   SPACE_CONFIDENCE_CEILING,
   cappedConfidence,
   type CaptureSpace,
   type LensReading,
-} from '../src/lens/reading.js';
-import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera.js';
+} from '../src/lens/reading';
+import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera';
 import { aggregate, partition, type Region, type Sample } from '@irodora/color-sampling';
 
 const px = (r: number, g: number, b: number): Sample => ({ r, g, b, alpha: 1 });

@@ -17,7 +17,7 @@
  * fails the build"* quietly becoming *"an unreviewed translation passes silently."*
  */
 
-import type { MessageKey } from './en.js';
+import type { MessageKey } from './en';
 
 export const ja: Record<MessageKey, string> = {
   'home.title': 'このデバイスでエンジンが動作しています',

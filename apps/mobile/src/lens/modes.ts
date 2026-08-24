@@ -24,7 +24,7 @@ import {
   type Region,
   type Sample,
 } from '@irodora/color-sampling';
-import { cappedConfidence, type CaptureSpace, type LensReading } from './reading.js';
+import { cappedConfidence, type CaptureSpace, type LensReading } from './reading';
 import { ILLUMINATION_CEILING } from '@irodora/color-sampling';
 
 /**

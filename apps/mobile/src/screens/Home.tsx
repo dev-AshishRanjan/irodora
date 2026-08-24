@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 import { Surface, Swatch, Text, useTheme } from '@irodora/ui';
-import { differenceOklch, displayFromOklch } from '../engine.js';
-import { useMessages } from '../i18n/useMessages.js';
-import type { MessageKey } from '../i18n/index.js';
+import { differenceOklch, displayFromOklch } from '../engine';
+import { useMessages } from '../i18n/useMessages';
+import type { MessageKey } from '../i18n/index';
 import type { Triple } from '@irodora/color-spaces';
 
 /**

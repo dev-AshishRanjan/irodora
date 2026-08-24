@@ -25,7 +25,7 @@ import {
   resolveLocale,
   t,
   type MessageKey,
-} from '../src/i18n/index.js';
+} from '../src/i18n/index';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.

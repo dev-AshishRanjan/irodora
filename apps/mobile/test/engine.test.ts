@@ -19,7 +19,7 @@
 
 import { deltaE00 } from '@irodora/color-difference';
 import { oklchToXyz, xyzToLab, xyzToSrgb, srgbToHex } from '@irodora/color-spaces';
-import { differenceOklch, displayFromOklch } from '../src/engine.js';
+import { differenceOklch, displayFromOklch } from '../src/engine';
 
 describe('the app reaches the real engine', () => {
   it('derives the hex through the engine, not by hand', () => {
