@@ -105,7 +105,7 @@ before each corpus release.
 
 | ID | Source | Type | Rights holder | Licence | Cleared | Notes |
 |---|---|---|---|---|---|---|
-| — | *No sources registered yet. Corpus entries begin at F-012.* | — | — | — | — | — |
+| IRO-ED-001 | Irodora editorial curation — seed corpus, 2026 | editorial | Irodora | Proprietary — Irodora original work | 2026-08-24 | The whole of the 2026.08.1 seed corpus. Every value constructed in OKLCh by editorial judgement and converted by the engine; every Japanese name an Irodora coinage. Nothing measured, nothing transcribed, nothing ingested (ADR-0065). One editor, self-reviewed (ADR-0060) |
 
 **A source not in this table cannot appear in a published entry.** The `content` gate
 cross-checks `provenance.source` against this register — **as of F-011 it actually does**;
@@ -124,9 +124,16 @@ How the check reads this table, because the shape is now load-bearing:
 - **An unparseable table is a failure**, never an absence of constraint. A missing heading, a
   short row or a duplicate id fails the build.
 
-With no sources registered, **any entry citing one fails.** That is the correct direction: this
-table is a legal safeguard reviewed by a person before each corpus version ships, and it stays
-a human-reviewed document rather than generated data precisely so that review keeps happening.
+**One row, and it is the whole seed corpus.** `IRO-ED-001` is our own editorial curation, which
+is rank 5 in the hierarchy above — the lowest rank that is a source at all. That is the honest
+position today: there is no colorimeter and no cleared primary work, so an entry claiming
+anything better would be claiming something that did not happen ([ADR-0065](../adr/0065-the-seed-corpus-is-coined-not-canonical-and-constructed-not-measured.md)).
+A reader auditing the corpus finds a single source behind all 125 records, and that thinness is
+visible here rather than spread across 125 plausible-looking rows.
+
+A source not listed still fails, which remains the correct direction: this table is a legal
+safeguard reviewed by a person before each corpus version ships, and it stays a human-reviewed
+document rather than generated data precisely so that review keeps happening.
 
 ---
 

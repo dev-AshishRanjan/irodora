@@ -418,7 +418,7 @@
       "service": "content",
       "release": "R1",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-011",
         "F-084"
@@ -442,7 +442,8 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "plan": "plans/F-012-the-seed-corpus-is-our-own-work-and-says-so.md"
     },
     {
       "id": "F-013",
