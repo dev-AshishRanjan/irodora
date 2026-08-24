@@ -2310,7 +2310,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-087"
       ],

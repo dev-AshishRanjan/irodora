@@ -8,6 +8,81 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-088 · the comparison was worth more than the wrapper would have been
+
+Written as *"rebuild `Text`, `Icon`, `Status` and `Surface` as HeroUI wrappers"*. Reading
+HeroUI's equivalents against ours found **no behaviour to inherit**, so the feature was
+re-scoped on the record — the acceptance list and its `notes` both say what changed and why.
+
+| Ours | HeroUI | Verdict |
+|---|---|---|
+| `Text` | `Text` / `Text.Heading` | Everything it offers over ours is a **native React Native prop** |
+| `Surface` | `Surface` | Adds a `ThemeBackground`/`GlassView` **blur** that would stay permanently disabled |
+| `Icon` | *none* | HeroUI ships no icon primitive |
+| `Status` | *none* | `Alert` is a banner; ADR-0044's three channels do not survive being poured into one |
+
+The `Surface` case is the one that matters: **a blur tints what it surrounds**, which is the
+exact simultaneous-contrast hazard `swatch.well` exists to prevent. Wrapping it would mean
+carrying a code path that must never run next to a colour sample, guarded by nothing but
+everyone remembering.
+
+`Button` genuinely gained and was rebuilt in F-087. The rule is now written down in
+[`heroui-wrappers.md`](../rules/frontend/heroui-wrappers.md): **wrap HeroUI when there is
+behaviour to inherit, never for provenance.**
+
+### The comparison found two real gaps, and they are the feature
+
+**No heading role anywhere.** Screen-reader users navigate by heading; every screen announced
+as a flat run of text. No contrast or colour check could have surfaced it — **the colours were
+all correct**. It is now **A11** in `ACCESSIBILITY.md`, asserted over the *rendered node* in
+both the component suite and the app's, and the Home title is a real consumer rather than a
+prop only a test uses. Mutation-checked: removing `heading` from `Home.tsx` fails two tests.
+
+**No Dynamic Type ramp.** `dynamicTypeRamp` names which curve iOS scales along. Derived per
+step from the manifest scale against Apple's published ramp, matched by **size, not by name** —
+our `body` is 15 px and Apple's is 17, so matching by name would scale our body text along a
+curve calibrated for something larger. The `xs` step at 11.5 px is exactly equidistant from two
+ramps, so the tie-break is a live case rather than a defensive one.
+
+The mapping is **pinned in a test**. A derivation nobody can see change is the same hazard as a
+copy nobody remembers to update.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks |
+| `typecheck` · `lint` · `format` · `build` | **passed** — 31 tasks |
+| `test` | **passed** — 169 `design-tokens`, 63 `ui`, 44 `mobile` |
+| `contrast` · `cvd` · `a11y` | **passed** — no token values changed; run because "unaffected" is a claim worth checking |
+| `verify-guards --prove` | **passed** — 23 boundaries |
+| `generate --check` | **passed** — generated output current |
+
+**Not run:** `e2e`, `perf`, `security`, `content`, `color-golden` — none in F-088's set. **No
+device attestation**, so nothing here discharges A8; whether a heading is *spoken* as one
+remains owed by F-017.
+
+**Verified by the implementer, not by the evaluator subagent** — same as F-087, and stated for
+the same reason.
+
+### Recorded honestly
+
+- **`dynamicTypeRamp` is iOS-only.** Android ignores it, and `maxFontSizeMultiplier={2}`
+  remains the mechanism there. This improves one platform and changes nothing on the other.
+- **The rendered tree cannot prove a screen reader announces a heading.** It proves the role is
+  on the node.
+- **A11 arrived late**, and the note under the commitments table says so. The table is
+  otherwise from F-003; a gap that survives that long is worth marking rather than
+  back-filling silently.
+
+### Next
+
+The R2 screens — F-018 (Colour Atlas), F-019 (Compare), F-020 (Palette Studio), F-021 (Colour
+Finder), F-023 (Share cards). Each brings the HeroUI wrappers it consumes: dialog, bottom
+sheet, select, menu, tabs, toast, slider, search field. **No wrapper without a consumer.**
+
+---
+
 ## 2026-08-24 — F-087 · HeroUI Native goes in behind the boundary, and the gates keep seeing colour
 
 `@irodora/ui` is now built on `heroui-native` ([ADR-0062](../../docs/adr/0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md)),
