@@ -1,0 +1,81 @@
+{
+  "slug": "yu-dachi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "夕立",
+    "kana": "ゆうだち",
+    "romaji": "yū-dachi",
+    "en": "Sudden Shower"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.115029,
+      "y": 0.126289,
+      "z": 0.246979
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "blue-grey",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": [
+      "summer"
+    ]
+  },
+  "editorial": {
+    "description_en": "The dark that arrives ten minutes before a summer downpour and leaves twenty minutes after it.",
+    "description_ja": "夕立の前の空のような、暗い青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "coats"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.500, C 0.066, h 246.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 夕 (yū, evening) + 立ち (dachi, rising), after the standing word 夕立. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Sudden Shower\" is an editorial decision about what communicates in English, not a literal translation of 夕立. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — ame-iwa at ΔE00 4.6, en-yo at ΔE00 5.3, yoi-zora at ΔE00 6.9. complementary is the entry nearest the opposite OKLCh hue (66°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-iwa",
+      "en-yo",
+      "yoi-zora"
+    ],
+    "complementary": [
+      "aki-batake"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

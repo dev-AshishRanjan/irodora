@@ -1,0 +1,80 @@
+{
+  "slug": "mi-aka",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "実赤",
+    "kana": "みあか",
+    "romaji": "mi-aka",
+    "en": "Fruit Red"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.200722,
+      "y": 0.136213,
+      "z": 0.060706
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "red",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "high",
+    "era": null,
+    "material": null,
+    "season": [
+      "autumn"
+    ]
+  },
+  "editorial": {
+    "description_en": "Ripe fruit on a bare branch. The highest-chroma entry in the corpus, and the only one that is unambiguously a red.",
+    "description_ja": "熟した実のような、こい赤。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": "The corpus ceiling for chroma. It is here so that the Atlas has one colour that a screen renders convincingly and a camera estimate does not, which is a difference worth being able to show.",
+    "fashionUse": [
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.530, C 0.134, h 28.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 実 (mi, fruit) + 赤 (aka, red). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Fruit Red\" is an editorial decision about what communicates in English, not a literal translation of 実赤. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yaki-tsuchi at ΔE00 8.3, sabi-iwa at ΔE00 10.1, yama-moe at ΔE00 10.6. complementary is the entry nearest the opposite OKLCh hue (208°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "sabi-iwa",
+      "yaki-tsuchi",
+      "yama-moe"
+    ],
+    "complementary": [
+      "oki-nagi"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

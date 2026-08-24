@@ -51,13 +51,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 乾き (kawaki, dryness) + 砂 (suna, sand). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dry Sand\" is an editorial decision about what communicates in English, not a literal translation of 乾砂. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-gami at ΔE00 2.7, asa-nuno at ΔE00 3.9, sekkai-kabe at ΔE00 4.9. complementary is empty because at chroma 0.024 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 乾き (kawaki, dryness) + 砂 (suna, sand). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dry Sand\" is an editorial decision about what communicates in English, not a literal translation of 乾砂. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-gami at ΔE00 2.7, shira-tsuchi at ΔE00 3.1, haru-moya at ΔE00 3.6. complementary is empty because at chroma 0.024 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
-      "asa-nuno",
       "furu-gami",
-      "sekkai-kabe"
+      "haru-moya",
+      "shira-tsuchi"
     ],
     "complementary": [],
     "historicalVariants": []

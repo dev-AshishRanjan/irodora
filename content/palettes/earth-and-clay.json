@@ -1,0 +1,77 @@
+{
+  "slug": "earth-and-clay",
+  "name": {
+    "en": "Earth and Clay",
+    "ja": "土と陶"
+  },
+  "classification": "japanese-inspired",
+  "category": "contemporary",
+  "colors": [
+    {
+      "slug": "kuro-tsuchi",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "kare-eda",
+      "role": "neutral",
+      "rank": 2,
+      "weight": 0.9
+    },
+    {
+      "slug": "asa-bukuro",
+      "role": "neutral",
+      "rank": 3,
+      "weight": 0.84
+    },
+    {
+      "slug": "kare-no",
+      "role": "neutral",
+      "rank": 4,
+      "weight": 0.78
+    },
+    {
+      "slug": "suna-kabe",
+      "role": "light",
+      "rank": 5,
+      "weight": 0.72
+    },
+    {
+      "slug": "shira-tsuchi",
+      "role": "light",
+      "rank": 6,
+      "weight": 0.66
+    },
+    {
+      "slug": "yaki-tsuchi",
+      "role": "accent",
+      "rank": 7,
+      "weight": 0.6
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial selection from the twenty-four Earth and Clay entries: five low-chroma members forming a lightness ladder, plus one accent at more than twice their chroma. Chosen by hand.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "The hard part of an earth palette is that everything in it is warm, so nothing separates by hue and the whole thing collapses into one colour at three brightnesses. The five ladder members are therefore all held under chroma 0.06 and separated by lightness alone, and 焼土 at 0.102 is the only member allowed to carry the group. Using two accents here was tried and rejected — the second one competes rather than reads."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

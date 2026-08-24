@@ -51,13 +51,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 麻 (asa, hemp) + 縄 (nawa, rope). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Hemp Rope\" is an editorial decision about what communicates in English, not a literal translation of 麻縄. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — hai-suna at ΔE00 8.5, kare-wara at ΔE00 8.9, sawa-ishi at ΔE00 9.4. complementary is empty because at chroma 0.026 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 麻 (asa, hemp) + 縄 (nawa, rope). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Hemp Rope\" is an editorial decision about what communicates in English, not a literal translation of 麻縄. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — asa-bukuro at ΔE00 5.6, hai-suna at ΔE00 8.5, kare-wara at ΔE00 8.9. complementary is empty because at chroma 0.026 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
+      "asa-bukuro",
       "hai-suna",
-      "kare-wara",
-      "sawa-ishi"
+      "kare-wara"
     ],
     "complementary": [],
     "historicalVariants": []

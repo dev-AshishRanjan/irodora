@@ -1,0 +1,79 @@
+{
+  "slug": "furu-gawara",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "古瓦",
+    "kana": "ふるがわら",
+    "romaji": "furu-gawara",
+    "en": "Old Tile"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.046882,
+      "y": 0.038877,
+      "z": 0.017344
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "brown",
+    "temperature": "warm",
+    "lightnessBand": "dark",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "A tile off an old roof, weathered on one face. Dark, red-brown, and much duller than the tile it started as.",
+    "description_ja": "古い屋根の瓦のような、暗い赤茶。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.344, C 0.058, h 46.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 古 (furu, old) + 瓦 (kawara, roof tile), rendaku to -gawara. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Old Tile\" is an editorial decision about what communicates in English, not a literal translation of 古瓦. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — doro-soko at ΔE00 5.5, do-ma at ΔE00 5.7, yaki-guri at ΔE00 5.8. complementary is the entry nearest the opposite OKLCh hue (226°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "do-ma",
+      "doro-soko",
+      "yaki-guri"
+    ],
+    "complementary": [
+      "nami-ma"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description",
+    "editorial.fashionUse": "no garment use is proposed for this entry; it is atlas content rather than a palette member"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

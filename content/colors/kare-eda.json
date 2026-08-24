@@ -1,0 +1,81 @@
+{
+  "slug": "kare-eda",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "枯枝",
+    "kana": "かれえだ",
+    "romaji": "kare-eda",
+    "en": "Bare Branch"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.082507,
+      "y": 0.076559,
+      "z": 0.036541
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "brown",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Winter branches against a pale sky: a dark neutral brown that carries almost no red.",
+    "description_ja": "冬の枯れた枝のような、暗く落ち着いた茶。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "trousers",
+      "coats"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.428, C 0.056, h 62.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 枯れ (kare, withered) + 枝 (eda, branch). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Bare Branch\" is an editorial decision about what communicates in English, not a literal translation of 枯枝. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — do-ma at ΔE00 4.1, furu-kawa at ΔE00 7.2, furu-gawara at ΔE00 9.3. complementary is the entry nearest the opposite OKLCh hue (242°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "do-ma",
+      "furu-gawara",
+      "furu-kawa"
+    ],
+    "complementary": [
+      "ame-iwa"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

@@ -1,0 +1,80 @@
+{
+  "slug": "hi-kabe",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "陽壁",
+    "kana": "ひかべ",
+    "romaji": "hi-kabe",
+    "en": "Sunlit Wall"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.46321,
+      "y": 0.462685,
+      "z": 0.286017
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "ochre",
+    "temperature": "warm",
+    "lightnessBand": "light",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "An earth wall with afternoon sun full on it — the point where an ochre stops being a neutral and starts being a colour.",
+    "description_ja": "日のあたる土壁のような、あざやかな黄土。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.776, C 0.070, h 72.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 陽 (hi, sunlight) + 壁 (kabe, wall). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Sunlit Wall\" is an editorial decision about what communicates in English, not a literal translation of 陽壁. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kare-no at ΔE00 5.1, nen-do at ΔE00 6.1, kari-ato at ΔE00 7.0. complementary is the entry nearest the opposite OKLCh hue (252°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "kare-no",
+      "kari-ato",
+      "nen-do"
+    ],
+    "complementary": [
+      "en-yo"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

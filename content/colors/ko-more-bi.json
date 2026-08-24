@@ -1,0 +1,81 @@
+{
+  "slug": "ko-more-bi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "木漏日",
+    "kana": "こもれび",
+    "romaji": "ko-more-bi",
+    "en": "Dappled Light"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.580589,
+      "y": 0.64691,
+      "z": 0.361647
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "yellow-green",
+    "temperature": "warm",
+    "lightnessBand": "light",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": [
+      "summer"
+    ]
+  },
+  "editorial": {
+    "description_en": "Sunlight arriving through leaves — the colour of the light rather than of the leaf.",
+    "description_ja": "葉の間からもれる光のような、明るい黄緑。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "shirting"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.862, C 0.088, h 104.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 木 (ko, tree) + 漏れ (more, leaking) + 日 (bi, sunlight), after the standing word 木漏れ日. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dappled Light\" is an editorial decision about what communicates in English, not a literal translation of 木漏日. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — haru-na at ΔE00 7.3, hina-gusa at ΔE00 8.1, mugi-batake at ΔE00 8.6. complementary is the entry nearest the opposite OKLCh hue (284°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "haru-na",
+      "hina-gusa",
+      "mugi-batake"
+    ],
+    "complementary": [
+      "fuyu-kage"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

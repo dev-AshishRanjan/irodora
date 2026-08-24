@@ -51,13 +51,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 鉄 (tetsu, iron) + 砂 (suna, sand), reversing the ordinary word 砂鉄 (satetsu) rather than reusing it. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Iron Sand\" is an editorial decision about what communicates in English, not a literal translation of 鉄砂. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kumori-iwa at ΔE00 8.2, yaki-sugi at ΔE00 12.7, yoru-gami at ΔE00 14.7. complementary is empty because at chroma 0.013 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 鉄 (tetsu, iron) + 砂 (suna, sand), reversing the ordinary word 砂鉄 (satetsu) rather than reusing it. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Iron Sand\" is an editorial decision about what communicates in English, not a literal translation of 鉄砂. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kumori-iwa at ΔE00 8.2, ame-iwa at ΔE00 8.9, yoru-giri at ΔE00 9.3. complementary is empty because at chroma 0.013 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
+      "ame-iwa",
       "kumori-iwa",
-      "yaki-sugi",
-      "yoru-gami"
+      "yoru-giri"
     ],
     "complementary": [],
     "historicalVariants": []

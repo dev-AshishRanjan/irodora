@@ -50,12 +50,12 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 焼き (yaki, burning) + 杉 (sugi, cedar). Also an existing term for the board-charring technique; used here as a colour name and not as a claim about any board. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Charred Cedar\" is an editorial decision about what communicates in English, not a literal translation of 焼杉. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yoru-gami at ΔE00 11.7, tetsu-suna at ΔE00 12.7, soko-zumi at ΔE00 14.2. complementary is empty because at chroma 0.016 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 焼き (yaki, burning) + 杉 (sugi, cedar). Also an existing term for the board-charring technique; used here as a colour name and not as a claim about any board. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Charred Cedar\" is an editorial decision about what communicates in English, not a literal translation of 焼杉. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — doro-soko at ΔE00 9.9, yoru-gami at ΔE00 11.7, ame-doro at ΔE00 11.8. complementary is empty because at chroma 0.016 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
-      "soko-zumi",
-      "tetsu-suna",
+      "ame-doro",
+      "doro-soko",
       "yoru-gami"
     ],
     "complementary": [],

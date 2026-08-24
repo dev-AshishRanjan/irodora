@@ -52,13 +52,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 麻 (asa, hemp or linen) + 布 (nuno, cloth). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Linen Cloth\" is an editorial decision about what communicates in English, not a literal translation of 麻布. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kai-jiro at ΔE00 3.4, sekkai-kabe at ΔE00 3.7, kawaki-suna at ΔE00 3.9. complementary is empty because at chroma 0.017 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 麻 (asa, hemp or linen) + 布 (nuno, cloth). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Linen Cloth\" is an editorial decision about what communicates in English, not a literal translation of 麻布. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — shira-tsuchi at ΔE00 3.3, kai-jiro at ΔE00 3.4, sekkai-kabe at ΔE00 3.7. complementary is empty because at chroma 0.017 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
       "kai-jiro",
-      "kawaki-suna",
-      "sekkai-kabe"
+      "sekkai-kabe",
+      "shira-tsuchi"
     ],
     "complementary": [],
     "historicalVariants": []

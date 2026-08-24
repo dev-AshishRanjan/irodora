@@ -1,0 +1,79 @@
+{
+  "slug": "yuki-ge",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "雪気",
+    "kana": "ゆきげ",
+    "romaji": "yuki-ge",
+    "en": "Snow Air"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.761499,
+      "y": 0.798811,
+      "z": 0.945676
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "pale-blue",
+    "temperature": "cool",
+    "lightnessBand": "light",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": [
+      "winter"
+    ]
+  },
+  "editorial": {
+    "description_en": "The look of the sky before snow, which is lighter than the sky before rain and slightly violet.",
+    "description_ja": "雪の降りそうな空のような、うすい青紫。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "shirting"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.928, C 0.014, h 268.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 雪 (yuki, snow) + 気 (ke, sign or feeling), after the seasonal word 雪気. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Snow Air\" is an editorial decision about what communicates in English, not a literal translation of 雪気. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — asa-moya at ΔE00 3.1, usu-shimo at ΔE00 3.4, hatsu-gori at ΔE00 4.7. complementary is empty because at chroma 0.014 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "asa-moya",
+      "hatsu-gori",
+      "usu-shimo"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

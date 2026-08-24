@@ -1,0 +1,79 @@
+{
+  "slug": "fuchi-mizu",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "淵水",
+    "kana": "ふちみず",
+    "romaji": "fuchi-mizu",
+    "en": "Pool Water"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.071249,
+      "y": 0.092092,
+      "z": 0.11018
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "blue-green",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "A deep pool in a river where the current stops. Dark, cool, and closer to blue than to green.",
+    "description_ja": "川の淵のような、深く青みのある緑。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.446, C 0.046, h 190.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 淵 (fuchi, a deep pool) + 水 (mizu, water). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Pool Water\" is an editorial decision about what communicates in English, not a literal translation of 淵水. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — tetsu-midori at ΔE00 7.7, iwa-goke at ΔE00 9.6, yama-kage at ΔE00 12.9. complementary is the entry nearest the opposite OKLCh hue (10°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "iwa-goke",
+      "tetsu-midori",
+      "yama-kage"
+    ],
+    "complementary": [
+      "mi-aka"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description",
+    "editorial.fashionUse": "no garment use is proposed for this entry; it is atlas content rather than a palette member"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

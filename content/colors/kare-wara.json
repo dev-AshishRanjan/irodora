@@ -51,13 +51,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 枯れ (kare, withered) + 藁 (wara, straw). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dry Straw\" is an editorial decision about what communicates in English, not a literal translation of 枯藁. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-gami at ΔE00 6.4, kawaki-suna at ΔE00 7.8, kiri-goke at ΔE00 8.7. complementary is empty because at chroma 0.030 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 枯れ (kare, withered) + 藁 (wara, straw). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dry Straw\" is an editorial decision about what communicates in English, not a literal translation of 枯藁. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-gami at ΔE00 6.4, kare-no at ΔE00 6.6, kawaki-suna at ΔE00 7.8. complementary is empty because at chroma 0.030 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
       "furu-gami",
-      "kawaki-suna",
-      "kiri-goke"
+      "kare-no",
+      "kawaki-suna"
     ],
     "complementary": [],
     "historicalVariants": []

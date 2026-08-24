@@ -1,0 +1,82 @@
+{
+  "slug": "kari-ato",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "刈跡",
+    "kana": "かりあと",
+    "romaji": "kari-ato",
+    "en": "After the Harvest"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.338819,
+      "y": 0.339902,
+      "z": 0.187605
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "gold",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": [
+      "autumn"
+    ]
+  },
+  "editorial": {
+    "description_en": "Stubble left standing after the cut — the same field as rice ear, a week later and much quieter.",
+    "description_ja": "刈ったあとの田のような、しずんだ黄土。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "trousers",
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.700, C 0.072, h 76.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 刈り (kari, cutting) + 跡 (ato, what is left behind). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"After the Harvest\" is an editorial decision about what communicates in English, not a literal translation of 刈跡. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kare-no at ΔE00 6.0, asa-bukuro at ΔE00 6.7, hi-kabe at ΔE00 7.0. complementary is the entry nearest the opposite OKLCh hue (256°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "asa-bukuro",
+      "hi-kabe",
+      "kare-no"
+    ],
+    "complementary": [
+      "yoru-giri"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

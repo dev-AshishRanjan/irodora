@@ -1,0 +1,80 @@
+{
+  "slug": "yu-mizu",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "夕水",
+    "kana": "ゆうみず",
+    "romaji": "yū-mizu",
+    "en": "Evening Water"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.319852,
+      "y": 0.345126,
+      "z": 0.608719
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "mid-blue",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Water at the end of the day, when it has stopped reflecting and started holding.",
+    "description_ja": "夕方の水のような、深みのある青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "shirting"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.700, C 0.072, h 250.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 夕 (yū, evening) + 水 (mizu, water). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Evening Water\" is an editorial decision about what communicates in English, not a literal translation of 夕水. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — ko-men at ΔE00 6.0, natsu-zora at ΔE00 6.6, kumori-nami at ΔE00 6.9. complementary is the entry nearest the opposite OKLCh hue (70°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ko-men",
+      "kumori-nami",
+      "natsu-zora"
+    ],
+    "complementary": [
+      "doro-kabe"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

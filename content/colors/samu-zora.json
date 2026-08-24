@@ -1,0 +1,80 @@
+{
+  "slug": "samu-zora",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "寒空",
+    "kana": "さむぞら",
+    "romaji": "samu-zora",
+    "en": "Cold Sky"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.411764,
+      "y": 0.440543,
+      "z": 0.600093
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "pale-blue",
+    "temperature": "cool",
+    "lightnessBand": "light",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": [
+      "winter"
+    ]
+  },
+  "editorial": {
+    "description_en": "A clear cold sky with no depth in it — light, cool, and low in chroma.",
+    "description_ja": "冬の晴れた空のような、つめたい青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "shirting",
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.760, C 0.034, h 250.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 寒 (samu, cold) + 空 (sora, sky), rendaku to -zora. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Cold Sky\" is an editorial decision about what communicates in English, not a literal translation of 寒空. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — to-yama at ΔE00 4.5, yuki-kage at ΔE00 4.6, ame-ishi at ΔE00 4.9. complementary is empty because at chroma 0.034 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-ishi",
+      "to-yama",
+      "yuki-kage"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

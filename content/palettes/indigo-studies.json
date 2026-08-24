@@ -1,0 +1,77 @@
+{
+  "slug": "indigo-studies",
+  "name": {
+    "en": "Indigo Studies",
+    "ja": "藍の習作"
+  },
+  "classification": "japanese-inspired",
+  "category": "contemporary",
+  "colors": [
+    {
+      "slug": "fuka-yoi",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "fuyu-umi",
+      "role": "neutral",
+      "rank": 2,
+      "weight": 0.9
+    },
+    {
+      "slug": "ko-men",
+      "role": "neutral",
+      "rank": 3,
+      "weight": 0.82
+    },
+    {
+      "slug": "ame-zora",
+      "role": "light",
+      "rank": 4,
+      "weight": 0.78
+    },
+    {
+      "slug": "hatsu-gori",
+      "role": "light",
+      "rank": 5,
+      "weight": 0.7
+    },
+    {
+      "slug": "fuka-moya",
+      "role": "neutral",
+      "rank": 6,
+      "weight": 0.66
+    },
+    {
+      "slug": "yoi-zora",
+      "role": "accent",
+      "rank": 7,
+      "weight": 0.6
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial selection from the twenty-four Indigo Studies: a lightness ladder from 深宵 to 初氷 at roughly even OKLCh steps, plus one high-chroma accent that does not sit on the ladder. Chosen by hand, not generated.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "The name is the honest part and the limit of the claim. This is a study of the BLUE RANGE indigo occupies, arranged as a vat progression is arranged — palest to deepest. Nothing here was dyed, nothing was measured, and no member is presented as what indigo at a given number of dips actually is; that is why the entries are named from water, sky and night rather than from the dye. 深宵 anchors rather than a black, because the whole point of the group is that the deep end still has a hue. 宵空 is the accent and is deliberately off the ladder — it is the one member that would be wrong to use as a ground."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

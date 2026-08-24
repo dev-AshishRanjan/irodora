@@ -1,0 +1,77 @@
+{
+  "slug": "forest-and-mineral",
+  "name": {
+    "en": "Forest and Mineral",
+    "ja": "森と鉱物"
+  },
+  "classification": "japanese-inspired",
+  "category": "contemporary",
+  "colors": [
+    {
+      "slug": "kuro-midori",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "sugi-kage",
+      "role": "neutral",
+      "rank": 2,
+      "weight": 0.9
+    },
+    {
+      "slug": "iwa-goke",
+      "role": "neutral",
+      "rank": 3,
+      "weight": 0.84
+    },
+    {
+      "slug": "shio-iwa",
+      "role": "neutral",
+      "rank": 4,
+      "weight": 0.76
+    },
+    {
+      "slug": "shimo-ba",
+      "role": "light",
+      "rank": 5,
+      "weight": 0.72
+    },
+    {
+      "slug": "tani-giri",
+      "role": "light",
+      "rank": 6,
+      "weight": 0.66
+    },
+    {
+      "slug": "do-sabi",
+      "role": "accent",
+      "rank": 7,
+      "weight": 0.6
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial selection from the twenty-four Forest and Mineral entries: a green ladder from 黒緑 to 霜葉, with one mineral grey held between the greens to stop them reading as a gradient, and one blue-green accent.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "The two halves of the name are doing different work, and the palette needs both. The greens alone read as a single hue at five lightnesses — pleasant and inert. 潮岩 is a mineral grey placed deliberately in the middle of the ladder so the greens have something that is not green to be measured against, and 銅錆 is the accent because copper patina is the one colour in this family that is unmistakably a mineral and unmistakably chromatic. 黒緑 anchors instead of a black for the same reason 深宵 does in the Indigo palette."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

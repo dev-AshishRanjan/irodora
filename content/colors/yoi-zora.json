@@ -1,0 +1,79 @@
+{
+  "slug": "yoi-zora",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "宵空",
+    "kana": "よいぞら",
+    "romaji": "yoi-zora",
+    "en": "Dusk Sky"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.109745,
+      "y": 0.101688,
+      "z": 0.329775
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "deep-blue",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "high",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "The sky in the half hour after sunset, at its most saturated just before it gives up and goes black.",
+    "description_ja": "日が沈んだあとの空のような、あざやかな青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": "The highest-chroma entry in this group. It is here to give the palette something to fail against — a blue this strong is where a camera estimate and a screen disagree most visibly.",
+    "fashionUse": [
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.470, C 0.118, h 262.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 宵 (yoi, early night) + 空 (sora, sky), rendaku to -zora. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dusk Sky\" is an editorial decision about what communicates in English, not a literal translation of 宵空. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yu-dachi at ΔE00 6.9, en-yo at ΔE00 8.2, fuka-mizu at ΔE00 8.5. complementary is the entry nearest the opposite OKLCh hue (82°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "en-yo",
+      "fuka-mizu",
+      "yu-dachi"
+    ],
+    "complementary": [
+      "ina-ho"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

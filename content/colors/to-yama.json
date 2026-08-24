@@ -1,0 +1,79 @@
+{
+  "slug": "to-yama",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "遠山",
+    "kana": "とおやま",
+    "romaji": "tō-yama",
+    "en": "Distant Hill"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.455978,
+      "y": 0.496586,
+      "z": 0.727554
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "mid-blue",
+    "temperature": "cool",
+    "lightnessBand": "light",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "A hill far enough away that the air between has taken its colour and given back blue.",
+    "description_ja": "遠くの山のような、空気をふくんだ青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.790, C 0.050, h 244.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 遠 (tō, distant) + 山 (yama, hill or mountain). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Distant Hill\" is an editorial decision about what communicates in English, not a literal translation of 遠山. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — ame-zora at ΔE00 4.3, samu-zora at ΔE00 4.5, oki-gasumi at ΔE00 4.6. complementary is the entry nearest the opposite OKLCh hue (64°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-zora",
+      "oki-gasumi",
+      "samu-zora"
+    ],
+    "complementary": [
+      "aki-batake"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description",
+    "editorial.fashionUse": "no garment use is proposed for this entry; it is atlas content rather than a palette member"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

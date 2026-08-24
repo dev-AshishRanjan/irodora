@@ -1,0 +1,81 @@
+{
+  "slug": "fuka-moya",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "深靄",
+    "kana": "ふかもや",
+    "romaji": "fuka-moya",
+    "en": "Deep Haze"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.164953,
+      "y": 0.171668,
+      "z": 0.283731
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "deep-blue",
+    "temperature": "cool",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Haze thick enough to have a colour of its own — the quiet member of the deep blues, and the one that behaves as a neutral beside them.",
+    "description_ja": "濃い靄のような、しずかな青灰色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "suiting",
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.556, C 0.046, h 262.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 深 (fuka, deep) + 靄 (moya, haze). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Deep Haze\" is an editorial decision about what communicates in English, not a literal translation of 深靄. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — ame-iwa at ΔE00 8.2, yu-dachi at ΔE00 8.5, yoru-kawa at ΔE00 8.9. complementary is the entry nearest the opposite OKLCh hue (82°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-iwa",
+      "yoru-kawa",
+      "yu-dachi"
+    ],
+    "complementary": [
+      "ina-ho"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

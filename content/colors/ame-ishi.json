@@ -52,12 +52,12 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 雨 (ame, rain) + 石 (ishi, stone). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Rain Stone\" is an editorial decision about what communicates in English, not a literal translation of 雨石. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — suzu-gami at ΔE00 4.0, fuyu-gumo at ΔE00 5.2, kiri-goke at ΔE00 8.9. complementary is empty because at chroma 0.016 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 雨 (ame, rain) + 石 (ishi, stone). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Rain Stone\" is an editorial decision about what communicates in English, not a literal translation of 雨石. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — suzu-gami at ΔE00 4.0, samu-zora at ΔE00 4.9, fuyu-gumo at ΔE00 5.2. complementary is empty because at chroma 0.016 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
       "fuyu-gumo",
-      "kiri-goke",
+      "samu-zora",
       "suzu-gami"
     ],
     "complementary": [],

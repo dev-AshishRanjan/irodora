@@ -1,0 +1,77 @@
+{
+  "slug": "tani-giri",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "谷霧",
+    "kana": "たにぎり",
+    "romaji": "tani-giri",
+    "en": "Valley Mist"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.532176,
+      "y": 0.589923,
+      "z": 0.60684
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "pale-green",
+    "temperature": "cool",
+    "lightnessBand": "light",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Mist filling a valley in the morning, taking a little green from what it is sitting on.",
+    "description_ja": "谷にたまった霧のような、緑がかったうすい色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.836, C 0.022, h 158.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 谷 (tani, valley) + 霧 (kiri, mist), rendaku to -giri. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Valley Mist\" is an editorial decision about what communicates in English, not a literal translation of 谷霧. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — iwa-shimizu at ΔE00 4.3, usu-shiba at ΔE00 5.3, shimo-ba at ΔE00 5.4. complementary is empty because at chroma 0.022 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "iwa-shimizu",
+      "shimo-ba",
+      "usu-shiba"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description",
+    "editorial.fashionUse": "no garment use is proposed for this entry; it is atlas content rather than a palette member"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

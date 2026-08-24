@@ -1,0 +1,77 @@
+{
+  "slug": "yuki-kage",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "雪影",
+    "kana": "ゆきかげ",
+    "romaji": "yuki-kage",
+    "en": "Snow Shadow"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.487047,
+      "y": 0.512058,
+      "z": 0.663625
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "pale-blue",
+    "temperature": "cool",
+    "lightnessBand": "light",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "The blue that appears in a shadow cast on snow — low in chroma, and further round toward violet than the other pale blues here.",
+    "description_ja": "雪の上の影に見える、うすい青。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": null
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.800, C 0.026, h 262.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 雪 (yuki, snow) + 影 (kage, shadow). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Snow Shadow\" is an editorial decision about what communicates in English, not a literal translation of 雪影. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — fuyu-gumo at ΔE00 3.1, ame-zora at ΔE00 4.1, samu-zora at ΔE00 4.6. complementary is empty because at chroma 0.026 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-zora",
+      "fuyu-gumo",
+      "samu-zora"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description",
+    "editorial.fashionUse": "no garment use is proposed for this entry; it is atlas content rather than a palette member"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

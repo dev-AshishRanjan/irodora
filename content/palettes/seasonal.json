@@ -1,0 +1,83 @@
+{
+  "slug": "seasonal",
+  "name": {
+    "en": "Seasonal",
+    "ja": "四季"
+  },
+  "classification": "japanese-inspired",
+  "category": "seasonal",
+  "colors": [
+    {
+      "slug": "shimo-yo",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "hana-gasumi",
+      "role": "light",
+      "rank": 2,
+      "weight": 0.85
+    },
+    {
+      "slug": "ao-ta",
+      "role": "accent",
+      "rank": 3,
+      "weight": 0.8
+    },
+    {
+      "slug": "ina-ho",
+      "role": "accent",
+      "rank": 4,
+      "weight": 0.8
+    },
+    {
+      "slug": "kari-ato",
+      "role": "neutral",
+      "rank": 5,
+      "weight": 0.7
+    },
+    {
+      "slug": "samu-zora",
+      "role": "neutral",
+      "rank": 6,
+      "weight": 0.7
+    },
+    {
+      "slug": "shin-me",
+      "role": "light",
+      "rank": 7,
+      "weight": 0.65
+    },
+    {
+      "slug": "natsu-kage",
+      "role": "neutral",
+      "rank": 8,
+      "weight": 0.65
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial selection of two entries per season from the twenty-four Seasonal colours, plus 霜夜 as the anchor. Chosen so that each season is represented by one colour that carries it and one that supports it, rather than by whichever member is most saturated.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "This is the only palette in the seed corpus whose members do not sit in one hue family, and it is the only one where that is the point — a seasonal palette that reads as a single harmony has stopped being seasonal. The anchor is winter, because winter is the season with the fewest colours and the palette needs its deep value to come from somewhere that is not simply \"the darkest one\". Two accents rather than one, deliberately: 青田 and 稲穂 are the same field four months apart, and putting them at equal weight is the palette’s argument. Its category is `seasonal` rather than `contemporary` — the other four are contemporary selections, and this one is organised by a calendar."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

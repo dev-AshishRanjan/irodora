@@ -1,0 +1,78 @@
+{
+  "slug": "kuro-tsuchi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "黒土",
+    "kana": "くろつち",
+    "romaji": "kuro-tsuchi",
+    "en": "Black Earth"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.009454,
+      "y": 0.008481,
+      "z": 0.003736
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "brown",
+    "temperature": "warm",
+    "lightnessBand": "dark",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "The darkest soil there is, at the point where warmth is the only thing distinguishing it from a charcoal.",
+    "description_ja": "いちばん黒い土のような、深くあたたかい色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": "The warm counterpart to 底墨. The two are close in lightness and read as different colours only against something neutral, which is the comparison the Compare surface exists to make.",
+    "fashionUse": [
+      "outerwear",
+      "trousers"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.206, C 0.030, h 58.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 黒 (kuro, black) + 土 (tsuchi, earth). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Black Earth\" is an editorial decision about what communicates in English, not a literal translation of 黒土. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — ame-doro at ΔE00 5.2, doro-soko at ΔE00 10.2, soko-zumi at ΔE00 10.2. complementary is empty because at chroma 0.030 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "ame-doro",
+      "doro-soko",
+      "soko-zumi"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

@@ -1,0 +1,82 @@
+{
+  "slug": "chiri-ba",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "散葉",
+    "kana": "ちりば",
+    "romaji": "chiri-ba",
+    "en": "Scattered Leaf"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.15248,
+      "y": 0.134397,
+      "z": 0.0476
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "brown",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": [
+      "autumn"
+    ]
+  },
+  "editorial": {
+    "description_en": "Leaves on the ground rather than on the tree, past their colour and into their brown.",
+    "description_ja": "地に散った葉のような、赤みのある茶。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "knitwear",
+      "outerwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.518, C 0.086, h 60.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 散り (chiri, scattering) + 葉 (ha, leaf), rendaku to -ba. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Scattered Leaf\" is an editorial decision about what communicates in English, not a literal translation of 散葉. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-kawa at ΔE00 4.0, sabi-suna at ΔE00 7.3, doro-kabe at ΔE00 7.4. complementary is the entry nearest the opposite OKLCh hue (240°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "doro-kabe",
+      "furu-kawa",
+      "sabi-suna"
+    ],
+    "complementary": [
+      "fuka-mizu"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

@@ -50,13 +50,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 朝 (asa, morning) + 靄 (moya, haze). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Morning Haze\" is an editorial decision about what communicates in English, not a literal translation of 朝靄. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kumori-garasu at ΔE00 4.2, usu-shimo at ΔE00 4.2, fuyu-gumo at ΔE00 7.4. complementary is empty because at chroma 0.014 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 朝 (asa, morning) + 靄 (moya, haze). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Morning Haze\" is an editorial decision about what communicates in English, not a literal translation of 朝靄. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yuki-ge at ΔE00 3.1, hatsu-gori at ΔE00 3.6, kumori-garasu at ΔE00 4.2. complementary is empty because at chroma 0.014 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
-      "fuyu-gumo",
+      "hatsu-gori",
       "kumori-garasu",
-      "usu-shimo"
+      "yuki-ge"
     ],
     "complementary": [],
     "historicalVariants": []

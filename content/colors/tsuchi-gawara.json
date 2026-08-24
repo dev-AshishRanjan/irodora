@@ -1,0 +1,80 @@
+{
+  "slug": "tsuchi-gawara",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "土瓦",
+    "kana": "つちがわら",
+    "romaji": "tsuchi-gawara",
+    "en": "Earth Tile"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.278151,
+      "y": 0.240827,
+      "z": 0.137179
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "clay",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "A roof tile made from local clay, seen dry. Redder than unglazed ware and a step down in light.",
+    "description_ja": "土を焼いた瓦のような、赤みの強い色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "knitwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.630, C 0.086, h 44.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 土 (tsuchi, earth) + 瓦 (kawara, roof tile), rendaku to -gawara. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Earth Tile\" is an editorial decision about what communicates in English, not a literal translation of 土瓦. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — su-yaki at ΔE00 7.1, sabi-suna at ΔE00 7.5, aka-tsuchi at ΔE00 9.0. complementary is the entry nearest the opposite OKLCh hue (224°), within 22°. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "aka-tsuchi",
+      "sabi-suna",
+      "su-yaki"
+    ],
+    "complementary": [
+      "nami-ma"
+    ],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

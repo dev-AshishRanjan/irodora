@@ -51,13 +51,13 @@
     "verifiedBy": "ed-001",
     "verifiedAt": "2026-08-24",
     "reviewIndependence": "self",
-    "editorialNotes": "Name coined by Irodora: 冬 (fuyu, winter) + 雲 (kumo, cloud), rendaku to -gumo. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Winter Cloud\" is an editorial decision about what communicates in English, not a literal translation of 冬雲. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kumori-garasu at ΔE00 5.2, ame-ishi at ΔE00 5.2, asa-moya at ΔE00 7.4. complementary is empty because at chroma 0.015 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+    "editorialNotes": "Name coined by Irodora: 冬 (fuyu, winter) + 雲 (kumo, cloud), rendaku to -gumo. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Winter Cloud\" is an editorial decision about what communicates in English, not a literal translation of 冬雲. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yuki-kage at ΔE00 3.1, kumori-garasu at ΔE00 5.2, ame-ishi at ΔE00 5.2. complementary is empty because at chroma 0.015 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
   },
   "relations": {
     "related": [
       "ame-ishi",
-      "asa-moya",
-      "kumori-garasu"
+      "kumori-garasu",
+      "yuki-kage"
     ],
     "complementary": [],
     "historicalVariants": []

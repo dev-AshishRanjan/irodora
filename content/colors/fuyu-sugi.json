@@ -1,0 +1,79 @@
+{
+  "slug": "fuyu-sugi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "冬杉",
+    "kana": "ふゆすぎ",
+    "romaji": "fuyu-sugi",
+    "en": "Winter Cedar"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.025551,
+      "y": 0.038085,
+      "z": 0.025994
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "green",
+    "temperature": "neutral",
+    "lightnessBand": "dark",
+    "chromaBand": "mid",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Cedar in winter, which does not lose its needles and does lose most of its light.",
+    "description_ja": "冬の杉のような、深く暗い緑。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "outerwear",
+      "coats"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.330, C 0.056, h 154.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 冬 (fuyu, winter) + 杉 (sugi, cedar). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Winter Cedar\" is an editorial decision about what communicates in English, not a literal translation of 冬杉. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — kuro-midori at ΔE00 6.5, tetsu-midori at ΔE00 7.0, numa-kage at ΔE00 7.6. complementary is empty because no entry in this corpus sits within 22° of the opposite hue. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "kuro-midori",
+      "numa-kage",
+      "tetsu-midori"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}
