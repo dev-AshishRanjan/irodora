@@ -1,0 +1,78 @@
+{
+  "slug": "yaki-sugi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "焼杉",
+    "kana": "やきすぎ",
+    "romaji": "yaki-sugi",
+    "en": "Charred Cedar"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.042922,
+      "y": 0.043255,
+      "z": 0.037357
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "charcoal",
+    "temperature": "warm",
+    "lightnessBand": "dark",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Cedar board burned to preserve it. Dark and warm, and the only colour in this group whose warmth survives at low lightness.",
+    "description_ja": "焼いた杉板のような、暗くあたたかい色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "outerwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.352, C 0.016, h 58.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 焼き (yaki, burning) + 杉 (sugi, cedar). Also an existing term for the board-charring technique; used here as a colour name and not as a claim about any board. It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Charred Cedar\" is an editorial decision about what communicates in English, not a literal translation of 焼杉. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — yoru-gami at ΔE00 11.7, tetsu-suna at ΔE00 12.7, soko-zumi at ΔE00 14.2. complementary is empty because at chroma 0.016 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "soko-zumi",
+      "tetsu-suna",
+      "yoru-gami"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

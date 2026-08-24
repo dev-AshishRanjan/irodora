@@ -1,0 +1,79 @@
+{
+  "slug": "kawaki-suna",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "乾砂",
+    "kana": "かわきすな",
+    "romaji": "kawaki-suna",
+    "en": "Dry Sand"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.611106,
+      "y": 0.639831,
+      "z": 0.592786
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "warm-grey",
+    "temperature": "warm",
+    "lightnessBand": "light",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Dry sand above the tideline — the first colour in this group warm enough to be called sand rather than off-white.",
+    "description_ja": "乾いた砂のような、あたたかみのある明るい色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "knitwear",
+      "outerwear"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.862, C 0.024, h 80.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 乾き (kawaki, dryness) + 砂 (suna, sand). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Dry Sand\" is an editorial decision about what communicates in English, not a literal translation of 乾砂. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — furu-gami at ΔE00 2.7, asa-nuno at ΔE00 3.9, sekkai-kabe at ΔE00 4.9. complementary is empty because at chroma 0.024 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "asa-nuno",
+      "furu-gami",
+      "sekkai-kabe"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

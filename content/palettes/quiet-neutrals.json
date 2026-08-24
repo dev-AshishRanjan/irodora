@@ -1,0 +1,77 @@
+{
+  "slug": "quiet-neutrals",
+  "name": {
+    "en": "Quiet Neutrals",
+    "ja": "静かな中間色"
+  },
+  "classification": "japanese-inspired",
+  "category": "contemporary",
+  "colors": [
+    {
+      "slug": "soko-zumi",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "usu-gami",
+      "role": "light",
+      "rank": 2,
+      "weight": 0.9
+    },
+    {
+      "slug": "ame-ishi",
+      "role": "neutral",
+      "rank": 3,
+      "weight": 0.85
+    },
+    {
+      "slug": "asa-nuno",
+      "role": "light",
+      "rank": 4,
+      "weight": 0.8
+    },
+    {
+      "slug": "fuyu-gumo",
+      "role": "neutral",
+      "rank": 5,
+      "weight": 0.75
+    },
+    {
+      "slug": "asa-nawa",
+      "role": "neutral",
+      "rank": 6,
+      "weight": 0.7
+    },
+    {
+      "slug": "kare-wara",
+      "role": "accent",
+      "rank": 7,
+      "weight": 0.6
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial selection, not a generated harmony. Seven of the twenty-four Quiet Neutrals chosen by hand for lightness spacing across the group: one deep anchor, two lights, three mid neutrals and one warm accent.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "The anchor is 底墨 rather than a mid grey. In a neutral palette the deep value is what every other member is judged against, and a palette anchored in the middle leaves its lights sitting on nothing. 枯藁 is the only member above the group’s warm centre and is the accent for exactly that reason — it is the palette’s one colour decision. Roles are editorial; no generator was involved, and FR-22 requires that to be true rather than assumed."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}

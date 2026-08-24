@@ -1,0 +1,79 @@
+{
+  "slug": "fuyu-tsuchi",
+  "classification": "japanese-inspired",
+  "name": {
+    "kanji": "冬土",
+    "kana": "ふゆつち",
+    "romaji": "fuyu-tsuchi",
+    "en": "Winter Earth"
+  },
+  "color": {
+    "xyz": {
+      "x": 0.169532,
+      "y": 0.174956,
+      "z": 0.159714
+    },
+    "measuredUnder": "D65",
+    "adaptation": null,
+    "sourceHex": null
+  },
+  "taxonomy": {
+    "family": "warm-grey",
+    "temperature": "warm",
+    "lightnessBand": "mid",
+    "chromaBand": "low",
+    "era": null,
+    "material": null,
+    "season": null
+  },
+  "editorial": {
+    "description_en": "Bare ground in winter: a dark warm neutral, the last step before this group turns to charcoal.",
+    "description_ja": "冬のむき出しの土のような、暗くあたたかい色。",
+    "historicalNote_en": null,
+    "contemporaryNote_en": null,
+    "fashionUse": [
+      "outerwear",
+      "trousers"
+    ]
+  },
+  "provenance": {
+    "source": "Irodora editorial curation — seed corpus, 2026",
+    "sourceId": "IRO-ED-001",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial construction, not a measurement. Specified in OKLCh as L 0.560, C 0.018, h 68.0° and converted to canonical D65 XYZ by @irodora/color-spaces 0.1.0 (oklchToXyz), rounded to six decimal places. Re-derivable from this sentence alone.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Name coined by Irodora: 冬 (fuyu, winter) + 土 (tsuchi, earth). It is not asserted to be a traditional Japanese colour name, and the hyphenated romaji marks it as a constructed compound (ADR-0065). \"Winter Earth\" is an editorial decision about what communicates in English, not a literal translation of 冬土. Relations asserted from measured proximity under the current engine, not from a source: related is the three nearest in CIELAB — hai-suna at ΔE00 5.7, kumori-iwa at ΔE00 11.5, togi-ishi at ΔE00 12.9. complementary is empty because at chroma 0.018 the hue is not a reliable enough statement to oppose. historicalVariants is empty: this entry makes no historical claim to vary from."
+  },
+  "relations": {
+    "related": [
+      "hai-suna",
+      "kumori-iwa",
+      "togi-ishi"
+    ],
+    "complementary": [],
+    "historicalVariants": []
+  },
+  "unknowns": {
+    "color.adaptation": "specified and stored at D65, which is canonical, so nothing was adapted",
+    "color.sourceHex": "no source printed a hex for this colour — the value was constructed, not transcribed",
+    "taxonomy.era": "an Irodora construction of 2026 belongs to no historical period, and claiming one would be the dishonesty ADR-0065 exists to prevent",
+    "taxonomy.material": "nothing was dyed and nothing was measured, so no material stands behind this value",
+    "editorial.historicalNote_en": "no history is claimed for a colour we constructed; this column is where a cleared source would land",
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository",
+    "taxonomy.season": "assigned only in the Seasonal group, where the season is the editorial premise of the colour",
+    "editorial.contemporaryNote_en": "nothing to add beyond the description"
+  },
+  "status": "published",
+  "versionId": "2026.08.1"
+}
