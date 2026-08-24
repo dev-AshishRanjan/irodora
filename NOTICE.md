@@ -16,16 +16,26 @@ is produced per release; see [`docs/operations/release-process.md`](docs/operati
 copyleft (MPL-2.0, LGPL) requires review before adoption. Strong copyleft (GPL, AGPL) is
 not permitted in shipped code. The check runs in CI.
 
-### Notable dependencies used as test oracles, not runtime code
+### Notable dependencies used as test oracles
 
 The colour engine is implemented in-house
-([ADR-0004](docs/adr/0004-own-the-colour-engine-culori-as-test-oracle.md)). The following
-are development dependencies used to cross-validate our maths, and are **not** shipped:
+([ADR-0004](docs/adr/0004-own-the-colour-engine-culori-as-test-oracle.md)). The following are
+development dependencies used to cross-validate our maths:
 
-| Library | Licence | Used for |
-|---|---|---|
-| `culori` | MIT | Independent conversion and ΔE reference values |
-| `colorjs.io` | MIT | CSS Color 4 specification conformance cross-check |
+| Library | Licence | Used for | Shipped? |
+|---|---|---|---|
+| `culori` | MIT | Independent conversion and ΔE reference values | **Yes**, transitively — see below |
+| `colorjs.io` | MIT | CSS Color 4 specification conformance cross-check | No |
+
+**`culori` is also in the shipped app bundle**, which it was not when this section was first
+written. It arrives as a transitive dependency of `uniwind`, the styling engine behind HeroUI
+Native: `uniwind`'s React Native entry reaches `core/native/native-utils`, whose top-level
+import of `culori` Metro therefore bundles
+([ADR-0063](docs/adr/0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md)).
+
+It is not used as colour science. `packages/color-*` remain zero-dependency, and the generated
+stylesheet emits sRGB hex only, so every conversion is performed by our engine and `culori`
+never computes a colour the product displays.
 
 ---
 

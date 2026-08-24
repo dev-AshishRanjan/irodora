@@ -86,6 +86,7 @@ Two rules that matter more than the format:
 | [0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) | Irodora ships with one editor, and self-review is declared rather than assumed | Accepted |
 | [0061](0061-nfr-3-guarantees-the-observable-value-not-the-double.md) | NFR-3 guarantees the observable value, not the double | Accepted |
 | [0062](0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md) | HeroUI Native is the component foundation, and it lives behind the `@irodora/ui` boundary | Accepted |
+| [0063](0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md) | `culori` ships in the app bundle, and the generated stylesheet emits sRGB hex only | Accepted |
 
 ## Open questions awaiting an ADR
 
