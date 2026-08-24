@@ -47,8 +47,12 @@ export default {
   //    node_modules/<pkg>/ — and the allow-list never sees it, so heroui-native's ESM
   //    reaches the runtime untransformed and dies on `export *`. The packages are named
   //    explicitly because that second segment is what has to match.
+  //
+  //    `@noble` is on the list for the same reason and a different package (F-018,
+  //    ADR-0066): `@noble/hashes` is ESM-only, so untransformed it dies on `import` before a
+  //    single corpus assertion runs. Metro handles it natively — this line is the jest half.
   transformIgnorePatterns: [
-    '/node_modules/(?!(\\.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|heroui-native|uniwind|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|@gorhom))',
+    '/node_modules/(?!(\\.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|heroui-native|uniwind|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|@gorhom|@noble))',
     '/node_modules/react-native-reanimated/plugin/',
     '/node_modules/@react-native/babel-preset/',
   ],

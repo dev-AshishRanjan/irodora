@@ -89,6 +89,7 @@ Two rules that matter more than the format:
 | [0063](0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md) | `culori` ships in the app bundle, and the generated stylesheet emits sRGB hex only | Accepted |
 | [0064](0064-irodora-ui-resolves-the-way-metro-does-not-the-way-node-does.md) | `@irodora/ui` resolves modules the way Metro does, not the way Node does | Accepted |
 | [0065](0065-the-seed-corpus-is-coined-not-canonical-and-constructed-not-measured.md) | The seed corpus is coined, not canonical, and constructed, not measured | Accepted |
+| [0066](0066-the-app-verifies-the-corpus-with-noble-hashes-and-ships-the-bundle-as-generated-text.md) | The app verifies the corpus with `@noble/hashes`, and ships the bundle as generated text | Accepted |
 
 ## Open questions awaiting an ADR
 

@@ -608,7 +608,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-012",
         "F-017",
@@ -628,7 +628,8 @@
         "a11y",
         "contrast"
       ],
-      "notes": "BLOCKEDBY F-012 ADDED IN F-074. It was missing, and F-018 cannot meet its own second criterion without it: content/versions/index.json is [], so there is no signed bundle at any version to read or to verify a digest against. Found while selecting the next feature after F-017 — the same class of defect as the retired-surface criteria, and one the F-074 check CANNOT see, because it is a missing field rather than a wrong word."
+      "notes": "BLOCKEDBY F-012 ADDED IN F-074. It was missing, and F-018 cannot meet its own second criterion without it: content/versions/index.json is [], so there is no signed bundle at any version to read or to verify a digest against. Found while selecting the next feature after F-017 — the same class of defect as the retired-surface criteria, and one the F-074 check CANNOT see, because it is a missing field rather than a wrong word.",
+      "plan": "plans/F-018-the-atlas-reads-the-bundle-and-trusts-nothing-else.md"
     },
     {
       "id": "F-019",

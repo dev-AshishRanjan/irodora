@@ -95,6 +95,10 @@ export default tseslint.config(
       // the emitter to satisfy a style rule, and the byte comparison is what actually
       // guards these files.
       'packages/design-tokens/src/generated/**',
+      // The pinned corpus bundle, ~450 KB of JSON in a string literal, emitted by
+      // scripts/generate-corpus-bundle.mjs and byte-compared by `--check` in gate 11
+      // (ADR-0066). Nothing here is authored.
+      'apps/mobile/src/corpus/generated/**',
     ],
   },
 

@@ -28,6 +28,7 @@
     "@irodora/design-tokens": "workspace:*",
     "@irodora/store": "workspace:*",
     "@irodora/ui": "workspace:*",
+    "@noble/hashes": "2.3.0",
     "expo": "~57.0.14",
     "expo-font": "^57.0.1",
     "expo-localization": "^57.0.1",

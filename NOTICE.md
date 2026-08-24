@@ -37,6 +37,22 @@ It is not used as colour science. `packages/color-*` remain zero-dependency, and
 stylesheet emits sRGB hex only, so every conversion is performed by our engine and `culori`
 never computes a colour the product displays.
 
+### The one cryptographic dependency
+
+| Library | Licence | Used for | Shipped? |
+|---|---|---|---|
+| `@noble/hashes` | MIT | SHA-256, to verify the corpus bundle's checksum at load | **Yes**, in the app |
+
+The corpus is an immutable signed bundle and its checksum is verified **at load**, not only at
+write ([ADR-0046](docs/adr/0046-published-corpus-is-an-immutable-generated-bundle.md)). That
+needs a **synchronous** SHA-256 on the device, which neither React Native nor `expo-crypto`
+provides — `expo-crypto` is async only, and verification behind a promise can be outrun by the
+first render ([ADR-0066](docs/adr/0066-the-app-verifies-the-corpus-with-noble-hashes-and-ships-the-bundle-as-generated-text.md)).
+
+**It is not trusted on arrival.** `assertSha256` runs it against published FIPS vectors before
+it is used anywhere, including one non-ASCII vector that catches a hasher encoding UTF-16 rather
+than UTF-8. It is the same primitive check the publish path and gate 11 apply to `node:crypto`.
+
 ---
 
 ## 2. Colour science
