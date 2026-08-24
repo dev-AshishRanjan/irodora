@@ -29,6 +29,11 @@ import { formatHex, formatHex8, interpolate, parse } from 'culori'
 
 Metro bundles it. **`culori` is in the app.**
 
+Confirmed by bundling rather than by reading the import chain. `expo export --platform android`
+produces a 5.0 MB Hermes bundle of 2453 modules, and its string table carries `culori`,
+`modeOklab`, `modeLrgb`, `useMode` and `formatHex`. An inference about a module graph is not
+the same claim as a measurement of what shipped, and this ADR rests on the second.
+
 ### The supply-chain half is the smaller half
 
 [ADR-0004](0004-own-the-colour-engine-culori-as-test-oracle.md) says *"`culori` and
@@ -92,9 +97,18 @@ path by which it can compute a colour we display.**
    resolved tokens through `style`, never `className` — means the colours that matter bypass
    this code path entirely. This ADR is about the chrome that remains.
 
-5. **A guard, not an intention.** `verify-design-tokens.mjs` fails if the generated stylesheet
-   contains `oklch(`, `color-mix(`, `rgb(`, `hsl(` or a named colour, with a `--prove` decoy for
-   each. The rule is checked on every run rather than remembered.
+5. **A guard, not an intention — in the emitter itself.** `emitHeroui` scans its own output
+   and **throws** if any declaration carries `oklch(`, `color-mix(`, `rgb(`, `hsl(`, `lab(` or
+   `lch(`. Hex, or it does not build — which is stronger than a separate script reporting on an
+   artefact already written to disk, and it needs no second place to remember the rule.
+
+   Comments are stripped before the scan and are deliberately exempt: they carry each value's
+   token name and OKLCh source, and that provenance is the only thing that makes a page of hex
+   readable.
+
+   The check is exported and tested against a crafted string, because `emitHeroui` has no
+   branch that could produce a colour function — a guard whose failing path is unreachable from
+   its own caller is a guard nobody has watched fail.
 
 `culori` is additionally recorded in [`NOTICE.md`](../../NOTICE.md) as a shipped dependency,
 which it previously was not.

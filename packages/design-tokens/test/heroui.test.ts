@@ -25,6 +25,7 @@ import {
   emitHeroui,
   herouiTheme,
   HerouiEmitError,
+  nonHexDeclarations,
   parseManifest,
   THEMES,
   type Manifest,
@@ -175,5 +176,36 @@ describe('DECOY — the emitter refuses to write a failing stylesheet', () => {
     expect(() => emitHeroui(manifest)).not.toThrow();
     expect(herouiTheme(manifest, 'dark').findings).toEqual([]);
     expect(herouiTheme(manifest, 'light').findings).toEqual([]);
+  });
+});
+
+describe('the hex-only rule is enforced by the emitter, not only by this test', () => {
+  it('a colour function in a declaration is rejected', () => {
+    // The emitter cannot produce this — `format` has no branch that does — so the guard is
+    // handed a crafted string directly. A guard whose failing path is unreachable from its
+    // own caller is a guard nobody has watched fail
+    // [[a-decoy-that-is-not-broken-proves-nothing]].
+    const bad = [
+      '@layer theme {',
+      '  --background: oklch(0.135 0.004 70);',
+      '  --accent: color-mix(in oklab, var(--x) 90%, var(--y) 10%);',
+      '  --border: rgba(255, 255, 255, 0.08);',
+      '}',
+    ].join('\n');
+    expect(nonHexDeclarations(bad)).toHaveLength(3);
+  });
+
+  it('the same notations inside a COMMENT are fine, because that is the provenance', () => {
+    const good = [
+      '@layer theme {',
+      '  --background: #090807; /* background — oklch(0.135 0.004 70) */',
+      '  --accent-hover: #DBD9D6; /* mix(--accent 90%, --accent-foreground 10%) */',
+      '}',
+    ].join('\n');
+    expect(nonHexDeclarations(good)).toEqual([]);
+  });
+
+  it('the real emitted stylesheet has none', () => {
+    expect(nonHexDeclarations(emitHeroui(manifest))).toEqual([]);
   });
 });

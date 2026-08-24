@@ -2279,7 +2279,7 @@
         "apps/mobile cannot import heroui-native; the boundary guard fails on one, as it already does for other forbidden specifiers",
         "A HeroUI-backed component renders under the a11y harness with its colours resolved in the tree, and the conformance suite fails a registered subject whose tree carries no resolved colour",
         "A colour-bearing utility class in @irodora/ui fails lint, because className is inert under jest and a colour routed that way is invisible to the contrast gate",
-        "HeroUI colour animation is disabled at the provider and verify-motion fails a wrapper that re-enables it; motion.animatable remains opacity and transform only"
+        "HeroUI colour animation is off and verify-motion fails a component that allows it, in either of the two ways it can be allowed — an explicit highlightAnimation/rippleAnimation, or the default feedbackVariant. Written as \"disabled at the provider\"; HeroUI's only global switch is `animation: \"disable-all\"`, which would take scale and opacity with it, and the manifest allows both — it is only COLOUR that may never be animated. Done per component with feedbackVariant=\"scale\" instead, so press feedback survives"
       ],
       "verification": [
         "state",

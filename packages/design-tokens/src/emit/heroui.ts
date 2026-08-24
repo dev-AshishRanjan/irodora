@@ -348,6 +348,27 @@ const intermediate = (colorVar: string): string => colorVar.replace('--color-', 
 const format = (r: Resolved): string => (r.alpha >= 1 ? toHex(r.rgb) : toHex8(r.rgb, r.alpha));
 
 /**
+ * Every colour DECLARATION in the emitted stylesheet is a hex, and nothing else (ADR-0063).
+ *
+ * Exported so it can be tested against a crafted string. The emitter can only produce hex —
+ * `format` has no other branch — so a decoy has to be handed to the check directly. A guard
+ * whose failing path is unreachable from its own caller is a guard nobody has watched fail
+ * [[a-decoy-that-is-not-broken-proves-nothing]].
+ *
+ * **Comments are exempt, and stripped first.** They carry each value's token name and its
+ * OKLCh source on purpose — that provenance is the only thing that makes a page of hex
+ * readable, and ADR-0063 says so explicitly.
+ */
+export function nonHexDeclarations(css: string): readonly string[] {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//gu, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('--'))
+    .filter((line) => /(?:oklch|color-mix|rgba?|hsla?|lab|lch|colour|color)\(/u.test(line));
+}
+
+/**
  * `apps/mobile/global.css`.
  *
  * Emits both themes plus the calculated layer, and **throws rather than writing** if any
@@ -437,5 +458,15 @@ export function emitHeroui(manifest: Manifest): string {
   for (const d of DERIVED) out.push(`  ${d.name}: var(${intermediate(d.name)});`);
   out.push('}', '');
 
-  return out.join('\n');
+  const css = out.join('\n');
+  // ADR-0063: hex, or it does not build. Uniwind hands every variable to `culori.parse` on
+  // device, and a colour FUNCTION there would make culori the author of a value our gate
+  // measured with our own implementation.
+  const nonHex = nonHexDeclarations(css);
+  if (nonHex.length > 0)
+    throw new HerouiEmitError(
+      nonHex.map((line) => `not a hex value, which ADR-0063 requires: ${line}`),
+    );
+
+  return css;
 }
