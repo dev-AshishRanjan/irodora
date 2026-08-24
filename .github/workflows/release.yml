@@ -144,6 +144,7 @@ jobs:
       # ONE Gradle invocation over one merged manifest, which is why checking the APK's
       # permission set below is a statement about the AAB as well.
       - name: Build
+        id: gradle
         working-directory: apps/mobile/android
         env:
           IRODORA_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
@@ -155,7 +156,18 @@ jobs:
           # no JDK. Empty is falsy in the injected Groovy, so an unset variable means "let
           # AGP decide" rather than "set it to nothing".
           IRODORA_ANDROID_KEYSTORE_TYPE: ${{ vars.ANDROID_KEYSTORE_TYPE }}
-        run: ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon
+        run: |
+          set -eo pipefail
+          ./gradlew :app:assembleRelease :app:bundleRelease --no-daemon 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+
+      # Gradle prints to stdout, and a job's log needs authentication to read. Without this a
+      # failed build says only "Process completed with exit code 1" to anyone working from the
+      # public check-run API. The tail goes into an annotation, which is public.
+      - name: Report the Gradle failure where it can be read
+        if: failure() && steps.gradle.outcome == 'failure'
+        run: |
+          printf '::error title=Gradle build failed::%s\n' \
+            "$(tail -n 80 "$RUNNER_TEMP/gradle.log" | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
 
       - name: Collect the artefacts
         id: artefacts

@@ -16,7 +16,7 @@
  * asserted green first, because a probe against an already-red tree proves nothing.
  * [[a-decoy-that-is-not-broken-proves-nothing]] [[mutual-assignability-does-not-catch-an-optional-field]]
  */
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,7 +26,10 @@ const FILE = `${ROOT}/packages/contracts/src/color.ts`;
 
 const typecheck = () => {
   try {
-    execFileSync('cmd', ['/c', 'corepack pnpm --filter @irodora/contracts typecheck'], {
+    // A shell on both platforms: `cmd` does not exist on Linux, and `pnpm` on Windows is a
+    // `.cmd` shim Node 20+ will not spawn directly. See verify-contrast-proof.mjs, where the
+    // same line left four mutation cases dead on Linux from the day they were written.
+    execSync('pnpm --filter @irodora/contracts typecheck', {
       cwd: ROOT,
       stdio: 'pipe',
     });

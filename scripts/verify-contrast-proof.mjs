@@ -9,7 +9,7 @@
  * pipe. [[a-pipe-discards-the-exit-status-a-gate-just-produced]]
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,12 +28,33 @@ const run = (cmd, args) => {
   }
 };
 
+/**
+ * A pnpm script, on whichever platform this is.
+ *
+ * **This replaced `execFileSync('cmd', ['/c', …])`, and the four cases that used it had been
+ * dead on Linux since they were written.** `cmd` does not exist there, `run` caught the
+ * ENOENT, returned 1, and every baseline that depended on it was red before a mutation was
+ * applied — so the proof reported "did not discriminate", which was true and for entirely the
+ * wrong reason. The six cases invoking `process.execPath` were unaffected, which is why the
+ * failure looked like a subset rather than a platform problem.
+ *
+ * A shell is required on BOTH platforms, not just Windows: `pnpm` there is a `.cmd` shim that
+ * Node 20+ refuses to spawn directly, and `execSync` picks `cmd.exe` or `/bin/sh` for us.
+ */
+const runShell = (command) => {
+  try {
+    execSync(command, { cwd: ROOT, stdio: 'pipe' });
+    return 0;
+  } catch (e) {
+    return e.status ?? 1;
+  }
+};
+
 const gate9 = () => run(process.execPath, ['scripts/verify-contrast.mjs']);
-const gate10 = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens test:cvd']);
-const typecheck = () =>
-  run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens typecheck']);
-const emitTest = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens test']);
-const rebuild = () => run('cmd', ['/c', 'corepack pnpm --filter @irodora/design-tokens build']);
+const gate10 = () => runShell('pnpm --filter @irodora/design-tokens test:cvd');
+const typecheck = () => runShell('pnpm --filter @irodora/design-tokens typecheck');
+const emitTest = () => runShell('pnpm --filter @irodora/design-tokens test');
+const rebuild = () => runShell('pnpm --filter @irodora/design-tokens build');
 
 /**
  * A manifest mutation stated as a PATH and an EXPECTED value, not as source text.
@@ -209,7 +230,11 @@ for (const c of cases) {
       allGood = false;
       failures.push(
         `${c.name}: baseline exit ${baseline}, mutated exit ${after}, expected ` +
-          `${wantGreen ? '0' : 'non-zero'}`,
+          `${wantGreen ? '0' : 'non-zero'}` +
+          (baseline !== 0
+            ? ' — THE BASELINE WAS ALREADY RED, so this case proved nothing about the boundary. ' +
+              'Fix the checker, not the rule.'
+            : ''),
       );
     }
     console.log(
