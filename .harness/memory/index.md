@@ -39,6 +39,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
 - [lessons/a-gate-that-errors-is-failing-open.md](lessons/a-gate-that-errors-is-failing-open.md) — a check that cannot run is not passing; the same shape appears in authorisation and tenancy.
+- [lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md](lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md) — className resolved by a bundler plugin is absent from the rendered tree, so the contrast gate measures an empty set and stays green.
 - [lessons/provenance-in-the-type-is-what-makes-honesty-structural.md](lessons/provenance-in-the-type-is-what-makes-honesty-structural.md) — ask what makes a guarantee impossible to violate, not what reminds people not to.
 
 - [lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md](lessons/a-later-flat-config-object-replaces-a-rule-it-does-not-merge.md) — a rule that has never been watched fail is not enforcement, it is configuration that parses.
