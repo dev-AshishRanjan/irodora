@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ciError } from './lib/annotate.mjs';
+import { ciError } from './annotate.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..').replaceAll('\\', '/');
 const MANIFEST = `${ROOT}/docs/design/design-system.manifest.json`;

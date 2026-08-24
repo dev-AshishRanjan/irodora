@@ -22,7 +22,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from './corpus-io.mjs';
-import { ciError } from './lib/annotate.mjs';
+import { ciError } from './annotate.mjs';
 
 const GREEN = '[32m';
 const RED = '[31m';

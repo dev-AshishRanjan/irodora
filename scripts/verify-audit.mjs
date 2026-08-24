@@ -40,7 +40,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ciError } from './lib/annotate.mjs';
+import { ciError } from './annotate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTER = resolve(ROOT, '.harness/verification/advisories.json');
