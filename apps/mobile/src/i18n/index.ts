@@ -65,5 +65,12 @@ export function t(locale: Locale, key: MessageKey): string {
 }
 
 export { en, type MessageKey } from './en';
-export { ja, IDENTICAL_BY_DESIGN, JA_REVIEWED } from './ja';
+export {
+  ja,
+  IDENTICAL_BY_DESIGN,
+  JA_REVIEWED,
+  NOTATION_KEYS,
+  NOTATION_MAX,
+  NOTATION_SHAPE,
+} from './ja';
 export { MESSAGE_KEYS } from './en';

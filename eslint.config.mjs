@@ -549,6 +549,54 @@ export default tseslint.config(
     },
   },
 
+  // --- A published value is READ, never recomputed (F-018 criterion 3) ------
+  //
+  // > Browsing renders values read from the published bundle; the engine is called for derived
+  // > answers, never to recompute a value the bundle already carries.
+  //
+  // A corpus bundle stores `lab`, `lch`, `oklch`, `rgb` and `hex`, computed by the engine at
+  // PUBLISH time and frozen there. Recomputing one from `color.xyz` while rendering looks
+  // identical, passes every test, and silently returns TODAY's engine's answer for a version
+  // published under an older one — which is the failure FR-10 exists to prevent and the one
+  // `loadPublishedVersion` refuses to commit on its own read path.
+  //
+  // The banned imports are exactly the functions that take an XYZ and produce a stored value.
+  // `srgbToHex` is NOT among them and must not be: the colour-vision block encodes a SIMULATED
+  // sRGB triple, which is a derived answer the bundle does not carry, and banning the encoder
+  // would ban the legitimate case along with the illegitimate one.
+  {
+    files: ['apps/mobile/src/screens/**/*.tsx', 'apps/mobile/src/corpus/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@irodora/color-spaces',
+              importNames: [
+                'xyzToLab',
+                'xyzToLch',
+                'xyzToOklab',
+                'xyzToOklch',
+                'xyzToSrgb',
+                'xyzToLinearSrgb',
+                'xyzToDisplayP3',
+                'gamutMap',
+                'gamutMapDetail',
+              ],
+              message:
+                'The bundle already carries this value, computed by the engine at publish time. ' +
+                'Recomputing it here returns the CURRENT engine s answer for a version published ' +
+                'under an older one, with no error and no failing test (FR-10, E-001). Read ' +
+                '`derived.*` instead. A genuinely derived answer — a CVD simulation, a ΔE00 ' +
+                'between two entries — is a different thing and is allowed.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // --- The gate scripts ----------------------------------------------------
   //
   // `scripts/` is in NO package, so `turbo run lint` — which walks packages — structurally

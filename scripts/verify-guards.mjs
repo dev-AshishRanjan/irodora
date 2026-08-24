@@ -300,6 +300,31 @@ export const x = FileSystem;
     must: 'NFR-11 — en and ja from the first release, with no hard-coded string',
     source: `import { Text } from 'react-native';\nexport const X = (): React.JSX.Element => <Text>Hard coded</Text>;\n`,
   },
+  {
+    // F-018 criterion 3. The bundle carries the derived values; recomputing one from xyz at
+    // render time is invisible — same shape, same type, plausible number — and returns the
+    // CURRENT engine's answer for a version published under an older one.
+    name: 'a screen may not recompute a value the corpus bundle already carries',
+    path: 'apps/mobile/src/screens/__guard__.tsx',
+    rule: 'no-restricted-imports',
+    must:
+      'F-018 criterion 3 and FR-10 — a stored recommendation must still resolve, which it ' +
+      'cannot if the value it used is recomputed by whatever engine is current',
+    source: `import { xyzToOklch } from '@irodora/color-spaces';\nexport const X = xyzToOklch([0.1, 0.1, 0.1]);\n`,
+  },
+  {
+    // The DECOY that keeps the rule usable. srgbToHex encodes a SIMULATED triple in the
+    // colour-vision block; banning it along with the conversions would ban the legitimate
+    // case, and a rule that blocks correct code is a rule someone deletes.
+    name: 'a screen may still encode a genuinely derived answer',
+    path: 'apps/mobile/src/screens/__guard__.tsx',
+    rule: 'no-restricted-imports',
+    silent: true,
+    must:
+      'F-018 criterion 3 draws a line between reading a stored value and computing a new ' +
+      'one; a guard that cannot tell them apart is a guard that gets turned off',
+    source: `import { srgbToHex } from '@irodora/color-spaces';\nexport const X = srgbToHex([0.1, 0.2, 0.3]);\n`,
+  },
 ];
 
 const GREEN = '\x1b[32m',
@@ -349,6 +374,16 @@ console.log(`\n${BOLD}Irodora — boundary guards${OFF}\n`);
 
 const notEnforced = [];
 const couldNotRun = [];
+
+/**
+ * Guards that fired when they were supposed to stay quiet.
+ *
+ * A separate list from `notEnforced` because it is the opposite defect and it sends the next
+ * person somewhere else: an unenforced boundary means the rule is too weak, an overreaching one
+ * means it is too broad — and a rule that blocks correct code is a rule somebody deletes, at
+ * which point the boundary is gone entirely [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+const overreached = [];
 
 /**
  * Everything the next person needs to tell a tooling failure from a boundary failure.
@@ -405,7 +440,25 @@ try {
       continue;
     }
 
-    if (payload.rules.includes(guard.rule)) {
+    const fired = payload.rules.includes(guard.rule);
+
+    // A `silent` guard is a DECOY: source the rule must NOT object to. Without one, a rule
+    // that fired on everything would satisfy every other entry in this table and nobody would
+    // find out until it started blocking correct code.
+    if (guard.silent === true) {
+      if (fired) {
+        overreached.push({
+          guard,
+          reason: `"${guard.rule}" fired on source it must accept`,
+        });
+      } else {
+        console.log(`  ${GREEN}✓${OFF} ${guard.name}`);
+        console.log(`    ${DIM}${guard.rule} stayed silent at ${relative(ROOT, abs)}${OFF}`);
+      }
+      continue;
+    }
+
+    if (fired) {
       console.log(`  ${GREEN}✓${OFF} ${guard.name}`);
       console.log(`    ${DIM}${guard.rule} fired at ${relative(ROOT, abs)}${OFF}`);
     } else {
@@ -474,13 +527,31 @@ if (notEnforced.length) {
   }
 }
 
-if (couldNotRun.length || notEnforced.length) {
+if (overreached.length) {
+  console.log(`\n${RED}${BOLD}${overreached.length} guard(s) OVERREACHED${OFF}\n`);
+  for (const { guard, reason } of overreached) {
+    console.log(`  ${RED}✗ ${guard.name}${OFF}`);
+    console.log(`    ${DIM}what:${OFF} ${reason}`);
+    console.log(`    ${DIM}why it matters:${OFF} ${guard.must}`);
+    console.log(
+      `    ${DIM}fix:${OFF} narrow the rule in eslint.config.mjs. A rule that blocks correct ` +
+        `code is a rule somebody turns off, and then the boundary is gone entirely\n`,
+    );
+  }
+}
+
+if (couldNotRun.length || notEnforced.length || overreached.length) {
   console.log(
-    `${RED}${BOLD}Boundary guards FAILED.${OFF} A boundary that cannot fail is not a boundary.\n`,
+    `${RED}${BOLD}Boundary guards FAILED.${OFF} A boundary that cannot fail is not a boundary, ` +
+      `and one that fails on everything is not a boundary either.\n`,
   );
   process.exit(1);
 }
 
+/** Guards the rules must NOT fire on. Counted so the summary cannot imply they were all bans. */
+const decoys = GUARDS.filter((g) => g.silent === true).length;
+
 console.log(
-  `\n${GREEN}${BOLD}All ${GUARDS.length} boundaries enforced, and the wiring that runs them.${OFF}\n`,
+  `\n${GREEN}${BOLD}All ${GUARDS.length} boundaries enforced, and the wiring that runs them.${OFF}` +
+    `${DIM} ${decoys === 1 ? '1 of them is a decoy' : `${String(decoys)} of them are decoys`} the rules must ACCEPT.${OFF}\n`,
 );

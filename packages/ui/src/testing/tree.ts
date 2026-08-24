@@ -190,12 +190,23 @@ export function resolveTextNodes(root: TestNode, theme: Theme): readonly Resolve
 }
 
 /**
- * Every node that responds to touch.
+ * Every node that responds to a person.
  *
- * Detected by the presence of a press handler rather than by host type, because `Pressable`,
- * `TouchableOpacity` and a `View` with `onStartShouldSetResponder` all render to host types
- * that differ across platforms and versions. A component is interactive if it *behaves*
- * interactively, and that is the property the accessibility rules attach to.
+ * Detected by BEHAVIOUR rather than by host type, because `Pressable`, `TouchableOpacity` and
+ * a `View` with `onStartShouldSetResponder` all render to host types that differ across
+ * platforms and versions. A component is interactive if it *behaves* interactively, and that is
+ * the property the accessibility rules attach to.
+ *
+ * **`onChangeText` is here because a text field is not pressable** (F-018). Until `SearchField`
+ * there was no interactive control in this library that was not a button or a swatch, so
+ * "responds" and "responds to a press" were the same set and nothing distinguished them. A
+ * search field declaring `kind: "interactive"` was reported as *"nothing in the tree
+ * responds"* — which would have pushed it to claim a kind it does not have, and the kind is the
+ * one lever a component has over its own required states.
+ *
+ * The name stays `pressableNodes` for its callers; what changed is the definition, and the
+ * accessibility rules downstream — role, name, tap target, disabled and busy — apply to a text
+ * field exactly as they apply to a button.
  */
 export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[] {
   const out: ResolvedPressableNode[] = [];
@@ -207,6 +218,8 @@ export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[]
       typeof p['onClick'] === 'function' ||
       typeof p['onPress'] === 'function' ||
       typeof p['onResponderRelease'] === 'function' ||
+      // A text field responds to typing, not to a press. See the note above.
+      typeof p['onChangeText'] === 'function' ||
       p['accessible'] === true;
     if (interactive) {
       const state = p['accessibilityState'];

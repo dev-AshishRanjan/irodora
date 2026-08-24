@@ -78,6 +78,9 @@ importers:
       '@irodora/corpus':
         specifier: workspace:*
         version: link:../../packages/corpus
+      '@irodora/cvd-engine':
+        specifier: workspace:*
+        version: link:../../packages/cvd-engine
       '@irodora/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens

@@ -9,7 +9,16 @@
 
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { Button, Status, Surface, Swatch, Text, ThemeProvider } from '../src/index.js';
+import {
+  Button,
+  Chip,
+  SearchField,
+  Status,
+  Surface,
+  Swatch,
+  Text,
+  ThemeProvider,
+} from '../src/index.js';
 import {
   checkAll,
   checkStatusAdjacency,
@@ -71,6 +80,45 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           disabled={state === 'disabled'}
           loading={state === 'loading'}
           variant={state === 'focus' ? 'secondary' : 'primary'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'Chip',
+    kind: 'interactive',
+    // 'chip' and 'filter' are what the role already tells a screen reader. A control whose
+    // whole name is its own type says nothing about WHICH filter it is.
+    forbiddenNames: ['chip', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <Chip
+          label="Blue-grey"
+          selected={state === 'active'}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'SearchField',
+    kind: 'interactive',
+    forbiddenNames: ['search', 'field', 'input'],
+    render: (state, theme) =>
+      draw(
+        <SearchField
+          label="Search by name or reading"
+          value={state === 'active' ? 'ai' : ''}
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
           testID={state}
         />,
         theme,

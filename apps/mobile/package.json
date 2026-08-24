@@ -25,6 +25,7 @@
     "@irodora/color-spaces": "workspace:*",
     "@irodora/contracts": "workspace:*",
     "@irodora/corpus": "workspace:*",
+    "@irodora/cvd-engine": "workspace:*",
     "@irodora/design-tokens": "workspace:*",
     "@irodora/store": "workspace:*",
     "@irodora/ui": "workspace:*",

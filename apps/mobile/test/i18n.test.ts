@@ -22,6 +22,9 @@ import {
   JA_REVIEWED,
   LOCALES,
   MESSAGE_KEYS,
+  NOTATION_KEYS,
+  NOTATION_MAX,
+  NOTATION_SHAPE,
   resolveLocale,
   t,
   type MessageKey,
@@ -61,12 +64,16 @@ describe('Japanese is written, not copied', () => {
     // THE CHECK THAT CATCHES A PLACEHOLDER. A copy-paste of the English text type-checks
     // perfectly — `Record<MessageKey, string>` is satisfied by any string at all.
     const identical = MESSAGE_KEYS.filter((k) => ja[k] === en[k]);
-    expect(identical.sort()).toEqual([...IDENTICAL_BY_DESIGN].sort());
+    const allowed = [...IDENTICAL_BY_DESIGN, ...NOTATION_KEYS];
+    expect(identical.sort()).toEqual(allowed.sort());
   });
 
-  it('keeps the exemption list short enough to read, and every entry real', () => {
-    // Each entry is a place the check above is switched off. An exemption list that grows
-    // without anyone noticing is how a check stops checking.
+  it('keeps the ad-hoc exemption list short enough to read, and every entry real', () => {
+    // Each entry is a place the check above is switched off for no reason but our say-so. A
+    // list of favours that grows without anyone noticing is how a check stops checking.
+    //
+    // It is EMPTY now (F-018), and the loop is deliberately kept rather than deleted: the day
+    // someone adds a favour, it has to survive these two assertions.
     expect(IDENTICAL_BY_DESIGN.length).toBeLessThanOrEqual(3);
     for (const k of IDENTICAL_BY_DESIGN) {
       expect(MESSAGE_KEYS).toContain(k);
@@ -76,11 +83,61 @@ describe('Japanese is written, not copied', () => {
     }
   });
 
+  /*
+   * The category that replaced five more favours (F-018).
+   *
+   * A rule beats a longer list. "CIELAB" is CIELAB in Japanese and translating it would invent
+   * a term nobody uses — but "it is notation" has to be CHECKABLE, or it is only a nicer word
+   * for an exemption. An anchored shape plus a length cap: a phrase cannot qualify, however it
+   * is described.
+   */
+  it('admits notation only where it really is notation', () => {
+    expect(NOTATION_KEYS.length).toBeGreaterThan(0);
+    for (const k of NOTATION_KEYS) {
+      expect(MESSAGE_KEYS).toContain(k);
+      expect(ja[k]).toBe(en[k]);
+      // The key is folded into the compared VALUE rather than into the pattern: jest reads a
+      // string argument to toMatch as a substring, and a key containing a dot would then be a
+      // regex metacharacter in a pattern nobody meant to write.
+      expect(`${k} shaped like notation: ${String(NOTATION_SHAPE.test(en[k]))}`).toBe(
+        `${k} shaped like notation: true`,
+      );
+      expect(en[k].length).toBeLessThanOrEqual(NOTATION_MAX);
+    }
+  });
+
+  /*
+   * The decoy. Without it NOTATION_SHAPE could match anything and every assertion above would
+   * still pass [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+   */
+  it('DECOY — a prose string cannot pass as notation', () => {
+    // 'Not recorded' is the one that matters: it is twelve characters, so the length cap alone
+    // admits it, and the FIRST shape written here admitted it too. The decoy is why the rule
+    // now allows a space only before a parenthesised qualifier.
+    for (const phrase of [
+      'Search by name or reading',
+      'Not recorded',
+      'Colour Atlas',
+      'In use today',
+    ])
+      expect(
+        `${phrase}: ${String(NOTATION_SHAPE.test(phrase) && phrase.length <= NOTATION_MAX)}`,
+      ).toBe(`${phrase}: false`);
+
+    // And the shape must still ADMIT the real symbols, or it would be passing by rejecting
+    // everything [[a-decoy-that-is-not-broken-proves-nothing]].
+    for (const symbol of ['CIELAB', 'sRGB', 'OKLCh', 'ΔE00', 'XYZ (D65)'])
+      expect(
+        `${symbol}: ${String(NOTATION_SHAPE.test(symbol) && symbol.length <= NOTATION_MAX)}`,
+      ).toBe(`${symbol}: true`);
+  });
+
   it('contains Japanese script wherever the English is prose', () => {
     // Hiragana, katakana or kanji. Stronger than "not equal to English": it rejects a value
     // someone edited into a near-copy, which `!==` alone would accept.
     const japanese = /[぀-ゟ゠-ヿ一-鿿]/u;
-    const prose = MESSAGE_KEYS.filter((k) => !IDENTICAL_BY_DESIGN.includes(k));
+    const exempt = [...IDENTICAL_BY_DESIGN, ...NOTATION_KEYS];
+    const prose = MESSAGE_KEYS.filter((k) => !exempt.includes(k));
     expect(prose.length).toBeGreaterThan(0);
     // The key is folded into the compared value so a failure names WHICH entry, since
     // jest's expect takes no message argument.
