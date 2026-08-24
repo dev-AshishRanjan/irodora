@@ -14,3 +14,17 @@ packages:
 # artefact and no user.
 allowBuilds:
   unrs-resolver: true
+
+# Pinned deliberately, not by luck (ADR-0062, F-087).
+#
+# react-native-vision-camera resolves worklets 0.11.4 and reanimated 4.5.3.
+# heroui-native declares reanimated ^4.1.1 and worklets >=0.5.1, so a naive
+# install satisfies BOTH by taking the newest — which pulled 0.12.1 and 4.6.0
+# and left three copies of worklets in the tree. Two copies of a native module
+# is a runtime the camera and the UI do not share.
+#
+# These are the versions the camera resolves, and both sit inside HeroUI's
+# declared ranges. Widening either is a decision, not a bump.
+overrides:
+  react-native-worklets: 0.11.4
+  react-native-reanimated: 4.5.3
