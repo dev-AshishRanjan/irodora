@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Specified, **not applied** — no key exists and no remote exists |
+| **Status** | Applied. A key exists and both lanes sign with it. **The first key was leaked and must be rotated** — see [the compromise section](#if-the-key-is-compromised) |
 | **Decision** | [ADR-0058](../adr/0058-release-builds-are-github-actions-and-gradle-not-eas.md) |
 | **Feature** | F-080 |
 
@@ -105,7 +105,7 @@ openssl x509 -in irodora.crt -noout -fingerprint -sha256
 
 That prints `SHA256 Fingerprint=AB:CD:…`. It is the SHA-256 of the certificate's DER
 encoding, which is exactly what `apksigner verify --print-certs` reports for a signed APK and
-exactly what `scripts/verify-apk.mjs` computes. Colons are optional — gate 16 strips them.
+exactly what `scripts/verify-apk.mjs` computes.
 
 ## 4. Put it into the repository's settings
 
@@ -124,7 +124,7 @@ Repository → Settings → Secrets and variables → Actions.
 
 | Name | Value |
 |---|---|
-| `ANDROID_SIGNER_SHA256` | the SHA-256 from step 3 — colons optional, gate 16 strips them |
+| `ANDROID_SIGNER_SHA256` | the SHA-256 from step 3. **Paste the whole line if you like** — `SHA256 Fingerprint=AB:CD:…` from openssl and `SHA256: AB:CD:…` from keytool are both accepted, as is bare hex. Gate 16 strips the label and the colons and then requires exactly 64 hex digits, so a mangled value fails as a malformed fingerprint rather than as a certificate mismatch |
 | `ANDROID_KEYSTORE_TYPE` | `PKCS12` for an openssl-made keystore; leave unset for a keytool-made JKS |
 
 The fingerprint is a *variable* rather than a secret on purpose. It is not confidential, it is

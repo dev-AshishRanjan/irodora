@@ -399,6 +399,87 @@ function readWithAapt2(aapt2, apkPath) {
 /* ================================================================== the checks */
 
 const INTERNET = 'android.permission.INTERNET';
+/**
+ * The complete permission set a shipped Irodora artefact may declare.
+ *
+ * **One place, deliberately.** This lived as a `--expect-permissions` argument duplicated
+ * across two workflow files, and the two rounds it took to get right were spent editing both
+ * and getting one wrong. The gate is where the list belongs, next to the reason for each
+ * entry.
+ *
+ * Read from the ARTEFACT, not from `app.config.ts`. Four of these were never in that file and
+ * two were never in any dependency either — they come from Expo's prebuild template and from
+ * AndroidX, and appear only after the manifest merger has run (E-018).
+ *
+ * | permission | where from | why it stays |
+ * |---|---|---|
+ * | `CAMERA` | ours | the Lens. The only one a person is ever prompted for |
+ * | `VIBRATE` | Expo template | haptic confirmation on selection — an NFR-9 obligation, not a nicety. Normal level, grants access to nothing |
+ * | `USE_BIOMETRIC` | `expo-secure-store` | it holds the SQLCipher key. Normal level, invisible in the permissions UI, and blocking a capability a native module may probe fails on a device rather than here |
+ * | `USE_FINGERPRINT` | `expo-secure-store` | the same, for API 24–27, where `USE_BIOMETRIC` did not exist |
+ * | `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | AndroidX core | the app defines this one FOR ITSELF at signature level, so no other app can hold it. Every AndroidX app has it; removing it breaks dynamically registered receivers |
+ *
+ * What is BLOCKED instead lives in `app.config.ts`: `INTERNET`, `ACCESS_NETWORK_STATE`,
+ * both locations, both external-storage permissions, and `SYSTEM_ALERT_WINDOW`.
+ */
+const EXPECTED_PERMISSIONS = [
+  'android.permission.CAMERA',
+  'android.permission.USE_BIOMETRIC',
+  'android.permission.USE_FINGERPRINT',
+  'android.permission.VIBRATE',
+  'com.irodora.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION',
+];
+
+/**
+ * A certificate fingerprint, from whatever a person pasted.
+ *
+ * Three tools print this value and all three label it differently:
+ *
+ * ```text
+ * SHA256 Fingerprint=AB:CD:…                     openssl x509 -fingerprint -sha256
+ * SHA256: AB:CD:…                                keytool -list
+ * Signer #1 certificate SHA-256 digest: abcd…    apksigner verify --print-certs
+ * ```
+ *
+ * **Pasting the whole line is the obvious thing to do**, and the third form is the one this
+ * lane prints in its own log immediately above the step that reads this value.
+ *
+ * Two earlier versions were wrong in the same direction. The first stripped every non-hex
+ * character and compared what was left, which on a labelled value silently yielded `A256FE…`
+ * — the `A`, `256`, `F` and `e` of "SHA256 Fingerprint=" survive a hex filter. The second
+ * removed the label by name, and so rejected apksigner's wording. Both reported a
+ * **certificate mismatch on a correctly signed APK**, which reads as a compromised key rather
+ * than as a parsing bug. That is the worst available way to be wrong, and it cost two builds.
+ *
+ * So this does not try to recognise labels at all. It looks for something *shaped like* a
+ * SHA-256 fingerprint — 64 hex digits, or 32 colon-separated pairs — anchored on word
+ * boundaries, so a longer run cannot be quietly truncated to its first 64 characters. Finding
+ * none throws, and so does finding two that disagree: choosing between them is not this
+ * gate's call to make.
+ */
+function normaliseFingerprint(raw) {
+  const text = String(raw);
+  const shapes = [/\b(?:[0-9a-fA-F]{2}:){31}[0-9a-fA-F]{2}\b/g, /\b[0-9a-fA-F]{64}\b/g];
+
+  const found = new Set();
+  for (const shape of shapes)
+    for (const [match] of text.matchAll(shape)) found.add(match.replace(/:/g, '').toUpperCase());
+
+  if (found.size === 1) return [...found][0];
+
+  throw new Error(
+    found.size === 0
+      ? `expected a SHA-256 certificate fingerprint — 64 hex digits, optionally ` +
+          `colon-separated — and found none in ${JSON.stringify(text)}. All of these paste ` +
+          `verbatim: "AB:CD:…", "ABCD…", "SHA256 Fingerprint=AB:CD:…" (openssl), ` +
+          `"SHA256: AB:CD:…" (keytool), "…SHA-256 digest: abcd…" (apksigner).`
+      : `found ${String(found.size)} different SHA-256 fingerprints in ` +
+          `${JSON.stringify(text)}. apksigner prints the CERTIFICATE digest and the PUBLIC KEY ` +
+          `digest and they are not the same value; gate 16 compares the certificate one. Paste ` +
+          `a single fingerprint.`,
+  );
+}
+
 const NETWORK_PERMISSIONS = [
   INTERNET,
   'android.permission.ACCESS_NETWORK_STATE',
@@ -503,7 +584,7 @@ export function checkApk(apkPath, expected) {
     );
 
   if (expected.signerSha256 !== undefined) {
-    const want = expected.signerSha256.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
+    const want = normaliseFingerprint(expected.signerSha256);
     check(
       certificates.some((c) => c.sha256 === want),
       'signer certificate',
@@ -629,7 +710,8 @@ ${extra}
   };
 
   /** The set every fixture manifest declares. `manifestXml` writes CAMERA and nothing else. */
-  const EXPECTED_PERMISSIONS = ['android.permission.CAMERA'];
+  /** What `manifestXml` writes. NOT the app's set — these are synthetic fixtures. */
+  const EXPECTED_FIXTURE_PERMISSIONS = ['android.permission.CAMERA'];
 
   const cleanApk = build('clean', manifestXml());
 
@@ -682,8 +764,13 @@ ${extra}
     return apkPath;
   };
 
+  /** `ABCD…` -> `AB:CD:…`, the shape openssl and keytool both print. */
+  const colonise = (hex) => (hex.match(/../g) ?? []).join(':');
+
   const der = Buffer.from('this is not a certificate, and it does not need to be', 'utf8');
   const derSha = createHash('sha256').update(der).digest('hex').toUpperCase();
+  /** A different digest, deterministically. `derSha` starting with AA is rare, not impossible. */
+  const notDerSha = (derSha[0] === 'A' ? 'B' : 'A') + derSha.slice(1);
   const signedApk = withSigningBlock(cleanApk, 'signed', der);
 
   const cases = [
@@ -750,14 +837,86 @@ ${extra}
       mustFail: 'signer certificate',
     },
     {
-      name: 'the exact permission set (must stay GREEN)',
-      apk: cleanApk,
-      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      // THE DEFECT THAT COST A 30-MINUTE BUILD. `openssl x509 -fingerprint -sha256` prints
+      // "SHA256 Fingerprint=AB:CD:…" and pasting that whole line is the obvious thing to do —
+      // the documentation invites it by saying colons are optional. The old sanitiser stripped
+      // non-hex characters and kept the A, 256, F and e OF THE LABEL, producing "A256FE…", then
+      // reported a certificate mismatch on a correctly signed APK. That reads like a
+      // compromised key rather than a parsing bug, which is the worst way to be wrong.
+      name: 'an openssl-labelled fingerprint (must stay GREEN)',
+      apk: signedApk,
+      expected: {
+        ...EXPECTED,
+        requireSignature: true,
+        signerSha256: `SHA256 Fingerprint=${colonise(derSha)}`,
+      },
       mustFail: false,
     },
     {
-      // F-085. The dev-client overlay case: SYSTEM_ALERT_WINDOW is not a network permission,
-      // so the NFR-12 check waves it through — and shipping it would be serious.
+      name: 'a keytool-labelled fingerprint (must stay GREEN)',
+      apk: signedApk,
+      expected: {
+        ...EXPECTED,
+        requireSignature: true,
+        signerSha256: `SHA256: ${colonise(derSha)}`,
+      },
+      mustFail: false,
+    },
+    {
+      // The form this very lane prints, in its own log, in the step directly above gate 16.
+      // The second version of the parser removed the label BY NAME and did not know this
+      // wording, so it rejected the most convenient value on the page.
+      name: 'an apksigner-labelled fingerprint (must stay GREEN)',
+      apk: signedApk,
+      expected: {
+        ...EXPECTED,
+        requireSignature: true,
+        signerSha256: `Signer #1 certificate SHA-256 digest: ${derSha.toLowerCase()}`,
+      },
+      mustFail: false,
+    },
+    {
+      // Exactly what the first parser produced: the label's hex characters glued to the real
+      // fingerprint. Anchoring on word boundaries is what makes this throw rather than get
+      // silently truncated back to a plausible-looking 64 characters.
+      name: 'a hex run longer than 64 is not truncated into a plausible answer',
+      apk: signedApk,
+      expected: { ...EXPECTED, requireSignature: true, signerSha256: `A256FE${derSha}ABCDEFAB` },
+      mustThrow: /64 hex digits/,
+    },
+    {
+      // `apksigner verify --print-certs` prints the certificate digest AND the public key
+      // digest. Pasting the whole block offers two 64-hex values, and picking one would be
+      // guessing at which question the operator meant to ask.
+      name: 'two different fingerprints in one value',
+      apk: signedApk,
+      expected: {
+        ...EXPECTED,
+        requireSignature: true,
+        signerSha256:
+          `certificate SHA-256 digest: ${derSha.toLowerCase()}\n` +
+          `public key SHA-256 digest: ${notDerSha.toLowerCase()}`,
+      },
+      mustThrow: /different SHA-256 fingerprints/,
+    },
+    {
+      // A sanitiser that cannot fail turns a typo into a wrong answer, so a value that is not
+      // a fingerprint must THROW rather than be compared to something plausible.
+      name: 'a fingerprint that is not 64 hex digits',
+      apk: signedApk,
+      expected: { ...EXPECTED, requireSignature: true, signerSha256: 'DF:6D:BF' },
+      mustThrow: /64 hex digits/,
+    },
+    {
+      name: 'the exact permission set (must stay GREEN)',
+      apk: cleanApk,
+      expected: { ...EXPECTED, permissions: EXPECTED_FIXTURE_PERMISSIONS },
+      mustFail: false,
+    },
+    {
+      // The dev-client overlay case. SYSTEM_ALERT_WINDOW is not a NETWORK permission, so the
+      // NFR-12 check waves it through — and "draw over other apps" would be serious to ship.
+      // It reached a real release APK before this assertion existed (E-018).
       name: 'a dev-client overlay permission that is not a network one',
       apk: build(
         'overlay',
@@ -765,7 +924,7 @@ ${extra}
           extra: '  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />',
         }),
       ),
-      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      expected: { ...EXPECTED, permissions: EXPECTED_FIXTURE_PERMISSIONS },
       mustFail: 'permission set',
     },
     {
@@ -773,18 +932,18 @@ ${extra}
       // fails on a device with nothing at build time to say so.
       name: 'a permission the app requires, gone missing',
       apk: build('no-camera', manifestXml({ camera: false })),
-      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      expected: { ...EXPECTED, permissions: EXPECTED_FIXTURE_PERMISSIONS },
       mustFail: 'permission set',
     },
     {
-      // INTERNET keeps its OWN finding rather than being folded into "unexpected permission".
-      // It falsifies a requirement; the others are review failures. Same red, different fix.
+      // INTERNET keeps its OWN finding rather than folding into "unexpected permission". It
+      // falsifies a requirement; the others are review failures. Same red, different fix.
       name: 'INTERNET still reports as a network permission, not merely an unexpected one',
       apk: build(
         'internet-with-set',
         manifestXml({ extra: '  <uses-permission android:name="android.permission.INTERNET" />' }),
       ),
-      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      expected: { ...EXPECTED, permissions: EXPECTED_FIXTURE_PERMISSIONS },
       mustFail: 'network permission present',
     },
     {
@@ -800,7 +959,21 @@ ${extra}
     let result;
     try {
       result = checkApk(c.apk, c.expected);
+      if (c.mustThrow) {
+        wrong.push({ c, why: 'expected the checker to THROW, and it returned a verdict' });
+        continue;
+      }
     } catch (error) {
+      // A throw is the right answer for malformed INPUT — a fingerprint that is not a
+      // fingerprint is not a failed comparison, it is a question that cannot be asked.
+      if (c.mustThrow) {
+        if (c.mustThrow.test(error.message)) {
+          console.log(`  ${GREEN}✓${OFF} ${c.name} ${DIM}→ threw${OFF}`);
+        } else {
+          wrong.push({ c, why: `threw the wrong message: ${error.message}` });
+        }
+        continue;
+      }
       wrong.push({ c, why: `the checker threw: ${error.message}` });
       continue;
     }
@@ -878,13 +1051,18 @@ if (args.prove) {
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);
   if (args['expect-version-name']) expected.versionName = String(args['expect-version-name']);
   if (args['expect-signer-sha256']) expected.signerSha256 = String(args['expect-signer-sha256']);
-  // Empty string means "exactly no permissions", which is a real expectation and must not
-  // collapse into "do not check". Only an ABSENT flag skips the assertion.
-  if (args['expect-permissions'] !== undefined && args['expect-permissions'] !== true)
-    expected.permissions = String(args['expect-permissions'])
-      .split(',')
-      .map((x) => x.trim())
-      .filter(Boolean);
+  // Defaults to EXPECTED_PERMISSIONS rather than to "do not check". The list used to be a
+  // workflow argument duplicated in two files, and keeping two copies of a security-relevant
+  // set in agreement is not a thing to rely on a person for. The flag remains for `--prove`
+  // and for a caller with a genuinely different artefact; an empty string still means
+  // "exactly none", which is a real expectation.
+  expected.permissions =
+    args['expect-permissions'] !== undefined && args['expect-permissions'] !== true
+      ? String(args['expect-permissions'])
+          .split(',')
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : EXPECTED_PERMISSIONS;
 
   const { manifest, certificates, failures, notes } = checkApk(apkPath, expected);
 
