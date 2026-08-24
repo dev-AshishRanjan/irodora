@@ -16,6 +16,9 @@ export default function Index(): React.JSX.Element {
         onOpenAtlas={() => {
           router.push('/atlas');
         }}
+        onOpenCompare={() => {
+          router.push('/compare');
+        }}
       />
     </>
   );

@@ -34,6 +34,37 @@ export const ja: Record<MessageKey, string> = {
 
   'atlas.title': '色の一覧',
   'home.openAtlas': '色を見る',
+
+  'compare.title': '2色をくらべる',
+  'compare.slotA': '1つめの色',
+  'compare.slotB': '2つめの色',
+  'compare.choose': '色をえらぶ',
+  'compare.difference': '色差',
+  'compare.perAxis': '軸ごとの差',
+  'compare.separation': '色覚での見分けやすさ',
+  'compare.contrast': 'コントラスト',
+  'compare.sameColour': '同じ色なので、差はすべてゼロです。',
+  'unit.deltaE00': 'ΔE00',
+  'unit.lc': 'Lc',
+  'space.cielab': 'CIELAB (D65)',
+  'space.oklch': 'OKLCh',
+  'space.srgb': 'sRGB（符号化）',
+  'axis.labL': '明度 L*',
+  'axis.labA': '緑と赤 a*',
+  'axis.labB': '青と黄 b*',
+  'axis.oklchL': '明度 L',
+  'axis.oklchC': '彩度 C',
+  'axis.oklchH': '色相 h',
+  'contrast.wcag': 'WCAG 2.2 比',
+  'contrast.apcaBOnA': 'APCA — 1つめの上に2つめ',
+  'contrast.apcaAOnB': 'APCA — 2つめの上に1つめ',
+  'contrast.apcaNote':
+    'APCAは向きで変わります。どちらを文字にするかで値がちがいます。WCAGは変わりません。',
+  'separation.score': '見分けやすさ',
+  'separation.deltaE00': '模擬したときの色差',
+  'separation.lightness': '明度の差',
+  'separation.severity': '表にある中でもっとも強い段階で模擬しています。',
+  'home.openCompare': '2色をくらべる',
   'atlas.corpus': '収録版',
   'atlas.colours': '色',
   'atlas.palettes': '配色',
@@ -162,6 +193,12 @@ export const NOTATION_KEYS: readonly MessageKey[] = [
   'coord.lch',
   'coord.oklch',
   'coord.rgb',
+  // F-019. Units and space names, on every metric FR-48 asks for. Each one passes
+  // NOTATION_SHAPE and the length cap; a phrase could not be added here.
+  'unit.deltaE00',
+  'unit.lc',
+  'space.cielab',
+  'space.oklch',
 ];
 
 /**

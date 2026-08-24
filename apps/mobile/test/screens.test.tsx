@@ -22,6 +22,9 @@ import {
 import { Home } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
+import { Compare } from '../src/screens/Compare';
+import { compare } from '../src/compare';
+import { nativeNumericFeature } from '@irodora/design-tokens';
 import { allEntries, CORPUS_ENTRY_COUNT } from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
@@ -66,6 +69,15 @@ const SAMPLE_HEXES: readonly string[] = [...CORPUS_HEXES, ...CVD_HEXES];
 /** An entry whose `complementary` is empty, so the empty branch is RENDERED, not skipped. */
 const WITHOUT_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length === 0)!;
 
+/**
+ * The pair Compare opens on in these assertions.
+ *
+ * A near-white and the darkest entry in the corpus: far apart on every axis, so a row that
+ * failed to render would not be hidden behind a delta that rounds to zero.
+ */
+const PAIR_A = 'usu-gami';
+const PAIR_B = 'soko-zumi';
+
 /** An entry that HAS a complementary, so the populated branch is rendered too. */
 const WITH_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length > 0)!;
 
@@ -95,6 +107,14 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} />, theme),
+  },
+  {
+    name: 'screens/Compare',
+    // `static` for the same reason the Atlas is: its interactive parts are SearchField and
+    // Swatch, both registered in packages/ui where the suite makes them render their states.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme),
   },
 ];
 
@@ -309,4 +329,153 @@ describe('the Atlas and the detail screen have headings (A11)', () => {
       );
     });
   }
+});
+
+/**
+ * FR-48 criterion 1 — **every metric, with its unit and the space it was computed in**.
+ *
+ * Asserted by content over the rendered tree. What matters is that a reader can see the space a
+ * number was computed in, not that it sits in a particular node: "ΔE00 4.2" without "CIELAB
+ * (D65)" beside it is a different claim from the one the engine made.
+ */
+describe('compare shows every metric with its unit and its space (FR-48)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const nodes = (): string[] =>
+    textOf(draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light'));
+  const blob = (): string => nodes().join('\u0000');
+
+  const A = allEntries().find((e) => e.entry.slug === PAIR_A)!;
+  const B = allEntries().find((e) => e.entry.slug === PAIR_B)!;
+  const m = compare(A, B);
+
+  it('shows ΔE00, and the value the engine actually computed', () => {
+    expect(nodes()).toContain(m.deltaE00.toFixed(2));
+    expect(blob()).toContain('ΔE00');
+  });
+
+  it('names the space every metric was computed in', () => {
+    const text = blob();
+    for (const space of ['CIELAB (D65)', 'OKLCh', 'encoded sRGB']) expect(text).toContain(space);
+  });
+
+  it('shows the per-axis differences in both spaces', () => {
+    const text = blob();
+    for (const label of ['Lightness L*', 'Green–red a*', 'Blue–yellow b*'])
+      expect(text).toContain(label);
+    for (const label of ['Lightness L', 'Chroma C', 'Hue h']) expect(text).toContain(label);
+    // The values, not only the labels.
+    expect(nodes()).toContain(m.lab.l.a.toFixed(2));
+    expect(nodes()).toContain(`${m.oklch.h.a.toFixed(1)}°`);
+  });
+
+  it('shows CVD separation WITH its decomposition, for all three deficiencies', () => {
+    const text = blob();
+    for (const label of ['Red-weak (protan)', 'Green-weak (deutan)', 'Blue-weak (tritan)'])
+      expect(text).toContain(label);
+    for (const s of m.separation) {
+      expect(nodes()).toContain(`${s.score.toFixed(0)}/100`);
+      expect(nodes()).toContain(s.deltaE00.toFixed(2));
+      expect(nodes()).toContain(s.lightnessDifference.toFixed(2));
+    }
+  });
+
+  it('shows the severity it simulated at rather than leaving it to be assumed', () => {
+    expect(blob()).toContain('strongest tabulated severity');
+  });
+
+  it('shows contrast, in both APCA directions and as a WCAG ratio', () => {
+    expect(nodes()).toContain(`${m.contrast.wcagRatio.toFixed(2)}:1`);
+    expect(blob()).toContain('APCA — second on first');
+    expect(blob()).toContain('APCA — first on second');
+  });
+
+  /*
+   * The asymmetry stated rather than implied. Showing one APCA reading beside a WCAG ratio
+   * invites the reading that all three behave the same way, and two of them do not.
+   */
+  it('says which of the contrast readings is directional', () => {
+    expect(blob()).toContain('APCA is directional');
+  });
+});
+
+/**
+ * FR-48 criterion 2 — **tabular numerals, aligned columns, copyable values**.
+ *
+ * `nativeNumericFeature` was emitted from the manifest and consumed by nothing for two
+ * releases. This is the assertion that it reaches the nodes that carry numbers.
+ */
+describe('the numbers are tabular and copyable (FR-48)', () => {
+  function styleOf(node: TestNode): Record<string, unknown> {
+    const raw: unknown = node.props['style'];
+    // `reduce` rather than `Object.assign({}, ...raw)`: the spread widens to `any`, and a
+    // React Native style array legitimately contains `null` and `false` layers that
+    // `Object.assign` would happily skip while the types pretended otherwise.
+    if (Array.isArray(raw))
+      return (raw as unknown[]).reduce<Record<string, unknown>>(
+        (acc, layer) =>
+          typeof layer === 'object' && layer !== null
+            ? { ...acc, ...(layer as Record<string, unknown>) }
+            : acc,
+        {},
+      );
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  }
+
+  function numericNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
+    const v = styleOf(node)['fontVariant'];
+    if (Array.isArray(v) && (v as unknown[]).includes(nativeNumericFeature)) out.push(node);
+    for (const child of node.children ?? [])
+      if (typeof child !== 'string') numericNodes(child, out);
+    return out;
+  }
+
+  const tree = (): TestNode => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light');
+
+  it('renders a substantial number of tabular figures, not one', () => {
+    // A table of metrics. If this were 1 or 2, the prop would be on a heading somewhere and
+    // the columns would still be ragged.
+    expect(numericNodes(tree()).length).toBeGreaterThan(20);
+  });
+
+  it('makes every tabular value selectable, which is how a value is copied', () => {
+    for (const n of numericNodes(tree())) expect(n.props['selectable']).toBe(true);
+  });
+
+  /*
+   * THE DECOY. Every screen so far renders numbers WITHOUT the prop, so if the variant were
+   * applied unconditionally by Text this would still be green — and the assertions above would
+   * be measuring nothing.
+   */
+  it('DECOY — a screen that asks for no tabular figures has none', () => {
+    expect(numericNodes(draw(<Home />, 'light'))).toHaveLength(0);
+  });
+});
+
+/** A11 — Compare announces structure a screen reader can navigate. */
+describe('compare has headings (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its sections as headings in ${theme}`, () => {
+      expect(roles(draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme))).toContain(
+        'header',
+      );
+    });
 });

@@ -42,6 +42,7 @@ import {
   type nativeLargeTextSizes,
   nativeDynamicTypeRamp,
   nativeFamilies,
+  nativeNumericFeature,
   nativeType,
   type LargeTextToken,
   type TextToken,
@@ -76,6 +77,23 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
    * number, and a component that guessed would be wrong in the case nobody checks.
    */
   readonly heading?: boolean;
+  /**
+   * Render figures as **tabular** — equal-width, so columns of numbers align.
+   *
+   * C9 in the design brief, and it is not a stylistic preference: *"colour values appear in
+   * columns and must align — proportional figures make a ΔE table unscannable."* A professional
+   * scans a column of deltas, and proportional digits make that column ragged enough that the
+   * comparison the table exists for has to be done one row at a time.
+   *
+   * A PROP rather than an automatic rule, for the same reason `heading` is one: a heuristic
+   * would have to guess which strings are numbers, and "0.42" and "F-019" are both strings. The
+   * caller knows; the component cannot.
+   *
+   * The value comes from `nativeNumericFeature`, which the manifest owns. Until F-019 that
+   * token was emitted, asserted against the manifest by its own test, and **consumed by
+   * nothing** — a generated value that reached no pixel for two releases.
+   */
+  readonly numeric?: boolean;
 };
 
 export function Text<S extends TypeSize>({
@@ -83,6 +101,7 @@ export function Text<S extends TypeSize>({
   color,
   script = 'latin',
   heading = false,
+  numeric = false,
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
@@ -123,6 +142,10 @@ export function Text<S extends TypeSize>({
         ...step,
         color: colors[color],
         ...(japanese ? { fontFamily: nativeFamilies.jp } : {}),
+        // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:
+        // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
+        // absent one, and the conformance suite reads what the NODE carries.
+        ...(numeric ? { fontVariant: [nativeNumericFeature] } : {}),
       }}
     >
       {children}

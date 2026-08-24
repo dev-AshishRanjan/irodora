@@ -654,7 +654,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-018",
         "F-039",
@@ -669,7 +669,8 @@
         "e2e",
         "a11y",
         "contrast"
-      ]
+      ],
+      "plan": "plans/F-019-two-colours-and-every-number-that-separates-them.md"
     },
     {
       "id": "F-020",

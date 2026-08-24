@@ -9,6 +9,7 @@
 
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
+import { nativeNumericFeature } from '@irodora/design-tokens';
 import {
   Button,
   Chip,
@@ -423,5 +424,74 @@ describe('a status colour may not sit beside a colour sample (F-069)', () => {
     // The two themes are authored independently; a status token's value differs between them.
     expect(check('dark')).toHaveLength(1);
     expect(check('dark', true)).toEqual([]);
+  });
+});
+
+/**
+ * C9 — **numbers are tabular**, and the token reaches the node.
+ *
+ * `nativeNumericFeature` was emitted from the manifest and asserted against it by
+ * `packages/design-tokens`, and consumed by **nothing**, for two releases. A generated value
+ * with no consumer passes every test it has [[a-tested-module-nobody-wired-up-passes-every-test-it-has]];
+ * what it cannot do is align a column.
+ *
+ * Asserted over the RENDERED tree rather than by reading `Text.tsx`, because "the prop is in
+ * the source" and "the variant reached the node" are different claims — and the second is the
+ * one a text engine acts on. Whether the glyphs are ACTUALLY equal-width is a property of the
+ * face, and that stays a device attestation.
+ */
+describe('figures are tabular where a caller asks for them (C9)', () => {
+  function styleOf(node: TestNode): Record<string, unknown> {
+    const raw: unknown = node.props['style'];
+    // `reduce` rather than `Object.assign({}, ...raw)`: the spread widens to `any`, and a
+    // React Native style array legitimately contains `null` and `false` layers that
+    // `Object.assign` would happily skip while the types pretended otherwise.
+    if (Array.isArray(raw))
+      return (raw as unknown[]).reduce<Record<string, unknown>>(
+        (acc, layer) =>
+          typeof layer === 'object' && layer !== null
+            ? { ...acc, ...(layer as Record<string, unknown>) }
+            : acc,
+        {},
+      );
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  }
+
+  function variants(node: TestNode, out: unknown[] = []): unknown[] {
+    const v = styleOf(node)['fontVariant'];
+    if (v !== undefined) out.push(v);
+    for (const child of node.children ?? []) if (typeof child !== 'string') variants(child, out);
+    return out;
+  }
+
+  it('carries the manifest feature when the numeric prop is set', () => {
+    const tree = draw(
+      <Text size="small" color="foreground" numeric>
+        12.34
+      </Text>,
+      'light',
+    );
+    expect(variants(tree)).toContainEqual([nativeNumericFeature]);
+  });
+
+  /*
+   * THE DECOY. Without it, a component that applied the variant unconditionally would satisfy
+   * the assertion above and the prop would be decoration
+   * [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+   */
+  it('DECOY — a Text without `numeric` carries no font variant at all', () => {
+    const tree = draw(
+      <Text size="small" color="foreground">
+        12.34
+      </Text>,
+      'light',
+    );
+    expect(variants(tree)).toEqual([]);
+  });
+
+  it('uses the manifest value rather than a literal', () => {
+    // If someone writes 'tabular-nums' into Text.tsx and the manifest later says something
+    // else, this is what disagrees. The token is the single home.
+    expect(nativeNumericFeature).toBe('tabular-nums');
   });
 });

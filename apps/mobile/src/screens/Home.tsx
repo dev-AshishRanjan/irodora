@@ -45,9 +45,11 @@ export interface HomeProps {
    * green, and nothing on screen leading to any of them.
    */
   readonly onOpenAtlas?: () => void;
+  /** Open Compare. Same shape and same reason as onOpenAtlas. */
+  readonly onOpenCompare?: () => void;
 }
 
-export function Home({ onOpenAtlas }: HomeProps = {}): React.JSX.Element {
+export function Home({ onOpenAtlas, onOpenCompare }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
   const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
@@ -103,6 +105,14 @@ export function Home({ onOpenAtlas }: HomeProps = {}): React.JSX.Element {
         label={t('home.openAtlas')}
         onPress={() => {
           onOpenAtlas?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openCompare')}
+        variant="secondary"
+        onPress={() => {
+          onOpenCompare?.();
         }}
       />
     </View>
