@@ -213,7 +213,7 @@ export interface MixOperand {
  *
  * ## Why this exists at all
  *
- * HeroUI derives roughly twenty colours this way — every hover state and every `-soft`
+ * HeroUI derives twenty-nine colours this way — every hover state and every `-soft`
  * variant — and some of them carry text: `Alert` tints its title with
  * `--color-success-soft-foreground`. A colour the stylesheet computes is a colour the
  * `contrast` gate never measured, so the generator computes them instead and emits literals
@@ -286,4 +286,21 @@ export function mixOklab(
   if (!isInGamut(rgb)) throw new OutOfGamutError('color-mix result', rgb);
 
   return { rgb, alpha: alpha * alphaMultiplier };
+}
+
+/**
+ * `#RRGGBBAA` — the only way to write a translucent colour under
+ * [ADR-0063](../../../docs/adr/0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md),
+ * which forbids `rgba()` in the generated stylesheet alongside every other colour function.
+ *
+ * `toRgbaString` still exists and is still correct for the CSS target, where the constraint
+ * does not apply. This is the React Native path, where Uniwind hands whatever it finds to
+ * `culori.parse` and we want that call to have nothing left to decide.
+ */
+export function toHex8(rgb: Rgb, alpha: number): string {
+  const a = Math.round(Math.min(1, Math.max(0, alpha)) * 255)
+    .toString(16)
+    .padStart(2, '0')
+    .toUpperCase();
+  return `${srgbToHex(rgb)}${a}`;
 }

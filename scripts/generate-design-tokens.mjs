@@ -6,8 +6,10 @@
  * 1. **Rewrite the `srgb` field of every token** from its own OKLCh (ADR-0043). Nobody types
  *    a hex; the 37-of-38 drift that made this rule necessary is only impossible once the
  *    second value stops being authored.
- * 2. **Emit the four targets.** CSS, Tailwind, TypeScript, React Native — from one source,
- *    so a token that exists on web and not on mobile cannot be constructed.
+ * 2. **Emit the five targets.** CSS, Tailwind, TypeScript, React Native and HeroUI's
+ *    global.css — from one source, so a token that exists on web and not on mobile cannot be
+ *    constructed, and so HeroUI's theme cannot become a second place colour is decided
+ *    (ADR-0062).
  *
  * It lives in scripts/ rather than in the package because it reads files: `src/` is bundled by
  * `apps/mobile`, where a node:fs import is a crash on a phone, and the package's own ESLint
@@ -25,8 +27,17 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGE = join(ROOT, 'packages', 'design-tokens');
 const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 
-const { parseManifest, derivedSrgb, emitCss, emitTailwind, emitTypescript, emitReactNative } =
-  await import(pathToFileURL(join(PACKAGE, 'dist', 'index.js')).href);
+const {
+  parseManifest,
+  derivedSrgb,
+  emitCss,
+  emitTailwind,
+  emitTypescript,
+  emitReactNative,
+  emitHeroui,
+} = await import(pathToFileURL(join(PACKAGE, 'dist', 'index.js')).href);
+
+const APP = join(ROOT, 'apps', 'mobile');
 
 const checkOnly = process.argv.includes('--check');
 
@@ -45,13 +56,17 @@ for (const theme of ['dark', 'light'])
     parsed.color[theme][name].srgb = expected;
   }
 
-// --- 2. the four targets -------------------------------------------------------------
+// --- 2. the five targets -------------------------------------------------------------
 
 const outputs = [
   [join(PACKAGE, 'generated', 'tokens.css'), emitCss(manifest)],
   [join(PACKAGE, 'generated', 'tokens.tailwind.css'), emitTailwind(manifest)],
   [join(PACKAGE, 'src', 'generated', 'tokens.ts'), emitTypescript(manifest)],
   [join(PACKAGE, 'src', 'generated', 'native.ts'), emitReactNative(manifest)],
+  // The app's own stylesheet. `emitHeroui` THROWS rather than returning a failing sheet —
+  // a generator that writes bad output and reports the problem separately is a generator
+  // whose output someone ships.
+  [join(APP, 'global.css'), emitHeroui(manifest)],
 ];
 
 const stale = [];

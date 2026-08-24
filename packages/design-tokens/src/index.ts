@@ -44,6 +44,7 @@ export {
   OutOfGamutError,
   resolveAll,
   toHex,
+  toHex8,
   toOklchString,
   toRgbaString,
   tokenRgb,
@@ -68,6 +69,7 @@ export { statusPresentation, type StatusKind, type StatusPresentation } from './
 
 export { emitCss, cssVarName } from './emit/css.js';
 export { emitTailwind } from './emit/tailwind.js';
+export { emitHeroui, herouiTheme, HerouiEmitError } from './emit/heroui.js';
 export { emitTypescript } from './emit/typescript.js';
 export { emitReactNative } from './emit/react-native.js';
 
