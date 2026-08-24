@@ -8,6 +8,91 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-085 DONE · the lane was building an artefact that could not run
+
+The APK from `android-build.yml` was installed on a phone and did not start:
+
+> Unable to load script. Make sure you're running Metro or that your bundle
+> `index.android.bundle` is packaged correctly for release.
+
+**That is correct behaviour, and the wrong artefact to have asked for.** React Native skips JS
+bundling for every variant in `debuggableVariants`, which defaults to `["debug"]`, because a
+debug build expects Metro to serve JS over a socket. F-080 asked Gradle for `assembleDebug`.
+
+### Why it is not a small mistake
+
+The lane existed to discharge device attestations. The two loudest are *"every core journey
+completes with the device in airplane mode"* and *"the app opens no socket during any core
+journey"*. **An artefact that needs a socket to start cannot test either.** The lane could
+never have done the job it was built for, and nothing said so because nobody installed the
+output — F-080 shipped it on a green CI run.
+
+Gate 16 passed on that APK, correctly. It reads the manifest, not the bundle, and never
+claimed to know whether the app runs. The honest conclusion is not that the gate failed; it is
+that **a green gate is not an installed app**, and the only evidence for "it runs" is a person
+running it.
+
+### The fix is the release variant, not a bundle bolted onto debug
+
+The internal lane now builds `assembleRelease`, signed with the real release key, uploaded as
+a workflow artefact and published nowhere. An internal build that differs from production in
+build type, minification or signature is testing a different artefact than the one that ships.
+
+It also disposed of two traps at once. `src/debug/` and `src/debugOptimized/` carry
+dev-client manifest overlays declaring `SYSTEM_ALERT_WINDOW` and `usesCleartextTraffic="true"`.
+A release variant has neither by construction.
+
+Version: `0.0.0-internal.<run>` with `versionCode` = the run number. Successive internal
+builds upgrade over each other; a real release (≥ 1 000 000, from the tag) upgrades over all
+of them; installing an internal build over a release is refused as a downgrade, which is the
+right way round.
+
+### Gate 16 now pins the whole permission set
+
+The old check asked *"can it transmit"*. It would have waved `SYSTEM_ALERT_WINDOW` straight
+through — not a network permission, and serious to ship. `--expect-permissions` now asserts
+**set equality**, in both directions: an unexpected permission is a capability nobody
+reviewed, a missing one is a feature that fails on a device with nothing at build time to say
+so.
+
+`INTERNET` keeps its **own** finding rather than folding into "unexpected permission". It
+falsifies a requirement; the others are review failures. Same red, different fix.
+
+```
+✓ the exact permission set (must stay GREEN)
+✓ a dev-client overlay permission that is not a network one   → permission set
+✓ a permission the app requires, gone missing                 → permission set
+✓ INTERNET still reports as a network permission              → network permission present
+```
+
+10 `--prove` cases became 14.
+
+### Deliberately not done
+
+**R8 minification stays off.** It is standard for production and the unminified artefact was
+89.7 MB, so this is real. It also breaks reflection-based native modules in ways only a device
+shows, and VisionCamera, expo-sqlite and Hermes are exactly those shapes. Turning it on in the
+same change as *"make the APK run at all"* would confound the next failure — and this feature
+exists because something shipped that nobody had launched. **F-086.**
+
+### Gates
+
+```
+Ran:      state ✓  typecheck ✓  lint ✓  format ✓  test ✓  build ✓
+          artifact ✓ 14/14 discriminate   gate-mirror ✓ 13/13   guards ✓ 18/18
+NOT run:  any Gradle build — no JDK here, and an Android SDK five platforms short of 36.
+          THE ARTEFACT STARTING IS ATTESTED, not gated. Gate 16 cannot see a JS bundle, and
+          the previous artefact was shipped unverified in exactly this way.
+```
+
+### The release lane is still blocked
+
+`release.yml` calls `ci.yml`, and gate 4 is red on **F-083** — NFR-3 does not hold across
+platforms. No tag can produce an artefact until that is decided. The internal lane does not
+call `ci.yml` and is unaffected, so device testing can continue.
+
+---
+
 ## 2026-08-23 — F-084 DONE · one editor, and the entry says so
 
 Irodora has one editor. The content gate required two distinct roster identities, so nothing

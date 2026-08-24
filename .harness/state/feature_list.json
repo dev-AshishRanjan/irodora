@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-23",
+  "updated": "2026-08-24",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -2178,6 +2178,71 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-085",
+      "title": "The build lane produces the artefact it claims to",
+      "requirements": [
+        "NFR-12",
+        "NFR-14",
+        "NFR-17"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [
+        "F-080"
+      ],
+      "plan": "plans/F-085-the-build-lane-produces-the-artefact-it-claims-to.md",
+      "acceptance": [
+        "The internal lane builds a release variant, so the JS bundle is embedded and the app starts with no Metro and no network",
+        "The internal artefact is signed with the release key and gate 16 asserts the certificate",
+        "Gate 16 asserts the artefact permission set EQUALS a declared list, not merely that INTERNET is absent",
+        "The exact-set assertion is watched failing on an extra permission and on a missing one, with an exact match green either side",
+        "Internal versionCode comes from the run number, so internal builds upgrade over each other and any release upgrades over all of them",
+        "docs/operations/release-process.md describes the two lanes as they now are"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "artifact"
+      ],
+      "notes": "FOUND BY INSTALLING THE ARTEFACT. The APK from android-build.yml failed at launch with \"Unable to load script ... make sure your bundle index.android.bundle is packaged correctly for release\". That is CORRECT behaviour for what F-080 asked Gradle for and the WRONG artefact to have asked for: React Native skips JS bundling for every variant listed in `debuggableVariants`, which defaults to [\"debug\"], because a debug build expects Metro to serve JS over a socket. THE DEFECT IS NOT COSMETIC. The lane existed to discharge device attestations, and the two loudest are \"every core journey completes with the device in airplane mode\" and \"the app opens no socket during any core journey\" — an artefact that needs a socket to START cannot test either, so the lane could never have done its job. It also means F-080 shipped a lane nobody had installed the output of; gate 16 passed on that APK because gate 16 reads the manifest, not the bundle. TWO TRAPS DISPOSED OF AT THE SAME TIME: src/debug/ and src/debugOptimized/ carry dev-client manifest overlays declaring SYSTEM_ALERT_WINDOW and usesCleartextTraffic=\"true\", which must never reach a user and are absent from a release variant by construction. That is also why gate 16 now pins the whole permission SET rather than only rejecting network permissions — an exact-set assertion is what would have caught a debug overlay reaching a release, and it catches any dependency adding anything. CLOSED 2026-08-24. Gate 16 grew from 10 --prove cases to 14. The internal lane now needs the release environment and its secrets, which is a deliberate trade: an internal build that differs from production in build type, minification or signature is testing a different artefact than the one that ships, and the signing key is the same key either way. R8 stays OFF and is F-086 — turning it on in the same change as \"make the APK run at all\" would confound the next failure.",
+      "attested": [
+        {
+          "criterion": "The internal lane builds a release variant, so the JS bundle is embedded and the app starts with no Metro and no network",
+          "verifiedBy": "A person installing the artefact on a phone in airplane mode and watching it open. This workstation has no JDK and an Android SDK five platforms short of the required 36, so no Gradle build can run here at all — the previous artefact was shipped unverified in exactly this way and that is how the defect reached a device. Gate 16 reads the manifest and cannot see whether a JS bundle is present or loadable, so nothing automated closes this.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-086",
+      "title": "R8 minification and resource shrinking for release builds",
+      "requirements": [
+        "NFR-4"
+      ],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-085"
+      ],
+      "acceptance": [
+        "android.enableMinifyInReleaseBuilds and resource shrinking are on for release builds",
+        "The keep rules live in a config plugin, never in a hand-edited android/ directory",
+        "A device smoke test covers the Lens, the store and the font, which are the parts reflection breaks first",
+        "The size before and after is recorded"
+      ],
+      "verification": [
+        "state",
+        "artifact"
+      ],
+      "notes": "DELIBERATELY NOT DONE IN F-085. R8 is standard for production and materially reduces size — the unminified debug artefact was 89.7 MB. It also breaks reflection-based native modules in ways only a device shows, and VisionCamera, expo-sqlite and Hermes are exactly the shapes that break. Turning it on in the same change as \"make the APK run at all\" would confound the next failure, and F-085 exists because an artefact was shipped without anyone installing it. Do this once the internal lane has produced an artefact somebody has actually launched."
     }
   ]
 }

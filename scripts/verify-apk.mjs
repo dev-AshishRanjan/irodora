@@ -36,6 +36,7 @@
  *   node scripts/verify-apk.mjs --apk path/to/app.apk \
  *        --expect-package com.irodora.app \
  *        --expect-version-code 100 --expect-version-name 0.1.0 \
+ *        [--expect-permissions android.permission.CAMERA,...] \
  *        [--expect-signer-sha256 AB:CD:...] [--allow-unsigned]
  *
  *   node scripts/verify-apk.mjs --prove      # watch every assertion fail
@@ -437,6 +438,38 @@ export function checkApk(apkPath, expected) {
       'tweak: it falsifies NFR-12 and needs an ADR.',
   );
 
+  // ---- the whole permission set, not just the network ones ----------------------------
+  //
+  // The check above answers "can it transmit". This answers "is it the app we meant", and it
+  // is the stronger question. F-085: `src/debug/` and `src/debugOptimized/` carry dev-client
+  // overlays declaring SYSTEM_ALERT_WINDOW and usesCleartextTraffic — neither is a network
+  // permission, both would be a serious thing to ship, and the network check would have
+  // waved both through. Exact-set equality is what catches a build variant leaking into a
+  // release, and any dependency that adds anything at all.
+  //
+  // Both directions matter: an EXTRA permission is a capability nobody asked for, and a
+  // MISSING one is a feature that will fail on a device with no build-time signal.
+  if (expected.permissions !== undefined) {
+    const want = [...expected.permissions].sort();
+    const got = manifest.permissions;
+    const extra = got.filter((p) => !want.includes(p));
+    const absent = want.filter((p) => !got.includes(p));
+
+    check(
+      extra.length === 0 && absent.length === 0,
+      'permission set',
+      [
+        extra.length ? `UNEXPECTED: ${extra.join(', ')}` : '',
+        absent.length ? `MISSING: ${absent.join(', ')}` : '',
+        `expected exactly [${want.join(', ')}], artefact declares [${got.join(', ') || 'none'}]. ` +
+          'An unexpected permission is a capability nobody reviewed; a missing one is a ' +
+          'feature that fails on a device with nothing at build time to say so.',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    );
+  }
+
   // ---- identity ----------------------------------------------------------------------
   if (expected.package !== undefined)
     check(
@@ -569,14 +602,20 @@ function prove() {
     return apkPath;
   };
 
-  const manifestXml = ({ pkg = 'com.irodora.app', code = 100, name = '0.1.0', extra = '' } = {}) =>
+  const manifestXml = ({
+    pkg = 'com.irodora.app',
+    code = 100,
+    name = '0.1.0',
+    extra = '',
+    camera = true,
+  } = {}) =>
     `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="${pkg}"
     android:versionCode="${String(code)}"
     android:versionName="${name}">
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
-  <uses-permission android:name="android.permission.CAMERA" />
+${camera ? '  <uses-permission android:name="android.permission.CAMERA" />' : ''}
 ${extra}
   <application />
 </manifest>
@@ -587,6 +626,9 @@ ${extra}
     versionCode: 100,
     versionName: '0.1.0',
   };
+
+  /** The set every fixture manifest declares. `manifestXml` writes CAMERA and nothing else. */
+  const EXPECTED_PERMISSIONS = ['android.permission.CAMERA'];
 
   const cleanApk = build('clean', manifestXml());
 
@@ -707,6 +749,44 @@ ${extra}
       mustFail: 'signer certificate',
     },
     {
+      name: 'the exact permission set (must stay GREEN)',
+      apk: cleanApk,
+      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      mustFail: false,
+    },
+    {
+      // F-085. The dev-client overlay case: SYSTEM_ALERT_WINDOW is not a network permission,
+      // so the NFR-12 check waves it through — and shipping it would be serious.
+      name: 'a dev-client overlay permission that is not a network one',
+      apk: build(
+        'overlay',
+        manifestXml({
+          extra: '  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />',
+        }),
+      ),
+      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      mustFail: 'permission set',
+    },
+    {
+      // The other direction. A permission the app NEEDS, silently dropped, is a feature that
+      // fails on a device with nothing at build time to say so.
+      name: 'a permission the app requires, gone missing',
+      apk: build('no-camera', manifestXml({ camera: false })),
+      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      mustFail: 'permission set',
+    },
+    {
+      // INTERNET keeps its OWN finding rather than being folded into "unexpected permission".
+      // It falsifies a requirement; the others are review failures. Same red, different fix.
+      name: 'INTERNET still reports as a network permission, not merely an unexpected one',
+      apk: build(
+        'internet-with-set',
+        manifestXml({ extra: '  <uses-permission android:name="android.permission.INTERNET" />' }),
+      ),
+      expected: { ...EXPECTED, permissions: EXPECTED_PERMISSIONS },
+      mustFail: 'network permission present',
+    },
+    {
       name: 'the clean fixture again (the baseline either side)',
       apk: cleanApk,
       expected: EXPECTED,
@@ -784,7 +864,7 @@ if (args.prove) {
   console.log(
     `\n${RED}usage:${OFF} node scripts/verify-apk.mjs --apk <path> ` +
       `[--expect-package X] [--expect-version-code N] [--expect-version-name X] ` +
-      `[--expect-signer-sha256 X] [--allow-unsigned]\n` +
+      `[--expect-permissions A,B] [--expect-signer-sha256 X] [--allow-unsigned]\n` +
       `       node scripts/verify-apk.mjs --prove\n`,
   );
   process.exit(2);
@@ -797,6 +877,13 @@ if (args.prove) {
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);
   if (args['expect-version-name']) expected.versionName = String(args['expect-version-name']);
   if (args['expect-signer-sha256']) expected.signerSha256 = String(args['expect-signer-sha256']);
+  // Empty string means "exactly no permissions", which is a real expectation and must not
+  // collapse into "do not check". Only an ABSENT flag skips the assertion.
+  if (args['expect-permissions'] !== undefined && args['expect-permissions'] !== true)
+    expected.permissions = String(args['expect-permissions'])
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
 
   const { manifest, certificates, failures, notes } = checkApk(apkPath, expected);
 

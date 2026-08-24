@@ -1,37 +1,48 @@
-name: Android build (test)
+name: Android build (internal)
 
-# An installable APK, on demand, with no secrets involved.
+# An installable APK, on demand, that actually runs.
 #
-# THIS LANE EXISTS FOR THE DEVICE ATTESTATIONS. A dozen acceptance criteria across F-006,
-# F-017, F-035, F-039, F-040 and F-041 say some version of "verified on a physical device",
-# and every one of them has been outstanding since the day it was written because there was
-# no way to get the app onto a phone. See `.harness/state/feature_list.json` — the `attested`
-# entries are the checklist this lane unblocks.
+# ## Why this builds a RELEASE variant
 #
-# WHAT IT PRODUCES IS NOT A RELEASE. The APK is signed with the React Native debug keystore,
-# which is public, so it is fine for a phone you control and unfit for anyone else's. It is
-# uploaded as a workflow artefact — never to a GitHub Release, and never to a store. The
-# release lane is `release.yml`, and it requires a real key.
+# It used to build `assembleDebug`, and the artefact did not start:
 #
-# Gate 16 runs here anyway: the artefact must still declare no network permission. A debug
-# build is exactly where a dependency's `INTERNET` would first show up.
+#     Unable to load script. Make sure you're running Metro or that your bundle
+#     'index.android.bundle' is packaged correctly for release.
+#
+# That is correct behaviour, not a bug in Gradle. React Native SKIPS JS bundling for every
+# variant named in `debuggableVariants`, which defaults to `["debug"]`, because a debug build
+# expects Metro to serve JS over a socket. The lane asked for the wrong artefact.
+#
+# It mattered more than "inconvenient". This lane exists to discharge device attestations, and
+# the two loudest are *every core journey completes with the device in airplane mode* and *the
+# app opens no socket during any core journey*. **An artefact that needs a socket to start
+# cannot test either.**
+#
+# It also disposes of two traps at once: `src/debug/` and `src/debugOptimized/` carry
+# dev-client manifest overlays declaring `SYSTEM_ALERT_WINDOW` and `usesCleartextTraffic`.
+# Neither is a network permission, both would be serious to ship, and a release variant has
+# neither by construction. Gate 16 now pins the whole permission set so a leak is caught
+# rather than assumed away.
+#
+# ## What this is NOT
+#
+# Not a release. Nothing is published, no GitHub Release is created, and the version says
+# `internal` out loud. `release.yml` is the lane that publishes, and it runs every gate first.
+#
+# It IS signed with the real release key, deliberately: an internal build that differs from
+# production in build type, minification or signature is testing a different artefact than the
+# one that ships.
 
 on:
   workflow_dispatch:
     inputs:
-      version_name:
-        description: 'Version name to stamp on the build (cosmetic; not a release)'
+      note:
+        description: 'What is being tested (appears in the artefact name)'
         required: false
-        default: '0.0.0-dev'
-      variant:
-        description: 'Gradle variant'
-        required: false
-        default: debug
-        type: choice
-        options: [debug, debugOptimized]
+        default: ''
 
 concurrency:
-  group: android-build-${{ github.ref }}
+  group: android-internal-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -39,67 +50,120 @@ permissions:
 
 jobs:
   apk:
-    name: Debug APK
+    name: Internal APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+    # The same protected environment the release lane uses. The signing key is the same key;
+    # putting this lane behind weaker protection would make the environment decorative.
+    environment: release
 
     env:
-      IRODORA_VERSION_NAME: ${{ inputs.version_name }}
-      # Deliberately 1, and deliberately not derived from anything. A test build must never
-      # mint a version code that a real release might later want: codes are monotonic
-      # forever, and a phone that has installed code 500 will refuse code 400 as a downgrade.
-      IRODORA_VERSION_CODE: '1'
+      # An obviously-not-a-release version, and a code that still ORDERS correctly: successive
+      # internal builds upgrade over each other, and any real release (>= 1 000 000, from the
+      # tag) upgrades over all of them. Installing an internal build over a release is refused
+      # by Android as a downgrade, which is the right way round.
+      IRODORA_VERSION_NAME: 0.0.0-internal.${{ github.run_number }}
+      IRODORA_VERSION_CODE: ${{ github.run_number }}
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/setup-android-build
 
-      # The native project is generated, never committed (apps/mobile/AGENTS.md). `--clean`
-      # rather than incremental: a prebuild layered onto a stale android/ is how a config
-      # plugin appears to have run when it has not.
+      # Fail here, naming what is missing, rather than twenty minutes later inside Gradle with
+      # "storeFile not set". Nothing is echoed: the check is on emptiness.
+      - name: Check the signing credentials are present
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SIGNER_SHA256: ${{ vars.ANDROID_SIGNER_SHA256 }}
+        run: |
+          set -euo pipefail
+          MISSING=()
+          [[ -z "$KEYSTORE" ]]          && MISSING+=("secret ANDROID_KEYSTORE_BASE64")
+          [[ -z "$KEYSTORE_PASSWORD" ]] && MISSING+=("secret ANDROID_KEYSTORE_PASSWORD")
+          [[ -z "$KEY_ALIAS" ]]         && MISSING+=("secret ANDROID_KEY_ALIAS")
+          [[ -z "$KEY_PASSWORD" ]]      && MISSING+=("secret ANDROID_KEY_PASSWORD")
+          [[ -z "$SIGNER_SHA256" ]]     && MISSING+=("variable ANDROID_SIGNER_SHA256")
+          if (( ${#MISSING[@]} )); then
+            printf '::error::missing: %s\n' "${MISSING[*]}"
+            echo "::error::See docs/operations/signing-and-credentials.md."
+            exit 1
+          fi
+
+      # Into RUNNER_TEMP, never the workspace, so no later step can archive it by accident.
+      - name: Materialise the keystore
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          test -s "$RUNNER_TEMP/release.keystore"
+
+      # `--clean` rather than incremental: a prebuild layered onto a stale android/ is how a
+      # config plugin appears to have run when it has not.
       - name: Generate the native project
         working-directory: apps/mobile
         run: pnpm exec expo prebuild --platform android --clean --no-install
 
-      - name: Assemble
+      - name: Build
         working-directory: apps/mobile/android
-        run: ./gradlew assemble${{ inputs.variant == 'debugOptimized' && 'DebugOptimized' || 'Debug' }} --no-daemon
+        env:
+          IRODORA_ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          IRODORA_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          IRODORA_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          IRODORA_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          IRODORA_ANDROID_KEYSTORE_TYPE: ${{ vars.ANDROID_KEYSTORE_TYPE }}
+        run: ./gradlew :app:assembleRelease --no-daemon
 
-      - name: Locate the APK
+      - name: Collect
         id: apk
         run: |
-          FOUND=$(find apps/mobile/android/app/build/outputs/apk -name '*.apk' | head -1)
-          test -n "$FOUND" || { echo "no APK was produced"; exit 1; }
-          echo "path=$FOUND" >> "$GITHUB_OUTPUT"
-          echo "sha256=$(sha256sum "$FOUND" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          mkdir -p dist
+          FOUND=$(find apps/mobile/android/app/build/outputs/apk/release -name '*.apk' | head -1)
+          test -n "$FOUND" || { echo "::error::no APK was produced"; exit 1; }
+          cp "$FOUND" "dist/irodora-internal-${IRODORA_VERSION_NAME}.apk"
+          echo "path=dist/irodora-internal-${IRODORA_VERSION_NAME}.apk" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "dist/irodora-internal-${IRODORA_VERSION_NAME}.apk" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
-      # No --expect-signer-sha256: this build is signed with the public debug key, and
-      # asserting that would be asserting the thing the lane is documented as not providing.
-      # Everything else is checked, and the permission assertion is the point.
+      # The cryptographic half, same as the release lane. An internal build held to a weaker
+      # standard is an internal build that stops predicting what production will do.
+      - name: Verify the signature
+        run: "$ANDROID_HOME/build-tools/36.0.0/apksigner verify --verbose --print-certs '${{ steps.apk.outputs.path }}'"
+
       - name: 'Gate 16 — artifact'
-        run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code 1 --expect-version-name "${{ inputs.version_name }}"
+        run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code "${{ github.run_number }}" --expect-version-name "0.0.0-internal.${{ github.run_number }}" --expect-permissions android.permission.CAMERA --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: irodora-${{ inputs.variant }}-${{ github.sha }}
+          name: irodora-internal-${{ github.run_number }}${{ inputs.note && format('-{0}', inputs.note) || '' }}
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
 
       - name: Summary
         run: |
           {
-            echo "### Irodora — test build"
+            echo "### Irodora — internal build"
             echo
-            echo "**Not for distribution.** Signed with the public React Native debug key."
+            echo "A **release** build: the JS bundle is embedded, so it starts with no Metro and"
+            echo "no network. Signed with the real release key. **Not published** — this is not a release."
             echo
             echo "| | |"
             echo "|---|---|"
-            echo "| commit | \`${{ github.sha }}\` |"
-            echo "| variant | \`${{ inputs.variant }}\` |"
+            echo "| version | \`${IRODORA_VERSION_NAME}\` (code \`${IRODORA_VERSION_CODE}\`) |"
+            echo "| commit | \`${GITHUB_SHA}\` |"
             echo "| sha256 | \`${{ steps.apk.outputs.sha256 }}\` |"
+            echo "| permissions | \`android.permission.CAMERA\` — asserted as the COMPLETE set |"
             echo
-            echo "Download the artefact above, then: \`adb install -r <file>.apk\`"
+            echo '```bash'
+            echo "adb install -r irodora-internal-${IRODORA_VERSION_NAME}.apk"
+            echo '```'
+            echo
+            echo "Then put the phone in **airplane mode** and open it. If it starts, the offline"
+            echo "attestations on F-039 can be discharged against this build."
           } >> "$GITHUB_STEP_SUMMARY"

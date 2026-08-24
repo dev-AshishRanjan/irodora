@@ -181,7 +181,7 @@ jobs:
           "$APKSIGNER" verify --verbose --print-certs "${{ steps.artefacts.outputs.apk }}"
 
       - name: 'Gate 16 — artifact'
-        run: node scripts/verify-apk.mjs --apk "${{ steps.artefacts.outputs.apk }}" --expect-package com.irodora.app --expect-version-code "${{ needs.version.outputs.code }}" --expect-version-name "${{ needs.version.outputs.name }}" --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
+        run: node scripts/verify-apk.mjs --apk "${{ steps.artefacts.outputs.apk }}" --expect-package com.irodora.app --expect-version-code "${{ needs.version.outputs.code }}" --expect-version-name "${{ needs.version.outputs.name }}" --expect-permissions android.permission.CAMERA --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
 
       - name: Generate an SBOM
         uses: anchore/sbom-action@v0

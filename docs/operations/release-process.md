@@ -56,10 +56,10 @@ mistaken for a gap.
 
 ## Two lanes
 
-### A test build — [`android-build.yml`](../../.github/workflows/android-build.yml)
+### An internal build — [`android-build.yml`](../../.github/workflows/android-build.yml)
 
-Run it from the Actions tab (`workflow_dispatch`). It produces a **debug-signed APK** as a
-workflow artefact, with no secrets involved.
+Run it from the Actions tab (`workflow_dispatch`). It produces a **release build, signed with
+the real release key**, as a workflow artefact. Nothing is published.
 
 **This is the lane the device attestations run through.** Every `attested` entry in
 [`feature_list.json`](../../.harness/state/feature_list.json) whose `verifiedBy` says
@@ -68,12 +68,30 @@ digest under Hermes (F-006, F-039), the store conformance suite and encryption-a
 (F-041), TalkBack and 200 % text scaling (F-017), kinsoku line breaking (F-017), the Lens
 frame-processor questions (F-040), and export/import against a real file (F-035).
 
-It is **not a release**: the debug keystore is public, so the artefact is fine for a phone you
-control and unfit for anyone else's.
+> **It used to build `assembleDebug`, and the artefact did not start** (F-085):
+>
+> > Unable to load script. Make sure you're running Metro or that your bundle
+> > `index.android.bundle` is packaged correctly for release.
+>
+> That is correct behaviour. React Native **skips JS bundling** for every variant in
+> `debuggableVariants`, which defaults to `["debug"]`, because a debug build expects Metro to
+> serve JS over a socket. The lane asked for the wrong artefact — and an artefact that needs a
+> socket to *start* can never test *"completes in airplane mode"* or *"opens no socket"*,
+> which are the two attestations it existed for.
+
+**It is a release build on purpose.** An internal build that differs from production in build
+type, minification or signature is testing a different artefact than the one that ships. The
+only differences are the version — `0.0.0-internal.<run>` — and that it goes to a workflow
+artefact rather than a GitHub Release.
+
+It needs the signing secrets and runs in the `release` environment, so a required reviewer
+approves it. That is deliberate: the key is the same key.
 
 ```bash
-adb install -r irodora-debug.apk
+adb install -r irodora-internal-0.0.0-internal.42.apk
 ```
+
+Then put the phone in **airplane mode** and open it.
 
 ### A release — [`release.yml`](../../.github/workflows/release.yml)
 
@@ -83,7 +101,7 @@ tag vX.Y.Z
    ↓  derive versionName and versionCode from the tag
    ↓  expo prebuild --clean, then gradlew assembleRelease bundleRelease
    ↓  apksigner verify        — the signature is cryptographically valid
-   ↓  gate 16                 — and it is OUR certificate, and no network permission
+   ↓  gate 16                 — our certificate, and the EXACT permission set
    ↓  SBOM · SHA-256 sums · attested build provenance
    ↓  GitHub Release, artefacts attached
 ```
@@ -121,6 +139,8 @@ Automated — the workflow fails rather than asking:
 
 - [x] Every gate green, in order
 - [x] The artefact declares no network permission (gate 16, NFR-12)
+- [x] The artefact permission set is EXACTLY `android.permission.CAMERA` — an extra one is a
+      capability nobody reviewed, a missing one is a feature that fails on a device (F-085)
 - [x] The artefact carries the tag's version
 - [x] The artefact is signed by the expected certificate, not the debug key
 - [x] Checksums, SBOM and provenance published
