@@ -245,6 +245,61 @@ export const x = FileSystem;
     source: `export const x = window.innerWidth;
 `,
   },
+  {
+    // ADR-0062. The boundary is what makes a young dependency swappable, and a boundary
+    // nobody has watched fail is a configuration file that happens to parse.
+    name: 'a screen may not import HeroUI directly',
+    path: 'apps/mobile/src/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      'ADR-0062 — HeroUI lives behind @irodora/ui, which is what keeps the colour-literal ' +
+      'ban, the conformance registry, and the ability to swap the component engine',
+    source: `import { Button } from 'heroui-native';\nexport const x = Button;\n`,
+  },
+  {
+    // THE F-087 RULE. Uniwind resolves className in Metro; jest never runs Metro; so a
+    // colour routed through a class is absent from the rendered tree and the contrast gate
+    // measures an empty set [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+    name: 'a colour utility class in @irodora/ui is rejected',
+    path: 'packages/ui/src/__guard__.tsx',
+    rule: 'no-restricted-syntax',
+    must:
+      'F-087 — a colour the rendered tree does not carry is a colour the contrast gate ' +
+      'cannot measure, and the gate stays green over nothing',
+    source: `import { View } from 'react-native';\nexport const X = (): React.JSX.Element => <View className="bg-accent" />;\n`,
+  },
+  {
+    // The same rule, reached the other way. An arbitrary value is the obvious workaround for
+    // someone who has just been told not to use `bg-accent`, so it is worth its own decoy.
+    name: 'an arbitrary colour in a class is rejected too',
+    path: 'packages/ui/src/__guard__.tsx',
+    rule: 'no-restricted-syntax',
+    must: 'F-087 — as above; an arbitrary value is invisible to the gate for the same reason',
+    source: `import { View } from 'react-native';\nexport const X = (): React.JSX.Element => <View className="bg-[#ff0000]" />;\n`,
+  },
+  {
+    // THE HOLE THIS CLOSES was live until F-087. `apps/mobile/src/screens/**` is covered by
+    // two zones that both name `no-restricted-syntax` — the colour ban and the copy rule —
+    // and flat config REPLACES a rule's options rather than merging them, so the copy rule
+    // silently disarmed the colour ban on exactly the files most likely to hard-code a
+    // colour. Nothing reported it; the guard table simply had no entry pointed here.
+    name: 'a SCREEN may not hard-code a hex colour either',
+    path: 'apps/mobile/src/screens/__guard__.tsx',
+    rule: 'no-restricted-syntax',
+    must:
+      'F-017 and F-087 — the colour-literal ban is what makes the contrast gate reach the ' +
+      'pixels rather than stopping at a JSON file, and a screen is where a literal goes',
+    source: `import { View } from 'react-native';\nexport const X = (): React.JSX.Element => <View style={{ backgroundColor: '#ff0000' }} />;\n`,
+  },
+  {
+    // The other half of the same pair. If someone "fixes" the overlap by dropping the copy
+    // selectors instead of spreading both, this is what says so.
+    name: 'a screen may still not hard-code user-facing copy',
+    path: 'apps/mobile/src/screens/__guard__.tsx',
+    rule: 'no-restricted-syntax',
+    must: 'NFR-11 — en and ja from the first release, with no hard-coded string',
+    source: `import { Text } from 'react-native';\nexport const X = (): React.JSX.Element => <Text>Hard coded</Text>;\n`,
+  },
 ];
 
 const GREEN = '\x1b[32m',

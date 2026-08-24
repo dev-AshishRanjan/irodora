@@ -18,6 +18,68 @@ import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import-x';
 import globals from 'globals';
 
+/**
+ * Colour may not be written into source, in any notation — hex, functional, named, or a
+ * Tailwind utility class.
+ *
+ * **Shared, because flat config REPLACES a rule's options rather than merging them.** Two
+ * config objects both naming `no-restricted-syntax` over the same file silently disarm one
+ * of them, and that had already happened here: the screens zone below meant a hex colour in
+ * `apps/mobile/src/screens/**` — the files most likely to contain one — was caught by
+ * nothing at all. Found by `verify-guards.mjs` while adding the className rules in F-087,
+ * after the same mistake was made a second time.
+ */
+const COLOUR_LITERAL_SELECTORS = [
+  {
+    selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$/]',
+    message:
+      'A hex colour belongs in docs/design/design-system.manifest.json, not in source. ' +
+      'The contrast and cvd gates read the manifest; a value typed here is checked by ' +
+      'neither and is indistinguishable from one that passed. Import it from ' +
+      '@irodora/design-tokens.',
+  },
+  {
+    // `transparent` is deliberately absent: it is the absence of a colour, it makes no
+    // claim a gate could check, and RN's border-triangle trick has no alternative.
+    selector:
+      'Literal[value=/^(?:rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color-mix)\\(/], Literal[value=/^(?:red|green|blue|black|white|gray|grey|yellow|orange|purple|pink|cyan|magenta)$/]',
+    message:
+      'A colour value belongs in docs/design/design-system.manifest.json, not in ' +
+      'source. Import it from @irodora/design-tokens. (`transparent` is allowed — it ' +
+      'is the absence of a colour and makes no claim a gate could check.)',
+  },
+  // --- and colour may not travel through a Tailwind class either (F-087) ---
+  //
+  // THE RULE THE SPIKE EXISTED TO FIND. Uniwind resolves className in its METRO plugin,
+  // and jest never runs Metro — so a colour routed through a class is absent from the
+  // rendered tree, and the contrast and cvd gates go on passing over nothing
+  // [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+  //
+  // These live in THIS rule rather than a zone of their own: flat config replaces a
+  // rule's options wholesale, so a second zone naming no-restricted-syntax over the same
+  // files would disarm the hex ban above. verify-guards.mjs caught exactly that.
+  //
+  // className remains right for everything a gate does not read — layout, spacing,
+  // radius, weight. Only colour has to come through `style`.
+  {
+    selector:
+      "JSXAttribute[name.name='className'] Literal[value=/\[(?:#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab|lab|lch|color-mix)\()/]",
+    message:
+      'An arbitrary colour in a Tailwind class is invisible to the contrast gate — ' +
+      'Uniwind resolves className in Metro, which jest does not run, so the rendered ' +
+      'tree carries no colour to measure. Pass a resolved token through the style prop.',
+  },
+  {
+    selector:
+      "JSXAttribute[name.name='className'] :matches(Literal[value=/\b(?:bg|text|border|ring|fill|stroke|shadow|decoration|outline|divide|placeholder|caret|accent|from|via|to)-(?:background|foreground|surface|overlay|backdrop|muted|default|accent|field|success|warning|danger|segment|separator|focus|link|border)\b/], TemplateElement[value.raw=/\b(?:bg|text|border|ring|fill|stroke|shadow|decoration|outline|divide|placeholder|caret|accent|from|via|to)-(?:background|foreground|surface|overlay|backdrop|muted|default|accent|field|success|warning|danger|segment|separator|focus|link|border)\b/])",
+    message:
+      'A colour utility class is invisible to the contrast gate — Uniwind resolves ' +
+      'className in Metro, which jest does not run, so the rendered tree carries no ' +
+      'colour to measure and the gate passes over nothing. Pass the resolved token ' +
+      'through the style prop instead; className stays correct for layout and spacing.',
+  },
+];
+
 export default tseslint.config(
   {
     ignores: [
@@ -75,6 +137,14 @@ export default tseslint.config(
               group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
               message:
                 'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+            {
+              // Repeated rather than shared, because flat config replaces this array wholesale
+              // for a file matched by two zones. The Lens is excluded from the HeroUI zone
+              // below precisely so these two do not disarm each other.
+              group: ['heroui-native', 'heroui-native/*', 'uniwind', 'uniwind/*'],
+              message:
+                'apps/mobile imports @irodora/ui, never HeroUI or Uniwind directly (ADR-0062).',
             },
             {
               group: ['../../../*'],
@@ -392,31 +462,49 @@ export default tseslint.config(
   // those — it resolves what was actually painted, and reports an unresolvable value as a
   // failure rather than skipping it.
   {
+    // Everything EXCEPT the rendering surfaces, which need the copy rule too and therefore
+    // get their own zone below with both sets spread into one rule.
     files: [
       'packages/ui/src/**/*.{ts,tsx}',
-      'apps/mobile/app/**/*.tsx',
       'apps/mobile/src/**/*.{ts,tsx}',
+      'apps/mobile/app/**/*.ts',
     ],
+    ignores: ['apps/mobile/src/screens/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-syntax': [
+      'no-restricted-syntax': ['error', ...COLOUR_LITERAL_SELECTORS],
+    },
+  },
+
+  // --- HeroUI is an implementation detail of @irodora/ui -------------------
+  //
+  // ADR-0062 adopted HeroUI Native and put it BEHIND the component library. That boundary is
+  // the whole insurance policy: a fourteen-month-old dependency with two test files across
+  // 607 source files is swappable only for as long as exactly one package imports it.
+  //
+  // It also protects the two things `packages/ui` buys that the app does not have — the
+  // total colour-literal ban, and the conformance registry that fails a component nothing
+  // renders. A screen importing HeroUI directly is outside both.
+  {
+    // NON-OVERLAPPING with the Lens zone above on purpose. Flat config REPLACES a rule's
+    // options rather than merging them, so two zones both setting `no-restricted-imports`
+    // over the same file silently disarms one of them — which is exactly what happened when
+    // this zone was first written, and what verify-guards.mjs caught.
+    files: ['apps/mobile/src/**/*.{ts,tsx}', 'apps/mobile/app/**/*.ts'],
+    ignores: ['apps/mobile/src/lens/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
         'error',
         {
-          selector: 'Literal[value=/^#[0-9a-fA-F]{3,8}$/]',
-          message:
-            'A hex colour belongs in docs/design/design-system.manifest.json, not in source. ' +
-            'The contrast and cvd gates read the manifest; a value typed here is checked by ' +
-            'neither and is indistinguishable from one that passed. Import it from ' +
-            '@irodora/design-tokens.',
-        },
-        {
-          // `transparent` is deliberately absent: it is the absence of a colour, it makes no
-          // claim a gate could check, and RN's border-triangle trick has no alternative.
-          selector:
-            'Literal[value=/^(?:rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color-mix)\\(/], Literal[value=/^(?:red|green|blue|black|white|gray|grey|yellow|orange|purple|pink|cyan|magenta)$/]',
-          message:
-            'A colour value belongs in docs/design/design-system.manifest.json, not in ' +
-            'source. Import it from @irodora/design-tokens. (`transparent` is allowed — it ' +
-            'is the absence of a colour and makes no claim a gate could check.)',
+          patterns: [
+            {
+              group: ['heroui-native', 'heroui-native/*', 'uniwind', 'uniwind/*'],
+              message:
+                'apps/mobile imports @irodora/ui, never HeroUI or Uniwind directly (ADR-0062). ' +
+                'The wrapper is what keeps the colour-literal ban, the conformance registry ' +
+                'and the ability to swap the component engine without touching a screen. If a ' +
+                'screen needs a component that does not exist yet, add the wrapper.',
+            },
+          ],
         },
       ],
     },
@@ -436,8 +524,12 @@ export default tseslint.config(
   {
     files: ['apps/mobile/app/**/*.tsx', 'apps/mobile/src/screens/**/*.tsx'],
     rules: {
+      // BOTH sets, in ONE rule. Naming the copy rule alone here is what disarmed the colour
+      // ban on every screen until F-087 — flat config replaces a rule's options rather than
+      // merging them, so the zone that lost was simply the earlier one.
       'no-restricted-syntax': [
         'error',
+        ...COLOUR_LITERAL_SELECTORS,
         {
           selector: 'JSXText[value=/[A-Za-z\\u3040-\\u30ff\\u4e00-\\u9fff]/]',
           message:
