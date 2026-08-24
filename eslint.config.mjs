@@ -494,4 +494,29 @@ export default tseslint.config(
     files: ['**/*.config.mjs', '**/*.config.js'],
     ...tseslint.configs.disableTypeChecked,
   },
+
+  // --- CommonJS that Metro and Jest load with require() --------------------
+  //
+  // `apps/mobile` has no `"type": "module"`, so a `.js` file there IS CommonJS — and Metro
+  // and Jest both load these by `require`, not by import. They are the only files in the
+  // repository that legitimately use it.
+  //
+  // Scoped by exact path rather than by `**/*.js`: the point of naming
+  // `metro.config.js` and `jest.setup.js` is that a THIRD CommonJS file appearing somewhere
+  // has to be added here deliberately instead of inheriting an exemption nobody chose.
+  {
+    files: ['apps/*/metro.config.js', 'apps/*/jest.setup.js', 'packages/*/jest.setup.js'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      sourceType: 'commonjs',
+      // `globals.node` for the same reason `scripts/**` uses it, plus `globals.jest` for the
+      // setup files, whose entire content is `jest.mock`.
+      globals: { ...globals.node, ...globals.jest },
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 );

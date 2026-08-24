@@ -34,4 +34,31 @@ export default {
   // Without the mapper, jest resolves what Metro resolves, and a reintroduced `.js` fails in
   // seconds rather than in a device build. `scripts/verify-app-imports.mjs` is the guard.
   passWithNoTests: false,
+
+  /*
+   * THE THREE PIECES THAT LET A HeroUI TREE RENDER HERE (F-087, ADR-0062).
+   *
+   * Each was found by running it, and each has a distinct failure without which the suite
+   * does not merely miss something — it refuses to start.
+   */
+
+  // 1. jest-expo's own allow-list already names `.pnpm`, which covers the FIRST
+  //    /node_modules/ in a pnpm path. pnpm then nests a SECOND — .pnpm/<pkg>@<ver>/
+  //    node_modules/<pkg>/ — and the allow-list never sees it, so heroui-native's ESM
+  //    reaches the runtime untransformed and dies on `export *`. The packages are named
+  //    explicitly because that second segment is what has to match.
+  transformIgnorePatterns: [
+    '/node_modules/(?!(\\.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|heroui-native|uniwind|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|@gorhom))',
+    '/node_modules/react-native-reanimated/plugin/',
+    '/node_modules/@react-native/babel-preset/',
+  ],
+
+  // 2. Worklets' `.native` entry expects a native runtime and throws
+  //    `loadUnpackersWithCode of undefined` on import. Its own resolver strips the `.native`
+  //    extension so the non-native build loads instead. Reanimated is NOT mocked — its mock
+  //    omits `useReducedMotion`, which HeroUI's animation provider calls on first render.
+  resolver: 'react-native-worklets/jest/resolver.js',
+
+  // 3. gesture-handler v3 against HeroUI's declared ^2.28.0. See jest.setup.js.
+  setupFiles: ['<rootDir>/jest.setup.js'],
 };

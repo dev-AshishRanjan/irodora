@@ -127,3 +127,8 @@ docs/__claims_proof__.md
 # Build inputs that are downloaded, not authored. The SUBSET is committed; its 9.6MB
 # source is not — see scripts/generate-font-subset.mjs.
 .cache/
+
+# Uniwind's generated className types (ADR-0062). Written by the Metro plugin on every
+# bundle from apps/mobile/global.css, which IS committed — this is a build artefact of a
+# build artefact.
+apps/mobile/src/uniwind.d.ts
