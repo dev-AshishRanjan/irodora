@@ -14,6 +14,7 @@
  * `valuesPerSample` field is what makes that distinguishable from a real change.
  */
 
+import { canonicalise } from '@irodora/testing';
 import {
   adapt,
   convert,
@@ -29,7 +30,32 @@ export const IDENTITY_SEED = 'irodora/f-006/identity';
 export const IDENTITY_COUNT = 10_000;
 
 /** Samples recorded in full, in exact hex, so a digest mismatch names a colour. */
-export const IDENTITY_PROBE_INDICES: readonly number[] = [0, 1, 2, 3, 5_000, 9_999];
+/**
+ * Every twentieth sample (F-083).
+ *
+ * It was six, and six landed on none of the samples that diverge across platforms — which is
+ * why this fixture was believed to be passing while it was not. Probes are the only part
+ * recording EXACT values rather than a hash, so they are the only part that can measure a
+ * disagreement rather than merely detect one.
+ */
+export const IDENTITY_PROBE_INDICES: readonly number[] = Array.from(
+  { length: 500 },
+  (_, i) => i * 20,
+);
+
+/**
+ * The conversions at a precision coarse enough that the platform disagreement stops existing.
+ *
+ * The raw doubles are NOT identical across platforms and cannot be: `Math.pow` in the sRGB
+ * transfer function and `Math.cbrt` in Lab and Oklab are implementation-approximated, and the
+ * same Node version disagrees between its Windows and Linux builds (ADR-0061). This is the
+ * form NFR-3 now guarantees, and `canonicalise` carries the arithmetic behind the precision.
+ */
+export const CANONICAL_SIGNIFICANT_DIGITS = 5;
+
+export function computeCanonicalVector(rgb: Triple): readonly number[] {
+  return computeIdentityVector(rgb).map((v) => canonicalise(v, CANONICAL_SIGNIFICANT_DIGITS));
+}
 
 /**
  * Every number the engine produces for one sRGB input.

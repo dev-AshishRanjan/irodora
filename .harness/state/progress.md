@@ -93,6 +93,27 @@ NOT run:  e2e (7), perf (12) — both still pending
           may exceed 16, and the bound is what will say so. F-006 and F-039 re-scoped.
 ```
 
+### Round 7: color-spaces was never passing either
+
+With color-difference fixed, gate 4 failed again — on **@irodora/color-spaces**, raw digest
+`da79e11f85d2dc2b` (Windows) against `5a11efe679787200` (Linux).
+
+**Every earlier statement that color-spaces passed was wrong**, and wrong the same way as
+rounds 2-4: its failure never made the ten visible annotations while color-difference filled
+them, and absence was read as a pass. The reasoning built on it — *"the conversions agree, so
+a divergent linear channel must be absorbed by the matrix"* — rested on nothing. It was also
+the exact question this feature had listed as acceptance: whether the color-spaces fixture was
+passing by luck. **It was not passing at all.**
+
+Fixed consistently: `canonicalise` lives in `@irodora/testing` and both fixtures use it at
+**five significant digits**, not the two decimal places ADR-0061 first chose. Significant
+digits because the quantities span scales — XYZ ~0.1, Lab L ~50, Lab a/b to ±100 — and a fixed
+decimal grid is too coarse for one and too fine for another, with *too fine* the direction
+that flakes. Both raw digests are unchanged, so nothing in the engine moved.
+
+Both packages watched: canonical mutated fails, raw mutated stays green and reports, a probe
+moved 40 ULP against the 16 bound fails naming the sample and both values.
+
 ### What this unblocks
 
 **CI should now be green, and `release.yml` can reach a build.** Gate 4 was the only thing

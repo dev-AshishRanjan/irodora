@@ -103,3 +103,37 @@ export function ulpDistance(a: number, b: number): number {
   const difference = ordered(a) - ordered(b);
   return Number(difference < 0n ? -difference : difference);
 }
+
+/**
+ * Significant digits at which a cross-platform disagreement stops existing.
+ *
+ * **Rounding does not remove a disagreement, it moves it.** Two values `d` apart land in
+ * different buckets only if they straddle a boundary, with probability `d / g` for a grid
+ * `g`. So the precision is a correctness property, not a preference:
+ *
+ * | grid | straddle per value | over ~400 000 values |
+ * |---|---|---|
+ * | 12 significant digits | 1e-3 | certain, every run |
+ * | 8 | 1e-7 | ~4 % |
+ * | **5** | **1e-10** | **~4e-5** |
+ * | 4 | 1e-11 | ~4e-6 |
+ *
+ * Measured platform noise is 2–4 ULP, or ~1e-15 relative (F-083, ADR-0061). Five significant
+ * digits sits ten orders above it and still resolves a change of 1e-5 relative — finer than
+ * any value the product displays, and far finer than the ~1e-4 that a just-perceptible colour
+ * difference corresponds to.
+ *
+ * **Significant digits rather than decimal places**, because the quantities span scales: XYZ
+ * is ~0.1, Lab L is ~50, Lab a and b reach ±100. A fixed decimal grid would be far too coarse
+ * for one and too fine for another, and "too fine" is the direction that flakes.
+ *
+ * `-0` normalises to `0`. The byte encoding distinguishes them deliberately, and a value
+ * within a few ULP of zero could round to `-0` on one platform and `0` on the other — a
+ * difference in a digit nobody can see.
+ */
+export function canonicalise(value: number, significantDigits = 5): number {
+  if (!Number.isFinite(value)) return value;
+  if (value === 0) return 0;
+  const rounded = Number(value.toPrecision(significantDigits));
+  return rounded === 0 ? 0 : rounded;
+}

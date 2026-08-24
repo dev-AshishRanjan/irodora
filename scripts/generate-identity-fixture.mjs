@@ -36,7 +36,11 @@ const engine = await import(pathToFileURL(resolve(PACKAGE, 'dist/index.js')).hre
 const testing = await import(pathToFileURL(resolve(ROOT, 'packages/testing/dist/index.js')).href);
 
 const { adapt, convert, CONVERTIBLE_SPACES, D50, D65, srgbToXyz, ENGINE_VERSION } = engine;
-const { runIdentityVectors, float64ToHex } = testing;
+const { runIdentityVectors, float64ToHex, canonicalise } = testing;
+
+/** One rule for both fixtures. See `canonicalise` for why five and not twelve. */
+const CANONICAL_SIGNIFICANT_DIGITS = 5;
+const canon = (v) => canonicalise(v, CANONICAL_SIGNIFICANT_DIGITS);
 
 const ADAPTATIONS = ['cat16', 'bradford'];
 
@@ -62,11 +66,20 @@ const compute = (rgb) => {
   return values;
 };
 
+const PROBES = Array.from({ length: 500 }, (_, i) => i * 20);
+
 const run = runIdentityVectors({
   seed: 'irodora/f-006/identity',
   count: 10_000,
   compute,
-  probeIndices: [0, 1, 2, 3, 5_000, 9_999],
+  probeIndices: PROBES,
+});
+
+const canonicalSpacesRun = runIdentityVectors({
+  seed: 'irodora/f-006/identity',
+  count: 10_000,
+  compute: (rgb) => compute(rgb).map(canon),
+  probeIndices: [],
 });
 
 const fixture = {
@@ -83,6 +96,16 @@ const fixture = {
   count: run.count,
   valuesPerSample: run.valuesPerSample,
   digest: run.digest,
+  /*
+   * THE GUARANTEE (ADR-0061). `digest` above is over RAW doubles and does NOT reproduce across
+   * platforms — Math.pow in the sRGB transfer function and Math.cbrt in Lab and Oklab are
+   * implementation-approximated, and the same Node version disagrees between its Windows and
+   * Linux builds. This one is over the canonicalised values and is what NFR-3 promises.
+   */
+  canonicalSignificantDigits: CANONICAL_SIGNIFICANT_DIGITS,
+  canonicalDigest: canonicalSpacesRun.digest,
+  /** Every probe must agree with the committed value to within this. Observed worst: 4. */
+  maxProbeUlp: 16,
   probes: run.probes,
 };
 
@@ -183,15 +206,10 @@ const PROBE_INDICES = Array.from({ length: 500 }, (_, i) => i * 20);
  * Two decimal places, and `-0` normalised to `0`. See that module for why the precision is a
  * correctness property rather than a preference.
  */
-const canonicalise = (value) => {
-  const rounded = Math.round(value * 100) / 100;
-  return rounded === 0 ? 0 : rounded;
-};
-
 const canonicalRun = runIdentityVectors({
   seed: 'irodora/f-007/identity',
   count: 10_000,
-  compute: (rgb) => computeDifference(rgb).map(canonicalise),
+  compute: (rgb) => computeDifference(rgb).map(canon),
   probeIndices: [],
 });
 
@@ -306,7 +324,7 @@ const differenceFixture = {
    * precision, and it is what NFR-3 now promises: what a person can observe is identical
    * everywhere.
    */
-  canonicalDecimals: 2,
+  canonicalSignificantDigits: CANONICAL_SIGNIFICANT_DIGITS,
   canonicalDigest: canonicalRun.digest,
   /*
    * The magnitude tripwire. Every probe on every platform must agree with the committed value

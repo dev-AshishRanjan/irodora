@@ -33,9 +33,16 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { float64Digest, float64ToHex, hexToFloat64, runIdentityVectors } from '@irodora/testing';
+import {
+  float64Digest,
+  float64ToHex,
+  hexToFloat64,
+  runIdentityVectors,
+  ulpDistance,
+} from '@irodora/testing';
 import fixture from '../../golden/cross-platform-identity.fixture.json' with { type: 'json' };
 import {
+  computeCanonicalVector,
   computeIdentityVector,
   IDENTITY_COUNT,
   IDENTITY_PROBE_INDICES,
@@ -43,6 +50,14 @@ import {
   IDENTITY_VALUES_PER_SAMPLE,
 } from './vectors.js';
 import { CONVERTIBLE_SPACES, ENGINE_VERSION, type Triple } from '../../src/index.js';
+
+/** The same samples, canonicalised. See `computeCanonicalVector`. */
+const canonicalRun = runIdentityVectors({
+  seed: IDENTITY_SEED,
+  count: IDENTITY_COUNT,
+  compute: computeCanonicalVector,
+  probeIndices: [],
+});
 
 const run = runIdentityVectors({
   seed: IDENTITY_SEED,
@@ -69,22 +84,107 @@ describe('the fixture describes the run it was generated from', () => {
   });
 });
 
+/**
+ * ONE assertion, because GitHub publishes at most ten failure annotations per check run and a
+ * report split across more assertions than the channel can carry silently lies about what
+ * passed. That is not hypothetical here: **this fixture was believed to be passing on Linux
+ * for four rounds of F-083 while it was failing**, because its failure never made the visible
+ * ten and its absence was read as a pass.
+ */
 describe('the Node execution', () => {
-  it('reproduces the committed digest, bit for bit', () => {
-    // If this fails and no engine change was intended, the engine changed. Regenerating the
-    // fixture to make it green is the one thing this check exists to prevent.
-    expect(run.digest).toBe(fixture.digest);
-  });
+  it('reproduces the committed fixture on this platform', () => {
+    /** What fails the build. */
+    const findings: string[] = [];
+    /** What is reported and never asserted (ADR-0061). */
+    const notes: string[] = [];
 
-  it('and the probes match, so a mismatch names a colour rather than a hash', () => {
-    expect(run.probes).toHaveLength(fixture.probes.length);
+    /*
+     * THE GUARANTEE (ADR-0061). The conversions at a precision coarse enough that the platform
+     * disagreement stops existing. Asserted exactly; regenerating the fixture to make THIS one
+     * green is the single thing it exists to prevent.
+     */
+    if (canonicalRun.digest !== fixture.canonicalDigest)
+      findings.push(
+        `canonical digest (${String(fixture.canonicalSignificantDigits)} sig digits): got ` +
+          `${canonicalRun.digest}, committed ${fixture.canonicalDigest} — a real engine change, ` +
+          'not platform noise',
+      );
+
+    /*
+     * The RAW double digest is recorded and NOT asserted. `Math.pow` in the sRGB transfer
+     * function and `Math.cbrt` in Lab and Oklab are implementation-approximated, and the same
+     * Node 24.19.0 disagrees between its Windows and Linux builds by 2–4 ULP on ~0.2 % of
+     * inputs. Asserting it meant a permanently red gate.
+     */
+    if (run.digest !== fixture.digest)
+      notes.push(
+        `raw double digest differs: got ${run.digest}, committed ${fixture.digest}. NOT a ` +
+          'failure — see ADR-0061.',
+      );
+
+    /*
+     * The magnitude, per output column, over 500 recorded probes. Under the committed bound
+     * this is platform noise and belongs in the log; over it, something changed that
+     * measurement does not explain, and that stops the build.
+     */
+    const worst = Array.from({ length: IDENTITY_VALUES_PER_SAMPLE }, () => ({
+      n: 0,
+      ulp: 0,
+      at: -1,
+      got: '',
+      want: '',
+    }));
+    let inputsDiffer = 0;
 
     for (const [i, probe] of run.probes.entries()) {
-      const expected = fixture.probes[i]!;
-      expect(probe.index).toBe(expected.index);
-      expect(probe.rgb).toEqual(expected.rgb);
-      expect(probe.output).toEqual(expected.output);
+      const want = fixture.probes[i];
+      if (!want) continue;
+      if (probe.rgb.join(',') !== want.rgb.join(',')) {
+        inputsDiffer++;
+        continue;
+      }
+      for (const [j, w] of worst.entries()) {
+        const a = probe.output[j];
+        const b = want.output[j];
+        if (a === undefined || b === undefined || a === b) continue;
+        const distance = ulpDistance(hexToFloat64(a), hexToFloat64(b));
+        w.n++;
+        if (distance > w.ulp) {
+          w.ulp = distance;
+          w.at = probe.index;
+          w.got = a;
+          w.want = b;
+        }
+      }
     }
+
+    if (inputsDiffer)
+      findings.push(
+        `${String(inputsDiffer)} probe INPUTS differ — the sample sets are not identical, which ` +
+          'would be a divergent PRNG rather than a divergent engine',
+      );
+
+    for (const [j, w] of worst.entries())
+      if (w.n)
+        (w.ulp > fixture.maxProbeUlp ? findings : notes).push(
+          `output[${String(j)}]: ${String(w.n)}/${String(run.probes.length)} probes differ, worst ` +
+            `${String(w.ulp)} ulp at sample ${String(w.at)} — got ${w.got}, committed ${w.want}` +
+            (w.ulp > fixture.maxProbeUlp
+              ? ` — EXCEEDS the ${String(fixture.maxProbeUlp)} ulp bound (ADR-0061).`
+              : ''),
+        );
+
+    if (notes.length)
+      console.info(
+        '  raw-double differences, reported and NOT asserted (ADR-0061):\n    ' +
+          notes.join('\n    '),
+      );
+
+    expect(
+      findings,
+      `NFR-3: this platform does not reproduce the committed fixture (F-083).\n  ` +
+        findings.join('\n  '),
+    ).toEqual([]);
   });
 
   it('the recorded hex really is the value, not a rounded rendering of it', () => {

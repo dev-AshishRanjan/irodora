@@ -20307,7 +20307,7 @@
       ]
     }
   ],
-  "canonicalDecimals": 2,
-  "canonicalDigest": "5a74342ff5e85d88",
+  "canonicalSignificantDigits": 5,
+  "canonicalDigest": "99b77891ccbc2f8f",
   "maxProbeUlp": 16
 }

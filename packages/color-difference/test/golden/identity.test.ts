@@ -120,7 +120,7 @@ describe('the Node execution', () => {
      */
     if (canonicalRun.digest !== fixture.canonicalDigest)
       findings.push(
-        `canonical digest (${String(fixture.canonicalDecimals)} dp): got ${canonicalRun.digest}, ` +
+        `canonical digest (${String(fixture.canonicalSignificantDigits)} sig digits): got ${canonicalRun.digest}, ` +
           `committed ${fixture.canonicalDigest} — a value the product SHOWS differs, which is a ` +
           'real engine change and not platform noise',
       );
