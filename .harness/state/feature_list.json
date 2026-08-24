@@ -654,7 +654,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-018",
         "F-039",
@@ -670,7 +670,22 @@
         "a11y",
         "contrast"
       ],
-      "plan": "plans/F-019-two-colours-and-every-number-that-separates-them.md"
+      "plan": "plans/F-019-two-colours-and-every-number-that-separates-them.md",
+      "effects": [
+        "E-003",
+        "E-007",
+        "E-016",
+        "E-017"
+      ],
+      "attested": [
+        {
+          "criterion": "Tabular numerals, aligned columns, copyable values",
+          "verifiedBy": "THE FIRST TWO ARE ASSERTED AND THE THIRD IS NOT FULLY. The rendered tree is checked for the font variant on more than twenty numeric nodes, with a decoy proving a Text without the prop carries none — so \"tabular\" reaches the node. What no render-tree assertion can reach: whether the FACE actually has equal-width figures at every weight, which is a property of the subset Noto Sans JP ships and needs a device or a glyph-metrics read; and whether `selectable` produces a usable copy affordance on iOS and Android, which is platform behaviour rather than a prop. `selectable: true` is asserted on every tabular value, so what is owed is the device leg, not the wiring.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. Compare shows ΔE00, the per-axis CIELAB and OKLCh deltas, CVD separation and both contrast readings — each with its unit AND the space it was computed in, which is what FR-48 actually asks for. \"ΔE00 4.2\" without \"CIELAB (D65)\" beside it is a different claim from the one the engine made, and this repository has already been bitten by exactly that. A TOKEN THAT HAD NEVER REACHED A PIXEL. `nativeNumericFeature` was emitted from the manifest, asserted against it by its own test, and consumed by NOTHING since F-017 — so C9 (\"numbers are tabular\", annotated mandatory) was true of a constant and false of every screen. `Text` gained a `numeric` prop reading the token, asserted over the rendered node with a decoy: a Text WITHOUT the prop must carry no font variant, or the assertion would pass for a component applying it unconditionally. Recorded as a lesson and filed as F-092, because the shape — a generated value whose only reader is its own emitter test — is not specific to this token. THE METRIC SET IS A MODULE, NOT A COMPONENT. A number a screen computes inline is a number no test can reach without rendering. `compare.ts` is asserted on PROPERTIES rather than by re-running the arithmetic: zero against itself, ΔE00 and WCAG symmetric, APCA deliberately NOT — swapping the pair swaps both readings, with a decoy proving the two are genuinely different numbers rather than one value returned twice. THE PINNED VALUE WAS A GUESS AND THE TEST CAUGHT IT. I wrote 76.86 ΔE00 for usu-gami to soko-zumi without computing it; the engine returned 89.73. That is the argument for pinning a number rather than describing a pair in words, and the comment now records which it was. It is also E-003’s destination end: a change to `deltaE00` now fails on a surface as well as in the golden set. NO COLOUR MATHS IS WRITTEN HERE. `hueDelta` already exists, and the hue axis is the one place subtracting two stored numbers is wrong — the mean of 350° and 10° is 0°, not 180°. Separation shows its DECOMPOSITION rather than only a score, because a number labelled \"62\" with nothing beside it is a grade nobody can check. THREE KEYS WERE DROPPED RATHER THAN TRANSLATED. `:1`, `°` and `/100` are fragments of a formatted number, not symbol names, and NOTATION_SHAPE rejected them — correctly. Keeping them meant widening the shape until a fragment of prose could qualify, or three more favours in a list capped at three. The words stayed in the catalogue; the punctuation moved into the value. E-017 fired a THIRD time, for 3 codepoints; three firings in three features is the shape of that link rather than bad luck. `e2e` IS IN THIS FEATURE’S VERIFICATION LIST AND WAS NOT RUN, for the same reason as F-018: gate 7 is pending and nothing declares a test:e2e task. F-091 carries it."
     },
     {
       "id": "F-020",
@@ -2430,6 +2445,29 @@
         "e2e"
       ],
       "notes": "GATE 7 SAYS activatesWith: F-039, AND F-039 IS DONE — but the gate is still `pending`, nothing in the workspace declares a `test:e2e` task, and e2e-scope.mjs fails for want of a surface to run. So the activation is owed by F-039’s attested criterion (\"the app opens no socket during any core journey, asserted by the e2e offline suite rather than by inspection\") and by nothing that is scheduled. FILED IN F-018 because F-018 lists `e2e` in its own verification and could not run it: reporting that as \"not run\" is honest for one feature and would become a habit across F-019, F-020, F-021 and F-023, each of which will list it and each of which will skip it. WHAT F-018 DOES ASSERT INSTEAD, so the gap is sized rather than waved at: the criterion-1 walk over the rendered tree proves every entry is present from the root, and the criterion-4 assertions prove the detail screen renders what the record carries. What no render-tree assertion can reach: real navigation between routes, a real gesture, a cold start, and whether a socket opened. The last one is the reason this is `must` rather than `should` — NFR-12 is a claim about the network, and a claim about the network cannot be checked without running the app."
+    },
+    {
+      "id": "F-092",
+      "title": "A design token that reaches no component fails a check",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "tests",
+      "release": "R2",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Every value emitted from the design manifest is either read by a component or declared unreached with a reason",
+        "A token whose only reader is its own emitter test is reported by name",
+        "Proven by removing a real consumer and watching the check name that token",
+        "A deliberately unreached token can be declared, in the same visible-and-reasoned shape as retired-ok"
+      ],
+      "verification": [
+        "state",
+        "a11y"
+      ],
+      "notes": "FOUND IN F-019. `typography.numeric.fontFeature` has said \"tabular-nums\" in the manifest since F-003, annotated MANDATORY on every colour value, coordinate, score and delta. It was emitted to `nativeNumericFeature`, its emitter had a test, and that test passed — because it asserted the constant equals the manifest. NO COMPONENT READ IT. For two releases C9 (\"proportional figures make a ΔE table unreadable\") was true of a constant and false of every pixel. WHY THIS IS NOT DEAD CODE: dead code is unreferenced and looks it. This looked complete — manifest, emitter, test, and an effect link (E-007) from the manifest to the token package. Every step was true, and the chain stopped one short of a screen; the link was accurate about every OTHER token, which is worse than a missing link because the graph looked whole. THE SHAPE ALREADY EXISTS FOR COMPONENTS: a11y-scope.mjs computes the closure from the conformance registries and fails on anything outside it (ADR-0054). This is the same computation over token VALUES, and the hard part is the same one: the escape hatch. Some tokens legitimately have no consumer yet — a value emitted for a surface that has not been built — so the check must distinguish \"unreached\" from \"unreached and nobody noticed\", which means a declaration with a reason rather than a silent allowlist."
     }
   ]
 }

@@ -8,6 +8,128 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-24 — F-019 · every number that separates two colours, and a token that had never reached a pixel
+
+Compare shows ΔE00, the per-axis CIELAB and OKLCh deltas, CVD separation and both contrast
+readings — each with its unit **and the space it was computed in**.
+
+### The criterion is about the label as much as the number
+
+> *All metrics shown with their units and the space they were computed in.* — FR-48
+
+"ΔE00 4.2" without "CIELAB (D65)" beside it is a different claim from the one the engine made,
+and this repository has already paid for that once: culori read 10% low because our D65 Lab was
+handed to its D50 mode [[an-oracle-that-normalises-its-input-will-silently-adapt-a-mislabelled-colour]].
+So every row carries three things, and the two asymmetries are stated rather than left to be
+inferred — **WCAG is symmetric, APCA is not**, and showing one direction would imply otherwise.
+
+Separation shows its **decomposition**, not only its score. A number labelled "62" with nothing
+beside it is a grade nobody can check, so the ΔE00 and the lightness difference it was built
+from travel with it, along with the severity it simulated at.
+
+### A token that had never reached a pixel
+
+`typography.numeric.fontFeature` has said `"tabular-nums"` since F-003, annotated in the
+manifest as **mandatory on every colour value, coordinate, score and delta**. It was emitted to
+`nativeNumericFeature`. Its emitter had a test. That test asserted the constant equals the
+manifest, and passed.
+
+**No component read it.** For two releases, C9 — *"proportional figures make a ΔE table
+unreadable"* — was true of a constant and false of every pixel.
+
+This is not dead code. Dead code is unreferenced and looks it; this looked **complete**:
+manifest, emitter, test, and an effect link (E-007) from the manifest to the token package.
+Every step was true and the chain stopped one short of a screen — and the link was accurate
+about every *other* token, which is worse than a missing link because the graph looked whole.
+
+`Text` gained a `numeric` prop reading the token, asserted over the rendered **node**, with the
+decoy that makes it mean anything: a `Text` **without** the prop must carry no font variant, or
+a component applying it unconditionally would satisfy the assertion and the prop would be
+decoration. Recorded as a lesson and filed as **F-092**, because the shape — *a generated value
+whose only reader is its own emitter test* — is not specific to this token, and `a11y-scope.mjs`
+already computes exactly this closure for components.
+
+### The metric set is a module, and its tests do not re-run its arithmetic
+
+A number a screen computes inline is a number no test can reach without rendering, so
+`compare.ts` assembles the set and `compare.test.ts` asserts **properties**:
+
+| Property | What it proves |
+|---|---|
+| ΔE00 of a colour with itself is 0 | the pair reached the function |
+| ΔE00 and WCAG are symmetric | correct arguments, either way round |
+| **APCA is not**, and swapping the pair swaps both readings | both directions are reported, not one twice |
+| every axis delta reverses sign | the subtraction points the way it should |
+
+Calling `deltaE00` in the test on the same two Labs would assert that a function returns what it
+returns. Each metric already has a golden dataset in its own package; what was unproven is that
+this module wires the right inputs to the right function — and plumbing is checked by
+properties.
+
+**The pinned value was a guess, and the test caught it.** I wrote 76.86 ΔE00 for usu-gami to
+soko-zumi without computing it. The engine returned **89.73**. That is the entire argument for
+pinning a number rather than describing a pair in words, and the comment now records which it
+was. It is also E-003's destination end: a change to `deltaE00` fails on a **surface** now as
+well as in the golden set.
+
+**No colour maths is written in this feature.** `hueDelta` already exists, and the hue axis is
+the one place where subtracting two stored numbers is wrong — *the mean of 350° and 10° is 0°,
+not 180°*.
+
+### Three keys were deleted rather than translated
+
+`:1`, `°` and `/100` are fragments of a formatted number, not symbol names, and `NOTATION_SHAPE`
+rejected them — correctly. Keeping them meant either widening the shape until a fragment of
+prose could qualify, or three more favours in a list capped at three. The **words** stayed in
+the catalogue; the punctuation moved into the value.
+
+E-017 fired a **third** time, for 3 codepoints. Three firings in three features is the shape of
+that link rather than bad luck: any feature that writes Japanese triggers it, and regenerating
+the subset is part of the work rather than something discovered afterwards.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 19 effect links |
+| `typecheck` · `lint` · `format` · `build` | **passed** — 31 tasks; 25 boundaries, 1 decoy |
+| `test` | **passed** — 117 in `mobile`, 68 in `ui` |
+| `a11y` | **passed** — 4/4 screens reached |
+| `contrast` | **passed** — both themes |
+| `color-golden` | **passed** — 17 tasks; run because this feature is E-003's destination |
+| `content` | **passed** — font 399/754, bundle current |
+
+**Not run:** `e2e`, `cvd`, `perf`, `security`.
+
+**`e2e` is in this feature's verification list and was not run**, for the same reason as F-018 —
+gate 7 is pending and nothing declares a `test:e2e` task. **F-091** carries it, and this is the
+second feature to report it, which is why it was filed rather than repeated as prose.
+
+### Recorded honestly
+
+- **The attested criterion is the third word of criterion 2: *copyable*.** The font variant
+  reaching the node is asserted, with a decoy. What no render-tree assertion can reach: whether
+  the subset face actually has equal-width figures at every weight, and whether `selectable`
+  produces a usable copy affordance on iOS and Android. `selectable: true` is asserted on every
+  tabular value, so what is owed is the device leg, not the wiring.
+- **Two lint findings were my own `Object.assign({}, ...styles)`** in both conformance suites —
+  it widens to `any`, and a React Native style array legitimately contains `null` layers that
+  the types were pretending it did not. Replaced with a typed reduce that skips them.
+- **The unit labels are not `numeric`.** "Lc" and "ΔE00" are symbols, not figures — tabular-nums
+  has nothing to align in them, and marking them numeric made *"every tabular figure is
+  selectable"* fail on a node that is a label rather than a value. The assertion was right and
+  the markup was wrong.
+- **Compare opens on the first and last entries**, not the first two: adjacent slugs are usually
+  adjacent colours, and the screen would open on a comparison that shows almost nothing.
+
+### Next
+
+**F-020 — Palette Studio**, or **F-021 — Colour Finder**. Both are R2 and both are unblocked.
+F-021 is `must` and F-020 is `should`, so F-021 by priority; F-020 is the lower id. The
+ordering rule is lowest id within the release, so **F-020**.
+
+---
+
 ## 2026-08-24 — F-018 · the corpus reaches a reader, and three checks found what review would not
 
 The Atlas lists all 120 colours from its root with no filter, and a detail screen shows
