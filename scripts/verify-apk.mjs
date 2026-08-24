@@ -45,9 +45,10 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
+import { ciError } from './annotate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -903,6 +904,19 @@ if (args.prove) {
     console.log(`\n${RED}${BOLD}${String(failures.length)} failure(s)${OFF}\n`);
     for (const f of failures)
       console.log(`  ${RED}✗ ${f.what}${OFF}\n    ${DIM}${f.detail}${OFF}\n`);
+    // The artefact's own facts go in the annotation, not just the verdict. A gate that says
+    // "permission set" without naming the permissions sends the reader to a job log that
+    // needs authentication — which is how the first real APK failure cost a whole round.
+    ciError(
+      `gate 16: ${String(failures.length)} failure(s) in ${basename(apkPath)}`,
+      [
+        ...failures.map((f) => `${f.what}: ${f.detail}`),
+        '',
+        `artefact declares: ${manifest.permissions.join(', ') || '(no permissions)'}`,
+        `package ${String(manifest.package)} · version ${String(manifest.versionName)} (${String(manifest.versionCode)})`,
+        `signed by: ${certificates.map((c) => `${c.scheme} ${c.sha256}`).join(' / ') || '(unsigned)'}`,
+      ].join('\n'),
+    );
     console.log(`${RED}${BOLD}Gate 16 FAILED.${OFF} This artefact must not be published.\n`);
     process.exit(1);
   }

@@ -147,7 +147,7 @@ jobs:
         run: "$ANDROID_HOME/build-tools/36.0.0/apksigner verify --verbose --print-certs '${{ steps.apk.outputs.path }}'"
 
       - name: 'Gate 16 — artifact'
-        run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code "${{ github.run_number }}" --expect-version-name "0.0.0-internal.${{ github.run_number }}" --expect-permissions android.permission.CAMERA --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
+        run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code "${{ github.run_number }}" --expect-version-name "0.0.0-internal.${{ github.run_number }}" --expect-permissions android.permission.CAMERA,android.permission.VIBRATE --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"
 
       - name: Upload
         uses: actions/upload-artifact@v4
@@ -170,7 +170,7 @@ jobs:
             echo "| version | \`${IRODORA_VERSION_NAME}\` (code \`${IRODORA_VERSION_CODE}\`) |"
             echo "| commit | \`${GITHUB_SHA}\` |"
             echo "| sha256 | \`${{ steps.apk.outputs.sha256 }}\` |"
-            echo "| permissions | \`android.permission.CAMERA\` — asserted as the COMPLETE set |"
+            echo "| permissions | \`CAMERA\`, \`VIBRATE\` — asserted as the COMPLETE set |"
             echo
             echo '```bash'
             echo "adb install -r irodora-internal-${IRODORA_VERSION_NAME}.apk"

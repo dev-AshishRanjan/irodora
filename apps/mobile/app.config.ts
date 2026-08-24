@@ -100,7 +100,39 @@ const config: ExpoConfig = {
       'android.permission.ACCESS_NETWORK_STATE',
       'android.permission.ACCESS_FINE_LOCATION',
       'android.permission.ACCESS_COARSE_LOCATION',
+      // Added after gate 16 rejected the first real release APK, which is the whole reason
+      // that gate reads the artefact rather than this file (E-018).
+      //
+      // `expo-file-system` declares INTERNET, READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE
+      // in `android/src/main/`, so they merge into a RELEASE build. It is not a dependency of
+      // this app — nothing here imports it — it arrives transitively and is autolinked, and
+      // the manifest merger takes its permissions silently and by design. INTERNET was already
+      // blocked; these two were not, and they would have shipped.
+      //
+      // They are also the wrong permissions to ship on any modern Android: scoped storage made
+      // WRITE ineffective at API 29 and granular media permissions replaced READ at API 33.
+      // The database lives in app-private storage, which needs neither, and F-035's export
+      // reads and writes "a file the person chose" through the Storage Access Framework, which
+      // needs neither either.
+      //
+      // THE LIMIT, so it is a decision rather than an oversight: on API 24-28 a write to
+      // SHARED storage does require WRITE_EXTERNAL_STORAGE. If the export flow ever needs
+      // that, it is an ADR and a permission a person can see — not a line that reappeared.
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      // "Draw over other apps" — one of the most alarming entries in Android's own settings
+      // screen, and Expo's prebuild template adds it to `src/main` by default, so it reaches
+      // RELEASE and not just the dev client that wants it for the debug overlay.
+      //
+      // Nothing in a shipped Irodora draws over another app. A colour tool asking for this
+      // would be a fair reason to refuse to install it.
+      'android.permission.SYSTEM_ALERT_WINDOW',
     ],
+    // NOT blocked, and the omission is a decision: `VIBRATE` also arrives from Expo's default
+    // manifest, and unlike the others it is WANTED. `apps/mobile/AGENTS.md` commits to "haptic
+    // confirmation on selection, a non-visual channel that costs nothing" — which is an
+    // accessibility promise (NFR-9: never colour alone), not a nicety. It is a normal-level
+    // permission that grants no access to anything. Gate 16 expects it by name.
   },
 
   /*

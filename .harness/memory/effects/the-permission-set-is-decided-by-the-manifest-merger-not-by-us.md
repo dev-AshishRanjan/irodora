@@ -57,6 +57,30 @@ clean fixture green either side. **It found a real defect on its first run**: th
 walker treated a zero-length element as the end of a sequence, so a correctly signed APK read
 as unsigned — and the only reason that surfaced is that one case was required to stay green.
 
+## It caught one, on the first real artefact
+
+The first release APK gate 16 ever read was **rejected**, for exactly the reason above. The
+merged manifest carried four permissions nobody had asked for:
+
+| permission | where from | verdict |
+|---|---|---|
+| `READ_EXTERNAL_STORAGE` | `expo-file-system`, `android/src/main/` | blocked — scoped storage made it pointless at API 29 |
+| `WRITE_EXTERNAL_STORAGE` | same | blocked — the database is app-private and export uses the Storage Access Framework |
+| `SYSTEM_ALERT_WINDOW` | Expo's prebuild default manifest | blocked — "draw over other apps", on a colour tool |
+| `VIBRATE` | Expo's prebuild default manifest | **kept** — `apps/mobile/AGENTS.md` commits to haptic confirmation, which is an NFR-9 obligation |
+
+**`expo-file-system` is not a dependency of this app.** Nothing imports it. It arrives
+transitively, is autolinked, and its manifest merges. `INTERNET` was already blocked; the
+other two were not, so they would have shipped — on an app whose entire pitch is that it asks
+for nothing and cannot transmit.
+
+The two from Expo's own template are the sharper half: **they were never in a dependency at
+all**, so no amount of auditing `package.json` or the lockfile would have found them. They
+exist only in the generated project and only in the artefact.
+
+That is the case for reading the file rather than the config, stated better by an example than
+by the argument above it. The config was correct. The artefact was not.
+
 ## What it still does not cover
 
 The AAB. Its manifest is protobuf rather than binary XML and needs a different parser; both
