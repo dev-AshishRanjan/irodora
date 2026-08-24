@@ -604,7 +604,8 @@
       "blockedBy": [
         "F-012",
         "F-017",
-        "F-039"
+        "F-039",
+        "F-088"
       ],
       "acceptance": [
         "Every corpus entry reachable in 3 interactions or fewer from the atlas root",
@@ -633,7 +634,8 @@
       "status": "todo",
       "blockedBy": [
         "F-018",
-        "F-039"
+        "F-039",
+        "F-088"
       ],
       "acceptance": [
         "DeltaE00, per-axis differences, OKLCh delta, CVD separation and contrast, each with its units and computation space",
@@ -658,7 +660,8 @@
       "status": "todo",
       "blockedBy": [
         "F-018",
-        "F-039"
+        "F-039",
+        "F-088"
       ],
       "acceptance": [
         "Build, edit, reorder and save palettes with anchor, neutral, light and accent roles",
@@ -683,7 +686,8 @@
       "status": "todo",
       "blockedBy": [
         "F-018",
-        "F-039"
+        "F-039",
+        "F-088"
       ],
       "acceptance": [
         "Search by English name, Japanese name, kanji, romaji, hex, or natural phrase",
@@ -709,7 +713,8 @@
       "status": "todo",
       "blockedBy": [
         "F-018",
-        "F-039"
+        "F-039",
+        "F-088"
       ],
       "acceptance": [
         "A rendered card with name, kanji, hex, attribution and corpus version",
@@ -2252,6 +2257,78 @@
         "artifact"
       ],
       "notes": "DELIBERATELY NOT DONE IN F-085. R8 is standard for production and materially reduces size — the unminified debug artefact was 89.7 MB. It also breaks reflection-based native modules in ways only a device shows, and VisionCamera, expo-sqlite and Hermes are exactly the shapes that break. Turning it on in the same change as \"make the APK run at all\" would confound the next failure, and F-085 exists because an artefact was shipped without anyone installing it. Do this once the internal lane has produced an artefact somebody has actually launched."
+    },
+    {
+      "id": "F-087",
+      "title": "HeroUI Native foundation and the token bridge that keeps the gates seeing colour",
+      "requirements": [
+        "NFR-8",
+        "NFR-9",
+        "NFR-24"
+      ],
+      "service": "mobile",
+      "release": "R2",
+      "priority": "must",
+      "status": "in_progress",
+      "blockedBy": [],
+      "acceptance": [
+        "heroui-native and uniwind build and bundle in apps/mobile, with react-native-worklets and react-native-reanimated pinned by pnpm.overrides to the versions VisionCamera resolves, and a single copy of each in the app tree",
+        "@irodora/design-tokens emits HeroUI global.css from design-system.manifest.json; the manifest remains the only source of colour and a hand-written colour in that stylesheet fails the build",
+        "The manifest declares the five tokens HeroUI requires and it lacked — backdrop, status.ok.foreground, status.warn.foreground, status.bad.foreground and link — each with its pairings, and the contrast and cvd gates cover them",
+        "Every colour HeroUI would derive with color-mix is computed by the generator and checked by checkContrast and checkSeparation; the emitted stylesheet contains literal values and no color-mix call",
+        "apps/mobile cannot import heroui-native; the boundary guard fails on one, as it already does for other forbidden specifiers",
+        "A HeroUI-backed component renders under the a11y harness with its colours resolved in the tree, and the conformance suite fails a registered subject whose tree carries no resolved colour",
+        "A colour-bearing utility class in @irodora/ui fails lint, because className is inert under jest and a colour routed that way is invisible to the contrast gate",
+        "HeroUI colour animation is disabled at the provider and verify-motion fails a wrapper that re-enables it; motion.animatable remains opacity and transform only"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "cvd",
+        "build"
+      ],
+      "effects": [],
+      "notes": "ADR-0062. The spike proved the shape: className is resolved by Uniwind in Metro, which jest never runs, so a HeroUI tree renders with no colours in it and the contrast gate would pass vacuously. Colour reaches a component through style, from a resolved token, and that is what the lint rule and the conformance assertion enforce.",
+      "plan": "plans/F-087-heroui-native-foundation-and-the-token-bridge.md"
+    },
+    {
+      "id": "F-088",
+      "title": "The existing components are rebuilt on HeroUI, and Swatch is not",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R2",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-087"
+      ],
+      "acceptance": [
+        "Button, Text, Icon, Status and Surface are HeroUI-backed wrappers in @irodora/ui with their public API unchanged, so no screen changes to consume them",
+        "Swatch, and every component carrying provenance or confidence, remains built on React Native primitives; radius stays nativeRadius.swatch, the well and the two-tone opaque keyline are unchanged",
+        "Every state each component kind requires still renders differently, and accessibilityState still carries busy as well as disabled where the component can be busy",
+        "The Home screen renders unchanged through the conformance suite in both themes, with no new findings",
+        "The a11y scope reporter still fails a component that is neither consumed by a screen nor registered, and no wrapper is added without a consumer"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ],
+      "effects": [],
+      "notes": "ADR-0062. Wrappers for R2 components — dialog, bottom sheet, select, menu, tabs, toast, slider, search field — are NOT built here. Each R2 feature brings the wrappers it consumes, because a package with no consumers passes every gate and ships nothing and this repository has already lost six increments to that shape."
     }
   ]
 }
