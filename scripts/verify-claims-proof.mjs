@@ -27,6 +27,7 @@ import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ciError } from './lib/annotate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LINT = join(ROOT, 'scripts/verify-claims.mjs');
@@ -175,6 +176,11 @@ try {
 
 if (failures > 0) {
   console.error(`\n${RED}${BOLD}AT LEAST ONE PROOF FAILED.${OFF} ${String(failures)} case(s).\n`);
+  ciError(
+    `gate 2 claims mutation proof: ${String(failures)} case(s) did not discriminate`,
+    'See the job log for the per-case detail; this annotation exists so the COUNT is visible ' +
+      'without a token.',
+  );
   process.exit(1);
 }
 

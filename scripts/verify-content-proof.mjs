@@ -22,6 +22,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from './corpus-io.mjs';
+import { ciError } from './lib/annotate.mjs';
 
 const GREEN = '[32m';
 const RED = '[31m';
@@ -416,6 +417,12 @@ if (final.code !== 0) {
 if (problems.length > 0) {
   console.log(`\n${RED}${BOLD}${String(problems.length)} case(s) did not discriminate.${OFF}\n`);
   for (const problem of problems) console.log(`  ${RED}x${OFF} ${problem}\n`);
+  // One annotation carrying every case: a job's log needs authentication to read and its
+  // annotations do not, and GitHub caps annotations at ten per run.
+  ciError(
+    `gate 11 content mutation proof: ${String(problems.length)} case(s) did not discriminate`,
+    problems.join('\n'),
+  );
   process.exit(1);
 }
 

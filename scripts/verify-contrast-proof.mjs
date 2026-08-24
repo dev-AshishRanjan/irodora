@@ -13,6 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ciError } from './lib/annotate.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..').replaceAll('\\', '/');
 const MANIFEST = `${ROOT}/docs/design/design-system.manifest.json`;
@@ -181,6 +182,8 @@ const cases = [
 ];
 
 let allGood = true;
+/** Every case that did not discriminate, for one annotation at the end. */
+const failures = [];
 for (const c of cases) {
   const original = readFileSync(c.file, 'utf8');
   const mutated = c.mutate(original);
@@ -202,7 +205,13 @@ for (const c of cases) {
     // already failing before it was applied. [[a-decoy-that-is-not-broken-proves-nothing]]
     const wantGreen = c.expect === 'green';
     const ok = baseline === 0 && (wantGreen ? after === 0 : after !== 0);
-    if (!ok) allGood = false;
+    if (!ok) {
+      allGood = false;
+      failures.push(
+        `${c.name}: baseline exit ${baseline}, mutated exit ${after}, expected ` +
+          `${wantGreen ? '0' : 'non-zero'}`,
+      );
+    }
     console.log(
       `${ok ? 'OK ' : 'BAD'} ${c.name}: baseline exit ${baseline}, mutated exit ${after} ` +
         `(expected ${wantGreen ? '0' : 'non-zero'})`,
@@ -219,4 +228,14 @@ for (const c of cases) {
 }
 
 console.log(allGood ? '\nAll mutation proofs held.' : '\nAT LEAST ONE PROOF FAILED.');
+
+// ONE annotation carrying every case, because a job's log needs authentication to read and
+// its annotations do not — and because GitHub caps annotations at ten per run, so one per
+// case would lose the eleventh silently.
+if (!allGood)
+  ciError(
+    `gate 9 contrast mutation proof: ${String(failures.length)} case(s) did not discriminate`,
+    failures.join('\n'),
+  );
+
 process.exit(allGood ? 0 : 1);

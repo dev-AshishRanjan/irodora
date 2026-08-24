@@ -40,6 +40,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ciError } from './lib/annotate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTER = resolve(ROOT, '.harness/verification/advisories.json');
@@ -363,6 +364,12 @@ function prove() {
     console.log(`\n${RED}${BOLD}${String(wrong.length)} case(s) did not discriminate${OFF}\n`);
     for (const { c, why } of wrong)
       console.log(`  ${RED}✗${OFF} ${c.name}\n    ${DIM}${why}${OFF}`);
+    // One annotation carrying every case: a job's log needs authentication to read and its
+    // annotations do not, and GitHub caps annotations at ten per run.
+    ciError(
+      `gate 15 disposition proof: ${String(wrong.length)} case(s) did not discriminate`,
+      wrong.map(({ c, why }) => `${c.name}: ${why}`).join('\n'),
+    );
     console.log(`\n${RED}${BOLD}Audit disposition proof FAILED.${OFF}\n`);
     process.exit(1);
   }
