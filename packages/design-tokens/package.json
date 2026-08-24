@@ -29,12 +29,13 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@irodora/color-spaces": "workspace:*",
     "@irodora/color-difference": "workspace:*",
+    "@irodora/color-spaces": "workspace:*",
     "@irodora/cvd-engine": "workspace:*"
   },
   "devDependencies": {
     "@irodora/testing": "workspace:*",
+    "colorjs.io": "^0.7.1",
     "vitest": "^4.1.10"
   }
 }

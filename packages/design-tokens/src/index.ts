@@ -36,6 +36,8 @@ export {
 export {
   compositeOver,
   derivedSrgb,
+  mixOklab,
+  type MixOperand,
   GAMUT_EPSILON,
   isInGamut,
   oklchToRgb,

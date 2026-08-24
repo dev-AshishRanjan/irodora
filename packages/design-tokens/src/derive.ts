@@ -23,9 +23,13 @@
 
 import {
   linearSrgbToSrgb,
+  oklabToXyz,
   oklchToXyz,
   srgbToHex,
   srgbToLinearSrgb,
+  srgbToXyz,
+  xyzToOklab,
+  type OkLab,
   type Rgb,
 } from '@irodora/color-spaces';
 import { xyzToSrgb } from '@irodora/color-spaces';
@@ -188,4 +192,98 @@ export function derivedSrgb(name: string, token: ColorToken): string {
 export function toOklchString(oklch: ManifestOklch): string {
   const head = `${String(oklch.l)} ${String(oklch.c)} ${String(oklch.h)}`;
   return oklch.alpha === undefined ? `oklch(${head})` : `oklch(${head} / ${String(oklch.alpha)})`;
+}
+
+/**
+ * One side of a `color-mix()`, already resolved to sRGB.
+ *
+ * `percent` is as authored — `90` for `90%` — because normalising it at the call site is
+ * where the CSS rules for an omitted or under-summing percentage get quietly skipped.
+ */
+export interface MixOperand {
+  readonly rgb: Rgb;
+  /** `0`–`1`. `transparent` is `rgb(0, 0, 0)` at alpha `0`, which is why the colour matters. */
+  readonly alpha: number;
+  /** `0`–`100`, as written in the declaration. */
+  readonly percent: number;
+}
+
+/**
+ * `color-mix(in oklab, a p1%, b p2%)`, evaluated at build time.
+ *
+ * ## Why this exists at all
+ *
+ * HeroUI derives roughly twenty colours this way — every hover state and every `-soft`
+ * variant — and some of them carry text: `Alert` tints its title with
+ * `--color-success-soft-foreground`. A colour the stylesheet computes is a colour the
+ * `contrast` gate never measured, so the generator computes them instead and emits literals
+ * ([ADR-0062](../../../docs/adr/0062-heroui-native-is-the-component-foundation-behind-the-irodora-ui-boundary.md)).
+ *
+ * Evaluating it here rather than on the device is also what keeps the conversion ours.
+ * Uniwind's runtime `colorMix` is `culori.interpolate`, and a colour it computes is one our
+ * engine did not
+ * ([ADR-0063](../../../docs/adr/0063-culori-ships-in-the-app-bundle-and-the-generated-stylesheet-emits-hex-only.md)).
+ *
+ * ## The part that is easy to get wrong
+ *
+ * **Premultiply by alpha before interpolating, un-premultiply after.** CSS Color 5 §3.3
+ * requires it, and skipping it is not a subtle inaccuracy — it is the difference between a
+ * colour at 15 % opacity and a colour dragged 85 % of the way to black.
+ *
+ * `color-mix(in oklab, var(--danger) 15%, transparent)` is exactly that case, and it is the
+ * form HeroUI uses for every `-soft` token. `transparent` is `rgb(0 0 0 / 0)` — a *black*
+ * with zero alpha — so a naive lerp mixes in real black and returns a near-black at 15 %
+ * alpha. Premultiplied, black's contribution is weighted by its own alpha of zero, it
+ * vanishes, and the result is the original colour at 15 % alpha. `test/derive.test.ts` holds
+ * the naive value as a decoy [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+ *
+ * ## Interpolation happens in Oklab, not sRGB
+ *
+ * Because the declaration says `in oklab`, and because a midpoint interpolated in encoded
+ * sRGB is the same class of error as averaging encoded sRGB — it reads too dark
+ * [[averaging-non-linear-srgb-reads-too-dark]]. Unlike `compositeEncoded`, there is no
+ * "what the platform actually draws" counterpart to weigh against: nothing evaluates this
+ * at runtime, because the whole point is that we evaluate it here.
+ */
+export function mixOklab(
+  a: MixOperand,
+  b: MixOperand,
+): { readonly rgb: Rgb; readonly alpha: number } {
+  // --- percentage normalisation (CSS Color 5 §3.3) ---------------------------------------
+  //
+  // Both percentages are required here rather than inferred. CSS lets one be omitted and
+  // derives it as `100 - other`; doing that at the call site is fine, guessing it here is
+  // not, because a caller that forgot one would silently get a 50/50 mix.
+  const sum = a.percent + b.percent;
+  if (sum <= 0) throw new Error(`color-mix percentages sum to ${String(sum)}; must be > 0`);
+  const p = a.percent / sum;
+  const q = 1 - p;
+  // A sum below 100 does not change the ratio — it scales the RESULT's alpha. `color-mix(in
+  // oklab, red 30%, blue 30%)` is a 50/50 mix at 60 % alpha, not a 30/30 mix of something.
+  const alphaMultiplier = sum < 100 ? sum / 100 : 1;
+
+  const toOklab = (rgb: Rgb): OkLab => xyzToOklab(srgbToXyz(rgb));
+  const al = toOklab(a.rgb);
+  const bl = toOklab(b.rgb);
+
+  // Premultiplied in the INTERPOLATION space, which is where the spec puts it.
+  const mixed: OkLab = [
+    al[0] * a.alpha * p + bl[0] * b.alpha * q,
+    al[1] * a.alpha * p + bl[1] * b.alpha * q,
+    al[2] * a.alpha * p + bl[2] * b.alpha * q,
+  ];
+  const alpha = a.alpha * p + b.alpha * q;
+
+  // Un-premultiply. A fully transparent result has no colour to recover and the division
+  // would be 0/0, so it stays at the origin rather than becoming NaN.
+  const unpremultiplied: OkLab =
+    alpha === 0 ? [0, 0, 0] : [mixed[0] / alpha, mixed[1] / alpha, mixed[2] / alpha];
+
+  const rgb = xyzToSrgb(oklabToXyz(unpremultiplied));
+  // Same rule as `tokenRgb`: an out-of-gamut result is an error, not a clipped hex that no
+  // longer matches the colour the gate measured. Mixing two in-gamut colours in Oklab can
+  // leave the sRGB cube when either operand sits near its boundary.
+  if (!isInGamut(rgb)) throw new OutOfGamutError('color-mix result', rgb);
+
+  return { rgb, alpha: alpha * alphaMultiplier };
 }
