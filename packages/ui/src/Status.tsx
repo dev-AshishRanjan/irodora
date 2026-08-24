@@ -1,6 +1,16 @@
 /**
  * A status, in all three channels or not at all.
  *
+ * ## Not a HeroUI wrapper, because Alert is a different component
+ *
+ * HeroUI's nearest equivalent is `Alert`, which is a **banner** — a titled, described block
+ * that occupies a row of the layout. This is an inline status that sits beside the thing it
+ * describes, and ADR-0044's three channels (colour on the WORDS, an icon whose shape differs,
+ * a visible label) do not survive being poured into a banner.
+ *
+ * What would actually be inherited is `statusPresentation()`, and that is already ours. See
+ * [`heroui-wrappers.md`](../../../.harness/rules/frontend/heroui-wrappers.md).
+ *
  * This composes `statusPresentation()` from `@irodora/design-tokens` rather than re-deriving
  * the rule. That function already refuses to compile without colour, icon and text, and
  * throws on a whitespace label — the front-door version of the same violation. Reimplementing

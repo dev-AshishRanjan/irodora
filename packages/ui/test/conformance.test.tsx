@@ -250,6 +250,56 @@ describe('the suite rejects what it is supposed to reject', () => {
   });
 });
 
+describe('a heading is announced as one (F-088)', () => {
+  /** Walk to the first node carrying a role, so the assertion reads the TREE not the prop. */
+  function roleOf(node: TestNode): string | undefined {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') return here;
+    for (const child of node.children ?? []) {
+      // A child is a node or a raw string; only a node can carry props.
+      if (typeof child === 'string') continue;
+      const found = roleOf(child);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+
+  it('renders accessibilityRole="header" when asked', () => {
+    // Screen-reader users navigate by heading. Asserted against the rendered node rather than
+    // the prop, because "we passed it" and "it reached the tree" are different claims.
+    const tree = draw(
+      <Text size="title" color="foreground" heading>
+        Colour Atlas
+      </Text>,
+      'dark',
+    );
+    expect(roleOf(tree)).toBe('header');
+  });
+
+  it('DOES NOT render it otherwise — a component that always sets it is as wrong', () => {
+    const tree = draw(
+      <Text size="title" color="foreground">
+        Colour Atlas
+      </Text>,
+      'dark',
+    );
+    expect(roleOf(tree)).toBeUndefined();
+  });
+
+  it('the Home screen title is a heading, so the prop has a real consumer', () => {
+    // A prop nothing uses is a prop nothing checks
+    // [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]. This is asserted in the
+    // app's own suite too; here it guards the component's half of the contract.
+    const tree = draw(
+      <Text size="title" color="foreground" heading>
+        x
+      </Text>,
+      'light',
+    );
+    expect(roleOf(tree)).toBe('header');
+  });
+});
+
 describe('the swatch carries what ACCESSIBILITY.md section 5 requires', () => {
   it('names the colour, its value AND its provenance', () => {
     const tree = JSON.stringify(

@@ -56,3 +56,31 @@ describe('every screen conforms', () => {
     expect(formatFindings(findings)).toBe('');
   });
 });
+
+/**
+ * A11 — structure is announced.
+ *
+ * A screen reader navigates by heading. Without the role, this screen announced as a flat run
+ * of text with nothing to move through, and no contrast or colour check could ever have
+ * surfaced that: the colours were all correct.
+ *
+ * Asserted over the RENDERED tree rather than by reading `Home.tsx`, because "the prop is in
+ * the source" and "the role reached the node" are different claims — and the second is the one
+ * a screen reader acts on. Whether it is SPOKEN as a heading stays a device attestation (A8).
+ */
+describe('the home screen has structure a screen reader can navigate (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its title as a heading in ${theme}`, () => {
+      expect(roles(draw(<Home />, theme))).toContain('header');
+    });
+});

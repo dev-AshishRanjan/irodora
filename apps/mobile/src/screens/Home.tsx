@@ -44,7 +44,13 @@ export function Home(): React.JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, padding: 20, gap: 20 }}>
-      <Text size="title" color="foreground" script={script}>
+      {/*
+        `heading` (F-088). A screen reader navigates by heading, and without the role this
+        announced as ordinary text — the screen had no structure to move through at all.
+        ACCESSIBILITY.md A11 states the requirement; the conformance suite asserts the role
+        reaches the rendered node rather than trusting the prop was passed.
+      */}
+      <Text size="title" color="foreground" script={script} heading>
         {t('home.title')}
       </Text>
 

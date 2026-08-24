@@ -1,6 +1,12 @@
 /**
  * Icons, and the registry that makes NFR-9's structural guarantee reach the screen.
  *
+ * ## Not a HeroUI wrapper, and there is no HeroUI to wrap
+ *
+ * HeroUI ships **no icon primitive** — it expects `react-native-svg` and your own glyphs. So
+ * this stays exactly as it was, and the reasoning below (ADR-0054's, about tofu and about
+ * shapes differing rather than colours) survives ADR-0062 untouched. See [`heroui-wrappers.md`](../../../.harness/rules/frontend/heroui-wrappers.md).
+ *
  * ## What was actually missing
  *
  * `statusPresentation()` has refused to compile without an icon token since F-003, and

@@ -2301,24 +2301,27 @@
     },
     {
       "id": "F-088",
-      "title": "The existing components are rebuilt on HeroUI, and Swatch is not",
+      "title": "Text gains the accessibility affordances the HeroUI comparison surfaced, and the wrapper policy is written down",
       "requirements": [
         "NFR-8",
-        "NFR-9"
+        "NFR-9",
+        "NFR-11"
       ],
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-087"
       ],
       "acceptance": [
-        "Button, Text, Icon, Status and Surface are HeroUI-backed wrappers in @irodora/ui with their public API unchanged, so no screen changes to consume them",
-        "Swatch, and every component carrying provenance or confidence, remains built on React Native primitives; radius stays nativeRadius.swatch, the well and the two-tone opaque keyline are unchanged",
-        "Every state each component kind requires still renders differently, and accessibilityState still carries busy as well as disabled where the component can be busy",
-        "The Home screen renders unchanged through the conformance suite in both themes, with no new findings",
-        "The a11y scope reporter still fails a component that is neither consumed by a screen nor registered, and no wrapper is added without a consumer"
+        "Text supports a heading, rendering accessibilityRole=\"header\" so a screen reader can navigate by heading; the conformance suite asserts the role reaches the rendered node",
+        "Text sets dynamicTypeRamp on every step, DERIVED from the manifest type scale against Apple's published ramp sizes rather than hand-mapped, so a new step is covered without anyone editing the component",
+        "The Home screen title is a heading — the prop has a real consumer, not only a test",
+        "Icon, Status and Surface remain on React Native primitives, and the reason is recorded where a reader meets it rather than only in a commit message",
+        "A rule states when a component sits on HeroUI and when it does not, so the question is answered once instead of per component; ACCESSIBILITY.md states the heading requirement it now implements",
+        "Swatch and every component carrying provenance or confidence is untouched; radius stays nativeRadius.swatch, the well and the two-tone opaque keyline are unchanged",
+        "The Home screen renders through the conformance suite in both themes with no new findings, and the a11y scope reporter still fails a component that is neither consumed nor registered"
       ],
       "verification": [
         "state",
@@ -2331,7 +2334,8 @@
         "build"
       ],
       "effects": [],
-      "notes": "ADR-0062. Wrappers for R2 components — dialog, bottom sheet, select, menu, tabs, toast, slider, search field — are NOT built here. Each R2 feature brings the wrappers it consumes, because a package with no consumers passes every gate and ships nothing and this repository has already lost six increments to that shape."
+      "notes": "RE-SCOPED after reading HeroUI's equivalents. Written as \"rebuild Text, Icon, Status and Surface as HeroUI wrappers\"; the comparison found no behaviour to inherit. HeroUI ships no Icon; its Alert is a banner rather than an inline status and cannot carry ADR-0044's three channels; its Surface adds a ThemeBackground/GlassView blur layer that would have to stay permanently disabled, because a blur tints what it surrounds and that is the simultaneous-contrast hazard swatch.well exists to prevent; and everything its Text offers over ours — accessibilityRole=\"header\", dynamicTypeRamp — are native React Native Text props. Button DID gain from HeroUI and was rebuilt in F-087. HeroUI is used where it has behaviour to give: the R2 components, each arriving with the screen that consumes it.",
+      "plan": "plans/F-088-the-affordances-the-comparison-surfaced.md"
     }
   ]
 }

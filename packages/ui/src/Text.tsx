@@ -16,6 +16,20 @@
  * <Text size="small" color="foreground.3" />   // does not compile
  * ```
  *
+ * ## Two affordances the HeroUI comparison surfaced (F-088)
+ *
+ * **`heading`.** Screen-reader users navigate by heading, and nothing here offered the role —
+ * so the home screen's title announced as ordinary text. This is not a HeroUI wrapper: its
+ * `Text.Heading` sets `accessibilityRole="header"`, which is a React Native prop we can set
+ * ourselves. Taking the idea without taking the dependency is the whole of
+ * [`heroui-wrappers.md`](../../../.harness/rules/frontend/heroui-wrappers.md).
+ *
+ * **`dynamicTypeRamp`.** iOS scales text along different curves at different sizes. Naming the
+ * curve is how a 15 px label and a 34 px title both behave correctly as the user's setting
+ * moves. Derived per step from the manifest scale, matched by SIZE rather than by name — see
+ * `typography.ts` for why those differ and which is right. iOS only; `maxFontSizeMultiplier`
+ * remains the mechanism on Android.
+ *
  * Both halves are derived from the manifest — `LARGE_TEXT_TOKENS` from each token's `usage`,
  * and `nativeLargeTextSizes` from each step's size against `gate.contrast.largeTextMinPx`.
  * Nothing here lists a token name or a pixel count, so a new step or a re-classified token is
@@ -26,6 +40,7 @@
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 import {
   type nativeLargeTextSizes,
+  nativeDynamicTypeRamp,
   nativeFamilies,
   nativeType,
   type LargeTextToken,
@@ -54,12 +69,20 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
   readonly color: ColorFor<S>;
   /** Japanese needs more leading at the same size; the scale carries both. */
   readonly script?: keyof typeof nativeType;
+  /**
+   * Announce this as a heading, so a screen reader can navigate by it (NFR-8).
+   *
+   * A prop rather than a size rule: `display.1` is usually a heading and sometimes a large
+   * number, and a component that guessed would be wrong in the case nobody checks.
+   */
+  readonly heading?: boolean;
 };
 
 export function Text<S extends TypeSize>({
   size,
   color,
   script = 'latin',
+  heading = false,
   children,
   ...rest
 }: TextProps<S>): React.JSX.Element {
@@ -72,6 +95,13 @@ export function Text<S extends TypeSize>({
       // requires text to scale to 200% without loss of content or function.
       allowFontScaling
       maxFontSizeMultiplier={2}
+      // WHICH CURVE iOS scales along. Derived from this step's size, so a new step or a
+      // resized one is covered without anyone editing this file — the same property the
+      // largeText constraint above already has.
+      dynamicTypeRamp={nativeDynamicTypeRamp[size]}
+      // Set from ONE prop so the role and the intent cannot disagree. Spread BEFORE `rest`,
+      // so a caller with a genuinely different role can still say so.
+      {...(heading ? { accessibilityRole: 'header' as const } : {})}
       // KINSOKU SHORI — Japanese line-breaking rules: a line may not begin with 、。」or a
       // small kana, and may not end with 「. React Native does not implement this; it asks
       // the PLATFORM text engine to. So what is checkable here is that we asked, in the form

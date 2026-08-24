@@ -67,6 +67,8 @@ export {
 
 export { statusPresentation, type StatusKind, type StatusPresentation } from './status.js';
 
+export { APPLE_TYPE_RAMP, dynamicTypeRampFor, type DynamicTypeRamp } from './typography.js';
+
 export { emitCss, cssVarName } from './emit/css.js';
 export { emitTailwind } from './emit/tailwind.js';
 export { emitHeroui, herouiTheme, HerouiEmitError, nonHexDeclarations } from './emit/heroui.js';
@@ -104,6 +106,7 @@ export {
   nativeLargeTextSizes,
   nativeSmallTextSizes,
   nativeLargeTextMinPx,
+  nativeDynamicTypeRamp,
   nativeFamilies,
 } from './generated/native.js';
 

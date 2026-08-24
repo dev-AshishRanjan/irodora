@@ -14,6 +14,7 @@
  */
 
 import { compositeOver, derivedSrgb, toHex, tokenRgb } from '../derive.js';
+import { dynamicTypeRampFor } from '../typography.js';
 import { SCRIPTS, THEMES, type Manifest } from '../manifest.js';
 
 const quote = (v: string): string => `'${v.replace(/'/gu, "\\'")}'`;
@@ -175,6 +176,20 @@ export function emitReactNative(manifest: Manifest): string {
   out.push('/** Scale steps BELOW it. A largeText-only token may never be used at these. */');
   out.push(`export const nativeSmallTextSizes = [${small.map(quote).join(', ')}] as const;`);
   out.push(`export const nativeLargeTextMinPx = ${String(floor)} as const;`);
+  out.push('');
+
+  // Which iOS Dynamic Type CURVE each step scales along.
+  //
+  // Derived from the step's size against Apple's published ramp, for the same reason
+  // nativeLargeTextSizes is derived: a new step, or a step whose size changes, is classified
+  // with nobody remembering to. Matching is by SIZE rather than by name — see typography.ts.
+  //
+  // iOS only. Android ignores the prop; maxFontSizeMultiplier remains the mechanism there.
+  out.push("/** iOS Dynamic Type curve per step, matched by SIZE to Apple's ramp. */");
+  out.push('export const nativeDynamicTypeRamp = {');
+  for (const [name, step] of Object.entries(scale))
+    out.push(`  ${key(name)}: ${quote(dynamicTypeRampFor(step.size))},`);
+  out.push('} as const;');
   out.push('');
 
   // --- families -------------------------------------------------------------------------

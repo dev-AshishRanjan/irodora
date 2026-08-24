@@ -33,6 +33,13 @@ It is an argument that we do not believe our own thesis.
 | **A8** | Screen readers: VoiceOver and TalkBack verified per release. NVDA is a Windows screen reader and there is no Windows surface | Release checklist |
 | **A9** | Accessibility features are **never** behind a paywall | [ADR-0027](../adr/0027-monetisation-tiers.md) |
 | **A10** | Real CVD users test the product before every major release | Release checklist |
+| **A11** | **Structure is announced.** A heading carries the heading role, so a screen reader can navigate by it rather than reading a screen top to bottom | Component contract + the conformance suite, which asserts the role on the **rendered node** rather than trusting the prop was passed. Whether it is spoken as one is a device attestation (A8) |
+
+**A11 arrived in F-088**, from comparing our `Text` with HeroUI's. Ours had no heading role
+at all, so every screen announced as a flat run of text — a structural gap that no contrast or
+colour check could ever have surfaced, and that a sighted developer never encounters. Recorded
+here rather than only in the component, because the commitment is the product's, not the
+component's.
 
 **AA and not AAA.** AAA contrast (7:1) would make the muted, low-contrast Japanese
 aesthetic the product is built around unexpressible. We meet AA everywhere and exceed it

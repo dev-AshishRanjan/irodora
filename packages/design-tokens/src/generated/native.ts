@@ -106,6 +106,17 @@ export const nativeLargeTextSizes = ['display.1', 'display.2', 'title'] as const
 export const nativeSmallTextSizes = ['body', 'small', 'xs', 'label'] as const;
 export const nativeLargeTextMinPx = 18.66 as const;
 
+/** iOS Dynamic Type curve per step, matched by SIZE to Apple's ramp. */
+export const nativeDynamicTypeRamp = {
+  'display.1': 'largeTitle',
+  'display.2': 'largeTitle',
+  title: 'title2',
+  body: 'subheadline',
+  small: 'footnote',
+  xs: 'caption1',
+  label: 'caption2',
+} as const;
+
 /** ONE family per script — RN has no fallback cascade. jp is bundled; Latin is the platform. */
 export const nativeFamilies = { jp: 'NotoSansJP' } as const;
 
