@@ -139,14 +139,6 @@ export default tseslint.config(
                 'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
             },
             {
-              // Repeated rather than shared, because flat config replaces this array wholesale
-              // for a file matched by two zones. The Lens is excluded from the HeroUI zone
-              // below precisely so these two do not disarm each other.
-              group: ['heroui-native', 'heroui-native/*', 'uniwind', 'uniwind/*'],
-              message:
-                'apps/mobile imports @irodora/ui, never HeroUI or Uniwind directly (ADR-0062).',
-            },
-            {
               group: ['../../../*'],
               message:
                 'Three levels up means you have crossed a boundary. Import through a package entry point instead.',
@@ -374,6 +366,18 @@ export default tseslint.config(
         'error',
         {
           patterns: [
+            {
+              // Repeated rather than shared: flat config replaces this array wholesale for a
+              // file matched by two zones, and the Lens is deliberately EXCLUDED from the
+              // app-wide HeroUI zone below so the two cannot disarm each other.
+              //
+              // Workspace-wide would have been the tempting place for it, and is wrong —
+              // `packages/ui` is the one package that MUST import HeroUI. Putting it there
+              // broke the wrapper the ban exists to protect.
+              group: ['heroui-native', 'heroui-native/*', 'uniwind', 'uniwind/*'],
+              message:
+                'apps/mobile imports @irodora/ui, never HeroUI or Uniwind directly (ADR-0062).',
+            },
             {
               group: ['expo-file-system', 'expo-media-library', 'node:fs', 'fs'],
               message:

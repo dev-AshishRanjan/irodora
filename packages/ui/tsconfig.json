@@ -1,11 +1,17 @@
 {
+  // ADR-0064: this package is loaded by METRO, never by Node — it is private, and
+  // apps/mobile is its only consumer. NodeNext described a resolver that does not
+  // participate, and heroui-native's bundler-style declarations do not resolve under it.
+  // The rest of packages/* stays on NodeNext, where Node genuinely is the consumer.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
     "rootDir": ".",
     "jsx": "react-jsx",
     "lib": ["ES2023", "DOM"],
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "module": "Preserve",
+    "moduleResolution": "bundler"
   },
   "include": ["src/**/*", "test/**/*"]
 }

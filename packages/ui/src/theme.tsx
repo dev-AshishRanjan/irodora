@@ -13,6 +13,7 @@
  */
 
 import { createContext, useContext, type ReactNode } from 'react';
+import { HeroUINativeProvider } from 'heroui-native';
 import { useColorScheme, type ColorSchemeName } from 'react-native';
 import { nativeColors, nativeDefaultTheme, type Theme } from '@irodora/design-tokens';
 
@@ -57,6 +58,24 @@ export function resolveThemeName(
   return nativeDefaultTheme;
 }
 
+/**
+ * HeroUI's provider configuration.
+ *
+ * Hoisted to a module constant so it is one object rather than a new one per render, and so
+ * the two settings that are DECISIONS sit where they can be read.
+ *
+ * `stylingPrinciples: false` silences a console banner on every mount. It is advice about
+ * className-first styling that this repository deliberately does not follow — colour comes
+ * through `style` here, because Uniwind resolves className in Metro and jest never runs Metro
+ * [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+ *
+ * Animation is NOT globally disabled. `'disable-all'` would take scale and opacity with it,
+ * and the manifest allows both — it is only colour that may never be animated. That is handled
+ * per component with `feedbackVariant="scale"`, and `verify-motion.mjs` rejects a component
+ * that allows the highlight instead.
+ */
+const HEROUI_CONFIG = { devInfo: { stylingPrinciples: false } } as const;
+
 export function ThemeProvider({ children, theme }: ThemeProviderProps): React.JSX.Element {
   /*
    * react-native types useColorScheme as `null | undefined | ColorSchemeName`, and the
@@ -69,7 +88,13 @@ export function ThemeProvider({ children, theme }: ThemeProviderProps): React.JS
   const name = resolveThemeName(scheme, theme);
   return (
     <ThemeContext.Provider value={{ name, colors: nativeColors[name] }}>
-      {children}
+      {/*
+        HeroUI's provider supplies the animation-settings and portal contexts its components
+        read on first render — without it a Button throws rather than rendering. It sits INSIDE
+        our context deliberately: `name` above is the resolved theme, and the manifest is what
+        resolved it, so nothing downstream can reach a theme our gates did not check.
+      */}
+      <HeroUINativeProvider config={HEROUI_CONFIG}>{children}</HeroUINativeProvider>
     </ThemeContext.Provider>
   );
 }
