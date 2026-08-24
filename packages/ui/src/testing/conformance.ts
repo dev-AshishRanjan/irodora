@@ -59,6 +59,21 @@ export interface ConformanceSubject {
    */
   readonly forbiddenNames?: readonly string[];
   /**
+   * Why this subject paints no colour at all — a REASON, never a boolean.
+   *
+   * A subject whose rendered tree carries no colour is normally a subject the `contrast` gate
+   * cannot see, and since F-087 that is a failure rather than a quiet pass. HeroUI styles
+   * through `className`, Uniwind resolves className in METRO, and jest never runs Metro — so a
+   * component that routes its colour that way renders here with an EMPTY colour set and every
+   * colour check below iterates over nothing
+   * [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+   *
+   * A genuinely colourless component states why here. Same polarity as `sampleValues`: the
+   * exemption lives in the registry where a reviewer sees it, not as a prop a component could
+   * forget and thereby disappear from the check.
+   */
+  readonly paintsNoColour?: string;
+  /**
    * Colour values this component renders as **data** rather than as chrome.
    *
    * A swatch exists to show an arbitrary sample, and an arbitrary sample is by definition not
@@ -113,10 +128,32 @@ export function checkSubject(
       }
       rendered.set(state, tree);
 
+      // --- the gate must be able to SEE a colour at all --------------------------------
+      //
+      // The check below iterates over the painted colours. An empty list makes it vacuous:
+      // it reports nothing, prints as a pass, and looks identical to a component whose every
+      // colour resolved. That is the shape F-087 found in HeroUI — className is resolved by
+      // Uniwind's Metro plugin, jest does not run Metro, and the rendered tree came back with
+      // no colours in it while the contrast gate stayed green over the empty set.
+      //
+      // WHAT THIS DOES NOT CATCH, stated so a green run is not read as more than it is: a
+      // component that paints SOME colours through `style` and routes others through a class.
+      // The lint rule in eslint.config.mjs is the primary defence there; this is the backstop
+      // for the case where the whole component vanishes.
+      const paintedHere = paintedColors(tree, theme);
+      if (paintedHere.length === 0 && subject.paintsNoColour === undefined)
+        at(
+          'colour-invisible',
+          'renders no colour the gate can read. If it routes colour through className, ' +
+            'Uniwind resolves that in Metro and jest never runs Metro — pass a resolved ' +
+            'token through `style` instead. If it genuinely paints nothing, say why in ' +
+            '`paintsNoColour` on the registry entry.',
+        );
+
       // --- every colour resolves to a token -------------------------------------------
       // Unresolved is a FAILURE, never a skip: skipping it fails open on exactly the input
       // the colour-literal rule exists to catch.
-      for (const painted of paintedColors(tree, theme)) {
+      for (const painted of paintedHere) {
         if (painted.resolution.kind !== 'unresolved') continue;
         // Exact-match exemption for declared sample data — never a blanket pass. Chrome
         // painted with a literal is still caught even on a component that renders samples.

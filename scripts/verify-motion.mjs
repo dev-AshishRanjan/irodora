@@ -113,6 +113,62 @@ function animatedStyleKeys(source) {
   return findings;
 }
 
+/**
+ * HeroUI's own colour animations, re-enabled from our side.
+ *
+ * `animatedStyleKeys` above reads `<Animated.X style={{…}}>` in OUR source. It cannot see
+ * inside a dependency, and HeroUI's `PressableFeedback` animates `backgroundColor` in its
+ * highlight — on by default on every Button. ADR-0062 turns that off at the provider; this is
+ * what stops a wrapper turning it back on one component at a time.
+ *
+ * `motion.animatable` is `opacity` and `transform`, and the reason is not fussiness: the
+ * intermediate frames of a colour transition are plausible colours the engine never produced,
+ * which for this product is a correctness defect rather than a polish one.
+ *
+ * Only the props that animate a COLOUR are named. `scaleAnimation` is transform and
+ * `opacity`-based feedback is allowed, so both stay available — a check that banned all
+ * motion would be switched off inside a week.
+ */
+const COLOUR_ANIMATION_PROPS = ['highlightAnimation', 'rippleAnimation'];
+
+function colourAnimationOptIns(source) {
+  const findings = [];
+  // The three ways to write "off". Anything else — an object, a variable, a bare prop — is
+  // switching it on, or leaving it to a value this check cannot see, and both are findings.
+  const OFF = new Set(['{false}', '"disabled"', "{'disabled'}", '{"disabled"}']);
+  const BOUNDARY = /[\s{(,<]/u;
+
+  for (const prop of COLOUR_ANIMATION_PROPS) {
+    let from = 0;
+    for (;;) {
+      const at = source.indexOf(prop, from);
+      if (at === -1) break;
+      from = at + prop.length;
+
+      // A JSX attribute, not a substring of a longer identifier or a word in a comment.
+      const before = at === 0 ? ' ' : source[at - 1];
+      if (before === undefined || !BOUNDARY.test(before)) continue;
+
+      const rest = source.slice(from);
+      const eq = rest.match(/^\s*=\s*/u);
+      if (eq === null) {
+        // `<Button highlightAnimation />` — a bare JSX prop is `true`.
+        if (/^\s*[/>]/u.test(rest)) findings.push({ prop, value: '(bare, means true)' });
+        continue;
+      }
+
+      const value = rest.slice(eq[0].length);
+      const token = value.startsWith('{')
+        ? value.slice(0, value.indexOf('}') + 1)
+        : (/^(["'])[^"']*\1/u.exec(value)?.[0] ?? '');
+      const normalised = token.replace(/\s+/gu, '');
+      if (!OFF.has(normalised))
+        findings.push({ prop, value: normalised === '' ? '(unreadable)' : normalised });
+    }
+  }
+  return findings;
+}
+
 function run(allowed) {
   const violations = [];
   let scanned = 0;
@@ -127,6 +183,15 @@ function run(allowed) {
       for (const { component, property } of keys)
         if (!allowed.has(property))
           violations.push({ file: relative(ROOT, file), component, property });
+
+      // The half the style scan structurally cannot reach: a dependency's own colour
+      // animation, switched on from our side by a prop.
+      for (const { prop, value } of colourAnimationOptIns(source))
+        violations.push({
+          file: relative(ROOT, file),
+          component: `HeroUI ${prop}`,
+          property: `backgroundColor (via ${prop}=${value})`,
+        });
     }
 
   return { violations, scanned, animatedElements };
@@ -142,6 +207,38 @@ if (process.argv.includes('--prove')) {
     { name: 'an animated width (a layout property)', style: 'width: grow', shouldFail: true },
     { name: 'an animated opacity', style: 'opacity: fade', shouldFail: false },
     { name: 'an animated transform', style: 'transform: shift', shouldFail: false },
+  ];
+
+  /*
+   * HeroUI's own colour animation, switched on from our side (ADR-0062).
+   *
+   * These are a SEPARATE case shape because they are a prop on someone else's component, not
+   * a style literal on an `Animated.*` element — which is precisely why the scan above cannot
+   * see them. `PressableFeedback`'s highlight animates `backgroundColor` and is on by default
+   * on every Button, so "we turned it off at the provider" needs something that notices a
+   * component turning it back on.
+   *
+   * The two that must PASS matter as much as the two that must fail: a check that rejected
+   * every mention of these props would ban the documented way to disable them, and would be
+   * switched off within a week.
+   */
+  const propCases = [
+    {
+      name: 'highlightAnimation left on',
+      attr: 'highlightAnimation={{ duration: 120 }}',
+      shouldFail: true,
+    },
+    { name: 'rippleAnimation left on', attr: 'rippleAnimation', shouldFail: true },
+    {
+      name: 'highlightAnimation turned off',
+      attr: 'highlightAnimation={false}',
+      shouldFail: false,
+    },
+    {
+      name: 'rippleAnimation set to disabled',
+      attr: 'rippleAnimation="disabled"',
+      shouldFail: false,
+    },
   ];
 
   let bad = 0;
@@ -160,6 +257,22 @@ if (process.argv.includes('--prove')) {
       `import { Animated } from 'react-native';\n` +
         `export function Probe({ fade, grow, shift }: never): React.JSX.Element {\n` +
         `  return <Animated.View style={{ ${c.style} }} />;\n}\n`,
+    );
+    const found = run(allowed).violations.length > 0;
+    unlinkSync(planted);
+    const ok = found === c.shouldFail;
+    if (!ok) bad += 1;
+    console.log(
+      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
+    );
+  }
+
+  for (const c of propCases) {
+    writeFileSync(
+      planted,
+      `import { Button } from 'heroui-native';\n` +
+        `export function Probe(): React.JSX.Element {\n` +
+        `  return <Button ${c.attr} />;\n}\n`,
     );
     const found = run(allowed).violations.length > 0;
     unlinkSync(planted);
@@ -191,7 +304,7 @@ console.log(
     `not a copy).${OFF}`,
 );
 console.log(
-  `${DIM}  NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
+  `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062). NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
     `by a helper. This is source analysis, and the rendered tree CANNOT see an animated ` +
     `colour — it resolves to a concrete value indistinguishable from a static one.${OFF}`,
 );

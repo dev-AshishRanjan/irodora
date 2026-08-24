@@ -22,6 +22,8 @@ import {
 } from '../src/testing/index.js';
 import {
   BadStates,
+  ColourInStyle,
+  ColourOnlyInClassName,
   GenericName,
   LiteralColour,
   StatusBesideSample,
@@ -169,6 +171,49 @@ describe('the suite rejects what it is supposed to reject', () => {
       ['light', 'dark'],
     );
     expect(rules(findings)).toContain('colour-literal');
+  });
+
+  it('rejects a component whose colour the rendered tree cannot show', () => {
+    // THE F-087 BACKSTOP. The tree below is the shape a real heroui-native Button produced
+    // under this harness: a className, a transform, and no colour anywhere. Every colour
+    // check in the suite then iterates over an empty list and reports nothing — which is
+    // indistinguishable from a component whose every colour resolved.
+    const findings = checkSubject(
+      {
+        name: 'ColourOnlyInClassName',
+        kind: 'static',
+        render: (_s, theme) => draw(<ColourOnlyInClassName />, theme),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(findings)).toContain('colour-invisible');
+  });
+
+  it('DECOY CONTROL — the same tree with a resolved token passes', () => {
+    // Without this, the test above would pass for a component that fails for some OTHER
+    // reason, and the rule it names would never have been the thing that fired.
+    const findings = checkSubject(
+      {
+        name: 'ColourInStyle',
+        kind: 'static',
+        render: (_s, theme) => draw(<ColourInStyle />, theme),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(findings)).not.toContain('colour-invisible');
+  });
+
+  it('a subject that declares WHY it paints nothing is not flagged', () => {
+    const findings = checkSubject(
+      {
+        name: 'ColourOnlyInClassName',
+        kind: 'static',
+        paintsNoColour: 'A spacer. It has no colour to declare, and never will.',
+        render: (_s, theme) => draw(<ColourOnlyInClassName />, theme),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(findings)).not.toContain('colour-invisible');
   });
 
   it('rejects an accessible name that is only the component type', () => {

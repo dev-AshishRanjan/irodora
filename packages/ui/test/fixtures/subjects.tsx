@@ -13,8 +13,20 @@
  * explicit path**, never by glob — a glob would exempt whatever else drifts into `test/`.
  */
 
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, type ViewProps } from 'react-native';
 import { nativeColors } from '@irodora/design-tokens';
+
+/**
+ * `className` as a prop the type system here does not know about.
+ *
+ * Uniwind augments React Native's props through a `.d.ts` its METRO plugin generates. Metro
+ * does not run under `tsc` or under jest — which is the very split these two fixtures exist
+ * to demonstrate — so the augmentation is absent and `<View className=… />` does not compile.
+ *
+ * Threaded through a typed object instead: the rendered tree carries the attribute, which is
+ * all the conformance suite looks at, and nothing pretends the type exists.
+ */
+const withClassName = (className: string): ViewProps => ({ className }) as ViewProps;
 
 const t = nativeColors.light;
 
@@ -217,5 +229,58 @@ export function StatusBesideSampleInWell({
       <View style={{ width: 72, height: 72, backgroundColor: '#526A6B' }} />
       <View style={{ width: 12, height: 12, backgroundColor: c['status.bad'] }} />
     </View>
+  );
+}
+
+/**
+ * A component styled the way HeroUI styles itself: everything through `className`, nothing
+ * the rendered tree can show.
+ *
+ * **This is not a hypothetical.** It is the exact tree the F-087 spike got back from a real
+ * `heroui-native` Button under this harness:
+ *
+ * ```json
+ * { "className": "button__root button__root--variant-primary",
+ *   "style": [{ "borderCurve": "continuous" }, { "transform": [{ "scale": 1 }] }] }
+ * ```
+ *
+ * Uniwind resolves those classes in its Metro plugin, and jest never runs Metro. Every colour
+ * check in the suite then iterates over an empty list and reports nothing — which reads
+ * exactly like a component whose every colour resolved
+ * [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+ */
+export function ColourOnlyInClassName(): React.JSX.Element {
+  return (
+    <View
+      accessibilityRole="button"
+      accessibilityLabel="Measure this colour"
+      // Writable here because the className ban is scoped to `packages/ui/src/**` — a
+      // fixture that lint refuses to let us write is a decoy we could never check
+      // [[a-decoy-that-is-not-broken-proves-nothing]]. Lint is the primary defence in src;
+      // this proves the conformance BACKSTOP fires for what lint cannot see — a class
+      // assembled at runtime, or a third-party component's own classes.
+      {...withClassName('bg-accent text-accent-foreground')}
+      style={{ borderCurve: 'continuous' }}
+    />
+  );
+}
+
+/**
+ * The control for `ColourOnlyInClassName`: the same tree, with the colour passed the way
+ * ADR-0062 requires — a resolved token through `style`.
+ *
+ * A decoy proves a rule fires; a control proves the rule is the reason. Without this the
+ * `colour-invisible` test would pass for a component that failed for some other reason, and
+ * nobody would notice the rule had never been what fired.
+ */
+export function ColourInStyle(): React.JSX.Element {
+  const c = nativeColors.dark;
+  return (
+    <View
+      accessibilityRole="button"
+      accessibilityLabel="Measure this colour"
+      {...withClassName('rounded-3xl px-4')}
+      style={{ backgroundColor: c.inverse, borderCurve: 'continuous' }}
+    />
   );
 }
