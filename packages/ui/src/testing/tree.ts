@@ -280,6 +280,20 @@ export function paintedColors(
     for (const property of PROPS) {
       const value = stringOrUndefined(style[property]);
       if (value === undefined) continue;
+      /*
+       * `transparent` PAINTS NOTHING, so there is nothing to resolve and nothing to measure
+       * the contrast of. Asking which token the absence of a colour is would report every
+       * deliberately see-through surface as a literal.
+       *
+       * It went unnoticed until F-023 for a small reason worth recording: `Icon` has set it on
+       * its triangle glyph since F-003, and the only registered subject that renders an Icon is
+       * `Status`, which is registered with `kind="bad"` — the CROSS glyph. The transparent
+       * branch had never once been rendered through this suite.
+       *
+       * Narrow on purpose: this skips one keyword, and `LiteralColour` still proves a real
+       * hand-typed hex is reported.
+       */
+      if (value.toLowerCase() === 'transparent') continue;
       out.push({ property, resolution: resolveColor(value, theme), path: here });
     }
     for (const child of node.children ?? []) if (isNode(child)) walk(child, here);

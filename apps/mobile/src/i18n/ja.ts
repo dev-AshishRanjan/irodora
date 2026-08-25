@@ -199,6 +199,14 @@ export const ja: Record<MessageKey, string> = {
   'finder.nonePhraseHint': 'この版にその範囲に入る色はありません。',
   'finder.noneNameHint': '名前・読み・識別子のいずれにも含まれていません。',
   'axis.hue': '色相',
+  // F-023 — Shareable colour cards (FR-50).
+  'card.title': '色のカード',
+  'card.attribution': 'Irodora',
+  'card.thumbnail': '縮小したとき',
+  'card.note':
+    'この端末で、固定した収録版から作成しています。同じ色・同じ版なら同じカードになります。',
+  'card.export': 'ファイルへの書き出しは、書き出し機能とともに追加します。',
+  'detail.openCard': 'カードを見る',
 };
 
 /**
@@ -241,6 +249,9 @@ export const NOTATION_KEYS: readonly MessageKey[] = [
   'unit.lc',
   'space.cielab',
   'space.oklch',
+  // F-023. A brand name: identical in both languages, letters only, and well inside the
+  // length cap. Translating it would invent a second name for one product.
+  'card.attribution',
 ];
 
 /**

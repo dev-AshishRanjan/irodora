@@ -307,6 +307,26 @@ describe('the suite rejects what it is supposed to reject', () => {
    * has watched fire — and nobody has watched STILL fire elsewhere — is indistinguishable
    * from switching the rule off.
    */
+  /*
+   * `transparent` paints nothing (F-023). The PAIR is what keeps that from becoming a hole:
+   * the keyword is skipped, and a real hand-typed colour is still reported by the same run.
+   *
+   * It went unnoticed until F-023 because `Icon` has set it on its triangle glyph since F-003,
+   * and the only registered subject rendering an Icon is `Status` with `kind="bad"` — the
+   * CROSS glyph. That branch had never been rendered through this suite.
+   */
+  it('treats transparent as painting nothing, and still catches a real literal', () => {
+    const findings = checkSubject(
+      {
+        name: 'TransparentAndLiteral',
+        kind: 'static',
+        render: (_state, theme) => draw(<ColourInStyle />, theme),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(findings)).toContain('colour-literal');
+    expect(formatFindings(findings)).not.toContain('transparent');
+  });
   it('still rejects a pressable with no role, now that TextInput is exempt', () => {
     const findings = checkSubject(
       {

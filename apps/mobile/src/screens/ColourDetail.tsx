@@ -26,7 +26,7 @@
 import { ScrollView, View } from 'react-native';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
-import { Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Button, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import {
   colorFor,
   entryBySlug,
@@ -45,7 +45,14 @@ import type { MessageKey } from '../i18n/index';
  * A value the corpus can hold and the catalogue cannot name is a compile error rather than a
  * blank line on the screen a reader is using to decide whether to trust us.
  */
-const CLASSIFICATION_KEYS = {
+/**
+ * Classification → its label.
+ *
+ * Exported since F-023 so the card uses the SAME map. Two copies of the FR-23 vocabulary would
+ * drift, and the one that drifts would be the one on the artefact that leaves the app with none
+ * of its context.
+ */
+export const CLASSIFICATION_KEYS = {
   historical: 'classification.historical',
   traditional: 'classification.traditional',
   'modern-japanese': 'classification.modern-japanese',
@@ -105,9 +112,16 @@ const triple = (t: readonly number[], places = 3): string =>
 
 export interface ColourDetailProps {
   readonly slug: string;
+  /**
+   * Open this colour's card. Supplied by the route, absent in the conformance suite.
+   *
+   * Same shape and same reason as Home's: a card nothing routes to is 120 documents nobody
+   * can reach [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
+   */
+  readonly onOpenCard?: (slug: string) => void;
 }
 
-export function ColourDetail({ slug }: ColourDetailProps): React.JSX.Element {
+export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
   const found = entryBySlug(slug);
@@ -438,6 +452,14 @@ export function ColourDetail({ slug }: ColourDetailProps): React.JSX.Element {
           {t('cvd.note')}
         </Text>
       </Section>
+
+      <Button
+        label={t('detail.openCard')}
+        variant="secondary"
+        onPress={() => {
+          onOpenCard?.(slug);
+        }}
+      />
     </ScrollView>
   );
 }

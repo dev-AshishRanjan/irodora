@@ -93,6 +93,7 @@ Two rules that matter more than the format:
 | [0067](0067-a-palette-built-on-a-device-is-validated-by-the-corpus-schema-and-says-it-came-from-a-device.md) | A palette built on a device is validated by the corpus schema, and says it came from a device | Accepted |
 | [0068](0068-a-gate-on-an-unsupported-toolchain-warns-and-re-keys-rather-than-refusing.md) | A gate on an unsupported toolchain warns and re-keys rather than refusing | Accepted |
 | [0069](0069-a-phrase-is-versioned-rule-content-and-a-hue-term-carries-a-chroma-floor.md) | A phrase is versioned rule content, and a hue term carries a chroma floor | Accepted |
+| [0070](0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md) | A shareable card is a deterministic document, not a bitmap | Accepted |
 
 ## Open questions awaiting an ADR
 

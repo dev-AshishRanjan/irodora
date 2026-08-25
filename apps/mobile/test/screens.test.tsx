@@ -28,6 +28,9 @@ import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Finder } from '../src/screens/Finder';
+import { ColourCard } from '../src/screens/ColourCard';
+import { cardSvg } from '../src/card';
+import { nativeColors } from '@irodora/design-tokens';
 import { find } from '../src/finder';
 import { toStoreWrite } from '../src/palette';
 import { PALETTE_ROLES } from '@irodora/corpus';
@@ -35,7 +38,7 @@ import type { PaletteDraft, PaletteStore } from '../src/palette';
 import type { StoredPalette } from '@irodora/store';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
-import { allEntries, CORPUS_ENTRY_COUNT } from '../src/corpus';
+import { allEntries, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
 
@@ -178,6 +181,15 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme),
+  },
+  {
+    name: 'screens/ColourCard',
+    kind: 'static',
+    // The card's own colours live in an SVG document, which the tree carries as a STRING prop
+    // rather than as a style the suite can read. They are checked exhaustively in card.test.ts,
+    // over every entry and both themes, against the token set and the entry's own hex.
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<ColourCard slug={allEntries()[0]!.entry.slug} />, theme),
   },
   {
     name: 'screens/Finder',
@@ -886,5 +898,107 @@ describe('the Finder has headings (A11)', () => {
   for (const theme of ['light', 'dark'] as const)
     it(`announces its sections as headings in ${theme}`, () => {
       expect(roles(draw(<Finder initialQuery="dark muted green" />, theme))).toContain('header');
+    });
+});
+
+/**
+ * FR-50 on the screen.
+ *
+ * The document and its determinism are asserted in `card.test.ts`, without rendering. What is
+ * left here is the half that file cannot see: that the card a person looks at is the SAME
+ * document, drawn in the theme they are in, and that the thumbnail claim is shown rather than
+ * only calculated.
+ */
+describe('the colour card screen shows the document it generated (FR-50)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const CARD_ENTRY = allEntries()[0]!;
+
+  it('renders the same string cardSvg produced, not a re-drawn copy', () => {
+    // The whole determinism claim rests on ONE document. A screen that rebuilt the card from
+    // the same data would be a second implementation, and the two could differ without either
+    // being wrong on its own.
+    const expected = cardSvg(CARD_ENTRY, {
+      theme: 'light',
+      corpusVersion: CORPUS_LABEL,
+      labels: {
+        classification: 'Irodora original, Japanese-inspired',
+        attribution: 'Irodora',
+      },
+    });
+    const tree = draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'light');
+    const xml = JSON.stringify(tree);
+    // The SVG reaches the tree as the `xml` prop of SvgXml, escaped into the JSON.
+    expect(xml).toContain(JSON.stringify(expected).slice(1, 120));
+  });
+
+  it('draws the card in the theme the person is in', () => {
+    // F-017's defect was a screen deciding its own theme, which made it uncheckable in the
+    // other one. The card a person shares must match the card they were looking at.
+    const light = JSON.stringify(draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'light'));
+    const dark = JSON.stringify(draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'dark'));
+    expect(light).not.toBe(dark);
+    expect(light).toContain(nativeColors.light.background);
+    expect(dark).toContain(nativeColors.dark.background);
+  });
+
+  it('shows the thumbnail beside the full card, rather than only asserting it', () => {
+    const tree = draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'light');
+    expect(textOf(tree).join(' ')).toContain('At thumbnail size');
+    // Two renderings of one document: the claim is visible, not just calculated.
+    const occurrences = JSON.stringify(tree).split('viewBox=').length - 1;
+    expect(occurrences).toBeGreaterThanOrEqual(2);
+  });
+
+  it('says where the file export is, rather than leaving the gap implicit', () => {
+    // FR-51 owns getting bytes out of the app, and it is R5. A boundary, not an omission.
+    expect(textOf(draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'light')).join(' ')).toContain(
+      'export',
+    );
+  });
+
+  it('says a colour is not in this corpus version rather than throwing', () => {
+    expect(textOf(draw(<ColourCard slug="no-such-colour" />, 'light')).join(' ')).toContain(
+      'not in this corpus version',
+    );
+  });
+
+  /*
+   * FR-23 travels with the artefact that leaves the app. A card read with none of its context
+   * must still not present our coinage as attested history.
+   */
+  it('carries the entry’s own classification onto the card', () => {
+    const xml = JSON.stringify(draw(<ColourCard slug={CARD_ENTRY.entry.slug} />, 'light'));
+    expect(xml).toContain('Irodora original, Japanese-inspired');
+    for (const other of ['Historical', 'Traditional', 'Modern Japanese'])
+      expect(xml).not.toContain(`>${other}<`);
+  });
+});
+
+/** A11 — the card screen announces structure a screen reader can navigate. */
+describe('the colour card has headings (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its sections as headings in ${theme}`, () => {
+      expect(roles(draw(<ColourCard slug={allEntries()[0]!.entry.slug} />, theme))).toContain(
+        'header',
+      );
     });
 });

@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ColourDetail } from '../../src/screens/ColourDetail';
 
 /**
@@ -13,12 +13,18 @@ export default function ColourDetailRoute(): React.JSX.Element {
   // Typed OPTIONAL, because it is. The non-optional form type-checks and then makes the
   // `?? ''` below an "unnecessary condition" — the lint reporting, correctly, that the type
   // was claiming a guarantee the router does not give for a malformed path.
+  const router = useRouter();
   const params = useLocalSearchParams<{ slug?: string | string[] }>();
   const slug = Array.isArray(params.slug) ? (params.slug[0] ?? '') : (params.slug ?? '');
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <ColourDetail slug={slug} />
+      <ColourDetail
+        slug={slug}
+        onOpenCard={(s) => {
+          router.push(`/card/${s}`);
+        }}
+      />
     </>
   );
 }

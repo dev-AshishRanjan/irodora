@@ -204,6 +204,14 @@ export const en = {
   'finder.nonePhraseHint': 'No colour in this version falls inside that region.',
   'finder.noneNameHint': 'No name, reading or slug contains that.',
   'axis.hue': 'Hue',
+  // F-023 — Shareable colour cards (FR-50).
+  'card.title': 'Colour card',
+  'card.attribution': 'Irodora',
+  'card.thumbnail': 'At thumbnail size',
+  'card.note':
+    'Generated on this device from the pinned corpus version. The same colour at the same version gives the same card.',
+  'card.export': 'Saving the card to a file arrives with export.',
+  'detail.openCard': 'See its card',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */
