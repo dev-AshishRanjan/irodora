@@ -852,7 +852,7 @@
       "service": "mobile",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-039"
       ],
@@ -868,7 +868,24 @@
         "test",
         "e2e",
         "a11y"
-      ]
+      ],
+      "plan": "plans/F-026-guided-personal-colour-profile-setup.md",
+      "effects": [
+        "E-007",
+        "E-016",
+        "E-017",
+        "E-023",
+        "E-030"
+      ],
+      "attested": [
+        {
+          "criterion": "Swatch-comparison flow completes in 90 seconds median, with no camera",
+          "verifiedBy": "THE CAMERA HALF IS GATED; THE 90 SECONDS IS NOT. \"No camera\" is checked over the source: no module under src/profile/ and no line of ProfileSetup.tsx matches vision-camera, expo-camera, ../lens/ or ImagePicker, with a decoy proving the scan can report one and a count proving it read the files it meant to. The DESIGN BUDGET is checked as arithmetic — 12 trials x 5 s + 20 s overhead = 80 s against FR-26 ceiling of 90 s, with a second assertion that the margin is finite so a per-trial budget of zero could not satisfy it. WHAT NO CHECK HERE REACHES: how long a real person takes. Nobody has been timed on this flow. TRIAL_BUDGET_SECONDS is a DECLARED design budget, never a measurement, and must not be quoted as one in copy or in a report (ADR-0031). Discharging this needs a moderated run with real participants across both locales, on a device, with the median reported alongside the spread — which is the first study this product has needed and is not a device-lab row.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. Twelve forced-choice swatch comparisons become seven dimensions, each with its own confidence and its own origin, editable, and stored. THE CRITERION DECIDED THE DESIGN, twice. \"Each with its own confidence\" covers all SEVEN dimensions including the three lists, which the data-model sketch did not — so the table carries seven confidence columns, and a list takes the MINIMUM of the dimensions it was derived from rather than a mean, because a mean launders a weak reading into a strong one and F-028 weights recommendations by this number. \"A user correction is never overwritten by re-derivation\" became origin_* as a COLUMN and one function, applyDerivation, that copies a fresh derivation only where the origin reads `derived` — a timestamp heuristic would have been usually right, which is not what ADR-0010 section 6 promised. CONFIDENCE IS AGREEMENT, CAPPED AT 0.75. Unanimous 0.75, split 0.5, unanswered 0, never 1 — and the same fact produces a WIDER range when the answers disagreed, so the range and the confidence agree because they have one source. ADR-0072 records it. THE TRIALS ARE DECLARED SLUGS AND THE CLAIM LIVES IN THE BUNDLE: each pair asserts it separates on its own axis and holds the others, and test/profile.test.ts checks that against the published OKLCh trial by trial, with a decoy asserting two off-whites FAIL the same bound. Filed as E-030 — a corpus publish that moved one entry would make a temperature question partly a lightness question, with every gate green and nothing different on screen. NFR-22 IS NOW A CHECK RATHER THAN A POLICY NOTE. prohibited.ts refuses a migration adding skin_*, complexion, ethnic*, rac(e|ial)*, attractive*/beauty*, body_* or bmi, AND refuses a database whose sqlite_master already carries one — the half no code review can substitute for. THE DECOY FOUND A REAL HOLE IN IT: the first pattern was \\brac(e|es|ial)\\b, which catches `race` and MISSES `racial_group`, because _ is a word character and there is no boundary before it. A rule that refuses the obvious name and accepts the one somebody would actually type reads as coverage. WHAT IS NOT PROVEN: gate 7 (e2e) could not run — it is pending and F-091 is blocked on the environment — so no assertion here covers a cold start, real navigation, or a real gesture. And nobody has been timed on the flow; that is the attested criterion above."
     },
     {
       "id": "F-027",
@@ -2498,7 +2515,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [],
       "acceptance": [
         "A surface declares a test:e2e task, so e2e-scope stops failing for want of anything to run",
@@ -2613,6 +2630,27 @@
       ],
       "notes": "FOUND BY F-092, not by inspection. `nativeSpacing` (4, 8, 14, 20, 28, 40, 56, 96) is emitted from the manifest, exported from @irodora/design-tokens, and IMPORTED BY NOTHING — its only reader is emit.test.ts. Meanwhile there are 69 hand-written padding/margin/gap declarations across packages/ui/src and apps/mobile/src using 1, 2, 4, 6, 8, 12, 16 and 20, and 36 OF THE 69 USE A VALUE THE SCALE DOES NOT CONTAIN. So the manifest declares a rhythm the product does not follow, and nothing noticed because nothing was looking. WHY THIS IS ITS OWN FEATURE AND NOT PART OF F-092: moving 69 values changes layout on every screen, and five of the eight values in use are not decisions the manifest ever made — so the work is a design decision (does 16 become 14 or does the scale gain 16?) before it is a refactor. F-092 recorded it rather than excusing it, and .harness/verification/unreached-tokens.json cites this id as the reason nativeSpacing is declared unreached. THE 4-BASE MATTERS: the manifest says `spacing.base: 4`, and 1, 2, 6 are not multiples of it, so those three are off-grid rather than merely off-scale. A screenshot or device comparison before and after is worth more here than a test, because the failure mode is \"the layout is now subtly wrong everywhere\".",
       "service": "mobile"
+    },
+    {
+      "id": "F-096",
+      "title": "The key-material scan has no ledger for a rules digest",
+      "requirements": [
+        "FR-56"
+      ],
+      "service": "root",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "verify-no-key-material.mjs accounts for the rules-bundle digest and gate 15 is green with no shipped source unexplained",
+        "A planted 64-hex literal that is NOT a recorded digest is still reported, proven by a decoy"
+      ],
+      "verification": [
+        "state",
+        "security"
+      ],
+      "notes": "FOUND WHILE VERIFYING F-026, PRE-EXISTING, AND CONFIRMED AT HEAD WITH EVERY F-026 CHANGE STASHED. `node scripts/verify-no-key-material.mjs` reports apps/mobile/src/rules/generated/lexicon.ts carrying 64 hex digits \"the ledger does not record\", and exits 1 — so gate 15 (security) is RED. The literal is not a key: `git grep` finds the same value in content/rules/index.json, which is the rules bundle digest F-069 introduced. The script accounts for CORPUS digests by reading content/versions/ (130 of them), and the rules bundle is a second versioned artefact with its own digest home that the script has never been taught about. THE FILE WAS LAST WRITTEN BY F-021 (f0f1f6c), so this has been red since then; the sessions after it recorded gate 15 as \"partly run\" because gitleaks was not installed and did not report the key scan failing — which is how a red gate stayed invisible across four features. That second-order lesson is the reason this is `should` and not `could`. FIX SHAPE: the ledger the script consults should be every recorded digest, not every corpus digest, and the decoy in the fix must plant a 64-hex literal that is NOT a recorded digest — otherwise widening the ledger is indistinguishable from switching the check off."
     }
   ]
 }

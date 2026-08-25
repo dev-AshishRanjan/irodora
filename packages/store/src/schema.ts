@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -159,8 +159,106 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       CREATE INDEX palette_live ON palette (deleted_at) WHERE deleted_at IS NULL;
     `,
   },
+  {
+    version: 3,
+    /*
+     * F-026. The personal colour profile, as FR-30 requires it to be: seven dimensions, each a
+     * value with its OWN confidence and its OWN origin.
+     *
+     * ## There is no skin colour column, and there cannot be one
+     *
+     * NFR-22 and ADR-0010 §1. `prohibited.ts` refuses a migration that adds one and refuses a
+     * database that already has one, so this is a check rather than a promise. The absence is
+     * the design: the field the false precision would be built on does not exist.
+     *
+     * ## Seven confidences and seven origins, as columns
+     *
+     * Not a JSON blob, for the reason data-model.md §5 gives about the reproducibility
+     * envelope: "which dimensions did the person correct by hand?" is a question that gets
+     * asked every time a recommendation is investigated, and a blob makes it a table scan and
+     * a parse. It is also the only shape a CHECK constraint can reach.
+     *
+     * `origin_*` is what makes acceptance criterion 4 structural. Re-derivation writes into a
+     * dimension only when its origin is `derived`; a `user` value is never overwritten. The
+     * column is NOT NULL with a CHECK, so a row cannot be silent about which it is.
+     *
+     * ## Ranges, and the constraint that they are ranges
+     *
+     * `CHECK (lightness_min <= lightness_max)` is a table-level constraint rather than a rule
+     * in the writer, because an inverted range is not a value that means something unusual —
+     * it is a value that means nothing, and every reader would have to decide separately what
+     * to do with it.
+     *
+     * ## The lists are a child table
+     *
+     * `neutrals[] · accents[] · avoid[]` in the sketch. A child table rather than three
+     * columns of delimited slugs: a slug list in a TEXT column is a parser, and it would be
+     * the second place in this package where corpus slugs are addressed.
+     *
+     * The rows carry the sync columns like every other user table, so a list that changes is
+     * a change the log can describe member by member rather than as a wholesale replacement.
+     */
+    up: `
+      CREATE TABLE personal_color_profile (
+        ${SYNC_COLUMNS},
+        method                  TEXT NOT NULL CHECK (method IN ('guided','photo-assisted','professional')),
+
+        lightness_min           REAL NOT NULL CHECK (lightness_min >= 0.0 AND lightness_min <= 1.0),
+        lightness_max           REAL NOT NULL CHECK (lightness_max >= 0.0 AND lightness_max <= 1.0),
+        -- -1 is fully cool, +1 fully warm, 0 no tendency either way. A BIAS, not a category:
+        -- FR-30 asks for a tendency with a confidence, and a two-valued column could not carry
+        -- "leans warm, but only just".
+        temperature_bias        REAL NOT NULL CHECK (temperature_bias >= -1.0 AND temperature_bias <= 1.0),
+        chroma_min              REAL NOT NULL CHECK (chroma_min >= 0.0 AND chroma_min <= 1.0),
+        chroma_max              REAL NOT NULL CHECK (chroma_max >= 0.0 AND chroma_max <= 1.0),
+        contrast_preference     TEXT NOT NULL CHECK (contrast_preference IN ('low','medium','high')),
+
+        confidence_lightness    REAL NOT NULL CHECK (confidence_lightness   >= 0.0 AND confidence_lightness   <= 1.0),
+        confidence_temperature  REAL NOT NULL CHECK (confidence_temperature >= 0.0 AND confidence_temperature <= 1.0),
+        confidence_chroma       REAL NOT NULL CHECK (confidence_chroma      >= 0.0 AND confidence_chroma      <= 1.0),
+        confidence_contrast     REAL NOT NULL CHECK (confidence_contrast    >= 0.0 AND confidence_contrast    <= 1.0),
+        confidence_neutrals     REAL NOT NULL CHECK (confidence_neutrals    >= 0.0 AND confidence_neutrals    <= 1.0),
+        confidence_accents      REAL NOT NULL CHECK (confidence_accents     >= 0.0 AND confidence_accents     <= 1.0),
+        confidence_avoid        REAL NOT NULL CHECK (confidence_avoid       >= 0.0 AND confidence_avoid       <= 1.0),
+
+        origin_lightness        TEXT NOT NULL CHECK (origin_lightness   IN ('derived','user')),
+        origin_temperature      TEXT NOT NULL CHECK (origin_temperature IN ('derived','user')),
+        origin_chroma           TEXT NOT NULL CHECK (origin_chroma      IN ('derived','user')),
+        origin_contrast         TEXT NOT NULL CHECK (origin_contrast    IN ('derived','user')),
+        origin_neutrals         TEXT NOT NULL CHECK (origin_neutrals    IN ('derived','user')),
+        origin_accents          TEXT NOT NULL CHECK (origin_accents     IN ('derived','user')),
+        origin_avoid            TEXT NOT NULL CHECK (origin_avoid       IN ('derived','user')),
+
+        CHECK (lightness_min <= lightness_max),
+        CHECK (chroma_min <= chroma_max)
+      ) STRICT;
+
+      CREATE INDEX personal_color_profile_live
+        ON personal_color_profile (deleted_at) WHERE deleted_at IS NULL;
+
+      CREATE TABLE profile_dimension_color (
+        ${SYNC_COLUMNS},
+        profile_id  TEXT    NOT NULL REFERENCES personal_color_profile (id) ON DELETE CASCADE,
+        dimension   TEXT    NOT NULL CHECK (dimension IN ('neutrals','accents','avoid')),
+        -- A corpus slug, like saved_color.corpus_slug. NOT a saved_color reference: these are
+        -- entries the person was shown, not colours they saved, and a foreign key here would
+        -- create a saved_color row for every recommendation the profile makes.
+        corpus_slug TEXT    NOT NULL,
+        position    INTEGER NOT NULL
+      ) STRICT;
+
+      CREATE INDEX profile_dimension_color_profile
+        ON profile_dimension_color (profile_id, dimension, position);
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
-export const SYNC_TABLES = ['saved_color', 'palette', 'palette_member'] as const;
+export const SYNC_TABLES = [
+  'saved_color',
+  'palette',
+  'palette_member',
+  'personal_color_profile',
+  'profile_dimension_color',
+] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];

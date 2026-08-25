@@ -8,6 +8,143 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-026 · twelve taps become seven dimensions, and one of them stays yours
+
+**R3 opens.** A person answers twelve forced-choice swatch comparisons — no camera, no
+photograph, no face — and gets a profile: a lightness range, a warm/cool tendency, a chroma
+tolerance, a contrast preference, and three lists of corpus colours. Every one of the seven
+dimensions carries **its own confidence and its own origin**, every one is editable, and
+re-running the flow never touches a dimension the person set by hand.
+
+### The criterion decided the design, twice
+
+**"…each with its own confidence"** enumerates seven things, and the data-model sketch had four
+confidence columns and no origin at all. So the table carries seven, and a **list dimension takes
+the MINIMUM** of the dimensions it was derived from. A mean would launder an uncertain
+temperature reading into a confident neutrals list, and F-028 weights recommendations by exactly
+this number — an overstated confidence there is not cosmetic, it is authority the answer did not
+earn.
+
+**"A user correction is never overwritten by re-derivation"** became `origin_*` as a column and
+one function. `applyDerivation` copies a fresh derivation into a dimension **only where the
+origin reads `derived`**. Editing latches to `user` — including when the value did not move,
+because *"I looked at this and it is right"* is a correction, and inferring intent from whether
+the number changed would make the latch depend on the person having picked a different answer.
+
+A timestamp comparison would have been usually right. ADR-0010 §6 did not promise usually.
+
+### Confidence is agreement, and its ceiling is 0.75
+
+```
+unanimous (3 of 3) → 0.75      split (2 of 1) → 0.50      unanswered → 0
+```
+
+Never 1. And the **same fact** produces the range: split answers span further apart, so the range
+comes out *wider* at the moment the confidence comes out *lower*. Two numbers from one source,
+rather than two guesses that happen to agree. [ADR-0072](../../docs/adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md).
+
+### The trials are declared slugs, and the claim lives in the bundle
+
+`TRIALS` is twelve pairs. What makes a temperature trial *about temperature* is not the
+declaration — it is that `ame-doro` and `shimo-yo` are 0.006 apart in OKLCh L, 0.008 in C, and
+opposed in hue class. TypeScript can check that a slug is a string. It cannot check that.
+
+So `test/profile.test.ts` checks every trial against the bundle's published OKLCh, one test per
+trial, naming the trial that fails. **Filed as [E-030](effects.json).** Move one entry 0.05 in L
+at the next publish and a temperature question becomes partly a lightness question: the tally
+still counts it, the profile still reads as reasonable, every gate stays green, and **nothing on
+the screen looks different**.
+
+The thresholds carry a decoy — two off-whites 0.018 apart are asserted to *fail* the same bound —
+because "every trial clears `SEPARATED_L`" is equally true of a `SEPARATED_L` of zero.
+
+### NFR-22 stopped being a policy note
+
+`packages/store/src/prohibited.ts` refuses a migration ladder that would add `skin_*`,
+`complexion`, `ethnic*`, `rac(e|ial)*`, `attractive*`/`beauty*`, `body_*` or `bmi` — and refuses
+a database whose `sqlite_master` already carries one. The second half is the one no code review
+substitutes for: a column that arrived from a fork or a hand-run `ALTER` is invisible in the
+ladder.
+
+**The decoy found a real hole in it on its first run.** The pattern was `\brac(e|es|ial)\b`,
+which catches `race` and **misses `racial_group`** — `_` is a word character, so there is no
+boundary before it. A rule that refuses the obvious name and accepts the one somebody would
+actually type reads as coverage, which is worse than a rule that is visibly absent. Recorded as
+[[a-word-boundary-fails-before-an-underscore-so-the-obvious-name-is-caught-and-the-real-one-is-not]].
+
+### Two more things the checks caught, both about the checks
+
+**A decoy string that looks like an import is an import.** `verify-app-imports.mjs` reads source
+text, so the camera-decoy fixture `from '../lens/reading'` failed the gate — correctly — and so
+did the *comment* explaining the fix, on the next run. The specifier is assembled from parts now.
+
+**Japanese copy was written to the font subset rather than repaired against it.** Every kanji in
+the 39 new `ja` strings already existed in the bundled face — 差し色 for accents, 合わせやすい色
+and 合わせにくい色 for the neutrals and avoid lists. `verify-font-coverage` reports **440
+required, unchanged**, which is the E-017 cost paid in advance instead of after a red gate on a
+machine that cannot rebuild the 9.6 MB source face.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (16 checks, 27 links) · `typecheck` (31) · `lint` (31 + 9 scripts) · `format` · `build` (18) · `a11y` (scope 18/18, token-reach, 20 tasks) · `contrast` (tokens --check, 21 tasks) · `cvd` · `content` (content, font 440/787, four bundle `--check`s) · `gitleaks` · `verify-audit` |
+| **Ran, RED — pre-existing** | `test` — `@irodora/color-difference` and `@irodora/color-spaces`. `security` — `verify-no-key-material` |
+| **NOT run** | `e2e` (gate 7 pending; F-091 blocked on the environment) · `perf` (pending) |
+
+**Everything F-026 touched is green.** `@irodora/store` 59/59, `@irodora/mobile` 302/302 across
+12 suites, both forced.
+
+**The two red `test` packages are the Node-22 divergence** ([F-083](feature_list.json),
+ADR-0061) — `expected 4.500078715444717 to be 4.500078715444719`, and identity fixtures 48 and
+256 ulp out against a 16 ulp bound. **Proven pre-existing**: stashed every F-026 change and
+`color-spaces` identity fails identically at HEAD. The previous session reported one failing
+package because turbo stops at the first; `--continue` shows two.
+
+**`security` is red and it is a real finding, not a toolchain artefact.**
+`verify-no-key-material.mjs` reports `apps/mobile/src/rules/generated/lexicon.ts` carrying a
+64-hex literal "the ledger does not record". It is not a key — `git grep` finds the same value in
+`content/rules/index.json`. The script accounts for **corpus** digests by reading
+`content/versions/`, and the rules bundle is a second versioned artefact it was never taught
+about. Confirmed at HEAD with every F-026 change stashed. Filed as **F-096**.
+
+The part worth keeping: that file was last written by **F-021**, so gate 15 has been red for four
+features, and every session since recorded it as *"partly run — gitleaks not installed"* without
+noticing that the half which DID run was failing. A gate reported as partly run needs to say
+which half, and what that half said.
+
+### Recorded honestly
+
+- **Nobody has been timed on this flow.** `TRIAL_BUDGET_SECONDS` is a declared design budget —
+  12 × 5 s + 20 s = 80 s against FR-26's 90 — and the test asserts the arithmetic, plus that the
+  margin is finite so a budget of zero could not satisfy it. **The median with real people is
+  attested on F-026 and blocks the release.** It must not be quoted as a measurement anywhere.
+- **Twelve forced choices are not a validated instrument**, and ADR-0072's Consequences say so in
+  those words. The 0.75 ceiling is a declared bound, not a calibration.
+- **Whether the derivation performs evenly across skin tones is untested and unclaimed.** That is
+  NFR-23 and F-037, which is blocked on F-027 and F-028.
+- **No e2e assertion exists for this journey.** Nothing here covers a cold start, real navigation
+  between routes, or a gesture. The render-tree suite reaches both branches of the screen in both
+  themes; it cannot reach any of that.
+- **The Japanese is unreviewed**, like the rest of the catalogue — 218 entries, 0 reviewed, OQ-5.
+- **The list editor offers keep-or-drop over the derived candidates**, not an open picker. A
+  person cannot add a colour from outside the derivation, and the screen says nothing implying
+  otherwise.
+
+### Next
+
+**R3's eligible queue by lowest id:** F-027 (photo-assisted, `must`) is now unblocked by F-026.
+F-029 (rule and weight content, `must`, blockers done) closes **E-009 — the one link in the graph
+with `guard: none`**. F-095 and F-096 are `should` and unblocked.
+
+**F-028 is unblocked and is the one this feature was built for**: it consumes exactly these seven
+dimensions and weights by exactly these confidences.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**, which is what unblocks F-091 and
+would tell us whether the two red `test` packages are the toolchain or a finding.
+
+---
+
 ## 2026-08-25 — F-090 · the first screen ever rendered in Japanese, and the tofu it found
 
 The Atlas filter, every Atlas row and the colour detail screen showed the English authoring slug

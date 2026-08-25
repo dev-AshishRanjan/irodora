@@ -14,6 +14,15 @@ export {
   type SyncTable,
 } from './schema.js';
 export { applyPragmas, migrate } from './migrate.js';
+export {
+  assertMigrationsClean,
+  findProhibited,
+  prohibitedError,
+  sqlCode,
+  PROHIBITED_IDENTIFIERS,
+  type ProhibitedFinding,
+  type ProhibitedIdentifier,
+} from './prohibited.js';
 export { createRepository } from './createRepository.js';
 export {
   ARCHIVE_TABLES,
@@ -34,7 +43,14 @@ export {
   type EraseOutcome,
 } from './backup.js';
 export { uuidv7 } from './id.js';
-export { StoreError } from './repository.js';
+export {
+  StoreError,
+  CONTRAST_PREFERENCES,
+  DIMENSION_ORIGINS,
+  PROFILE_DIMENSIONS,
+  PROFILE_LIST_DIMENSIONS,
+  PROFILE_METHODS,
+} from './repository.js';
 export {
   DATABASE_KEY_NAME,
   forgetDatabaseKey,
@@ -44,18 +60,28 @@ export {
 } from './key.js';
 export type {
   ChangeLogRow,
+  ContrastPreference,
+  DimensionOrigin,
   Driver,
   DriverFactory,
   DriverInfo,
   Millis,
   NewPalette,
   NewPaletteMember,
+  NewPersonalProfile,
   NewSavedColor,
   PaletteMemberRow,
   PaletteRow,
+  PersonalProfileRow,
+  ProfileDimension,
+  ProfileDimensionColorRow,
+  ProfileListDimension,
+  ProfileMethod,
+  Range,
   Repository,
   SavedColorRow,
   StoredPalette,
   StoredPaletteMember,
+  StoredPersonalProfile,
   SyncRow,
 } from './repository.js';

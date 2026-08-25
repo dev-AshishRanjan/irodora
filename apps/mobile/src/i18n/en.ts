@@ -212,6 +212,59 @@ export const en = {
     'Generated on this device from the pinned corpus version. The same colour at the same version gives the same card.',
   'card.export': 'Saving the card to a file arrives with export.',
   'detail.openCard': 'See its card',
+
+  /*
+   * F-026 — guided personal colour profile setup (FR-26, FR-30).
+   *
+   * Two rules govern every string below. **Nothing may read as a measurement**: this is an
+   * estimate from twelve forced choices and the copy says so in `profile.estimate`, which is
+   * why the summary opens with an invitation to correct it rather than with a verdict
+   * (ADR-0031, ADR-0010 §6). **Nothing may name a duration**: FR-26's 90 seconds is a design
+   * budget nobody has measured, and a sentence quoting it would be the claim the budget was
+   * carefully written not to make.
+   */
+  'home.openProfile': 'Build your colour profile',
+  'profile.title': 'Your colour profile',
+  'profile.privacy': 'No camera. Everything stays on this device.',
+  'profile.progress': 'Comparison',
+  'profile.question': 'Which would you rather wear?',
+  'profile.choose': 'Choose',
+  'profile.summary': 'What your answers suggest',
+  'profile.estimate':
+    'An estimate from the colours you chose, not a measurement. Change anything that is wrong — a change you make is kept.',
+  'profile.corrected': 'You set this.',
+  'profile.confidence.agreed': 'Your answers agreed on this.',
+  'profile.confidence.split': 'Your answers were split, so this is less certain.',
+  'profile.confidence.none': 'Not asked yet.',
+  'profile.dim.lightness': 'Lightness range',
+  'profile.dim.temperature': 'Warm or cool',
+  'profile.dim.chroma': 'How much colour',
+  'profile.dim.contrast': 'Contrast',
+  'profile.dim.neutrals': 'Neutrals',
+  'profile.dim.accents': 'Accents',
+  'profile.dim.avoid': 'Harder to wear',
+  'profile.band.dark': 'Darker',
+  'profile.band.mid': 'Middle',
+  'profile.band.light': 'Lighter',
+  'profile.band.wide': 'All of it',
+  'profile.chromaBand.low': 'Muted',
+  'profile.chromaBand.mid': 'Moderate',
+  'profile.chromaBand.high': 'Strong',
+  'profile.temp.cool': 'Cool',
+  'profile.temp.leansCool': 'Leans cool',
+  'profile.temp.leansWarm': 'Leans warm',
+  'profile.temp.warm': 'Warm',
+  'profile.contrast.low': 'Soft',
+  'profile.contrast.medium': 'Middle',
+  'profile.contrast.high': 'Strong',
+  'profile.keep': 'Keep',
+  'profile.drop': 'Not this one',
+  'profile.listEmpty': 'Nothing here, and that is an answer rather than a gap.',
+  'profile.save': 'Save this profile',
+  'profile.saved': 'Saved on this device.',
+  'profile.notFinished': 'Every comparison needs an answer before this can be saved.',
+  'profile.restart': 'Compare again',
+  'profile.restartHint': 'Anything you set by hand stays as you set it.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

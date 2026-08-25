@@ -9,19 +9,32 @@
 
 import { migrate } from './migrate.js';
 import {
+  CONTRAST_PREFERENCES,
+  DIMENSION_ORIGINS,
+  PROFILE_DIMENSIONS,
+  PROFILE_LIST_DIMENSIONS,
+  PROFILE_METHODS,
   StoreError,
   type ChangeLogRow,
+  type ContrastPreference,
+  type DimensionOrigin,
   type Driver,
   type DriverInfo,
   type Millis,
   type NewPalette,
+  type NewPersonalProfile,
   type NewSavedColor,
   type PaletteMemberRow,
   type PaletteRow,
+  type PersonalProfileRow,
+  type ProfileDimensionColorRow,
+  type ProfileListDimension,
+  type ProfileMethod,
   type Repository,
   type SavedColorRow,
   type StoredPalette,
   type StoredPaletteMember,
+  type StoredPersonalProfile,
 } from './repository.js';
 
 const COLOR_COLUMNS =
@@ -33,6 +46,38 @@ const PALETTE_COLUMNS =
 
 const MEMBER_COLUMNS =
   'id, created_at, updated_at, deleted_at, palette_id, color_id, position, role, weight';
+
+/**
+ * The profile's own columns, **derived from `PROFILE_DIMENSIONS` rather than listed twice**.
+ *
+ * Fourteen of these twenty-one are a confidence or an origin per dimension, and a hand-written
+ * list would be the second place a dimension has to be added — the kind of pair that agrees on
+ * the day it is written and disagrees the first time somebody is in a hurry. Here, adding a
+ * dimension to the union adds its two columns to the INSERT, the UPDATE and the SELECT at
+ * once, and the migration is the only other place that has to know.
+ */
+const PROFILE_VALUE_COLUMNS: readonly string[] = [
+  'method',
+  'lightness_min',
+  'lightness_max',
+  'temperature_bias',
+  'chroma_min',
+  'chroma_max',
+  'contrast_preference',
+  ...PROFILE_DIMENSIONS.map((d) => `confidence_${d}`),
+  ...PROFILE_DIMENSIONS.map((d) => `origin_${d}`),
+];
+
+const PROFILE_COLUMNS = [
+  'id',
+  'created_at',
+  'updated_at',
+  'deleted_at',
+  ...PROFILE_VALUE_COLUMNS,
+].join(', ');
+
+const PROFILE_COLOR_COLUMNS =
+  'id, created_at, updated_at, deleted_at, profile_id, dimension, corpus_slug, position';
 
 /**
  * Resolve a migration-2 column, or say which row and which column is empty.
@@ -185,6 +230,108 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
       members,
     };
   };
+
+  /**
+   * Resolve a column whose value must be one of a closed set, or say which row and which set.
+   *
+   * The database has the same CHECK, so this can only fire on a row written by something that
+   * bypassed it — which is precisely the case where a silent cast to the union type would let
+   * an unknown string travel as a `ContrastPreference` and be compared against three values it
+   * is not any of, forever, without an error.
+   */
+  const oneOf = <T extends string>(
+    value: string,
+    allowed: readonly T[],
+    column: string,
+    id: string,
+  ): T => {
+    const found = allowed.find((a) => a === value);
+    if (found === undefined)
+      throw new StoreError(
+        `profile row ${id} has ${column} = "${value}", which is not one of ` +
+          `${allowed.join(', ')}. The table CHECK makes this impossible to write, so the row ` +
+          'came from a build with a different vocabulary — reading it as one of ours would be ' +
+          'a guess about what somebody meant.',
+      );
+    return found;
+  };
+
+  /** The three slug lists for one profile, live rows only, in position order. */
+  const profileLists = (
+    profileId: string,
+  ): Readonly<Record<ProfileListDimension, readonly string[]>> => {
+    const rows = driver.query<ProfileDimensionColorRow>(
+      `SELECT ${PROFILE_COLOR_COLUMNS} FROM profile_dimension_color
+       WHERE profile_id = ? AND deleted_at IS NULL ORDER BY dimension, position`,
+      [profileId],
+    );
+    const lists: Record<ProfileListDimension, string[]> = {
+      neutrals: [],
+      accents: [],
+      avoid: [],
+    };
+    for (const row of rows) {
+      const dimension = oneOf(row.dimension, PROFILE_LIST_DIMENSIONS, 'dimension', profileId);
+      lists[dimension].push(row.corpus_slug);
+    }
+    return lists;
+  };
+
+  const readProfile = (row: PersonalProfileRow): StoredPersonalProfile => {
+    const lists = profileLists(row.id);
+    const origin = (column: string, value: string): DimensionOrigin =>
+      oneOf(value, DIMENSION_ORIGINS, column, row.id);
+    return {
+      id: row.id,
+      method: oneOf<ProfileMethod>(row.method, PROFILE_METHODS, 'method', row.id),
+      lightness: { min: row.lightness_min, max: row.lightness_max },
+      temperatureBias: row.temperature_bias,
+      chroma: { min: row.chroma_min, max: row.chroma_max },
+      contrast: oneOf<ContrastPreference>(
+        row.contrast_preference,
+        CONTRAST_PREFERENCES,
+        'contrast_preference',
+        row.id,
+      ),
+      confidence: {
+        lightness: row.confidence_lightness,
+        temperature: row.confidence_temperature,
+        chroma: row.confidence_chroma,
+        contrast: row.confidence_contrast,
+        neutrals: row.confidence_neutrals,
+        accents: row.confidence_accents,
+        avoid: row.confidence_avoid,
+      },
+      origin: {
+        lightness: origin('origin_lightness', row.origin_lightness),
+        temperature: origin('origin_temperature', row.origin_temperature),
+        chroma: origin('origin_chroma', row.origin_chroma),
+        contrast: origin('origin_contrast', row.origin_contrast),
+        neutrals: origin('origin_neutrals', row.origin_neutrals),
+        accents: origin('origin_accents', row.origin_accents),
+        avoid: origin('origin_avoid', row.origin_avoid),
+      },
+      neutrals: lists.neutrals,
+      accents: lists.accents,
+      avoid: lists.avoid,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      deletedAt: row.deleted_at,
+    };
+  };
+
+  /** The profile's own columns, in `PROFILE_COLUMNS` order minus the sync four. */
+  const profileValues = (p: NewPersonalProfile): readonly unknown[] => [
+    p.method,
+    p.lightness.min,
+    p.lightness.max,
+    p.temperatureBias,
+    p.chroma.min,
+    p.chroma.max,
+    p.contrast,
+    ...PROFILE_DIMENSIONS.map((d) => p.confidence[d]),
+    ...PROFILE_DIMENSIONS.map((d) => p.origin[d]),
+  ];
 
   return {
     info,
@@ -383,6 +530,129 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
             row.id,
           ]);
           log('palette_member', row.id, 'delete', now);
+        }
+      });
+    },
+
+    saveProfile(profile: NewPersonalProfile, now: Millis): void {
+      driver.transaction(() => {
+        const existing = driver.query<{ id: string }>(
+          'SELECT id FROM personal_color_profile WHERE id = ?',
+          [profile.id],
+        );
+        if (existing.length > 0) {
+          driver.run(
+            `UPDATE personal_color_profile SET updated_at = ?, deleted_at = NULL,
+             ${PROFILE_VALUE_COLUMNS.map((c) => `${c} = ?`).join(', ')} WHERE id = ?`,
+            [now, ...profileValues(profile), profile.id],
+          );
+          log('personal_color_profile', profile.id, 'update', now);
+        } else {
+          driver.run(
+            `INSERT INTO personal_color_profile (${PROFILE_COLUMNS})
+             VALUES (?, ?, ?, NULL${', ?'.repeat(PROFILE_VALUE_COLUMNS.length)})`,
+            [profile.id, now, now, ...profileValues(profile)],
+          );
+          log('personal_color_profile', profile.id, 'insert', now);
+        }
+
+        /*
+         * The lists are reconciled by (dimension, slug), the same way palette members are
+         * reconciled by (palette_id, color_id) and for the same reason: a slug taken out of
+         * `avoid` and put back later is the SAME fact returning, not a second row, and the id
+         * is derived from the pair so re-saving an unchanged profile writes no new rows.
+         *
+         * A slug may legitimately appear in two dimensions — a low-chroma entry can be a
+         * neutral for one person and, at a different lightness, on another's avoid list — so
+         * the dimension is part of the id rather than a column that could collide.
+         */
+        const existingEntries = driver.query<{
+          id: string;
+          dimension: string;
+          corpus_slug: string;
+          deleted_at: number | null;
+        }>(
+          'SELECT id, dimension, corpus_slug, deleted_at FROM profile_dimension_color ' +
+            'WHERE profile_id = ?',
+          [profile.id],
+        );
+        const rowFor = new Map(
+          existingEntries.map((r) => [`${r.dimension}:${r.corpus_slug}`, r.id]),
+        );
+        const wanted = new Set<string>();
+
+        for (const dimension of PROFILE_LIST_DIMENSIONS) {
+          profile[dimension].forEach((slug, index) => {
+            const key = `${dimension}:${slug}`;
+            wanted.add(key);
+            const rowId = rowFor.get(key);
+            if (rowId === undefined) {
+              const fresh = `${profile.id}:${key}`;
+              driver.run(
+                `INSERT INTO profile_dimension_color (${PROFILE_COLOR_COLUMNS})
+                 VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
+                [fresh, now, now, profile.id, dimension, slug, index],
+              );
+              log('profile_dimension_color', fresh, 'insert', now);
+              return;
+            }
+            driver.run(
+              `UPDATE profile_dimension_color SET updated_at = ?, deleted_at = NULL,
+               position = ? WHERE id = ?`,
+              [now, index, rowId],
+            );
+            log('profile_dimension_color', rowId, 'update', now);
+          });
+        }
+
+        for (const row of existingEntries) {
+          if (wanted.has(`${row.dimension}:${row.corpus_slug}`) || row.deleted_at !== null)
+            continue;
+          driver.run(
+            'UPDATE profile_dimension_color SET deleted_at = ?, updated_at = ? WHERE id = ?',
+            [now, now, row.id],
+          );
+          log('profile_dimension_color', row.id, 'delete', now);
+        }
+      });
+    },
+
+    listProfiles(): StoredPersonalProfile[] {
+      return driver
+        .query<PersonalProfileRow>(
+          `SELECT ${PROFILE_COLUMNS} FROM personal_color_profile
+           WHERE deleted_at IS NULL ORDER BY created_at`,
+        )
+        .map((row) => readProfile(row));
+    },
+
+    getProfile(id: string): StoredPersonalProfile | undefined {
+      const row = driver.query<PersonalProfileRow>(
+        `SELECT ${PROFILE_COLUMNS} FROM personal_color_profile WHERE id = ?`,
+        [id],
+      )[0];
+      return row === undefined ? undefined : readProfile(row);
+    },
+
+    deleteProfile(id: string, now: Millis): void {
+      driver.transaction(() => {
+        driver.run(
+          'UPDATE personal_color_profile SET deleted_at = ?, updated_at = ? WHERE id = ?',
+          [now, now, id],
+        );
+        log('personal_color_profile', id, 'delete', now);
+        // Tombstoned explicitly, not left to ON DELETE CASCADE — a cascade fires on a DELETE
+        // and this is an UPDATE, so the list entries would stay live under a deleted profile
+        // and nothing would report it. Same defect `deletePalette` names.
+        for (const row of driver.query<{ id: string }>(
+          'SELECT id FROM profile_dimension_color WHERE profile_id = ? AND deleted_at IS NULL',
+          [id],
+        )) {
+          driver.run(
+            'UPDATE profile_dimension_color SET deleted_at = ?, updated_at = ? WHERE id = ?',
+            [now, now, row.id],
+          );
+          log('profile_dimension_color', row.id, 'delete', now);
         }
       });
     },

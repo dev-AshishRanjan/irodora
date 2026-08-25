@@ -186,6 +186,115 @@ export interface StoredPalette {
 }
 
 /**
+ * The seven dimensions of a personal colour profile (FR-30, ADR-0010).
+ *
+ * Ordered as the person meets them: the four scalar dimensions the comparisons establish
+ * directly, then the three lists derived from those. The order is load-bearing in exactly one
+ * place — it is the order a summary is read in — and nowhere else.
+ */
+export const PROFILE_DIMENSIONS = [
+  'lightness',
+  'temperature',
+  'chroma',
+  'contrast',
+  'neutrals',
+  'accents',
+  'avoid',
+] as const;
+export type ProfileDimension = (typeof PROFILE_DIMENSIONS)[number];
+
+/** The three dimensions that are lists of corpus slugs. */
+export const PROFILE_LIST_DIMENSIONS = ['neutrals', 'accents', 'avoid'] as const;
+export type ProfileListDimension = (typeof PROFILE_LIST_DIMENSIONS)[number];
+
+/**
+ * Where a dimension's current value came from.
+ *
+ * **`user` is a latch, not a label.** Re-derivation writes into a dimension only when this
+ * says `derived` — which is acceptance criterion 4 of F-026 and clause 6 of ADR-0010, *"the
+ * user's correction always wins"*. Storing it as a column rather than inferring it from a
+ * timestamp is the difference between a rule and a heuristic that is usually right.
+ */
+export const DIMENSION_ORIGINS = ['derived', 'user'] as const;
+export type DimensionOrigin = (typeof DIMENSION_ORIGINS)[number];
+
+/** How a profile was arrived at. `professional` is FR-28 and nothing writes it yet. */
+export const PROFILE_METHODS = ['guided', 'photo-assisted', 'professional'] as const;
+export type ProfileMethod = (typeof PROFILE_METHODS)[number];
+
+export const CONTRAST_PREFERENCES = ['low', 'medium', 'high'] as const;
+export type ContrastPreference = (typeof CONTRAST_PREFERENCES)[number];
+
+/** A closed interval. `min <= max` is a table CHECK, not a convention. */
+export interface Range {
+  readonly min: number;
+  readonly max: number;
+}
+
+/** The profile row exactly as the database holds it. Flat, because CHECK constraints are. */
+export interface PersonalProfileRow extends SyncRow {
+  readonly method: string;
+  readonly lightness_min: number;
+  readonly lightness_max: number;
+  readonly temperature_bias: number;
+  readonly chroma_min: number;
+  readonly chroma_max: number;
+  readonly contrast_preference: string;
+  readonly confidence_lightness: number;
+  readonly confidence_temperature: number;
+  readonly confidence_chroma: number;
+  readonly confidence_contrast: number;
+  readonly confidence_neutrals: number;
+  readonly confidence_accents: number;
+  readonly confidence_avoid: number;
+  readonly origin_lightness: string;
+  readonly origin_temperature: string;
+  readonly origin_chroma: string;
+  readonly origin_contrast: string;
+  readonly origin_neutrals: string;
+  readonly origin_accents: string;
+  readonly origin_avoid: string;
+}
+
+export interface ProfileDimensionColorRow extends SyncRow {
+  readonly profile_id: string;
+  readonly dimension: string;
+  readonly corpus_slug: string;
+  readonly position: number;
+}
+
+/**
+ * A profile being written.
+ *
+ * `confidence` and `origin` are **total records over `ProfileDimension`**, so a new dimension
+ * is a compile error at every call site rather than a column silently left at a default. That
+ * is the same move `MessageKey` makes for the catalogues: the type is the completeness check.
+ */
+export interface NewPersonalProfile {
+  /** UUIDv7. */
+  readonly id: string;
+  readonly method: ProfileMethod;
+  readonly lightness: Range;
+  /** -1 fully cool … +1 fully warm. */
+  readonly temperatureBias: number;
+  readonly chroma: Range;
+  readonly contrast: ContrastPreference;
+  readonly confidence: Readonly<Record<ProfileDimension, number>>;
+  readonly origin: Readonly<Record<ProfileDimension, DimensionOrigin>>;
+  /** Corpus slugs, in the order they should be read. */
+  readonly neutrals: readonly string[];
+  readonly accents: readonly string[];
+  readonly avoid: readonly string[];
+}
+
+/** A profile read back out, with its timestamps. */
+export interface StoredPersonalProfile extends NewPersonalProfile {
+  readonly createdAt: Millis;
+  readonly updatedAt: Millis;
+  readonly deletedAt: Millis | null;
+}
+
+/**
  * A row the database can hold but the product cannot use.
  *
  * Its own class so a caller can tell "this database is older than this build" from a driver
@@ -223,6 +332,25 @@ export interface Repository {
   getPalette(id: string): StoredPalette | undefined;
   /** Tombstones the palette and every live member. The colours themselves are left alone. */
   deletePalette(id: string, now: Millis): void;
+  /**
+   * Write a profile and its three slug lists, atomically.
+   *
+   * A whole-profile write for the same reason `savePalette` is one: the lists are positional,
+   * and a caller applying an edit as N member operations would leave the profile in states
+   * that are not profiles between them.
+   *
+   * **What this method does NOT do is decide what may be overwritten.** The `origin` latch is
+   * applied by the caller before it gets here — a store that silently refused to update a
+   * `user` dimension would be a second copy of a product rule, in the layer least able to
+   * explain itself, and the caller would have no way to tell a rejection from a no-op.
+   */
+  saveProfile(profile: NewPersonalProfile, now: Millis): void;
+  /** Live profiles, oldest first. Throws `StoreError` on a row holding an unknown enum value. */
+  listProfiles(): StoredPersonalProfile[];
+  /** One profile, tombstoned or not — same reason as `getColor`. */
+  getProfile(id: string): StoredPersonalProfile | undefined;
+  /** Tombstones the profile and every live list entry. */
+  deleteProfile(id: string, now: Millis): void;
   /** Every change-log entry, oldest first. Read by tests and by nothing in the product. */
   changeLog(): ChangeLogRow[];
   close(): void;

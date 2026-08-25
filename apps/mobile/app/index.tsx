@@ -25,6 +25,9 @@ export default function Index(): React.JSX.Element {
         onOpenFinder={() => {
           router.push('/find');
         }}
+        onOpenProfile={() => {
+          router.push('/profile');
+        }}
       />
     </>
   );

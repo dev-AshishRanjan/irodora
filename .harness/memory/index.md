@@ -65,6 +65,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/generating-an-artefact-is-not-checking-it.md](lessons/generating-an-artefact-is-not-checking-it.md) — E-004 named `gate:build` as its guard, and a build overwrites rather than compares; the guard is the `--check`, in a gate that is not the build.
 - [lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md](lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md) — `pnpm test` printed 31/31 successful while --force was red in four; ask what a check READ, not which package it lives in.
 - [lessons/test-the-requirements-own-example-before-your-own.md](lessons/test-the-requirements-own-example-before-your-own.md) — FR-47 names "dark muted green" and the first lexicon could not resolve it; when a decoy fails, suspect the design.
+- [lessons/a-word-boundary-fails-before-an-underscore-so-the-obvious-name-is-caught-and-the-real-one-is-not.md](lessons/a-word-boundary-fails-before-an-underscore-so-the-obvious-name-is-caught-and-the-real-one-is-not.md) — `rac(e|ial)` catches `race` and misses `racial_group`; plant every rule at the name somebody would actually type, not the one it was written from.
 
 ### Environment
 
@@ -105,6 +106,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-token-leaves-the-app-inside-the-card.md](effects/a-token-leaves-the-app-inside-the-card.md) — **E-027** · E-007 stopped at components; a shared card keeps the token values it was built with for ever.
 - [effects/a-family-word-is-content-because-the-family-is.md](effects/a-family-word-is-content-because-the-family-is.md) — **E-028** · the key set comes from a publish, so the compiler cannot check it and gate 11 does.
 - [effects/a-token-with-no-reader-is-a-decision-nobody-applied.md](effects/a-token-with-no-reader-is-a-decision-nobody-applied.md) — **E-029** · emitting a value is not applying a decision, and a comment is not a reader.
+- [effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md](effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md) — **E-030** · twelve constants assert that two colours differ on ONE axis; only the bundle can check it, and every gate stays green when it stops being true.
 
 ## Glossary
 

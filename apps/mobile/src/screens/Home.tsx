@@ -51,6 +51,8 @@ export interface HomeProps {
   readonly onOpenStudio?: () => void;
   /** Open the Colour Finder. Same shape and same reason as onOpenAtlas. */
   readonly onOpenFinder?: () => void;
+  /** Open guided profile setup. Same shape and same reason as onOpenAtlas. */
+  readonly onOpenProfile?: () => void;
 }
 
 export function Home({
@@ -58,6 +60,7 @@ export function Home({
   onOpenCompare,
   onOpenStudio,
   onOpenFinder,
+  onOpenProfile,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -138,6 +141,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenFinder?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openProfile')}
+        variant="secondary"
+        onPress={() => {
+          onOpenProfile?.();
         }}
       />
     </View>

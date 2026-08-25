@@ -29,9 +29,9 @@ describe('the node:sqlite driver conforms', () => {
     const { findings, ran, info } = checkStore(open);
     expect(formatStoreFindings(findings)).toBe('');
     // A suite reporting zero findings over zero checks is the shape this asserts against.
-    // Raised with the two palette checks (F-020): a floor that never moves stops noticing a
-    // check that quietly went missing.
-    expect(ran).toBeGreaterThanOrEqual(9);
+    // Raised with the two palette checks (F-020) and again with the three profile checks
+    // (F-026): a floor that never moves stops noticing a check that quietly went missing.
+    expect(ran).toBeGreaterThanOrEqual(12);
     expect(info.name).toBe('node:sqlite');
   });
 

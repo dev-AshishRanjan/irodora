@@ -14,7 +14,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { ThemeProvider, swatchAccessibleName } from '@irodora/ui';
 import {
   checkAll,
   checkStatusAdjacency,
@@ -29,16 +29,21 @@ import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Finder } from '../src/screens/Finder';
 import { ColourCard } from '../src/screens/ColourCard';
+import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import { find } from '../src/finder';
 import { toStoreWrite } from '../src/palette';
 import { PALETTE_ROLES } from '@irodora/corpus';
 import type { PaletteDraft, PaletteStore } from '../src/palette';
-import type { StoredPalette } from '@irodora/store';
+import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@irodora/store';
+import { TRIALS, type TrialAnswer } from '../src/profile/trials';
+import { PROFILE_DIMENSIONS } from '@irodora/store';
+import { en } from '../src/i18n/en';
+import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
-import { allEntries, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
+import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
 
@@ -147,6 +152,23 @@ const DRAFT: PaletteDraft = {
   ],
 };
 
+/** The profile port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device. */
+function fakeProfileStore(): ProfileStore & { readonly saved: NewPersonalProfile[] } {
+  const saved: NewPersonalProfile[] = [];
+  const rows = new Map<string, StoredPersonalProfile>();
+  return {
+    saved,
+    saveProfile(profile, now) {
+      saved.push(profile);
+      rows.set(profile.id, { ...profile, createdAt: now, updatedAt: now, deletedAt: null });
+    },
+    listProfiles: () => [...rows.values()],
+  };
+}
+
+/** Every trial answered on the `a` pole — the summary branch, fully populated. */
+const ALL_ANSWERS: readonly TrialAnswer[] = TRIALS.map((t) => ({ trialId: t.id, pole: 'a' }));
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Home',
@@ -232,6 +254,30 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme),
+  },
+  {
+    name: 'screens/ProfileSetup',
+    // `static`, like the rest: its interactive parts are Button, Chip and Swatch, each
+    // registered in packages/ui where the suite makes them render focus, active, disabled and
+    // loading differently.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<ProfileSetup store={fakeProfileStore()} />, theme),
+  },
+  {
+    /*
+     * The SAME screen with every comparison answered.
+     *
+     * The two branches render almost disjoint trees — the comparison branch draws two option
+     * cards and no summary; the summary branch draws seven dimension rows, four chip groups
+     * and three list editors, and NONE of that is reachable from the first. Registering only
+     * one would check the accessibility of half a screen.
+     */
+    name: 'screens/ProfileSetup (summary)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<ProfileSetup store={fakeProfileStore()} initialAnswers={ALL_ANSWERS} />, theme),
   },
 ];
 
@@ -780,6 +826,14 @@ describe('the route wires the real repository, not a fake', () => {
     expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
 
+  it('does the same for guided setup, whose port is the other half of this seam', () => {
+    // F-026. A profile the person spent twelve comparisons on, written to a fake, would be
+    // gone on the next launch — and every assertion in this file would still be green.
+    const profile = readFileSync(join(process.cwd(), 'app', 'profile.tsx'), 'utf8');
+    expect(profile).toContain("from '../src/store/repository'");
+    expect(profile).toMatch(/store=\{deviceRepository\(\)\}/u);
+  });
+
   it('DECOY — the assertion above is not true of every route', () => {
     // Without this, "the file contains a string" would pass for any file at all, and the
     // check would be measuring that `readFileSync` works.
@@ -984,6 +1038,198 @@ describe('the colour card screen shows the document it generated (FR-50)', () =>
 });
 
 /** A11 — the card screen announces structure a screen reader can navigate. */
+/**
+ * FR-26 and FR-30 on the screen, rather than in the module.
+ *
+ * The derivation, the confidence rule and the origin latch are asserted in `profile.test.ts`,
+ * where they can be reached without rendering. What is left here is the half that file cannot
+ * see: that the comparison is answerable without reading a colour, that all seven dimensions
+ * reach the summary with their confidence as a SENTENCE, and that a correction is marked as
+ * one on the surface a person is looking at.
+ */
+describe('guided setup asks, concludes, and can be corrected (FR-26, FR-30)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const nodes = (
+    answers?: readonly TrialAnswer[],
+    store: ProfileStore = fakeProfileStore(),
+  ): string[] =>
+    textOf(
+      draw(
+        <ProfileSetup
+          store={store}
+          {...(answers === undefined ? {} : { initialAnswers: answers })}
+        />,
+        'light',
+      ),
+    );
+
+  it('asks the first comparison, and says where in the run it is', () => {
+    const text = nodes().join(' ');
+    expect(text).toContain('Which would you rather wear?');
+    expect(text).toContain(`1 / ${String(TRIALS.length)}`);
+  });
+
+  it('draws each option as a swatch AND names it, so the choice never needs colour alone', () => {
+    /*
+     * Golden rule 13, and here it is not an edge case: this screen is asking a question OF the
+     * people the CVD work exists for. Two swatches somebody cannot separate must still be
+     * answerable, which means the names have to be on screen.
+     *
+     * The value reaches the swatch's accessible name rather than the visible text — deliberate
+     * on a screen asking about preference, where a row of hex codes is noise. It is asserted
+     * through `swatchAccessibleName` rather than by reproducing its format, so the two cannot
+     * drift.
+     */
+    const first = TRIALS[0]!;
+    const shown = nodes();
+    const text = shown.join(' ');
+    for (const option of first.options)
+      for (const slug of option.slugs) {
+        const found = allEntries().find((e) => e.entry.slug === slug)!;
+        expect(text).toContain(found.entry.name.kanji);
+        expect(text).toContain(found.entry.name.en);
+        expect(shown).toContain(
+          swatchAccessibleName(found.entry.name.en, found.derived.hex, colorFor(found.entry)),
+        );
+      }
+  });
+
+  it('names each choose control by the colours it would pick', () => {
+    // A screen reader otherwise hears "Choose" twice with nothing to tell the options apart.
+    const labels = nodes();
+    const [a, b] = TRIALS[0]!.options;
+    const nameFor = (slugs: readonly string[]): string =>
+      slugs.map((s) => allEntries().find((e) => e.entry.slug === s)!.entry.name.en).join(' + ');
+    expect(labels).toContain(`Choose — ${nameFor(a.slugs)}`);
+    expect(labels).toContain(`Choose — ${nameFor(b.slugs)}`);
+  });
+
+  it('says no camera is involved, on the screen rather than only in a document', () => {
+    // ADR-0010 §2: the swatch path is the PRIMARY one, and its being camera-free is the
+    // privacy and accessibility promise — which is worth nothing if only the ADR says it.
+    expect(nodes().join(' ')).toContain('No camera');
+  });
+
+  it('reaches every one of the seven dimensions in the summary', () => {
+    const text = nodes(ALL_ANSWERS).join(' ');
+    // Read through the catalogue from the store's own dimension list, not from seven strings
+    // typed here: an eighth dimension would otherwise be a row nobody renders and a test
+    // nobody fails.
+    for (const dimension of PROFILE_DIMENSIONS)
+      expect(text).toContain(en[DIMENSION_KEYS[dimension]]);
+  });
+
+  it('states confidence as a sentence about the answers, never as a bare number', () => {
+    const text = nodes(ALL_ANSWERS).join(' ');
+    expect(text).toContain('Your answers agreed on this.');
+    // 0.75 is a weight for F-028, not something to show a person: a number with no units and
+    // no scale invites being read as a percentage of correctness.
+    expect(text).not.toContain('0.75');
+  });
+
+  it('calls the result an estimate and invites the correction', () => {
+    // ADR-0031 and ADR-0010 §6, on the surface. Twelve forced choices are not a measurement,
+    // and the sentence that says so is the one a person actually reads.
+    const text = nodes(ALL_ANSWERS).join(' ');
+    expect(text).toContain('not a measurement');
+    expect(text).toContain('a change you make is kept');
+  });
+
+  it('explains why an unfinished run cannot be saved rather than only disabling the control', () => {
+    expect(nodes().join(' ')).toContain(
+      'Every comparison needs an answer before this can be saved',
+    );
+  });
+
+  it('DECOY — a finished run shows no such sentence', () => {
+    // Without this, the assertion above would also pass on a screen that shows the sentence
+    // permanently [[a-decoy-that-is-not-broken-proves-nothing]].
+    expect(nodes(ALL_ANSWERS).join(' ')).not.toContain(
+      'Every comparison needs an answer before this can be saved',
+    );
+  });
+
+  it('marks a dimension the person set, and only that one', () => {
+    /*
+     * The screen half of acceptance criterion 4. A profile already on the device has
+     * `contrast` corrected to `low`; the answers below derive `high`. The correction must
+     * survive `applyDerivation` and be VISIBLE as a correction — a preserved value that looks
+     * identical to a derived one leaves a person unable to tell what the app decided from
+     * what they decided.
+     */
+    const store = fakeProfileStore();
+    const derived = TRIALS.map((t) => ({ trialId: t.id, pole: 'a' as const }));
+    store.saveProfile(
+      {
+        id: 'kept',
+        method: 'guided',
+        lightness: { min: 0.4, max: 0.8 },
+        temperatureBias: 1,
+        chroma: { min: 0, max: 0.1 },
+        contrast: 'low',
+        confidence: {
+          lightness: 0.75,
+          temperature: 0.75,
+          chroma: 0.75,
+          contrast: 1,
+          neutrals: 0.75,
+          accents: 0.75,
+          avoid: 0.75,
+        },
+        origin: {
+          lightness: 'derived',
+          temperature: 'derived',
+          chroma: 'derived',
+          contrast: 'user',
+          neutrals: 'derived',
+          accents: 'derived',
+          avoid: 'derived',
+        },
+        neutrals: [],
+        accents: [],
+        avoid: [],
+      },
+      1000,
+    );
+
+    const marked = nodes(derived, store).filter((line) => line === 'You set this.');
+    expect(marked).toHaveLength(1);
+    // The baseline, in the same test: with nothing corrected the marker is absent entirely.
+    expect(nodes(derived)).not.toContain('You set this.');
+  });
+});
+
+describe('guided setup has headings (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its sections as headings in ${theme}`, () => {
+      expect(roles(draw(<ProfileSetup store={fakeProfileStore()} />, theme))).toContain('header');
+      expect(
+        roles(
+          draw(<ProfileSetup store={fakeProfileStore()} initialAnswers={ALL_ANSWERS} />, theme),
+        ),
+      ).toContain('header');
+    });
+});
+
 describe('the colour card has headings (A11)', () => {
   function roles(node: TestNode, out: string[] = []): string[] {
     const here = node.props['accessibilityRole'];

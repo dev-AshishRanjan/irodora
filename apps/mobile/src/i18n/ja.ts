@@ -207,6 +207,61 @@ export const ja: Record<MessageKey, string> = {
     'この端末で、固定した収録版から作成しています。同じ色・同じ版なら同じカードになります。',
   'card.export': 'ファイルへの書き出しは、書き出し機能とともに追加します。',
   'detail.openCard': 'カードを見る',
+
+  /*
+   * F-026. Written under one extra constraint the English does not have: **every kanji here
+   * already exists in the bundled subset**, which is generated from `content/colors/**` and
+   * this file (ADR-0057). A character the face lacks renders as tofu, and gate 11 would catch
+   * it — but only on a workstation that can rebuild the font, and the source face is a 9.6 MB
+   * download that CI deliberately does not have. So the copy was written to the covered set
+   * rather than written first and repaired afterwards. That is E-017's cost, paid here.
+   *
+   * 差し色 is the ordinary Japanese term for an accent colour and is used rather than a
+   * transliteration; 合わせやすい色 / 合わせにくい色 say what a neutral and an avoid-list
+   * actually are, where 中立色 would be a translation of our word for it.
+   */
+  'home.openProfile': '自分の色をつくる',
+  'profile.title': '自分の色',
+  'profile.privacy': 'カメラは使いません。すべてこのデバイスの中だけです。',
+  'profile.progress': 'くらべる',
+  'profile.question': 'どちらを着たいですか。',
+  'profile.choose': 'えらぶ',
+  'profile.summary': 'えらんだ色からわかること',
+  'profile.estimate':
+    'えらんだ色からの見立てで、計った値ではありません。ちがうところはなおしてください。なおしたところはそのままです。',
+  'profile.corrected': '自分でえらびました。',
+  'profile.confidence.agreed': 'えらび方がそろっています。',
+  'profile.confidence.split': 'えらび方が分かれたので、たしかさは低めです。',
+  'profile.confidence.none': 'まだくらべていません。',
+  'profile.dim.lightness': '明るさの範囲',
+  'profile.dim.temperature': '暖色か寒色か',
+  'profile.dim.chroma': '色の濃さ',
+  'profile.dim.contrast': '明暗の差',
+  'profile.dim.neutrals': '合わせやすい色',
+  'profile.dim.accents': '差し色',
+  'profile.dim.avoid': '合わせにくい色',
+  'profile.band.dark': '暗いほう',
+  'profile.band.mid': '中ほど',
+  'profile.band.light': '明るいほう',
+  'profile.band.wide': 'ぜんぶ',
+  'profile.chromaBand.low': 'おさえめ',
+  'profile.chromaBand.mid': 'ふつう',
+  'profile.chromaBand.high': 'はっきり',
+  'profile.temp.cool': '寒色',
+  'profile.temp.leansCool': 'やや寒色',
+  'profile.temp.leansWarm': 'やや暖色',
+  'profile.temp.warm': '暖色',
+  'profile.contrast.low': '弱め',
+  'profile.contrast.medium': '中くらい',
+  'profile.contrast.high': '強め',
+  'profile.keep': 'のこす',
+  'profile.drop': 'はずす',
+  'profile.listEmpty': 'あてはまる色はありませんでした。',
+  'profile.save': 'この見立てを保存する',
+  'profile.saved': 'このデバイスに保存しました。',
+  'profile.notFinished': 'すべてくらべてから保存できます。',
+  'profile.restart': 'もういちどくらべる',
+  'profile.restartHint': '自分でえらんだところはそのままです。',
 };
 
 /**

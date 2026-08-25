@@ -765,7 +765,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/a-migration-reaches-two-drivers-and-a-backup-format.md",
-      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device.",
+      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -1034,6 +1034,38 @@
       "memory": "memory/effects/a-token-with-no-reader-is-a-decision-nobody-applied.md",
       "rationale": "EMITTING A VALUE IS NOT APPLYING A DECISION. Every value in packages/design-tokens/src/generated/ is byte-compared against the manifest by emit.test.ts and again by generate-design-tokens.mjs --check, so we know each one is CORRECT. Nothing asked whether it was USED — and F-019 found nativeNumericFeature that way by hand, emitted and exported and reaching no component, for as long as nobody happened to look. ADR-0054 had already settled the identical question for COMPONENTS; verify-token-reach.mjs is the same closure over VALUES, in gate 8 beside a11y-scope.mjs. THREE RULES DECIDE WHETHER IT IS WORTH ANYTHING. packages/ui/src/testing/ is NOT a reader, because a token read only by the conformance checker exists so a CHECK can enforce it and is not a painted pixel — without that exclusion, four findings would have been absorbed silently. Reach propagates through OBJECT VALUES (Surface resolves surface.1 through nativeElevation, and that name appears nowhere as a literal) but never through KEYS (theme.tsx reads nativeColors, whose keys are all 33 colour tokens) and never through ARRAY ELEMENTS (a membership test is a question nobody answers with the token). An object is looked up; a list is looked in. COMMENTS ARE NOT CODE, and the proof found that, not a reading: border.strong was removed from all five components that use it and the check still called it reached, because Button.tsx mentions it in backticks in a comment. Every JSDoc example in a repository that comments this heavily was counting as a consumer. Stripping comments turned three more tokens honest, including foreground.3 — the token whose entire purpose is to be restricted — whose every mention in the reader zone is prose about why it is dangerous. THE ESCAPE HATCH RUNS BOTH WAYS: .harness/verification/unreached-tokens.json declares 34 names with a why and a citation, prints the whole list on every run rather than only on a failure, and FAILS on a declaration for a token that IS read. One of its entries is a defect rather than an exemption — nativeSpacing is imported by nothing while 69 hand-written values contradict the scale, filed as F-095 and cited from the declaration.",
       "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-030",
+      "from": {
+        "kind": "artifact",
+        "ref": "apps/mobile/src/corpus/generated/bundle.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/trials.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/derive.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test (apps/mobile/test/profile.test.ts — every trial checked against the published OKLCh)",
+      "memory": "memory/effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md",
+      "rationale": "TWELVE CONSTANTS NAME CORPUS SLUGS AND ENCODE A CLAIM ABOUT THE VALUES BEHIND THEM: that each comparison separates on its own axis and stays matched on the others. Nothing in the type system holds that. A temperature trial is two entries matched in OKLCh L and C and opposed in hue class — move one entry 0.05 in L at the next publish and the same question is now partly about lightness, the answer still tallies, the profile still looks reasonable, and NOTHING ON THE SCREEN LOOKS DIFFERENT. This is E-022’s shape aimed at a different destination: E-022 asks whether the bundle the app reads is the one that was published; this asks whether a constant DESCRIBING the bundle’s contents still means what it said. The guard reads the published values rather than the authored ones and names the trial that fails, with a decoy asserting the separation thresholds can reject a pair — without it \"every trial clears the bound\" would also be true of a bound of zero. It is severity high rather than medium because the failure is silent by construction and the output is a personal profile that F-028 will weight recommendations by.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

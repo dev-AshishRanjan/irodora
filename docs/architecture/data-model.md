@@ -122,17 +122,43 @@ version, and that version is recorded in every envelope it produced.
 ## 5. User data
 
 ```
-personal_color_profile
-  id · version
-  lightness_min/max · temperature_bias · chroma_min/max · contrast_preference
-  confidence_lightness · confidence_temperature · confidence_chroma · confidence_contrast
+personal_color_profile                                          (schema version 3, F-026)
+  id · created_at · updated_at · deleted_at
   method: guided | photo-assisted | professional
-  neutrals[] · accents[] · avoid[]
+  lightness_min/max · temperature_bias · chroma_min/max · contrast_preference
+  confidence_*   one per dimension, all seven
+  origin_*       one per dimension, all seven: derived | user
+
+profile_dimension_color                                          the three list dimensions
+  profile_id · dimension (neutrals|accents|avoid) · corpus_slug · position
 ```
 
 **Ranges, not points, with per-dimension confidence** (FR-30). There is no `skin_color`
 column and there never will be — a schema check rejects a migration that adds one (NFR-22).
 The field cannot exist, so the false precision it would imply cannot be built on top of it.
+
+That check is `packages/store/src/prohibited.ts`, and it runs from `migrate()` in **both**
+directions: over `MIGRATIONS` before a step is applied, and over `sqlite_master` afterwards.
+The second half is the one no code review can substitute for — a column that arrived some other
+way is invisible to a reading of the migration ladder.
+
+**Seven confidences and seven origins, as columns.** The sketch this section replaced carried
+four confidences and no origin at all. FR-26 asks for *"a confidence per dimension"* and names
+all seven, and the lists are dimensions; and `origin` is what makes *"a user correction is never
+overwritten by re-derivation"* a rule rather than a habit — re-derivation writes into a dimension
+only where it reads `derived`. Columns rather than a JSON blob, for the reason the
+reproducibility envelope is four columns: *"which dimensions did this person correct?"* is asked
+every time a recommendation is investigated, and only a column can carry a CHECK.
+
+The list dimensions are a child table rather than three delimited TEXT columns. A slug list in a
+string is a parser, and it would be the second place in the package where corpus slugs are
+addressed. The rows carry the sync columns like every other user table, so a slug taken out of
+`avoid` is one tombstone rather than a wholesale replacement — and, because
+`ARCHIVE_TABLES = [...SYNC_TABLES]`, both tables joined the backup format and its canonical
+digest without anyone editing `archive.ts` ([E-023](../../.harness/state/effects.json)).
+
+How the guided path produces these values, and why the confidence ceiling is 0.75, is
+[ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md).
 
 ```
 saved_color

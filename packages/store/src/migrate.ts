@@ -12,7 +12,27 @@
  */
 
 import { CONNECTION_PRAGMAS, MIGRATIONS, SCHEMA_VERSION } from './schema.js';
+import { assertMigrationsClean, findProhibited, prohibitedError } from './prohibited.js';
 import type { Driver } from './repository.js';
+
+/**
+ * Refuse a database whose schema carries a column NFR-22 forbids.
+ *
+ * Reads `sqlite_master` — what this database ACTUALLY has — rather than only what this build
+ * would apply. That is the half that catches a column which arrived some other way: a fork, a
+ * hand-run `ALTER TABLE`, or a build older than the rule.
+ *
+ * Runs **after** the migrations rather than before, so the message describes the schema the
+ * app is about to use. A prohibited column is a governance failure and not a data condition,
+ * so nothing here catches and continues: the database does not open.
+ */
+function assertSchemaClean(driver: Driver): void {
+  const rows = driver.query<{ name: string; sql: string | null }>(
+    "SELECT name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%'",
+  );
+  const findings = rows.flatMap((r) => findProhibited(r.sql ?? '', `schema object ${r.name}`));
+  if (findings.length > 0) throw prohibitedError(findings);
+}
 
 /** Apply pragmas that must hold on **every** connection, not once at creation. */
 export function applyPragmas(driver: Driver): void {
@@ -29,6 +49,13 @@ export function applyPragmas(driver: Driver): void {
  */
 export function migrate(driver: Driver): number {
   applyPragmas(driver);
+
+  /*
+   * NFR-22, before a single statement runs. A migration that would add a prohibited column
+   * never applies, so the failure is a build that will not open a database rather than a
+   * column somebody has to argue about removing once it holds data (ADR-0010 §1).
+   */
+  assertMigrationsClean(MIGRATIONS);
 
   const [row] = driver.query<{ user_version: number }>('PRAGMA user_version');
   const current = row?.user_version ?? 0;
@@ -51,5 +78,7 @@ export function migrate(driver: Driver): number {
     });
     applied += 1;
   }
+
+  assertSchemaClean(driver);
   return applied;
 }

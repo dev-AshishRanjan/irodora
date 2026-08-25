@@ -24,7 +24,13 @@
 
 import { createRepository } from '../createRepository.js';
 import { uuidv7 } from '../id.js';
-import type { Driver, DriverInfo, NewPalette, NewSavedColor } from '../repository.js';
+import type {
+  Driver,
+  DriverInfo,
+  NewPalette,
+  NewPersonalProfile,
+  NewSavedColor,
+} from '../repository.js';
 
 export interface StoreFinding {
   readonly driver: string;
@@ -83,6 +89,46 @@ const palette = (id: string): NewPalette => ({
       weight: 0.6,
     },
   ],
+});
+
+/**
+ * A profile with something interesting in every part of it.
+ *
+ * **`temperature` is `user` and the rest are `derived` on purpose.** A fixture where every
+ * origin is the same value cannot tell a round trip that preserves the column from one that
+ * writes a constant — the latch is the whole of F-026's fourth criterion, and a check that
+ * would pass on a hard-coded `'derived'` proves nothing about it.
+ *
+ * The confidences differ from each other for the same reason.
+ */
+const profile = (id: string): NewPersonalProfile => ({
+  id,
+  method: 'guided',
+  lightness: { min: 0.42, max: 0.78 },
+  temperatureBias: -0.5,
+  chroma: { min: 0.02, max: 0.14 },
+  contrast: 'high',
+  confidence: {
+    lightness: 0.75,
+    temperature: 0.5,
+    chroma: 0.5,
+    contrast: 0.75,
+    neutrals: 0.5,
+    accents: 0.5,
+    avoid: 0.5,
+  },
+  origin: {
+    lightness: 'derived',
+    temperature: 'user',
+    chroma: 'derived',
+    contrast: 'derived',
+    neutrals: 'derived',
+    accents: 'derived',
+    avoid: 'derived',
+  },
+  neutrals: ['ai-nezumi', 'usu-gami'],
+  accents: ['ai-nezumi'],
+  avoid: ['usu-gami'],
 });
 
 /**
@@ -340,6 +386,92 @@ export function checkStore(open: OpenStore): {
           'members, which is a state the corpus schema rejects and a screen renders as empty',
       );
     repo.close();
+  });
+
+  // --- a profile survives a reopen, with its three lists ----------------------------------
+  run('profile-durability', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+    const id = uuidv7();
+    repo.saveProfile(profile(id), 1000);
+
+    // The reopen, for the same reason as everywhere above: a profile is written across two
+    // tables and 24 columns, and an in-process object would satisfy a read without it.
+    repo.reopen();
+
+    const after = repo.getProfile(id);
+    if (after === undefined) at('profile-durability', 'the profile did not survive a reopen');
+    else if (after.neutrals.join() !== 'ai-nezumi,usu-gami')
+      at(
+        'profile-durability',
+        `neutrals came back as [${after.neutrals.join(', ')}]; a list that loses its ORDER ` +
+          'loses the ranking the derivation put in it',
+      );
+    else if (after.origin.temperature !== 'user')
+      at(
+        'profile-durability',
+        'origin_temperature came back as "derived" — the latch that stops a re-derivation ' +
+          'overwriting a correction did not survive the round trip, which would silently ' +
+          'undo the correction on the next run',
+      );
+    else if (after.confidence.chroma !== 0.5)
+      at('profile-durability', `confidence_chroma came back as ${String(after.confidence.chroma)}`);
+    repo.close();
+  });
+
+  // --- a list entry removed from a profile is tombstoned, not deleted ----------------------
+  run('profile-list-tombstone', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+    const id = uuidv7();
+    repo.saveProfile(profile(id), 1000);
+    repo.saveProfile({ ...profile(id), neutrals: ['ai-nezumi'] }, 2000);
+
+    const after = repo.getProfile(id);
+    if (after?.neutrals.join() !== 'ai-nezumi')
+      at('profile-list-tombstone', `neutrals is [${after?.neutrals.join(', ') ?? 'missing'}]`);
+
+    const ops = repo
+      .changeLog()
+      .filter((r) => r.table_name === 'profile_dimension_color' && r.op === 'delete');
+    if (ops.length !== 1)
+      at(
+        'profile-list-tombstone',
+        `${String(ops.length)} delete(s) logged for one removal — a removed slug must be ` +
+          'tombstoned exactly once, or a reconciler cannot tell one removal from several',
+      );
+    repo.close();
+  });
+
+  // --- the seven-dimension CHECK constraints are real --------------------------------------
+  run('profile-check-constraints', () => {
+    const { driver, info: i } = open();
+    createRepository(driver, i);
+    let rejected = false;
+    try {
+      /*
+       * An INVERTED RANGE. `lightness_min > lightness_max` is not an unusual profile — it is
+       * not a profile, and every reader would otherwise have to decide separately what to do
+       * with it. The table-level CHECK is the one constraint here that no column CHECK could
+       * express, so it is the one worth watching fail.
+       */
+      driver.run(
+        `INSERT INTO personal_color_profile (id, created_at, updated_at, deleted_at, method,
+           lightness_min, lightness_max, temperature_bias, chroma_min, chroma_max,
+           contrast_preference, confidence_lightness, confidence_temperature,
+           confidence_chroma, confidence_contrast, confidence_neutrals, confidence_accents,
+           confidence_avoid, origin_lightness, origin_temperature, origin_chroma,
+           origin_contrast, origin_neutrals, origin_accents, origin_avoid)
+         VALUES (?, ?, ?, NULL, 'guided', 0.8, 0.2, 0, 0.05, 0.2, 'medium',
+           0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+           'derived','derived','derived','derived','derived','derived','derived')`,
+        [uuidv7(), 1000, 1000],
+      );
+    } catch {
+      rejected = true;
+    }
+    if (!rejected) at('profile-check-constraints', 'a lightness range of 0.8 … 0.2 was accepted');
+    driver.close();
   });
 
   return { findings, ran, info };
