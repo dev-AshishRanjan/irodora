@@ -1,8 +1,13 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
-  "globalDependencies": ["tsconfig.base.json", ".nvmrc", "content/schemas/**"],
-  "globalEnv": ["NODE_ENV"],
+  "globalDependencies": [
+    "tsconfig.base.json",
+    ".nvmrc",
+    "content/schemas/**",
+    "docs/design/design-system.manifest.json"
+  ],
+  "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

@@ -6,9 +6,6 @@
  * is a two-line test here, which is the entire argument for the keystore being an interface.
  */
 
-import { readFileSync } from 'node:fs';
-import { readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   DATABASE_KEY_NAME,
@@ -90,98 +87,21 @@ describe('the key reaches SQLCipher through PRAGMA, and nothing else', () => {
   });
 });
 
-/**
- * "Never in the bundle" (FR-56). A key committed to source is a key every user shares.
+/*
+ * THE 64-HEX LITERAL SCAN USED TO LIVE HERE, AND THAT WAS THE DEFECT (F-093).
  *
- * ## Why this check needed correcting, and what it was NOT allowed to become
+ * FR-56 says the database key is never in the bundle, and the check for it scanned
+ * `apps/mobile/src` — a directory this package does not own. Turbo keys the `test` task on
+ * the inputs of the package it runs in, so when F-018 generated a corpus bundle carrying 126
+ * SHA-256 digests the check went red and its cached pass was replayed for two whole features
+ * while `pnpm test` printed 31 successful, 31 total.
  *
- * It scanned for any 64-hex literal and went red the moment F-018 generated the corpus
- * bundle — because a **SHA-256 digest is also 64 hex characters**, and the bundle carries 126
- * of them. It stayed red for two features without anyone seeing it: `turbo`'s `test` task is
- * keyed on the inputs of the package it runs in, and `packages/store` had not changed, so a
- * cached pass was replayed while the file it reads changed underneath it.
+ * It now runs in `scripts/verify-no-key-material.mjs`, inside gate 15, uncached — beside the
+ * question it is a variant of, and in a gate that is `requiredFor: always` rather than
+ * `requiredFor: code`.
  *
- * The tempting repair is an exemption — skip `**\/generated/**` — and it is the wrong one: it
- * would switch the check off for a whole directory to remove one class of false positive, and
- * a key written into a generated file is exactly as dangerous as one written by hand.
- *
- * So the discriminator is the **ledger**, not the path. Every digest in shipped source is one
- * `content/versions/` records; a database key is not in the ledger and never could be, because
- * the ledger is built from corpus content. The check therefore stays total over the same files
- * and rejects any 64-hex literal it cannot account for.
+ * The rule worth carrying: a REPOSITORY-WIDE check does not belong inside one package's test
+ * suite. Not because caching is awkward to configure, but because the scope of the question
+ * and the scope of the cache key disagree by construction, and nothing reports that
+ * [[a-cache-key-describes-the-package-not-the-world-the-test-read]].
  */
-describe('no key is in the bundle', () => {
-  /** Every 64-hex string the committed corpus ledger records. */
-  const ledgerDigests = (): ReadonlySet<string> => {
-    const dir = join(process.cwd(), '..', '..', 'content', 'versions');
-    const found = new Set<string>();
-    for (const file of readdirSync(dir)) {
-      if (!file.endsWith('.json')) continue;
-      for (const m of readFileSync(join(dir, file), 'utf8').matchAll(/\b[0-9a-f]{64}\b/gu))
-        found.add(m[0]);
-    }
-    return found;
-  };
-
-  const shippedSource = (): readonly string[] => {
-    // The test files themselves are excluded BY PATH, because this one necessarily contains
-    // 'a'.repeat(64) fixtures. `src` is what ships.
-    const roots = [
-      join(process.cwd(), 'src'),
-      join(process.cwd(), '..', '..', 'apps', 'mobile', 'src'),
-    ];
-    const files: string[] = [];
-    const walk = (dir: string): void => {
-      let entries: string[];
-      try {
-        entries = readdirSync(dir);
-      } catch {
-        return;
-      }
-      for (const e of entries) {
-        const full = join(dir, e);
-        if (statSync(full).isDirectory()) walk(full);
-        else if (/\.tsx?$/u.test(e)) files.push(full);
-      }
-    };
-    for (const r of roots) walk(r);
-    return files;
-  };
-
-  /** A 64-hex literal that is not a digest the ledger records. */
-  const unaccounted = (source: string, ledger: ReadonlySet<string>): readonly string[] =>
-    [...source.matchAll(/['"`]([0-9a-fA-F]{64})['"`]/gu)]
-      .map((m) => m[1] ?? '')
-      .filter((hex) => !ledger.has(hex.toLowerCase()));
-
-  it('has no unaccounted 64-hex literal anywhere in shipped source', () => {
-    const ledger = ledgerDigests();
-    // The ledger must have been FOUND. An empty set would make every digest unaccounted and
-    // the test would fail loudly — which is the right direction, but say it plainly.
-    expect(ledger.size).toBeGreaterThan(0);
-
-    const files = shippedSource();
-    expect(files.length).toBeGreaterThan(0);
-
-    const offenders = files.filter((f) => unaccounted(readFileSync(f, 'utf8'), ledger).length > 0);
-    expect(offenders).toEqual([]);
-  });
-
-  /*
-   * THE DECOY. Without it, "no offenders" is equally true of a check that accepts everything —
-   * and this check now has an allow-list, which is precisely the shape that stops discriminating
-   * [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
-   */
-  it('DECOY — a key literal is reported even though digests are not', () => {
-    const ledger = ledgerDigests();
-    const digest = [...ledger][0] ?? '';
-    expect(digest).toHaveLength(64);
-
-    // A real digest: accounted for, so silent.
-    expect(unaccounted(`export const D = '${digest}';`, ledger)).toEqual([]);
-
-    // A key: same shape, same length, not in the ledger, and therefore reported.
-    const key = 'f'.repeat(63) + '0';
-    expect(unaccounted(`const KEY = '${key}';`, ledger)).toEqual([key]);
-  });
-});
