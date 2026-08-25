@@ -853,6 +853,52 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-026",
+      "from": {
+        "kind": "content",
+        "ref": "content/rules"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/src/rules/generated/lexicon.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/finder.ts"
+        },
+        {
+          "kind": "content",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0069-a-phrase-is-versioned-rule-content-and-a-hue-term-carries-a-chroma-floor.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile",
+        "packages/corpus"
+      ],
+      "severity": "high",
+      "guard": "gate:content",
+      "memory": "memory/effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md",
+      "rationale": "THE LEXICON AND THE CORPUS TAXONOMY DEFINE THE SAME WORDS, and before F-021 only one of them existed. \"dark\" is now a numeric OKLCh region in content/rules AND an authored `taxonomy.lightnessBand` on every entry, which the Atlas filters on. Two definitions of one word drift, and the one that drifts is whichever nobody is looking at — so gate 11 asserts every authored band falls inside the lexicon region of the same name, 175 agreements over 28 terms, printed on every run so a green check over ZERO entries cannot read as coverage. IT HAS ALREADY PAID: the boundaries were first written as round numbers and the check found that 0.40 sits a MILLIONTH above the lowest entry filed as mid (do-ma at 0.3999990449505662), which would have excluded it from every query for a medium colour, silently and forever. THE LINK RUNS BOTH WAYS, which is what makes it worth recording: editing a BOUNDARY breaks entries nobody touched, and adding an ENTRY across a boundary breaks a lexicon nobody touched. THE THIRD DESTINATION IS THE FONT. The lexicon’s Japanese terms are typed INTO the Finder and echoed in the field, so they render in the app’s own subset exactly as a colour name does — verify-font-coverage.mjs now reads them, and doing so immediately found two codepoints (淡, 鮮) that nothing else required. THE FOURTH is the generated module: publishing a lexicon without regenerating leaves the app on the old vocabulary with every other gate green, which is E-022’s shape, guarded the same way by generate-rules-bundle.mjs --check inside gate 11.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

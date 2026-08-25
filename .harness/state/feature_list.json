@@ -739,7 +739,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-018",
         "F-039",
@@ -755,7 +755,23 @@
         "e2e",
         "a11y",
         "test"
-      ]
+      ],
+      "plan": "plans/F-021-colour-finder.md",
+      "effects": [
+        "E-013",
+        "E-016",
+        "E-017",
+        "E-026"
+      ],
+      "attested": [
+        {
+          "criterion": "Search by English name, Japanese name, kanji, romaji, hex, or natural phrase",
+          "verifiedBy": "EVERY BRANCH IS ASSERTED OFF-DEVICE AND THE JAPANESE HALF IS NOT REVIEWED. The routing, the hex ranking, the phrase regions and the name forms are all asserted in finder.test.ts and over the rendered screen, in both themes. What no test here reaches: whether the Japanese TERMS mean what a Japanese speaker would expect — they are written by one editor and declared unreviewed in the lexicon’s own editorial notes (ADR-0060, OQ-5) — and whether typing them on a device produces the terms at all, which is an IME question no render-tree assertion can answer. The font coverage they need IS checked.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. One field routes three ways — hex, phrase, name — and the screen SAYS WHICH QUESTION IT ANSWERED, which is the feature rather than the polish: a single field that routes will sometimes route differently from what the person meant, and the difference between \"these results are wrong\" and \"ah, it read that as a hex\" is one sentence. THE HEX BRANCH IS NOT IMPLEMENTED HERE. `nameColor` from @irodora/color-naming (F-013) already returns candidates ranked by ΔE00 whose two-stage search is PROVABLY the ranking a full scan would give (E-015). Writing a second nearest-match would be a defect by definition. THE LEXICON IS VERSIONED RULE CONTENT with its own ledger (ADR-0069, ADR-0011): content/rules/phrase-lexicon.2026.08.1.json plus content/rules/index.json, two files because a record checked against a checksum it carries verifies itself. It is NOT in the corpus bundle — adding a key there would change every recorded digest and force a corpus mint for a change to vocabulary. F-029 is not built: no weights, no normalisation, no contexts, and E-009 is untouched. TWO RULES CAME FROM MEASURING THE CORPUS, NOT FROM TASTE. FIRST, every hue term carries a CHROMA FLOOR, enforced by the schema: charcoal spans hue 58°–268° and off-white 66°–246° because a colour with almost no chroma has no hue, so a hue-only term would answer \"green\" with greys. SECOND, \"dark\" is now defined twice — as a lexicon region and as an authored taxonomy band — so gate 11 asserts every authored band falls inside the region of the same name: 175 agreements over 28 terms, PRINTED, because a green check over zero entries reads identically to one over 175. THAT CHECK PAID BEFORE IT SHIPPED. The boundaries were first round numbers, chosen from a measurement printed to three decimals. 0.40 sits a MILLIONTH above the lowest entry filed as mid — do-ma at 0.3999990449505662 — so it would have been excluded from every query for a medium colour, silently and forever. Boundaries now sit in the measured GAP: 0.395, 0.725, 0.039, 0.100. TWO DECOYS CORRECTED THE DESIGN RATHER THAN CONFIRMING IT. (1) The first vocabulary made \"dark muted green\" — the phrase FR-47 ITSELF NAMES — resolve to a single point matching almost nothing, because \"muted\" had been given grey’s range; muted is low-to-MID chroma and must overlap the hue floor or no hue can ever be muted. (2) `beaded` IS a valid hex — six characters, every one a hex digit, and #BEADED is a real colour, as are decade and facade. No anchoring fixes that, so an unprefixed hex must contain a DIGIT and `#` is how a person says they meant the colour; the cost (ffffff searches names) is asserted so it is visible rather than discovered. MATCHING SCANS FOR TERMS RATHER THAN SPLITTING ON WHITESPACE, longest first — Japanese has no spaces, and a resolver that split on them would work in one language and not the other. A phrase needs EVERY part known; one unrecognised word sends the whole query to name search. E-017 FIRED A FIFTH TIME, and from a new direction: the lexicon’s Japanese terms are typed INTO the field and echoed there, so they render in the app’s own subset. Extending verify-font-coverage.mjs to read them immediately found two codepoints — 淡 and 鮮 — that nothing else in the repository required. A person typing 淡い would have seen a tofu box. `e2e` IS IN THIS FEATURE’S VERIFICATION LIST AND WAS NOT RUN — the fifth feature to report it. F-091 carries gate 7. AND `test` IS RED REPO-WIDE on this workstation for the Node 22 reason F-093 made visible and F-083 owns; every package this feature touches is green under a forced run."
     },
     {
       "id": "F-023",

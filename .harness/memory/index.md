@@ -64,6 +64,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-task-runner-that-walks-packages-cannot-see-a-file-outside-one.md](lessons/a-task-runner-that-walks-packages-cannot-see-a-file-outside-one.md) — `turbo run lint` reported 31/31 successful with two errors planted in a gate script; ask what a check's traversal ROOT is, not what its rules are.
 - [lessons/generating-an-artefact-is-not-checking-it.md](lessons/generating-an-artefact-is-not-checking-it.md) — E-004 named `gate:build` as its guard, and a build overwrites rather than compares; the guard is the `--check`, in a gate that is not the build.
 - [lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md](lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md) — `pnpm test` printed 31/31 successful while --force was red in four; ask what a check READ, not which package it lives in.
+- [lessons/test-the-requirements-own-example-before-your-own.md](lessons/test-the-requirements-own-example-before-your-own.md) — FR-47 names "dark muted green" and the first lexicon could not resolve it; when a decoy fails, suspect the design.
 
 ### Environment
 
@@ -100,6 +101,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-migration-reaches-two-drivers-and-a-backup-format.md](effects/a-migration-reaches-two-drivers-and-a-backup-format.md) — **E-023** · no rollback exists, and `SELECT *` puts a new column into the backup format nobody edited.
 - [effects/the-palette-schema-now-runs-on-a-phone.md](effects/the-palette-schema-now-runs-on-a-phone.md) — **E-024** · tightening the schema for editors breaks saving on a device, with gate 11 green throughout.
 - [effects/the-cache-key-decides-whether-a-gate-ran-at-all.md](effects/the-cache-key-decides-whether-a-gate-ran-at-all.md) — **E-025** · every other link names a gate as its guard, and a replayed cache discharges none of them.
+- [effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md](effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md) — **E-026** · "dark" is defined twice; the agreement check found a boundary a MILLIONTH on the wrong side.
 
 ## Glossary
 

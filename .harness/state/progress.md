@@ -8,6 +8,148 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-021 · one field, three questions, and the app saying which it answered
+
+Type a name, a reading, a kanji, a hex, or *"dark muted green"*. The Finder routes, and it
+labels the answer with the question it decided to answer.
+
+### Why that label is the feature and not the polish
+
+A single field that routes three ways will sometimes route differently from what the person
+meant — `beaded` is a word and also a valid hex. Without the label they stare at results that
+look wrong for no visible reason. With it, the difference is between *"these results are wrong"*
+and *"ah, it read that as a hex"*.
+
+A phrase answer additionally shows the **region** the words resolved to and the **vocabulary
+version** that resolved them: FR-10's habit applied to search, because an answer that cannot say
+what produced it cannot be reproduced after the vocabulary moves.
+
+### The hex branch is not implemented here
+
+`nameColor` from `@irodora/color-naming` (F-013) already ranks by ΔE00, and its two-stage search
+is **provably** the ranking a full scan would give — E-015, with that package's own equivalence
+suite behind it. Writing a second nearest-match would be a defect by definition.
+
+### Two rules came from measuring the corpus, not from taste
+
+**Every hue term carries a chroma floor**, enforced by the schema. `charcoal` in this corpus
+spans hue **58° to 268°**; `off-white` 66° to 246°; `pink` 10° to 340°. Those are not hues —
+they are rounding on colours with almost no chroma. A hue-only term would answer *"green"* with
+greys, and nothing in the file would look wrong to a reviewer.
+
+That also disposes of *brown*, which is **not a hue**: it is dark low-to-mid chroma orange, and
+a term may constrain three axes at once so the lexicon can say so instead of omitting the word.
+
+**"dark" is now defined twice** — as a lexicon region and as an authored `taxonomy.lightnessBand`
+the Atlas filters on. Two definitions of one word drift, and the one that drifts is whichever
+nobody is looking at. So gate 11 asserts every authored band falls inside the region of the same
+name: **175 agreements over 28 terms**, and the count is printed, because a green check over
+*zero* entries reads identically to one over 175.
+
+### That check paid before it shipped
+
+The boundaries were first round numbers — 0.40, 0.04 — chosen from a measurement I had printed
+to three decimals, where `mid` appeared to begin at `0.400`.
+
+It begins at **`0.3999990449505662`**. `do-ma` would have been excluded from every query for a
+medium colour, silently, forever. The boundaries now sit in the measured **gap** between adjacent
+bands: 0.395, 0.725, 0.039, 0.100.
+
+> `toFixed(3)` in an exploratory script is a decision about what you are able to see.
+
+### Two decoys corrected the design rather than confirming it
+
+**FR-47's own example did not work.** The first vocabulary gave *muted* the range `[0, 0.04]` —
+which is *grey* — so *"dark muted green"*, the phrase the requirement itself names, resolved to a
+single point matching almost nothing. The mechanism was right and the words were wrong: muted is
+low-to-**mid** chroma and has to overlap the floor at which a hue becomes perceptible, or no hue
+can ever be muted.
+
+**`beaded` is a valid hex.** Six characters, every one a hex digit; `#BEADED` is a real colour,
+as are `decade` and `facade`. A decoy asserting "a name is not a hex" failed, and no amount of
+anchoring the pattern fixes it — the string genuinely *is* a hex. So an unprefixed hex must
+contain a **digit**, and `#` is how a person says they meant the colour. The cost — `ffffff`
+without a hash searches names and finds nothing — is asserted in a test so it is visible rather
+than discovered.
+
+Both times the instinct to fix the test would have been wrong. Recorded as a lesson.
+
+### Matching scans, it does not split
+
+Terms are found by scanning the query longest-first, not by splitting on whitespace. **Japanese
+has no spaces**, and a resolver that split on them would work in one language and not the other.
+A phrase needs *every* part known; one unrecognised word sends the whole query to name search,
+so *"dark muted green"* cannot half-succeed on the two words it recognised.
+
+### The lexicon is versioned rule content, and E-017 fired from a new direction
+
+`content/rules/phrase-lexicon.2026.08.1.json` plus `content/rules/index.json` — two files,
+because a record checked against a checksum it carries verifies itself. This is
+[ADR-0011](../../docs/adr/0011-recommendation-rules-are-versioned-content.md)'s `rule_version`
+built for the first time, **for the lexicon only**: no weights, no normalisation, no contexts,
+and E-009 untouched. F-029 extends it.
+
+**E-017 fired a fifth time and from a direction nobody was watching.** The lexicon's Japanese
+terms are typed *into* the Finder and echoed in the field, so they render in the app's own
+subset exactly as a colour name does. Extending `verify-font-coverage.mjs` to read them
+immediately found two codepoints — **淡** and **鮮** — that nothing else in the repository
+required. A person typing 淡い would have seen a tofu box.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 23 effect links |
+| `typecheck` · `build` · `format` | **passed** — 31 and 18 tasks |
+| `lint` | **passed** — 31 tasks, 25 boundaries, cache-scope clean |
+| `test` | **passed for every package this feature touches**, forced rather than cached — 248 in `corpus`, 203 in `mobile`, 71 in `ui`. **RED repo-wide**, see below |
+| `a11y` | **passed** — gate 8 scope 16/16, 6/6 screens |
+| `contrast` | **passed** — both themes, 21 tasks |
+| `content` | **passed** — 7 rule groups, 23 fixture corpora, 175 lexicon/taxonomy agreements; font 427/778; corpus and rules bundles current |
+
+**Not run:** `e2e`, `cvd`, `perf`, `color-golden`.
+
+**`e2e` is in this feature's verification list and was not run** — the **fifth** feature to
+report it. F-091 carries gate 7.
+
+**`test` is red repo-wide** in `color-spaces` and `color-difference`: four bitwise fixtures under
+Node 22.16.0 against a repo pinning 24.19.0. That is the redness F-093 made visible and F-083
+owns, and it is unchanged by this feature.
+
+### Three checks watched failing before being trusted
+
+- the **agreement** check, on a boundary widened to 0.45 — five entries named;
+- the **digest** check, on a hand-edited rationale;
+- the **chroma-floor** rule, on a hue term stripped of its floor.
+
+Baseline asserted green either side of each.
+
+### Recorded honestly
+
+- **The Japanese terms are written and not reviewed** by a competent speaker — the same standing
+  gap as the corpus (ADR-0060, OQ-5), declared in the lexicon's own editorial notes rather than
+  left to be assumed. That is what the attested criterion carries.
+- **The boundaries are fitted to 120 entries.** They reproduce an editor's judgement; they carry
+  no claim about human vision and must never be presented as if they did. The agreement check
+  is what keeps them honest as the corpus grows.
+- **`content/rules` now has two consumers with different needs** — this lexicon, and F-029's
+  weights later. The ledger format will have to carry both.
+- **The subset generator keeps its own copy of the font collection**, so the two must stay in
+  step. The dangerous direction is loud (the check requiring a glyph the generator omits turns
+  gate 11 red); the quiet direction only ships a glyph nobody renders.
+
+### Next
+
+**F-023 — Shareable colour cards** is the lowest-id eligible feature in R2 (`should`), and the
+last of the R2 surfaces.
+
+Still ahead of it in cost, and unchanged: **the Node upgrade to 24.19.0** — an environment
+action no repository change can perform, and the only thing between this machine and a green
+`test`; then **F-091** (gate 7 has never run; five features have now declared `e2e` and skipped
+it); then **F-094**.
+
+---
+
 ## 2026-08-25 — F-093 · the gate that reported a pass it did not earn
 
 `pnpm test` printed **31 successful, 31 total — 26 cached**. The same command with `--force`
