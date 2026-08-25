@@ -63,6 +63,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-compound-mutation-reports-a-miss-only-if-every-part-misses.md](lessons/a-compound-mutation-reports-a-miss-only-if-every-part-misses.md) — three drifted anchors said "MUTATION DID NOT APPLY"; the fourth chained two replaces, so the half that planted the real failure went missing in silence.
 - [lessons/a-task-runner-that-walks-packages-cannot-see-a-file-outside-one.md](lessons/a-task-runner-that-walks-packages-cannot-see-a-file-outside-one.md) — `turbo run lint` reported 31/31 successful with two errors planted in a gate script; ask what a check's traversal ROOT is, not what its rules are.
 - [lessons/generating-an-artefact-is-not-checking-it.md](lessons/generating-an-artefact-is-not-checking-it.md) — E-004 named `gate:build` as its guard, and a build overwrites rather than compares; the guard is the `--check`, in a gate that is not the build.
+- [lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md](lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md) — `pnpm test` printed 31/31 successful while --force was red in four; ask what a check READ, not which package it lives in.
 
 ### Environment
 
@@ -96,6 +97,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md](effects/the-shortlist-bound-is-the-only-thing-making-two-stage-equal-a-full-scan.md) — **E-015** · a fixed radius is wrong on 317 of 360 queries, and looks right every time.
 - [effects/the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md](effects/the-stylesheet-is-generated-and-a-colour-function-in-it-hands-the-conversion-away.md) — **E-019** · a generated file a dependency evaluates at runtime is only as authoritative as the notation it is written in.
 - [effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md](effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md) — **E-020** · HeroUI styles in Metro, jest never runs Metro, and the contrast gate measured an empty set.
+- [effects/a-migration-reaches-two-drivers-and-a-backup-format.md](effects/a-migration-reaches-two-drivers-and-a-backup-format.md) — **E-023** · no rollback exists, and `SELECT *` puts a new column into the backup format nobody edited.
+- [effects/the-palette-schema-now-runs-on-a-phone.md](effects/the-palette-schema-now-runs-on-a-phone.md) — **E-024** · tightening the schema for editors breaks saving on a device, with gate 11 green throughout.
 
 ## Glossary
 

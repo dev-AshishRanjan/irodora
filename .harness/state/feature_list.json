@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-24",
+  "updated": "2026-08-25",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -696,7 +696,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-018",
         "F-039",
@@ -711,7 +711,24 @@
         "e2e",
         "a11y",
         "contrast"
-      ]
+      ],
+      "plan": "plans/F-020-palette-studio.md",
+      "effects": [
+        "E-013",
+        "E-016",
+        "E-017",
+        "E-023",
+        "E-024"
+      ],
+      "attested": [
+        {
+          "criterion": "Build, edit, reorder and save palettes with anchor, neutral, light and accent roles",
+          "verifiedBy": "THE SAVE IS PROVEN AGAINST node:sqlite, NOT AGAINST THE DATABASE THAT SHIPS. packages/store/test/palette.test.ts writes a palette, REOPENS the database and reads it back with its members — real transactions, real foreign keys — and the shared conformance suite gained palette-durability and palette-atomicity so the device driver is judged by the same checks when F-041’s device attestation is run. What no CI run can reach: whether expo-sqlite commits the three-table write on a phone, whether SQLCipher encrypted it, and whether a save survives a force-quit. That is F-041’s standing attestation and this feature adds a table to it rather than a new kind of gap. The screen’s own save is proven against an in-memory port; the route wiring is proven by typecheck plus a source assertion, which is weak and is stated as weak.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. Palette Studio builds, edits, reorders and saves a palette to the encrypted database, and every saved palette is parsed by `parsePalette` — the same function content/palettes/*.json goes through — on the way in AND on the way back out. THAT IS THE WHOLE DESIGN: the two rules a palette EDITOR breaks are the two the schema already states (at least one anchor; ranks contiguous from 1), so a reorder bug fails at the boundary with a message that explains itself, instead of against a second copy of those rules in a screen. WHAT A DEVICE-BUILT PALETTE IS ENTITLED TO SAY ABOUT ITSELF is ADR-0067, not a decision made in passing: the corpus schema was written for provenanced editorial content and a palette built on a phone is not that, so every required field says what is actually the case — sourceId USER-LOCAL and authoredBy user-local (both RESERVED and enforced never to appear under content/), status draft so no reviewer can be recorded, versionId the corpus version it was built against, and name.en === name.ja because we do not translate user content. THE RESERVED-IDENTITY CHECK CARRIES ITS OWN DECOY, because both strings appear nowhere under content/ and a check over an empty set is indistinguishable from one that does nothing; it applies its rule to a planted record on every run, and was watched going red on a real palette before being trusted. WEIGHT IS DERIVED FROM RANK — 1.0, then a ladder from 0.9 to 0.6 — because FR-49 asks for roles and ordering and the schema requires a weight. That makes ORDER MEAN PROPORTION, which is the only reason a reorder control is worth having; it deliberately does NOT reproduce the seed palettes’ hand-authored weights, because a formula claiming to reproduce editorial judgement would be claiming something it cannot do. MIGRATION 2 adds the six columns F-041’s provisional tables could not carry, all NULLABLE WITH NO DEFAULT: a default would be a value nobody chose standing in for one somebody must, and NULL honestly means \"written before this column existed\" — refused by name, with the row planted through the driver because the write path cannot produce one. THE TESTS FOUND TWO REAL DEFECTS. Re-adding a removed member hit UNIQUE constraint failed, because the member lookup filtered to live rows and the derived member id collided with its own tombstone; re-adding is a RESURRECTION of that row, not a second one. And `no-role` demanded an accessibilityRole for TextInput that React Native has no name for — Role offers searchbox and no textbox, AccessibilityRole’s nearest is `text`, which means STATIC text. The checker’s model was what was wrong, so it now reads the host type, with a paired decoy proving a Pressable with no role is still reported AND that a TextInput with no NAME still is. A PRE-EXISTING RED GATE WAS FOUND AND FILED AS F-093: `pnpm test` printed 31/31 successful while --force was red in four tests. packages/store/test/key.test.ts scans apps/mobile/src for 64-hex literals and had been red since F-018 generated a bundle carrying 126 SHA-256 digests — turbo keys the task on its own package’s inputs, so a cached pass was replayed for two features. Fixed HERE, because it blocked this feature’s own verification: a 64-hex literal is an offender only if the corpus ledger does not record it, which keeps the check total instead of exempting a path, with a decoy proving a key literal is still caught. The three remaining failures are bitwise identity/golden tests failing by ULP on Node 22.16.0 against a repo pinning 24.19.0; reproduced at clean HEAD, in packages this feature does not touch, and carried by F-093. `e2e` IS IN THIS FEATURE’S VERIFICATION LIST AND WAS NOT RUN — the fourth feature to report it. Nothing declares a test:e2e task and F-091 carries it. E-017 fired a FOURTH time, for 11 codepoints; the subset was regenerated and gate 11 is green."
     },
     {
       "id": "F-021",
@@ -2468,6 +2485,28 @@
         "a11y"
       ],
       "notes": "FOUND IN F-019. `typography.numeric.fontFeature` has said \"tabular-nums\" in the manifest since F-003, annotated MANDATORY on every colour value, coordinate, score and delta. It was emitted to `nativeNumericFeature`, its emitter had a test, and that test passed — because it asserted the constant equals the manifest. NO COMPONENT READ IT. For two releases C9 (\"proportional figures make a ΔE table unreadable\") was true of a constant and false of every pixel. WHY THIS IS NOT DEAD CODE: dead code is unreferenced and looks it. This looked complete — manifest, emitter, test, and an effect link (E-007) from the manifest to the token package. Every step was true, and the chain stopped one short of a screen; the link was accurate about every OTHER token, which is worse than a missing link because the graph looked whole. THE SHAPE ALREADY EXISTS FOR COMPONENTS: a11y-scope.mjs computes the closure from the conformance registries and fails on anything outside it (ADR-0054). This is the same computation over token VALUES, and the hard part is the same one: the escape hatch. Some tokens legitimately have no consumer yet — a value emitted for a surface that has not been built — so the check must distinguish \"unreached\" from \"unreached and nobody noticed\", which means a declaration with a reason rather than a silent allowlist."
+    },
+    {
+      "id": "F-093",
+      "title": "A cached task result is replayed for a world that changed",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A task whose test reads a file outside its own package is invalidated when that file changes",
+        "A cached result produced under a different Node or pnpm version is not replayed",
+        "The failure is demonstrated before the fix: a planted change outside a package must turn its cached green red"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "notes": "FOUND 2026-08-25 during F-020. `pnpm test` reported \"31 successful, 31 total — 26 cached\" while a `--force` run of the same command was RED in four tests. A gate reporting a pass it did not earn is the most expensive shape in this repository, and this one had been doing it for at least two features. TWO INDEPENDENT MECHANISMS, both confirmed by observation rather than inferred. (1) CROSS-PACKAGE READS. `packages/store/test/key.test.ts` scans `apps/mobile/src` for 64-hex literals — FR-56, \"never in the bundle\". Turbo keys the `test` task on the inputs of the package it runs in, so when F-018 generated `apps/mobile/src/corpus/generated/bundle.ts` with 126 SHA-256 digests in it, the check went red and its cached pass was replayed through F-018 and F-019 unchanged. F-020 fixed that TEST (a 64-hex literal is now an offender only if the corpus ledger does not record it, with a decoy proving a key literal is still caught) but not the MECHANISM: any test reading outside its package has the same hole. (2) TOOLCHAIN VERSION. `turbo.json` lists `.nvmrc` in `globalDependencies`, which is the FILE, not the running runtime. This workstation runs Node 22.16.0 against a repo pinning 24.19.0, so caches produced under 24 are replayed under 22 — and the tests that differ are precisely the bitwise ones: `color-spaces/test/identity/identity.test.ts`, `color-difference/test/golden/identity.test.ts`, `apca.test.ts` and `wcag.test.ts`, the last failing by 2 ULP (4.500078715444717 vs ...719). REPRODUCED AT CLEAN HEAD with the working tree stashed, so none of it is F-020’s. RELATED BUT DIFFERENT FROM F-083, which is the same class of divergence between Windows and Linux on the SAME Node; this is between two Node versions on the same machine, and it means a local `pnpm test` cannot be trusted about the colour packages until the workstation runs the pinned version. THE FIX IS NOT \"TURN THE CACHE OFF\": that trades a wrong answer for a slow one and nobody keeps it. Declare the real inputs (`inputs` globs that reach the files a test actually reads) and put the runtime version into the cache key — `turbo` supports `globalEnv`, and a resolved `node --version` is what belongs there rather than the file that requests one. THE ACCEPTANCE CRITERION THAT MATTERS IS THE THIRD: watch a planted change outside a package turn its cached green red, or the fix is a configuration that parses [[a-later-flat-config-object-replaces-a-rule-it-does-not-merge]]."
     }
   ]
 }

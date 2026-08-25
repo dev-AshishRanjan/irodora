@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-24",
+  "updated": "2026-08-25",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -718,6 +718,93 @@
       "memory": "memory/effects/the-app-pins-a-corpus-version-and-a-publish-can-leave-it-behind.md",
       "rationale": "THE APP DOES NOT READ content/versions/; IT READS A COPY. ADR-0066 ships the pinned bundle as a generated TypeScript module carrying the bundle TEXT and the LEDGER’S root digest as two separate exports, because content/ sits outside apps/mobile and loadPublishedVersion takes text. So publishing a new corpus version without regenerating leaves the app on the OLD one, silently and with every other gate green: the old pair still verifies, because it is a valid bundle against its own valid ledger row. Nothing about the app would look wrong. THE GUARD IS `--check` INSIDE gate:content, and it was watched failing on a hand-edited count before being trusted. It compares the file on disk against what the CURRENT ledger’s last row produces, so a publish that forgets this step fails the build rather than shipping a stale corpus. THE SEPARATION OF TEXT AND DIGEST IS PART OF THE LINK, not a detail: a bundle carrying its own expected checksum verifies itself, so the generator reads the digest from index.json and never from the bundle, and a test asserts the bundle contains no self-describing root digest that a careless call site could pass instead.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-023",
+      "from": {
+        "kind": "schema",
+        "ref": "packages/store/src/schema.ts#MIGRATIONS"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/createRepository.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/archive.ts"
+        },
+        {
+          "kind": "module",
+          "ref": "packages/store/src/testing"
+        },
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/store"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/data-model.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/store",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test",
+      "memory": "memory/effects/a-migration-reaches-two-drivers-and-a-backup-format.md",
+      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-024",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/corpus/src/palette.ts#parsePalette"
+      },
+      "to": [
+        {
+          "kind": "content",
+          "ref": "content/palettes"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/palette.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0067-a-palette-built-on-a-device-is-validated-by-the-corpus-schema-and-says-it-came-from-a-device.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/corpus",
+        "content",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test",
+      "memory": "memory/effects/the-palette-schema-now-runs-on-a-phone.md",
+      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }
