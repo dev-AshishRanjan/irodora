@@ -29,6 +29,7 @@ apps/mobile/global.css
 # reformatting it would make the comparison a test of Prettier.
 apps/mobile/src/corpus/generated/
 apps/mobile/src/rules/generated/
+apps/mobile/src/taxonomy/generated/
 
 # Golden colour data is byte-significant
 packages/**/golden/

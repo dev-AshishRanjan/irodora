@@ -73,6 +73,7 @@ const {
   loadPublishedVersion,
   matchesRegion,
   parsePhraseLexicon,
+  parseTaxonomyVocabulary,
   RESERVED_DEVICE_IDENTITIES,
 } = corpus;
 
@@ -291,6 +292,71 @@ for (const { file, record } of [...real.entries, ...real.palettes])
     fail(`${file}: "${record.slug}" is a fixture slug and must not appear under content/`);
 rulesExercised += 1;
 
+// --- the taxonomy vocabulary: every family a reader can see has a word ---------------------
+
+/**
+ * F-090. Until now the Atlas filter, every Atlas row and the colour detail screen rendered
+ * `taxonomy.family` raw — `blue-grey`, `off-white`, `mineral-green` — **in both locales**. On a
+ * Japanese colour product that is a wart on the screen the product exists for.
+ *
+ * The words live in content because the family is content. What could not live in the app is a
+ * lookup table: it would be an ENUMERATED table against a set the CORPUS controls, so a family
+ * added by a future publish would render blank or fall back to English — and ADR-0028 forbids
+ * fallback precisely because it makes a gap invisible.
+ *
+ * ## Completeness moved from the compiler to here, and that is the design
+ *
+ * The message catalogue's completeness is checked by `tsc`, which cannot see a key set that
+ * comes from JSON data. So this check is what keeps ADR-0028's guarantee: **both directions**,
+ * because a row for a family nobody uses is how a live gap gets waved through later — the same
+ * shape as the source register (E-021) and as the advisory register's dead-entry rule.
+ */
+const TAXONOMY_FILE = join(CONTENT, 'taxonomy.json');
+
+if (!existsSync(TAXONOMY_FILE)) {
+  console.log(
+    `\n${RED}${BOLD}Gate 11 cannot run.${OFF} ${TAXONOMY_FILE} is missing.\n` +
+      'A gate that lost its own inputs must fail rather than pass over an empty set.\n',
+  );
+  process.exit(1);
+}
+
+let vocabulary = null;
+let familiesChecked = 0;
+try {
+  vocabulary = parseTaxonomyVocabulary(readJsonFile(TAXONOMY_FILE), 'taxonomy.json');
+
+  const listed = new Set(vocabulary.families.map((f) => f.family));
+  const used = new Map();
+  for (const { file, record } of real.entries) {
+    const family = record.taxonomy.family;
+    if (!used.has(family)) used.set(family, file);
+  }
+
+  for (const [family, file] of used) {
+    familiesChecked += 1;
+    if (listed.has(family)) continue;
+    fail(
+      `content/taxonomy.json has no row for family "${family}" (used by ${file}). A Japanese ` +
+        'reader would see the English authoring slug, which is the exact defect this file ' +
+        'exists to prevent — and returning the slug quietly is the fallback ADR-0028 forbids.',
+    );
+  }
+
+  // THE OTHER DIRECTION. A row nobody uses is not harmless: it is how a reviewer stops reading
+  // the list, and then a genuinely missing family goes unnoticed inside it.
+  for (const family of listed)
+    if (!used.has(family))
+      fail(
+        `content/taxonomy.json lists family "${family}", which no authored entry uses. A dead ` +
+          'row is how a live one gets waved through later — remove it, or publish an entry ' +
+          'that needs it.',
+      );
+} catch (error) {
+  fail(`taxonomy.json: ${error.message}`);
+}
+rulesExercised += 1;
+
 // --- the phrase lexicon: schema, digest, and agreement with the authored taxonomy ----------
 
 /**
@@ -464,7 +530,13 @@ console.log(
 // compared at all.
 console.log(
   `${DIM}  ${String(lexiconAgreements)} lexicon/taxonomy agreement(s) checked over ` +
-    `${String(lexicon === null ? 0 : lexicon.terms.length)} term(s)${OFF}\n`,
+    `${String(lexicon === null ? 0 : lexicon.terms.length)} term(s)${OFF}`,
+);
+// PRINTED for the same reason: a green family check over ZERO families and a green one over 25
+// read identically otherwise, and the first would mean no Japanese reader was protected at all.
+console.log(
+  `${DIM}  ${String(familiesChecked)} famil(ies) used by an entry, all with a word in ` +
+    `${String(vocabulary === null ? 0 : vocabulary.families.length)} vocabulary row(s)${OFF}\n`,
 );
 
 if (real.entries.length === 0)

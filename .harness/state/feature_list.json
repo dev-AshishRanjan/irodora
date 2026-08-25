@@ -2459,7 +2459,7 @@
       "service": "content",
       "release": "R2",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "Every taxonomy.family in a published corpus version has a Japanese form that a reader sees in the ja locale",
@@ -2471,7 +2471,22 @@
         "content",
         "a11y"
       ],
-      "notes": "FOUND IN F-018. The Atlas filters by taxonomy.family and shows the value the corpus authored — \"blue-grey\", \"off-white\", \"mineral-green\" — IN BOTH LOCALES. On a Japanese colour product that is a wart on the screen the product exists for. IT WAS NOT FIXED IN F-018 ON PURPOSE, and the reason is the interesting part: a lookup table in the app would be putting words in the editor’s mouth, and it would be an ENUMERATED table against a set the CORPUS controls — so a family introduced by a future publish would render blank or fall back to English, and ADR-0028 forbids fallback precisely because it makes a gap invisible. The catalogue is the wrong home for this: ADR-0056 makes it an enumerated TypeScript record whose completeness tsc checks, and tsc cannot check a key set that comes from JSON data. THE FAMILY IS CONTENT, so its Japanese form belongs in content — most likely a taxonomy vocabulary file beside editors.json, with the content gate rejecting a family that has no entry, which is the same shape as the source register (E-021). The same question applies to `era` and `material` the day a measured entry carries them."
+      "notes": "DONE. The Atlas filter, every Atlas row and the colour detail screen showed the English authoring slug — blue-grey, off-white, mineral-green — IN BOTH LOCALES since F-018. They now read as Japanese in ja and as English in en. WHERE THE WORDS LIVE WAS THE WHOLE DECISION, and F-018 had left it unfixed on purpose. A lookup table in the app would be ENUMERATED against a set the CORPUS controls, so a family added by a future publish would render blank or fall back to English — and ADR-0028 forbids fallback precisely because it makes a gap invisible. The catalogue cannot hold it either: ADR-0056 makes it a TypeScript record whose completeness tsc checks, and tsc cannot see a key set that comes from JSON data. So the words are in content/taxonomy.json beside editors.json, and COMPLETENESS MOVED FROM THE COMPILER TO GATE 11 — both directions, because a row nobody uses is how a live gap gets waved through later. Both watched failing. THE SCHEMA REFUSES A JAPANESE FORM THAT IS THE SLUG, which is the defect in its purest form: it satisfies \"has a Japanese form\" while showing a Japanese reader exactly what they saw before. E-017 FIRED A SEVENTH TIME AND CAUGHT SOMETHING REAL. The family words render on three screens, so verify-font-coverage.mjs now reads them — and immediately reported 鼠 and 陶, which nothing else in the repository required. 鼠 IS IN SIX OF THE TWENTY-FIVE FAMILIES, every grey one, so a Japanese reader would have seen tofu across most of the grey filter chips. Third time content has reached a screen from a direction the font check was not looking; the pattern is now explicit in E-028. THE FIRST DRAFT OF THE LEAK TEST CRIED WOLF. Scanning a joined text blob for each slug reported \"red\" and \"brown\" — red matches inside \"japanese-inspired\" and brown inside an English description. Both false positives, and a check that fires on prose gets deleted. It asserts on WHOLE TEXT NODES now, in the three shapes the family actually renders in, with a four-case decoy table. That table also caught a shell-mangled `startsWith()` with no argument, which the earlier one-case decoy had passed straight over [[a-decoy-that-is-not-broken-proves-nothing]]. THIS IS THE FIRST TIME ANY SCREEN HAS BEEN RENDERED IN ja. It needed a module mock of expo-localization, so it lives in its own file — screens.test.tsx keeps rendering in English because English is the decoy: it is the locale that legitimately resembles the slug. `familyLabel` is TOTAL OR IT THROWS: no fallback to the slug, because returning \"blue-grey\" quietly is what let this survive from F-018 to here. `era` and `material` will need the same treatment the day a measured entry carries one; both are null on every seed entry.",
+      "plan": "plans/F-090-the-family-a-japanese-reader-sees.md",
+      "effects": [
+        "E-016",
+        "E-017",
+        "E-021",
+        "E-028"
+      ],
+      "attested": [
+        {
+          "criterion": "Every taxonomy.family in a published corpus version has a Japanese form that a reader sees in the ja locale",
+          "verifiedBy": "THE MECHANISM IS PROVEN; THE WORDS ARE NOT REVIEWED. Completeness is asserted in both directions over the files by gate 11 (25 families, printed), and over what the APP loads by a test that renders the Atlas and the detail screen in the ja locale — the first time any screen in this repository has been rendered in Japanese. What no test reaches: whether 生成り, 青鼠, 岩緑青 and the other 22 are the words a Japanese speaker would choose. They are written by one editor and unreviewed (ADR-0060, OQ-5), and a family name is far more visible than a rationale — it is on every Atlas row. A reviewer should expect to change several.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-091",

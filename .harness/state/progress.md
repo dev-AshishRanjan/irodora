@@ -8,6 +8,117 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-090 · the first screen ever rendered in Japanese, and the tofu it found
+
+The Atlas filter, every Atlas row and the colour detail screen showed the English authoring slug
+— `blue-grey`, `off-white`, `mineral-green` — **in both locales**, since F-018. They read as
+Japanese in `ja` now, and as English in `en`.
+
+### Where the words live was the whole decision
+
+F-018 saw this and left it **on purpose**, and the reason is the design.
+
+A lookup table in the app would be *enumerated* against a set the **corpus** controls, so a
+family added by a future publish would render blank or fall back to English — and ADR-0028
+forbids fallback precisely because it makes a gap invisible. The message catalogue cannot hold
+it either: ADR-0056 makes it a TypeScript record whose completeness `tsc` checks, and **`tsc`
+cannot see a key set that comes from JSON data**.
+
+So the words are in `content/taxonomy.json`, beside `editors.json`, and **completeness moved
+from the compiler to gate 11**:
+
+| | English catalogue | this vocabulary |
+|---|---|---|
+| key set comes from | source | **corpus data** |
+| completeness checked by | `tsc` | **gate 11** |
+| a missing entry is | a compile error | **a build failure naming the family** |
+
+Both directions, both watched failing: a family used by an entry with no row, and a row no entry
+uses. A dead row is how a live gap gets waved through later.
+
+**The schema refuses a Japanese form that is the slug** — the defect in its purest form, since
+it satisfies *"has a Japanese form"* while showing a Japanese reader exactly what they saw
+before.
+
+### E-017 fired a seventh time, and caught something real
+
+The family words render on three screens, so `verify-font-coverage.mjs` now reads them. It
+immediately reported **鼠** and **陶** — codepoints nothing else in the repository required.
+
+**鼠 is in six of the twenty-five families.** Every grey one: 青鼠, 緑鼠, 紫鼠, 石の鼠,
+寒色系の鼠, 暖色系の鼠. A Japanese reader would have seen tofu boxes across most of the grey
+filter chips, on the screen the product exists for.
+
+Third time content has reached a screen from a direction the font check was not looking. The
+pattern is explicit in E-028 now: **any `ja` string in `content/` that a screen renders belongs
+in the font requirement.**
+
+### The first draft of the leak test cried wolf
+
+Scanning a joined text blob for each slug reported `red` and `brown`. `red` matches inside
+**"japanese-inspi*red*"**; `brown` inside an English description. Both false positives — and a
+check that fires on prose gets deleted.
+
+It asserts on **whole text nodes** now, in the three shapes the family actually renders in
+(`label count`, `label · temp · hex`, and the bare label). The four-case decoy table also caught
+a shell-mangled `startsWith()` **with no argument** — half the check silently doing nothing,
+which the earlier one-case decoy had passed straight over.
+
+### The first screen ever rendered in `ja`
+
+That is why this needed its own test file: the locale comes from `expo-localization`, so it needs
+a module mock, and a module mock is file-wide. `screens.test.tsx` keeps rendering in English
+because **English is the decoy** — it is the locale that legitimately resembles the slug.
+
+`familyLabel` is total or it throws. No fallback to the slug, because returning `blue-grey`
+quietly is exactly what let this survive from F-018 to here.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 16 checks, 25 links |
+| `typecheck` · `build` · `lint` · `format` | **passed** — 31, 18, 31 tasks |
+| `test` | **passed for the touched packages**, forced — 11 files in `corpus`, 247 in `mobile`. **RED repo-wide**, unchanged |
+| `a11y` | **passed** — scope 17/17, 20 tasks |
+| `contrast` | **passed** — 21 tasks |
+| `content` | **passed** — 25 families all with a word; font 440/787; every bundle current |
+
+**Not run:** `e2e`, `cvd`, `perf`, `color-golden`.
+
+### Recorded honestly
+
+- **The Japanese is unreviewed**, and it matters more here than anywhere it has mattered before:
+  a family name is on every Atlas row, not buried in a rationale. That is the attested criterion,
+  and a reviewer should expect to change several.
+- **A row is a judgement, not a translation.** `off-white` → 生成り (undyed, unbleached cloth)
+  rather than オフホワイト, because this is a product about what you wear. Every row says what was
+  chosen and why.
+- **No digest ledger for the vocabulary**, deliberately: a corrupted vocabulary shows wrong
+  *words*, a corrupted corpus shows a wrong *colour claim*, and the digest chain exists for the
+  second. The gate validates the source, `--check` proves the shipped copy matches, the diff is
+  the control — the same one the source register itself has.
+- **`era` and `material` have the same problem** the day a measured entry carries one. Null on
+  every seed entry, so noted rather than built.
+
+### Next
+
+R2 has **no eligible feature**. Two `backlog` items remain plus one `wont`:
+
+| | | |
+|---|---|---|
+| **F-091** | `must` | Blocked on the environment — every Expo e2e tool is a dependency and `pnpm install` cannot run here |
+| **F-092** | `should` | A design token that reaches no component fails a check |
+
+**F-092 is the last one doable on this machine.** It is F-089's class aimed at a different
+artefact: F-089 asks whether a *rationale* describes a world that exists, F-092 asks whether a
+*generated value* has a reader — the shape F-019 found with `tabular-nums`, and the shape F-094
+found again with `global.css`.
+
+**Ahead of everything, unchanged: the Node upgrade to 24.19.0.**
+
+---
+
 ## 2026-08-25 — F-089 · the check fired on its author, and the plan was the thing that was wrong
 
 Gate 0 has a sixteenth check. An effect rationale — or its paired memory note — that asserts its

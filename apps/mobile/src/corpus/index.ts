@@ -46,6 +46,9 @@ import {
   type PublishedEntry,
   type PublishedPalette,
   type VersionBundle,
+  familyWord,
+  parseTaxonomyVocabulary,
+  type TaxonomyVocabulary,
 } from '@irodora/corpus';
 import {
   CORPUS_BUNDLE_TEXT,
@@ -54,6 +57,7 @@ import {
   CORPUS_PALETTE_COUNT,
   CORPUS_ROOT_DIGEST,
 } from './generated/bundle';
+import { VOCABULARY_FAMILY_COUNT, VOCABULARY_TEXT } from '../taxonomy/generated/vocabulary';
 
 /** SHA-256 over UTF-8, the shape the corpus digest seam expects. */
 export const sha256 = (text: string): string => bytesToHex(nobleSha256(utf8ToBytes(text)));
@@ -170,6 +174,40 @@ export function colorFor(entry: CorpusEntry): Color {
   });
 }
 
+/**
+ * The verified family vocabulary (F-090).
+ *
+ * Parsed once, by the same function gate 11 uses. There is no digest here and the generator
+ * says why: a corrupted vocabulary shows wrong WORDS, not a wrong colour claim, and the
+ * content gate validates the source in both directions against the authored corpus.
+ */
+let cachedVocabulary: TaxonomyVocabulary | null = null;
+
+function vocabulary(): TaxonomyVocabulary {
+  if (cachedVocabulary !== null) return cachedVocabulary;
+  const parsed = parseTaxonomyVocabulary(JSON.parse(VOCABULARY_TEXT), 'taxonomy.json');
+  if (parsed.families.length !== VOCABULARY_FAMILY_COUNT)
+    throw new Error(
+      `taxonomy: the generated module records ${String(VOCABULARY_FAMILY_COUNT)} families and ` +
+        `the file carries ${String(parsed.families.length)}. The two came from different ` +
+        'generations — run `node scripts/generate-taxonomy-bundle.mjs`.',
+    );
+  cachedVocabulary = parsed;
+  return parsed;
+}
+
+/**
+ * The word a reader sees for a family.
+ *
+ * **Total, or it throws.** No fallback to the authoring slug: gate 11 guarantees every family
+ * a published entry uses has a row, so an unknown one means the shipped vocabulary and the
+ * shipped corpus came from different generations. Returning the slug quietly is exactly the
+ * behaviour ADR-0028 forbids — it makes the gap invisible, which is how it survived from F-018
+ * to F-090 in the first place.
+ */
+export function familyLabel(family: string, locale: 'en' | 'ja'): string {
+  return familyWord(vocabulary(), family, locale);
+}
 /** Every family in the corpus, with how many entries carry it. For the Atlas's filters. */
 export function families(): readonly { readonly family: string; readonly count: number }[] {
   const counts = new Map<string, number>();

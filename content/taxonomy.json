@@ -1,0 +1,176 @@
+{
+  "provenance": {
+    "source": "Irodora editorial curation — taxonomy vocabulary, 2026",
+    "sourceId": "IRO-ED-003",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial. Each family already had an English authoring slug; the Japanese form is a choice, not a translation of that slug. Where an ordinary Japanese colour word exists it is used (茶, 赤, 緑); where the family names a MATERIAL or a QUALITY rather than a hue, the Japanese follows the material (陶土色, 石色) rather than transliterating the English. Katakana is used only where the loanword is genuinely the word a Japanese speaker would reach for.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-25",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-25",
+    "reviewIndependence": "self",
+    "editorialNotes": "The families are the most VISIBLE editorial choice in the product — they are on the Atlas filter, every list row and the detail screen — and until F-090 a Japanese reader saw the English authoring slug on all three. THE JAPANESE HERE IS WRITTEN BY ONE EDITOR AND NOT REVIEWED by a competent speaker; that is the same standing gap the corpus and the phrase lexicon carry (ADR-0060, OQ-5), and it matters more here than in a rationale because a family name is read by everyone who opens the Atlas. A reviewer should expect to change several of these."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "families": [
+    {
+      "family": "blue-green",
+      "en": "Blue-green",
+      "ja": "青緑",
+      "rationale": "The ordinary compound for the blue-to-green region, and the one a Japanese reader would use unprompted."
+    },
+    {
+      "family": "blue-grey",
+      "en": "Blue-grey",
+      "ja": "青鼠",
+      "rationale": "青鼠 rather than 青灰: 鼠 is the traditional word for a grey in Japanese colour naming, and this corpus is built on that vocabulary."
+    },
+    {
+      "family": "brown",
+      "en": "Brown",
+      "ja": "茶",
+      "rationale": "The plain word. 茶 covers the whole brown region in ordinary Japanese use and needs no qualifier here."
+    },
+    {
+      "family": "charcoal",
+      "en": "Charcoal",
+      "ja": "墨",
+      "rationale": "墨 is ink-black in the traditional palette and is what these near-blacks are named after; 木炭 would name the material rather than the colour."
+    },
+    {
+      "family": "clay",
+      "en": "Clay",
+      "ja": "陶土色",
+      "rationale": "A material family, so the Japanese follows the material: 陶土 is potter's clay, which is what these warm mid-tones are drawn from."
+    },
+    {
+      "family": "cool-grey",
+      "en": "Cool grey",
+      "ja": "寒色系の鼠",
+      "rationale": "Grey qualified by temperature. 鼠 keeps it inside the traditional grey vocabulary, and 寒色系 is the standard way to say the cool side."
+    },
+    {
+      "family": "deep-blue",
+      "en": "Deep blue",
+      "ja": "深い青",
+      "rationale": "Depth rather than a named dye: these are dark blues of several origins, so 紺 or 藍 would claim a specific dye they do not all share."
+    },
+    {
+      "family": "gold",
+      "en": "Gold",
+      "ja": "金茶",
+      "rationale": "金茶 rather than 金: the family is a warm yellow-brown, not a metallic, and 金 alone would suggest metal."
+    },
+    {
+      "family": "green",
+      "en": "Green",
+      "ja": "緑",
+      "rationale": "The plain word, for the same reason as 茶: the family is the whole green region with no qualifier."
+    },
+    {
+      "family": "green-grey",
+      "en": "Green-grey",
+      "ja": "緑鼠",
+      "rationale": "The same construction as 青鼠, keeping 鼠 as the grey element across every grey family."
+    },
+    {
+      "family": "mid-blue",
+      "en": "Mid blue",
+      "ja": "中間の青",
+      "rationale": "Lightness qualified, not a dye name. Naming it 縹 or 花色 would assert a traditional dye these entries were not derived from."
+    },
+    {
+      "family": "mineral-green",
+      "en": "Mineral green",
+      "ja": "岩緑青",
+      "rationale": "岩緑青 is the mineral pigment green of Japanese painting, which is exactly what this family is named for in English."
+    },
+    {
+      "family": "mineral-grey",
+      "en": "Mineral grey",
+      "ja": "石の鼠",
+      "rationale": "The mineral half made explicit while keeping 鼠 as the grey element; 鉱物 would read as a geology term rather than a colour."
+    },
+    {
+      "family": "ochre",
+      "en": "Ochre",
+      "ja": "黄土",
+      "rationale": "黄土 is the established Japanese word for ochre as a pigment, and needs no loanword."
+    },
+    {
+      "family": "off-white",
+      "en": "Off-white",
+      "ja": "生成り",
+      "rationale": "生成り is undyed, unbleached cloth — the exact sense of off-white in a clothing context, and far better than オフホワイト for a product about what you wear."
+    },
+    {
+      "family": "pale-blue",
+      "en": "Pale blue",
+      "ja": "淡い青",
+      "rationale": "淡い is the standard qualifier for a weak, light colour, and matches the phrase lexicon's use of the same word."
+    },
+    {
+      "family": "pale-green",
+      "en": "Pale green",
+      "ja": "淡い緑",
+      "rationale": "The same construction as 淡い青, so the pale families read as one set."
+    },
+    {
+      "family": "pale-yellow",
+      "en": "Pale yellow",
+      "ja": "淡い黄",
+      "rationale": "The same construction again; consistency across the three pale families matters more than finding a distinct word for each."
+    },
+    {
+      "family": "pink",
+      "en": "Pink",
+      "ja": "桃",
+      "rationale": "桃 is the traditional pink and is at home beside the rest of this vocabulary; ピンク would be the only katakana loanword in the set."
+    },
+    {
+      "family": "red",
+      "en": "Red",
+      "ja": "赤",
+      "rationale": "The plain word, like 茶 and 緑: the family is the whole red region."
+    },
+    {
+      "family": "rust",
+      "en": "Rust",
+      "ja": "錆色",
+      "rationale": "錆 is rust as the material, and 錆色 is the established colour word built on it — the same move as 陶土色."
+    },
+    {
+      "family": "stone",
+      "en": "Stone",
+      "ja": "石色",
+      "rationale": "A material family named after stone, so the Japanese names the material and adds 色, consistent with 錆色 and 陶土色."
+    },
+    {
+      "family": "violet-grey",
+      "en": "Violet-grey",
+      "ja": "紫鼠",
+      "rationale": "The same 鼠 construction as the other grey families, with 紫 for the violet cast."
+    },
+    {
+      "family": "warm-grey",
+      "en": "Warm grey",
+      "ja": "暖色系の鼠",
+      "rationale": "The counterpart to 寒色系の鼠, so the two temperature-qualified greys read as a pair."
+    },
+    {
+      "family": "yellow-green",
+      "en": "Yellow-green",
+      "ja": "黄緑",
+      "rationale": "The ordinary compound, and the direct counterpart to 青緑 at the other end of the green region."
+    }
+  ]
+}

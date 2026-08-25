@@ -29,6 +29,7 @@ import { srgbToHex } from '@irodora/color-spaces';
 import { Button, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import {
   colorFor,
+  familyLabel,
   entryBySlug,
   palettesContaining,
   resolveSlugs,
@@ -123,7 +124,7 @@ export interface ColourDetailProps {
 
 export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX.Element {
   const { colors } = useTheme();
-  const { t, script } = useMessages();
+  const { t, script, locale } = useMessages();
   const found = entryBySlug(slug);
 
   if (found === null)
@@ -316,7 +317,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
       </Section>
 
       <Section title={t('detail.taxonomy')}>
-        <Row label={t('filter.family')} value={entry.taxonomy.family} />
+        <Row label={t('filter.family')} value={familyLabel(entry.taxonomy.family, locale)} />
         <Row
           label={t('filter.temperature')}
           value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}

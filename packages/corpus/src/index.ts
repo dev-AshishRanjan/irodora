@@ -69,6 +69,13 @@ export {
 export { ISO_DATE_PATTERN, SLUG_PATTERN, VERSION_ID_PATTERN } from './primitives.js';
 
 export {
+  familyWord,
+  parseTaxonomyVocabulary,
+  type FamilyVocabulary,
+  type TaxonomyVocabulary,
+} from './taxonomy.js';
+
+export {
   inRange,
   LEXICON_AXES,
   matchesRegion,

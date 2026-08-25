@@ -181,6 +181,24 @@ function requiredCodepoints() {
           if (isJapanese(cp)) required.set(cp, `rules/${file}`);
     }
 
+  /*
+   * The taxonomy vocabulary (F-090). Its Japanese FAMILY WORDS render on the Atlas filter,
+   * every Atlas row and the colour detail screen — the same reach as a colour name, and the
+   * same reason the phrase lexicon is read above. Only the `ja` field: a rationale is
+   * editorial prose that never reaches a screen.
+   */
+  const taxonomyFile = join(ROOT, 'content', 'taxonomy.json');
+  if (existsSync(taxonomyFile)) {
+    let parsed;
+    try {
+      parsed = JSON.parse(readFileSync(taxonomyFile, 'utf8'));
+    } catch {
+      parsed = null;
+    }
+    for (const f of parsed?.families ?? [])
+      for (const cp of codepointsOf(String(f.ja ?? '')))
+        if (isJapanese(cp)) required.set(cp, 'content/taxonomy.json');
+  }
   return { required, entries };
 }
 
@@ -289,7 +307,7 @@ const { required, entries } = requiredCodepoints();
 // "every codepoint is covered" from "there were no codepoints".
 console.log(
   `${DIM}  ${String(required.size)} Japanese codepoint(s) required, from ${String(entries)} ` +
-    `authored corpus entr(ies), the ja catalogue and the phrase lexicon.${OFF}`,
+    `authored corpus entr(ies), the ja catalogue, the phrase lexicon and the taxonomy vocabulary.${OFF}`,
 );
 
 if (!existsSync(FONT)) {

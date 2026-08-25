@@ -44,6 +44,7 @@ import { nativeTapTarget } from '@irodora/design-tokens';
 import { Chip, SearchField, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import {
   allEntries,
+  familyLabel,
   colorFor,
   families,
   CORPUS_ENTRY_COUNT,
@@ -137,7 +138,7 @@ export interface AtlasProps {
 
 export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
   const { colors } = useTheme();
-  const { t, script } = useMessages();
+  const { t, script, locale } = useMessages();
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
@@ -217,7 +218,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
         label={t('filter.family')}
         options={familyOptions.map((f) => ({
           value: f.family,
-          label: `${f.family} ${String(f.count)}`,
+          label: `${familyLabel(f.family, locale)} ${String(f.count)}`,
         }))}
         selected={filters.family}
         onChange={(family) => {
@@ -333,7 +334,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
                     {`${entry.name.kana} · ${entry.name.romaji}`}
                   </Text>
                   <Text size="small" color="foreground.2" script={script}>
-                    {`${entry.taxonomy.family} · ${t(TEMPERATURE_KEYS[entry.taxonomy.temperature])} · ${derived.hex}`}
+                    {`${familyLabel(entry.taxonomy.family, locale)} · ${t(TEMPERATURE_KEYS[entry.taxonomy.temperature])} · ${derived.hex}`}
                   </Text>
                 </View>
               </View>

@@ -944,6 +944,52 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-028",
+      "from": {
+        "kind": "content",
+        "ref": "content/taxonomy.json"
+      },
+      "to": [
+        {
+          "kind": "content",
+          "ref": "content/colors"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/src/taxonomy/generated/vocabulary.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile",
+        "packages/corpus"
+      ],
+      "severity": "high",
+      "guard": "gate:content",
+      "memory": "memory/effects/a-family-word-is-content-because-the-family-is.md",
+      "rationale": "THE KEY SET COMES FROM CORPUS DATA, SO THE COMPILER CANNOT CHECK IT. Every other user-facing string in this app is a key in an enumerated TypeScript record whose completeness `tsc` proves (ADR-0056). A family is different: `taxonomy.family` is authored in content/colors, so the set of words that must exist is decided by a PUBLISH rather than by source — and tsc cannot see a key set that comes from JSON. That is why F-018 left the Atlas rendering `blue-grey` and `off-white` in the ja locale rather than adding a lookup table: a table in the app would be enumerated against a set the corpus controls, and a family added by a future publish would render blank or fall back to English, which ADR-0028 forbids precisely because fallback makes a gap invisible. SO COMPLETENESS MOVED FROM THE COMPILER TO GATE 11, and the link runs BOTH ways: publishing an entry with a new family breaks the vocabulary, and removing a vocabulary row breaks the corpus. A row nobody uses fails too — a dead row is how a live gap gets waved through later, the same rule the source register and the advisory register both carry. THE THIRD DESTINATION IS THE FONT, and it caught something: the Japanese family words render on the Atlas filter, every Atlas row and the detail screen, so verify-font-coverage.mjs now reads them — and doing so immediately reported 鼠 and 陶, which nothing else in the repository required. 鼠 alone appears in six of the 25 families, so a Japanese reader would have seen tofu on most of the grey filter chips. THE LOOKUP IS TOTAL OR IT THROWS: familyLabel has no fallback to the slug, because returning `blue-grey` quietly is the behaviour that let this survive from F-018 to F-090 in the first place.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

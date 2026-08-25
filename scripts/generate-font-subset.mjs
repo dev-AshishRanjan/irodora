@@ -117,6 +117,18 @@ function requiredCodepoints() {
       for (const t of parsed.terms ?? []) add(String(t.term ?? ''));
     }
 
+  // The taxonomy vocabulary (F-090). IN STEP WITH verify-font-coverage.mjs, which keeps its
+  // own copy of this collection — see the note on the lexicon block above.
+  const taxonomyFile = join(ROOT, 'content', 'taxonomy.json');
+  if (existsSync(taxonomyFile)) {
+    let parsed;
+    try {
+      parsed = JSON.parse(readFileSync(taxonomyFile, 'utf8'));
+    } catch {
+      parsed = null;
+    }
+    for (const f of parsed?.families ?? []) add(String(f.ja ?? ''));
+  }
   return { required, entries, fromContent };
 }
 
@@ -138,7 +150,7 @@ console.log(`\n${BOLD}Font subset${OFF}\n`);
 const { required, entries, fromContent } = requiredCodepoints();
 console.log(
   `${DIM}  ${String(required.size)} codepoint(s) required — ${String(fromContent)} from ` +
-    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue + the phrase lexicon), the rest ` +
+    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue + the phrase lexicon + the taxonomy vocabulary), the rest ` +
     `from the always-included ranges.${OFF}`,
 );
 

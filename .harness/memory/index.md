@@ -103,6 +103,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-cache-key-decides-whether-a-gate-ran-at-all.md](effects/the-cache-key-decides-whether-a-gate-ran-at-all.md) — **E-025** · every other link names a gate as its guard, and a replayed cache discharges none of them.
 - [effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md](effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md) — **E-026** · "dark" is defined twice; the agreement check found a boundary a MILLIONTH on the wrong side.
 - [effects/a-token-leaves-the-app-inside-the-card.md](effects/a-token-leaves-the-app-inside-the-card.md) — **E-027** · E-007 stopped at components; a shared card keeps the token values it was built with for ever.
+- [effects/a-family-word-is-content-because-the-family-is.md](effects/a-family-word-is-content-because-the-family-is.md) — **E-028** · the key set comes from a publish, so the compiler cannot check it and gate 11 does.
 
 ## Glossary
 

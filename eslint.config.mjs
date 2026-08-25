@@ -100,6 +100,7 @@ export default tseslint.config(
       // (ADR-0066). Nothing here is authored.
       'apps/mobile/src/corpus/generated/**',
       'apps/mobile/src/rules/generated/**',
+      'apps/mobile/src/taxonomy/generated/**',
     ],
   },
 
