@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-027 · the camera gets one look, admits what it cannot tell, and waits to be told yes
+
+A `LensReading` proposes a profile. It fills the dimensions one reading can honestly support,
+**abstains on the one it cannot**, carries a ceiling below anything the guided path can reach,
+and **nothing is written until the person presses a control that says so**.
+
+### What a single reading can support decided the scope
+
+| Dimension | From the reading |
+|---|---|
+| `lightness` | a range around its own OKLCh **L** |
+| `temperature` | a bias from its **hue** |
+| `chroma` | a tolerance from its own **C** |
+| `contrast` | **nothing** |
+
+**`contrast` abstains at confidence 0**, and the row reads *"Not asked yet."* — the same words a
+guided run uses for a trial nobody answered — while every other row is answered. That is what
+makes the abstention legible as a decision rather than as a defect. A contrast preference is the
+separation between two garments; one region has no second colour in it. A photo path that
+answered all seven would have invented exactly the dimension nobody would check.
+
+### `PHOTO_CEILING = 0.5` is not a tuning knob
+
+At or below `CONFIDENCE_MAJORITY`, so an estimate from one reading never outranks a guided
+answer two of three people disagreed on. The reason is NFR-23: **nobody has measured this path
+across ITA° bands**, so a higher number would be a claim with nothing behind it. ADR-0072 §5
+records it and names the day it can move — the day F-037 publishes per-band accuracy.
+
+The bias is **scaled by the confidence** and the ranges are not: a washed-out reading should not
+say "fully warm" with a quiet number beside it, whereas widening a range by uncertainty produces
+a range that excludes nothing.
+
+### The F-026 no-camera check was re-scoped, and the guarantee is stronger
+
+`photo.ts` names `LensReading` on purpose, so F-026's directory-wide scan would have failed on
+the feature it was built to coexist with. **The tempting repair — an exclusion — would have
+quietly changed what is guaranteed.**
+
+What FR-26 protects is that the *guided flow* does not depend on a camera, so the check now says
+that directly: no guided module matches a camera pattern **and none imports `./photo`**;
+`photo.ts` reaches the lens by `import type` only, so nothing camera-shaped is in the runtime
+graph at all; and the roster is asserted against the directory, so a new module is a failure
+rather than a file nothing scans.
+
+### Gate 11 caught the comment that explained it
+
+The Japanese note saying a particular kanji is absent from the bundled face **contained that
+kanji**. Font coverage went 440 → 441 required, one missing.
+
+That is the second time in two features: F-026's decoy comment quoting an import specifier
+failed `verify-app-imports` the same way. Both gates read source text, and they are right to —
+**a note about an artefact is an instance of it**. Recorded as
+[[a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it]].
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (16 checks, 28 links) · `typecheck` (31) · `lint` (31 + 9 scripts) · `format` · `build` (18) · `a11y` (scope 18/18, token-reach, 20 tasks) · `contrast` (21) · `cvd` · `content` (font **440/787**, back to unchanged) |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) · `security` on `verify-no-key-material` (**F-096**) |
+| **NOT run** | `e2e` (gate 7 pending; F-091 blocked) · `perf` (pending) |
+
+`@irodora/mobile` **325/325** across 12 suites. Three `ProfileSetup` branches are now in the
+conformance registry — comparison, summary and photo estimate — because the estimate draws two
+controls and an unanswered row the other two never draw.
+
+### Recorded honestly
+
+- **Two criteria are attested, both blocking release, and both were named in the plan.**
+  - *"never transmitted"* is a claim about sockets during a real journey. It is F-039's attested
+    criterion and gate 7's subject, and gate 7 is pending. A source scan would prove nothing
+    about runtime and is not offered as if it did. The other two clauses of that criterion —
+    ranges derived on-device, the image discarded — **are** structural: the derivation takes a
+    `LensReading`, which has no field a frame could be assigned to, asserted with
+    `ts-expect-error` so the test stops compiling if that becomes false.
+  - *"bias validation across every ITA° band"* needs participants, not a fixture. **It is also
+    F-037's third criterion, and F-037 is `blockedBy: [F-027]`** — the study sits downstream of
+    the feature that creates the need for it. That ordering is legitimate and is now visible
+    from the feature that ships the camera path, rather than only from the one that will
+    eventually discharge it. What protects the product meanwhile is not the attestation; it is
+    the 0.5 ceiling.
+- **Nothing in the app produces a `LensReading`.** F-040 shipped the seam and four capture modes
+  wired to nothing, with its device criteria attested — the app has had a capture seam and no
+  capture surface since R2. The photo path is reachable only by passing a reading in. Filed as
+  **F-097** rather than narrated, because a tested module nobody wired up passes every test it
+  has.
+- **The mapping from a reading to a lightness range is a stated convention**, not a validated
+  model, and it says so in the module, in the ADR and here.
+- **The Japanese is unreviewed**, like the rest of the catalogue (OQ-5).
+
+### Next
+
+R3 by lowest id: **F-028** (`must`, unblocked) is the feature this and F-026 were built for — it
+consumes the seven dimensions and weights by exactly these confidences. **F-029** (`must`,
+unblocked) closes **E-009**, the only link in the graph still carrying `guard: none`. F-095,
+F-096 and F-097 are `should`.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-25 — F-026 · twelve taps become seven dimensions, and one of them stays yours
 
 **R3 opens.** A person answers twelve forced-choice swatch comparisons — no camera, no

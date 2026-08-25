@@ -265,6 +265,20 @@ export const en = {
   'profile.notFinished': 'Every comparison needs an answer before this can be saved.',
   'profile.restart': 'Compare again',
   'profile.restartHint': 'Anything you set by hand stays as you set it.',
+
+  /*
+   * F-027 — photo-assisted setup (FR-27).
+   *
+   * `profile.fromPhoto` is a SECOND admission rather than a reworded first one. The guided path
+   * has one thing to say — this is an estimate, correct it. The photo path has two: it is a
+   * weaker estimate, and the reason is that a camera reads the room as much as the person
+   * (ADR-0010 §2). Saying only the first would leave the weaker confidence looking arbitrary.
+   */
+  'profile.fromPhoto':
+    'This came from one camera reading. A camera reads the light in the room as much as it reads you, so this is a weaker starting point than the comparisons — check each line.',
+  'profile.confirm': 'This looks right',
+  'profile.compareInstead': 'Answer the comparisons instead',
+  'profile.confirmHint': 'Check the estimate and confirm it before saving.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

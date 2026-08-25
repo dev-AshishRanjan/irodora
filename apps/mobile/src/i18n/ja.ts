@@ -262,6 +262,23 @@ export const ja: Record<MessageKey, string> = {
   'profile.notFinished': 'すべてくらべてから保存できます。',
   'profile.restart': 'もういちどくらべる',
   'profile.restartHint': '自分でえらんだところはそのままです。',
+
+  /*
+   * F-027. Same constraint as the block above: every kanji is already in the bundled subset.
+   *
+   * The natural word for "starting point" here is te-gakari, and its first character is not in
+   * the face — so 見立て is used instead, the same word the guided summary already uses for its
+   * own estimate, and the more honest one anyway.
+   *
+   * IT IS SPELLED IN ROMAJI ABOVE ON PURPOSE. Gate 11 reads this whole file, comments included,
+   * so a note explaining that a character is unavailable puts that character into the required
+   * set — which is exactly how this comment failed the gate on its first draft.
+   */
+  'profile.fromPhoto':
+    'カメラで一度読んだものです。カメラは部屋の光もいっしょに読むので、くらべたときより弱い見立てです。一つずつたしかめてください。',
+  'profile.confirm': 'これでよい',
+  'profile.compareInstead': 'かわりにくらべる',
+  'profile.confirmHint': '見立てをたしかめて、よければ保存できます。',
 };
 
 /**

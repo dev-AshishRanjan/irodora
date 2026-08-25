@@ -1055,6 +1055,10 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/photo.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1064,8 +1068,36 @@
       "severity": "high",
       "guard": "gate:test (apps/mobile/test/profile.test.ts — every trial checked against the published OKLCh)",
       "memory": "memory/effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md",
-      "rationale": "TWELVE CONSTANTS NAME CORPUS SLUGS AND ENCODE A CLAIM ABOUT THE VALUES BEHIND THEM: that each comparison separates on its own axis and stays matched on the others. Nothing in the type system holds that. A temperature trial is two entries matched in OKLCh L and C and opposed in hue class — move one entry 0.05 in L at the next publish and the same question is now partly about lightness, the answer still tallies, the profile still looks reasonable, and NOTHING ON THE SCREEN LOOKS DIFFERENT. This is E-022’s shape aimed at a different destination: E-022 asks whether the bundle the app reads is the one that was published; this asks whether a constant DESCRIBING the bundle’s contents still means what it said. The guard reads the published values rather than the authored ones and names the trial that fails, with a decoy asserting the separation thresholds can reject a pair — without it \"every trial clears the bound\" would also be true of a bound of zero. It is severity high rather than medium because the failure is silent by construction and the output is a personal profile that F-028 will weight recommendations by.",
+      "rationale": "TWELVE CONSTANTS NAME CORPUS SLUGS AND ENCODE A CLAIM ABOUT THE VALUES BEHIND THEM: that each comparison separates on its own axis and stays matched on the others. Nothing in the type system holds that. A temperature trial is two entries matched in OKLCh L and C and opposed in hue class — move one entry 0.05 in L at the next publish and the same question is now partly about lightness, the answer still tallies, the profile still looks reasonable, and NOTHING ON THE SCREEN LOOKS DIFFERENT. This is E-022’s shape aimed at a different destination: E-022 asks whether the bundle the app reads is the one that was published; this asks whether a constant DESCRIBING the bundle’s contents still means what it said. The guard reads the published values rather than the authored ones and names the trial that fails, with a decoy asserting the separation thresholds can reject a pair — without it \"every trial clears the bound\" would also be true of a bound of zero. It is severity high rather than medium because the failure is silent by construction and the output is a personal profile that F-028 will weight recommendations by. F-027 ADDED A SECOND CONSUMER THAT DOES NOT NAME A SLUG. `photo.ts` calls the same three list derivations over the same published entries, so a corpus publish moves a photo estimate’s neutrals, accents and avoid list exactly as it moves a guided one — and unlike the trials, nothing about that dependency is visible as a constant somebody could read. It is caught because the two paths SHARE the derivations rather than agreeing today: the guided tests assert those lists exactly, so a change reaching one path fails there.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-031",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/lens/reading.ts#cappedConfidence"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/photo.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test (apps/mobile/test/profile.test.ts — the reading’s cap is asserted to reach the estimate, with a baseline)",
+      "memory": "memory/effects/the-capture-ceiling-is-now-a-profile-confidence.md",
+      "rationale": "A LENS READING’S CONFIDENCE WAS A NUMBER SHOWN BESIDE A COLOUR. It is now the ceiling on seven profile dimensions, and F-028 will weight recommendations by those. So a change to ANY of the three inputs `cappedConfidence` combines — SPACE_CONFIDENCE_CEILING, the illumination assessment, the quality assessment — silently changes how much authority a personal profile carries, one subsystem away from where it was edited. THE TYPE CANNOT SEE IT: the field stays a number in [0,1] and every signature is unchanged, so typecheck is green through the whole thing. The guard is a test that asserts a poor reading produces a less confident estimate AND that a good one produces the ceiling — the baseline half matters, because \"the cap is applied\" is indistinguishable from \"the value is constant\" without it. What the guard does NOT cover is whether the ceilings are the right numbers; they are conventions (NFR-2) and F-063 is what would replace them with measurements.",
+      "confidence": 0.85,
       "origin": "manual",
       "status": "active"
     }

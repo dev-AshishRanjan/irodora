@@ -41,6 +41,7 @@ import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
 import type { ProfileStore } from '../src/profile/store';
+import type { LensReading } from '../src/lens/reading';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
 import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
@@ -169,6 +170,18 @@ function fakeProfileStore(): ProfileStore & { readonly saved: NewPersonalProfile
 /** Every trial answered on the `a` pole — the summary branch, fully populated. */
 const ALL_ANSWERS: readonly TrialAnswer[] = TRIALS.map((t) => ({ trialId: t.id, pole: 'a' }));
 
+/** A good reading: sRGB, well lit, plenty of samples, nothing capped (F-027). */
+const SAMPLE_READING: LensReading = {
+  rgb: [0.78, 0.62, 0.5],
+  space: 'srgb',
+  usableSamples: 1800,
+  variance: 0.01,
+  illumination: 'daylight',
+  quality: 'excellent',
+  confidence: 1,
+  instruction: '',
+};
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Home',
@@ -278,6 +291,18 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<ProfileSetup store={fakeProfileStore()} initialAnswers={ALL_ANSWERS} />, theme),
+  },
+  {
+    /*
+     * The THIRD branch (F-027): a photo estimate awaiting confirmation. It draws two controls
+     * the other two never draw and an unanswered row none of them has, so registering the first
+     * two would leave the confirmation gate unchecked in both themes.
+     */
+    name: 'screens/ProfileSetup (photo estimate)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<ProfileSetup store={fakeProfileStore()} reading={SAMPLE_READING} />, theme),
   },
 ];
 
@@ -1205,6 +1230,107 @@ describe('guided setup asks, concludes, and can be corrected (FR-26, FR-30)', ()
     expect(marked).toHaveLength(1);
     // The baseline, in the same test: with nothing corrected the marker is absent entirely.
     expect(nodes(derived)).not.toContain('You set this.');
+  });
+});
+
+/**
+ * FR-27 on the screen — **the estimate, and the gate in front of saving it**.
+ *
+ * The derivation is asserted in `profile.test.ts` without rendering. What is left here is the
+ * half that file cannot see: that the estimate reaches the summary, that it says where it came
+ * from, and that **nothing can be finalised until the person presses a control** — which is a
+ * property of the screen and of nothing else.
+ */
+describe('a photo estimate is proposed, not finalised (FR-27)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const READING = SAMPLE_READING;
+
+  const nodes = (over: Partial<LensReading> | null = {}): string[] =>
+    textOf(
+      draw(
+        <ProfileSetup
+          store={fakeProfileStore()}
+          {...(over === null ? {} : { reading: { ...READING, ...over } })}
+        />,
+        'light',
+      ),
+    );
+
+  it('shows the summary straight away rather than starting the comparisons', () => {
+    const text = nodes().join(' ');
+    expect(text).toContain('What your answers suggest');
+    // And NOT the comparison branch, which is what a person with a reading has skipped.
+    expect(text).not.toContain('Which would you rather wear?');
+  });
+
+  it('says the estimate came from a camera, and why that makes it weaker', () => {
+    // A lower confidence with no stated reason reads as arbitrary. ADR-0010 §2 gives the
+    // reason, and the screen is where a person can actually read it.
+    const text = nodes().join(' ');
+    expect(text).toContain('one camera reading');
+    expect(text).toContain('reads the light in the room');
+  });
+
+  it('refuses to save until the person confirms, and says so', () => {
+    /*
+     * FR-27's third criterion. The control is disabled AND the reason is on screen — a disabled
+     * button with no sentence is the accessibility failure that looks like polish.
+     */
+    const text = nodes().join(' ');
+    expect(text).toContain('Check the estimate and confirm it before saving.');
+    expect(text).toContain('This looks right');
+    // The alternative is offered in the same breath, so "confirm" is not the only way forward.
+    expect(text).toContain('Answer the comparisons instead');
+  });
+
+  it('DECOY — the guided path is never asked to confirm a confirmation', () => {
+    /*
+     * Without this, "the confirmation gate exists" would be indistinguishable from "the gate is
+     * always shown" [[a-decoy-that-is-not-broken-proves-nothing]]. A completed guided run
+     * finalises by pressing save, which is already explicit.
+     */
+    const guided = textOf(
+      draw(<ProfileSetup store={fakeProfileStore()} initialAnswers={ALL_ANSWERS} />, 'light'),
+    ).join(' ');
+    expect(guided).not.toContain('Check the estimate and confirm it before saving.');
+    expect(guided).not.toContain('This looks right');
+    expect(guided).not.toContain('one camera reading');
+  });
+
+  it('offers no estimate at all from a reading the capture assessment rejected', () => {
+    // `worthOffering` is the reading's own verdict. An estimate built on nothing would spend a
+    // person's correction on noise, and it would look exactly like a good one.
+    const text = nodes({ confidence: 0, usableSamples: 0 }).join(' ');
+    expect(text).toContain('Which would you rather wear?');
+    expect(text).not.toContain('one camera reading');
+  });
+
+  it('shows the contrast row as unanswered rather than filling it in', () => {
+    /*
+     * The abstention, on the surface. One reading has no second colour to be contrasted with,
+     * and the row says "Not asked yet." in the same words a guided run uses for a trial nobody
+     * answered — while every other row IS answered, which is what makes it read as a decision.
+     */
+    const shown = nodes();
+    expect(shown.filter((line) => line === 'Not asked yet.')).toHaveLength(1);
+    expect(shown.join(' ')).toContain('Contrast');
+  });
+
+  it('never presents an estimate as more certain than a split guided answer', () => {
+    // Every dimension the photo path answers is capped at PHOTO_CEILING, which is at most
+    // CONFIDENCE_MAJORITY — so the summary must never show the "answers agreed" sentence.
+    const text = nodes().join(' ');
+    expect(text).toContain('less certain');
+    expect(text).not.toContain('Your answers agreed on this.');
   });
 });
 

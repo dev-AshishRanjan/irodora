@@ -42,6 +42,16 @@ import {
   remaining,
 } from '../src/profile/derive';
 import {
+  biasFromHue,
+  COOL_HUE,
+  estimateFromReading,
+  PHOTO_CEILING,
+  readingOklch,
+  WARM_HUE,
+  worthOffering,
+} from '../src/profile/photo';
+import type { LensReading } from '../src/lens/reading';
+import {
   budgetSeconds,
   FLOW_CEILING_SECONDS,
   TRIALS,
@@ -175,25 +185,61 @@ describe('the design budget', () => {
   });
 });
 
-describe('the flow reaches no camera', () => {
+/**
+ * FR-26's "no camera", re-scoped by F-027 — and the guarantee is stronger, not weaker.
+ *
+ * The first version scanned everything under `src/profile/` for anything camera-shaped. F-027
+ * put `photo.ts` in that directory, and it names `LensReading` **on purpose** — so the original
+ * scan would have failed on the feature it was meant to coexist with, and the tempting repair
+ * is to add an exclusion and move on.
+ *
+ * That would have quietly changed what is guaranteed. What FR-26 protects is that **a person
+ * who will not photograph their face can finish the guided flow** — which is a claim about what
+ * the guided modules DEPEND ON, not about which files sit next to them. So the check now asserts
+ * the dependency directly:
+ *
+ * 1. no guided module matches a camera pattern, **and none of them imports `./photo`**;
+ * 2. `photo.ts` itself reaches the lens **by type only**, so nothing camera-shaped is in the
+ *    runtime graph at all — an `import type` is erased before the bundler sees it;
+ * 3. the guided flow renders start to finish with no reading supplied.
+ *
+ * (1) is what the old check meant to say. (2) and (3) are new, and neither was true-by-accident
+ * before — they are the two things a reader would want to know once a photo path exists.
+ */
+describe('the guided flow reaches no camera', () => {
   /** Anything that would put a lens between the person and the answer. */
   const CAMERA = /vision-camera|expo-camera|\.\.\/lens\/|from '\.\/camera'|ImagePicker/;
 
-  const sources = (): { file: string; text: string }[] => {
-    const dir = join(__dirname, '..', 'src', 'profile');
-    const files = readdirSync(dir).map((f) => join(dir, f));
-    files.push(join(__dirname, '..', 'src', 'screens', 'ProfileSetup.tsx'));
-    return files.map((file) => ({ file, text: readFileSync(file, 'utf8') }));
-  };
+  /** The modules the guided flow depends on. `photo.ts` is deliberately not one of them. */
+  const GUIDED = ['dimensions.ts', 'trials.ts', 'derive.ts', 'store.ts'];
+
+  const guidedSources = (): { file: string; text: string }[] =>
+    GUIDED.map((name) => {
+      const file = join(__dirname, '..', 'src', 'profile', name);
+      return { file, text: readFileSync(file, 'utf8') };
+    });
 
   it('imports nothing that opens one', () => {
-    // FR-26 says "no camera", and it is the accessibility and privacy half of ADR-0010: the
-    // guided path has to work for somebody who will not photograph their face. An import is
-    // what would quietly make it optional-in-name-only.
-    const offenders = sources()
+    const offenders = guidedSources()
       .filter(({ text }) => CAMERA.test(text))
       .map(({ file }) => file);
     expect(offenders).toEqual([]);
+  });
+
+  it('does not depend on the photo path either', () => {
+    // The dependency claim, which is the one FR-26 actually makes. Without it "no camera" would
+    // be satisfied by a guided module that imported `photo.ts`, which imports the lens.
+    for (const { file, text } of guidedSources())
+      expect(`${file}: ${String(text.includes('./photo'))}`).toBe(`${file}: false`);
+  });
+
+  it('and photo.ts reaches the lens by TYPE ONLY, so no camera is in the runtime graph', () => {
+    // `import type` is erased before Metro sees it. This is what lets a photo path exist in the
+    // same directory without putting a native module into the bundle the guided user loads.
+    const photo = readFileSync(join(__dirname, '..', 'src', 'profile', 'photo.ts'), 'utf8');
+    expect(photo).toContain('import type { LensReading }');
+    // The negative half: not a value import of the same module, which would NOT be erased.
+    expect(photo).not.toMatch(/^import \{[^}]*\} from '\.\.\/lens\//mu);
   });
 
   it('and the check can see one — the decoy', () => {
@@ -217,10 +263,15 @@ describe('the flow reaches no camera', () => {
 
   it('scanned the files it meant to', () => {
     // A walk that found nothing reports the same "no offenders" as a clean one
-    // [[a-gate-that-errors-is-failing-open]].
-    const files = sources();
-    expect(files.length).toBeGreaterThanOrEqual(5);
+    // [[a-gate-that-errors-is-failing-open]]. And the roster is asserted against the directory,
+    // so a NEW guided module is a failure here rather than a file nothing scans.
+    const files = guidedSources();
+    expect(files).toHaveLength(GUIDED.length);
     expect(files.every(({ text }) => text.length > 0)).toBe(true);
+    const onDisk = readdirSync(join(__dirname, '..', 'src', 'profile')).filter((f) =>
+      f.endsWith('.ts'),
+    );
+    expect([...onDisk].sort()).toEqual([...GUIDED, 'photo.ts'].sort());
   });
 });
 
@@ -433,6 +484,158 @@ describe('completion', () => {
     expect(remaining(partial)).toBe(TRIALS.length - 5);
     expect(isComplete(answers())).toBe(true);
     expect(remaining(answers())).toBe(0);
+  });
+});
+
+/**
+ * F-027 — one reading into a profile nobody has agreed to yet.
+ *
+ * The estimate is a **pure function of a `LensReading`**, which is what makes it checkable at
+ * all without a device: F-040 drew that seam precisely so the half that can be gated is gated
+ * and the half that needs a phone is attested rather than faked.
+ */
+describe('a photo estimate', () => {
+  /** A good reading: sRGB, well lit, plenty of samples, nothing capped. */
+  const reading = (over: Partial<LensReading> = {}): LensReading => ({
+    rgb: [0.78, 0.62, 0.5],
+    space: 'srgb',
+    usableSamples: 1800,
+    variance: 0.01,
+    illumination: 'daylight',
+    quality: 'excellent',
+    confidence: 1,
+    instruction: '',
+    ...over,
+  });
+
+  it('cannot be handed an image, and the type is what says so', () => {
+    /*
+     * F-040's own move, inherited rather than restated. `ts-expect-error` fails the build on an
+     * UNUSED directive, so if `LensReading` ever grows a field a frame could be assigned to,
+     * this line stops erroring and the test stops compiling — which is the failure mode a
+     * comment saying "do not pass the frame" does not have.
+     */
+    // @ts-expect-error — there is no field pixels, a buffer, a path or a URI could go in.
+    const withImage: LensReading = { ...reading(), pixels: new Uint8Array(4) };
+    expect(withImage.usableSamples).toBe(1800);
+  });
+
+  it('never exceeds the photo ceiling, even on a perfect reading', () => {
+    // NFR-23: nobody has measured this path across ITA° bands, so nothing about it may sound
+    // more certain than a convention. A reading with confidence 1 is still capped.
+    const p = estimateFromReading('p', reading({ confidence: 1 }));
+    for (const value of Object.values(p.confidence))
+      expect(value).toBeLessThanOrEqual(PHOTO_CEILING);
+    expect(p.confidence.lightness).toBe(PHOTO_CEILING);
+  });
+
+  it('is never more confident than a split guided answer', () => {
+    // The ordering that matters: twelve taps somebody half-disagreed with still outrank one
+    // photograph. If this inverts, the compatibility engine starts preferring the camera.
+    expect(PHOTO_CEILING).toBeLessThanOrEqual(CONFIDENCE_MAJORITY);
+    expect(estimateFromReading('p', reading()).confidence.lightness).toBeLessThanOrEqual(
+      CONFIDENCE_MAJORITY,
+    );
+  });
+
+  it('carries the reading’s own cap through, rather than restating it', () => {
+    // A poor reading must produce a less confident estimate. The reading has already combined
+    // capture space, illumination and quality by taking a minimum; this only adds its own.
+    const poor = estimateFromReading('p', reading({ confidence: 0.2 }));
+    expect(poor.confidence.lightness).toBe(0.2);
+    // And the baseline, so "it is capped" is distinguishable from "it is always 0.2".
+    expect(estimateFromReading('p', reading()).confidence.lightness).toBe(PHOTO_CEILING);
+  });
+
+  it('ABSTAINS on contrast rather than inventing it', () => {
+    /*
+     * The design decision this feature turns on. One region has no second colour to be
+     * contrasted with, so the estimate says "not asked yet" in the same words the guided path
+     * uses for an unanswered trial — and every OTHER dimension is answered, which is what makes
+     * the abstention legible as a choice rather than as a bug.
+     */
+    const p = estimateFromReading('p', reading());
+    expect(p.confidence.contrast).toBe(CONFIDENCE_NONE);
+    expect(p.confidence.lightness).toBeGreaterThan(CONFIDENCE_NONE);
+    expect(p.confidence.temperature).toBeGreaterThan(CONFIDENCE_NONE);
+    expect(p.confidence.chroma).toBeGreaterThan(CONFIDENCE_NONE);
+  });
+
+  it('records the method it came from', () => {
+    expect(estimateFromReading('p', reading()).method).toBe('photo-assisted');
+  });
+
+  it('centres the lightness range on the reading, inside the axis', () => {
+    const p = estimateFromReading('p', reading());
+    const [l] = readingOklch(reading());
+    expect((p.lightness.min + p.lightness.max) / 2).toBeCloseTo(l, 6);
+    expect(p.lightness.min).toBeGreaterThanOrEqual(0);
+    expect(p.lightness.max).toBeLessThanOrEqual(1);
+
+    // Clamped rather than wrapped, at both ends.
+    const dark = estimateFromReading('p', reading({ rgb: [0.01, 0.01, 0.01] }));
+    expect(dark.lightness.min).toBe(0);
+    const light = estimateFromReading('p', reading({ rgb: [1, 1, 1] }));
+    expect(light.lightness.max).toBe(1);
+  });
+
+  it('reads warm and cool from the hue, and neither from the middle', () => {
+    expect(biasFromHue(WARM_HUE)).toBeCloseTo(1, 10);
+    expect(biasFromHue(COOL_HUE)).toBeCloseTo(-1, 10);
+    // Equidistant from both references. A threshold comparison would return a confident answer
+    // here and flip it on a single degree.
+    expect(biasFromHue((WARM_HUE + COOL_HUE) / 2)).toBeCloseTo(0, 10);
+  });
+
+  it('pulls the bias toward the middle when the reading was poor', () => {
+    // A washed-out reading should not say "fully warm" with a quiet number beside it. The
+    // estimate itself moves, which is what a poor reading actually supports.
+    const warm = reading({ rgb: [0.9, 0.6, 0.35] });
+    const good = estimateFromReading('p', warm);
+    const bad = estimateFromReading('p', { ...warm, confidence: 0.1 });
+    expect(good.temperatureBias).toBeGreaterThan(0);
+    expect(Math.abs(bad.temperatureBias)).toBeLessThan(Math.abs(good.temperatureBias));
+  });
+
+  it('converts through the space the platform reported, not the one it assumed', () => {
+    // The same numbers in P3 are a different colour. If this ever stops differing, the space
+    // is being ignored — which is the exact defect `readCaptureSpace` exists to prevent, and
+    // it is invisible in every other assertion here.
+    const srgb = readingOklch(reading({ space: 'srgb' }));
+    const p3 = readingOklch(reading({ space: 'display-p3' }));
+    expect(p3).not.toEqual(srgb);
+    // `unknown` converts as sRGB deliberately; its cost is the reading's own confidence ceiling,
+    // which is applied before this module sees it.
+    expect(readingOklch(reading({ space: 'unknown' }))).toEqual(srgb);
+  });
+
+  it('draws its three lists from the same functions the guided path uses', () => {
+    const p = estimateFromReading('p', reading());
+    for (const slug of [...p.neutrals, ...p.accents, ...p.avoid])
+      expect(entryBySlug(slug)).not.toBeNull();
+    expect(p.accents.length).toBeGreaterThan(0);
+  });
+
+  it('declines to offer an estimate built on nothing', () => {
+    expect(worthOffering(reading())).toBe(true);
+    expect(worthOffering(reading({ confidence: 0 }))).toBe(false);
+    expect(worthOffering(reading({ usableSamples: 0 }))).toBe(false);
+  });
+
+  it('is subject to the SAME correction latch as the guided path', () => {
+    /*
+     * There are two producers of a `Profile` now, and only one implementation of "a user
+     * correction is never overwritten". This is the assertion that says the second producer did
+     * not get its own path — with both halves, so "the correction survived" is distinguishable
+     * from "nothing ever moves".
+     */
+    const guided = deriveProfile('p', answers());
+    const edited = setDimension(guided, { kind: 'chroma', range: { min: 0, max: 0.05 } });
+    const merged = applyDerivation(edited, estimateFromReading('p', reading()));
+    expect(merged.chroma).toEqual({ min: 0, max: 0.05 });
+    expect(merged.origin.chroma).toBe('user');
+    // The baseline: an untouched dimension DOES take the estimate's value.
+    expect(merged.lightness).toEqual(estimateFromReading('p', reading()).lightness);
   });
 });
 

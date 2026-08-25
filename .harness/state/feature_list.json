@@ -897,7 +897,7 @@
       "service": "mobile",
       "release": "R3",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-026"
       ],
@@ -911,7 +911,30 @@
         "state",
         "test",
         "e2e"
-      ]
+      ],
+      "plan": "plans/F-027-photo-assisted-profile-setup.md",
+      "effects": [
+        "E-007",
+        "E-016",
+        "E-017",
+        "E-030",
+        "E-031"
+      ],
+      "attested": [
+        {
+          "criterion": "Ranges derived on-device; the image is discarded and never transmitted",
+          "verifiedBy": "TWO OF THREE CLAUSES ARE GATED AND THE THIRD IS NOT. \"Ranges derived\" and \"the image is discarded\" are structural: the derivation takes a `LensReading`, which has NO field a frame, buffer, path or URI could be assigned to (F-040), asserted here with `ts-expect-error` so the test stops compiling if that ever becomes false — the image cannot be retained because it cannot be received. \"NEVER TRANSMITTED\" IS NOT PROVEN HERE. It is a claim about sockets during a real journey, it is F-039’s attested criterion and gate 7’s subject, and gate 7 is pending because F-091 is blocked on the environment. Discharging it needs the e2e offline suite asserting no socket opens during capture on a device — not a source scan, which is what would be tempting and would prove nothing about runtime.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Bias validation across every ITA-degree band with a stated minimum sample per band",
+          "verifiedBy": "A HELD-OUT VALIDATION RUN OVER AN ITA-STRATIFIED SAMPLE OF REAL PEOPLE, with the minimum per band stated in advance and per-band accuracy published internally. NOT DISCHARGEABLE BY ANY CHECK IN THIS REPOSITORY — it needs participants, not a fixture, and \"hard to test\" is explicitly not the bar for attestation; \"requires a system we do not control\" is, and a cohort of people is one. THE SAME CRITERION IS F-037’s THIRD, AND F-037 IS `blockedBy: [F-027]` — so the study sits downstream of the feature that creates the need for it. That ordering is recorded rather than quietly resolved: it is legitimate (build the estimator, then validate it) but it means the validation debt must be visible from HERE, on the feature that ships the camera path, and not only from the feature that will eventually discharge it. WHAT PROTECTS THE PRODUCT MEANWHILE is not this attestation — it is `PHOTO_CEILING = 0.5`, which holds every photo-derived dimension at or below a split guided answer precisely because nobody has measured this path.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE, with two of four criteria attested and both stated up front in the plan rather than discovered at the end — the same shape F-040 used, and for the same reason: the half that can be gated is gated and the half that needs a device or a cohort is named. WHAT A SINGLE READING CAN HONESTLY SUPPORT DECIDED THE SCOPE. Lightness from the reading’s own L, temperature from its hue, chroma from its own C — and CONTRAST ABSTAINS AT CONFIDENCE 0, because a contrast preference is the separation between two garments and one region has no second colour in it. The row reads \"not asked yet\", the same words a guided run uses for an unanswered trial, while every other row IS answered — which is what makes the abstention legible as a decision. A photo path that answered all seven would have invented exactly the dimension nobody would check. PHOTO_CEILING IS 0.5 AND THAT IS NOT A TUNING KNOB. It sits at or below CONFIDENCE_MAJORITY so an estimate from one reading never outranks a guided answer two of three people disagreed on, and the reason is NFR-23: nobody has measured this path across ITA° bands, so a higher number would be a claim with nothing behind it. ADR-0072 §5 records it and names the day it can move — the day F-037 publishes per-band accuracy. THE F-026 NO-CAMERA CHECK WAS RE-SCOPED, AND THE GUARANTEE IS STRONGER. `photo.ts` names `LensReading` on purpose, so the original directory-wide scan would have failed on the feature it was meant to coexist with, and the tempting repair — an exclusion — would have quietly changed what is guaranteed. What FR-26 protects is that the GUIDED FLOW does not depend on a camera, so the check now asserts that directly: no guided module matches a camera pattern AND none imports `./photo`; `photo.ts` reaches the lens by `import type` only, so nothing camera-shaped is in the runtime graph at all; and the roster is asserted against the directory so a new module is a failure rather than a file nothing scans. GATE 11 CAUGHT THE COMMENT THAT EXPLAINED IT. The Japanese note saying a particular kanji is absent from the bundled face contained that kanji, so the font-coverage gate reported 441 required and one missing — the same class as the app-imports gate reading a decoy comment as an import during F-026. Both gates read source text; a note ABOUT an artefact is an instance of it. WHAT IS NOT WIRED: nothing produces a `LensReading` in the app yet. F-040 shipped the seam and the four modes and attested every device criterion; there is no viewfinder. So the photo path is reachable only by passing a reading in, and that gap is filed as F-097 rather than narrated — a tested module nobody wired up passes every test it has."
     },
     {
       "id": "F-028",
@@ -2651,6 +2674,32 @@
         "security"
       ],
       "notes": "FOUND WHILE VERIFYING F-026, PRE-EXISTING, AND CONFIRMED AT HEAD WITH EVERY F-026 CHANGE STASHED. `node scripts/verify-no-key-material.mjs` reports apps/mobile/src/rules/generated/lexicon.ts carrying 64 hex digits \"the ledger does not record\", and exits 1 — so gate 15 (security) is RED. The literal is not a key: `git grep` finds the same value in content/rules/index.json, which is the rules bundle digest F-069 introduced. The script accounts for CORPUS digests by reading content/versions/ (130 of them), and the rules bundle is a second versioned artefact with its own digest home that the script has never been taught about. THE FILE WAS LAST WRITTEN BY F-021 (f0f1f6c), so this has been red since then; the sessions after it recorded gate 15 as \"partly run\" because gitleaks was not installed and did not report the key scan failing — which is how a red gate stayed invisible across four features. That second-order lesson is the reason this is `should` and not `could`. FIX SHAPE: the ledger the script consults should be every recorded digest, not every corpus digest, and the decoy in the fix must plant a 64-hex literal that is NOT a recorded digest — otherwise widening the ledger is indistinguishable from switching the check off."
+    },
+    {
+      "id": "F-097",
+      "title": "The photo path has no producer: a capture surface hands a reading to profile setup",
+      "requirements": [
+        "FR-27",
+        "FR-13"
+      ],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-027"
+      ],
+      "acceptance": [
+        "A capture surface exists that a person can reach, and it produces a LensReading",
+        "Profile setup receives that reading from the surface rather than from a prop a test supplies",
+        "A person can complete photo-assisted setup end to end without a test harness"
+      ],
+      "verification": [
+        "state",
+        "a11y",
+        "e2e"
+      ],
+      "notes": "FILED BY F-027, WHICH BUILT THE CONSUMER. `estimateFromReading` is checked twelve ways and is reachable in the app only by passing a `LensReading` in as a prop — nothing constructs one. That is [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] exactly, and it is recorded rather than absorbed because F-027’s criteria are about the ESTIMATE and the CONFIRMATION, and widening them to build a viewfinder would have been scope nobody reviewed against a requirement. THE GAP IS OLDER THAN F-027: F-040 is `done` and shipped `read()` plus four capture modes wired to nothing, with its four device criteria attested — so the app has had a capture seam and no capture surface since R2. This feature is the surface. WHY IT IS NOT SIMPLY PART OF F-040: F-040 is closed and its attestations describe the frame-processor behaviour on a device, which is a different claim from \"a person can reach this\". NOTE THE VERIFICATION REALITY BEFORE CLAIMING IT: a VisionCamera surface cannot be rendered by jest, so the a11y conformance registry cannot hold it in the shape the other eight screens use, and criterion 3 needs gate 7 — which is pending on F-091."
     }
   ]
 }

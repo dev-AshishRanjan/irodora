@@ -87,7 +87,30 @@ right" is a correction.
 A column rather than a timestamp comparison: a heuristic that is usually right is not what
 ADR-0010 §6 promised.
 
-### 5. The prohibition is a check, in the migration path
+### 5. The photo path answers fewer dimensions, at a lower ceiling — added by F-027
+
+The same decision extended rather than a second one, because it is the same question: *where
+does a confidence number come from, and what may it claim?*
+
+- **`PHOTO_CEILING = 0.5`**, at or below `CONFIDENCE_MAJORITY` — an estimate from one reading
+  never outranks a guided answer two people out of three disagreed on. A convention, not a
+  measurement (NFR-2), and **the day it can change is the day F-037 publishes per-band
+  accuracy**. Until then a higher number is a claim with nothing behind it, and ADR-0010 §2 is
+  blunt about why: under a warm bulb it is the lighting that gets measured.
+- **The dimension confidence is `min(PHOTO_CEILING, reading.confidence)`.** The reading has
+  already combined the capture space, the illumination and the quality by taking a minimum, for
+  the reason `reading.ts` gives — three ceilings multiplied produce a number lower than any
+  single assessment justified.
+- **The temperature bias is scaled by the confidence, and the ranges are not.** A washed-out
+  reading should not produce "fully warm" with a quiet 0.3 beside it; the estimate itself should
+  sit nearer the middle. The ranges need no equivalent — they are already centred on the
+  reading, and widening them by uncertainty would produce a range that excludes nothing.
+- **`contrast` abstains, at confidence 0.** A contrast preference is the separation between two
+  garments and one region has no second colour in it. The row reads *"not asked yet"* — the same
+  words a guided run uses for a trial nobody answered — while every other row is answered, which
+  is what makes the abstention read as a decision rather than a defect.
+
+### 6. The prohibition is a check, in the migration path
 
 `packages/store/src/prohibited.ts` refuses a migration ladder that would add `skin_*`,
 `complexion`, `ethnic*`, `rac(e|ial)*`, `attractive*`/`beauty*`, `body_*` or `bmi` — **and**

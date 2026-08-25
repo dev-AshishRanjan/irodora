@@ -41,6 +41,8 @@ import type { MessageKey } from '../i18n/index';
 import { applyDerivation, setDimension, type Profile } from '../profile/dimensions';
 import { CONFIDENCE_MAJORITY, CONFIDENCE_NONE, deriveProfile, isComplete } from '../profile/derive';
 import { TRIALS, type Trial, type TrialAnswer, type TrialOption } from '../profile/trials';
+import { estimateFromReading, worthOffering } from '../profile/photo';
+import type { LensReading } from '../lens/reading';
 import { activeProfile, toWorking, type ProfileStore } from '../profile/store';
 
 /**
@@ -139,9 +141,21 @@ export interface ProfileSetupProps {
    * that can only reach the first is checking a screen nobody has finished.
    */
   readonly initialAnswers?: readonly TrialAnswer[];
+  /**
+   * A camera reading to propose a profile from (FR-27), when there is one.
+   *
+   * A TYPE-ONLY import: `LensReading` has no field a frame, buffer, path or URI could be
+   * assigned to (F-040), so nothing camera-shaped enters this screen's runtime graph and the
+   * guided path is unaffected by the photo path existing.
+   */
+  readonly reading?: LensReading;
 }
 
-export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): React.JSX.Element {
+export function ProfileSetup({
+  store,
+  initialAnswers,
+  reading,
+}: ProfileSetupProps): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
 
@@ -158,6 +172,27 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
   );
   const [saved, setSaved] = useState(false);
 
+  /**
+   * The estimate a camera reading proposes, or `null`.
+   *
+   * A reading the capture assessment already called unusable produces no estimate at all —
+   * `worthOffering` is the reading's own verdict, not a second opinion invented here.
+   */
+  const estimate =
+    reading !== undefined && worthOffering(reading) ? estimateFromReading(id, reading) : null;
+
+  /**
+   * FR-27: *the profile is never finalised without explicit user confirmation*.
+   *
+   * Starts `false` **only when there is an estimate to confirm**. The guided path finalises by
+   * pressing save, which is already an explicit act; demanding a second one there would be a
+   * confirmation about nothing, and a control people learn to press without reading is worse
+   * than no control at all.
+   */
+  const [confirmed, setConfirmed] = useState(() => estimate === null);
+  /** Set when the person leaves an estimate to answer the comparisons instead. */
+  const [comparing, setComparing] = useState(false);
+
   const complete = isComplete(answers);
   /*
    * The derivation runs on every render and is a pure function of the answers, so there is no
@@ -165,7 +200,16 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
    * person's corrections back on top — which is the only place criterion 4 is implemented.
    */
   const derived = deriveProfile(id, answers);
-  const profile = corrections === null ? derived : applyDerivation(corrections, derived);
+  /** What is on screen before the comparisons have anything to say: a stored profile, or an estimate. */
+  const seeded = corrections ?? estimate;
+  /*
+   * THE COMPARISONS REPLACE AN ESTIMATE ONLY ONCE THEY ARE FINISHED.
+   *
+   * `deriveProfile([])` is a real profile with confidence 0 everywhere and a lightness range of
+   * the whole axis — folding that in mid-flow would erase an estimate one trial at a time and
+   * look, from the screen, like the estimate had simply been wrong.
+   */
+  const profile = complete ? applyDerivation(seeded ?? derived, derived) : (seeded ?? derived);
 
   const answer = (trial: Trial, option: TrialOption): void => {
     setAnswers((previous) => [
@@ -188,6 +232,10 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
 
   const answered = answers.length;
   const current = TRIALS.find((trial) => !answers.some((a) => a.trialId === trial.id));
+  /** The summary shows once the comparisons are done, or straight away when something seeded it. */
+  const showSummary = complete || (!comparing && seeded !== null);
+  /** Save is refused until the estimate has been confirmed, and until there is something to save. */
+  const canSave = confirmed && (complete || seeded !== null);
 
   function Option({ trial, option }: { trial: Trial; option: TrialOption }) {
     const entries = option.slugs.flatMap((slug) => {
@@ -401,7 +449,7 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
         {t('profile.privacy')}
       </Text>
 
-      {current !== undefined ? (
+      {!showSummary && current !== undefined ? (
         <View style={{ gap: 12 }}>
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
             <Text size="small" color="foreground.2" script={script}>
@@ -425,21 +473,58 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
             {t('profile.summary')}
           </Text>
           {/*
-            THE HONESTY LINE, and it is not decoration. Everything below is an estimate from
-            twelve forced choices, and the invitation to correct it is what ADR-0010 §6 is for.
+            THE HONESTY LINE, and it is not decoration. Everything below is an estimate — from
+            twelve forced choices, or from one reading — and the invitation to correct it is
+            what ADR-0010 §6 is for.
+
+            The photo path gets a SECOND sentence rather than a reworded first one, because it
+            has a second thing to admit: a camera measures the room as much as the person, so
+            the estimate is weaker AND its origin is worth naming.
           */}
           <Text size="small" color="foreground" script={script}>
             {t('profile.estimate')}
           </Text>
+          {estimate !== null && !complete ? (
+            <Text size="small" color="foreground" script={script}>
+              {t('profile.fromPhoto')}
+            </Text>
+          ) : null}
 
           {PROFILE_DIMENSIONS.map((dimension) => (
             <Dimension key={dimension} dimension={dimension} />
           ))}
 
+          {/*
+            FR-27's third criterion, as a control rather than as a sentence in a document:
+            nothing is finalised until this is pressed. It appears only while there is an
+            estimate to confirm, so the guided path is not asked to confirm a confirmation.
+          */}
+          {confirmed ? null : (
+            <>
+              <Button
+                label={t('profile.confirm')}
+                onPress={() => {
+                  setConfirmed(true);
+                  setSaved(false);
+                }}
+              />
+              <Button
+                label={t('profile.compareInstead')}
+                variant="secondary"
+                onPress={() => {
+                  setComparing(true);
+                  setAnswers([]);
+                  setSaved(false);
+                }}
+              />
+            </>
+          )}
+
           <Button
             label={t('profile.restart')}
             variant="secondary"
             onPress={() => {
+              setComparing(true);
               setAnswers([]);
               setSaved(false);
             }}
@@ -452,7 +537,7 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
 
       <Button
         label={t('profile.save')}
-        disabled={!complete}
+        disabled={!canSave}
         onPress={() => {
           save();
         }}
@@ -460,11 +545,12 @@ export function ProfileSetup({ store, initialAnswers }: ProfileSetupProps): Reac
       {/*
         A disabled control with no stated reason is the accessibility failure that looks like
         polish. The sentence is rendered whenever the button is disabled, not on hover and not
-        after a failed tap.
+        after a failed tap — and it names WHICH of the two reasons applies, because "you cannot
+        save yet" without saying why is the same failure wearing a sentence.
       */}
-      {complete ? null : (
+      {canSave ? null : (
         <Text size="small" color="foreground" script={script}>
-          {t('profile.notFinished')}
+          {t(confirmed ? 'profile.notFinished' : 'profile.confirmHint')}
         </Text>
       )}
       {saved ? (

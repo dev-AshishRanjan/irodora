@@ -233,7 +233,7 @@ function agreesWithBias(e: PublishedEntry, bias: number): boolean {
  * question a neutral answers is "what can I wear next to anything" and the middle of the
  * person's own range is the answer.
  */
-function deriveNeutrals(
+export function deriveNeutrals(
   entries: readonly PublishedEntry[],
   lightness: { min: number; max: number },
   bias: number,
@@ -260,7 +260,7 @@ function deriveNeutrals(
  * areas, not on the small ones. Filtering accents by it would return the same colours as
  * `neutrals` with more chroma, which is not what the word means.
  */
-function deriveAccents(entries: readonly PublishedEntry[], bias: number): readonly string[] {
+export function deriveAccents(entries: readonly PublishedEntry[], bias: number): readonly string[] {
   return entries
     .filter((e) => agreesWithBias(e, bias))
     .sort(
@@ -283,7 +283,7 @@ function deriveAccents(entries: readonly PublishedEntry[], bias: number): readon
  * what you told us" — and inventing entries to fill it would be the product asserting a
  * difficulty it has no evidence for.
  */
-function deriveAvoid(
+export function deriveAvoid(
   entries: readonly PublishedEntry[],
   chroma: { min: number; max: number },
   bias: number,
