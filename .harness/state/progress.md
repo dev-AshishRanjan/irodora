@@ -6590,3 +6590,103 @@ upgrade to 24.19.0.**
 
 ---
 
+## Handoff — 2026-08-25
+
+**Feature:** none claimed. **R2 has no eligible feature, and the reason is the workstation, not
+the backlog.**
+
+### Done
+
+**R2 is 29 of 31 done.** This session closed F-023, F-093, F-021, F-094, F-089, F-090 and F-092,
+each committed with its gates recorded in the entries above.
+
+`origin/main` is at `4528c52` (F-090), so **one commit is unpushed: F-092.** Nothing was pushed
+from this session.
+
+### In flight
+
+Nothing. The tree is clean, gate 0 passes, and no feature is `in_progress`.
+
+### Next action
+
+**Install Node 24.19.0 and pnpm 11, then run `pnpm install`.** That single step is what unblocks
+everything below; no repository change can perform it.
+
+```
+nvm install 24.19.0 && nvm use 24.19.0
+corepack enable && corepack prepare pnpm@11.21.0 --activate
+pnpm install
+```
+
+Then claim **F-091** — it is the only R2 item left, and it is `must`.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (16 checks, 26 links) · `typecheck` (31 tasks) · `lint` · `build` (18 tasks) · `a11y` (20 tasks, 76 tests) · `verify-token-reach --prove` (9 cases) |
+| **Ran, RED** | `test` — 1 task failed: `@irodora/color-difference#test`, 3 test files, 3 tests of 167 |
+| **NOT run** | `e2e` (no harness — that is F-091) · `cvd` · `perf` · `color-golden` · `content` |
+
+**The `test` failure is the toolchain, not the code.** A representative assertion:
+
+```
+wcag.test.ts > flips a real 8-bit colour across the AA threshold
+  expected 4.500078715444717 to be 4.500078715444719
+```
+
+Last two digits. The fixtures were generated on **Node 24**; this machine runs **Node 22.16.0**.
+That is the same phenomenon [F-083](feature_list.json) recorded across *operating systems* on
+identical Node — ECMAScript specifies `pow`, `atan2`, `exp`, `sin`, `cos` as
+implementation-approximated, so this is where divergence appears first. It should go green on
+the pinned toolchain. **If it does not, that is a real finding and F-083 is the record to read
+before touching a golden value.**
+
+### Blocked on
+
+**One environment action, and everything downstream of it.**
+
+| Item | Blocked by |
+|---|---|
+| **F-091** — the e2e harness (R2, `must`) | Maestro, Detox and Appium all arrive as **dependencies**, and `pnpm install` refuses: `ERR_PNPM_UNSUPPORTED_ENGINE`. Node 22.16.0 / pnpm 9.3.0 against `engines` requiring 24.19.0 / pnpm 11. It also needs an emulator, and criteria 2–4 can only be discharged by a CI run, which needs a push |
+| **F-086** — R8 minification (R3, the only `todo` anywhere) | needs a JDK; the Android SDK is present at `ANDROID_HOME` but `java` is on no path and neither `C:\Program Files\Java` nor Android Studio's bundled JBR exists. Its own note also requires "an artefact somebody has actually launched" — a human step |
+| **F-081** — the iOS lane (R3, `blocked`) | a paid Apple Developer membership, a certificate and a profile. OQ-6 is a purchase decision that closes as an ADR |
+
+**No later-release feature was pulled.** `next-feature` is explicit: *"Do not silently pull from
+a later release — release order exists because R1 proves the engine before anything is built on
+top of it."* R3's only `todo` is blocked on this machine as well, so pulling it would not have
+helped even if it were allowed.
+
+### Decisions made
+
+- **F-092's escape hatch cites work rather than excusing it.** `nativeSpacing` is emitted and
+  imported by nothing while 69 hand-written spacing values contradict the scale; that is filed
+  as **F-095** and the declaration names the id. An exemption whose reason is a pointer to work
+  is working; one whose reason is a soothing sentence is how a defect becomes permanent.
+- **`packages/ui/src/testing/` is not a token reader.** Without that exclusion, four of F-092's
+  findings disappear and its second acceptance criterion is unsatisfiable by construction.
+- **F-095 was filed to R3, not R2.** R2 is a release about proving the app's surfaces; moving 69
+  layout values is a design decision (does `16` become `14`, or does the scale gain `16`?) before
+  it is a refactor.
+
+### Watch out
+
+- **Piping a gate through `sed` swallows its exit code.** `node scripts/gate.mjs test | sed …`
+  prints red output and reports success, because bash returns the *last* command's status. I
+  briefly believed the gate was lying about itself. Check `$?` on the unpiped command.
+- **`pnpm install` has never run here.** `packages/store/node_modules/@irodora/corpus` is a
+  hand-made **junction**, created because `ln -s` on this platform silently *copied* the package.
+  A real `pnpm install` should replace it; verify `packages/corpus` is intact afterwards.
+- **A block comment cannot contain `**/`.** Writing a glob like that in a JSDoc header ends the
+  comment mid-line and the rest of the file becomes code. Cost one debugging cycle in F-092.
+- **Backticks in a heredoc, and `\\` in a heredoc, are both mangled by this shell.** Four
+  separate corruptions this session, including a regex `\b` that became a backspace character
+  and a `startsWith()` that lost its argument. Write scripts with the file tools, not `cat <<EOF`.
+- **Whether CI is green on any of this is unknown from here** — `gh` is not installed on this
+  workstation, so no run could be inspected. `verify-gate-mirror.mjs` proves the workflow
+  *mirrors* the gates; it cannot prove they pass on Linux. **Check the run for `4528c52` before
+  trusting the red `test` diagnosis above** — if gate 4 is green there, the Node-22 explanation
+  is confirmed and needs no further work.
+
+---
+
