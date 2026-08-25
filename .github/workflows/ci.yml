@@ -75,6 +75,11 @@ jobs:
       - name: 'Gate 0 — stale-rationale proof'
         run: node scripts/verify-stale-rationale-proof.mjs
 
+      # Belongs to gate 8, run here with the other proofs. It plants IN MEMORY — nothing is
+      # written to the working tree — so it needs no checkout hygiene of its own.
+      - name: 'Gate 8 — token-reach proof'
+        run: node scripts/verify-token-reach.mjs --prove
+
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -115,6 +120,10 @@ jobs:
       # Gate 8 runs the scope reporter FIRST — a suite that passes over a component
       # nobody registered proves nothing about that component, and `test:a11y` exited
       # 0 over zero test files until F-017 gave it subjects and a refusal.
+      #
+      # `verify-token-reach.mjs` is the same question one level down (F-092): the conformance
+      # suite proves the components it renders conform, and says nothing about a design token
+      # nothing renders. Both reporters run before the suite, for the same reason.
       - name: 'Gate 8 — a11y'
         run: pnpm test:a11y
 

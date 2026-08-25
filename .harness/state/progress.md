@@ -6486,3 +6486,107 @@ document.
 2. **Then F-001** (monorepo toolchain scaffold) via `/next-feature` → `/plan`.
 
 Nothing is `in_progress`. The next session starts with `/next-feature`.
+
+## 2026-08-25 — F-092 · the tokens that reach no pixel, and the comment that pretended to be one
+
+Every value in `packages/design-tokens/src/generated/` was already byte-compared against the
+manifest twice — by `emit.test.ts` and by `generate-design-tokens.mjs --check`. So each one was
+known to be **correct**. Nothing anywhere asked whether it was **used**.
+
+`scripts/verify-token-reach.mjs` now runs in gate 8 beside `a11y-scope.mjs`. Of 71 emitted
+names, **37 are read by a component and 34 are declared unreached with a reason**.
+
+### The same rule ADR-0054 already made, one level down
+
+> Every component is either consumed by a real screen or registered in the conformance registry,
+> and the scope reporter prints any that are neither and fails.
+
+A component nobody renders and a token nobody paints are the same defect. Only one was reported,
+and the cost has been paid twice: F-019 found `nativeNumericFeature` by hand, F-094 found the
+same shape at artefact level with `global.css`.
+
+### Three rules decide whether it is worth anything
+
+| | |
+|---|---|
+| **`packages/ui/src/testing/` is not a reader** | a token read only by the conformance checker exists so a **check** can enforce it. Without the exclusion, four findings vanish and criterion 2 is unsatisfiable by construction |
+| **object values propagate, keys and array elements do not** | `Surface` resolves `surface.1` through `nativeElevation` and that name appears nowhere as a literal. But `theme.tsx` reads `nativeColors`, whose keys are all 33 colour tokens — one import would mark the palette reached |
+| **comments are not code** | see below |
+
+**An object is looked up; a list is looked in.**
+
+### The proof found the bug, not the reading
+
+`border.strong` was removed from all five components that use it and the check still called it
+reached — because `Button.tsx` mentions `` `border.strong` `` in a comment explaining why it
+does *not* pair. A backtick is one of the quote characters a literal read matches, so **every
+JSDoc example in a repository that comments this heavily was counting as a consumer.**
+
+Stripping comments turned three more tokens honest. The most interesting is **`foreground.3`**:
+the token whose entire purpose is to be restricted is painted by nothing, and every mention of
+it in the reader zone is prose about why it is dangerous.
+
+Two more the prototype got wrong: `nativeRadius.pill` is a **member access**, not a literal, so
+the first version reported every radius step in the product as unreached; and **`xs` is a radius
+step and a type step**, so 22 `size="xs"` literals were marking the radius reached. A name in
+two groups is now resolvable only from an owner- or prop-scoped read.
+
+### What the allowlist actually says
+
+It is a readable inventory of what the design system has **drawn** and the product has not yet
+**built** — no chart, no dialog or bottom sheet, no animation, no display type on any screen,
+and a `Status` component that conforms and that no screen renders. Every entry cites the feature
+that will consume it, and the whole list prints on every run rather than only on a failure.
+
+### One entry is a defect, and it is filed
+
+**`nativeSpacing` is emitted, exported and imported by nothing** — while 69 hand-written
+padding/margin/gap declarations across `packages/ui/src` and `apps/mobile/src` use eight values
+of which **five are not on the scale**, and `1`, `2`, `6` are not even multiples of the declared
+`base: 4`.
+
+That is **F-095**, filed, and the declaration cites the id. Moving 69 values changes layout on
+every screen and five of the eight are design decisions the manifest never made, so it is not
+work this feature could absorb. An escape hatch whose reason is a pointer to work is working;
+one whose reason is a soothing sentence is how a defect becomes permanent.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 16 checks, 26 links |
+| `typecheck` | **passed** — 31 tasks |
+| `lint` | see below |
+| `a11y` | the two scope reporters **pass**; the suite itself see below |
+| `verify-token-reach --prove` | **passed** — 9 cases, baseline asserted first |
+
+**Not run:** `e2e`, `cvd`, `perf`, `color-golden`, `content`.
+
+### Recorded honestly
+
+- **A reader is found by string literal, which is a heuristic, not a type.** A component that
+  built a token name by concatenation would read a token this cannot see and be reported as
+  unreached — the false positive that gets a check deleted. None exists today; the header says
+  which way it errs.
+- **Leaf level reaches named tokens only.** `nativeMotion.durations.micro` is not individually
+  checked, because `nativeMotion.forbidden` is prose and `nativeSpacing` is a nameless array.
+  Stated in the header rather than implied.
+- **No file in `packages/`, `apps/` or `content/` changed.** This feature adds a check and
+  writes down what it found. It does not move a pixel.
+- **The proof plants in memory.** Nothing is written to the working tree — this session already
+  left a mutated manifest behind once, and a proof that edits `packages/` is a proof that can
+  fail dirty.
+
+### Next
+
+R2 has **one item left and it is blocked on the environment**:
+
+| | | |
+|---|---|---|
+| **F-091** | `must` | The e2e harness — every Expo e2e tool is a dependency and `pnpm install` cannot run here |
+
+**F-092 was the last one doable on this machine.** Ahead of everything, unchanged: **the Node
+upgrade to 24.19.0.**
+
+---
+

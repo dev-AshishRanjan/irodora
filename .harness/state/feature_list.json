@@ -2521,7 +2521,7 @@
       "service": "tests",
       "release": "R2",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "Every value emitted from the design manifest is either read by a component or declared unreached with a reason",
@@ -2533,7 +2533,11 @@
         "state",
         "a11y"
       ],
-      "notes": "FOUND IN F-019. `typography.numeric.fontFeature` has said \"tabular-nums\" in the manifest since F-003, annotated MANDATORY on every colour value, coordinate, score and delta. It was emitted to `nativeNumericFeature`, its emitter had a test, and that test passed — because it asserted the constant equals the manifest. NO COMPONENT READ IT. For two releases C9 (\"proportional figures make a ΔE table unreadable\") was true of a constant and false of every pixel. WHY THIS IS NOT DEAD CODE: dead code is unreferenced and looks it. This looked complete — manifest, emitter, test, and an effect link (E-007) from the manifest to the token package. Every step was true, and the chain stopped one short of a screen; the link was accurate about every OTHER token, which is worse than a missing link because the graph looked whole. THE SHAPE ALREADY EXISTS FOR COMPONENTS: a11y-scope.mjs computes the closure from the conformance registries and fails on anything outside it (ADR-0054). This is the same computation over token VALUES, and the hard part is the same one: the escape hatch. Some tokens legitimately have no consumer yet — a value emitted for a surface that has not been built — so the check must distinguish \"unreached\" from \"unreached and nobody noticed\", which means a declaration with a reason rather than a silent allowlist."
+      "notes": "DONE. Every value in packages/design-tokens/src/generated/ was already byte-compared against the manifest TWICE — by emit.test.ts and by generate-design-tokens.mjs --check — so each one was known to be CORRECT. Nothing anywhere asked whether it was USED. scripts/verify-token-reach.mjs now runs in gate 8 beside a11y-scope.mjs: of 71 emitted names, 37 are read by a component and 34 are declared unreached with a reason. ADR-0071. THIS IS ADR-0054 ONE LEVEL DOWN. A component nobody renders and a token nobody paints are the same defect, and only one was reported — a cost paid twice already, by F-019 finding nativeNumericFeature by hand and F-094 finding the same shape at artefact level. THREE RULES DECIDE WHETHER IT IS WORTH ANYTHING. (1) packages/ui/src/testing/ is NOT a reader: a token read only by the conformance checker exists so a CHECK can enforce it, and without that exclusion four findings vanish and acceptance criterion 2 is unsatisfiable by construction. (2) Reach propagates through OBJECT VALUES (Surface resolves surface.1 through nativeElevation, and that name appears nowhere as a literal) but never through KEYS (theme.tsx reads nativeColors, whose keys are all 33 colour tokens) and never through ARRAY ELEMENTS (a membership test is a question nobody answers with the token). An object is looked up; a list is looked in. (3) COMMENTS ARE NOT CODE. THE PROOF FOUND THE BUG, NOT THE READING. border.strong was removed from all five components that use it and the check still called it reached, because Button.tsx mentions it in BACKTICKS in a comment explaining why it does not pair — and a backtick is one of the quote characters a literal read matches. Every JSDoc example in a repository that comments this heavily was counting as a consumer. Stripping comments turned three more tokens honest, the best of them foreground.3: THE TOKEN WHOSE ENTIRE PURPOSE IS TO BE RESTRICTED IS PAINTED BY NOTHING, and every mention of it in the reader zone is prose about why it is dangerous. Two more the prototype got wrong: nativeRadius.pill is a MEMBER ACCESS, not a literal, so the first version reported every radius step in the product as unreached; and xs is a radius step AND a type step, so 22 size=\"xs\" literals were marking the radius reached. A name in two groups is now resolvable only from an owner- or prop-scoped read. THE ALLOWLIST IS THE ARTEFACT. .harness/verification/unreached-tokens.json is a readable inventory of what the design system has DRAWN and the product has not yet BUILT — no chart, no dialog or bottom sheet, no animation, no display type on any screen, and a Status component that conforms and that no screen renders. Every entry cites the feature that will consume it; the whole list prints on EVERY run, not only on a failure; and a declaration for a token that IS read fails, the same both-directions rule as E-021 and E-028. ONE ENTRY IS A DEFECT AND IT IS FILED AS F-095: nativeSpacing is emitted, exported and imported by nothing, while 69 hand-written padding/margin/gap declarations use eight values of which FIVE ARE NOT ON THE SCALE and 1, 2, 6 are not even multiples of the declared base: 4. An escape hatch whose reason is a pointer to work is working; one whose reason is a soothing sentence is how a defect becomes permanent. NO FILE IN packages/, apps/ OR content/ CHANGED. This feature adds a check and writes down what it found; it does not move a pixel. The proof plants IN MEMORY, so nothing is written to the working tree. WHAT IT DOES NOT COVER: a reader is found by string literal, which is a heuristic and not a type — a component that built a token name by concatenation would be reported as unreached, the false positive that gets a check deleted; none exists today and the header says which way it errs. Leaf level reaches named tokens only, so nativeMotion.durations.micro is not individually checked.",
+      "plan": "plans/F-092-a-token-that-reaches-no-pixel.md",
+      "effects": [
+        "E-029"
+      ]
     },
     {
       "id": "F-093",
@@ -2586,6 +2590,29 @@
         "E-007",
         "E-019"
       ]
+    },
+    {
+      "id": "F-095",
+      "title": "The spacing scale reaches a component, or the value is not on the scale",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "requirements": [
+        "NFR-24"
+      ],
+      "blockedBy": [],
+      "acceptance": [
+        "Every padding, margin and gap value in packages/ui/src and apps/mobile/src comes from the spacing scale, or is declared off-scale with a reason",
+        "nativeSpacing is imported by at least one component, so the emitted scale has a reader",
+        "A hand-written value that is not a step of the scale fails a check that names the file and the value",
+        "The five values in use today that are NOT on the scale — 1, 2, 6, 12, 16 — are each either moved onto it or added to it by an ADR"
+      ],
+      "verification": [
+        "a11y",
+        "state"
+      ],
+      "notes": "FOUND BY F-092, not by inspection. `nativeSpacing` (4, 8, 14, 20, 28, 40, 56, 96) is emitted from the manifest, exported from @irodora/design-tokens, and IMPORTED BY NOTHING — its only reader is emit.test.ts. Meanwhile there are 69 hand-written padding/margin/gap declarations across packages/ui/src and apps/mobile/src using 1, 2, 4, 6, 8, 12, 16 and 20, and 36 OF THE 69 USE A VALUE THE SCALE DOES NOT CONTAIN. So the manifest declares a rhythm the product does not follow, and nothing noticed because nothing was looking. WHY THIS IS ITS OWN FEATURE AND NOT PART OF F-092: moving 69 values changes layout on every screen, and five of the eight values in use are not decisions the manifest ever made — so the work is a design decision (does 16 become 14 or does the scale gain 16?) before it is a refactor. F-092 recorded it rather than excusing it, and .harness/verification/unreached-tokens.json cites this id as the reason nativeSpacing is declared unreached. THE 4-BASE MATTERS: the manifest says `spacing.base: 4`, and 1, 2, 6 are not multiples of it, so those three are off-grid rather than merely off-scale. A screenshot or device comparison before and after is worth more here than a test, because the failure mode is \"the layout is now subtly wrong everywhere\".",
+      "service": "mobile"
     }
   ]
 }

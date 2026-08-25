@@ -990,6 +990,52 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-029",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "packages/design-tokens/src/generated/native.ts"
+        },
+        {
+          "kind": "artifact",
+          "ref": "packages/design-tokens/src/generated/tokens.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unreached-tokens.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y",
+      "memory": "memory/effects/a-token-with-no-reader-is-a-decision-nobody-applied.md",
+      "rationale": "EMITTING A VALUE IS NOT APPLYING A DECISION. Every value in packages/design-tokens/src/generated/ is byte-compared against the manifest by emit.test.ts and again by generate-design-tokens.mjs --check, so we know each one is CORRECT. Nothing asked whether it was USED — and F-019 found nativeNumericFeature that way by hand, emitted and exported and reaching no component, for as long as nobody happened to look. ADR-0054 had already settled the identical question for COMPONENTS; verify-token-reach.mjs is the same closure over VALUES, in gate 8 beside a11y-scope.mjs. THREE RULES DECIDE WHETHER IT IS WORTH ANYTHING. packages/ui/src/testing/ is NOT a reader, because a token read only by the conformance checker exists so a CHECK can enforce it and is not a painted pixel — without that exclusion, four findings would have been absorbed silently. Reach propagates through OBJECT VALUES (Surface resolves surface.1 through nativeElevation, and that name appears nowhere as a literal) but never through KEYS (theme.tsx reads nativeColors, whose keys are all 33 colour tokens) and never through ARRAY ELEMENTS (a membership test is a question nobody answers with the token). An object is looked up; a list is looked in. COMMENTS ARE NOT CODE, and the proof found that, not a reading: border.strong was removed from all five components that use it and the check still called it reached, because Button.tsx mentions it in backticks in a comment. Every JSDoc example in a repository that comments this heavily was counting as a consumer. Stripping comments turned three more tokens honest, including foreground.3 — the token whose entire purpose is to be restricted — whose every mention in the reader zone is prose about why it is dangerous. THE ESCAPE HATCH RUNS BOTH WAYS: .harness/verification/unreached-tokens.json declares 34 names with a why and a citation, prints the whole list on every run rather than only on a failure, and FAILS on a declaration for a token that IS read. One of its entries is a defect rather than an exemption — nativeSpacing is imported by nothing while 69 hand-written values contradict the scale, filed as F-095 and cited from the declaration.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

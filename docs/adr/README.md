@@ -94,6 +94,7 @@ Two rules that matter more than the format:
 | [0068](0068-a-gate-on-an-unsupported-toolchain-warns-and-re-keys-rather-than-refusing.md) | A gate on an unsupported toolchain warns and re-keys rather than refusing | Accepted |
 | [0069](0069-a-phrase-is-versioned-rule-content-and-a-hue-term-carries-a-chroma-floor.md) | A phrase is versioned rule content, and a hue term carries a chroma floor | Accepted |
 | [0070](0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md) | A shareable card is a deterministic document, not a bitmap | Accepted |
+| [0071](0071-a-token-with-no-reader-is-a-decision-nobody-applied.md) | A token with no reader is a decision nobody applied | Accepted |
 
 ## Open questions awaiting an ADR
 
