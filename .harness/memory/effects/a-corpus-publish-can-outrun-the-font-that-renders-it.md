@@ -70,6 +70,8 @@ note goes stale exactly the way a comment does — the difference is that this o
 future session reads to decide whether a check can be trusted. Re-read the note against the
 gate, not the gate against the note.
 
+`past-state-ok: the phrase is quoted here to describe the rot, not asserted — the guard has been blocking since F-076.`
+
 ## The remedy is never to relax the check
 
 Regenerate the subset. A codepoint the app can render and the font cannot is a tofu box, and a

@@ -1,0 +1,30 @@
+{
+  "$comment": "Phrases in an effect rationale or its paired memory note that ASSERT a guard is absent, unbuilt or not blocking. Gate 0 fails on one only when the link's guard is in fact WIRED — the phrase alone is never a finding, because this repository narrates its own defects constantly and a word-matcher that flagged every 'not yet' would be deleted within a release. See F-089 and .harness/plans/F-089-a-rationale-that-describes-a-world-that-is-gone.md.",
+  "version": 1,
+  "updated": "2026-08-25",
+  "$patternComment": "PRESENT TENSE ONLY. 'was red for two features' is narration and true; 'is not yet blocking' is a claim about now. The distinction is the whole design: keep the list short enough to read, and when it fires on legitimate narration remove the phrase rather than marking the prose.",
+  "claims": [
+    {
+      "pattern": "not yet blocking|is not blocking|does not block",
+      "name": "a guard that does not block",
+      "why": "E-017 said its guard was \"built and proven but NOT YET BLOCKING\" for three features after F-076 wired it into pnpm test:content. A reader deciding whether to skip a verification believes this sentence."
+    },
+    {
+      "pattern": "guard (?:is|remains) (?:none|absent|unbuilt)|no guard (?:yet|exists)|nothing guards",
+      "name": "a guard asserted absent",
+      "why": "The honest case is carried by the link's own `guard: \"none\"` field, which this check skips. Saying it in prose while the field names a wired guard is the two disagreeing."
+    },
+    {
+      "pattern": "must (?:still )?be built|has yet to be (?:built|wired|written)|is not (?:yet )?wired",
+      "name": "a guard described as still owed",
+      "why": "An obligation that has been discharged and still reads as owed sends the next person to build something twice, or to trust a check they think is missing."
+    },
+    {
+      "pattern": "exits 1 today|fails today because|cannot run today",
+      "name": "a present-tense claim that the guard cannot run",
+      "why": "E-017 said verify-font-coverage.mjs \"exits 1 today because no font asset exists\". F-076 shipped the asset. The word `today` is what makes this a claim about now rather than history."
+    }
+  ],
+  "allowMarker": "past-state-ok:",
+  "$allowComment": "A rationale may describe a past state on purpose — the narrative of a defect is often the most useful part of a note. Append `past-state-ok: <reason>` to the sentence. Visible in the prose a reviewer is already reading, for the same reason retired-ok is: an exemption in a config file nobody opens is an exemption nobody weighs."
+}

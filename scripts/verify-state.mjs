@@ -571,6 +571,140 @@ if (effects) {
     );
 }
 
+/* ------------------------------------------------- stale rationale (F-089, NFR-24) */
+
+/*
+ * An effect rationale is where the honest admissions live — "guard: none", "not yet blocking",
+ * "detected against intent rather than enforced". When the promise behind one is KEPT and the
+ * sentence is not updated, the record becomes a lie in the direction that matters: it tells a
+ * reader a verification does not exist, and the reader it misleads is one deciding whether to
+ * skip it.
+ *
+ * Two real instances, a week apart:
+ *
+ *   E-017 said its guard was "built and proven but NOT YET BLOCKING" for three features after
+ *   F-076 wired it. Caught by RUNNING the guard, not by reading about it.
+ *
+ *   E-007's memory note said "the four outputs … the emit tests byte-compare, so a skipped
+ *   regenerate is loud". Both halves nearly true, and the gap between FOUR and FIVE was the
+ *   defect — apps/mobile/global.css was compared by nothing. It survived because the sentence
+ *   SOUNDED like coverage. That case is why memory notes are read here too: E-007's link was
+ *   fine, its note was not.
+ *
+ * THE CHECK NEVER FIRES ON A PHRASE ALONE. It fires on a disagreement between the prose and
+ * the repository: the rationale claims the guard is absent AND the guard is actually wired.
+ * A word-matcher that flagged every "not yet" would be deleted within a release, and would
+ * deserve to be — this repository narrates its own defects constantly.
+ */
+
+const claimsPath = join(HARNESS, 'verification/discharged-claims.json');
+const claimsRaw = readText(claimsPath);
+
+if (effects && claimsRaw) {
+  let claimsConfig;
+  try {
+    claimsConfig = JSON.parse(claimsRaw);
+  } catch {
+    claimsConfig = null;
+  }
+
+  if (
+    claimsConfig === null ||
+    !Array.isArray(claimsConfig.claims) ||
+    claimsConfig.claims.length === 0
+  ) {
+    fail(
+      'stale-rationale',
+      'discharged-claims.json is missing, unparseable, or declares no phrases',
+      'A vocabulary check with no vocabulary passes over everything and reports coverage.',
+      'Restore .harness/verification/discharged-claims.json.',
+    );
+  } else {
+    const marker = claimsConfig.allowMarker ?? 'past-state-ok:';
+    const gatesForClaims = readJson(join(HARNESS, 'verification/gates.json'));
+    const rootPkg = readJson(join(ROOT, 'package.json'));
+    const scriptBodies = Object.values(rootPkg?.scripts ?? {}).join(' ; ');
+    const activeGates = new Set(
+      (gatesForClaims?.gates ?? []).filter((g) => g.status === 'active').map((g) => g.id),
+    );
+
+    /**
+     * Is this link's guard actually wired?
+     *
+     * Computed from the repository, never from prose. `gate:<id>` is wired when gates.json
+     * has it ACTIVE; `script:<file>` is wired when a root script invokes that filename.
+     *
+     * `test:` and `lint:` guards are deliberately NOT resolved — a test path existing says
+     * nothing about whether a runner reaches it, and guessing would be the failing-open shape
+     * this whole file exists to avoid. Links guarded only that way are skipped and counted.
+     */
+    const wiring = (guard) => {
+      const gateRefs = [...String(guard).matchAll(/gate:([a-z][a-z-]*)/gu)].map((m) => m[1]);
+      const scriptRefs = [...String(guard).matchAll(/script:([\w.-]+\.mjs)/gu)].map((m) => m[1]);
+      if (gateRefs.length === 0 && scriptRefs.length === 0) return 'unresolved';
+      if (gateRefs.some((id) => activeGates.has(id))) return 'wired';
+      if (scriptRefs.some((file) => scriptBodies.includes(file))) return 'wired';
+      return 'not-wired';
+    };
+
+    let subjectCount = 0;
+    let skippedNone = 0;
+    let skippedUnresolved = 0;
+    let exemptClaims = 0;
+
+    for (const link of effects.links ?? []) {
+      // THE HONEST CASE, skipped entirely. A link that reports a check we owe must keep
+      // saying so — E-009 has since F-001, and this check must never be the reason it stops.
+      if (String(link.guard).trim() === 'none') {
+        skippedNone += 1;
+        continue;
+      }
+      const state = wiring(link.guard);
+      if (state === 'unresolved') {
+        skippedUnresolved += 1;
+        continue;
+      }
+      if (state !== 'wired') continue;
+
+      const notePath = join(HARNESS, link.memory ?? '');
+      const noteText = link.memory ? readText(notePath) : null;
+      const subjects = [
+        { where: `${link.id}.rationale`, text: String(link.rationale ?? '') },
+        ...(noteText === null ? [] : [{ where: `${link.id} → ${link.memory}`, text: noteText }]),
+      ];
+
+      for (const { where, text } of subjects) {
+        subjectCount += 1;
+        if (text.includes(marker)) {
+          exemptClaims += 1;
+          continue;
+        }
+        for (const claim of claimsConfig.claims) {
+          const hit = new RegExp(claim.pattern, 'iu').exec(text);
+          if (hit === null) continue;
+          fail(
+            'stale-rationale',
+            `${where} asserts ${claim.name} — "${hit[0]}" — but ${link.guard} is wired`,
+            `${claim.why} A promise kept turns its own record into a lie, and the reader it ` +
+              'misleads is one deciding whether to skip a verification.',
+            `Rewrite the sentence for the guard that now exists, or append "${marker} <reason>" ` +
+              'if it describes a past state on purpose.',
+          );
+        }
+      }
+    }
+
+    pass(
+      'stale-rationale',
+      `${String(subjectCount)} rationale(s) and note(s) checked against ` +
+        `${String(claimsConfig.claims.length)} phrase(s); ${String(skippedNone)} link(s) ` +
+        `honestly report guard:none, ${String(skippedUnresolved)} guarded only by a test or ` +
+        `lint rule this cannot resolve, ${String(exemptClaims)} marked as past state. ` +
+        'A phrase alone is never a finding — only a phrase that disagrees with the repository',
+    );
+  }
+}
+
 /* ============================================================== 5. memory index */
 
 const memoryIndex = readText(join(HARNESS, 'memory/index.md'));

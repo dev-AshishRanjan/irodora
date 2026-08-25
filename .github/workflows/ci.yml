@@ -72,6 +72,9 @@ jobs:
       - name: 'Gate 0 — mirror proof'
         run: node scripts/verify-gate-mirror.mjs
 
+      - name: 'Gate 0 — stale-rationale proof'
+        run: node scripts/verify-stale-rationale-proof.mjs
+
       # ---- toolchain (activates with F-001) ------------------------------
       - name: Set up pnpm
         uses: pnpm/action-setup@v4

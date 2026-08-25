@@ -52,7 +52,8 @@
     "a11y:scope": "node scripts/a11y-scope.mjs",
     "verify:cache-scope": "node scripts/verify-cache-scope.mjs",
     "verify:cache-scope:prove": "node scripts/verify-cache-scope.mjs --prove",
-    "verify:tokens": "node scripts/generate-design-tokens.mjs --check"
+    "verify:tokens": "node scripts/generate-design-tokens.mjs --check",
+    "verify:stale:prove": "node scripts/verify-stale-rationale-proof.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

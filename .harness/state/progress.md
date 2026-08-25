@@ -8,6 +8,111 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-089 · the check fired on its author, and the plan was the thing that was wrong
+
+Gate 0 has a sixteenth check. An effect rationale — or its paired memory note — that asserts its
+guard is absent or not blocking **while that guard is wired** now fails by link id and by phrase.
+40 rationales and notes against 4 phrases on every run, with the counts printed.
+
+### It never fires on a phrase alone, and that is the whole design
+
+The feature was filed with the hard part named: *"a word-matcher that flags every 'not yet'
+would be deleted within a release."* It would deserve to be — this repository narrates its own
+defects constantly.
+
+So the check fires on a **disagreement between the prose and the repository**:
+
+```
+the rationale claims the guard is absent   AND   the guard is actually wired
+```
+
+**Wired is computed, never read.** `gate:<id>` against `gates.json` status; `script:<file>`
+against the root `package.json` scripts. A link whose guard is literally `none` is skipped
+entirely — that is the honest case the graph exists to carry, E-009 has said so since F-001, and
+a **control case plants the loudest phrase on E-009 and asserts it stays silent**.
+
+### The first run disproved the plan's own policy
+
+This is the most useful thing that happened here, so it is recorded rather than tidied away.
+
+The plan said: *"if it fires on legitimate narration, the phrase is wrong and gets removed, not
+marked."*
+
+It then fired on **E-017's rationale and its note** — which had already been corrected, and now
+*quote* the old claim in order to show how an effect note rots. The quoted phrase is
+`not yet blocking`: **the canonical instance of the defect**, and the last phrase that should
+ever be deleted from the list.
+
+So the marker was the right instrument, this is its first legitimate use, and it is precisely
+what acceptance criterion 4 asks for — *"an escape hatch … for a rationale that describes a past
+state on purpose"*.
+
+The policy is now: **fire, read it, and choose.** Fix the prose when it is a claim; mark it when
+it is a quotation; remove the phrase only when it cannot tell the two apart at all. The plan is
+corrected in place, with the old sentence quoted so the correction is legible.
+
+### A clever rule was available and was rejected
+
+*"A phrase inside quotation marks is a quotation"* would have removed both false positives
+automatically, with nothing to maintain.
+
+It would also have been a **silent** exemption that a real claim could wear simply by being
+quoted. This repository consistently prefers a visible reasoned exemption to a clever automatic
+one — `retired-ok`, `sampleValues`, the `ALLOWED` sets — and in every one of those the polarity
+is what makes it safe: forgetting produces a finding, not a pass.
+
+### What it cannot resolve, printed on every run
+
+A guard named only by a `test:` path or a `lint:` rule. A test file existing says nothing about
+whether a runner reaches it, and guessing would be the failing-open shape gate 0 exists to
+prevent. Those 2 links are **skipped and counted** rather than assumed.
+
+### Proven, not assumed
+
+`scripts/verify-stale-rationale-proof.mjs`, wired into CI beside the other mutation proofs:
+
+```
+✓ baseline is green before the plants
+✓ a discharged claim on a WIRED guard is reported
+✓ the same claim with the marker passes
+✓ CONTROL — the honest guard:none link is never touched
+✓ a second phrase fires as well, so the list is not one rule wearing four names
+✓ baseline is green after the plants were removed
+```
+
+Every plant throws if the value it meant to change did not change — the habit F-094 earned the
+hard way.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — now **16** checks, 24 links |
+| `state` mutation proof | **passed** — 4/4, baseline green either side |
+| CI mirror | **passed** — 13 gates; the new step is a proof, not a gate command |
+| `format` · `lint` (scripts) | **passed** |
+
+**No source outside `scripts/` changed**, so `typecheck`, `build` and `test` are untouched —
+and `test` stays red repo-wide for the Node 22 reason F-093 made visible and F-083 owns.
+
+### Next
+
+R2 has **no eligible feature**. Three `backlog` items remain plus one `wont`:
+
+| | | |
+|---|---|---|
+| **F-091** | `must` | Blocked on the environment — every Expo e2e tool is a dependency and `pnpm install` cannot run here |
+| F-090 | `should` | Taxonomy vocabulary readable in Japanese, not only English |
+| F-092 | `should` | A design token that reaches no component fails a check |
+
+**F-092 is the natural successor to this feature** — same class, different artefact: F-089 asks
+whether a *rationale* describes a world that exists, F-092 asks whether a *generated value* has a
+reader. Both are the shape F-019 found with `tabular-nums`.
+
+**Ahead of all of them, unchanged: the Node upgrade to 24.19.0.**
+
+---
+
 ## 2026-08-25 — F-094 · the freshness check nobody ran, and the hole it actually closed
 
 `generate-design-tokens.mjs --check` now runs **first** in gate 9. A manifest edited without
