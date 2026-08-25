@@ -85,6 +85,8 @@ export interface ResolvedTextNode {
 /** A rendered node that responds to touch. */
 export interface ResolvedPressableNode {
   readonly accessibilityRole: string | undefined;
+  /** The host component this rendered to — `TextInput`, `View`, … See `pressableNodes`. */
+  readonly hostType: string;
   readonly accessibilityLabel: string | undefined;
   readonly accessibilityHint: string | undefined;
   readonly accessibilityState: Readonly<Record<string, unknown>> | undefined;
@@ -225,6 +227,21 @@ export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[]
       const state = p['accessibilityState'];
       out.push({
         accessibilityRole: stringOrUndefined(p['accessibilityRole']),
+        /*
+         * The HOST type (F-020).
+         *
+         * A `Pressable` renders to a plain view and announces as nothing at all unless a role
+         * is declared — which is why `no-role` exists. A `TextInput` is a different case: the
+         * platform types it as a text field on both iOS and Android without being told, and
+         * neither RN role list has a member that means "a field you type into" (`Role` has
+         * `searchbox` and no `textbox`; `AccessibilityRole`'s nearest is `text`, which means
+         * STATIC text — a worse announcement than none).
+         *
+         * So the host type is carried, and the rule reads it. The alternative was to declare
+         * a role we know to be wrong in order to satisfy a checker, which is the shape where
+         * the check starts governing the code instead of the other way round.
+         */
+        hostType: node.type,
         accessibilityLabel: stringOrUndefined(p['accessibilityLabel']),
         accessibilityHint: stringOrUndefined(p['accessibilityHint']),
         accessibilityState:

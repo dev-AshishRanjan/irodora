@@ -24,7 +24,7 @@
 
 import { createRepository } from '../createRepository.js';
 import { uuidv7 } from '../id.js';
-import type { Driver, DriverInfo, NewSavedColor } from '../repository.js';
+import type { Driver, DriverInfo, NewPalette, NewSavedColor } from '../repository.js';
 
 export interface StoreFinding {
   readonly driver: string;
@@ -50,6 +50,39 @@ const sample = (id: string, name: string): NewSavedColor => ({
   hex: '#0000FF',
   source: 'declared',
   confidence: 1,
+  // null on purpose: this fixture is not a corpus entry, and the nullable branch is the one
+  // a Lens capture (F-040) will take.
+  corpus_slug: null,
+});
+
+/**
+ * A two-member palette, the smallest one the corpus schema accepts: an anchor and one other.
+ *
+ * Members carry a `corpus_slug` here — unlike `sample` — because that is the only way back to
+ * the entry a member names, and a palette whose members have none cannot be re-expressed as a
+ * corpus record at all.
+ */
+const palette = (id: string): NewPalette => ({
+  id,
+  nameEn: 'Evening walk',
+  nameJa: 'Evening walk',
+  classification: 'editorial',
+  category: 'contemporary',
+  versionId: '2026.08.1',
+  members: [
+    {
+      color: { ...sample(uuidv7(), 'Ai-nezumi'), corpus_slug: 'ai-nezumi' },
+      role: 'anchor',
+      rank: 1,
+      weight: 1,
+    },
+    {
+      color: { ...sample(uuidv7(), 'Usu-gami'), corpus_slug: 'usu-gami' },
+      role: 'light',
+      rank: 2,
+      weight: 0.6,
+    },
+  ],
 });
 
 /**
@@ -231,6 +264,82 @@ export function checkStore(open: OpenStore): {
           'insert locality and "insert order is meaningful" both depend on it',
       );
     if (new Set(ids).size !== ids.length) at('id-ordering', 'ids collided within a millisecond');
+  });
+
+  // --- a palette survives a reopen, with its members --------------------------------------
+  run('palette-durability', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+    const id = uuidv7();
+    repo.savePalette(palette(id), 1000);
+
+    // The reopen again. A palette is written across THREE tables, so this is a stronger
+    // statement than the single-row case: it says the whole write committed, not that an
+    // object still holds what was put into it.
+    repo.reopen();
+
+    const after = repo.getPalette(id);
+    if (after === undefined) at('palette-durability', 'the palette did not survive a reopen');
+    else if (after.members.length !== 2)
+      at(
+        'palette-durability',
+        `${String(after.members.length)} member(s) survived the reopen; 2 were written`,
+      );
+    else if (after.members[0]?.slug !== 'ai-nezumi')
+      at('palette-durability', 'members did not come back in rank order');
+    repo.close();
+  });
+
+  // --- a palette write is atomic ACROSS TABLES --------------------------------------------
+  run('palette-atomicity', () => {
+    const { driver, info: i } = open();
+    const repo = createRepository(driver, i);
+    const id = uuidv7();
+
+    /*
+     * A palette row and a member that cannot exist, in one transaction. The member violates
+     * the foreign key, so the statement fails — and the palette row must go with it.
+     *
+     * This is the multi-table half of `transaction-atomicity`, and it is worth its own check
+     * because the two drivers implement `transaction` separately. A palette left behind with
+     * no members is a palette the schema forbids and no read path would report: it simply
+     * renders as empty.
+     */
+    try {
+      driver.transaction(() => {
+        driver.run(
+          `INSERT INTO palette (id, created_at, updated_at, deleted_at, name, name_ja,
+             classification, category, version_id)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            1000,
+            1000,
+            'Half a palette',
+            'Half a palette',
+            'editorial',
+            'contemporary',
+            '2026.08.1',
+          ],
+        );
+        driver.run(
+          `INSERT INTO palette_member (id, created_at, updated_at, deleted_at, palette_id,
+             color_id, position, role, weight)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)`,
+          [uuidv7(), 1000, 1000, id, 'no-such-colour', 1, 'anchor', 1],
+        );
+      });
+    } catch {
+      /* expected: the member's colour does not exist */
+    }
+
+    if (repo.getPalette(id) !== undefined)
+      at(
+        'palette-atomicity',
+        'a palette row survived a transaction whose member insert failed — it now has no ' +
+          'members, which is a state the corpus schema rejects and a screen renders as empty',
+      );
+    repo.close();
   });
 
   return { findings, ran, info };

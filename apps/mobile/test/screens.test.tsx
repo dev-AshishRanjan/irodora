@@ -11,10 +11,13 @@
  * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
  */
 
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@irodora/ui';
 import {
   checkAll,
+  checkStatusAdjacency,
   formatFindings,
   type ConformanceSubject,
   type TestNode,
@@ -23,6 +26,11 @@ import { Home } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
+import { PaletteStudio } from '../src/screens/PaletteStudio';
+import { toStoreWrite } from '../src/palette';
+import { PALETTE_ROLES } from '@irodora/corpus';
+import type { PaletteDraft, PaletteStore } from '../src/palette';
+import type { StoredPalette } from '@irodora/store';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
 import { allEntries, CORPUS_ENTRY_COUNT } from '../src/corpus';
@@ -81,6 +89,59 @@ const PAIR_B = 'soko-zumi';
 /** An entry that HAS a complementary, so the populated branch is rendered too. */
 const WITH_COMPLEMENT = allEntries().find((e) => e.entry.relations.complementary.length > 0)!;
 
+/**
+ * An in-memory `PaletteStore`.
+ *
+ * The screen takes the port, not the repository: `expo-sqlite` needs a device, so a screen
+ * that imported it could not be rendered here at all — and this file is where NFR-8 and NFR-9
+ * are actually checked. The SQL behind the port is proven in `packages/store` against
+ * `node:sqlite`, and the device driver against the same conformance suite on F-041.
+ *
+ * It is a real implementation rather than a stub of no-ops: `save then list` is the sequence
+ * the screen depends on, and a store that accepted a write and returned nothing would make
+ * every assertion about the saved list vacuously true.
+ */
+function fakeStore(): PaletteStore {
+  const rows = new Map<string, StoredPalette>();
+  return {
+    savePalette(palette, now) {
+      rows.set(palette.id, {
+        id: palette.id,
+        nameEn: palette.nameEn,
+        nameJa: palette.nameJa,
+        classification: palette.classification,
+        category: palette.category,
+        versionId: palette.versionId,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+        members: palette.members.map((m) => ({
+          colorId: m.color.id,
+          slug: m.color.corpus_slug ?? '',
+          role: m.role,
+          rank: m.rank,
+          weight: m.weight,
+          color: { ...m.color, created_at: now, updated_at: now, deleted_at: null },
+        })),
+      });
+    },
+    listPalettes: () => [...rows.values()],
+    deletePalette(id) {
+      rows.delete(id);
+    },
+  };
+}
+
+/** Three real corpus entries, with one of them the anchor — a draft the schema accepts. */
+const DRAFT: PaletteDraft = {
+  name: 'Evening walk',
+  members: [
+    { slug: allEntries()[0]!.entry.slug, role: 'anchor' },
+    { slug: allEntries()[1]!.entry.slug, role: 'neutral' },
+    { slug: allEntries()[2]!.entry.slug, role: 'accent' },
+  ],
+};
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Home',
@@ -115,6 +176,29 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme),
+  },
+  {
+    name: 'screens/PaletteStudio',
+    // `static`, like the rest: its interactive parts are TextField, SearchField, Chip, Button
+    // and Swatch, each registered in packages/ui where the suite makes them render focus,
+    // active, disabled and loading differently.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<PaletteStudio store={fakeStore()} />, theme),
+  },
+  {
+    /*
+     * The SAME screen with a draft in it.
+     *
+     * The empty and populated branches of this screen render almost disjoint trees — an empty
+     * Studio draws no swatch, no role chip and no reorder control, so a registry entry for it
+     * alone would check the accessibility of a screen nobody has used yet.
+     */
+    name: 'screens/PaletteStudio (with a draft)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme),
   },
 ];
 
@@ -478,4 +562,209 @@ describe('compare has headings (A11)', () => {
         'header',
       );
     });
+});
+
+/**
+ * FR-49 — **build, edit, reorder and save**, on the screen rather than in the module.
+ *
+ * The draft operations and the schema check are asserted in `palette.test.ts`, where they can
+ * be reached without rendering anything. What is left for this file is the half that file
+ * cannot see: that the controls reach the screen, that they are named individually, and that a
+ * saved palette comes back through the port.
+ */
+describe('Palette Studio builds, edits, reorders and saves (FR-49)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const nodes = (draft?: PaletteDraft, store: PaletteStore = fakeStore()): string[] =>
+    textOf(
+      draw(
+        // `exactOptionalPropertyTypes` is on: an optional prop is absent or present, never
+        // explicitly `undefined`. Spreading is how "absent" is expressed.
+        <PaletteStudio store={store} {...(draft === undefined ? {} : { initialDraft: draft })} />,
+        'light',
+      ),
+    );
+
+  it('offers a role control for every role the schema defines', () => {
+    const text = nodes(DRAFT).join(' ').toLowerCase();
+    // Read from the schema's own list, not from four strings typed here: a fifth role would
+    // otherwise be a chip nobody renders and a test nobody fails.
+    for (const role of PALETTE_ROLES) expect(text).toContain(role);
+  });
+
+  it('names each reorder and remove control by the colour it acts on', () => {
+    const labels = nodes(DRAFT);
+    const first = allEntries()[0]!.entry.name.en;
+    // A screen reader moving down a member list otherwise hears "Move up" three times with
+    // nothing to tell the rows apart.
+    expect(labels).toContain(`Move up — ${first}`);
+    expect(labels).toContain(`Move down — ${first}`);
+    expect(labels).toContain(`Remove — ${first}`);
+  });
+
+  it('draws every member as a swatch, not only as a name', () => {
+    const text = nodes(DRAFT).join(' ');
+    for (const m of DRAFT.members) {
+      const entry = allEntries().find((e) => e.entry.slug === m.slug)!;
+      expect(text).toContain(entry.entry.name.en);
+      expect(text).toContain(entry.derived.hex);
+    }
+  });
+
+  it('says what the ordering DOES, rather than offering a reorder with no visible effect', () => {
+    expect(nodes(DRAFT).join(' ')).toContain('order sets how much');
+  });
+
+  it('explains why an empty draft cannot be saved rather than only disabling the control', () => {
+    // A disabled control with no stated reason is the accessibility failure that looks like
+    // polish. The sentence comes from the schema's verdict via `draftProblem`.
+    expect(nodes().join(' ')).toContain('Add at least one colour before saving');
+  });
+
+  it('explains the anchor rule when the anchor is gone', () => {
+    const noAnchor: PaletteDraft = {
+      ...DRAFT,
+      members: DRAFT.members.map((m) => ({ ...m, role: 'neutral' as const })),
+    };
+    expect(nodes(noAnchor).join(' ')).toContain('must be the anchor');
+  });
+
+  /*
+   * THE DECOY. Without it every assertion above is equally true of a screen that shows every
+   * sentence at once [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+   */
+  it('DECOY — a valid draft shows no problem sentence at all', () => {
+    const text = nodes(DRAFT).join(' ');
+    expect(text).not.toContain('Add at least one colour before saving');
+    expect(text).not.toContain('must be the anchor');
+    expect(text).not.toContain('Give the palette a name');
+  });
+
+  /*
+   * FR-23's negative form, applied to a palette the person made.
+   *
+   * A device-built palette is `classification: "editorial"` — the honest field — and that
+   * token's label reads "Irodora original", which is untrue of somebody else's work. Compared
+   * as WHOLE text nodes rather than as a substring, because "original" appears legitimately
+   * elsewhere and a substring assertion would fail on the wrong thing.
+   */
+  it('never presents a palette the person made as Irodora own work (ADR-0067)', () => {
+    const shown = nodes(DRAFT);
+    for (const label of ['Irodora original', 'Irodora original, Japanese-inspired'])
+      expect(shown).not.toContain(label);
+    expect(shown.join(' ')).toContain('Made by you, on this device');
+  });
+
+  it('shows a saved palette in the list, having written it through the port', () => {
+    const store = fakeStore();
+    // Written the way the screen writes it, so this exercises `toStoreWrite` end to end
+    // rather than a shape invented here.
+    let n = 0;
+    store.savePalette(
+      toStoreWrite(
+        DRAFT,
+        { id: '0198e2f1-4c3a-7b21-9d54-6e0a1b2c3d4e', today: '2026-08-25' },
+        () => `color-${String(n++)}`,
+      ),
+      1000,
+    );
+    expect(nodes(undefined, store).join(' ')).toContain('Evening walk');
+  });
+
+  it('says nothing is saved when nothing is, rather than showing an empty list', () => {
+    expect(nodes().join(' ')).toContain('Nothing saved yet');
+  });
+});
+
+/** A11 — the Studio announces structure a screen reader can navigate. */
+describe('Palette Studio has headings (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its sections as headings in ${theme}`, () => {
+      const tree = draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme);
+      expect(roles(tree)).toContain('header');
+    });
+});
+
+/**
+ * Golden rule 13, at screen scale (F-069).
+ *
+ * A status colour beside a colour sample changes how the sample reads — simultaneous contrast
+ * — so the manifest requires a `swatch.well` between them. `checkStatusAdjacency` has been
+ * asserted against fixtures in `packages/ui` since F-069 and had never been run over a SCREEN,
+ * which is where samples and statuses actually meet.
+ *
+ * It finds nothing today, because no screen paints a status token: the Studio deliberately
+ * shows its save confirmation and its refusal as plain prose. That is the check being in place
+ * BEFORE the first one arrives rather than after — and the mechanism itself is proven by the
+ * `StatusBesideSample` fixtures, not by this run.
+ */
+describe('no screen puts a status colour beside a colour sample (F-069)', () => {
+  it.each(SCREENS.map((s) => [s.name, s] as const))('%s', (_name, subject) => {
+    for (const theme of ['light', 'dark'] as const) {
+      const tree = subject.render('default', theme);
+      expect(tree).not.toBeNull();
+      expect(checkStatusAdjacency(tree!, theme, subject.sampleValues ?? [])).toEqual([]);
+    }
+  });
+});
+
+/**
+ * The seam nothing else can see.
+ *
+ * The Studio takes a `PaletteStore`; the conformance suite passes an in-memory one. That is
+ * what lets the screen be rendered at all — `expo-sqlite` needs a device — and it is also a
+ * hole: every assertion above would pass on an app whose route wired a fake, and the person
+ * would find out when they reopened it.
+ *
+ * `typecheck` proves `Repository` satisfies the port. This proves the ROUTE reaches for the
+ * real one. It is a source assertion, which is weak, and it is stated as weak: what it cannot
+ * see is whether a row survives on a device, and nothing off-device can
+ * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
+ */
+describe('the route wires the real repository, not a fake', () => {
+  const route = readFileSync(join(process.cwd(), 'app', 'palettes.tsx'), 'utf8');
+
+  it('imports the device repository and hands it to the screen', () => {
+    expect(route).toContain("from '../src/store/repository'");
+    expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
+  });
+
+  it('DECOY — the assertion above is not true of every route', () => {
+    // Without this, "the file contains a string" would pass for any file at all, and the
+    // check would be measuring that `readFileSync` works.
+    const compare = readFileSync(join(process.cwd(), 'app', 'compare.tsx'), 'utf8');
+    expect(compare).not.toContain('deviceRepository');
+  });
+
+  /*
+   * `expo-sqlite` must not be reachable from a SCREEN. A screen that imported it could not be
+   * rendered by jest, and this file is where the accessibility guarantees are checked — so the
+   * failure would present as "the conformance suite lost a screen" rather than as an import.
+   */
+  it('keeps expo-sqlite out of every screen', () => {
+    const dir = join(process.cwd(), 'src', 'screens');
+    for (const file of readdirSync(dir)) {
+      const source = readFileSync(join(dir, file), 'utf8');
+      expect(`${file}: ${String(source.includes('expo-sqlite'))}`).toBe(`${file}: false`);
+      expect(`${file}: ${String(source.includes('store/repository'))}`).toBe(`${file}: false`);
+    }
+  });
 });

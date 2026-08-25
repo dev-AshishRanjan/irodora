@@ -19,6 +19,9 @@ export default function Index(): React.JSX.Element {
         onOpenCompare={() => {
           router.push('/compare');
         }}
+        onOpenStudio={() => {
+          router.push('/palettes');
+        }}
       />
     </>
   );

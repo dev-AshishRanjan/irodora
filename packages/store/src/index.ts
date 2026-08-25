@@ -34,6 +34,7 @@ export {
   type EraseOutcome,
 } from './backup.js';
 export { uuidv7 } from './id.js';
+export { StoreError } from './repository.js';
 export {
   DATABASE_KEY_NAME,
   forgetDatabaseKey,
@@ -47,8 +48,14 @@ export type {
   DriverFactory,
   DriverInfo,
   Millis,
+  NewPalette,
+  NewPaletteMember,
   NewSavedColor,
+  PaletteMemberRow,
+  PaletteRow,
   Repository,
   SavedColorRow,
+  StoredPalette,
+  StoredPaletteMember,
   SyncRow,
 } from './repository.js';

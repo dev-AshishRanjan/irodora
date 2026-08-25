@@ -25,6 +25,7 @@ export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
 export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
 export { SearchField, type SearchFieldProps } from './SearchField.js';
+export { TextField, type TextFieldProps } from './TextField.js';
 export { Swatch, swatchAccessibleName, type SwatchProps } from './Swatch.js';
 
 export const UI_VERSION = '0.0.0' as const;

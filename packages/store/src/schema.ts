@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -118,6 +118,45 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       ) STRICT;
 
       CREATE INDEX palette_member_palette ON palette_member (palette_id, position);
+    `,
+  },
+  {
+    version: 2,
+    /*
+     * F-020. Migration 1 provisioned `palette` and `palette_member` ahead of the feature, and
+     * they could not hold what FR-49 requires: *"palettes validate against the same schema as
+     * corpus palettes"*, and a `CorpusPalette` carries a Japanese name, a classification, a
+     * category, a corpus version and a per-member weight. None of those had a column.
+     *
+     * `saved_color.corpus_slug` is the other half: without it a row is a colour with no way
+     * back to the entry it came from, so a saved palette could never be re-expressed as the
+     * slug-addressed record `parsePalette` reads.
+     *
+     * ## Every column is NULLABLE, and none has a DEFAULT
+     *
+     * A `DEFAULT` here would be a value nobody chose standing in for one somebody must —
+     * `version_id DEFAULT ''` is a silent blank wearing a NOT NULL constraint. `NULL` means
+     * exactly one thing: *this row was written before the column existed*. That is a real
+     * distinction, the read path refuses it by name, and no row can currently be in that state
+     * because nothing has ever written a palette.
+     *
+     * ## What SQLite will not let this migration add
+     *
+     * `ALTER TABLE … ADD COLUMN` cannot carry a `CHECK`, so `classification` and `category`
+     * have no constraint at the database. They are constrained where the rule actually lives:
+     * `parsePalette` rejects anything outside the union, on the way in and on the way back
+     * out. A CHECK here would be a SECOND definition of a content rule, in a language with no
+     * tests — the shape E-013 exists to keep to one place.
+     */
+    up: `
+      ALTER TABLE saved_color    ADD COLUMN corpus_slug    TEXT;
+      ALTER TABLE palette        ADD COLUMN name_ja        TEXT;
+      ALTER TABLE palette        ADD COLUMN classification TEXT;
+      ALTER TABLE palette        ADD COLUMN category       TEXT;
+      ALTER TABLE palette        ADD COLUMN version_id     TEXT;
+      ALTER TABLE palette_member ADD COLUMN weight         REAL;
+
+      CREATE INDEX palette_live ON palette (deleted_at) WHERE deleted_at IS NULL;
     `,
   },
 ];

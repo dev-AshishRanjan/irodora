@@ -157,6 +157,32 @@ export const ja: Record<MessageKey, string> = {
   'cvd.tritan': '青が弱い（3型）',
   'cvd.note':
     'この端末で、公開されたモデルの最も強い段階で計算した模擬表示です。模擬はモデルであり、他の人に見えているものではありません。',
+  // F-020 — Palette Studio (FR-49).
+  'home.openStudio': '配色をつくる',
+  'studio.title': '配色スタジオ',
+  'studio.origin': 'この端末であなたが作った配色です。Irodoraの収録色ではありません。',
+  'studio.name': '配色の名前',
+  'studio.nameHint': '夕方の散歩',
+  'studio.members': 'この配色の色',
+  'studio.order': '並び順が、それぞれの色の占める割合になります。',
+  'studio.role': '役割',
+  'studio.moveUp': '上へ',
+  'studio.moveDown': '下へ',
+  'studio.remove': '外す',
+  'studio.empty': 'まだ色がありません。',
+  'studio.emptyHint': '下で探して、色をえらぶと追加されます。',
+  'studio.add': '色を追加する',
+  'studio.save': '配色を保存する',
+  'studio.saved': 'この端末に保存しました。',
+  'studio.yours': '保存した配色',
+  'studio.none': 'まだ保存はありません。',
+  'studio.open': '開く',
+  'studio.delete': 'この配色を削除する',
+  'studio.new': '新しい配色をつくる',
+  'studio.problem.empty': '保存するには、色を1つ以上追加してください。',
+  'studio.problem.noAnchor': '1つの色を「基準」にしてください。ほかの色はそれに合わせて選びます。',
+  'studio.problem.noName': '保存するには、名前をつけてください。',
+  'studio.problem.other': 'この配色はまだ保存できません。',
 };
 
 /**

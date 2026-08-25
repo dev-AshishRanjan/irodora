@@ -13,7 +13,7 @@
  * explicit path**, never by glob — a glob would exempt whatever else drifts into `test/`.
  */
 
-import { Pressable, Text, View, type ViewProps } from 'react-native';
+import { Pressable, Text, TextInput, View, type ViewProps } from 'react-native';
 import { nativeColors } from '@irodora/design-tokens';
 
 /**
@@ -119,6 +119,25 @@ export function UnlabelledPressable(): React.JSX.Element {
     <Pressable style={{ minWidth: 44, minHeight: 44 }} onPress={() => undefined}>
       <View style={{ backgroundColor: t['swatch.well'] }} />
     </Pressable>
+  );
+}
+
+/**
+ * DECOY 4b — a `TextInput` with no accessible name (F-020).
+ *
+ * Pairs with the `TextInput` exemption from the `no-role` rule. The exemption is meant to
+ * remove exactly ONE check, because the platform supplies exactly one thing — so this fixture
+ * must still be reported for `no-name`. Without it, "TextInput is exempt from no-role" and
+ * "TextInput is exempt" are indistinguishable from the outside, and the second is how an
+ * exemption quietly becomes a hole.
+ */
+export function UnlabelledTextInput(): React.JSX.Element {
+  return (
+    <TextInput
+      style={{ minWidth: 44, minHeight: 44, backgroundColor: t['surface.2'], color: t.foreground }}
+      value=""
+      onChangeText={() => undefined}
+    />
   );
 }
 

@@ -80,6 +80,33 @@ const PROVENANCE_KEYS = [
   'editorialNotes',
 ] as const;
 
+/**
+ * The identities a record made **on a device** carries, and which repository content may not.
+ *
+ * A palette somebody builds in Palette Studio (FR-49, F-020) goes through `parsePalette` —
+ * deliberately, because the schema is what enforces "at least one anchor" and "ranks
+ * contiguous from 1", which is exactly what an editor breaks. But its provenance is not a
+ * corpus provenance: there is no register row behind it and no roster editor wrote it.
+ *
+ * `sourceId` and `authoredBy` are free strings to `parsePalette` and are cross-checked
+ * against the register and `content/editors.json` by the **content gate**, which runs over
+ * `content/` and never sees a device. So a device record needs values that are honest —
+ * *"this came from a person's phone"* — and that the gate will never mistake for a real id.
+ *
+ * These are those values, defined **once** so the app that writes them and the gate that
+ * forbids them read the same constants. Two copies of a reserved word is how a reserved word
+ * stops being reserved. `verify-content.mjs` rejects any `content/` record using either, and
+ * a decoy proves that check fires — a check for a string that appears nowhere passes
+ * vacuously.
+ */
+export const DEVICE_LOCAL_SOURCE_ID = 'USER-LOCAL';
+
+/** The `authoredBy` of a record made on a device. Never a `content/editors.json` id. */
+export const DEVICE_LOCAL_AUTHOR_ID = 'user-local';
+
+/** Both reserved identities, for a checker that wants to scan for either. */
+export const RESERVED_DEVICE_IDENTITIES = [DEVICE_LOCAL_SOURCE_ID, DEVICE_LOCAL_AUTHOR_ID] as const;
+
 /** Who checked the entry, relative to who wrote it. See `RecordProvenance`. */
 export const REVIEW_INDEPENDENCE = ['independent', 'self'] as const;
 

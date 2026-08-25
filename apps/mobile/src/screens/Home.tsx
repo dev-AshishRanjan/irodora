@@ -47,9 +47,15 @@ export interface HomeProps {
   readonly onOpenAtlas?: () => void;
   /** Open Compare. Same shape and same reason as onOpenAtlas. */
   readonly onOpenCompare?: () => void;
+  /** Open Palette Studio. Same shape and same reason as onOpenAtlas. */
+  readonly onOpenStudio?: () => void;
 }
 
-export function Home({ onOpenAtlas, onOpenCompare }: HomeProps = {}): React.JSX.Element {
+export function Home({
+  onOpenAtlas,
+  onOpenCompare,
+  onOpenStudio,
+}: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
   const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
@@ -113,6 +119,14 @@ export function Home({ onOpenAtlas, onOpenCompare }: HomeProps = {}): React.JSX.
         variant="secondary"
         onPress={() => {
           onOpenCompare?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openStudio')}
+        variant="secondary"
+        onPress={() => {
+          onOpenStudio?.();
         }}
       />
     </View>

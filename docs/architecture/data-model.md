@@ -135,6 +135,34 @@ column and there never will be — a schema check rejects a migration that adds 
 The field cannot exist, so the false precision it would imply cannot be built on top of it.
 
 ```
+saved_color
+  id · name · xyz_* · lab_* · oklch_* · hex
+  source · confidence            (ADR-0005: provenance is NOT NULL)
+  corpus_slug                    which corpus entry this came from, or null
+
+palette
+  id · name (en) · name_ja · classification · category · version_id
+palette_member
+  palette_id · color_id · position (= rank) · role · weight
+```
+
+**A user palette is a corpus-schema palette** (FR-49,
+[ADR-0067](../adr/0067-a-palette-built-on-a-device-is-validated-by-the-corpus-schema-and-says-it-came-from-a-device.md)).
+`parsePalette` runs on it before it is written and again when it is read back, so the two rules
+a palette editor breaks — at least one `anchor`, ranks contiguous from 1 — are checked by the
+code that defines them rather than by a second copy in a screen.
+
+That is why these columns exist: `palette.id` doubles as the corpus `slug`,
+`palette_member.position` is the corpus `rank`, and `corpus_slug` is what lets a stored row be
+re-expressed as a slug-addressed member. A second column for the same fact would be a second
+thing that can disagree.
+
+**A member copies the corpus colour into `saved_color`.** Not duplication for its own sake: a
+palette built against `2026.08.1` keeps the colours the person chose when a later version
+supersedes an entry, and `version_id` records which version it was built against. `corpus_slug`
+is nullable because a Lens capture (F-040) has no slug and never will.
+
+```
 garment
   id · type · name
   primary_color_id · pattern · material · formality · season[]
@@ -202,6 +230,16 @@ in store builds only, never as an OTA update
 
 Expand/contract still applies to anything destructive: add, backfill, dual-write, switch
 reads, then drop — across separate releases.
+
+**A column added by a later migration is nullable with no `DEFAULT`.** A default would be a
+value nobody chose standing in for one somebody must — `version_id DEFAULT ''` is a silent blank
+wearing a NOT NULL constraint. `NULL` means exactly one thing, *written before this column
+existed*, and the read path refuses it by name rather than inventing a substitute. Migration 2
+(F-020) is the first to apply this.
+
+A migration reaches further than the tables it names: the archive reads `SELECT *`, so a new
+column joins the backup format and its canonical digest without anyone editing `archive.ts`
+([E-023](../../.harness/state/effects.json)).
 
 **Retention.** Everything is kept until the person deletes it. There is no operator-side
 retention schedule because there is no operator-side copy. Corpus versions are kept

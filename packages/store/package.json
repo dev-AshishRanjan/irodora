@@ -31,6 +31,7 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "devDependencies": {
+    "@irodora/corpus": "workspace:*",
     "vitest": "^4.1.10"
   }
 }

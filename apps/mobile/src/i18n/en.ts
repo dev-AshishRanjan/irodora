@@ -161,6 +161,33 @@ export const en = {
   'cvd.tritan': 'Blue-weak (tritan)',
   'cvd.note':
     'Simulated on this device with a published model, at its strongest tabulated severity. A simulation is a model, not what another person sees.',
+  // F-020 — Palette Studio (FR-49).
+  'home.openStudio': 'Build a palette',
+  'studio.title': 'Palette Studio',
+  'studio.origin': 'Made by you, on this device. It is not part of the Irodora corpus.',
+  'studio.name': 'Palette name',
+  'studio.nameHint': 'Evening walk',
+  'studio.members': 'Colours in this palette',
+  'studio.order': 'The order sets how much of the palette each colour takes.',
+  'studio.role': 'Role',
+  'studio.moveUp': 'Move up',
+  'studio.moveDown': 'Move down',
+  'studio.remove': 'Remove',
+  'studio.empty': 'No colours yet.',
+  'studio.emptyHint': 'Search below and choose a colour to add it.',
+  'studio.add': 'Add a colour',
+  'studio.save': 'Save palette',
+  'studio.saved': 'Saved to this device.',
+  'studio.yours': 'Palettes you have saved',
+  'studio.none': 'Nothing saved yet.',
+  'studio.open': 'Open',
+  'studio.delete': 'Delete this palette',
+  'studio.new': 'Start a new palette',
+  'studio.problem.empty': 'Add at least one colour before saving.',
+  'studio.problem.noAnchor':
+    'One colour must be the anchor — the one the others are chosen against.',
+  'studio.problem.noName': 'Give the palette a name before saving.',
+  'studio.problem.other': 'This palette cannot be saved yet.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

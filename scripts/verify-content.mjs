@@ -70,6 +70,7 @@ const {
   hexToXyz,
   ledgerRowFor,
   loadPublishedVersion,
+  RESERVED_DEVICE_IDENTITIES,
 } = corpus;
 
 const failures = [];
@@ -286,6 +287,56 @@ for (const { file, record } of [...real.entries, ...real.palettes])
   if (record.slug.startsWith(FIXTURE_PREFIX))
     fail(`${file}: "${record.slug}" is a fixture slug and must not appear under content/`);
 rulesExercised += 1;
+
+// --- the device-local identities are RESERVED, and content may not use them -----------------
+
+/**
+ * F-020. A palette built in Palette Studio goes through the same `parsePalette` that
+ * `content/palettes/*.json` does, so its provenance needs a `sourceId` and an `authoredBy`.
+ * There is no register row behind it and no roster editor wrote it, so it carries reserved
+ * sentinels instead — `USER-LOCAL` and `user-local`.
+ *
+ * They are only reserved if something enforces it. A `content/` record adopting either would
+ * pass the register and roster cross-checks by naming an identity those files do not contain,
+ * and the failure would read as a missing register row rather than as content impersonating a
+ * device.
+ *
+ * **The decoy is not optional here.** These strings appear nowhere under `content/`, so a
+ * check for them passes over an empty set every time — which is indistinguishable from a check
+ * that does nothing at all. So the rule is applied to a PLANTED record on every run, and the
+ * gate fails if the planted record is accepted.
+ */
+const reservedIn = (record) => {
+  const p = record?.provenance ?? {};
+  return RESERVED_DEVICE_IDENTITIES.filter((id) => p.sourceId === id || p.authoredBy === id);
+};
+
+for (const { file, record } of [...real.entries, ...real.palettes])
+  for (const id of reservedIn(record))
+    fail(
+      `${file}: uses the reserved device identity "${id}". It belongs to records built on a ` +
+        'phone in Palette Studio (ADR-0067), which are never repository content — a content ' +
+        'record wearing it would look like a missing register row rather than like content ' +
+        'claiming to have come from somebody else’s device.',
+    );
+
+// The planted record. Without it the loop above runs over zero matches and reports success
+// [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+{
+  const planted = { provenance: { sourceId: RESERVED_DEVICE_IDENTITIES[0], authoredBy: 'ed-001' } };
+  const clean = { provenance: { sourceId: 'IRO-ED-001', authoredBy: 'ed-001' } };
+  if (reservedIn(planted).length === 0)
+    fail(
+      'the reserved-identity check did not fire on a planted record. It is scanning for ' +
+        'strings that appear nowhere under content/, so a check that never fires and a check ' +
+        'that cannot fire look identical from the outside.',
+    );
+  // And the other direction: a check that fires on everything is no check either.
+  if (reservedIn(clean).length > 0)
+    fail('the reserved-identity check fired on an ordinary register id');
+}
+rulesExercised += 1;
+fixtureRules += 1;
 
 // --- report --------------------------------------------------------------------------------
 

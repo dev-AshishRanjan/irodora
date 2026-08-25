@@ -18,6 +18,7 @@ import {
   Surface,
   Swatch,
   Text,
+  TextField,
   ThemeProvider,
 } from '../src/index.js';
 import {
@@ -38,6 +39,8 @@ import {
   LiteralColour,
   StatusBesideSample,
   StatusBesideSampleInWell,
+  UnlabelledPressable,
+  UnlabelledTextInput,
 } from './fixtures/subjects.js';
 
 /** Render inside a forced theme, and hand back the walkable tree. */
@@ -114,6 +117,30 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         <SearchField
           label="Search by name or reading"
           value={state === 'active' ? 'ai' : ''}
+          onChangeText={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'TextField',
+    kind: 'interactive',
+    // The words a screen reader must never hear as the WHOLE name. "Name" would be one of
+    // them if the palette field were labelled that way — it is "Palette name" for exactly
+    // this reason.
+    forbiddenNames: ['field', 'input', 'name', 'text'],
+    render: (state, theme) =>
+      draw(
+        <TextField
+          label="Palette name"
+          hint="Evening walk"
+          value={state === 'active' ? 'Evening walk' : ''}
           onChangeText={() => {
             /* the suite renders; it does not drive */
           }}
@@ -271,6 +298,40 @@ describe('the suite rejects what it is supposed to reject', () => {
       ['light', 'dark'],
     );
     expect(rules(findings)).toContain('generic-name');
+  });
+
+  /*
+   * The pair that keeps the `TextInput` exemption honest (F-020).
+   *
+   * `no-role` now skips a host type the platform announces on its own. An exemption nobody
+   * has watched fire — and nobody has watched STILL fire elsewhere — is indistinguishable
+   * from switching the rule off.
+   */
+  it('still rejects a pressable with no role, now that TextInput is exempt', () => {
+    const findings = checkSubject(
+      {
+        name: 'UnlabelledPressable',
+        kind: 'interactive',
+        render: (_state, theme) => draw(<UnlabelledPressable />, theme),
+      },
+      ['light', 'dark'],
+    );
+    expect(rules(findings)).toContain('no-role');
+  });
+
+  it('exempts a TextInput from the ROLE check and from nothing else', () => {
+    const findings = checkSubject(
+      {
+        name: 'UnlabelledTextInput',
+        kind: 'interactive',
+        render: (_state, theme) => draw(<UnlabelledTextInput />, theme),
+      },
+      ['light', 'dark'],
+    );
+    // The platform supplies the role, so this is silent...
+    expect(rules(findings)).not.toContain('no-role');
+    // ...and supplies nothing else, so the missing name is still reported.
+    expect(rules(findings)).toContain('no-name');
   });
 
   it('rejects a component that claims a state it cannot render', () => {

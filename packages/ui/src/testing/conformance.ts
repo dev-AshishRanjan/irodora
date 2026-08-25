@@ -99,6 +99,26 @@ export interface Finding {
 const GENERIC_NAMES = ['swatch', 'button', 'colour', 'color', 'image', 'icon', 'view', 'text'];
 
 /**
+ * Host components the platform announces correctly on its own (F-020).
+ *
+ * `no-role` exists because a `Pressable` renders to a plain view: a screen reader is told
+ * nothing about it unless a role is declared. `TextInput` is not that case — iOS and Android
+ * both type it as a text field natively, and **neither React Native role list has a member
+ * that means it**: `Role` offers `searchbox` but no `textbox`, and `AccessibilityRole`'s
+ * nearest is `text`, which means static text and would announce the field as something a
+ * person cannot edit.
+ *
+ * So the exemption is by HOST TYPE and it is one entry long. It removes only the role check;
+ * name, tap target, disabled and busy still apply to a text field exactly as to a button, and
+ * `SearchField` still declares `search` because that is a real distinction the platform
+ * cannot infer.
+ *
+ * Kept as a set rather than an `=== 'TextInput'` so adding a second one is a decision made
+ * here, in the open, rather than a condition someone widens in passing.
+ */
+const SELF_ANNOUNCING_HOSTS = new Set(['TextInput']);
+
+/**
  * Check one subject across every required state and both themes.
  *
  * Returns findings. An empty array means it conformed; it does **not** mean anything ran, so
@@ -196,7 +216,9 @@ export function checkSubject(
         at('not-interactive', 'declares kind "interactive" but nothing in the tree responds');
 
       for (const p of pressables) {
-        if (p.accessibilityRole === undefined)
+        // A host type the platform already announces correctly needs no declared role; see
+        // `SELF_ANNOUNCING_HOSTS`. Everything else that responds must say what it is.
+        if (p.accessibilityRole === undefined && !SELF_ANNOUNCING_HOSTS.has(p.hostType))
           at('no-role', `${p.path.join('>')} is pressable with no accessibilityRole`);
         const label = p.accessibilityLabel?.trim() ?? '';
         if (label === '') at('no-name', `${p.path.join('>')} is pressable with no accessible name`);

@@ -29,7 +29,9 @@ describe('the node:sqlite driver conforms', () => {
     const { findings, ran, info } = checkStore(open);
     expect(formatStoreFindings(findings)).toBe('');
     // A suite reporting zero findings over zero checks is the shape this asserts against.
-    expect(ran).toBeGreaterThanOrEqual(7);
+    // Raised with the two palette checks (F-020): a floor that never moves stops noticing a
+    // check that quietly went missing.
+    expect(ran).toBeGreaterThanOrEqual(9);
     expect(info.name).toBe('node:sqlite');
   });
 
@@ -103,6 +105,7 @@ describe('the repository keeps its own rules, not the driver', () => {
         hex: '#0000FF',
         source: 'declared',
         confidence: 1,
+        corpus_slug: null,
       },
       1000,
     );

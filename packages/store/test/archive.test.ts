@@ -63,6 +63,7 @@ function seeded() {
     hex: '#FFFFFF',
     source: 'estimated',
     confidence,
+    corpus_slug: null,
   });
   repo.saveColor(colour(live, 'Ai-nezumi', 1), 1000);
   repo.saveColor(colour(dead, 'Sohi', 0), 1100);

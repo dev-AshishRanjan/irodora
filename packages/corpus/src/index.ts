@@ -68,7 +68,13 @@ export {
 
 export { ISO_DATE_PATTERN, SLUG_PATTERN, VERSION_ID_PATTERN } from './primitives.js';
 
-export { parseProvenance, type RecordProvenance } from './provenance.js';
+export {
+  DEVICE_LOCAL_AUTHOR_ID,
+  DEVICE_LOCAL_SOURCE_ID,
+  parseProvenance,
+  RESERVED_DEVICE_IDENTITIES,
+  type RecordProvenance,
+} from './provenance.js';
 
 export { deriveColor, hexToXyz, type DerivedColor } from './derive.js';
 

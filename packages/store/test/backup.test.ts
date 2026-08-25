@@ -83,6 +83,7 @@ function seeded() {
       hex: '#526A6B',
       source: 'declared',
       confidence: 1,
+      corpus_slug: null,
     },
     1000,
   );
