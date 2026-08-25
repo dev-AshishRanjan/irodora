@@ -8,6 +8,157 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-093 · the gate that reported a pass it did not earn
+
+`pnpm test` printed **31 successful, 31 total — 26 cached**. The same command with `--force`
+was **red in four tests**. It now prints **23 successful, 31 total** over the same repository
+state, and that is the entire feature: the red was always there and the cache was reporting
+over it.
+
+### Why this came before F-021
+
+The initialization protocol's readiness test asks four questions, and one of them is *"can you
+run the test suite and see it pass?"* — with the note that **any "no" is the first thing to fix,
+ahead of whatever you were going to do**. A suite that cannot be trusted to have run is a "no".
+
+It also sits upstream of everything else in the effect graph. E-001 and E-003 name
+`gate:color-golden`, E-007 names `gate:contrast`, E-013 and E-023 name `gate:content` and
+`gate:test`. **A gate that replays a cached pass discharges none of them.** That is why E-025 is
+`critical` despite touching no product code.
+
+### Both failures were watched before either was fixed
+
+**H1 — keyed on the package, not on what the test read.** Eight files in
+`packages/design-tokens/test/` read `docs/design/design-system.manifest.json`. Planting a change
+that fails seven of them — `radius.swatch` from `0` to `4` — produced:
+
+```
+@irodora/design-tokens:test: cache hit, replaying logs 5035bb991a32387e
+ Tasks:    5 successful, 5 total
+```
+
+With the manifest in `globalDependencies`, the identical change produced `cache miss, executing`
+and three red suites.
+
+**H2 — keyed on the request, not on the runtime.** `turbo run test --dry=json` says what the
+global hash contains:
+
+```
+files:   { ".nvmrc": <git blob>, "tsconfig.base.json": <git blob>, … }
+engines: { "node": ">=24.19.0 <25", "pnpm": ">=11.0.0" }
+env:     ["NODE_ENV"]
+```
+
+`.nvmrc` is hashed as **the file that requests a version**; `engines` is a **range**. Nothing in
+it varies with the Node executing. After the fix, the same toolchain twice is a cache hit and a
+different `IRODORA_TOOLCHAIN` is a miss with a different hash.
+
+### The two holes got different fixes, because they are different in kind
+
+The manifest is a small central artefact that legitimately belongs to the whole repository, so
+it joined `globalDependencies` beside `tsconfig.base.json`. `apps/mobile/src` is not: putting it
+there would invalidate all 31 tasks on any app edit, and **a cache people distrust is a cache
+people turn off**.
+
+So the FR-56 key scan **moved out of `packages/store`** into `verify-no-key-material.mjs` —
+uncached, in gate 15, which is `requiredFor: always` rather than `requiredFor: code`.
+
+> A repository-wide check does not belong inside one package's test suite. Not because caching
+> is awkward to configure, but because the scope of the question and the scope of the cache key
+> disagree by construction, and nothing reports that.
+
+Moving it widened the scan from two directories to **every shipped `src/`**, which immediately
+found four more legitimate 64-hex literals: the FIPS 180-4 vectors in `corpus/digest.ts`. They
+are accounted for **by exact value, never by path** — exempting the file would let a key be
+pasted beside them.
+
+### The durable deliverable, because fixing two instances does not stop the third
+
+`scripts/verify-cache-scope.mjs`, in `pnpm lint`. Two rules:
+
+1. a test may not read past its package unless the target is a declared `globalDependency`, and
+   a path it cannot resolve statically counts as **unaccounted** — failing closed;
+2. a **cached** task must be started by `scripts/gate.mjs`.
+
+Rule 1 is proven by `--prove`: six planted cases including two controls that must stay silent,
+with the baseline asserted green before the plant and after its removal. Rule 2 was watched
+going red on a script reverted to a bare `turbo run test`.
+
+**Both the scanner and its proof were wrong first, in the same way, and that is worth keeping.**
+The scanner's first draft used a fixed count of `..` and reported ten in-package golden fixtures
+as escapes — two levels up leaves a package from `test/` and lands *on the package root* from
+`test/golden/`. Ascents are resolved against each file's real position now, with one level of
+base indirection because `const PACKAGE = join(HERE, '..')` is how the real case is written.
+Then the proof's plant sat one directory deeper than a real test, so every planted ascent landed
+back inside the package and three cases reported "nothing" while looking like a broken scanner.
+A decoy at the wrong depth proves nothing.
+
+### The decision not to refuse
+
+[ADR-0068](../../docs/adr/0068-a-gate-on-an-unsupported-toolchain-warns-and-re-keys-rather-than-refusing.md).
+A mismatched toolchain warns loudly and gets its own cache namespace; it is not refused.
+
+|  | On an unsupported toolchain |
+|---|---|
+| **Without keying** | a cache made elsewhere is replayed → **false green** |
+| **With keying** | the run executes and may fail for toolchain reasons → **false red** |
+
+Only the first is dangerous. Refusing adds nothing to the guarantee and leaves a workstation
+unable to run any gate — this one already cannot `pnpm install`, and a repository change cannot
+upgrade anybody's Node. The bad consequence is recorded rather than hidden: somebody can keep
+working on an unsupported toolchain, seeing a warning they eventually stop reading.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 22 effect links |
+| `typecheck` · `build` · `format` | **passed** — 31 and 18 tasks |
+| `lint` | **passed** — 31 tasks, 25 boundaries, plus the new cache-scope check |
+| `test` | **RED — 23 successful, 31 total.** `@irodora/color-difference` and `@irodora/color-spaces`, four bitwise fixtures |
+| `a11y` · `contrast` | **passed** — 20 and 21 tasks |
+| `content` | **passed** — font, subset and bundle current |
+| `security` | **partly run** — `verify-no-key-material` (both checks) and `verify-audit` passed; `gitleaks` not installed here |
+
+**Not run:** `e2e`, `cvd`, `perf`, `color-golden`.
+
+### The red, stated plainly
+
+**`test` is red on this workstation and this feature is why it is visible.** Node 22.16.0 cannot
+reproduce fixtures pinned to the last bit — WCAG contrast returns `4.500078715444717` against a
+committed `…719`. F-083 already says, in as many words, **do not regenerate the fixture to go
+green**: that converts a discovered violation of the product's central guarantee into a silent
+one.
+
+The single blocking action is a **Node upgrade to 24.19.0**, and no repository change can
+perform it. Until then this machine cannot produce release evidence for the colour packages —
+which was equally true yesterday, and is now said out loud on every run.
+
+`pnpm` itself refuses to run **any** script here for the same reason (`engines`), so the gates
+above were invoked as `node scripts/gate.mjs …` directly. That is not a workaround the
+repository endorses; it is what was available.
+
+### Also found, not fixed, filed
+
+**F-094** — `generate-design-tokens.mjs --check` exists, is called "the freshness check" in two
+plans, and is wired into no gate and no CI step. The generated token modules are committed
+source, so a manifest edited without regenerating leaves them stale and every test over `src/`
+green about the old values. Currently green, so it is a latent hole rather than a live defect —
+which is exactly when it is cheap to close. It is the same shape as
+[[generating-an-artefact-is-not-checking-it]], and `gate:content` already runs the equivalent
+`--check` for the corpus bundle and the font subset.
+
+### Next
+
+**F-021 — Colour Finder**, the lowest-id eligible feature in R2 and `must`.
+
+Ahead of it, in the order they cost: **the Node upgrade** (not a feature — an environment
+action, and the only thing standing between this machine and a green `test`), then **F-091**
+(gate 7 has never been able to run; four features have declared `e2e` and not run it), then
+**F-094**.
+
+---
+
 ## 2026-08-25 — F-020 · a palette you built, checked by the schema that checks ours
 
 Palette Studio builds, edits, reorders and saves a palette to the encrypted database. Every

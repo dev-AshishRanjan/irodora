@@ -99,6 +99,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md](effects/a-component-styled-by-a-bundler-plugin-is-invisible-to-the-gate-that-reads-it.md) — **E-020** · HeroUI styles in Metro, jest never runs Metro, and the contrast gate measured an empty set.
 - [effects/a-migration-reaches-two-drivers-and-a-backup-format.md](effects/a-migration-reaches-two-drivers-and-a-backup-format.md) — **E-023** · no rollback exists, and `SELECT *` puts a new column into the backup format nobody edited.
 - [effects/the-palette-schema-now-runs-on-a-phone.md](effects/the-palette-schema-now-runs-on-a-phone.md) — **E-024** · tightening the schema for editors breaks saving on a device, with gate 11 green throughout.
+- [effects/the-cache-key-decides-whether-a-gate-ran-at-all.md](effects/the-cache-key-decides-whether-a-gate-ran-at-all.md) — **E-025** · every other link names a gate as its guard, and a replayed cache discharges none of them.
 
 ## Glossary
 

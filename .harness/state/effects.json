@@ -807,6 +807,52 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-025",
+      "from": {
+        "kind": "file",
+        "ref": "turbo.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "package.json"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/gate.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-cache-scope.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0068-a-gate-on-an-unsupported-toolchain-warns-and-re-keys-rather-than-refusing.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages",
+        "apps/mobile"
+      ],
+      "severity": "critical",
+      "guard": "script:verify-cache-scope.mjs",
+      "memory": "memory/effects/the-cache-key-decides-whether-a-gate-ran-at-all.md",
+      "rationale": "THE CACHE KEY DECIDES WHETHER A GATE RAN, AND NOTHING ELSE REPORTS THAT IT DID NOT. `pnpm test` printed \"31 successful, 31 total — 26 cached\" while --force was red in four tests, for two independent reasons: a task is keyed on the inputs of the package it runs in, so eight design-tokens tests reading docs/design/design-system.manifest.json were cached over a change that fails seven of them; and the global hash contains `.nvmrc` as a GIT BLOB and `engines` as a RANGE, neither of which is the runtime executing — so a cache made on Node 24 is replayed on Node 22, where the bitwise fixtures differ by ULP. THIS IS CRITICAL BECAUSE IT IS UPSTREAM OF EVERY OTHER GUARD IN THIS GRAPH: E-001, E-003, E-007, E-013 and E-023 all name a gate as their guard, and a gate that replays a cached pass discharges none of them. A change to globalDependencies, globalEnv or the root scripts therefore changes what every other link is worth. THE GUARD IS verify-cache-scope.mjs, which enforces both halves — a test may not read past its package unless the target is a declared global dependency (an unresolvable path counts as unaccounted, failing closed), and a cached task must be started by scripts/gate.mjs, which is what puts the exact Node and package-manager versions into the key. Both were watched failing before being trusted: 6 planted cases through --prove with the baseline green either side, and rule 2 watched going red on a script reverted to a bare `turbo run test`. WHAT IT CANNOT SEE, printed on every run: a path assembled at run time or read through a helper it cannot follow.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
