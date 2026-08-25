@@ -22,6 +22,9 @@ export default function Index(): React.JSX.Element {
         onOpenStudio={() => {
           router.push('/palettes');
         }}
+        onOpenFinder={() => {
+          router.push('/find');
+        }}
       />
     </>
   );

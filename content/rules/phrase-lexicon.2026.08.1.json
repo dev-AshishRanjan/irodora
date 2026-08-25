@@ -1,0 +1,404 @@
+{
+  "versionId": "2026.08.1",
+  "publishedAt": "2026-08-25",
+  "provenance": {
+    "source": "Irodora editorial curation — phrase lexicon, 2026",
+    "sourceId": "IRO-ED-002",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial, then corrected by measurement. The lightness and chroma boundaries are placed in the MEASURED GAP between adjacent authored bands of corpus 2026.08.1: dark ends at 0.3900001 and mid begins at 0.3999990, so the boundary is 0.395; mid ends at 0.7160002 and light begins at 0.7340001, so 0.725; low ends at 0.0380005 and mid begins at 0.0399996, so 0.039; mid ends at 0.0980002 and high begins at 0.1020007, so 0.100. The first draft used round numbers instead — 0.40 and 0.04 — and the agreement check caught that 0.40 sits a MILLIONTH above the lowest mid entry, which would have quietly excluded do-ma from every query for a medium colour. The hue arcs are conventional OKLCh divisions checked against the chromatic entries of each family. Nothing here was measured from a material.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-25",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-25",
+    "reviewIndependence": "self",
+    "editorialNotes": "The seed vocabulary. Two rules shape it and both came from the corpus rather than from taste. FIRST, every hue term carries a chroma floor of 0.04: charcoal in this corpus spans hue 58° to 268° and off-white 66° to 246°, because a colour with almost no chroma has no hue to speak of — a hue term without a floor would answer 'green' with greys. SECOND, 'muted' is low-to-MID chroma and deliberately OVERLAPS that floor. The first draft gave it 0.00 to 0.04, which is grey rather than muted, and 'dark muted green' — the example FR-47 itself names — resolved to a single point matching almost nothing. The Japanese terms are written but NOT reviewed by a competent speaker; that gap is the same one the corpus carries (ADR-0060, OQ-5) and is declared rather than hidden."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "terms": [
+    {
+      "term": "dark",
+      "locale": "en",
+      "constrains": {
+        "lightness": {
+          "min": 0,
+          "max": 0.395
+        }
+      },
+      "rationale": "OKLCh lightness at or below 0.395, which lies in the gap between the authored dark band (ends 0.3900001) and mid (begins 0.3999990). The boundary is placed there rather than at a round 0.40, which sits a millionth ABOVE the lowest mid entry."
+    },
+    {
+      "term": "medium",
+      "locale": "en",
+      "constrains": {
+        "lightness": {
+          "min": 0.395,
+          "max": 0.725
+        }
+      },
+      "rationale": "Between the two measured gaps, 0.395 to 0.725. It brackets every entry an editor filed as mid — 0.3999990 to 0.7160002 — without admitting one they did not."
+    },
+    {
+      "term": "light",
+      "locale": "en",
+      "constrains": {
+        "lightness": {
+          "min": 0.725,
+          "max": 1
+        }
+      },
+      "rationale": "OKLCh lightness at or above 0.725, in the gap between mid (ends 0.7160002) and the authored light band (begins 0.7340001)."
+    },
+    {
+      "term": "pale",
+      "locale": "en",
+      "constrains": {
+        "lightness": {
+          "min": 0.725,
+          "max": 1
+        },
+        "chroma": {
+          "min": 0,
+          "max": 0.06
+        }
+      },
+      "rationale": "Light AND weak in chroma. Pale is not a synonym for light: a light vivid yellow is not pale, and a term that ignored chroma would return it."
+    },
+    {
+      "term": "grey",
+      "locale": "en",
+      "constrains": {
+        "chroma": {
+          "min": 0,
+          "max": 0.039
+        }
+      },
+      "rationale": "At or below 0.039, in the gap between the authored low band (ends 0.0380005) and mid (begins 0.0399996). This is also the floor below which the hue terms refuse to operate, because there is no perceptible hue left."
+    },
+    {
+      "term": "neutral",
+      "locale": "en",
+      "constrains": {
+        "chroma": {
+          "min": 0,
+          "max": 0.039
+        }
+      },
+      "rationale": "The same region as grey, under the word a person reaches for when describing clothing rather than a colour chip."
+    },
+    {
+      "term": "muted",
+      "locale": "en",
+      "constrains": {
+        "chroma": {
+          "min": 0.02,
+          "max": 0.07
+        }
+      },
+      "rationale": "Low-to-mid chroma, deliberately OVERLAPPING the 0.039 hue floor. A muted green must still be green, so this range has to reach above the floor or no hue could ever be muted."
+    },
+    {
+      "term": "soft",
+      "locale": "en",
+      "constrains": {
+        "chroma": {
+          "min": 0.02,
+          "max": 0.07
+        }
+      },
+      "rationale": "The same region as muted. Kept as a separate term rather than an alias because the lexicon is the vocabulary, and a word nobody listed is a word nobody can type."
+    },
+    {
+      "term": "vivid",
+      "locale": "en",
+      "constrains": {
+        "chroma": {
+          "min": 0.1,
+          "max": 0.4
+        }
+      },
+      "rationale": "Chroma at or above 0.10, in the gap between the authored mid band (ends 0.0980002) and high (begins 0.1020007). Only ten entries reach it, which is correct — a corpus of traditional dyed colours is mostly not vivid."
+    },
+    {
+      "term": "red",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 20,
+          "max": 45
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The red arc in OKLCh, above the chroma floor. The corpus red family sits at 28° to 40°, inside it, and rust reaches 50° which is why orange begins there rather than later."
+    },
+    {
+      "term": "orange",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 45,
+          "max": 75
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The orange arc, above the chroma floor. Clay sits at 44° to 62° and brown at 40° to 70°, so this arc covers the warm earth colours the corpus is richest in."
+    },
+    {
+      "term": "brown",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 40,
+          "max": 75
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        },
+        "lightness": {
+          "min": 0,
+          "max": 0.55
+        }
+      },
+      "rationale": "Brown is NOT a hue. It is dark low-to-mid chroma orange, and the only honest way to write it is as a constraint on three axes at once — a lexicon that could not say that would have to omit the commonest colour word in the corpus."
+    },
+    {
+      "term": "yellow",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 75,
+          "max": 105
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The yellow arc, above the chroma floor. Ochre runs 66° to 84° and gold 76° to 82°, so the arc starts at 75° where ochre stops reading as orange."
+    },
+    {
+      "term": "green",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 105,
+          "max": 175
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The green arc, above the chroma floor. It is the widest arc here because the corpus is: yellow-green at 104° to 128°, green at 128° to 158°, mineral-green at 160°."
+    },
+    {
+      "term": "teal",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 175,
+          "max": 220
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The blue-green arc, above the chroma floor. The corpus blue-green family sits at 178° to 214°, which is what fixes both ends of it."
+    },
+    {
+      "term": "blue",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 220,
+          "max": 275
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The blue arc, above the chroma floor. Mid-blue runs 228° to 250° and deep-blue 240° to 278°, so the arc ends at 275° where the deepest indigos start to read violet."
+    },
+    {
+      "term": "violet",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 275,
+          "max": 320
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The violet arc, above the chroma floor. The corpus violet-grey family reaches 272° to 282°, which is the only chromatic evidence available for this end of the wheel."
+    },
+    {
+      "term": "pink",
+      "locale": "en",
+      "constrains": {
+        "hue": {
+          "min": 320,
+          "max": 20
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The arc through 0°, which is the one place a hue range has to wrap. The corpus pink family is entirely below the chroma floor, so this term currently answers with nothing — correctly."
+    },
+    {
+      "term": "暗い",
+      "locale": "ja",
+      "constrains": {
+        "lightness": {
+          "min": 0,
+          "max": 0.395
+        }
+      },
+      "rationale": "The same region as dark. Written, not reviewed by a competent speaker — the gap the corpus carries (ADR-0060)."
+    },
+    {
+      "term": "明るい",
+      "locale": "ja",
+      "constrains": {
+        "lightness": {
+          "min": 0.725,
+          "max": 1
+        }
+      },
+      "rationale": "The same region as light. Written, not reviewed by a competent speaker — the gap the corpus carries (ADR-0060)."
+    },
+    {
+      "term": "淡い",
+      "locale": "ja",
+      "constrains": {
+        "lightness": {
+          "min": 0.725,
+          "max": 1
+        },
+        "chroma": {
+          "min": 0,
+          "max": 0.06
+        }
+      },
+      "rationale": "The same region as pale: light and weak in chroma, on both axes. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "くすんだ",
+      "locale": "ja",
+      "constrains": {
+        "chroma": {
+          "min": 0.02,
+          "max": 0.07
+        }
+      },
+      "rationale": "The same region as muted, overlapping the hue floor for the same reason. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "鮮やかな",
+      "locale": "ja",
+      "constrains": {
+        "chroma": {
+          "min": 0.1,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same region as vivid. Written, not reviewed by a competent speaker — the gap the corpus carries (ADR-0060)."
+    },
+    {
+      "term": "赤",
+      "locale": "ja",
+      "constrains": {
+        "hue": {
+          "min": 20,
+          "max": 45
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same arc as red, with the same chroma floor. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "黄",
+      "locale": "ja",
+      "constrains": {
+        "hue": {
+          "min": 75,
+          "max": 105
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same arc as yellow, with the same chroma floor. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "緑",
+      "locale": "ja",
+      "constrains": {
+        "hue": {
+          "min": 105,
+          "max": 175
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same arc as green, with the same chroma floor. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "青",
+      "locale": "ja",
+      "constrains": {
+        "hue": {
+          "min": 220,
+          "max": 275
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same arc as blue, with the same chroma floor. Written, not reviewed by a competent speaker."
+    },
+    {
+      "term": "紫",
+      "locale": "ja",
+      "constrains": {
+        "hue": {
+          "min": 275,
+          "max": 320
+        },
+        "chroma": {
+          "min": 0.039,
+          "max": 0.4
+        }
+      },
+      "rationale": "The same arc as violet, with the same chroma floor. Written, not reviewed by a competent speaker."
+    }
+  ]
+}

@@ -183,6 +183,22 @@ export const ja: Record<MessageKey, string> = {
   'studio.problem.noAnchor': '1つの色を「基準」にしてください。ほかの色はそれに合わせて選びます。',
   'studio.problem.noName': '保存するには、名前をつけてください。',
   'studio.problem.other': 'この配色はまだ保存できません。',
+  // F-021 — Colour Finder (FR-47).
+  'home.openFinder': '色をさがす',
+  'finder.title': '色さがし',
+  'finder.search': '名前・読み・16進・ことば',
+  'finder.hint': '名前、#526A6B のような16進、「暗いくすんだ緑」などで探せます。',
+  'finder.empty': '入力すると検索します。',
+  'finder.none': '該当する色がありません。',
+  'finder.answered.hex': 'その16進にもっとも近い色',
+  'finder.answered.phrase': 'そのことばが表す範囲にある色',
+  'finder.answered.name': '名前が一致する色',
+  'finder.region': 'このことばの意味',
+  'finder.vocabulary': '語彙',
+  'finder.noneHexHint': 'この版のどの色も、表示できる範囲より離れています。',
+  'finder.nonePhraseHint': 'この版にその範囲に入る色はありません。',
+  'finder.noneNameHint': '名前・読み・識別子のいずれにも含まれていません。',
+  'axis.hue': '色相',
 };
 
 /**

@@ -66,10 +66,13 @@ const {
   checkCorpus,
   CorpusError,
   deriveColor,
+  entryDigest,
   FIXTURE_PREFIX,
   hexToXyz,
   ledgerRowFor,
   loadPublishedVersion,
+  matchesRegion,
+  parsePhraseLexicon,
   RESERVED_DEVICE_IDENTITIES,
 } = corpus;
 
@@ -288,6 +291,113 @@ for (const { file, record } of [...real.entries, ...real.palettes])
     fail(`${file}: "${record.slug}" is a fixture slug and must not appear under content/`);
 rulesExercised += 1;
 
+// --- the phrase lexicon: schema, digest, and agreement with the authored taxonomy ----------
+
+/**
+ * F-021. The lexicon is rule content (ADR-0011), so it carries a version, a provenance block
+ * and a checksum recorded in a ledger that is a DIFFERENT FILE — a record checked against a
+ * checksum it carries verifies itself, which is ADR-0066's argument applied here.
+ *
+ * ## The check that earns its place is the third one
+ *
+ * The lexicon says what "dark" means as an OKLCh region. The corpus says what "dark" means as
+ * an authored `lightnessBand`. **Those are two definitions of one word**, and the one that
+ * drifts is whichever nobody is looking at. So every authored band is asserted to fall inside
+ * the lexicon region of the same name, over every entry, on every run.
+ *
+ * It has already paid for itself. The boundaries were first written as round numbers — 0.40
+ * and 0.04 — and this check found that 0.40 sits a MILLIONTH above the lowest entry an editor
+ * filed as mid, so `do-ma` would have been excluded from every query for a medium colour, in
+ * silence. The boundaries now sit in the measured gap between adjacent bands.
+ *
+ * `chromaBand: mid` has no term on purpose: "muted" deliberately straddles the low/mid
+ * boundary, because a muted colour still has to have a hue. So the map below is partial, and
+ * that is a statement rather than an omission.
+ */
+const RULES_DIR = join(CONTENT, 'rules');
+const LEXICON_FILE = 'phrase-lexicon.2026.08.1.json';
+
+/** Authored band → the lexicon term that must agree with it. Partial: see above. */
+const BAND_TERMS = {
+  lightness: { dark: 'dark', mid: 'medium', light: 'light' },
+  chroma: { low: 'grey', high: 'vivid' },
+};
+
+if (!existsSync(join(RULES_DIR, LEXICON_FILE))) {
+  console.log(
+    `\n${RED}${BOLD}Gate 11 cannot run.${OFF} ${LEXICON_FILE} is missing from ${RULES_DIR}.\n` +
+      'A gate that lost its own inputs must fail rather than pass over an empty set.\n',
+  );
+  process.exit(1);
+}
+
+let lexicon = null;
+let lexiconAgreements = 0;
+try {
+  const raw = readJsonFile(join(RULES_DIR, LEXICON_FILE));
+  lexicon = parsePhraseLexicon(raw, LEXICON_FILE);
+
+  // The digest lives in the ledger, never in the file it describes.
+  const ledgerRows = readJsonFile(join(RULES_DIR, 'index.json'));
+  const row = Array.isArray(ledgerRows)
+    ? ledgerRows.find((r) => r.label === lexicon.versionId && r.kind === 'phrase-lexicon')
+    : undefined;
+  if (row === undefined)
+    fail(
+      `content/rules/index.json has no phrase-lexicon row for ${lexicon.versionId}. The ledger ` +
+        'is what makes the checksum mean anything — a file checked against a checksum it ' +
+        'carries verifies itself.',
+    );
+  else {
+    const actual = entryDigest(raw, sha256);
+    if (actual !== row.checksum)
+      fail(
+        `${LEXICON_FILE}: digest ${actual} does not match the ledger's ${row.checksum}. ` +
+          'Published rule content is immutable — a change mints a new version rather than ' +
+          'editing this one.',
+      );
+    if (row.termCount !== lexicon.terms.length)
+      fail(
+        `content/rules/index.json records ${String(row.termCount)} term(s) for ` +
+          `${lexicon.versionId}; the file carries ${String(lexicon.terms.length)}.`,
+      );
+  }
+
+  const termFor = (name) => lexicon.terms.find((t) => t.term === name && t.locale === 'en');
+  for (const [axis, bands] of Object.entries(BAND_TERMS))
+    for (const name of Object.values(bands))
+      if (termFor(name) === undefined)
+        fail(
+          `${LEXICON_FILE}: the agreement check expects an English term "${name}" for the ` +
+            `${axis} axis and the lexicon has none. Renaming a term is a change to what the ` +
+            'corpus taxonomy is being checked against.',
+        );
+
+  for (const { file, record } of real.entries) {
+    const oklch = deriveColor(record.color.xyz).oklch;
+    for (const [axis, bands] of Object.entries(BAND_TERMS)) {
+      const band =
+        axis === 'lightness' ? record.taxonomy.lightnessBand : record.taxonomy.chromaBand;
+      const name = bands[band];
+      if (name === undefined) continue;
+      const term = termFor(name);
+      if (term === undefined) continue;
+      lexiconAgreements += 1;
+      if (!matchesRegion(term.constrains, oklch))
+        fail(
+          `${file}: taxonomy says ${axis}Band "${band}" but its OKLCh ${axis} does not fall ` +
+            `inside the lexicon's "${name}" region. Those are two definitions of one word, and ` +
+            'the one that drifts is whichever nobody is looking at. Either the entry is filed ' +
+            'in the wrong band or the lexicon boundary moved — decide which, rather than ' +
+            'widening the range to make this pass.',
+        );
+    }
+  }
+} catch (error) {
+  fail(`${LEXICON_FILE}: ${error.message}`);
+}
+rulesExercised += 1;
+
 // --- the device-local identities are RESERVED, and content may not use them -----------------
 
 /**
@@ -347,7 +457,14 @@ console.log(
 );
 console.log(
   `${DIM}  ${String(rulesExercised)} corpus rule group(s) + ${String(fixtureRules)} fixture ` +
-    `corpora exercised${OFF}\n`,
+    `corpora exercised${OFF}`,
+);
+// PRINTED, because a green agreement check over ZERO entries and a green one over 175 read
+// identically otherwise — and the first would mean the lexicon and the taxonomy were never
+// compared at all.
+console.log(
+  `${DIM}  ${String(lexiconAgreements)} lexicon/taxonomy agreement(s) checked over ` +
+    `${String(lexicon === null ? 0 : lexicon.terms.length)} term(s)${OFF}\n`,
 );
 
 if (real.entries.length === 0)

@@ -72,6 +72,8 @@ const isJapanese = (cp) =>
   (cp >= 0x4e00 && cp <= 0x9fff) ||
   (cp >= 0x3400 && cp <= 0x4dbf);
 
+const RULES = join(ROOT, 'content', 'rules');
+
 function requiredCodepoints() {
   const required = new Set();
   for (const [lo, hi] of ALWAYS) for (let c = lo; c <= hi; c += 1) required.add(c);
@@ -96,6 +98,25 @@ function requiredCodepoints() {
       add(readFileSync(join(CORPUS, file), 'utf8'));
     }
 
+  /*
+   * The phrase lexicon's Japanese TERMS (F-021) — what a person types into the Finder and sees
+   * echoed in the field. THIS BLOCK MUST STAY IN STEP WITH `verify-font-coverage.mjs`, which
+   * keeps its own copy of this collection: if the check requires a codepoint this generator
+   * does not add, gate 11 goes red and stays red until they agree. That direction is loud; the
+   * other direction only adds a glyph nobody renders.
+   */
+  if (existsSync(RULES))
+    for (const file of readdirSync(RULES)) {
+      if (!file.startsWith('phrase-lexicon.') || !file.endsWith('.json')) continue;
+      let parsed;
+      try {
+        parsed = JSON.parse(readFileSync(join(RULES, file), 'utf8'));
+      } catch {
+        continue;
+      }
+      for (const t of parsed.terms ?? []) add(String(t.term ?? ''));
+    }
+
   return { required, entries, fromContent };
 }
 
@@ -117,7 +138,7 @@ console.log(`\n${BOLD}Font subset${OFF}\n`);
 const { required, entries, fromContent } = requiredCodepoints();
 console.log(
   `${DIM}  ${String(required.size)} codepoint(s) required — ${String(fromContent)} from ` +
-    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue), the rest ` +
+    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue + the phrase lexicon), the rest ` +
     `from the always-included ranges.${OFF}`,
 );
 

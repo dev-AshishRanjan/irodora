@@ -188,6 +188,22 @@ export const en = {
     'One colour must be the anchor — the one the others are chosen against.',
   'studio.problem.noName': 'Give the palette a name before saving.',
   'studio.problem.other': 'This palette cannot be saved yet.',
+  // F-021 — Colour Finder (FR-47).
+  'home.openFinder': 'Find a colour',
+  'finder.title': 'Colour Finder',
+  'finder.search': 'Name, reading, hex, or a phrase',
+  'finder.hint': 'Try a name, a hex like #526A6B, or “dark muted green”.',
+  'finder.empty': 'Type something to search.',
+  'finder.none': 'Nothing matches that.',
+  'finder.answered.hex': 'Nearest colours to that hex',
+  'finder.answered.phrase': 'Colours in the region that phrase describes',
+  'finder.answered.name': 'Colours whose name matches',
+  'finder.region': 'That phrase means',
+  'finder.vocabulary': 'Vocabulary',
+  'finder.noneHexHint': 'Every colour in this version is further away than the list shows.',
+  'finder.nonePhraseHint': 'No colour in this version falls inside that region.',
+  'finder.noneNameHint': 'No name, reading or slug contains that.',
+  'axis.hue': 'Hue',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

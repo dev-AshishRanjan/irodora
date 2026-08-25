@@ -49,12 +49,15 @@ export interface HomeProps {
   readonly onOpenCompare?: () => void;
   /** Open Palette Studio. Same shape and same reason as onOpenAtlas. */
   readonly onOpenStudio?: () => void;
+  /** Open the Colour Finder. Same shape and same reason as onOpenAtlas. */
+  readonly onOpenFinder?: () => void;
 }
 
 export function Home({
   onOpenAtlas,
   onOpenCompare,
   onOpenStudio,
+  onOpenFinder,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -127,6 +130,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenStudio?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openFinder')}
+        variant="secondary"
+        onPress={() => {
+          onOpenFinder?.();
         }}
       />
     </View>

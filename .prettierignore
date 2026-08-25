@@ -28,6 +28,7 @@ apps/mobile/global.css
 # The pinned corpus bundle (ADR-0066). Byte-compared by `--check` in gate 11, so
 # reformatting it would make the comparison a test of Prettier.
 apps/mobile/src/corpus/generated/
+apps/mobile/src/rules/generated/
 
 # Golden colour data is byte-significant
 packages/**/golden/

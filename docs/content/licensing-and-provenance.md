@@ -106,6 +106,7 @@ before each corpus release.
 | ID | Source | Type | Rights holder | Licence | Cleared | Notes |
 |---|---|---|---|---|---|---|
 | IRO-ED-001 | Irodora editorial curation — seed corpus, 2026 | editorial | Irodora | Proprietary — Irodora original work | 2026-08-24 | The whole of the 2026.08.1 seed corpus. Every value constructed in OKLCh by editorial judgement and converted by the engine; every Japanese name an Irodora coinage. Nothing measured, nothing transcribed, nothing ingested (ADR-0065). One editor, self-reviewed (ADR-0060) |
+| IRO-ED-002 | Irodora editorial curation — phrase lexicon, 2026 | editorial | Irodora | Proprietary — Irodora original work | 2026-08-25 | The phrase lexicon in `content/rules/` (F-021): the words a person may type and the OKLCh region each one means. Boundaries placed in the measured gap between adjacent authored bands of 2026.08.1 rather than chosen as round numbers, and held there by an agreement check over all 120 entries. Japanese terms written, NOT reviewed by a competent speaker (ADR-0060, OQ-5) |
 
 **A source not in this table cannot appear in a published entry.** The `content` gate
 cross-checks `provenance.source` against this register — **as of F-011 it actually does**;

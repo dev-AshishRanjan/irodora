@@ -19,7 +19,7 @@
     "test": "node scripts/gate.mjs test",
     "test:golden": "node scripts/gate.mjs test:golden",
     "test:cvd": "node scripts/gate.mjs test:cvd",
-    "test:content": "node scripts/verify-content.mjs && node scripts/verify-font-coverage.mjs && node scripts/generate-font-subset.mjs --check && node scripts/generate-corpus-bundle.mjs --check",
+    "test:content": "node scripts/verify-content.mjs && node scripts/verify-font-coverage.mjs && node scripts/generate-font-subset.mjs --check && node scripts/generate-corpus-bundle.mjs --check && node scripts/generate-rules-bundle.mjs --check",
     "build": "node scripts/gate.mjs build",
     "test:e2e": "node scripts/e2e-scope.mjs && node scripts/gate.mjs test:e2e",
     "test:a11y": "node scripts/a11y-scope.mjs && node scripts/gate.mjs test:a11y",

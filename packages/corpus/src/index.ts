@@ -69,6 +69,19 @@ export {
 export { ISO_DATE_PATTERN, SLUG_PATTERN, VERSION_ID_PATTERN } from './primitives.js';
 
 export {
+  inRange,
+  LEXICON_AXES,
+  matchesRegion,
+  narrow,
+  parsePhraseLexicon,
+  resolvePhrase,
+  type LexiconAxis,
+  type LexiconRange,
+  type LexiconTerm,
+  type PhraseLexicon,
+  type PhraseRegion,
+} from './lexicon.js';
+export {
   DEVICE_LOCAL_AUTHOR_ID,
   DEVICE_LOCAL_SOURCE_ID,
   parseProvenance,

@@ -27,6 +27,8 @@ import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
+import { Finder } from '../src/screens/Finder';
+import { find } from '../src/finder';
 import { toStoreWrite } from '../src/palette';
 import { PALETTE_ROLES } from '@irodora/corpus';
 import type { PaletteDraft, PaletteStore } from '../src/palette';
@@ -176,6 +178,25 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, theme),
+  },
+  {
+    name: 'screens/Finder',
+    // `static`, like the rest: its one interactive part is SearchField, registered in
+    // packages/ui where the suite makes it render focus, active, disabled and loading.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Finder />, theme),
+  },
+  {
+    /*
+     * The SAME screen with an answer on it. Empty and answered render almost disjoint trees —
+     * an empty Finder draws no swatch, no region and no result row, so registering only that
+     * would check a screen nobody has used yet.
+     */
+    name: 'screens/Finder (with a phrase answer)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Finder initialQuery="dark muted green" />, theme),
   },
   {
     name: 'screens/PaletteStudio',
@@ -767,4 +788,103 @@ describe('the route wires the real repository, not a fake', () => {
       expect(`${file}: ${String(source.includes('store/repository'))}`).toBe(`${file}: false`);
     }
   });
+});
+
+/**
+ * FR-47 on the screen — **which question did it answer?**
+ *
+ * The routing and the searching are asserted in `finder.test.ts`, without rendering. What is
+ * left here is the half that file cannot see: that a person is told which of three questions
+ * the app decided to answer, and that a phrase answer shows the region and the vocabulary
+ * behind it.
+ */
+describe('the Finder says which question it answered (FR-47)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  const nodes = (query?: string): string[] =>
+    textOf(draw(<Finder {...(query === undefined ? {} : { initialQuery: query })} />, 'light'));
+
+  it.each([
+    ['#526A6B', 'Nearest colours to that hex'],
+    ['dark muted green', 'Colours in the region that phrase describes'],
+    ['ai', 'Colours whose name matches'],
+  ])('names the question for %s', (query, sentence) => {
+    expect(nodes(query).join(' ')).toContain(sentence);
+  });
+
+  /*
+   * THE DECOY. Without it, "the sentence is present" would be equally true of a screen that
+   * renders all three at once, and every case above would be measuring nothing.
+   */
+  it('DECOY — only one of the three sentences is shown at a time', () => {
+    const shown = nodes('dark muted green').join(' ');
+    expect(shown).toContain('Colours in the region that phrase describes');
+    expect(shown).not.toContain('Nearest colours to that hex');
+    expect(shown).not.toContain('Colours whose name matches');
+  });
+
+  it('shows the region a phrase resolved to, with the space it is measured in', () => {
+    const shown = nodes('dark muted green').join(' ');
+    expect(shown).toContain('That phrase means');
+    // The axes, by the same labels the Atlas filters use — one word, one name.
+    for (const axis of ['Lightness', 'Chroma', 'Hue']) expect(shown).toContain(axis);
+    expect(shown).toContain('OKLCh');
+  });
+
+  it('names the vocabulary version behind a phrase answer', () => {
+    // An answer that cannot say what produced it cannot be reproduced once the lexicon moves.
+    expect(nodes('dark muted green').join(' ')).toContain('2026.08.1');
+  });
+
+  it('shows a distance with its unit on a hex answer, and none on a phrase answer', () => {
+    // ΔE00 is what makes "nearest" checkable rather than an order to be trusted. It has no
+    // meaning for a region, so showing one there would be a number with no question behind it.
+    expect(nodes('#526A6B').join(' ')).toContain('ΔE00');
+    expect(nodes('dark muted green').join(' ')).not.toContain('ΔE00');
+  });
+
+  it('draws every result as a swatch, not only as a name', () => {
+    const shown = nodes('#526A6B').join(' ');
+    const first = find('#526A6B').entries[0]!;
+    expect(shown).toContain(first.entry.name.en);
+    expect(shown).toContain(first.derived.hex);
+  });
+
+  it('invites a query rather than listing the whole corpus when empty', () => {
+    const shown = nodes().join(' ');
+    expect(shown).toContain('Type something to search');
+    expect(shown).not.toContain('Colours whose name matches');
+  });
+
+  it('says nothing matched, and why, rather than showing an empty list', () => {
+    const shown = nodes('zzzzzznotacolour').join(' ');
+    expect(shown).toContain('Nothing matches that');
+    expect(shown).toContain('No name, reading or slug contains that');
+  });
+});
+
+/** A11 — the Finder announces structure a screen reader can navigate. */
+describe('the Finder has headings (A11)', () => {
+  function roles(node: TestNode, out: string[] = []): string[] {
+    const here = node.props['accessibilityRole'];
+    if (typeof here === 'string') out.push(here);
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      roles(child, out);
+    }
+    return out;
+  }
+
+  for (const theme of ['light', 'dark'] as const)
+    it(`announces its sections as headings in ${theme}`, () => {
+      expect(roles(draw(<Finder initialQuery="dark muted green" />, theme))).toContain('header');
+    });
 });

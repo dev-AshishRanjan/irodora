@@ -137,6 +137,8 @@ const isJapanese = (cp) =>
   (cp >= 0x4e00 && cp <= 0x9fff) ||
   (cp >= 0x3400 && cp <= 0x4dbf);
 
+const RULES = join(ROOT, 'content', 'rules');
+
 function requiredCodepoints() {
   const required = new Map(); // codepoint -> where it came from
 
@@ -154,6 +156,29 @@ function requiredCodepoints() {
       entries += 1;
       for (const cp of codepointsOf(readFileSync(join(CORPUS, file), 'utf8')))
         if (isJapanese(cp)) required.set(cp, `corpus/${file}`);
+    }
+
+  /*
+   * The phrase lexicon (F-021). Its Japanese TERMS are what a person types into the Finder and
+   * sees echoed in the field, so they render in the app's own face exactly as a colour name
+   * does. A vocabulary the app cannot draw is a query nobody can see themselves entering.
+   *
+   * Only `term` and the two name-ish fields are read: a rationale is editorial prose that never
+   * reaches a screen, and requiring the whole subset to carry it would bloat the face for text
+   * nobody renders.
+   */
+  if (existsSync(RULES))
+    for (const file of readdirSync(RULES)) {
+      if (!file.startsWith('phrase-lexicon.') || !file.endsWith('.json')) continue;
+      let parsed;
+      try {
+        parsed = JSON.parse(readFileSync(join(RULES, file), 'utf8'));
+      } catch {
+        continue;
+      }
+      for (const t of parsed.terms ?? [])
+        for (const cp of codepointsOf(String(t.term ?? '')))
+          if (isJapanese(cp)) required.set(cp, `rules/${file}`);
     }
 
   return { required, entries };
@@ -264,7 +289,7 @@ const { required, entries } = requiredCodepoints();
 // "every codepoint is covered" from "there were no codepoints".
 console.log(
   `${DIM}  ${String(required.size)} Japanese codepoint(s) required, from ${String(entries)} ` +
-    `authored corpus entr(ies) and the ja catalogue.${OFF}`,
+    `authored corpus entr(ies), the ja catalogue and the phrase lexicon.${OFF}`,
 );
 
 if (!existsSync(FONT)) {

@@ -99,6 +99,7 @@ export default tseslint.config(
       // scripts/generate-corpus-bundle.mjs and byte-compared by `--check` in gate 11
       // (ADR-0066). Nothing here is authored.
       'apps/mobile/src/corpus/generated/**',
+      'apps/mobile/src/rules/generated/**',
     ],
   },
 
