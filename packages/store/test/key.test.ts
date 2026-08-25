@@ -90,11 +90,42 @@ describe('the key reaches SQLCipher through PRAGMA, and nothing else', () => {
   });
 });
 
+/**
+ * "Never in the bundle" (FR-56). A key committed to source is a key every user shares.
+ *
+ * ## Why this check needed correcting, and what it was NOT allowed to become
+ *
+ * It scanned for any 64-hex literal and went red the moment F-018 generated the corpus
+ * bundle — because a **SHA-256 digest is also 64 hex characters**, and the bundle carries 126
+ * of them. It stayed red for two features without anyone seeing it: `turbo`'s `test` task is
+ * keyed on the inputs of the package it runs in, and `packages/store` had not changed, so a
+ * cached pass was replayed while the file it reads changed underneath it.
+ *
+ * The tempting repair is an exemption — skip `**\/generated/**` — and it is the wrong one: it
+ * would switch the check off for a whole directory to remove one class of false positive, and
+ * a key written into a generated file is exactly as dangerous as one written by hand.
+ *
+ * So the discriminator is the **ledger**, not the path. Every digest in shipped source is one
+ * `content/versions/` records; a database key is not in the ledger and never could be, because
+ * the ledger is built from corpus content. The check therefore stays total over the same files
+ * and rejects any 64-hex literal it cannot account for.
+ */
 describe('no key is in the bundle', () => {
-  it('has no 64-hex-character literal anywhere in shipped source', () => {
-    // "Never in the bundle" (FR-56). A key committed to source is a key every user shares.
-    // Scans real source rather than asserting an intention; the test files themselves are
-    // excluded BY PATH, because this file necessarily contains 'a'.repeat(64) fixtures.
+  /** Every 64-hex string the committed corpus ledger records. */
+  const ledgerDigests = (): ReadonlySet<string> => {
+    const dir = join(process.cwd(), '..', '..', 'content', 'versions');
+    const found = new Set<string>();
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith('.json')) continue;
+      for (const m of readFileSync(join(dir, file), 'utf8').matchAll(/\b[0-9a-f]{64}\b/gu))
+        found.add(m[0]);
+    }
+    return found;
+  };
+
+  const shippedSource = (): readonly string[] => {
+    // The test files themselves are excluded BY PATH, because this one necessarily contains
+    // 'a'.repeat(64) fixtures. `src` is what ships.
     const roots = [
       join(process.cwd(), 'src'),
       join(process.cwd(), '..', '..', 'apps', 'mobile', 'src'),
@@ -114,11 +145,43 @@ describe('no key is in the bundle', () => {
       }
     };
     for (const r of roots) walk(r);
+    return files;
+  };
 
+  /** A 64-hex literal that is not a digest the ledger records. */
+  const unaccounted = (source: string, ledger: ReadonlySet<string>): readonly string[] =>
+    [...source.matchAll(/['"`]([0-9a-fA-F]{64})['"`]/gu)]
+      .map((m) => m[1] ?? '')
+      .filter((hex) => !ledger.has(hex.toLowerCase()));
+
+  it('has no unaccounted 64-hex literal anywhere in shipped source', () => {
+    const ledger = ledgerDigests();
+    // The ledger must have been FOUND. An empty set would make every digest unaccounted and
+    // the test would fail loudly — which is the right direction, but say it plainly.
+    expect(ledger.size).toBeGreaterThan(0);
+
+    const files = shippedSource();
     expect(files.length).toBeGreaterThan(0);
-    const offenders = files.filter((f) =>
-      /['"`][0-9a-fA-F]{64}['"`]/u.test(readFileSync(f, 'utf8')),
-    );
+
+    const offenders = files.filter((f) => unaccounted(readFileSync(f, 'utf8'), ledger).length > 0);
     expect(offenders).toEqual([]);
+  });
+
+  /*
+   * THE DECOY. Without it, "no offenders" is equally true of a check that accepts everything —
+   * and this check now has an allow-list, which is precisely the shape that stops discriminating
+   * [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+   */
+  it('DECOY — a key literal is reported even though digests are not', () => {
+    const ledger = ledgerDigests();
+    const digest = [...ledger][0] ?? '';
+    expect(digest).toHaveLength(64);
+
+    // A real digest: accounted for, so silent.
+    expect(unaccounted(`export const D = '${digest}';`, ledger)).toEqual([]);
+
+    // A key: same shape, same length, not in the ledger, and therefore reported.
+    const key = 'f'.repeat(63) + '0';
+    expect(unaccounted(`const KEY = '${key}';`, ledger)).toEqual([key]);
   });
 });
