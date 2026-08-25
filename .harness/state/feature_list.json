@@ -782,7 +782,7 @@
       "service": "mobile",
       "release": "R2",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-018",
         "F-039",
@@ -797,7 +797,24 @@
         "state",
         "e2e",
         "contrast"
-      ]
+      ],
+      "plan": "plans/F-023-shareable-colour-cards.md",
+      "effects": [
+        "E-007",
+        "E-016",
+        "E-017",
+        "E-022",
+        "E-027"
+      ],
+      "attested": [
+        {
+          "criterion": "Readable at thumbnail size",
+          "verifiedBy": "THE ARITHMETIC IS CHECKED; THE GLYPHS ARE NOT. Every type size scaled to a declared 96px thumbnail is compared against a floor, the sample block is asserted to occupy 62% of the card, and a decoy asserts the detail lines are BELOW the floor so the kanji claim means something rather than being one true statement among five vague ones. The screen shows the same document at that size beside the full one, so a person can disagree with the arithmetic. What no test reaches: whether a kanji at 9.6px is legible to a person on a real display — THUMBNAIL_MIN_PX is a DECLARED floor for CJK stroke separation, not a result from a legibility study, and must never be quoted as one.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. A colour as a card carrying kanji, kana, romaji, English name, hex, the entry’s own classification and the corpus version. THE CRITERION DECIDED THE DESIGN. \"The same entry at the same corpus version renders the same card on both platforms\" is unmeetable read as \"the same pixels\" — iOS and Android rasterise text differently and no application code changes that, so the criterion would have become an attested-forever item and then nothing. So the card is a DOCUMENT: cardSvg() is a pure function returning SVG text, byte-identical because nothing platform-shaped touches it, and CHECKABLE IN CI WITH NO DEVICE — asserted over every entry in both themes. The rasterisation is the platform’s and is not claimed. Same move archive.ts makes for FR-58’s \"byte-identical database\", and ADR-0070 records it for the same reason. TEXT DOES NOT SIT ON THE SAMPLE. Putting the hex over the colour needs a legible foreground chosen per entry against 120 backgrounds with no declared pairing — inventing the contrast decision the manifest exists to make. The sample is a block; the text sits on the card’s own ground where the pairing is declared and gate 9 already checks it. THE SAMPLE KEEPS SWATCH’S TWO-TONE KEYLINE, reusing swatch.hairline and its inverse rather than drawing a border: a near-white entry on a near-white card has no perceptible edge, and F-068 already measured that the worse of the two tones reaches 4.23 against the worst possible sample. Reusing the tokens inherits the proof; a border invented here would have inherited nothing. EVERY COLOUR IN THE DOCUMENT IS ACCOUNTED FOR — a token value or the entry’s own published hex, over all 120 entries in both themes, with a decoy proving a planted colour is reported. An SVG needs literal colours, which is what the colour-literal rule forbids in a component; the resolution is E-019’s, and E-027 records the part that is NEW: a stylesheet is rebuilt on every build and a card somebody sent last week is not. THE THUMBNAIL CLAIM IS NARROWED HONESTLY. At 96px no text on this card is comfortable. What survives is the COLOUR — the sample is 62% of the card — and the kanji, sized to clear the floor. A decoy asserts the hex and the attribution are BELOW it, because the alternative is five vague true statements instead of one sharp one. THE CONFORMANCE SUITE FOUND SOMETHING ON ITS FIRST RUN OVER THIS SCREEN: react-native-svg sets backgroundColor: transparent on its host view, and the colour-literal rule asked which token the ABSENCE of a colour is. `transparent` paints nothing, so it is now skipped — narrowly, one keyword, with a paired assertion proving a real hand-typed hex is still caught. It had gone unnoticed because Icon has set it on its triangle glyph since F-003 and the only registered subject rendering an Icon is Status with kind=\"bad\", the CROSS glyph: that branch had never been rendered through the suite. CLASSIFICATION_KEYS IS NOW SHARED with the detail screen rather than copied. Two copies of the FR-23 vocabulary would drift, and the one that drifts would be the one on the artefact that leaves the app with none of its context. GETTING BYTES OUT IS FR-51 (R5) — no expo-sharing, no rasteriser, no device-only path — and the screen says so rather than leaving a person hunting for a share button. `e2e` IS IN THIS FEATURE’S VERIFICATION LIST AND WAS NOT RUN — the sixth feature to report it; F-091 carries gate 7. E-017 fired a sixth time, for 7 codepoints. `test` stays red repo-wide for the Node 22 reason F-093 made visible and F-083 owns; every package this feature touches is green under a forced run."
     },
     {
       "id": "F-025",

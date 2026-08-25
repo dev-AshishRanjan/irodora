@@ -102,6 +102,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-palette-schema-now-runs-on-a-phone.md](effects/the-palette-schema-now-runs-on-a-phone.md) — **E-024** · tightening the schema for editors breaks saving on a device, with gate 11 green throughout.
 - [effects/the-cache-key-decides-whether-a-gate-ran-at-all.md](effects/the-cache-key-decides-whether-a-gate-ran-at-all.md) — **E-025** · every other link names a gate as its guard, and a replayed cache discharges none of them.
 - [effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md](effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md) — **E-026** · "dark" is defined twice; the agreement check found a boundary a MILLIONTH on the wrong side.
+- [effects/a-token-leaves-the-app-inside-the-card.md](effects/a-token-leaves-the-app-inside-the-card.md) — **E-027** · E-007 stopped at components; a shared card keeps the token values it was built with for ever.
 
 ## Glossary
 

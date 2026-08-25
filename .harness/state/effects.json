@@ -899,6 +899,43 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-027",
+      "from": {
+        "kind": "artifact",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/card.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/card.test.ts"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/design-tokens"
+      ],
+      "severity": "high",
+      "guard": "gate:test",
+      "memory": "memory/effects/a-token-leaves-the-app-inside-the-card.md",
+      "rationale": "E-007 ALREADY SAYS A TOKEN CHANGE IS A CONTRAST CHANGE IN BOTH THEMES, AND IT STOPPED AT COMPONENTS. Since F-023 the tokens also travel OUT of the app: cardSvg bakes background, foreground, foreground.2 and BOTH swatch.hairline tones into an SVG document as literal values, because an SVG has no other way to carry a colour. That is E-019 shape — a generated artefact a dependency evaluates later — with one difference that matters: a stylesheet is regenerated on every build and a shared card is not. A card somebody sent last week keeps the token values it was built with, and no gate reaches it. WHAT IS GUARDED: every colour in a freshly built document must be a design-token value or the entry own published hex, over all 120 entries in BOTH themes, with a decoy proving a planted colour is reported. WHAT IS NOT: the keyline tones are inherited from F-068 rather than re-derived here, so a manifest change that moved swatch.hairline without re-running swatch-edge.test.ts would keep this link green while the card lost its edge against a near-white sample. That is why the card reuses the TOKENS instead of drawing a border, and why the two checks are complementary rather than redundant.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

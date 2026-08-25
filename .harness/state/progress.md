@@ -8,6 +8,130 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-023 · a card is a document, and R2's surfaces are finished
+
+A colour as a card: kanji, kana, romaji, English name, hex, the entry's own classification and
+the corpus version. **This closes the last `todo` in R2.**
+
+### The criterion decided the design
+
+> *The same entry at the same corpus version renders the same card on both platforms.*
+
+Read as *"the same pixels"* that is unmeetable. iOS and Android rasterise text differently —
+hinting, subpixel positioning, antialiasing — and no application code changes it. CI has no
+device, and a device attestation cannot compare two platforms it is not both running on. A
+criterion nobody can check does not stay a criterion: it becomes an attested-forever item and
+then it becomes nothing.
+
+So **the card is a document**. `cardSvg()` is a pure function returning SVG text, byte-identical
+because nothing platform-shaped touches it — no clock, no locale, no random source, no platform
+API. The rasterisation is the platform's and is **not** claimed.
+
+What that buys is the point: the criterion is now **checked in CI over every entry in both
+themes, with no device at all**.
+
+This is the move `archive.ts` already makes for FR-58's *"byte-identical database"* — the file
+differs in page layout after identical writes, so the claim worth making is that the **data**
+round-trips. Same shape, recorded in
+[ADR-0070](../../docs/adr/0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md).
+
+### Three decisions that came from constraints already in the repository
+
+**Text does not sit on the sample.** Putting the hex over the colour needs a legible foreground
+chosen *per entry* against 120 backgrounds, with no declared pairing to lean on — inventing the
+contrast decision the manifest exists to make. The sample is a block; the text sits on the
+card's own ground where the pairing is declared and gate 9 already checks it.
+
+**The sample keeps `Swatch`'s two-tone keyline**, reusing `swatch.hairline` and its inverse
+rather than drawing a border. A near-white entry on a near-white card has no perceptible edge,
+and F-068 already measured that the worse of the two tones still reaches 4.23 against the worst
+possible sample. Reusing the tokens **inherits that proof**; a border invented here would have
+inherited nothing.
+
+**Every colour in the document is accounted for** — a token value or the entry's own published
+hex, over all 120 entries in both themes, with a decoy proving a planted colour is reported.
+
+### The thumbnail claim, narrowed until it means something
+
+At 96 px wide **no text on this card is comfortable**. What survives is the **colour** — the
+sample is 62% of the card — and the **kanji**, sized to clear the floor.
+
+So a decoy asserts the hex and the attribution are *below* the floor. Five vague true statements
+would have been worse than one sharp one. The screen shows the same document at that size beside
+the full one, so a person can disagree with the arithmetic rather than take it.
+
+### The conformance suite found something on its first run over this screen
+
+`react-native-svg` sets `backgroundColor: 'transparent'` on its host view, and the colour-literal
+rule asked which token the **absence of a colour** is.
+
+`transparent` paints nothing, so it is now skipped — narrowly, one keyword, with a paired
+assertion proving a real hand-typed hex is still caught in the same run.
+
+It had gone unnoticed for a small reason worth recording: `Icon` has set it on its triangle
+glyph since F-003, and the only registered subject that renders an `Icon` is `Status` with
+`kind="bad"` — the **cross** glyph. That branch had never once been rendered through the suite.
+
+### Gates run, and what they said
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 24 effect links |
+| `typecheck` · `build` · `lint` · `format` | **passed** — 31, 18 and 31 tasks; cache-scope clean |
+| `test` | **passed for every package this feature touches**, forced — 235 in `mobile`, 72 in `ui`. **RED repo-wide**, see below |
+| `a11y` | **passed** — gate 8 scope 17/17, 7 screens |
+| `contrast` | **passed** — both themes, 21 tasks |
+| `content` | **passed** — font 438/785; corpus, rules and subset current |
+
+**Not run:** `e2e`, `cvd`, `perf`, `color-golden`.
+
+**`e2e` is in this feature's verification list and was not run** — the **sixth** feature to
+report it. F-091 carries gate 7.
+
+**`test` is red repo-wide** in `color-spaces` and `color-difference`: the four bitwise fixtures
+under Node 22.16.0 against a repo pinning 24.19.0. F-093 made it visible, F-083 owns it, and this
+feature does not touch it.
+
+### Recorded honestly
+
+- **A card nobody can yet send anywhere.** FR-51 — export to CSV, JSON, CSS, ASE, PDF — is R5 and
+  owns files leaving the device. The screen says so rather than leaving a person hunting for a
+  share button, but until then the word *shareable* in the feature title does more work than the
+  feature does.
+- **`THUMBNAIL_MIN_PX` is declared, not measured.** A stated floor for CJK stroke separation, not
+  a legibility study, and it must never be quoted as one. That is the attested criterion.
+- **E-027 records what E-007 did not reach.** A token change is a contrast change in both themes,
+  and every destination E-007 names is inside the app. Tokens now leave it: a stylesheet is
+  rebuilt on every build, and **a card somebody sent last week is not**.
+- **The keyline is inherited, not re-derived.** A manifest change moving `swatch.hairline` would
+  keep E-027 green while the card lost its edge against a near-white sample —
+  `swatch-edge.test.ts` is the check that would catch it, and the two are complementary rather
+  than redundant.
+- **`CLASSIFICATION_KEYS` is now shared** with the detail screen rather than copied. Two copies of
+  the FR-23 vocabulary would drift, and the one that drifts would be on the artefact that leaves
+  the app.
+
+### Next — and R2's `todo` queue is empty
+
+**No feature is eligible.** All 25 R2 features that were ever `todo` are `done`; what remains in
+R2 is six `backlog` items, one of them `wont`:
+
+| | | |
+|---|---|---|
+| **F-091** | `must` | The e2e harness that lets gate 7 run at all — **six** features have now declared `e2e` and skipped it |
+| **F-094** | `must` | `generate-design-tokens.mjs --check` exists, is called "the freshness check" in two plans, and is wired into no gate |
+| F-089 | `should` | Gate 0 catches an effect rationale describing a world that no longer exists |
+| F-090 | `should` | Taxonomy vocabulary readable in Japanese, not only English |
+| F-092 | `should` | A design token that reaches no component fails a check |
+| F-082 | `wont` | Withdrawn — duplicate of F-079 |
+
+**Ahead of all of them, and unchanged: the Node upgrade to 24.19.0.** It is an environment
+action no repository change can perform, and it is the only thing between this machine and a
+green `test`. Promoting any of the above to `todo` is a scheduling decision rather than a
+selection the harness can make.
+
+---
+
 ## 2026-08-25 — F-021 · one field, three questions, and the app saying which it answered
 
 Type a name, a reading, a kanji, a hex, or *"dark muted green"*. The Finder routes, and it
