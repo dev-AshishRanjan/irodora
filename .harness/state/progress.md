@@ -8,6 +8,113 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-25 — F-094 · the freshness check nobody ran, and the hole it actually closed
+
+`generate-design-tokens.mjs --check` now runs **first** in gate 9. A manifest edited without
+regenerating, or a generated artefact edited by hand, fails before the suites that would have
+agreed with the stale values.
+
+### The filed premise was wrong, and measuring is what found that
+
+F-093 filed this saying all five generated artefacts were compared by nothing. **They were not.**
+`packages/design-tokens/test/emit.test.ts` already byte-compares **four** of them —
+`tokens.css`, `tokens.tailwind.css`, `tokens.ts`, `native.ts` — and carries its own
+`checks all four targets` assertion. A stale manifest already failed gate 5.
+
+That was established by planting a manifest edit and watching gate 5 go red, rather than by
+reading the plan back to myself. The plan's *Approach* section now says so, corrected in place.
+
+### The real hole was one artefact, and it is the one that ships
+
+**`apps/mobile/global.css`** — the app's own stylesheet — was compared by nothing.
+
+Measured, not inferred: hand-editing a hex in it leaves **all 172** design-tokens tests green,
+and only the new check reports it.
+
+```
+--- do the design-tokens tests notice? ---
+ Test Files  12 passed (12)
+      Tests  172 passed (172)
+--- does the new gate-9 step notice? ---
+design tokens: generated output is STALE.
+  file  .\apps\mobile\global.css
+```
+
+That file is **E-019's own subject** — a generated stylesheet Uniwind evaluates in Metro — and
+E-019's guard names `heroui.test.ts` and `emitHeroui` throwing, neither of which compares the
+committed file against what the manifest would emit now.
+
+So the feature is smaller than filed and lands on the artefact that matters most.
+
+### Watched failing in both directions, which fail differently
+
+| Mutation | What it reports |
+|---|---|
+| a token value edited in the manifest | the derived `srgb` field **plus four files at once** |
+| a generated artefact edited by hand | **exactly one** file |
+
+Baseline asserted green either side of each.
+
+**The first mutation attempt silently did not apply.** `oklch` is an object, not an array, so
+`Array.isArray(t.oklch)` was false and the "planted" manifest was unchanged — and the check
+correctly reported *current*, which read exactly like a passing proof. Every plant here now
+throws if the value it meant to change did not change
+[[a-decoy-that-is-not-broken-proves-nothing]].
+
+### E-007 was nearly right, and the gap was the defect
+
+Its memory note said *"the four outputs … the emit tests byte-compare, so a skipped regenerate
+is loud"*. Both halves were nearly true. **The gap between "four" and "five" was the whole
+defect**, and it survived because the sentence sounded like coverage.
+
+E-007 now names all five artefacts, its guard names both halves, and the note says which one was
+uncompared and how that was measured.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| `state` | **passed** — 15 checks, 24 links |
+| `contrast` | **passed** — 21 tasks, with the new `--check` ahead of them |
+| CI mirror | **passed** — 13 gates; the script name is unchanged so `gates.json` is untouched |
+| `format` · `lint` (scripts) · `cache-scope` | **passed** |
+
+**No source changed.** This feature is wiring plus proof, so `typecheck`, `build` and `test` are
+untouched — and `test` stays red repo-wide for the Node 22 reason F-093 made visible and F-083
+owns.
+
+### Also recorded: F-091 is blocked on the environment, not on effort
+
+Written into F-091's own notes rather than left in a chat, because the next session would
+otherwise select it and hit the same wall:
+
+> Every e2e tool for Expo — Maestro, Detox, Appium — arrives as a **dependency**, and
+> `pnpm install` cannot run on this workstation at all (`ERR_PNPM_UNSUPPORTED_ENGINE`: Node
+> 22.16.0 and pnpm 9.3.0 against engines requiring 24.19.0 and pnpm 11). It is not merely
+> unverifiable here — **the tool cannot be added.** It also needs an emulator, hence a JDK and an
+> Android SDK this machine lacks, and criteria 2–4 can only be discharged by a CI run, which
+> needs a push.
+
+### Next
+
+R2 has **no eligible feature**. What remains is four `backlog` items and one `wont`:
+
+| | | |
+|---|---|---|
+| **F-091** | `must` | Blocked on the environment, as above — the Node upgrade is its prerequisite |
+| F-089 | `should` | Gate 0 catches an effect rationale describing a world that no longer exists |
+| F-090 | `should` | Taxonomy vocabulary readable in Japanese, not only English |
+| F-092 | `should` | A design token that reaches no component fails a check |
+
+**F-089 and F-092 are both live-looking after this feature.** F-089 is about exactly the failure
+E-007's note just had — a rationale that was nearly true for long enough to hide a defect — and
+F-092 is the shape F-019 found with `tabular-nums`. Either is doable here; both are `should`, so
+promoting one is a scheduling decision rather than a selection the harness can make.
+
+**Ahead of all of them, unchanged: the Node upgrade to 24.19.0.**
+
+---
+
 ## 2026-08-25 — F-023 · a card is a document, and R2's surfaces are finished
 
 A colour as a card: kanji, kana, romaji, English name, hex, the entry's own classification and

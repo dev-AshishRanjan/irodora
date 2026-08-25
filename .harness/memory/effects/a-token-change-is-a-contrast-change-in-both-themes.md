@@ -48,8 +48,16 @@ and invisible on a meter track.
 
 ## What must happen on a token change
 
-1. `pnpm --filter @irodora/design-tokens generate` — the four outputs and the derived hexes
-   are regenerated together. The emit tests byte-compare, so a skipped regenerate is loud.
+1. `pnpm --filter @irodora/design-tokens generate` — the **five** outputs and the derived
+   hexes are regenerated together.
+
+   This note used to say FOUR, and say that the emit tests byte-compare so a skipped
+   regenerate is loud. Both halves were nearly true and the gap between them was the defect
+   (F-094). `emit.test.ts` compares four artefacts; the fifth is **`apps/mobile/global.css`**,
+   the app’s own stylesheet, and it was compared by nothing — hand-editing a hex in it left all
+   172 design-tokens tests green. `generate-design-tokens.mjs --check` now runs first in
+   `gate:contrast`, so all five are compared and they are compared BEFORE the suites that
+   would otherwise agree with stale values.
 2. `pnpm test:contrast` — every declared pairing, **both themes**.
 3. Check APCA alongside WCAG. A disagreement is usually a real perceptual issue worth looking
    at, even though the gate remains WCAG.
