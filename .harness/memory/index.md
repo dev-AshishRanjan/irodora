@@ -81,6 +81,8 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-threshold-nothing-can-cross-is-not-a-threshold.md](lessons/a-threshold-nothing-can-cross-is-not-a-threshold.md) — a 1 ms budget on 0.6 µs of work passed 2000 runs and had no reachable failing state; ask what would make a check go red, never whether it passes.
 - [lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md](lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md) — a gate carrying its own copy of the rule checks that two copies match; perturb the source of truth and require the verdict to follow.
 - [lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md](lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md) — F-099 was blocked by a hazard F-098 had already turned into a gate; the better the argument, the less likely anybody rechecks its premise.
+- [lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md](lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md) — crypto is real in Node and absent in Hermes; seventeen gates passed and the app died on the first screen that generated an id.
+- [lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md](lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md) — three honest "not run here" notes, three real failures, and the missing module was one junction away all along.
 
 ## Effects
 

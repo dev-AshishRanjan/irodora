@@ -20,12 +20,13 @@ import {
 import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera';
 import { clearOffer, hasOffer, offerReading, takeReading } from '../src/lens/handoff';
 /*
- * `permissionState` comes from the VIEWFINDER, which reaches react-native-vision-camera. It is
- * a pure function of two booleans and jest-expo resolves the module, so importing it costs
- * nothing here — and putting it anywhere else would mean a second copy of a mapping that has
- * three cases and exactly one right answer.
+ * From `../src/lens/permission`, NOT from the viewfinder.
+ *
+ * The viewfinder imports react-native-vision-camera, which touches the native TurboModule at
+ * module load — so importing it here failed the whole suite before any assertion ran. F-097's
+ * comment claimed jest could resolve it; that claim was never run, and it was wrong (F-104).
  */
-import { permissionState } from '../src/lens/viewfinder';
+import { permissionState } from '../src/lens/permission';
 import { aggregate, partition, type Region, type Sample } from '@irodora/color-sampling';
 
 const px = (r: number, g: number, b: number): Sample => ({ r, g, b, alpha: 1 });

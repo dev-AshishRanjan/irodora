@@ -31,6 +31,8 @@ import { Finder } from '../src/screens/Finder';
 import { ColourCard } from '../src/screens/ColourCard';
 import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
 import { Lens } from '../src/screens/Lens';
+import { readingOklch } from '../src/profile/photo';
+import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import { find } from '../src/finder';
@@ -358,7 +360,19 @@ const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Lens (reading)',
     kind: 'static',
-    sampleValues: SAMPLE_HEXES,
+    /*
+     * The reading's OWN colour is a declared sample value.
+     *
+     * The Lens paints a swatch of whatever the camera saw, which by definition resolves to no
+     * token — that is the point of the screen. `sampleValues` is the mechanism for exactly this,
+     * and the exemption is exact-match on the value rather than a pass for the component, so
+     * chrome painted with a literal is still caught.
+     *
+     * DERIVED from SAMPLE_READING rather than typed as '#C79E7F': a literal here would silently
+     * stop matching the moment the fixture changed, and the finding would come back looking like
+     * a regression in the screen.
+     */
+    sampleValues: [...SAMPLE_HEXES, displayFromOklch(readingOklch(SAMPLE_READING)).hex],
     render: (_state, theme) =>
       draw(
         <Lens

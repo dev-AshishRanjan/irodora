@@ -193,9 +193,51 @@ export default tseslint.config(
         { name: 'window', message: 'The colour engine is platform-neutral.' },
         { name: 'document', message: 'The colour engine is platform-neutral.' },
         { name: 'process', message: 'The colour engine is platform-neutral.' },
+        {
+          name: 'crypto',
+          message:
+            'React Native and Hermes have no crypto global — Expo 57 installs TextDecoder, URL ' +
+            'and DOMException, and no crypto. It exists in Node, so a direct call passes every ' +
+            'test and kills the app on a device (F-104). Use randomBytes from @irodora/store.',
+        },
       ],
       // Floating-point behaviour must be explicit and auditable in colour maths.
       'no-loss-of-precision': 'error',
+    },
+  },
+
+  // --- Runtime globals that do not exist on the device ---------------------
+  //
+  // F-104. `packages/store` called `crypto.getRandomValues` — real in Node, absent in Hermes —
+  // so 68 assertions passed and the app died on the first screen that generated an id. Nothing
+  // could have caught it: the typecheck sees `lib.dom`'s declaration and is satisfied, and the
+  // engine zone's `no-restricted-globals` did not reach this far.
+  //
+  // SCOPED WITH `ignores` FOR THE ENGINE ZONE ON PURPOSE. A later flat-config object replaces
+  // `no-restricted-globals` per key rather than merging, so a block matching packages/color-*
+  // would silently drop the four names declared above
+  // [[a-later-flat-config-object-replaces-a-rule-it-does-not-merge]]. Excluding that zone leaves
+  // every file governed by exactly one of the two lists.
+  //
+  // `globalThis.crypto` is NOT flagged, and that is the intended hole: reading it defensively
+  // off `globalThis` is how a port asks whether a platform HAS one. Referencing it as a bare
+  // global is the assumption that broke.
+  {
+    files: ['packages/**/*.{ts,tsx}', 'apps/mobile/src/**/*.{ts,tsx}'],
+    ignores: ['packages/color-*/**/*.ts', 'packages/cvd-engine/**/*.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'crypto',
+          message:
+            'React Native and Hermes have no crypto global (F-104). Use randomBytes from ' +
+            '@irodora/store, which takes the platform source the app installs at startup.',
+        },
+        { name: 'window', message: 'There is no DOM on a phone.' },
+        { name: 'document', message: 'There is no DOM on a phone.' },
+        { name: 'localStorage', message: 'There is no DOM on a phone; the store is SQLite.' },
+      ],
     },
   },
 

@@ -18,6 +18,8 @@
  * writes that happen fastest.
  */
 
+import { randomBytes } from './random.js';
+
 let lastMillis = -1;
 let counter = 0;
 
@@ -41,8 +43,10 @@ export function uuidv7(now: number = Date.now()): string {
 
   const timeHigh = Math.floor(now / 0x100000000);
   const timeLow = now >>> 0;
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
+  // Through the PORT, never the ambient global. `crypto` exists in Node and not in Hermes,
+  // so the direct call passed every test and killed the app on the first screen that made an
+  // id (F-104). See `random.ts`.
+  const bytes = randomBytes(16);
 
   const a = hex(timeHigh & 0xffff, 4) + hex(timeLow >>> 16, 4);
   const b = hex(timeLow & 0xffff, 4);

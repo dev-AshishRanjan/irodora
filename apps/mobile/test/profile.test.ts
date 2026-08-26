@@ -636,7 +636,10 @@ describe('a photo estimate', () => {
      */
     const { poles } = ruleSet();
     let previous = -Infinity;
-    for (let hue = poles.cool; hue < poles.cool + 180; hue += 1) {
+    // `<=`, not `<`. The half-open bound stopped at 419, and 419 % 360 is 59 — one degree
+    // short of the warm pole, so the final assertion compared 0.9889 against 1. The sweep was
+    // right and its bound was not.
+    for (let hue = poles.cool; hue <= poles.cool + 180; hue += 1) {
       const bias = hueBias(((hue % 360) + 360) % 360, poles);
       expect(bias).toBeGreaterThanOrEqual(previous - 1e-12);
       previous = bias;

@@ -60,7 +60,9 @@ import { useTheme } from '@irodora/ui';
 import { readCaptureSpace, sampleStride, type FrameSample } from './camera';
 import { read } from './modes';
 import type { CaptureSpace, LensReading } from './reading';
-import type { LensPermission } from '../screens/Lens';
+// From `./permission`, which imports nothing native — so the mapping stays testable while
+// this file cannot be loaded outside a device build at all.
+import { permissionState, type LensPermission } from './permission';
 
 /**
  * The fraction of the frame's shorter side the crosshair region spans.
@@ -77,21 +79,6 @@ const MODE = 'live' as const;
 export interface ViewfinderProps {
   /** Called with each reading the frame output produces. */
   readonly onReading: (reading: LensReading) => void;
-}
-
-/**
- * Map VisionCamera's permission model onto the screen's three states.
- *
- * Exported and pure so it can be tested without a camera. The distinction it preserves is the
- * one the copy depends on: *not asked yet* and *asked and refused* are different screens, and
- * only the first one has a button that would help.
- */
-export function permissionState(
-  hasPermission: boolean,
-  canRequestPermission: boolean,
-): LensPermission {
-  if (hasPermission) return 'granted';
-  return canRequestPermission ? 'undetermined' : 'denied';
 }
 
 /**

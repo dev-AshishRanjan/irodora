@@ -43,6 +43,14 @@ export {
   type EraseOutcome,
 } from './backup.js';
 export { uuidv7 } from './id.js';
+
+/**
+ * The randomness port (F-104).
+ *
+ * `setRandomBytes` is what a platform without a `crypto` global calls at startup — React
+ * Native has none, and calling neither is a loud refusal rather than a weak key.
+ */
+export { randomBytes, resetRandomBytes, setRandomBytes, type RandomBytes } from './random.js';
 export {
   StoreError,
   CONTRAST_PREFERENCES,

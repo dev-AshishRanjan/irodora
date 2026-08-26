@@ -8,6 +8,129 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-27 — F-104 · the global that was real in every runtime except the one that ships
+
+A field report, not a selected feature: the app closing on two buttons, a home screen that would
+not scroll, and a red CI job. Three defects, one investigation.
+
+### The crash: `crypto` does not exist on a phone
+
+`/palettes` and `/profile` are **the only two routes that call `deviceRepository()`**, and the
+only two screens that call `uuidv7()` in a `useState` initialiser — which runs on first render.
+Both reach `crypto.getRandomValues` in `packages/store`.
+
+**React Native has no `crypto` global.** Verified rather than assumed:
+`expo/src/winter/runtime.native.ts` installs `TextDecoder`, `TextDecoderStream`,
+`TextEncoderStream`, `URL`, `URLSearchParams` and `DOMException`, and patches `AbortSignal` and
+`FormData`. No crypto. A grep for `getRandomValues` across React Native, `expo-modules-core`,
+`expo-secure-store` and `expo-sqlite` returns nothing.
+
+So the call was `undefined.getRandomValues(...)` — an unhandled `TypeError` during render, which
+Android reports as *"Irodora keeps stopping"*. Every other route works because no other route
+generates randomness. **The correlation is exact, and it is what identified it:** the crash
+followed a *capability*, not a component.
+
+### Why seventeen gates were green
+
+| check | why it passed |
+|---|---|
+| the package's 68 assertions | run under **Node**, where `globalThis.crypto` is real |
+| `tsc` | `lib.dom` declares `crypto`, so the call type-checked |
+| `no-restricted-globals` | already banned `window`, `document`, `process` — scoped to `packages/color-*` |
+| the conformance suite | also Node, so the call succeeded there too |
+
+Each was working correctly. The gap is between the runtime the checks run in and the runtime the
+code ships to, and no check inside the first can see it.
+
+### Fixed architecturally, not with a polyfill
+
+[ADR-0077](../../docs/adr/0077-the-random-source-is-a-port-and-the-app-installs-it.md).
+`packages/store` takes a `RandomBytes` port: installed source → `globalThis.crypto` → **a
+refusal that names the fix**. Never `Math.random()` — this value keys the database, and a weak
+key *works*, so nothing downstream could ever tell.
+
+The app installs `expo-crypto` at module scope in the root layout, and the install draws a probe
+and refuses a wrong length or an all-zero buffer, which is what a native module that failed to
+link looks like from JavaScript.
+
+A polyfill was rejected: it leaves a platform-neutral package depending on an ambient global, so
+the next runtime without one fails identically and just as invisibly. `apps/mobile/src/store/index.ts`
+already stated the rule the store had broken — *"the platform bindings live at the one place that
+has a platform"*.
+
+**Recurrence is prevented by a lint, not by care.** `crypto` joins `no-restricted-globals` across
+`packages/**` and `apps/mobile/src/**`, with the engine zone kept on its own list because a later
+flat-config object *replaces* a rule rather than merging it. Watched: the original line was
+reintroduced and the rule named it and the fix, then restored.
+
+### The home screen was a fixed `View`
+
+`flex: 1`, no scroll, no indicator — everything past the fold unreachable. F-097's sixth button
+is what made it visible. Now a `ScrollView` with padding and gap on `contentContainerStyle`; on
+`style` they pad the *scroller* and clip the last child by exactly the bottom padding, which is
+the same bug one step smaller.
+
+**No automated guard is possible in this suite**, and that is stated rather than papered over: a
+react-test-renderer tree has no viewport and no Yoga pass, so *rendered* and *reachable* are the
+same thing there and different things on a phone.
+
+### CI: three suites, all mine, all committed without being run
+
+The app's jest suite had been unrunnable here all session. `@babel/runtime` turned out to be
+**already in the pnpm store** and merely unlinked — two junctions, and 366 assertions ran.
+
+| suite | cause | from |
+|---|---|---|
+| `lens.test.ts` | imported `viewfinder.tsx` → VisionCamera → native TurboModule **at module load** | F-097 |
+| `profile.test.ts` | the 180° sweep used `<` where it needed `<=`, stopping at 419 % 360 = 59 | F-099 |
+| `screens.test.tsx` | an untokenised colour, and an `accessible` region with no role | F-097 |
+
+F-097's own comment claimed *"jest-expo resolves the module, so importing it costs nothing
+here"*. That claim was never run, and it was wrong. `permissionState` now lives in
+`src/lens/permission.ts`, which imports nothing native.
+
+The Lens's reading swatch paints a colour that by design resolves to no token; its hex is now a
+declared `sampleValue` **derived from the fixture** rather than typed as `#C79E7F`, so it cannot
+drift. The viewfinder region declares `accessibilityRole="image"` — the honest role for visual
+content a screen reader cannot use, rather than the one that silences the checker.
+
+### The lesson I owe
+
+Three features, three honest *"not run here"* notes, three real failures. The sentence bought
+accuracy and it did not buy a working build — and the missing module was **one junction away for
+the whole session and I never looked**. A blocker I recorded myself stopped being investigated,
+which is [[a-blocker-outlives-the-state-of-the-world-that-caused-it]] pointed at my own notes.
+
+### Gates
+
+| | |
+|---|---|
+| mobile suite | **366 passed, 13 files** — green for the first time this session |
+| `packages/store` | **68 passed**, including four new port cases |
+| the new lint | **watched catching the original line**, then restored |
+| a11y scope · token reach · spacing · content · claims · no-inference · app-imports · motion · unsafe-calls · cache-scope · perf · typecheck · eslint · prettier | green |
+
+**Gate 0 fails on the lockfile, correctly.** `expo-crypto` is a registry dependency: its entry
+needs an integrity hash and a peer-resolution key that cannot be hand-written safely. E-032 is
+the same rule — a manifest and the lockfile move together, and only the pinned toolchain can
+produce the entry.
+
+```bash
+pnpm install
+```
+
+### Not verified
+
+**That the app starts.** The crash was a missing Hermes global, and no Node process can observe
+its absence except by deleting it — which is exactly what the new store test does, and that is
+evidence about the *port*, not about the app opening. `expo-crypto` carries native code, so the
+fix does not exist until a rebuild. Recorded as F-104's attested criterion, blocking release.
+
+Three `no-unsafe-*` lint errors stand in `apps/mobile/src/store/random.ts` until `expo-crypto`
+is installed and its types resolve.
+
+---
+
 ## 2026-08-26 — F-101 · a third of the corpus had a temperature it did not have
 
 F-031 refused to make this change on an argument, and was right to:

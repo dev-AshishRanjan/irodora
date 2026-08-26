@@ -6,7 +6,7 @@
  * is a two-line test here, which is the entire argument for the keystore being an interface.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   DATABASE_KEY_NAME,
   forgetDatabaseKey,
@@ -14,6 +14,7 @@ import {
   keyPragma,
   type SecureKeyStore,
 } from '../src/key.js';
+import { randomBytes, resetRandomBytes, setRandomBytes } from '../src/random.js';
 
 const fakeStore = (): SecureKeyStore & { readonly seen: Map<string, string> } => {
   const seen = new Map<string, string>();
@@ -105,3 +106,71 @@ describe('the key reaches SQLCipher through PRAGMA, and nothing else', () => {
  * and the scope of the cache key disagree by construction, and nothing reports that
  * [[a-cache-key-describes-the-package-not-the-world-the-test-read]].
  */
+
+/**
+ * The randomness port, and the failure it exists to make impossible (F-104).
+ *
+ * `key.ts` and `id.ts` called the ambient `crypto.getRandomValues`. Under Node that global is
+ * real, so all 64 assertions in this package passed; under Hermes it is `undefined`, so the app
+ * died with a `TypeError` on the first screen that generated an id. Android reported it as
+ * "Irodora keeps stopping" and no gate could have seen it coming.
+ *
+ * These cases exist because the *fix* has the same shape as the bug if nobody watches it: a
+ * port with a fallback is only as good as the branch nobody exercises.
+ */
+describe('the CSPRNG is a port, not an ambient global', () => {
+  afterEach(() => {
+    // Module state. A test that leaves a source installed hands it to the next one.
+    resetRandomBytes();
+  });
+
+  it('uses the installed source in preference to anything ambient', () => {
+    // The device path. If this did not bind, React Native would silently fall through to the
+    // `globalThis.crypto` branch — which is exactly the state that shipped.
+    const calls: number[] = [];
+    setRandomBytes((n) => {
+      calls.push(n);
+      return new Uint8Array(n).fill(7);
+    });
+    const key = getOrCreateDatabaseKey(fakeStore());
+    expect(calls).toEqual([32]);
+    expect(key).toBe('07'.repeat(32));
+  });
+
+  it('falls back to the platform when nothing is installed — which is why Node needs no setup', () => {
+    resetRandomBytes();
+    const key = getOrCreateDatabaseKey(fakeStore());
+    expect(key).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
+  it('REFUSES rather than weakening when no source exists at all', () => {
+    /*
+     * THE CASE THAT MATTERS. This value keys the database (NFR-13). A `Math.random()` fallback
+     * would have kept the app running on Hermes and produced a key an attacker can reproduce —
+     * and nothing downstream could tell the difference, because a weak key opens the database
+     * exactly as well as a strong one.
+     *
+     * Hermes is simulated by removing the global, which is what Hermes actually is here.
+     */
+    const platform = Reflect.get(globalThis, 'crypto') as unknown;
+    try {
+      Reflect.deleteProperty(globalThis, 'crypto');
+      resetRandomBytes();
+      expect(() => getOrCreateDatabaseKey(fakeStore())).toThrow(/no cryptographically secure/iu);
+      // And the message has to be actionable, or the next person reads a stack trace instead.
+      expect(() => randomBytes(32)).toThrow(/setRandomBytes/u);
+    } finally {
+      Reflect.defineProperty(globalThis, 'crypto', {
+        value: platform,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+
+  it('refuses a nonsensical length rather than returning an empty buffer', () => {
+    // An empty buffer would hex-encode to '' and fail `keyPragma`'s validation with a message
+    // about hex, sending whoever debugs it to the wrong file.
+    for (const bad of [0, -1, 1.5, Number.NaN]) expect(() => randomBytes(bad)).toThrow(RangeError);
+  });
+});

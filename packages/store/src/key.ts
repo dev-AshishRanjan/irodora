@@ -32,6 +32,8 @@
  * keystore read would make "open the database" a promise that every call site has to thread.
  * `expo-secure-store` provides synchronous variants for exactly this case.
  */
+import { randomBytes } from './random.js';
+
 export interface SecureKeyStore {
   get(name: string): string | null;
   set(name: string, value: string): void;
@@ -57,8 +59,9 @@ export function getOrCreateDatabaseKey(store: SecureKeyStore): string {
   const existing = store.get(DATABASE_KEY_NAME);
   if (existing !== null && existing !== '') return existing;
 
-  const bytes = new Uint8Array(KEY_BYTES);
-  crypto.getRandomValues(bytes);
+  // Through the PORT. This is the key that encrypts the database, and the port refuses
+  // rather than falling back when no CSPRNG exists — see `random.ts` (F-104).
+  const bytes = randomBytes(KEY_BYTES);
   const key = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
 
   store.set(DATABASE_KEY_NAME, key);

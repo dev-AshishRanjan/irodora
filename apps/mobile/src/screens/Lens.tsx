@@ -48,6 +48,7 @@ import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
 import { readingOklch, worthOffering } from '../profile/photo';
 import type { CaptureSpace, LensReading } from '../lens/reading';
+import type { LensPermission } from '../lens/permission';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
@@ -55,13 +56,10 @@ import type { MessageKey } from '../i18n/index';
 export const LENS_NAME_LIMIT = 3;
 
 /**
- * Whether the camera may be used, as the surface needs to know it.
- *
- * Three states, not a boolean. `undetermined` and `denied` need completely different copy — one
- * asks, the other explains that asking again will not help — and a boolean would collapse them
- * into the same screen.
+ * Re-exported so a caller of this screen needs one import, while the definition lives beside
+ * the mapping that produces it — in a file with no native import (F-104).
  */
-export type LensPermission = 'granted' | 'denied' | 'undetermined';
+export type { LensPermission } from '../lens/permission';
 
 /** Capture space → the label that names it. Total, so a fourth space is a compile error. */
 const SPACE_KEYS: Readonly<Record<CaptureSpace, MessageKey>> = {
@@ -151,7 +149,18 @@ export function Lens({
         // the app reaches its background — and gate 8's own proof depends on that being true:
         // its decoy removes the elevation map and asserts `surface.1` goes unreached, which a
         // literal here would have silently defeated.
-        <Surface level="1" accessible accessibilityLabel={t('lens.viewfinder')}>
+        <Surface
+          level="1"
+          accessible
+          // `image`, and it is the honest role rather than the one that silences the checker.
+          // `accessible` groups the region into one node, and gate 8 reads any grouped node as
+          // something a person can land on — so it must say what it is. A live viewfinder is
+          // visual content a screen reader cannot use, which is exactly what `image` announces;
+          // calling it a `button` would be a lie, and leaving it silent tells a screen-reader
+          // user nothing about the thing producing every number below it.
+          accessibilityRole="image"
+          accessibilityLabel={t('lens.viewfinder')}
+        >
           <View style={{ minHeight: nativeTapTarget, overflow: 'hidden' }}>{viewfinder}</View>
         </Surface>
       ) : (

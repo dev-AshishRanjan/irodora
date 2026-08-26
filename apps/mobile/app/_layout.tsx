@@ -3,6 +3,21 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
 import { ThemeProvider, useTheme } from '@irodora/ui';
+import { installRandomSource } from '../src/store/random';
+
+/*
+ * THE CSPRNG, INSTALLED BEFORE ANY SCREEN RENDERS (F-104).
+ *
+ * At module scope, not in an effect. React Native has no `crypto` global, so until this runs
+ * every `uuidv7()` and the database key generator take the port's refusal branch — and a
+ * screen that rendered first would fail in a way that looks intermittent. The root layout is
+ * the first module Expo Router loads, which makes this the earliest point that is also a
+ * place somebody would think to look.
+ *
+ * It THROWS on a source it cannot verify. That is deliberate: this value keys the database
+ * (NFR-13), and a startup crash with a sentence is better than a key nobody can reproduce.
+ */
+installRandomSource();
 
 /**
  * The root layout.

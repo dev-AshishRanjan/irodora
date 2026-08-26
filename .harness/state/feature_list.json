@@ -2939,6 +2939,44 @@
         "state"
       ],
       "notes": "FOUND WHILE IMPLEMENTING F-095 AND SAYING SO. `nativeRadius` is a named record — `nativeRadius.swatch` — and `nativeSpacing` is a bare array, so a component writes `nativeSpacing[2]` and nothing in that expression names 12. THE ASYMMETRY IS THE ROOT CAUSE OF F-095 ITSELF: a scale nobody can name is a scale nobody reaches for, which is why it sat emitted and unread while 45 hand-written values contradicted it. AND IT IS NOW A LIVE HAZARD RATHER THAN AN ERGONOMIC ONE. ADR-0074 renumbered every index above 1, which was safe only because nothing read the scale; five components read it now. A future step added or removed changes what every index above it means while every call site compiles, every test passes and every style prop still receives a valid number — React Native takes `number`, and 12 and 14 are equally assignable. E-036 records the link and states the limit: `verify-spacing-scale.mjs` checks LITERALS and cannot see a stale index. NOT DONE IN F-095 because it changes the manifest schema and all four emitters, and F-095 had a scope. Filed to R4 rather than R3: R3 is closing, and this is a refactor of a system that currently works."
+    },
+    {
+      "id": "F-104",
+      "title": "The app crashes on every screen that writes, and the home screen does not scroll",
+      "requirements": [
+        "NFR-3",
+        "NFR-13",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-104-the-app-crashes-on-every-screen-that-writes.md",
+      "acceptance": [
+        "No shipped module reads an ambient global the device does not provide, enforced by a lint rather than by review",
+        "The database key and every id come from a source the platform supplies, and the absence of one is a refusal rather than a weak value",
+        "Every entry point on the home screen is reachable",
+        "The mobile suite is green, and every assertion in it has been run",
+        "The app opens Palette Studio and profile setup on a device without closing"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "attested": [
+        {
+          "criterion": "The app opens Palette Studio and profile setup on a device without closing",
+          "verifiedBy": "A device run after `pnpm install` and a rebuild: open the app, tap \"Build a palette\" and \"Build your colour profile\", and reach both screens. NOT RUNNABLE ON THIS WORKSTATION and not simulated: the crash was a missing Hermes global, and no Node process can observe its absence except by deleting it — which is exactly what packages/store/test/key.test.ts does to exercise the refusal branch, and is evidence about the PORT rather than about the app starting. `expo-crypto` also carries native code, so the fix does not exist until a rebuild.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "FILED FROM A FIELD REPORT, NOT SELECTED THROUGH next-feature. Three defects reported together and found in one investigation. ROOT CAUSE OF THE CRASH: `packages/store` called the ambient `crypto.getRandomValues` in `key.ts` (the database key) and `id.ts` (every uuidv7). THERE IS NO `crypto` GLOBAL IN REACT NATIVE — verified by reading expo/src/winter/runtime.native.ts, which installs TextDecoder, URL, DOMException and four others and no crypto, and by grepping react-native, expo-modules-core, expo-secure-store and expo-sqlite for getRandomValues, which returns nothing. So the call was `undefined.getRandomValues(...)`: an unhandled TypeError during render, which Android reports as \"Irodora keeps stopping\". THE CORRELATION IS EXACT AND IS WHAT IDENTIFIED IT: /palettes and /profile are the only two routes that call deviceRepository(), and the only two screens that call uuidv7() in a useState initialiser — which runs on first render. Every other route works because no other route generates randomness. WHY SEVENTEEN GATES MISSED IT, which is the part worth keeping: the package’s tests run under Node where the global is real; tsc sees lib.dom’s declaration and is satisfied; and `no-restricted-globals` existed but covered packages/color-* only. A global that is real in two of three runtimes is invisible to a test suite that runs in one. FIXED ARCHITECTURALLY, NOT WITH A POLYFILL (ADR-0077). packages/store takes a RandomBytes port — installed source, then globalThis.crypto, then a REFUSAL naming the fix. Never Math.random(): this value keys the database (NFR-13) and a weak key works, so nothing downstream could tell. The app installs expo-crypto at module scope in the root layout, and the install draws a probe and refuses a wrong length or an all-zero buffer — which is what a native module that failed to link looks like from JS. A polyfill was rejected because it leaves a platform-neutral package depending on an ambient global, and the next runtime without one fails identically and just as invisibly. RECURRENCE PREVENTED BY A LINT: `crypto` joins no-restricted-globals across packages/** and apps/mobile/src/**, with the engine zone kept on its own list because a later flat-config object REPLACES a rule rather than merging it. WATCHED: the original line was reintroduced and the rule named it and the fix; then restored. `globalThis.crypto` is deliberately not flagged — reading it defensively is how a port asks whether a platform has one. SECOND DEFECT — THE HOME SCREEN DID NOT SCROLL. It was a fixed `View` with flex: 1, so anything past the fold was unreachable with no scroll and no indicator; F-097’s sixth button is what made it visible. Now a ScrollView with padding and gap on contentContainerStyle — on `style` they pad the scroller and clip the last child by exactly the bottom padding, the same bug one step smaller. NO AUTOMATED GUARD IS POSSIBLE in this suite and that is stated rather than papered over: a react-test-renderer tree has no viewport and no Yoga pass, so \"rendered\" and \"reachable\" are the same thing there and different things on a phone. THIRD — CI WAS RED ON THREE SUITES, ALL MINE, ALL COMMITTED WITHOUT BEING RUN. The app’s jest suite had been unrunnable here all session; @babel/runtime turned out to be in the pnpm store and merely unlinked, and a junction made it run. (1) lens.test.ts imported viewfinder.tsx, which reaches VisionCamera and touches the native TurboModule AT MODULE LOAD — F-097’s own comment claimed jest could resolve it, and that claim was never run. `permissionState` moved to src/lens/permission.ts, which imports nothing native. (2) profile.test.ts’s 180° sweep used `<` where it needed `<=`, so it stopped at 419 % 360 = 59 — one degree short of the warm pole. The sweep was right; its bound was not. (3) screens.test.tsx: the Lens paints the reading’s own colour, which by design resolves to no token, and declared `accessible` with no role. The hex is now a declared sampleValue DERIVED from the fixture rather than typed as a literal, and the viewfinder region declares accessibilityRole=\"image\" — the honest role for visual content a screen reader cannot use, rather than the one that silences the checker. THE LESSON I OWE: I committed three features whose tests I could not run and said so each time, and all three carried a real failure. Saying \"not run here\" is necessary and it is not sufficient — the missing module was one junction away for the whole session and I never looked. GATES: the full mobile suite 366/366 across 13 files (green for the first time this session), packages/store 68/68 including four new port cases, a11y scope, token reach, spacing, content, claims, no-inference, app-imports, motion, unsafe-calls, cache-scope, perf, typecheck, eslint, prettier. GATE 0 FAILS ON THE LOCKFILE, CORRECTLY AND BY DESIGN: expo-crypto is a registry dependency and its entry needs an integrity hash and a peer-resolution key that cannot be hand-written safely. E-032 is the same rule — a manifest and the lockfile move together, and only the pinned toolchain can produce the entry. `pnpm install` clears it."
     }
   ]
 }
