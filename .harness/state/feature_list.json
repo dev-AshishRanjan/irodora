@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-08-25",
+  "updated": "2026-08-26",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -2663,7 +2663,7 @@
       "service": "root",
       "release": "R3",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "verify-no-key-material.mjs accounts for the rules-bundle digest and gate 15 is green with no shipped source unexplained",
@@ -2673,7 +2673,7 @@
         "state",
         "security"
       ],
-      "notes": "FOUND WHILE VERIFYING F-026, PRE-EXISTING, AND CONFIRMED AT HEAD WITH EVERY F-026 CHANGE STASHED. `node scripts/verify-no-key-material.mjs` reports apps/mobile/src/rules/generated/lexicon.ts carrying 64 hex digits \"the ledger does not record\", and exits 1 — so gate 15 (security) is RED. The literal is not a key: `git grep` finds the same value in content/rules/index.json, which is the rules bundle digest F-069 introduced. The script accounts for CORPUS digests by reading content/versions/ (130 of them), and the rules bundle is a second versioned artefact with its own digest home that the script has never been taught about. THE FILE WAS LAST WRITTEN BY F-021 (f0f1f6c), so this has been red since then; the sessions after it recorded gate 15 as \"partly run\" because gitleaks was not installed and did not report the key scan failing — which is how a red gate stayed invisible across four features. That second-order lesson is the reason this is `should` and not `could`. FIX SHAPE: the ledger the script consults should be every recorded digest, not every corpus digest, and the decoy in the fix must plant a 64-hex literal that is NOT a recorded digest — otherwise widening the ledger is indistinguishable from switching the check off."
+      "notes": "FOUND WHILE VERIFYING F-026, PRE-EXISTING, AND CONFIRMED AT HEAD WITH EVERY F-026 CHANGE STASHED. `node scripts/verify-no-key-material.mjs` reports apps/mobile/src/rules/generated/lexicon.ts carrying 64 hex digits \"the ledger does not record\", and exits 1 — so gate 15 (security) is RED. The literal is not a key: `git grep` finds the same value in content/rules/index.json, which is the rules bundle digest F-069 introduced. The script accounts for CORPUS digests by reading content/versions/ (130 of them), and the rules bundle is a second versioned artefact with its own digest home that the script has never been taught about. THE FILE WAS LAST WRITTEN BY F-021 (f0f1f6c), so this has been red since then; the sessions after it recorded gate 15 as \"partly run\" because gitleaks was not installed and did not report the key scan failing — which is how a red gate stayed invisible across four features. That second-order lesson is the reason this is `should` and not `could`. FIX SHAPE: the ledger the script consults should be every recorded digest, not every corpus digest, and the decoy in the fix must plant a 64-hex literal that is NOT a recorded digest — otherwise widening the ledger is indistinguishable from switching the check off. DONE. THE FIX IS THE ONE THE NOTE ABOVE PREDICTED: `ledgerDigests()` now reads a NAMED list of content ledgers — content/versions/ (126 digests) and content/rules/index.json (1) — rather than the corpus ledger alone, and gate 15 is green over 179 shipped source files with nothing unexplained. THE DECOY WAS THE PART WORTH GETTING RIGHT. The existing probe took `[...ledger][0]`, which is one of the four published SHA-256 vectors hard-coded in this script — it is silent whether or not either ledger FILE was read, so it could never have caught the rules ledger being absent from the list, which is exactly the defect. There is now one probe PER LEDGER SOURCE, each using the first digest that source carries, plus the planted key literal that must still be reported. A named ledger that is missing, or that records no checksum at all, now FAILS rather than contributing nothing: absence makes this check STRICTER, which is the safe direction and therefore precisely the kind of breakage nobody investigates — until the day it is easier to silence a real finding than to work out why the ledger went quiet. Each source prints its digest count on every run for the same reason. PULLED FORWARD FROM R3 DELIBERATELY, and this is the one place release order gives way: gate 15 was RED at HEAD and gate 15 is blocking. A red blocking gate is not a scope choice to be sequenced. WATCHED FAILING, four ways, each restored and the baseline green after: dropping content/rules/index.json from LEDGER_SOURCES reproduces the original finding on lexicon.ts exactly; a missing ledger file and a ledger recording nothing each fail naming the source; and the planted key literal is still reported on every run. THE SECOND-ORDER LESSON IN THE NOTE ABOVE HELD AGAIN. This was found only because `pnpm install` finally ran here and gate 15 could be executed in full — it had been red since F-021 (f0f1f6c) and CI never reached it, because CI stopped at the install step (see F-098)."
     },
     {
       "id": "F-097",
@@ -2700,6 +2700,29 @@
         "e2e"
       ],
       "notes": "FILED BY F-027, WHICH BUILT THE CONSUMER. `estimateFromReading` is checked twelve ways and is reachable in the app only by passing a `LensReading` in as a prop — nothing constructs one. That is [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] exactly, and it is recorded rather than absorbed because F-027’s criteria are about the ESTIMATE and the CONFIRMATION, and widening them to build a viewfinder would have been scope nobody reviewed against a requirement. THE GAP IS OLDER THAN F-027: F-040 is `done` and shipped `read()` plus four capture modes wired to nothing, with its four device criteria attested — so the app has had a capture seam and no capture surface since R2. This feature is the surface. WHY IT IS NOT SIMPLY PART OF F-040: F-040 is closed and its attestations describe the frame-processor behaviour on a device, which is a different claim from \"a person can reach this\". NOTE THE VERIFICATION REALITY BEFORE CLAIMING IT: a VisionCamera surface cannot be rendered by jest, so the a11y conformance registry cannot hold it in the shape the other eight screens use, and criterion 3 needs gate 7 — which is pending on F-091."
+    },
+    {
+      "id": "F-098",
+      "title": "The lockfile drifts from a manifest and only the install step finds out",
+      "requirements": [
+        "NFR-19",
+        "NFR-24"
+      ],
+      "service": "root",
+      "release": "R2",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "pnpm install --frozen-lockfile succeeds at HEAD on the pinned toolchain",
+        "A manifest declaring a dependency the lockfile does not resolve fails gate 0 — before install — naming the package and the workspace project",
+        "A changed specifier, a removed dependency, an override drift and a workspace project with no importer each fail the same check",
+        "The check is watched failing, and watched STAYING GREEN on a reformatted manifest and on a workspace project that declares nothing"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FILED AFTER THE FACT AND SAYING SO. CI was red on three consecutive pushes (4528c52, bfcfe9d, dfc3239) at the `Install` step, with all seventeen steps after it skipped. This was not selected through next-feature; it was diagnosed from a red build and repaired, and the record is written to match what happened rather than to look like the loop. ROOT CAUSE: F-020 (9ce0926) added `@irodora/corpus: workspace:*` to packages/store/package.json and nothing regenerated pnpm-lock.yaml, so `pnpm install --frozen-lockfile` refused with ERR_PNPM_OUTDATED_LOCKFILE naming that one package. IT WAS NOT CARELESSNESS, WHICH IS WHY A GATE IS THE RIGHT ANSWER: `pnpm install` could not run on the workstation at all (Node 22.16.0 and pnpm 9.3.0 against engines demanding 24.19.0 and 11), and progress.md records the workaround honestly — packages/store/node_modules/@irodora/corpus was a hand-made junction. The junction made the local tree behave correctly, and there was no local command that could have disagreed with it. FIXED by regenerating the lockfile on the pinned toolchain; the diff is three lines, the importer entry that was missing. GUARDED by a new section in gate 0 that mirrors pnpm own rule — the same three dependency sections, the same verbatim specifier comparison, the same overrides handling — and runs BEFORE install, on Node built-ins, on a clean clone. That last part is the whole point: it is the only place that can say \"the lockfile is stale\" to somebody who cannot run pnpm at all. Workspace projects come from the pnpm-workspace.yaml globs rather than a hard-coded list, and a glob the parser cannot expand FAILS rather than being skipped. PROVEN by scripts/verify-lockfile-proof.mjs, wired into CI beside the other gate 0 proofs: seven cases with the baseline green either side, five red and TWO GREEN. The second control is the one that matters — a workspace project declaring nothing is written `tests/bench: {}` in the lockfile, and reading that as absent would have made the check fail on a correct lockfile from its first run. FOUND WHILE FIXING THIS, and fixed under its own id: gate 15 was independently red at HEAD (F-096). Repairing install alone would have moved the red from step 9 to step 25."
     }
   ]
 }

@@ -8,6 +8,166 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-098 and F-096 DONE · CI was red at the install step, and the gate behind it was red too
+
+**Not selected through `next-feature`.** CI had been failing on `main` for three consecutive
+pushes and the report is written to match what happened rather than to look like the loop.
+
+### The reported failure
+
+Run [32871722949](https://github.com/dev-AshishRanjan/irodora/actions/runs/32871722949) (`dfc3239`),
+and the two before it: step 9, `Install`, red. **Seventeen steps skipped.** Same at `bfcfe9d`
+and `4528c52`. Last green run was `418b7b2c` on 2026-08-24.
+
+Reproduced locally, byte for byte:
+
+```
+[ERR_PNPM_OUTDATED_LOCKFILE] Cannot install with "frozen-lockfile" because pnpm-lock.yaml
+is not up to date with <ROOT>\packages\store\package.json
+  * 1 dependencies were added: @irodora/corpus@workspace:*
+```
+
+**Root cause: F-020 (`9ce0926`) added `@irodora/corpus: workspace:*` to
+`packages/store/package.json` and nothing regenerated the lockfile.** The fix is three lines —
+the importer entry that was missing.
+
+### It was not carelessness, which is why it is now a gate
+
+`progress.md` recorded the workaround honestly at the time: *"`pnpm install` has never run here.
+`packages/store/node_modules/@irodora/corpus` is a hand-made junction."* Node 22.16.0 and pnpm
+9.3.0 against `engines` demanding 24.19.0 and 11.
+
+The junction made the local tree behave **correctly**. Imports resolved, typecheck passed, tests
+passed. There was no local command that could have disagreed with it, because the one command
+that would have — `pnpm install` — was the command that could not run.
+
+> A dependency edge lives in three places: the manifest, the lockfile, and `node_modules`. It can
+> be true in two of them and false in the one CI reads, with no compiler error and no failing
+> test. **E-032.**
+
+**Gate 0, section 7b** now mirrors pnpm's own rule — the same three dependency sections, the same
+verbatim specifier comparison, the same `overrides` handling — and runs **before install, on Node
+built-ins, on a clean clone**. That position is the point: it is the only place that can report a
+stale lockfile to somebody who cannot run pnpm at all. Workspace projects come from the
+`pnpm-workspace.yaml` globs rather than a hard-coded list, and a glob the parser cannot expand
+**fails** rather than being skipped.
+
+`scripts/verify-lockfile-proof.mjs` plants seven cases with the baseline green either side.
+**Five red:** the F-020 shape, a changed specifier, a removal, an override drift, a project with
+no importer. **Two green** — and the second is the one that took thought: a workspace project
+declaring nothing is written `tests/bench: {}` in the lockfile, and reading that as absent would
+have made the check fail on a correct lockfile from its first run.
+
+### What was behind it
+
+**Repairing install alone would have moved the red from step 9 to step 25.** `pnpm security:keys`
+was independently failing at HEAD:
+
+```
+1 file(s) carry a 64-hex literal the ledger does not record
+  ✗ apps/mobile/src/rules/generated/lexicon.ts  2d5e2e41…
+```
+
+That is **F-096**, already filed by the F-026 session, with the fix shape already written down —
+and it was right. The literal is `LEXICON_DIGEST`, the rules-bundle checksum, and
+`content/rules/index.json` records it. `verify-no-key-material.mjs` read `content/versions/`
+only, so a published digest read as a possible SQLCipher key. **Red since F-021 (`f0f1f6c`) —
+four features.**
+
+The repair is *not* to exempt the path; a key written into a generated file is exactly as
+dangerous as one written by hand. The discriminator is the **ledger**, so the ledger is now every
+place this repository publishes a checksum: `content/versions/` (126 digests) and
+`content/rules/index.json` (1), each **named**, each printing its contribution on every run.
+
+**The decoy was the part worth getting right.** The old probe took `[...ledger][0]` — one of the
+four hard-coded published SHA-256 vectors — which is silent whether or not either ledger *file*
+was read, so it could never have caught this defect. There is now **one probe per ledger source**,
+each using a digest that source actually carries, plus the planted key literal that must still be
+reported. A named ledger that is missing, or that records no checksum, now **fails**: absence
+makes this check stricter, which is the safe direction and therefore exactly the kind of breakage
+nobody investigates.
+
+Watched failing four ways, each restored, baseline green after: dropping the rules ledger from
+`LEDGER_SOURCES` reproduces the original finding on `lexicon.ts` exactly; a missing ledger file
+and a ledger recording nothing each fail naming the source; the planted key literal is reported
+on every run.
+
+### Gates — which ran, and which did not
+
+Run on the pinned toolchain (Node **24.19.0** via nvm, pnpm **11.21.0** via corepack), in
+`gates.json` order, unpiped, exit status checked on each.
+
+| Gate | Result | Evidence |
+|---|---|---|
+| 0 state | **pass** | 17 checks, 43 warnings; `lockfile` reports 19 projects, 136 dependencies, 2 overrides |
+| 0 mirror proof | **pass** | 13 active gates proven mirrored |
+| 0 stale-rationale proof | **pass** | 4 cases |
+| 0 lockfile drift proof | **pass** | 7 cases — 5 red, 2 green |
+| 8 token-reach proof | **pass** | nothing written to the tree |
+| — install | **pass** | `--frozen-lockfile`, `CI=true`, resolution step skipped |
+| 1 typecheck | **pass** | 31 tasks |
+| 2 lint | **pass** | incl. guards, purity, claims, motion, app-imports, cache-scope |
+| 2 claims proof | **pass** | 14 cases discriminate |
+| 3 format | **pass** | prettier `--check .` |
+| 4 test | **pass** | 31 tasks; 325 jest tests in `@irodora/mobile` |
+| 5 color-golden | **pass** | 17 tasks |
+| 6 build | **pass** | 18 tasks |
+| 8 a11y | **pass** | 20 tasks |
+| 9 contrast | **pass** | 21 tasks |
+| 9 contrast proof | **pass** | all mutation proofs held |
+| 10 cvd | **pass** | 15 tasks |
+| 11 content | **pass** | corpus, font, subset, corpus/rules/taxonomy bundles current |
+| 11 content proof | **pass** | 25 cases discriminate |
+| 12 perf | **pass** | `@irodora/bench` has no test files; exits 0 by design |
+| 15 security | **pass** | secrets + keys + audit, all three |
+| 15 advisory proof | **pass** | 11 cases discriminate |
+| 7 e2e | **not run** | `pending`, `ciStep:false`, arrives with F-039 |
+| 16 artifact | **not run** | release workflow; needs an APK and a JDK, neither on this machine |
+
+**One caveat, stated rather than buried:** the local `gitleaks` is a `go install` build and
+reports `version is set by build process`. CI pins **8.30.1**. The secret scan passed here, but
+"passed on the pinned scanner" is a claim only the CI run can make.
+
+**Gate 4 is green on Node 24.** The previous session recorded `wcag.test.ts` failing in the last
+two digits on Node 22.16.0 and reasoned it was the implementation-approximated-`pow` phenomenon
+F-083 records. **That was correct** — it passes on the pinned toolchain, and no golden value
+needed touching.
+
+### `pnpm install` has now run here
+
+For the first time. The hand-made junction at `packages/store/node_modules/@irodora/corpus` was
+replaced by a real symlink, and `packages/corpus` is intact — 17 source files, gates green.
+
+Node 24.19.0 was on this machine the whole time, under nvm, while the toolchain was being
+recorded as unavailable. **Before recording a tool as unavailable, check whether the pinned
+version is already installed under a version manager** — `.nvmrc` names it. That unblocks the
+environment half of **F-091** as well; it is not claimed here, because nobody has run it.
+
+### Recorded
+
+- **F-098** filed and done — the lockfile guard. Filed after the fact, and the note says so.
+- **F-096** done — pulled forward from R3. Release order gives way to a red blocking gate; that
+  is not a scope choice to be sequenced.
+- **E-032** — `pnpm-workspace.yaml` → the lockfile → every gate. `critical`, guarded by
+  `gate:state`, with [[a-manifest-and-the-lockfile-must-move-together]].
+- **E-026 extended** — publishing a lexicon also reaches gate 15, and a third kind of versioned
+  content will mean a third entry in `LEDGER_SOURCES`.
+- Lesson: [[a-red-gate-at-step-nine-hides-every-gate-after-it]].
+
+### Watch out
+
+- **The failure you are handed is evidence about one step and about nothing that never ran.**
+  Seventeen grey steps are skipped, not passed. After repairing an early-stopping step, walk
+  `gates.json` to the end before saying the build is fixed.
+- **`gh` is still not installed on this workstation.** The run was read through the public REST
+  API (`/actions/runs`, `/actions/jobs/:id`); job *logs* need auth and returned 403, so the
+  diagnosis was made by reproducing the failure locally rather than by reading CI output.
+- **A `catalog:` specifier would be resolved in the lockfile** and would no longer match the
+  manifest text. Section 7b checks presence and not the version for those, and prints the count
+  when there is one. There are none today.
+
+---
+
 ## 2026-08-25 — F-027 · the camera gets one look, admits what it cannot tell, and waits to be told yes
 
 A `LensReading` proposes a profile. It fills the dimensions one reading can honestly support,

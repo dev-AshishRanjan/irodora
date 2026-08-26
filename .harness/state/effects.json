@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-25",
+  "updated": "2026-08-26",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -892,6 +892,10 @@
         {
           "kind": "decision",
           "ref": "docs/adr/0069-a-phrase-is-versioned-rule-content-and-a-hue-term-carries-a-chroma-floor.md"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-no-key-material.mjs"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -901,9 +905,9 @@
         "packages/corpus"
       ],
       "severity": "high",
-      "guard": "gate:content",
+      "guard": "gate:content + gate:security (verify-no-key-material.mjs)",
       "memory": "memory/effects/a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy.md",
-      "rationale": "THE LEXICON AND THE CORPUS TAXONOMY DEFINE THE SAME WORDS, and before F-021 only one of them existed. \"dark\" is now a numeric OKLCh region in content/rules AND an authored `taxonomy.lightnessBand` on every entry, which the Atlas filters on. Two definitions of one word drift, and the one that drifts is whichever nobody is looking at — so gate 11 asserts every authored band falls inside the lexicon region of the same name, 175 agreements over 28 terms, printed on every run so a green check over ZERO entries cannot read as coverage. IT HAS ALREADY PAID: the boundaries were first written as round numbers and the check found that 0.40 sits a MILLIONTH above the lowest entry filed as mid (do-ma at 0.3999990449505662), which would have excluded it from every query for a medium colour, silently and forever. THE LINK RUNS BOTH WAYS, which is what makes it worth recording: editing a BOUNDARY breaks entries nobody touched, and adding an ENTRY across a boundary breaks a lexicon nobody touched. THE THIRD DESTINATION IS THE FONT. The lexicon’s Japanese terms are typed INTO the Finder and echoed in the field, so they render in the app’s own subset exactly as a colour name does — verify-font-coverage.mjs now reads them, and doing so immediately found two codepoints (淡, 鮮) that nothing else required. THE FOURTH is the generated module: publishing a lexicon without regenerating leaves the app on the old vocabulary with every other gate green, which is E-022’s shape, guarded the same way by generate-rules-bundle.mjs --check inside gate 11.",
+      "rationale": "THE LEXICON AND THE CORPUS TAXONOMY DEFINE THE SAME WORDS, and before F-021 only one of them existed. \"dark\" is now a numeric OKLCh region in content/rules AND an authored `taxonomy.lightnessBand` on every entry, which the Atlas filters on. Two definitions of one word drift, and the one that drifts is whichever nobody is looking at — so gate 11 asserts every authored band falls inside the lexicon region of the same name, 175 agreements over 28 terms, printed on every run so a green check over ZERO entries cannot read as coverage. IT HAS ALREADY PAID: the boundaries were first written as round numbers and the check found that 0.40 sits a MILLIONTH above the lowest entry filed as mid (do-ma at 0.3999990449505662), which would have excluded it from every query for a medium colour, silently and forever. THE LINK RUNS BOTH WAYS, which is what makes it worth recording: editing a BOUNDARY breaks entries nobody touched, and adding an ENTRY across a boundary breaks a lexicon nobody touched. THE THIRD DESTINATION IS THE FONT. The lexicon’s Japanese terms are typed INTO the Finder and echoed in the field, so they render in the app’s own subset exactly as a colour name does — verify-font-coverage.mjs now reads them, and doing so immediately found two codepoints (淡, 鮮) that nothing else required. THE FOURTH is the generated module: publishing a lexicon without regenerating leaves the app on the old vocabulary with every other gate green, which is E-022’s shape, guarded the same way by generate-rules-bundle.mjs --check inside gate 11. PUBLISHING A LEXICON ALSO REACHES GATE 15, which nobody had noticed until F-096. `generate-rules-bundle.mjs` emits the ledger checksum into apps/mobile/src/rules/generated/lexicon.ts as LEXICON_DIGEST, and a 64-hex literal in shipped source is the shape of a SQLCipher key — so `verify-no-key-material.mjs` reported a published digest as a possible key and gate 15 went RED, from F-021 (f0f1f6c) onward. It stayed invisible for four features because the workstation had no gitleaks and reported gate 15 as \"partly run\", and because CI stopped at the install step before ever reaching it (F-098). THE FIX WAS NOT TO EXEMPT THE PATH: a key written into a generated file is exactly as dangerous as one written by hand. The discriminator is the LEDGER, so the ledger is now every place this repository publishes a checksum — content/versions/ and content/rules/index.json — and each source is probed on every run with a digest it actually carries, because the old single probe used a hard-coded test vector that is silent whether or not either ledger file was read. PUBLISHING A THIRD KIND OF VERSIONED CONTENT MEANS ADDING ITS LEDGER TO LEDGER_SOURCES. Forgetting turns gate 15 red on something correct, which is the failure that gets a security gate ignored rather than the one that gets it fixed.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -1100,6 +1104,46 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-032",
+      "from": {
+        "kind": "file",
+        "ref": "pnpm-workspace.yaml"
+      },
+      "to": [
+        {
+          "kind": "artifact",
+          "ref": "pnpm-lock.yaml"
+        },
+        {
+          "kind": "file",
+          "ref": ".github/workflows/ci.yml"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-lockfile-proof.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "apps/mobile",
+        "packages",
+        "tests"
+      ],
+      "severity": "critical",
+      "guard": "gate:state (verify-state.mjs section 7b, proven by verify-lockfile-proof.mjs)",
+      "memory": "memory/effects/a-manifest-and-the-lockfile-must-move-together.md",
+      "rationale": "EVERY WORKSPACE MANIFEST IS AN INPUT TO ONE SHARED ARTEFACT, and every gate is downstream of it. pnpm-workspace.yaml names the projects and carries the overrides; each package.json declares dependencies; pnpm-lock.yaml resolves all of them at once; and CI installs with `pnpm install --frozen-lockfile`, which refuses unless the lockfile resolves exactly what the manifests declare — three dependency sections, compared VERBATIM, plus overrides. Install is step nine of the CI job and the seventeen steps after it do not run when it fails, so a three-line omission in a generated file reads as a total build outage. IT HAPPENED: F-020 (9ce0926) added `@irodora/corpus: workspace:*` to packages/store and nothing regenerated the lockfile, and three pushes were red on an install step nobody had touched. THE REASON IT IS CRITICAL RATHER THAN HIGH is that it broke while every local signal said it was fine: pnpm could not run on the workstation at all (Node 22 and pnpm 9 against engines demanding 24 and 11), a hand-made junction stood in for the workspace link, and imports, typecheck and tests all passed against it. A dependency edge that lives in three places — the manifest, the lockfile, node_modules — can be true in two of them and false where it counts, with no compiler error and no failing test. GUARDED IN GATE 0 rather than at install, because gate 0 runs before install, on Node built-ins, on a clean clone, and is therefore the only check that can report a stale lockfile to somebody who cannot run pnpm. Projects come from the globs rather than a hard-coded list, and a glob the parser cannot expand FAILS rather than being skipped. PROVEN by verify-lockfile-proof.mjs: seven cases, five red and two green, the second control being a project that declares nothing — `tests/bench: {}` is that shape, and reading it as absent would have failed a correct lockfile on day one.",
+      "confidence": 1,
+      "origin": "manual",
+      "status": "active",
+      "feature": "F-098"
     }
   ]
 }

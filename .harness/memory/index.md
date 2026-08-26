@@ -17,6 +17,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 ### Colour science
 
 - [lessons/a-truncated-report-reads-exactly-like-a-passing-one.md](lessons/a-truncated-report-reads-exactly-like-a-passing-one.md) — GitHub caps failure annotations at 10; absence of a failure is not evidence of a pass.
+- [lessons/a-red-gate-at-step-nine-hides-every-gate-after-it.md](lessons/a-red-gate-at-step-nine-hides-every-gate-after-it.md) — the seventeen steps after a failing one are skipped, not passed; gate 15 was red for four features behind a red install.
 - [lessons/parse-by-matching-what-you-want-not-by-removing-what-you-recognise.md](lessons/parse-by-matching-what-you-want-not-by-removing-what-you-recognise.md) — stripping a label kept the hex digits IN the label and accused a valid key of being the wrong one; match the shape of the value instead.
 - [lessons/a-failing-gate-is-usually-already-filed.md](lessons/a-failing-gate-is-usually-already-filed.md) — the feature list is an index of known problems, not only a scheduler; grep it for the failure’s vocabulary before filing.
 - [lessons/averaging-non-linear-srgb-reads-too-dark.md](lessons/averaging-non-linear-srgb-reads-too-dark.md) — pixel aggregation must happen in linear light; the error is systematic, not noise.
@@ -109,6 +110,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-token-with-no-reader-is-a-decision-nobody-applied.md](effects/a-token-with-no-reader-is-a-decision-nobody-applied.md) — **E-029** · emitting a value is not applying a decision, and a comment is not a reader.
 - [effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md](effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md) — **E-030** · twelve constants assert that two colours differ on ONE axis; only the bundle can check it, and every gate stays green when it stops being true.
 - [effects/the-capture-ceiling-is-now-a-profile-confidence.md](effects/the-capture-ceiling-is-now-a-profile-confidence.md) — **E-031** · a lens confidence used to describe one swatch; it now caps seven profile dimensions, and the type is identical either way.
+- [effects/a-manifest-and-the-lockfile-must-move-together.md](effects/a-manifest-and-the-lockfile-must-move-together.md) — **E-032** · the dependency edge was true in the manifest and in node_modules, and false in the one file CI reads.
 
 ## Glossary
 
