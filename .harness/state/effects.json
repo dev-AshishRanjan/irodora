@@ -318,6 +318,10 @@
         {
           "kind": "artifact",
           "ref": "content/rules/index.json"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit.ts#recommendForSlot"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -328,7 +332,7 @@
       "severity": "high",
       "guard": "gate:content (verify-content.mjs parses every published weight set through the engine’s own parseRuleSet, and checks the ledger digest)",
       "memory": "memory/effects/rule-weights-change-every-answer-without-a-deploy.md",
-      "rationale": "Weights are content, so a publish changes what every user is told with no code change and no deployment. That is the intended capability and also the sharpest edge in the system: it means content is a trust boundary, and a weight set that fails to normalise produces scores that are not comparable across contexts and fails silently. F-029 CLOSED IT, AND THE WORD THAT MATTERED WAS \"SILENTLY\". A weight file that does not sum to 1 still parses as JSON, still carries five occasions, and still produces a number for every colour — one that cannot be compared with a number from any other context. Nothing downstream throws, so nothing downstream could ever have been the guard. THE CHECK DOES NOT RE-IMPLEMENT THE RULE: gate 11 loads the BUILT @irodora/recommendation and calls `parseWeightContent`, which wraps the engine’s own `parseRuleSet` — so \"these weights normalise\" is decided by the code that scores with them rather than by a copy in a script that would agree on the day it was written (E-013). A `loadRecommendationPackage` sits beside `loadCorpusPackage` for exactly that reason. WATCHED FAILING IN BOTH HALVES, on the real published file: a weight moved from 0.35 to 0.9 reports \"occasions.default: weights sum to 1.5499999999999998, not 1\", and a single WORD changed in a rationale — a file that still parses perfectly — reports a digest that does not match the ledger. The second is the one a sum check alone would have missed, and it is the immutability half of ADR-0011. FIVE FIXTURES RUN ON EVERY PASS, four spoilings required to fail and the unspoiled original required to pass in the same block, and the counts are PRINTED — 20 rationales across 5 occasions — because a green gate over a weight file that failed to load reads identically to a green gate over twenty checked rationales otherwise. WHAT IS STILL NOT CHECKED, and is printed on every run for the corpus already: an edit to a published file made together with a matching ledger update passes here. The two-file diff and review are the control, and ADR-0051 removed the publish path that would have been the other one.",
+      "rationale": "Weights are content, so a publish changes what every user is told with no code change and no deployment. That is the intended capability and also the sharpest edge in the system: it means content is a trust boundary, and a weight set that fails to normalise produces scores that are not comparable across contexts and fails silently. F-029 CLOSED IT, AND THE WORD THAT MATTERED WAS \"SILENTLY\". A weight file that does not sum to 1 still parses as JSON, still carries five occasions, and still produces a number for every colour — one that cannot be compared with a number from any other context. Nothing downstream throws, so nothing downstream could ever have been the guard. THE CHECK DOES NOT RE-IMPLEMENT THE RULE: gate 11 loads the BUILT @irodora/recommendation and calls `parseWeightContent`, which wraps the engine’s own `parseRuleSet` — so \"these weights normalise\" is decided by the code that scores with them rather than by a copy in a script that would agree on the day it was written (E-013). A `loadRecommendationPackage` sits beside `loadCorpusPackage` for exactly that reason. WATCHED FAILING IN BOTH HALVES, on the real published file: a weight moved from 0.35 to 0.9 reports \"occasions.default: weights sum to 1.5499999999999998, not 1\", and a single WORD changed in a rationale — a file that still parses perfectly — reports a digest that does not match the ledger. The second is the one a sum check alone would have missed, and it is the immutability half of ADR-0011. FIVE FIXTURES RUN ON EVERY PASS, four spoilings required to fail and the unspoiled original required to pass in the same block, and the counts are PRINTED — 20 rationales across 5 occasions — because a green gate over a weight file that failed to load reads identically to a green gate over twenty checked rationales otherwise. WHAT IS STILL NOT CHECKED, and is printed on every run for the corpus already: an edit to a published file made together with a matching ledger update passes here. The two-file diff and review are the control, and ADR-0051 removed the publish path that would have been the other one. F-030 GAVE THE PUBLISHED WEIGHTS A SECOND CONSUMER, and it reads them differently: `scoreColor` asks how well a colour suits a PERSON, while the outfit engine also asks how well it sits with a GARMENT — reusing the same `falloff`, the same `poles` and the same CONTRAST_TARGET rather than defining a second version of any axis. So a weight version is now a claim about two answers, and the outfit tests run against the PUBLISHED file rather than a fixture precisely so a rule version that scores sensibly for one cannot quietly stop behaving for the other.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -1179,6 +1183,34 @@
       "memory": "memory/effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md",
       "rationale": "THE WARM/COOL RULE NOW EXISTS TWICE AND ONLY ONE OF THEM IS CANONICAL. `hueBias` in the engine and `biasFromHue` in `apps/mobile/src/profile/photo.ts` compute the same thing — how warm a hue is, as a signed distance between two reference poles — and they were written two features apart with the same constants (60 and 240) by the same reasoning. THIS IS THE E-008 SHAPE, and E-008 states the consequence exactly: a second implementation makes the same input measure differently on two surfaces, and NO SINGLE-PLATFORM TEST CAN SEE IT. Both sides pass their own tests today. GUARD: NONE, HONESTLY. The fix is for the app to import the engine, and it cannot: `apps/mobile/node_modules/@irodora/` has no `recommendation` link and `pnpm install` refuses on this workstation (Node 22.16.0 against engines demanding 24.19.0). A cross-package agreement test was considered and rejected — the app file imports the corpus bundle, so a package test importing it would drag app dependencies across a layering boundary to check two numbers, and a check whose model is wrong is worse than an absent one. Scraping the constants out of the source would compare two literals while the ALGORITHMS drifted, which is the half that actually matters. WHAT MAKES THIS SAFE TO CARRY: the poles are a RULE SET field in the engine, so the engine’s copy is already content-versioned and the app’s is not — the drift, when it comes, will be the app holding a constant the content moved past. F-099 deletes the duplicate the day the app can depend on the package, and this link is what will still be here to say so.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-033",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/score.ts#CONTRAST_TARGET"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/score.ts#scoreColor"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit.ts#pairingFit"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation"
+      ],
+      "severity": "medium",
+      "guard": "gate:test (both readings asserted in score.test.ts and outfit.test.ts, each in both directions)",
+      "memory": "memory/effects/one-contrast-target-answers-two-different-questions.md",
+      "rationale": "ONE TABLE, TWO QUESTIONS. `CONTRAST_TARGET` says how much lightness separation each contrast preference asks for. `scoreColor` measures that separation between a colour and the MIDDLE OF THE PERSON’S OWN LIGHTNESS RANGE; `pairingFit` measures it between TWO GARMENTS. Both are legitimate readings of \"how much contrast do you like\", and keeping them on one table is what makes \"high contrast\" mean a single thing in this product — a second table would let the same word describe two different amounts on one screen. THE COST IS THAT MOVING A NUMBER MOVES BOTH, in ways that are not symmetrical: raising `high` makes a person harder to suit AND makes two garments harder to pair, and only one of those may have been intended. Neither is a type error and neither throws. THE GUARD IS TWO-DIRECTIONAL BY DESIGN. Both readings are asserted with a preference either side — a `high` profile must prefer more separation than a `low` one, in scoring AND in pairing — because a one-sided assertion passes on a fit that only ever rewards distance. THAT IS NOT HYPOTHETICAL: F-030’s first draft of the pairing test asserted that a high-contrast preference prefers the FURTHEST colour, and it failed, correctly — the target is a target and overshooting it is a miss. The test was wrong and the engine was right, and the property is now asserted explicitly rather than assumed.",
+      "confidence": 0.85,
       "origin": "manual",
       "status": "active"
     }

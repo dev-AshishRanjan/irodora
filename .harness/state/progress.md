@@ -8,6 +8,102 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-030 · what goes with this, and the number that is not content
+
+Given a garment colour and the slot it is worn in, the engine returns **ranked colours for the
+other slots** — each with its score and the four contributions behind it — plus **alternatives
+labelled with the dimension they move along**. Three of four criteria gated; the latency one is
+attested and says exactly why.
+
+### A rank is two questions, not one
+
+`scoreColor` answers *does this suit me*. It says nothing about the garment in hand, and built on
+it alone this feature would have returned **the same five colours whatever you were holding** —
+a personal-colour list wearing a different name.
+
+So a rank is the mean of **personal fit** and **pairing fit**, and there is a test that earns the
+second half: two very different garments must produce different orders for the same person and
+the same pool.
+
+Pairing is separation judged against the person's contrast preference, plus temperature
+coherence between the two colours, with a penalty when two **large areas** both carry strong
+chroma — measured against the person's own tolerance, so somebody who wears strong colour is not
+told their preference is a clash.
+
+### The 50/50 blend is the one number here that is not content
+
+Declared, not tuned, and said out loud in the module header, the plan and the feature record.
+FR-32's six-factor model is **F-031**; inventing a weight the week after F-029 finished proving
+that weights belong in `content/rules` would have been exactly the wrong lesson to draw. Equal
+weight asserts no preference, which is the honest position while there is no basis for one.
+
+Everything else — `falloff`, `poles`, `CONTRAST_TARGET` — comes from the published rule set. No
+axis is defined twice.
+
+### The bound is reported, not just applied
+
+`considered` and `scored` are on the result, so the test asserts **a pool of 10 000 was scored at
+most 64 times** — a bound that *held* — rather than asserting a constant exists. The baseline is
+there too: a pool of ten is scored entirely, so "scored ≤ 64" is distinguishable from "scored
+nothing".
+
+### My test was wrong and the engine was right
+
+The first draft asserted that somebody who wants high contrast prefers the **furthest** colour
+available. It failed. Against a near-black top, an off-white overshoots the `high` target — 0.776
+separation against 0.50 — by more than a mid grey undershoots it at 0.314, so the mid grey scores
+higher.
+
+**A contrast preference is a target, not a floor.** Somebody who asked for strong contrast did not
+ask for the maximum. The property is now asserted explicitly, and **E-033** records the table two
+different questions read: `scoreColor` measures separation between a colour and the person,
+`pairingFit` between two garments, and moving a number moves both — asymmetrically.
+
+### The cache-scope gate caught something subtle
+
+A shared `CONTENT` constant reduced what the static scan could see to the directory name, which
+`turbo.json` does not declare. Spelling each path out in full is what lets the check match
+`content/versions` against `globalDependencies` — a readability habit that turns out to be
+load-bearing.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 31 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · `cache-scope` |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+| **Cannot run** | `perf` — gate 12 is `pending` and activates with F-038, which is blocked by this feature |
+
+`@irodora/recommendation` **75/75** across five files.
+
+### Recorded honestly
+
+- **The latency number is a design signal, not the NFR-4 claim.** `recommendOutfit` over the
+  120-entry corpus, 200 runs, Node 22.16.0 on a desktop: **median 0.35 ms, p95 0.87 ms** —
+  roughly two hundred times under the 200 ms budget. It is the *fastest* hardware available
+  rather than the slowest supported, the corpus is already in memory, and Hermes is not V8. It
+  is **printed by the test rather than asserted**: gate 12's own description says a latency
+  assertion on a shared runner flakes until somebody disables it, and a threshold that passes
+  trivially reads like coverage.
+- **What is asserted about cost is the bound**, which is a number the engine reports rather than
+  a duration the machine decides.
+- **Still owed: ADR-0011 §2** — `envelope.rules` as an indexed column on a stored recommendation.
+  Nothing stores one yet; this engine returns the rule version on every result so the storing
+  feature has it to record.
+- **Nothing consumes this engine.** F-031 scores an outfit across six factors; F-033 builds one.
+
+### Next
+
+**F-031** (`must`) is unblocked — it was blocked by F-030 alone. It replaces the 50/50 blend with
+the real six-factor model and owns FR-32's explanations. **F-037** (`must`) is now unblocked too:
+F-027 and F-028 were its blockers, and it carries the ITA°-band bias validation that F-027
+attested. F-038 (`must`, unblocked) activates gate 12 and is what would discharge the latency
+criterion above.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-26 — F-100 · a proof that perturbs the colour engine and cannot put it back
 
 Found while verifying F-029, not selected through `next-feature`, and the record says so.

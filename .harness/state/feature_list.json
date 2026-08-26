@@ -1014,7 +1014,7 @@
       "package": "@irodora/recommendation",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-028",
         "F-029"
@@ -1031,7 +1031,21 @@
         "test",
         "perf",
         "build"
-      ]
+      ],
+      "plan": "plans/F-030-outfit-colour-engine.md",
+      "effects": [
+        "E-009",
+        "E-033"
+      ],
+      "attested": [
+        {
+          "criterion": "Recommendation p95 within NFR-4",
+          "verifiedBy": "A MEASURED RUN ON THE SLOWEST DEVICE IN THE SUPPORT MATRIX, which is what NFR-4 asks for in those words. GATE 12 IS THE PLACE IT BELONGS AND IT CANNOT RUN HERE: `perf` is `pending` and `activatesWith: F-038` — and F-038 is blockedBy F-030, so the gate that would check this arrives after the feature that produces it. WHAT WAS MEASURED, and what it is not: `recommendOutfit` over the 120-entry published corpus, 200 runs, Node 22.16.0 on a desktop — median 0.35 ms, p95 0.87 ms. That is roughly two hundred times under the 200 ms budget, which is a useful design signal and is NOT the NFR-4 claim: it is the fastest hardware available rather than the slowest supported, the corpus is already in memory, and Hermes is not V8. The number is PRINTED by the test rather than asserted, deliberately — gate 12’s own description says a latency assertion on a shared runner flakes until somebody disables it, and a threshold that passes trivially reads like coverage. WHAT IS ASSERTED ABOUT COST instead is the bound: `scored` never exceeds SHORTLIST_LIMIT however large the pool, which is a number the engine reports rather than a duration the machine decides.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. \"What goes with this\" returns ranked colours for the other slots, each with its score and the four contributions behind it, plus alternatives labelled with the dimension they move along. Three of four criteria gated; the latency one is attested and says exactly why. A RANK IS TWO QUESTIONS, NOT ONE. `scoreColor` answers \"does this suit me\" and says nothing about the garment in hand — built on it alone this would have returned the same five colours whatever you were holding, which is a personal-colour list wearing a different name. So the rank is the mean of personal fit and PAIRING fit, and there is a test that earns that half: two very different garments must produce different orders for the same person and pool. THE 50/50 BLEND IS THE ONE NUMBER HERE THAT IS NOT CONTENT, and it is said out loud in the module header, the plan and this note. FR-32’s six-factor model is F-031; inventing a weight the week after F-029 finished proving weights belong in content/rules would have been exactly the wrong lesson to draw. Equal weight asserts no preference, which is the honest position while there is no basis for one. Everything else — falloff, poles, CONTRAST_TARGET — comes from the published rule set, so no axis is defined twice. THE BOUND IS REPORTED, NOT JUST APPLIED. `considered` and `scored` are on the result, so the test asserts a pool of 10 000 was scored at most 64 times — a bound that HELD — rather than asserting that a constant exists. The baseline half is there too: a pool of ten is scored entirely, so \"scored <= 64\" is distinguishable from \"scored nothing\". AN AXIS WITH NO CANDIDATE IS OMITTED, NEVER FILLED. FR-38 asks for at least three labelled alternatives; four where one is mislabelled is not an answer. A pool of two near-identical off-whites is asserted to produce FEWER alternatives rather than duplicates. MY OWN TEST WAS WRONG AND THE ENGINE WAS RIGHT, and it is worth keeping. The first draft asserted that somebody who wants high contrast prefers the FURTHEST colour available. It failed: against a near-black top, an off-white overshoots the high target (0.776 separation against 0.50) by more than a mid grey undershoots it (0.314). A contrast preference is a TARGET, not a floor — somebody who asked for strong contrast did not ask for the maximum. That property is now asserted explicitly, and E-033 records the table that two different questions read. THE CACHE-SCOPE GATE CAUGHT SOMETHING SUBTLE: a shared `CONTENT` constant reduced what the static scan could see to the directory name, which turbo.json does not declare. Spelling each path out in full is what lets the check match `content/versions` against globalDependencies — a readability habit that happens to be load-bearing. STILL OWED: ADR-0011 section 2, `envelope.rules` as an indexed column on a stored recommendation. Nothing stores one yet; this engine returns the rule version on every result so the storing feature has it to record."
     },
     {
       "id": "F-031",

@@ -52,4 +52,22 @@ export {
   type WeightedFactor,
 } from './weights.js';
 
-export const RECOMMENDATION_VERSION = '0.2.0' as const;
+export { isLargeArea, OUTFIT_SLOTS, SLOT_AREA, type OutfitSlot } from './slots.js';
+
+export {
+  ALTERNATIVE_AXES,
+  pairingFit,
+  PAIRING_WEIGHT,
+  PERSONAL_WEIGHT,
+  recommendForSlot,
+  recommendOutfit,
+  SHORTLIST_LIMIT,
+  type Alternative,
+  type AlternativeAxis,
+  type Candidate,
+  type OutfitInput,
+  type OutfitRecommendation,
+  type RankedCandidate,
+} from './outfit.js';
+
+export const RECOMMENDATION_VERSION = '0.3.0' as const;

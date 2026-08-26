@@ -6,6 +6,7 @@
     ".nvmrc",
     "content/schemas/**",
     "content/rules/**",
+    "content/versions/**",
     "docs/design/design-system.manifest.json"
   ],
   "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],
