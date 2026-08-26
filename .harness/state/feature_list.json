@@ -1091,7 +1091,7 @@
       "service": "mobile",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-031"
       ],
@@ -1106,7 +1106,23 @@
         "cvd",
         "e2e",
         "a11y"
-      ]
+      ],
+      "plan": "plans/F-032-cvd-outfit-mode.md",
+      "effects": [
+        "E-005",
+        "E-007",
+        "E-016",
+        "E-017"
+      ],
+      "attested": [
+        {
+          "criterion": "The improvement is reproducible from the stored envelope",
+          "verifiedBy": "THE REPRODUCIBILITY IS GATED; THE STORING IS NOT, BECAUSE NOTHING STORES ONE. `reproduceImprovement` recomputes the identical number from the envelope and the three colours, and REFUSES when the envelope records a severity this build does not check — both asserted. What does not exist is a `recommendation` row to store the envelope IN: the table is in data-model.md and unbuilt, and ADR-0011 section 2 (`envelope.rules` as an indexed column) is owed by whatever first persists a recommendation. Discharging this needs that feature plus a test that reads a finding back OUT of the database and reproduces its number — a round trip, not a recomputation in memory.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE, with one criterion attested, one recorded as NOT APPLICABLE, and a surface deviation stated rather than quietly taken. SCORING, NOT RENDERING. There is no simulation preview anywhere in this feature, and a test asserts the module calls neither `simulateAnomalous` nor `simulateDichromacy` — not because simulation is wrong (`separationScore` does it internally) but because a colour simulated FOR DISPLAY is the industry-default filter that shows a person what their palette looks like TO SOMEONE ELSE. [[cvd-is-scoring-not-rendering]] is explicit that this helps designers and does close to nothing for the person it names. What is drawn is a sentence about a pair, a number, and a swap. E-005 GAINED THE CONSUMER IT NAMED, and it is the one where a second definition would have done the most damage: this flag proposes a swap with a MEASURED improvement, a number a person is invited to act on. If the Studio flagged by one definition and the engine ranked by another, the product would say a swap gained 99 points and then rank the result as though it had not. THE SURFACE IS PALETTE STUDIO, NOT AN OUTFIT, AND THAT IS A DEVIATION. FR-35 says \"outfit mode\"; there is no outfit surface — the builder is F-033 and it is R4. Building against nothing would have been [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] for the third time this release. A palette is a set of colours somebody assembled by hand, which is exactly this check’s input, and the computation is identical when an outfit surface arrives. IT WORKS END TO END ON REAL DATA: kawaki-suna and usu-shiba separate at 1 of 100 — the hardest pair in the corpus, found by ASKING the model rather than reasoning about hue, which is the mistake F-031 made — and the Studio proposes Autumn Field at 100, a gain of +99. CRITERION 3 IS COPY, AND IT IS CHECKED. Every string is an observation about the colours: \"These two are hard to tell apart\", never \"you may not be able to distinguish these\". The product knows nothing about the reader’s vision and must not imply it does — NFR-22’s discipline arriving from a different direction, where the failure is not a stored field but a sentence that diagnoses somebody. A decoy proves the check fires on English AND Japanese second-person vision language, and a positive assertion proves the copy says the right thing rather than merely avoiding the wrong one. CRITERION 4 IS NOT APPLICABLE AND IS RECORDED AS SUCH RATHER THAN TICKED. \"Permanently available in the free tier\" describes a world ADR-0051 removed: no server, no account, no billing provider, and the PRD says there is no team tier with OQ-2 void. THERE ARE NO TIERS, so there is nothing to gate this behind and nothing to check — the same treatment ADR-0011’s \"no deployment\" got in F-029. Ticking it would have been claiming a check that could not exist. NOT RUN: `e2e` is in this feature’s verification list and gate 7 is pending with F-091 blocked on the environment, so nothing proves the flag is reachable by a real gesture."
     },
     {
       "id": "F-035",

@@ -61,6 +61,7 @@ import {
   type PaletteStore,
 } from '../palette';
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
+import { findSeparationProblems } from '../outfit/cvd';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
@@ -142,6 +143,24 @@ export function PaletteStudio({
   const problem = draftProblem(draft, context);
   const taken = new Set(draft.members.map((m) => m.slug));
   const found = matches(query, taken);
+
+  /*
+   * F-032. Recomputed on every render and memoised on the members, because the corpus search
+   * behind `proposeAlternative` runs over all 120 entries per flagged pair — cheap, but not
+   * cheap enough to redo on a keystroke in the search field.
+   */
+  const separationProblems = useMemo(
+    () =>
+      findSeparationProblems(
+        draft.members.flatMap((m) => {
+          const entry = entryBySlug(m.slug);
+          return entry === null
+            ? []
+            : [{ id: m.slug, label: entry.entry.name.en, color: colorFor(entry.entry) }];
+        }),
+      ),
+    [draft.members],
+  );
 
   /** Any edit invalidates the confirmation: "saved" must mean what is on screen now. */
   const edit = (next: PaletteDraft): void => {
@@ -342,6 +361,85 @@ export function PaletteStudio({
               {t('studio.saved')}
             </Text>
           ) : null}
+        </View>
+      </Surface>
+
+      {/*
+        F-032 — CVD mode, on the surface that exists.
+
+        FR-35 calls it "outfit mode" and there is no outfit surface: the builder is F-033 and it
+        is R4. A palette is a set of colours the person assembled by hand, which is exactly the
+        input this check takes — so the flag lands here, and the computation is identical when an
+        outfit surface arrives.
+
+        NO SIMULATION PREVIEW. What is drawn is a sentence about a pair, a number, and a swap
+        [[cvd-is-scoring-not-rendering]]. And no status token: F-069 forbids a status colour
+        beside a colour sample without a `swatch.well` between them, and this panel is mostly
+        samples — so the flag carries no colour channel at all, which satisfies golden rule 13
+        by having nothing to satisfy.
+      */}
+      <Surface level="1" padding={16}>
+        <View style={{ gap: 8 }}>
+          <Text size="body" color="foreground" script={script} heading>
+            {t('cvd.title')}
+          </Text>
+          {separationProblems.length === 0 ? (
+            <Text size="small" color="foreground" script={script}>
+              {t('cvd.none')}
+            </Text>
+          ) : (
+            separationProblems.map((finding) => (
+              <View key={`${finding.a.id}-${finding.b.id}`} style={{ gap: 6, paddingVertical: 6 }}>
+                <Text size="small" color="foreground" script={script}>
+                  {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('cvd.separation')}
+                  </Text>
+                  {/* Tabular, like every other measured value in the app. */}
+                  <Text size="xs" color="foreground.2" numeric>
+                    {finding.separation.toFixed(0)}
+                  </Text>
+                </View>
+                {finding.alternative === null ? (
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('cvd.noAlternative')}
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      gap: 12,
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {(() => {
+                      const entry = entryBySlug(finding.alternative.slug);
+                      return entry === null ? null : (
+                        <Swatch
+                          name={entry.entry.name.en}
+                          hex={entry.derived.hex}
+                          color={colorFor(entry.entry)}
+                          size={40}
+                        />
+                      );
+                    })()}
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {`${t('cvd.swapTo')} ${finding.alternative.label}`}
+                    </Text>
+                    <Text size="xs" color="foreground.2" numeric>
+                      {`${finding.alternative.separation.toFixed(0)} (${t('cvd.improvement')} +${finding.alternative.improvement.toFixed(0)})`}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))
+          )}
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('cvd.method')}
+          </Text>
         </View>
       </Surface>
 

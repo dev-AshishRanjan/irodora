@@ -279,6 +279,28 @@ export const en = {
   'profile.confirm': 'This looks right',
   'profile.compareInstead': 'Answer the comparisons instead',
   'profile.confirmHint': 'Check the estimate and confirm it before saving.',
+
+  /*
+   * F-032 — CVD outfit mode (FR-35).
+   *
+   * EVERY STRING HERE IS AN OBSERVATION ABOUT THE COLOURS, NEVER ABOUT THE READER. "These two
+   * are hard to tell apart" — not "you may not be able to distinguish these". The product knows
+   * nothing about anybody's vision and must not imply that it does; that is criterion 3, and
+   * `test/cvd-mode.test.ts` checks it with a decoy rather than trusting this comment.
+   *
+   * There is also no simulation preview to write copy for. A display filter shows a person what
+   * their palette looks like TO SOMEONE ELSE, which is the industry default and helps designers
+   * [[cvd-is-scoring-not-rendering]].
+   */
+  'cvd.title': 'Telling these apart',
+  'cvd.none': 'Every pair here stays distinguishable under the three common colour-vision types.',
+  'cvd.hard': 'These two are hard to tell apart',
+  'cvd.separation': 'Separation',
+  'cvd.swapTo': 'Swapping the second for this raises it to',
+  'cvd.improvement': 'A gain of',
+  'cvd.noAlternative': 'No colour in this version separates enough better to be worth the swap.',
+  'cvd.method':
+    'Measured on this device with a published model, at its strongest tabulated severity, against the pinned corpus version.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

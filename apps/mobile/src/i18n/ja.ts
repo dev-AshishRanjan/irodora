@@ -279,6 +279,22 @@ export const ja: Record<MessageKey, string> = {
   'profile.confirm': 'これでよい',
   'profile.compareInstead': 'かわりにくらべる',
   'profile.confirmHint': '見立てをたしかめて、よければ保存できます。',
+
+  /*
+   * F-032. Same two constraints as every Japanese block here: every kanji is already in the
+   * bundled subset, and every string is an observation about the COLOURS rather than about the
+   * reader. 見分けにくい ("hard to tell apart") describes the pair; a sentence with あなた in it
+   * would describe the person, and this product knows nothing about anybody's vision.
+   */
+  'cvd.title': '見分けについて',
+  'cvd.none': 'よくある3つの色覚のどれでも、ここの色はすべて見分けられます。',
+  'cvd.hard': 'この2色は見分けにくいです',
+  'cvd.separation': '見分けやすさ',
+  'cvd.swapTo': '2つめをこの色にかえると',
+  'cvd.improvement': 'よくなる分',
+  'cvd.noAlternative': 'このバージョンには、かえてよくなる色はありません。',
+  'cvd.method':
+    'このデバイスで、公開されているモデルを使い、いちばん強い段階で、固定した色のバージョンに対して計りました。',
 };
 
 /**

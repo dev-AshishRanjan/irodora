@@ -269,6 +269,31 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, theme),
   },
   {
+    /*
+     * The Studio with a pair CVD mode flags (F-032). It draws a sentence, a separation number,
+     * a proposed swatch and an improvement that none of the other Studio entries draw — and it
+     * is the branch where F-069 matters most, since a status colour beside a colour sample is
+     * exactly what this panel would reach for if nobody had decided otherwise.
+     */
+    name: 'screens/PaletteStudio (CVD flag)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <PaletteStudio
+          store={fakeStore()}
+          initialDraft={{
+            name: 'Hard to separate',
+            members: [
+              { slug: 'kawaki-suna', role: 'anchor' },
+              { slug: 'usu-shiba', role: 'neutral' },
+            ],
+          }}
+        />,
+        theme,
+      ),
+  },
+  {
     name: 'screens/ProfileSetup',
     // `static`, like the rest: its interactive parts are Button, Chip and Swatch, each
     // registered in packages/ui where the suite makes them render focus, active, disabled and
@@ -1331,6 +1356,84 @@ describe('a photo estimate is proposed, not finalised (FR-27)', () => {
     const text = nodes().join(' ');
     expect(text).toContain('less certain');
     expect(text).not.toContain('Your answers agreed on this.');
+  });
+});
+
+/**
+ * FR-35 on the surface — **the flag, and the swap that fixes it**.
+ *
+ * The computation is asserted in `cvd-mode.test.ts` without rendering. What is left here is what
+ * that file cannot see: that the flag reaches a screen, that it names the pair, that the
+ * improvement is on it as a number, and that nothing about it addresses the reader.
+ *
+ * The surface is Palette Studio rather than an outfit, and that is a recorded deviation: FR-35
+ * says "outfit mode" and the outfit builder is F-033, R4. A palette is a set of colours somebody
+ * assembled by hand, which is exactly this check's input.
+ */
+describe('CVD mode flags a hard pair and proposes a swap (FR-35)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  /** The hardest pair in the corpus by the model's own reckoning (0.68 of 100). */
+  const HARD: PaletteDraft = {
+    name: 'Hard to separate',
+    members: [
+      { slug: 'kawaki-suna', role: 'anchor' },
+      { slug: 'usu-shiba', role: 'neutral' },
+    ],
+  };
+  /** A near-black and a near-white: separable under every deficiency. */
+  const EASY: PaletteDraft = {
+    name: 'Easy to separate',
+    members: [
+      { slug: 'soko-zumi', role: 'anchor' },
+      { slug: 'usu-gami', role: 'neutral' },
+    ],
+  };
+
+  const nodes = (draft: PaletteDraft): string[] =>
+    textOf(draw(<PaletteStudio store={fakeStore()} initialDraft={draft} />, 'light'));
+
+  it('flags the pair, naming both colours', () => {
+    const text = nodes(HARD).join(' ');
+    expect(text).toContain('These two are hard to tell apart');
+    expect(text).toContain('Dry Sand');
+    expect(text).toContain('Thin Turf');
+  });
+
+  it('DECOY — a well-separated palette is not flagged, and says so', () => {
+    // Without this, "it shows the flag" would be equally true of a screen that always shows it.
+    const text = nodes(EASY).join(' ');
+    expect(text).not.toContain('These two are hard to tell apart');
+    expect(text).toContain('Every pair here stays distinguishable');
+  });
+
+  it('shows the improvement as a number, with the swap that earns it', () => {
+    const text = nodes(HARD).join(' ');
+    expect(text).toContain('Swapping the second for this raises it to');
+    // A gain, signed, so the direction is legible without reading the sentence around it.
+    expect(text).toMatch(/A gain of \+\d+/u);
+  });
+
+  it('states how the number was produced', () => {
+    // ADR-0031: a measurement without its conditions is a claim.
+    expect(nodes(HARD).join(' ')).toContain('strongest tabulated severity');
+  });
+
+  it('says nothing about the reader’s vision, on either palette', () => {
+    // Criterion 3, on the surface rather than only in the catalogue.
+    for (const draft of [HARD, EASY]) {
+      const text = nodes(draft).join(' ');
+      expect(text).not.toMatch(/\byour (?:eyes|vision)\b/iu);
+      expect(text).not.toMatch(/\byou (?:may|might|cannot|can't) (?:not )?(?:be able to )?see\b/iu);
+    }
   });
 });
 

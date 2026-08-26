@@ -8,6 +8,103 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-032 · the pair that vanishes, and the swap that is worth making
+
+Two colours in a set that are hard to tell apart get flagged, with **a swap and the measured
+improvement**. On real data: `kawaki-suna` and `usu-shiba` separate at **1 of 100** — the hardest
+pair in the corpus — and the Studio proposes *Autumn Field* at **100, a gain of +99**.
+
+### Scoring, not rendering
+
+[[cvd-is-scoring-not-rendering]] is explicit:
+
+> *Someone with deuteranomaly choosing trousers does not want to see what their outfit looks like
+> **to someone else**.*
+
+So there is **no simulation preview anywhere in this feature**, and a test asserts the module
+calls neither `simulateAnomalous` nor `simulateDichromacy`. Not because simulation is wrong —
+`separationScore` does it internally — but because a colour simulated *for display* is the
+industry-default filter that helps designers and does close to nothing for the person it names.
+
+What is drawn is a sentence about a pair, a number, and a swap.
+
+### E-005 gained the consumer it named
+
+The link was written listing *"the UI's CVD preview, the recommendation engine's separation
+factor and the design system's `cvdPairs` check"*. All three are real now, and this is the one
+where a second definition would have done the most damage: **this flag proposes a swap with a
+measured improvement — a number a person is invited to act on.** If the Studio flagged by one
+definition and the engine ranked by another, the product would say a swap gained 99 points and
+then rank the result as though it had not.
+
+### The surface is Palette Studio, and that is a deviation I am stating
+
+FR-35 says *outfit* mode. **There is no outfit surface** — the builder is F-033, R4. Building
+against nothing would have been [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] for
+the third time this release (F-027's photo path, F-028's engine, and this).
+
+A palette is a set of colours somebody assembled by hand, which is exactly this check's input,
+and it is on screen today. The computation is identical when an outfit surface arrives; what
+changes is who supplies the set.
+
+### Criterion 3 is copy, and it is checked
+
+> *Reads as an observation about the outfit, not as a diagnosis of the user.*
+
+**"These two are hard to tell apart"** — never *"you may not be able to distinguish these"*. The
+product knows nothing about the reader's vision and must not imply it does: NFR-22's discipline
+arriving from a different direction, where the failure is not a stored field but a sentence that
+diagnoses somebody.
+
+A decoy proves the check fires on second-person vision language in **both** languages, and a
+positive assertion proves the copy says the right thing rather than merely avoiding the wrong
+one.
+
+The pair was found by **asking the model** which corpus pair it finds hardest — not by reasoning
+about hue, which is the mistake F-031 made when it assumed a red and a green would collapse.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 32 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · **`a11y`** (scope 18/18) · **`contrast`** · **`cvd`** · `content` (font 441/787, subset current) · `cache-scope` · `security` |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+| **Could not run** | `e2e` — in this feature's verification list; gate 7 is pending and F-091 is blocked |
+
+`@irodora/mobile` **351/351** across 13 suites. A fourth Studio branch — the CVD flag — is in the
+conformance registry, because it draws a sentence, a separation number, a proposed swatch and an
+improvement that none of the other three draw, and because it is the branch where **F-069**
+matters most: a status colour beside a colour sample is exactly what this panel would reach for
+if nobody had decided otherwise. It carries no colour channel at all.
+
+### Recorded honestly
+
+- **Criterion 4 is not applicable, and is recorded as such rather than ticked.** *"Permanently
+  available in the free tier"* describes a world ADR-0051 removed: no server, no account, no
+  billing provider, and the PRD says there is no team tier with OQ-2 void. **There are no
+  tiers**, so there is nothing to gate this behind and nothing to check — the same treatment
+  ADR-0011's *"no deployment"* got in F-029. Ticking it would have been claiming a check that
+  could not exist.
+- **Criterion 2 is attested, blocking release.** The *reproducibility* is gated —
+  `reproduceImprovement` recomputes the identical number and **refuses** when the envelope
+  records a severity this build does not check. What does not exist is a `recommendation` row to
+  store the envelope *in*. Discharging it needs a **round trip** through the database, not a
+  recomputation in memory.
+- **The thresholds are conventions** (NFR-2). `HARD_TO_SEPARATE = 20` and `WORTH_PROPOSING = 15`
+  are stated as such: flagging pairs most people manage fine would teach the reader to dismiss
+  the flag, and a swap gaining two points is a change asked of somebody for nothing.
+- **`e2e` did not run**, so nothing proves the flag is reachable by a real gesture.
+
+### Next
+
+**F-037** (`must`) and **F-038** (`must`) are the remaining R3 musts. F-037 carries the ITA°-band
+bias validation that F-027 attested — a study needing participants, so most of it will attest.
+**F-038 activates gate 12** and is what would discharge F-030's latency criterion.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-26 — F-031 · six numbers, one of them renamed, and a grey that thought it was warm
 
 An outfit gets six component scores and an overall, each with its direction, its message key and

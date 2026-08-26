@@ -153,6 +153,10 @@
         {
           "kind": "file",
           "ref": "packages/recommendation/src/outfit-score.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/outfit/cvd.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -165,7 +169,7 @@
       "severity": "critical",
       "guard": "gate:cvd",
       "memory": "memory/effects/one-separation-definition-for-ui-and-engine.md",
-      "rationale": "The UI's CVD preview, the recommendation engine's separation factor and the design system's cvdPairs check all read the same score. If a second definition ever appears, the two will disagree and nobody will notice which surface is wrong — the failure is a recommendation that claims an accessibility property the interface does not actually deliver. F-031 MADE THE PREDICTED CONSUMER REAL. This link was written naming \"the recommendation engine’s separation factor\" before any such thing existed — a `to` that described an intention. `outfit-score.ts#cvdAccessibility` now imports `separationScore` and defines no separation of its own, so the link describes the repository rather than a plan. IT IS THE ONLY ONE OF THE SIX OUTFIT COMPONENTS RESTING ON A PUBLISHED MODEL — the other five are conventions this repository invented and each says so — which is exactly why a second definition here would have been the worst place for one: an accessibility claim is the component a person would be most entitled to rely on. It takes the WORST pair across all three deficiencies rather than the mean, because an outfit where one pair vanishes for a deutan is not rescued by two that survive.",
+      "rationale": "The UI's CVD preview, the recommendation engine's separation factor and the design system's cvdPairs check all read the same score. If a second definition ever appears, the two will disagree and nobody will notice which surface is wrong — the failure is a recommendation that claims an accessibility property the interface does not actually deliver. F-031 MADE THE PREDICTED CONSUMER REAL. This link was written naming \"the recommendation engine’s separation factor\" before any such thing existed — a `to` that described an intention. `outfit-score.ts#cvdAccessibility` now imports `separationScore` and defines no separation of its own, so the link describes the repository rather than a plan. IT IS THE ONLY ONE OF THE SIX OUTFIT COMPONENTS RESTING ON A PUBLISHED MODEL — the other five are conventions this repository invented and each says so — which is exactly why a second definition here would have been the worst place for one: an accessibility claim is the component a person would be most entitled to rely on. It takes the WORST pair across all three deficiencies rather than the mean, because an outfit where one pair vanishes for a deutan is not rescued by two that survive. F-032 ADDED THE THIRD CONSUMER THIS LINK NAMED, and it is the one where a second definition would have done the most damage. `apps/mobile/src/outfit/cvd.ts` flags a pair as hard to tell apart and proposes a swap WITH A MEASURED IMPROVEMENT — a number a person is invited to act on. If the Studio flagged by one definition and the recommendation engine ranked by another, the product would tell somebody a swap gained 99 points and then rank the result as though it had not. All three now read `separationScore`, and a test asserts the module calls neither `simulateAnomalous` nor `simulateDichromacy` — not because simulation is wrong (it is what `separationScore` does internally) but because a colour simulated FOR DISPLAY is the filter [[cvd-is-scoring-not-rendering]] exists to reject.",
       "confidence": 0.94,
       "origin": "manual",
       "status": "active"
