@@ -162,14 +162,14 @@
     {
       "id": "perf",
       "order": 12,
-      "status": "pending",
+      "status": "active",
       "activatesWith": "F-038",
       "command": "pnpm bench",
       "requiredFor": [
         "release"
       ],
       "ciStep": true,
-      "description": "Performance against ABSOLUTE committed thresholds (NFR-4), never baseline deltas — hardware varies, and a delta gate flakes until someone disables it. Every threshold is now on-device: live pick <= 50 ms perceived, local analysis p95 <= 200 ms, recommendation p95 <= 200 ms, capsule solve (40 garments) p95 <= 3 s. The API p95 <= 300 ms budget went with the API (ADR-0051). A miss is a tracked work item, never an edited threshold."
+      "description": "Performance against ABSOLUTE committed thresholds (NFR-4), never baseline deltas — hardware varies, and a delta gate flakes until someone disables it. Thresholds live in tests/bench/budgets.json, each with a rationale and a SCOPE. NFR-4's own budgets are on-device — live pick <= 50 ms perceived, local analysis p95 <= 200 ms, recommendation p95 <= 200 ms, capsule solve (40 garments) p95 <= 3 s — and this gate REPORTS THOSE AS NOT RUN rather than counting them passed, because a CI runner is not the slowest device in the support matrix. What it does measure and fail on is the engine's own cost on reference hardware, which is a chosen ceiling on the computation's contribution and not evidence about NFR-4. The bench self-tests its percentile arithmetic in both directions before measuring anything, and refuses to report over zero measurements. The API p95 <= 300 ms budget went with the API (ADR-0051). A miss is a tracked work item, never an edited threshold."
     },
     {
       "id": "security",

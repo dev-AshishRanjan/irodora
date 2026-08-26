@@ -8,6 +8,148 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-038 · the gate that could not measure a phone, and the budget nothing could exceed
+
+Gate 12 stops being `pending`. It was also, it turns out, a gate that would never have run.
+
+### The activation was the hazard, not the bench
+
+The CI step carried:
+
+```yaml
+if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''
+```
+
+`tests/bench/package.json` has existed since **F-001**. So the surviving effect of that guard
+was not "activate when the feature lands" — it was **skip the gate on every pull request**,
+which is where a slow change is actually reviewed.
+
+The status was flipped to `active` with the guard still in place, and gate 0 was **watched
+failing**:
+
+```
+✗ Active gate "perf" has a CI step guarded by `if: github.event_name == 'push' && …`
+```
+
+Then the line came off, in the same change. That is the whole content of
+[[a-ci-step-guarded-by-an-if-is-invisible-to-the-mirror-check]], and F-072 built the check that
+caught it. **No step in `ci.yml` carries an `if:` any more**, and the header comment that used
+to recommend the practice now records why it was abandoned.
+
+`verify-gate-mirror.mjs` afterwards: 14 active gates, both halves — removing the perf step
+fails gate 0, and conditioning it out fails gate 0.
+
+### Three options, and only one of them honest
+
+NFR-4's budgets are on-device, *"measured on the slowest device in the support matrix rather
+than the fastest"*. A CI runner is neither the slowest thing nor a device.
+
+1. **Assert NFR-4's numbers on the runner.** `recommendOutfit` costs 0.76 ms here against a
+   200 ms budget. It passes by a factor of two hundred, reads like coverage in every report, and
+   would keep passing if the app took a second on a phone.
+2. **Invent a scaling factor.** Nobody has measured the ratio between this workstation and a
+   four-year-old Android. It would turn a desktop number into a claim about a phone — in a file
+   nobody reads as a claim.
+3. **Measure what is here and print what is not.**
+
+Every budget carries a `scope`. `node-reference` is measured and failed on a miss.
+`device` — all four of NFR-4's own numbers — is printed as **NOT RUN**, with the reason, on
+every run, and stays attested on F-030, F-040 and R4's capsule solver.
+
+A green gate 12 says *the engine is not the problem*. It does not say the app is fast, and the
+gate's output says so every time. **E-035** and its note record the link.
+
+### Two defects found by measuring instead of assuming
+
+**The rationale was wrong in the direction that flatters the code.** The first draft budgeted
+`scoreOutfit` at 40 ms "because `corpusAffinity` is the most expensive thing the engine does per
+call". It is not. Measured:
+
+| | p50 | p95 |
+|---|---|---|
+| `recommendOutfit` | 0.32 ms | 0.76 ms |
+| `scoreOutfit` | 0.22 ms | 0.45 ms |
+
+Two slots of shortlist-plus-score outweigh one corpus-wide dE00 sweep. The ceiling and the
+sentence beside it were both rewritten from the numbers.
+
+**A budget nothing could exceed.** `scoreColor` costs about 0.6 µs. Timed one call at a time its
+p95 is `0.00 ms`, and the first draft reported that, green, against a 1 ms ceiling — a check
+that passes because it does nothing, in the one form that looks like good news. Cheap work is
+now measured in batches of 1000 with the ceiling on the batch, and **the bench refuses any
+`node-reference` p95 of exactly zero**, naming the fix, so the next one cannot be added quietly.
+
+### The arithmetic checks itself, in both directions
+
+Criterion 4, and the reason it is worth having: a p95 computed wrongly produces a plausible
+number and a green gate for ever, with no downstream symptom — unlike almost every other defect
+in this repository.
+
+So the percentile runs against known arrays with known answers, **and** against the question
+those cannot ask: is p95 different from p5? `bench-proof.mjs` plants a percentile hardcoded to
+return the right value for every case the first half checks and a constant otherwise. The
+known-answer checks all pass. Only the comparison catches it.
+
+Ten cases, **nine red, one green**. The green one is load-bearing: a `device` budget with a
+0.001 ms ceiling, unreachable by anything, staying green because device budgets are never
+measured here. If this gate is ever changed to satisfy NFR-4 with a desktop number, that case is
+what goes red.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| 0 `state` | **green** — 17 checks, 47 warnings |
+| 0 mirror proof | **green** — 14 active gates, removal *and* condition-out |
+| 12 `perf` | **green** — 3 measured, 4 NOT RUN, 6 self-tests |
+| 12 proof | **green** — 10 cases, 9 red, 1 green |
+| 1 `typecheck` | `tsc --noEmit` over `tests/bench` — green |
+| 2 `lint` | eslint over `tests/bench` — green; all seven lint-adjacent scripts green |
+| 3 `format` | prettier — green |
+
+**NOT RUN, and why:** every gate that needs `pnpm`. Node 22.16.0 / pnpm 9.3.0 against `engines`
+demanding 24.19.0 / 11. The bench itself runs on bare `node`, which is why `pnpm bench` was
+pointed at `node tests/bench/src/bench.mjs` rather than at a workspace filter — the previous
+value was `pnpm --filter @irodora/bench test`, resolving to `vitest --passWithNoTests`, which is
+a gate command that could never fail.
+
+### Recorded, not resolved
+
+- **Criterion 3 is NOT APPLICABLE, and says so rather than being ticked.** *"Frontend measured
+  over the wire, gzipped, at the load event, under prefers-reduced-motion with CPU throttling,
+  median of 3"* is NFR-5, withdrawn by [ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md).
+  The PRD's withdrawal table says *"There is no web surface"*. Nothing is served over a wire and
+  there is no load event. Same treatment F-032 gave the free tier and F-029 gave "no deployment".
+- **Criterion 2 says "backend" and there is no backend.** Met in substance: the bench imports the
+  **built** `@irodora/recommendation` and `@irodora/color-core` rather than sources or mocks, and
+  runs over published corpus `2026.08.1` and weights `2026.08.2` — the files that ship, pinned.
+- **`F-102` filed: two different effect links are both numbered `E-032`.** F-098's
+  lockfile link (guard `gate:state`) and F-099's `hueBias` link (guard `none`). Gate 0 warns
+  *"E-032 (high) has no guard"* and there is no way to tell which it means; E-034's rationale
+  cites "(E-032)" ambiguously. Not fixed here — WIP is 1 and it is unrelated to performance. The
+  renumber is a minute of work; the part worth doing properly is the gate 0 check that stops it
+  recurring, watched failing first.
+
+### Watch out
+
+- **`eslint.config.mjs` now lints `tests/bench/src/**` alongside `scripts/**`** — one widened
+  pattern rather than a second block, because a later flat-config object at the same specificity
+  **replaces** a rule rather than merging with it.
+- **A `.mjs` gate script cannot be part of the build it measures.** The bench imports built
+  `dist/`, so it is plain `.mjs` in `src/` beside a `.ts` entry point that exists to give `tsc`
+  something to compile. `tests/bench/src/index.ts` now carries the `Budget` type instead of
+  `PLACEHOLDER = true`.
+- **The 15 ms ceiling is not slack, it is GC.** The same run that measured a 0.76 ms p95 produced
+  a 14.9 ms maximum. The gate asserts on p95 for that reason; anyone tightening the ceiling
+  toward the median will get a flaky gate and then a disabled one.
+
+### Next
+
+R3's remaining work is all `should`: F-081 (blocked — Apple membership), F-086 (blocked — no
+JDK), F-095, F-097, F-099, F-101, and now F-102.
+
+---
+
 ## 2026-08-26 — F-037 · the rule leaves SQL, and finds out it was written for the wrong language
 
 Two guarantees of different kinds, treated differently on purpose.

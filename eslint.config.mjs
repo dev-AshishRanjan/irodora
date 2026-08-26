@@ -644,8 +644,15 @@ export default tseslint.config(
   // Linted WITHOUT type-awareness: they are plain `.mjs` in no tsconfig project, so the
   // type-aware rules cannot parse them at all. Everything that does not need a type checker
   // still applies — undefined variables, unreachable code, unused values.
+  //
+  // `tests/bench/src/**/*.mjs` joins them (F-038) rather than getting a block of its own. It is
+  // the same kind of file for the same reason — a gate script and its proof, plain `.mjs`
+  // because they run against the BUILT packages and so cannot be compiled by the build they
+  // depend on. A second block at the same specificity would be the shadowing hazard
+  // [[a-later-flat-config-object-replaces-a-rule-it-does-not-merge]]; one widened pattern
+  // cannot shadow anything.
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'tests/bench/src/**/*.mjs'],
     ...tseslint.configs.disableTypeChecked,
     languageOptions: {
       ...tseslint.configs.disableTypeChecked.languageOptions,

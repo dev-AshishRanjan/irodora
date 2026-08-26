@@ -1,0 +1,60 @@
+{
+  "$comment": "Gate 12's committed budgets (F-038, NFR-4). ABSOLUTE ceilings, never deltas against a previous run — hardware varies, and a delta gate flakes until somebody disables it. `scope` decides whether the gate runs the entry or reports it as NOT RUN: `node-reference` is measurable on a CI runner, `device` is NFR-4's actual claim and needs the slowest phone in the support matrix. A number without a scope would let a desktop result stand in for a device one, which is the only way this gate could lie. `runs` and `callsPerRun` live here rather than in the bench so the ceiling and the sample it is a ceiling ON cannot drift apart.",
+  "budgets": [
+    {
+      "id": "recommend-outfit-p95",
+      "scope": "node-reference",
+      "measures": "recommendOutfit over the 120-entry published corpus, both remaining slots, one call per run",
+      "runs": 300,
+      "callsPerRun": 1,
+      "ceilingMs": 15,
+      "rationale": "The most expensive single call the engine makes, and the ENGINE budget rather than NFR-4's. Two slots, each shortlisting the corpus and then running scoreColor plus pairingFit over up to SHORTLIST_LIMIT candidates. Observed p95 on this workstation is 0.76–1.06 ms across runs, so 15 ms is roughly fifteen to twenty times the observation — deliberately loose, because the same machine produced a 14.9 ms outlier under GC and a gate that flakes gets disabled. Tight enough that the SHORTLIST_LIMIT bound coming off, and the full corpus being scored per slot, would fail rather than merely slow. NFR-4 allows 200 ms for a recommendation end to end on the slowest supported device; this is what the pure computation may cost on reference hardware, leaving the rest for the platform. THE RATIO BETWEEN THE TWO IS NOT A DERIVATION. Nobody has measured how much slower a four-year-old Android is than this workstation; this is a chosen ceiling on the engine's own contribution and it is not evidence about NFR-4."
+    },
+    {
+      "id": "score-outfit-p95",
+      "scope": "node-reference",
+      "measures": "scoreOutfit — six components, including a corpus-wide dE00 search — over a three-piece outfit, one call per run",
+      "runs": 300,
+      "callsPerRun": 1,
+      "ceilingMs": 10,
+      "rationale": "Cheaper than the recommendation above, which is worth writing down because the intuition runs the other way: `corpusAffinity` converts all 120 reference entries to Lab and takes 3 × 120 dE00, and `versatility` walks the same set once — around 500 operations, against the roughly 190 scoreColor-plus-pairingFit pairs recommendOutfit runs across two slots. Observed p95 is 0.45–0.67 ms. 10 ms is about twenty times that, matching the headroom above so the two entries are comparable, and it would still catch the reference set being dropped into a nested loop."
+    },
+    {
+      "id": "score-color-batch-p95",
+      "scope": "node-reference",
+      "measures": "scoreColor — one colour against one profile — 1000 calls per run, so the ceiling is on the batch",
+      "runs": 200,
+      "callsPerRun": 1000,
+      "ceilingMs": 10,
+      "rationale": "MEASURED IN BATCHES BECAUSE A SINGLE CALL IS NOT MEASURABLE HERE. One call is four fits, a renormalisation and a round; timed individually it reports 0.00 ms against any per-call ceiling, and a budget nothing can exceed is a check that passes because it does nothing — the exact shape this gate refuses elsewhere. 1000 calls take 0.6 ms at the median and 1.78 ms at p95, so 10 ms is roughly six times the observation. Tighter headroom than the entries above is deliberate: the batch averages away the GC spikes that forced the loose ceilings there. The entry exists because scoreColor is called once per candidate by everything else, so its cost multiplies — a conversion accidentally added to the hot path shows up here first."
+    },
+    {
+      "id": "live-pick-perceived",
+      "scope": "device",
+      "measures": "Live pick, perceived latency under a moving crosshair",
+      "ceilingMs": 50,
+      "rationale": "NFR-4, verbatim. NOT RUN HERE and it must not be: 'perceived' is a property of a frame reaching a screen, there is no viewfinder yet (F-040 shipped the seam, F-097 owes the surface), and a CI runner has no camera. Attested on F-040."
+    },
+    {
+      "id": "local-analysis-p95",
+      "scope": "device",
+      "measures": "Local analysis p95, on the slowest device in the support matrix",
+      "ceilingMs": 200,
+      "rationale": "NFR-4, verbatim. NOT RUN HERE. The engine half is covered by the node-reference entries above; what is missing is Hermes rather than V8, a phone's memory bandwidth, and everything the platform does around the call."
+    },
+    {
+      "id": "recommendation-p95",
+      "scope": "device",
+      "measures": "Recommendation p95, on the slowest device in the support matrix",
+      "ceilingMs": 200,
+      "rationale": "NFR-4, verbatim, and the criterion F-030 attested. NOT RUN HERE. This is the entry that would discharge it, and it stays outstanding until somebody runs it on a device."
+    },
+    {
+      "id": "capsule-solve-p95",
+      "scope": "device",
+      "measures": "Capsule optimisation over a 40-item wardrobe, p95",
+      "ceilingMs": 3000,
+      "rationale": "NFR-4, verbatim. NOT RUN HERE, and there is nothing to run: the capsule solver is FR-45 and R4. Recorded now so the budget is committed before the feature exists rather than chosen to fit whatever it turns out to cost."
+    }
+  ]
+}

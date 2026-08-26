@@ -18,8 +18,13 @@ name: CI
 # on that push. The mitigation is that gate 15 also runs on every pull request, and a secret
 # is caught before merge rather than after.
 #
-# Steps for gates that are still `pending` are present but guarded by a file existence check,
-# so they activate the moment their feature lands rather than waiting for someone to remember.
+# NO STEP IN THIS FILE CARRIES AN `if:`, and that is a decision rather than a coincidence.
+# Guarding a pending gate's step on `hashFiles(...)` reads like it activates the moment the
+# feature lands; what it actually does is let an ACTIVE gate sit in this file and never run,
+# because gate 0 compares `run:` commands. Gate 11 nearly shipped skipped for the whole of R1
+# that way, and gate 12 carried the same guard until F-038 removed it. A gate that is not ready
+# has NO step here and is recorded as `ciStep: false` in gates.json, so the omission is
+# declared and machine-checked rather than hidden behind an expression (F-072).
 
 on:
   push:
@@ -183,9 +188,28 @@ jobs:
         run: node scripts/verify-content-proof.mjs
 
       # ---- gates 12-14: release -------------------------------------------
+
+      # Unconditional as of F-038. This step carried
+      # `if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''`, and
+      # `tests/bench/package.json` has existed since F-001 — so the surviving effect of the
+      # guard was to skip the gate on every pull request, which is where a slow change is
+      # actually reviewed. Flipping the gate to `active` with the guard in place was watched
+      # failing gate 0 before the line came off.
+      #
+      # What this measures and what it does not is printed on every run: the engine's own cost
+      # against committed ceilings, and NFR-4's on-device budgets reported NOT RUN, because a
+      # CI runner is not the slowest device in the support matrix.
       - name: 'Gate 12 — perf'
-        if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''
         run: pnpm bench
+
+      # Not a gate — the proof that gate 12 can fail. A performance gate is the easiest kind to
+      # ship broken, because broken looks identical to healthy: green, fast, reporting numbers.
+      # Nine cases go red, including a percentile hardcoded to satisfy its own known answers.
+      # ONE must stay GREEN: a device budget with a 0.001 ms ceiling, unreachable by anything —
+      # if this gate were ever changed to satisfy NFR-4's device budgets with a desktop number,
+      # that is the case that would catch it.
+      - name: 'Gate 12 — bench discrimination proof'
+        run: pnpm bench:prove
 
       # ---- gate 15: security ----------------------------------------------
       # gitleaks is installed and then invoked through `pnpm security:secrets` — the SAME

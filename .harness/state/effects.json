@@ -1255,6 +1255,40 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-035",
+      "from": {
+        "kind": "file",
+        "ref": "tests/bench/budgets.json"
+      },
+      "to": [
+        {
+          "kind": "gate",
+          "ref": "perf"
+        },
+        {
+          "kind": "file",
+          "ref": "tests/bench/src/bench.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".github/workflows/ci.yml"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "tests/bench",
+        ".harness/verification"
+      ],
+      "severity": "high",
+      "guard": "gate:perf (tests/bench/src/bench.mjs), proven by tests/bench/src/bench-proof.mjs",
+      "feature": "F-038",
+      "memory": "memory/effects/a-performance-gate-cannot-measure-a-phone.md",
+      "rationale": "THE CEILINGS ARE CONTENT, AND GATE 12 BLOCKS A RELEASE. A number edited in this file changes what may ship, with no code change and no test failing — the same shape as E-009 for weights, one level up: the file decides the verdict rather than participating in it. WHAT THE GUARD ACTUALLY COVERS. `bench-proof.mjs` plants ten cases and asserts nine go red: a measurement over its ceiling, a node-reference budget nothing measures, an unknown scope, a missing ceiling, a missing sample size, an empty budget list, a percentile that always returns the maximum, a percentile HARDCODED to satisfy its own known answers (caught only by the p95-vs-p5 comparison, which is why that half exists), and durations forced to zero (the guard against a ceiling below the timer's resolution — a budget nothing can exceed). One case must stay GREEN and it is the load-bearing one: a `device` budget with a 0.001 ms ceiling, unreachable by anything, which stays green because device budgets are PRINTED, never measured here. WHAT THE GUARD DOES NOT COVER, AND CANNOT. Nothing stops somebody raising a ceiling to turn a red run green. gates.json says a miss is a tracked work item and never an edited threshold; the enforcement is the diff, the `rationale` field beside each number, and review — the same honest limit ADR-0046 records for published content, and it is stated here rather than dressed up. THE CLAIM THIS LINK EXISTS TO STOP BEING MISREAD: a green gate 12 IS NOT EVIDENCE FOR NFR-4. NFR-4's budgets are measured on the slowest device in the support matrix; a CI runner is neither slowest nor a device, so all four of its budgets are reported NOT RUN on every run and stay attested on F-030, F-040 and R4's capsule solver. What the gate does measure is the engine's own cost on reference hardware, against ceilings CHOSEN rather than derived — nobody has measured the ratio between a workstation and a four-year-old Android, and inventing one would turn a desktop number into a claim about a phone.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

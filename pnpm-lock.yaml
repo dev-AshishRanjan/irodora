@@ -493,7 +493,14 @@ importers:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
 
-  tests/bench: {}
+  tests/bench:
+    dependencies:
+      '@irodora/color-core':
+        specifier: workspace:*
+        version: link:../../packages/color-core
+      '@irodora/recommendation':
+        specifier: workspace:*
+        version: link:../../packages/recommendation
 
   tests/color-lab: {}
 

@@ -1220,7 +1220,7 @@
       "service": "tests",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-030"
       ],
@@ -1233,8 +1233,13 @@
       ],
       "verification": [
         "state",
-        "perf"
-      ]
+        "perf",
+        "lint",
+        "format",
+        "typecheck"
+      ],
+      "plan": "plans/F-038-performance-budgets-and-gates.md",
+      "notes": "DONE, WITH ONE CRITERION RECORDED NOT APPLICABLE AND THE REASON. WHAT SHIPPED: tests/bench/budgets.json holds seven ABSOLUTE ceilings, each with a rationale and a `scope`; tests/bench/src/bench.mjs measures the three that are measurable here and PRINTS the four that are not; tests/bench/src/bench-proof.mjs plants ten cases against it. Gate 12 is active and unconditional in CI. CRITERION 1 (absolute, never deltas) — met: every ceiling is a committed number, and the bench reads no previous run at all, so a delta is not merely discouraged but unimplementable. CRITERION 2 (\"Backend bench boots the real runtime over a versioned deterministic corpus\") — met in substance; the word \"backend\" is retired-world and there is no backend. The bench imports the BUILT @irodora/recommendation and @irodora/color-core rather than sources or mocks, and runs over published corpus 2026.08.1 (120 entries) and weights 2026.08.2 — the files that ship, pinned by version, so a measurement is reproducible. CRITERION 3 (frontend over the wire, gzipped, at the load event, CPU-throttled, median of 3) — NOT APPLICABLE, and recorded rather than ticked. That is NFR-5, withdrawn by ADR-0051; the PRD's own withdrawal table says \"There is no web surface\". Nothing is served over a wire and there is no load event. Same treatment as F-032 gave the free tier and F-029 gave \"no deployment\". CRITERION 4 (each gate self-tests its arithmetic every run) — met, and it is the interesting one. A p95 computed wrongly produces a plausible number and a green gate for ever, with no downstream symptom ever. The percentile is checked against known arrays with known answers AND against the question those cannot ask — is p95 different from p5. The proof plants a percentile hardcoded to satisfy the known answers and constant otherwise; only the second half catches it. Zero self-tests is a refusal, not a pass. CRITERION 5 (gate perf activates) — met, and the ACTIVATION WAS THE HAZARD. The CI step carried `if: github.event_name == 'push' && hashFiles('tests/bench/package.json') != ''`, and that file has existed since F-001 — so the guard’s surviving effect was to skip the gate on every pull request. Gate 0 was WATCHED FAILING with the status flipped and the guard still in place (\"Active gate \\\"perf\\\" has a CI step guarded by `if: ...`\"), then the line came off in the same change. No step in ci.yml carries an `if:` any more, and the file now says why. TWO DEFECTS FOUND BY MEASURING RATHER THAN ASSUMING. (1) The first draft budgeted score-outfit at 40 ms \"because corpusAffinity is the most expensive thing the engine does\". It is not: scoreOutfit p95 is 0.45–0.67 ms against recommendOutfit at 0.76–1.06 ms, because two slots of shortlist-plus-score outweigh one corpus-wide dE00 sweep. The rationale was wrong in the direction that flatters the code, and it was rewritten from the numbers. (2) A per-call ceiling on scoreColor reported p95 0.00 ms — the work is cheaper than performance.now() can resolve, so the budget could not be exceeded by any regression. That is a check that passes because it does nothing, in the one form that looks like good news. Fixed by measuring 1000-call batches, and the bench now REFUSES any node-reference p95 of exactly zero so the next one cannot be added quietly. WHAT THIS GATE DOES NOT PROVE, printed on every run: NFR-4 is measured on the slowest device in the support matrix. A CI runner is neither slowest nor a device. All four device budgets are NOT RUN and stay attested on F-030, F-040 and R4. The node-reference ceilings are CHOSEN at roughly twenty times the observation, not derived from the device numbers — nobody has measured the ratio between this workstation and a four-year-old Android, and inventing one would turn a desktop number into a claim about a phone. E-035 records the link. GATES RUN ON THIS WORKSTATION: state (green), perf (green, 3 measured / 4 NOT RUN), the gate 12 proof (10 cases, 9 red 1 green), the gate-CI mirror proof (14 active gates, both halves), eslint and prettier over tests/bench, and tsc --noEmit for the package. NOT RUN HERE and said plainly: any gate needing pnpm, because Node 22.16.0 / pnpm 9.3.0 cannot satisfy engines >=24.19.0 / >=11."
     },
     {
       "id": "F-039",
@@ -2856,6 +2861,27 @@
         "test"
       ],
       "notes": "FILED BY F-031, WHICH FIXED HALF OF IT AND SAID SO. `hueBias` returns 0.867 for a warm grey at OKLCh C = 0.012 — more strongly warm than the corpus’s most saturated red at 0.644 — because a hue angle at that chroma is a rounding artefact of two tiny a and b components. F-031 introduced `temperatureOf`, which scales by chroma against the published lexicon’s 0.039 boundary for \"grey\", and wired it into `harmony` and `pairingCoherence` where the defect was DEMONSTRATED to produce a wrong answer (versatility ranking a vivid red as the corpus’s most versatile colour). WHAT IS LEFT, and why it was not just changed: `scoreColor`’s temperature fit and `apps/mobile/src/profile/photo.ts#biasFromHue` still call the raw `hueBias`. Changing scoreColor moves EVERY personal-compatibility score in a shipped, tested engine, and it is not obviously wrong there — \"this near-neutral garment is warm\" may be a defensible thing to tell somebody whose profile leans warm. THAT IS A PRODUCT QUESTION, not a refactor, and writing a guard before answering it would encode the answer in the check. THE APP’S COPY IS E-032’s SUBJECT TOO and is blocked on the same toolchain: it cannot import this package until pnpm install can run. Doing F-099 first would make this a one-line change instead of two."
+    },
+    {
+      "id": "F-102",
+      "title": "Two different effect links are both numbered E-032",
+      "requirements": [
+        "NFR-20"
+      ],
+      "service": "root",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Every id in effects.json is unique, and the renumbered link keeps its memory note and index row",
+        "Gate 0 fails on a duplicate effect id, watched failing before it is fixed",
+        "Every reference to the renumbered id elsewhere in the repository moves with it"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FILED AFTER THE FACT AND SAYING SO — found while tracing F-038’s effects, not selected through next-feature. THE DEFECT: effects.json carries two links both numbered E-032. One is F-098’s `pnpm-workspace.yaml` → lockfile link, guard `gate:state`, note `a-manifest-and-the-lockfile-must-move-together.md`. The other is F-099’s `score.ts#hueBias` link, guard `none`, note `the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md`. Both rows sit in memory/index.md labelled E-032. WHY IT MATTERS MORE THAN A TYPO: gate 0 warns \"E-032 (high) has no guard\" and there is no way to tell which link it means — one names a proven guard and the other honestly names none, so the warning is simultaneously wrong and right. E-034’s rationale cites \"(E-032)\" to point at the app’s biasFromHue, which is now an ambiguous reference in a document whose whole purpose is to be unambiguous about consequences. NOT FIXED IN F-038: WIP is 1 and this is unrelated to performance budgets. The renumber itself is a minute of work; the part worth doing properly is the gate 0 check that makes it impossible to reintroduce, watched failing first."
     }
   ]
 }
