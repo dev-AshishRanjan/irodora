@@ -424,9 +424,16 @@ importers:
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../color-core
+      '@irodora/color-spaces':
+        specifier: workspace:*
+        version: link:../color-spaces
       '@irodora/corpus':
         specifier: workspace:*
         version: link:../corpus
+    devDependencies:
+      '@irodora/store':
+        specifier: workspace:*
+        version: link:../store
 
   packages/store:
     devDependencies:

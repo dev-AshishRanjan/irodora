@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-028 · the number, and the four things that made it
+
+*"Does this colour suit me?"* is a score in [0,100] with four named contributions behind it.
+`@irodora/recommendation` is no longer a placeholder. **Every criterion is gated — no
+attestation**, which is rare enough here to be worth stating: this feature renders nothing,
+ships no content and touches no device, so there is no half that needs a phone or a cohort.
+
+### The range is a property, not a clamp
+
+The score is `100 × Σ(weight × fit)` with every fit in [0,1]. **If the weights sum to 1 the
+range follows** — so `parseRuleSet` refuses anything else rather than the engine clamping. A
+clamp would turn a defect in the weights into a plausible number at the boundary, which is the
+same failure shape as an accuracy claim with nothing behind it.
+
+The tolerance is `1e-9` because `0.4 + 0.3 + 0.2 + 0.1` is `0.9999999999999999`, and a validator
+that rejected the most obvious weight set anybody would write is a validator somebody deletes.
+
+### Criterion 3 is the renormalisation, and the decoy is what proves it
+
+```
+effective = weight × confidence,   then divided by their total
+```
+
+**Without the division**, an uncertain profile simply scores every colour lower — which reads as
+*"this suits you less"* when the truth is *"we know less about you"*. Different claims, and only
+the second is ours.
+
+So the test halves every confidence and asserts **the score does not move**; and separately, that
+silencing a dimension the colour *misses* on raises the score while silencing one it *matches*
+on lowers it. A single direction would also be produced by an implementation that just scaled
+everything down.
+
+### Fifty is an answer, not a fallback
+
+With every confidence at zero there is nothing to renormalise. The engine returns **50, with
+`confidence: 0` and all four contributions at zero** — legibly "nothing to go on". Not equal
+weights, which would assert certainty the profile does not have. F-027 makes this reachable
+rather than theoretical: a photo estimate abstains on contrast at confidence 0.
+
+### No prose, and no default rule set
+
+The engine emits `explain.<factor>.<direction>` keys and holds no catalogue, no locale and no
+formatter. A sentence produced at scoring time has to be *translated* at scoring time, and a
+stored recommendation becomes a stored English string.
+
+And there is deliberately **no `DEFAULT_RULES`**: a default would be a weight living in code, in
+the one place F-029 would have to find it, and E-009 would be false the day it was written.
+
+### The lockfile gate F-098 built paid for itself within the hour
+
+Adding `@irodora/color-spaces` and `@irodora/store` to this package's manifest failed gate 0
+**immediately**, naming both packages and both sections, *before any install* — which is exactly
+what it was built to do for somebody who cannot run pnpm at all. The matching three-line importer
+entries were written by hand and gate 0 confirmed the pair agrees.
+
+`ln -s` then did what F-098's notes warned about: it **recursively copied** the two packages into
+`node_modules` instead of linking them, silently. `mklink /J` made real junctions. The source
+packages were checked intact before anything was deleted.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 30 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · `test` for the touched package |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+| **Not applicable** | `a11y` · `contrast` · `cvd` · `content` — this feature renders nothing and ships no content |
+| **NOT run** | `e2e` (pending) · `perf` (pending) |
+
+`@irodora/recommendation` **36/36** across three files.
+
+### Recorded honestly
+
+- **The warm/cool rule now exists twice**, and it is written down rather than tolerated quietly.
+  `hueBias` here and `biasFromHue` in `apps/mobile/src/profile/photo.ts` compute the same thing
+  with the same constants, two features apart. **E-032, `guard: none`** — the fix is a one-line
+  import and the app cannot depend on this package until `pnpm install` can run. Two guards were
+  considered and rejected as models that would report green while the *algorithms* drifted:
+  a cross-package test would drag app dependencies over a layering boundary to check two
+  numbers, and scraping the constants compares literals rather than behaviour. **F-099** deletes
+  the duplicate.
+  The drift has a predictable direction, which is the part worth knowing: the engine's poles are
+  a **rule-set field**, so F-029 versions them as content while the app's stay literals.
+- **The message-key contract has no check yet, and must not have one here.** The app renders no
+  score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve
+  keys now would trade one hole for a different one. Recorded on **E-016**; owed by F-030, the
+  first feature able to satisfy both halves.
+- **Nothing consumes this engine.** F-030 is what will, and it is blocked on F-029.
+- **The weights, falloffs and poles are conventions**, not measurements (NFR-2). The engine says
+  so in each doc comment, and F-029 is what turns them into versioned content.
+
+### Next
+
+**F-029** (`must`, unblocked) is the one to take: it makes weights content, and it closes
+**E-009** — the last link in the graph carrying `guard: none` before E-032 joined it. F-095,
+F-097 and F-099 are `should`.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**, which now blocks F-099 as well
+as F-091.
+
+---
+
 ## 2026-08-26 — F-098 and F-096 DONE · CI was red at the install step, and the gate behind it was red too
 
 **Not selected through `next-feature`.** CI had been failing on `main` for three consecutive

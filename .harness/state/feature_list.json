@@ -947,7 +947,7 @@
       "package": "@irodora/recommendation",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-026"
       ],
@@ -962,7 +962,13 @@
         "typecheck",
         "test",
         "build"
-      ]
+      ],
+      "plan": "plans/F-028-personal-compatibility-engine.md",
+      "effects": [
+        "E-016",
+        "E-032"
+      ],
+      "notes": "DONE, and every criterion is gated — no attestation, which is rare here and worth saying: this feature renders nothing, ships no content and touches no device, so there is no half that needs a phone or a cohort. THE SCORE IS IN [0,100] BY CONSTRUCTION RATHER THAN BY CLAMPING. It is 100 x the weighted sum of fits in [0,1], so if the weights sum to 1 the range follows — which is why `parseRuleSet` REFUSES anything else instead of the engine clamping. A clamp would turn a defect in the weights into a plausible number at the boundary, which is the same failure shape as an accuracy claim with nothing behind it. The tolerance is 1e-9 because 0.4+0.3+0.2+0.1 is 0.9999999999999999 and a validator that rejected the most obvious weight set anybody would write is a validator somebody deletes. CRITERION 3 IS THE RENORMALISATION, AND THE DECOY IS WHAT PROVES IT. effective weight = weight x confidence, DIVIDED BY THEIR TOTAL. Without the division an uncertain profile simply scores every colour lower — which reads as \"this suits you less\" when the truth is \"we know less about you\", and those are different claims. The test halves every confidence and asserts THE SCORE DOES NOT MOVE, and separately that silencing a dimension the colour MISSES on raises the score while silencing one it MATCHES on lowers it. A single direction would also be produced by an implementation that just scaled everything down. NO PROSE, AND NO DEFAULT RULE SET. The engine emits `explain.<factor>.<direction>` keys and holds no catalogue, locale or formatter — a sentence produced at scoring time has to be translated at scoring time, and a stored recommendation becomes a stored English string. And there is deliberately NO `DEFAULT_RULES` export: a default would be a weight living in code, in the one place F-029 would have to find it, and E-009 would be false the day it was written. `scoreColor` requires a RuleSet; the tests build their own. FIFTY IS AN ANSWER, NOT A FALLBACK. With every confidence at zero there is nothing to renormalise, so the engine returns 50 with confidence 0 and all four contributions at zero — legibly \"nothing to go on\". Not equal weights, which would assert certainty the profile does not have. F-027 makes this reachable rather than theoretical: a photo estimate abstains on contrast at confidence 0. THE PROFILE ARRIVES STRUCTURALLY. `PersonalProfile` is a shape `NewPersonalProfile` satisfies, so the engine never imports `@irodora/store` — and because the two meet NOWHERE in the product yet, `test/profile.test.ts` is currently the only place a column removed in the store would fail. It is a devDependency import for exactly that reason. THE LOCKFILE GATE F-098 BUILT PAID FOR ITSELF WITHIN THE HOUR. Adding @irodora/color-spaces and @irodora/store to this package’s manifest failed gate 0 immediately, naming both packages and both sections, BEFORE any install — which is what it was built to do for somebody who cannot run pnpm at all. The matching three-line importer entries were written by hand and gate 0 confirmed the pair agrees. WHAT IS NOT PROVEN AND IS RECORDED AS E-032: `hueBias` here and `biasFromHue` in apps/mobile/src/profile/photo.ts are two implementations of one colour rule, carried with `guard: none` because the app cannot depend on this package until pnpm install can run. Two guards were considered and rejected as models that would report green while the algorithms drifted. F-099 deletes the duplicate. NOTHING CONSUMES THIS ENGINE YET — F-030 is what will, and it is blocked on F-029."
     },
     {
       "id": "F-029",
@@ -2723,6 +2729,32 @@
         "state"
       ],
       "notes": "FILED AFTER THE FACT AND SAYING SO. CI was red on three consecutive pushes (4528c52, bfcfe9d, dfc3239) at the `Install` step, with all seventeen steps after it skipped. This was not selected through next-feature; it was diagnosed from a red build and repaired, and the record is written to match what happened rather than to look like the loop. ROOT CAUSE: F-020 (9ce0926) added `@irodora/corpus: workspace:*` to packages/store/package.json and nothing regenerated pnpm-lock.yaml, so `pnpm install --frozen-lockfile` refused with ERR_PNPM_OUTDATED_LOCKFILE naming that one package. IT WAS NOT CARELESSNESS, WHICH IS WHY A GATE IS THE RIGHT ANSWER: `pnpm install` could not run on the workstation at all (Node 22.16.0 and pnpm 9.3.0 against engines demanding 24.19.0 and 11), and progress.md records the workaround honestly — packages/store/node_modules/@irodora/corpus was a hand-made junction. The junction made the local tree behave correctly, and there was no local command that could have disagreed with it. FIXED by regenerating the lockfile on the pinned toolchain; the diff is three lines, the importer entry that was missing. GUARDED by a new section in gate 0 that mirrors pnpm own rule — the same three dependency sections, the same verbatim specifier comparison, the same overrides handling — and runs BEFORE install, on Node built-ins, on a clean clone. That last part is the whole point: it is the only place that can say \"the lockfile is stale\" to somebody who cannot run pnpm at all. Workspace projects come from the pnpm-workspace.yaml globs rather than a hard-coded list, and a glob the parser cannot expand FAILS rather than being skipped. PROVEN by scripts/verify-lockfile-proof.mjs, wired into CI beside the other gate 0 proofs: seven cases with the baseline green either side, five red and TWO GREEN. The second control is the one that matters — a workspace project declaring nothing is written `tests/bench: {}` in the lockfile, and reading that as absent would have made the check fail on a correct lockfile from its first run. FOUND WHILE FIXING THIS, and fixed under its own id: gate 15 was independently red at HEAD (F-096). Repairing install alone would have moved the red from step 9 to step 25."
+    },
+    {
+      "id": "F-099",
+      "title": "One warm/cool rule: the app imports the engine instead of repeating it",
+      "requirements": [
+        "FR-29",
+        "NFR-3"
+      ],
+      "service": "mobile",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-028"
+      ],
+      "acceptance": [
+        "apps/mobile/src/profile/photo.ts computes no warm/cool bias of its own and imports the engine",
+        "The reference poles reach the app from the same rule set the engine scores with, not from a literal",
+        "E-032 is resolved, and gate 0 stops warning that it carries no guard"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test"
+      ],
+      "notes": "FILED BY F-028, WHICH WROTE THE SECOND COPY AND SAID SO. `hueBias` (engine) and `biasFromHue` (app) compute the same thing with the same constants, two features apart. E-008 states the consequence: a second implementation makes the same input measure differently on two surfaces and no single-platform test can see it — both sides pass their own tests today. THE DRIFT HAS A PREDICTABLE DIRECTION, which is the part worth knowing: the engine’s poles are a RULE SET field, so F-029 will version them as content, while the app’s are literals. The first time an editor moves the warm pole, a profile built from a photograph will disagree with the score the engine gives it, with every gate green. BLOCKED ON THE TOOLCHAIN, NOT ON A DECISION: the one-line fix is an import, and apps/mobile/node_modules/@irodora/ has no `recommendation` link because `pnpm install` refuses on Node 22.16.0 against engines demanding 24.19.0. Adding the dependency ALSO needs the lockfile importer entry, which gate 0 now checks (F-098) — so the manifest and lockfile half is mechanical and verifiable here; it is the node_modules link that is not, and a hand-made junction is what F-098’s own notes call the workaround that hid a stale lockfile for four features. DO IT ON THE PINNED TOOLCHAIN."
     }
   ]
 }

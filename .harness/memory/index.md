@@ -110,6 +110,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-token-with-no-reader-is-a-decision-nobody-applied.md](effects/a-token-with-no-reader-is-a-decision-nobody-applied.md) — **E-029** · emitting a value is not applying a decision, and a comment is not a reader.
 - [effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md](effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md) — **E-030** · twelve constants assert that two colours differ on ONE axis; only the bundle can check it, and every gate stays green when it stops being true.
 - [effects/the-capture-ceiling-is-now-a-profile-confidence.md](effects/the-capture-ceiling-is-now-a-profile-confidence.md) — **E-031** · a lens confidence used to describe one swatch; it now caps seven profile dimensions, and the type is identical either way.
+- [effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md](effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md) — **E-032** · one colour rule, two implementations, `guard: none` honestly; a check whose model is wrong is worse than an absent one.
 - [effects/a-manifest-and-the-lockfile-must-move-together.md](effects/a-manifest-and-the-lockfile-must-move-together.md) — **E-032** · the dependency edge was true in the manifest and in node_modules, and false in the one file CI reads.
 
 ## Glossary

@@ -495,6 +495,10 @@
         {
           "kind": "decision",
           "ref": "docs/adr/0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -504,7 +508,7 @@
       "severity": "high",
       "guard": "gate:typecheck",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
-      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value.",
+      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -1144,6 +1148,32 @@
       "origin": "manual",
       "status": "active",
       "feature": "F-098"
+    },
+    {
+      "id": "E-032",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/score.ts#hueBias"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/photo.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "none",
+      "feature": "F-099",
+      "memory": "memory/effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md",
+      "rationale": "THE WARM/COOL RULE NOW EXISTS TWICE AND ONLY ONE OF THEM IS CANONICAL. `hueBias` in the engine and `biasFromHue` in `apps/mobile/src/profile/photo.ts` compute the same thing — how warm a hue is, as a signed distance between two reference poles — and they were written two features apart with the same constants (60 and 240) by the same reasoning. THIS IS THE E-008 SHAPE, and E-008 states the consequence exactly: a second implementation makes the same input measure differently on two surfaces, and NO SINGLE-PLATFORM TEST CAN SEE IT. Both sides pass their own tests today. GUARD: NONE, HONESTLY. The fix is for the app to import the engine, and it cannot: `apps/mobile/node_modules/@irodora/` has no `recommendation` link and `pnpm install` refuses on this workstation (Node 22.16.0 against engines demanding 24.19.0). A cross-package agreement test was considered and rejected — the app file imports the corpus bundle, so a package test importing it would drag app dependencies across a layering boundary to check two numbers, and a check whose model is wrong is worse than an absent one. Scraping the constants out of the source would compare two literals while the ALGORITHMS drifted, which is the half that actually matters. WHAT MAKES THIS SAFE TO CARRY: the poles are a RULE SET field in the engine, so the engine’s copy is already content-versioned and the app’s is not — the drift, when it comes, will be the app holding a constant the content moved past. F-099 deletes the duplicate the day the app can depend on the package, and this link is what will still be here to say so.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
