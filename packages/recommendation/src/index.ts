@@ -35,6 +35,8 @@ export {
   OPPOSES_BELOW,
   scoreColor,
   SUPPORTS_ABOVE,
+  temperatureOf,
+  NEUTRAL_CHROMA,
   type CompatibilityScore,
   type ExplanationDirection,
   type FactorContribution,

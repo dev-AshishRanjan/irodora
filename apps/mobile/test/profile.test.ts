@@ -698,3 +698,47 @@ describe('a photo estimate', () => {
 
 /** Used by the profile type in a way `typecheck` alone would not exercise. */
 export type _Profile = Profile;
+
+/**
+ * ADR-0076, at the surface that writes a profile.
+ *
+ * The engine's own suite asserts the rule. This asserts the CONSEQUENCE the app is responsible
+ * for: a reading of something grey must not propose a temperature preference, because that
+ * preference is written into a stored profile and every later recommendation reads it.
+ */
+describe('a near-neutral reading proposes no temperature (ADR-0076)', () => {
+  const reading = (rgb: readonly [number, number, number]): LensReading => ({
+    rgb: [rgb[0], rgb[1], rgb[2]],
+    space: 'srgb',
+    usableSamples: 1800,
+    variance: 0.01,
+    illumination: 'daylight',
+    quality: 'excellent',
+    confidence: 1,
+    instruction: '',
+  });
+
+  it('a grey reading lands near zero, whichever side of the circle its hue falls', () => {
+    /*
+     * TWO GREYS WHOSE RGB DIFFERS BY 0.004. Measured: both land at OKLCh C = 0.0010, hue 67.8°
+     * and 247.8°. Under the raw hue question they came back at **+0.913 and −0.913** — a
+     * near-complete temperature verdict, in opposite directions, from a difference no eye could
+     * resolve. Chroma-weighted they are ±0.023.
+     *
+     * This mattered more here than in the engine: the value is written into a stored PROFILE,
+     * where it then biases every recommendation the person ever sees.
+     */
+    const warmish = estimateFromReading('p', reading([0.502, 0.5, 0.498]));
+    const coolish = estimateFromReading('p', reading([0.498, 0.5, 0.502]));
+    expect(Math.abs(warmish.temperatureBias)).toBeLessThan(0.15);
+    expect(Math.abs(coolish.temperatureBias)).toBeLessThan(0.15);
+  });
+
+  it('DECOY — a saturated reading still proposes a temperature', () => {
+    // Without this, the assertion above is also true of an estimate that stopped reading hue.
+    const orange = estimateFromReading('p', reading([0.85, 0.45, 0.15]));
+    const blue = estimateFromReading('p', reading([0.15, 0.35, 0.8]));
+    expect(orange.temperatureBias).toBeGreaterThan(0.2);
+    expect(blue.temperatureBias).toBeLessThan(-0.2);
+  });
+});

@@ -223,9 +223,20 @@ export function scoreColor(
   const fits: Record<ScoreFactor, number> = {
     lightness: intervalFit(l, profile.lightness, rules.falloff.lightness),
     chroma: intervalFit(c, profile.chroma, rules.falloff.chroma),
-    // Agreement between the colour's own warmth and the profile's. The two biases span [-1,1],
-    // so their distance spans [0,2] and halving it puts the fit back in [0,1].
-    temperature: clamp01(1 - Math.abs(hueBias(h, rules.poles) - profile.temperatureBias) / 2),
+    /*
+     * Agreement between the colour's own warmth and the profile's. The two biases span [-1,1],
+     * so their distance spans [0,2] and halving it puts the fit back in [0,1].
+     *
+     * `temperatureOf`, NOT `hueBias` (ADR-0076). The subject here is an ARBITRARY garment, and
+     * 45 of the 120 published entries sit below NEUTRAL_CHROMA. Under the raw hue question,
+     * `usu-gami` (Thin Paper, C = 0.006) and `usu-shimo` (Thin Frost, C = 0.005) — two
+     * off-whites 0.027 apart in lightness — came back at +0.644 and -0.933, and a strongly warm
+     * profile scored two pale greys 33 points apart out of 100. Nothing a person can see
+     * justifies that.
+     */
+    temperature: clamp01(
+      1 - Math.abs(temperatureOf(c, h, rules.poles) - profile.temperatureBias) / 2,
+    ),
     // How close the colour sits to the separation this person prefers, measured from the middle
     // of their own lightness range — the contrast that matters is between the garment and them.
     contrast: contrastFit(l, profile),

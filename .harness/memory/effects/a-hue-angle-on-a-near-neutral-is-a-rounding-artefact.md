@@ -65,3 +65,53 @@ everywhere would encode an answer nobody has decided yet: whether a near-neutral
 
 The same shape as [[deltae00-is-not-a-metric-and-cannot-be-indexed]]: a quantity that is
 perfectly well defined and still cannot be used the way it looks like it can.
+
+---
+
+## Resolved by F-101 — and the number that made the decision easy
+
+F-031 left this open deliberately: *"'this near-neutral garment is warm' may be a defensible
+thing to tell somebody whose profile leans warm. THAT IS A PRODUCT QUESTION."* Right to leave it,
+and the question turned out to have an answer with evidence behind it.
+
+**45 of the 120 published entries sit below `NEUTRAL_CHROMA`** — 37.5% of the corpus. Not an
+edge case in a corpus built around subdued, weathered colour, and it will not be one in a
+wardrobe.
+
+The pair that settled it, both off-whites, 0.027 apart in lightness:
+
+| | C | h | `hueBias` |
+|---|---:|---:|---:|
+| `usu-gami` — Thin Paper | 0.006 | 92° | **+0.644** |
+| `usu-shimo` — Thin Frost | 0.005 | 246° | **−0.933** |
+
+Taken to a score with a sharper pair at the same chroma, a strongly warm profile rated Lime Wall
+**97** and Thin Frost **64** — a 33-point gap out of 100 between two pale greys. The product was
+not making a defensible claim; it was confidently wrong about a third of its own corpus.
+
+**The app case was worse**, because the answer is written into a stored profile and biases
+everything afterwards: two greys whose RGB differs by 0.004 produced +0.913 and −0.913.
+
+## The alternative that was nearly right
+
+Let the temperature factor **abstain** below `NEUTRAL_CHROMA`, renormalising the other three the
+way a zero-confidence factor already does. It says "this axis has nothing to say about a grey",
+which is arguably truer than any fit.
+
+Rejected for a reason worth keeping: it asserts a grey suits **everyone equally**, which is also
+a claim and a stronger one. And the mechanism would have run through `raw[factor]` — profile
+confidence — so the reported `confidence`, documented as describing the PROFILE, would have
+started varying with the COLOUR. A number quietly meaning something else is worse than a fit
+that is merely approximate.
+
+## What the change exposed on its way through
+
+`alternativesFor`'s doc had always said an axis is *"never filled with a duplicate"*, and
+**nothing implemented it**. The test asserting uniqueness passed because no pool had happened to
+produce one. ADR-0076 produced one immediately: with a two-colour pool of off-whites the single
+non-best candidate is genuinely cooler *and* lighter *and* higher-contrast, so three axes chose
+it — three chips, one swatch.
+
+Not mislabelled; every label was true. That is exactly why the code had to decide rather than the
+data. A rule stated only in a comment is a rule that holds until the first input that tests it
+[[an-effect-rationale-is-prose-in-a-state-file-and-nothing-executes-it]].

@@ -43,7 +43,7 @@
 import { displayP3ToXyz, srgbToXyz, xyzToOklch, type Triple } from '@irodora/color-spaces';
 import type { PublishedEntry } from '@irodora/corpus';
 import { allEntries } from '../corpus';
-import { hueBias } from '@irodora/recommendation';
+import { temperatureOf } from '@irodora/recommendation';
 import type { LensReading } from '../lens/reading';
 import { ruleSet } from '../rules';
 import type { Profile } from './dimensions';
@@ -169,7 +169,10 @@ export function estimateFromReading(
    */
   // The ENGINE’s bias, against the PUBLISHED poles. Both halves matter: the function is the
   // one that scores garments, and the two reference hues come from the same file it reads.
-  const bias = clamp(hueBias(h, ruleSet().poles) * (confidence / PHOTO_CEILING), -1, 1);
+  // `temperatureOf`, NOT `hueBias` (ADR-0076). A reading of a near-neutral carries a hue angle
+  // computed from two components near zero, and calling it "strongly warm" is the same defect
+  // the engine had — worse here, because the answer is written into a stored profile.
+  const bias = clamp(temperatureOf(c, h, ruleSet().poles) * (confidence / PHOTO_CEILING), -1, 1);
 
   const chroma = { min: 0, max: clamp(c + CHROMA_PAD, 0, 1) };
 

@@ -304,3 +304,69 @@ describe('the fits', () => {
     expect(near).toBeGreaterThan(identical);
   });
 });
+
+/**
+ * ADR-0076 — the temperature factor reads a CHROMA-WEIGHTED temperature.
+ *
+ * The defect this replaced: `hueBias` answers the pure hue question with equal confidence for a
+ * vivid red and for a grey whose hue angle is a rounding artefact of two components near zero.
+ * 45 of the 120 published corpus entries sit below `NEUTRAL_CHROMA`, so it was wrong about a
+ * third of the corpus.
+ *
+ * Both halves are asserted, because "greys now agree" is also true of a function that ignores
+ * hue entirely [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+describe('a near-neutral has no temperature (ADR-0076)', () => {
+  /* The published pair the ADR is argued from, in OKLCh: two off-whites, opposite hue angles. */
+  const THIN_PAPER = colour([0.962, 0.006, 92]); // usu-gami
+  const THIN_FROST = colour([0.935, 0.005, 246]); // usu-shimo
+
+  const temperatureFit = (c: Color, p: PersonalProfile): number =>
+    scoreColor(p, c, RULES).factors.find((f) => f.factor === 'temperature')!.fit;
+
+  it('scores two indistinguishable greys almost alike, whatever the profile prefers', () => {
+    /*
+     * Under `hueBias` these came back at +0.644 and -0.933 — the raw fits were 0.922 and 0.256
+     * for a strongly warm profile, a gap of 0.667 between two colours a person would both call
+     * off-white. 0.15 is loose enough to leave the chroma difference visible (0.006 against
+     * 0.005 is not nothing) and far tighter than the artefact it replaced.
+     */
+    for (const bias of [-1, -0.5, 0, 0.5, 1]) {
+      const p = profile({ temperatureBias: bias });
+      const gap = Math.abs(temperatureFit(THIN_PAPER, p) - temperatureFit(THIN_FROST, p));
+      expect(`bias ${String(bias)}: ${gap < 0.15 ? 'close' : `${gap.toFixed(3)} apart`}`).toBe(
+        `bias ${String(bias)}: close`,
+      );
+    }
+  });
+
+  it('DECOY — two SATURATED colours of opposite hue still score far apart', () => {
+    /*
+     * Without this, the assertion above would pass on a temperature factor that had been
+     * disabled entirely. These two are well above `NEUTRAL_CHROMA`, so their hue is real and
+     * the factor must still discriminate — chroma-weighting damps a grey, it does not flatten
+     * the axis.
+     */
+    const p = profile({ temperatureBias: 1 });
+    const warm = temperatureFit(colour([0.6, 0.15, 60]), p);
+    const cool = temperatureFit(colour([0.6, 0.15, 240]), p);
+    expect(warm - cool).toBeGreaterThan(0.5);
+  });
+
+  it('ramps: the same hue matters more as the colour gains chroma', () => {
+    // The mechanism itself, asserted directly rather than inferred from the two cases above.
+    // A cool hue against a warm profile should fit WORSE the more chroma it actually has.
+    const p = profile({ temperatureBias: 1 });
+    const fits = [0.002, 0.01, 0.02, 0.039, 0.1].map((c) =>
+      temperatureFit(colour([0.6, c, 240]), p),
+    );
+    for (let i = 1; i < fits.length; i += 1) expect(fits[i]!).toBeLessThan(fits[i - 1]!);
+  });
+
+  it('leaves `hueBias` itself alone — it is still the pure hue question', () => {
+    // The primitive is unchanged and still exported: a caller that has already established the
+    // chroma is meaningful should not have to re-derive it. ADR-0076 moved CALL SITES.
+    expect(hueBias(60, RULES.poles)).toBeCloseTo(1, 10);
+    expect(hueBias(240, RULES.poles)).toBeCloseTo(-1, 10);
+  });
+});

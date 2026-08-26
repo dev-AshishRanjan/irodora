@@ -99,6 +99,7 @@ Two rules that matter more than the format:
 | [0073](0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md) | The "Japanese aesthetic" score is corpus affinity, and says so | Accepted |
 | [0074](0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md) | The spacing scale is a four-point grid, and the step that was not one goes | Accepted |
 | [0075](0075-the-frame-output-is-requested-as-rgb-because-yuv-would-mean-writing-a-colour-transform.md) | The frame output is requested as `rgb`, because `yuv` would mean writing a colour transform | Accepted |
+| [0076](0076-a-near-neutral-has-no-temperature-and-scorecolor-now-agrees.md) | A near-neutral has no temperature, and `scoreColor` now agrees | Accepted |
 
 ## Open questions awaiting an ADR
 

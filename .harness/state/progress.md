@@ -8,6 +8,127 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-101 · a third of the corpus had a temperature it did not have
+
+F-031 refused to make this change on an argument, and was right to:
+
+> *"'this near-neutral garment is warm' may be a defensible thing to tell somebody whose profile
+> leans warm. **THAT IS A PRODUCT QUESTION.**"*
+
+So it was answered with measurements, taken **before** any change — evidence taken afterwards is
+an artefact of the thing it argues for.
+
+### What the measurements said
+
+**45 of the 120 published entries sit below `NEUTRAL_CHROMA`.** 37.5% of a corpus built around
+subdued, weathered colour. Not an edge case, and it will not be one in a wardrobe.
+
+| | L | C | h | `hueBias` | `temperatureOf` |
+|---|---:|---:|---:|---:|---:|
+| `usu-gami` — Thin Paper | 0.962 | 0.006 | 92° | **+0.644** | +0.099 |
+| `usu-shimo` — Thin Frost | 0.935 | 0.005 | 246° | **−0.933** | −0.120 |
+
+Two off-whites, 0.027 apart in lightness. Taken to a score with a sharper pair at the same
+chroma — Lime Wall against Thin Frost:
+
+| profile | Lime Wall | Thin Frost | gap |
+|---|---:|---:|---:|
+| strongly warm | **97** | **64** | 33 |
+| strongly cool | 69 | 92 | 23 |
+
+**A 33-point gap out of 100 between two pale greys.** The question F-031 left open has an
+answer: the problem is not the verdict for any one grey, it is that the verdict is *opposite*
+for two greys nobody can distinguish, driven by an angle computed from two components near zero.
+
+The app case was worse, because the answer is written into a **stored profile** and biases
+everything afterwards. Two greys whose RGB differs by 0.004 produced **+0.913 and −0.913**.
+
+### All three sites, and the cost stated up front
+
+`scoreColor`'s temperature fit, `alternativesFor`'s `warmer`/`cooler` axes, and the app's photo
+path — one call each after F-099. `hueBias` stays exported and unchanged; ADR-0076 moved **call
+sites**.
+
+**45 of 120 entries move, mean |Δfit| 0.055, largest 0.407.** Every score containing a
+near-neutral changes. Nothing stores a recommendation yet — no screen scores a colour — so the
+blast radius is empty *today*, which is why now.
+
+### The alternative that was nearly right
+
+Let the temperature factor **abstain** below `NEUTRAL_CHROMA`, renormalising the other three the
+way a zero-confidence factor already does. It says "this axis has nothing to say about a grey",
+which is arguably truer than any fit.
+
+Rejected, and the reason is worth keeping: it asserts a grey suits **everyone equally**, which is
+also a claim and a stronger one. And the mechanism runs through `raw[factor]` — *profile*
+confidence — so the reported `confidence`, documented as describing the **profile**, would have
+started varying with the **colour**. A number quietly meaning something else is worse than a fit
+that is merely approximate.
+
+### What the change exposed on its way through
+
+`alternativesFor`'s doc has always said an axis is *"never filled with a duplicate"*. **Nothing
+implemented it.** The test asserting uniqueness passed because no pool had happened to produce
+one — and ADR-0076 produced one immediately: with a two-colour pool of off-whites the single
+non-best candidate is genuinely cooler *and* lighter *and* higher-contrast, so three axes chose
+it. Three chips, one swatch, a person told they have three options when they have one.
+
+Not mislabelled — every label was true — which is exactly why the **code** had to decide rather
+than the data. First axis in `ALTERNATIVE_AXES` order takes it; the rest are omitted.
+
+### Watched failing, both ways
+
+A scratch script reverted each change separately and re-ran the suite, restoring byte-for-byte in
+a `finally` and verifying the restore (F-100 is why):
+
+```
+as committed:              exit 0
+with hueBias:              exit 1, 2 failed — and names the ADR-0076 block
+without the taken-set:     exit 1, 1 failed
+both files restored byte-for-byte.
+```
+
+Every new assertion carries a **decoy**, because *"greys now agree"* is equally true of a
+temperature factor that has been switched off: two saturated opposites must still score far
+apart, a saturated reading must still propose a temperature, and the ramp is asserted directly.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| 0 `state` | **green** — and warnings 48 → 47 as E-034 resolved |
+| 4 `test` (recommendation) | **green** — 103 tests, 6 files |
+| 1 `typecheck` | **green** — engine and app |
+| 11 `content` + rule bundle | **green** |
+| 8 a11y scope · token reach · spacing | **green** |
+| 12 `perf` + proof | **green** |
+| purity · app-imports · claims · no-inference · lint · format | **green** |
+
+**NOT RUN:** jest in either app zone, so the app-side consequence test is written and not run
+here. Its thresholds are **not guesses** — the four readings were computed directly against the
+built engine and the measured numbers are in the test's own comment. Also not run: any gate
+needing `pnpm`.
+
+### Recorded, not tidied
+
+- **The plan file was written after the ADR, not before the code**, and gate 0 caught the missing
+  artefact at close-out. What happened was investigation → measurement → ADR → code; the ADR did
+  the design work, and golden rule 3 asks for the plan artefact first. The plan file says so in
+  its own header rather than being backdated.
+- **`NEUTRAL_CHROMA` and the linear ramp are conventions**, borrowed from the published lexicon
+  and not measured. Better than a rule that ignores chroma; not evidence about anything.
+
+### Where the effect graph stands
+
+With F-099 and F-101 both closed, **no high-severity link carries `guard: none`**. Gate 0's
+effects section is quiet for the first time.
+
+### Next
+
+R3 holds F-081 and F-086 — both blocked on this machine — and F-102.
+
+---
+
 ## 2026-08-26 — F-099 · one warm/cool rule, and a blocker that had already been lifted
 
 ### The blocker was closed before I read it

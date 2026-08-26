@@ -43,7 +43,6 @@ import type { PersonalProfile } from './profile.js';
 import type { RuleSet } from './rules.js';
 import {
   CONTRAST_TARGET,
-  hueBias,
   intervalFit,
   scoreColor,
   temperatureOf,
@@ -332,26 +331,57 @@ function alternativesFor(
   const bestColor = byId.get(best.id);
   if (bestColor === undefined) return [];
 
-  const [bl, , bh] = oklchOf(bestColor.color);
-  const bestBias = hueBias(bh, rules.poles);
+  const [bl, bc, bh] = oklchOf(bestColor.color);
+  /*
+   * `temperatureOf`, NOT `hueBias` (ADR-0076). "Like that, but warmer" is a question about an
+   * arbitrary candidate, so offering a grey whose hue angle happens to sit at 66° as the WARMER
+   * alternative is the same defect wearing a different hat — and here it is visible, because
+   * the label says "warmer" beside a colour that is not.
+   */
+  const bestBias = temperatureOf(bc, bh, rules.poles);
   const [gl] = oklchOf(input.color);
   const bestSeparation = Math.abs(bl - gl);
 
+  /** A candidate’s temperature, chroma-weighted. Named so the two axes below read as one rule. */
+  const temperatureAt = (c: Candidate): number => {
+    const [, cc, ch] = oklchOf(c.color);
+    return temperatureOf(cc, ch, rules.poles);
+  };
+
   const moves: Readonly<Record<AlternativeAxis, (c: Candidate) => boolean>> = {
-    warmer: (c) => hueBias(oklchOf(c.color)[2], rules.poles) > bestBias,
-    cooler: (c) => hueBias(oklchOf(c.color)[2], rules.poles) < bestBias,
+    warmer: (c) => temperatureAt(c) > bestBias,
+    cooler: (c) => temperatureAt(c) < bestBias,
     lighter: (c) => oklchOf(c.color)[0] > bl,
     higherContrast: (c) => Math.abs(oklchOf(c.color)[0] - gl) > bestSeparation,
   };
 
+  /*
+   * ONE CANDIDATE, ONE AXIS. The doc above has always said an axis is *"never filled with a
+   * duplicate"*, and until F-101 nothing implemented it — a candidate that satisfied three
+   * predicates was offered three times under three labels, and the test that asserts uniqueness
+   * passed because no pool had happened to produce it.
+   *
+   * ADR-0076 produced one. With a two-colour pool of off-whites, the single non-best candidate
+   * is genuinely cooler AND lighter AND higher-contrast, so all three axes chose it: three
+   * chips, one swatch, and a person told they have three options when they have one.
+   *
+   * Not mislabelled — every label was true — which is exactly why the code has to decide. The
+   * first axis in `ALTERNATIVE_AXES` order takes it, and the rest are omitted, because
+   * *"three real ones and a missing fourth is an honest answer"* and three of the same colour is
+   * not an answer at all.
+   */
   const out: Alternative[] = [];
+  const taken = new Set<string>();
   for (const axis of ALTERNATIVE_AXES) {
     const moved = ranked.find((r) => {
-      if (r.id === best.id) return false;
+      if (r.id === best.id || taken.has(r.id)) return false;
       const candidate = byId.get(r.id);
       return candidate !== undefined && moves[axis](candidate);
     });
-    if (moved !== undefined) out.push({ axis, candidate: moved });
+    if (moved !== undefined) {
+      out.push({ axis, candidate: moved });
+      taken.add(moved.id);
+    }
   }
   return out;
 }
