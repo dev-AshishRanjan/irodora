@@ -30,6 +30,7 @@ import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Finder } from '../src/screens/Finder';
 import { ColourCard } from '../src/screens/ColourCard';
 import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
+import { Lens } from '../src/screens/Lens';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import { find } from '../src/finder';
@@ -328,6 +329,46 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<ProfileSetup store={fakeProfileStore()} reading={SAMPLE_READING} />, theme),
+  },
+  /*
+   * THE LENS, IN ALL THREE PERMISSION STATES (F-097).
+   *
+   * The viewfinder is `null` here and that is the whole reason this screen is registrable at
+   * all: `src/lens/viewfinder.tsx` imports react-native-vision-camera, which jest cannot
+   * render, so the camera arrives as a NODE from the route and every pixel this screen is
+   * responsible for stays checkable. `app/profile.tsx` set the precedent with the repository.
+   *
+   * Three entries rather than one because the three states draw disjoint trees: undetermined
+   * has a request button, denied has none and different copy, and granted has the readout,
+   * the nearest-colour list and the hand-off — none of which the other two reach.
+   */
+  {
+    name: 'screens/Lens (undetermined)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Lens permission="undetermined" onRequestPermission={() => undefined} />, theme),
+  },
+  {
+    name: 'screens/Lens (denied)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Lens permission="denied" />, theme),
+  },
+  {
+    name: 'screens/Lens (reading)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          reading={SAMPLE_READING}
+          onUseForProfile={() => undefined}
+          onOpenColour={() => undefined}
+        />,
+        theme,
+      ),
   },
 ];
 
@@ -1167,6 +1208,27 @@ describe('guided setup asks, concludes, and can be corrected (FR-26, FR-30)', ()
     // ADR-0010 §2: the swatch path is the PRIMARY one, and its being camera-free is the
     // privacy and accessibility promise — which is worth nothing if only the ADR says it.
     expect(nodes().join(' ')).toContain('No camera');
+  });
+
+  it('DOES NOT say "no camera" when a camera reading is what it is showing (F-097)', () => {
+    /*
+     * THE CLAIM THAT WOULD HAVE QUIETLY STOPPED BEING TRUE.
+     *
+     * 'profile.privacy' — "No camera. Everything stays on this device." — was simply true
+     * until F-097 gave the photo path a producer. Nothing would have failed when it stopped
+     * being: the string still existed, still rendered, still read well, and the test above
+     * would still have passed, because it asserts the guided path and the guided path is
+     * unchanged.
+     *
+     * So the assertion is made from the OTHER side. The photo path must not claim it, and it
+     * must say the thing that IS true of it — the same claim NSCameraUsageDescription makes at
+     * the moment permission is requested.
+     */
+    const text = textOf(
+      draw(<ProfileSetup store={fakeProfileStore()} reading={SAMPLE_READING} />, 'light'),
+    ).join(' ');
+    expect(text).not.toContain('No camera');
+    expect(text).toContain('discarded');
   });
 
   it('reaches every one of the seven dimensions in the summary', () => {

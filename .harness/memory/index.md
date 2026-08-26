@@ -119,6 +119,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-manifest-and-the-lockfile-must-move-together.md](effects/a-manifest-and-the-lockfile-must-move-together.md) — **E-032** · the dependency edge was true in the manifest and in node_modules, and false in the one file CI reads.
 - [effects/a-performance-gate-cannot-measure-a-phone.md](effects/a-performance-gate-cannot-measure-a-phone.md) — **E-035** · gate 12 measures the engine and PRINTS what it cannot measure; a ceiling below the timer's resolution is a budget nothing can exceed.
 - [effects/a-scale-with-no-names-shifts-under-its-readers.md](effects/a-scale-with-no-names-shifts-under-its-readers.md) — **E-036** · the spacing scale is positional in all four targets, so a step added or removed renumbers every reader and nothing fails.
+- [effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md](effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md) — **E-037** · "No camera" was true until a camera path existed; the file that moved was not the file carrying the claim.
 
 ## Glossary
 

@@ -102,11 +102,10 @@
       "group": "status kind",
       "tokens": [
         "ok",
-        "warn",
         "bad"
       ],
-      "cites": "ADR-0054, F-031",
-      "why": "`Status` is built, conforms, and is rendered by no screen — it reaches gate 8's component half through the conformance registry, which ADR-0054 allows as a root, so nothing else reports it. All three kinds are handled by the component and none is requested by a caller. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses is a written-down fact rather than an assumption that it is used somewhere."
+      "cites": "ADR-0054, F-031, F-097",
+      "why": "TWO OF THREE, as of F-097. `warn` is read by the Lens, which shows a capture instruction as a status rather than as prose so it carries an icon as well as its words — colour is never the only channel, and neither is a paragraph of grey text nobody scans. `ok` and `bad` are still requested by no caller: `Status` is built, conforms, and reaches gate 8 through the conformance registry, which ADR-0054 allows as a root, so nothing else reports them. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses stays a written-down fact rather than an assumption that it is used somewhere — and F-097 is what turned one third of it from an assumption into a reader."
     }
   ]
 }

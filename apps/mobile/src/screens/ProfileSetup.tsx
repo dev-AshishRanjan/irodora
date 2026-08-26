@@ -445,8 +445,18 @@ export function ProfileSetup({
       <Text size="title" color="foreground" script={script} heading>
         {t('profile.title')}
       </Text>
+      {/*
+        THE PRIVACY CLAIM, AND IT DEPENDS ON THE PATH. 'profile.privacy' says "No camera",
+        which is true of the guided path and became FALSE the moment F-097 gave the photo path
+        a producer. A claim that quietly stops being true is worse than one never made, and
+        nothing would have failed — the string still existed, still rendered, still read well.
+
+        Both sentences say the thing that matters and neither overstates: the guided path uses
+        no camera, and the photo path analysed a frame and discarded it. The second is the same
+        claim NSCameraUsageDescription makes at the moment permission is requested.
+      */}
       <Text size="small" color="foreground.2" script={script}>
-        {t('profile.privacy')}
+        {t(reading === undefined ? 'profile.privacy' : 'profile.privacyPhoto')}
       </Text>
 
       {!showSummary && current !== undefined ? (

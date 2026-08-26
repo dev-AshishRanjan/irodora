@@ -53,6 +53,12 @@ export interface HomeProps {
   readonly onOpenFinder?: () => void;
   /** Open guided profile setup. Same shape and same reason as onOpenAtlas. */
   readonly onOpenProfile?: () => void;
+  /**
+   * Open the Lens. Same shape and same reason as onOpenAtlas, and the sharpest instance of it:
+   * `read()` and four capture modes shipped in F-040 and `estimateFromReading` in F-027, and
+   * until F-097 nothing on any screen led to a camera at all.
+   */
+  readonly onOpenLens?: () => void;
 }
 
 export function Home({
@@ -61,6 +67,7 @@ export function Home({
   onOpenStudio,
   onOpenFinder,
   onOpenProfile,
+  onOpenLens,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -149,6 +156,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenProfile?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openLens')}
+        variant="secondary"
+        onPress={() => {
+          onOpenLens?.();
         }}
       />
     </View>

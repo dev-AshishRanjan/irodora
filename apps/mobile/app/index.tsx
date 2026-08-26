@@ -28,6 +28,9 @@ export default function Index(): React.JSX.Element {
         onOpenProfile={() => {
           router.push('/profile');
         }}
+        onOpenLens={() => {
+          router.push('/lens');
+        }}
       />
     </>
   );

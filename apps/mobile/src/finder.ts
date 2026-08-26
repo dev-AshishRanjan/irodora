@@ -44,7 +44,7 @@ import {
   type PhraseLexicon,
   type PhraseRegion,
 } from '@irodora/corpus';
-import { xyzToLab, type Triple } from '@irodora/color-spaces';
+import { oklchToXyz, xyzToLab, type Triple } from '@irodora/color-spaces';
 import { allEntries, corpus, sha256, type PublishedEntry } from './corpus';
 import {
   LEXICON_DIGEST,
@@ -169,6 +169,50 @@ function normaliseHex(query: string): string {
 /** How many entries a hex query returns. Enough to compare, few enough to read. */
 export const HEX_LIMIT = 8;
 
+/** A corpus entry and how far the query was from it, in ΔE00. */
+export interface NearestEntry {
+  readonly entry: PublishedEntry;
+  readonly deltaE00: number;
+}
+
+/**
+ * The nearest corpus entries to a colour, in Lab, ranked by ΔE00.
+ *
+ * Extracted from the hex branch below in F-097 so that the Lens and the Finder rank against the
+ * same index by the same metric. **A second nearest-match implementation would be a defect by
+ * definition** — the naming package's two-stage search is proven equivalent to a full scan by
+ * its own suite, and a hand-rolled loop somewhere else in the app would be a third answer to a
+ * question that already has one.
+ *
+ * Lab, not OKLCh: ΔE00 is defined on CIELAB and the index was built in it. Handing it OKLCh
+ * type-checks and means nothing [[deltae00-is-the-ranking-authority]].
+ */
+export function nearestByOklch(oklch: Triple, limit: number): readonly NearestEntry[] {
+  /*
+   * The conversion lives HERE, not in the screen that wants the answer.
+   *
+   * `apps/mobile/src/screens/**` may not import `xyzToLab` at all — the lint says so, because a
+   * screen recomputing a value the bundle already carries returns the CURRENT engine's answer
+   * for a version published under an older one (FR-10, E-001). A live camera reading is a
+   * genuinely derived value and the exception would have applied, but a screen is still the
+   * wrong place for a colour conversion: this module already owns the route from a colour to a
+   * ranking, and a second route would be a second answer.
+   */
+  return nearestByLab(xyzToLab(oklchToXyz(oklch)), limit);
+}
+
+export function nearestByLab(lab: Triple, limit: number): readonly NearestEntry[] {
+  const result = nameColor(index(), lab, { limit });
+  const bySlug = new Map(allEntries().map((e) => [e.entry.slug, e]));
+  const out: NearestEntry[] = [];
+  for (const candidate of result.candidates) {
+    const entry = bySlug.get(candidate.id);
+    if (entry === undefined) continue;
+    out.push({ entry, deltaE00: candidate.deltaE00 });
+  }
+  return out;
+}
+
 /**
  * Answer a query.
  *
@@ -185,17 +229,12 @@ export function find(query: string): FinderResult {
     // Through the engine, never re-implemented: hex → sRGB → XYZ → OKLCh is three published
     // conversions, and the ranking below needs Lab from the same source the corpus used.
     const lab = labOfHex(hex);
-    const result = nameColor(index(), lab, { limit: HEX_LIMIT });
-    const bySlug = new Map(allEntries().map((e) => [e.entry.slug, e]));
-    const entries: PublishedEntry[] = [];
-    const distances: number[] = [];
-    for (const candidate of result.candidates) {
-      const entry = bySlug.get(candidate.id);
-      if (entry === undefined) continue;
-      entries.push(entry);
-      distances.push(candidate.deltaE00);
-    }
-    return { kind: 'hex', entries, distances };
+    const nearest = nearestByLab(lab, HEX_LIMIT);
+    return {
+      kind: 'hex',
+      entries: nearest.map((n) => n.entry),
+      distances: nearest.map((n) => n.deltaE00),
+    };
   }
 
   const phrase = resolvePhrase(lexicon(), text);

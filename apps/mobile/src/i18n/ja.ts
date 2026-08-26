@@ -223,6 +223,37 @@ export const ja: Record<MessageKey, string> = {
   'home.openProfile': '自分の色をつくる',
   'profile.title': '自分の色',
   'profile.privacy': 'カメラは使いません。すべてこのデバイスの中だけです。',
+  'profile.privacyPhoto':
+    'カメラは一度だけ見て、写真はすぐに捨てました。すべてこのデバイスの中だけです。',
+  'home.openLens': 'カメラで色を読む',
+  'lens.title': 'レンズ',
+  'lens.privacy': '映像はこのデバイスの中だけで見て、すぐに捨てます。保存も送信もしません。',
+  'lens.viewfinder': 'カメラの映像です。画面の中心にある色を続けて読みます。',
+  'lens.askTitle': 'レンズにはカメラが必要です',
+  'lens.askBody': '目の前の色を読むためだけに使います。写真は残しません。',
+  'lens.ask': 'カメラを許可する',
+  'lens.deniedTitle': 'カメラを使えません',
+  'lens.deniedBody':
+    'このアプリのカメラ利用がオフになっています。端末の設定から戻せます。ほかの機能はカメラがなくても使えます。',
+  'lens.waiting': '画面の中心を色に合わせてください。',
+  'lens.noReading': 'まだ色を読んでいません。',
+  'lens.conditions': '読み取りの条件',
+  'lens.confidence': 'この読み取りの確からしさ（0 から 1）',
+  'lens.reading': '中心で読んだ色',
+  'lens.samples': '使った画素の数',
+  'lens.nearest': '近い色',
+  'lens.useForProfile': 'この色を自分の色づくりに使う',
+  'lens.useForProfileNote':
+    '出発点を提案するだけで、あとから変えられます。次の画面で確認するまで何も保存しません。',
+  'lens.light.daylight': '昼の光',
+  'lens.light.warmIndoor': '暖かい室内の光',
+  'lens.light.coolIndoor': '涼しい室内の光',
+  'lens.light.mixed': '混ざった光',
+  'lens.light.lowLight': '暗い光',
+  'lens.light.unknown': '光の種類は分かりません',
+  'lens.space.srgb': 'sRGB',
+  'lens.space.displayP3': 'Display-P3',
+  'lens.space.unknown': 'カメラが色空間を伝えていません',
   'profile.progress': 'くらべる',
   'profile.question': 'どちらを着たいですか。',
   'profile.choose': 'えらぶ',
@@ -340,6 +371,13 @@ export const NOTATION_KEYS: readonly MessageKey[] = [
   // F-023. A brand name: identical in both languages, letters only, and well inside the
   // length cap. Translating it would invent a second name for one product.
   'card.attribution',
+  // F-097. The two capture spaces the Lens names. Both are symbols: 'sRGB' and 'Display-P3'.
+  // The second was written 'Display P3' first and NOTATION_SHAPE refused it — a space followed
+  // by a bare word is what the rule uses to tell a symbol from a phrase, and it was right to.
+  // Hyphenating it is also the formal name (the CSS and ICC spelling is `display-p3`), so the
+  // rule improved the copy rather than being worked around.
+  'lens.space.srgb',
+  'lens.space.displayP3',
 ];
 
 /**

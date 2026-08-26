@@ -8,6 +8,129 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-097 · the photo path gets a producer, and a true sentence stops being true
+
+`read()` shipped in F-040. `estimateFromReading` shipped in F-027, checked twelve ways. Nothing
+in the app could construct a `LensReading`, so both were reachable only from a test —
+[[a-tested-module-nobody-wired-up-passes-every-test-it-has]] with two features stacked on it.
+
+### The split, and the smaller reason for it
+
+A VisionCamera view cannot be rendered by jest, and `a11y-scope.mjs` fails on a screen the
+conformance registry cannot reach. So:
+
+| file | zone | rendered by jest |
+|---|---|---|
+| `src/screens/Lens.tsx` | scanned, registered in **three** permission states | **yes** — takes the viewfinder as a node |
+| `src/lens/viewfinder.tsx` | not scanned | no — permission, `<Camera>`, frame output |
+| `app/lens.tsx` | route | no — composes them, and does the hand-off |
+
+`app/profile.tsx` set the precedent by importing `deviceRepository` in the route. **The bigger
+reason is not the checker**: everything in the screen is layout, copy and formatting — the parts
+that go wrong quietly — and all of it is now checked in both themes by CI, while the part that
+needs a phone is one file with no layout in it.
+
+### Three things found by wiring the real API
+
+**VisionCamera 5 is not the library F-040 was written against.** No `useFrameProcessor`, no
+`useCameraPermission` in the old shape; `useCamera`, `useFrameOutput`, Nitro specs. And its
+frame output takes `native | yuv | rgb` — where asking for `yuv` leaves a planar buffer that only
+a hand-written YUV→RGB matrix turns into a colour. That is arithmetic the engine does not
+provide and `apps/mobile/AGENTS.md` forbids the app from inventing; F-040's own header calls it
+the forbidden option.
+[ADR-0075](../../docs/adr/0075-the-frame-output-is-requested-as-rgb-because-yuv-would-mean-writing-a-colour-transform.md)
+records requesting `rgb`, and says plainly that it supersedes the pixel-format half of an F-040
+criterion **nobody has run**.
+
+**A pixel format would have been read as a colour space.** `readCaptureSpace` accepted any
+string containing `rgb-8`; `rgb-rgb-8-bit` is a VisionCamera *pixel format*. Nothing had ever
+passed one in — the wiring is what put one within reach. A confident sRGB reading for a frame
+whose space nobody stated is exactly the assumption the rule exists to prevent. Anything naming
+a bit depth is now refused before the space rules run, with four decoys. The space comes from
+the **session** (`onSessionConfigSelected` → `selectedVideoDynamicRange.colorSpace`) and is
+`unknown` until it does, which caps confidence rather than defaulting.
+
+**"No camera" stopped being true, and nothing failed.** The profile screen has said *"No camera.
+Everything stays on this device."* since F-026. It was true; ADR-0010 §2 is why. It stayed true
+through F-027 because nothing could construct a reading. It became false the moment this feature
+shipped — on exactly the run where the claim matters most — and:
+
+- the key still existed, so the i18n suite passed
+- it still rendered, and a sentence's *truth* is not something the conformance suite can see
+- the test asserting it covers the **guided** path, which is unchanged and still says it
+- nobody edited the string; the file that moved was somewhere else entirely
+
+The claim is now per-path, and asserted **from both sides**: the guided path must contain it and
+the photo path must not, and must carry the sentence that replaces it. A one-sided assertion
+would have kept passing through the exact change that made it false. **E-037** records it.
+
+### The hand-off is one-shot
+
+`src/lens/handoff.ts`, not a route parameter. A route parameter is a URL; and a JSON round-trip
+produces a `LensReading`-shaped object the compiler believes on trust, when the type having no
+field for a frame is the entire guarantee (F-040).
+
+One-shot is the half worth testing: someone reaches their profile, decides to answer the twelve
+comparisons instead, and navigates back. Without the consume they are re-proposed an estimate
+they just declined, and FR-27's *"never finalised without explicit user confirmation"* starts to
+read as nagging.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| 0 `state` | **green** — 17 checks, 49 warnings (two of them F-097's own attestations) |
+| 8 a11y scope · token reach · spacing | **green** — `Status kind="warn"` now has a reader, and its declaration was updated |
+| 11 `content` | **green**, after regenerating the font subset — the new Japanese copy needed 9 codepoints the face lacked |
+| 2 `lint` + all seven adjacent scripts | **green** |
+| 1 `typecheck` · 3 `format` | **green** |
+
+**NOT RUN, and this is most of the feature:**
+
+1. Every gate needing `pnpm`.
+2. **The rendered half of gate 8** — jest cannot start in `apps/mobile` (`@babel/runtime`
+   absent) or `packages/ui` (`react-native-worklets` absent), both partial-install symptoms. So
+   the three conformance registrations and the privacy-claim assertion are **written and not run
+   here**. CI runs them, which is a real difference from the camera code, which nothing anywhere
+   runs yet.
+3. **Gate 7**, pending on F-091, which is blocked.
+4. **A device.** No emulator, no JDK, no phone.
+
+### Recorded, not resolved
+
+- **Criterion 3 is attested, not met.** *"A person can complete photo-assisted setup end to end
+  without a test harness"* needs a device and is recorded as blocking release. jest-expo would
+  cheerfully mock a camera that does nothing, and *"it rendered without crashing"* would pass
+  forever while proving nothing — F-040's test file says so and is still right.
+- **A fourth acceptance criterion was added during implementation, with the reason.** NFR-23
+  says a band that underperforms *"blocks release of that feature"*, and this is the feature that
+  makes the photo path reachable. The harness records a release-blocking obligation as an
+  attestation against an acceptance entry, so without the entry there was nowhere to put it. The
+  decision to build both halves and attest rather than gate the path at runtime was the user's.
+- **What already limits the claim in code**, independent of the study: `PHOTO_CEILING` is 0.5,
+  below `CONFIDENCE_MAJORITY`, so a photo estimate never outranks a split guided answer; every
+  dimension is editable; nothing is stored without confirmation; and no copy says how accurate
+  the estimate is.
+- **The F-095 entry below carried a wrong reason** and is corrected in place: `react-native-worklets`
+  is not "absent everywhere" — it is installed under `apps/mobile`, and that zone's blocker is
+  `@babel/runtime`. The conclusion was right; the reason for half of it was not.
+
+### Watch out
+
+- **`sampleFrame` walks by `bytesPerRow`, not `width × bytesPerPixel`.** Rows are padded on both
+  platforms, and a walk that assumes otherwise drifts further left with every row — producing a
+  plausible colour sampled from the wrong place.
+- **The frame is disposed in a `finally`.** A retained frame stalls the pipeline within a second
+  or two, and the symptom is a preview that simply stops.
+- **`offerable` narrows.** TypeScript infers a narrowing predicate for a `const` boolean, so
+  `reading !== null` after it is dead code and lint says so.
+
+### Next
+
+R3 holds F-081 and F-086 (both blocked on this machine), F-099, F-101, F-102.
+
+---
+
 ## 2026-08-26 — F-095 · the scale and the product were both right, about different things
 
 F-092 filed this as *"36 of 69 spacing values are off the scale"*. Re-counted before touching
@@ -97,11 +220,17 @@ value that *is* a step. Plus a dead exemption, which must fail, or the list only
 **NOT RUN, and the second one matters:**
 
 1. Every gate needing `pnpm` — Node 22.16.0 / pnpm 9.3.0 against `engines` demanding 24.19.0 / 11.
-2. **The rendered half of gate 8.** `jest` cannot start in `packages/ui` or `apps/mobile`:
-   `react-native-worklets` is absent everywhere, a consequence of `pnpm install` never having run
-   here. Pre-existing and unrelated — the error names a missing resolver module, not an edited
-   file — but it means **the layout change is unverified visually**. Twenty values moved by 2px
-   each, no emulator, no JDK. Reported as unverified rather than verified.
+2. **The rendered half of gate 8.** `jest` cannot start in `packages/ui` or `apps/mobile`.
+   Pre-existing and unrelated to this change, but it means **the layout change is unverified
+   visually**. Twenty values moved by 2px each, no emulator, no JDK. Reported as unverified
+   rather than verified.
+
+   > **Corrected while working F-097.** This entry first said `react-native-worklets` was
+   > "absent everywhere". It is not: it is installed under `apps/mobile` and missing only from
+   > `packages/ui`, which is what stops jest there. The app's blocker is a different missing
+   > module, `@babel/runtime`. Both are partial-install symptoms of `pnpm install` never having
+   > run here, and the conclusion — neither zone can run jest — was right. The reason given for
+   > one of them was not.
 
 ### Recorded, not resolved
 

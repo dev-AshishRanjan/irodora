@@ -18,6 +18,14 @@ import {
   type LensReading,
 } from '../src/lens/reading';
 import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera';
+import { clearOffer, hasOffer, offerReading, takeReading } from '../src/lens/handoff';
+/*
+ * `permissionState` comes from the VIEWFINDER, which reaches react-native-vision-camera. It is
+ * a pure function of two booleans and jest-expo resolves the module, so importing it costs
+ * nothing here — and putting it anywhere else would mean a second copy of a mapping that has
+ * three cases and exactly one right answer.
+ */
+import { permissionState } from '../src/lens/viewfinder';
 import { aggregate, partition, type Region, type Sample } from '@irodora/color-sampling';
 
 const px = (r: number, g: number, b: number): Sample => ({ r, g, b, alpha: 1 });
@@ -33,6 +41,18 @@ function textured(width: number, height: number): Region {
 }
 
 const GOOD = textured(40, 40);
+
+/** A plain reading, for the hand-off suites. Its values are irrelevant; its identity is not. */
+const READING: LensReading = {
+  rgb: [0.32, 0.42, 0.43],
+  space: 'srgb',
+  usableSamples: 1600,
+  variance: 0.01,
+  illumination: 'daylight',
+  quality: 'good',
+  confidence: 0.7,
+  instruction: '',
+};
 
 /**
  * A region with neutral highlights, so illumination classifies as daylight.
@@ -171,6 +191,22 @@ describe('the capture colour space is read, never assumed', () => {
     // saturated colours this product exists for.
     expect(readCaptureSpace('rec2020')).toBe('unknown');
     expect(readCaptureSpace('adobe-rgb')).toBe('unknown');
+    // The names VisionCamera 5's session actually reports (F-097). `p3-d65` is Display-P3 and
+    // was `unknown` until the viewfinder was wired to the real API — the vocabulary came from
+    // the platform rather than from what looked plausible.
+    expect(readCaptureSpace('p3-d65')).toBe('display-p3');
+    expect(readCaptureSpace('hlg-bt2020')).toBe('unknown');
+    expect(readCaptureSpace('dolby-vision')).toBe('unknown');
+    expect(readCaptureSpace('apple-log')).toBe('unknown');
+    // DECOYS, AND THE THIRD ONE IS THE REASON THE OTHERS ARE HERE. A pixel format is a memory
+    // layout, not a colour space; the session reports the space and the frame reports the
+    // layout. `rgb-rgb-8-bit` contains the substring `rgb-8`, so the sRGB rule accepted it
+    // until F-097 — a confident sRGB reading for a frame whose space nobody had stated, which
+    // is the exact assumption apps/mobile/AGENTS.md forbids.
+    expect(readCaptureSpace('yuv-420-8-bit-full')).toBe('unknown');
+    expect(readCaptureSpace('raw-bayer-packed96-12-bit')).toBe('unknown');
+    expect(readCaptureSpace('rgb-rgb-8-bit')).toBe('unknown');
+    expect(readCaptureSpace('rgb-rgba-8-bit')).toBe('unknown');
     expect(readCaptureSpace(null)).toBe('unknown');
     expect(readCaptureSpace(undefined)).toBe('unknown');
     expect(readCaptureSpace('')).toBe('unknown');
@@ -207,5 +243,67 @@ describe('the sample that crosses the bridge is bounded', () => {
     // Sending exactly 1000 would leave fewer than 1000 usable once specular and shadow
     // pixels are discarded on the other side.
     expect(MAX_SAMPLES_PER_FRAME).toBeGreaterThan(1000);
+  });
+});
+
+describe('the hand-off to profile setup (F-097)', () => {
+  afterEach(() => {
+    // Module state. A test that leaves an offer standing would hand it to the next one, and
+    // the failure would look like a bug in whichever test happened to run second.
+    clearOffer();
+  });
+
+  it('offers a reading and hands it over', () => {
+    expect(hasOffer()).toBe(false);
+    offerReading(READING);
+    expect(hasOffer()).toBe(true);
+    expect(takeReading()).toEqual(READING);
+  });
+
+  it('IS ONE-SHOT — a second take returns null', () => {
+    /*
+     * The case nobody would find by hand. Someone opens the Lens, taps through to their
+     * profile, decides to answer the twelve comparisons instead, and navigates back. Without
+     * the consume, arriving a second time re-proposes the estimate they just declined — and
+     * FR-27's "never finalised without explicit user confirmation" starts to read as nagging.
+     */
+    offerReading(READING);
+    expect(takeReading()).toEqual(READING);
+    expect(takeReading()).toBeNull();
+    expect(hasOffer()).toBe(false);
+  });
+
+  it('returns null when nobody offered anything, rather than throwing', () => {
+    // The ORDINARY case: the guided path reaches profile setup this way on every run.
+    expect(takeReading()).toBeNull();
+  });
+
+  it('keeps the second reading when two are offered', () => {
+    // Not a queue. Somebody who takes two readings before navigating meant the second one; a
+    // queue would offer them a colour they had already moved on from.
+    const second = { ...READING, usableSamples: 1234 };
+    offerReading(READING);
+    offerReading(second);
+    expect(takeReading()).toEqual(second);
+  });
+
+  it('can be cleared without being read', () => {
+    offerReading(READING);
+    clearOffer();
+    expect(takeReading()).toBeNull();
+  });
+});
+
+describe('permission maps to three states, not two', () => {
+  it('separates "not asked" from "asked and refused"', () => {
+    /*
+     * A boolean would collapse these, and they are different screens: one has a button that
+     * would help and the other does not. Getting it wrong means offering somebody a control
+     * that cannot work, which is worse than explaining that it cannot.
+     */
+    expect(permissionState(true, true)).toBe('granted');
+    expect(permissionState(true, false)).toBe('granted');
+    expect(permissionState(false, true)).toBe('undetermined');
+    expect(permissionState(false, false)).toBe('denied');
   });
 });

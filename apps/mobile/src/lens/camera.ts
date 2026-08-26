@@ -77,9 +77,28 @@ export interface FrameSample {
 export function readCaptureSpace(reported: string | null | undefined): CaptureSpace {
   if (reported === null || reported === undefined) return 'unknown';
   const normalised = reported.toLowerCase().replace(/[\s_]/gu, '-');
-  if (normalised.includes('display-p3') || normalised === 'p3') return 'display-p3';
+
+  /*
+   * A PIXEL FORMAT IS NOT A COLOUR SPACE, and this is where that could have been confused.
+   *
+   * `rgb-rgb-8-bit` is a VisionCamera 5 pixel format — a memory layout — and it contains the
+   * substring `rgb-8`, which the sRGB rule below would have accepted. That is precisely the
+   * assumption `apps/mobile/AGENTS.md` forbids: it would report a confident sRGB reading for a
+   * frame whose colour space nobody stated.
+   *
+   * Anything naming a bit depth is a layout. Rejected first, so the rules below cannot see it.
+   * F-097 found this while wiring the real API; nothing had ever passed such a string in.
+   */
+  if (normalised.includes('bit') || normalised.includes('bayer')) return 'unknown';
+
+  // `p3-d65` is VisionCamera 5's own name for Display-P3 (F-097). Added because the session
+  // reports it, not because it looked plausible — the vocabulary a reader accepts should come
+  // from what the platform actually says.
+  if (normalised.includes('display-p3') || normalised === 'p3' || normalised.startsWith('p3-'))
+    return 'display-p3';
   if (normalised.includes('srgb') || normalised.includes('rgb-8')) return 'srgb';
-  // Rec.2020, Adobe RGB, or a string nobody here has seen. Not sRGB, and not a guess.
+  // Rec.2020, Adobe RGB, Dolby Vision, an Apple Log variant, or a string nobody here has seen.
+  // Not sRGB, and not a guess.
   return 'unknown';
 }
 

@@ -226,6 +226,55 @@ export const en = {
   'home.openProfile': 'Build your colour profile',
   'profile.title': 'Your colour profile',
   'profile.privacy': 'No camera. Everything stays on this device.',
+  /*
+   * The photo path's version of the same claim, and the reason there are two.
+   *
+   * 'profile.privacy' says "No camera", which was simply true until F-097 gave the photo path a
+   * producer. A privacy claim that quietly stops being true is worse than one never made, and
+   * nothing would have failed: the string still exists, still renders, still reads well.
+   *
+   * This one says only what is true of that path — a frame was looked at and discarded, and
+   * nothing left the device. It is the same claim NSCameraUsageDescription makes at the moment
+   * permission is asked for, which is where a person first reads it.
+   */
+  'profile.privacyPhoto':
+    'The camera looked once and the picture was discarded. Everything stays on this device.',
+  /*
+   * THE LENS (FR-13, F-097). What this copy may never say is "measure": a camera reading is
+   * `estimated` provenance, and NFR-21's claims lint binds the word to `reference` and
+   * `calibrated` (ADR-0031). It reads, it says how sure it is, and it never says how accurate
+   * it is — because nobody has established that (NFR-23 is F-037's study and has not run).
+   */
+  'home.openLens': 'Read a colour with the camera',
+  'lens.title': 'Lens',
+  'lens.privacy':
+    'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
+  'lens.viewfinder': 'Camera view. The colour under the centre of the frame is read continuously.',
+  'lens.askTitle': 'The Lens needs the camera',
+  'lens.askBody': 'Only to read the colour in front of it. No picture is kept.',
+  'lens.ask': 'Allow the camera',
+  'lens.deniedTitle': 'The camera is not available',
+  'lens.deniedBody':
+    'Camera access was turned off for Irodora. You can turn it back on in your device settings. Everything else in the app works without it.',
+  'lens.waiting': 'Point the centre of the frame at a colour.',
+  'lens.noReading': 'No colour has been read yet.',
+  'lens.conditions': 'Conditions',
+  'lens.confidence': 'How sure this reading is, from 0 to 1',
+  'lens.reading': 'The colour under the crosshair',
+  'lens.samples': 'Pixels used',
+  'lens.nearest': 'Closest colours in the corpus',
+  'lens.useForProfile': 'Use this colour for my profile',
+  'lens.useForProfileNote':
+    'It proposes a starting point you can change. Nothing is saved until you confirm it on the next screen.',
+  'lens.light.daylight': 'Daylight',
+  'lens.light.warmIndoor': 'Warm indoor light',
+  'lens.light.coolIndoor': 'Cool indoor light',
+  'lens.light.mixed': 'Mixed light',
+  'lens.light.lowLight': 'Low light',
+  'lens.light.unknown': 'Light not identified',
+  'lens.space.srgb': 'sRGB',
+  'lens.space.displayP3': 'Display-P3',
+  'lens.space.unknown': 'Colour space not stated by the camera',
   'profile.progress': 'Comparison',
   'profile.question': 'Which would you rather wear?',
   'profile.choose': 'Choose',

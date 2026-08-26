@@ -2752,21 +2752,41 @@
       "service": "mobile",
       "release": "R3",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-027"
       ],
       "acceptance": [
         "A capture surface exists that a person can reach, and it produces a LensReading",
         "Profile setup receives that reading from the surface rather than from a prop a test supplies",
-        "A person can complete photo-assisted setup end to end without a test harness"
+        "A person can complete photo-assisted setup end to end without a test harness",
+        "The photo-assisted path is validated across the full skin-tone range before it is released (NFR-23)"
       ],
       "verification": [
         "state",
         "a11y",
-        "e2e"
+        "e2e",
+        "typecheck",
+        "lint",
+        "format",
+        "content"
       ],
-      "notes": "FILED BY F-027, WHICH BUILT THE CONSUMER. `estimateFromReading` is checked twelve ways and is reachable in the app only by passing a `LensReading` in as a prop — nothing constructs one. That is [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] exactly, and it is recorded rather than absorbed because F-027’s criteria are about the ESTIMATE and the CONFIRMATION, and widening them to build a viewfinder would have been scope nobody reviewed against a requirement. THE GAP IS OLDER THAN F-027: F-040 is `done` and shipped `read()` plus four capture modes wired to nothing, with its four device criteria attested — so the app has had a capture seam and no capture surface since R2. This feature is the surface. WHY IT IS NOT SIMPLY PART OF F-040: F-040 is closed and its attestations describe the frame-processor behaviour on a device, which is a different claim from \"a person can reach this\". NOTE THE VERIFICATION REALITY BEFORE CLAIMING IT: a VisionCamera surface cannot be rendered by jest, so the a11y conformance registry cannot hold it in the shape the other eight screens use, and criterion 3 needs gate 7 — which is pending on F-091."
+      "notes": "ONE ACCEPTANCE CRITERION WAS ADDED DURING IMPLEMENTATION, DELIBERATELY AND WITH THE REASON. NFR-23 says a band that underperforms \"blocks release of that feature\", and F-097 is the feature that makes the photo path reachable for the first time — so the requirement lands here, and the harness records a release-blocking obligation as an ATTESTATION against an acceptance entry. Without the entry there was nowhere to record it, and the alternative was leaving it in prose that gate 0 cannot see. The user was asked and chose to build both halves and attest NFR-23 rather than gate the path at runtime. DONE. THE PRODUCER EXISTS. `read()` shipped in F-040 and `estimateFromReading` in F-027, and until now nothing in the app could construct a `LensReading` — [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] with two features stacked on top of it. THE ARCHITECTURE IS A SPLIT, AND THE CHECKER IS THE SMALLER REASON FOR IT. A VisionCamera view cannot be rendered by jest, and a11y-scope fails on a screen the conformance registry cannot reach — so `src/screens/Lens.tsx` takes the viewfinder as a NODE and `src/lens/viewfinder.tsx` supplies it from the route, exactly as app/profile.tsx imports deviceRepository. The bigger reason is that everything in the screen is layout, copy and formatting — the parts that go wrong quietly — and all of it is now registered in three permission states and checked in both themes by CI. CRITERION 1 (a capture surface a person can reach, producing a LensReading) — met in code: a /lens route, an entry point on Home, permission handling in three states, and a frame output that reduces through `read()`. Whether it RUNS is the attestation above; nothing here claims it does. CRITERION 2 (profile setup receives the reading from the surface, not from a prop a test supplies) — met. `src/lens/handoff.ts` is a one-shot slot: not a route parameter, because a route parameter is a URL and because a JSON round-trip produces a `LensReading`-shaped object the compiler believes on trust — and the type having no field for a frame is the whole guarantee (F-040). ONE-SHOT is the interesting half: someone who reaches their profile, decides to answer the twelve comparisons instead and navigates back must not be re-proposed the estimate they declined. Five tests, including that one. CRITERION 3 — ATTESTED, not met. See above. THREE THINGS FOUND BY WIRING THE REAL API. (1) VisionCamera 5 has a different surface from the one F-040 was written against, and asking for `yuv` would have meant hand-writing a YUV→RGB matrix — arithmetic the engine does not provide and apps/mobile/AGENTS.md forbids the app from inventing. ADR-0075 records requesting `rgb` instead, and says plainly that it supersedes the pixel-format half of an F-040 criterion that nobody has run. (2) `readCaptureSpace` accepted any string containing \"rgb-8\" as sRGB, and `rgb-rgb-8-bit` is a VisionCamera PIXEL FORMAT — a memory layout would have been read as a colour space, producing a confident sRGB reading for a frame nobody had described. Anything naming a bit depth is now refused first, with four decoys. The space comes from the SESSION (`onSessionConfigSelected`), and is `unknown` until it does, which caps confidence rather than defaulting. (3) The profile screen has said \"No camera\" since F-026 and that became FALSE the moment this path existed — with nothing failing: the key existed, it rendered, and the test asserting it covered the guided path, which is unchanged. The claim is now per-path and asserted FROM BOTH SIDES. E-037 records it. GATES RUN: state, a11y scope, token reach, the spacing check, content (including a regenerated font subset — the new Japanese copy needed 9 codepoints the face lacked), claims, no-inference, app-imports, engine purity, motion, guards, unsafe call sites, cache scope, typecheck for apps/mobile and packages/ui, eslint and prettier. NOT RUN: every gate needing pnpm; THE RENDERED HALF OF GATE 8, because jest cannot start in either zone; and gate 7, which is pending. So the three conformance registrations and the privacy-claim assertion are WRITTEN AND NOT RUN HERE — CI runs them, and that is a real difference from the camera code, which nothing anywhere runs yet.",
+      "plan": "plans/F-097-a-capture-surface-hands-a-reading-to-profile-setup.md",
+      "attested": [
+        {
+          "criterion": "A person can complete photo-assisted setup end to end without a test harness",
+          "verifiedBy": "A device run: grant the camera, point the crosshair at a colour, tap \"use this colour for my profile\", land on profile setup with an estimate, correct a dimension, confirm, and reopen the app to find it stored. NOT RUNNABLE ON THE WORKSTATION THIS WAS BUILT ON and not simulated either: gate 7 is pending on F-091, which is blocked on tooling that cannot install; jest cannot start in apps/mobile (@babel/runtime absent) or packages/ui (react-native-worklets absent), both partial-install symptoms; and there is no emulator, no JDK and no phone. jest-expo would happily mock a camera that does nothing and \"it rendered without crashing\" would pass forever while proving nothing — F-040’s test file says exactly that and it is still right.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The photo-assisted path is validated across the full skin-tone range before it is released (NFR-23)",
+          "verifiedBy": "NFR-23: \"a held-out validation set stratified by ITA° covers every band with a stated minimum sample; per-band accuracy is published internally and a band that underperforms blocks release of that feature.\" That study is F-037’s outstanding attestation and has not run. BUILDING THE SURFACE IS NOT RELEASING IT, and the two must not be confused: F-097 makes the photo→profile path reachable for the first time, so this is the feature NFR-23 names. Recorded here rather than only on F-037 because the requirement blocks the release of THIS path, and a reader of F-097 alone would otherwise not know. What already limits the claim in code: PHOTO_CEILING is 0.5, below CONFIDENCE_MAJORITY, so a photo estimate never outranks a split guided answer; every dimension is editable; nothing is stored without explicit confirmation; and the copy never says how accurate the estimate is, because nobody has established that.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-098",

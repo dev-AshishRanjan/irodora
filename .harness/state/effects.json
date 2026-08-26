@@ -1123,7 +1123,7 @@
       "severity": "medium",
       "guard": "gate:test (apps/mobile/test/profile.test.ts — the reading’s cap is asserted to reach the estimate, with a baseline)",
       "memory": "memory/effects/the-capture-ceiling-is-now-a-profile-confidence.md",
-      "rationale": "A LENS READING’S CONFIDENCE WAS A NUMBER SHOWN BESIDE A COLOUR. It is now the ceiling on seven profile dimensions, and F-028 will weight recommendations by those. So a change to ANY of the three inputs `cappedConfidence` combines — SPACE_CONFIDENCE_CEILING, the illumination assessment, the quality assessment — silently changes how much authority a personal profile carries, one subsystem away from where it was edited. THE TYPE CANNOT SEE IT: the field stays a number in [0,1] and every signature is unchanged, so typecheck is green through the whole thing. The guard is a test that asserts a poor reading produces a less confident estimate AND that a good one produces the ceiling — the baseline half matters, because \"the cap is applied\" is indistinguishable from \"the value is constant\" without it. What the guard does NOT cover is whether the ceilings are the right numbers; they are conventions (NFR-2) and F-063 is what would replace them with measurements.",
+      "rationale": "A LENS READING’S CONFIDENCE WAS A NUMBER SHOWN BESIDE A COLOUR. It is now the ceiling on seven profile dimensions, and F-028 will weight recommendations by those. So a change to ANY of the three inputs `cappedConfidence` combines — SPACE_CONFIDENCE_CEILING, the illumination assessment, the quality assessment — silently changes how much authority a personal profile carries, one subsystem away from where it was edited. THE TYPE CANNOT SEE IT: the field stays a number in [0,1] and every signature is unchanged, so typecheck is green through the whole thing. The guard is a test that asserts a poor reading produces a less confident estimate AND that a good one produces the ceiling — the baseline half matters, because \"the cap is applied\" is indistinguishable from \"the value is constant\" without it. What the guard does NOT cover is whether the ceilings are the right numbers; they are conventions (NFR-2) and F-063 is what would replace them with measurements. F-097 GAVE THIS LINK ITS FIRST REAL TRAFFIC. Until then `cappedConfidence` reached seven profile dimensions only through a prop a test supplied — the consumer existed, the producer did not, and the whole path was [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]. A capture space the platform declines to state now genuinely caps a stored profile’s confidence, on a device, and ADR-0075 records the one place that had to be decided to make it so: VisionCamera 5 reports a PIXEL FORMAT on the frame and a COLOUR SPACE on the session, and `readCaptureSpace` accepted any string containing \"rgb-8\" — which the pixel format `rgb-rgb-8-bit` does. A layout would have been read as a colour space and produced a confident sRGB reading for a frame nobody had described. Anything naming a bit depth is now refused before the space rules run, with decoys.",
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
@@ -1325,6 +1325,43 @@
       "feature": "F-095",
       "memory": "memory/effects/a-scale-with-no-names-shifts-under-its-readers.md",
       "rationale": "THE SCALE IS POSITIONAL IN ALL FOUR TARGETS — `--space-1..N`, `--spacing-1..N`, `SPACING[]` and `nativeSpacing[]`. So adding a step at the front or removing one from the middle changes what EVERY index above it means, while every call site still compiles and every test still passes: React Native style props take `number`, `nativeSpacing[2]` has literal type 12 today and would have literal type 14 tomorrow, and both are equally assignable. No test asserts a component’s padding VALUE — the conformance suite resolves colours, not lengths. The symptom is a layout subtly wrong everywhere, which is the symptom nobody bisects. CONTRAST WITH `nativeRadius`, WHICH IS A NAMED RECORD: `nativeRadius.swatch` survives any reordering and fails loudly if the name goes. Spacing and radius come from the same manifest and got different shapes, and only one of them is safe to edit. WHY F-095 COULD MOVE THE SCALE ANYWAY: ADR-0074 renumbered every index above 1, and that was safe PRECISELY BECAUSE NOTHING READ IT — the defect E-029 recorded. That window closed the moment it was fixed; five components read it now. GUARD, AND ITS HONEST LIMIT. `verify-spacing-scale.mjs` fails on any padding, margin or gap LITERAL that is not a step, naming file, line, property and value, and reads the scale from the manifest rather than repeating it — a `--prove` case removes a step from the manifest and asserts the verdict follows, which is what distinguishes reading the scale from carrying a copy. IT CANNOT SEE A STALE INDEX: `nativeSpacing[2]` is not a literal, the check reads no indices, and it says so. What stands in for a guard is the doc comment emitted onto the binding itself and the fact that only five call sites exist — protection that works until it does not. THE STRUCTURAL FIX IS NAMES, as radius already has, and it is F-103 rather than smuggled into F-095: it changes the manifest schema and all four emitters.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-037",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/handoff.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/en.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:a11y (screens.test.tsx, asserted from both sides)",
+      "feature": "F-097",
+      "memory": "memory/effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md",
+      "rationale": "BUILDING THE PRODUCER MADE A CLAIM ON ANOTHER SCREEN FALSE, AND NOTHING WOULD HAVE BROKEN. The profile screen has said \"No camera. Everything stays on this device.\" since F-026, and it was true: ADR-0010 §2 makes the swatch path primary precisely because it is camera-free, and a test asserted the sentence rendered. F-027 added a `reading` prop and it stayed true in practice, because nothing in the app could construct a `LensReading`. F-097 built the thing that can, so the sentence is now false on exactly the run where it matters most. WHY NO CHECK COULD SEE IT: the key still exists, so the i18n suite passes; it still renders, and a sentence’s TRUTH is not a property the conformance suite can see; the existing assertion covers the GUIDED path, which is unchanged and still says it; and nobody edited the string — the file that moved was not the file carrying the claim. THE GUARD IS TWO-SIDED, and the second half is the load-bearing one: the guided path must CONTAIN \"No camera\" and the photo path must NOT, and must carry the sentence that replaces it. A one-sided assertion would have kept passing through exactly the change that made the claim false. WHAT IS STILL UNGUARDED: every other claim in a 300-string catalogue whose truth depends on code elsewhere. NFR-21’s copy lint binds MEASUREMENT language to provenance and nothing binds anything else; content/rules/claims.json is the register for the phrases it covers and does not cover this one.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
