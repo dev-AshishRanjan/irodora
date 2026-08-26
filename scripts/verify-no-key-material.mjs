@@ -177,17 +177,78 @@ const PUBLISHED_VECTORS = [
   '2e4f11086a73e790e15a5ad94911828c116dd78cd9bbec7da72bf043c538655a',
 ];
 
-/** Every 64-hex string the committed corpus ledger records. */
+/**
+ * The committed content LEDGERS — every file in which this repository publishes a checksum
+ * for content it ships.
+ *
+ * `content/versions/` was the whole list while the corpus was the only thing published. F-021
+ * published a second: the phrase lexicon, whose ledger is `content/rules/index.json`, and
+ * `generate-rules-bundle.mjs` emits that checksum into shipped source exactly as the corpus
+ * bundle emits its own. This check did not know the second ledger existed, so `LEXICON_DIGEST`
+ * — a published digest, in a generated module, verified current by gate 11 on the same run —
+ * was reported as a possible SQLCipher key.
+ *
+ * That is worse than it first reads. It is not a missed key; it is a security gate going red
+ * on something correct, which is how a security gate stops being read. The repair is NOT to
+ * exempt the path — see above, a key written into a generated file is exactly as dangerous as
+ * one written by hand. It is to give the discriminator the whole ledger.
+ *
+ * Each source is NAMED and its contribution is printed on every run, so a ledger that quietly
+ * stops being read appears as a number rather than as nothing. A named source that is missing,
+ * or that records no checksum at all, FAILS. Absence here makes the check STRICTER, which is
+ * the safe direction and therefore precisely the kind of breakage nobody investigates — until
+ * the day it is easier to silence a real finding than to work out why the ledger went quiet.
+ */
+const LEDGER_SOURCES = [
+  {
+    path: 'content/versions',
+    kind: 'dir',
+    why: 'the corpus ledger — every published corpus version and its digest',
+  },
+  {
+    path: 'content/rules/index.json',
+    kind: 'file',
+    why: 'the rules ledger — the phrase lexicon publishes its checksum here (F-021)',
+  },
+];
+
+/**
+ * Every 64-hex string the committed ledgers record, with what each source contributed.
+ *
+ * `sample` is the first digest a source carries — not the first it ADDS — so the decoy below
+ * can assert that source is still being read even when another one happens to record the same
+ * value first.
+ */
 function ledgerDigests() {
-  const dir = join(ROOT, 'content', 'versions');
   const found = new Set(PUBLISHED_VECTORS);
-  if (!existsSync(dir)) return found;
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.json')) continue;
-    for (const m of readFileSync(join(dir, file), 'utf8').matchAll(/\b[0-9a-f]{64}\b/gu))
-      found.add(m[0]);
+  const read = [];
+  const missing = [];
+
+  for (const source of LEDGER_SOURCES) {
+    const full = join(ROOT, source.path);
+    if (!existsSync(full)) {
+      missing.push(source);
+      continue;
+    }
+    const files =
+      source.kind === 'dir'
+        ? readdirSync(full)
+            .filter((f) => f.endsWith('.json'))
+            .map((f) => join(full, f))
+        : [full];
+
+    let digests = 0;
+    let sample;
+    for (const file of files)
+      for (const m of readFileSync(file, 'utf8').matchAll(/\b[0-9a-f]{64}\b/gu)) {
+        sample ??= m[0];
+        digests += 1;
+        found.add(m[0]);
+      }
+    read.push({ ...source, files: files.length, digests, sample });
   }
-  return found;
+
+  return { found, read, missing };
 }
 
 /** `src/` files under a shipped root. `test/` is excluded BY PATH — fixtures live there. */
@@ -217,7 +278,7 @@ export function unaccountedHex(source, ledger) {
     .filter((hex) => !ledger.has(hex.toLowerCase()));
 }
 
-const ledger = ledgerDigests();
+const { found: ledger, read: ledgersRead, missing: ledgersMissing } = ledgerDigests();
 const sources = SHIPPED.flatMap((d) => shippedSources(d));
 
 console.log(`\n${BOLD}Irodora — no key pasted into source${OFF}\n`);
@@ -225,6 +286,29 @@ console.log(
   `${DIM}  ${String(sources.length)} shipped source file(s) scanned; ` +
     `${String(ledger.size)} ledger digest(s) accounted for${OFF}`,
 );
+for (const l of ledgersRead)
+  console.log(
+    `${DIM}    ${l.path} — ${String(l.digests)} digest(s) in ${String(l.files)} file(s) — ${l.why}${OFF}`,
+  );
+
+/*
+ * A NAMED LEDGER THAT IS NOT THERE, or that records nothing, is a failure rather than an empty
+ * contribution. It would make this check stricter, not looser, and a check that has quietly
+ * become stricter is one somebody eventually gets past by exempting the finding instead.
+ */
+if (ledgersMissing.length > 0 || ledgersRead.some((l) => l.digests === 0)) {
+  const broken = [
+    ...ledgersMissing.map((l) => `${l.path} — missing`),
+    ...ledgersRead.filter((l) => l.digests === 0).map((l) => `${l.path} — records no checksum`),
+  ];
+  console.log(
+    `\n${RED}${BOLD}A declared content ledger could not be read.${OFF}\n` +
+      broken.map((b) => `  ${RED}✗ ${b}${OFF}\n`).join('') +
+      `\n  ${DIM}Every published digest that ledger accounts for would now read as a key. Restore it,\n` +
+      `  or remove it from LEDGER_SOURCES deliberately — do not leave it declared and unread.${OFF}\n`,
+  );
+  process.exit(1);
+}
 
 /*
  * THE GATE MUST KNOW IT FOUND ITS INPUTS. An empty ledger would make every digest unaccounted
@@ -244,20 +328,30 @@ if (sources.length === 0) {
  * discriminating without anyone noticing [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
  * A real digest must be silent and a key-shaped literal must be reported, every time.
  */
-const probeDigest = [...ledger][0];
 const probeKey = `${'f'.repeat(63)}0`;
-if (probeDigest !== undefined) {
-  if (unaccountedHex(`const D = '${probeDigest}';`, ledger).length > 0) {
-    console.log(`\n${RED}${BOLD}The scan reported a digest the ledger records.${OFF}\n`);
-    process.exit(1);
-  }
-  if (unaccountedHex(`const KEY = '${probeKey}';`, ledger).length !== 1) {
+
+/*
+ * ONE DIGEST PER LEDGER, not one digest overall. `[...ledger][0]` is a published test vector —
+ * it is silent whether or not either ledger file was read, so it could never have caught the
+ * rules ledger being absent from this list. A probe per source is what makes each source's
+ * absence visible here rather than in a red gate over correct content.
+ */
+for (const l of ledgersRead) {
+  if (l.sample === undefined) continue;
+  if (unaccountedHex(`const D = '${l.sample}';`, ledger).length > 0) {
     console.log(
-      `\n${RED}${BOLD}The scan did not report a planted key literal.${OFF}\n` +
-        'A check that cannot fire and a check that has nothing to report look identical.\n',
+      `\n${RED}${BOLD}The scan reported a digest ${l.path} records.${OFF}\n` +
+        `A published checksum reading as a key is how this gate stops being trusted.\n`,
     );
     process.exit(1);
   }
+}
+if (unaccountedHex(`const KEY = '${probeKey}';`, ledger).length !== 1) {
+  console.log(
+    `\n${RED}${BOLD}The scan did not report a planted key literal.${OFF}\n` +
+      'A check that cannot fire and a check that has nothing to report look identical.\n',
+  );
+  process.exit(1);
 }
 
 const pasted = sources
@@ -272,8 +366,9 @@ if (pasted.length) {
     console.log(`  ${RED}✗ ${file}${OFF} ${DIM}${hits.join(', ')}${OFF}`);
   console.log(
     `\n  ${DIM}A 64-hex literal is the shape of a SQLCipher key, and FR-56 says a key is never\n` +
-      `  in the bundle. If this is a corpus digest, it belongs in content/versions/ and the\n` +
-      `  module should be regenerated. If it is a key, it is compromised: rotate it.${OFF}\n`,
+      `  in the bundle. If this is a published digest, it belongs in the ledger that publishes\n` +
+      `  its content — ${LEDGER_SOURCES.map((l) => l.path).join(' or ')} — and the module\n` +
+      `  should be regenerated. If it is a key, it is compromised: rotate it.${OFF}\n`,
   );
   process.exit(1);
 }
