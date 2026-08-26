@@ -8,6 +8,121 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-037 · the rule leaves SQL, and finds out it was written for the wrong language
+
+Two guarantees of different kinds, treated differently on purpose.
+
+**NFR-22 is structural and was buildable, so it was built.** **NFR-23 is a study with human
+participants and cannot be done here at all**, so both its criteria are attested — and the thing
+it would gate now refuses to claim more than it has *by test* rather than by note.
+
+### The rule left SQL
+
+`prohibited.ts` refuses a **column**. It cannot see a function called `inferEthnicity` that never
+touches the database, and *"no code path infers a protected characteristic"* is a claim about
+**code**.
+
+So `scripts/verify-no-inference.mjs` scans **308 shipped source files**, reusing the store's own
+vocabulary from the built package rather than keeping a second list (E-013). The prohibition also
+gained **age** and **health** — F-026 had covered skin, complexion, ethnicity, race,
+attractiveness and body.
+
+### The proof found two real holes, and they are the same hole
+
+My patterns were written for **snake_case SQL**. TypeScript is **camelCase**.
+
+| planted | why it was missed |
+|---|---|
+| `inferEthnicity` | `\bethnic` needs a boundary before "ethnic"; here it follows `r` |
+| `ageBand` | `\bages?\b` needs a boundary *after* "age"; here it precedes `B` |
+
+**Both slipped through silently** — the scan reported "no code path names a protected
+characteristic" over a file that had just had `inferEthnicity` added to it.
+
+The obvious fix is worse: drop the anchors and the age rule flags `average`, `percentage`,
+`storage`, `language` and `usage`. That check gets switched off within a day.
+
+**The fix is tokenisation.** `inferEthnicity` → `infer` · `ethnicity`; `ageBand` → `age` ·
+`band`; `percentage` stays one word that does not *begin* with "age". Stems then match by prefix
+per token, and prefix matching is safe precisely *because* of the tokenising.
+
+One vocabulary, two representations: `pattern` for SQL, `stems` for source — **one list with two
+fields**, so adding a family cannot cover one input and miss the other. Written up as
+[[a-rule-written-for-snake-case-columns-cannot-read-camel-case-source]].
+
+### Four false positives, and every one changed the rule rather than the exemption
+
+- **`diagnos\w*`** caught `verify-guards.mjs`'s `diagnose()` helper and a test constant — the
+  ordinary engineering sense. The family now matches the **noun**, `diagnosis`/`diagnoses`, which
+  is what a *field* is called. The verb is what engineers do to bugs.
+- **`body`** caught `verify-state.mjs`'s markdown `body` and `bodyIndent`. The source stems are
+  multi-word now: `body shape`, `body type`, `body fat`, `body mass` — the same reasoning behind
+  `body_` in the SQL pattern.
+
+The exemption list is **four files**, each made of the vocabulary by necessity, and the proof is
+what stops it growing: a violation planted in a **non-exempt** file must be caught *while* the
+exempt files stay green. Five cases — **three red, two green**. The green ones are the
+load-bearing half: a doc comment discussing skin colour and ethnicity (this repository is full of
+them), and identifiers containing "age" and "race".
+
+### It runs in gate 15, not gate 2, and that is worth recording
+
+The scan reads the vocabulary from the **built** store, and CI runs **lint (gate 2) before build
+(gate 6)**. Putting it in `pnpm lint` would have passed locally — where `dist` exists — and
+failed on the first push. That is the F-098 shape exactly, caught by reading the workflow rather
+than by a red CI run.
+
+It belongs beside the key-material scan anyway: both are about what the product must never do
+with personal data.
+
+### NFR-23 becomes a condition rather than a note
+
+Neither of its criteria can be discharged here. What this feature could do:
+
+**A test now asserts `PHOTO_CEILING` stays at or below `CONFIDENCE_MAJORITY` while the study is
+outstanding.** Raising it produces a failing test asking what changed, rather than a green run.
+That is the only guard NFR-23 can have before participants exist.
+
+And the attestation now **names the shape of the study** — ITA° from a calibrated reference
+capture, bands at conventional boundaries, a per-band minimum fixed *before* collection so it
+cannot be fitted to what arrived, agreement measured against each participant's own corrected
+profile — so whoever runs it has something to run rather than a shrug.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 32 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · **`security`** (key material, advisories, **no-inference over 308 files**) · the no-inference proof (3 red, 2 green) · `content` · `cvd` · `a11y` · `contrast` · `cache-scope` |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+
+`@irodora/store` **64/64**, `@irodora/mobile` **352/352**.
+
+### Recorded honestly
+
+- **This feature cannot make the product safe.** It makes one class of failure structurally
+  impossible and leaves the other clearly outstanding. That is the honest division, not a
+  completed guarantee.
+- **Both NFR-23 criteria are attested and block release.** They need participants and consent,
+  not a fixture.
+- **What the scan cannot see**, printed on every run: a characteristic inferred without ever
+  naming it — a model predicting an age band from a column called `x7`. No source analysis
+  reaches that. What it removes is the version somebody would actually write.
+- **`healthy_margin` is a known false positive**, asserted deliberately in the store's tests
+  rather than tuned away: narrowing `health` to `health_` would miss `healthStatus` and
+  `healthData`, which are the names the field would actually be given. A rule aimed at a
+  protected characteristic should err toward refusing.
+
+### Next
+
+**F-038** is R3's last `must` — performance budgets, which **activates gate 12** and is what
+would discharge F-030's attested latency criterion. After that R3 holds only `should` items:
+F-081 and F-086 (blocked on tooling this workstation lacks), and F-095, F-097, F-099, F-101 —
+four of which this session filed.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-26 — F-032 · the pair that vanishes, and the swap that is worth making
 
 Two colours in a set that are hard to tell apart get flagged, with **a swap and the measured

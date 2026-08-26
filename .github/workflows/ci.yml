@@ -215,6 +215,23 @@ jobs:
       - name: 'Gate 15 — security'
         run: pnpm security
 
+      # Not a gate — the proof that the no-inference scan inside gate 15 can fail (NFR-22,
+      # F-037). It plants a function that infers a protected characteristic into a REAL
+      # non-exempt source file, asserts the scan goes red AND names it, and restores in a
+      # `finally` — the discipline F-100 paid for.
+      #
+      # IT LIVES IN GATE 15 RATHER THAN GATE 2 FOR A MECHANICAL REASON: the scan reads the
+      # prohibited vocabulary from the BUILT @irodora/store, so there is one definition rather
+      # than a copy in a script (E-013) — and gate 2 runs before gate 6 builds anything. It
+      # belongs beside the key-material scan anyway: both are about what the product must never
+      # do with personal data.
+      #
+      # TWO cases must stay GREEN: a doc comment discussing the vocabulary, which this
+      # repository is full of, and identifiers containing "age" and "race". A check that fired
+      # on either would be switched off within a day, and the real protection would go with it.
+      - name: 'Gate 15 — no-inference mutation proof'
+        run: node scripts/verify-no-inference-proof.mjs
+
       # Not a gate — the proof that the disposition cannot become a blanket exemption. A
       # DIFFERENT high advisory must still stop the build while an accepted one is in force,
       # and an accepted entry must expire by itself and fail when it goes stale.

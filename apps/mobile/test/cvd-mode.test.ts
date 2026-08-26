@@ -186,7 +186,7 @@ describe('it reads as an observation about the colours (criterion 3)', () => {
    * is NFR-22's discipline arriving from a different direction: the failure is not a stored
    * field, it is a sentence that diagnoses somebody.
    */
-  const DIAGNOSES =
+  const ADDRESSES_THE_READER =
     /\byou (?:may|might|could|cannot|can't|will) (?:not )?(?:be able to )?(?:see|tell|distinguish|perceive)\b|\byour (?:eyes|vision|colour vision|color vision)\b|あなたの目|あなたには見/iu;
 
   const CVD_KEYS = Object.keys(en).filter((k) => k.startsWith('cvd.'));
@@ -198,18 +198,18 @@ describe('it reads as an observation about the colours (criterion 3)', () => {
 
   it('says nothing about the reader, in either language', () => {
     for (const key of CVD_KEYS) {
-      expect(en[key as keyof typeof en]).not.toMatch(DIAGNOSES);
-      expect(ja[key as keyof typeof en]).not.toMatch(DIAGNOSES);
+      expect(en[key as keyof typeof en]).not.toMatch(ADDRESSES_THE_READER);
+      expect(ja[key as keyof typeof en]).not.toMatch(ADDRESSES_THE_READER);
     }
   });
 
   it('DECOY — the check can see a diagnosis', () => {
     // Without this, the assertion above would pass on a pattern that matches nothing
     // [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
-    expect(DIAGNOSES.test('You may not be able to distinguish these two.')).toBe(true);
-    expect(DIAGNOSES.test('This depends on your colour vision.')).toBe(true);
-    expect(DIAGNOSES.test('あなたの目には見分けにくいかもしれません。')).toBe(true);
-    expect(DIAGNOSES.test('These two are hard to tell apart')).toBe(false);
+    expect(ADDRESSES_THE_READER.test('You may not be able to distinguish these two.')).toBe(true);
+    expect(ADDRESSES_THE_READER.test('This depends on your colour vision.')).toBe(true);
+    expect(ADDRESSES_THE_READER.test('あなたの目には見分けにくいかもしれません。')).toBe(true);
+    expect(ADDRESSES_THE_READER.test('These two are hard to tell apart')).toBe(false);
   });
 
   it('describes the colours, not a person — positively', () => {

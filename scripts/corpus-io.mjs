@@ -50,6 +50,24 @@ export async function loadCorpusPackage() {
  * a copy of it (E-013). A second implementation in this script would agree on the day it was
  * written and drift quietly afterwards.
  */
+/**
+ * Load the built store package.
+ *
+ * `verify-no-inference.mjs` needs `PROHIBITED_IDENTIFIERS`, and the whole point of that check is
+ * that the vocabulary is defined ONCE — in the code that also refuses a migration. A copy in the
+ * script would agree on the day it was written (E-013).
+ */
+export async function loadStorePackage() {
+  const dist = join(ROOT, 'packages', 'store', 'dist', 'index.js');
+  if (!existsSync(dist))
+    throw new Error(
+      `@irodora/store is not built (${dist} is missing). Run \`pnpm build\` first — this ` +
+        'script deliberately uses the built package rather than re-implementing the prohibited ' +
+        'vocabulary, so the source scan and the schema check cannot disagree.',
+    );
+  return import(pathToFileURL(dist).href);
+}
+
 export async function loadRecommendationPackage() {
   const dist = join(ROOT, 'packages', 'recommendation', 'dist', 'index.js');
   if (!existsSync(dist))

@@ -44,7 +44,23 @@ import { StoreError } from './repository.js';
  */
 export interface ProhibitedIdentifier {
   readonly id: string;
+  /** For SQL, where an identifier is snake_case and sits between word boundaries. */
   readonly pattern: RegExp;
+  /**
+   * For SOURCE, where an identifier is camelCase and the banned word is often neither at the
+   * start nor at a word boundary.
+   *
+   * `scripts/verify-no-inference.mjs` splits an identifier into words — `inferEthnicity` into
+   * `infer` + `ethnicity`, `ageBand` into `age` + `band` — and matches each word against
+   * these stems by prefix. **The tokenisation is what makes prefix matching safe**: `average`,
+   * `percentage`, `storage`, `language` and `usage` are each ONE word, and none of them
+   * begins with "age".
+   *
+   * Two representations of one vocabulary rather than two vocabularies. The regex could not do
+   * the source job — `ethnic` does not match inside `inferEthnicity`, and `ages?` does
+   * not match `ageBand` — and the proof found both.
+   */
+  readonly stems: readonly string[];
   /** Why the product refuses it, in the words of the requirement rather than a scold. */
   readonly why: string;
 }
@@ -52,6 +68,7 @@ export interface ProhibitedIdentifier {
 export const PROHIBITED_IDENTIFIERS: readonly ProhibitedIdentifier[] = [
   {
     id: 'skin',
+    stems: ['skin'],
     pattern: /\bskin\w*\b/i,
     why:
       'A profile is a set of ranges, never a skin value (FR-30, ADR-0010). Skin is not one ' +
@@ -60,11 +77,13 @@ export const PROHIBITED_IDENTIFIERS: readonly ProhibitedIdentifier[] = [
   },
   {
     id: 'complexion',
+    stems: ['complexion'],
     pattern: /\bcomplexions?\b/i,
     why: 'A dermatological claim by another name. NFR-22 puts it outside the product.',
   },
   {
     id: 'ethnicity',
+    stems: ['ethnic'],
     pattern: /\bethnic\w*\b/i,
     why: 'NFR-22: no ethnic classification. There is no version of this field that is fine.',
   },
@@ -78,20 +97,66 @@ export const PROHIBITED_IDENTIFIERS: readonly ProhibitedIdentifier[] = [
      * The leading boundary is what keeps `bracelet` and `grace` out.
      */
     id: 'race',
+    stems: ['race', 'racial'],
     pattern: /\brac(e|ial)\w*\b/i,
     why: 'NFR-22: no racial classification.',
   },
   {
     id: 'attractiveness',
+    stems: ['attractive', 'beauty'],
     pattern: /\battractive\w*\b|\bbeauty\w*\b/i,
     why: 'NFR-22: no attractiveness judgement. The product says what suits, not who is pretty.',
   },
   {
     id: 'body',
+    // MULTI-WORD for source, and the scan found out why: `body` alone is an ordinary word in a
+    // codebase — a markdown body, an HTTP body, a function body — and `verify-state.mjs` has
+    // both. The characteristic is always a compound. Same reasoning as `body_` in the SQL
+    // pattern, expressed the way a tokenised identifier needs it.
+    stems: ['body shape', 'body type', 'body fat', 'body mass', 'bmi'],
     pattern: /\bbody_\w+\b|\bbmi\b/i,
     why:
       'NFR-22: no body judgement. `body_` is prefixed on purpose so `weight` survives — it ' +
       'is a palette member’s rank weight and has nothing to do with a person.',
+  },
+  {
+    /*
+     * AGE IS THE ONE THAT NEEDS CARE, and it is why every rule here is anchored rather than a
+     * substring search. `average`, `image`, `storage`, `language`, `usage`, `percentage` and
+     * `manage` all contain "age"; every one of them is planted as a decoy in the test, so this
+     * rule is watched NOT firing as carefully as it is watched firing.
+     *
+     * A rule that flagged `percentage` would be removed within a day, and the removal would
+     * take the real protection with it.
+     */
+    id: 'age',
+    stems: ['age', 'birth', 'dob'],
+    pattern: /\bages?\b|\bage_\w+\b|\bbirth\w*\b|\bdate_of_birth\b|\bdob\b/i,
+    why:
+      'NFR-22 is written about dermatological, ethnic and body judgements, and F-037 names age ' +
+      'alongside them for the same reason: it is a protected characteristic, it is what an ' +
+      'inference would be built on, and the product has no use for it. What colour suits ' +
+      'somebody is not a function of how old they are.',
+  },
+  {
+    /*
+     * `diagnosis`/`diagnoses`, NOT `diagnos\w*`.
+     *
+     * The first draft used the wider stem and the source scan immediately found two honest uses
+     * of the ORDINARY engineering sense: `verify-guards.mjs` has a `diagnose()` helper that
+     * explains why a guard could not run, and a test named a regex `DIAGNOSES`. Neither is a
+     * medical claim, and a rule that refused them would have been narrowed by whoever hit it
+     * next — probably by deleting the family.
+     *
+     * The noun is what a FIELD is called. The verb is what engineers do to bugs.
+     */
+    id: 'health',
+    stems: ['health', 'medical', 'diagnosis', 'diagnoses', 'pregnan', 'disabilit'],
+    pattern: /\bhealth\w*\b|\bmedical\w*\b|\bdiagnos[ei]s\b|\bpregnan\w*\b|\bdisabilit\w*\b/i,
+    why:
+      'NFR-22: no dermatological or medical claim, and regulated territory the product has no ' +
+      'business entering (PRD section 9). A health column is the field a claim would be built ' +
+      'on, and the surest way not to make one is to have nowhere to put it.',
   },
 ];
 

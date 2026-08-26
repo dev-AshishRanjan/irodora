@@ -1175,7 +1175,7 @@
       "package": "@irodora/recommendation",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-027",
         "F-028"
@@ -1191,14 +1191,24 @@
         "typecheck",
         "test"
       ],
-      "notes": "A release blocker, not a nice-to-have. A personal-colour engine unvalidated across the full skin-tone range is not shippable.",
+      "notes": "DONE. Two guarantees of different kinds, and the feature treats them differently on purpose. NFR-22 IS STRUCTURAL AND WAS BUILDABLE, so it was built. The prohibition gained AGE and HEALTH — F-026 had covered skin, complexion, ethnicity, race, attractiveness and body — and more importantly it LEFT SQL. `packages/store/src/prohibited.ts` refuses a column; it cannot see a function called `inferEthnicity` that never touches the database, and \"no code path infers a protected characteristic\" is a claim about CODE. `scripts/verify-no-inference.mjs` scans 308 shipped source files, reusing the store’s own vocabulary from the BUILT package rather than keeping a second list (E-013). THE PROOF FOUND TWO REAL HOLES IN MY FIRST VERSION, and they are the same hole: the patterns were written for snake_case SQL and TypeScript is camelCase. `\\bethnic\\w*\\b` does not match inside `inferEthnicity` — the word is not at a boundary — and `\\bages?\\b` does not match `ageBand`, because the `\\b` after \"age\" fails against a capital B. BOTH SLIPPED THROUGH SILENTLY. The fix is not a looser regex, which would flag `average`, `percentage`, `storage`, `language` and `usage`: it is TOKENISATION. Identifiers are split into words — `inferEthnicity` into infer+ethnicity, `ageBand` into age+band — and stems are matched by prefix per token, which is safe precisely because `percentage` is ONE word that does not begin with \"age\". One vocabulary, two representations: `pattern` for SQL and `stems` for source, each suited to its input, in one list. THE SCAN THEN FOUND FOUR FALSE POSITIVES IN THE REPOSITORY, and every one changed the rule rather than the exemption list. `diagnos\\w*` caught `verify-guards.mjs`’s `diagnose()` helper and a test constant — the ORDINARY engineering sense — so the family now matches the noun `diagnosis`/`diagnoses`, which is what a FIELD is called. `body` caught `verify-state.mjs`’s markdown `body` and `bodyIndent`, so the source stems are multi-word: `body shape`, `body type`, `body fat`, `body mass`. A check that fires on honest code is one somebody switches off, and the real protection goes with it. THE EXEMPTION LIST IS FOUR FILES, each made of the vocabulary by necessity, and the proof is what stops it growing: a violation planted in a NON-exempt file must be caught while the exempt files stay green, so silencing a real finding by widening the exemption fails the proof. Five cases — three red, TWO GREEN. The green ones are the load-bearing half: a doc comment discussing skin colour and ethnicity (this repository is full of them) and identifiers containing \"age\" and \"race\". IT RUNS IN GATE 15, NOT GATE 2, FOR A MECHANICAL REASON WORTH RECORDING: the scan reads the vocabulary from the BUILT store, and CI runs lint (gate 2) BEFORE build (gate 6). Putting it in `pnpm lint` would have passed locally — where dist exists — and failed on the first push, which is the F-098 shape exactly. It belongs beside the key-material scan anyway: both are about what the product must never do with personal data. NFR-23 CANNOT BE DONE HERE AT ALL, and both its criteria are attested, blocking release. What this feature could do is make the absence a CONDITION rather than a note: a test asserts PHOTO_CEILING stays at or below CONFIDENCE_MAJORITY while the study is outstanding, so raising it produces a failing test asking what changed. That is the only guard NFR-23 can have before participants exist, and the attestation now names the shape of the study so whoever runs it has something to run. THIS FEATURE CANNOT MAKE THE PRODUCT SAFE. It makes one class of failure structurally impossible and leaves the other clearly outstanding, which is the honest division.",
       "attested": [
         {
+          "criterion": "Held-out validation set stratified by ITA-degree band, every band above its minimum sample",
+          "verifiedBy": "A HELD-OUT SET OF PHOTOGRAPHS OF REAL PEOPLE, stratified by ITA° band, with the minimum per band stated in advance. NOT DISCHARGEABLE BY ANY CHECK IN THIS REPOSITORY — it needs participants and consent, not a fixture, and \"requires a system we do not control\" is the bar for attestation rather than \"hard to test\". THE SHAPE IT WOULD TAKE, so the attestation is actionable rather than a shrug: ITA° computed from a calibrated reference capture per participant; bands at the conventional boundaries; a minimum per band chosen BEFORE collection so it cannot be fitted to what arrived; the guided profile and the photo estimate both run per participant; agreement measured against the participant’s own corrected profile, which is the only ground truth this product has. WHAT PROTECTS THE PRODUCT MEANWHILE is not this attestation — it is PHOTO_CEILING = 0.5, and F-037 turned that from a constant into a CONDITION: a test now asserts it stays at or below CONFIDENCE_MAJORITY while this criterion is outstanding, so raising it produces a failing test asking what changed rather than a green run.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
           "criterion": "Per-band accuracy published internally; a band that underperforms blocks release of the profile feature",
-          "verifiedBy": "A held-out validation run over an ITA-stratified sample, published internally. A release blocker on an ethical guarantee (NFR-23).",
+          "verifiedBy": "A held-out validation run over an ITA-stratified sample, published internally. A release blocker on an ethical guarantee (NFR-23). Depends on the criterion above: there is nothing to publish until there is a set to measure over.",
           "blocks": "release",
           "status": "outstanding"
         }
+      ],
+      "plan": "plans/F-037-ethical-guardrails-and-bias-validation.md",
+      "effects": [
+        "E-013"
       ]
     },
     {

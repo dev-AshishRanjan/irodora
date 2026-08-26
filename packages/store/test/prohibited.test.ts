@@ -98,6 +98,28 @@ describe('a migration adding a prohibited column is refused', () => {
       }).toThrow(StoreError);
   });
 
+  it('rejects age, which F-037 added — including the names it actually gets given', () => {
+    // NFR-22 is written about dermatological, ethnic and body judgements; age belongs with them
+    // for the same reason. What colour suits somebody is not a function of how old they are.
+    for (const column of ['age', 'age_band', 'age_range', 'birth_year', 'date_of_birth', 'dob'])
+      expect(() => {
+        assertMigrationsClean(adds(column));
+      }).toThrow(StoreError);
+  });
+
+  it('rejects health, which is regulated territory the product stays out of', () => {
+    for (const column of [
+      'health_status',
+      'medical_history',
+      'diagnosis',
+      'pregnancy_status',
+      'disability',
+    ])
+      expect(() => {
+        assertMigrationsClean(adds(column));
+      }).toThrow(StoreError);
+  });
+
   it('every declared family has a case above', () => {
     // The proof-suite discipline from `verify-claims-proof.mjs`: a rule with no planted case
     // means the test silently covers less than the check does, and nobody would notice a
@@ -110,6 +132,8 @@ describe('a migration adding a prohibited column is refused', () => {
       'race',
       'attractiveness_score',
       'body_shape',
+      'age_band',
+      'health_status',
     ])
       for (const finding of findProhibited(`ADD COLUMN ${column} TEXT`, 'case'))
         covered.add(finding.id);
@@ -140,6 +164,48 @@ describe('what it must NOT reject', () => {
 
   it('does not treat "bracelet" as "race"', () => {
     expect(findProhibited('ALTER TABLE garment ADD COLUMN bracelet TEXT;', 'x')).toEqual([]);
+  });
+
+  it('does not treat "percentage" — or five other ordinary words — as "age"', () => {
+    /*
+     * THE DECOYS THAT DECIDE WHETHER THE AGE RULE SURVIVES. Every one of these contains the
+     * letters "age", and a rule that flagged `percentage` would be removed within a day —
+     * taking the real protection with it. The rule is anchored, and this is where that is
+     * watched NOT firing.
+     */
+    for (const word of [
+      'average',
+      'image_path',
+      'storage_key',
+      'language',
+      'usage_count',
+      'percentage',
+    ])
+      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toEqual([]);
+  });
+
+  it('does not treat "manager" or "condition" as health', () => {
+    // A bare `condition` was considered for the health family and LEFT OUT, precisely because
+    // it is an ordinary word in a codebase. The families name what a FIELD would be called, not
+    // every word a health claim might use.
+    for (const word of ['manager_id', 'condition_code'])
+      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toEqual([]);
+  });
+
+  it('DOES flag `healthy_margin`, and that false positive is accepted deliberately', () => {
+    /*
+     * `\bhealth\w*\b` matches `healthy_margin`. Recorded rather than tuned away.
+     *
+     * The alternative is anchoring to `health_` with an underscore, which would then MISS
+     * `healthstatus` and `healthData` — the names the field would actually be given. A rule
+     * aimed at a protected characteristic should err toward refusing, and the cost here is a
+     * column nobody in a colour product would write.
+     *
+     * Asserted so the trade-off is visible and somebody narrowing the rule has to come here
+     * first and decide it again, rather than discovering it as a surprise.
+     */
+    const findings = findProhibited('ALTER TABLE garment ADD COLUMN healthy_margin TEXT;', 'x');
+    expect(findings.map((f) => f.id)).toEqual(['health']);
   });
 });
 

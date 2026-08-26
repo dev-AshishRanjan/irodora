@@ -67,6 +67,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md](lessons/a-cache-key-describes-the-package-not-the-world-the-test-read.md) — `pnpm test` printed 31/31 successful while --force was red in four; ask what a check READ, not which package it lives in.
 - [lessons/test-the-requirements-own-example-before-your-own.md](lessons/test-the-requirements-own-example-before-your-own.md) — FR-47 names "dark muted green" and the first lexicon could not resolve it; when a decoy fails, suspect the design.
 - [lessons/a-word-boundary-fails-before-an-underscore-so-the-obvious-name-is-caught-and-the-real-one-is-not.md](lessons/a-word-boundary-fails-before-an-underscore-so-the-obvious-name-is-caught-and-the-real-one-is-not.md) — `rac(e|ial)` catches `race` and misses `racial_group`; plant every rule at the name somebody would actually type, not the one it was written from.
+- [lessons/a-rule-written-for-snake-case-columns-cannot-read-camel-case-source.md](lessons/a-rule-written-for-snake-case-columns-cannot-read-camel-case-source.md) — the same regex missed `inferEthnicity` and `ageBand` silently; tokenise the identifier, then match stems per token.
 - [lessons/a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it.md](lessons/a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it.md) — two gates read source text and both failed on the COMMENT explaining the fix; writing about the forbidden thing produces it.
 
 ### Environment

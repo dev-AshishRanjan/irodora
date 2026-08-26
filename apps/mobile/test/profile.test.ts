@@ -538,6 +538,25 @@ describe('a photo estimate', () => {
     );
   });
 
+  it('STAYS capped while NFR-23’s validation is outstanding (F-037)', () => {
+    /*
+     * The only guard NFR-23 can have before the study exists, and it is worth having.
+     *
+     * NFR-23 requires this path to be validated across every ITA° band before anybody may say
+     * how well it performs. **That study has not run** — it needs participants, it is F-037's
+     * attested criterion, and it blocks release.
+     *
+     * `PHOTO_CEILING` is the number that stands in for it: 0.5 not because anything was
+     * measured, but because nothing was. This assertion turns "we have not measured this" from
+     * a note in a state file into a CONDITION — anybody raising the ceiling while the study is
+     * outstanding gets a failing test asking them what changed, rather than a green run.
+     *
+     * When F-037's study lands, this test is what should be edited, deliberately, alongside the
+     * per-band numbers that justify the new value.
+     */
+    expect(PHOTO_CEILING).toBeLessThanOrEqual(CONFIDENCE_MAJORITY);
+  });
+
   it('carries the reading’s own cap through, rather than restating it', () => {
     // A poor reading must produce a less confident estimate. The reading has already combined
     // capture space, illumination and quality by taking a minimum; this only adds its own.
