@@ -8,6 +8,120 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-099 · one warm/cool rule, and a blocker that had already been lifted
+
+### The blocker was closed before I read it
+
+F-099's entry said, carefully and with evidence:
+
+> **BLOCKED ON THE TOOLCHAIN, NOT ON A DECISION** … a hand-made junction is what F-098's own
+> notes call the workaround that hid a stale lockfile for four features. **DO IT ON THE PINNED
+> TOOLCHAIN.**
+
+True when written. **F-098 is the feature that removed it.** Gate 0 section 7b now compares
+every manifest against `pnpm-lock.yaml` *before* install, on Node built-ins, on a clean clone —
+built precisely so somebody who cannot run pnpm is still told the lockfile is stale. The hazard
+the note warned about had become the gate that catches it.
+
+Watched, in order:
+
+```
+✗ pnpm-lock.yaml does not resolve @irodora/recommendation@workspace:*,
+  which apps/mobile/package.json declares under dependencies
+✓ lockfile  19 workspace projects, 143 declared dependencies … all resolved
+```
+
+then `mklink /J`. A lesson is filed:
+[[a-blocker-outlives-the-state-of-the-world-that-caused-it]] — **the better the argument, the
+less likely anybody rechecks its premise**, and the premise is the part that rots.
+
+### The deletion, and why `hueGap` mattered as much as the rule
+
+`biasFromHue`, its private `hueGap`, and the `WARM_HUE = 60` / `COOL_HUE = 240` literals are
+gone. The app calls the engine's `hueBias`.
+
+The old comment justified keeping `hueGap` local: *"it is not colour arithmetic — it is the
+arithmetic of a circle, and the engine has no opinion about how far a hue is from an arbitrary
+reference this module chose."* True, and beside the point. What made the duplication a defect was
+never which branch of mathematics it belonged to; it was that **two files computed one product
+rule and no single-platform test could see them disagree**. A circular-distance helper left
+behind is what somebody reaches for next time, and a second copy of a rule never arrives labelled
+as one.
+
+### The poles are content now, which was the actual work
+
+They live in `content/rules/weights.<label>.json` — the file `ruleSetFor` reads — and the app had
+no weights bundle at all. `generate-rules-bundle.mjs` now emits a **second** module beside the
+lexicon, the same shape step for step: the last published row, the text from the file, the digest
+from the **ledger**, and a parse through the engine's own `parseWeightContent` before either is
+written anywhere.
+
+`apps/mobile/src/rules.ts` checks two things, and they catch different failures:
+
+| check | catches |
+|---|---|
+| the digest | an edited file |
+| the rationale count | a generated module and a ledger row from two different generations — where the module verifies perfectly against its own stale digest |
+
+### The replacement test sweeps, because three points is what a second copy passes
+
+`biasFromHue` and `hueBias` both passed a three-point check — warm, cool, and the middle — for
+two features, while being two implementations of one rule. The new assertion walks 180 degrees
+and requires monotonicity.
+
+And the poles are compared against **the file on disk**, not against `60` and `240` typed in a
+test. Two literals in a test are the same defect as two literals in the source: they would keep
+passing through exactly the publish that made the app and the engine disagree.
+
+### E-032 is resolved, not guarded
+
+Gate 0's own output is the evidence — warnings went 49 → 48 and the *"E-032 (high) has no guard"*
+line is gone.
+
+**Resolved** rather than guarded, deliberately: a guard would be a check that the two
+implementations still agree, and there is no second implementation to disagree with.
+
+The link was matched by `from.ref`, **not by id** — two links carry E-032, which is the defect
+F-102 was filed for, and resolving by id would have been a coin toss between this and F-098's
+lockfile link. F-102 still stands.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| 0 `state` | **green** — watched RED first, on the lockfile |
+| 11 `content` + rule-bundle `--check` | **green** — lexicon 2026.08.1 (28 terms), weights 2026.08.2 (26 rationales) |
+| 2 `lint` + app-imports, purity, claims, no-inference | **green** |
+| 1 `typecheck` · 3 `format` | **green** |
+
+**NOT RUN, and it is the assertion this feature exists for:** jest, in either zone —
+`@babel/runtime` absent from `apps/mobile`, `react-native-worklets` from `packages/ui`. So the
+180-degree sweep is **source, not evidence**, on this workstation. CI runs it.
+
+`tsc --noEmit` covers the type-level half and is not nothing: the three deleted exports failed
+the typecheck the moment they went, which is how the stale test imports were found.
+
+Also not run: any gate needing pnpm, and a real `pnpm install` to confirm the hand-written
+importer entry resolves the way pnpm would.
+
+### Recorded, not resolved
+
+- **`hueBias` is still the defective one.** It reports a grey at C = 0.012 as more warm than the
+  most saturated red in the corpus (E-034). **F-101 owns it**, and folding it in here would have
+  changed what the answer *is* in the same commit that changed where it *comes from* — leaving
+  nobody able to say which one moved a number. The app now calls a function that is still wrong
+  about near-neutrals, which is a smaller problem than two copies of it: there is one place to
+  fix.
+- **The app now bundles a rule set it does not otherwise use.** Nothing in the app scores a
+  colour yet. Justified because the poles are what criterion 2 asks for, and a partial bundle —
+  poles without the weights they belong to — would have been a third representation.
+
+### Next
+
+R3 holds F-081 and F-086 (both blocked on this machine), F-101, F-102.
+
+---
+
 ## 2026-08-26 — F-097 · the photo path gets a producer, and a true sentence stops being true
 
 `read()` shipped in F-040. `estimateFromReading` shipped in F-027, checked twelve ways. Nothing

@@ -84,6 +84,9 @@ importers:
       '@irodora/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@irodora/recommendation':
+        specifier: workspace:*
+        version: link:../../packages/recommendation
       '@irodora/store':
         specifier: workspace:*
         version: link:../../packages/store

@@ -27,6 +27,7 @@
     "@irodora/corpus": "workspace:*",
     "@irodora/cvd-engine": "workspace:*",
     "@irodora/design-tokens": "workspace:*",
+    "@irodora/recommendation": "workspace:*",
     "@irodora/store": "workspace:*",
     "@irodora/ui": "workspace:*",
     "@noble/hashes": "2.3.0",

@@ -43,7 +43,9 @@
 import { displayP3ToXyz, srgbToXyz, xyzToOklch, type Triple } from '@irodora/color-spaces';
 import type { PublishedEntry } from '@irodora/corpus';
 import { allEntries } from '../corpus';
+import { hueBias } from '@irodora/recommendation';
 import type { LensReading } from '../lens/reading';
+import { ruleSet } from '../rules';
 import type { Profile } from './dimensions';
 import {
   CHROMA_PAD,
@@ -76,16 +78,18 @@ export const PHOTO_CEILING = 0.5;
 /** How wide a lightness range one reading justifies, either side of the reading's own L. */
 export const PHOTO_LIGHTNESS_SPREAD = 0.18;
 
-/**
- * How far from neutral a hue has to sit before it is called warm or cool, in OKLCh degrees
- * from the yellow–blue axis.
+/*
+ * The warm and cool reference poles are NOT here, and F-099 is why.
  *
- * Warm is the arc around 60° and cool the arc around 240°, and the bias is how far along the
- * arc the reading fell rather than which half it landed in — so a hue near the boundary
- * produces a bias near zero rather than a confident answer that flips on a degree.
+ * They were `WARM_HUE = 60` and `COOL_HUE = 240`, written as literals beside a second
+ * implementation of the bias function. The engine holds the same two numbers as a RULE SET
+ * field, which F-029 versioned as content — so the first time an editor published a new pole,
+ * a profile built from a photograph would have disagreed with the score the engine gave it,
+ * with every gate green. That is E-008's failure, and E-032 recorded it rather than tolerating
+ * it quietly.
+ *
+ * Both now come from `ruleSet()`, which reads the published weight set the engine scores with.
  */
-export const WARM_HUE = 60;
-export const COOL_HUE = 240;
 
 /**
  * The reading in OKLCh, converted through the space the platform reported.
@@ -102,32 +106,24 @@ export function readingOklch(reading: LensReading): Triple {
   return xyzToOklch(xyz);
 }
 
-/**
- * Signed distance around the hue circle from `from` to `to`, in degrees, in [-180, 180].
+/*
+ * `hueGap` AND `biasFromHue` BOTH LIVED HERE, AND BOTH ARE GONE (F-099).
  *
- * Circular, because 350° and 10° are 20° apart. Written out rather than reached for from the
- * engine because it is not colour arithmetic — it is the arithmetic of a circle, and the engine
- * has no opinion about how far a hue is from an arbitrary reference this module chose.
- */
-function hueGap(from: number, to: number): number {
-  const d = ((to - from + 540) % 360) - 180;
-  return d;
-}
-
-/**
- * Warm–cool bias in [-1, +1] from a hue.
+ * `hueBias` from `@irodora/recommendation` is the canonical definition and is now the only one.
+ * Deleting the private `hueGap` alongside it matters as much as deleting the bias function: a
+ * circular-distance helper sitting in this file is the thing somebody reaches for next time,
+ * and the second copy of a rule never arrives labelled as one.
  *
- * Distance to the warm reference against distance to the cool one, normalised. A hue equidistant
- * from both returns 0 — which is the honest answer for a colour that is neither, and the answer
- * a threshold comparison would never give.
+ * The rationale the old comment gave for keeping `hueGap` local — *"it is not colour arithmetic,
+ * it is the arithmetic of a circle"* — was true and beside the point. What made the duplication
+ * a defect was not which branch of mathematics it belonged to; it was that two files computed
+ * one product rule and no single-platform test could see them disagree.
+ *
+ * WHAT THIS DOES NOT FIX: `hueBias` reports a grey at C = 0.012 as more warm than the most
+ * saturated red in the corpus. That is E-034, `temperatureOf` is the answer, and **F-101 owns
+ * it**. Doing it here would change what the photo path ANSWERS in the same commit that changes
+ * where the answer comes from, and nobody could then tell which one moved a number.
  */
-export function biasFromHue(hue: number): number {
-  const toWarm = Math.abs(hueGap(hue, WARM_HUE));
-  const toCool = Math.abs(hueGap(hue, COOL_HUE));
-  const span = toWarm + toCool;
-  if (span === 0) return 0;
-  return (toCool - toWarm) / span;
-}
 
 /** Clamp to a closed interval. */
 const clamp = (value: number, low: number, high: number): number =>
@@ -171,7 +167,9 @@ export function estimateFromReading(
    * no equivalent: they are already centred on the reading, and widening them by uncertainty
    * would produce a range that excludes nothing.
    */
-  const bias = clamp(biasFromHue(h) * (confidence / PHOTO_CEILING), -1, 1);
+  // The ENGINE’s bias, against the PUBLISHED poles. Both halves matter: the function is the
+  // one that scores garments, and the two reference hues come from the same file it reads.
+  const bias = clamp(hueBias(h, ruleSet().poles) * (confidence / PHOTO_CEILING), -1, 1);
 
   const chroma = { min: 0, max: clamp(c + CHROMA_PAD, 0, 1) };
 

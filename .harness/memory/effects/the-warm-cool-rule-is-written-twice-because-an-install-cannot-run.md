@@ -58,3 +58,47 @@ warning is the point.
 
 **F-099**, the day the app can depend on `@irodora/recommendation`. That is downstream of the
 Node upgrade, like most things here.
+
+---
+
+## Resolved by F-099 — and the toolchain was not what unblocked it
+
+This note's title says the reason was a toolchain rather than a decision, and the feature's own
+entry said **"DO IT ON THE PINNED TOOLCHAIN"**. Neither turned out to be the thing that mattered.
+
+The objection was that adding a workspace dependency here needs a hand-made junction in
+`node_modules`, and that a junction is *"the workaround that hid a stale lockfile for four
+features"*. True when it was written. **F-098 closed it**: gate 0 section 7b mirrors pnpm's own
+rule and compares every manifest against `pnpm-lock.yaml` before install, on Node built-ins, on
+a clean clone — precisely so somebody who cannot run pnpm can still be told the lockfile is
+stale.
+
+So the procedure is now four steps, and the second one is the point:
+
+1. add `@irodora/recommendation` to `apps/mobile/package.json`
+2. **watch gate 0 go red** — *"pnpm-lock.yaml does not resolve @irodora/recommendation@workspace:\*"*
+3. hand-write the importer entry; watch it go green
+4. `mklink /J` the junction
+
+The hazard the note warned about is now the thing that is checked. **A blocker recorded against
+a state of the world outlives that state**, and the entry that records it is not automatically
+revisited when the world moves — this one sat as `backlog` through the whole of the feature that
+removed its reason.
+
+## What replaced the duplication
+
+`biasFromHue`, its private `hueGap`, and the `WARM_HUE` / `COOL_HUE` literals are deleted. The
+app calls `hueBias` from the engine, against `ruleSet().poles` — the published weight set,
+reaching the app as a generated module with the **ledger's** digest beside it, exactly like the
+phrase lexicon. Both halves were needed: the same function, and the same two reference hues.
+
+The test that replaced the old one sweeps 180 degrees rather than checking three points. Three
+points is what a second copy passes; it is what both copies passed for two features.
+
+## What this did NOT fix
+
+`hueBias` still reports a grey at C = 0.012 as more warm than the most saturated red in the
+corpus — [[a-hue-angle-on-a-near-neutral-is-a-rounding-artefact]], and **F-101** owns it.
+Deliberately not folded in: changing what the answer *is* in the same commit that changes where
+it *comes from* leaves nobody able to say which one moved a number. There is now one place to
+fix instead of two, which is the whole return on this feature.

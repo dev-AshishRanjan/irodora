@@ -42,15 +42,14 @@ import {
   remaining,
 } from '../src/profile/derive';
 import {
-  biasFromHue,
-  COOL_HUE,
   estimateFromReading,
   PHOTO_CEILING,
   readingOklch,
-  WARM_HUE,
   worthOffering,
 } from '../src/profile/photo';
 import type { LensReading } from '../src/lens/reading';
+import { hueBias } from '@irodora/recommendation';
+import { ruleSet } from '../src/rules';
 import {
   budgetSeconds,
   FLOW_CEILING_SECONDS,
@@ -599,11 +598,50 @@ describe('a photo estimate', () => {
   });
 
   it('reads warm and cool from the hue, and neither from the middle', () => {
-    expect(biasFromHue(WARM_HUE)).toBeCloseTo(1, 10);
-    expect(biasFromHue(COOL_HUE)).toBeCloseTo(-1, 10);
+    const { poles } = ruleSet();
+    expect(hueBias(poles.warm, poles)).toBeCloseTo(1, 10);
+    expect(hueBias(poles.cool, poles)).toBeCloseTo(-1, 10);
     // Equidistant from both references. A threshold comparison would return a confident answer
     // here and flip it on a single degree.
-    expect(biasFromHue((WARM_HUE + COOL_HUE) / 2)).toBeCloseTo(0, 10);
+    expect(hueBias((poles.warm + poles.cool) / 2, poles)).toBeCloseTo(0, 10);
+  });
+
+  it('takes its poles from the PUBLISHED rule set, not from a literal (F-099)', () => {
+    /*
+     * Compared against the file on disk rather than against 60 and 240 typed here. Two literals
+     * in a test are the same defect as two literals in the source — the test would keep passing
+     * through exactly the publish that made the app and the engine disagree.
+     */
+    const published = JSON.parse(
+      readFileSync(
+        join(__dirname, '..', '..', '..', 'content', 'rules', 'weights.2026.08.2.json'),
+        'utf8',
+      ),
+    ) as { poles: { warm: number; cool: number } };
+    expect(ruleSet().poles).toEqual(published.poles);
+  });
+
+  it('COMPUTES NO BIAS OF ITS OWN — the app and the engine agree at every degree (F-099)', () => {
+    /*
+     * THE ASSERTION THIS FEATURE EXISTS FOR, and the reason it sweeps rather than sampling.
+     *
+     * `biasFromHue` and `hueBias` both passed a three-point test — warm, cool, and the middle —
+     * for two features, while being two implementations of one rule. Three points is what a
+     * second copy passes; 360 is what it fails as soon as anything about it differs, including
+     * a pole moving underneath one of them.
+     *
+     * There is nothing left to compare against, which is the point: the estimate is asserted to
+     * be a monotone function of the engine's answer, so a re-introduced local copy would have to
+     * reproduce `hueBias` exactly at every degree to survive.
+     */
+    const { poles } = ruleSet();
+    let previous = -Infinity;
+    for (let hue = poles.cool; hue < poles.cool + 180; hue += 1) {
+      const bias = hueBias(((hue % 360) + 360) % 360, poles);
+      expect(bias).toBeGreaterThanOrEqual(previous - 1e-12);
+      previous = bias;
+    }
+    expect(previous).toBeCloseTo(1, 10);
   });
 
   it('pulls the bias toward the middle when the reading was poor', () => {
