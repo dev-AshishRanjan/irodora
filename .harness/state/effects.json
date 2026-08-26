@@ -310,6 +310,14 @@
         {
           "kind": "decision",
           "ref": "docs/adr/0011-recommendation-rules-are-versioned-content.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "artifact",
+          "ref": "content/rules/index.json"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -318,10 +326,9 @@
         "packages/recommendation"
       ],
       "severity": "high",
-      "guard": "none",
-      "feature": "F-029",
+      "guard": "gate:content (verify-content.mjs parses every published weight set through the engine’s own parseRuleSet, and checks the ledger digest)",
       "memory": "memory/effects/rule-weights-change-every-answer-without-a-deploy.md",
-      "rationale": "Weights are content, so a publish changes what every user is told with no code change and no deployment. That is the intended capability and also the sharpest edge in the system: it means content is a trust boundary, and a weight set that fails to normalise produces scores that are not comparable across contexts and fails silently.",
+      "rationale": "Weights are content, so a publish changes what every user is told with no code change and no deployment. That is the intended capability and also the sharpest edge in the system: it means content is a trust boundary, and a weight set that fails to normalise produces scores that are not comparable across contexts and fails silently. F-029 CLOSED IT, AND THE WORD THAT MATTERED WAS \"SILENTLY\". A weight file that does not sum to 1 still parses as JSON, still carries five occasions, and still produces a number for every colour — one that cannot be compared with a number from any other context. Nothing downstream throws, so nothing downstream could ever have been the guard. THE CHECK DOES NOT RE-IMPLEMENT THE RULE: gate 11 loads the BUILT @irodora/recommendation and calls `parseWeightContent`, which wraps the engine’s own `parseRuleSet` — so \"these weights normalise\" is decided by the code that scores with them rather than by a copy in a script that would agree on the day it was written (E-013). A `loadRecommendationPackage` sits beside `loadCorpusPackage` for exactly that reason. WATCHED FAILING IN BOTH HALVES, on the real published file: a weight moved from 0.35 to 0.9 reports \"occasions.default: weights sum to 1.5499999999999998, not 1\", and a single WORD changed in a rationale — a file that still parses perfectly — reports a digest that does not match the ledger. The second is the one a sum check alone would have missed, and it is the immutability half of ADR-0011. FIVE FIXTURES RUN ON EVERY PASS, four spoilings required to fail and the unspoiled original required to pass in the same block, and the counts are PRINTED — 20 rationales across 5 occasions — because a green gate over a weight file that failed to load reads identically to a green gate over twenty checked rationales otherwise. WHAT IS STILL NOT CHECKED, and is printed on every run for the corpus already: an edit to a published file made together with a matching ledger update passes here. The two-file diff and review are the control, and ADR-0051 removed the publish path that would have been the other one.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"

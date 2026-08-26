@@ -456,6 +456,42 @@ export default tseslint.config(
     },
   },
 
+  // --- The recommendation engine ships to a phone too ----------------------
+  //
+  // Same rule as the store's above, and it became necessary the moment F-029 gave this package
+  // `"types": ["node"]` so its TESTS could read a published content file. That widening is
+  // correct — a test has to open the file it validates — and it also means `node:fs` in `src/`
+  // now typechecks, where before it simply would not compile.
+  //
+  // The app does not import this package yet (F-099 is what will, once an install can run), so
+  // the crash this prevents is one nobody could reach today. That is exactly when to put the
+  // rule in: after the fact it would be a bug report from a device.
+  {
+    files: ['packages/recommendation/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['node:*', 'fs', 'path', 'crypto', 'os'],
+              message:
+                'apps/mobile will bundle this package (F-099). A Node API reachable from the ' +
+                'engine entry is a crash on a phone that no test here can see — every test in ' +
+                'this package runs in Node. Scoring needs no platform API; if a rule set has ' +
+                'to be READ from somewhere, that is the caller’s job.',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // --- A colour value comes from the manifest, never from a keyboard -------
   //
   // The `contrast` and `cvd` gates read `design-system.manifest.json`. A hex typed into a

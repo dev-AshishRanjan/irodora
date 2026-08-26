@@ -46,7 +46,14 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadCorpusPackage, readCorpusRoot, readJsonFile, ROOT, sha256 } from './corpus-io.mjs';
+import {
+  loadCorpusPackage,
+  loadRecommendationPackage,
+  readCorpusRoot,
+  readJsonFile,
+  ROOT,
+  sha256,
+} from './corpus-io.mjs';
 
 const GREEN = '[32m';
 const RED = '[31m';
@@ -76,6 +83,10 @@ const {
   parseTaxonomyVocabulary,
   RESERVED_DEVICE_IDENTITIES,
 } = corpus;
+
+// The weight rules come from the engine that scores with them, never from a copy here (E-013).
+const recommendation = await loadRecommendationPackage();
+const { OCCASIONS, parseWeightContent, rationaleCount, ruleSetFor, SCORE_FACTORS } = recommendation;
 
 const failures = [];
 const notes = [];
@@ -464,6 +475,138 @@ try {
 }
 rulesExercised += 1;
 
+// --- the recommendation weights: schema, rationales, normalisation, digest ------------------
+
+/**
+ * F-029, and the check that closes [E-009](../.harness/state/effects.json).
+ *
+ * > *Weights are content, so a publish changes what every user is told with no code change …
+ * > a weight set that fails to normalise produces scores that are not comparable across
+ * > contexts and fails silently.*
+ *
+ * The word that mattered in that link was **silently**. A weight file that does not sum to 1
+ * still parses as JSON, still has five occasions, and still produces a number for every colour
+ * — one that cannot be compared with a number from any other context. Nothing downstream
+ * throws.
+ *
+ * ## The rule is not implemented here
+ *
+ * `parseWeightContent` wraps the engine's own `parseRuleSet`, and this gate calls it from the
+ * BUILT package. So "the weights normalise" is checked by the code that scores with them
+ * rather than by a copy that agrees today — the shape E-013 keeps to one place.
+ *
+ * ## Fixtures run on every pass
+ *
+ * A published file that happens to be valid tells you nothing about whether the check can
+ * reject one. Four spoiled copies are built in memory from the real file and each is required
+ * to fail, with the unspoiled original required to pass in the same block.
+ */
+const WEIGHTS_FILE = 'weights.2026.08.1.json';
+
+if (!existsSync(join(RULES_DIR, WEIGHTS_FILE))) {
+  console.log(
+    `\n${RED}${BOLD}Gate 11 cannot run.${OFF} ${WEIGHTS_FILE} is missing from ${RULES_DIR}.\n` +
+      'A gate that lost its own inputs must fail rather than pass over an empty set.\n',
+  );
+  process.exit(1);
+}
+
+let weightRationales = 0;
+let weightFixtures = 0;
+try {
+  const raw = readJsonFile(join(RULES_DIR, WEIGHTS_FILE));
+  const content = parseWeightContent(raw, WEIGHTS_FILE);
+  weightRationales = rationaleCount(content);
+
+  // The digest lives in the ledger, never in the file it describes — same as the lexicon.
+  const ledgerRows = readJsonFile(join(RULES_DIR, 'index.json'));
+  const row = Array.isArray(ledgerRows)
+    ? ledgerRows.find((r) => r.label === content.versionId && r.kind === 'weights')
+    : undefined;
+  if (row === undefined)
+    fail(
+      `content/rules/index.json has no weights row for ${content.versionId}. The ledger is what ` +
+        'makes the checksum mean anything.',
+    );
+  else {
+    const actual = entryDigest(raw, sha256);
+    if (actual !== row.checksum)
+      fail(
+        `${WEIGHTS_FILE}: digest ${actual} does not match the ledger's ${row.checksum}. ` +
+          'Published rule content is immutable — a change mints a new version rather than ' +
+          'editing this one.',
+      );
+    if (row.occasionCount !== content.occasions.length)
+      fail(
+        `content/rules/index.json records ${String(row.occasionCount)} occasion(s) for ` +
+          `${content.versionId}; the file carries ${String(content.occasions.length)}.`,
+      );
+    if (row.rationaleCount !== weightRationales)
+      fail(
+        `content/rules/index.json records ${String(row.rationaleCount)} rationale(s) for ` +
+          `${content.versionId}; the file carries ${String(weightRationales)}.`,
+      );
+  }
+
+  /*
+   * Every occasion resolves to a scorable rule set. `ruleSetFor` throws rather than falling
+   * back, so this is what proves selecting a context cannot silently become "the default".
+   */
+  for (const occasion of OCCASIONS)
+    try {
+      const rules = ruleSetFor(content, occasion);
+      const total = SCORE_FACTORS.reduce((n, f) => n + rules.weights[f], 0);
+      if (Math.abs(total - 1) > 1e-9)
+        fail(`${WEIGHTS_FILE}: occasion "${occasion}" weights sum to ${String(total)}, not 1.`);
+    } catch (error) {
+      fail(`${WEIGHTS_FILE}: occasion "${occasion}" — ${error.message}`);
+    }
+
+  // --- the fixtures: four spoilings, each required to fail, and the original required to pass
+  const spoil = (label, mutate) => {
+    weightFixtures += 1;
+    const draft = structuredClone(raw);
+    mutate(draft);
+    try {
+      parseWeightContent(draft, `fixture:${label}`);
+      fail(
+        `${WEIGHTS_FILE} fixture "${label}": the check ACCEPTED a file it must reject. A ` +
+          'validator nobody has watched reject anything might only be capable of passing.',
+      );
+    } catch {
+      /* expected */
+    }
+  };
+
+  spoil('weights that do not normalise', (d) => {
+    d.occasions[0].factors[0].weight = 0.9;
+  });
+  spoil('a weight with no rationale', (d) => {
+    delete d.occasions[1].factors[0].rationale;
+  });
+  spoil('a missing occasion', (d) => {
+    d.occasions = d.occasions.slice(1);
+  });
+  spoil('a factor named twice', (d) => {
+    d.occasions[2].factors[3].factor = d.occasions[2].factors[2].factor;
+  });
+
+  // THE BASELINE, in the same block. Without it every spoiling above is equally satisfied by a
+  // parser that rejects everything [[a-decoy-that-is-not-broken-proves-nothing]].
+  weightFixtures += 1;
+  try {
+    parseWeightContent(structuredClone(raw), 'fixture:unspoiled');
+  } catch (error) {
+    fail(
+      `${WEIGHTS_FILE} fixture "unspoiled": the check REJECTED the published file — ` +
+        `${error.message}. The spoilings above prove nothing if this one does not pass.`,
+    );
+  }
+} catch (error) {
+  fail(`${WEIGHTS_FILE}: ${error.message}`);
+}
+rulesExercised += 1;
+
 // --- the device-local identities are RESERVED, and content may not use them -----------------
 
 /**
@@ -536,7 +679,15 @@ console.log(
 // read identically otherwise, and the first would mean no Japanese reader was protected at all.
 console.log(
   `${DIM}  ${String(familiesChecked)} famil(ies) used by an entry, all with a word in ` +
-    `${String(vocabulary === null ? 0 : vocabulary.families.length)} vocabulary row(s)${OFF}\n`,
+    `${String(vocabulary === null ? 0 : vocabulary.families.length)} vocabulary row(s)${OFF}`,
+);
+// And the same again for the weights (F-029, E-009). A section that reports nothing is one
+// nobody can tell ran: a green gate over a weight file that failed to load and a green gate
+// over twenty checked rationales read identically without these numbers.
+console.log(
+  `${DIM}  ${String(weightRationales)} weight rationale(s) across ${String(OCCASIONS.length)} ` +
+    `occasion(s), each set normalised by the engine's own validator; ` +
+    `${String(weightFixtures)} weight fixture(s) exercised${OFF}\n`,
 );
 
 if (real.entries.length === 0)

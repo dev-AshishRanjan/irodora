@@ -364,11 +364,59 @@ try {
   }
   console.log(`  ${GREEN}OK${OFF}  baseline: gate 11 exits 0 before any mutation`);
 
+  /*
+   * REFUSE BEFORE MUTATING, rather than discovering it halfway through.
+   *
+   * The E-001 case needs `rebuild()`, which shells out to pnpm — and pnpm refuses outright on a
+   * toolchain below `engines` (Node 22.16.0 against >=24.19.0). The `finally` below guarantees
+   * the engine source is put back, but a proof that perturbs a colour matrix and then reports
+   * an unrelated failure is a proof nobody can read. This runs the same rebuild first, on an
+   * UNMODIFIED tree, so the only thing it can prove is whether the rebuild works at all.
+   */
+  try {
+    rebuild();
+  } catch (error) {
+    // The backup was taken before the baseline ran, so the refuse path has to clear it too.
+    // It is a copy of a tracked fixture directory: left behind, `git add -A` commits it, which
+    // is how it reached a commit the first time this refusal fired.
+    rmSync(BACKUP, { recursive: true, force: true });
+    console.log(
+      `\n${RED}${BOLD}This proof cannot run on this toolchain.${OFF}\n` +
+        `  The E-001 case rebuilds the engine, and the rebuild failed BEFORE anything was\n` +
+        `  mutated — which is the point: it refuses rather than leaving a perturbed matrix\n` +
+        `  behind. Run it on the pinned toolchain (Node 24.19.0, pnpm 11.21.0).\n\n` +
+        `  ${String(error instanceof Error ? error.message : error).split('\n')[0]}\n`,
+    );
+    process.exit(1);
+  }
+
   for (const testCase of CASES) {
     restore();
-    testCase.apply();
-    const { code, output } = runGate();
-    testCase.cleanup?.();
+    /*
+     * `apply` AND `cleanup` in a try/finally, and this is not defensive tidiness.
+     *
+     * The E-001 case WRITES A PERTURBED MATRIX INTO packages/color-spaces/src/matrices.ts and
+     * then calls `rebuild()`, which shells out to pnpm. On a workstation that cannot run pnpm —
+     * Node 22.16.0 against `engines: >=24.19.0`, which is the state this repository has been in
+     * for weeks — `rebuild()` throws, the throw escapes before `cleanup` runs, and the proof
+     * exits leaving **a corrupted colour engine in a tracked source file**.
+     *
+     * That is not a proof failing. That is a proof that edits the engine and does not put it
+     * back: 374 gate-11 failures afterwards, and a one-digit diff that a hurried `git add -A`
+     * would commit. It was found exactly that way — the gate went red immediately after this
+     * script ran, and the cause was a `0.819022437996703` that had become `0.829022437996703`.
+     *
+     * `finally` makes the restore unconditional. `runGate` is inside it too, so a throw there
+     * cannot skip the cleanup either.
+     */
+    let code = 1;
+    let output = '';
+    try {
+      testCase.apply();
+      ({ code, output } = runGate());
+    } finally {
+      testCase.cleanup?.();
+    }
     restore();
 
     const after = runGate();

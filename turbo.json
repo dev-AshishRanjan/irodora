@@ -5,6 +5,7 @@
     "tsconfig.base.json",
     ".nvmrc",
     "content/schemas/**",
+    "content/rules/**",
     "docs/design/design-system.manifest.json"
   ],
   "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],

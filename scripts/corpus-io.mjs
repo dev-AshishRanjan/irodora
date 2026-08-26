@@ -42,6 +42,25 @@ export async function loadCorpusPackage() {
   return import(pathToFileURL(dist).href);
 }
 
+/**
+ * Load the built recommendation package.
+ *
+ * Its sibling's twin, and for the same reason: the rule that weights must sum to 1 is
+ * implemented once, in the code that SCORES with them, and the gate runs that code rather than
+ * a copy of it (E-013). A second implementation in this script would agree on the day it was
+ * written and drift quietly afterwards.
+ */
+export async function loadRecommendationPackage() {
+  const dist = join(ROOT, 'packages', 'recommendation', 'dist', 'index.js');
+  if (!existsSync(dist))
+    throw new Error(
+      `@irodora/recommendation is not built (${dist} is missing). Run \`pnpm build\` first — ` +
+        'this script deliberately uses the built package rather than re-implementing the ' +
+        'weight rules, so the gate and the engine agree by construction.',
+    );
+  return import(pathToFileURL(dist).href);
+}
+
 /** Every `*.json` in a directory, sorted, with its filename. Missing directory → `[]`. */
 export function readJsonDir(dir) {
   if (!existsSync(dir)) return [];

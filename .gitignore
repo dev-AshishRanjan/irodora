@@ -132,3 +132,8 @@ docs/__claims_proof__.md
 # bundle from apps/mobile/global.css, which IS committed — this is a build artefact of a
 # build artefact.
 apps/mobile/src/uniwind.d.ts
+
+# Scratch copy taken by scripts/verify-content-proof.mjs while it mutates the fixture
+# corpus. The script removes it on every exit path; this is the second line of defence,
+# because the one time it did not, `git add -A` committed a copy of the fixtures (F-100).
+packages/corpus/test/fixtures/.valid-backup/

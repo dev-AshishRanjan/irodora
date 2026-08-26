@@ -8,6 +8,194 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-100 · a proof that perturbs the colour engine and cannot put it back
+
+Found while verifying F-029, not selected through `next-feature`, and the record says so.
+
+### What happened
+
+`verify-content-proof.mjs`'s E-001 case writes a **perturbed OKLab matrix** into
+`packages/color-spaces/src/matrices.ts` and then calls `rebuild()`, which shells out to pnpm.
+pnpm refuses outright on this workstation — Node 22.16.0 against `engines: >=24.19.0`.
+
+So `apply()` **threw after the write**, the throw escaped before the case's `cleanup` could run,
+and the script exited leaving **a corrupted colour engine in a tracked source file**.
+
+```
+-  0.819022437996703, 0.3619062600528904, …
++  0.829022437996703, 0.3619062600528904, …
+```
+
+One digit. Gate 11 went from green to **374 failures**, every one reading *"the CURRENT engine
+derives … publish a NEW corpus version"*.
+
+### The half-hour it cost, and why
+
+A corrupted engine looks exactly like a feature that broke the corpus. I bisected my own changes
+— stashing each area in turn — and got red every time, because **I was not rebuilding between
+stashes**, so `dist` never changed and the bisect could not have found anything. One run that
+did rebuild came back green, which sent me looking for a source cause that did not exist.
+
+What finally said otherwise was `git status` naming **`packages/color-spaces/src/matrices.ts`**
+as modified — a file nobody in the session had opened.
+
+### The real danger was the commit
+
+The perturbation is a tracked-file edit that `git add -A` picks up without comment. The next
+feature commit made on this workstation after running the proof would have shipped **a wrong
+colour matrix** — the one artefact here whose corruption changes every derived value and
+reproduces perfectly.
+
+### Two fixes, both needed
+
+1. **`apply` and `runGate` are inside a `try`/`finally`**, so cleanup is unconditional. The
+   case's own cleanup does `git checkout` *before* its rebuild, so the source comes back even
+   when that rebuild then throws.
+2. **The proof runs `rebuild()` once up front, on an unmodified tree**, and exits naming the
+   toolchain if it fails — refusing *before* mutating rather than discovering it halfway
+   through. A proof that perturbs a colour matrix and then reports an unrelated failure is a
+   proof nobody can read.
+
+### And a third thing, found by the commit itself
+
+The refuse path still left `.valid-backup/` behind — a copy of the fixture corpus the script
+takes before the baseline runs — and `git add -A` **committed it**. Caught by reading the
+staged list rather than by any gate, and fixed twice over: the refuse path removes the
+directory, and `.gitignore` carries it as a second line of defence.
+
+That is the same failure as the matrix, one size smaller: a script that writes into the working
+tree and exits by a path that does not clean up.
+
+### Gates
+
+Watched: the proof exits 1 with *"This proof cannot run on this toolchain"*,
+`git status packages/color-spaces/` is **empty** afterwards, and gate 11 stays green.
+
+**What is NOT proven here:** that the proof still *discriminates*. That needs the pinned
+toolchain — and it was already true before this change that nobody on Node 22 could run it. What
+changed is that failing no longer costs the engine.
+
+---
+
+## 2026-08-26 — F-029 · the weights become content, and E-009 stops being owed
+
+Twenty weights across five occasions, each with a stated reason, published as immutable content
+with its digest in the ledger. **[E-009](effects.json) is closed** — `guard: none` since
+2026-08-13, the longest-standing owed check in the graph, and the gate kept asking for thirteen
+days until it was built.
+
+### The word that mattered was "silently"
+
+> *A weight set that fails to normalise produces scores that are not comparable across contexts
+> and fails silently.*
+
+A weight file that does not sum to 1 still parses as JSON, still carries five occasions, and
+still produces a number for every colour — one that cannot be compared with a number from any
+other context. **Nothing downstream throws**, so nothing downstream could ever have been the
+guard.
+
+### The gate does not re-implement the rule
+
+`verify-content.mjs` loads the **built** `@irodora/recommendation` and calls
+`parseWeightContent`, which wraps F-028's own `parseRuleSet`. So *"these weights normalise"* is
+decided by the code that **scores** with them, not by a copy in a script that would agree on the
+day it was written ([E-013](effects.json)'s shape). `loadRecommendationPackage` sits beside
+`loadCorpusPackage` for exactly that reason — and criterion 3 was therefore already half-built
+before this feature started.
+
+### Watched failing in both halves, on the real file
+
+| Mutation | What the gate said |
+|---|---|
+| a weight 0.35 → 0.9 | `occasions.default: weights sum to 1.5499999999999998, not 1` |
+| **one word** in a rationale | digest `b9eec720…` does not match the ledger's `86b870d1…` |
+
+The second needed its own mutation: the first throw short-circuits the rest of the block, so a
+non-normalising file never reaches the digest check. That is the immutability half of ADR-0011,
+and a file that still parses perfectly is exactly the edit it exists to catch.
+
+Restored byte-exactly afterwards — **proven by the digest passing again**, which is a stronger
+check than reading a diff.
+
+Five fixtures also run on every pass: four spoilings required to fail, and the unspoiled original
+required to pass **in the same block**. The counts are printed — 20 rationales across 5 occasions
+— because a green gate over a weight file that failed to load reads identically otherwise.
+
+### An occasion IS a weight set
+
+Which is why FR-34 cost almost nothing. `scoreColor` already took a `RuleSet`, so choosing a
+context is choosing which one to pass. The alternative — an occasion as a modifier applied
+*after* scoring — would have put a second set of numbers between the weights and the answer, and
+the weights would have stopped being the thing that decides.
+
+### Two of my own failures, both worth keeping
+
+**Criterion 4 is the one a test can most easily fake.** "Changing a weight changes rankings" is
+satisfied by asserting two numbers differ — which would pass on an engine that read no weights
+and returned noise. It is asserted as a **reordering** through an engine byte-identical between
+the two calls, plus the same occasion always producing the same order, plus a third connecting
+the numbers to the **prose**: the `japanese-inspired` rationale claims restraint is a chroma
+property, so a colour outside the tolerance must score worse there than under `casual` and better
+under `formal`, which carries the lowest chroma weight.
+
+**My first draft of that test asserted rank position and failed.** The vivid colour sits third
+under both occasions because the colours above it move too. Rank is a comparison against whichever
+candidates happen to be in the list; the **score** is what the weight acts on and what the
+rationale is a claim about.
+
+**The second failure improved the parser.** The per-factor count reported only the first
+mismatch, so retyping `contrast` as `chroma` said *"chroma appears 2"* and never mentioned the
+factor that had gone missing — while my test asserted the other half. Each of us was describing
+one half of the same mistake. It names every mismatch now.
+
+### ADR-0011 got a note rather than a rewrite
+
+It was written on 2026-08-13, when there was a server tier.
+[ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)
+removed it.
+
+**Does not survive:** *"a weight change requires no deployment"* and *"publication only through
+the admin application"*. In a local-first app new content ships in a new build, the pull request
+**is** the publish path, and the two-file diff is the audit log. **FR-67's own wording is the one
+that holds** — *without a **code** change* — and it is what the gate checks.
+
+**Survives and is now enforced:** §1 immutability, §4 a rationale on every weight, §6 weights
+sum to 1.0 at publish time. §2 (`envelope.rules` as an indexed column) is still owed and belongs
+to F-030.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 30 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · **`content`** (120 entries, 175 lexicon agreements, 25 families, **20 weight rationales across 5 occasions, 5 weight fixtures**) · `security` |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+| **NOT run** | `e2e` (pending) · `perf` (pending) |
+
+`@irodora/recommendation` **55/55** across four files.
+
+### Recorded honestly
+
+- **The weights are editorial and nobody editorial set them.** Irodora's own first draft,
+  self-reviewed like every other record here (ADR-0060, OQ-5). The derivation says plainly that
+  **no weight here is supported by a study**, and the editorial notes name the one a second
+  editor would most likely argue with first — contrast, because it is the factor the guided flow
+  establishes with the least direct evidence and the photo path cannot establish at all.
+- **What the gate still does not catch:** an edit to a published file made *together with* a
+  matching ledger update. Two files, caught by review and by nothing else. ADR-0051 removed the
+  publish path that would have been the other control, and gate 11 prints that on every run.
+- **Nothing selects an occasion yet.** F-030 is the first feature that will, and it is now
+  unblocked.
+
+### Next
+
+**F-030** (`must`) is unblocked — F-028 and F-029 were its two blockers. It is the outfit colour
+engine, and it owes ADR-0011 §2: `envelope.rules` as an indexed column on a stored
+recommendation. F-095, F-097 and F-099 are `should`.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-26 — F-028 · the number, and the four things that made it
 
 *"Does this colour suit me?"* is a score in [0,100] with four named contributions behind it.

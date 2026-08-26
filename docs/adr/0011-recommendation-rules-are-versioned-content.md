@@ -89,9 +89,38 @@ weights.
 | **Learn weights from feedback** | Would adapt automatically. Violates [ADR-0002](0002-deterministic-core-tiered-capability-policy.md) — recommendations would stop being reproducible and explanations would become post-hoc narration |
 | **Per-user weight overrides only** | Personalisation without a content system. Does not address the global tuning problem, and per-user preference weights (FR-37) already exist as a separate, additive mechanism |
 
+## What ADR-0051 removed, and what survives — added by F-029, 2026-08-26
+
+This decision was written on **2026-08-13**, when the product had a server tier and an admin
+application. [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) removed
+both. Recording that here rather than leaving the text to age, because the parts it invalidates
+are specific and the rest is untouched
+([[prose-in-a-state-file-rots-and-no-schema-can-see-it]]).
+
+**Does not survive.**
+
+- *"A weight change requires no deployment"* (§3). In a local-first app new content ships in a
+  new build. **FR-67's own wording is the one that holds** — *changing a weight changes rankings
+  without a **code** change* — and that is precisely what F-029 made true and what gate 11
+  checks: the engine is byte-identical between two occasions and only the rule set differs.
+- *"Publication only through the admin application, every publish audit-logged with a diff"*
+  (§5). There is no admin application. **The pull request is the publish path**, the two-file
+  diff is the audit log, and review is the control. Gate 11 prints that limitation on every run.
+
+**Survives unchanged, and is now enforced** ([E-009](../../.harness/state/effects.json)):
+
+- §1 immutability — the ledger digest fails on a published file that changed, proven by altering
+  a single word in a rationale;
+- §4 a rationale on every weight — required, non-empty, with a floor under the length;
+- §6 weights sum to 1.0, validated at publish time — by the engine's own `parseRuleSet`, called
+  from the gate, so there is one definition rather than two.
+
+§2 (`envelope.rules` as an indexed column) is still owed and belongs to F-030, which is the first
+feature that stores a recommendation.
+
 ## Revisit when
 
 - The number of context-specific rule sets makes a flat weight table unmanageable and a
   hierarchy or inheritance model is needed.
-- Editorial demand justifies a staging environment for rule versions — publish-to-preview
-  before publish-to-production.
+- Editorial demand justifies a staging environment for rule versions — which, without a server,
+  would mean a second published version and a build flag rather than an environment.

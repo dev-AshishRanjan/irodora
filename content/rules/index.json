@@ -5,5 +5,13 @@
     "checksum": "2d5e2e4102d62e1187bcc86633c6c490d7862d2522ce4d8ae46a777fd80c8286",
     "publishedAt": "2026-08-25",
     "termCount": 28
+  },
+  {
+    "label": "2026.08.1",
+    "kind": "weights",
+    "checksum": "86b870d1d3b29cfa2eea07fc86ad0a90fd86e38fca7ded9b98dc1f7433fb8750",
+    "publishedAt": "2026-08-26",
+    "occasionCount": 5,
+    "rationaleCount": 20
   }
 ]

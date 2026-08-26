@@ -980,7 +980,7 @@
       "service": "content",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-011"
       ],
@@ -997,8 +997,11 @@
         "content"
       ],
       "effects": [
-        "E-009"
-      ]
+        "E-009",
+        "E-013"
+      ],
+      "plan": "plans/F-029-rule-and-weight-content-system.md",
+      "notes": "DONE, and it CLOSES E-009 — the longest-standing owed check in the graph, carried with `guard: none` since 2026-08-13. Every criterion is gated; no attestation. THE WORD THAT MATTERED IN E-009 WAS \"SILENTLY\". A weight file that does not sum to 1 still parses as JSON, still carries five occasions, and still produces a number for every colour — one that cannot be compared with a number from any other context. Nothing downstream throws, so nothing downstream could ever have been the guard. THE GATE DOES NOT RE-IMPLEMENT THE RULE. `verify-content.mjs` loads the BUILT @irodora/recommendation and calls `parseWeightContent`, which wraps F-028’s own `parseRuleSet` — so \"these weights normalise\" is decided by the code that SCORES with them rather than by a copy in a script that would agree on the day it was written (E-013). A `loadRecommendationPackage` sits beside `loadCorpusPackage` for exactly that reason, and criterion 3 was therefore already half-built before this feature started. WATCHED FAILING IN BOTH HALVES, ON THE REAL PUBLISHED FILE. A weight moved from 0.35 to 0.9 reports \"occasions.default: weights sum to 1.5499999999999998, not 1\". A SINGLE WORD changed in a rationale — a file that still parses perfectly, and which the sum check cannot see — reports a digest that does not match the ledger. The second is the immutability half of ADR-0011 and it needed its own mutation, because the first throw short-circuits the rest of the block. Restored byte-exactly afterwards, proven by the digest passing again rather than by reading a diff. AN OCCASION IS A WEIGHT SET, which is why FR-34 cost almost nothing. `scoreColor` already took a RuleSet, so choosing a context is choosing which one to pass. The alternative — an occasion as a modifier applied AFTER scoring — would have put a second set of numbers between the weights and the answer, and the weights would have stopped being the thing that decides. CRITERION 4 IS THE ONE A TEST CAN MOST EASILY FAKE. \"Changing a weight changes rankings\" is satisfied by asserting two numbers differ, which would pass on an engine that read no weights and returned noise. It is asserted as a REORDERING of the same colours through an engine that is byte-identical between the two calls, plus a check that the same occasion always produces the same order — and a third that connects the numbers to the PROSE: the japanese-inspired rationale claims restraint is a chroma property, so a colour outside the chroma tolerance must score worse there than under casual and better under formal, which carries the lowest chroma weight. Without that a rationale could say anything at all. THE FIRST DRAFT OF THAT TEST WAS WRONG AND THE FAILURE WAS INSTRUCTIVE: it asserted rank POSITION, and the vivid colour sits third under both occasions because the colours above it move too. Rank is a comparison against whichever candidates happen to be in the list; the SCORE is what the weight acts on and what the rationale is a claim about. A SECOND FAILURE IMPROVED THE PARSER. The per-factor count reported only the first mismatch, so retyping `contrast` as `chroma` said \"chroma appears 2\" and never mentioned the factor that had gone missing — my test asserted the other half. The realistic edit produces both at once, so the message now names every mismatch. ADR-0011 GOT A NOTE RATHER THAN A REWRITE. It was written on 2026-08-13 when there was a server tier; ADR-0051 removed it. \"A weight change requires no deployment\" and \"publication only through the admin application\" do not survive — in a local-first app new content ships in a new build, the pull request IS the publish path, and the two-file diff is the audit log. FR-67’s own wording is the one that holds and the one the gate checks: without a CODE change. Sections 1, 4 and 6 survive unchanged and are now enforced. THE WEIGHTS ARE EDITORIAL AND NOBODY EDITORIAL SET THEM — Irodora’s own first draft, self-reviewed like every other record here (ADR-0060, OQ-5). The provenance block says so in its own words, and the derivation states plainly that NO WEIGHT IS SUPPORTED BY A STUDY. The editorial notes name the weight a second editor would most likely argue with first."
     },
     {
       "id": "F-030",
@@ -2755,6 +2758,29 @@
         "test"
       ],
       "notes": "FILED BY F-028, WHICH WROTE THE SECOND COPY AND SAID SO. `hueBias` (engine) and `biasFromHue` (app) compute the same thing with the same constants, two features apart. E-008 states the consequence: a second implementation makes the same input measure differently on two surfaces and no single-platform test can see it — both sides pass their own tests today. THE DRIFT HAS A PREDICTABLE DIRECTION, which is the part worth knowing: the engine’s poles are a RULE SET field, so F-029 will version them as content, while the app’s are literals. The first time an editor moves the warm pole, a profile built from a photograph will disagree with the score the engine gives it, with every gate green. BLOCKED ON THE TOOLCHAIN, NOT ON A DECISION: the one-line fix is an import, and apps/mobile/node_modules/@irodora/ has no `recommendation` link because `pnpm install` refuses on Node 22.16.0 against engines demanding 24.19.0. Adding the dependency ALSO needs the lockfile importer entry, which gate 0 now checks (F-098) — so the manifest and lockfile half is mechanical and verifiable here; it is the node_modules link that is not, and a hand-made junction is what F-098’s own notes call the workaround that hid a stale lockfile for four features. DO IT ON THE PINNED TOOLCHAIN."
+    },
+    {
+      "id": "F-100",
+      "title": "A proof that perturbs the colour engine and cannot put it back",
+      "requirements": [
+        "NFR-20",
+        "NFR-3"
+      ],
+      "service": "root",
+      "release": "R3",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "verify-content-proof.mjs leaves packages/color-spaces/src/matrices.ts unmodified however it exits",
+        "On a toolchain that cannot rebuild, it refuses BEFORE mutating anything and says why",
+        "The restore is unconditional rather than dependent on the mutation succeeding"
+      ],
+      "verification": [
+        "state",
+        "content"
+      ],
+      "notes": "FILED AFTER THE FACT AND SAYING SO — found while verifying F-029, not selected through next-feature. THE DEFECT: the E-001 case in verify-content-proof.mjs writes a perturbed OKLab matrix into packages/color-spaces/src/matrices.ts and then calls `rebuild()`, which shells out to pnpm. On this workstation pnpm refuses outright — Node 22.16.0 against engines >=24.19.0 — so `apply()` THREW AFTER THE WRITE, the throw escaped before the case’s `cleanup` could run, and the script exited leaving a corrupted colour engine in a TRACKED SOURCE FILE. WHAT THAT LOOKS LIKE FROM THE OUTSIDE: gate 11 goes from green to 374 failures, every one reading \"the CURRENT engine derives ... publish a NEW corpus version\". The diff is ONE DIGIT — 0.819022437996703 became 0.829022437996703 — in a file nobody in the session had opened. I spent a long time bisecting my own changes for it, because a corrupted engine looks exactly like a feature that broke the corpus. `git status` naming matrices.ts as modified was what finally said otherwise. THE REAL DANGER IS THE COMMIT. The perturbation is a tracked-file edit that `git add -A` picks up without comment, so the next feature commit made on this workstation after running the proof would have shipped a wrong colour matrix — the one artefact in this repository whose corruption changes every derived value and reproduces perfectly. TWO FIXES, BOTH NEEDED. (1) `apply` and `runGate` are now inside a try/FINALLY so cleanup is unconditional — the case’s own cleanup does `git checkout` BEFORE its rebuild, so the source comes back even when the rebuild then throws. (2) The proof RUNS `rebuild()` ONCE UP FRONT, on an unmodified tree, and exits naming the toolchain if it fails — refusing before mutating rather than discovering it halfway through. A proof that perturbs a colour matrix and then reports an unrelated failure is a proof nobody can read. WATCHED: the proof now exits 1 with \"This proof cannot run on this toolchain\", `git status packages/color-spaces/` is empty afterwards, and gate 11 stays green. What is NOT proven here is that the proof still DISCRIMINATES — that needs the pinned toolchain, and it was already the case before this change that nobody on Node 22 could run it."
     }
   ]
 }

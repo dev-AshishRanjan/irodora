@@ -40,4 +40,16 @@ export {
   type FactorContribution,
 } from './score.js';
 
-export const RECOMMENDATION_VERSION = '0.1.0' as const;
+export {
+  MIN_RATIONALE,
+  OCCASIONS,
+  parseWeightContent,
+  rationaleCount,
+  ruleSetFor,
+  type Occasion,
+  type OccasionWeights,
+  type WeightContent,
+  type WeightedFactor,
+} from './weights.js';
+
+export const RECOMMENDATION_VERSION = '0.2.0' as const;

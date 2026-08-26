@@ -1,0 +1,156 @@
+{
+  "versionId": "2026.08.1",
+  "publishedAt": "2026-08-26",
+  "provenance": {
+    "source": "Irodora editorial curation — recommendation weights, 2026",
+    "sourceId": "IRO-ED-003",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial judgement, and nothing here was measured. These are the seed weights: a first statement of how much each of the four factors should matter, written so the next person has something specific to disagree with rather than a blank file. The DEFAULT profile leans on temperature because it is the factor a personal profile establishes most directly — three forced choices on one axis, against a lightness range inferred from the swatches somebody happened to choose. The occasion profiles move weight between factors and never introduce a fifth: FR-34 asks for deterministic weighting profiles, so an occasion is a different set of the same numbers rather than a modifier applied afterwards. NO WEIGHT HERE IS SUPPORTED BY A STUDY. The rationales say what the reasoning was, not what was observed, and a rationale that read like a measurement would be worse than none.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-08-26",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-08-26",
+    "reviewIndependence": "self",
+    "editorialNotes": "Reviewed by its own author, like every other editorial record here — ADR-0060 and the standing OQ-5 gap. A second editor would most likely argue with the contrast weighting first: it is the factor the guided flow establishes with the least direct evidence, and the one the photo path cannot establish at all."
+  },
+  "falloff": {
+    "lightness": 0.25,
+    "chroma": 0.12
+  },
+  "poles": {
+    "warm": 60,
+    "cool": 240
+  },
+  "occasions": [
+    {
+      "occasion": "default",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.35,
+          "rationale": "The heaviest of the four because it is the dimension a profile establishes most directly: three forced choices on one axis, each isolating hue with lightness and chroma held constant. It is also the factor a person can least easily judge for themselves, which is what makes it worth stating."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.3,
+          "rationale": "Close behind temperature. A lightness range is derived from the swatches somebody chose rather than asked about directly, so it is one inference further from the person — but it constrains the large areas of an outfit, which is where a mismatch is most visible."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.2,
+          "rationale": "Lower because tolerance for chroma varies most within a single person: the same wearer accepts far more of it in a scarf than in a coat. Weighting it as heavily as lightness would make the engine refuse colours that work in small areas."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.15,
+          "rationale": "The lightest weight, because it is the factor established with the least direct evidence — the guided flow infers it from three paired comparisons, and the photo path cannot establish it at all and abstains. A weight is not the place to compensate for that; the per-dimension confidence already does."
+        }
+      ]
+    },
+    {
+      "occasion": "office",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.25,
+          "rationale": "Reduced from default. Office dress leans on a narrow, mostly neutral range where temperature differences are small by construction, so weighting it heavily would separate colours that read as interchangeable in the room."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.3,
+          "rationale": "Held at default. Lightness is what distinguishes one neutral from another once chroma is low, so it carries more of the decision here than it does elsewhere even at the same number."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.15,
+          "rationale": "Reduced, and deliberately not to zero. Office palettes are low-chroma, so the axis discriminates less — but a strong colour is still a real choice a person can make, and a zero weight would stop the engine having any opinion about it."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.3,
+          "rationale": "Doubled from default, and the largest single move in this file. When chroma and temperature are both compressed, contrast is most of what remains to distinguish one office outfit from another."
+        }
+      ]
+    },
+    {
+      "occasion": "casual",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.4,
+          "rationale": "Raised. Casual dress has the widest colour range of any context here, so temperature is doing the most work separating what suits a person from what merely fits the occasion."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.25,
+          "rationale": "Slightly reduced. Casual outfits tolerate a wider lightness spread than office or formal dress, so a colour outside the range is a weaker signal than it is elsewhere."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.25,
+          "rationale": "Raised from default. This is the context where a saturated colour is most likely to be worn as a large area rather than an accent, which is exactly when chroma tolerance stops being a detail."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.1,
+          "rationale": "The lowest weight in the file. Casual dress has no convention about separation between pieces, so a preference expressed here says more about the person than about whether the outfit works."
+        }
+      ]
+    },
+    {
+      "occasion": "formal",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.2,
+          "rationale": "The lowest temperature weight here. Formal palettes are narrow and dark, and within that range the warm-cool distinction is small enough that weighting it heavily would produce confident answers about differences nobody sees."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.35,
+          "rationale": "The heaviest factor for this occasion. Formal dress is largely a question of how dark, and a colour outside the range is the most visible way to be wrong in it."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.1,
+          "rationale": "The lowest chroma weight in the file. Formal palettes are near-neutral by convention, so the axis has very little range to discriminate over and a high weight would amplify noise."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.35,
+          "rationale": "Tied for heaviest, for the same reason as the office profile and more so: when both chroma and temperature are compressed, the separation between pieces is most of what is left to judge."
+        }
+      ]
+    },
+    {
+      "occasion": "japanese-inspired",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.3,
+          "rationale": "Slightly below default. This corpus is roughly balanced between warm earths and cool indigos, so temperature separates its entries well — but the context is defined by restraint rather than by warmth, which is what the chroma weight expresses."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.25,
+          "rationale": "Reduced. The traditional pairings this context draws on span a wide lightness range — 藍 against 生成り is most of the axis — so a narrow personal range is a weaker constraint here than elsewhere."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.35,
+          "rationale": "The heaviest chroma weight in the file, and the one that defines this profile. The restraint that characterises these palettes is a chroma property before it is anything else, so a colour outside the tolerance is the clearest way to be wrong in this context."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.1,
+          "rationale": "Low. These pairings use both high contrast and near-tonal combinations freely, so a stated preference is a fact about the person rather than about the context, and the engine should weight it accordingly."
+        }
+      ]
+    }
+  ]
+}
