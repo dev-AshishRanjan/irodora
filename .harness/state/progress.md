@@ -8,6 +8,105 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-031 · six numbers, one of them renamed, and a grey that thought it was warm
+
+An outfit gets six component scores and an overall, each with its direction, its message key and
+**numeric evidence** so the number can be disagreed with rather than only doubted.
+
+### "Japanese aesthetic" is called `corpusAffinity`, and the rename is the feature
+
+FR-32 names the component and it has to exist. A number claiming **how Japanese an outfit is**
+would be an unmeasurable cultural claim shipped out of 100 — a larger version of exactly what
+the claims lint bans phrases for.
+
+What *is* measurable is ΔE00 to the nearest published corpus entry: a real distance, a real unit,
+reproducible from the corpus version. [ADR-0073](../../docs/adr/0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md)
+records it **including the cost** — the component measures *our corpus*, not the tradition, and
+our corpus is 120 entries chosen by one editor.
+
+### The outfit weights are content, so a version got published
+
+Six numbers summing to 1 is precisely the shape F-029 made content. `weights.2026.08.2.json`
+supersedes 2026.08.1, changes **nothing** that was in it, and adds an `outfit` block with a
+rationale per component.
+
+The parser makes that block **optional**, and it is not a soft default: 2026.08.1 is published
+and immutable, so a required field would have turned gate 11 red on a file nobody is allowed to
+edit. `null` means *this version predates the feature*, and `outfitWeights` **throws naming the
+version** rather than substituting numbers nobody published.
+
+**Gate 11 now discovers every weight file** instead of naming one. F-029 hard-coded 2026.08.1 —
+correct while there was one, stale within the day. An old version still has to pass: it is
+immutable, the app may pin it, and a file nobody checks is a file nobody would notice going
+wrong. **46 rationales over 2 versions, 10 fixtures.**
+
+### E-005 stopped being a prediction
+
+It was written naming *"the recommendation engine's separation factor"* before one existed.
+`cvdAccessibility` now imports `separationScore` and defines no separation of its own — and
+takes the **worst** pair across all three deficiencies, not the mean, because an outfit where one
+pair vanishes for a deutan is not rescued by two that survive.
+
+### Two of my tests failed, and both found real defects
+
+**The CVD test assumed a red and a green would collapse under deutan.** Both scored 100 — they
+differ in *lightness*, and `separationScore` weights that. Asking the model which corpus pair it
+actually finds hardest returned `kawaki-suna`/`usu-shiba` at **0.68 of 100**. Measured rather
+than assumed.
+
+**And the big one.** `versatility` ranked `mi-aka`, the most saturated red in the corpus, as its
+**most versatile colour** — 73.3% against 61.7% for a warm grey. Two stacked defects:
+
+1. The component was built on `pairingFit`, whose lightness-separation term dominated — so it
+   was measuring *lightness centrality*, and scoring the same property `contrast` already scored.
+   Two of the six were double-counting.
+2. Removing separation made the gap **wider in the wrong direction**, which exposed the second:
+   **`hueBias` calls `hai-suna`, a grey at C = 0.012, `+0.867` warm** — more strongly warm than
+   that vivid red at `+0.644`. A hue angle on a near-neutral is a rounding artefact of two tiny
+   `a` and `b` components.
+
+`temperatureOf` scales the bias by chroma against the **published lexicon's own 0.039 boundary
+for "grey"**, so the word denotes one thing across the product. **E-034** records it — including
+that `scoreColor` and the app's copy still carry the same blind spot, fixed where it was
+demonstrated and filed as **F-101** where it was not.
+
+**A test written against what the code computes would have passed.** The only reason any of this
+surfaced is that the assertions were written against what the *words* mean.
+
+### Gates
+
+| | |
+|---|---|
+| **Ran, green** | `state` (17 checks, 32 links) · `typecheck` (31) · `lint` · `format` · `build` (18) · **`content`** (46 weight rationales over 2 versions, 10 fixtures) · `cvd` · `cache-scope` · `security` |
+| **Ran, RED — pre-existing, unchanged** | `test` on `@irodora/color-difference` and `@irodora/color-spaces` (Node-22 ULP, F-083) |
+| **Could not run** | `e2e` — in this feature's verification list; gate 7 is pending and F-091 is blocked on the environment |
+
+`@irodora/recommendation` **99/99** across six files.
+
+### Recorded honestly
+
+- **Five of the six components are conventions.** Only `cvdAccessibility` rests on a published
+  model (Machado, Viénot). Each of the other five says so in its own doc comment — a component
+  that reads like a measurement is worse than one that admits it is a judgement, because the
+  first gets quoted back.
+- **`e2e` did not run**, so nothing proves a person ever sees six numbers rather than one.
+- **The message-key contract is still owed.** Twelve keys from F-028 and eighteen from this
+  feature, and the app renders none of them yet — adding them now would fail `i18n.test.ts`'s
+  "no key nobody renders". Recorded on E-016.
+- **`corpusAffinity` scores an outfit assembled from published corpus colours highly whether or
+  not it is well composed.** That is stated in the ADR's Consequences rather than buried.
+
+### Next
+
+**F-032** (`must`) is unblocked — CVD outfit mode, which turns the component this feature scores
+into a flag and an alternative with a *measured* improvement. **F-037** (`must`) and **F-038**
+(`must`) remain eligible; F-038 activates gate 12 and would discharge F-030's attested latency
+criterion.
+
+Ahead of everything, unchanged: **the Node upgrade to 24.19.0**.
+
+---
+
 ## 2026-08-26 — F-030 · what goes with this, and the number that is not content
 
 Given a garment colour and the slot it is worn in, the engine returns **ranked colours for the

@@ -501,11 +501,23 @@ rulesExercised += 1;
  * reject one. Four spoiled copies are built in memory from the real file and each is required
  * to fail, with the unspoiled original required to pass in the same block.
  */
-const WEIGHTS_FILE = 'weights.2026.08.1.json';
+/*
+ * EVERY published weight file, DISCOVERED rather than named.
+ *
+ * F-029 hard-coded `weights.2026.08.1.json`, which was correct while there was one — and F-031
+ * published `2026.08.2` within the day. A gate that checks the version somebody remembered to
+ * add to it stops covering the moment the machinery it exists for is actually used.
+ *
+ * An OLD version still has to pass. A published version is immutable and the app may pin it, so
+ * a file nobody checks any more is a file nobody would notice going wrong.
+ */
+const WEIGHTS_FILES = readdirSync(RULES_DIR)
+  .filter((name) => /^weights\..+\.json$/u.test(name))
+  .sort();
 
-if (!existsSync(join(RULES_DIR, WEIGHTS_FILE))) {
+if (WEIGHTS_FILES.length === 0) {
   console.log(
-    `\n${RED}${BOLD}Gate 11 cannot run.${OFF} ${WEIGHTS_FILE} is missing from ${RULES_DIR}.\n` +
+    `\n${RED}${BOLD}Gate 11 cannot run.${OFF} No weights.*.json in ${RULES_DIR}.\n` +
       'A gate that lost its own inputs must fail rather than pass over an empty set.\n',
   );
   process.exit(1);
@@ -513,98 +525,105 @@ if (!existsSync(join(RULES_DIR, WEIGHTS_FILE))) {
 
 let weightRationales = 0;
 let weightFixtures = 0;
-try {
-  const raw = readJsonFile(join(RULES_DIR, WEIGHTS_FILE));
-  const content = parseWeightContent(raw, WEIGHTS_FILE);
-  weightRationales = rationaleCount(content);
-
-  // The digest lives in the ledger, never in the file it describes — same as the lexicon.
-  const ledgerRows = readJsonFile(join(RULES_DIR, 'index.json'));
-  const row = Array.isArray(ledgerRows)
-    ? ledgerRows.find((r) => r.label === content.versionId && r.kind === 'weights')
-    : undefined;
-  if (row === undefined)
-    fail(
-      `content/rules/index.json has no weights row for ${content.versionId}. The ledger is what ` +
-        'makes the checksum mean anything.',
-    );
-  else {
-    const actual = entryDigest(raw, sha256);
-    if (actual !== row.checksum)
-      fail(
-        `${WEIGHTS_FILE}: digest ${actual} does not match the ledger's ${row.checksum}. ` +
-          'Published rule content is immutable — a change mints a new version rather than ' +
-          'editing this one.',
-      );
-    if (row.occasionCount !== content.occasions.length)
-      fail(
-        `content/rules/index.json records ${String(row.occasionCount)} occasion(s) for ` +
-          `${content.versionId}; the file carries ${String(content.occasions.length)}.`,
-      );
-    if (row.rationaleCount !== weightRationales)
-      fail(
-        `content/rules/index.json records ${String(row.rationaleCount)} rationale(s) for ` +
-          `${content.versionId}; the file carries ${String(weightRationales)}.`,
-      );
-  }
-
-  /*
-   * Every occasion resolves to a scorable rule set. `ruleSetFor` throws rather than falling
-   * back, so this is what proves selecting a context cannot silently become "the default".
-   */
-  for (const occasion of OCCASIONS)
-    try {
-      const rules = ruleSetFor(content, occasion);
-      const total = SCORE_FACTORS.reduce((n, f) => n + rules.weights[f], 0);
-      if (Math.abs(total - 1) > 1e-9)
-        fail(`${WEIGHTS_FILE}: occasion "${occasion}" weights sum to ${String(total)}, not 1.`);
-    } catch (error) {
-      fail(`${WEIGHTS_FILE}: occasion "${occasion}" — ${error.message}`);
-    }
-
-  // --- the fixtures: four spoilings, each required to fail, and the original required to pass
-  const spoil = (label, mutate) => {
-    weightFixtures += 1;
-    const draft = structuredClone(raw);
-    mutate(draft);
-    try {
-      parseWeightContent(draft, `fixture:${label}`);
-      fail(
-        `${WEIGHTS_FILE} fixture "${label}": the check ACCEPTED a file it must reject. A ` +
-          'validator nobody has watched reject anything might only be capable of passing.',
-      );
-    } catch {
-      /* expected */
-    }
-  };
-
-  spoil('weights that do not normalise', (d) => {
-    d.occasions[0].factors[0].weight = 0.9;
-  });
-  spoil('a weight with no rationale', (d) => {
-    delete d.occasions[1].factors[0].rationale;
-  });
-  spoil('a missing occasion', (d) => {
-    d.occasions = d.occasions.slice(1);
-  });
-  spoil('a factor named twice', (d) => {
-    d.occasions[2].factors[3].factor = d.occasions[2].factors[2].factor;
-  });
-
-  // THE BASELINE, in the same block. Without it every spoiling above is equally satisfied by a
-  // parser that rejects everything [[a-decoy-that-is-not-broken-proves-nothing]].
-  weightFixtures += 1;
+let outfitVersions = 0;
+for (const WEIGHTS_FILE of WEIGHTS_FILES)
   try {
-    parseWeightContent(structuredClone(raw), 'fixture:unspoiled');
+    const raw = readJsonFile(join(RULES_DIR, WEIGHTS_FILE));
+    const content = parseWeightContent(raw, WEIGHTS_FILE);
+    // Per FILE, then accumulated. The ledger row describes one version, so comparing a running
+    // total against it was wrong the moment a second version existed — and it said so plainly:
+    // "records 26 for 2026.08.2; the file carries 40", which is 20 + 20.
+    const fileRationales = rationaleCount(content);
+    weightRationales += fileRationales;
+    if (content.outfit !== null) outfitVersions += 1;
+
+    // The digest lives in the ledger, never in the file it describes — same as the lexicon.
+    const ledgerRows = readJsonFile(join(RULES_DIR, 'index.json'));
+    const row = Array.isArray(ledgerRows)
+      ? ledgerRows.find((r) => r.label === content.versionId && r.kind === 'weights')
+      : undefined;
+    if (row === undefined)
+      fail(
+        `content/rules/index.json has no weights row for ${content.versionId}. The ledger is what ` +
+          'makes the checksum mean anything.',
+      );
+    else {
+      const actual = entryDigest(raw, sha256);
+      if (actual !== row.checksum)
+        fail(
+          `${WEIGHTS_FILE}: digest ${actual} does not match the ledger's ${row.checksum}. ` +
+            'Published rule content is immutable — a change mints a new version rather than ' +
+            'editing this one.',
+        );
+      if (row.occasionCount !== content.occasions.length)
+        fail(
+          `content/rules/index.json records ${String(row.occasionCount)} occasion(s) for ` +
+            `${content.versionId}; the file carries ${String(content.occasions.length)}.`,
+        );
+      if (row.rationaleCount !== fileRationales)
+        fail(
+          `content/rules/index.json records ${String(row.rationaleCount)} rationale(s) for ` +
+            `${content.versionId}; the file carries ${String(fileRationales)}.`,
+        );
+    }
+
+    /*
+     * Every occasion resolves to a scorable rule set. `ruleSetFor` throws rather than falling
+     * back, so this is what proves selecting a context cannot silently become "the default".
+     */
+    for (const occasion of OCCASIONS)
+      try {
+        const rules = ruleSetFor(content, occasion);
+        const total = SCORE_FACTORS.reduce((n, f) => n + rules.weights[f], 0);
+        if (Math.abs(total - 1) > 1e-9)
+          fail(`${WEIGHTS_FILE}: occasion "${occasion}" weights sum to ${String(total)}, not 1.`);
+      } catch (error) {
+        fail(`${WEIGHTS_FILE}: occasion "${occasion}" — ${error.message}`);
+      }
+
+    // --- the fixtures: four spoilings, each required to fail, and the original required to pass
+    const spoil = (label, mutate) => {
+      weightFixtures += 1;
+      const draft = structuredClone(raw);
+      mutate(draft);
+      try {
+        parseWeightContent(draft, `fixture:${label}`);
+        fail(
+          `${WEIGHTS_FILE} fixture "${label}": the check ACCEPTED a file it must reject. A ` +
+            'validator nobody has watched reject anything might only be capable of passing.',
+        );
+      } catch {
+        /* expected */
+      }
+    };
+
+    spoil('weights that do not normalise', (d) => {
+      d.occasions[0].factors[0].weight = 0.9;
+    });
+    spoil('a weight with no rationale', (d) => {
+      delete d.occasions[1].factors[0].rationale;
+    });
+    spoil('a missing occasion', (d) => {
+      d.occasions = d.occasions.slice(1);
+    });
+    spoil('a factor named twice', (d) => {
+      d.occasions[2].factors[3].factor = d.occasions[2].factors[2].factor;
+    });
+
+    // THE BASELINE, in the same block. Without it every spoiling above is equally satisfied by a
+    // parser that rejects everything [[a-decoy-that-is-not-broken-proves-nothing]].
+    weightFixtures += 1;
+    try {
+      parseWeightContent(structuredClone(raw), 'fixture:unspoiled');
+    } catch (error) {
+      fail(
+        `${WEIGHTS_FILE} fixture "unspoiled": the check REJECTED the published file — ` +
+          `${error.message}. The spoilings above prove nothing if this one does not pass.`,
+      );
+    }
   } catch (error) {
-    fail(
-      `${WEIGHTS_FILE} fixture "unspoiled": the check REJECTED the published file — ` +
-        `${error.message}. The spoilings above prove nothing if this one does not pass.`,
-    );
+    fail(`${WEIGHTS_FILE}: ${error.message}`);
   }
-} catch (error) {
-  fail(`${WEIGHTS_FILE}: ${error.message}`);
-}
 rulesExercised += 1;
 
 // --- the device-local identities are RESERVED, and content may not use them -----------------
@@ -685,9 +704,10 @@ console.log(
 // nobody can tell ran: a green gate over a weight file that failed to load and a green gate
 // over twenty checked rationales read identically without these numbers.
 console.log(
-  `${DIM}  ${String(weightRationales)} weight rationale(s) across ${String(OCCASIONS.length)} ` +
-    `occasion(s), each set normalised by the engine's own validator; ` +
-    `${String(weightFixtures)} weight fixture(s) exercised${OFF}\n`,
+  `${DIM}  ${String(weightRationales)} weight rationale(s) over ${String(WEIGHTS_FILES.length)} ` +
+    `published version(s) x ${String(OCCASIONS.length)} occasion(s), each set normalised by the ` +
+    `engine's own validator; ${String(outfitVersions)} carr${outfitVersions === 1 ? 'ies' : 'y'} ` +
+    `outfit weights; ${String(weightFixtures)} weight fixture(s) exercised${OFF}\n`,
 );
 
 if (real.entries.length === 0)

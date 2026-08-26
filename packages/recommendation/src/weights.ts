@@ -42,7 +42,7 @@
  * `test/weights.test.ts` asserts — two occasions, one unchanged engine, different rankings.
  */
 
-import { parseRuleSet, RuleError, type RuleSet } from './rules.js';
+import { parseRuleSet, requireObject, RuleError, WEIGHT_TOLERANCE, type RuleSet } from './rules.js';
 import { SCORE_FACTORS, type ScoreFactor } from './profile.js';
 
 /**
@@ -77,6 +77,23 @@ export interface OccasionWeights {
   readonly factors: readonly WeightedFactor[];
 }
 
+/**
+ * The six components of an outfit score, weighted. Added by F-031.
+ *
+ * `OutfitComponent` is not imported here — that would make this module depend on the scorer it
+ * feeds. The key set is checked against the array below, and `outfit-score.ts` imports THIS
+ * union, so there is one list and the compiler keeps the two in step.
+ */
+export const OUTFIT_WEIGHT_COMPONENTS = [
+  'harmony',
+  'personalFit',
+  'contrast',
+  'corpusAffinity',
+  'versatility',
+  'cvdAccessibility',
+] as const;
+export type OutfitWeightComponent = (typeof OUTFIT_WEIGHT_COMPONENTS)[number];
+
 /** The published file, as the engine reads it. */
 export interface WeightContent {
   readonly versionId: string;
@@ -85,6 +102,24 @@ export interface WeightContent {
   readonly occasions: readonly OccasionWeights[];
   readonly falloff: RuleSet['falloff'];
   readonly poles: RuleSet['poles'];
+  /**
+   * The outfit-score weights, or `null` for a version published before F-031 existed.
+   *
+   * **Optional in the parser, and that is not a soft default.** `weights.2026.08.1.json` is
+   * published and immutable — making this field required would stop it parsing, and gate 11
+   * would go red on a file nobody is allowed to edit. `null` means exactly one thing here, the
+   * same way a nullable migration-2 column does: *this version predates the feature*.
+   *
+   * Nothing falls back. `outfitWeights` throws naming the version rather than substituting a
+   * number nobody published.
+   */
+  readonly outfit: Readonly<Record<OutfitWeightComponent, WeightedComponent>> | null;
+}
+
+/** One outfit component's weight, and the reason it is that number. */
+export interface WeightedComponent {
+  readonly weight: number;
+  readonly rationale: string;
 }
 
 /** The shortest rationale that could say anything. Not a style rule — a floor under a field. */
@@ -192,12 +227,11 @@ export function parseWeightContent(value: unknown, where: string): WeightContent
    * RuleSet here and discarding it is the point: what is wanted is the THROW, so a published
    * file that would produce incomparable scores never reaches a device.
    */
-  const content: WeightContent = {
+  const content = {
     versionId,
     publishedAt,
     occasions,
-    falloff: { lightness: 0, chroma: 0 },
-    poles: { warm: 0, cool: 0 },
+    outfit: parseOutfitWeights(o['outfit'], `${where}: outfit`),
   };
   let firstRules: RuleSet | null = null;
   for (const entry of occasions) {
@@ -218,6 +252,78 @@ export function parseWeightContent(value: unknown, where: string): WeightContent
   if (firstRules === null) throw new RuleError(`${where}: no occasions to validate`);
 
   return { ...content, falloff: firstRules.falloff, poles: firstRules.poles };
+}
+
+/**
+ * The outfit block, or `null` when the version predates it.
+ *
+ * ABSENT AND EMPTY ARE DIFFERENT. A missing key is a version published before F-031; a present
+ * block that is incomplete is a publish somebody got wrong, and it is refused. Treating the
+ * second as the first is how a half-written weight set reaches a device.
+ */
+function parseOutfitWeights(
+  value: unknown,
+  where: string,
+): Readonly<Record<OutfitWeightComponent, WeightedComponent>> | null {
+  if (value === undefined || value === null) return null;
+  const o = requireObject(value, where);
+
+  for (const key of Object.keys(o))
+    if (!(OUTFIT_WEIGHT_COMPONENTS as readonly string[]).includes(key))
+      throw new RuleError(
+        `${where}.${key} is not a component this engine scores ` +
+          `(${OUTFIT_WEIGHT_COMPONENTS.join(', ')})`,
+      );
+
+  let total = 0;
+  const out: Record<string, WeightedComponent> = {};
+  for (const component of OUTFIT_WEIGHT_COMPONENTS) {
+    const entry = requireObject(o[component], `${where}.${component}`);
+    const weight = entry['weight'];
+    if (typeof weight !== 'number' || !Number.isFinite(weight) || weight < 0 || weight > 1)
+      throw new RuleError(
+        `${where}.${component}.weight must be a number in [0,1]; got ${JSON.stringify(weight)}`,
+      );
+    const rationale = entry['rationale'];
+    if (typeof rationale !== 'string' || rationale.trim().length < MIN_RATIONALE)
+      throw new RuleError(
+        `${where}.${component}.rationale is required and must say something (at least ` +
+          `${String(MIN_RATIONALE)} characters). ADR-0011 section 4 applies to every weight, ` +
+          'not only to the four a colour is scored on.',
+      );
+    out[component] = { weight, rationale };
+    total += weight;
+  }
+  if (Math.abs(total - 1) > WEIGHT_TOLERANCE)
+    throw new RuleError(
+      `${where}: weights sum to ${String(total)}, not 1. An outfit score is the weighted sum ` +
+        'of six component scores in [0,100], so weights that do not sum to 1 do not produce an ' +
+        'overall in [0,100].',
+    );
+  return out as Record<OutfitWeightComponent, WeightedComponent>;
+}
+
+/**
+ * The outfit weights for a published version, or a throw naming it.
+ *
+ * **No fallback.** A version published before F-031 carries none, and substituting a number
+ * nobody published would make "scored under 2026.08.1" and "scored under weights we invented"
+ * the same sentence on a screen whose whole proposition is explainability.
+ */
+export function outfitWeights(
+  content: WeightContent,
+): Readonly<Record<OutfitWeightComponent, number>> {
+  if (content.outfit === null)
+    throw new RuleError(
+      `weights ${content.versionId} carry no outfit block. That version was published before ` +
+        'outfit scoring existed; publish a version that includes one rather than scoring ' +
+        'against weights nobody chose.',
+    );
+  const outfit = content.outfit;
+  return Object.fromEntries(OUTFIT_WEIGHT_COMPONENTS.map((c) => [c, outfit[c].weight])) as Record<
+    OutfitWeightComponent,
+    number
+  >;
 }
 
 /**
@@ -248,5 +354,13 @@ export function ruleSetFor(content: WeightContent, occasion: Occasion): RuleSet 
 
 /** Every rationale in the file, for a gate that wants to report how many it checked. */
 export function rationaleCount(content: WeightContent): number {
+  // The outfit block's six count too. A ledger row that recorded only the occasion rationales
+  // would let six weights be added, or removed, without the count moving.
+  const outfit = content.outfit === null ? 0 : Object.keys(content.outfit).length;
+  return outfit + occasionRationaleCount(content);
+}
+
+/** The occasion half, kept separate so `rationaleCount` reads as the sum it is. */
+function occasionRationaleCount(content: WeightContent): number {
   return content.occasions.reduce((n, o) => n + o.factors.length, 0);
 }

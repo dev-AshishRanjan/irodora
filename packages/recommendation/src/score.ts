@@ -160,6 +160,46 @@ export function hueBias(
   return (toCool - toWarm) / span;
 }
 
+/**
+ * The chroma at or below which a colour has no temperature worth speaking of.
+ *
+ * **Hue is meaningless at low chroma**, and `hueBias` alone does not know that. Measured on the
+ * published corpus: `hai-suna`, a warm grey at C = 0.012, returns a bias of **0.867** — *more
+ * strongly warm than `mi-aka`, the most saturated red in the corpus, at 0.644*. A hue angle on a
+ * near-neutral is a rounding artefact of two tiny numbers, and treating it as a claim about
+ * warmth is how a grey ends up clashing with things.
+ *
+ * **0.039 is not invented here.** It is the published phrase lexicon's own boundary for the term
+ * "grey" (`content/rules/phrase-lexicon.2026.08.1.json`), which was itself placed in the
+ * measured gap between the corpus's authored chroma bands. Using the same number means "grey"
+ * denotes one thing in this product — the shape [[a-word-in-the-lexicon-is-also-a-word-in-the-taxonomy]]
+ * exists to protect.
+ *
+ * It belongs in the rule set with the poles it works beside, and it is not there yet: adding a
+ * required field would stop `weights.2026.08.1.json` parsing, and that file is published and
+ * immutable. Owed to the next version that needs a new optional block anyway.
+ */
+export const NEUTRAL_CHROMA = 0.039;
+
+/**
+ * A colour's warm–cool temperature, **scaled by how much colour it actually has**.
+ *
+ * `hueBias` is the pure hue question and stays that way — it is the right function when the
+ * chroma is already known to be meaningful. This is the one to use when the input is an
+ * arbitrary colour, because most of a wardrobe is near-neutral.
+ *
+ * Ramps linearly from 0 at C = 0 to the full bias at `NEUTRAL_CHROMA`. Linear because a curve
+ * would be a claim about how quickly a grey becomes a colour, and nobody has measured that.
+ */
+export function temperatureOf(
+  chroma: number,
+  hue: number,
+  poles: { readonly warm: number; readonly cool: number },
+): number {
+  const weight = clamp01(chroma / NEUTRAL_CHROMA);
+  return hueBias(hue, poles) * weight;
+}
+
 /** How much lightness separation each contrast preference is asking for, in OKLCh L. */
 const CONTRAST_TARGET: Readonly<Record<PersonalProfile['contrast'], number>> = {
   low: 0.12,

@@ -424,12 +424,18 @@ importers:
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../color-core
+      '@irodora/color-difference':
+        specifier: workspace:*
+        version: link:../color-difference
       '@irodora/color-spaces':
         specifier: workspace:*
         version: link:../color-spaces
       '@irodora/corpus':
         specifier: workspace:*
         version: link:../corpus
+      '@irodora/cvd-engine':
+        specifier: workspace:*
+        version: link:../cvd-engine
     devDependencies:
       '@irodora/store':
         specifier: workspace:*

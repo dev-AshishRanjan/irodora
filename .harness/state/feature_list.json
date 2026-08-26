@@ -1058,7 +1058,7 @@
       "package": "@irodora/recommendation",
       "release": "R3",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-030"
       ],
@@ -1072,7 +1072,15 @@
         "typecheck",
         "test",
         "e2e"
-      ]
+      ],
+      "plan": "plans/F-031-outfit-scoring-and-explainability.md",
+      "effects": [
+        "E-005",
+        "E-009",
+        "E-033",
+        "E-034"
+      ],
+      "notes": "DONE. Six component scores and an overall, each with its direction, its message key and numeric evidence. All three criteria gated; `e2e` is in the verification list and could not run — gate 7 is pending and F-091 is blocked on the environment — so nothing here proves a person ever SEES six numbers. \"JAPANESE AESTHETIC\" IS CALLED `corpusAffinity`, AND THE RENAME IS THE FEATURE. FR-32 names the component and it has to exist; a number claiming how JAPANESE an outfit is would be an unmeasurable cultural claim shipped out of 100, which is a larger version of exactly what the claims lint bans phrases for. What is measurable is dE00 to the nearest published corpus entry — a real distance, a real unit, reproducible from the corpus version. ADR-0073 records it INCLUDING the cost: the component measures OUR corpus, not the tradition, and our corpus is 120 entries chosen by one editor. THE OUTFIT WEIGHTS ARE CONTENT, AND THAT MEANT PUBLISHING A VERSION. Six numbers summing to 1 is precisely the shape F-029 made content, so folding them in as constants would have repeated what F-030 explicitly refused. `weights.2026.08.2.json` supersedes 2026.08.1, changes NOTHING that was in it, and adds an `outfit` block with a rationale per component. THE PARSER MADE THE BLOCK OPTIONAL RATHER THAN REQUIRED, and that is not a soft default: 2026.08.1 is published and immutable, so a required field would have turned gate 11 red on a file nobody is allowed to edit. `null` means \"this version predates the feature\", and `outfitWeights` THROWS naming the version rather than substituting numbers nobody published. GATE 11 NOW DISCOVERS EVERY WEIGHT FILE instead of naming one. F-029 hard-coded 2026.08.1 — correct while there was one, and stale within the day. An old version still has to pass: it is immutable, the app may pin it, and a file nobody checks is a file nobody would notice going wrong. 46 rationales over 2 versions, 10 fixtures. E-005 STOPPED BEING A PREDICTION. It was written naming \"the recommendation engine’s separation factor\" before one existed; `cvdAccessibility` now imports `separationScore` and defines no separation of its own. It takes the WORST pair across all three deficiencies, not the mean — an outfit where one pair vanishes for a deutan is not rescued by two that survive. TWO OF MY TESTS FAILED AND BOTH FOUND REAL DEFECTS, one of them serious. (1) The CVD test assumed a red and a green would collapse under deutan; both scored 100, because they differ in LIGHTNESS and separationScore weights that. Asking the model which corpus pair it actually finds hardest returned kawaki-suna/usu-shiba at 0.68 of 100 — measured rather than assumed. (2) THE BIG ONE: `versatility` ranked mi-aka, the most saturated red in the corpus, as the MOST versatile colour — 73.3% against 61.7% for a warm grey. Two stacked defects. The component was built on `pairingFit`, whose separation term dominated, so it was measuring lightness centrality AND scoring the same property `contrast` already scored. Removing separation made the gap WIDER in the wrong direction, which exposed the second: `hueBias` calls `hai-suna`, a grey at C=0.012, 0.867 WARM — more strongly warm than that vivid red at 0.644. A hue angle on a near-neutral is a rounding artefact. `temperatureOf` scales the bias by chroma against the published lexicon’s own 0.039 boundary for \"grey\". E-034 records it, and records that `scoreColor` and the app’s copy still carry the same blind spot — fixed where it was demonstrated, filed as F-101 where it was not. A TEST WRITTEN AGAINST WHAT THE CODE COMPUTES WOULD HAVE PASSED. The only reason any of this surfaced is that the assertions were written against what the WORDS mean."
     },
     {
       "id": "F-032",
@@ -2795,6 +2803,33 @@
         "content"
       ],
       "notes": "FILED AFTER THE FACT AND SAYING SO — found while verifying F-029, not selected through next-feature. THE DEFECT: the E-001 case in verify-content-proof.mjs writes a perturbed OKLab matrix into packages/color-spaces/src/matrices.ts and then calls `rebuild()`, which shells out to pnpm. On this workstation pnpm refuses outright — Node 22.16.0 against engines >=24.19.0 — so `apply()` THREW AFTER THE WRITE, the throw escaped before the case’s `cleanup` could run, and the script exited leaving a corrupted colour engine in a TRACKED SOURCE FILE. WHAT THAT LOOKS LIKE FROM THE OUTSIDE: gate 11 goes from green to 374 failures, every one reading \"the CURRENT engine derives ... publish a NEW corpus version\". The diff is ONE DIGIT — 0.819022437996703 became 0.829022437996703 — in a file nobody in the session had opened. I spent a long time bisecting my own changes for it, because a corrupted engine looks exactly like a feature that broke the corpus. `git status` naming matrices.ts as modified was what finally said otherwise. THE REAL DANGER IS THE COMMIT. The perturbation is a tracked-file edit that `git add -A` picks up without comment, so the next feature commit made on this workstation after running the proof would have shipped a wrong colour matrix — the one artefact in this repository whose corruption changes every derived value and reproduces perfectly. TWO FIXES, BOTH NEEDED. (1) `apply` and `runGate` are now inside a try/FINALLY so cleanup is unconditional — the case’s own cleanup does `git checkout` BEFORE its rebuild, so the source comes back even when the rebuild then throws. (2) The proof RUNS `rebuild()` ONCE UP FRONT, on an unmodified tree, and exits naming the toolchain if it fails — refusing before mutating rather than discovering it halfway through. A proof that perturbs a colour matrix and then reports an unrelated failure is a proof nobody can read. WATCHED: the proof now exits 1 with \"This proof cannot run on this toolchain\", `git status packages/color-spaces/` is empty afterwards, and gate 11 stays green. What is NOT proven here is that the proof still DISCRIMINATES — that needs the pinned toolchain, and it was already the case before this change that nobody on Node 22 could run it."
+    },
+    {
+      "id": "F-101",
+      "title": "A near-neutral has no temperature, everywhere it is judged",
+      "requirements": [
+        "FR-29",
+        "FR-30"
+      ],
+      "service": "packages",
+      "package": "@irodora/recommendation",
+      "release": "R3",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-031"
+      ],
+      "acceptance": [
+        "Every place a colour of arbitrary chroma is judged for warmth reads a chroma-weighted temperature, or states why it does not",
+        "The decision for scoreColor is made deliberately — a near-neutral garment either has a temperature or does not, and the answer is written down",
+        "E-034 is resolved and gate 0 stops warning that it carries no guard"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test"
+      ],
+      "notes": "FILED BY F-031, WHICH FIXED HALF OF IT AND SAID SO. `hueBias` returns 0.867 for a warm grey at OKLCh C = 0.012 — more strongly warm than the corpus’s most saturated red at 0.644 — because a hue angle at that chroma is a rounding artefact of two tiny a and b components. F-031 introduced `temperatureOf`, which scales by chroma against the published lexicon’s 0.039 boundary for \"grey\", and wired it into `harmony` and `pairingCoherence` where the defect was DEMONSTRATED to produce a wrong answer (versatility ranking a vivid red as the corpus’s most versatile colour). WHAT IS LEFT, and why it was not just changed: `scoreColor`’s temperature fit and `apps/mobile/src/profile/photo.ts#biasFromHue` still call the raw `hueBias`. Changing scoreColor moves EVERY personal-compatibility score in a shipped, tested engine, and it is not obviously wrong there — \"this near-neutral garment is warm\" may be a defensible thing to tell somebody whose profile leans warm. THAT IS A PRODUCT QUESTION, not a refactor, and writing a guard before answering it would encode the answer in the check. THE APP’S COPY IS E-032’s SUBJECT TOO and is blocked on the same toolchain: it cannot import this package until pnpm install can run. Doing F-099 first would make this a one-line change instead of two."
     }
   ]
 }

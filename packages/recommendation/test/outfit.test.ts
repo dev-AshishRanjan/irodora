@@ -290,14 +290,24 @@ describe('the pairing fit', () => {
     );
   });
 
-  it('treats overshooting the target as a miss, like undershooting it', () => {
-    // The property the test above discovered, asserted directly rather than left implicit.
+  it('treats overshooting the target as a miss, and further past is worse', () => {
+    /*
+     * The property the test above discovered, asserted directly.
+     *
+     * THE TWO CANDIDATES ARE MATCHED IN CHROMA AND HUE ON PURPOSE. `pairingFit` is the mean of
+     * separation and coherence, so a comparison between candidates whose coherence differs
+     * measures both halves at once. The first draft used an off-white against a mid blue and
+     * failed once `temperatureOf` landed — correctly: a near-neutral cannot clash with a
+     * near-neutral garment, so the off-white's coherence rose enough to offset its worse
+     * separation. Both candidates below are cool, both above `NEUTRAL_CHROMA`, six degrees
+     * apart, so coherence cancels and only the separation is being compared.
+     */
     const dark = POOL.find((c) => c.id === 'soko-zumi')!.color;
-    const onTarget = POOL.find((c) => c.id === 'ko-men')!.color;
-    const wayPast = POOL.find((c) => c.id === 'usu-gami')!.color;
+    const closerToTarget = POOL.find((c) => c.id === 'to-yama')!.color; // overshoots by ~0.10
+    const furtherPast = POOL.find((c) => c.id === 'asa-kawa')!.color; // overshoots by ~0.17
     const high = profile({ contrast: 'high' });
-    expect(pairingFit(dark, 'top', onTarget, 'trouser', high, RULES)).toBeGreaterThan(
-      pairingFit(dark, 'top', wayPast, 'trouser', high, RULES),
+    expect(pairingFit(dark, 'top', closerToTarget, 'trouser', high, RULES)).toBeGreaterThan(
+      pairingFit(dark, 'top', furtherPast, 'trouser', high, RULES),
     );
   });
 

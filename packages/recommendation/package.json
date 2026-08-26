@@ -24,8 +24,10 @@
   },
   "dependencies": {
     "@irodora/color-core": "workspace:*",
+    "@irodora/color-difference": "workspace:*",
     "@irodora/color-spaces": "workspace:*",
-    "@irodora/corpus": "workspace:*"
+    "@irodora/corpus": "workspace:*",
+    "@irodora/cvd-engine": "workspace:*"
   },
   "devDependencies": {
     "@irodora/store": "workspace:*"

@@ -147,7 +147,8 @@ export function parseRuleSet(value: unknown, where: string): RuleSet {
   };
 }
 
-function requireObject(value: unknown, where: string): Record<string, unknown> {
+/** Exported for `weights.ts`, which parses the same shapes. Not re-exported from the index. */
+export function requireObject(value: unknown, where: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null) throw new RuleError(`${where}: expected object`);
   return value as Record<string, unknown>;
 }

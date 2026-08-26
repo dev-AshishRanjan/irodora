@@ -112,6 +112,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-capture-ceiling-is-now-a-profile-confidence.md](effects/the-capture-ceiling-is-now-a-profile-confidence.md) — **E-031** · a lens confidence used to describe one swatch; it now caps seven profile dimensions, and the type is identical either way.
 - [effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md](effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md) — **E-032** · one colour rule, two implementations, `guard: none` honestly; a check whose model is wrong is worse than an absent one.
 - [effects/one-contrast-target-answers-two-different-questions.md](effects/one-contrast-target-answers-two-different-questions.md) — **E-033** · one table read by a person-to-colour question and a garment-to-garment one; a contrast preference is a TARGET, and overshooting it is a miss.
+- [effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md](effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md) — **E-034** · a grey at C=0.012 read as more warm than a vivid red; when an angle is evidence, ask what its radius is.
 - [effects/a-manifest-and-the-lockfile-must-move-together.md](effects/a-manifest-and-the-lockfile-must-move-together.md) — **E-032** · the dependency edge was true in the manifest and in node_modules, and false in the one file CI reads.
 
 ## Glossary

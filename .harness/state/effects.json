@@ -149,6 +149,10 @@
         {
           "kind": "gate",
           "ref": "cvd"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/recommendation/src/outfit-score.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -161,7 +165,7 @@
       "severity": "critical",
       "guard": "gate:cvd",
       "memory": "memory/effects/one-separation-definition-for-ui-and-engine.md",
-      "rationale": "The UI's CVD preview, the recommendation engine's separation factor and the design system's cvdPairs check all read the same score. If a second definition ever appears, the two will disagree and nobody will notice which surface is wrong — the failure is a recommendation that claims an accessibility property the interface does not actually deliver.",
+      "rationale": "The UI's CVD preview, the recommendation engine's separation factor and the design system's cvdPairs check all read the same score. If a second definition ever appears, the two will disagree and nobody will notice which surface is wrong — the failure is a recommendation that claims an accessibility property the interface does not actually deliver. F-031 MADE THE PREDICTED CONSUMER REAL. This link was written naming \"the recommendation engine’s separation factor\" before any such thing existed — a `to` that described an intention. `outfit-score.ts#cvdAccessibility` now imports `separationScore` and defines no separation of its own, so the link describes the repository rather than a plan. IT IS THE ONLY ONE OF THE SIX OUTFIT COMPONENTS RESTING ON A PUBLISHED MODEL — the other five are conventions this repository invented and each says so — which is exactly why a second definition here would have been the worst place for one: an accessibility claim is the component a person would be most entitled to rely on. It takes the WORST pair across all three deficiencies rather than the mean, because an outfit where one pair vanishes for a deutan is not rescued by two that survive.",
       "confidence": 0.94,
       "origin": "manual",
       "status": "active"
@@ -1211,6 +1215,40 @@
       "memory": "memory/effects/one-contrast-target-answers-two-different-questions.md",
       "rationale": "ONE TABLE, TWO QUESTIONS. `CONTRAST_TARGET` says how much lightness separation each contrast preference asks for. `scoreColor` measures that separation between a colour and the MIDDLE OF THE PERSON’S OWN LIGHTNESS RANGE; `pairingFit` measures it between TWO GARMENTS. Both are legitimate readings of \"how much contrast do you like\", and keeping them on one table is what makes \"high contrast\" mean a single thing in this product — a second table would let the same word describe two different amounts on one screen. THE COST IS THAT MOVING A NUMBER MOVES BOTH, in ways that are not symmetrical: raising `high` makes a person harder to suit AND makes two garments harder to pair, and only one of those may have been intended. Neither is a type error and neither throws. THE GUARD IS TWO-DIRECTIONAL BY DESIGN. Both readings are asserted with a preference either side — a `high` profile must prefer more separation than a `low` one, in scoring AND in pairing — because a one-sided assertion passes on a fit that only ever rewards distance. THAT IS NOT HYPOTHETICAL: F-030’s first draft of the pairing test asserted that a high-contrast preference prefers the FURTHEST colour, and it failed, correctly — the target is a target and overshooting it is a miss. The test was wrong and the engine was right, and the property is now asserted explicitly rather than assumed.",
       "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-034",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/score.ts#hueBias"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/score.ts#temperatureOf"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/score.ts#scoreColor"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/photo.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "none",
+      "feature": "F-101",
+      "memory": "memory/effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md",
+      "rationale": "HUE IS MEANINGLESS AT LOW CHROMA, AND `hueBias` DOES NOT KNOW THAT. Measured on the published corpus: `hai-suna`, a warm grey at OKLCh C = 0.012, returns a bias of 0.867 — MORE STRONGLY WARM than `mi-aka`, the most saturated red in the corpus, at 0.644. A hue angle on a near-neutral is a rounding artefact of two tiny a and b components; treating it as a claim about warmth makes a grey clash with things. HOW IT SURFACED: F-031’s `versatility` component ranked `mi-aka` as the MOST versatile colour in the corpus, at 73.3% against 61.7% for a warm grey. That is the opposite of what the word means, and it was visible only because a test asserted the intuition rather than the formula. FIXED WHERE IT WAS DEMONSTRATED, NOT EVERYWHERE. `temperatureOf` scales the bias by chroma against the PUBLISHED lexicon’s own boundary for \"grey\" (0.039), and F-031’s `harmony` and `pairingCoherence` read it. `scoreColor`’s temperature fit and the app’s `biasFromHue` (E-032) still call the raw `hueBias`, so a near-neutral garment is still scored as though it had a temperature — the same defect, in two places where it has not been demonstrated to produce a wrong answer and where changing it would move every score in a shipped engine mid-feature. GUARD: NONE, HONESTLY, and F-101 carries it. A test could assert `temperatureOf` is used everywhere a colour of arbitrary chroma is judged, but writing that check before deciding whether `scoreColor` SHOULD change would be encoding the answer in the guard.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

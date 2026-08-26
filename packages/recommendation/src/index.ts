@@ -45,10 +45,14 @@ export {
   OCCASIONS,
   parseWeightContent,
   rationaleCount,
+  outfitWeights,
+  OUTFIT_WEIGHT_COMPONENTS,
   ruleSetFor,
   type Occasion,
   type OccasionWeights,
   type WeightContent,
+  type OutfitWeightComponent,
+  type WeightedComponent,
   type WeightedFactor,
 } from './weights.js';
 
@@ -56,6 +60,7 @@ export { isLargeArea, OUTFIT_SLOTS, SLOT_AREA, type OutfitSlot } from './slots.j
 
 export {
   ALTERNATIVE_AXES,
+  pairingCoherence,
   pairingFit,
   PAIRING_WEIGHT,
   PERSONAL_WEIGHT,
@@ -70,4 +75,19 @@ export {
   type RankedCandidate,
 } from './outfit.js';
 
-export const RECOMMENDATION_VERSION = '0.3.0' as const;
+export {
+  COMPONENT_OPPOSES_BELOW,
+  COMPONENT_SUPPORTS_ABOVE,
+  CORPUS_NEAR_DELTA_E,
+  CVD_SEVERITY,
+  OUTFIT_COMPONENTS,
+  OUTFIT_MESSAGE_KEYS,
+  scoreOutfit,
+  VERSATILE_PAIRING,
+  type ComponentScore,
+  type OutfitComponent,
+  type OutfitPiece,
+  type OutfitScore,
+} from './outfit-score.js';
+
+export const RECOMMENDATION_VERSION = '0.4.0' as const;
