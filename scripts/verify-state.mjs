@@ -979,6 +979,351 @@ if (gates) {
     pass('gates', `${gates.gates.length} gates defined, ${active.length} active`);
 }
 
+/* ========================================== 7b. lockfile ↔ manifests (F-098) */
+
+/**
+ * The lockfile resolves exactly what the manifests declare.
+ *
+ * CI installs with `pnpm install --frozen-lockfile`, which refuses when a manifest declares
+ * something the lockfile does not resolve. That refusal is correct, and it is also the most
+ * expensive place to learn it: install is the ninth step, every gate after it is skipped,
+ * and the message names one package while saying nothing about how the two fell out of step.
+ *
+ * That is not hypothetical here. F-020 added `@irodora/corpus` to `packages/store`, and on
+ * the workstation `pnpm install` could not run at all — Node 22 and pnpm 9 against `engines`
+ * demanding 24 and 11 — so a hand-made junction stood in for the workspace link and local
+ * work carried on correctly. Nothing regenerated the lockfile. Three pushes later CI was
+ * still red on an install step nobody had touched, with three features' worth of commits
+ * between the cause and the symptom.
+ *
+ * So the check belongs in gate 0: before install, on Node built-ins, on a clean clone. It is
+ * the only place that can say "the lockfile is stale" to someone who cannot run pnpm at all.
+ *
+ * It MIRRORS pnpm's rule rather than approximating it — the same three dependency sections,
+ * the same verbatim specifier comparison, the same treatment of `overrides` — because a
+ * check that is merely similar produces both false greens and false reds, and the second
+ * kind gets the check deleted. Where it cannot mirror pnpm (a `catalog:` specifier is
+ * resolved in the lockfile and no longer matches the manifest text) it says so on the run
+ * rather than quietly comparing the wrong two strings.
+ */
+
+const LOCKFILE = 'pnpm-lock.yaml';
+const WORKSPACE_YAML = 'pnpm-workspace.yaml';
+const DEP_SECTIONS = ['dependencies', 'devDependencies', 'optionalDependencies'];
+
+/** Strip the surrounding quotes YAML adds to keys like `'@irodora/corpus'` and values like `'>=1'`. */
+const unquote = (s) => s.replace(/^'(.*)'$/s, '$1').replace(/^"(.*)"$/s, '$1');
+
+/**
+ * The `packages:` and `overrides:` blocks of pnpm-workspace.yaml, read with a line parser
+ * because gate 0 carries no dependencies — the same constraint that shapes the CI mirror
+ * check above.
+ *
+ * Only the forms this repository uses are understood, and an unrecognised `packages:` entry
+ * is a FAILURE rather than a skip. A glob this parser walks past is a workspace project the
+ * check silently stops covering, and "passed by finding nothing" is the shape of every
+ * defect in this file's history.
+ */
+const parseWorkspaceYaml = (text) => {
+  const packages = [];
+  const overrides = new Map();
+  const unsupported = [];
+  let section = null;
+
+  for (const raw of text.split(/\r?\n/)) {
+    if (/^\s*#/.test(raw) || raw.trim() === '') continue;
+
+    const top = raw.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
+    if (top) {
+      section = top[2] === '' ? top[1] : null;
+      continue;
+    }
+
+    if (section === 'packages') {
+      const item = raw.match(/^\s+-\s*(.+?)\s*$/);
+      if (!item) continue;
+      const glob = unquote(item[1]);
+      if (/^[\w.@/-]+(\/\*{1,2})?$/.test(glob) || /^![\w.@/-]+(\/\*{1,2})?$/.test(glob))
+        packages.push(glob);
+      else unsupported.push(glob);
+      continue;
+    }
+
+    if (section === 'overrides') {
+      const entry = raw.match(/^\s+(.+?):\s*(.+?)\s*$/);
+      if (entry) overrides.set(unquote(entry[1]), unquote(entry[2]));
+    }
+  }
+
+  return { packages, overrides, unsupported };
+};
+
+/**
+ * Expand one workspace glob to the project directories it selects, as posix paths relative
+ * to the repository root. A directory without a package.json is not a project — pnpm ignores
+ * it, so this must too, or every glob would report phantom projects.
+ */
+const expandWorkspaceGlob = (glob) => {
+  const isProject = (dir) => existsSync(join(ROOT, dir, 'package.json'));
+
+  if (!glob.includes('*')) return isProject(glob) ? [glob] : [];
+
+  const prefix = glob.replace(/\/\*{1,2}$/, '');
+  const recursive = glob.endsWith('/**');
+  const base = join(ROOT, prefix);
+  if (!existsSync(base)) return [];
+
+  const found = [];
+  const descend = (relDir) => {
+    for (const entry of readdirSync(join(ROOT, relDir), { withFileTypes: true })) {
+      if (!entry.isDirectory() || SKIP_DIRS.has(entry.name)) continue;
+      const child = `${relDir}/${entry.name}`;
+      if (isProject(child)) found.push(child);
+      if (recursive) descend(child);
+    }
+  };
+  descend(prefix);
+  return found;
+};
+
+/**
+ * The `importers:` block of the lockfile, plus its top-level `overrides:`.
+ *
+ * Indentation is the grammar: importer keys sit at two spaces, dependency sections at four,
+ * package names at six, and `specifier:`/`version:` at eight. A project with no dependencies
+ * is written inline as `tests/bench: {}` and must still register as PRESENT — treating it as
+ * absent would report two false failures on this repository today.
+ */
+const parseLockfile = (text) => {
+  const importers = new Map();
+  const overrides = new Map();
+  let block = null;
+  let importer = null;
+  let section = null;
+  let dep = null;
+
+  for (const raw of text.split(/\r?\n/)) {
+    if (raw.trim() === '' || /^\s*#/.test(raw)) continue;
+
+    const top = raw.match(/^([A-Za-z_][\w-]*):\s*(.*)$/);
+    if (top) {
+      block = top[2] === '' ? top[1] : null;
+      importer = null;
+      section = null;
+      dep = null;
+      continue;
+    }
+
+    if (block === 'overrides') {
+      const entry = raw.match(/^\s+(.+?):\s*(.+?)\s*$/);
+      if (entry) overrides.set(unquote(entry[1]), unquote(entry[2]));
+      continue;
+    }
+
+    if (block !== 'importers') continue;
+
+    const head = raw.match(/^ {2}(\S.*?):\s*(\{\})?\s*$/);
+    if (head) {
+      importer = unquote(head[1]);
+      importers.set(importer, new Map());
+      section = null;
+      dep = null;
+      continue;
+    }
+    if (importer === null) continue;
+
+    const sec = raw.match(/^ {4}(\w+):\s*$/);
+    if (sec) {
+      section = DEP_SECTIONS.includes(sec[1]) ? sec[1] : null;
+      if (section) importers.get(importer).set(section, new Map());
+      dep = null;
+      continue;
+    }
+    if (section === null) continue;
+
+    const name = raw.match(/^ {6}(\S.*?):\s*$/);
+    if (name) {
+      dep = unquote(name[1]);
+      importers.get(importer).get(section).set(dep, null);
+      continue;
+    }
+
+    const spec = raw.match(/^ {8}specifier:\s*(.*?)\s*$/);
+    if (spec && dep !== null) importers.get(importer).get(section).set(dep, unquote(spec[1]));
+  }
+
+  return { importers, overrides };
+};
+
+const lockText = readText(join(ROOT, LOCKFILE));
+const workspaceText = readText(join(ROOT, WORKSPACE_YAML));
+
+if (workspaceText === null)
+  fail(
+    'lockfile',
+    `${WORKSPACE_YAML} is missing`,
+    'Without it there is no workspace, and this check cannot know which manifests feed the lockfile. It would then pass by finding nothing.',
+    'Restore pnpm-workspace.yaml.',
+  );
+else if (lockText === null)
+  fail(
+    'lockfile',
+    `${LOCKFILE} is missing`,
+    '`pnpm install --frozen-lockfile` — what CI runs — refuses outright without a lockfile, and an unlocked install is not a reproducible one.',
+    'Run `pnpm install --lockfile-only` on the pinned toolchain and commit the result.',
+  );
+else {
+  const workspace = parseWorkspaceYaml(workspaceText);
+  const lock = parseLockfile(lockText);
+
+  for (const glob of workspace.unsupported)
+    fail(
+      'lockfile',
+      `${WORKSPACE_YAML} declares the package glob "${glob}", which this check cannot expand`,
+      'Projects it selects would be invisible here while pnpm still installs them — the check would look green over a surface it never read.',
+      'Use a supported form (an exact path, `dir/*`, or `dir/**`), or teach expandWorkspaceGlob the new one. Do not leave it unread.',
+    );
+
+  const excluded = new Set(
+    workspace.packages
+      .filter((g) => g.startsWith('!'))
+      .flatMap((g) => expandWorkspaceGlob(g.slice(1))),
+  );
+  const projects = [
+    '.',
+    ...new Set(
+      workspace.packages
+        .filter((g) => !g.startsWith('!'))
+        .flatMap(expandWorkspaceGlob)
+        .filter((d) => !excluded.has(d)),
+    ),
+  ].sort();
+
+  if (lock.importers.size === 0)
+    fail(
+      'lockfile',
+      `${LOCKFILE} parsed to zero importers`,
+      'Every comparison below would then trivially agree, and this check would report a clean lockfile for any lockfile at all.',
+      'The lockfile format has changed under the parser in section 7b. Fix the parser — do not relax the check.',
+    );
+
+  let drift = 0;
+  let deps = 0;
+  let catalogued = 0;
+
+  for (const project of projects) {
+    const manifest = readJson(join(ROOT, project, 'package.json'));
+    if (manifest === null) continue;
+
+    const importer = lock.importers.get(project);
+    if (importer === undefined) {
+      const declares = DEP_SECTIONS.some((s) => Object.keys(manifest[s] ?? {}).length > 0);
+      if (declares) {
+        drift += 1;
+        fail(
+          'lockfile',
+          `${LOCKFILE} has no importer for the workspace project "${project}"`,
+          'pnpm resolves each project separately; a project the lockfile never saw cannot be installed frozen, and `--frozen-lockfile` fails at install with every gate after it skipped.',
+          'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+        );
+      }
+      continue;
+    }
+
+    for (const section of DEP_SECTIONS) {
+      const declared = manifest[section] ?? {};
+      const resolved = importer.get(section) ?? new Map();
+
+      for (const [name, specifier] of Object.entries(declared)) {
+        deps += 1;
+        if (specifier.startsWith('catalog:')) {
+          catalogued += 1;
+          if (!resolved.has(name)) {
+            drift += 1;
+            fail(
+              'lockfile',
+              `${LOCKFILE} does not resolve ${name} for ${project} (${section})`,
+              'The manifest declares it, so `pnpm install --frozen-lockfile` refuses.',
+              'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+            );
+          }
+          continue;
+        }
+        if (!resolved.has(name)) {
+          drift += 1;
+          fail(
+            'lockfile',
+            `${LOCKFILE} does not resolve ${name}@${specifier}, which ${project}/package.json declares under ${section}`,
+            'This is the exact condition `pnpm install --frozen-lockfile` refuses on. CI stops at install and every gate after it is skipped, so the push reports one opaque failure instead of the state of the build.',
+            'Run `pnpm install --lockfile-only` on the pinned toolchain (Node 24.19.0, pnpm 11.21.0) and commit pnpm-lock.yaml alongside the manifest change.',
+          );
+        } else if (resolved.get(name) !== specifier) {
+          drift += 1;
+          fail(
+            'lockfile',
+            `${LOCKFILE} resolves ${name} at "${String(resolved.get(name))}" but ${project}/package.json asks for "${specifier}"`,
+            'pnpm compares specifiers verbatim; a changed range is as fatal to a frozen install as a missing dependency, and it is easier to miss in review because the name is still there.',
+            'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml alongside the manifest change.',
+          );
+        }
+      }
+
+      for (const name of resolved.keys())
+        if (!(name in declared)) {
+          drift += 1;
+          fail(
+            'lockfile',
+            `${LOCKFILE} still resolves ${name} for ${project} (${section}), which the manifest no longer declares`,
+            'A frozen install refuses on a removal as readily as on an addition, and a dependency nothing declares is one nobody is reviewing.',
+            'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+          );
+        }
+    }
+  }
+
+  for (const [name, version] of workspace.overrides)
+    if (!lock.overrides.has(name)) {
+      drift += 1;
+      fail(
+        'lockfile',
+        `${LOCKFILE} carries no override for ${name}, which ${WORKSPACE_YAML} pins to ${version}`,
+        'The pins in pnpm-workspace.yaml exist because two copies of a native module is a runtime the camera and the UI do not share (ADR-0062). An override the lockfile has not absorbed is a pin that is not in force.',
+        'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+      );
+    } else if (lock.overrides.get(name) !== version) {
+      drift += 1;
+      fail(
+        'lockfile',
+        `${LOCKFILE} overrides ${name} to "${String(lock.overrides.get(name))}" but ${WORKSPACE_YAML} pins "${version}"`,
+        'The lockfile is what installs. A pin that disagrees with it is a decision recorded in the place nobody resolves from.',
+        'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+      );
+    }
+
+  for (const name of lock.overrides.keys())
+    if (!workspace.overrides.has(name)) {
+      drift += 1;
+      fail(
+        'lockfile',
+        `${LOCKFILE} overrides ${name}, which ${WORKSPACE_YAML} no longer pins`,
+        'Every override is a supply-chain decision. One that survives only in the lockfile has lost the comment that justified it.',
+        'Run `pnpm install --lockfile-only` on the pinned toolchain and commit pnpm-lock.yaml.',
+      );
+    }
+
+  if (catalogued > 0)
+    warn(
+      'lockfile',
+      `${String(catalogued)} dependenc(ies) use a catalog: specifier — presence is checked, the version is NOT. The lockfile records the resolved version there, so comparing it to the manifest text would fail on every correct lockfile.`,
+    );
+
+  if (drift === 0)
+    pass(
+      'lockfile',
+      `${String(projects.length)} workspace projects, ${String(deps)} declared dependencies and ${String(workspace.overrides.size)} override(s) all resolved in ${LOCKFILE}`,
+    );
+}
+
 /* ============================================== 8. env contract (.env.example) */
 
 // Scans the whole workspace rather than one package. It used to read packages/config/src only,

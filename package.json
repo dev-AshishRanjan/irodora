@@ -55,7 +55,8 @@
     "verify:cache-scope": "node scripts/verify-cache-scope.mjs",
     "verify:cache-scope:prove": "node scripts/verify-cache-scope.mjs --prove",
     "verify:tokens": "node scripts/generate-design-tokens.mjs --check",
-    "verify:stale:prove": "node scripts/verify-stale-rationale-proof.mjs"
+    "verify:stale:prove": "node scripts/verify-stale-rationale-proof.mjs",
+    "verify:lockfile:prove": "node scripts/verify-lockfile-proof.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

@@ -75,6 +75,16 @@ jobs:
       - name: 'Gate 0 — stale-rationale proof'
         run: node scripts/verify-stale-rationale-proof.mjs
 
+      # Not a gate — the proof that gate 0's lockfile check can fail (F-098). It runs HERE,
+      # before `pnpm install`, because that is the whole point of the check it proves: the
+      # install step already refuses a stale lockfile, and refusing it at step nine skips
+      # every gate after it while naming one package and no cause. Plants five drifts and two
+      # controls; both controls must stay GREEN, one of them a workspace project that declares
+      # nothing — `tests/bench: {}` is that shape, and reading it as absent would have made the
+      # check fail on a correct lockfile from its first run.
+      - name: 'Gate 0 — lockfile drift proof'
+        run: node scripts/verify-lockfile-proof.mjs
+
       # Belongs to gate 8, run here with the other proofs. It plants IN MEMORY — nothing is
       # written to the working tree — so it needs no checkout hygiene of its own.
       - name: 'Gate 8 — token-reach proof'
