@@ -8,6 +8,111 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-27 — F-105 · two CI failures, and the toolchain that was installed all along
+
+### Two failures, not one
+
+`gh` is not installed and the log endpoint needs admin rights, but the **run and job metadata
+are public** and name the failing step exactly:
+
+| run | commit | stopped at |
+|---|---|---|
+| 30 | `1310b3a` (F-104) | step 4 — **gate 0, state** — 26 steps skipped |
+| 29 | `4abc565` (F-101) | step 6 — **gate 0, stale-rationale proof** |
+| 28 | `0012992` | **success** |
+
+Different defects. Fixing the first only uncovered the second, which had been red for several
+commits.
+
+### 1. The lockfile — mine, and avoidable
+
+F-104 added `expo-crypto` to the manifest and committed without the lockfile entry, reasoning
+that a registry package needs an integrity hash and a peer-resolution key that cannot be
+hand-written safely.
+
+**The reasoning was right and committing anyway was not.** Golden rule 6 says the build stays
+green between increments; E-032 says a manifest and the lockfile move together. Knowing the rule
+and citing it in the commit message does not exempt the commit from it.
+
+Fixed by generating it — `pnpm install --lockfile-only` on the pinned pnpm. The diff is 14 lines,
+and the integrity hash matches the one independently fetched from the npm registry earlier.
+
+### 2. The stale-rationale proof — older, and nobody's fault
+
+Its control read: *"E-009 says its guard is none and must keep saying so."*
+
+**F-029 wired E-009's guard to `gate:content`** — a success; the check the graph was owed got
+built. The control then pointed at a link with a real guard, so planting *"the guard is not yet
+blocking"* made the checker fire correctly and the control expected silence.
+
+Re-pointing it at another guardless link would only have moved the fuse: F-099 and F-101
+resolved the last two, and **the graph now contains none at all**. Also a success.
+
+So the control now **constructs the condition it controls for**: it sets `guard: 'none'` on the
+link it plants into. The subject is E-013 — the same link the positive case uses — so the two
+differ in exactly one variable, which is what makes it a control rather than a second assertion.
+
+> **A control that depends on a mutable property of the data it guards will break every time
+> that data legitimately improves.** Twice here, in the same file, from two unrelated successes.
+
+### The discovery that invalidates a session of my own notes
+
+**The pinned toolchain was installed the whole time.**
+
+- **Node 24.19.0** under nvm at `AppData/Roaming/nvm/v24.19.0`
+- **pnpm 11.21.0** via `npx pnpm@11.21.0`
+
+Personal memory recorded the first fact explicitly — *"the pinned toolchain is installed
+locally"* — and it was in context from the first message. Every *"not runnable on this
+workstation"* since F-038 was true only of `PATH`.
+
+What followed from it and was false:
+
+| recorded | actually |
+|---|---|
+| Node-22 ULP failures, "known red and pre-existing" since F-038 | **gone on Node 24**, exactly as F-083 and ADR-0061 predicted |
+| "any gate needing pnpm" cannot run | all of them run |
+| the content mutation proof cannot run here (F-100) | it runs |
+| "the whole CI sequence cannot be run here" | it can, and every step passes |
+
+This is the lesson written earlier the same day —
+[[saying-not-run-here-is-necessary-and-it-is-not-sufficient]] — committed again within hours,
+about a different tool. The note has been extended rather than left as the narrower version.
+
+### Every CI step, in order, on the pinned toolchain
+
+| step | result | | step | result |
+|---|---|---|---|---|
+| 0 state | **PASS** | | 9 contrast | **PASS** |
+| 0 mirror proof | **PASS** | | 9 contrast proof | **PASS** |
+| 0 stale-rationale proof | **PASS** — 4/4 | | 10 cvd | **PASS** |
+| 0 lockfile drift proof | **PASS** | | 11 content | **PASS** |
+| 8 token-reach proof | **PASS** | | 11 content mutation proof | **PASS** |
+| 1 typecheck | **PASS** | | 12 perf | **PASS** |
+| 2 lint | **PASS** | | 12 bench proof | **PASS** |
+| 2 claims proof | **PASS** | | 15 security | **PASS** |
+| 3 format | **PASS** | | 15 no-inference proof | **PASS** |
+| 4 test | **PASS** — 32/32 tasks | | 15 advisory proof | **PASS** |
+| 5 color-golden | **PASS** | | 6 build | **PASS** |
+| 8 a11y | **PASS** | | 8 spacing proof | **PASS** |
+
+`effects.json` and every other mutated file restored byte-for-byte afterwards.
+
+### Noted, not absorbed
+
+The regenerated lockfile marks **`@xmldom/xmldom` 0.8.14 and 0.9.11 as deprecated with "critical
+issues"**. The *versions* did not change — pnpm 11 records deprecation metadata npm already
+carried. Both are transitive and build-time (Expo config plugins), and `pnpm security` passes.
+Flagged for a decision rather than silently carried.
+
+### Next
+
+R3 holds F-081 and F-086, both blocked on external things, and F-102. F-104's device
+attestation — that the app opens Palette Studio and profile setup without closing — is still
+outstanding and blocks release.
+
+---
+
 ## 2026-08-27 — F-104 · the global that was real in every runtime except the one that ships
 
 A field report, not a selected feature: the app closing on two buttons, a home screen that would

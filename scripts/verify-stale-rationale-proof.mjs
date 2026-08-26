@@ -33,12 +33,26 @@ function findings() {
 
 /** Rewrite one link's rationale, asserting the mutation actually applied. */
 function withRationale(id, mutate) {
+  withLink(id, (link) => {
+    const before = link.rationale;
+    link.rationale = mutate(before);
+    if (link.rationale === before) throw new Error(`MUTATION DID NOT APPLY on ${id}`);
+  });
+}
+
+/**
+ * Rewrite one link however the caller likes, asserting the mutation actually applied.
+ *
+ * Generalised in F-104 so the control below can set `guard` as well as `rationale` — see the
+ * comment on that case. Every write still starts from `original`, so cases never compound.
+ */
+function withLink(id, mutate) {
   const graph = JSON.parse(original);
   const link = graph.links.find((l) => l.id === id);
   if (link === undefined) throw new Error(`${id} not found`);
-  const before = link.rationale;
-  link.rationale = mutate(before);
-  if (link.rationale === before) throw new Error(`MUTATION DID NOT APPLY on ${id}`);
+  const before = JSON.stringify(link);
+  mutate(link);
+  if (JSON.stringify(link) === before) throw new Error(`MUTATION DID NOT APPLY on ${id}`);
   writeFileSync(EFFECTS, `${JSON.stringify(graph, null, 2)}\n`, 'utf8');
 }
 
@@ -60,9 +74,32 @@ const CASES = [
   },
   {
     name: 'CONTROL — the honest guard:none link is never touched',
-    // E-009 says its guard is none and must keep saying so. Plant the loudest phrase on it.
-    plant: () => withRationale('E-009', (r) => `${r} The guard is not yet blocking.`),
-    expect: (f) => !f.includes('E-009'),
+    /*
+     * THE CONTROL BUILDS ITS OWN SUBJECT, and F-104 is why.
+     *
+     * It used to name E-009, with the comment *"E-009 says its guard is none and must keep
+     * saying so"*. That was true when it was written and stopped being true when **F-029 wired
+     * E-009's guard to gate:content** — which is a success, not a regression. The control then
+     * pointed at a link with a real guard, so the checker correctly reported the planted phrase
+     * and the control expected silence. CI went red on a proof, for a reason that had nothing
+     * to do with the proof.
+     *
+     * Re-pointing it at another guardless link would only have moved the fuse: F-099 and F-101
+     * resolved the last two, and **the graph now contains none at all** — which is also a
+     * success, and would have broken it a third time.
+     *
+     * So the control sets `guard: 'none'` on the link it plants into. It no longer depends on a
+     * mutable property of production data holding still; it constructs the condition it is
+     * controlling for. The subject is E-013 because the case above already proves this checker
+     * DOES fire on E-013 when the guard is wired — so the two cases differ in exactly one
+     * variable, which is what makes this a control rather than a second assertion.
+     */
+    plant: () =>
+      withLink('E-013', (link) => {
+        link.guard = 'none';
+        link.rationale = `${link.rationale} The guard is not yet blocking.`;
+      }),
+    expect: (f) => !f.includes('E-013'),
   },
   {
     name: 'a second phrase fires as well, so the list is not one rule wearing four names',
