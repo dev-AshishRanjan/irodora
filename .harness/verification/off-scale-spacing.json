@@ -1,0 +1,15 @@
+{
+  "$comment": "Padding, margin and gap values that are deliberately NOT a step of docs/design/design-system.manifest.json `spacing.scale`. `scripts/verify-spacing-scale.mjs` fails on any off-scale value that is not listed here, AND on any entry here that no longer matches anything in the source — both directions, because a dead exemption is how a live one gets waved through later. Same shape as unreached-tokens.json. Every entry carries a `why`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. See F-095 and ADR-0074.",
+  "version": 1,
+  "updated": "2026-08-26",
+  "$sizeComment": "This list is meant to stay very short. Four values were moved onto the scale and two were added to it rather than exempted, precisely so that this file would not become the place the scale goes to die. An entry that reads like 'this one is special too' is the signal that the SCALE is wrong, not that the list needs another row.",
+  "exempt": [
+    {
+      "file": "packages/ui/src/Swatch.tsx",
+      "property": "padding",
+      "value": 1,
+      "cites": "F-068, ADR-0074, packages/design-tokens/test/swatch-edge.test.ts",
+      "why": "NOT SPACING. This is the inner half of F-068's two-tone keyline: two nested opaque 1px borders, drawn as padding because that is how a nested View makes a ring of an exact pixel width. A single hairline cannot work — the other side of it is an arbitrary garment colour, and a translucent line measured 1.00 against a black sample, which is no edge at all. The 1 is a border width sized to the device pixel, and rounding it to the smallest scale step would turn a keyline into a 4px frame around every swatch in the product."
+    }
+  ]
+}

@@ -24,7 +24,12 @@
  */
 
 import { View } from 'react-native';
-import { STATUS_PAIRING, statusPresentation, type StatusKind } from '@irodora/design-tokens';
+import {
+  nativeSpacing,
+  STATUS_PAIRING,
+  statusPresentation,
+  type StatusKind,
+} from '@irodora/design-tokens';
 import { Icon, type IconToken } from './Icon.js';
 import { Text } from './Text.js';
 import { useTheme, type ThemeColors } from './theme.js';
@@ -49,8 +54,10 @@ export function Status({ kind, text, adjacentToSample = false }: StatusProps): R
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
-        ...(adjacentToSample ? { backgroundColor: colors['swatch.well'], padding: 6 } : {}),
+        gap: nativeSpacing[1],
+        ...(adjacentToSample
+          ? { backgroundColor: colors['swatch.well'], padding: nativeSpacing[1] }
+          : {}),
       }}
     >
       <Icon

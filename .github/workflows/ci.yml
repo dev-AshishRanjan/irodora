@@ -142,6 +142,17 @@ jobs:
       - name: 'Gate 8 — a11y'
         run: pnpm test:a11y
 
+      # Not a gate — the proof that the spacing check inside gate 8 can fail (F-095, ADR-0074).
+      # Unlike the token-reach proof above it PLANTS IN THE WORKING TREE, so it restores in a
+      # `finally` and verifies the restore; on a runner that is a throwaway checkout anyway.
+      # Three cases red, TWO GREEN — a comment discussing an off-scale number, and a value that
+      # is a step of the scale — because a check that fired on prose gets deleted, and the real
+      # protection goes with it. Plus two cases the exit code alone would miss: an exemption
+      # that matches nothing, and a step removed from the MANIFEST, which is what distinguishes
+      # reading the scale from carrying a copy of it.
+      - name: 'Gate 8 — spacing-scale proof'
+        run: pnpm verify:spacing:prove
+
       # Gate 7 (e2e) has NO STEP HERE, deliberately, and gates.json records it as
       # status:pending + ciStep:false so the mirror check knows the omission is intentional.
       #

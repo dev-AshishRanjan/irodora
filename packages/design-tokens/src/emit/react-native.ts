@@ -112,6 +112,21 @@ export function emitReactNative(manifest: Manifest): string {
     out.push(`  ${key(name)}: ${String(value)},`);
   out.push('} as const;');
   out.push('');
+  // The scale is POSITIONAL in all four targets — CSS emits `--space-1..N`, Tailwind
+  // `--spacing-1..N`, and both TypeScript targets an array. `nativeSpacing[2]` is `--space-3`.
+  // Said in the emitted file rather than only here, because the reader of an index is a
+  // component author who will never open this emitter (F-095).
+  out.push('/**');
+  out.push(" * The spacing scale, in order. Index N is CSS's `--space-{N+1}`.");
+  out.push(' *');
+  out.push(' * POSITIONAL, AND THE POSITIONS SHIFT when a step is added or removed — ADR-0074');
+  out.push(' * removed a 14 and added 12 and 16, which moved every index above 1. That was safe');
+  out.push(' * because nothing read this yet. It will not be safe next time, so a change to');
+  out.push(' * `spacing.scale` means reading every index in packages/ui.');
+  out.push(' *');
+  out.push(' * Every step is a multiple of `spacing.base`, and');
+  out.push(' * scripts/verify-spacing-scale.mjs fails if that stops being true.');
+  out.push(' */');
   out.push(`export const nativeSpacing = [${manifest.spacing.scale.join(', ')}] as const;`);
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
   out.push('');

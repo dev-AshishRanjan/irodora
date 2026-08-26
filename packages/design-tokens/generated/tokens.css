@@ -131,11 +131,12 @@
   --irodora-radius-swatch: 0px;
   --irodora-space-1: 4px;
   --irodora-space-2: 8px;
-  --irodora-space-3: 14px;
-  --irodora-space-4: 20px;
-  --irodora-space-5: 28px;
-  --irodora-space-6: 40px;
-  --irodora-space-7: 56px;
-  --irodora-space-8: 96px;
+  --irodora-space-3: 12px;
+  --irodora-space-4: 16px;
+  --irodora-space-5: 20px;
+  --irodora-space-6: 28px;
+  --irodora-space-7: 40px;
+  --irodora-space-8: 56px;
+  --irodora-space-9: 96px;
   --irodora-size-tap-target: 44px;
 }

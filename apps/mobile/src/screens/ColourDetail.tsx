@@ -150,7 +150,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
   }): React.JSX.Element {
     const reason = reasonFor === undefined ? undefined : entry.unknowns[reasonFor];
     return (
-      <View style={{ gap: 2, paddingVertical: 4 }}>
+      <View style={{ gap: 4, paddingVertical: 4 }}>
         <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
@@ -212,7 +212,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
         ) : (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {resolved.map((r) => (
-              <View key={r.entry.slug} style={{ alignItems: 'center', gap: 2 }}>
+              <View key={r.entry.slug} style={{ alignItems: 'center', gap: 4 }}>
                 <Swatch
                   name={r.entry.name.en}
                   hex={r.derived.hex}
@@ -422,14 +422,14 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
 
       <Section title={t('detail.colourVision')}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingVertical: 4 }}>
-          <View style={{ alignItems: 'center', gap: 2 }}>
+          <View style={{ alignItems: 'center', gap: 4 }}>
             <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={44} />
             <Text size="xs" color="foreground.2" script={script}>
               {t('cvd.normal')}
             </Text>
           </View>
           {cvd.map(({ kind, hex }) => (
-            <View key={kind} style={{ alignItems: 'center', gap: 2 }}>
+            <View key={kind} style={{ alignItems: 'center', gap: 4 }}>
               {/*
                 The accessible name carries which deficiency this is, so the swatches are not
                 distinguished by colour alone (golden rule 13) — which in a colour-vision block

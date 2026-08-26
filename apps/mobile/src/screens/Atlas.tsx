@@ -160,14 +160,14 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
     readonly onChange: (value: K | null) => void;
   }): React.JSX.Element {
     return (
-      <View style={{ gap: 6 }}>
+      <View style={{ gap: 8 }}>
         <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 6 }}
+          contentContainerStyle={{ gap: 8 }}
         >
           <Chip
             label={t('atlas.all')}
@@ -293,7 +293,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
 
       {shown.length === 0 ? (
         <Surface level="1" padding={16}>
-          <View style={{ gap: 6 }}>
+          <View style={{ gap: 8 }}>
             <Text size="body" color="foreground" script={script}>
               {t('atlas.empty')}
             </Text>
@@ -326,7 +326,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
                   nothing at all.
                 */}
                 <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={56} />
-                <View style={{ gap: 2, flexShrink: 1 }}>
+                <View style={{ gap: 4, flexShrink: 1 }}>
                   <Text size="body" color="foreground" script={script}>
                     {`${entry.name.kanji} ${entry.name.en}`}
                   </Text>

@@ -33,7 +33,7 @@
  */
 
 import { TextInput, View, type TextInputProps } from 'react-native';
-import { nativeRadius, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 
@@ -82,7 +82,7 @@ export function TextField({
   const inert = disabled || loading;
 
   return (
-    <View style={{ gap: 4 }}>
+    <View style={{ gap: nativeSpacing[0] }}>
       <Text size="label" color="foreground.2" script={script}>
         {label}
       </Text>
@@ -112,7 +112,7 @@ export function TextField({
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
           borderRadius: nativeRadius.sm,
-          paddingHorizontal: 12,
+          paddingHorizontal: nativeSpacing[2],
           backgroundColor: colors['surface.2'],
           color: colors.foreground,
           fontSize: nativeType[script].body.fontSize,

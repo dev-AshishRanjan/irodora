@@ -87,7 +87,7 @@ export function Home({
               sample whose origin nobody recorded cannot be rendered (ADR-0005).
             */}
             <Swatch name={t(nameKey)} hex={display.hex} color={display.color} size={72} />
-            <View style={{ gap: 2, flexShrink: 1 }}>
+            <View style={{ gap: 4, flexShrink: 1 }}>
               {/*
                 `foreground.2`, not `foreground.3`. At `size="small"` the type will not accept
                 a largeText-only token, so this is a compile error rather than a review note.

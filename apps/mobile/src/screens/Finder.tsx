@@ -80,14 +80,14 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         }}
         style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
       >
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 6 }}>
+        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 8 }}>
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}
             size={40}
           />
-          <View style={{ gap: 2, flexShrink: 1 }}>
+          <View style={{ gap: 4, flexShrink: 1 }}>
             <Text size="body" color="foreground" script={script}>
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>

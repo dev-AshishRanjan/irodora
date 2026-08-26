@@ -111,7 +111,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
     readonly space: string;
   }): React.JSX.Element {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, paddingVertical: 6 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, paddingVertical: 8 }}>
         <View style={{ flex: 1 }}>
           <Text size="small" color="foreground" script={script}>
             {label}
@@ -203,7 +203,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
               color={colorFor(entry.entry)}
               size={56}
             />
-            <View style={{ gap: 2, flexShrink: 1 }}>
+            <View style={{ gap: 4, flexShrink: 1 }}>
               <Text size="body" color="foreground" script={script}>
                 {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
               </Text>
@@ -306,7 +306,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
             {t('compare.separation')}
           </Text>
           {metrics.separation.map((s) => (
-            <View key={s.deficiency} style={{ gap: 2, paddingVertical: 4 }}>
+            <View key={s.deficiency} style={{ gap: 4, paddingVertical: 4 }}>
               <Text size="small" color="foreground" script={script}>
                 {t(CVD_KEYS[s.deficiency])}
               </Text>

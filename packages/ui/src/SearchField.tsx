@@ -23,7 +23,7 @@
  */
 
 import { TextInput, View, type TextInputProps } from 'react-native';
-import { nativeRadius, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
 
 export type SearchFieldProps = Omit<
@@ -71,7 +71,7 @@ export function SearchField({
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
           borderRadius: nativeRadius.sm,
-          paddingHorizontal: 12,
+          paddingHorizontal: nativeSpacing[2],
           backgroundColor: colors['surface.2'],
           color: colors.foreground,
           fontSize: nativeType.latin.body.fontSize,

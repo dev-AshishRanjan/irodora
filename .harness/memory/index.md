@@ -79,6 +79,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/wada-public-domain-is-not-the-same-as-free-to-ingest.md](lessons/wada-public-domain-is-not-the-same-as-free-to-ingest.md) — the source work's status says nothing about a digitiser's dataset.
 - [lessons/an-identity-check-a-typo-can-satisfy-is-not-a-check.md](lessons/an-identity-check-a-typo-can-satisfy-is-not-a-check.md) — "these two must differ" fails OPEN on any corruption of either value; compare roster ids, and reject an unknown one.
 - [lessons/a-threshold-nothing-can-cross-is-not-a-threshold.md](lessons/a-threshold-nothing-can-cross-is-not-a-threshold.md) — a 1 ms budget on 0.6 µs of work passed 2000 runs and had no reachable failing state; ask what would make a check go red, never whether it passes.
+- [lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md](lessons/a-check-that-reimplements-its-subject-agrees-with-it-on-day-one.md) — a gate carrying its own copy of the rule checks that two copies match; perturb the source of truth and require the verdict to follow.
 
 ## Effects
 
@@ -117,6 +118,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md](effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md) — **E-034** · a grey at C=0.012 read as more warm than a vivid red; when an angle is evidence, ask what its radius is.
 - [effects/a-manifest-and-the-lockfile-must-move-together.md](effects/a-manifest-and-the-lockfile-must-move-together.md) — **E-032** · the dependency edge was true in the manifest and in node_modules, and false in the one file CI reads.
 - [effects/a-performance-gate-cannot-measure-a-phone.md](effects/a-performance-gate-cannot-measure-a-phone.md) — **E-035** · gate 12 measures the engine and PRINTS what it cannot measure; a ceiling below the timer's resolution is a budget nothing can exceed.
+- [effects/a-scale-with-no-names-shifts-under-its-readers.md](effects/a-scale-with-no-names-shifts-under-its-readers.md) — **E-036** · the spacing scale is positional in all four targets, so a step added or removed renumbers every reader and nothing fails.
 
 ## Glossary
 

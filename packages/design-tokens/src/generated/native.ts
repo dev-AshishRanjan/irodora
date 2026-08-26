@@ -75,7 +75,18 @@ export const nativeRadius = {
   swatch: 0,
 } as const;
 
-export const nativeSpacing = [4, 8, 14, 20, 28, 40, 56, 96] as const;
+/**
+ * The spacing scale, in order. Index N is CSS's `--space-{N+1}`.
+ *
+ * POSITIONAL, AND THE POSITIONS SHIFT when a step is added or removed — ADR-0074
+ * removed a 14 and added 12 and 16, which moved every index above 1. That was safe
+ * because nothing read this yet. It will not be safe next time, so a change to
+ * `spacing.scale` means reading every index in packages/ui.
+ *
+ * Every step is a multiple of `spacing.base`, and
+ * scripts/verify-spacing-scale.mjs fails if that stops being true.
+ */
+export const nativeSpacing = [4, 8, 12, 16, 20, 28, 40, 56, 96] as const;
 export const nativeTapTarget = 44 as const;
 
 /** Absolute points, NOT the manifest ratios — RN lineHeight is a length. */

@@ -189,7 +189,7 @@ export function PaletteStudio({
             color={colorFor(entry.entry)}
             size={48}
           />
-          <View style={{ gap: 2, flexShrink: 1 }}>
+          <View style={{ gap: 4, flexShrink: 1 }}>
             <Text size="body" color="foreground" script={script}>
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>
@@ -389,7 +389,7 @@ export function PaletteStudio({
             </Text>
           ) : (
             separationProblems.map((finding) => (
-              <View key={`${finding.a.id}-${finding.b.id}`} style={{ gap: 6, paddingVertical: 6 }}>
+              <View key={`${finding.a.id}-${finding.b.id}`} style={{ gap: 8, paddingVertical: 8 }}>
                 <Text size="small" color="foreground" script={script}>
                   {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
                 </Text>

@@ -1,13 +1,18 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-08-25",
+  "updated": "2026-08-26",
   "$groupComment": "`group` is required because `xs` is a radius step AND a type step, and they are not the same decision. One of them is read by 22 `size=\"xs\"` literals; the other is read by nothing.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
     {
       "group": "binding",
-      "tokens": ["COLOR", "RADIUS", "SPACING", "TAP_TARGET"],
+      "tokens": [
+        "COLOR",
+        "RADIUS",
+        "SPACING",
+        "TAP_TARGET"
+      ],
       "cites": "ADR-0020, ADR-0051",
       "why": "The web target. apps/mobile is the only surface (ADR-0051), so nothing in the reader zone imports these — their only reader is emit.test.ts, which is precisely the case this check reports. They are emitted anyway because four targets from one manifest is what stops web and mobile drifting the day a web surface exists (ADR-0020). Deleting them would remove the guarantee, not the dead code."
     },
@@ -24,15 +29,11 @@
     },
     {
       "group": "binding",
-      "tokens": ["nativeMotion"],
+      "tokens": [
+        "nativeMotion"
+      ],
       "cites": "F-092, scripts/verify-motion.mjs",
       "why": "Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone — the durations and easings exist so that when something does move, the values are already decided rather than invented at the call site. The rule they belong to (motion may not animate a colour) is enforced from the manifest side by verify-motion.mjs, so it is guarded whether or not this binding is imported."
-    },
-    {
-      "group": "binding",
-      "tokens": ["nativeSpacing"],
-      "cites": "F-095",
-      "why": "A REAL FINDING, filed as F-095 rather than excused here. The scale 4/8/14/20/28/40/56/96 is emitted, exported and imported by nothing, while 69 hand-written padding, margin and gap declarations across packages/ui/src and apps/mobile/src use 1, 2, 4, 6, 8, 12, 16 and 20 — and 36 of those 69 use a value the scale does not contain. Moving them changes layout on every screen and five of the eight values in use are not decisions the manifest ever made, so it is its own feature. This entry is a pointer to that work, not a reason to leave it."
     },
     {
       "group": "colour token",
@@ -60,31 +61,50 @@
     },
     {
       "group": "colour token",
-      "tokens": ["chart.1", "chart.2", "chart.3", "chart.4", "chart.5"],
+      "tokens": [
+        "chart.1",
+        "chart.2",
+        "chart.3",
+        "chart.4",
+        "chart.5"
+      ],
       "cites": "F-048, F-055",
       "why": "There is no chart in the product. The five-step near-achromatic ramp exists because a data series must be distinguishable without hue (golden rule 13), and deciding that under deadline is how a rainbow palette gets shipped. Wardrobe coverage and gap analysis (F-048) is the first surface that plots anything; the professional dE tables (F-055) are the second."
     },
     {
       "group": "colour token",
-      "tokens": ["foreground.3"],
+      "tokens": [
+        "foreground.3"
+      ],
       "cites": "F-003, F-017",
       "why": "The token that exists to be restricted, and nothing paints it. Its usage is `largeText` — it fails AA against every surface below the WCAG large-text floor — so Text's `ColorFor<S>` type admits it only at a display or title size. The type permits it; no caller asks for it, and the one place a reader might expect it (the Home micro-label) carries a comment saying that label uses `foreground.2` and NOT this. Found only when this check stopped counting comments as reads: every mention of it in the reader zone is prose about why it is dangerous."
     },
     {
       "group": "radius step",
-      "tokens": ["xs", "lg", "xl"],
+      "tokens": [
+        "xs",
+        "lg",
+        "xl"
+      ],
       "cites": "F-017",
-      "why": "Steps of a scale that IS used — `sm`, `md`, `pill` and `swatch` are all read, so the scale itself is reaching components and only these three steps have found no surface. That is the ordinary state of a scale and the opposite of the nativeSpacing entry above, where the scale reaches nothing at all and hand-written values contradict it. The distinction is the whole reason both are listed here rather than one being quietly folded into the other."
+      "why": "Steps of a scale that IS used — `sm`, `md`, `pill` and `swatch` are all read, so the scale itself is reaching components and only these three steps have found no surface. That is the ordinary state of a scale: some steps have found no surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it — which is what `nativeSpacing` was until F-095, and why that entry was here and is now gone. The distinction is worth keeping written down, because it decides whether an entry is a note or a defect."
     },
     {
       "group": "type step",
-      "tokens": ["display.1", "display.2"],
+      "tokens": [
+        "display.1",
+        "display.2"
+      ],
       "cites": "F-017",
       "why": "The 72px and 34px steps. The other five steps are read by 96 `size=` literals across the screens, so the scale reaches components — but no screen leads with a display size; every one of them opens at `title`. Neither is reached by nativeLargeTextSizes listing them either: a membership test is a question nobody answers with the token, which is why this check does not propagate through arrays. The editorial display type the design system was built around is, so far, not on any screen."
     },
     {
       "group": "status kind",
-      "tokens": ["ok", "warn", "bad"],
+      "tokens": [
+        "ok",
+        "warn",
+        "bad"
+      ],
       "cites": "ADR-0054, F-031",
       "why": "`Status` is built, conforms, and is rendered by no screen — it reaches gate 8's component half through the conformance registry, which ADR-0054 allows as a root, so nothing else reports it. All three kinds are handled by the component and none is requested by a caller. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses is a written-down fact rather than an assumption that it is used somewhere."
     }

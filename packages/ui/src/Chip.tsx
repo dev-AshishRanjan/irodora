@@ -22,7 +22,7 @@
  */
 
 import { Pressable, View, type PressableProps } from 'react-native';
-import { nativeRadius, nativeTapTarget } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 
@@ -85,7 +85,7 @@ export function Chip({
         minHeight: nativeTapTarget,
         alignItems: 'center',
         borderRadius: nativeRadius.sm,
-        paddingHorizontal: 12,
+        paddingHorizontal: nativeSpacing[2],
         justifyContent: 'center',
         backgroundColor: background,
         // Focus is a RING, not a fill: it has to be visible on a chip that is already

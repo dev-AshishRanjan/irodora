@@ -27,7 +27,7 @@
 
 import { Pressable, View } from 'react-native';
 import type { Color } from '@irodora/color-core';
-import { nativeRadius, nativeTapTarget } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
 
@@ -98,9 +98,9 @@ export function Swatch({
         // The mandatory neutral ground. Not decoration — it is what makes the sample
         // readable next to anything else on the screen.
         backgroundColor: colors['swatch.well'],
-        padding: 8,
+        padding: nativeSpacing[1],
         alignItems: 'center',
-        gap: 6,
+        gap: nativeSpacing[1],
         // Selection is never colour alone: the checkmark below carries it too. Focus is a
         // DIFFERENT treatment from selection — the ring token exists for exactly this, and
         // rendering them the same would make one of the two a state in name only.

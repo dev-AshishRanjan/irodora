@@ -2698,7 +2698,7 @@
       "title": "The spacing scale reaches a component, or the value is not on the scale",
       "release": "R3",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "requirements": [
         "NFR-24"
       ],
@@ -2711,10 +2711,15 @@
       ],
       "verification": [
         "a11y",
-        "state"
+        "state",
+        "contrast",
+        "typecheck",
+        "lint",
+        "format"
       ],
-      "notes": "FOUND BY F-092, not by inspection. `nativeSpacing` (4, 8, 14, 20, 28, 40, 56, 96) is emitted from the manifest, exported from @irodora/design-tokens, and IMPORTED BY NOTHING — its only reader is emit.test.ts. Meanwhile there are 69 hand-written padding/margin/gap declarations across packages/ui/src and apps/mobile/src using 1, 2, 4, 6, 8, 12, 16 and 20, and 36 OF THE 69 USE A VALUE THE SCALE DOES NOT CONTAIN. So the manifest declares a rhythm the product does not follow, and nothing noticed because nothing was looking. WHY THIS IS ITS OWN FEATURE AND NOT PART OF F-092: moving 69 values changes layout on every screen, and five of the eight values in use are not decisions the manifest ever made — so the work is a design decision (does 16 become 14 or does the scale gain 16?) before it is a refactor. F-092 recorded it rather than excusing it, and .harness/verification/unreached-tokens.json cites this id as the reason nativeSpacing is declared unreached. THE 4-BASE MATTERS: the manifest says `spacing.base: 4`, and 1, 2, 6 are not multiples of it, so those three are off-grid rather than merely off-scale. A screenshot or device comparison before and after is worth more here than a test, because the failure mode is \"the layout is now subtly wrong everywhere\".",
-      "service": "mobile"
+      "notes": "DONE. THE RE-COUNT CHANGED THE FEATURE. F-092 recorded 69 declarations with 36 off-scale; measured at implementation time it was 102 with 45 off-scale — and, in the direction nobody had counted, FIVE OF THE SCALE’S EIGHT STEPS WERE USED ZERO TIMES (14, 28, 40, 56, 96). That is not a codebase that drifted off a scale. It is two systems never reconciled: an editorial rhythm in the manifest, and the conventional four-point grid the screens were built on. THE DECISION, ADR-0074, AND IT WAS THE USER’S: the scale moves to 4/8/12/16/20/28/40/56/96. `14` goes because it is the ONLY step that is not a multiple of the declared `base: 4` — the scale contradicted a rule the manifest states about itself — and because nothing used it. `12` and `16` join because they are used 24 times between them. 28 upward are used nowhere and are KEPT, said out loud: rhythm for layouts not built is not the same as a step that breaks a stated rule. CRITERION 1 (every value from the scale, or declared off-scale with a reason) — met. 102 declarations, 101 on the scale, one declared: `Swatch.tsx` `padding: 1` is F-068’s two-tone keyline, a border width sized to the device pixel, and rounding it to 4 would turn a keyline into a frame around every swatch. CRITERION 2 (nativeSpacing has a reader) — met by FIVE components, and the design system was the right place to start: packages/ui held ten spacing declarations and five of them contradicted the scale. Chip, SearchField, Status, Swatch and TextField now read `nativeSpacing`. Removing the unreached-tokens entry was PROVEN, not assumed — `verify-token-reach.mjs` fails on a listed name a component does read, and it was watched doing exactly that before the entry came out. CRITERION 3 (a check that names the file and the value) — met. `scripts/verify-spacing-scale.mjs`, wired into gate 8 beside verify-token-reach, naming file, line, property and value. It READS the scale from the manifest; a `--prove` case removes a step from the manifest and asserts the verdict follows, which is what separates reading the scale from carrying a copy that agrees with it only on the day it was written. Five planted cases: three red, TWO GREEN (a comment discussing an off-scale number, and a value that IS a step) — a check that fired on prose would be deleted and the real protection with it. Plus a dead exemption, which must fail: the list only ever grows otherwise. CRITERION 4 (the five off-scale values each resolved) — met, and by three different routes. `12` and `16` by moving the scale; `2 → 4` and `6 → 8` by moving 20 declarations; `1` by declaration. `2 → 4` is the change with a visible effect — all ten are a gap inside a stacked text pair — and it was chosen over exempting ten declarations because a scale that exempts its most common small value is not a scale. `6 → 8` rounds UP: seven of the ten are row padding or label gaps where the taller result also helps a touch target. ONE THING FOUND WHILE FIXING IT, FILED AS F-103: `nativeRadius` is a NAMED record and `nativeSpacing` is an unnamed array, so `nativeRadius.swatch` reads and `nativeSpacing[2]` does not. That asymmetry is why this token had no reader long before anybody counted, and it now carries a live hazard — the indices are positional, so a future step added or removed renumbers every reader while everything still compiles. E-036 records it; the emitted binding carries a doc comment saying so where a component author will see it. GATES RUN ON THIS WORKSTATION: state (green), the spacing check and its proof (green, 5 planted cases + a dead exemption + a perturbed manifest), verify-token-reach (green, and watched RED first with the stale entry in place), generate-design-tokens --check (green, all five artefacts), packages/design-tokens’ own suite (172 tests, which byte-compare the regenerated files), typecheck for packages/ui and apps/mobile, eslint and prettier. NOT RUN HERE, AND THE SECOND ONE MATTERS: (1) every gate needing pnpm — Node 22.16.0 / pnpm 9.3.0 against engines >=24.19.0 / >=11. (2) THE RENDERED HALF OF GATE 8. jest cannot start in packages/ui or apps/mobile because `react-native-worklets` is absent everywhere, a consequence of pnpm install never having run here — pre-existing and unrelated to this change, verified by the error naming a missing resolver module rather than any edited file. THE LAYOUT CHANGE IS THEREFORE UNVERIFIED VISUALLY. Twenty values moved by 2px each; there is no emulator and no JDK on this workstation, and the F-095 note is right that a screenshot comparison is worth more than a test for \"the layout is now subtly wrong everywhere\". Reported as unverified rather than verified.",
+      "service": "mobile",
+      "plan": "plans/F-095-the-spacing-scale-reaches-a-component.md"
     },
     {
       "id": "F-096",
@@ -2882,6 +2887,30 @@
         "state"
       ],
       "notes": "FILED AFTER THE FACT AND SAYING SO — found while tracing F-038’s effects, not selected through next-feature. THE DEFECT: effects.json carries two links both numbered E-032. One is F-098’s `pnpm-workspace.yaml` → lockfile link, guard `gate:state`, note `a-manifest-and-the-lockfile-must-move-together.md`. The other is F-099’s `score.ts#hueBias` link, guard `none`, note `the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md`. Both rows sit in memory/index.md labelled E-032. WHY IT MATTERS MORE THAN A TYPO: gate 0 warns \"E-032 (high) has no guard\" and there is no way to tell which link it means — one names a proven guard and the other honestly names none, so the warning is simultaneously wrong and right. E-034’s rationale cites \"(E-032)\" to point at the app’s biasFromHue, which is now an ambiguous reference in a document whose whole purpose is to be unambiguous about consequences. NOT FIXED IN F-038: WIP is 1 and this is unrelated to performance budgets. The renumber itself is a minute of work; the part worth doing properly is the gate 0 check that makes it impossible to reintroduce, watched failing first."
+    },
+    {
+      "id": "F-103",
+      "title": "The spacing steps get names, the way the radius steps already have",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "spacing steps are named in the manifest and emitted as a named record, not a positional array",
+        "No component reads a spacing step by index",
+        "Reordering or inserting a step fails a check or a typecheck, watched failing",
+        "The four emit targets and the CSS custom property names move together, byte-compared"
+      ],
+      "verification": [
+        "contrast",
+        "a11y",
+        "state"
+      ],
+      "notes": "FOUND WHILE IMPLEMENTING F-095 AND SAYING SO. `nativeRadius` is a named record — `nativeRadius.swatch` — and `nativeSpacing` is a bare array, so a component writes `nativeSpacing[2]` and nothing in that expression names 12. THE ASYMMETRY IS THE ROOT CAUSE OF F-095 ITSELF: a scale nobody can name is a scale nobody reaches for, which is why it sat emitted and unread while 45 hand-written values contradicted it. AND IT IS NOW A LIVE HAZARD RATHER THAN AN ERGONOMIC ONE. ADR-0074 renumbered every index above 1, which was safe only because nothing read the scale; five components read it now. A future step added or removed changes what every index above it means while every call site compiles, every test passes and every style prop still receives a valid number — React Native takes `number`, and 12 and 14 are equally assignable. E-036 records the link and states the limit: `verify-spacing-scale.mjs` checks LITERALS and cannot see a stale index. NOT DONE IN F-095 because it changes the manifest schema and all four emitters, and F-095 had a scope. Filed to R4 rather than R3: R3 is closing, and this is a refactor of a system that currently works."
     }
   ]
 }

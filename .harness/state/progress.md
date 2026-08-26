@@ -8,6 +8,130 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-26 — F-095 · the scale and the product were both right, about different things
+
+F-092 filed this as *"36 of 69 spacing values are off the scale"*. Re-counted before touching
+anything: **102 declarations, 45 off-scale** — the codebase had grown. And then the count nobody
+had run:
+
+| value in use | uses | | scale step | uses |
+|---:|---:|---|---:|---:|
+| 1 | 1 | | 4 | 19 |
+| 2 | 10 | | 8 | 25 |
+| 4 | 19 | | **14** | **0** |
+| 6 | 10 | | 20 | 13 |
+| 8 | 25 | | **28** | **0** |
+| 12 | 15 | | **40** | **0** |
+| 16 | 9 | | **56** | **0** |
+| 20 | 13 | | **96** | **0** |
+
+**Five of the scale's eight steps were used zero times.** That changes what this was. Not a
+codebase that drifted off a declared scale — two systems that were never reconciled, each
+internally consistent, for as long as nobody counted in both directions.
+
+### The decision, and one fact that settled it
+
+The manifest declares `base: 4`. Of the eight steps, exactly one is not a multiple of four:
+**`14`** — and it is also the one step nothing used. The scale contradicted a rule the manifest
+states about itself.
+
+[ADR-0074](../../docs/adr/0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md):
+the scale becomes **`4, 8, 12, 16, 20, 28, 40, 56, 96`**. `14` out, `12` and `16` in — used 24
+times between them. `28` upward are used nowhere and are **kept**, said out loud: rhythm for
+layouts not yet built is not the same thing as a step that breaks a stated rule, and 間 (*ma*) is
+declared a design element.
+
+The alternative — keep the scale, move all 45 declarations — was rejected on the merits, not the
+effort: it leaves `14` still violating the base, and `16 → 20` makes the gap between sections
+equal to the page's own padding, flattening the hierarchy it exists to express. A worse layout,
+arrived at by obeying a scale nobody had used.
+
+### What moved
+
+| | |
+|---|---|
+| `2 → 4` | 10 declarations, all a `gap` inside a stacked text pair |
+| `6 → 8` | 10 declarations, rounded **up** — seven are row padding where taller also helps a touch target |
+| `1` | declared off-scale: F-068's two-tone keyline, a border width sized to the device pixel |
+
+`2 → 4` is the change with a visible effect and it was chosen over exempting ten declarations,
+because **a scale that exempts its most common small value is not a scale**.
+
+### The check asks the question `verify-token-reach` does not
+
+That script asks *did anything get emitted that nothing uses?* `verify-spacing-scale.mjs` asks
+**is anything used that was never decided?** A design system fails in both directions and only
+one end had a gate.
+
+It **reads** the scale from the manifest rather than repeating it, and that is proven rather than
+claimed: a `--prove` case removes a step from the manifest and asserts the verdict follows. A
+checker carrying its own copy would stay green there, which is the whole failure.
+
+Five planted cases — three red, **two green**: a comment discussing an off-scale number, and a
+value that *is* a step. Plus a dead exemption, which must fail, or the list only ever grows.
+
+### Two things proven rather than assumed
+
+- **Removing the `nativeSpacing` entry from `unreached-tokens.json`.** `verify-token-reach.mjs`
+  fails on a listed name a component *does* read, and it was watched failing — *"nativeSpacing is
+  declared unreached, and is read by Chip.tsx, SearchField.tsx, Status.tsx"* — before the entry
+  came out. It also has a sibling entry that cross-referenced this one in prose; that sentence
+  was rewritten rather than left dangling.
+- **The emitter is built, not sourced.** `generate-design-tokens.mjs` loads
+  `packages/design-tokens/dist/index.js`, so editing `src/emit/react-native.ts` changed nothing
+  until the package was rebuilt. Worth knowing before believing an artefact is current.
+
+### Gates run
+
+| Gate | Result |
+|---|---|
+| 0 `state` | **green** |
+| 8 spacing check | **green** — 102 declarations, 1 declared off-scale, 4 unused steps reported |
+| 8 spacing proof | **green** — 5 cases (3 red, 2 green) + dead exemption + perturbed manifest |
+| 8 token reach | **green** — 71 names, 38 read, 33 declared. Watched RED first |
+| 9 `contrast` (generator half) | **green** — all five artefacts byte-current |
+| 4 `test` (design-tokens only) | **green** — 172 tests, which byte-compare the regenerated files |
+| 1 `typecheck` | **green** — `packages/ui` and `apps/mobile` |
+| 2 `lint` · 3 `format` | **green** |
+
+**NOT RUN, and the second one matters:**
+
+1. Every gate needing `pnpm` — Node 22.16.0 / pnpm 9.3.0 against `engines` demanding 24.19.0 / 11.
+2. **The rendered half of gate 8.** `jest` cannot start in `packages/ui` or `apps/mobile`:
+   `react-native-worklets` is absent everywhere, a consequence of `pnpm install` never having run
+   here. Pre-existing and unrelated — the error names a missing resolver module, not an edited
+   file — but it means **the layout change is unverified visually**. Twenty values moved by 2px
+   each, no emulator, no JDK. Reported as unverified rather than verified.
+
+### Recorded, not resolved
+
+- **`F-103` filed: the spacing steps get names, the way radius already has them.**
+  `nativeRadius.swatch` reads; `nativeSpacing[2]` does not, and nothing in that expression names
+  12. That asymmetry is the *root cause of F-095 itself* — a scale nobody can name is a scale
+  nobody reaches for. It is now a live hazard rather than an ergonomic one: ADR-0074 renumbered
+  every index above 1, which was safe only because nothing read the scale, and five components
+  read it now. **E-036** records the link and states the limit honestly — the check reads
+  literals and cannot see a stale index. Filed to R4; R3 is closing and this is a refactor of a
+  system that currently works.
+- **E-029 extended rather than closed.** Its `nativeSpacing` entry is gone, but the link is about
+  every emitted value, and the other ten entries stand.
+
+### Watch out
+
+- **`generate-design-tokens.mjs --check` passing does not mean the emitter is current** — it
+  compares artefacts against the *built* emitter. Rebuild `packages/design-tokens` after editing
+  `src/emit/`.
+- **The spacing indices are positional and will shift again.** `nativeSpacing[2]` is `--space-3`.
+  A step added or removed renumbers every reader above it, with no type error and no failing
+  test. The emitted binding now carries a doc comment saying so.
+
+### Next
+
+R3 holds F-081 (blocked — Apple membership), F-086 (blocked — `JAVA_HOME` points at a
+`jdk-18.0.2.1` that does not exist), F-097, F-099, F-101, F-102.
+
+---
+
 ## 2026-08-26 — F-038 · the gate that could not measure a phone, and the budget nothing could exceed
 
 Gate 12 stops being `pending`. It was also, it turns out, a gate that would never have run.

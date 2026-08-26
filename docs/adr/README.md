@@ -97,6 +97,7 @@ Two rules that matter more than the format:
 | [0071](0071-a-token-with-no-reader-is-a-decision-nobody-applied.md) | A token with no reader is a decision nobody applied | Accepted |
 | [0072](0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) | A guided profile is forced choices, and confidence is agreement | Accepted |
 | [0073](0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md) | The "Japanese aesthetic" score is corpus affinity, and says so | Accepted |
+| [0074](0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md) | The spacing scale is a four-point grid, and the step that was not one goes | Accepted |
 
 ## Open questions awaiting an ADR
 
