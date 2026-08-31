@@ -22,11 +22,22 @@
  * `store` owns and F-042's `ts-expect-error` guards.
  */
 
+import { fromXyz } from '@irodora/color-core';
+import type {
+  CaptureQuality,
+  CapturedSource,
+  Color,
+  Illuminant,
+  UntrackedSource,
+} from '@irodora/color-core';
 import { oklchToXyz, xyzToLab } from '@irodora/color-spaces';
+import type { Xyz } from '@irodora/color-spaces';
+import { captureConditionsOf } from '@irodora/store';
 import type {
   GarmentEnrichment,
   NewGarment,
   NewSavedColor,
+  SavedColorRow,
   SanitisedImage,
   StoredGarment,
 } from '@irodora/store';
@@ -173,6 +184,22 @@ function colourFromReading(reading: LensReading, id: string): NewSavedColor {
     source: 'estimated',
     confidence: reading.confidence,
     corpus_slug: null,
+    /*
+     * THE FOUR FACTS THE SOURCE OWES (F-108). `estimated` is a CapturedSource, and ADR-0005
+     * makes `conditions` REQUIRED for those — so without these the row cannot be read back as
+     * a `Color` at all, and there is no honest substitute: an illuminant nobody observed is a
+     * fabricated measurement.
+     *
+     * F-042 wrote this row with the source and not the conditions, and every test stayed
+     * green because nothing had yet read a colour back OUT as a Color. The reading carried
+     * all four the whole time.
+     */
+    conditions: {
+      illuminant: reading.illumination,
+      quality: reading.quality,
+      sampleCount: reading.usableSamples,
+      variance: reading.variance,
+    },
   };
 }
 
@@ -201,6 +228,56 @@ export function toStoreWrite(draft: GarmentDraft, newId: () => string): NewGarme
         ? colourFromCorpus(colour.slug, newId())
         : colourFromReading(colour.reading, newId()),
   };
+}
+
+/**
+ * A stored colour, back as a `Color` (F-108).
+ *
+ * ## This function is why F-108 existed
+ *
+ * ADR-0005 makes provenance part of the value, and the union is strict: `reference` and
+ * `declared` owe nothing, while `estimated` and `calibrated` owe their `conditions`. Before
+ * F-108 the store held the source and not the conditions, so **this function could not be
+ * written at all** — there was no honest provenance to hand `fromXyz`, and inventing an
+ * illuminant would have been fabricating a measurement to make a read succeed.
+ *
+ * `captureConditionsOf` is the store's, not repeated here: the four columns are its invariant,
+ * and it refuses a pre-migration row by name rather than letting this file decide what to do
+ * with a capture that lost its conditions.
+ *
+ * `originSpace` is `oklch`, matching what `colorFor` declares for a corpus entry. XYZ is the
+ * canonical space and is deliberately not in `ColorSpace` — a value does not *arrive* in it —
+ * and both paths into `saved_color` derive their XYZ from OKLCh, so that is the honest answer
+ * for a row.
+ *
+ * WHAT IS NOT CARRIED, and it is a smaller thing than F-108 but worth naming: `captureSpace`.
+ * The reading knew whether the camera reported sRGB or Display P3, and `saved_color` does not
+ * store it. The field is **optional on `CapturedProvenance` by design** — it is not always
+ * knowable — so omitting it is honest rather than a second gap of the F-108 kind. What is lost
+ * is fidelity, not truthfulness: nothing here claims a space it does not have.
+ */
+export function colorOf(row: SavedColorRow): Color {
+  const conditions = captureConditionsOf(row);
+  const xyz: Xyz = [row.xyz_x, row.xyz_y, row.xyz_z];
+
+  if (conditions === null)
+    return fromXyz(xyz, {
+      source: row.source as UntrackedSource,
+      confidence: row.confidence,
+      originSpace: 'oklch',
+    });
+
+  return fromXyz(xyz, {
+    source: row.source as CapturedSource,
+    confidence: row.confidence,
+    originSpace: 'oklch',
+    conditions: {
+      illuminant: conditions.illuminant as Illuminant,
+      quality: conditions.quality as CaptureQuality,
+      sampleCount: conditions.sampleCount,
+      variance: conditions.variance,
+    },
+  });
 }
 
 /** Whether a draft carries anything beyond the two required fields. Used to label the save. */

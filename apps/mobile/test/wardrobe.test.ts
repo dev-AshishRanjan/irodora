@@ -15,7 +15,9 @@
 
 import { allEntries } from '../src/corpus';
 import type { LensReading } from '../src/lens/reading';
+import type { SavedColorRow } from '@irodora/store';
 import {
+  colorOf,
   draftProblem,
   EMPTY_DRAFT,
   hasEnrichment,
@@ -162,5 +164,67 @@ describe('hasEnrichment', () => {
   it('tells a bare draft from one carrying anything at all', () => {
     expect(hasEnrichment(minimal)).toBe(false);
     expect(hasEnrichment({ ...minimal, enrichment: { brand: 'Uniqlo' } })).toBe(true);
+  });
+});
+
+describe('a stored colour, back as a Color (F-108)', () => {
+  /*
+   * THIS BLOCK COULD NOT HAVE BEEN WRITTEN BEFORE F-108, and that is the point of it.
+   *
+   * ADR-0005 makes provenance part of the value, and the union is strict: a CapturedSource
+   * OWES its conditions. F-042 stored `source: 'estimated'` and none of them, so there was no
+   * honest provenance to hand `fromXyz` — the row was unreadable as a `Color`, and inventing
+   * an illuminant to make the read succeed would have been fabricating a measurement.
+   *
+   * F-042's own tests were green throughout because they wrote rows and asserted COLUMNS.
+   * Nothing read a colour back out as a `Color`, and a column holding the string 'estimated'
+   * looks correct until the type is asked for a provenance.
+   */
+  const asRow = (write: ReturnType<typeof toStoreWrite>): SavedColorRow => ({
+    ...write.color,
+    created_at: 1,
+    updated_at: 1,
+    deleted_at: null,
+    capture_illuminant: write.color.conditions?.illuminant ?? null,
+    capture_quality: write.color.conditions?.quality ?? null,
+    capture_samples: write.color.conditions?.sampleCount ?? null,
+    capture_variance: write.color.conditions?.variance ?? null,
+  });
+
+  it('carries a capture\u2019s conditions all the way through', () => {
+    const write = toStoreWrite(
+      { ...minimal, colour: { kind: 'reading', reading: READING } },
+      newId,
+    );
+    const colour = colorOf(asRow(write));
+
+    expect(colour.provenance.source).toBe('estimated');
+    expect(colour.provenance.confidence).toBe(0.82);
+    // The four facts the source owes, from the reading, through the row, into the type.
+    expect('conditions' in colour.provenance).toBe(true);
+    if (!('conditions' in colour.provenance)) throw new Error('unreachable');
+    expect(colour.provenance.conditions.illuminant).toBe('daylight');
+    expect(colour.provenance.conditions.quality).toBe('good');
+    expect(colour.provenance.conditions.sampleCount).toBe(4096);
+    expect(colour.provenance.conditions.variance).toBe(0.004);
+  });
+
+  it('needs none of them for a published colour', () => {
+    // THE DECOY. A colorOf that demanded conditions unconditionally would break the path every
+    // corpus-picked garment takes — which is most of them — while passing the test above.
+    const colour = colorOf(asRow(toStoreWrite(minimal, newId)));
+    expect(colour.provenance.source).toBe('reference');
+    expect('conditions' in colour.provenance).toBe(false);
+  });
+
+  it('REFUSES a capture whose conditions were never stored', () => {
+    // The pre-migration row. Refused by name rather than downgraded to a reference colour,
+    // which would relabel a camera estimate as a published value.
+    const write = toStoreWrite(
+      { ...minimal, colour: { kind: 'reading', reading: READING } },
+      newId,
+    );
+    const stripped: SavedColorRow = { ...asRow(write), capture_illuminant: null };
+    expect(() => colorOf(stripped)).toThrow(/capture/i);
   });
 });

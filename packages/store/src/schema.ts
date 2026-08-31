@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -353,6 +353,43 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       ) STRICT;
 
       CREATE INDEX garment_image_garment ON garment_image (garment_id);
+    `,
+  },
+  {
+    version: 5,
+    /*
+     * F-108. The four facts a capture owes, which F-042 did not persist.
+     *
+     * ## The defect this corrects
+     *
+     * `colourFromReading` wrote `source: 'estimated'` and nothing else about the capture. But
+     * `estimated` is a CapturedSource, and ADR-0005's `CapturedProvenance` REQUIRES
+     * `conditions` — illuminant, quality, sampleCount, variance. So the row could not be read
+     * back as a `Color` at all: there was no honest provenance to hand `fromXyz`, and
+     * inventing the four values would be fabricating measurement facts.
+     *
+     * The `LensReading` carried all four the whole time. Nothing caught it because nothing
+     * had yet read a colour back OUT as a Color — the write path was covered end to end and
+     * a column holding the string 'estimated' looks correct until the type is asked for a
+     * provenance.
+     *
+     * ## Nullable, no DEFAULT, and all four move together
+     *
+     * Migration 2's convention and its reason: a default here would be a measurement nobody
+     * took wearing the shape of one somebody did. NULL means exactly "written before this
+     * column existed", and the read path refuses such a row BY NAME rather than substituting
+     * — and specifically never downgrades it to 'reference', which would relabel a camera
+     * estimate as a published value.
+     *
+     * ALTER TABLE cannot carry a CHECK, so the vocabularies are enforced where they are
+     * already defined: the reader refuses an illuminant or a quality outside the union, the
+     * same move migration 2 makes for classification.
+     */
+    up: `
+      ALTER TABLE saved_color ADD COLUMN capture_illuminant TEXT;
+      ALTER TABLE saved_color ADD COLUMN capture_quality    TEXT;
+      ALTER TABLE saved_color ADD COLUMN capture_samples    INTEGER;
+      ALTER TABLE saved_color ADD COLUMN capture_variance   REAL;
     `,
   },
 ];

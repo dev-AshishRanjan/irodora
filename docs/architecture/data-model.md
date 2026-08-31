@@ -165,6 +165,8 @@ saved_color
   id · name · xyz_* · lab_* · oklch_* · hex
   source · confidence            (ADR-0005: provenance is NOT NULL)
   corpus_slug                    which corpus entry this came from, or null
+  capture_illuminant · capture_quality · capture_samples · capture_variance
+                                 the four facts a CAPTURE owes (F-108, migration 5)
 
 palette
   id · name (en) · name_ja · classification · category · version_id
@@ -182,6 +184,18 @@ That is why these columns exist: `palette.id` doubles as the corpus `slug`,
 `palette_member.position` is the corpus `rank`, and `corpus_slug` is what lets a stored row be
 re-expressed as a slug-addressed member. A second column for the same fact would be a second
 thing that can disagree.
+
+**The capture columns are all four or none** (F-108, migration 5). ADR-0005's provenance is a
+union: `reference` and `declared` owe nothing, while `estimated` and `calibrated` owe their
+`conditions` — illuminant, quality, sample count and variance. F-042 stored the *source*
+without them, which made a captured row **unreadable as a `Color`**: there was no honest
+provenance to construct, and inventing an illuminant would have been fabricating a measurement
+to make a read succeed.
+
+The columns are nullable with no `DEFAULT`, and the read path **refuses** a captured row that
+lacks them, by name. It never substitutes, and it never relabels the row `reference` — that
+would turn a camera estimate into a published value, which is exactly the back door ADR-0005
+exists to close.
 
 **A member copies the corpus colour into `saved_color`.** Not duplication for its own sake: a
 palette built against `2026.08.1` keeps the colours the person chose when a later version

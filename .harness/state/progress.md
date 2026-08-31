@@ -8,6 +8,144 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-108 DONE · the row said "estimated" and could not prove it
+
+### Found by the type system, in code I had shipped two features earlier
+
+F-045's plan reached the point of turning a stored garment back into a `Color`, and could not.
+
+`colourFromReading` (F-042) writes `source: 'estimated'` onto a `saved_color` row carrying
+`source` and `confidence` and nothing else. But `'estimated'` is a **`CapturedSource`**, and
+ADR-0005's `CapturedProvenance` **requires** `conditions` — illuminant, quality, sampleCount,
+variance. There was no honest provenance to hand `fromXyz`, and **inventing the four values
+would be fabricating measurement facts**, which is the one thing this codebase exists to
+prevent.
+
+The `LensReading` had all four the whole time:
+
+| `LensReading` | `CaptureConditions` |
+|---|---|
+| `illumination` | `illuminant` |
+| `quality` | `quality` |
+| `usableSamples` | `sampleCount` |
+| `variance` | `variance` |
+
+### Why F-042's tests were green, and they were not weak tests
+
+**They wrote rows and asserted columns.** Nothing ever read a colour back out *as a `Color`*,
+and a column holding the string `'estimated'` looks perfectly correct until the type is asked
+for a provenance.
+
+That is [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] on a **read path** rather
+than a module: the write side was covered end to end, and the other side did not exist yet.
+The lesson generalises — *a round trip is not proven by the half of it you built*.
+
+### The fix, and the one line that matters most
+
+Migration 5 adds four columns, nullable, no `DEFAULT` — migration 2's convention and its
+reason. `colourFromReading` writes them from the reading it already held.
+
+**`captureConditionsOf` refuses a pre-migration row by name, and never downgrades it.**
+Returning `null` there — treating the row as though it owed nothing — would relabel a camera
+estimate as a published value, indistinguishable downstream from a colour an editor verified.
+That is the back door ADR-0005 exists to close, and it is the fix a "make it work" attempt
+reaches for first.
+
+**The type refuses to describe a partial capture.** The conditions are **one optional object**
+on `NewSavedColor`, not four optional fields, so "estimated with three of four" is not
+expressible through the repository. The database can still hold such a row — an older build
+wrote them — so the *reader* is what refuses, and the test plants one by writing SQL directly
+because the writer no longer can.
+
+### Watched failing, with the decoy that makes it mean something
+
+Mutating the refusal to `return null` — the plausible wrong fix — turns **exactly the three
+refusal tests red and leaves the reference-colour case green**. That green case is the decoy:
+a `captureConditionsOf` that threw on any null column would pass every refusal test and break
+the path every corpus-picked garment takes, which is most of them.
+
+### E-023 named its dependents again, and one of them was a test fake
+
+No new link. E-023 already says *"a migration reaches further than the tables it names"*, and
+this is an instance. What it caught this time: `NewSavedColor` changing shape broke the **fake
+store in `screens.test.tsx`**, which spreads a write into a row. Fixed by mapping the four
+columns the way the repository does — a fake that stands in for a simplified idea of the write
+path is a fake that stops standing in for it.
+
+`data-model.md` moved too, and says why the columns are all-or-none.
+
+### Named rather than quietly lost
+
+`captureSpace` — the reading knew whether the camera reported sRGB or Display P3, and
+`saved_color` does not store it. **It is optional on `CapturedProvenance` by design**, so
+omitting it is honest rather than a second gap of this kind. What is lost is fidelity, not
+truthfulness: nothing claims a space it does not have. Said in the code rather than left for
+somebody to notice.
+
+### F-043 shipped with gate 11 red, and this is where it was caught
+
+Adding twenty Japanese keys added kanji — 推 撮 添 付 任 在 — that the **bundled font subset
+does not cover**. The subset is generated from the corpus and the `ja` catalogue
+(ADR-0057): a character outside it renders as tofu on a device, and nothing about the string
+looks wrong in a diff.
+
+**F-043's sweep did not run the content gate, and its plan did not name it.** That is the real
+miss — not a mis-invocation this time but a *tracing* failure: I did not follow "new Japanese
+copy" to "the font subset is generated from the catalogue". The effect graph would have said
+so if the link existed; it does not, and E-007's family is where it belongs.
+
+Regenerating was possible here only because the 9.6 MB source font happened to be cached in
+`.cache/fonts/` from F-076. It is a downloaded build input and is deliberately not committed —
+on a clean clone this fix needs a network fetch, and CI never regenerates: it *verifies* the
+committed subset, which is exactly the split ADR-0057 designed. The subset grew 639,644 →
+642,136 bytes.
+
+**The gate was doing its job and I had not asked it.** Golden rule 4 is about evidence, and a
+gate a plan forgot to name produces none.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** | | 6 build | **PASS** |
+| 1 typecheck | **PASS** | | 8 a11y | **PASS** |
+| 2 lint | **PASS** | | 9 contrast | **PASS** |
+| 3 format | **PASS** | | 11 content | **PASS** |
+| 4 test | **PASS** — 115 store, 384 app | | 15 security | **PASS** |
+| 3 format | **PASS** | | 11 content | **PASS** — *after regenerating the subset* |
+
+Not applicable: `color-golden` (no engine maths), `cvd`, `perf`, `artifact`. `e2e` remains
+pending on F-091.
+
+### Watch out — the same mistake, five times, in five costumes
+
+Every one was **a plausible name instead of the real one**, and every one reported something:
+
+| I used | it actually is | what it did |
+|---|---|---|
+| `--filter irodora-mobile` | `@irodora/mobile` | exit **0** over nothing |
+| `/tmp/vs-id.bak` in Node | `E:\tmp\…` | threw; the mutation never applied |
+| `pnpm gate:content` | `pnpm test:content` | exit **1**, reads as a red gate |
+| `pnpm test:perf` | `pnpm bench` | exit **1**, reads as a red gate |
+| `npx prettier@3.6.2` | pinned `^3.9.6` | *"unchanged"* while `format:check` stayed red |
+
+The last is the sharpest: a formatter of a different version reports success and leaves the
+file failing. **Read the tool out of the manifest and the command out of `gates.json`.** Both
+are already data.
+
+And a sixth, unrelated in mechanism and identical in shape: **a backtick inside a `node -e`
+string is command-substituted**, six times, each leaving a doubled space in prose. The
+repository recorded it for heredocs; it is true of any double-quoted shell string. Edits that
+carry backticks are now written as files.
+
+### Next
+
+**F-045 resumes** — it is blocked only by this, its plan stands, and its design is unchanged:
+`scoreOutfit` takes the whole composed outfit, so multi-slot locking needs no new engine call
+and no colour arithmetic in the app.
+
+---
+
 ## 2026-08-31 — F-043 DONE · four ways in, two required fields, and a mailbox that had one reader
 
 ### The wardrobe becomes reachable

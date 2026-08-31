@@ -61,6 +61,7 @@ export {
 export { randomBytes, resetRandomBytes, setRandomBytes, type RandomBytes } from './random.js';
 export {
   StoreError,
+  captureConditionsOf,
   CONTRAST_PREFERENCES,
   DIMENSION_ORIGINS,
   PROFILE_DIMENSIONS,
@@ -108,6 +109,7 @@ export type {
   Range,
   Repository,
   SavedColorRow,
+  StoredCaptureConditions,
   StoredGarment,
   StoredGarmentColor,
   StoredPalette,

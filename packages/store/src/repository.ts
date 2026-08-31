@@ -115,9 +115,49 @@ export interface SavedColorRow extends SyncRow {
    * member, because `parsePalette` addresses colours by slug and nothing else.
    */
   readonly corpus_slug: string | null;
+  /*
+   * The four facts a capture owes (F-108). NULL on a reference or declared colour, which owes
+   * none — and NULL on a captured row written before migration 5, which the read path refuses
+   * BY NAME rather than reconstructing.
+   */
+  readonly capture_illuminant: string | null;
+  readonly capture_quality: string | null;
+  readonly capture_samples: number | null;
+  readonly capture_variance: number | null;
 }
 
-export type NewSavedColor = Omit<SavedColorRow, keyof SyncRow> & { readonly id: string };
+/**
+ * The conditions a CAPTURED colour owes, as four scalars.
+ *
+ * The engine's `CaptureConditions` by shape, deliberately NOT by import: this package carries
+ * no runtime dependency and will not gain one for four numbers. What it owns is that the four
+ * MOVE TOGETHER — three of them is a row nobody should be able to write, and the writer takes
+ * them as one object so that is not expressible.
+ */
+export interface StoredCaptureConditions {
+  readonly illuminant: string;
+  readonly quality: string;
+  readonly sampleCount: number;
+  readonly variance: number;
+}
+
+/** The four capture columns, named once so the Omit below cannot drift from them. */
+type CaptureColumns =
+  'capture_illuminant' | 'capture_quality' | 'capture_samples' | 'capture_variance';
+
+/**
+ * A colour being written.
+ *
+ * THE CONDITIONS ARE ONE OPTIONAL OBJECT, not four optional fields, and that is the whole
+ * design (F-108). Four separate optionals make three-of-four expressible, and a captured row
+ * missing its variance is exactly the state that cannot be read back — so the type refuses to
+ * describe it. A reference or declared colour omits the object entirely rather than inventing
+ * an empty one, because it genuinely owes no conditions.
+ */
+export type NewSavedColor = Omit<SavedColorRow, keyof SyncRow | CaptureColumns> & {
+  readonly id: string;
+  readonly conditions?: StoredCaptureConditions;
+};
 
 /**
  * A palette row. The migration-2 columns are `string | null` in the ROW because that is what
@@ -430,6 +470,63 @@ export interface GarmentImageInfo {
  * frames later.
  */
 export class StoreError extends Error {}
+
+/**
+ * The capture conditions on a stored colour, or a loud refusal (F-108).
+ *
+ * ## Why this lives in the store
+ *
+ * The four columns are the store’s invariant: they move together or not at all. A caller
+ * assembling them by hand would be the second place that rule is stated, and the second copy
+ * of a rule is the one nobody looks at when they drift.
+ *
+ * ## What it refuses, and what it must never do instead
+ *
+ * A row whose `source` is a CAPTURE (`estimated` or `calibrated`) and whose conditions are
+ * absent was written before migration 5. It is refused BY NAME.
+ *
+ * **It is never downgraded to `reference`.** That would be the worst available outcome: a
+ * camera estimate relabelled as a published value, indistinguishable downstream from a colour
+ * an editor verified. ADR-0005 makes provenance part of the value precisely so that cannot
+ * happen quietly, and substituting here would be the back door into the type.
+ *
+ * **And it never invents the numbers.** An illuminant nobody observed is a measurement fact
+ * fabricated to make a read succeed, which is the one thing this codebase exists to prevent.
+ */
+export function captureConditionsOf(row: {
+  readonly id: string;
+  readonly source: string;
+  readonly capture_illuminant: string | null;
+  readonly capture_quality: string | null;
+  readonly capture_samples: number | null;
+  readonly capture_variance: number | null;
+}): StoredCaptureConditions | null {
+  // A published or declared colour owes nothing. Checked FIRST, so the working path never
+  // touches the refusal below.
+  if (row.source !== 'estimated' && row.source !== 'calibrated') return null;
+
+  const { capture_illuminant, capture_quality, capture_samples, capture_variance } = row;
+  if (
+    capture_illuminant === null ||
+    capture_quality === null ||
+    capture_samples === null ||
+    capture_variance === null
+  )
+    throw new StoreError(
+      `saved_color ${row.id} has source "${row.source}", which is a capture, and does not ` +
+        'carry its conditions. The columns arrived with schema version 5, so this row was ' +
+        'written by an older build. There is no honest value to put here: an illuminant ' +
+        'nobody observed is a fabricated measurement, and calling it "reference" would ' +
+        'relabel a camera estimate as a published one.',
+    );
+
+  return {
+    illuminant: capture_illuminant,
+    quality: capture_quality,
+    sampleCount: capture_samples,
+    variance: capture_variance,
+  };
+}
 
 /** What the app is allowed to do to the database. */
 export interface Repository {

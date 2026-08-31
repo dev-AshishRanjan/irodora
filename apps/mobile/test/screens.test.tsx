@@ -139,7 +139,23 @@ function fakeStore(): PaletteStore {
           role: m.role,
           rank: m.rank,
           weight: m.weight,
-          color: { ...m.color, created_at: now, updated_at: now, deleted_at: null },
+          /*
+           * The four capture columns are mapped, not spread (F-108). `NewSavedColor` carries
+           * the conditions as ONE optional object and the ROW carries them as four columns, so
+           * a spread produces a shape that is neither. Doing it here the way the repository
+           * does keeps this fake standing in for the real write path rather than for a
+           * simplified idea of it.
+           */
+          color: {
+            ...m.color,
+            created_at: now,
+            updated_at: now,
+            deleted_at: null,
+            capture_illuminant: m.color.conditions?.illuminant ?? null,
+            capture_quality: m.color.conditions?.quality ?? null,
+            capture_samples: m.color.conditions?.sampleCount ?? null,
+            capture_variance: m.color.conditions?.variance ?? null,
+          },
         })),
       });
     },

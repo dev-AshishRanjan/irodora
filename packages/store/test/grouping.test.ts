@@ -53,6 +53,11 @@ const garment = (id: string, hex: string): StoredGarment => {
     source: 'reference',
     confidence: 1,
     corpus_slug: null,
+    // A reference colour owes no capture conditions (F-108) — it was published, not measured.
+    capture_illuminant: null,
+    capture_quality: null,
+    capture_samples: null,
+    capture_variance: null,
   };
 
   return {

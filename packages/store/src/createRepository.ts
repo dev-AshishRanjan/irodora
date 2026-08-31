@@ -50,7 +50,8 @@ import {
 
 const COLOR_COLUMNS =
   'id, created_at, updated_at, deleted_at, name, xyz_x, xyz_y, xyz_z, ' +
-  'lab_l, lab_a, lab_b, oklch_l, oklch_c, oklch_h, hex, source, confidence, corpus_slug';
+  'lab_l, lab_a, lab_b, oklch_l, oklch_c, oklch_h, hex, source, confidence, corpus_slug, ' +
+  'capture_illuminant, capture_quality, capture_samples, capture_variance';
 
 const PALETTE_COLUMNS =
   'id, created_at, updated_at, deleted_at, name, name_ja, classification, category, version_id';
@@ -181,7 +182,9 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
       driver.run(
         `UPDATE saved_color SET updated_at = ?, name = ?, xyz_x = ?, xyz_y = ?, xyz_z = ?,
          lab_l = ?, lab_a = ?, lab_b = ?, oklch_l = ?, oklch_c = ?, oklch_h = ?,
-         hex = ?, source = ?, confidence = ?, corpus_slug = ? WHERE id = ?`,
+         hex = ?, source = ?, confidence = ?, corpus_slug = ?,
+         capture_illuminant = ?, capture_quality = ?, capture_samples = ?,
+         capture_variance = ? WHERE id = ?`,
         [
           now,
           row.name,
@@ -198,6 +201,10 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           row.source,
           row.confidence,
           row.corpus_slug,
+          row.conditions?.illuminant ?? null,
+          row.conditions?.quality ?? null,
+          row.conditions?.sampleCount ?? null,
+          row.conditions?.variance ?? null,
           row.id,
         ],
       );
@@ -206,7 +213,7 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
     }
     driver.run(
       `INSERT INTO saved_color (${COLOR_COLUMNS})
-       VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         row.id,
         now,
@@ -225,6 +232,10 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
         row.source,
         row.confidence,
         row.corpus_slug,
+        row.conditions?.illuminant ?? null,
+        row.conditions?.quality ?? null,
+        row.conditions?.sampleCount ?? null,
+        row.conditions?.variance ?? null,
       ],
     );
     log('saved_color', row.id, 'insert', now);
