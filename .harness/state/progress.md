@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-045 DONE · the engine already had the multi-lock answer
+
+### The problem, and where it was not solved
+
+`recommendOutfit` takes **one** anchor garment and fills every other slot. FR-33 wants **N
+locked slots** constraining generation, and no engine call does that.
+
+The tempting fix is to score candidates against each locked garment in the app and combine.
+**That is new colour arithmetic in the app**, and E-008 is precisely about why it cannot live
+there: a second implementation makes the same outfit rank differently on two surfaces, both
+pass their own tests, and nothing runs both.
+
+**`scoreOutfit` already takes the whole composed outfit.** So generation is: for each unlocked
+slot, for each garment that could fill it, compose `locks + candidate` and ask the **engine**
+what that outfit scores. Every judgement is the engine's; the app supplies combinations and
+sorts a list. The only arithmetic in `builder.ts` is a comparison — which is why F-045 stayed a
+mobile feature rather than becoming an engine change.
+
+### Determinism: the test that can fail, and the one that cannot
+
+Criterion 2 is *"the same locked set and versions always regenerate the same candidates"*.
+
+**"Call it twice and compare" does not test that.** It passes for an implementation that is
+entirely order-dependent and for one that caches; it checks the function is not actively
+random, which was never in doubt because the engine is pure.
+
+The threat is the app's ordering. `sort` is stable, so two equally-scored garments come back in
+**wardrobe order** — and the wardrobe's order changes the day somebody adds a jumper. So the
+assertions are the same locks over a **reversed wardrobe**, and a tie broken on **garment id**.
+
+Both were watched failing, and they caught **different** things:
+
+| mutation | what failed |
+|---|---|
+| the id tie-break dropped | *"breaks a tie on id, not on arrival"* — and **only** that |
+| the candidate scored alone, locks ignored | *"scores the candidate WITH the locked garments"* — and only that |
+
+The first is worth noting: the reversed-wardrobe test did **not** catch the missing tie-break,
+because no two garments in that fixture tie. Two assertions, two properties, neither redundant.
+
+### Where six numbers finally reach a person
+
+F-031 built six component scores and its own note said the quiet part: *"nothing here proves a
+person ever SEES six numbers"* — `e2e` was in its verification list and could not run. **This is
+the first screen that renders one**, and F-031's criterion 2 is honoured at the surface it was
+written for: the overall appears **beside** its components, never instead of them, and the
+builder ranks on the score *object* rather than a number so that stays possible one layer up.
+
+### What F-108 had to fix before this could compile
+
+The first real line of work — turning a stored garment into an `OutfitPiece` — needs its colour
+as a `Color`, and ADR-0005 will not produce one without complete provenance. A Lens-captured
+garment could not supply it. That was F-108, fixed in the previous entry, and `colorOf` is what
+unblocked this file. **The builder compiled first try on the second attempt**, which is what a
+real blocker looks like once it is actually removed.
+
+### The font subset was a tracing step this time
+
+F-043 shipped with gate 11 red because new Japanese copy introduced kanji outside the bundled
+subset. Here the eleven new `ja` keys were followed straight to
+`generate-font-subset.mjs` **in the same change**, 642,136 → 645,176 bytes, and gate 11 was run
+before anything was committed. The lesson from one entry ago, applied rather than recorded
+again.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** | | 6 build | **PASS** |
+| 1 typecheck | **PASS** | | 8 a11y | **PASS** |
+| 2 lint | **PASS** | | 9 contrast | **PASS** |
+| 3 format | **PASS** | | 11 content | **PASS** |
+| 4 test | **PASS** — 398 in the app | | 15 security | **PASS** |
+
+**`e2e` is in this feature's verification list and could not run** — gate 7 is pending on F-091.
+Nothing here proves the compose → lock → regenerate loop works as a **journey**, only that each
+step is correct in isolation. That is the third feature in a row to owe the same thing.
+
+Not applicable: `color-golden` (no engine maths — every judgement is an imported call), `cvd`
+(the CVD component lives inside `scoreOutfit`, unchanged), `perf`, `artifact`.
+
+### Deliberately not built
+
+- **Persisting an outfit.** `outfit` and `outfit_item` are in the data-model sketch and in no
+  migration. No criterion here asks for a saved outfit, and adding a table nothing reads is the
+  shape F-041 refused with `change_log`.
+- **Occasion weighting (FR-34)** and **CVD outfit mode (FR-35)** — separate requirements this
+  feature does not claim.
+- **Swapping a colour independently of a garment.** FR-33 says "swap colours"; in a wardrobe a
+  colour arrives attached to a garment, so swapping the garment is how a colour changes. The
+  alternative — recolouring a jumper somebody owns — is not a thing.
+
+### Next
+
+R4 holds **F-046** (preference feedback loop, unblocked), **F-048**, **F-049**, **F-050** and
+**F-103**. F-107 still holds the retired-vocabulary sweep. F-104's device attestation and
+F-091's emulator both still block release, and the e2e debt across F-042, F-043 and F-045 is now
+worth reading as one item rather than three.
+
+---
+
 ## 2026-08-31 — F-108 DONE · the row said "estimated" and could not prove it
 
 ### Found by the type system, in code I had shipped two features earlier

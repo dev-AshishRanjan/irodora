@@ -372,6 +372,19 @@ export const en = {
   'wardrobe.noColour': 'Choose a colour, and you can add it.',
   'wardrobe.unknownSlug': 'That colour is not in this version of the collection.',
   'wardrobe.count': 'In your wardrobe',
+
+  /* The outfit builder (FR-33, F-045). */
+  'outfit.title': 'Build an outfit',
+  'outfit.top': 'Top',
+  'outfit.trouser': 'Trousers',
+  'outfit.shoe': 'Shoes',
+  'outfit.slotEmpty': 'Nothing chosen yet',
+  'outfit.lock': 'Lock',
+  'outfit.unlock': 'Unlock',
+  'outfit.lockedNote': 'Locked. Other slots are chosen to go with this one.',
+  'outfit.suggested': 'From your wardrobe',
+  'outfit.overall': 'Overall',
+  'outfit.empty': 'Nothing in your wardrobe fits a slot yet. Add a top, trousers or shoes.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

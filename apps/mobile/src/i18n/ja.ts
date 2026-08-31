@@ -348,6 +348,19 @@ export const ja: Record<MessageKey, string> = {
   'wardrobe.noColour': '色を選ぶと追加できます。',
   'wardrobe.unknownSlug': 'この色は現在の収録版にありません。',
   'wardrobe.count': 'ワードローブの中',
+
+  /* The outfit builder (FR-33, F-045). */
+  'outfit.title': 'コーディネートを組む',
+  'outfit.top': 'トップス',
+  'outfit.trouser': 'ボトムス',
+  'outfit.shoe': 'くつ',
+  'outfit.slotEmpty': 'まだ選んでいません',
+  'outfit.lock': '固定する',
+  'outfit.unlock': '固定をやめる',
+  'outfit.lockedNote': '固定中。ほかの枠はこれに合わせて選ばれます。',
+  'outfit.suggested': 'ワードローブから',
+  'outfit.overall': '総合',
+  'outfit.empty': 'まだ枠に合う服がありません。トップス、ボトムス、くつを追加してください。',
 };
 
 /**

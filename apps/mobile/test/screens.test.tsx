@@ -28,6 +28,12 @@ import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { AddGarment } from '../src/screens/AddGarment';
+import { OutfitBuilder } from '../src/screens/OutfitBuilder';
+import { colorOf } from '../src/wardrobe';
+import { ruleSet } from '../src/rules';
+import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
+import { parseWeightContent } from '@irodora/recommendation';
+import type { SavedColorRow, StoredGarment } from '@irodora/store';
 import type { WardrobeStore } from '../src/wardrobe';
 import type { ImageSource } from '../src/wardrobe/source';
 import type { NewGarment } from '@irodora/store';
@@ -260,6 +266,101 @@ const OFFERED_READING: LensReading = {
   instruction: '',
 };
 
+/** Everything `regenerate` needs that the screen does not own. Built from published content. */
+const OUTFIT_CONTEXT = {
+  profile: {
+    id: 'p',
+    method: 'guided',
+    lightness: { min: 0.3, max: 0.8 },
+    temperatureBias: 0.2,
+    chroma: { min: 0.02, max: 0.2 },
+    contrast: 'medium',
+    confidence: {
+      lightness: 0.7,
+      temperature: 0.7,
+      chroma: 0.7,
+      contrast: 0.7,
+      neutrals: 0.7,
+      accents: 0.7,
+      avoid: 0.7,
+    },
+    origin: {
+      lightness: 'derived',
+      temperature: 'derived',
+      chroma: 'derived',
+      contrast: 'derived',
+      neutrals: 'derived',
+      accents: 'derived',
+      avoid: 'derived',
+    },
+    neutrals: [],
+    accents: [],
+    avoid: [],
+  },
+  rules: ruleSet(),
+  weights: parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json'),
+  reference: allEntries()
+    .slice(0, 8)
+    .map((e) => ({ id: e.entry.slug, color: colorOf(outfitRow(e.entry.slug)) })),
+} as const;
+
+/** A stored colour row for a published entry. Reference-sourced, so it owes no conditions. */
+function outfitRow(slug: string): SavedColorRow {
+  const e = allEntries().find((x) => x.entry.slug === slug);
+  if (e === undefined) throw new Error(`no entry ${slug}`);
+  return {
+    id: `c-${slug}`,
+    created_at: 1,
+    updated_at: 1,
+    deleted_at: null,
+    name: e.entry.name.en,
+    xyz_x: e.entry.color.xyz[0],
+    xyz_y: e.entry.color.xyz[1],
+    xyz_z: e.entry.color.xyz[2],
+    lab_l: e.derived.lab[0],
+    lab_a: e.derived.lab[1],
+    lab_b: e.derived.lab[2],
+    oklch_l: e.derived.oklch[0],
+    oklch_c: e.derived.oklch[1],
+    oklch_h: e.derived.oklch[2],
+    hex: e.derived.hex,
+    source: 'reference',
+    confidence: 1,
+    corpus_slug: slug,
+    capture_illuminant: null,
+    capture_quality: null,
+    capture_samples: null,
+    capture_variance: null,
+  };
+}
+
+const outfitGarment = (id: string, type: string, slug: string): StoredGarment => ({
+  id,
+  type,
+  color: outfitRow(slug),
+  name: null,
+  pattern: null,
+  material: null,
+  formality: null,
+  brand: null,
+  size: null,
+  purchaseDate: null,
+  costMinor: null,
+  currency: null,
+  wearCount: 0,
+  seasons: [],
+  colors: [],
+  createdAt: 1,
+  updatedAt: 1,
+  deletedAt: null,
+});
+
+const OUTFIT_WARDROBE = [
+  outfitGarment('o-1', 'jumper', allEntries()[0]!.entry.slug),
+  outfitGarment('o-2', 'trousers', allEntries()[1]!.entry.slug),
+  outfitGarment('o-3', 'shoes', allEntries()[2]!.entry.slug),
+];
+
 const SCREENS: readonly ConformanceSubject[] = [
   {
     name: 'screens/Home',
@@ -322,6 +423,36 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Finder initialQuery="dark muted green" />, theme),
+  },
+  {
+    name: 'screens/OutfitBuilder',
+    // `static`, like the rest: its interactive parts are Button and Swatch, each registered in
+    // packages/ui where the suite makes them render focus, active, disabled and loading.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<OutfitBuilder wardrobe={OUTFIT_WARDROBE} context={OUTFIT_CONTEXT} />, theme),
+  },
+  {
+    /*
+     * The SAME screen with a slot locked and scores on it.
+     *
+     * The empty and composed branches are almost disjoint: an empty builder draws no swatch,
+     * no lock control and no component scores, so a registry entry for it alone would check
+     * the accessibility of a screen nobody has used. Same reasoning as the Studio's two.
+     */
+    name: 'screens/OutfitBuilder (a slot locked)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <OutfitBuilder
+          wardrobe={OUTFIT_WARDROBE}
+          context={OUTFIT_CONTEXT}
+          initialDraft={[{ slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true }]}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/AddGarment',
