@@ -84,6 +84,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 - [lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md](lessons/a-blocker-outlives-the-state-of-the-world-that-caused-it.md) — F-099 was blocked by a hazard F-098 had already turned into a gate; the better the argument, the less likely anybody rechecks its premise.
 - [lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md](lessons/a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check.md) — crypto is real in Node and absent in Hermes; seventeen gates passed and the app died on the first screen that generated an id.
 - [lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md](lessons/saying-not-run-here-is-necessary-and-it-is-not-sufficient.md) — three honest "not run here" notes, three real failures, and the missing module was one junction away all along.
+- [lessons/a-green-gate-says-the-code-works-not-that-it-is-where-the-record-says.md](lessons/a-green-gate-says-the-code-works-not-that-it-is-where-the-record-says.md) — F-049 was built in the wrong package and every gate went green; nothing here checks that a feature landed where its own row says, so the plan header has to be re-derived rather than copied forward.
 
 ## Effects
 
