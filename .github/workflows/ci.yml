@@ -80,6 +80,15 @@ jobs:
       - name: 'Gate 0 — stale-rationale proof'
         run: node scripts/verify-stale-rationale-proof.mjs
 
+      # Not a gate — the proof that gate 0's duplicate effect-id check can fail (F-102). The
+      # check was watched failing against the real collision (E-032 held by two links, twenty-
+      # four minutes apart), but that evidence expired with the renumber, so case 1 here
+      # RECONSTRUCTS it and is the regression test. Four cases: three red, and a CONTROL that
+      # must stay GREEN — a link added with a fresh id — because a check that failed on any
+      # added link would otherwise pass. Plants into effects.json and restores it byte-for-byte.
+      - name: 'Gate 0 — duplicate effect-id proof'
+        run: node scripts/verify-effect-id-proof.mjs
+
       # Not a gate — the proof that gate 0's lockfile check can fail (F-098). It runs HERE,
       # before `pnpm install`, because that is the whole point of the check it proves: the
       # install step already refuses a stale lockfile, and refusing it at step nine skips

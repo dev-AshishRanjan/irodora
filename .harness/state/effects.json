@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-26",
+  "updated": "2026-08-31",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -1169,32 +1169,6 @@
       "feature": "F-098"
     },
     {
-      "id": "E-032",
-      "from": {
-        "kind": "symbol",
-        "ref": "packages/recommendation/src/score.ts#hueBias"
-      },
-      "to": [
-        {
-          "kind": "file",
-          "ref": "apps/mobile/src/profile/photo.ts"
-        }
-      ],
-      "kind": "EFFECT_LINK",
-      "scope": [
-        "packages/recommendation",
-        "apps/mobile"
-      ],
-      "severity": "high",
-      "guard": "none needed — the duplication is gone. apps/mobile/src/profile/photo.ts imports hueBias from @irodora/recommendation and the poles come from the published rule set (F-099).",
-      "feature": "F-099",
-      "memory": "memory/effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md",
-      "rationale": "THE WARM/COOL RULE NOW EXISTS TWICE AND ONLY ONE OF THEM IS CANONICAL. `hueBias` in the engine and `biasFromHue` in `apps/mobile/src/profile/photo.ts` compute the same thing — how warm a hue is, as a signed distance between two reference poles — and they were written two features apart with the same constants (60 and 240) by the same reasoning. THIS IS THE E-008 SHAPE, and E-008 states the consequence exactly: a second implementation makes the same input measure differently on two surfaces, and NO SINGLE-PLATFORM TEST CAN SEE IT. Both sides pass their own tests today. GUARD: NONE, HONESTLY. The fix is for the app to import the engine, and it cannot: `apps/mobile/node_modules/@irodora/` has no `recommendation` link and `pnpm install` refuses on this workstation (Node 22.16.0 against engines demanding 24.19.0). A cross-package agreement test was considered and rejected — the app file imports the corpus bundle, so a package test importing it would drag app dependencies across a layering boundary to check two numbers, and a check whose model is wrong is worse than an absent one. Scraping the constants out of the source would compare two literals while the ALGORITHMS drifted, which is the half that actually matters. WHAT MAKES THIS SAFE TO CARRY: the poles are a RULE SET field in the engine, so the engine’s copy is already content-versioned and the app’s is not — the drift, when it comes, will be the app holding a constant the content moved past. F-099 deletes the duplicate the day the app can depend on the package, and this link is what will still be here to say so. RESOLVED BY F-099, AND \"RESOLVED\" IS THE RIGHT WORD RATHER THAN \"GUARDED\". A guard would be a check that the two implementations still agree; there is no second implementation to disagree. `biasFromHue`, its private `hueGap`, and the WARM_HUE/COOL_HUE literals were deleted, and the app now calls the engine’s `hueBias` against `ruleSet().poles` — the same published weight set the engine scores with, reaching the app as a generated module with the LEDGER’s digest beside it, exactly like the phrase lexicon. THE DRIFT THIS PREVENTED HAD A KNOWN DIRECTION, which is what made it worth a feature: the engine’s poles are content and the app’s were literals, so the first publish that moved a pole would have made a profile built from a photograph disagree with the score the engine gave it, with every gate green. WHAT F-099 DELIBERATELY DID NOT FIX: `hueBias` still reports a near-neutral as strongly warm (E-034). F-101 owns that. Changing what the answer IS in the same commit that changes where it COMES FROM would have left nobody able to say which one moved a number — and there is now one place to fix rather than two.",
-      "confidence": 0.9,
-      "origin": "manual",
-      "status": "resolved"
-    },
-    {
       "id": "E-033",
       "from": {
         "kind": "symbol",
@@ -1251,7 +1225,7 @@
       "guard": "gate:test — packages/recommendation/test/score.test.ts asserts the two published off-whites score alike at every profile bias AND that two saturated opposites still score far apart; apps/mobile/test/profile.test.ts asserts the same at the surface that writes a profile.",
       "feature": "F-101",
       "memory": "memory/effects/a-hue-angle-on-a-near-neutral-is-a-rounding-artefact.md",
-      "rationale": "HUE IS MEANINGLESS AT LOW CHROMA, AND `hueBias` DOES NOT KNOW THAT. Measured on the published corpus: `hai-suna`, a warm grey at OKLCh C = 0.012, returns a bias of 0.867 — MORE STRONGLY WARM than `mi-aka`, the most saturated red in the corpus, at 0.644. A hue angle on a near-neutral is a rounding artefact of two tiny a and b components; treating it as a claim about warmth makes a grey clash with things. HOW IT SURFACED: F-031’s `versatility` component ranked `mi-aka` as the MOST versatile colour in the corpus, at 73.3% against 61.7% for a warm grey. That is the opposite of what the word means, and it was visible only because a test asserted the intuition rather than the formula. FIXED WHERE IT WAS DEMONSTRATED, NOT EVERYWHERE. `temperatureOf` scales the bias by chroma against the PUBLISHED lexicon’s own boundary for \"grey\" (0.039), and F-031’s `harmony` and `pairingCoherence` read it. `scoreColor`’s temperature fit and the app’s `biasFromHue` (E-032) still call the raw `hueBias`, so a near-neutral garment is still scored as though it had a temperature — the same defect, in two places where it has not been demonstrated to produce a wrong answer and where changing it would move every score in a shipped engine mid-feature. GUARD: NONE, HONESTLY, and F-101 carries it. A test could assert `temperatureOf` is used everywhere a colour of arbitrary chroma is judged, but writing that check before deciding whether `scoreColor` SHOULD change would be encoding the answer in the guard. RESOLVED BY F-101 (ADR-0076), AND THE DECISION WAS MADE FROM MEASUREMENTS TAKEN BEFORE THE CHANGE. Three call sites still read the raw hue question: `scoreColor`’s temperature fit, `alternativesFor`’s warmer/cooler axes, and the app’s photo path (a single call after F-099 deleted its second copy). All three now read `temperatureOf`. THE EVIDENCE: 45 of the 120 published entries sit below NEUTRAL_CHROMA — 37.5% of the corpus, not an edge case. `usu-gami` (Thin Paper, C = 0.006, h 92°) and `usu-shimo` (Thin Frost, C = 0.005, h 246°) are two off-whites 0.027 apart in lightness that came back at +0.644 and −0.933. Taken to a score, `sekkai-kabe` (Lime Wall, C = 0.009) against Thin Frost was 97 vs 64 for a strongly warm profile — a 33-POINT GAP OUT OF 100 BETWEEN TWO PALE GREYS. The app case was worse because it is written into a stored profile: two greys whose RGB differs by 0.004 produced +0.913 and −0.913. Cost, stated: 45 of 120 entries move, mean |Δfit| 0.055, largest 0.407. ADR-0076 records the alternative that was seriously considered and rejected — letting the factor ABSTAIN below NEUTRAL_CHROMA — because it asserts a grey suits everyone equally, which is a stronger claim than the gradient, and because the mechanism would have made the reported `confidence` (documented as describing the PROFILE) vary with the COLOUR. ONE THING THE CHANGE EXPOSED: `alternativesFor`’s doc had always said an axis is \"never filled with a duplicate\" and nothing implemented it. With a two-colour pool of off-whites the single non-best candidate was genuinely cooler AND lighter AND higher-contrast, so three axes chose it — three chips, one swatch. Not mislabelled, which is why the code had to decide: the first axis in ALTERNATIVE_AXES order takes it and the rest are omitted. The uniqueness assertion that had been passing by luck is now load-bearing, watched failing.",
+      "rationale": "HUE IS MEANINGLESS AT LOW CHROMA, AND `hueBias` DOES NOT KNOW THAT. Measured on the published corpus: `hai-suna`, a warm grey at OKLCh C = 0.012, returns a bias of 0.867 — MORE STRONGLY WARM than `mi-aka`, the most saturated red in the corpus, at 0.644. A hue angle on a near-neutral is a rounding artefact of two tiny a and b components; treating it as a claim about warmth makes a grey clash with things. HOW IT SURFACED: F-031’s `versatility` component ranked `mi-aka` as the MOST versatile colour in the corpus, at 73.3% against 61.7% for a warm grey. That is the opposite of what the word means, and it was visible only because a test asserted the intuition rather than the formula. FIXED WHERE IT WAS DEMONSTRATED, NOT EVERYWHERE. `temperatureOf` scales the bias by chroma against the PUBLISHED lexicon’s own boundary for \"grey\" (0.039), and F-031’s `harmony` and `pairingCoherence` read it. `scoreColor`’s temperature fit and the app’s `biasFromHue` (E-038) still call the raw `hueBias`, so a near-neutral garment is still scored as though it had a temperature — the same defect, in two places where it has not been demonstrated to produce a wrong answer and where changing it would move every score in a shipped engine mid-feature. GUARD: NONE, HONESTLY, and F-101 carries it. A test could assert `temperatureOf` is used everywhere a colour of arbitrary chroma is judged, but writing that check before deciding whether `scoreColor` SHOULD change would be encoding the answer in the guard. RESOLVED BY F-101 (ADR-0076), AND THE DECISION WAS MADE FROM MEASUREMENTS TAKEN BEFORE THE CHANGE. Three call sites still read the raw hue question: `scoreColor`’s temperature fit, `alternativesFor`’s warmer/cooler axes, and the app’s photo path (a single call after F-099 deleted its second copy). All three now read `temperatureOf`. THE EVIDENCE: 45 of the 120 published entries sit below NEUTRAL_CHROMA — 37.5% of the corpus, not an edge case. `usu-gami` (Thin Paper, C = 0.006, h 92°) and `usu-shimo` (Thin Frost, C = 0.005, h 246°) are two off-whites 0.027 apart in lightness that came back at +0.644 and −0.933. Taken to a score, `sekkai-kabe` (Lime Wall, C = 0.009) against Thin Frost was 97 vs 64 for a strongly warm profile — a 33-POINT GAP OUT OF 100 BETWEEN TWO PALE GREYS. The app case was worse because it is written into a stored profile: two greys whose RGB differs by 0.004 produced +0.913 and −0.913. Cost, stated: 45 of 120 entries move, mean |Δfit| 0.055, largest 0.407. ADR-0076 records the alternative that was seriously considered and rejected — letting the factor ABSTAIN below NEUTRAL_CHROMA — because it asserts a grey suits everyone equally, which is a stronger claim than the gradient, and because the mechanism would have made the reported `confidence` (documented as describing the PROFILE) vary with the COLOUR. ONE THING THE CHANGE EXPOSED: `alternativesFor`’s doc had always said an axis is \"never filled with a duplicate\" and nothing implemented it. With a two-colour pool of off-whites the single non-best candidate was genuinely cooler AND lighter AND higher-contrast, so three axes chose it — three chips, one swatch. Not mislabelled, which is why the code had to decide: the first axis in ALTERNATIVE_AXES order takes it and the rest are omitted. The uniqueness assertion that had been passing by luck is now load-bearing, watched failing.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "resolved"
@@ -1363,6 +1337,65 @@
       "memory": "memory/effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md",
       "rationale": "BUILDING THE PRODUCER MADE A CLAIM ON ANOTHER SCREEN FALSE, AND NOTHING WOULD HAVE BROKEN. The profile screen has said \"No camera. Everything stays on this device.\" since F-026, and it was true: ADR-0010 §2 makes the swatch path primary precisely because it is camera-free, and a test asserted the sentence rendered. F-027 added a `reading` prop and it stayed true in practice, because nothing in the app could construct a `LensReading`. F-097 built the thing that can, so the sentence is now false on exactly the run where it matters most. WHY NO CHECK COULD SEE IT: the key still exists, so the i18n suite passes; it still renders, and a sentence’s TRUTH is not a property the conformance suite can see; the existing assertion covers the GUIDED path, which is unchanged and still says it; and nobody edited the string — the file that moved was not the file carrying the claim. THE GUARD IS TWO-SIDED, and the second half is the load-bearing one: the guided path must CONTAIN \"No camera\" and the photo path must NOT, and must carry the sentence that replaces it. A one-sided assertion would have kept passing through exactly the change that made the claim false. WHAT IS STILL UNGUARDED: every other claim in a 300-string catalogue whose truth depends on code elsewhere. NFR-21’s copy lint binds MEASUREMENT language to provenance and nothing binds anything else; content/rules/claims.json is the register for the phrases it covers and does not cover this one.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-038",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/score.ts#hueBias"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/photo.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "none needed — the duplication is gone. apps/mobile/src/profile/photo.ts imports hueBias from @irodora/recommendation and the poles come from the published rule set (F-099).",
+      "feature": "F-099",
+      "memory": "memory/effects/the-warm-cool-rule-is-written-twice-because-an-install-cannot-run.md",
+      "rationale": "THE WARM/COOL RULE NOW EXISTS TWICE AND ONLY ONE OF THEM IS CANONICAL. `hueBias` in the engine and `biasFromHue` in `apps/mobile/src/profile/photo.ts` compute the same thing — how warm a hue is, as a signed distance between two reference poles — and they were written two features apart with the same constants (60 and 240) by the same reasoning. THIS IS THE E-008 SHAPE, and E-008 states the consequence exactly: a second implementation makes the same input measure differently on two surfaces, and NO SINGLE-PLATFORM TEST CAN SEE IT. Both sides pass their own tests today. GUARD: NONE, HONESTLY. The fix is for the app to import the engine, and it cannot: `apps/mobile/node_modules/@irodora/` has no `recommendation` link and `pnpm install` refuses on this workstation (Node 22.16.0 against engines demanding 24.19.0). A cross-package agreement test was considered and rejected — the app file imports the corpus bundle, so a package test importing it would drag app dependencies across a layering boundary to check two numbers, and a check whose model is wrong is worse than an absent one. Scraping the constants out of the source would compare two literals while the ALGORITHMS drifted, which is the half that actually matters. WHAT MAKES THIS SAFE TO CARRY: the poles are a RULE SET field in the engine, so the engine’s copy is already content-versioned and the app’s is not — the drift, when it comes, will be the app holding a constant the content moved past. F-099 deletes the duplicate the day the app can depend on the package, and this link is what will still be here to say so. RESOLVED BY F-099, AND \"RESOLVED\" IS THE RIGHT WORD RATHER THAN \"GUARDED\". A guard would be a check that the two implementations still agree; there is no second implementation to disagree. `biasFromHue`, its private `hueGap`, and the WARM_HUE/COOL_HUE literals were deleted, and the app now calls the engine’s `hueBias` against `ruleSet().poles` — the same published weight set the engine scores with, reaching the app as a generated module with the LEDGER’s digest beside it, exactly like the phrase lexicon. THE DRIFT THIS PREVENTED HAD A KNOWN DIRECTION, which is what made it worth a feature: the engine’s poles are content and the app’s were literals, so the first publish that moved a pole would have made a profile built from a photograph disagree with the score the engine gave it, with every gate green. WHAT F-099 DELIBERATELY DID NOT FIX: `hueBias` still reports a near-neutral as strongly warm (E-034). F-101 owns that. Changing what the answer IS in the same commit that changes where it COMES FROM would have left nobody able to say which one moved a number — and there is now one place to fix rather than two. FORMERLY NUMBERED E-032, RENUMBERED BY F-102. F-098 allocated E-032 to the pnpm-workspace.yaml -> lockfile link 24 minutes earlier the same day and this link took the id a second time; the first allocation keeps it. Gate 0 now fails on a duplicate effect id, so the collision cannot recur.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "resolved"
+    },
+    {
+      "id": "E-039",
+      "from": {
+        "kind": "file",
+        "ref": ".harness/state/effects.json"
+      },
+      "to": [
+        {
+          "kind": "gate",
+          "ref": "state"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-effect-id-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/memory/index.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        ".harness"
+      ],
+      "severity": "high",
+      "guard": "gate:state (verify-state.mjs section 4), proven by script:verify-effect-id-proof.mjs",
+      "memory": "memory/effects/an-effect-id-is-a-primary-key-and-the-schema-cannot-check-it.md",
+      "rationale": "AN EFFECT ID IS THE GRAPH'S PRIMARY KEY, AND THE SCHEMA CANNOT CHECK IT. `effects.schema.json` validates the SHAPE of an id — `^E-[0-9]{3}$` — and stops there; JSON Schema 2020-12 offers `uniqueItems`, which compares whole objects, and no unique-by-property constraint, so two links sharing an id while differing in every other field are two distinct objects and validate perfectly. Everything outside the graph points into it by id and by nothing else: ADRs, source comments, other links' rationales, `memory/index.md`'s per-note label, gate 0's own warning text, and each feature's `effects` array. Every one of those citations rests on uniqueness, and none of them carries a copy of the link. IT HAPPENED, AND IT WAS NOT CARELESSNESS: E-032 was allocated by F-098 at 09:22:54 and again by F-028 at 09:46:43 on 2026-08-26 — twenty-four minutes apart, by two features neither of which could see the other's write. THE COST WAS NOT COSMETIC. Gate 0 printed \"E-032 (high) has no guard\" while one E-032 named a proven guard and the other honestly named none, so its own warning was simultaneously right and wrong with nothing in it to say which link it meant; F-099 had to resolve its link by `from.ref` because resolving by id, in its own words, \"would have been a coin toss\"; and E-034's rationale carried \"(E-032)\" as an ambiguous pointer inside the document whose entire purpose is to be unambiguous about consequences. THE CHECK NAMES BOTH SUBJECTS rather than only the id, because \"duplicate id E-032\" on its own sends the reader to `git log -S` to find out which two links collided — the search the check exists to spare them. The pass line reports the distinct-id count beside the link count, so the check is visible when it succeeds and not only when it fails. PROVEN BY `verify-effect-id-proof.mjs`: four cases, three red and one green control. Case 1 RECONSTRUCTS the historical collision and is the regression test for the defect that created this link, which will outlive anyone's memory of it. Case 3 is aimed at a plausible wrong implementation rather than at the margin: two links sharing an id AND the same `from.ref`, which a check deduplicating on `from` — or on the id-and-from pair — misses while passing every other case. THAT MUTATION FOUND SOMETHING WORTH RECORDING. Keying on `from.ref` turns the BASELINE red on five pairs, because E-017/E-026/E-027/E-029 and E-034/E-038 each legitimately share a `from` with a sibling link. One source having several distinct consequences is normal; one id naming two links is corruption, and any future check over this graph has to keep those two apart.",
+      "confidence": 1,
       "origin": "manual",
       "status": "active"
     }

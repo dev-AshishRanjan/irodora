@@ -85,7 +85,7 @@ export const PHOTO_LIGHTNESS_SPREAD = 0.18;
  * implementation of the bias function. The engine holds the same two numbers as a RULE SET
  * field, which F-029 versioned as content — so the first time an editor published a new pole,
  * a profile built from a photograph would have disagreed with the score the engine gave it,
- * with every gate green. That is E-008's failure, and E-032 recorded it rather than tolerating
+ * with every gate green. That is E-008's failure, and E-038 recorded it rather than tolerating
  * it quietly.
  *
  * Both now come from `ruleSet()`, which reads the published weight set the engine scores with.

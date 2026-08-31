@@ -12,7 +12,7 @@
  * ```
  *
  * **Two artefacts, one shape** (F-099). The weights module was added because the app needed the
- * warm/cool POLES and had been carrying its own copy of them as literals — E-032, and E-008's
+ * warm/cool POLES and had been carrying its own copy of them as literals — E-038, and E-008's
  * consequence: two definitions of a colour rule, both passing their own tests, drifting the
  * first time an editor publishes a new pole. Bundling the poles as anything other than the
  * published rule set would have been a third representation.

@@ -145,7 +145,7 @@ function hueGap(from: number, to: number): number {
  *
  * THIS IS THE CANONICAL DEFINITION OF THE WARM/COOL RULE. `apps/mobile/src/profile/photo.ts`
  * currently carries its own copy because the app cannot yet depend on this package — recorded
- * as [E-032](../../../.harness/state/effects.json) and scheduled for deletion. Two definitions
+ * as [E-038](../../../.harness/state/effects.json) and scheduled for deletion. Two definitions
  * of a colour rule is precisely what E-008 exists to prevent, and it is written down rather
  * than tolerated quietly.
  */

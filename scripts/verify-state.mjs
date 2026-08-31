@@ -512,6 +512,42 @@ if (effects) {
   );
   const referenced = new Set();
 
+  /*
+   * An effect id is the graph's primary key, and nothing was checking it (F-102).
+   *
+   * The schema cannot: JSON Schema 2020-12 has `uniqueItems` over whole objects and no
+   * unique-by-property constraint, so two links sharing an id but differing in every other
+   * field validate perfectly. Both did, for a day.
+   *
+   * What a collision costs is more than tidiness. Gate 0 warned "E-032 (high) has no
+   * guard" while one E-032 named a proven guard and the other honestly named none — the
+   * warning was simultaneously right and wrong, with no way to tell which link it meant.
+   * E-034's rationale cited "(E-032)" in a document whose entire purpose is to be
+   * unambiguous about consequences.
+   *
+   * The message names BOTH subjects, because "duplicate id E-032" alone sends the reader
+   * to `git log -S` to find out which two links collided. That is the search this check
+   * exists to spare them.
+   */
+  const idOwners = new Map();
+  for (const link of effects.links) {
+    const first = idOwners.get(link.id);
+    if (first === undefined) {
+      idOwners.set(link.id, link.from?.ref ?? '(no from.ref)');
+      continue;
+    }
+    fail(
+      'effects',
+      `${link.id} is used by two different links: "${first}" and "${link.from?.ref ?? '(no from.ref)'}"`,
+      'An effect id is how every other document points at a consequence. When it resolves ' +
+        'to two links, every reference to it — in a rationale, an ADR, a source comment or ' +
+        'a gate warning — becomes ambiguous, and the graph stops being able to do the one ' +
+        'job it has.',
+      'Give the later link the next unallocated id, and move its memory-index row, its note ' +
+        'heading and every reference a reader consults as current. Never reuse an id.',
+    );
+  }
+
   for (const link of effects.links) {
     referenced.add(link.memory);
 
@@ -567,7 +603,8 @@ if (effects) {
   if (!failures.some((f) => f.check === 'effects'))
     pass(
       'effects',
-      `${effects.links.length} links, notes paired, paths resolve, critical links guarded`,
+      `${effects.links.length} links, ${idOwners.size} distinct ids, notes paired, ` +
+        'paths resolve, critical links guarded',
     );
 }
 

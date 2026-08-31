@@ -8,7 +8,7 @@ scope: [packages/recommendation, apps/mobile]
 links: [[sampling-lives-in-the-engine-not-the-platform]], [[the-capture-ceiling-is-now-a-profile-confidence]], [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]
 ---
 
-# E-032 — two implementations of one colour rule, carried deliberately and visibly
+# E-038 — two implementations of one colour rule, carried deliberately and visibly
 
 **`packages/recommendation/src/score.ts#hueBias` → `apps/mobile/src/profile/photo.ts`**
 
@@ -102,3 +102,23 @@ corpus — [[a-hue-angle-on-a-near-neutral-is-a-rounding-artefact]], and **F-101
 Deliberately not folded in: changing what the answer *is* in the same commit that changes where
 it *comes from* leaves nobody able to say which one moved a number. There is now one place to
 fix instead of two, which is the whole return on this feature.
+
+## This link was E-032 until F-102
+
+**If you found `E-032` in an old entry and it was about the warm/cool rule, this is the link.**
+
+F-098 allocated `E-032` to the `pnpm-workspace.yaml` → lockfile link at 09:22:54 on
+2026-08-26. F-028 allocated it a second time, to this link, at 09:46:43 — twenty-four minutes
+later, on the same day, by two features that never saw each other's write. Nothing checked,
+because an id is the graph's primary key and JSON Schema has no unique-by-property constraint.
+
+The cost was not tidiness. Gate 0 warned *"E-032 (high) has no guard"* while one E-032 named a
+proven guard and the other honestly named none — so the warning was right and wrong at once,
+with no way to tell which link it meant. F-099 resolved this link **by `from.ref` rather than
+by id**, because resolving by id would have been a coin toss.
+
+The first allocation keeps the id; this link became **E-038**. Gate 0 now fails on a duplicate
+effect id, and `scripts/verify-effect-id-proof.mjs` is what keeps that check honest.
+
+`progress.md` and the plans in `.harness/plans/` were **not** rewritten. They are history, and
+history said E-032. This paragraph is the mapping they point at.

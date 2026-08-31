@@ -8,6 +8,208 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-102 DONE · one id, two links, and the primary key no schema can check
+
+### The feature was asked for as R4, and R3 was not closed
+
+The request named R4. `next-feature` is explicit — *"Do not silently pull from a later
+release"* — so the R3 remainder was checked rather than assumed:
+
+| | |
+|---|---|
+| **F-081** iOS lane | `blocked` — a paid Apple Developer membership. OQ-6 is a purchase, and it closes as an ADR |
+| **F-086** R8 minification | `todo`, and genuinely unavailable here: `which java` finds nothing and `C:\Program Files\Java` does not exist. Its own note also requires an artefact somebody has launched, which is F-104's outstanding attestation |
+| **F-102** | `should`, **no blockers, actionable** |
+
+So R3 held an actionable item and R4 was not eligible. F-102 it was.
+
+**One record was corrected on the way past, and it is not this feature's:** F-091's blocker
+says `pnpm install` cannot run here on Node 22.16.0 / pnpm 9.3.0. F-105 established that is
+false — the pinned toolchain is installed. F-091 stays blocked (it needs an emulator, and
+there is no JDK) but **for a different reason than its note gives**. Not edited: WIP is 1.
+Recorded here so the next session does not re-derive it.
+
+### Which link keeps E-032 — settled from the record, not from preference
+
+Both E-032s were load-bearing and both were widely cited, so the tiebreak could not come from
+convenience. `git log -S` gave one:
+
+| link | added by | committed |
+|---|---|---|
+| `pnpm-workspace.yaml` → lockfile · `critical` · `active` | F-098 (`0012992`) | **09:22:54** |
+| `score.ts#hueBias` → `photo.ts` · `high` · `resolved` | F-028 (`c629d5b`) | **09:46:43** |
+
+**Twenty-four minutes apart, on the same day, by two features neither of which could see the
+other's write.** The lockfile link held it first, so it keeps it. Three things agree rather
+than one: first allocation wins; ADR-0077 already cites *"the same rule E-032"* meaning the
+lockfile rule, and leaving a decision record correct beats editing it; and the moving link is
+`resolved`, so its id has no future to disturb. **The hueBias link is now E-038.**
+
+### The check, watched failing against the real defect
+
+Not a plant. The collision was in the tree, so the check landed first and gate 0 was run
+against it:
+
+```
+✗ E-032 is used by two different links: "pnpm-workspace.yaml" and "packages/recommendation/src/score.ts#hueBias"
+    why: An effect id is how every other document points at a consequence. When it resolves to
+         two links, every reference to it — in a rationale, an ADR, a source comment or a gate
+         warning — becomes ambiguous, and the graph stops being able to do the one job it has.
+Gate 0 FAILED.
+```
+
+**The message names both subjects deliberately.** "Duplicate id E-032" on its own sends the
+reader to `git log -S` to find out which two links collided — the exact search the check
+exists to spare them. The pass line also reports the distinct count now (`36 links, 36
+distinct ids`), because a check that only ever speaks on failure is one nobody notices going
+missing.
+
+**Why the schema could not have caught it.** JSON Schema 2020-12 has `uniqueItems`, which
+compares *whole objects*, and no unique-by-property constraint — two links sharing an id and
+differing anywhere else are distinct objects and validate perfectly. The primary key is the
+one field a schema is structurally incapable of checking.
+
+### What moved, and what is history
+
+Criterion 3 says every reference moves with the id. Read literally it would rewrite
+`progress.md`, which `state/README.md` defines as **append, newest first**. Rewriting a past
+entry to say something it did not say is falsifying the record to satisfy a checklist, and it
+would destroy the only account of how the collision happened. So the line was drawn at **what
+a reader consults as current**:
+
+| moved | left alone |
+|---|---|
+| `effects.json` — the link's id, and E-034's `(E-032)` citation | `progress.md` — history |
+| `memory/index.md` row, and the note's own heading | `.harness/plans/F-029`, `F-099`, `F-104`, `F-105` |
+| `score.ts`, `photo.ts`, `generate-rules-bundle.mjs` comments | feature `notes` narrating what was true at the time |
+| `feature_list.json` — F-028's `effects` array, F-099's acceptance text | |
+
+F-099's acceptance criterion was reworded **only** to change the identifier. That is the
+opposite of the failure `state/README.md` warns about — it preserves the criterion's substance
+exactly, and left as `E-032` it would have resolved to an `active` `critical` link and read as
+*unmet*.
+
+The mapping is recorded once, in the renumbered link's memory note, under a heading that says
+what a reader arriving from history is looking for. Gate 0 already requires that note to exist
+and to be referenced, so the pointer cannot rot.
+
+### The proof, and the two mutations it survived
+
+`verify-effect-id-proof.mjs` — four cases, three red and one green control, `effects.json`
+restored and **byte-compared** rather than merely re-run.
+
+Case 1 **reconstructs the historical collision**, because the live evidence above expired the
+moment the renumber landed. Case 3 is aimed at a plausible wrong implementation rather than at
+the margin: two links sharing an id **and** the same `from.ref`, which a check deduplicating
+on `from` misses while passing everything else.
+
+Watched failing both ways:
+
+| mutation | result |
+|---|---|
+| the check neutered | **3 of 4 cases went the wrong way**, exit 1; the control stayed green |
+| keyed on `from.ref` instead of `id` | exit 1 — and it turned the **baseline** red |
+
+**The second mutation found something worth keeping.** Keying on `from.ref` reports five
+collisions on correct data: `E-017`/`E-026`/`E-027`/`E-029` and `E-034`/`E-038` each share a
+`from` with a sibling link, entirely legitimately — one source can have several distinct
+consequences. **Links sharing a source is normal; links sharing an id is corruption**, and a
+check that conflates them fires constantly on correct data, which is how a real check gets
+deleted for being noisy.
+
+### The control rotted inside the same session
+
+Case 4 was first written with a literal `E-039` and passed. Then the effect trace recorded
+**E-039** for the id-uniqueness property itself, and the control began planting a *duplicate*
+while asserting green — reporting the check as broken when the check was the only thing
+working. That is
+[[a-decoy-written-against-old-values-quietly-stops-discriminating]] happening in under an hour
+rather than over a release, and it is only visible because the proof was re-run after the
+effect trace instead of before it. The control now **derives** the next unallocated id from
+the graph and throws if none exists.
+
+### The same hole exists in two more files — found by experiment, filed as F-106
+
+The obvious next question after fixing one id space is whether the others have the same gap.
+Answered by planting rather than by reading:
+
+| id space | duplicate caught? |
+|---|---|
+| `effects.json` links | **yes**, as of this feature |
+| `feature_list.json` features | **no** — two entries numbered F-102, gate 0 **passed** |
+| `.harness/verification/gates.json` gates | **no** — two gates sharing an id, gate 0 **passed** |
+| ADR numbers | yes — 78 files, 0 duplicates, index reconciled both ways |
+| corpus slugs | yes — gate 11 |
+
+Both plants were restored and gate 0 re-run green. **The feature-id case is worse than the one
+just fixed**: a feature id is not only a citation target, it is a control-flow input —
+`blockedBy` resolves by id and `next-feature` selects by id, so an ambiguous feature id makes a
+*blocker* ambiguous, not merely a warning. Filed as **F-106** (R3, `should`) rather than fixed:
+WIP is 1 and F-102's acceptance is scoped to `effects.json`. Golden rule 5 — a known break is
+fixed now or recorded, never left unrecorded.
+
+Worth noticing on its own: **content already learned this lesson and the harness state files
+did not.** The lesson does not travel between files in one repository unless somebody carries
+it.
+
+### Gates run, and gates not run
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** — 17 checks, 48 warnings | | 3 format | **PASS** |
+| 0 duplicate effect-id proof | **PASS** — 4/4 | | 2 lint | **PASS** |
+| 0 mirror proof | **PASS** — 14 gates mirrored | | 1 typecheck | **PASS** |
+| 0 stale-rationale proof | **PASS** | | 4 test | **PASS** |
+| 0 lockfile drift proof | **PASS** | | 8 token-reach proof | **PASS** |
+| 6 build | **PASS** | | 15 security | **PASS** |
+
+**Not run, and why** — `color-golden`, `cvd`, `content`, `contrast`, `a11y`, `perf`,
+`artifact`, `e2e`. No colour maths, no corpus entry, no rendered surface and no artefact
+changed here; every source edit in this feature is a comment. `artifact` needs an APK and
+`e2e` is still pending on F-091. F-102's own `verification` list names `state` alone; the
+other eleven were run because source files were touched and because clean-state asks for
+`typecheck`, `lint`, `build`, `test` and `gitleaks` before a commit — not because the feature
+claims them.
+
+All of the above ran on the **pinned toolchain** — Node 24.19.0 via nvm, pnpm 11.21.0 via
+`npx pnpm@11.21.0` — per F-105.
+
+### Acceptance, criterion by criterion
+
+1. **Every id unique; the renumbered link keeps its note and index row** — *gated*.
+   `gate:state` reports `36 links, 36 distinct ids`, fails on a missing or orphaned note, and
+   the memory check reports `95 memory files, all indexed`.
+2. **Gate 0 fails on a duplicate, watched failing before it is fixed** — *gated*, and watched
+   twice: once against the live defect (output above), and permanently by
+   `verify-effect-id-proof.mjs` case 1, which reconstructs it.
+3. **Every reference moves with the id** — met, verified by a **recorded repository-wide
+   sweep** with every hit classified. **It is not continuously gated, and it cannot be**: after
+   a renumber, a *historical* mention of the old id is correct and a *live* one is not, and no
+   scan can tell those apart. Saying "not gated" is the accurate statement; saying "a check
+   will catch it next time" would not be.
+
+### Watch out
+
+- **Backticks inside a `node -e` string are command-substituted by this shell.** It ate
+  `` `effects` `` out of E-039's rationale mid-write, leaving `each feature's  array`. The
+  existing note about heredocs applies to *any* double-quoted shell string. Rewritten from a
+  file via a script, with an assertion that the backticked segment survived. Cost: one cycle.
+- **A round-trip check before any programmatic JSON write.** Both `effects.json` and
+  `feature_list.json` are byte-identical under `JSON.stringify(…, null, 2) + '\n'`, which is
+  what made re-sorting the links safe. Verify that before writing, not after.
+- **A pipe still discards the exit status** — the proof's mutation runs reported `EXIT=0`
+  through `| tail`, and had to be re-run unpiped to see the real `1`.
+
+### Next
+
+R3 now holds **F-081** (blocked — Apple membership), **F-086** (`todo`, blocked here on a
+missing JDK and on F-104's device attestation) and the newly filed **F-106**. F-104's
+attestation — that the app opens Palette Studio and profile setup without closing — is still
+outstanding and blocks release. R4's lowest eligible id is **F-042**, whose blocker F-041 is
+done.
+
+---
+
 ## 2026-08-27 — F-105 · two CI failures, and the toolchain that was installed all along
 
 ### Two failures, not one
