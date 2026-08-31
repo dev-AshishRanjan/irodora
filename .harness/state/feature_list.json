@@ -1492,10 +1492,11 @@
       "service": "mobile",
       "release": "R4",
       "priority": "must",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [
         "F-031",
-        "F-043"
+        "F-043",
+        "F-108"
       ],
       "acceptance": [
         "Compose slots, lock items, swap colours, regenerate",
@@ -1505,7 +1506,8 @@
         "state",
         "e2e",
         "a11y"
-      ]
+      ],
+      "notes": "CLAIMED, PLANNED, AND BLOCKED BY A DEFECT THE PLANNING FOUND. The plan is written and stands: plans/F-045-outfit-builder.md. Its central decision is that the engine already has the multi-lock answer — recommendOutfit takes ONE anchor, but scoreOutfit takes the WHOLE composed outfit, so generation is \"for each unlocked slot, for each candidate, compose locks+candidate and ask the engine\". No colour arithmetic in the app, which is E-008 rule. WHAT STOPPED IT: turning a stored garment back into a Color needs its provenance, and a Lens-captured garment cannot supply one — F-042 stores source \"estimated\" without the capture conditions ADR-0005 requires. F-108 is that defect and this feature waits for it. THE PARTIAL BUILDER WAS DELETED RATHER THAN LEFT IN THE TREE. It was most of the way written and it does not compile, and clean-state is explicit that the next session cannot tell half-finished code from deliberate code. The design is in the plan, which is the artefact worth keeping; retyping the file is twenty minutes and inheriting an ambiguous one costs more. RESUMES when F-108 lands, from the plan."
     },
     {
       "id": "F-046",
@@ -3063,6 +3065,31 @@
         "state"
       ],
       "notes": "FOUND WHILE BUILDING F-042, NOT SELECTED THROUGH next-feature. THE GAP: gate 0’s retired-surface check builds its subject list from feature `acceptance` entries, `attested[].criterion` entries and PRD requirement rows — and nothing else. `docs/architecture/` and `docs/adr/` are entirely outside its corpus. THE EVIDENCE IS THAT IT MISSED ITS OWN VOCABULARY: `docs/architecture/security/privacy-design.md` §4 contained the phrase \"per-tenant data key\", and `\\bper-tenant\\b` is literally one of the seven terms in retired-surface.json. Gate 0 was green over it for months. WHAT WAS STILL DESCRIBED AS CURRENT, nine months after ADR-0051 retired the server tier: privacy-design §4’s encryption table named TLS 1.3, HSTS, certificate pinning, a per-tenant data key and a KMS master key, and the paragraph explaining why we do not claim end-to-end encryption gave as its reason \"the server can decrypt wardrobe images\" — a reason that depends on a server that does not exist. `.harness/rules/security/security.md` still says images are decoded \"only in the worker\", \"never in the API process\", and that \"the worker runs non-root, read-only filesystem, no network egress\"; its Database section still describes RLS with FORCE, migration roles and DDL grants; and it carries rate-limiting rules for auth endpoints. ADR-0026 §4 and §7 describe uploads gated on cloud sync and a server that decrypts synced images. F-042 FIXED WHAT ITS OWN CRITERION 5 REACHED and stopped there: privacy-design §4, the data-model sentence about SQLCipher covering an image directory, and the two places that DENIED end-to-end encryption for the retired reason — .harness/rules/security/privacy.md and the security-review skill both said \"the server can decrypt synced wardrobe images\". Those two were corrected rather than filed because a rules file is read as binding and the sentence was false about the product security posture, in the exact subject F-042 was building. WHAT REMAINS FOR THIS FEATURE: security.md images-are-hostile-input and Database sections, ADR-0026 §4 and §7, and the scan itself. Not swept in, because WIP is 1 and rewriting a security rule file is not a wardrobe feature. WHY THIS IS WORSE THAN STALE PROSE GENERALLY: a security rule that describes a worker process gives a reader instructions they cannot follow, and F-042’s criterion 4 (\"images decoded only in the worker under hard limits\") was written FROM that rule — so the rot propagated into the scope file, where the check does look, in vocabulary the check does not know. THE THIRD CRITERION IS THE ONE THAT MATTERS: widening the corpus without widening the vocabulary would find \"per-tenant\" and still miss \"the worker\"."
+    },
+    {
+      "id": "F-108",
+      "title": "A captured wardrobe colour is stored as estimated without the conditions that source requires",
+      "requirements": [
+        "FR-56",
+        "NFR-20"
+      ],
+      "service": "packages",
+      "package": "@irodora/store",
+      "release": "R4",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "saved_color persists the capture conditions a CapturedProvenance requires: illuminant, quality, sample count and variance",
+        "A stored capture round-trips to a Color through fromXyz, watched failing before the columns exist",
+        "A row written before the columns is refused BY NAME rather than reconstructed with invented conditions"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test"
+      ],
+      "notes": "FOUND WHILE BUILDING F-045, IN CODE F-042 SHIPPED TWO FEATURES EARLIER. THE DEFECT: `colourFromReading` records `source: 'estimated'` on a `saved_color` row, and `saved_color` stores only `source` and `confidence`. But `estimated` is a CapturedSource, and ADR-0005's `CapturedProvenance` REQUIRES `conditions` — illuminant, quality, sampleCount, variance. So a Lens-captured garment colour CANNOT BE RECONSTRUCTED INTO A `Color` AT ALL: there is no honest provenance to hand `fromXyz`, and inventing the conditions would be fabricating measurement facts, which is the one thing this codebase exists to prevent. THE LensReading HAD ALL FOUR VALUES and F-042 simply did not persist them. WHAT CAUGHT IT: the type system, at the first attempt to turn a stored garment back into a `Color` for outfit scoring. Nothing in F-042 caught it because F-042 NEVER READ A COLOUR BACK OUT AS A Color — it wrote rows and asserted columns, and a column holding the string 'estimated' looks correct right up until something asks the type for a provenance. That is the same shape as a-tested-module-nobody-wired-up-passes-every-test-it-has: the write path was covered from end to end and the read path did not exist yet. THE BLAST RADIUS TODAY IS BOUNDED AND WORTH STATING: corpus-picked garments carry `source: 'reference'`, an UntrackedSource that needs no conditions, so they round-trip fine. Only the Lens path is affected, and only where something wants a `Color` rather than the raw columns — which nothing did until F-045. THE FIX IS FORWARD-ONLY: migration 5 adds four nullable columns with no DEFAULT, `colourFromReading` writes them from the reading it already holds, and the read path REFUSES A PRE-MIGRATION ROW BY NAME rather than substituting values nobody measured — the same move migration 2 makes for its own nullable columns, and the same reason. Filed rather than folded into F-045 because WIP is 1 and this is a store schema change, not an outfit surface."
     }
   ]
 }
