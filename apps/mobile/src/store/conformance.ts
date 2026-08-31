@@ -18,6 +18,7 @@ import { openDeviceDriver } from './index';
 export interface DeviceConformanceResult {
   readonly driver: string;
   readonly encryptsAtRest: boolean;
+  readonly supportsRekey: boolean;
   readonly ran: number;
   readonly passed: boolean;
   readonly report: string;
@@ -37,6 +38,10 @@ export function runDeviceStoreConformance(): DeviceConformanceResult {
     // Whether the bytes on disk are actually encrypted is what the device run confirms, and
     // no assertion in this process can stand in for it.
     encryptsAtRest: info.encryptsAtRest,
+    // Carried for the same reason and with the same limit (F-042): SQLCipher HAS rekey, so
+    // this is true here and false on node:sqlite. Whether a rotated database then opens under
+    // the new key AND REFUSES THE OLD ONE is what the device run is evidence for.
+    supportsRekey: info.supportsRekey,
     ran,
     passed: findings.length === 0,
     report:

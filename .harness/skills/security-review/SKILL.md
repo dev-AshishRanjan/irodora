@@ -82,8 +82,9 @@ invisible to conventional monitoring.
 - [ ] No image, frame, or profile dimension reachable from a log, trace or telemetry sink.
 - [ ] No new field inferring a protected characteristic.
 - [ ] The redaction test still passes.
-- [ ] **No text anywhere calls this "end-to-end encrypted."** The server can decrypt synced
-      images; borrowing the phrase would be a false claim.
+- [ ] **No text anywhere calls this "end-to-end encrypted."** There is one end (ADR-0051), so
+      the phrase describes a property that does not apply rather than one we fail to meet.
+      The old reason — that our server could decrypt synced images — retired with the server.
 
 ### Failure behaviour
 

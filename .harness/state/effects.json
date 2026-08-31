@@ -1451,6 +1451,47 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-041",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/store/src/image.ts#SanitisedImage"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/repository.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/createRepository.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/store/test/garment-image.test.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/store/test/image.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/store",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:typecheck — the brand makes an un-ingested buffer a compile error, proven by two @ts-expect-error directives whose UNUSED state is itself a build failure. What it cannot cover is ingestImage stripping less; that is gate:test, with a decoy on every assertion.",
+      "memory": "memory/effects/a-brand-is-the-only-thing-that-makes-sanitising-mandatory.md",
+      "rationale": "A BRAND IS THE ONLY THING THAT MAKES SANITISING MANDATORY. `Repository.putGarmentImage` accepts a `SanitisedImage` and nothing else, and `SanitisedImage` carries a `unique symbol` field that no code outside `image.ts` can produce — so the only way to obtain one is to call `ingestImage`, which strips EXIF, verifies the type from the magic bytes, and bounds the byte count and the pixel count before anything decodes. WIDEN THAT PARAMETER TO `Uint8Array` AND THE GUARANTEE IS GONE SILENTLY: nothing else in the package changes, no test fails, and every existing call site keeps working, because they all ingest first. The one that forgets is the one nobody has written yet. WHY A BRAND RATHER THAN A CONVENTION: the convention version is a comment saying \"call ingestImage first\", and it holds until somebody has a buffer in hand and a deadline. The failure is invisible in review — `putGarmentImage(id, bytes, now)` looks exactly like the correct call, and the difference is a function that was not called. WHAT MAKES IT WORK IS THAT IT IS NOT INHABITABLE BY ACCIDENT. A plain marker field would let any object literal claim it, which is why the proof plants a hand-made object with the right SHAPE as its second case: without the unique symbol that line compiles and the brand is decoration. Same move as `LensReading` in F-040, whose type has no field a camera frame could be assigned to. THE GUARD COVERS a call site storing bytes it did not ingest — `tsc` refuses it, and two `@ts-expect-error` directives fail the build if that stops being true, because an UNUSED directive is itself an error and that is what turns a comment about a type into an assertion about it. IT DOES NOT COVER `ingestImage` being changed to strip less: the brand says a function ran, not what it did. That half is `test/image.test.ts`, where every stripping assertion is paired with a decoy — the metadata went AND the image is still an image, with the ICC profile intact — because a stripper that truncated the file would satisfy \"no EXIF\" perfectly. WHAT IS DELIBERATELY KEPT is `APP2` / `iCCP`, the ICC profile. A strip-all-metadata implementation is the obvious one and it is wrong in a colour product: without the profile a Display P3 photograph is silently reinterpreted as sRGB and comes back muted, with nothing anywhere to say why.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

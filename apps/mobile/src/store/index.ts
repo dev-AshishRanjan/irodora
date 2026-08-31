@@ -27,6 +27,7 @@ import * as SecureStore from 'expo-secure-store';
 import {
   getOrCreateDatabaseKey,
   keyPragma,
+  rekeyPragma,
   type Driver,
   type DriverInfo,
   type SecureKeyStore,
@@ -98,6 +99,23 @@ export function openDeviceDriver(): { driver: Driver; info: DriverInfo } {
       // corruption; reopening without the pragmas silently turns foreign keys back off.
       db.execSync(keyPragma(getOrCreateDatabaseKey(secureKeyStore)));
     },
+    /**
+     * Re-encrypt the whole database under a new key (NFR-13, F-042).
+     *
+     * `PRAGMA rekey` is SQLCipher's own operation: it rewrites every page, including the
+     * wardrobe photographs, which live in this file rather than beside it (ADR-0078).
+     *
+     * **It does not touch the keystore.** `rotateDatabaseKey` writes the new key only after
+     * this returns, and the order is the whole point — storing first would leave the keystore
+     * holding a key that opens nothing if the rekey failed, and the data intact and
+     * unreachable on disk. This method's one job is to move the database or throw.
+     *
+     * The key is validated as 64 hex characters by `rekeyPragma` before interpolation, because
+     * PRAGMA takes no bound parameter.
+     */
+    rekey(newKey: string) {
+      db.execSync(rekeyPragma(newKey));
+    },
   };
 
   return {
@@ -107,6 +125,10 @@ export function openDeviceDriver(): { driver: Driver; info: DriverInfo } {
       // A claim about what this connection ASKED FOR. That it actually encrypted is the
       // device attestation on F-041, and nothing in CI can stand in for it.
       encryptsAtRest: true,
+      // Same shape of claim: SQLCipher HAS rekey, so rotation is available here and refused
+      // on the Node driver. Whether a rotated database then opens under the new key and
+      // refuses the old is the device attestation on F-042.
+      supportsRekey: true,
     },
   };
 }

@@ -43,6 +43,14 @@ export {
   type EraseOutcome,
 } from './backup.js';
 export { uuidv7 } from './id.js';
+export { DEFAULT_GROUPING_THRESHOLD, groupByColor, type ColorGroup } from './grouping.js';
+export {
+  DEFAULT_IMAGE_LIMITS,
+  ImageRejected,
+  ingestImage,
+  type ImageLimits,
+  type SanitisedImage,
+} from './image.js';
 
 /**
  * The randomness port (F-104).
@@ -58,12 +66,17 @@ export {
   PROFILE_DIMENSIONS,
   PROFILE_LIST_DIMENSIONS,
   PROFILE_METHODS,
+  GARMENT_SEASONS,
+  GARMENT_COLOR_ROLES,
 } from './repository.js';
 export {
   DATABASE_KEY_NAME,
   forgetDatabaseKey,
   getOrCreateDatabaseKey,
   keyPragma,
+  rekeyPragma,
+  rotateDatabaseKey,
+  type RekeyableDriver,
   type SecureKeyStore,
 } from './key.js';
 export type {
@@ -74,6 +87,13 @@ export type {
   DriverFactory,
   DriverInfo,
   Millis,
+  GarmentColorRole,
+  GarmentImageInfo,
+  GarmentEnrichment,
+  GarmentRow,
+  GarmentSeason,
+  NewGarment,
+  NewGarmentColor,
   NewPalette,
   NewPaletteMember,
   NewPersonalProfile,
@@ -88,6 +108,8 @@ export type {
   Range,
   Repository,
   SavedColorRow,
+  StoredGarment,
+  StoredGarmentColor,
   StoredPalette,
   StoredPaletteMember,
   StoredPersonalProfile,

@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -251,6 +251,110 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
         ON profile_dimension_color (profile_id, dimension, position);
     `,
   },
+  {
+    version: 4,
+    /*
+     * F-042. The wardrobe: a garment, its colours, and its photograph.
+     *
+     * ## Only `type` and one colour are NOT NULL, and that is FR-39 rather than laxity
+     *
+     * *"Only colour and type are required at creation; every other field is progressively
+     * enriched."* Every other column here is nullable **with no DEFAULT**, for the reason
+     * migration 2 gives: a default is a value nobody chose standing in for one somebody must,
+     * and `formality DEFAULT 'casual'` would be an assertion about a garment nobody looked at.
+     * `NULL` means *not recorded yet*, which is the true state of almost every field on a
+     * garment somebody added in four seconds.
+     *
+     * The requirement is enforced in the TYPE as well (`NewGarment`), because a NOT NULL
+     * column tells you a value is present and cannot tell you the caller was not forced to
+     * invent one.
+     *
+     * ## `season` is a child table, not a delimited string
+     *
+     * FR-39 lists `season[]`. A `'spring,summer'` TEXT column is a parser, and it makes
+     * "every garment for autumn" a `LIKE '%autumn%'` that also matches nothing useful. Same
+     * reasoning as migration 3's `profile_dimension_color`.
+     *
+     * ## The image is a BLOB in this database, and that is the whole point
+     *
+     * NFR-13: *"the database AND ANY STORED IMAGERY are encrypted with SQLCipher"*. A file in
+     * the app's private directory is covered by the OS, which is real protection and is NOT
+     * SQLCipher and NOT a key we hold — so an `image_path` column would have made NFR-13 false
+     * while looking like it satisfied it. `data-model.md` §5 said the image directory was
+     * "covered by ... SQLCipher"; it is not, and ADR-0078 records the correction along with
+     * this decision and its two costs.
+     *
+     * ONE ROW PER GARMENT, in its own table rather than a column on `garment`, because a blob
+     * read is all-or-nothing: `SELECT * FROM garment` for a list screen must not drag every
+     * photograph into memory. The split is what makes the list query cheap.
+     *
+     * `byte_length` and the dimensions are stored beside the bytes so a caller can size a
+     * decode — or decide not to — WITHOUT reading the blob. That is the whole reason they are
+     * columns rather than something a reader works out from the bytes it just loaded.
+     *
+     * THERE IS NO DIGEST COLUMN. One was drafted and removed: nothing in F-042 needs it, this
+     * package carries no runtime dependency, and SHA-256 here would mean either a second port
+     * to install at startup or an implementation of a hash nobody asked for. When the archive
+     * needs to compare images without rehydrating them, that is the feature that adds it.
+     */
+    up: `
+      CREATE TABLE garment (
+        ${SYNC_COLUMNS},
+        -- The two required fields. Everything below is nullable.
+        type             TEXT    NOT NULL,
+        primary_color_id TEXT    NOT NULL REFERENCES saved_color (id) ON DELETE RESTRICT,
+
+        name             TEXT,
+        pattern          TEXT,
+        material         TEXT,
+        formality        TEXT,
+        brand            TEXT,
+        size             TEXT,
+        purchase_date    TEXT,
+        -- Minor units, INTEGER. A REAL price is a rounding error with a currency symbol.
+        cost_minor       INTEGER,
+        currency         TEXT,
+        wear_count       INTEGER NOT NULL DEFAULT 0 CHECK (wear_count >= 0)
+      ) STRICT;
+
+      CREATE INDEX garment_live ON garment (deleted_at) WHERE deleted_at IS NULL;
+      CREATE INDEX garment_type ON garment (type);
+      CREATE INDEX garment_primary_color ON garment (primary_color_id);
+
+      CREATE TABLE garment_season (
+        ${SYNC_COLUMNS},
+        garment_id TEXT NOT NULL REFERENCES garment (id) ON DELETE CASCADE,
+        season     TEXT NOT NULL CHECK (season IN ('spring','summer','autumn','winter'))
+      ) STRICT;
+
+      CREATE INDEX garment_season_garment ON garment_season (garment_id);
+      CREATE INDEX garment_season_season ON garment_season (season);
+
+      -- Secondary and accent colours. The PRIMARY colour is a column on garment because it is
+      -- required and every grouping query needs it without a join; these are the rest.
+      CREATE TABLE garment_color (
+        ${SYNC_COLUMNS},
+        garment_id TEXT NOT NULL REFERENCES garment (id) ON DELETE CASCADE,
+        color_id   TEXT NOT NULL REFERENCES saved_color (id) ON DELETE RESTRICT,
+        role       TEXT NOT NULL CHECK (role IN ('secondary','accent')),
+        proportion REAL CHECK (proportion > 0.0 AND proportion <= 1.0)
+      ) STRICT;
+
+      CREATE INDEX garment_color_garment ON garment_color (garment_id);
+
+      CREATE TABLE garment_image (
+        ${SYNC_COLUMNS},
+        garment_id  TEXT    NOT NULL UNIQUE REFERENCES garment (id) ON DELETE CASCADE,
+        bytes       BLOB    NOT NULL,
+        byte_length INTEGER NOT NULL CHECK (byte_length > 0),
+        width       INTEGER NOT NULL CHECK (width > 0),
+        height      INTEGER NOT NULL CHECK (height > 0),
+        format      TEXT    NOT NULL CHECK (format IN ('jpeg','png'))
+      ) STRICT;
+
+      CREATE INDEX garment_image_garment ON garment_image (garment_id);
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -260,5 +364,9 @@ export const SYNC_TABLES = [
   'palette_member',
   'personal_color_profile',
   'profile_dimension_color',
+  'garment',
+  'garment_season',
+  'garment_color',
+  'garment_image',
 ] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];

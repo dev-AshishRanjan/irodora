@@ -27,6 +27,9 @@ export const NODE_DRIVER_INFO: DriverInfo = {
   // Stated as data rather than left to a comment, so the conformance report can print it and
   // a reader cannot mistake a green CI run for a proof about encryption at rest.
   encryptsAtRest: false,
+  // node:sqlite has no SQLCipher, so there is no key to change. Reported rather than
+  // discovered, so rotateDatabaseKey refuses here instead of appearing to succeed.
+  supportsRekey: false,
 };
 
 /**
@@ -64,6 +67,14 @@ export function nodeDriver(path = ':memory:'): { driver: Driver; info: DriverInf
     },
     close() {
       db.close();
+    },
+    rekey() {
+      // THROWS rather than no-ops. A silent success here would make the rotation test green
+      // against a database whose key never moved, which is worse than having no test.
+      throw new Error(
+        `the node:sqlite driver cannot rekey: it has no SQLCipher, so there is no key to ` +
+          `change. Rotation runs on the device.`,
+      );
     },
     reopen() {
       if (path === ':memory:')

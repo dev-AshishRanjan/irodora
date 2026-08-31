@@ -167,7 +167,11 @@ describe('the migration', () => {
     );
 
     const applied = migrate(driver);
-    expect(applied).toBe(1);
+    // DERIVED, not a literal. This read `toBe(1)` and broke the moment F-042 added migration
+    // 4 — a count of "the migrations that did not exist when this test was written", which is
+    // a number the repository is free to change. What the test is actually for is that EVERY
+    // pending step ran, and that is what this says.
+    expect(applied).toBe(MIGRATIONS.filter((m) => m.version > 2).length);
     expect(driver.query<{ user_version: number }>('PRAGMA user_version')[0]?.user_version).toBe(
       SCHEMA_VERSION,
     );

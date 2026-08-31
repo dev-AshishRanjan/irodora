@@ -448,6 +448,13 @@ importers:
         version: link:../store
 
   packages/store:
+    dependencies:
+      '@irodora/color-difference':
+        specifier: workspace:*
+        version: link:../color-difference
+      '@irodora/color-spaces':
+        specifier: workspace:*
+        version: link:../color-spaces
     devDependencies:
       '@irodora/corpus':
         specifier: workspace:*

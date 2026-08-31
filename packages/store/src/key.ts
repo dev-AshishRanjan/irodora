@@ -79,12 +79,84 @@ export function getOrCreateDatabaseKey(store: SecureKeyStore): string {
  * otherwise be a SQL injection into the one statement that runs before any other.
  */
 export function keyPragma(key: string): string {
+  return pragma('key', key);
+}
+
+/**
+ * `PRAGMA rekey` — re-encrypt every page under a new key.
+ *
+ * Its own function rather than a caller rewriting `keyPragma`'s output, because the validation
+ * is the point: both statements interpolate a key into SQL that takes no bound parameter, and
+ * a second construction path is a second place for that to be got wrong. A device driver was
+ * briefly doing it by string replacement, which works and is one careless edit from not.
+ *
+ * Unlike `PRAGMA key`, this runs on an ALREADY-OPEN, already-keyed connection — it is a
+ * rewrite, not an unlock.
+ */
+export function rekeyPragma(newKey: string): string {
+  return pragma('rekey', newKey);
+}
+
+function pragma(name: 'key' | 'rekey', key: string): string {
   if (!/^[0-9a-f]{64}$/u.test(key))
     throw new Error(
-      'the database key is not 64 hex characters. It is interpolated into PRAGMA key, ' +
+      `the database key is not 64 hex characters. It is interpolated into PRAGMA ${name}, ` +
         'which takes no bound parameter, so anything else is refused rather than executed.',
     );
-  return `PRAGMA key = "x'${key}'"`;
+  return `PRAGMA ${name} = "x'${key}'"`;
+}
+
+/**
+ * What a driver must be able to do for the key to be rotatable.
+ *
+ * A narrow structural type rather than the whole `Driver`, so `rotateDatabaseKey` can be
+ * tested against three lines of fake and so this module keeps knowing nothing about SQL.
+ */
+export interface RekeyableDriver {
+  readonly info: { readonly supportsRekey: boolean; readonly name: string };
+  rekey(newKey: string): void;
+}
+
+/**
+ * Rotate the database key (NFR-13 — *"key generation, storage and rotation are exercised in a
+ * test"*).
+ *
+ * ## The order is the entire function
+ *
+ * Generate → **rekey the database** → *then* write the keystore. Any other order loses the
+ * data, and loses it silently:
+ *
+ * - Storing first and rekeying second leaves the keystore holding a key that opens nothing if
+ *   the rekey fails. The database is intact on disk and unreachable forever.
+ * - Storing first and rekeying second *successfully* is fine, which is exactly what makes the
+ *   bug survive review — it works every time until the one time it does not.
+ *
+ * The symptom either way is "the app lost my photographs", reported once, months later, on a
+ * device nobody can reproduce. So the keystore write is last, and it is unreachable if
+ * `rekey` throws.
+ *
+ * ## What this cannot check, stated rather than implied
+ *
+ * `node:sqlite` has no SQLCipher, so `PRAGMA rekey` cannot execute in CI — the same wall
+ * F-041 hit and recorded as `encryptsAtRest: false`. A driver that cannot rekey **throws**
+ * rather than returning quietly, because a rotation that reports success while changing
+ * nothing would leave the old key working and everyone believing it had been replaced.
+ */
+export function rotateDatabaseKey(store: SecureKeyStore, driver: RekeyableDriver): string {
+  if (!driver.info.supportsRekey)
+    throw new Error(
+      `the ${driver.info.name} driver cannot rekey, so rotation would report success while ` +
+        'changing nothing — leaving the old key working and everyone believing it had been ' +
+        'replaced. SQLCipher is on the device; node:sqlite has no rekey at all.',
+    );
+
+  const next = [...randomBytes(KEY_BYTES)].map((b) => b.toString(16).padStart(2, '0')).join('');
+
+  // The database first. If this throws, the keystore still holds the key that opens the file.
+  driver.rekey(next);
+
+  store.set(DATABASE_KEY_NAME, next);
+  return next;
 }
 
 /**

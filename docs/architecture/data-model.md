@@ -193,10 +193,13 @@ garment
   id · type · name
   primary_color_id · pattern · material · formality · season[]
   brand · size · purchase_date · cost_minor · currency
-  image_path · wear_count · created_at · updated_at · deleted_at
+  wear_count · created_at · updated_at · deleted_at
 
-garment_color   garment_id · role (primary|secondary|accent) · xyz · lab · oklch
-                proportion · provenance_source · provenance_confidence
+garment_season  garment_id · season (spring|summer|autumn|winter)
+garment_color   garment_id · color_id · role (secondary|accent) · proportion
+                -- primary is a column on garment: it is required, and every grouping
+                -- query needs it without a join
+garment_image   garment_id (UNIQUE) · bytes BLOB · byte_length · width · height · format
 
 outfit          id · name · occasion · created_at · updated_at · deleted_at
 outfit_item     outfit_id · slot · garment_id · locked
@@ -207,12 +210,27 @@ recommendation  id · input_color · context
 recommendation_feedback  recommendation_id · result_index · verdict · created_at
 ```
 
-`image_path` points into the app's private, OS-protected storage. There is no `image_encrypted`
-column and no data-key version, because there is no envelope encryption to describe: the
-**whole database and the image directory are covered by the device's own protection plus
-SQLCipher**, with the key in the Keychain / Keystore (NFR-13). Version 1.0's per-tenant data
-keys protected images from the operator of a shared store. There is no operator and no shared
-store.
+**There is no `image_path` column. The bytes are a BLOB in `garment_image`, inside the
+SQLCipher database** ([ADR-0078](../adr/0078-wardrobe-images-are-blobs-in-the-encrypted-database.md)).
+
+The paragraph that stood here said the image directory was *"covered by the device's own
+protection plus SQLCipher"*, and **that was false in a way worth naming**: SQLCipher encrypts a
+database file. It does not reach a directory of images sitting next to it. Those would be
+covered by iOS Data Protection and Android FBE — real protection, and neither SQLCipher nor a
+key we hold. NFR-13 says *"the database **and any stored imagery** are encrypted with
+SQLCipher"*, so an `image_path` column would have made that requirement false while looking
+like it satisfied it. F-042 found the contradiction rather than inheriting it.
+
+There is still no `image_encrypted` column and no data-key version, and that part was always
+right: there is no envelope encryption to describe, because the blob is inside the encrypted
+database and the one key in the Keychain / Keystore already covers it. Version 1.0's per-tenant
+data keys protected images from the operator of a shared store. There is no operator and no
+shared store.
+
+The two costs are recorded in the ADR rather than discovered later: a blob read is
+all-or-nothing, which is why `garment_image` is its own table and why the dimensions are
+columns beside the bytes; and `archive.ts` reads `SELECT *`, so photographs join the backup and
+its digest ([E-023](../../.harness/state/effects.json)).
 
 The reproducibility envelope is stored as **four separate columns**, not one JSON blob, so
 "which recommendations used rule version 2026.08.4?" is an indexed query rather than a table

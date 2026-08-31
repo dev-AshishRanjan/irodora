@@ -78,22 +78,34 @@ Four decisions follow:
 
 | Layer | Mechanism |
 |---|---|
-| In transit | TLS 1.3, HSTS, certificate pinning on mobile |
-| At rest — database | Volume/instance encryption |
-| At rest — wardrobe images | **Envelope encryption**: a per-tenant data key, itself encrypted by a master key held in KMS (cloud) or by the operator (VPS) |
-| On device | Platform keystore for secrets; platform database encryption |
+| In transit | **Nothing to protect.** There is no server, no account and no sync ([ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)). The Android build does not hold `INTERNET`, and gate 16 asserts that against the shipped APK rather than against the config |
+| At rest — database | **SQLCipher**, with a 256-bit key generated on the device |
+| At rest — wardrobe images | **The same SQLCipher database.** The bytes are a BLOB in `garment_image`, not a file beside it ([ADR-0078](../../adr/0078-wardrobe-images-are-blobs-in-the-encrypted-database.md)) |
+| The key | iOS Keychain / Android Keystore, never in the bundle, never in an environment variable, never in a log. Rotatable |
 
-**This is not end-to-end encryption, and we do not call it that.** The server can decrypt
-wardrobe images, because server-side features — thumbnailing, report generation, restoring
-your wardrobe to a new phone — require it. Envelope encryption protects against a stolen
-backup, a leaked storage bucket and a compromised disk. It does not protect against us.
+**This is not end-to-end encryption, and we do not call it that** — but the reason has
+changed, and stating the current one matters more than keeping the old sentence.
 
-Saying "end-to-end encrypted" when the server holds a usable key is one of the most common
-dishonest claims in consumer software. We would rather state the real threat model than
-borrow the phrase.
+The old reason was that our server could decrypt your wardrobe images. **There is no server.**
+The phrase is still wrong here, and now for a more basic reason: end-to-end encryption
+describes data protected in transit between two ends, and there is one end. Nothing leaves the
+device, so there is no channel to secure and nothing to be "end to end" about. Borrowing the
+phrase would be claiming a property that does not apply rather than one we fail to meet.
 
-Users who want the stronger guarantee have **local-only mode** (FR-55), where nothing
-syncs at all. That is the honest version of "we cannot see your data."
+What the encryption above actually protects against is a **lost or stolen phone**, and that is
+the whole of it. It does not protect against someone who has your unlocked device, and it is
+not a claim about anything leaving it, because nothing does.
+
+> **Superseded, and recorded rather than deleted.** This table used to describe TLS 1.3, HSTS,
+> certificate pinning, per-tenant data keys and a KMS master key. All of it was true of the
+> architecture in version 1.0 and none of it survived ADR-0051. It stood here for months after
+> the server was retired because gate 0's retired-vocabulary check reads **feature criteria and
+> PRD rows only** — architecture and security documents are outside its corpus, which is how a
+> document could keep saying *"per-tenant data key"*, a term literally on that check's own
+> retired list, with every gate green. Extending the scan is filed as F-107.
+
+**Local-only mode (FR-55) is not a mode.** It was the stronger option in version 1.0, chosen by
+people who wanted it. It is now simply what the product is, for everyone, by construction.
 
 ---
 

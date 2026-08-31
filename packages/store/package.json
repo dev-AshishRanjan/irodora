@@ -33,5 +33,9 @@
   "devDependencies": {
     "@irodora/corpus": "workspace:*",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/color-spaces": "workspace:*"
   }
 }

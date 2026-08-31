@@ -126,6 +126,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md](effects/a-privacy-claim-is-true-until-somebody-builds-the-thing-it-denies.md) — **E-037** · "No camera" was true until a camera path existed; the file that moved was not the file carrying the claim.
 - [effects/an-effect-id-is-a-primary-key-and-the-schema-cannot-check-it.md](effects/an-effect-id-is-a-primary-key-and-the-schema-cannot-check-it.md) — **E-039** · the graph's only primary key, unchecked by its own schema; two features allocated E-032 twenty-four minutes apart and everything validated.
 - [effects/a-table-driven-check-is-only-as-complete-as-its-table.md](effects/a-table-driven-check-is-only-as-complete-as-its-table.md) — **E-040** · the table covers seven id spaces and cannot see an eighth; an undeclared space produces no output, which reads exactly like correctness.
+- [effects/a-brand-is-the-only-thing-that-makes-sanitising-mandatory.md](effects/a-brand-is-the-only-thing-that-makes-sanitising-mandatory.md) — **E-041** · widening one parameter to `Uint8Array` silently removes EXIF stripping, and every existing call site keeps working.
 
 ## Glossary
 

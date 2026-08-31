@@ -20,6 +20,8 @@
  * guard proves that rule fires rather than trusting a comment to hold.
  */
 
+import type { SanitisedImage } from './image.js';
+
 /** Integer milliseconds since epoch, UTC. Never a float, never a string. */
 export type Millis = number;
 
@@ -57,6 +59,14 @@ export interface Driver {
   close(): void;
   /** Reopen the same underlying database. The durability tests need this. */
   reopen(): void;
+  /**
+   * Re-encrypt the database under a new key (NFR-13).
+   *
+   * On the DRIVER because only the driver knows whether its SQLite has SQLCipher. A driver
+   * that cannot do it MUST THROW rather than return: a rotation that reports success while
+   * changing nothing leaves the old key working and everyone believing it was replaced.
+   */
+  rekey(newKey: string): void;
 }
 
 /** How a driver identifies itself in a conformance report. */
@@ -64,6 +74,12 @@ export interface DriverInfo {
   readonly name: string;
   /** Whether this driver encrypts at rest. `node:sqlite` does not; SQLCipher does. */
   readonly encryptsAtRest: boolean;
+  /**
+   * Whether `rekey` does anything. Data rather than a comment, for the same reason
+   * `encryptsAtRest` is: the conformance report prints it, so a green CI run cannot be read
+   * as a statement about a rotation that never ran.
+   */
+  readonly supportsRekey: boolean;
 }
 
 export type DriverFactory = () => { readonly driver: Driver; readonly info: DriverInfo };
@@ -294,6 +310,118 @@ export interface StoredPersonalProfile extends NewPersonalProfile {
   readonly deletedAt: Millis | null;
 }
 
+/* ------------------------------------------------------------------- the wardrobe (F-042) */
+
+export const GARMENT_SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
+export type GarmentSeason = (typeof GARMENT_SEASONS)[number];
+
+/** `primary` is a column on `garment`, so it is not a role a member row can carry. */
+export const GARMENT_COLOR_ROLES = ['secondary', 'accent'] as const;
+export type GarmentColorRole = (typeof GARMENT_COLOR_ROLES)[number];
+
+export interface GarmentRow extends SyncRow {
+  readonly type: string;
+  readonly primary_color_id: string;
+  readonly name: string | null;
+  readonly pattern: string | null;
+  readonly material: string | null;
+  readonly formality: string | null;
+  readonly brand: string | null;
+  readonly size: string | null;
+  readonly purchase_date: string | null;
+  readonly cost_minor: number | null;
+  readonly currency: string | null;
+  readonly wear_count: number;
+}
+
+/**
+ * Everything needed to create a garment — **and nothing else** (FR-39).
+ *
+ * *"Only colour and type are required at creation; every other field is progressively
+ * enriched."* This type is that sentence: there is no optional field to leave out, so there
+ * is no field a caller can be tempted to invent a value for.
+ *
+ * **The nullable columns are not enough on their own.** A `NewGarment` carrying twelve
+ * optional properties satisfies every NOT NULL constraint in migration 4 while still putting
+ * twelve decisions in front of somebody adding a jumper — the constraint says a value may be
+ * absent, and the type says the caller is never asked. TypeScript's excess-property check
+ * refuses a `brand` here at the call site, and a `ts-expect-error` test proves it.
+ */
+export interface NewGarment {
+  readonly id: string;
+  readonly type: string;
+  /** The primary colour. Written as a `saved_color` row, reused by `corpus_slug` when it is one. */
+  readonly color: NewSavedColor;
+}
+
+/** A secondary or accent colour, added by enrichment rather than at creation. */
+export interface NewGarmentColor {
+  readonly role: GarmentColorRole;
+  readonly color: NewSavedColor;
+  /** How much of the garment this colour covers, if anybody measured it. */
+  readonly proportion: number | null;
+}
+
+/**
+ * The progressive half of FR-39. Every key optional; an explicit `null` **clears** a field.
+ *
+ * `undefined` and `null` mean different things here and the distinction is load-bearing:
+ * omitting `brand` leaves whatever is recorded, and passing `brand: null` erases it. A patch
+ * that could not express "remove this" would make every field write-once in practice.
+ */
+export interface GarmentEnrichment {
+  readonly type?: string;
+  readonly name?: string | null;
+  readonly pattern?: string | null;
+  readonly material?: string | null;
+  readonly formality?: string | null;
+  readonly brand?: string | null;
+  readonly size?: string | null;
+  readonly purchaseDate?: string | null;
+  readonly costMinor?: number | null;
+  readonly currency?: string | null;
+  readonly wearCount?: number;
+  /** Replaces the set. `[]` clears it. */
+  readonly seasons?: readonly GarmentSeason[];
+  /** Replaces the secondary and accent colours. `[]` clears them. */
+  readonly colors?: readonly NewGarmentColor[];
+}
+
+export interface StoredGarmentColor {
+  readonly role: GarmentColorRole;
+  readonly color: SavedColorRow;
+  readonly proportion: number | null;
+}
+
+export interface StoredGarment {
+  readonly id: string;
+  readonly type: string;
+  readonly color: SavedColorRow;
+  readonly name: string | null;
+  readonly pattern: string | null;
+  readonly material: string | null;
+  readonly formality: string | null;
+  readonly brand: string | null;
+  readonly size: string | null;
+  readonly purchaseDate: string | null;
+  readonly costMinor: number | null;
+  readonly currency: string | null;
+  readonly wearCount: number;
+  readonly seasons: readonly GarmentSeason[];
+  readonly colors: readonly StoredGarmentColor[];
+  readonly createdAt: Millis;
+  readonly updatedAt: Millis;
+  readonly deletedAt: Millis | null;
+}
+
+/** What a caller can learn about an image without loading it. */
+export interface GarmentImageInfo {
+  readonly byteLength: number;
+  readonly width: number;
+  readonly height: number;
+  readonly format: 'jpeg' | 'png';
+}
+
 /**
  * A row the database can hold but the product cannot use.
  *
@@ -351,6 +479,51 @@ export interface Repository {
   getProfile(id: string): StoredPersonalProfile | undefined;
   /** Tombstones the profile and every live list entry. */
   deleteProfile(id: string, now: Millis): void;
+  /**
+   * Create a garment from a colour and a type, and nothing else (FR-39).
+   *
+   * Separate from `enrichGarment` rather than one upsert taking a big optional object,
+   * because the split is the requirement: a creation path that *accepts* twelve fields is a
+   * creation path somebody will fill in, and the sentence in FR-39 is about what the person
+   * is asked for, not about what the columns permit.
+   */
+  createGarment(garment: NewGarment, now: Millis): void;
+  /**
+   * Apply a patch. Absent keys are left alone; an explicit `null` clears the field.
+   *
+   * Throws `StoreError` if the garment does not exist — an enrichment that silently created
+   * one would turn a typo in an id into a second garment nobody can find.
+   */
+  enrichGarment(id: string, patch: GarmentEnrichment, now: Millis): void;
+  /** Live garments, oldest first. */
+  listGarments(): StoredGarment[];
+  /** One garment, tombstoned or not — same reason as `getColor`. */
+  getGarment(id: string): StoredGarment | undefined;
+  /** Tombstones the garment, its seasons, its extra colours and its image. */
+  deleteGarment(id: string, now: Millis): void;
+  /**
+   * Attach a photograph, replacing any existing one.
+   *
+   * **Takes a `SanitisedImage` and nothing else.** No overload accepts a raw buffer, so an
+   * un-ingested image — one whose EXIF still carries the address it was taken at — cannot
+   * reach this method without somebody widening the type on purpose. That is the enforcement;
+   * the ingest function is only where it happens.
+   *
+   * The bytes go into the SQLCipher database rather than beside it (ADR-0078). NFR-13 says
+   * *"the database and any stored imagery are encrypted with SQLCipher"*, and a file in the
+   * app's private directory is covered by the OS — real protection, and not that sentence.
+   */
+  putGarmentImage(garmentId: string, image: SanitisedImage, now: Millis): void;
+  /**
+   * The image's dimensions and size **without reading the blob**.
+   *
+   * Separate from `getGarmentImage` because a blob read is all-or-nothing: a list screen that
+   * wants to know whether a garment has a photograph, and how big it is, must not pull every
+   * photograph in the wardrobe into memory to find out.
+   */
+  getGarmentImageInfo(garmentId: string): GarmentImageInfo | undefined;
+  /** The bytes. Loads the whole blob, which is why the info call above exists. */
+  getGarmentImage(garmentId: string): Uint8Array | undefined;
   /** Every change-log entry, oldest first. Read by tests and by nothing in the product. */
   changeLog(): ChangeLogRow[];
   close(): void;

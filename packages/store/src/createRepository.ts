@@ -7,6 +7,7 @@
  * differ in is how it talks to SQLite; what it may not differ in is what the data means.
  */
 
+import type { SanitisedImage } from './image.js';
 import { migrate } from './migrate.js';
 import {
   CONTRAST_PREFERENCES,
@@ -15,12 +16,21 @@ import {
   PROFILE_LIST_DIMENSIONS,
   PROFILE_METHODS,
   StoreError,
+  GARMENT_COLOR_ROLES,
+  GARMENT_SEASONS,
   type ChangeLogRow,
   type ContrastPreference,
   type DimensionOrigin,
   type Driver,
   type DriverInfo,
   type Millis,
+  type GarmentColorRole,
+  type GarmentImageInfo,
+  type GarmentEnrichment,
+  type GarmentRow,
+  type GarmentSeason,
+  type NewGarment,
+  type NewGarmentColor,
   type NewPalette,
   type NewPersonalProfile,
   type NewSavedColor,
@@ -33,6 +43,7 @@ import {
   type Repository,
   type SavedColorRow,
   type StoredPalette,
+  type StoredGarment,
   type StoredPaletteMember,
   type StoredPersonalProfile,
 } from './repository.js';
@@ -46,6 +57,31 @@ const PALETTE_COLUMNS =
 
 const MEMBER_COLUMNS =
   'id, created_at, updated_at, deleted_at, palette_id, color_id, position, role, weight';
+
+const GARMENT_COLUMNS =
+  'id, created_at, updated_at, deleted_at, type, primary_color_id, name, pattern, material, ' +
+  'formality, brand, size, purchase_date, cost_minor, currency, wear_count';
+
+/**
+ * The patchable scalar fields, as `[key on the patch, column]`.
+ *
+ * A table rather than fifteen `if` blocks, so a field added to `GarmentEnrichment` and not
+ * added here is one line to find rather than a silently ignored key — which is the failure
+ * mode of a hand-written patch builder, and it presents as "the edit did not save".
+ */
+const GARMENT_PATCH_COLUMNS = [
+  ['type', 'type'],
+  ['name', 'name'],
+  ['pattern', 'pattern'],
+  ['material', 'material'],
+  ['formality', 'formality'],
+  ['brand', 'brand'],
+  ['size', 'size'],
+  ['purchaseDate', 'purchase_date'],
+  ['costMinor', 'cost_minor'],
+  ['currency', 'currency'],
+  ['wearCount', 'wear_count'],
+] as const satisfies readonly (readonly [keyof GarmentEnrichment, string])[];
 
 /**
  * The profile's own columns, **derived from `PROFILE_DIMENSIONS` rather than listed twice**.
@@ -111,6 +147,22 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
       op,
       at,
     ]);
+  };
+
+  /**
+   * The id an incoming colour should be written under.
+   *
+   * A colour already saved under the same `corpus_slug` is reused, exactly as `savePalette`
+   * does. A Lens capture has no slug and never will (F-040), so it always writes its own row.
+   */
+  const reusableColorId = (color: NewSavedColor): string => {
+    const slug = color.corpus_slug;
+    if (slug === null) return color.id;
+    const existing = driver.query<{ id: string }>(
+      'SELECT id FROM saved_color WHERE corpus_slug = ? AND deleted_at IS NULL',
+      [slug],
+    );
+    return existing[0]?.id ?? color.id;
   };
 
   /**
@@ -275,6 +327,155 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
       lists[dimension].push(row.corpus_slug);
     }
     return lists;
+  };
+
+  /**
+   * Replace a garment's seasons.
+   *
+   * Wholesale rather than reconciled member-by-member, because a season set is small,
+   * unordered and has no identity of its own — there is no "this autumn row" a change log
+   * reader would want to follow. `palette_member` is reconciled precisely because a member
+   * DOES have identity: its rank and role move, and the log should say so.
+   *
+   * Tombstoned rather than deleted, like every other row here: a hard delete would leave a
+   * sync reconciler unable to tell "removed" from "never existed".
+   */
+  const replaceSeasons = (
+    garmentId: string,
+    seasons: readonly GarmentSeason[],
+    now: Millis,
+  ): void => {
+    for (const row of driver.query<{ id: string }>(
+      'SELECT id FROM garment_season WHERE garment_id = ? AND deleted_at IS NULL',
+      [garmentId],
+    )) {
+      driver.run('UPDATE garment_season SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+        now,
+        now,
+        row.id,
+      ]);
+      log('garment_season', row.id, 'delete', now);
+    }
+    // De-duplicated: the CHECK constrains the vocabulary and nothing constrains repetition,
+    // so ['autumn','autumn'] would otherwise store a garment as twice-autumnal.
+    for (const season of new Set(seasons)) {
+      const id = `${garmentId}:${season}`;
+      driver.run(
+        `INSERT INTO garment_season (id, created_at, updated_at, deleted_at, garment_id, season)
+         VALUES (?, ?, ?, NULL, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET deleted_at = NULL, updated_at = excluded.updated_at`,
+        [id, now, now, garmentId, season],
+      );
+      log('garment_season', id, 'insert', now);
+    }
+  };
+
+  /** Replace a garment's secondary and accent colours. Same wholesale reasoning as seasons. */
+  const replaceGarmentColors = (
+    garmentId: string,
+    colors: readonly NewGarmentColor[],
+    now: Millis,
+  ): void => {
+    for (const row of driver.query<{ id: string }>(
+      'SELECT id FROM garment_color WHERE garment_id = ? AND deleted_at IS NULL',
+      [garmentId],
+    )) {
+      driver.run('UPDATE garment_color SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+        now,
+        now,
+        row.id,
+      ]);
+      log('garment_color', row.id, 'delete', now);
+    }
+    for (const entry of colors) {
+      const colorId = reusableColorId(entry.color);
+      upsertColor({ ...entry.color, id: colorId }, now);
+      const id = `${garmentId}:${entry.role}:${colorId}`;
+      driver.run(
+        `INSERT INTO garment_color
+           (id, created_at, updated_at, deleted_at, garment_id, color_id, role, proportion)
+         VALUES (?, ?, ?, NULL, ?, ?, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET deleted_at = NULL, updated_at = excluded.updated_at,
+           proportion = excluded.proportion`,
+        [id, now, now, garmentId, colorId, entry.role, entry.proportion],
+      );
+      log('garment_color', id, 'insert', now);
+    }
+  };
+
+  /** One colour row by id, or a `StoreError` naming what is missing rather than a `TypeError`. */
+  const colorById = (id: string, context: string): SavedColorRow => {
+    const row = driver.query<SavedColorRow>(
+      `SELECT ${COLOR_COLUMNS} FROM saved_color WHERE id = ?`,
+      [id],
+    )[0];
+    if (row === undefined)
+      throw new StoreError(
+        `${context}: saved_color ${id} is missing. The foreign key should make this ` +
+          'impossible, which means foreign_keys was off when the row was written.',
+      );
+    return row;
+  };
+
+  const readGarment = (row: GarmentRow): StoredGarment => {
+    const seasons = driver
+      .query<{
+        season: string;
+      }>(
+        'SELECT season FROM garment_season WHERE garment_id = ? AND deleted_at IS NULL ORDER BY season',
+        [row.id],
+      )
+      .map((s) => {
+        // Refused BY NAME rather than cast into the union — the move migration 3's read path
+        // makes. A value the CHECK would reject can still be in a database written by a build
+        // that had a wider vocabulary, and `as GarmentSeason` would make it everyone's problem.
+        if (!(GARMENT_SEASONS as readonly string[]).includes(s.season))
+          throw new StoreError(
+            `garment ${row.id} carries season "${s.season}", which is not one of ` +
+              `${GARMENT_SEASONS.join(', ')}.`,
+          );
+        return s.season as GarmentSeason;
+      });
+
+    const colors = driver
+      .query<{ color_id: string; role: string; proportion: number | null }>(
+        `SELECT color_id, role, proportion FROM garment_color
+         WHERE garment_id = ? AND deleted_at IS NULL ORDER BY role, id`,
+        [row.id],
+      )
+      .map((c) => {
+        if (!(GARMENT_COLOR_ROLES as readonly string[]).includes(c.role))
+          throw new StoreError(
+            `garment ${row.id} carries colour role "${c.role}", which is not one of ` +
+              `${GARMENT_COLOR_ROLES.join(', ')}.`,
+          );
+        return {
+          role: c.role as GarmentColorRole,
+          color: colorById(c.color_id, `garment ${row.id}`),
+          proportion: c.proportion,
+        };
+      });
+
+    return {
+      id: row.id,
+      type: row.type,
+      color: colorById(row.primary_color_id, `garment ${row.id}`),
+      name: row.name,
+      pattern: row.pattern,
+      material: row.material,
+      formality: row.formality,
+      brand: row.brand,
+      size: row.size,
+      purchaseDate: row.purchase_date,
+      costMinor: row.cost_minor,
+      currency: row.currency,
+      wearCount: row.wear_count,
+      seasons,
+      colors,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      deletedAt: row.deleted_at,
+    };
   };
 
   const readProfile = (row: PersonalProfileRow): StoredPersonalProfile => {
@@ -655,6 +856,187 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           log('profile_dimension_color', row.id, 'delete', now);
         }
       });
+    },
+
+    /* ------------------------------------------------------------- the wardrobe (F-042) */
+
+    createGarment(garment: NewGarment, now: Millis): void {
+      driver.transaction(() => {
+        /*
+         * The colour first: `garment.primary_color_id` REFERENCES `saved_color` and
+         * foreign_keys is ON, so the other order is rejected rather than orphaned.
+         *
+         * Reused by `corpus_slug` for the reason `savePalette` gives — otherwise every
+         * garment in the same published navy writes its own copy of that navy, and "how many
+         * navy things do I own" becomes a question about rows rather than about clothes.
+         */
+        const colorId = reusableColorId(garment.color);
+        upsertColor({ ...garment.color, id: colorId }, now);
+
+        driver.run(
+          `INSERT INTO garment (id, created_at, updated_at, deleted_at, type, primary_color_id,
+             name, pattern, material, formality, brand, size, purchase_date, cost_minor,
+             currency, wear_count)
+           VALUES (?, ?, ?, NULL, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)`,
+          [garment.id, now, now, garment.type, colorId],
+        );
+        log('garment', garment.id, 'insert', now);
+      });
+    },
+
+    enrichGarment(id: string, patch: GarmentEnrichment, now: Millis): void {
+      driver.transaction(() => {
+        const existing = driver.query<{ id: string }>('SELECT id FROM garment WHERE id = ?', [id]);
+        if (existing.length === 0)
+          throw new StoreError(
+            `enrichGarment: no garment ${id}. A patch never creates one — a mistyped id would ` +
+              'otherwise become a second garment carrying half the edits and nothing to find it by.',
+          );
+
+        /*
+         * Built from the keys PRESENT on the patch, so `undefined` and `null` stay different:
+         * an absent key contributes no SET clause and leaves the column, while an explicit
+         * null writes NULL and clears it. `'brand' in patch` is the only test that can tell
+         * those apart — `patch.brand === undefined` cannot.
+         */
+        const sets: string[] = [];
+        const values: unknown[] = [];
+        for (const [key, column] of GARMENT_PATCH_COLUMNS) {
+          if (!(key in patch)) continue;
+          sets.push(`${column} = ?`);
+          values.push(patch[key] ?? null);
+        }
+
+        if (sets.length > 0) {
+          driver.run(`UPDATE garment SET updated_at = ?, ${sets.join(', ')} WHERE id = ?`, [
+            now,
+            ...values,
+            id,
+          ]);
+        } else {
+          driver.run('UPDATE garment SET updated_at = ? WHERE id = ?', [now, id]);
+        }
+        log('garment', id, 'update', now);
+
+        if (patch.seasons !== undefined) replaceSeasons(id, patch.seasons, now);
+        if (patch.colors !== undefined) replaceGarmentColors(id, patch.colors, now);
+      });
+    },
+
+    listGarments(): StoredGarment[] {
+      return driver
+        .query<GarmentRow>(
+          `SELECT ${GARMENT_COLUMNS} FROM garment WHERE deleted_at IS NULL ORDER BY created_at`,
+        )
+        .map((row) => readGarment(row));
+    },
+
+    getGarment(id: string): StoredGarment | undefined {
+      const row = driver.query<GarmentRow>(`SELECT ${GARMENT_COLUMNS} FROM garment WHERE id = ?`, [
+        id,
+      ])[0];
+      return row === undefined ? undefined : readGarment(row);
+    },
+
+    deleteGarment(id: string, now: Millis): void {
+      driver.transaction(() => {
+        driver.run('UPDATE garment SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+          now,
+          now,
+          id,
+        ]);
+        log('garment', id, 'delete', now);
+        // Tombstoned explicitly rather than left to ON DELETE CASCADE, for the reason
+        // `deleteProfile` states: a cascade fires on DELETE and this is an UPDATE, so the
+        // children would stay live under a deleted garment with nothing to report it.
+        for (const table of ['garment_season', 'garment_color', 'garment_image'] as const) {
+          for (const child of driver.query<{ id: string }>(
+            `SELECT id FROM ${table} WHERE garment_id = ? AND deleted_at IS NULL`,
+            [id],
+          )) {
+            driver.run(`UPDATE ${table} SET deleted_at = ?, updated_at = ? WHERE id = ?`, [
+              now,
+              now,
+              child.id,
+            ]);
+            log(table, child.id, 'delete', now);
+          }
+        }
+      });
+    },
+
+    putGarmentImage(garmentId: string, image: SanitisedImage, now: Millis): void {
+      driver.transaction(() => {
+        const garment = driver.query<{ id: string }>('SELECT id FROM garment WHERE id = ?', [
+          garmentId,
+        ]);
+        if (garment.length === 0)
+          throw new StoreError(
+            `putGarmentImage: no garment ${garmentId}. The foreign key would refuse this ` +
+              'anyway; saying so here names the id instead of surfacing a constraint error.',
+          );
+
+        // One image per garment — `garment_image.garment_id` is UNIQUE — so this replaces
+        // rather than accumulates. The row id is derived from the garment so a replacement is
+        // one change-log entry about one thing, not a delete and an insert of two ids.
+        const id = `${garmentId}:image`;
+        driver.run(
+          `INSERT INTO garment_image
+             (id, created_at, updated_at, deleted_at, garment_id, bytes, byte_length,
+              width, height, format)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (id) DO UPDATE SET
+             deleted_at = NULL, updated_at = excluded.updated_at, bytes = excluded.bytes,
+             byte_length = excluded.byte_length, width = excluded.width,
+             height = excluded.height, format = excluded.format`,
+          [
+            id,
+            now,
+            now,
+            garmentId,
+            image.bytes,
+            image.bytes.length,
+            image.width,
+            image.height,
+            image.format,
+          ],
+        );
+        log('garment_image', id, 'insert', now);
+      });
+    },
+
+    getGarmentImageInfo(garmentId: string): GarmentImageInfo | undefined {
+      // Every column EXCEPT `bytes`. The point of this method is not to touch the blob.
+      const row = driver.query<{
+        byte_length: number;
+        width: number;
+        height: number;
+        format: string;
+      }>(
+        `SELECT byte_length, width, height, format FROM garment_image
+         WHERE garment_id = ? AND deleted_at IS NULL`,
+        [garmentId],
+      )[0];
+      if (row === undefined) return undefined;
+      if (row.format !== 'jpeg' && row.format !== 'png')
+        throw new StoreError(
+          `garment ${garmentId} has an image in format "${row.format}", which is neither jpeg ` +
+            'nor png. Refused by name rather than cast into the union.',
+        );
+      return {
+        byteLength: row.byte_length,
+        width: row.width,
+        height: row.height,
+        format: row.format,
+      };
+    },
+
+    getGarmentImage(garmentId: string): Uint8Array | undefined {
+      const row = driver.query<{ bytes: Uint8Array }>(
+        'SELECT bytes FROM garment_image WHERE garment_id = ? AND deleted_at IS NULL',
+        [garmentId],
+      )[0];
+      return row === undefined ? undefined : Uint8Array.from(row.bytes);
     },
 
     changeLog(): ChangeLogRow[] {

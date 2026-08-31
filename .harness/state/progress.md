@@ -8,6 +8,196 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-042 DONE · the wardrobe, and a sentence about encryption that was not true
+
+### Three documents disagreed, and one of them was wrong
+
+The feature could not start until this was settled:
+
+| source | says |
+|---|---|
+| **NFR-13** | the database *and any stored imagery* are encrypted **with SQLCipher** |
+| **criterion 3** | encrypted with a **device key held in the platform keystore**; rotation tested |
+| **`data-model.md` §5** | *"no `image_encrypted` column … the whole database **and the image directory** are covered by the device's own protection plus SQLCipher"* |
+
+**The third was factually wrong.** SQLCipher encrypts a database file; it does not reach a
+directory of images sitting beside it. Those would be covered by iOS Data Protection and
+Android FBE — real, and neither SQLCipher nor a key we hold. So an `image_path` column would
+have made NFR-13 **false while appearing to satisfy it**.
+
+That is golden rule 11 one level in from the UI. An architecture document overstating what a
+mechanism covers is the same defect as a screen overstating what a camera measured, and it is
+harder to catch because nobody reads an architecture document hunting for a claim.
+
+**Decision (the user's, put to them because it changes the dependency footprint): BLOBs in the
+SQLCipher database.** ADR-0078 records it with both rejected options and why they lost —
+encrypted files needed two new dependencies and a crash-safe re-encrypt loop of our own; plain
+files needed **amending NFR-13**, which is the requirement owner's call and not an
+implementer's.
+
+### What was built
+
+Migration 4 — `garment`, `garment_season`, `garment_color`, `garment_image`. Five criteria,
+five mechanisms:
+
+- **Only colour and type at creation** — `NewGarment` has exactly three fields, and the
+  nullable columns are not the enforcement: a type carrying twelve optionals satisfies every
+  constraint while still putting twelve decisions in front of somebody adding a jumper.
+- **Perceptual grouping** — `deltaE00`, imported from `@irodora/color-difference`, never
+  re-derived. The decoys are the criterion: `#800000`/`#800080` sort adjacently and are ΔE00 ≈
+  39 apart; `#FF0000`/`#FE0102` differ in three bytes and are the same red.
+- **Images encrypted, rotation tested** — BLOBs in the encrypted database; `rekey` on the
+  driver, `rotateDatabaseKey` in `key.ts`.
+- **EXIF stripped, hard limits before decode** — `ingestImage`, and a branded `SanitisedImage`
+  no caller outside `image.ts` can construct.
+- **No document calls this end-to-end encryption** — `privacy-design.md` §4 rewritten.
+
+### The type is the enforcement, twice, and both were proven by breaking them
+
+`putGarmentImage` accepts only a `SanitisedImage`. `createGarment` accepts only
+`{id, type, color}`. Both are asserted with `@ts-expect-error`, which is a real assertion
+because an **unused** directive is itself a build failure.
+
+**And the first version of that proved nothing.** `NewGarment` was not exported from
+`index.ts`, so the test's annotation resolved to `any`, all three directives went unused, and
+`tsc` said so — while **vitest reported 78/78 green**. A type assertion that never bound is
+indistinguishable from one that holds, and only the separate typecheck gate could tell.
+
+### The order of operations is the whole of `rotateDatabaseKey`
+
+Generate → **rekey the database** → *then* write the keystore. Storing first works every time
+until the rekey fails, and then the keystore holds a key that opens nothing while the data sits
+intact and unreachable on disk. The symptom is *"the app lost my photographs"*, reported once,
+months later, unreproducible.
+
+`node:sqlite` has no SQLCipher, so `PRAGMA rekey` cannot run in CI — F-041's wall, and it is
+carried the same way: `DriverInfo.supportsRekey` is data, the Node driver reports `false` **and
+throws**, and a rotation against it is refused rather than reported as a success that changed
+nothing.
+
+### Widening the `Driver` interface broke the app, exactly as E-023 predicted
+
+E-023's `to` names `apps/mobile/src/store`, and adding `rekey` to `Driver` made the device
+driver an incomplete implementation. **The link named the dependent before it broke**, which is
+the entire return on keeping the graph. Fixed in the same change: the device driver implements
+`rekey` through SQLCipher's own pragma, reports `supportsRekey: true`, and the conformance
+report carries it so a device run is evidence for the rotation attestation.
+
+That also produced a small correction worth keeping. The device driver first called
+`keyPragma(newKey).replace('PRAGMA key', 'PRAGMA rekey')` — string surgery on a validated
+statement, which works and is one careless edit from not. `rekeyPragma` now shares the hex
+validation, because both statements interpolate a key into SQL that takes no bound parameter
+and a second construction path is a second place to get that wrong.
+
+### E-023 also predicted the archive, and that is asserted rather than discovered
+
+`ARCHIVE_TABLES` derives from `SYNC_TABLES`, so `garment_image` joined the backup format and
+its canonical digest with nobody editing `archive.ts`. **No new link was recorded for it** —
+E-023 covers exactly this and a duplicate would be noise. What was added is the assertion, so
+the behaviour is a decision rather than something a user discovers from an export that grew.
+
+### Four things that went wrong on the way, all of the same family
+
+Every one is a check that reported success without having run:
+
+- **`@ts-expect-error` suppresses the compile error and does not stop the statement.** The two
+  brand assertions type-checked as intended and then *executed*, passing a raw buffer into a
+  SQL bind. They now live in a declared-and-never-called function; the directives still fail
+  the build if the brand stops rejecting.
+- **`pnpm --filter irodora-mobile typecheck` matched nothing and exited 0.** The package is
+  `@irodora/mobile`. A filter that matches no package is a green run over nothing — the same
+  shape as F-106's `/tmp` mutation that never applied.
+- **A hard-coded migration count.** `expect(applied).toBe(1)` in F-026's test broke on
+  migration 4. It is now derived from `MIGRATIONS`, because the number it asserted was "the
+  migrations that did not exist when this was written".
+- **An invented column.** A `sha256` on `garment_image` was drafted for an archive comparison
+  nothing asked for; implementing it honestly meant a hash port or a hand-rolled SHA-256 in a
+  zero-dependency package. Removed. Extra scope is as much a failure as missing scope.
+
+### Criterion 4 names something that does not exist
+
+*"images decoded only in **the worker** under hard limits"*. ADR-0051 retired the server tier;
+there is no worker. `.harness/rules/security/security.md` still describes one — *"never in the
+API process"*, *"the worker runs non-root, read-only filesystem, no network egress"* — and
+**criterion 4 was written from that rule**, so the rot propagated from a rules file into the
+scope file.
+
+What survives the rehaul is the reason: hostile bytes must not reach a decoder unbounded. On a
+server you contain that with a process; here there is no process to spend, so the containment
+happens *before* the decode instead of around it. Byte cap, magic-byte type check, pixel bound
+read from the header — and this module never decodes anything. **The "in the worker" half is
+not implementable and is reported as such rather than reinterpreted into something easier.**
+
+### Gate 0's vocabulary check cannot see this class of rot
+
+It builds its subject list from `acceptance` entries, `attested[].criterion` entries and PRD
+requirement rows. **Architecture, ADR and rule documents are entirely outside its corpus.**
+
+The proof is that it missed its own vocabulary: `privacy-design.md` §4 contained
+*"per-tenant data key"*, and `\bper-tenant\b` is one of its seven terms. Green for months.
+
+What §4 still described as current, nine months after ADR-0051: TLS 1.3, HSTS, certificate
+pinning, a KMS master key — and the paragraph explaining why we do not claim end-to-end
+encryption gave as its reason *"the server can decrypt wardrobe images"*. Rewritten: the phrase
+is still wrong, now because **there is one end**, and what the encryption protects against is a
+lost or stolen phone.
+
+Two more places denied it for the retired reason — `.harness/rules/security/privacy.md` and the
+security-review skill. **Corrected here rather than filed**, deliberately and narrowly: a rules
+file is read as binding, the sentence was false about the product's security posture, and it
+sits in the exact subject this feature was building. The rest — `security.md`'s
+images-are-hostile-input and Database sections, ADR-0026 §4 and §7, and widening the scan
+itself — is **F-107**.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** — 18 checks | | 2 lint | **PASS** |
+| 0 effect-id proof | **PASS** | | 4 test | **PASS** — 109 in `@irodora/store` |
+| 0 state-id proof | **PASS** | | 6 build | **PASS** |
+| 0 mirror proof | **PASS** | | 15 security | **PASS** |
+| 0 lockfile proof | **PASS** | | 11 content | **PASS** |
+| 1 typecheck | **PASS** | | 3 format | **PASS** |
+
+**`e2e` is in this feature's verification list and could not run** — gate 7 is pending and
+F-091 is blocked on an emulator this workstation has no JDK for. Nothing here proves a person
+ever adds a garment through a screen; there is no screen, and that is F-043.
+
+Not applicable: `color-golden` (the metric is imported, no engine maths moved), `cvd`,
+`contrast`, `a11y`, `perf`, `artifact`.
+
+### What is attested rather than gated
+
+Two, both on the device, both blocking release:
+
+- **A rotated database opens under the new key and refuses the old one.** CI proves the
+  lifecycle and the ordering; `PRAGMA rekey` itself needs SQLCipher.
+- **Photographs are actually encrypted at rest.** The same wall as F-041's, now covering the
+  image bytes, because they are in that file.
+
+### Watch out
+
+- **Adding a table to `SYNC_TABLES` changes the backup format.** E-023 says so; it is now also
+  a test.
+- **A pnpm `--filter` that matches nothing exits 0.** Check the package name, not the
+  directory — `@irodora/mobile`, not `irodora-mobile`.
+- **So does a mistyped script name, differently.** `pnpm gate:content` exits **1** with
+  *"Command not found"*, which in a sweep that only prints exit codes reads exactly like a red
+  gate. The content gate is `test:content`, and it was green. **Three times this session a
+  check reported a result without having run** — a filter matching nothing, a scratch mutation
+  writing to a path Node resolves differently, and this. In every case the exit code was
+  believable and only the output said otherwise.
+
+### Next
+
+R4 continues. **F-043 — add-garment flows** is next by id and its blockers (F-040, F-042) are
+now both done; it is the surface that makes this feature reachable by a person, and it carries
+the median-time-to-add attestation. F-104's device attestation still blocks release, and F-107
+is filed against the vocabulary gap this feature found.
+
+---
+
 ## 2026-08-31 — F-106 DONE · the one-off became a table, and the table got its own honest limit
 
 ### Selected because filing it re-opened R3

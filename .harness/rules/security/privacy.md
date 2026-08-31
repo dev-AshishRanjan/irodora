@@ -110,9 +110,15 @@ it, not the job's exit code.
 
 ## Language
 
-**We do not say "end-to-end encrypted."** The server can decrypt synced wardrobe images,
-because thumbnailing and restore require it. Envelope encryption protects against a stolen
-backup or a leaked bucket. It does not protect against us, and the documentation says so.
+**We do not say "end-to-end encrypted."** The reason changed with ADR-0051 and the rule did
+not: it used to be that our server could decrypt synced wardrobe images. **There is no server.**
+The phrase is still wrong, now for a more basic reason — end-to-end encryption describes data
+protected between two ends, and there is one end. Nothing leaves the device, so there is no
+channel to secure and nothing to be "end to end" about.
+
+What the encryption does cover is a lost or stolen phone: SQLCipher over the whole database,
+wardrobe photographs included, since those are BLOBs inside it rather than files beside it
+(ADR-0078). It is not a claim about anything leaving the device, because nothing does.
 
 Borrowing the phrase when the server holds a usable key is one of the most common dishonest
 claims in consumer software. The honest version of "we cannot see your data" is
