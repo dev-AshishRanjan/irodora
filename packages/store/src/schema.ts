@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -392,6 +392,62 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       ALTER TABLE saved_color ADD COLUMN capture_variance   REAL;
     `,
   },
+  {
+    version: 6,
+    /*
+     * F-046. Preference feedback, as COUNTS.
+     *
+     * ## What is stored is what somebody did, not what we concluded from it
+     *
+     * The obvious shape is one `weight REAL` column nudged on each observation. It is wrong,
+     * and the reason is worth the paragraph: a running float depends on the ORDER the updates
+     * arrived in and on the HISTORY of the update function. Change the step size in a later
+     * release and every stored weight silently means something else, with nothing anywhere
+     * able to detect it.
+     *
+     * `accepted` and `rejected` are facts. The weight is `preferenceWeight()` in
+     * @irodora/recommendation, evaluated on demand. So FR-37's "deterministic" is true by
+     * construction, "inspectable" is real — these two integers ARE the evidence — and the
+     * formula can be corrected without corrupting anything.
+     *
+     * ## The pair is canonically ordered, and the UNIQUE constraint is what enforces it
+     *
+     * A pairing is unordered: rust with charcoal is charcoal with rust. Without one row per
+     * unordered pair the same preference is learned twice under two keys and half of it is
+     * never found — the recommender would appear to forget, depending on which garment was in
+     * hand. The writer sorts; `UNIQUE (family_a, family_b)` is what makes a second row
+     * impossible rather than merely unlikely.
+     *
+     * ## Families, not individual colours
+     *
+     * 25 families over 120 published entries, counted rather than assumed. Keyed on exact
+     * colours the space would be 120 x 120 and a person would have to pick the same two
+     * published entries repeatedly for anything to move — the loop would be correct and inert.
+     *
+     * ## This table never leaves the device and never becomes content
+     *
+     * FR-37: "feedback affects only the submitting user, never global ranking". There is no
+     * server to send it to (ADR-0051), and the published rule weights are content with their
+     * own version and digest — this is a LOCAL multiplier applied on top, and nothing here can
+     * write into them.
+     */
+    up: `
+      CREATE TABLE pairing_preference (
+        ${SYNC_COLUMNS},
+        family_a  TEXT    NOT NULL,
+        family_b  TEXT    NOT NULL,
+        accepted  INTEGER NOT NULL DEFAULT 0 CHECK (accepted >= 0),
+        rejected  INTEGER NOT NULL DEFAULT 0 CHECK (rejected >= 0),
+        -- Canonical order, enforced rather than trusted. Without it the same pairing can be
+        -- stored twice and the second copy is invisible to every read.
+        CHECK (family_a <= family_b),
+        UNIQUE (family_a, family_b)
+      ) STRICT;
+
+      CREATE INDEX pairing_preference_live
+        ON pairing_preference (deleted_at) WHERE deleted_at IS NULL;
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -405,5 +461,6 @@ export const SYNC_TABLES = [
   'garment_season',
   'garment_color',
   'garment_image',
+  'pairing_preference',
 ] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];

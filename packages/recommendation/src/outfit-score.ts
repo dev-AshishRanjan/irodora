@@ -38,6 +38,7 @@ import { deltaE00 } from '@irodora/color-difference';
 import { xyzToLab, xyzToOklch, xyzToSrgb } from '@irodora/color-spaces';
 import { separationScore, type Deficiency } from '@irodora/cvd-engine';
 import type { Color } from '@irodora/color-core';
+import { preferenceFor, PREFERENCE_NEUTRAL, type PreferenceTable } from './preference.js';
 import type { PersonalProfile } from './profile.js';
 import type { RuleSet } from './rules.js';
 import { CONTRAST_TARGET, scoreColor, temperatureOf, type ExplanationDirection } from './score.js';
@@ -59,6 +60,14 @@ export type OutfitComponent = (typeof OUTFIT_COMPONENTS)[number];
 export interface OutfitPiece {
   readonly slot: OutfitSlot;
   readonly color: Color;
+  /**
+   * The colour's family, when it has one (F-046).
+   *
+   * Optional because a Lens capture has no family — it is a measurement, not a published entry
+   * — and because every caller that predates preference feedback must keep compiling and must
+   * keep scoring identically. A piece without a family simply takes part in no preference.
+   */
+  readonly family?: string | undefined;
 }
 
 /** One component's verdict, as data. Never a sentence — FR-11. */
@@ -332,15 +341,65 @@ function cvdAccessibility(pieces: readonly OutfitPiece[]): ComponentScore {
  * Requiring it rather than defaulting is the same refusal `scoreColor` makes: a default would
  * be an editorial number living in code.
  */
+
+/**
+ * How much the person's own history should move the harmony of these pieces (FR-37, F-046).
+ *
+ * **Harmony and nothing else.** Harmony is the component about how colours sit together, which
+ * is what "repeated selection of a pairing" is evidence about. Personal fit, contrast and CVD
+ * accessibility are deliberately untouched: a habit is evidence about taste, and it is **not**
+ * evidence about whether two colours are separable for a deutan or whether text clears a
+ * contrast floor. Letting preference reach those would let somebody's repeated choices talk
+ * them out of an accessibility finding.
+ *
+ * The mean over pairs, not the product: three pairs each leaning 1.25 should lean 1.25, not
+ * 1.95. A product would let a three-piece outfit accumulate a preference nobody expressed.
+ *
+ * Pieces without a family take part in nothing, so an outfit with no families at all returns
+ * exactly `PREFERENCE_NEUTRAL` and the score is unchanged.
+ */
+function preferenceMultiplier(
+  pieces: readonly OutfitPiece[],
+  preferences: PreferenceTable | undefined,
+): number {
+  if (preferences === undefined || preferences.size === 0) return PREFERENCE_NEUTRAL;
+
+  const weights: number[] = [];
+  for (let i = 0; i < pieces.length; i += 1)
+    for (let j = i + 1; j < pieces.length; j += 1) {
+      const a = pieces[i]?.family;
+      const b = pieces[j]?.family;
+      if (a === undefined || b === undefined) continue;
+      weights.push(preferenceFor(preferences, a, b));
+    }
+
+  if (weights.length === 0) return PREFERENCE_NEUTRAL;
+  return weights.reduce((n, w) => n + w, 0) / weights.length;
+}
+
 export function scoreOutfit(
   pieces: readonly OutfitPiece[],
   reference: readonly Candidate[],
   profile: PersonalProfile,
   rules: RuleSet,
   weights: Readonly<Record<OutfitComponent, number>>,
+  /**
+   * This device's preference history (FR-37, F-046). **Optional, and absent means unchanged.**
+   *
+   * Every caller written before this argument existed passes nothing, and must keep getting
+   * exactly the score it got before — `PREFERENCE_NEUTRAL` is exactly 1 and the multiplier
+   * returns it for an empty or absent table, so the arithmetic is identity rather than
+   * approximately identity. A test asserts that rather than trusting it.
+   */
+  preferences?: PreferenceTable,
 ): OutfitScore {
+  const lean = preferenceMultiplier(pieces, preferences);
+  const base = harmony(pieces, rules);
   const components: readonly ComponentScore[] = [
-    harmony(pieces, rules),
+    // HARMONY ONLY. The other five are untouched by preference — see `preferenceMultiplier`.
+    lean === PREFERENCE_NEUTRAL
+      ? base
+      : { ...base, score: Math.max(0, Math.min(100, base.score * lean)) },
     personalFit(pieces, profile, rules),
     contrast(pieces, profile),
     corpusAffinity(pieces, reference),

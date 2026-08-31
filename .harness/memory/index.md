@@ -128,6 +128,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-table-driven-check-is-only-as-complete-as-its-table.md](effects/a-table-driven-check-is-only-as-complete-as-its-table.md) — **E-040** · the table covers seven id spaces and cannot see an eighth; an undeclared space produces no output, which reads exactly like correctness.
 - [effects/a-brand-is-the-only-thing-that-makes-sanitising-mandatory.md](effects/a-brand-is-the-only-thing-that-makes-sanitising-mandatory.md) — **E-041** · widening one parameter to `Uint8Array` silently removes EXIF stripping, and every existing call site keeps working.
 - [effects/a-one-slot-mailbox-with-two-readers-loses-mail-silently.md](effects/a-one-slot-mailbox-with-two-readers-loses-mail-silently.md) — **E-042** · the Lens hand-off was correct with one reader and silently wrong with two; both screens see `null` and neither can tell why.
+- [effects/a-habit-is-evidence-about-taste-and-not-about-legibility.md](effects/a-habit-is-evidence-about-taste-and-not-about-legibility.md) — **E-043** · preference moves harmony and nothing else; reaching CVD or contrast would teach the product to agree with somebody about an accessibility finding.
 
 ## Glossary
 

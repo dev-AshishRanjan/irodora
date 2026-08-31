@@ -92,4 +92,15 @@ export {
   type OutfitScore,
 } from './outfit-score.js';
 
+export {
+  pairingKey,
+  preferenceFor,
+  preferenceWeight,
+  PREFERENCE_NEUTRAL,
+  PREFERENCE_RANGE,
+  PREFERENCE_SATURATION,
+  type PreferenceObservation,
+  type PreferenceTable,
+} from './preference.js';
+
 export const RECOMMENDATION_VERSION = '0.4.0' as const;

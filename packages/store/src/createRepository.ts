@@ -26,6 +26,9 @@ import {
   type Millis,
   type GarmentColorRole,
   type GarmentImageInfo,
+  type PairingPreferenceRow,
+  type PreferenceVerdict,
+  type StoredPreference,
   type GarmentEnrichment,
   type GarmentRow,
   type GarmentSeason,
@@ -1048,6 +1051,66 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
         [garmentId],
       )[0];
       return row === undefined ? undefined : Uint8Array.from(row.bytes);
+    },
+
+    recordPreference(a: string, b: string, verdict: PreferenceVerdict, now: Millis): void {
+      const [familyA, familyB] = a <= b ? [a, b] : [b, a];
+      const column = verdict === 'accepted' ? 'accepted' : 'rejected';
+      const id = `pref:${familyA}:${familyB}`;
+
+      driver.transaction(() => {
+        // UPSERT on the canonical pair. The increment happens in SQL rather than read-modify-
+        // write, so two writes cannot read the same value and each store one more than it.
+        driver.run(
+          `INSERT INTO pairing_preference
+             (id, created_at, updated_at, deleted_at, family_a, family_b, accepted, rejected)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?)
+           ON CONFLICT (family_a, family_b) DO UPDATE SET
+             updated_at = excluded.updated_at,
+             deleted_at = NULL,
+             ${column} = pairing_preference.${column} + 1`,
+          [
+            id,
+            now,
+            now,
+            familyA,
+            familyB,
+            verdict === 'accepted' ? 1 : 0,
+            verdict === 'rejected' ? 1 : 0,
+          ],
+        );
+        log('pairing_preference', id, 'update', now);
+      });
+    },
+
+    listPreferences(): readonly StoredPreference[] {
+      return driver
+        .query<PairingPreferenceRow>(
+          `SELECT id, created_at, updated_at, deleted_at, family_a, family_b, accepted, rejected
+           FROM pairing_preference WHERE deleted_at IS NULL ORDER BY family_a, family_b`,
+        )
+        .map((row) => ({
+          familyA: row.family_a,
+          familyB: row.family_b,
+          accepted: row.accepted,
+          rejected: row.rejected,
+        }));
+    },
+
+    resetPreferences(now: Millis): void {
+      driver.transaction(() => {
+        // A HARD delete, unlike every other delete here. A tombstone would be a record of what
+        // somebody asked to have forgotten. The change-log rows go too, for the same reason —
+        // "reset" that leaves a trail of what was reset is not reset.
+        const rows = driver.query<{ id: string }>('SELECT id FROM pairing_preference');
+        driver.run('DELETE FROM pairing_preference');
+        for (const row of rows)
+          driver.run('DELETE FROM change_log WHERE table_name = ? AND row_id = ?', [
+            'pairing_preference',
+            row.id,
+          ]);
+        log('pairing_preference', 'all', 'delete', now);
+      });
     },
 
     changeLog(): ChangeLogRow[] {

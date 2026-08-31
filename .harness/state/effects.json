@@ -1532,6 +1532,43 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-043",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/outfit-score.ts#preferenceMultiplier"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/outfit-score.ts#scoreOutfit"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/recommendation/test/outfit-score.test.ts"
+        },
+        {
+          "kind": "content",
+          "ref": "content/rules"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "packages/store"
+      ],
+      "severity": "high",
+      "guard": "gate:test — asserted PER COMPONENT in a loop over OUTFIT_COMPONENTS with harmony skipped, because \"the overall moved\" passes for an implementation that moved the wrong one. Watched failing: applying the multiplier to contrast turns exactly that test red.",
+      "memory": "memory/effects/a-habit-is-evidence-about-taste-and-not-about-legibility.md",
+      "rationale": "A HABIT IS EVIDENCE ABOUT TASTE AND NOT ABOUT LEGIBILITY. `scoreOutfit` returns six components and preference feedback (FR-37) multiplies EXACTLY ONE of them — `harmony`, the component about how colours sit together, which is what \"repeated selection of a pairing\" is evidence about. The other five depend on not being reachable from it: `cvdAccessibility`, because whether two colours separate for a deutan is a fact about vision rather than about what somebody keeps picking; `contrast`, because a legibility floor is not negotiable by habit; `personalFit`, because the profile is what the person SAID about themselves while preference is what they DID, and letting one write the other makes the profile unfalsifiable; `corpusAffinity`, a measured dE00 to a published entry; and `versatility`, a property of the colour rather than of this wardrobe. THE FAILURE THIS PREVENTS, STATED PLAINLY: if preference reached `cvdAccessibility`, somebody who repeatedly chose a pairing a deutan cannot separate would gradually stop being told so — THE PRODUCT WOULD LEARN TO AGREE WITH THEM ABOUT AN ACCESSIBILITY FINDING. That is golden rule 13 defeated from an unexpected direction: not by removing the channel, but by teaching the system to stop using it. The same shape applies to `contrast`; a floor that erodes with use is not a floor. THE BOUND IS PART OF THE SAME GUARANTEE. The multiplier is clamped to plus or minus 25% around exactly 1, which is not tuning — it is what keeps preference NUDGING THE ORDER THE ENGINE PRODUCED rather than overruling it. An unbounded multiplier eventually promotes a pairing the engine scored badly, and at that point the six component scores are decoration: the answer is the person's habit wearing the engine's clothes. FR-11 promises a decomposition a person can argue with, and nobody can argue with a number that is mostly their own past behaviour reflected back. THE GUARD IS PER-COMPONENT, in a loop over OUTFIT_COMPONENTS with `harmony` skipped — NOT a check that the overall moved, because \"the overall moved\" passes for an implementation that moved the WRONG component, which is the entire failure. Watched failing: applying the multiplier to `contrast` as well turns exactly that one test red and leaves the other 120 green. THE OTHER HALF IS A DIFFERENT SHAPE AND IS ASSERTED SEPARATELY: preference must never reach the PUBLISHED RULE CONTENT, which is immutable at a version with a digest. The mechanism that prevents it is that preference lives in a device table the content pipeline cannot see, and the assertions are that the serialised RuleSet is byte-identical after scoring with a preference and that recording one touches no other table.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

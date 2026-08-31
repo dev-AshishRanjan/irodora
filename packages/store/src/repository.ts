@@ -454,6 +454,34 @@ export interface StoredGarment {
   readonly deletedAt: Millis | null;
 }
 
+/* ------------------------------------------------------- preference feedback (F-046) */
+
+export interface PairingPreferenceRow extends SyncRow {
+  readonly family_a: string;
+  readonly family_b: string;
+  readonly accepted: number;
+  readonly rejected: number;
+}
+
+/**
+ * One pairing's history, as the caller reads it.
+ *
+ * **Counts, never a weight.** The weight is `preferenceWeight()` in
+ * `@irodora/recommendation`, evaluated from these two integers — so what is stored is what
+ * somebody did and not what we concluded from it. A stored float would depend on the order the
+ * updates arrived in and on the history of the update function, and correcting the formula
+ * later would silently change what every existing row means.
+ */
+export interface StoredPreference {
+  readonly familyA: string;
+  readonly familyB: string;
+  readonly accepted: number;
+  readonly rejected: number;
+}
+
+/** What a person did about one pairing, once. */
+export type PreferenceVerdict = 'accepted' | 'rejected';
+
 /** What a caller can learn about an image without loading it. */
 export interface GarmentImageInfo {
   readonly byteLength: number;
@@ -621,6 +649,31 @@ export interface Repository {
   getGarmentImageInfo(garmentId: string): GarmentImageInfo | undefined;
   /** The bytes. Loads the whole blob, which is why the info call above exists. */
   getGarmentImage(garmentId: string): Uint8Array | undefined;
+  /**
+   * Record one verdict about a pairing of colour families (FR-37).
+   *
+   * The pair is **canonically ordered here**, so a caller cannot create a second row for the
+   * same unordered pairing by passing the families the other way round. The database also
+   * refuses it — `CHECK (family_a <= family_b)` and `UNIQUE` — because a rule enforced only
+   * by the writer is a rule that holds until somebody writes a second writer.
+   */
+  recordPreference(a: string, b: string, verdict: PreferenceVerdict, now: Millis): void;
+  /**
+   * Every pairing the person has expressed something about.
+   *
+   * This is FR-37's *"inspectable"*: the counts come back, and the weight is reproducible from
+   * them by anybody who reads `preferenceWeight`.
+   */
+  listPreferences(): readonly StoredPreference[];
+  /**
+   * Forget everything (FR-37's *"reset"*).
+   *
+   * A **hard delete**, unlike every other delete in this repository. A tombstone here would be
+   * a record of what somebody asked to have forgotten, which is the opposite of what they
+   * asked for — and preferences are derived from behaviour rather than authored, so there is
+   * nothing a future sync would need to reconcile.
+   */
+  resetPreferences(now: Millis): void;
   /** Every change-log entry, oldest first. Read by tests and by nothing in the product. */
   changeLog(): ChangeLogRow[];
   close(): void;

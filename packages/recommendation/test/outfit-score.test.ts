@@ -23,6 +23,8 @@ import {
   type OutfitPiece,
   type PersonalProfile,
   type RuleSet,
+  pairingKey,
+  type PreferenceTable,
 } from '../src/index.js';
 
 /* Paths written out in full — `verify-cache-scope.mjs` resolves a read statically, and a shared
@@ -338,5 +340,139 @@ describe('the outfit weights are content', () => {
     expect(CONTENT_1.versionId).toBe('2026.08.1');
     expect(CONTENT_1.occasions).toHaveLength(5);
     expect(ruleSetFor(CONTENT_1, 'office').weights.contrast).toBeGreaterThan(0);
+  });
+});
+
+describe('preference feedback (FR-37, F-046)', () => {
+  /*
+   * THE ASSERTION THAT PROTECTS EVERY EXISTING CALLER.
+   *
+   * `scoreOutfit` gained an optional argument. Every call site written before it passes
+   * nothing, and must keep getting EXACTLY the score it got before — not approximately, not to
+   * within rounding. A neutral of 0.999 would silently re-rank the whole product, and every
+   * other test in this file would still pass.
+   */
+  it('changes NOTHING when no preferences are supplied', () => {
+    const p = profile();
+    const before = scoreOutfit(COHERENT, POOL, p, RULES, WEIGHTS);
+    const after = scoreOutfit(COHERENT, POOL, p, RULES, WEIGHTS, new Map());
+
+    expect(after.overall).toBe(before.overall);
+    expect(after.components).toEqual(before.components);
+    expect(after.factors).toEqual(before.factors);
+  });
+
+  it('changes nothing when the pieces carry no family', () => {
+    // The decoy for the line above: a table with entries in it, and pieces that cannot take
+    // part. An implementation that applied a blanket multiplier would fail here and pass there.
+    const table: PreferenceTable = new Map([
+      [pairingKey('rust', 'charcoal'), { accepted: 8, rejected: 0 }],
+    ]);
+    const p = profile();
+    expect(scoreOutfit(COHERENT, POOL, p, RULES, WEIGHTS, table).overall).toBe(
+      scoreOutfit(COHERENT, POOL, p, RULES, WEIGHTS).overall,
+    );
+  });
+
+  it('lifts harmony for a pairing the person keeps choosing', () => {
+    const withFamilies = COHERENT.map((piece, i) => ({
+      ...piece,
+      family: i === 0 ? 'rust' : 'charcoal',
+    }));
+    const table: PreferenceTable = new Map([
+      [pairingKey('rust', 'charcoal'), { accepted: 8, rejected: 0 }],
+    ]);
+
+    const p = profile();
+    const plain = scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS);
+    const liked = scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS, table);
+
+    const harmonyOf = (r: ReturnType<typeof scoreOutfit>) =>
+      r.components.find((c) => c.component === 'harmony')?.score ?? 0;
+
+    expect(harmonyOf(liked)).toBeGreaterThan(harmonyOf(plain));
+  });
+
+  it('MOVES NOTHING BUT HARMONY, and that is the point', () => {
+    /*
+     * A habit is evidence about taste. It is NOT evidence about whether two colours are
+     * separable for a deutan, or whether text clears a contrast floor. Letting preference reach
+     * those components would let somebody's repeated choices talk them out of an accessibility
+     * finding — which is what golden rule 13 exists to prevent.
+     *
+     * Asserted PER COMPONENT, because "the overall moved" would pass for an implementation that
+     * moved the wrong one.
+     */
+    const withFamilies = COHERENT.map((piece, i) => ({
+      ...piece,
+      family: i === 0 ? 'rust' : 'charcoal',
+    }));
+    const table: PreferenceTable = new Map([
+      [pairingKey('rust', 'charcoal'), { accepted: 8, rejected: 0 }],
+    ]);
+
+    const p = profile();
+    const plain = scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS);
+    const liked = scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS, table);
+
+    for (const component of OUTFIT_COMPONENTS) {
+      if (component === 'harmony') continue;
+      const a = plain.components.find((c) => c.component === component)?.score;
+      const b = liked.components.find((c) => c.component === component)?.score;
+      expect(b).toBe(a);
+    }
+  });
+
+  it('lowers harmony for a pairing the person keeps rejecting', () => {
+    // The other direction. Without it, an implementation that only ever increased would pass
+    // every assertion above and make "reject" a control that does nothing.
+    const withFamilies = COHERENT.map((piece, i) => ({
+      ...piece,
+      family: i === 0 ? 'rust' : 'charcoal',
+    }));
+    const disliked: PreferenceTable = new Map([
+      [pairingKey('rust', 'charcoal'), { accepted: 0, rejected: 8 }],
+    ]);
+
+    const p = profile();
+    const harmonyOf = (r: ReturnType<typeof scoreOutfit>) =>
+      r.components.find((c) => c.component === 'harmony')?.score ?? 0;
+
+    expect(harmonyOf(scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS, disliked))).toBeLessThan(
+      harmonyOf(scoreOutfit(withFamilies, POOL, p, RULES, WEIGHTS)),
+    );
+  });
+
+  it('never takes a component outside its own range', () => {
+    // A multiplier on a score already near 100 must not produce 118. The clamp is what keeps
+    // "a number out of 100" true, which is the only thing that makes the six comparable.
+    const withFamilies = COHERENT.map((piece) => ({ ...piece, family: 'rust' }));
+    const table: PreferenceTable = new Map([
+      [pairingKey('rust', 'rust'), { accepted: 200, rejected: 0 }],
+    ]);
+    const result = scoreOutfit(withFamilies, POOL, profile(), RULES, WEIGHTS, table);
+
+    for (const c of result.components) {
+      expect(c.score).toBeGreaterThanOrEqual(0);
+      expect(c.score).toBeLessThanOrEqual(100);
+    }
+    expect(result.overall).toBeGreaterThanOrEqual(0);
+    expect(result.overall).toBeLessThanOrEqual(100);
+  });
+
+  it('leaves the published rule set untouched — criterion 3', () => {
+    // "Feedback affects only the submitting user, never global ranking." The rules are CONTENT
+    // with their own version and digest; scoring with a preference must not write into them.
+    const before = JSON.stringify(RULES);
+    const withFamilies = COHERENT.map((piece) => ({ ...piece, family: 'rust' }));
+    scoreOutfit(
+      withFamilies,
+      POOL,
+      profile(),
+      RULES,
+      WEIGHTS,
+      new Map([[pairingKey('rust', 'rust'), { accepted: 8, rejected: 0 }]]),
+    );
+    expect(JSON.stringify(RULES)).toBe(before);
   });
 });

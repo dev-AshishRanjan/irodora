@@ -8,6 +8,156 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-046 DONE · the counts are the facts, and the weight is a formula over them
+
+### The decision the rest depends on
+
+FR-37 asks for a *"stored, inspectable preference weight"*, and the obvious shape is one
+`weight REAL` column nudged on each observation. **It is wrong**, and the reason is worth
+stating because it is invisible until the day it bites: a running float depends on the **order**
+the updates arrived in and on the **history of the update function**. Change the step size in a
+later release and every stored weight silently means something else, with nothing anywhere able
+to detect it.
+
+So the table stores `accepted` and `rejected` — **counts, which are facts about what somebody
+did** — and `preferenceWeight()` is a pure function of them. Three things follow without being
+arranged:
+
+- *"Deterministic"* is true by construction rather than by discipline.
+- *"Inspectable"* is real: the two integers **are** the evidence, and the weight is reproducible
+  from them by anyone who reads the function.
+- The formula can be corrected later **without corrupting stored state**, because the state is
+  not the formula's output.
+
+### Families, not exact colours — otherwise nothing ever learns
+
+Keyed on exact colours the space is 120 × 120, and a person would have to pick the same two
+published entries repeatedly for anything to move. The loop would be correct and **inert**.
+
+The corpus carries `taxonomy.family` — **25 families over 120 entries, counted rather than
+assumed**. That is 325 unordered pairs, and choosing *this* rust with *that* charcoal informs
+the next rust and the next charcoal.
+
+Unordered, and enforced twice: the writer sorts, and `CHECK (family_a <= family_b)` with
+`UNIQUE` makes a second row impossible. **A rule enforced only by the writer holds until
+somebody writes a second writer** — and a test plants a mis-ordered row directly to watch the
+database refuse it.
+
+### The line this feature exists to hold
+
+Preference multiplies **`harmony` and nothing else** — the component about how colours sit
+together, which is what "repeated selection of a pairing" is evidence about.
+
+If it reached `cvdAccessibility`, somebody who repeatedly chose a pairing a deutan cannot
+separate would **gradually stop being told so**. The product would learn to agree with them
+about an accessibility finding: golden rule 13 defeated not by removing the channel but by
+teaching the system to stop using it. The same shape applies to `contrast` — a floor that erodes
+with use is not a floor.
+
+**Asserted per component**, in a loop over `OUTFIT_COMPONENTS` with `harmony` skipped. *"The
+overall moved"* would pass for an implementation that moved the wrong one, which is the entire
+failure. Recorded as **E-043**.
+
+### Two mutations, two distinct failures
+
+| mutation | what failed |
+|---|---|
+| the multiplier applied to `contrast` too | *"MOVES NOTHING BUT HARMONY"* — and only that, of 121 |
+| `PREFERENCE_NEUTRAL` set to 0.999 | **five** tests, led by *"multiplies by EXACTLY one"* |
+
+The second is the one protecting every existing caller. `scoreOutfit` gained an optional
+argument, and every call site written before it passes nothing — so neutral has to be **exactly**
+1, not approximately. A neutral of 0.999 would silently re-rank the whole product while every
+other assertion in the file stayed green.
+
+### The bound is part of the guarantee, not tuning
+
+±25% around 1, saturating at eight net observations. Unbounded, preference eventually promotes
+a pairing the engine scored badly — and at that point the six component scores are decoration,
+because the answer is the person's habit wearing the engine's clothes. FR-11 promises a
+decomposition somebody can argue with, and nobody can argue with a number that is mostly their
+own past behaviour reflected back.
+
+The numbers are judgements and are labelled as such: eight is "a habit shows within a week of
+ordinary use, and one stray tap moves it 3% and is undone by one tap back".
+
+### Reset is a hard delete, alone among the deletes here
+
+Every other delete in this repository is a tombstone, because a sync reconciler must tell
+"deleted" from "never existed". **Preferences are the exception**: a tombstone would be a record
+of what somebody asked to have forgotten, and a change-log row saying *"pairing_preference
+rust/charcoal was updated"* is the same record wearing another name. So the rows and their log
+entries both go — with a decoy asserting the *other* tables' history survives, because a reset
+implemented as `DELETE FROM change_log` would pass the first test and erase everything.
+
+### What is honestly not done
+
+Criterion 2 says *"the user can see and reset it"*. The data is inspectable and resettable —
+`listPreferences()` and `resetPreferences()` — and **nothing renders it**, so no person can
+currently see anything. F-046 is `service: packages` with no `a11y` in its verification, so a
+screen was not claimed.
+
+Filed as **F-109** rather than counted as met. This is F-031's shape exactly: six component
+scores built, nothing showing them, and F-045 was where they finally reached a person two
+releases later.
+
+### The claims lint caught me writing a banned phrase, three times
+
+`exact colou?r` is one of the eleven banned constructions (ADR-0031, NFR-21), and I had written
+it in a plan heading, a plan sentence and a migration comment — as "families, not exact
+_colours_", meaning granularity rather than accuracy.
+
+**The lint does not distinguish, and it should not.** ADR-0031 bans the CONSTRUCTION because a
+phrase migrates: a heading becomes a sentence becomes a field name becomes copy. **Reworded to
+"individual colours" rather than exempted** — an inline marker would have been available and
+would have spent an exemption on prose that had no need of the phrase. Exemptions are for lines
+that must name the thing in order to forbid it.
+
+### Gates DO NOT run concurrently, and this session paid for it three times
+
+`verify-guards` writes lint fixtures at fixed paths, and turbo tasks share output directories.
+Overlapping runs clobber each other, and the result is a **red gate that means nothing about
+the code**:
+
+| gate | concurrent | alone |
+|---|---|---|
+| lint (F-108) | red | green |
+| build (here) | exit 2 | green |
+| lint (here) | red | **red, for a real reason** |
+
+The third row is why the rule is *"run it alone"* rather than *"ignore a concurrent red"*. A
+concurrent result is not evidence in either direction — it is not evidence. **Every gate
+reported below was run on its own**, which is the only reading worth writing down.
+
+### A red gate that was not, and one that was
+
+Lint reported red in TWO concurrent sweeps before this, and F-108 recorded exactly that
+collision — `verify-guards` writes fixtures at fixed paths, so overlapping runs clobber each
+other. **This time the isolated run was red too, for a real reason.** The lesson from F-108
+held in the useful direction: it said a concurrent red is evidence about the sweep, not that a
+red is always noise. Running it alone is what told the two apart.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** | | 4 test | **PASS** — 121 engine, 124 store |
+| 1 typecheck | **PASS** | | 6 build | **PASS** |
+| 2 lint | **PASS** | | 11 content | **PASS** |
+| 3 format | **PASS** | | 15 security | **PASS** |
+
+This feature's own list is `state` and `test`; the rest were run because a migration and an
+engine input touch them. Not applicable: `color-golden` (no colour maths — the multiplier
+scales a component, it derives no colour), `cvd`, `contrast`, `a11y`, `perf`, `artifact`, `e2e`.
+
+### Next
+
+R4 holds **F-048** (coverage), **F-049** (duplicate detection), **F-050** (capsule optimiser),
+**F-103** and the newly filed **F-109**. F-107 still holds the retired-vocabulary sweep.
+F-104's device attestation and F-091's emulator both still block release.
+
+---
+
 ## 2026-08-31 — F-045 DONE · the engine already had the multi-lock answer
 
 ### The problem, and where it was not solved

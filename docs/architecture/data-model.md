@@ -222,6 +222,9 @@ recommendation  id · input_color · context
                 envelope_engine · envelope_corpus · envelope_rules · envelope_profile
                 results (JSON) · created_at
 recommendation_feedback  recommendation_id · result_index · verdict · created_at
+
+pairing_preference       family_a · family_b (canonical order, UNIQUE) · accepted · rejected
+                         COUNTS, never a weight — see below (FR-37, F-046, migration 6)
 ```
 
 **There is no `image_path` column. The bytes are a BLOB in `garment_image`, inside the
@@ -245,6 +248,19 @@ The two costs are recorded in the ADR rather than discovered later: a blob read 
 all-or-nothing, which is why `garment_image` is its own table and why the dimensions are
 columns beside the bytes; and `archive.ts` reads `SELECT *`, so photographs join the backup and
 its digest ([E-023](../../.harness/state/effects.json)).
+
+**`pairing_preference` stores counts and never a weight** (F-046). The obvious shape is one
+`weight REAL` nudged on each observation, and it is wrong: a running float depends on the ORDER
+the updates arrived in and on the HISTORY of the update function, so changing the step size in
+a later release silently changes what every stored row means, with nothing able to detect it.
+`accepted` and `rejected` are facts about what somebody did; the weight is `preferenceWeight()`
+in `@irodora/recommendation`, evaluated on demand. FR-37 asks for *"deterministic"* and
+*"inspectable"*, and both are then true by construction rather than by discipline.
+
+The pair is canonically ordered with `CHECK (family_a <= family_b)` and `UNIQUE`, because a
+pairing is unordered — without it the same preference is learned twice under two keys and half
+of it is never found. **Reset is a HARD delete**, alone among the deletes here: a tombstone
+would be a record of what somebody asked to have forgotten.
 
 The reproducibility envelope is stored as **four separate columns**, not one JSON blob, so
 "which recommendations used rule version 2026.08.4?" is an indexed query rather than a table
