@@ -23,6 +23,8 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@irodora/color-core": "workspace:*"
+    "@irodora/color-core": "workspace:*",
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/color-spaces": "workspace:*"
   }
 }

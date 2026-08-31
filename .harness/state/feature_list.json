@@ -1572,7 +1572,7 @@
       "package": "@irodora/optimization",
       "release": "R4",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-045"
       ],
@@ -1582,7 +1582,9 @@
       "verification": [
         "state",
         "test"
-      ]
+      ],
+      "plan": "plans/F-049-duplicate-detection.md",
+      "notes": "DONE. DELIVERED: packages/optimization/src/duplicates.ts — findDuplicates(items, threshold) returning every same-category pair closer than DUPLICATE_DELTA_E, each carrying its measured DeltaE00, closest first with an id tie-break so the ordering is total. 10 tests. BUILT IN THE WRONG PACKAGE FIRST: the plan header said @irodora/recommendation, carried forward from F-046 without checking. This record said @irodora/optimization all along, and ARCHITECTURE.md draws the line — recommendation is rules, weights, scoring and explanation objects; optimization is capsule and coverage solvers. Duplicate detection asks about the wardrobe as a SET, so it belongs in optimization. Moved before this feature closed, and @irodora/optimization gained color-difference and color-spaces as workspace dependencies. EVERY GATE WAS GREEN WITH THE CODE IN THE WRONG PACKAGE — gate 0 does not check that a feature landed in the package its record names, so nothing was ever going to say so. Found by reading this record while waiting for a gate. F-110 files the same defect for F-048, which is already committed. THE OPTIMISATION SOMEBODY WILL REACH FOR IS WRONG, NOT SLOW: DeltaE00 violates the triangle inequality, so no spatial index over it prunes correctly. Pairwise within a category, and said so in the file. CATEGORY IS THE GARMENT TYPE, NOT THE SLOT: a jumper and a coat are both top and are not duplicates; the decoy is two identical colours on different types. THE THRESHOLD IS THE REQUIREMENT S, NOT A JUDGEMENT: 5 from FR-44, unlike F-048 s COVERAGE_THRESHOLD which had to be chosen. Strict, per the PRD s \"< 5\" against the criterion s ambiguous \"within 5\", asserted at the boundary. THE MEASURED DIFFERENCE IS RETURNED, NEVER A BOOLEAN — half the criterion, and the test recomputes deltaE00 independently rather than comparing against the number the function produced. MUTATIONS WATCHED FAILING: category check removed -> the cross-category test failed alone; >= threshold -> > threshold -> the boundary test failed alone. GATES: state, typecheck, lint, format, test, build all PASS, run one at a time, and all re-run after the move because a green gate on code in the wrong package proves nothing. NOT APPLICABLE: color-golden — no colour maths is added or changed, deltaE00 is called and not defined; also cvd, contrast, a11y, content, perf, security, artifact, e2e. NO NEW EFFECT LINK: no shared contract, no behaviour changed. NOT DELIVERED: the surface. service is packages and a11y is not in the verification list, so nothing renders the warning. Third feature running (F-046, F-048, F-049) that computes something no person can see yet."
     },
     {
       "id": "F-050",
@@ -3120,6 +3122,32 @@
         "contrast"
       ],
       "notes": "FILED BY F-046, WHICH BUILT THE MECHANISM AND DELIBERATELY DID NOT BUILD THE SURFACE. FR-37 says the person “can see and reset” their preference weights. F-046 is `service: packages` with `verification: [state, test]` and no `a11y` — so a screen is not gated there and was not claimed. WHAT F-046 DID DELIVER: `listPreferences()` returns every pairing with its accepted and rejected counts, and `resetPreferences()` removes them along with their change-log rows. So the data IS inspectable and IS resettable. WHAT IS MISSING is the half the requirement words describe: NOTHING RENDERS IT, so no person can currently see or reset anything. That is the same shape as F-031, which built six component scores and said in its own notes that nothing proved a person ever saw them — F-045 was where they finally reached a screen, two releases later. Recording it as its own feature rather than counting criterion 2 as met is the difference between a gap and a claim. THE SECOND CRITERION IS THE ONE THAT MATTERS: the derived weight must be shown BESIDE the counts it comes from, never instead of them. The counts are the evidence and the weight is a formula over them, and a surface that showed only the weight would turn an inspectable mechanism back into an opaque number — which is precisely what storing counts instead of a float was for. THE THIRD IS ABOUT CONSEQUENCE: reset is a hard delete and it is not undoable, so the surface says what it will remove before it removes it."
+    },
+    {
+      "id": "F-110",
+      "title": "Coverage and gap analysis belongs in @irodora/optimization",
+      "requirements": [
+        "FR-43"
+      ],
+      "service": "packages",
+      "package": "@irodora/optimization",
+      "release": "R4",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "coverage, applyChange, gaps and their types are exported from @irodora/optimization, not @irodora/recommendation",
+        "The coverage tests move with them and stay green",
+        "The coverage-apply-change-p95 budget still measures the moved code and stays under its ceiling",
+        "No dependent import path is left broken, and @irodora/recommendation drops any dependency the move makes unused"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test",
+        "perf"
+      ],
+      "notes": "F-048 was built in @irodora/recommendation because the plan carried F-046 forward without checking the feature list, which assigns F-048 to @irodora/optimization. ARCHITECTURE.md is explicit: recommendation is rules, weights, scoring and explanation objects; optimization is capsule and coverage solvers. F-049 hit the same mistake and was corrected before it closed, so duplicates.ts is already in the right place. This is the same fix for already-committed work. Worth doing before F-050, which is in optimization and needs coverage()."
     }
   ]
 }

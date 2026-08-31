@@ -8,6 +8,122 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-049 DONE · a number, not an opinion, in the package that was already named
+
+One criterion, and it is precise: *"flags items within ΔE00 5 in the same category, showing the
+measured difference."* The code was short. The thing worth writing down is that I built it in
+the wrong package first, and the repository had said so all along.
+
+### I built it where the last feature was, not where the record said
+
+The plan header said `@irodora/recommendation`. I carried it forward from F-046 without
+checking. **The feature list assigns F-049 to `@irodora/optimization`** — it always did — and
+[`ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md) draws the line in two lines:
+
+```
+recommendation/     rules, weights, scoring, explanation objects
+optimization/       capsule and coverage solvers
+```
+
+Duplicate detection asks about the **wardrobe as a set** — what it repeats — not whether a
+colour suits a person. It belongs on the second line. `packages/optimization/src/index.ts` even
+carried a placeholder reading *"Capsule and coverage solvers. Implemented in F-048 onward."*
+
+I found it only because I read the feature's own record while waiting for a gate — not because
+anything failed. **Every gate was green with the code in the wrong package.** Gate 0 checks a
+great deal, but it does not check that a feature's files landed in the package the feature list
+names, so nothing in the harness was ever going to say so. Moved before this feature closed.
+
+**F-048 has exactly the same defect, and it is already committed** — `coverage.ts` is sitting in
+`recommendation`. Filed as **F-110** rather than widened into this one, and it is worth doing
+before F-050 starts, because F-050 is in `optimization` and will want `coverage()`.
+
+### `ln -s` silently made empty directories, again
+
+`@irodora/optimization` needed `color-difference` and `color-spaces` linked, and `pnpm install`
+has still never run here. `ln -s` reported nothing useful and left two **empty directories**
+where the packages should be — the failure progress.md already warns about. `mklink /J` from
+the right working directory made real junctions, and I verified each by reading the `name` out
+of the package.json behind it rather than trusting that the command printed success.
+
+### The optimisation somebody will reach for is wrong, not slow
+
+The obvious speed-up is a spatial index over the colours. **It cannot be correct.** ΔE00
+violates the triangle inequality, so any structure pruning by *"this is far from the centroid,
+therefore far from everything inside it"* ranks subtly and silently wrong —
+[[deltae00-is-not-a-metric-and-cannot-be-indexed]]. A wardrobe has tens of garments and a
+category has fewer; the alternative is not faster-but-approximate, it is **wrong**. Said in the
+file so the next person does not "fix" it.
+
+### "Category" is the type, not the slot
+
+A jumper and a coat are both `top`. They are not duplicates, and comparing at slot granularity
+would tell somebody their navy jumper duplicates their navy trousers — the one reading FR-44's
+wording rules out. The decoy is exactly that: **two identical colours on different types**,
+which a category-ignoring implementation flags.
+
+### The threshold is the requirement's, not mine
+
+Unlike F-048's `COVERAGE_THRESHOLD`, which I had to choose and argue for, **5 comes from
+FR-44**. Named and exported so nobody later mistakes it for a knob. The acceptance says *"within
+ΔE00 5"*, the PRD says *"< 5"* — **strict**, per the PRD, asserted at the boundary and driven
+through the threshold parameter rather than by constructing two colours exactly 5.000000 apart.
+
+### The difference is returned, never a boolean
+
+*"Showing the measured difference"* is half the criterion, and a `boolean` satisfies the first
+half while making the second unimplementable one layer up. The test recomputes `deltaE00`
+**independently** rather than comparing against the number the function produced — which would
+only assert self-consistency, and it would be self-consistent even if it were wrong.
+
+### The fixtures assert their own premise
+
+Every test rests on NAVY being inside the threshold from NEAR_NAVY and outside it from RUST, so
+the first test **asserts those two distances**. A fixture that drifted would otherwise make the
+whole file pass while testing nothing — [[a-decoy-written-against-old-values-quietly-stops-discriminating]].
+
+### Mutations watched failing
+
+- category check removed → *"does NOT flag across categories"* failed, alone
+- `>= threshold` → `> threshold` → *"excludes a pair at exactly the threshold"* failed, alone
+
+### Gates
+
+Run one at a time. The four before the move were re-run after it, because a green gate on code
+in the wrong package proves nothing about the code in the right one.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** |
+| 4 test | **PASS** |
+| 6 build | **PASS** |
+
+Not applicable: `color-golden` — **no colour maths is added or changed**; `deltaE00` is called,
+not defined. Also `cvd`, `contrast`, `a11y`, `content`, `perf`, `security`, `artifact`, `e2e`.
+
+### Effects
+
+**No new link.** This adds no shared contract and changes no existing behaviour. The move gave
+`@irodora/optimization` two engine dependencies, which is the ordinary layering
+`ARCHITECTURE.md` already describes, guarded by `gate:typecheck` and `gate:build`.
+
+### The surface debt is now three features deep
+
+F-046's preference weights, F-048's coverage and gaps, and F-049's duplicates are all
+`service: packages` with no `a11y` in their verification lists. **Nothing renders any of them.**
+Each was filed rather than counted as met, but three is a pattern now, and it is the shape F-031
+carried for two releases before F-045 finally showed its numbers to a person.
+
+### Next
+
+R4 holds **F-110** (the F-048 move, new), F-050 (capsule optimiser), F-103, F-107 and F-109.
+F-104's device attestation and F-091's emulator still block release.
+
+---
+
 ## 2026-08-31 — F-048 DONE · a coverage count that is not a multiplication, and gaps named in somebody else's words
 
 ### "Valid" cannot mean "one garment per slot"
