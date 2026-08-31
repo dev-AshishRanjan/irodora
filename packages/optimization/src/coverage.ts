@@ -34,12 +34,19 @@
 import { fromXyz, type Color } from '@irodora/color-core';
 import { oklchToXyz, xyzToOklch } from '@irodora/color-spaces';
 import type { LexiconTerm } from '@irodora/corpus';
-import { NEUTRAL_CHROMA } from './score.js';
-import { OUTFIT_SLOTS, type OutfitSlot } from './slots.js';
-import { scoreOutfit, type OutfitComponent, type OutfitPiece } from './outfit-score.js';
-import type { Candidate } from './outfit.js';
-import type { PersonalProfile } from './profile.js';
-import type { RuleSet } from './rules.js';
+// A solver over a scoring function, which is the direction this dependency runs:
+// `optimization` imports `recommendation`, and never the reverse. `lint` fails on cycles.
+import {
+  NEUTRAL_CHROMA,
+  OUTFIT_SLOTS,
+  scoreOutfit,
+  type Candidate,
+  type OutfitComponent,
+  type OutfitPiece,
+  type OutfitSlot,
+  type PersonalProfile,
+  type RuleSet,
+} from '@irodora/recommendation';
 
 /**
  * The score at or above which an outfit counts.

@@ -131,6 +131,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-one-slot-mailbox-with-two-readers-loses-mail-silently.md](effects/a-one-slot-mailbox-with-two-readers-loses-mail-silently.md) — **E-042** · the Lens hand-off was correct with one reader and silently wrong with two; both screens see `null` and neither can tell why.
 - [effects/a-habit-is-evidence-about-taste-and-not-about-legibility.md](effects/a-habit-is-evidence-about-taste-and-not-about-legibility.md) — **E-043** · preference moves harmony and nothing else; reaching CVD or contrast would teach the product to agree with somebody about an accessibility finding.
 - [effects/the-phrase-lexicon-has-two-readers-now-and-they-fail-differently.md](effects/the-phrase-lexicon-has-two-readers-now-and-they-fail-differently.md) — **E-044** · the Finder fails loudly when a term goes and gap analysis fails silently, because silence is what "you have no gaps" looks like.
+- [effects/nine-symbols-became-public-api-by-crossing-a-package-boundary.md](effects/nine-symbols-became-public-api-by-crossing-a-package-boundary.md) — **E-045** · the compile error is loud and the wrong fix is silent; redeclaring a measured constant to satisfy it is one rule in two places.
 
 ## Glossary
 

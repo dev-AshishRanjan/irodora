@@ -1598,7 +1598,8 @@
       "priority": "should",
       "status": "backlog",
       "blockedBy": [
-        "F-048"
+        "F-048",
+        "F-110"
       ],
       "acceptance": [
         "Solves at least N outfits from at most M garments for a 40-item wardrobe within NFR-4",
@@ -1609,7 +1610,8 @@
         "state",
         "test",
         "perf"
-      ]
+      ],
+      "notes": "BLOCKED BY F-110, recorded 2026-08-31 while closing F-049. F-050 lives in @irodora/optimization and needs coverage() to seed and score a capsule. coverage() is currently in @irodora/recommendation, where F-048 misfiled it. Building F-050 first would mean optimization importing recommendation — a dependency edge ARCHITECTURE.md does not draw — and F-110 would then have to rewrite F-050 s imports as well as move the file. Cheaper and more honest in the other order."
     },
     {
       "id": "F-051",
@@ -3133,7 +3135,7 @@
       "package": "@irodora/optimization",
       "release": "R4",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "coverage, applyChange, gaps and their types are exported from @irodora/optimization, not @irodora/recommendation",
@@ -3147,7 +3149,8 @@
         "test",
         "perf"
       ],
-      "notes": "F-048 was built in @irodora/recommendation because the plan carried F-046 forward without checking the feature list, which assigns F-048 to @irodora/optimization. ARCHITECTURE.md is explicit: recommendation is rules, weights, scoring and explanation objects; optimization is capsule and coverage solvers. F-049 hit the same mistake and was corrected before it closed, so duplicates.ts is already in the right place. This is the same fix for already-committed work. Worth doing before F-050, which is in optimization and needs coverage()."
+      "notes": "DONE. coverage.ts and coverage.test.ts moved from @irodora/recommendation to @irodora/optimization, the package F-048 was scoped to. NO BEHAVIOUR ADDED OR CHANGED, and the diff proves it: similarity index 97% for coverage.ts, 99% for the test, and every changed line is an import line. Not one assertion, constant or branch. NOT A git mv: coverage.ts reached NINE symbols inside recommendation as relative imports — NEUTRAL_CHROMA, OUTFIT_SLOTS, scoreOutfit, Candidate, OutfitComponent, OutfitPiece, OutfitSlot, PersonalProfile, RuleSet. Across a boundary they are PUBLIC API, and all nine changed status without a line of their own source changing. E-045 records it: the compile error is loud and names the file, but the WRONG FIX is silent — redeclaring 0.039 in optimization is E-013 s shape, and NEUTRAL_CHROMA is a number F-101 MEASURED, not a preference. THE DEPENDENCY DIRECTION HAD TO BE DECIDED because ARCHITECTURE.md names the edges for color-spaces, color-core, recommendation and store but NOT optimization. optimization -> recommendation, a solver optimises over a score, never the reverse. Written into the doc rather than left implied by the order of a list. No ADR: this fills a gap, it does not deviate. THE EFFECT TRACE CAUGHT THE ONE THING I WOULD HAVE MISSED: gate 0 went RED because E-044 referenced packages/recommendation/src/coverage.ts and its test, the only place outside the code where those paths were written down. Refs and scope updated; the rationale gained a note rather than a rewrite, because \"one test of 139 went red\" was true when written. CHECKED RATHER THAN ASSUMED: the fixture path (the test reads content/rules/weights via __dirname and three ..; same depth in the new package, and it ran) and the corpus dependency (the only remaining mention in recommendation is a JSDoc comment, so it was dropped from the manifest AND the local junction, so local resolution matches CI). optimization also needed types: [\"node\"] for the test s disk read. GATES one at a time: state (red on E-044, then green), typecheck, lint (including the cycle check on the new edge and verify-cache-scope, which already covered the moved test s content/ read), format (one red I caused by rewriting tsconfig with JSON.stringify; fixed with the pinned prettier), test (optimization 28 = 10 + 18, recommendation 121 = 139 - 18), build, perf. PERF IS CRITERION 3 AND IT IS THE EVIDENCE: coverage-apply-change-p95 measured THROUGH THE NEW IMPORT at p95 26.19 ms against a 60 ms ceiling, consistent with F-048 s recorded 23.0 ms. Moving a file did not move the number. NOT APPLICABLE: color-golden — no colour maths added, changed or moved between spaces; also cvd, contrast, a11y, content, security, artifact, e2e. UNBLOCKS F-050, which now finds coverage() inside its own package. STILL NOT DELIVERED: the surface. F-046, F-048, F-049 and this all compute things nobody can see; moving a file does not close that gap.",
+      "plan": "plans/F-110-coverage-belongs-in-optimization.md"
     }
   ]
 }

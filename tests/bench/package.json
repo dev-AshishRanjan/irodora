@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@irodora/color-core": "workspace:*",
+    "@irodora/optimization": "workspace:*",
     "@irodora/recommendation": "workspace:*"
   }
 }

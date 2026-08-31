@@ -11,6 +11,18 @@
  */
 
 export {
+  applyChange,
+  coverage,
+  COVERAGE_THRESHOLD,
+  type Coverage,
+  type CoverageContext,
+  type CoverageGarment,
+  gaps,
+  type Gap,
+  type WardrobeChange,
+} from './coverage.js';
+
+export {
   DUPLICATE_DELTA_E,
   findDuplicates,
   type DuplicateCandidate,

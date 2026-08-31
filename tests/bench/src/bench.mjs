@@ -37,8 +37,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fromXyz } from '@irodora/color-core';
 import {
-  applyChange,
-  coverage,
   outfitWeights,
   parseWeightContent,
   recommendOutfit,
@@ -46,6 +44,9 @@ import {
   scoreColor,
   scoreOutfit,
 } from '@irodora/recommendation';
+// Coverage moved to the package the feature list named for it (F-110). The budget below still
+// measures the same code over the same fixture, so its ceiling is unchanged.
+import { applyChange, coverage } from '@irodora/optimization';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..', '..');

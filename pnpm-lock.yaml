@@ -433,6 +433,12 @@ importers:
       '@irodora/color-spaces':
         specifier: workspace:*
         version: link:../color-spaces
+      '@irodora/corpus':
+        specifier: workspace:*
+        version: link:../corpus
+      '@irodora/recommendation':
+        specifier: workspace:*
+        version: link:../recommendation
 
   packages/recommendation:
     dependencies:
@@ -445,9 +451,6 @@ importers:
       '@irodora/color-spaces':
         specifier: workspace:*
         version: link:../color-spaces
-      '@irodora/corpus':
-        specifier: workspace:*
-        version: link:../corpus
       '@irodora/cvd-engine':
         specifier: workspace:*
         version: link:../cvd-engine
@@ -520,6 +523,9 @@ importers:
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../../packages/color-core
+      '@irodora/optimization':
+        specifier: workspace:*
+        version: link:../../packages/optimization
       '@irodora/recommendation':
         specifier: workspace:*
         version: link:../../packages/recommendation

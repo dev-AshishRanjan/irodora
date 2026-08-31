@@ -8,6 +8,117 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-110 DONE · a move that changed no assertion, and nine symbols that changed status
+
+F-048 built coverage in `@irodora/recommendation`. Its row said `@irodora/optimization`. F-049
+made the same mistake and was corrected before closing; this is the same fix for work already
+committed. **No behaviour is added and none is changed.**
+
+The measure of success is the diff: `similarity index 97%` for `coverage.ts`, **99%** for its
+test, and **every changed line is an import line.** Not one assertion, constant or branch. A
+move that alters a test is not a move.
+
+### The reason to do it before F-050 and not after
+
+F-050 is the capsule optimiser. It lives in `optimization` and is a solver over `coverage()`.
+Built against the old layout it would have imported `recommendation` for the one symbol that
+should already have been beside it, and this feature would then have had to rewrite F-050 as
+well as move a file. **F-050's `blockedBy` now records that**, so the ordering is in the state
+rather than in a paragraph somebody has to find.
+
+### It was never a `git mv`
+
+`coverage.ts` reached **nine symbols** inside `recommendation` as relative imports —
+`NEUTRAL_CHROMA`, `OUTFIT_SLOTS`, `scoreOutfit`, `Candidate`, `OutfitComponent`, `OutfitPiece`,
+`OutfitSlot`, `PersonalProfile`, `RuleSet`. Internal, and freely refactorable by anyone working
+in that package. Across a boundary they are **public API**, and all nine changed status without
+a line of their own source changing — the kind of change no diff shows you. **E-045** records
+it.
+
+The hazard there is not the compile error, which is loud and names the file. It is **the
+repair**: the cheapest-looking fix for a missing `NEUTRAL_CHROMA` is to redeclare `0.039` in
+`optimization`, which is [[E-013]]'s shape and worse than usual here, because that number is not
+a preference. F-101 *measured* it. A second copy would drift and nothing would go red.
+
+### The direction had to be decided, because the document did not
+
+[`ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md) says dependency direction is
+strictly one-way and names `color-spaces`, `color-core`, `recommendation` and `store`. It
+**does not name `optimization`**. So this establishes an edge rather than following one:
+
+```
+optimization  →  recommendation      a solver optimises over a score
+recommendation → optimization        NEVER
+```
+
+Written into the doc rather than left implied in the order of a list, because **an unstated rule
+is the one somebody reverses**. No ADR: this documents no deviation, it fills a gap.
+
+### The effect trace earned its place
+
+Gate 0 went **red** — E-044 pointed at `packages/recommendation/src/coverage.ts` and its test,
+neither of which existed any more. That is the check working exactly as intended, and it is the
+one thing in this feature I would otherwise have missed: the graph is the only place those paths
+were written down outside the code. Refs and scope updated; the rationale gained a note rather
+than a rewrite, because *"one test of 139 went red"* was true when it was written and the
+history should not be edited to match today.
+
+Every other link touching either package points at files that did not move.
+
+### Two things checked rather than assumed
+
+- **The fixture path.** The coverage test reads `content/rules/weights.2026.08.2.json` through
+  `__dirname` and three `..`. `packages/optimization/test/` sits at the same depth, so it
+  *should* still resolve — and *should* is not *does*. It ran; a wrong path throws.
+- **`recommendation` dropping `@irodora/corpus`.** Grep found the only remaining mention was
+  inside a JSDoc comment, not an import. Removed from the manifest **and** the local link, so
+  local resolution matches CI instead of hiding a stale import behind a junction that CI would
+  not have.
+
+`@irodora/optimization` needed `"types": ["node"]` in its tsconfig — the coverage test reads
+from disk, and `recommendation` had it while `optimization` did not.
+
+### Gates
+
+Run one at a time.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — after going red on E-044 and being fixed |
+| 1 typecheck | **PASS** — recommendation, optimization, mobile, bench all cache-missed |
+| 2 lint | **PASS** — including the cycle check on the new edge, and `verify-cache-scope` |
+| 3 format | **PASS** — after one red I caused (see below) |
+| 4 test | **PASS** — optimization 28 (10 + 18), recommendation 121 (139 − 18) |
+| 6 build | **PASS** |
+| 12 perf | **PASS** — `coverage-apply-change-p95` p95 **26.19 ms**, ceiling 60 ms |
+
+The perf number is the criterion-3 evidence: measured **through the new import**, and consistent
+with F-048's recorded 23.0 ms. Moving a file did not move the number, which is what the budget's
+own rationale predicted.
+
+Not applicable: `color-golden` — **no colour maths is added, changed or moved between spaces**;
+also `cvd`, `contrast`, `a11y`, `content`, `security`, `artifact`, `e2e`.
+
+**A red I caused:** rewriting `tsconfig.json` with `JSON.stringify` expanded a compact object
+prettier wanted on one line. Fixed with `pnpm exec prettier --write` — the pinned binary, not
+`npx prettier@...`, which reported "unchanged" against a different version once already.
+
+`verify-cache-scope` passing mattered more than it looks: the moved test reads `content/` from a
+new package, and turbo's cache key already covers it. That was a listed risk and needed no
+change.
+
+### Still not delivered, and now four features deep
+
+F-046, F-048, F-049 and the moved coverage all compute things **no person can see**. Moving a
+file does not close that, and F-048's surface gap is still F-048's.
+
+### Next
+
+R4 holds **F-050** (capsule optimiser — now genuinely unblocked, in the right package, with
+`coverage()` beside it), F-103, F-107, F-109.
+
+---
+
 ## 2026-08-31 — F-049 DONE · a number, not an opinion, in the package that was already named
 
 One criterion, and it is precise: *"flags items within ΔE00 5 in the same category, showing the

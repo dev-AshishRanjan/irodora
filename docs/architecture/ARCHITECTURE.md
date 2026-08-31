@@ -135,8 +135,9 @@ packages/
 ```
 
 **Dependency direction is strictly one-way.** `color-spaces` depends on nothing.
-`color-core` depends on the colour packages. `recommendation` depends on `color-core` and
-`corpus`. `store` depends on `contracts`. The app depends on packages. **No package ever
+`color-core` depends on the colour packages. `recommendation` depends on `color-core`.
+`optimization` depends on `recommendation` — **a solver optimises over a score, and never the
+reverse**. `store` depends on `contracts`. The app depends on packages. **No package ever
 imports the app.** A cycle fails `lint`.
 
 The colour packages additionally may not import `node:*`, touch `window`, `document` or

@@ -24,15 +24,17 @@ import {
   coverage,
   COVERAGE_THRESHOLD,
   gaps,
+  type CoverageContext,
+  type CoverageGarment,
+} from '../src/index.js';
+import {
   outfitWeights,
   parseWeightContent,
   ruleSetFor,
   type Candidate,
-  type CoverageContext,
-  type CoverageGarment,
   type PersonalProfile,
   type RuleSet,
-} from '../src/index.js';
+} from '@irodora/recommendation';
 
 const CONTENT = parseWeightContent(
   JSON.parse(
