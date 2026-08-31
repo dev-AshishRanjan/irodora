@@ -8,6 +8,165 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-048 DONE · a coverage count that is not a multiplication, and gaps named in somebody else's words
+
+### "Valid" cannot mean "one garment per slot"
+
+`tops × trousers × shoes` is a multiplication wearing the name of a score. It says nothing about
+colour and **it rises when you buy a second black jumper** — which is the opposite of what
+somebody asking *"how much does my wardrobe give me"* wants to know.
+
+A valid outfit is one clearing `COVERAGE_THRESHOLD`. `scoreOutfit` produces the number;
+`coverage.ts` counts and never judges. The threshold is **exported**, because *"34 outfits"* is
+a measurement with no units unless the bar is stated beside it.
+
+The first assertion in the file is that an impossible threshold gives **0** and not `t × r × s`
+— and its decoy is a floor-level threshold giving all four, because a coverage that always
+returned 0 would pass the first one.
+
+### Incremental equals whole, checked over a SEQUENCE
+
+Criterion 1 asks for incremental recompute, and an incremental cache that drifts is worse than
+no cache: it is confidently wrong and nothing looks broken.
+
+So `applyChange` is checked against a full recompute **at every step of a sequence** of adds and
+removes, not after one change. One change proves one path; the failure mode is state that
+*accumulates*, and only a sequence sees it.
+
+Two mutations, each hitting its own pair:
+
+| mutation | what failed |
+|---|---|
+| removal keeps stale combinations | *"agrees after a REMOVE"* and *"agrees after a SEQUENCE"* |
+| the threshold ignored | *"counts NOTHING when nothing clears the bar"* and the zero-count garment |
+
+**Counts are rebuilt from the surviving set rather than decremented.** Decrementing is faster
+and is precisely how such a cache drifts — one missed decrement is invisible for months and
+then the numbers are simply wrong with nothing to point at.
+
+### The gap vocabulary already existed, and finding that was the feature
+
+FR-43 wants gaps *"named in product language"*, its own example being *"no warm light
+neutral"*. **`content/rules/phrase-lexicon.*.json` already publishes exactly that** — 18 English
+terms, each constraining OKLCh axes, each with a rationale an editor wrote, at a version, parsed
+by `@irodora/corpus` and already read by the Finder.
+
+Inventing a second vocabulary in the engine would have been E-013's shape: one content rule in
+two places, drifting the first time an editor publishes. So every word in a gap name comes from
+content, and the decoy that proves it is **removing a term from the fixture lexicon and
+requiring the gap names that used it to disappear**. Hard-coding two term names fails exactly
+that one test of 139.
+
+**The consequence is stated rather than discovered: the gaps this can name are exactly the ones
+the lexicon can express.** Publish no term for a region and none is reported there.
+
+### The honest limit, and why it is a limit rather than a loop bound
+
+A lightness-and-chroma region **has no hue**, so a representative colour needs one chosen — and
+choosing one would be this file inventing the most consequential part of the answer.
+
+Below `NEUTRAL_CHROMA` that problem does not exist: F-101 established that a hue angle on a
+near-neutral is a rounding artefact. And the lexicon's own `neutral` term ends at **exactly
+0.039, the same number**. So the representative's hue is arbitrary *and demonstrably does not
+matter*, which is the only condition under which picking one is honest.
+
+Above it, hue matters enormously and *"light vivid"* without one is both unactionable and a
+claim this file cannot support. **Filed rather than guessed** — the hue-bearing half needs the
+lexicon's hue terms as a third axis, which is a feature.
+
+The two 0.039s are deliberately **not** collapsed into one constant. One is a *content* boundary
+an editor chose for a word; the other is an *engine* boundary F-101 measured for when hue stops
+meaning anything. They agree today and are free to diverge, and if an editor widened `neutral`,
+`gaps` should still refuse to invent a hue above where the engine says hue is real.
+
+### The unlock count is a projection and the type says so
+
+*"How many outfits would this unlock"* needs a garment that does not exist. Every `Gap`
+therefore carries the `representative` colour it projected from, so the number is reproducible
+and its basis is visible. Golden rule 11 applies to our own reports as much as to the UI, and
+this makes reporting the number without its basis inconvenient rather than impossible.
+
+### E-044: the lexicon has two readers now, and they fail differently
+
+| reader | a term disappears | how anyone finds out |
+|---|---|---|
+| Finder (F-021) | a typed phrase stops matching | they search, get nothing — self-reporting |
+| `gaps` (F-048) | a region stops being nameable | **silence** |
+
+The second is the dangerous one, because **silence is exactly what "you have no gaps" looks
+like**. Recorded with its limit stated: nothing checks that the lexicon can still express every
+region a wardrobe might lack, because that would require knowing every wardrobe.
+
+### The perf budget, and a measurement taken under the wrong conditions
+
+The plan promised a budget for the incremental path, and `perf` is in this feature's
+verification list. Running gate 12 without adding one would have been running a gate that says
+nothing about the change — so `coverage-apply-change-p95` now measures `applyChange` over a
+thirty-garment wardrobe.
+
+**The first ceiling was wrong, and the way it was wrong is the useful part.** I measured the
+increment at **4.79 ms** in a scratch script and set a 25 ms ceiling. The harness then reported
+**22.66 ms** — five times my number.
+
+The scratch script used a **12-entry reference set**; the bench uses the **full 120-entry
+published corpus**. `corpusAffinity` and `versatility` scan that set, so my measurement was
+taken under conditions the budget does not run in. **That is the same error as quoting a
+benchmark from a different machine**, and it very nearly shipped as a rationale citing numbers
+that did not apply.
+
+Re-measured through the harness itself, so the conditions are identical by construction:
+
+| | p95 | median |
+|---|---|---|
+| whole recompute | **216.8 ms** | 200.5 ms |
+| incremental | **23.0 ms** | 20.7 ms |
+
+A 9.4× ratio, matching the theoretical 10× — adding a top scores 100 combinations, not 1000.
+The ceiling is **60 ms**: about 2.6× the observation, which survives GC and a loaded
+workstation, and about a quarter of the full recompute, so an `applyChange` that quietly called
+`coverage()` lands near 217 ms and fails loudly. The rejected 25 ms had nine per cent of
+headroom, and **a gate that flakes gets disabled**.
+
+### Gates
+
+Run **one at a time**, per the rule this session earned the hard way.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 41 links, 18 checks |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** |
+| 4 test | **PASS** — 139 in the engine |
+| 6 build | **PASS** |
+| 12 bench | **PASS** — 22.2 ms against a 60 ms ceiling |
+| 12 bench proof | **PASS** |
+
+Not applicable: `color-golden` (no colour maths — every judgement is `scoreOutfit`'s), `cvd`,
+`contrast`, `a11y`, `content` (no content changed; the lexicon is only read), `security`,
+`artifact`, `e2e`.
+
+**And I broke my own rule while running them:** `test` was launched while `lint` was still
+going, one entry after recording that concurrent gates clobber each other. Both were re-run
+alone before anything above was written down. The rule is easy to state and apparently easy to
+forget under momentum, which is the argument for it being a rule rather than a habit.
+
+### What is deliberately not built
+
+- **The surface.** `service: packages`, no `a11y` in the verification list. Nothing renders a
+  coverage number or a gap; filed, as F-046's was.
+- **Hue-bearing gaps** — above `NEUTRAL_CHROMA`, needing the lexicon's hue terms.
+- **Capsule optimisation (F-050)**, which is blocked on this.
+- Recommending a *purchase*. A gap is a region, not a product.
+
+### Next
+
+R4 holds **F-049** (duplicate detection), **F-050** (capsule optimiser, now unblocked), F-103,
+F-107 and F-109. F-104's device attestation and F-091's emulator still block release, and the
+e2e debt now spans F-042, F-043 and F-045.
+
+---
+
 ## 2026-08-31 — F-046 DONE · the counts are the facts, and the weight is a formula over them
 
 ### The decision the rest depends on

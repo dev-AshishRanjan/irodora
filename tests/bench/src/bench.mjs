@@ -37,6 +37,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fromXyz } from '@irodora/color-core';
 import {
+  applyChange,
+  coverage,
   outfitWeights,
   parseWeightContent,
   recommendOutfit,
@@ -169,7 +171,49 @@ const outfit = [
  * ceiling and the sample it is a ceiling on are one decision and drift apart when they live in
  * two files.
  */
+
+/*
+ * A wardrobe of thirty — ten per slot, a thousand combinations (F-048).
+ *
+ * The SIZE is the point. The budget below exists to catch `applyChange` degenerating into a
+ * full recompute, and the two are only distinguishable when there is enough to recompute: at
+ * three garments both are instant and the gate would pass over a rewritten increment.
+ */
+const coverageWardrobe = ['top', 'trouser', 'shoe'].flatMap((slot, s) =>
+  Array.from({ length: 10 }, (_, i) => ({
+    id: `${slot}-${String(i)}`,
+    slot,
+    color: fromXyz([0.2 + i * 0.07 + s * 0.01, 0.22 + i * 0.07, 0.25 + i * 0.07], {
+      source: 'reference',
+      confidence: 1,
+      originSpace: 'oklch',
+    }),
+  })),
+);
+
+const coverageContext = {
+  reference: pool,
+  profile,
+  rules,
+  weights: outfitBudgetWeights,
+  threshold: 0,
+};
+const coverageBase = coverage(coverageWardrobe, coverageContext);
+const coverageAdded = {
+  id: 'incoming-top',
+  slot: 'top',
+  color: fromXyz([0.55, 0.57, 0.6], { source: 'reference', confidence: 1, originSpace: 'oklch' }),
+};
+
 const MEASUREMENTS = {
+  'coverage-apply-change-p95': () => {
+    applyChange(
+      coverageBase,
+      [...coverageWardrobe, coverageAdded],
+      { kind: 'added', garment: coverageAdded },
+      coverageContext,
+    );
+  },
   'recommend-outfit-p95': () => {
     recommendOutfit(input, pool, profile, rules);
   },

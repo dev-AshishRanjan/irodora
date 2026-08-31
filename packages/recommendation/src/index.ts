@@ -103,4 +103,16 @@ export {
   type PreferenceTable,
 } from './preference.js';
 
+export {
+  applyChange,
+  coverage,
+  COVERAGE_THRESHOLD,
+  type Coverage,
+  type CoverageContext,
+  type CoverageGarment,
+  gaps,
+  type Gap,
+  type WardrobeChange,
+} from './coverage.js';
+
 export const RECOMMENDATION_VERSION = '0.4.0' as const;

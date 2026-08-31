@@ -1569,6 +1569,44 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-044",
+      "from": {
+        "kind": "content",
+        "ref": "content/rules"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/coverage.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/finder.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/recommendation/test/coverage.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile",
+        "content"
+      ],
+      "severity": "high",
+      "guard": "gate:content (the lexicon parses, is digest-verified, carries a rationale per term) plus gate:test (removing a term removes the gap names that used it, watched failing). NEITHER reaches an editor removing a term nobody is currently missing — see the rationale.",
+      "memory": "memory/effects/the-phrase-lexicon-has-two-readers-now-and-they-fail-differently.md",
+      "rationale": "THE PHRASE LEXICON HAS TWO READERS NOW, AND THEY FAIL DIFFERENTLY. Until F-048 `content/rules/phrase-lexicon.*.json` had one consumer — the Finder (F-021), which matches what a person types. F-048's `gaps` added a second, naming a missing region from the same 18 published terms. WHEN AN EDITOR REMOVES A TERM the two break in ways that are not comparable: the Finder stops matching a phrase somebody types, which is visible and self-reporting because they search and get nothing; `gaps` loses the ability to NAME a region, so no gap is reported there — and SILENCE IS EXACTLY WHAT \"you have no gaps\" LOOKS LIKE. A removed term does not make gap analysis wrong, it makes it QUIETER, and a wardrobe with a real hole reports nothing while nobody types a query that comes back empty. WHY THE VOCABULARY LIVES IN CONTENT ANYWAY: inventing a second one inside coverage.ts would be E-013's shape, one content rule in two places drifting the first time an editor publishes. The lexicon has a rationale per term, a version and a digest; a hard-coded list in the engine has none of those and nobody would notice it diverging. So the trade is deliberate — THE GAPS THIS FEATURE CAN NAME ARE EXACTLY THE ONES THE LEXICON CAN EXPRESS — and it is written into the function's own header rather than left to be deduced from an empty result. THE GUARD AND ITS LIMIT: gate:content verifies the lexicon parses, is digest-verified and carries a rationale per term; gate:test asserts that REMOVING A TERM REMOVES THE GAP NAMES THAT USED IT, which is the decoy proving the words come from content rather than from the file, watched failing by hard-coding two term names and seeing exactly that one test of 139 go red. WHAT NEITHER REACHES is an editor removing a term nobody is currently missing — there is no check saying \"this lexicon can still express every region a wardrobe might lack\", because that would require knowing every wardrobe. The honest mitigation is that the term count is small and each carries a rationale an editor had to write, so removal is a deliberate act rather than a drift. THE NEAR-NEUTRAL BOUNDARY IS THE SAME NUMBER IN TWO PLACES AND THAT IS CORRECT: `gaps` only names regions below NEUTRAL_CHROMA (0.039) because above it a lightness-and-chroma region has a hue nobody published, and the lexicon's own `neutral` term ends at exactly 0.039. One is a CONTENT boundary an editor chose for a word and the other is an ENGINE boundary F-101 measured for when a hue angle stops meaning anything. They agree today and are free to disagree: if an editor widened `neutral`, `gaps` should still refuse to invent a hue above where the engine says hue is real.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
