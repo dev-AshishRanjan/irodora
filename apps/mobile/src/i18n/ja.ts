@@ -326,6 +326,28 @@ export const ja: Record<MessageKey, string> = {
   'cvd.noAlternative': 'このバージョンには、かえてよくなる色はありません。',
   'cvd.method':
     'このデバイスで、公開されているモデルを使い、いちばん強い段階で、固定した色のバージョンに対して計りました。',
+
+  /* The wardrobe (FR-40, F-043). */
+  'wardrobe.title': '服を追加する',
+  'wardrobe.type': '何ですか？',
+  'wardrobe.typeHint': 'セーター、コート、スカーフ',
+  'wardrobe.colour': 'その色',
+  'wardrobe.fromLens': 'レンズの読み取りを使う — 推定であり、一致ではありません',
+  'wardrobe.pickColour': '色を選ぶ',
+  'wardrobe.photo': '写真',
+  'wardrobe.photoLibrary': '写真を選ぶ',
+  'wardrobe.photoCamera': '写真を撮る',
+  'wardrobe.photoAttached': '写真を添付しました。このデバイスに残ります。',
+  'wardrobe.photoRejected': 'このファイルは使えませんでした。',
+  'wardrobe.optional': '以下はすべて任意です',
+  'wardrobe.brand': 'ブランド',
+  'wardrobe.size': 'サイズ',
+  'wardrobe.save': 'ワードローブに追加',
+  'wardrobe.saved': 'ワードローブに追加しました。',
+  'wardrobe.noType': '何かを入力すると追加できます。',
+  'wardrobe.noColour': '色を選ぶと追加できます。',
+  'wardrobe.unknownSlug': 'この色は現在の収録版にありません。',
+  'wardrobe.count': 'ワードローブの中',
 };
 
 /**

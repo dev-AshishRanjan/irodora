@@ -27,6 +27,11 @@ import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
+import { AddGarment } from '../src/screens/AddGarment';
+import type { WardrobeStore } from '../src/wardrobe';
+import type { ImageSource } from '../src/wardrobe/source';
+import type { NewGarment } from '@irodora/store';
+import type { LensReading } from '../src/lens/reading';
 import { Finder } from '../src/screens/Finder';
 import { ColourCard } from '../src/screens/ColourCard';
 import { ProfileSetup, DIMENSION_KEYS } from '../src/screens/ProfileSetup';
@@ -44,7 +49,6 @@ import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
 import type { ProfileStore } from '../src/profile/store';
-import type { LensReading } from '../src/lens/reading';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
 import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
@@ -156,6 +160,49 @@ const DRAFT: PaletteDraft = {
   ],
 };
 
+/**
+ * The wardrobe port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device.
+ *
+ * `createGarment` keeps only what the screen reads back — the count — because a full
+ * `StoredGarment` here would be a second implementation of the repository's read path, in a
+ * test file, disagreeing with the real one the first time a column moved.
+ */
+function fakeWardrobe(): WardrobeStore & { readonly written: NewGarment[] } {
+  const written: NewGarment[] = [];
+  return {
+    written,
+    createGarment(garment) {
+      written.push(garment);
+    },
+    enrichGarment() {
+      /* The screen calls this only when there is enrichment; nothing here reads it back. */
+    },
+    putGarmentImage() {
+      /* Likewise. `garment-image.test.ts` is where the bytes are actually asserted. */
+    },
+    listGarments: () => [],
+  };
+}
+
+/**
+ * An image source that always yields the same valid PNG.
+ *
+ * The bytes matter: they go through `ingestImage`, so a source returning something malformed
+ * would exercise the REJECTED branch while claiming to test the happy one. This is the
+ * smallest thing the ingest accepts.
+ */
+function fakeImageSource(): ImageSource {
+  const png = Uint8Array.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 8,
+    0, 0, 0, 8, 8, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63,
+    0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0x49, 0x45, 0x4e, 0x44, 0, 0, 0, 0,
+  ]);
+  return {
+    pickFromLibrary: () => Promise.resolve(png),
+    captureWithCamera: () => Promise.resolve(png),
+  };
+}
+
 /** The profile port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device. */
 function fakeProfileStore(): ProfileStore & { readonly saved: NewPersonalProfile[] } {
   const saved: NewPersonalProfile[] = [];
@@ -182,6 +229,18 @@ const SAMPLE_READING: LensReading = {
   illumination: 'daylight',
   quality: 'excellent',
   confidence: 1,
+  instruction: '',
+};
+
+/** A reading the Lens might have left for the wardrobe. Values are a plausible mid navy. */
+const OFFERED_READING: LensReading = {
+  rgb: [0.29, 0.42, 0.55],
+  space: 'srgb',
+  usableSamples: 4096,
+  variance: 0.004,
+  illumination: 'daylight',
+  quality: 'good',
+  confidence: 0.82,
   instruction: '',
 };
 
@@ -247,6 +306,37 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Finder initialQuery="dark muted green" />, theme),
+  },
+  {
+    name: 'screens/AddGarment',
+    // `static`, like the rest: its interactive parts are TextField, Button and Swatch, each
+    // registered in packages/ui where the suite makes them render focus, active, disabled and
+    // loading differently.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<AddGarment store={fakeWardrobe()} imageSource={fakeImageSource()} />, theme),
+  },
+  {
+    /*
+     * The SAME screen arrived at from the Lens.
+     *
+     * The offered branch draws a control the empty one does not — "use the Lens reading" — and
+     * a registry entry for the empty screen alone would check the accessibility of a path
+     * nobody took. Same reasoning as the Studio's two entries.
+     */
+    name: 'screens/AddGarment (from the Lens)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <AddGarment
+          store={fakeWardrobe()}
+          imageSource={fakeImageSource()}
+          offered={OFFERED_READING}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/PaletteStudio',

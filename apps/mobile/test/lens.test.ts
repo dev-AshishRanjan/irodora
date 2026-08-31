@@ -255,10 +255,10 @@ describe('the hand-off to profile setup (F-097)', () => {
   });
 
   it('offers a reading and hands it over', () => {
-    expect(hasOffer()).toBe(false);
-    offerReading(READING);
-    expect(hasOffer()).toBe(true);
-    expect(takeReading()).toEqual(READING);
+    expect(hasOffer('profile')).toBe(false);
+    offerReading(READING, 'profile');
+    expect(hasOffer('profile')).toBe(true);
+    expect(takeReading('profile')).toEqual(READING);
   });
 
   it('IS ONE-SHOT — a second take returns null', () => {
@@ -268,30 +268,54 @@ describe('the hand-off to profile setup (F-097)', () => {
      * the consume, arriving a second time re-proposes the estimate they just declined — and
      * FR-27's "never finalised without explicit user confirmation" starts to read as nagging.
      */
-    offerReading(READING);
-    expect(takeReading()).toEqual(READING);
-    expect(takeReading()).toBeNull();
-    expect(hasOffer()).toBe(false);
+    offerReading(READING, 'profile');
+    expect(takeReading('profile')).toEqual(READING);
+    expect(takeReading('profile')).toBeNull();
+    expect(hasOffer('profile')).toBe(false);
   });
 
   it('returns null when nobody offered anything, rather than throwing', () => {
     // The ORDINARY case: the guided path reaches profile setup this way on every run.
-    expect(takeReading()).toBeNull();
+    expect(takeReading('profile')).toBeNull();
   });
 
   it('keeps the second reading when two are offered', () => {
     // Not a queue. Somebody who takes two readings before navigating meant the second one; a
     // queue would offer them a colour they had already moved on from.
     const second = { ...READING, usableSamples: 1234 };
-    offerReading(READING);
-    offerReading(second);
-    expect(takeReading()).toEqual(second);
+    offerReading(READING, 'profile');
+    offerReading(second, 'profile');
+    expect(takeReading('profile')).toEqual(second);
   });
 
+  it('is ADDRESSED — the wardrobe cannot take a reading meant for the profile', () => {
+    /*
+     * THE PAIR THAT MAKES THE DESTINATION REAL. Without both directions this parameter is
+     * decoration: a takeReading that ignored it would pass every other test in this block.
+     *
+     * The bug it prevents is silent on both sides. Somebody scans a garment, passes through
+     * profile setup on the way to the wardrobe, and profile CONSUMES the reading — the
+     * wardrobe then finds an empty slot and asks them to scan again, while the profile has
+     * quietly proposed an estimate built from a jumper. Neither screen can tell "nobody
+     * scanned" from "somebody else took it", which is why the address is on the offer.
+     */
+    offerReading(READING, 'profile');
+    expect(takeReading('wardrobe')).toBeNull();
+    // AND THE OFFER SURVIVES. A mismatched take that consumed would be the original bug
+    // wearing a parameter — the rightful reader would still find nothing.
+    expect(takeReading('profile')).toEqual(READING);
+  });
+
+  it('is addressed in the other direction too', () => {
+    offerReading(READING, 'wardrobe');
+    expect(hasOffer('profile')).toBe(false);
+    expect(takeReading('profile')).toBeNull();
+    expect(takeReading('wardrobe')).toEqual(READING);
+  });
   it('can be cleared without being read', () => {
-    offerReading(READING);
+    offerReading(READING, 'profile');
     clearOffer();
-    expect(takeReading()).toBeNull();
+    expect(takeReading('profile')).toBeNull();
   });
 });
 

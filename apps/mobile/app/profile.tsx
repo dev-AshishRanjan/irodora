@@ -21,7 +21,7 @@ export default function ProfileRoute(): React.JSX.Element {
    * estimate would appear and then vanish on the next keystroke. Reading it in the initialiser
    * takes the offer exactly once per mount, which is what "an offer" means.
    */
-  const [reading] = useState(() => takeReading());
+  const [reading] = useState(() => takeReading('profile'));
 
   return (
     <>

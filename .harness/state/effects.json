@@ -1492,6 +1492,46 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-042",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/lens/handoff.ts#takeReading"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/profile.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/wardrobe/add.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/lens.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/lens.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test — two assertions in lens.test.ts, one per direction, and either alone proves nothing. Watched failing: dropping only the destination comparison turns exactly those two red and leaves the other 379 green.",
+      "memory": "memory/effects/a-one-slot-mailbox-with-two-readers-loses-mail-silently.md",
+      "rationale": "A ONE-SLOT MAILBOX WITH TWO READERS LOSES MAIL, AND NEITHER READER CAN TELL. The Lens hands a reading over through a module-level slot: `offerReading` writes and `takeReading` CONSUMES, and the consuming is deliberate — an offer that survives being declined is not an offer, and without it somebody navigating back is re-proposed an estimate they just turned down. That design is correct for one reader and quietly wrong for two. F-097 built it with profile setup as the only consumer; F-043 made the wardrobe a second one. THE FAILURE: somebody scans a garment intending to add it and passes through profile setup on the way. PROFILE SETUP TAKES THE READING, because the slot had no idea who it was for. The wardrobe screen then finds an empty slot and asks them to scan again, and the profile has been offered an estimate built from a jumper. BOTH HALVES ARE SILENT — neither screen can distinguish \"nobody scanned\" from \"somebody else took it\", because both see `null`. No type catches it: both readers want a `LensReading` and both get one, or do not. No test catches it either, because each screen's tests plant an offer and read it back, and the two never run in the same process in the order that breaks. THE FIX IS AN ADDRESS ON THE OFFER, still one slot — a queue would offer somebody a colour they had already moved on from, which is what the consume exists to prevent. THE HALF THAT IS EASY TO GET WRONG: a mismatched take must LEAVE THE OFFER STANDING. Consuming it and returning null would be the original bug wearing a parameter — the rightful reader would still find nothing and still have no way to tell that from nobody having scanned. THE GUARD IS A PAIR, ONE PER DIRECTION, AND EITHER ALONE PROVES NOTHING: a `takeReading` that ignored its argument entirely passes every other assertion in that describe block, because the offer is still written, still read back, still null on the second read, and still replaced by a second offer. All of that stays true. WATCHED FAILING: mutating the check to drop only the destination comparison turns exactly those two red and leaves the other 379 green. THE SHAPE WORTH CARRYING is the same family as a-generated-value-with-no-consumer seen from the other end — there one producer and no reader, here one slot and two readers. The question that finds both is \"how many things touch this, and does it know?\" A mailbox, a cache, a module-level singleton and a route parameter all answer it the same way, and all of them are correct until the second caller arrives.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

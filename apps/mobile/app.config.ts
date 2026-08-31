@@ -85,6 +85,11 @@ const config: ExpoConfig = {
       // claims lint: it says what we do with the frame, and does not promise accuracy.
       NSCameraUsageDescription:
         'Irodora reads colour from the camera on this device. Frames are analysed and discarded, and are never sent anywhere.',
+      // The wardrobe photograph (FR-40, F-043). A DIFFERENT operation from the sentence above
+      // and it says so: this one is kept, and the string has to be honest about that or the
+      // camera string becomes false the first time somebody adds a garment.
+      NSPhotoLibraryUsageDescription:
+        'Irodora can attach a photo you choose to an item in your wardrobe. It is stored in the encrypted database on this device and is never sent anywhere.',
     },
   },
 

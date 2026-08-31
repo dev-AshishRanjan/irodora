@@ -38,10 +38,26 @@
 import type { LensReading } from './reading';
 
 /**
+ * Who a reading is for.
+ *
+ * Added by F-043, and the reason is a bug that no type would have caught. Profile setup was
+ * the only consumer, and `takeReading` CONSUMES — so the moment the wardrobe became a second
+ * consumer, a person who scanned a garment and happened to pass through profile setup on the
+ * way would have had the reading eaten there. The wardrobe screen would then find an empty
+ * slot and ask them to scan again, and the profile would have quietly proposed an estimate
+ * built from a jumper.
+ *
+ * Both halves are silent. Neither screen can tell 'nobody scanned' from 'somebody else took
+ * it', which is why the destination is on the OFFER rather than a check at the reader.
+ */
+export const READING_DESTINATIONS = ['profile', 'wardrobe'] as const;
+export type ReadingDestination = (typeof READING_DESTINATIONS)[number];
+
+/**
  * The slot. `null` means nothing is on offer — which is the state every screen except the
  * Lens starts in, and the state the profile screen returns to as soon as it has read one.
  */
-let offered: LensReading | null = null;
+let offered: { reading: LensReading; to: ReadingDestination } | null = null;
 
 /**
  * Leave a reading for profile setup.
@@ -49,8 +65,8 @@ let offered: LensReading | null = null;
  * Overwrites. If someone takes two readings before navigating, the second is the one they
  * meant — a queue would offer them a colour they had already moved on from.
  */
-export function offerReading(reading: LensReading): void {
-  offered = reading;
+export function offerReading(reading: LensReading, to: ReadingDestination): void {
+  offered = { reading, to };
 }
 
 /**
@@ -59,8 +75,12 @@ export function offerReading(reading: LensReading): void {
  * Returns `null` rather than throwing: "nobody offered a reading" is the ordinary case, not an
  * error. The guided path reaches profile setup this way on every run.
  */
-export function takeReading(): LensReading | null {
-  const reading = offered;
+export function takeReading(to: ReadingDestination): LensReading | null {
+  // ADDRESSED, and the mismatch case LEAVES THE OFFER ALONE. Consuming a reading meant for
+  // somewhere else would be the original bug wearing a parameter: the rightful reader would
+  // still find an empty slot, and would still have no way to tell that from nobody scanning.
+  if (offered?.to !== to) return null;
+  const { reading } = offered;
   offered = null;
   return reading;
 }
@@ -72,8 +92,8 @@ export function takeReading(): LensReading | null {
  * read. Deliberately not used to gate `takeReading` — a check-then-take is two chances to get
  * the ordering wrong, and `takeReading` returning `null` already covers it.
  */
-export function hasOffer(): boolean {
-  return offered !== null;
+export function hasOffer(to: ReadingDestination): boolean {
+  return offered !== null && offered.to === to;
 }
 
 /**

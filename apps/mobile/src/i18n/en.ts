@@ -350,6 +350,28 @@ export const en = {
   'cvd.noAlternative': 'No colour in this version separates enough better to be worth the swap.',
   'cvd.method':
     'Measured on this device with a published model, at its strongest tabulated severity, against the pinned corpus version.',
+
+  /* The wardrobe (FR-40, F-043). */
+  'wardrobe.title': 'Add a garment',
+  'wardrobe.type': 'What is it?',
+  'wardrobe.typeHint': 'Jumper, coat, scarf',
+  'wardrobe.colour': 'Its colour',
+  'wardrobe.fromLens': 'Use the Lens reading — an estimate, not a match',
+  'wardrobe.pickColour': 'Choose a colour',
+  'wardrobe.photo': 'Photograph',
+  'wardrobe.photoLibrary': 'Choose a photo',
+  'wardrobe.photoCamera': 'Take a photo',
+  'wardrobe.photoAttached': 'Photograph attached. It stays on this device.',
+  'wardrobe.photoRejected': 'That file could not be used.',
+  'wardrobe.optional': 'Everything below is optional',
+  'wardrobe.brand': 'Brand',
+  'wardrobe.size': 'Size',
+  'wardrobe.save': 'Add to wardrobe',
+  'wardrobe.saved': 'Added to your wardrobe.',
+  'wardrobe.noType': 'Say what it is, and you can add it.',
+  'wardrobe.noColour': 'Choose a colour, and you can add it.',
+  'wardrobe.unknownSlug': 'That colour is not in this version of the collection.',
+  'wardrobe.count': 'In your wardrobe',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

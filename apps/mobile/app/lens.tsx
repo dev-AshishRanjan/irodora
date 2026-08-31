@@ -28,7 +28,7 @@ export default function LensRoute(): React.JSX.Element {
    * rather than left standing.
    */
   const useForProfile = useCallback((taken: LensReading) => {
-    offerReading(taken);
+    offerReading(taken, 'profile');
     router.push('/profile');
   }, []);
 

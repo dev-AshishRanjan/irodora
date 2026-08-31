@@ -8,6 +8,132 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-043 DONE · four ways in, two required fields, and a mailbox that had one reader
+
+### The wardrobe becomes reachable
+
+F-042 made it storable; this is the screen. Four entry paths (FR-40), two required fields, and
+`@irodora/store`'s `NewGarment` is what holds that line — it has three properties, one of them
+generated, so a caller supplies two and a third requirement would mean editing a type that
+F-042's `ts-expect-error` guards.
+
+### The bug that only appears when a second reader arrives
+
+`handoff.ts` is a one-slot mailbox: `offerReading` writes, `takeReading` **consumes**. Correct
+for one reader, and F-097 built it with profile setup as the only one.
+
+Make the wardrobe a second reader and it breaks in a way **no type and no existing test could
+see**. Somebody scans a garment, passes through profile setup on the way, and profile takes the
+reading. The wardrobe then finds an empty slot and asks them to scan again; the profile has
+been offered an estimate built from a jumper. **Both screens see `null`, and neither can tell
+that from nobody having scanned.**
+
+The offer gained a destination. Still one slot — a queue would offer a colour somebody had
+moved on from — but a mismatched take **leaves the offer standing**, because consuming it and
+returning `null` would be the original bug wearing a parameter.
+
+**The guard is a pair and either half alone proves nothing.** A `takeReading` that ignored its
+argument passes every other assertion in that block: the offer is written, read back, `null` on
+the second read, replaced by a second offer. All still true. Watched failing — dropping only
+the destination comparison turns exactly those two red and leaves the other 379 green.
+Recorded as **E-042**, and E-037 was *not* extended: that link is about a privacy claim, and
+this is a different failure with a different tell.
+
+### The lint that already anticipated this feature
+
+Two of the four paths need a picker, and `apps/mobile` had none. `eslint.config.mjs` bans
+`expo-file-system`, `expo-media-library`, `node:fs` and `fs` from the Lens **and from every
+route** — *"a camera frame may never be written to a file"* — and its own message says: *"If a
+surface here genuinely needs the filesystem, it is not the Lens."*
+
+**It does not need it.** `expo-image-picker` is asked for `base64`, the bytes go through
+`ingestImage`, and they become a BLOB in the SQLCipher database (ADR-0078). The photograph is
+never a file this app manages, so **nothing here asks for an exemption** and the rule stays
+exactly as strict as it is.
+
+`READ_MEDIA_IMAGES` may appear in the shipped APK's permission set on Android 13+, and
+`EXPECTED_PERMISSIONS` was **deliberately not widened in anticipation**. F-085 records that the
+first genuinely signed artefact failed gate 16 on three permissions no dependency and no source
+file named. A red gate naming a permission is the correct outcome; the list moves in response
+to a build, not before one.
+
+### Three checks caught three real things, and one was a design convention I did not know
+
+- **The a11y check found twelve unnamed buttons.** Each corpus swatch was wrapped in a
+  `Pressable` with a role and no accessible name — a screen reader announcing "button" twelve
+  times, which looks perfect in a screenshot. `swatchAccessibleName` composes the name, the hex
+  **and the provenance**, so the announcement carries what the swatch is.
+- **The token-reach check refused `display.1`.** Its declaration in `unreached-tokens.json`
+  says *"no screen leads with a display size; every one of them opens at `title`"*. That is a
+  **design convention**, and the honest fix was to follow it rather than to edit the
+  declaration — the check was right and the screen was the new thing.
+- **The i18n check refused twenty keys with no renderer.** Copy added before the screen existed
+  failed *"has no key nobody renders"*, which forced the right order: the screen, then the keys
+  it uses.
+
+### The Japanese is unreviewed, and the count says so
+
+Twenty new keys, none in `JA_REVIEWED`. The suite prints `0/278 reviewed, 278 OUTSTANDING`.
+OQ-5 is closed as a *decision* (ADR-0060, one editor) rather than answered, so what must never
+happen is *"a missing translation fails the build"* quietly becoming *"an unreviewed
+translation passes silently"*. The count is the mechanism that stops it.
+
+### One claim the screen must never make
+
+A Lens capture is stored with `source: 'estimated'` and the reading's own confidence, and its
+**name is the hex**. Naming it after the corpus entry it lands closest to would be an assertion
+of identity — exactly what FR-13 forbids and what the claims lint bans phrases for. The button
+offering the reading says it is an estimate, and nothing offers to name it.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** — 18 checks | | 6 build | **PASS** |
+| 1 typecheck | **PASS** | | 8 a11y | **PASS** |
+| 2 lint | **PASS** | | 9 contrast | **PASS** |
+| 3 format | **PASS** | | 12 perf | **PASS** |
+| 4 test | **PASS** — 381 in the app | | 15 security | **PASS** |
+
+**`e2e` is in this feature's verification list and could not run.** Gate 7 is pending and F-091
+is blocked on an emulator this workstation has no JDK for — and this is the feature e2e was
+most for: nothing here proves the four paths work as a *journey*, only that each one reaches
+the store through a port.
+
+**`artifact` could not run** — it needs an APK from CI, and it is where the permission question
+above gets answered.
+
+### Attested, and it was already declared
+
+*"Median time to add an item 20 seconds or less, measured on device."* Declared on this feature
+before it was claimed, still outstanding, still blocking release. The screen is built for it —
+two fields at the top, four colour paths beside them, everything else under a heading that says
+it is optional — but a layout argument is not a measurement.
+
+### Watch out
+
+- **A backtick inside a `node -e` string is command-substituted, again.** It ate
+  `` `swatchAccessibleName` `` out of a comment, leaving a double space. Third time this
+  session; the tell is always a doubled space in prose. Assert on it, or write the file.
+- **The design system requires an explicit `color` on every `Text`.** That is not friction, it
+  is how the contrast gate knows what pairing to check — a `Text` with a defaulted colour is a
+  pairing nobody declared.
+- **A FOURTH mis-invoked gate, and the pattern is now a finding of its own.** `pnpm test:perf`
+  does not exist — gate 12 is `pnpm bench` — and a missing script exits **1**, which in a sweep
+  that prints only exit codes is indistinguishable from a red gate. Across this session that is
+  a filter matching no package (exit 0), a scratch path Node resolved to another drive, and two
+  wrong script names. **Read the command out of `gates.json` rather than typing it**: the gate
+  ids and their commands are already data, and every one of these was me writing a plausible
+  name instead of reading the one that exists.
+
+### Next
+
+R4 continues. **F-045 — outfit builder** is next by id with its blockers (F-031, F-043) now
+both done. F-046 is also unblocked. F-104's device attestation still blocks release, and F-107
+holds the retired-vocabulary sweep.
+
+---
+
 ## 2026-08-31 — F-042 DONE · the wardrobe, and a sentence about encryption that was not true
 
 ### Three documents disagreed, and one of them was wrong
