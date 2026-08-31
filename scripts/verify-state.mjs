@@ -512,42 +512,6 @@ if (effects) {
   );
   const referenced = new Set();
 
-  /*
-   * An effect id is the graph's primary key, and nothing was checking it (F-102).
-   *
-   * The schema cannot: JSON Schema 2020-12 has `uniqueItems` over whole objects and no
-   * unique-by-property constraint, so two links sharing an id but differing in every other
-   * field validate perfectly. Both did, for a day.
-   *
-   * What a collision costs is more than tidiness. Gate 0 warned "E-032 (high) has no
-   * guard" while one E-032 named a proven guard and the other honestly named none — the
-   * warning was simultaneously right and wrong, with no way to tell which link it meant.
-   * E-034's rationale cited "(E-032)" in a document whose entire purpose is to be
-   * unambiguous about consequences.
-   *
-   * The message names BOTH subjects, because "duplicate id E-032" alone sends the reader
-   * to `git log -S` to find out which two links collided. That is the search this check
-   * exists to spare them.
-   */
-  const idOwners = new Map();
-  for (const link of effects.links) {
-    const first = idOwners.get(link.id);
-    if (first === undefined) {
-      idOwners.set(link.id, link.from?.ref ?? '(no from.ref)');
-      continue;
-    }
-    fail(
-      'effects',
-      `${link.id} is used by two different links: "${first}" and "${link.from?.ref ?? '(no from.ref)'}"`,
-      'An effect id is how every other document points at a consequence. When it resolves ' +
-        'to two links, every reference to it — in a rationale, an ADR, a source comment or ' +
-        'a gate warning — becomes ambiguous, and the graph stops being able to do the one ' +
-        'job it has.',
-      'Give the later link the next unallocated id, and move its memory-index row, its note ' +
-        'heading and every reference a reader consults as current. Never reuse an id.',
-    );
-  }
-
   for (const link of effects.links) {
     referenced.add(link.memory);
 
@@ -603,8 +567,7 @@ if (effects) {
   if (!failures.some((f) => f.check === 'effects'))
     pass(
       'effects',
-      `${effects.links.length} links, ${idOwners.size} distinct ids, notes paired, ` +
-        'paths resolve, critical links guarded',
+      `${effects.links.length} links, notes paired, paths resolve, critical links guarded`,
     );
 }
 
@@ -741,6 +704,203 @@ if (effects && claimsRaw) {
     );
   }
 }
+
+/* ================================ 4b. id uniqueness across .harness (F-102, F-106) */
+
+/*
+ * Every id space in `.harness/` is a primary key, and no schema can check one.
+ *
+ * JSON Schema 2020-12 has `uniqueItems`, which compares WHOLE OBJECTS, and no
+ * unique-by-property constraint — two entries sharing an id and differing anywhere else are
+ * distinct objects and validate perfectly. So the key is the one field a schema is
+ * structurally incapable of checking, and it is the field everything else resolves through.
+ *
+ * IT HAPPENED, AND IT WAS NOT CARELESSNESS. F-098 allocated `E-032` at 09:22:54 on
+ * 2026-08-26 and F-028 allocated it again at 09:46:43 — twenty-four minutes apart, by two
+ * features neither of which could see the other's write. Gate 0 then printed "E-032 (high)
+ * has no guard" while one E-032 named a proven guard and the other honestly named none: a
+ * warning simultaneously right and wrong, with nothing in it to say which link it meant.
+ *
+ * THIS IS A TABLE RATHER THAN THREE CHECKS BECAUSE THE ONE-OFF IS WHAT PRODUCED F-106.
+ * F-102 fixed `effects.json` alone; tracing its effects found the same hole in
+ * `feature_list.json` and `gates.json` within the hour, both passing gate 0 with a planted
+ * duplicate. A fourth file would otherwise schedule F-107.
+ *
+ * A FEATURE ID IS THE WORST OF THEM, and the reason is that it is not merely a citation
+ * target. `blockedBy` resolves by id and `next-feature` selects the lowest eligible id, so
+ * two features numbered F-102 make "every blocker is done" a question with two answers.
+ *
+ * IT FAILS CLOSED. A declared file that is missing, unparseable, or whose array is not where
+ * the table says is a FAILURE, never a skip — otherwise renaming a file silently disables its
+ * check, and a check that cannot run is not passing.
+ *
+ * WHAT IS DELIBERATELY ABSENT, both established by experiment rather than by reading:
+ *
+ *   `unreached-tokens.json` — `group` is NOT a key. Ten entries carry five distinct groups
+ *   and verify-token-reach.mjs maps (group, token) pairs, so a group-uniqueness check would
+ *   fire on correct data on its first run. That is how a real check gets deleted for noise.
+ *
+ *   `off-scale-spacing.json` — a compound (file, property, value) key, and a duplicate is
+ *   ALREADY caught elsewhere: verify-spacing-scale.mjs matches with findIndex, so a second
+ *   identical entry matches nothing and a dead exemption is already a failure. Verified by
+ *   planting one and watching it exit 1.
+ *
+ * The message names BOTH subjects. "Duplicate id E-032" on its own sends the reader to
+ * `git log -S` to find out which two collided, which is the search this check exists to
+ * spare them.
+ */
+
+const ID_SPACES = [
+  {
+    file: 'state/feature_list.json',
+    path: 'features',
+    key: 'id',
+    plural: 'features',
+    detail: (e) => e.title ?? '(no title)',
+    why:
+      'A feature id is not only a citation target, it is a control-flow input: `blockedBy` ' +
+      'resolves by id and `next-feature` selects the lowest eligible id. Two features under ' +
+      'one id make "every blocker is done" a question with two answers, and the check that ' +
+      'stops work starting on an unfinished dependency reports whichever it reached first.',
+  },
+  {
+    file: 'state/effects.json',
+    path: 'links',
+    key: 'id',
+    plural: 'links',
+    detail: (e) => e.from?.ref ?? '(no from.ref)',
+    why:
+      'An effect id is how every other document points at a consequence. When it resolves ' +
+      'to two links, every reference to it — in a rationale, an ADR, a source comment or a ' +
+      'gate warning — becomes ambiguous, and the graph stops being able to do the one job ' +
+      'it has.',
+  },
+  {
+    file: 'verification/gates.json',
+    path: 'gates',
+    key: 'id',
+    plural: 'gates',
+    detail: (e) => e.command ?? '(no command)',
+    why:
+      'A gate id resolves `activatesWith`, `requiredFor`, every feature’s `verification` ' +
+      'list and the CI mirror. Two gates under one id mean a feature can name a gate that ' +
+      'runs a command nobody chose, and the mirror can prove the wrong step is present.',
+  },
+  {
+    file: 'verification/claims.json',
+    path: 'banned',
+    key: 'id',
+    plural: 'banned constructions',
+    detail: (e) => e.pattern ?? '(no pattern)',
+    why:
+      'The claims lint names the construction it caught, and an exemption is justified ' +
+      'against one. Two constructions under one id make a finding unattributable and an ' +
+      'exemption wider than whoever wrote it intended.',
+  },
+  {
+    file: 'verification/discharged-claims.json',
+    path: 'claims',
+    key: 'name',
+    plural: 'discharged claims',
+    detail: (e) => e.pattern ?? '(no pattern)',
+    why:
+      'The stale-rationale failure reads "asserts <name>". Two claims under one name make ' +
+      'that sentence point at a phrase the author did not write.',
+  },
+  {
+    file: 'verification/retired-surface.json',
+    path: 'terms',
+    key: 'name',
+    plural: 'retired terms',
+    detail: (e) => e.pattern ?? '(no pattern)',
+    why:
+      'A retired term names what it retired and the ADR that retired it. Two under one name ' +
+      'attribute a finding to the wrong decision.',
+  },
+  {
+    file: 'verification/advisories.json',
+    path: 'accepted',
+    key: 'id',
+    plural: 'accepted advisories',
+    detail: (e) => e.package ?? '(no package)',
+    why:
+      'A disposition is an accepted risk recorded against one advisory id, with a ' +
+      'reachability argument for one package. Two under one id accept a risk nobody ' +
+      'assessed, which is the shape the advisory proof exists to prevent.',
+  },
+];
+
+const FIX =
+  'Give the later entry the next unallocated id, and move every reference a reader ' +
+  'consults as current. Never reuse an id.';
+
+let idEntries = 0;
+
+for (const space of ID_SPACES) {
+  const path = join(HARNESS, space.file);
+
+  if (!existsSync(path)) {
+    fail(
+      'ids',
+      `${space.file} is declared as an id space and is not there`,
+      'A declared space that cannot be read is an unchecked space. Skipping it would let a ' +
+        'rename disable a check with nothing to say so.',
+      `Restore .harness/${space.file}, or remove it from ID_SPACES in this script.`,
+    );
+    continue;
+  }
+
+  const data = readJson(path);
+  if (data === null) continue; // readJson has already reported the parse failure.
+
+  const entries = data[space.path];
+  if (!Array.isArray(entries)) {
+    fail(
+      'ids',
+      `${space.file} has no "${space.path}" array, so its ids are unchecked`,
+      'The table says where the entries live. When they move, the check silently stops ' +
+        'having anything to check, and reads exactly like a pass.',
+      `Point ID_SPACES at the new path in ${space.file}, or restore the array.`,
+    );
+    continue;
+  }
+
+  idEntries += entries.length;
+  const owners = new Map();
+
+  for (const entry of entries) {
+    const id = entry?.[space.key];
+    if (typeof id !== 'string' || id === '') {
+      fail(
+        'ids',
+        `${space.file} has an entry with no "${space.key}"`,
+        'An entry with no key cannot be referred to, and cannot be told apart from the next ' +
+          'one that also has none.',
+        `Give it a ${space.key}.`,
+      );
+      continue;
+    }
+    const detail = String(space.detail(entry));
+    const first = owners.get(id);
+    if (first === undefined) {
+      owners.set(id, detail);
+      continue;
+    }
+    fail(
+      'ids',
+      `${id} is used by two different ${space.plural}: "${first}" and "${detail}"`,
+      space.why,
+      FIX,
+    );
+  }
+}
+
+if (!failures.some((f) => f.check === 'ids'))
+  pass(
+    'ids',
+    `${String(ID_SPACES.length)} id space(s), ${String(idEntries)} entries, every id distinct ` +
+      '(2 spaces deliberately unkeyed — see the comment)',
+  );
 
 /* ============================================================== 5. memory index */
 

@@ -1,6 +1,6 @@
 # An effect id is a primary key, and the schema cannot check it
 
-**E-039** · from `.harness/state/effects.json` · guard `gate:state` (section 4), proven by
+**E-039** · from `.harness/state/effects.json` · guard `gate:state` (section 4b), proven by
 `scripts/verify-effect-id-proof.mjs`
 
 ## What depends on what
@@ -47,11 +47,14 @@ passed. The damage was not cosmetic:
 
 ## How it is checked now
 
-Gate 0 section 4 accumulates ids while walking the graph and fails on the second sighting,
-**naming both links' `from.ref`** — because "duplicate id E-032" on its own sends the reader
-to `git log -S` to find out which two collided, which is the search the check exists to spare
-them. The pass line reports the distinct-id count beside the link count, so the check is
-visible when it succeeds and not only when it fails.
+Gate 0 fails on the second sighting of an id, **naming both links' `from.ref`** — because
+"duplicate id E-032" on its own sends the reader to `git log -S` to find out which two
+collided, which is the search the check exists to spare them.
+
+Since **F-106** it lives in section 4b, which walks a declared table of seven id spaces with
+this graph as one row. Its pass line counts the spaces and the entries — `7 id space(s), 165
+entries, every id distinct` — so the check is visible when it succeeds and not only when it
+fails.
 
 `verify-effect-id-proof.mjs` keeps it honest. Case 1 **reconstructs the historical
 collision** — it is the regression test for this defect, and it will outlive everyone's
@@ -75,3 +78,12 @@ corruption.** Any future check over this graph has to keep those apart.
 there the parser resolved the collision silently and destructively; here it kept both and let
 every reader resolve it differently. [[prose-in-a-state-file-rots-and-no-schema-can-see-it]]
 is the same limit of schema validation applied to meaning rather than to keys.
+
+## What F-106 changed, and what it did not
+
+The check moved into a table covering seven id spaces. **The message was deliberately left
+byte-identical**, so `verify-effect-id-proof.mjs` passes *unchanged* through the refactor —
+which is how "the behaviour is the same" was established rather than asserted.
+
+What the table cannot do is notice an id space nobody declared:
+[[a-table-driven-check-is-only-as-complete-as-its-table]].

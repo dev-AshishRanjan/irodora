@@ -1392,10 +1392,63 @@
         ".harness"
       ],
       "severity": "high",
-      "guard": "gate:state (verify-state.mjs section 4), proven by script:verify-effect-id-proof.mjs",
+      "guard": "gate:state (verify-state.mjs section 4b, the ID_SPACES table), proven by script:verify-effect-id-proof.mjs",
       "memory": "memory/effects/an-effect-id-is-a-primary-key-and-the-schema-cannot-check-it.md",
-      "rationale": "AN EFFECT ID IS THE GRAPH'S PRIMARY KEY, AND THE SCHEMA CANNOT CHECK IT. `effects.schema.json` validates the SHAPE of an id — `^E-[0-9]{3}$` — and stops there; JSON Schema 2020-12 offers `uniqueItems`, which compares whole objects, and no unique-by-property constraint, so two links sharing an id while differing in every other field are two distinct objects and validate perfectly. Everything outside the graph points into it by id and by nothing else: ADRs, source comments, other links' rationales, `memory/index.md`'s per-note label, gate 0's own warning text, and each feature's `effects` array. Every one of those citations rests on uniqueness, and none of them carries a copy of the link. IT HAPPENED, AND IT WAS NOT CARELESSNESS: E-032 was allocated by F-098 at 09:22:54 and again by F-028 at 09:46:43 on 2026-08-26 — twenty-four minutes apart, by two features neither of which could see the other's write. THE COST WAS NOT COSMETIC. Gate 0 printed \"E-032 (high) has no guard\" while one E-032 named a proven guard and the other honestly named none, so its own warning was simultaneously right and wrong with nothing in it to say which link it meant; F-099 had to resolve its link by `from.ref` because resolving by id, in its own words, \"would have been a coin toss\"; and E-034's rationale carried \"(E-032)\" as an ambiguous pointer inside the document whose entire purpose is to be unambiguous about consequences. THE CHECK NAMES BOTH SUBJECTS rather than only the id, because \"duplicate id E-032\" on its own sends the reader to `git log -S` to find out which two links collided — the search the check exists to spare them. The pass line reports the distinct-id count beside the link count, so the check is visible when it succeeds and not only when it fails. PROVEN BY `verify-effect-id-proof.mjs`: four cases, three red and one green control. Case 1 RECONSTRUCTS the historical collision and is the regression test for the defect that created this link, which will outlive anyone's memory of it. Case 3 is aimed at a plausible wrong implementation rather than at the margin: two links sharing an id AND the same `from.ref`, which a check deduplicating on `from` — or on the id-and-from pair — misses while passing every other case. THAT MUTATION FOUND SOMETHING WORTH RECORDING. Keying on `from.ref` turns the BASELINE red on five pairs, because E-017/E-026/E-027/E-029 and E-034/E-038 each legitimately share a `from` with a sibling link. One source having several distinct consequences is normal; one id naming two links is corruption, and any future check over this graph has to keep those two apart.",
+      "rationale": "AN EFFECT ID IS THE GRAPH'S PRIMARY KEY, AND THE SCHEMA CANNOT CHECK IT. `effects.schema.json` validates the SHAPE of an id — `^E-[0-9]{3}$` — and stops there; JSON Schema 2020-12 offers `uniqueItems`, which compares whole objects, and no unique-by-property constraint, so two links sharing an id while differing in every other field are two distinct objects and validate perfectly. Everything outside the graph points into it by id and by nothing else: ADRs, source comments, other links' rationales, `memory/index.md`'s per-note label, gate 0's own warning text, and each feature's `effects` array. Every one of those citations rests on uniqueness, and none of them carries a copy of the link. IT HAPPENED, AND IT WAS NOT CARELESSNESS: E-032 was allocated by F-098 at 09:22:54 and again by F-028 at 09:46:43 on 2026-08-26 — twenty-four minutes apart, by two features neither of which could see the other's write. THE COST WAS NOT COSMETIC. Gate 0 printed \"E-032 (high) has no guard\" while one E-032 named a proven guard and the other honestly named none, so its own warning was simultaneously right and wrong with nothing in it to say which link it meant; F-099 had to resolve its link by `from.ref` because resolving by id, in its own words, \"would have been a coin toss\"; and E-034's rationale carried \"(E-032)\" as an ambiguous pointer inside the document whose entire purpose is to be unambiguous about consequences. THE CHECK NAMES BOTH SUBJECTS rather than only the id, because \"duplicate id E-032\" on its own sends the reader to `git log -S` to find out which two links collided — the search the check exists to spare them. The pass line reports the distinct-id count beside the link count, so the check is visible when it succeeds and not only when it fails. PROVEN BY `verify-effect-id-proof.mjs`: four cases, three red and one green control. Case 1 RECONSTRUCTS the historical collision and is the regression test for the defect that created this link, which will outlive anyone's memory of it. Case 3 is aimed at a plausible wrong implementation rather than at the margin: two links sharing an id AND the same `from.ref`, which a check deduplicating on `from` — or on the id-and-from pair — misses while passing every other case. THAT MUTATION FOUND SOMETHING WORTH RECORDING. Keying on `from.ref` turns the BASELINE red on five pairs, because E-017/E-026/E-027/E-029 and E-034/E-038 each legitimately share a `from` with a sibling link. One source having several distinct consequences is normal; one id naming two links is corruption, and any future check over this graph has to keep those two apart. FOLDED INTO A TABLE BY F-106, WITH THE BEHAVIOUR UNCHANGED. This check was written for effects.json alone; tracing F-102 found the same hole in feature_list.json and gates.json within the hour, so gate 0 section 4b now walks a declared table of seven id spaces and this graph is one row of it. The message format was deliberately not touched, so verify-effect-id-proof.mjs passes UNCHANGED through the refactor — which is how \"identical behaviour\" was established rather than asserted. The completeness of that table is its own link, E-040, because a table that omits a space produces no output at all and that reads exactly like correctness.",
       "confidence": 1,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-040",
+      "from": {
+        "kind": "symbol",
+        "ref": "scripts/verify-state.mjs#ID_SPACES"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/gates.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/claims.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/discharged-claims.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/retired-surface.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/advisories.json"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-state-id-proof.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        ".harness"
+      ],
+      "severity": "high",
+      "guard": "gate:state (verify-state.mjs section 4b), proven by script:verify-state-id-proof.mjs — and the proof covers every DECLARED space, not an undeclared one. See the rationale.",
+      "memory": "memory/effects/a-table-driven-check-is-only-as-complete-as-its-table.md",
+      "rationale": "A TABLE-DRIVEN CHECK IS ONLY AS COMPLETE AS ITS TABLE, AND THE INCOMPLETENESS IS SILENT. Gate 0 checks id uniqueness across `.harness/` by walking a declared table of seven spaces — which file, which array, which key, how to describe an entry. Every one of those files depends on being IN the table, and nothing about adding a new id space to a data file makes it appear there. The dependency runs the unusual way round: the CHECK depends on somebody extending it, and the failure looks exactly like success — an undeclared space is never mentioned, and gate 0 prints a green line with a smaller number in it than it should have. THIS IS A DIFFERENT FAILURE FROM E-039, WHICH IS WHY IT IS A DIFFERENT LINK. E-039's tell is a warning that is right and wrong at once; E-040's tell is NO OUTPUT AT ALL, which is indistinguishable from correctness. HOW IT AROSE: F-102 wrote the duplicate check for effects.json alone, and tracing that feature's effects found the same hole twice more within the hour — a second feature numbered F-102 and two gates sharing an id both left gate 0 GREEN. Two more one-off checks would have scheduled the third, so it became a table, and the table carries a risk the one-offs did not. This link records the trade rather than pretending it went away. THE GUARD, AND EXACTLY WHERE IT STOPS. `verify-state-id-proof.mjs` proves the table FAILS CLOSED on both ways a declared space can vanish — the array renamed, and the file absent — and both were watched: with the check mutated to `continue` instead of `fail`, those two cases and ONLY those two go the wrong way while the three duplicate cases keep passing. The halves are independent, which is what makes each case evidence about a distinct property rather than about the check in general. WHAT NO CHECK HERE CAN DO IS NOTICE AN ID SPACE NOBODY DECLARED. No schema says \"this array is keyed\", and inferring it — every array whose entries carry an id-shaped field — would be a guess that fires on data that merely happens to look keyed. So the honest statement is that every DECLARED space is real and checked, proven; an UNDECLARED one is invisible. What stands in for the missing half is that the table lives beside the data it reads, in the one script every session runs first, and the pass line prints the space count, so a number that stops matching the files in .harness/verification/ is visible on every run rather than only to an auditor. TWO SPACES ARE DELIBERATELY OUT, both established by running something rather than by reading: `unreached-tokens.json`, where `group` is not a key at all (ten entries, five distinct groups, and verify-token-reach.mjs maps (group, token) pairs) so a uniqueness check there would fire on correct data on its first run; and `off-scale-spacing.json`, a compound (file, property, value) key whose duplicates are ALREADY caught elsewhere, because verify-spacing-scale.mjs matches with findIndex and a dead exemption is already a failure — verified by planting one and watching it exit 1.",
+      "confidence": 0.95,
       "origin": "manual",
       "status": "active"
     }

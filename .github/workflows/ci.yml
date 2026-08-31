@@ -89,6 +89,16 @@ jobs:
       - name: 'Gate 0 — duplicate effect-id proof'
         run: node scripts/verify-effect-id-proof.mjs
 
+      # Not a gate — the proof that gate 0's id-uniqueness TABLE can fail (F-106). F-102 built
+      # that check for effects.json alone and the same hole was found in feature_list.json and
+      # gates.json within the hour, so it became a table over seven spaces. A table has a
+      # failure mode a single check does not: a space it cannot locate and silently skips.
+      # Seven cases — three duplicates, two fail-closed (renamed array, absent file) and two
+      # controls that must stay GREEN. The two halves are independent: neutering the duplicate
+      # check leaves the fail-closed cases passing and vice versa.
+      - name: 'Gate 0 — state id-uniqueness proof'
+        run: node scripts/verify-state-id-proof.mjs
+
       # Not a gate — the proof that gate 0's lockfile check can fail (F-098). It runs HERE,
       # before `pnpm install`, because that is the whole point of the check it proves: the
       # install step already refuses a stale lockfile, and refusing it at step nine skips

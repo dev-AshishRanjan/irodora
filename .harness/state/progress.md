@@ -8,6 +8,173 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-08-31 — F-106 DONE · the one-off became a table, and the table got its own honest limit
+
+### Selected because filing it re-opened R3
+
+F-102 filed this into R3, which changed the answer given at the end of that entry: R4's F-042
+was no longer the next eligible feature, because R3 had an actionable item again. Same rule as
+before — *"do not silently pull from a later release"* — applied to work I had just created.
+
+### What was wrong, and why it was worse than F-102
+
+Two plants, both run before writing anything:
+
+| plant | gate 0 |
+|---|---|
+| a second feature numbered `F-102` in `feature_list.json` | **passed** |
+| two gates sharing an id in `gates.json` | **passed** |
+
+**A feature id is not merely a citation target.** `blockedBy` resolves by id and
+`next-feature` selects the lowest eligible id, so two features under one id make *"every
+blocker is done"* a question with two answers — the check that stops work starting on an
+unfinished dependency, reporting whichever entry it reached first. E-032's collision only made
+a *warning* ambiguous. This one can make a *blocker* ambiguous.
+
+Both watched failing, verbatim:
+
+```
+✗ F-102 is used by two different features: "Two different effect links are both numbered
+  E-032" and "The spacing steps get names, the way the radius steps already have"
+✗ state is used by two different gates: "node scripts/verify-state.mjs" and "pnpm typecheck"
+```
+
+### A table, because the one-off is what produced this feature
+
+F-102 wrote its check for `effects.json` alone and the same hole turned up twice more inside
+the hour. Two more one-off checks would have scheduled F-107, so gate 0 section 4b now walks a
+**declared table of seven id spaces** — file, array, key, and how to describe an entry — and
+F-102's effects check is one row of it.
+
+**The message format was deliberately left byte-identical.** `verify-effect-id-proof.mjs`
+filters on that sentence, so it had to pass **unchanged** through the refactor — and it did,
+4/4. That is how "the behaviour is the same" was established rather than asserted, and it is
+the only reason a refactor of a check landed two hours after the check did.
+
+It **fails closed**: a declared file that is missing, unparseable, or whose array is not where
+the table says is a *failure*, never a skip. A rename would otherwise disable a check with
+nothing to say so.
+
+### The audit criterion 3 asked for — answered by running things, not by reading
+
+| space | verdict |
+|---|---|
+| `feature_list.json` `features[].id` | **checked** — control flow |
+| `effects.json` `links[].id` | **checked** — F-102, folded in |
+| `gates.json` `gates[].id` | **checked** — resolves `activatesWith`, `requiredFor`, the mirror |
+| `claims.json` `banned[].id` | **checked** |
+| `discharged-claims.json` `claims[].name` | **checked** — keyed on `name`, not `id` |
+| `retired-surface.json` `terms[].name` | **checked** |
+| `advisories.json` `accepted[].id` | **checked** |
+| `unreached-tokens.json` `unreached[]` | **deliberately not** — `group` is *not a key*: 10 entries, **5 distinct groups**, and `verify-token-reach.mjs` maps (group, token) pairs. A uniqueness check there would fire on correct data on its first run |
+| `off-scale-spacing.json` `exempt[]` | **deliberately not** — compound (file, property, value), and duplicates are **already caught**: `findIndex` matches the first, the second matches nothing, and a dead exemption is already a failure. Verified by planting one and watching it exit 1 |
+
+Also named rather than checked: `releases[]` and `statuses[]` are membership sets where a
+repeat is inert; a feature's `requirements[]` is already reconciled against the PRD by the
+traceability check; and the two schema `$id`s are distinct by construction and looked up by
+nobody.
+
+**The `unreached-tokens` answer is the one worth keeping.** Adding the obvious check there
+would have produced five false failures on correct data on day one — the same measurement
+F-102 made when it mutated its own check to key on `from.ref`. Twice now, the *plausible*
+uniqueness check has been the wrong one.
+
+### The proof, and the two mutations that separate its halves
+
+`verify-state-id-proof.mjs` — seven cases, five red and two green, four files restored and
+**byte-compared**.
+
+| mutation | result |
+|---|---|
+| duplicate detection neutered | **3 of 7 wrong** — the three duplicate cases; both fail-closed cases still passed |
+| an unlocatable space `continue`d instead of failing | **2 of 7 wrong** — the two fail-closed cases; all three duplicate cases still passed |
+
+**The halves are independent**, and that is the point: neither mutation moves a case belonging
+to the other property, so each case is evidence about one thing rather than about "the check"
+in general. F-003's evaluation found the opposite shape — a proof where one mutation broke two
+assertions at once, leaving a hole nobody could see.
+
+Both controls stayed green under both mutations. The fresh-id control **derives** its id from
+the file rather than naming one, because F-102's equivalent control hard-coded `E-039`, the
+repository allocated it hours later, and the control began planting a duplicate while asserting
+green.
+
+### The mutation runs that proved nothing, and how that was caught
+
+The first attempt at both mutations reported the proof passing 7/7 — which I nearly recorded
+as evidence. **The mutation script had never run.** It wrote its backup to `/tmp/vs-id.bak`,
+and Node on Windows resolves that to `E:\tmp\`, which does not exist; the script threw, the
+shell continued, and `verify-state.mjs` was never touched.
+
+The exit code was `0` and the output was a full row of green ticks. It was caught only by
+reading the stderr above the ticks rather than the ticks. **A mutation run that reports the
+subject passing is the one result that must never be taken at face value** — it is
+indistinguishable from a mutation that did not apply, which is why every plant in these proof
+scripts asserts `MUTATION DID NOT APPLY` and this scratch script did not.
+
+### E-039 was corrected rather than left to rot
+
+Folding F-102's check into the table made three sentences in E-039 and its memory note false:
+the guard named "section 4", the note sent a reader to a section where the code no longer is,
+and it claimed *"the pass line reports the distinct-id count beside the link count"* — which
+the effects pass line stopped doing when the count moved to the `ids` line. All three fixed in
+the same change that made them false, which is the whole point of
+[[an-effect-rationale-is-prose-in-a-state-file-and-nothing-executes-it]].
+
+**E-040** records what the table cannot do. Its tell is the opposite of E-039's: E-039's is a
+warning that is right and wrong at once, E-040's is **no output at all**, which reads exactly
+like correctness. Nothing can notice an id space nobody declared — inferring one from "every
+array whose entries have an id-shaped field" would fire on data that merely looks keyed — so
+the guard is honest about covering *declared* spaces only, and the pass line prints the space
+count so a number that stops matching `.harness/verification/` is visible on every run.
+
+### Gates
+
+| ran | result | | ran | result |
+|---|---|---|---|---|
+| 0 state | **PASS** — 18 checks, 48 warnings | | 3 format | **PASS** |
+| 0 state id-uniqueness proof | **PASS** — 7/7 | | 1 typecheck | **PASS** |
+| 0 effect-id proof *(unchanged)* | **PASS** — 4/4 | | 2 lint | **PASS** |
+| 0 mirror proof | **PASS** | | 4 test | **PASS** |
+| 0 stale-rationale proof | **PASS** | | 6 build | **PASS** |
+| 0 lockfile drift proof | **PASS** | | 15 security | **PASS** |
+| 8 token-reach proof | **PASS** | | 8 spacing-scale proof | **PASS** |
+
+**Not run, and why** — `color-golden`, `cvd`, `content`, `contrast`, `a11y`, `perf`,
+`artifact`, `e2e`. No colour maths, no corpus, no rendered surface and no artefact changed;
+this feature touches two scripts, a workflow and the harness state. `artifact` needs an APK and
+`e2e` is still pending on F-091.
+
+All on the pinned toolchain — Node 24.19.0, pnpm 11.21.0.
+
+### Acceptance, criterion by criterion
+
+1. **Gate 0 fails on a duplicate feature id and a duplicate gate id, each watched failing** —
+   *gated*, and watched twice: the two planted runs quoted above, and permanently by cases 1
+   and 2 of the proof.
+2. **Proven by a script on the F-102 pattern, with a control that must stay green** — *gated*.
+   Seven cases, two green controls, both surviving both mutations.
+3. **Every other id space checked or named with the reason** — met; the table above is the
+   audit, and both "not checked" verdicts were established by experiment.
+
+### Watch out
+
+- **`/tmp` is not `/tmp` inside Node on this machine.** Git Bash maps it; Node resolves it
+  against the current drive (`E:\tmp`). Scratch scripts must use the scratchpad path, and a
+  scratch mutator needs the same `MUTATION DID NOT APPLY` assertion the committed proofs have.
+- **Two concurrent `pnpm` invocations can make `format:check` exit 2.** It was green on its
+  own immediately after. Do not run two sweeps at once and read the first one's exit code.
+
+### Next
+
+R3 now holds **F-081** (blocked — a paid Apple membership, OQ-6) and **F-086** (`todo`, and
+blocked here: no JDK, plus F-104's device attestation is still outstanding). Neither is
+actionable on this workstation, so **R4 is now genuinely next, and its lowest eligible id is
+F-042** — Wardrobe model and encrypted local storage, blocker F-041 done. F-104's attestation
+still blocks release.
+
+---
+
 ## 2026-08-31 — F-102 DONE · one id, two links, and the primary key no schema can check
 
 ### The feature was asked for as R4, and R3 was not closed
