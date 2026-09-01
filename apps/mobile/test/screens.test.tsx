@@ -37,6 +37,7 @@ import { parseWeightContent, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../src/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 import type { WardrobeStore } from '../src/wardrobe';
+import type { WearStore } from '../src/wardrobe/cost';
 import type { ImageSource } from '../src/wardrobe/source';
 import type { NewGarment } from '@irodora/store';
 import type { LensReading } from '../src/lens/reading';
@@ -364,6 +365,29 @@ const OUTFIT_WARDROBE = [
 ];
 
 /**
+ * The same wardrobe with a price and a wear history on the top (F-051).
+ *
+ * A separate fixture because the two cost-per-wear branches draw different things: the
+ * unpriced one draws a single grey sentence and the priced one draws two numeric lines. A
+ * registry entry for only the first would check the accessibility of the case where the
+ * feature has nothing to say.
+ */
+const OUTFIT_WARDROBE_PRICED = [
+  { ...OUTFIT_WARDROBE[0]!, costMinor: 4550, currency: 'GBP', wearCount: 38 },
+  ...OUTFIT_WARDROBE.slice(1),
+];
+
+/** A store that records wears in memory. Nothing here reads them back; `cost.test.ts` does. */
+function fakeWearStore(garments: readonly StoredGarment[]): WearStore {
+  return {
+    enrichGarment() {
+      /* The screen calls this on a tap the static registry never performs. */
+    },
+    listGarments: () => garments,
+  };
+}
+
+/**
  * A preference store with a known shape, so the assertions below can name exact numbers.
  *
  * The rows are chosen to make the weight discriminating: green/warm-grey and ochre/mid-blue share a NET
@@ -494,7 +518,14 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<OutfitBuilder wardrobe={OUTFIT_WARDROBE} context={OUTFIT_CONTEXT} />, theme),
+      draw(
+        <OutfitBuilder
+          wardrobe={OUTFIT_WARDROBE}
+          context={OUTFIT_CONTEXT}
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+        />,
+        theme,
+      ),
   },
   {
     /*
@@ -513,6 +544,29 @@ const SCREENS: readonly ConformanceSubject[] = [
           wardrobe={OUTFIT_WARDROBE}
           context={OUTFIT_CONTEXT}
           initialDraft={[{ slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true }]}
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * The SAME screen where cost per wear HAS an answer (F-051).
+     *
+     * The composed entry above draws the refusal — a grey sentence — because its fixture has
+     * no price. This one draws the two numeric lines, which is a different set of tokens at a
+     * different size, and the contrast gate can only measure what something rendered.
+     */
+    name: 'screens/OutfitBuilder (cost per wear)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <OutfitBuilder
+          wardrobe={OUTFIT_WARDROBE_PRICED}
+          context={OUTFIT_CONTEXT}
+          initialDraft={[{ slot: 'top', garment: OUTFIT_WARDROBE_PRICED[0]!, locked: false }]}
+          store={fakeWearStore(OUTFIT_WARDROBE_PRICED)}
         />,
         theme,
       ),

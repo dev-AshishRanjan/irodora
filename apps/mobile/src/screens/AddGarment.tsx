@@ -44,6 +44,7 @@ import {
   type GarmentDraft,
   type WardrobeStore,
 } from '../wardrobe';
+import { costEntry, type CostEntryProblem } from '../wardrobe/cost';
 import type { ImageSource } from '../wardrobe/source';
 import { allEntries, colorFor } from '../corpus';
 import type { LensReading } from '../lens/reading';
@@ -56,6 +57,21 @@ const PROBLEM_KEYS = {
   noColour: 'wardrobe.noColour',
   unknownSlug: 'wardrobe.unknownSlug',
 } as const satisfies Record<DraftProblem, MessageKey>;
+
+/**
+ * Why a typed price was not recorded. Total, for the same reason as `PROBLEM_KEYS`.
+ *
+ * **None of these blocks the save** (F-051). FR-40 allows exactly two required fields and a
+ * price is not one of them, so a price that cannot be read is a price this screen declines to
+ * store — never a garment it declines to add. The sentence says so while somebody is still
+ * typing, which is the only moment at which it can be fixed.
+ */
+const COST_PROBLEM_KEYS = {
+  noAmount: 'wardrobe.costNoAmount',
+  badAmount: 'wardrobe.costBadAmount',
+  badCurrency: 'wardrobe.costBadCurrency',
+  tooPrecise: 'wardrobe.costTooPrecise',
+} as const satisfies Record<CostEntryProblem, MessageKey>;
 
 export interface AddGarmentProps {
   readonly store: WardrobeStore;
@@ -82,8 +98,25 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
   const [saved, setSaved] = useState(false);
   const [imageProblem, setImageProblem] = useState(false);
   const [count, setCount] = useState(() => store.listGarments().length);
+  /*
+   * The price is held as TYPED TEXT, not as the enrichment it becomes.
+   *
+   * `cost_minor` is an integer of minor units and its scale comes from the currency, so
+   * "45.5" is not a value until there is a code beside it. Keeping the parsed patch in state
+   * would mean deciding what to store on every keystroke — including the keystrokes in the
+   * middle of a number — and the field would fight whoever was typing.
+   */
+  const [amountText, setAmountText] = useState('');
+  const [currencyText, setCurrencyText] = useState('');
 
   const problem = draftProblem(draft);
+
+  const money = costEntry(amountText, currencyText);
+  // Silent until somebody has actually typed something. An empty optional field is not a
+  // mistake, and a screen that opened with a complaint on it would be wrong about the
+  // commonest case there is.
+  const moneyTyped = amountText.trim() !== '' || currencyText.trim() !== '';
+  const moneyProblem = moneyTyped && !money.ok ? money.problem : null;
 
   /**
    * Attach bytes from a source.
@@ -112,16 +145,20 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
     const write = toStoreWrite(draft, uuidv7);
     const now = Date.now();
     store.createGarment(write, now);
-    if (Object.keys(draft.enrichment).length > 0)
-      store.enrichGarment(write.id, draft.enrichment, now);
+    // A price that parsed joins the patch; one that did not is left out entirely rather than
+    // written as a half — a cost with no currency is a number nobody can read back (F-051).
+    const enrichment = money.ok ? { ...draft.enrichment, ...money.patch } : draft.enrichment;
+    if (Object.keys(enrichment).length > 0) store.enrichGarment(write.id, enrichment, now);
     // The image last: it is the only part that can be large, and a garment without its
     // photograph is a garment. The reverse — a photograph with no garment — is not a thing the
     // foreign key would allow anyway.
     if (draft.image !== null) store.putGarmentImage(write.id, draft.image, now);
     setDraft(EMPTY_DRAFT);
+    setAmountText('');
+    setCurrencyText('');
     setSaved(true);
     setCount(store.listGarments().length);
-  }, [draft, store]);
+  }, [draft, money, store]);
 
   const swatch = draft.colour;
 
@@ -238,6 +275,32 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
                 setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, size } }));
               }}
             />
+            {/*
+             * TWO FIELDS FOR ONE FACT, and they are deliberately adjacent. A price and its
+             * currency are a single value — `cost_minor` does not record its own scale — so
+             * the pair is what gets stored or nothing is (F-051, FR-46).
+             */}
+            <TextField
+              label={t('wardrobe.cost')}
+              hint={t('wardrobe.costHint')}
+              value={amountText}
+              onChangeText={setAmountText}
+              keyboardType="decimal-pad"
+            />
+            <TextField
+              label={t('wardrobe.currency')}
+              hint={t('wardrobe.currencyHint')}
+              value={currencyText}
+              onChangeText={setCurrencyText}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={3}
+            />
+            {moneyProblem === null ? null : (
+              <Text size="body" color="foreground.2">
+                {`${t('wardrobe.costNotRecorded')} ${t(COST_PROBLEM_KEYS[moneyProblem])}`}
+              </Text>
+            )}
           </View>
         </Surface>
 

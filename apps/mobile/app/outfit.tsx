@@ -73,6 +73,7 @@ export default function OutfitRoute(): React.JSX.Element {
       <Stack.Screen options={{ title: 'Irodora' }} />
       {context.profile === null ? null : (
         <OutfitBuilder
+          store={repo}
           wardrobe={repo.listGarments()}
           context={{
             profile: context.profile,

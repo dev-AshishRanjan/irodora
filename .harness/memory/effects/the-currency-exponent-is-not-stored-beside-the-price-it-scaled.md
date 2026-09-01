@@ -1,0 +1,77 @@
+# The currency exponent is not stored beside the price it scaled
+
+**Link:** [E-052](../../state/effects.json) ·
+`apps/mobile/src/wardrobe/cost.ts#MINOR_UNIT_DIGITS` → every stored `garment.cost_minor`
+**Severity:** high · **Guard:** `test:apps/mobile/test/cost.test.ts`
+**Introduced by:** F-051 (cost-per-wear), 2026-09-01
+
+---
+
+## The shape of it
+
+A garment row holds two things about money:
+
+```sql
+cost_minor  INTEGER,   -- 4550
+currency    TEXT       -- 'GBP'
+```
+
+`4550` is £45.50 because GBP has two minor-unit digits. It would be 4550 *yen* — not ¥45.50
+— if the code were JPY. **The row does not record which scale was used.** The scale is
+supplied twice, from one table: once by `costEntry` on the way in, once by `formatMinor` on
+the way out.
+
+While both calls read the same table, every price round-trips exactly. That is the whole
+guarantee, and it is a guarantee about a *file*, not about the data.
+
+## What breaks, and why nothing notices
+
+Change one entry — correct an exponent, add a currency that was falling through to the ISO
+default of two — and **every price already written for that currency is reinterpreted.**
+
+- A currency moved from the default 2 to 0: yesterday's £45.50 becomes ¥4550 on screen.
+- A currency moved from 0 to 2: yesterday's ¥15000 becomes 150.00.
+
+No compiler error. No failed read. No exception. The garment simply reports a different cost
+per wear than it did yesterday, in a plausible direction, and the person holding the phone
+has no way to tell which figure was the real one.
+
+**This is [[srgb-xyz-is-the-root-of-every-derived-value]] applied to money**: a value derived
+at write time that nothing recomputes on read, so a change to the deriving function
+invalidates the stored data silently. The colour version of this mistake is guarded by golden
+datasets and a content gate. The money version is guarded by one pinned table.
+
+## Why the column is not simply added
+
+The obvious fix is a `minor_unit_digits` column, making each price self-describing. It is the
+right answer the day a price crosses a boundary — an import, an export, a sync, a second
+device.
+
+None of those exist. There is one local database, one writer, and no path by which a price
+arrives from anywhere but the field somebody typed it into. Adding the column now is storage
+for a problem that has not been created yet, and F-042 refused exactly that shape twice in
+one migration: no digest column on `garment_image`, no `image_path`. When a price first
+crosses a boundary, **that** is the feature that adds the column — and this note is what tells
+it to.
+
+## What the guard does and does not do
+
+`cost.test.ts` pins **every** non-default entry by value, all twenty-six, plus the default.
+An illustrative test over JPY and KWD would have let a change to CLP or IQD through, which is
+why it is exhaustive [[a-decoy-that-is-not-broken-proves-nothing]].
+
+What that buys is **visibility, not safety**. A test cannot migrate a price that is already on
+somebody's phone. It makes the edit impossible to make quietly, so the migration question gets
+asked while there is still somebody there to ask it.
+
+If an exponent here is ever wrong, the correction is a migration decision before it is a code
+change. That order is the point of this note.
+
+## How to check it
+
+```bash
+node --run test --workspace @irodora/mobile   # or: pnpm test
+```
+
+Then read the failure. If it names a currency, the question is not *"is the new exponent
+right"* — it probably is — but **"what is already stored at the old one"**.

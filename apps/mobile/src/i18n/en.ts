@@ -372,6 +372,16 @@ export const en = {
   'wardrobe.noColour': 'Choose a colour, and you can add it.',
   'wardrobe.unknownSlug': 'That colour is not in this version of the collection.',
   'wardrobe.count': 'In your wardrobe',
+  // F-051 — a price arrives with its currency or not at all (FR-46).
+  'wardrobe.cost': 'What it cost',
+  'wardrobe.costHint': 'e.g. 45.50',
+  'wardrobe.currency': 'Currency code',
+  'wardrobe.currencyHint': 'e.g. GBP',
+  'wardrobe.costNotRecorded': 'Not recorded.',
+  'wardrobe.costNoAmount': 'A price needs an amount as well as a currency.',
+  'wardrobe.costBadAmount': 'Digits and at most one point, like 45.50.',
+  'wardrobe.costBadCurrency': 'A three-letter currency code, like GBP or JPY.',
+  'wardrobe.costTooPrecise': 'More decimal places than this currency has.',
 
   /* The outfit builder (FR-33, F-045). */
   'outfit.title': 'Build an outfit',
@@ -385,6 +395,15 @@ export const en = {
   'outfit.suggested': 'From your wardrobe',
   'outfit.overall': 'Overall',
   'outfit.empty': 'Nothing in your wardrobe fits a slot yet. Add a top, trousers or shoes.',
+  // F-051 — cost per wear, and the three ways there is not one (FR-46).
+  'outfit.perWear': 'Per wear',
+  'outfit.perWearBasis': 'Price and wears',
+  'outfit.costNoCost': 'No price recorded, so there is no cost per wear.',
+  'outfit.costNoCurrency': 'A price with no currency, so there is no cost per wear.',
+  'outfit.costNeverWorn': 'Not worn yet, so there is no cost per wear.',
+  'outfit.wore': 'I wore this',
+  'outfit.woreDone': 'Recorded. One more wear on each piece.',
+  'outfit.woreNothing': 'Choose something, and you can record wearing it.',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': 'What the app has learned',
   'preferences.origin':

@@ -348,6 +348,16 @@ export const ja: Record<MessageKey, string> = {
   'wardrobe.noColour': '色を選ぶと追加できます。',
   'wardrobe.unknownSlug': 'この色は現在の収録版にありません。',
   'wardrobe.count': 'ワードローブの中',
+  // F-051 — a price arrives with its currency or not at all (FR-46).
+  'wardrobe.cost': '購入価格',
+  'wardrobe.costHint': '例：45.50',
+  'wardrobe.currency': '通貨コード',
+  'wardrobe.currencyHint': '例：JPY',
+  'wardrobe.costNotRecorded': '記録しません。',
+  'wardrobe.costNoAmount': '価格には金額と通貨の両方が必要です。',
+  'wardrobe.costBadAmount': '数字と小数点1つまで。例：45.50',
+  'wardrobe.costBadCurrency': '通貨コードは3文字です。例：GBP、JPY',
+  'wardrobe.costTooPrecise': 'この通貨の小数点以下の桁数を超えています。',
 
   /* The outfit builder (FR-33, F-045). */
   'outfit.title': 'コーディネートを組む',
@@ -361,6 +371,15 @@ export const ja: Record<MessageKey, string> = {
   'outfit.suggested': 'ワードローブから',
   'outfit.overall': '総合',
   'outfit.empty': 'まだ枠に合う服がありません。トップス、ボトムス、くつを追加してください。',
+  // F-051 — cost per wear, and the three ways there is not one (FR-46).
+  'outfit.perWear': '1回あたり',
+  'outfit.perWearBasis': '価格と着用回数',
+  'outfit.costNoCost': '価格が記録されていないため、1回あたりの費用は出せません。',
+  'outfit.costNoCurrency': '通貨がないため、1回あたりの費用は出せません。',
+  'outfit.costNeverWorn': 'まだ着ていないため、1回あたりの費用は出せません。',
+  'outfit.wore': 'これを着ました',
+  'outfit.woreDone': '記録しました。それぞれの着用回数が1増えました。',
+  'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': '学習した好み',
   'preferences.origin':

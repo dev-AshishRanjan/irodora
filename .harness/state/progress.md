@@ -8,6 +8,149 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-051 DONE · the columns were there and nothing had ever written one
+
+R4 is complete, so R5 is the current release and F-051 is its lowest-id eligible feature. Gate
+0 refused the claim until a plan existed, which is the check working.
+
+### What the plan found before any source was edited
+
+`garment.cost_minor`, `garment.currency` and `garment.wear_count` have been columns since
+F-042's migration 4. **No code path in this application has ever written one of them.**
+
+So FR-46 — *"computed from cost and recorded wears"* — was a division whose denominator could
+only ever be zero, over two operands that could only ever be null. A cost-per-wear module built
+and tested against that schema alone would have passed every test it had, on every garment that
+could exist, by answering *unknown* forever.
+
+The fixtures are the tell: every test would have set `wearCount` to a number the application
+could not produce. **A suite written entirely against hand-made rows cannot distinguish a
+feature that works from one whose inputs are unreachable, because the fixture is the missing
+writer.** That is the mirror of
+[[a-generated-value-with-no-consumer-satisfies-its-own-test-and-reaches-nothing]] and it is
+harder to see, because the read side looks flawless — the column has a constraint, the
+repository maps it both ways, `GarmentEnrichment` accepts it. Recorded as
+[[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]], with the three other columns
+in the same state listed so the next feature meets them as a known property.
+
+So the feature is three things and any one alone is inert: the division, a way for a price to
+arrive, and a way for a wear to be recorded.
+
+### The refusal is the requirement, and it has three names
+
+`costPerWear` returns a discriminated union rather than `number | null`. Three absences, three
+sentences:
+
+| State | The tempting answer | What it would actually be |
+|---|---|---|
+| No cost recorded | `0` | A claim the garment was free |
+| No currency recorded | the bare ratio | A measurement with no units |
+| Never worn | `costMinor`, or `Infinity` | A claim the first wear has already happened |
+
+The third is the one JavaScript hands you for nothing: `4550 / 0` is `Infinity` — a number, of
+type number, that renders as a word and satisfies any test asserting only that the function
+returned. One silent *"unknown"* covering all three is the ambiguity F-119 removed from the
+Lens, one level down.
+
+### Three mutations, each failing its own case and only its own
+
+| Mutation | Failed |
+|---|---|
+| `if (!garment.costMinor)` instead of `=== null` | **1 test** — the garment that genuinely cost nothing |
+| exponent 2 for every currency | **6 tests**, including yen |
+| no `wearCount <= 0` check | **2 tests** — both Infinity assertions |
+
+The first is the one worth keeping. A gift has a price and it is zero; falsiness cannot tell
+that from a column nobody filled in, and **every other test in the file passes against it**.
+The baseline was re-run green after each [[a-decoy-that-is-not-broken-proves-nothing]].
+
+### The exponent table is a claim about the world, and it is now E-052
+
+`cost_minor` is stored at a scale **the row does not record**. `45.50` is 4550 in GBP and `150`
+is 150 in JPY; the exponent comes from an ISO 4217 table at write time and from the same table
+again at read time. While both agree, every price round-trips exactly — and that is a guarantee
+about a *file*, not about the data.
+
+Change one entry and every price already written for that currency is silently reinterpreted,
+in the plausible direction, with no compiler error, no failed read and no exception. **It is
+[[srgb-xyz-is-the-root-of-every-derived-value]] applied to money.**
+
+The guard pins **all twenty-six** non-default entries by value plus the default, and it was
+proven by changing `CLP` from 0 to 2 — a currency no example test names — and watching the
+suite fail naming it. An illustrative test over JPY and KWD would have let that through. What
+the guard buys is **visibility, not safety**: it cannot migrate a price already on a phone, so
+the note says the correction is a migration question before it is an edit.
+
+A `minor_unit_digits` column would make each price self-describing and is the right answer the
+day a price crosses a boundary. None does — one database, one writer, no import path — and
+adding it now is the shape F-042 refused twice in one migration (no digest column, no
+`image_path`).
+
+### Where the number had to go, and why that is a finding
+
+Cost per wear is rendered in the **outfit builder**, because it is the only screen in the app
+where a garment somebody owns appears, and the only moment at which a person says they are
+wearing something. A price can only be entered at creation, in `AddGarment`'s optional section.
+
+Both are correct for this feature and both are the wrong long-term home. **FR-41 — browse,
+filter and group the wardrobe — has no screen at all**, and `REQUIREMENTS-COVERAGE.md` records
+it as covered by F-042 with verification `e2e, a11y` — a `packages` feature whose service
+cannot satisfy either gate. Filed as **F-122**, with the coverage-map row named, rather than
+pulled into this feature: a browse screen is a second feature, and building one under this id
+would be scope nobody reviewed against a requirement.
+
+The figure is shown beside the numbers it came from — `Per wear: 119.74 GBP` over `Price and
+wears: 45.50 GBP / 38` — which is why `costPerWear` carries its inputs back instead of
+returning a scalar. A figure on its own asks to be believed; one beside its operands can be
+checked.
+
+### E-017 fired for real, and was resolved inside the same change
+
+Ten codepoints from the new Japanese copy were missing from the bundled subset — 購 価 例 通 貨
+額 両 桁 超 費 — every one of them tofu on a screen. Regenerated before any gate was declared:
+655,468 → 661,088 bytes, 520 required, 851 in the face. F-045's lesson applied rather than
+recorded a second time.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks, 49 warnings |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile **446**, up from 414 |
+| 5 build | **PASS** |
+| 8 a11y · 9 contrast | **PASS** — 130 each |
+| 11 content · color-golden · cvd · security:keys | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending on F-091, and nothing here proves the
+enter-a-price → wear-it → read-the-figure loop works as a *journey*, only that each step is
+correct in isolation. That is now the fourth feature owing the same thing. `perf` — no budget is
+claimed. `artifact`.
+
+**Not applicable:** `color-golden` has nothing to judge. This is integer division and a table;
+a golden dataset for a division would be theatre.
+
+**Node 22 vs 24 matters here.** This workstation's default `node` is 22.16.0 and the repository
+pins 24.19.0 (`.nvmrc`), which is installed under nvm at
+`%APPDATA%\nvm\v24.19.0`. Every gate above was run on **24**. The `wcag.test.ts` last-two-digits
+failure recorded in the F-092 handoff **does not reproduce there** — gate 4 is green — which
+confirms that diagnosis and closes it as an environment artefact rather than a defect.
+
+### Deliberately not built
+
+- **A wear log.** `wear_count` is a counter; *when* something was worn is a different question
+  with a different table, and no criterion asks it.
+- **Currency conversion.** Two prices in two currencies have two figures and no common one. A
+  rate would be the invented estimate the requirement names, with a feed attached.
+- **A value judgement.** No "good value" threshold. Whether £1.20 a wear is worth it is not a
+  question this repository can answer about somebody else's coat.
+- **A comma as a decimal separator.** It is a decimal point in much of Europe and a thousands
+  separator in both of this app's locales, so `1,500` is two amounts a factor of a thousand
+  apart with nothing in the string to say which. Refused, at the cost of a re-type — the
+  alternative is a price wrong by 1000× that looks entirely normal.
+
+---
+
 ## 2026-09-01 — F-121 DONE · the frame thread could not say what it threw, and now it can
 
 The device reported F-120's diagnostic:

@@ -1855,6 +1855,47 @@
       "confidence": 1,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-052",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/wardrobe/cost.ts#MINOR_UNIT_DIGITS"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wardrobe/cost.ts#costEntry"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/wardrobe/cost.ts#formatMinor"
+        },
+        {
+          "kind": "schema",
+          "ref": "packages/store/src/schema.ts#garment.cost_minor"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/OutfitBuilder.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/cost.test.ts"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/store"
+      ],
+      "severity": "high",
+      "guard": "test:apps/mobile/test/cost.test.ts",
+      "memory": "memory/effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md",
+      "rationale": "A PRICE IS STORED AT A SCALE THE ROW DOES NOT RECORD. `garment.cost_minor` is an INTEGER of minor units and `garment.currency` is a three-letter code; NOTHING on the row says how many minor units the code has. The exponent comes from this table at WRITE time (costEntry) and from the same table again at READ time (formatMinor). While the two agree, every price round-trips exactly. CHANGE ONE ENTRY AND EVERY PRICE ALREADY WRITTEN FOR THAT CURRENCY IS SILENTLY REINTERPRETED. Adding a currency at exponent 0 that was previously falling through to the ISO default of 2 divides every stored price for it by a hundred on the way out; removing one multiplies by a hundred. There is no compiler error, no failed read and no exception — a garment simply reports a different cost per wear than it did yesterday, in the plausible direction, and the person looking at it has no way to tell. It is the E-001 shape applied to money: a value derived at write time that nothing recomputes on read. WHY THE TABLE IS NOT SIMPLY MOVED ONTO THE ROW. A `minor_unit_digits` column would make each price self-describing and it would be the right answer if prices were ever exchanged between devices or between versions of this table. They are not yet — there is one local database, one writer, and no import path for a price — so the column would be storage for a problem that does not exist, and F-042 refused exactly that shape twice (no digest column, no image_path). WHAT THE GUARD CAN AND CANNOT DO. `cost.test.ts` pins EVERY non-default entry by value — all twenty-six — plus the ISO default, so an edit to this table cannot land quietly: the suite goes red and names the currency. A test over a handful of examples would have let a change to CLP or IQD through, which is why it is exhaustive rather than illustrative. That makes the change VISIBLE, which is all a test can do — it cannot migrate data that is already on somebody's phone. If an exponent here is ever corrected, the correction is a migration question before it is an edit, and this link is the record that says so.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
