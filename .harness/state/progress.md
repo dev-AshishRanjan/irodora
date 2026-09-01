@@ -8,6 +8,84 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-120 DONE · the camera had an error channel and this screen never listened to it
+
+The device reported F-119's diagnostic:
+
+> **no frames reached the frame processor**
+
+The preview is live — the screenshot shows a wall through the viewfinder with the crosshair over
+it — so the session runs, the device is fine, the permission is granted. **`onFrame` simply is
+not delivering**, which rules out every sampling failure: the region size, the GPU-only buffer,
+the planar format. None of them is reached.
+
+### My own diagnostic was ambiguous, and that came first
+
+`seenFrame` was set inside `deliver` and `report`, which run on the **JS** thread via
+`scheduleOnRN`. So a worklet that *is* invoked and then throws — a serialization failure, a
+missing runtime, anything before the schedule call — produced **exactly the same sentence** as a
+frame processor never called at all.
+
+Two completely different faults, one message. **That is the defect F-119 existed to remove, one
+level down, and I introduced it in the fix.**
+
+Now counted on the frame thread with a `Synchronizable`, incremented as the first statement in
+the worklet before anything that can throw. A ref cannot be written from a worklet, and a
+`scheduleOnRN` ping per frame would be bridge traffic at frame rate carrying a number nobody
+reads until something is wrong. The two cases now read differently:
+
+- *the frame processor was never called — the camera delivered no frames to it*
+- *the frame processor ran N time(s) but nothing reached the app*
+
+### The channel nobody was listening to
+
+`useCamera` accepts **`onError`**, `onStarted`, `onStopped` and `onInterruptionStarted`. This
+screen handled **none of them**, and `onError` defaults to a handler that logs.
+
+So a session that starts a preview and then fails to configure the frame output reports it in
+exactly one place — **a log on a phone**, which is not something the person holding it can read.
+That is the entire reason "a working preview and no readings" was the whole symptom.
+
+`onFrameDropped` is the same story: `useFrameOutput` installs a `console.warn` when you do not
+supply one. **A camera producing frames and discarding every one is a different fault from one
+producing none**, and the screen showed the same nothing for both.
+
+Both now reach the screen.
+
+### What is not tested, and why
+
+The viewfinder **cannot be rendered by jest** — it imports the native module, which is the whole
+reason `Lens` takes a node instead. There is no test here that can exercise these callbacks, and
+adding one that appeared to would be the *"registered with a render that never runs"* failure
+`Lens.tsx`'s own header warns about.
+
+What is checked is that nothing else broke: typecheck, lint, format, 414 mobile tests, both
+accessibility gates, gate 0. **That is the honest extent of it.**
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile 414 |
+| 8 a11y · 9 contrast | **PASS** |
+
+### What the next screenshot decides
+
+- **an error message** — the session is failing and now says how
+- **a dropped-frame reason** — frames exist and are being discarded
+- **"ran N times but nothing reached the app"** — the worklet runs and something after it fails
+- **"never called"** with no error at all — the output is created and attached without complaint
+  and still delivers nothing, which points at its configuration (`targetResolution` HD 16:9,
+  `pixelFormat: 'rgb'`) rather than at our code
+
+**Deliberately not done:** changing the pixel format or resolution to see if it helps. That is
+guessing with a rebuild per guess, and [ADR-0075](../../docs/adr/0075-the-frame-output-is-requested-as-rgb-because-yuv-would-mean-writing-a-colour-transform.md)
+chose `rgb` for a reason that still holds. If the evidence points there, it is a decision to make
+with the evidence in hand.
+
+---
+
 ## 2026-09-01 — F-119 DONE · a frame processor that refuses every frame and says nothing looks exactly like one that is not running
 
 > *The lens is opening, but nothing happens when I point the camera at a colour. Is this

@@ -45,7 +45,7 @@
  * F-097's attested criterion, not a claim this file gets to make.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   Camera,
@@ -55,7 +55,7 @@ import {
   type CameraSessionConfig,
   type Frame,
 } from 'react-native-vision-camera';
-import { scheduleOnRN } from 'react-native-worklets';
+import { createSynchronizable, scheduleOnRN } from 'react-native-worklets';
 import { useTheme } from '@irodora/ui';
 import { readCaptureSpace, sampleStride, type FrameSample } from './camera';
 import { read } from './modes';
@@ -117,6 +117,20 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
   const device = useCameraDevice('back');
   const seenFrame = useRef(false);
 
+  /**
+   * How many times the worklet has been entered, counted **on the frame thread**.
+   *
+   * A `Synchronizable` rather than a ref: a ref lives on the JS runtime and a worklet cannot
+   * write to it, and a `scheduleOnRN` ping per frame would be bridge traffic at frame rate to
+   * report a number nobody reads until something is wrong.
+   *
+   * It exists because the first version of this diagnostic could not tell two very different
+   * failures apart. `seenFrame` is set inside the JS callbacks, so a worklet that runs and then
+   * throws — a serialization problem, a missing runtime — looked exactly like a frame processor
+   * that was never invoked at all. This counts the entry, before anything can fail.
+   */
+  const entered = useMemo(() => createSynchronizable(0), []);
+
   /*
    * The negotiated capture space. `unknown` until the session says otherwise — see the header:
    * this is the one value that must never be guessed, and the confidence ceiling already prices
@@ -162,12 +176,18 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
    */
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!seenFrame.current) onDiagnostic?.('no frames reached the frame processor');
+      if (seenFrame.current) return;
+      const frames = entered.getBlocking();
+      onDiagnostic?.(
+        frames === 0
+          ? 'the frame processor was never called — the camera delivered no frames to it'
+          : `the frame processor ran ${String(frames)} time(s) but nothing reached the app`,
+      );
     }, 2000);
     return () => {
       clearTimeout(timer);
     };
-  }, [onDiagnostic]);
+  }, [onDiagnostic, entered]);
 
   const frameOutput = useFrameOutput({
     /*
@@ -177,6 +197,15 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
      * provide and `apps/mobile/AGENTS.md` forbids the app from inventing.
      */
     pixelFormat: 'rgb',
+    /*
+     * Frames the pipeline threw away. Without this the hook installs its own handler that calls
+     * `console.warn` — which on a phone is a message nobody will ever read. A camera producing
+     * frames and dropping every one of them is a completely different fault from one producing
+     * none, and until now the screen showed the same nothing for both.
+     */
+    onFrameDropped: (reason) => {
+      onDiagnostic?.(`the camera dropped a frame: ${reason}`);
+    },
     onFrame: (frame: Frame) => {
       'worklet';
       /*
@@ -187,6 +216,8 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
        * The frame is disposed in a `finally`: VisionCamera drops subsequent frames while one is
        * retained, and a stalled preview is not a failure anybody can debug from the outside.
        */
+      // FIRST, before anything that can throw: the frame thread reached this callback.
+      entered.setBlocking((n) => n + 1);
       try {
         const outcome = sampleFrame(frame, space);
         if (outcome.ok) scheduleOnRN(deliver, outcome.sample);
@@ -216,6 +247,17 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
         isActive
         outputs={[frameOutput]}
         onSessionConfigSelected={onSessionConfigSelected}
+        /*
+         * THE CAMERA'S OWN ERROR CHANNEL, which this screen ignored entirely until now.
+         *
+         * VisionCamera offers `onError` and defaults it to a handler that logs. A session that
+         * starts a preview and then fails to configure an output reports it HERE and nowhere a
+         * person can see — so a working preview with no readings was the symptom, and the
+         * explanation was going to a log on a phone.
+         */
+        onError={(error) => {
+          onDiagnostic?.(`camera error: ${error.message}`);
+        }}
       />
       {/*
         THE CROSSHAIR. An outline rather than a filled shape: anything opaque over the region
