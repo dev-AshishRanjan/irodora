@@ -34,6 +34,9 @@ export default function Index(): React.JSX.Element {
         onOpenShopping={() => {
           router.push('/shopping');
         }}
+        onOpenMeasure={() => {
+          router.push('/measure');
+        }}
       />
     </>
   );

@@ -8,6 +8,119 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-055 DONE · the one place a typed number is allowed to be called a measurement
+
+FR-28 and FR-61: colorimeter entry, Lab/LCh readouts, ΔE00 tables, reference libraries, batch
+compare. A typed L\*a\*b\* triple was **already a first-class colour** here —
+`fromSpace('lab', […], …)` routes through `labToXyz` and records `originSpace: 'lab'` — so
+criterion 2 is one engine call, and the work was the validation, the table and the surface.
+
+### `reference` is load-bearing, not decorative
+
+The claims lint binds language to provenance: **only `reference` and `calibrated` may appear
+near the word "measured"** (F-025, NFR-21, ADR-0031). FR-28 names `reference` for this path, so
+this is the one place in the product where a number somebody typed may be called a measurement.
+It earns it — an instrument produced it.
+
+That is also why the parse is strict, and the two decoys are the whole point:
+
+| Mutation | What it would produce | Failed |
+|---|---|---|
+| `parseFloat` instead of `Number` | `'12abc'` accepted as 12, **marked `reference`** | 1 test |
+| exclusive bounds | white and black rejected — the first two a professional measures | 1 test |
+| every refusal names field 0 | *"invalid input"*, and three fields to retype | 2 tests |
+| the reference's origin space on every row | a published value labelled an instrument reading | 1 test |
+| no tie-break on id | the table's order is the caller's array order | 1 test |
+| ΔE00 against LCh rather than Lab | a plausible number in the wrong space | 2 tests |
+| `declared` instead of `reference` | the claims lint's guarantee quietly false | 3 tests |
+
+**Seven mutations, seven failures**, which is only worth writing down because two of five
+survived F-054 yesterday. The fixture question got asked *first* this time: *"each row carries
+its own origin space"* and *"every row carries the reference's"* are the same assertion unless
+the batch **mixes** a corpus entry (`oklch`) with a typed reading (`lab`), so the fixture mixes
+them [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]].
+
+### The bounds walk themselves
+
+`L* = 0` and `L* = 100` are black and white. An exclusive comparison rejects both and every
+other test still passes. The case walks **both ends of every bound in `FIELD_BOUNDS`** rather
+than asserting two literals, so a bound added later is covered without anybody remembering to.
+
+### Which "calibration workflow" criterion 3 means
+
+The instrument-and-table one: pick the colour you measured from a published library, type what
+your instrument said, read the difference. That is how an instrument is checked, and it needs
+no reference card and no OQ-3.
+
+**F-053 is a different thing wearing the same word** — correcting a *camera* with a physical
+card — and it is blocked. Nothing here touches a camera. Written into the plan because the
+collision is exactly the kind that gets discovered halfway through an implementation.
+
+### Two guards caught me, and both were right
+
+- **The compiler refused `entry.color.srgb`** — there is no such field. That is what stopped a
+  hand-rolled channel clamp and hex pad from landing in a screen. `hexOf` now lives in
+  `engine.ts` beside the other engine-facing helpers, because `srgbToHex(xyzToSrgb(…))` is a
+  colour conversion and those are imported, never written.
+- **The unused-key scan caught `measure.corpus`** — a leftover from the first design. The
+  library name is the **corpus version**, a value rather than translatable copy, so the key was
+  deleted rather than rendered.
+
+### A third guard was wrong, and it is filed (F-127)
+
+`verify-unsafe-call-sites.mjs` decides a file is a call site with a **substring match over the
+whole file**. So a doc comment saying *"this path is not taken"* was reported as an
+**unreviewed call site**.
+
+The wrong fix was available: adding the file to `REVIEWED` would have gone green by declaring a
+call site that does not exist — and would have **pre-approved a real call there**, which is the
+one thing the census exists to prevent. The sentence was reworded instead.
+
+Worth stating beyond one comment: the check's own argument is that *a sentence about people is
+not a check*. A check that cannot tell a call from a sentence teaches people to stop writing
+the sentences, and the documentation it suppresses is exactly the kind that says which boundary
+is being preserved.
+
+### The reference libraries are the corpus and this device's palettes
+
+And nothing else. An industry library is **licensed content this product does not have**, and
+shipping a list under somebody else's name that we made up would be the worst available
+provenance failure in a product whose argument is provenance. A saved palette is a named subset
+of the corpus, so it introduces no colour the bundle does not already publish.
+
+The corpus library offers **all** its entries rather than a truncated twelve: this is the
+professional surface, the person is looking for the specific patch they measured, and the one
+they want is the one a cut-off list would be missing.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile **516**, up from 494 |
+| 5 build · 8 a11y (135) · 9 contrast (135) · 11 content · security:keys | **PASS** |
+
+**Not run:** `e2e` — in this feature's verification list, gate 7 still pending on F-091. Nothing
+proves *pick a reference → type a measurement → read the table* as a journey. **Sixth feature
+owing it**, and it is now the largest single gap in the release.
+
+**Not applicable:** `color-golden`, `cvd` — the conversion is `fromSpace`'s and the difference
+is `deltaE00`'s, each with its own golden coverage. E-017 fired again (five codepoints);
+regenerated to 667,520 bytes before any gate was declared.
+
+### Deliberately not built
+
+- **Importing a custom palette from a file** — FR-28's second clause. The format half is F-056's
+  (exports), and an importer written before its exporter has no format to agree with.
+- **A tolerance column, a pass/fail, a verdict.** Any threshold would be ours rather than the
+  standard the person works to.
+- **Persisting a batch.** A session, not a record.
+- **Any entitlement check.** FR-61 says available to every user *because none exists*; adding a
+  gate would invent a tier this product does not have (ADR-0051).
+
+---
+
 ## 2026-09-01 — F-054 DONE · the outfit scanner, and two mutations my fixture could not see
 
 ### F-053 was skipped, honestly

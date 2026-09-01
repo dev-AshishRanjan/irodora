@@ -31,6 +31,8 @@ import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
 import { Shopping } from '../src/screens/Shopping';
+import { Measure, type ReferenceLibrary } from '../src/screens/Measure';
+import { parseMeasurement } from '../src/measure';
 import { colorOf } from '../src/wardrobe';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
@@ -323,6 +325,33 @@ const SHOPPING_CONTEXT = {
   weights: outfitWeights(OUTFIT_CONTEXT.weights),
   reference: OUTFIT_CONTEXT.reference,
 } as const;
+
+/**
+ * One reference library, six entries (F-055).
+ *
+ * Small on purpose — the route offers the whole corpus, and a registry subject rendering 120
+ * swatches would spend the suite's time proving something six already prove.
+ */
+const MEASURE_LIBRARIES: readonly ReferenceLibrary[] = [
+  {
+    id: 'corpus',
+    name: 'Irodora 2026.08.1',
+    entries: allEntries()
+      .slice(0, 6)
+      .map((e) => ({ id: e.entry.slug, name: e.entry.name.en, color: colorFor(e.entry) })),
+  },
+];
+
+/** Two measurements, so the table branch has rows to draw. */
+const MEASURE_SAMPLES = (() => {
+  const one = parseMeasurement('lab', ['52.31', '-8.44', '2.07']);
+  const two = parseMeasurement('lab', ['61.02', '4.10', '-12.55']);
+  if (!one.ok || !two.ok) throw new Error('the fixture measurements must parse');
+  return [
+    { id: 'm-1', name: 'LAB 52.31 -8.44 2.07', color: one.color },
+    { id: 'm-2', name: 'LAB 61.02 4.10 -12.55', color: two.color },
+  ];
+})();
 
 /** A stored colour row for a published entry. Reference-sourced, so it owes no conditions. */
 function outfitRow(slug: string): SavedColorRow {
@@ -643,6 +672,39 @@ const SCREENS: readonly ConformanceSubject[] = [
           context={SHOPPING_CONTEXT}
           initialType="scarf"
           initialSlug={allEntries()[3]!.entry.slug}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * The professional surface with nothing chosen (F-055).
+     *
+     * Draws the library, the entry form and the empty table. Its own entry because the
+     * answered screen draws numeric rows this one does not.
+     */
+    name: 'screens/Measure',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Measure libraries={MEASURE_LIBRARIES} />, theme),
+  },
+  {
+    /*
+     * The SAME screen with a reference and two measurements against it.
+     *
+     * This is the branch FR-61 is actually about: Lab, LCh and a ΔE00 per row, at `small`,
+     * numeric, in a Surface — none of which the empty subject renders, and the contrast gate
+     * can only measure what something drew.
+     */
+    name: 'screens/Measure (a table with rows)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Measure
+          libraries={MEASURE_LIBRARIES}
+          initialReferenceId={allEntries()[0]!.entry.slug}
+          initialSamples={MEASURE_SAMPLES}
         />,
         theme,
       ),

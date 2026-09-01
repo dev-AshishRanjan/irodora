@@ -1734,7 +1734,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-019"
       ],
@@ -1747,7 +1747,9 @@
         "state",
         "e2e",
         "a11y"
-      ]
+      ],
+      "plan": "plans/F-055-professional-surfaces.md",
+      "notes": "DONE. A TYPED L*a*b* TRIPLE WAS ALREADY A FIRST-CLASS COLOUR HERE, WHICH IS WHY CRITERION 2 IS ONE ENGINE CALL. `fromSpace('lab', [l,a,b], …)` routes through `labToXyz` and records `originSpace: 'lab'`; `source: 'reference'` is the word FR-28 uses, and it is load-bearing rather than decorative — the claims lint binds language to provenance, so ONLY `reference` and `calibrated` may appear near \"measured\" (F-025, NFR-21, ADR-0031). This is therefore the one path in the product where a number somebody typed is allowed to be called a measurement, and it earns it because an instrument produced it. THAT IS ALSO WHY THE PARSE IS STRICT. `Number(raw)` and not `parseFloat`: parseFloat('12abc') is 12, which would accept a typo and then MARK IT A MEASUREMENT. The mutation swapping them failed exactly one test, and it is the test that exists for it. THE BOUNDS ARE INCLUSIVE AND A DECOY PROVES IT. L* 0 and L* 100 are black and white, which are the two values a professional measures first when checking an instrument; an exclusive comparison rejects both and every other test in the file still passes. The case walks BOTH ends of EVERY bound in FIELD_BOUNDS rather than asserting two literals, so a bound added later is covered without anybody remembering. THE REFUSAL NAMES WHICH FIELD, and the screen renders it beneath that field. \"Invalid input\" under a three-field form is the message that makes somebody retype all three to find out which one it meant; the mutation collapsing every refusal onto field 0 failed two tests. SEVEN MUTATIONS WERE RUN AND ALL SEVEN FAILED, WHICH IS ONLY WORTH SAYING BECAUSE TWO OF FIVE SURVIVED YESTERDAY IN F-054. The fixture question was asked first this time: \"each row carries its OWN origin space\" and \"every row carries the REFERENCE's\" are the same assertion unless the batch MIXES a corpus entry (oklch) with a typed reading (lab), so the fixture mixes them [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]]. NO TOLERANCE, NO PASS/FAIL, NO VERDICT. A calibration table with green and red rows needs a threshold, and any threshold here would be OURS rather than the standard the person works to. The table reports ΔE00 and orders by it, ties broken on id so the order is total rather than the caller's array order. THE CALIBRATION WORKFLOW IN CRITERION 3 IS THE INSTRUMENT-AND-TABLE ONE, NOT F-053's. Pick the colour you measured from a published library, type what your instrument said, read the difference — that is how an instrument is checked, and it needs no reference card and no OQ-3. F-053 is about correcting a CAMERA with a physical card and is blocked; nothing here touches a camera. Stated in the plan because the two words are the same. TWO GUARDS CAUGHT ME, AND BOTH WERE RIGHT. The compiler refused `entry.color.srgb` — there is no such field — which is what stopped a hand-rolled channel clamp and hex pad from landing in a screen; `hexOf` now lives in `engine.ts` beside the other engine-facing helpers, because `srgbToHex(xyzToSrgb(…))` is a colour conversion and those are imported, never written. And the unused-key scan caught `measure.corpus`, a leftover from the first design: the library name is the CORPUS VERSION, which is a value rather than translatable copy, so the key was deleted rather than rendered. A THIRD GUARD WAS WRONG, AND IT IS FILED. `verify-unsafe-call-sites.mjs` matches the identifier anywhere in a file, so a doc comment saying \"this path is NOT taken\" is reported as an unreviewed call site. Adding the file to REVIEWED would have declared a call site that does not exist and hidden a real future one, so the sentence was reworded instead and F-127 carries the fix. REFERENCE LIBRARIES ARE THE CORPUS AND THE DEVICE'S SAVED PALETTES, and nothing else. An industry library is licensed content this product does not have, and shipping a list under somebody else's name that we made up would be the worst available provenance failure in a product whose argument is provenance. A palette is a named subset of the corpus, so it introduces no colour the bundle does not publish. GATES RUN, all green: state (18 checks), typecheck, lint, format, test (mobile 516, up from 494), build, a11y (135), contrast (135), content, security:keys. NOT RUN: e2e — in this feature's verification list, gate 7 still pending on F-091, so nothing proves pick-a-reference, type-a-measurement, read-the-table as a JOURNEY. Sixth feature owing it. NOT APPLICABLE: color-golden and cvd — the conversion is `fromSpace`'s and the difference is `deltaE00`'s, each with its own golden coverage. DELIBERATELY NOT BUILT: importing a custom palette from a file (FR-28's second clause — the format half is F-056's, and an importer written before its exporter has no format to agree with); a tolerance column; persisting a batch, which is a session rather than a record; and any entitlement check, because FR-61 says available to every user BECAUSE NONE EXISTS."
     },
     {
       "id": "F-056",
@@ -3558,6 +3560,27 @@
         "e2e"
       ],
       "notes": "BLOCKED ON F-040'S FIRST ATTESTATION, NOT ON F-054. The scanner's maths, its refusals and its score set landed in F-054 and are tested; what is missing is pixels. `sampleFrame` in viewfinder.tsx walks ONE CENTRE REGION, and widening it to a whole frame is a change to the exact code path F-117 through F-121 have been debugging — as of F-121 NO READING HAS BEEN OBSERVED REACHING THE APP ON A DEVICE, and the build that would settle why is still unrun. Putting a second unproven path on top of an unproven one would make the next device report ambiguous again, which is the specific failure F-120 was filed to remove. THIS IS F-031'S SHAPE AND IT IS DELIBERATE. That feature built six component scores and could not show them; its own note said so, and F-045 rendered them once there was a surface to render them on. Same here: the estimator exists and is checkable, and the surface waits for the input to be real. WHAT UNBLOCKS IT: F-040's attestation — frame processors run on a worklet thread and a reading reaches the app — discharged on a device. Not another commit here. THE THIRD CRITERION IS THE ONE THAT WILL BE TEMPTING TO DROP. `proposeBands` refuses a uniform frame, a frame too short, and a frame with no real boundary; `scanOutfit` refuses a band with no usable pixels. Every one of those is a sentence somebody needs to read, and a screen that renders an empty result for them would put back exactly the ambiguity F-119 removed from the Lens."
+    },
+    {
+      "id": "F-127",
+      "title": "The unsafeFromHex census counts a mention as a call site",
+      "requirements": [
+        "NFR-24"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A file that names unsafeFromHex in a comment or a string is not reported as a call site",
+        "A file that actually calls or imports it still is — proven by a decoy file the check must flag"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything."
     }
   ]
 }

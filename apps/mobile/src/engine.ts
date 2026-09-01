@@ -51,6 +51,22 @@ export interface DisplayColour {
  * ([ADR-0005](../../../docs/adr/0005-measurement-provenance-is-a-type.md)), so a screen cannot
  * render a value whose origin nobody recorded.
  */
+/**
+ * The hex a `Color` renders as (F-055).
+ *
+ * Here rather than in the screen that needed it, because `srgbToHex(xyzToSrgb(…))` is a colour
+ * conversion and `apps/mobile/AGENTS.md` is explicit that those are imported, never written:
+ * the first draft of the professional surface hand-rolled a channel clamp and a hex pad, and
+ * the compiler caught it only because `Color` has no `srgb` field to read.
+ *
+ * Out of gamut, `xyzToSrgb` returns what it returns and this renders the nearest thing a
+ * screen can draw — the same value `displayFromOklch` reports, and the reason it reports the
+ * difference alongside it.
+ */
+export function hexOf(color: Color): string {
+  return srgbToHex(xyzToSrgb(color.xyz));
+}
+
 export function displayFromOklch(oklch: Triple): DisplayColour {
   const xyz = oklchToXyz(oklch);
   return {

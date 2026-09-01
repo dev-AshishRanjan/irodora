@@ -67,6 +67,15 @@ export interface HomeProps {
    * one door that opens onto "add something first".
    */
   readonly onOpenShopping?: () => void;
+  /**
+   * Open the professional surface (F-055). Same shape and same reason as onOpenAtlas.
+   *
+   * **No entitlement check guards this entry, and there is none to add.** FR-61 says the
+   * professional readouts are available to every user *because none exists* (ADR-0051), so the
+   * button is unconditional — which is a decision worth stating rather than a line worth
+   * omitting.
+   */
+  readonly onOpenMeasure?: () => void;
 }
 
 export function Home({
@@ -77,6 +86,7 @@ export function Home({
   onOpenProfile,
   onOpenLens,
   onOpenShopping,
+  onOpenMeasure,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -201,6 +211,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenShopping?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openMeasure')}
+        variant="secondary"
+        onPress={() => {
+          onOpenMeasure?.();
         }}
       />
     </ScrollView>

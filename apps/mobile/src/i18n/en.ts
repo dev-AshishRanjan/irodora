@@ -408,6 +408,24 @@ export const en = {
    * one says the factor did not weigh in, NOT that it was neither good nor bad in some deeper
    * sense.
    */
+  // F-055 — professional surfaces: colorimeter entry and the ΔE00 table (FR-28, FR-61).
+  'home.openMeasure': 'Enter measurements from an instrument',
+  'measure.title': 'Measurements and differences',
+  'measure.origin':
+    'Values you enter from your own instrument, compared on this device against a published library. Nothing is sent anywhere, and nothing is saved.',
+  'measure.library': 'Reference library',
+  'measure.reference': 'Reference',
+  'measure.pickReference': 'Choose the colour you measured',
+  'measure.noReference': 'Choose a reference, and your measurements are compared against it.',
+  'measure.space': 'What your instrument reports',
+  'measure.add': 'Add this measurement',
+  'measure.samples': 'Your measurements',
+  'measure.empty': 'Nothing entered yet.',
+  'measure.arrivedIn': 'Entered as',
+  'measure.axisLchC': 'Chroma C*',
+  'measure.problem.blank': 'This field needs a number.',
+  'measure.problem.notANumber': 'Digits only — no letters and no commas.',
+  'measure.problem.outOfRange': 'Outside the range this field allows.',
   'explain.temperature.supports': 'Its warmth sits with yours.',
   'explain.temperature.opposes': 'Its warmth works against yours.',
   'explain.temperature.neutral': 'Its warmth neither helps nor hurts.',
