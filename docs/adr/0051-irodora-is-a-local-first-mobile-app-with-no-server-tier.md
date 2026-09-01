@@ -14,7 +14,7 @@ R0 and most of R1 are delivered. Reading what actually shipped against what it s
 produced the observation that forced this decision:
 
 - **`apps/api` is 4,269 lines** of Fastify carrying an error envelope, idempotency keys, a
-  fixed-window rate limiter, cursor pagination and a generated OpenAPI document. Its
+  fixed-window rate limiter, cursor pagination and a generated OpenAPI document. Its <!-- retired-ok: ADR-0051 is the record that retired the server tier. Naming what it retired is its content. -->
   published contract is two paths: `/healthz` and `/readyz`. The e2e suite exercises
   *fixture* routes, and `apps/api/e2e/surface.ts` (readable at the `pre-rehaul-server` tag)
   explains at length why they must never become real ones — because there are no domain
@@ -24,7 +24,7 @@ produced the observation that forced this decision:
   [ADR-0046](0046-published-corpus-is-an-immutable-generated-bundle.md) and
   [ADR-0047](0047-editorial-identity-is-a-roster-id-not-a-name.md), a complete provenance
   schema and a mutation-proofed content gate all govern a corpus that does not exist.
-- **`feature_list.json` carries 73 features**, 28 of them backlog for R3–R5 — multi-tenancy,
+- **`feature_list.json` carries 73 features**, 28 of them backlog for R3–R5 — multi-tenancy, <!-- retired-ok: Lists the features this decision cancelled. The list is the evidence for the decision. -->
   RLS, OIDC, passkeys, billing, entitlements, quotas, audit trails, an admin CMS — for a
   product with no users.
 
@@ -124,7 +124,7 @@ The engine packages are not modified by this decision. Not one line.
 | Alternative | Why not |
 |---|---|
 | **Keep the server, stop adding to it** | Good at: preserving sync, web SEO and monetisation optionality at no immediate cost. Not enough: the API serves two health endpoints, so "keeping" it means carrying 4,269 lines, a Postgres and Valkey dependency, two Dockerfiles, a Terraform skeleton and ~28 roadmap features to preserve options for a product with no users. The cost is paid continuously; the option is exercised never. |
-| **Mobile + static web PWA from one Expo Router tree** | Good at: preserving a discovery channel and costing far less than a Next.js app. Not enough: Expo's web SQLite support is documented as alpha and OPFS needs `SharedArrayBuffer` with COOP/COEP headers, so web needs a second storage driver and a second conformance suite. And a static export has no SSR, so the SEO it preserves is weak — paying real complexity for a fraction of the benefit. Revisit once the app exists. |
+| **Mobile + static web PWA from one Expo Router tree** | Good at: preserving a discovery channel and costing far less than a Next.js app. Not enough: Expo's web SQLite support is documented as alpha and OPFS needs `SharedArrayBuffer` with COOP/COEP headers, so web needs a second storage driver and a second conformance suite. And a static export has no SSR, so the SEO it preserves is weak — paying real complexity for a fraction of the benefit. Revisit once the app exists. | <!-- retired-ok: An alternative considered and rejected. Rejected options necessarily name what they would have built. -->
 | **Local-first with an optional sync server** | Good at: the honest long-term shape of this product. Not enough: it is the same server, deferred. Building sync before a single user has one device's worth of data is the mistake this ADR corrects. Item 6 makes it a later feature rather than a later rewrite. |
 | **Keep the API purely as a corpus CDN** | Good at: shipping corpus corrections without an app release. Not enough: a corpus bundle is a static file. If it ever needs distribution, that is object storage and a digest check — not Fastify, Postgres and Valkey. |
 | **Delete the harness too, as part of "simplifying"** | Good at: it is what "we over-engineered this" usually means. Not enough: the harness is what made the engine correct. Its gates caught defects that human review missed, on record in F-003. Deleting it would repeat the original error in the opposite direction. |

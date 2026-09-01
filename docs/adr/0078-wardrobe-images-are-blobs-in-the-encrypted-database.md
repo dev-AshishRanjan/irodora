@@ -106,12 +106,12 @@ this, and it is a size, not a feeling.
 
 The false sentence in `data-model.md` §5 is rewritten, and it names what was wrong rather than
 quietly replacing it. `privacy-design.md` §4 is rewritten too: its encryption table described
-TLS, HSTS, certificate pinning, per-tenant data keys and a KMS master key — the version-1.0
+TLS, HSTS, certificate pinning, per-tenant data keys and a KMS master key — the version-1.0 <!-- retired-ok: Records what privacy-design used to claim, as the evidence for correcting it. -->
 server architecture, months after ADR-0051 retired it, and the paragraph explaining why we do
 not say "end-to-end encryption" gave a reason (*"the server can decrypt wardrobe images"*) that
 depends on a server that does not exist.
 
 Both survived because gate 0's retired-vocabulary check scans **feature criteria and PRD rows
-only**. `privacy-design.md` contained *"per-tenant data key"* — a phrase on that check's own
+only**. `privacy-design.md` contained *"per-tenant data key"* — a phrase on that check's own <!-- retired-ok: Quotes the missed term as the evidence for the gap F-107 closed. -->
 retired list — with every gate green. Extending the scan to architecture and security documents
 is filed as **F-107**.

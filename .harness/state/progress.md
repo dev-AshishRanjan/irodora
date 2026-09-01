@@ -8,6 +8,130 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-107 DONE · the check that missed its own vocabulary now reads 72 documents
+
+Gate 0's retired-surface check built its subject list from feature criteria, attested criteria
+and PRD rows — **and nothing else**. The evidence that this mattered is that it **missed its own
+vocabulary**: `privacy-design.md` §4 said *"per-tenant data key"* while `\bper-tenant\b` was
+already a declared term. Green for months, correctly by its own rules.
+
+### Measuring first changed the design
+
+| zone | files | findings |
+|---|---|---|
+| `docs/architecture` | 5 | **13** |
+| `docs/adr`, all | 80 | **91** |
+| `docs/adr`, excluding superseded | 67 | **31** |
+
+**91 would have been the wrong answer.** The bulk sits in ADR-0025 (15), ADR-0012 (12),
+ADR-0018 (6) — every one **superseded**, and a superseded ADR describes the retired world
+*because that is what it is for*. Marking sixty true statements `retired-ok:` would turn the
+marker into wallpaper, which is how an escape hatch stops meaning anything.
+
+So the filter is **the ADR's own Status**, a fact the document already states. Superseded,
+retired, rejected and withdrawn are history and are skipped; an **Accepted** ADR describing a
+retired surface as current is exactly the defect.
+
+### The vocabulary was the half that mattered
+
+Widening the corpus without widening the vocabulary would have found *"per-tenant"* and still
+missed *"the worker"*. Five terms added, and **three were narrowed after measuring against the
+corpus rather than reasoned about**:
+
+- **not** bare `the API` — it legitimately means a library surface in dozens of places
+- **not** bare `TLS` — the sentences that survive are the ones *denying* transport security, and
+  a pattern firing on those punishes the correction rather than the rot
+- **not** bare `synced` — ordinary English about two local things agreeing
+
+A term too broad turns the gate into noise, and noise gets it switched off.
+
+### The check immediately proved the thing I filed it for
+
+F-107's own filing notes predicted the mechanism: *"F-042's criterion 4 was written FROM that
+rule — so the rot propagated into the scope file, where the check does look, in vocabulary the
+check does not know."*
+
+The moment the terms went in, gate 0 flagged **`F-042.acceptance[3]`**:
+
+> *EXIF stripped on ingest; images decoded only in the worker under hard limits*
+
+**A criterion nobody could satisfy, in a feature that shipped.** What shipped decodes on the
+device under a byte cap and a header-read pixel cap — the criterion's intent, reached by
+ignoring its letter. **Corrected, not marked**, and that distinction is the rule for the whole
+class: it did not name the worker in order to forbid it, it *asked for* it.
+
+That is **E-047**: a rules file is a source, and scope files are written from it, so a false rule
+becomes a supply of plausible, unbuildable requirements. The link's guard is this check — and it
+records that the guard **does not cover its own source**, because `.harness/rules` is not in the
+corpus.
+
+### 43 findings triaged, one rule applied
+
+**Mark when the sentence is *about* the retired thing; correct when it describes it as current.**
+
+Corrected: `privacy-design.md` §2, §5 and §6, `security.md`'s four sections, ADR-0026's items 4
+and 7 and its neutral consequence, and F-042's criterion. Marked: 43 lines, each with a reason
+naming why *that* mention is right — ADR-0051 listing what it retired, the index rows labelled
+*Superseded*, ADR-0055 saying axe cannot run, ADR-0078 quoting the phrase that was missed.
+
+**ADRs are decision records, so their bodies are corrected only when they mislead about the
+present.** Rewriting a Context section would falsify what was decided. ADR-0026 was the
+exception my notes named, and it was **amended** — items revised, superseded wording quoted
+beside them — rather than overwritten.
+
+### The worst thing in the repository was in a file with no finding
+
+`privacy-design.md` §2's data inventory listed **email addresses, session ids, analytics events
+and audit events, every one of them on a server**, with lawful bases and retention periods. It
+produced **no finding at all**, because `server` is not a term and deliberately cannot be: across
+this repository the sentences that survive are overwhelmingly the ones *denying* a server.
+
+Found by reading. Recorded in the file itself, beside the correction: **a vocabulary scan
+narrows the reading; it does not replace it.**
+
+### The proof, and an assertion that could not tell which check failed
+
+`scripts/verify-retired-docs-proof.mjs`, wired as `pnpm verify:retired:prove`. Nine cases: each
+new term planted and watched firing by name, the marker watched exempting, and the tree asserted
+unchanged afterwards.
+
+The superseded filter is watched **both ways on the same file** — `0012-backend-fastify-zod-openapi.md`
+with the identical sentence appended, once as *Superseded* and once as *Accepted*, differing only
+in its status line. Without the negative case the filter could be skipping the entire corpus.
+
+**The first version of that case was wrong in an instructive way.** It planted a new `ADR-9999`
+and asserted `exit === 0` — which went red on gate 0's **ADR index** check, for a file absent
+from `README.md`, and reported it as the superseded filter failing. An assertion that cannot say
+*which* check failed is not evidence about that check. Now it asserts on the finding.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 9908 lines across criteria, PRD rows and **72 documents**; 43 deliberate mentions; 13 superseded ADRs skipped |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** — after one prettier pass on the proof |
+| retired proof | **PASS** — 9 cases |
+
+This feature's verification list is `state` alone. Not applicable: every gate that reads code —
+this changes prose and one checker.
+
+### Filed rather than swept in
+
+**F-112**: `.harness/rules` is corrected but **not scanned**, because criterion 1 names
+`docs/architecture` and `docs/adr` and the definition of done says *"no more, no less"*. Fixing a
+file without a guard behind it is a real gap and it is recorded, with the 11 findings already
+measured — and `security.md` already carries its markers, so it will pass the day that zone is
+added. `privacy-design.md` §8's sub-processors and international transfers go with it.
+
+### Next
+
+R4 holds **F-109** alone — the preference surface. The surface debt is five features deep and
+F-109 is the one that starts paying it.
+
+---
+
 ## 2026-09-01 — F-103 DONE · the scale gets names, and the rename is watched breaking three files
 
 `nativeRadius` was a named record and `nativeSpacing` was a bare array, so a component wrote

@@ -1684,6 +1684,44 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-047",
+      "from": {
+        "kind": "file",
+        "ref": ".harness/rules/security/security.md"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/architecture/security/privacy-design.md"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/architecture/security/threat-model.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        ".harness/rules",
+        ".harness/state",
+        "docs/architecture"
+      ],
+      "severity": "high",
+      "guard": "gate:state (the retired-surface check), which since F-107 reads docs/architecture and docs/adr and, since F-107 widened the vocabulary, knows the server-tier words. Proven by scripts/verify-retired-docs-proof.mjs — nine cases, including the superseded filter watched BOTH ways on the same file. THE GUARD DOES NOT COVER THE SOURCE. `.harness/rules` is NOT in the scan corpus (F-112), so the file at the FROM end of this link is the one place the check cannot see. That is the gap, and it is stated rather than implied.",
+      "memory": "memory/effects/a-rule-is-a-source-and-scope-files-are-written-from-it.md",
+      "rationale": "A RULES FILE IS NOT A DESCRIPTION, IT IS A SOURCE. Somebody planning a feature reads .harness/rules/security/security.md and writes acceptance criteria from it, so a false sentence in a rule does not stay in that file — it is COPIED, in good faith, into the scope of work that has not been done yet. THIS IS EVIDENCED, NOT HYPOTHESISED. security.md said \"decoding happens only in the worker, never in the API process\" nine months after ADR-0051 removed both. F-042 was planned from it and its criterion 4 read \"EXIF stripped on ingest; images decoded only in the worker under hard limits\" — a criterion that could not be satisfied by anything anyone could build, in a feature that shipped. What shipped decodes on the device under a byte cap and a header-read pixel cap, which is the criterion s intent; the criterion itself was corrected by F-107 rather than marked, because it did not name the worker to forbid it, it ASKED for it. THE MOMENT THE VOCABULARY WIDENED, THE CHECK FOUND IT. F-107 added the server-tier terms and gate 0 immediately flagged F-042.acceptance[3] — a criterion in the scope file, which was always in the corpus, in words the corpus did not know. That is the whole shape of this link in one observation: the check was looking in the right place for the wrong words. WHAT THIS MEANS FOR ANY RULE CHANGE: a rule that stops being true does not merely become stale prose. It becomes a supply of plausible, unbuildable requirements, and the features planned from it carry the error past every gate — because a criterion is a string, and a well-formed string describing a system that does not exist is exactly what the retired-surface check exists for and exactly what it cannot see without the vocabulary. THE DIRECTION IS ONE-WAY AND WORTH SAYING: criteria are written from rules, never the reverse. Correcting a criterion does not correct the rule it came from, so a fix at the TO end leaves the source intact to be copied again.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

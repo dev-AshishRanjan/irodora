@@ -101,7 +101,7 @@ change with no consumer asking for it.
 ## Revisit when
 
 - **`@irodora/ui` gains a consumer that resolves through Node** — a second surface, a
-  server-side render, a Vitest suite importing it directly.
+  server-side render, a Vitest suite importing it directly. <!-- retired-ok: Lists the resolvers a package could face, including ones this product no longer has — the point being that Metro is the one that matters. -->
 - **`heroui-native` publishes declarations that resolve under NodeNext**, which would remove
   the forcing constraint and make this a preference rather than a requirement.
 - **A specifier that Metro rejects reaches `packages/ui`** — that is the "Bad" consequence

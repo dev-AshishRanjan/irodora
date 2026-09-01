@@ -108,7 +108,7 @@ the same defect as trusting a request body.
 | **I** | Local data on a lost or stolen device | SQLCipher at rest; key in Keychain/Keystore; **the user's own export is the only recovery** | review |
 | **I** | The key leaking to a log or crash report | No sink exists to leak into; the prohibition is written down anyway ([ARCHITECTURE §9](../ARCHITECTURE.md#9-observability--what-we-gave-up)) | review |
 | **I** | Image exfiltration by another app | App-private scoped storage; no world-readable paths | review |
-| **D** | Decoder bomb in a captured or imported image | Hard limits on pixel count and wall-clock time, off the UI thread. **There is no worker process to sacrifice** — the blast radius is the user's app | test |
+| **D** | Decoder bomb in a captured or imported image | Hard limits on pixel count and wall-clock time, off the UI thread. **There is no worker process to sacrifice** — the blast radius is the user's app | test | <!-- retired-ok: Names the retired process in order to say it is gone, which is the mitigation. -->
 | **T** | Polyglot file | Content type verified by magic bytes, not by extension | test |
 | **I** | EXIF leakage | All metadata stripped on ingest — GPS coordinates in a wardrobe photo are a home address | test |
 | **S** | SSRF via image URL | No fetch-by-URL ingestion. Ever. There is no fetch at all | design |

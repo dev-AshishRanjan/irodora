@@ -23,7 +23,7 @@ platform APIs. Zod is a runtime dependency. The colour engine cannot import it.
 
 So `@irodora/color-core` declares `Provenance`, `MeasurementSource` and
 `ReproducibilityEnvelope` as plain TypeScript, and `@irodora/contracts` needs Zod schemas
-for the same three shapes to validate them at the boundary and to generate OpenAPI. That is
+for the same three shapes to validate them at the boundary and to generate OpenAPI. That is <!-- retired-ok: The wire-schema problem as it existed when there was a wire. The compiler-pinning principle survives. -->
 one shape defined twice, which is exactly what the rule forbids — and the rule is right
 about why: the two would diverge the first time only one was edited, and nothing would say
 so.

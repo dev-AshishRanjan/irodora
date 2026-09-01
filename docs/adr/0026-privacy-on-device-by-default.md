@@ -45,18 +45,26 @@ camera frame → local processing → colour value → frame discarded
 2. **The frame is discarded**, not cached, not queued, not written to a temporary file.
 3. **A network assertion in e2e** fails the test if any image data is transmitted during a
    Lens scan. A future change that would send frames breaks the build.
-4. **Images are uploaded only when the user explicitly chooses** to attach a photograph to
-   a wardrobe item, and only if cloud sync is on — which is **off by default**.
+4. **A wardrobe photograph is stored only when the user explicitly attaches one** to an
+   item, and it is stored on the device, as an encrypted BLOB in the database
+   ([ADR-0078](0078-wardrobe-images-are-blobs-in-the-encrypted-database.md)).
+   *Amended by ADR-0051:* this item read *"images are uploaded … only if cloud sync is on — <!-- retired-ok: Quotes the superseded wording of this decision item. -->
+   which is off by default"*. There is no upload and no sync, so there is no toggle either.
+   <!-- retired-ok: Records what this decision originally said, which is the point of amending rather than deleting. -->
 5. **EXIF is stripped on ingest.** A wardrobe photograph taken at home contains a home
    address in its GPS tags.
 6. **Local-only mode** (FR-55) delivers the full core product with no account and no
    network. This is the honest version of "we cannot see your data", and it is a shipped
    mode rather than a marketing line.
 7. **We do not describe this as end-to-end encryption**
-   ([privacy-design §4](../architecture/security/privacy-design.md)). The server can
-   decrypt synced wardrobe images, because thumbnailing and restore require it. Envelope
-   encryption protects against a stolen backup or a leaked bucket. It does not protect
-   against us, and we say so.
+   ([privacy-design §4](../architecture/security/privacy-design.md)), and the reason has
+   changed. It now protects against a **lost or stolen phone**, and that is the whole of it.
+   *Amended by ADR-0051:* the original reason was that *"the server can decrypt synced
+   wardrobe images, because thumbnailing and restore require it"*, under envelope encryption
+   against a leaked bucket. There is no server and no bucket. The phrase is still wrong here,
+   for a more basic reason — end-to-end describes data protected between two ends, and there
+   is one end.
+   <!-- retired-ok: Records the superseded reason so the change of reasoning is legible, not just the change of wording. -->
 
 ## Consequences
 
@@ -72,8 +80,11 @@ metadata ([ADR-0022](0022-observability-opentelemetry-no-raw-imagery.md)) and by
 explicit, consented support flow for a user-supplied file. Device compute varies, so
 performance is less uniform than a server would give.
 
-**Neutral.** Server-side colour operations exist (`POST /v1/color/*`) for external API
-consumers. Our own clients do not use them.
+**Neutral.** *Amended by ADR-0051:* this read *"server-side colour operations exist
+(`POST /v1/color/*`) for external API consumers. Our own clients do not use them."* There are <!-- retired-ok: Quotes the superseded consequence, which named the retired endpoint. -->
+none, and there is no external consumer — every colour operation runs on the device, which is
+what makes the transmit-nothing guarantee above structural rather than a policy.
+<!-- retired-ok: Records the retired endpoint the consequence was about. -->
 
 ## Alternatives considered
 

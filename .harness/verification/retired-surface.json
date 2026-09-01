@@ -1,7 +1,7 @@
 {
   "$comment": "Vocabulary that describes systems this product no longer has. Gate 0 fails on a criterion or a PRD verification column that uses one. GATE IDS ARE NOT LISTED HERE — they are derived from gates.json, so retiring a gate needs no edit to this file. This list exists only for words that are not symbols anywhere: 'tenant' cannot be derived from anything. Every entry cites the record that retired it, and the citation is printed on a failure, so an entry nobody can justify shows up as an entry with a weak one.",
   "version": 1,
-  "updated": "2026-08-20",
+  "updated": "2026-09-01",
   "terms": [
     {
       "pattern": "\\bPOST /|\\bGET /|\\bDELETE /|\\bPUT /|\\bPATCH /",
@@ -44,6 +44,36 @@
       "name": "content negotiation",
       "retiredBy": "ADR-0056",
       "why": "The locale comes from the device via expo-localization. There are no responses to negotiate."
+    },
+    {
+      "pattern": "\\bthe worker\\b|\\bworker process\\b",
+      "name": "the worker process",
+      "retiredBy": "ADR-0051",
+      "why": "Image decoding happened in a worker process, off the API process, under hard limits. There is no process tier at all now — decoding is on the device. DELIBERATELY NOT bare `worker`: `worklet` is current VisionCamera vocabulary and a frame processor runs on a worklet thread."
+    },
+    {
+      "pattern": "\\bAPI process\\b",
+      "name": "the API process",
+      "retiredBy": "ADR-0051",
+      "why": "There is no API and no process serving one. DELIBERATELY NOT bare `the API`, which was measured against this corpus and legitimately means a library surface — `the API of @irodora/color-core` — in dozens of places. A term that broad turns the gate into noise and noise gets it switched off."
+    },
+    {
+      "pattern": "\\bTLS 1\\.\\d\\b|\\bHSTS\\b|\\bcertificate pinning\\b",
+      "name": "transport security",
+      "retiredBy": "ADR-0051",
+      "why": "Nothing is transported. DELIBERATELY NOT bare `TLS`: the sentences that survive are the ones DENYING transport security — \"no TLS, because no network\" — and a pattern that fired on those would punish the correction rather than the rot."
+    },
+    {
+      "pattern": "\\bcloud sync\\b|\\bsynced wardrobe\\b",
+      "name": "cloud sync",
+      "retiredBy": "ADR-0051",
+      "why": "The device is the system of record and nothing leaves it. Narrow on purpose: bare `synced` is ordinary English about two local things agreeing."
+    },
+    {
+      "pattern": "\\bKMS\\b",
+      "name": "a key management service",
+      "retiredBy": "ADR-0051",
+      "why": "Envelope encryption under a KMS master key required a server holding the master key. Keys live in the platform keystore on the device (ADR-0078)."
     }
   ],
   "allowMarker": "retired-ok:",

@@ -16,7 +16,7 @@ ADR-0056 replaces them:
 | Clause | Now |
 |---|---|
 | §2 — server responses carry message keys, never prose | **Retired.** There are no responses. |
-| §5 — `Accept-Language` negotiation | The **device locale**, via `expo-localization`. |
+| §5 — `Accept-Language` negotiation | The **device locale**, via `expo-localization`. | <!-- retired-ok: A migration table mapping the retired mechanism to the current one. The left column has to name it. -->
 | §6 — locale is part of the cache key | **Moot.** There is no cache tier. |
 
 Read those three as history. Everything else here is current.
@@ -64,7 +64,7 @@ string.
 4. **Japanese typography is a design requirement**, not a font swap: correct kinsoku line
    breaking, verified fallback for the kanji in the corpus, ruby annotation available for
    readings, and layouts that survive text-length differences in both directions.
-5. **`Accept-Language` and an explicit user preference**, with the preference winning.
+5. **`Accept-Language` and an explicit user preference**, with the preference winning. <!-- retired-ok: The locale resolution order as originally decided; the table above in this same ADR maps it to the device locale. -->
 6. **Locale is part of the cache key** for catalog responses.
 7. **Numbers and dates are localised**; colour values are not — `#263B3C` and `L 22 C 0.03
    H 195°` are the same in every locale, and localising them would be actively harmful.

@@ -33,7 +33,7 @@ easy to build and quietly wrong for exactly the data users notice:
 **Local database is the client's source of truth. Outbox for propagation. Field-level
 logical clocks for ordering. Typed merge rules where LWW would lose data.**
 
-1. **Every write succeeds locally and immediately.** SQLite on mobile, IndexedDB on web,
+1. **Every write succeeds locally and immediately.** SQLite on mobile, IndexedDB on web, <!-- retired-ok: Version-1.0 context. The outbox and merge policy this ADR decided are themselves superseded by ADR-0051; the offline-first principle is what survives. -->
    behind one repository interface with a conformance suite both must pass.
 2. **Change records carry only changed fields**, plus a per-field logical counter:
 

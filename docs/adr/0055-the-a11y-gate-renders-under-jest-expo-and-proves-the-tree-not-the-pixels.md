@@ -12,10 +12,10 @@ Accepted
 
 Gate 8 (`a11y`) has `activatesWith: "F-017"` and has been `pending` since the gate set was
 defined. Its charter — [ADR-0021](0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md),
-NFR-8, ACCESSIBILITY.md A1 — was written when there was a web surface, and said *axe, zero A/AA
+NFR-8, ACCESSIBILITY.md A1 — was written when there was a web surface, and said *axe, zero A/AA <!-- retired-ok: States what the requirement said when a web surface existed. That is the problem this ADR solves. -->
 violations, every route*.
 
-**axe cannot run.** [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)
+**axe cannot run.** [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) <!-- retired-ok: Names the retired tool in order to say it cannot run, which is the decision. -->
 retired the web surface; there is no DOM to walk. Two further constraints narrow the field:
 
 - CI and the primary workstation are **Windows with no device attached**, so anything requiring

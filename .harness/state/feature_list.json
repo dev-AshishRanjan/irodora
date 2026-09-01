@@ -1424,7 +1424,7 @@
         "Only colour and type required at creation; every other field progressively enriched",
         "Colour grouping uses perceptual distance, not hex string sorting",
         "Wardrobe images are encrypted with a device key held in the platform keystore; key rotation is exercised in a test",
-        "EXIF stripped on ingest; images decoded only in the worker under hard limits",
+        "EXIF stripped on ingest; images decoded on the device under explicit byte and pixel limits read before decoding",
         "No documentation or copy describes this as end-to-end encryption"
       ],
       "verification": [
@@ -3064,17 +3064,18 @@
       "service": "root",
       "release": "R4",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "The retired-surface scan covers docs/architecture and docs/adr as well as criteria and PRD rows, watched failing on a real instance",
         "Every finding it raises in those documents is either corrected or carries the marker with a reason",
-        "A term for the retired server tier — worker, API process, TLS, cloud sync — is in the vocabulary, planted and watched firing"
+        "A term for the retired server tier — worker, API process, TLS, cloud sync — is in the vocabulary, planted and watched firing (retired-ok: names the retired surfaces in order to ADD them to the vocabulary, which is the criterion)"
       ],
       "verification": [
         "state"
       ],
-      "notes": "FOUND WHILE BUILDING F-042, NOT SELECTED THROUGH next-feature. THE GAP: gate 0’s retired-surface check builds its subject list from feature `acceptance` entries, `attested[].criterion` entries and PRD requirement rows — and nothing else. `docs/architecture/` and `docs/adr/` are entirely outside its corpus. THE EVIDENCE IS THAT IT MISSED ITS OWN VOCABULARY: `docs/architecture/security/privacy-design.md` §4 contained the phrase \"per-tenant data key\", and `\\bper-tenant\\b` is literally one of the seven terms in retired-surface.json. Gate 0 was green over it for months. WHAT WAS STILL DESCRIBED AS CURRENT, nine months after ADR-0051 retired the server tier: privacy-design §4’s encryption table named TLS 1.3, HSTS, certificate pinning, a per-tenant data key and a KMS master key, and the paragraph explaining why we do not claim end-to-end encryption gave as its reason \"the server can decrypt wardrobe images\" — a reason that depends on a server that does not exist. `.harness/rules/security/security.md` still says images are decoded \"only in the worker\", \"never in the API process\", and that \"the worker runs non-root, read-only filesystem, no network egress\"; its Database section still describes RLS with FORCE, migration roles and DDL grants; and it carries rate-limiting rules for auth endpoints. ADR-0026 §4 and §7 describe uploads gated on cloud sync and a server that decrypts synced images. F-042 FIXED WHAT ITS OWN CRITERION 5 REACHED and stopped there: privacy-design §4, the data-model sentence about SQLCipher covering an image directory, and the two places that DENIED end-to-end encryption for the retired reason — .harness/rules/security/privacy.md and the security-review skill both said \"the server can decrypt synced wardrobe images\". Those two were corrected rather than filed because a rules file is read as binding and the sentence was false about the product security posture, in the exact subject F-042 was building. WHAT REMAINS FOR THIS FEATURE: security.md images-are-hostile-input and Database sections, ADR-0026 §4 and §7, and the scan itself. Not swept in, because WIP is 1 and rewriting a security rule file is not a wardrobe feature. WHY THIS IS WORSE THAN STALE PROSE GENERALLY: a security rule that describes a worker process gives a reader instructions they cannot follow, and F-042’s criterion 4 (\"images decoded only in the worker under hard limits\") was written FROM that rule — so the rot propagated into the scope file, where the check does look, in vocabulary the check does not know. THE THIRD CRITERION IS THE ONE THAT MATTERS: widening the corpus without widening the vocabulary would find \"per-tenant\" and still miss \"the worker\"."
+      "notes": "DONE. Gate 0 s retired-surface check now reads docs/architecture and docs/adr as well as criteria and PRD rows — 9908 lines across 72 documents, 43 deliberate mentions, 13 superseded ADRs skipped. MEASURING FIRST CHANGED THE DESIGN. All ADRs would have produced 91 findings; excluding superseded ones, 31. The bulk sat in ADR-0025 (15), ADR-0012 (12) and ADR-0018 (6), every one SUPERSEDED — and a superseded ADR describes the retired world because that is what it is FOR. Marking sixty true statements retired-ok: would have turned the marker into wallpaper. So the filter is the ADR s own Status, a fact the document already states. THE VOCABULARY WAS THE HALF THAT MATTERED: widening the corpus without it would have found \"per-tenant\" and still missed \"the worker\". Five terms added and THREE NARROWED AFTER MEASURING rather than reasoned about — not bare `the API` (it legitimately means a library surface in dozens of places), not bare `TLS` (the surviving sentences DENY transport security, and a pattern firing on those punishes the correction), not bare `synced`. THE CHECK IMMEDIATELY PROVED WHAT THIS FEATURE WAS FILED FOR. The notes predicted F-042 s criterion 4 was written FROM security.md; the moment the terms went in, gate 0 flagged F-042.acceptance[3] — \"images decoded only in the worker under hard limits\", a criterion nobody could satisfy in a feature that SHIPPED. Corrected, not marked: it did not name the worker to forbid it, it ASKED for it. That is E-047. 43 FINDINGS TRIAGED on one rule — mark when the sentence is ABOUT the retired thing, correct when it describes it as current. CORRECTED: privacy-design.md sections 2, 5 and 6; security.md s images, database, rate-limiting and web sections; ADR-0026 items 4 and 7 and its neutral consequence (AMENDED, with the superseded wording quoted beside — rewriting an ADR s body would falsify what was decided); F-042 s criterion. THE WORST THING IN THE REPOSITORY PRODUCED NO FINDING. privacy-design.md section 2 listed email addresses, session ids, analytics events and audit events, every one on a server, with lawful bases and retention periods. `server` is not a term and deliberately cannot be — across this repository the surviving sentences overwhelmingly DENY a server. Found by reading, and recorded in the file beside the correction: a vocabulary scan narrows the reading, it does not replace it. PROOF: scripts/verify-retired-docs-proof.mjs, wired as pnpm verify:retired:prove. Nine cases — each new term planted and watched firing BY NAME, the marker watched exempting, the tree asserted unchanged after. The superseded filter is watched BOTH WAYS ON THE SAME FILE, 0012 with an identical sentence appended, once Superseded and once Accepted, differing only in its status line. THE FIRST VERSION OF THAT CASE WAS WRONG INSTRUCTIVELY: it planted a new ADR-9999 and asserted exit === 0, which went red on gate 0 s ADR INDEX check for a file absent from README.md and reported it as the filter failing. An assertion that cannot say WHICH check failed is not evidence about that check. GATES: state, typecheck, lint, format, and the proof — all PASS. Verification list is state alone; not applicable is every gate that reads code. FILED AS F-112: .harness/rules is corrected but NOT scanned, because criterion 1 names docs/architecture and docs/adr and the definition of done says no more, no less. Fixing a file without a guard behind it is a real gap, recorded with its 11 findings already measured — and security.md already carries its markers so it passes the day that zone is added. privacy-design.md section 8 s sub-processors and international transfers go with it.",
+      "plan": "plans/F-107-retired-vocabulary-reaches-the-docs.md"
     },
     {
       "id": "F-108",
@@ -3177,6 +3178,29 @@
         "a11y"
       ],
       "notes": "FILED BY F-103, WHICH NAMED THE STEPS AND STOPPED THERE. Before F-103, spacing was a positional array, so verify-token-reach.mjs could only answer for it at binding level — its header said so. Naming the steps makes them answerable at leaf level, the same way radius steps already are. WHY IT WAS NOT FOLDED INTO F-103: the manifest deliberately keeps xl2 through xl5 as \"rhythm for layouts not built rather than a rule the scale breaks\". Adding the group would report those five as unreached and require a declaration for each. Writing those declarations is a decision about what the scale is FOR, and it is not a consequence of naming it — F-103 had four criteria and none of them was this. THE INTERESTING PART IS THE WORDING. An unreached declaration that says \"not used yet\" is a note that rots into a deletion the first time somebody tidies. One that says \"rhythm for a layout tier that does not exist, kept on purpose\" is the manifest s own argument, and it survives the tidying. R5 and could, because nothing is broken today."
+    },
+    {
+      "id": "F-112",
+      "title": "The retired-vocabulary scan reaches the rules files, which are read as binding",
+      "requirements": [
+        "NFR-20"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-107"
+      ],
+      "acceptance": [
+        "The retired-surface scan covers .harness/rules as well as docs/architecture and docs/adr, watched failing on a planted instance",
+        "Every finding it raises there is either corrected or carries the marker with a reason",
+        "A rules file that regains a retired surface fails gate 0 rather than being caught by reading"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FILED BY F-107, WHICH FIXED security.md BY HAND AND LEFT NO GUARD BEHIND IT. F-107 s criterion 1 names docs/architecture and docs/adr, and the definition of done says acceptance criteria are met exactly, no more and no less — so .harness/rules was corrected but not added to the corpus. WHY IT MATTERS MORE THAN THE DOCS DO: a rules file is read as BINDING. F-107 s own filing notes record the mechanism — F-042 s criterion 4 (\"images decoded only in the worker under hard limits\") was written FROM security.md, so rot in a rules file propagated into a scope file. The widened vocabulary caught that criterion the moment it was added, which is the evidence: the propagation is real and it has happened at least once. WHAT IS ALREADY MEASURED, so this is not a survey: 11 findings across five files. security.md is clean and already carries markers (F-107 wrote them so the file would pass the day this zone is added). The rest: git.md:90 names the generated openapi.json; testing.md:115 says \"Assert axe on every route\"; typescript.md:63-64 describe Zod schemas generating an OpenAPI document and cite superseded ADR-0012; privacy.md:89 carries the same stale consent table F-107 rewrote in privacy-design.md, and privacy.md:114 is a correct sentence that names the retired server in order to deny it and needs the marker. ALSO WORTH DOING HERE: privacy-design.md section 8 still describes sub-processors, international transfers and keeping EU/UK data in-region, none of which the vocabulary can see because none of those words are terms. F-107 found it by reading and left it, having already rewritten sections 2, 5 and 6 of that file."
     }
   ]
 }

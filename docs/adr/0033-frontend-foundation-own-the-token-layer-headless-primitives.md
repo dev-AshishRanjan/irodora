@@ -13,7 +13,7 @@ Accepted
 Meta open-sourced **Astryx** (July 2026) — a React design system with 150+ accessible
 components, seven themes, a CLI and an MCP server, built on StyleX, MIT-licensed, eight
 years internal at Meta powering 13,000+ apps. It was proposed as the frontend foundation,
-with Next.js and Tailwind, and the question was put as a decision to reason about rather
+with Next.js and Tailwind, and the question was put as a decision to reason about rather <!-- retired-ok: Describes the starting point the decision was made from. -->
 than accept.
 
 It deserves a serious answer, because the case for it is genuinely strong:

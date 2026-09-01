@@ -59,7 +59,7 @@ back into the manifest by a generator. A hand-edited hex is a gate failure.**
    manifest stops carrying two answers from the moment the rule exists.
 4. **`srgb` stays in the file.** It is the fallback older browsers need and the value a
    designer can paste into a tool that does not speak OKLCh. It is output that happens to be
-   committed — the same status as a generated OpenAPI document.
+   committed — the same status as a generated OpenAPI document. <!-- retired-ok: An analogy to a retired artefact, explaining why a derived file is committed. The comparison still lands. -->
 
 This is the rule the corpus already lives under (F-011: "derived values computed from `xyz`
 by the engine at build time, never typed"). The design system was the one place where a

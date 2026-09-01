@@ -34,20 +34,36 @@ in three years.
 
 ## 2. Data inventory
 
+**Every row says "device", and that is the entire inventory.**
+
 | Data | Purpose | Location | Retention | Basis |
 |---|---|---|---|---|
 | Camera frames | Colour measurement | Device only, in memory | Discarded immediately | — |
-| Colour values | The product | Device; server if signed in | Until deleted | Contract |
-| Wardrobe images | Item recognition and display | Device; object storage if sync on | Until deleted | Consent |
-| Personal colour profile | Compatibility scoring | Device; server if sync on | Until deleted | Consent |
-| Email address | Account identity | Server, encrypted | Account lifetime | Contract |
-| Session and device ids | Auth, sync | Server | Expiry + 30 days | Contract |
-| Analytics events | Product improvement | Server, pseudonymous | 25 months | Legitimate interest, opt-out |
-| Audit events | Accountability | Server, append-only | 7 years | Legal obligation |
-| Support correspondence | Support | Helpdesk | 24 months | Legitimate interest |
+| Colour values | The product | Device | Until deleted | — |
+| Wardrobe images | Item recognition and display | Device, encrypted BLOBs in the database | Until deleted | — |
+| Personal colour profile | Compatibility scoring | Device | Until deleted | — |
 
 **Never collected:** precise location, contacts, biometric templates, facial recognition
 data, health data, ethnicity, or any inferred protected characteristic.
+
+**What version 1.0 listed here and this table does not.** Email address, session and device ids,
+analytics events, audit events and support correspondence — five rows, every one of them stored
+on a server, three with a lawful basis and a retention period. All five went with
+[ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md): there is
+no account to identify, no session to expire, no collector to send an event to, and no operator
+to correspond with.
+
+The `Basis` column is dashes now for the same reason. A lawful basis is something you need in
+order to process someone's data; **we do not process it, because it never reaches us.** Naming a
+basis anyway would imply a processing relationship that does not exist.
+
+> **This table was wrong for months and no gate saw it**, which is worth recording beside the
+> correction. F-107 widened the retired-vocabulary scan to reach this file and it flagged §4 and
+> §5 — but not this table, because the scan matches a **declared vocabulary** and the word
+> `server` is deliberately not in it: across this repository the sentences that survive are
+> overwhelmingly the ones *denying* a server, and a term firing on those would punish the
+> correction rather than the rot. This section was found by reading. **A vocabulary scan narrows
+> the reading; it does not replace it.**
 
 ---
 
@@ -96,13 +112,14 @@ What the encryption above actually protects against is a **lost or stolen phone*
 the whole of it. It does not protect against someone who has your unlocked device, and it is
 not a claim about anything leaving it, because nothing does.
 
-> **Superseded, and recorded rather than deleted.** This table used to describe TLS 1.3, HSTS,
-> certificate pinning, per-tenant data keys and a KMS master key. All of it was true of the
+> **Superseded, and recorded rather than deleted.** This table used to describe TLS 1.3, HSTS, <!-- retired-ok: The record of what this table used to say. Deleting the words would delete the record. -->
+> certificate pinning, per-tenant data keys and a KMS master key. All of it was true of the <!-- retired-ok: Continuation of the superseded-table record above. -->
 > architecture in version 1.0 and none of it survived ADR-0051. It stood here for months after
 > the server was retired because gate 0's retired-vocabulary check reads **feature criteria and
 > PRD rows only** — architecture and security documents are outside its corpus, which is how a
-> document could keep saying *"per-tenant data key"*, a term literally on that check's own
-> retired list, with every gate green. Extending the scan is filed as F-107.
+> document could keep saying *"per-tenant data key"*, a term literally on that check's own <!-- retired-ok: Quotes the term as the evidence for the defect F-107 fixed. The quotation IS the point. -->
+> retired list, with every gate green. **F-107 extended the scan**, and this document is now
+> in its corpus.
 
 **Local-only mode (FR-55) is not a mode.** It was the stronger option in version 1.0, chosen by
 people who wanted it. It is now simply what the product is, for everyone, by construction.
@@ -111,35 +128,56 @@ people who wanted it. It is now simply what the product is, for everyone, by con
 
 ## 5. Consent and control
 
+**There is almost nothing to consent to, and that is the design.** Version 1.0 needed this
+section because it listed the ways data could leave: sync, upload, analytics, marketing. None of
+those exist after [ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md),
+so every row below is about something that happens **on the device**.
+
 | Control | Default | Effect |
 |---|---|---|
-| Cloud sync | **Off** | Everything stays on the device |
-| Analytics | Off in EU/UK; opt-out elsewhere | No product events collected |
-| Image upload | Explicit, per item | Bytes stay local until you choose otherwise |
-| Photo-assisted profile | Explicit | Camera used once, image discarded |
-| Marketing email | Off | Double opt-in |
+| Photo-assisted profile setup | Explicit, per use | The camera is used once and the image is discarded (FR-27) |
+| Camera colour capture | Explicit, per capture | Frames are processed on device; nothing is written unless you save the item |
+| Wardrobe photos | Explicit, per item | Stored as encrypted blobs in the local database ([ADR-0078](../../adr/0078-wardrobe-images-are-blobs-in-the-encrypted-database.md)) |
 
-The app is fully functional with every one of these off. A privacy control that degrades
-the product into uselessness is not a control; it is a fee.
+**No analytics, no product events, no crash telemetry, no marketing email.** Not "off by
+default" — absent. There is no account to attach an event to and no endpoint to send one to.
+
+That is worth stating as a fact rather than as a setting, because **a toggle implies a mechanism
+behind it**. A row reading *"Analytics — off"* tells a reader there is an analytics pipeline
+they are opting out of, and there is not one to opt out of.
+
+The app is fully functional with every one of these declined, because declining them removes a
+convenience rather than the product. That was true in version 1.0 as a design commitment; it is
+now true by construction (FR-55).
 
 ---
 
 ## 6. Data-subject rights (FR-58)
 
+**Every one of these is exercised by the person, on their device, without asking us.** Version
+1.0 answered them with endpoints — `POST /v1/me/export`, `DELETE /v1/me` — and a 30-day <!-- retired-ok: Names the retired endpoints in order to say there is nobody to send a request to. -->
+fulfilment window. There is nobody to make the request to now, which changes what this section
+has to guarantee: not that we will respond, but that **the app itself can do it**.
+
 | Right | Implementation |
 |---|---|
-| Access / portability | `POST /v1/me/export` → machine-readable archive of every personal record |
-| Erasure | `DELETE /v1/me` → hard delete **and de-index**, including tombstones and search indexes |
+| Access / portability | Export from the app — every record, re-importable to a byte-identical database (FR-58) |
+| Erasure | Delete on the device, immediate; there is no copy anywhere else to reach |
 | Rectification | Editable in the app; profile corrections are first-class (FR-27) |
-| Restriction | Account can be suspended without deletion |
-| Objection | Analytics opt-out; no profiling for advertising exists to object to |
+| Restriction | Stop using it, or delete it. There is no account to suspend |
+| Objection | No profiling, no advertising, no analytics — nothing to object to |
 
-Fulfilled within 30 days; typically minutes, since both are automated jobs.
+**Erasure must reclaim, not just delete.** A row deleted from SQLite while its text remains in a
+search index or its key in a cache has not been erased. FR-58 requires erasure to be verified by
+a re-query returning nothing from each store.
 
-**Erasure must reclaim, not just delete.** A row deleted from SQLite while its text
-remains in a search index, its key in a cache, or its id in a sync tombstone has not been
-erased. The erasure job enumerates every store and is verified by a re-query returning
-nothing from each.
+**What retiring the server removed from this section, and what it added.** It removed the
+fulfilment window, the automated jobs and the sync tombstones — there is no second copy to chase.
+It added a harder obligation: **a right the person cannot exercise without us is not a right they
+have**, so export and erasure are product features with e2e coverage rather than an operational
+promise. FR-58 also states the cost plainly — with no server, a lost device is lost data — and
+the app prompts for an export before any destructive action rather than implying a safety net it
+does not have.
 
 ---
 

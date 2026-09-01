@@ -54,7 +54,7 @@ One suite per port, which **every** adapter must pass: `BlobStore`, `Cache`, `Qu
 
 ### 4. End-to-end — *does the assembled system work?*
 
-- `e2e` — per surface, real browser, including axe assertions.
+- `e2e` — per surface, real browser, including axe assertions. <!-- retired-ok: The test strategy as decided when there was a browser surface. ADR-0055 records what replaced it. -->
 - `e2e-full` — one live deployment, real API, real database, real journeys. Serialised,
   zero retries: a flaky full-stack gate is a lie.
 

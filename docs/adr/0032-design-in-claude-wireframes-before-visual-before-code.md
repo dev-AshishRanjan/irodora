@@ -20,7 +20,7 @@ Two things need fixing.
 **The tool.** Design is produced in **Claude** rather than Figma. That is a real
 constraint, not a neutral substitution. It means designs arrive as **code** — HTML and
 inline SVG — which is an advantage (a wireframe can be inspected in a browser, measured,
-run through axe, and viewed at any width) and a limitation (no component library, no
+run through axe, and viewed at any width) and a limitation (no component library, no <!-- retired-ok: Describes the HTML-wireframe workflow as decided, when axe was the accessibility tool. -->
 auto-layout, no comment threads pinned to a rectangle).
 
 **The staging.** A single "design deliverable" collapses two reviews that need to happen
@@ -73,7 +73,7 @@ moves from `placeholder` to `approved`, **which makes the contrast gate blocking
 | **Annotation** | In the page, beside what it describes. Not a separate document |
 | **Fidelity discipline** | Stage 1 is greyscale by rule, not by preference |
 | **Iteration** | Redeploy the same file to the same URL; the link is stable across revisions |
-| **Verification** | Because it is real HTML, axe and a contrast check can run against a design **before** it is implemented |
+| **Verification** | Because it is real HTML, axe and a contrast check can run against a design **before** it is implemented | <!-- retired-ok: The verification argument for HTML wireframes, as decided. ADR-0055 records that axe cannot run against the app. -->
 
 That last row is the genuine advantage over a static design tool, and it is why the tool
 choice is worth recording rather than treating as incidental. A contrast failure found in
@@ -91,7 +91,7 @@ Figma is a note; a contrast failure found in a wireframe is a test result.
 
 ## Consequences
 
-**Good.** The design is inspectable, measurable and testable before implementation — axe and
+**Good.** The design is inspectable, measurable and testable before implementation — axe and <!-- retired-ok: A consequence as originally recorded. -->
 contrast checks can run against a wireframe. There is no handoff translation step and
 therefore no handoff drift. Revisions keep a stable URL. And separating the two reviews
 means structural feedback arrives while structure is still cheap to change.
@@ -111,7 +111,7 @@ actually consumes.
 
 | Alternative | Why not |
 |---|---|
-| **Figma** | Mature, excellent exploration, real component variants, pinned comments, and every designer knows it. But it adds a handoff translation step that drifts, it cannot run axe against a design, and the user has chosen not to use it. The exploration advantage is worth less here than usual — the design problem is restraint, not breadth |
+| **Figma** | Mature, excellent exploration, real component variants, pinned comments, and every designer knows it. But it adds a handoff translation step that drifts, it cannot run axe against a design, and the user has chosen not to use it. The exploration advantage is worth less here than usual — the design problem is restraint, not breadth | <!-- retired-ok: A rejected alternative, argued against on the tooling available at the time. -->
 | **One combined design stage** | Fewer review cycles. Collapses two distinct questions: feedback about type weight arrives before anyone has agreed what is on the page, and structural objections surface after the colours are expensive to change |
 | **Wireframes in colour** | Faster, arguably more realistic. Defeats the purpose — the whole point of stage 1 is to settle structure while colour is not yet an argument, and this product's colour decisions are perceptual constraints that deserve their own review |
 | **Skip wireframes; design directly** | Fastest to something that looks finished. Structural mistakes then get discovered during visual design, when the cost of changing them is highest |

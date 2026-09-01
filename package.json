@@ -44,6 +44,7 @@
     "verify:pin": "node scripts/verify-contract-pin.mjs",
     "verify:claims": "node scripts/verify-claims.mjs",
     "verify:claims:prove": "node scripts/verify-claims-proof.mjs",
+    "verify:retired:prove": "node scripts/verify-retired-docs-proof.mjs",
     "verify:font": "node scripts/verify-font-coverage.mjs",
     "corpus:bundle": "node scripts/generate-corpus-bundle.mjs",
     "verify:font:prove": "node scripts/verify-font-coverage.mjs --prove",

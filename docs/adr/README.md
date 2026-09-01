@@ -35,13 +35,13 @@ Two rules that matter more than the format:
 | [0009](0009-cvd-is-an-engine-concern-not-a-ui-filter.md) | CVD simulation lives in the engine and scores every recommendation | Accepted |
 | [0010](0010-personal-colour-is-a-profile-not-a-skin-rgb.md) | A personal colour profile is ranges, never a skin colour value | Accepted |
 | [0011](0011-recommendation-rules-are-versioned-content.md) | Recommendation weights and harmony rules are versioned content | Accepted |
-| [0012](0012-backend-fastify-zod-openapi.md) | Fastify with Zod schemas that generate the OpenAPI document | Superseded by ADR-0051 |
+| [0012](0012-backend-fastify-zod-openapi.md) | Fastify with Zod schemas that generate the OpenAPI document | Superseded by ADR-0051 | <!-- retired-ok: An index row whose own Status column reads "Superseded by ADR-0051". -->
 | [0013](0013-postgres-drizzle-single-system-of-record.md) | PostgreSQL is the single system of record, accessed through Drizzle | Superseded by ADR-0051 |
 | [0014](0014-offline-first-sqlite-outbox-and-merge-policy.md) | Offline-first with an outbox, field-level clocks, typed merge rules | Amended by ADR-0051 |
 | [0015](0015-auth-oidc-passkeys-no-homegrown-crypto.md) | Standards-based authentication; no password primitives | Superseded by ADR-0051 |
 | [0016](0016-deployment-profiles-local-vps-cloud.md) | Three deployment profiles behind ports; VPS is first-class | Superseded by ADR-0051 |
-| [0017](0017-multi-tenancy-and-rls-from-day-one.md) | Tenancy from day one, enforced by the database | Superseded by ADR-0051 |
-| [0018](0018-web-nextjs-react-tailwind-radix.md) | Next.js App Router, React 19, Tailwind v4, Radix primitives | Superseded by ADR-0051 |
+| [0017](0017-multi-tenancy-and-rls-from-day-one.md) | Tenancy from day one, enforced by the database | Superseded by ADR-0051 | <!-- retired-ok: An index row whose own Status column reads "Superseded by ADR-0051". -->
+| [0018](0018-web-nextjs-react-tailwind-radix.md) | Next.js App Router, React 19, Tailwind v4, Radix primitives | Superseded by ADR-0051 | <!-- retired-ok: An index row whose own Status column reads "Superseded by ADR-0051". -->
 | [0019](0019-mobile-expo-dev-client-new-architecture.md) | Expo with a development client, on the New Architecture | Accepted |
 | [0020](0020-design-tokens-are-oklch-native.md) | The design system's own tokens are defined in OKLCH | Accepted |
 | [0021](0021-accessibility-wcag22-aa-as-a-gate-apca-reported.md) | WCAG 2.2 AA is a build gate; APCA is reported alongside | Accepted |

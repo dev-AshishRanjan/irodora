@@ -17,7 +17,7 @@ live in someone's head and that someone is not in this session.
 This codebase has unusually strong examples. Changing `srgbToXyz` invalidates every
 precomputed Lab and OKLCh value in the corpus — thousands of rows, no compiler error, no
 failing test unless one exists specifically for it. Changing the `Color` type touches every
-surface. Changing a wire schema requires regenerating OpenAPI, the SDK, and every consumer.
+surface. Changing a wire schema requires regenerating OpenAPI, the SDK, and every consumer. <!-- retired-ok: A version-1.0 example of a change with wide effects — the motivating example for the effects graph, not a current step. -->
 
 The usual answer is documentation: a wiki page listing what depends on what. It rots within
 a quarter, because nothing forces it to stay true.

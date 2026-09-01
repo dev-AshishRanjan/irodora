@@ -373,23 +373,76 @@ if (featureList && retiredRaw) {
     const knownGates = new Set((gatesHere?.gates ?? []).map((g) => g.id));
     const marker = retired.allowMarker ?? 'retired-ok:';
 
-    /** Every prose string gate 0 owns, with a label naming where it came from. */
+    /**
+     * Every prose string gate 0 owns, with a label naming where it came from.
+     *
+     * `kind` separates the two populations. Only `criterion` subjects get the gate-id check
+     * below: a criterion naming a gate is making a claim about how it will be verified, while
+     * a doc naming `Gate 12 (perf)` is describing the system, and the second is not a defect.
+     */
     const subjects = [];
     for (const f of featureList.features) {
       for (const [i, a] of (f.acceptance ?? []).entries())
-        subjects.push({ where: `${f.id}.acceptance[${i}]`, text: a });
+        subjects.push({ kind: 'criterion', where: `${f.id}.acceptance[${i}]`, text: a });
       for (const [i, a] of (f.attested ?? []).entries())
-        subjects.push({ where: `${f.id}.attested[${i}].criterion`, text: a.criterion });
+        subjects.push({
+          kind: 'criterion',
+          where: `${f.id}.attested[${i}].criterion`,
+          text: a.criterion,
+        });
     }
     if (prdHere)
       for (const line of prdHere.split('\n'))
         if (/^\|\s*\*\*(?:FR|NFR)-\d+\*\*/.test(line))
-          subjects.push({ where: `docs/PRD.md ${line.slice(0, 40).trim()}`, text: line });
+          subjects.push({
+            kind: 'criterion',
+            where: `docs/PRD.md ${line.slice(0, 40).trim()}`,
+            text: line,
+          });
+
+    /*
+     * THE DOCUMENTS, ADDED BY F-107, and the reason is that this check MISSED ITS OWN
+     * VOCABULARY: `docs/architecture/security/privacy-design.md` §4 said "per-tenant data key"
+     * while `\bper-tenant\b` was already a declared term. It was green for months, correctly by
+     * its own rules, because those rules only ever looked at criteria and PRD rows.
+     *
+     * A SUPERSEDED ADR IS NOT ROT, IT IS A RECORD. ADR-0025 names the generated OpenAPI
+     * document fifteen times and ADR-0012 names the API process twelve, and both are correct:
+     * they document decisions that were later reversed, and ADR-0051 is the reversal. Scanning
+     * them would produce 91 findings where 31 are real — and marking sixty true statements
+     * `retired-ok:` would turn the marker into wallpaper, which is how an escape hatch stops
+     * meaning anything.
+     *
+     * So the filter is the ADR's own Status, which is a fact the document already states.
+     */
+    const docStatus = (text) => {
+      const m = /##\s*Status\s*\n+([^\n]+)/u.exec(text);
+      return (m?.[1] ?? '').replace(/[*.]/gu, '').trim().split(/\s+/u)[0]?.toLowerCase() ?? '';
+    };
+    const HISTORICAL = new Set(['superseded', 'retired', 'rejected', 'withdrawn']);
+
+    let docsScanned = 0;
+    let docsSkipped = 0;
+    for (const zone of ['docs/architecture', 'docs/adr']) {
+      for (const file of walk(join(ROOT, zone), (p) => p.endsWith('.md'))) {
+        const text = readText(file);
+        if (text === null) continue;
+        const rel = posix(relative(ROOT, file));
+        if (zone === 'docs/adr' && HISTORICAL.has(docStatus(text))) {
+          docsSkipped += 1;
+          continue;
+        }
+        docsScanned += 1;
+        text.split('\n').forEach((line, i) => {
+          subjects.push({ kind: 'doc', where: `${rel}:${String(i + 1)}`, text: line });
+        });
+      }
+    }
 
     let hits = 0;
     let exempt = 0;
 
-    for (const { where, text } of subjects) {
+    for (const { kind, where, text } of subjects) {
       // The escape hatch, checked FIRST. A criterion may name a retired surface in order to
       // forbid it or to describe correcting it — F-074's own criteria do, and so does
       // ADR-0051. A check that could not express its own feature gets switched off.
@@ -417,6 +470,11 @@ if (featureList && retiredRaw) {
       // "Gate" caught `perf` and walked straight past `web-perf`, which is the one that was
       // actually retired — so the string is first qualified as being ABOUT gates, then every
       // `N (id)` in it is checked.
+      //
+      // CRITERIA ONLY. A criterion naming a gate claims how it will be verified; a document
+      // naming one is describing the system, and a doc discussing a gate that once existed is
+      // the same kind of history a superseded ADR is.
+      if (kind !== 'criterion') continue;
       if (!/\bgates?\b/iu.test(text)) continue;
       for (const m of text.matchAll(/\d+\s*\(([a-z][a-z-]*)\)/gu)) {
         const id = m[1];
@@ -435,9 +493,10 @@ if (featureList && retiredRaw) {
     if (hits === 0)
       pass(
         'retired-surface',
-        `${subjects.length} criteria and requirement rows scanned; ${retired.terms.length} ` +
-          `retired term(s), gate ids derived from gates.json; ${exempt} deliberate mention(s). ` +
-          'Vocabulary only — it cannot see a missing blockedBy',
+        `${subjects.length} line(s) scanned across criteria, PRD rows and ${docsScanned} ` +
+          `document(s); ${retired.terms.length} retired term(s), gate ids derived from ` +
+          `gates.json; ${exempt} deliberate mention(s); ${docsSkipped} superseded ADR(s) ` +
+          'skipped as history. Vocabulary only — it cannot see a missing blockedBy',
       );
   }
 }

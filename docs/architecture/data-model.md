@@ -6,7 +6,7 @@
 | **Version** | 2.0 · 2026-08-19 |
 | **Implements** | FR-21, FR-25, FR-30, FR-39, FR-56, FR-58, NFR-7, NFR-13, NFR-22 |
 | **Decisions** | [ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) · [ADR-0014](../adr/0014-offline-first-sqlite-outbox-and-merge-policy.md) (amended) · [ADR-0046](../adr/0046-published-corpus-is-an-immutable-generated-bundle.md) |
-| **Supersedes** | Version 1.0 — a PostgreSQL schema with tenancy, row-level security and an audit table, retired with the server tier |
+| **Supersedes** | Version 1.0 — a PostgreSQL schema with tenancy, row-level security and an audit table, retired with the server tier | <!-- retired-ok: A supersedes row. Naming what was retired is the whole content of the field. -->
 
 ---
 
@@ -240,7 +240,7 @@ like it satisfied it. F-042 found the contradiction rather than inheriting it.
 
 There is still no `image_encrypted` column and no data-key version, and that part was always
 right: there is no envelope encryption to describe, because the blob is inside the encrypted
-database and the one key in the Keychain / Keystore already covers it. Version 1.0's per-tenant
+database and the one key in the Keychain / Keystore already covers it. Version 1.0's per-tenant <!-- retired-ok: Explains why the current design needs no per-tenant key, by naming the one it replaced. -->
 data keys protected images from the operator of a shared store. There is no operator and no
 shared store.
 

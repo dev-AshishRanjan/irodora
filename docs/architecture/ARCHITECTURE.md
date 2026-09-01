@@ -306,7 +306,7 @@ only in production, which is stronger — but it also means repository write acc
 product write access, and branch protection is a security control rather than hygiene.
 
 **Images are hostile input, and there is no worker to sacrifice.** Version 1.0 decoded
-images in a worker process under hard limits, so a decoder bomb cost one worker rather than
+images in a worker process under hard limits, so a decoder bomb cost one worker rather than <!-- retired-ok: Describes what version 1.0 did, in a paragraph whose own heading says there is no worker to sacrifice. -->
 the platform. On a device the blast radius is the user's app. Decoding therefore happens
 with explicit bounds on pixel count and wall-clock time, off the UI thread, and a failure
 must surface as a handled error rather than a crash.

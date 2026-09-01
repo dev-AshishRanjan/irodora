@@ -29,7 +29,7 @@ in a procurement questionnaire or a legal complaint.
 **WCAG 2.2 AA is the enforced gate. APCA Lc is computed and reported alongside, never
 substituted.**
 
-1. **`a11y` gate** — axe-core against every route on every build, asserting zero WCAG 2.2
+1. **`a11y` gate** — axe-core against every route on every build, asserting zero WCAG 2.2 <!-- retired-ok: The gate as originally decided. ADR-0055 replaced the mechanism and cites this ADR as what it amends. -->
    A and AA violations. Not a warning. A failure.
 2. **`contrast` gate** — reads `design-system.manifest.json`
    ([ADR-0020](0020-design-tokens-are-oklch-native.md)) and asserts every declared
@@ -61,7 +61,7 @@ is structural rather than cultural, so it survives team changes. Reporting APCA 
 early warning of pairings that pass AA but read poorly, which is exactly the class of
 problem a colour product should be catching. Legal and procurement defensibility.
 
-**Bad.** The gate will occasionally block a design that is genuinely fine but that axe
+**Bad.** The gate will occasionally block a design that is genuinely fine but that axe <!-- retired-ok: A consequence of the original axe-based gate, superseded in mechanism by ADR-0055. -->
 flags — and the correct response is to fix the markup or record a reviewed exception, not
 to disable the rule. Palette freedom is constrained, and some muted combinations we would
 like are unavailable. Two contrast algorithms means two sets of numbers, which is more to

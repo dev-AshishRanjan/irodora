@@ -69,7 +69,7 @@ Three of its clauses describe a system that no longer exists
 ([ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)):
 
 - §2 — *server responses carry message keys, never prose* — **retired**; there are no responses.
-- §5 — *`Accept-Language` negotiation* — becomes the **device locale**.
+- §5 — *`Accept-Language` negotiation* — becomes the **device locale**. <!-- retired-ok: A migration line naming what the mechanism became. -->
 - §6 — *locale is part of the cache key* — **moot**; there is no cache tier.
 
 Its substance — both languages from day one, no fallback, no retrofit — stands and is what this
