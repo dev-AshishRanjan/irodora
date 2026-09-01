@@ -140,6 +140,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-worklet-may-only-call-worklets-and-jest-has-one-runtime.md](effects/a-worklet-may-only-call-worklets-and-jest-has-one-runtime.md) — **E-050** · the Lens crashed on its first frame because a worklet called an unmarked function; the directive does not change JS-thread behaviour, so no test here can tell the two states apart.
 - [effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md](effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md) — **E-051** · the Lens has two delivery paths and one boolean separates them; set `pushed` from the poll and the viewfinder freezes on a single colour that looks exactly like success.
 - [effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md](effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md) — **E-052** · a price is written at a scale the row does not record, so editing one exponent silently reinterprets every price already stored for that currency.
+- [effects/the-engine-names-keys-and-only-the-app-can-render-them.md](effects/the-engine-names-keys-and-only-the-app-can-render-them.md) — **E-053** · `messageKey` is a plain string on the engine’s side of the boundary, so twelve keys were emitted for two releases into a catalogue that had none of them.
 
 ## Glossary
 

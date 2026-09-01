@@ -1896,6 +1896,47 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-053",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/score.ts#MESSAGE_KEYS"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/en.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Shopping.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/i18n.test.ts"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0056-the-message-catalogue-is-enumerated-typescript-not-a-runtime-i18n-framework.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/recommendation"
+      ],
+      "severity": "high",
+      "guard": "test:apps/mobile/test/i18n.test.ts",
+      "memory": "memory/effects/the-engine-names-keys-and-only-the-app-can-render-them.md",
+      "rationale": "THE ENGINE EMITS MESSAGE KEYS AND HOLDS NO CATALOGUE, WHICH IS RIGHT AND WHICH LEAVES ONE END UNCHECKED. `scoreColor` returns a `FactorContribution.messageKey` and `scoreOutfit` returns component keys; rendering them is the app's job (FR-11, ADR-0056), because a sentence produced in the engine would have to be translated at scoring time and a stored recommendation would become a stored English string. The cost is that `messageKey` is a plain `string` on the engine's side of the boundary and a `MessageKey` only on the app's, so THE ENGINE CAN NAME A KEY THE CATALOGUE DOES NOT HAVE with typecheck green — and the app renders a blank line, or whatever `t()` does with a key it has never seen. E-016 is the reverse direction (en is the source of the key set and ja must match it) and cannot see this at all. IT WAS NOT A THEORETICAL GAP. Until F-052 NOTHING IN THE APP CALLED scoreColor: all twelve of its `explain.<factor>.<direction>` keys had been emitted since R3 and none had ever been in either catalogue. FR-29 asks for a per-factor explanation and the engine had been producing one for two releases into a catalogue that could not name it. The gap was invisible rather than absent, which is why the first consumer is where it had to be found. THE GUARD PINS THE SET IN BOTH DIRECTIONS AND THAT IS WHAT MAKES IT SAFE TO EXCLUDE THESE KEYS FROM THE UNUSED-KEY SCAN. `i18n.test.ts` asserts (a) every key `MESSAGE_KEYS` can produce exists in `en`, and (b) every `explain.*` key in `en` is one the engine emits. The second matters because these are rendered through a COMPUTED lookup — `t(f.messageKey)` — so no source literal exists and the existing 'has no key nobody renders' scan, which is a source-literal scan, cannot see the consumer. Without (b) the exclusion would open exactly the placeholder hole that scan exists to close. Both directions were proven by mutation: deleting `explain.chroma.neutral` failed (a) and (b); adding an `explain.sparkle.supports` the engine never emits failed (b) and three more. THE OUTFIT-COMPONENT KEYS ARE A DECLARED GAP, NOT AN EXCLUSION. `OUTFIT_MESSAGE_KEYS` have no catalogue entries — `OutfitBuilder` renders the raw component name beside each score — and the test asserts the missing set EXACTLY, so the existing gap stays visible and attributable while a NEW unrenderable key still fails. Filtering them out would have made the test quietly stop covering them. THE SCREEN NARROWS RATHER THAN CASTS. `t(key as MessageKey)` would compile and render nothing; `Shopping.tsx` checks membership and falls back to the raw key, so a miss is visible and reportable instead of blank. This guard is what stops that fallback ever being reached.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

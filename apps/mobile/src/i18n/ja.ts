@@ -226,6 +226,7 @@ export const ja: Record<MessageKey, string> = {
   'profile.privacyPhoto':
     'カメラは一度だけ見て、写真はすぐに捨てました。すべてこのデバイスの中だけです。',
   'home.openLens': 'カメラで色を読む',
+  'home.openShopping': '買う前に確かめる',
   'lens.title': 'レンズ',
   'lens.privacy': '映像はこのデバイスの中だけで見て、すぐに捨てます。保存も送信もしません。',
   'lens.viewfinder': 'カメラの映像です。画面の中心にある色を続けて読みます。',
@@ -348,6 +349,36 @@ export const ja: Record<MessageKey, string> = {
   'wardrobe.noColour': '色を選ぶと追加できます。',
   'wardrobe.unknownSlug': 'この色は現在の収録版にありません。',
   'wardrobe.count': 'ワードローブの中',
+  // The compatibility explanation (FR-29, F-052) — @irodora/recommendation's MESSAGE_KEYS.
+  'explain.temperature.supports': '暖かみがあなたに合っています。',
+  'explain.temperature.opposes': '暖かみがあなたに合っていません。',
+  'explain.temperature.neutral': '暖かみは効いても妨げてもいません。',
+  'explain.lightness.supports': '明るさがあなたの範囲に入っています。',
+  'explain.lightness.opposes': '明るさがあなたの範囲から外れています。',
+  'explain.lightness.neutral': '明るさは効いても妨げてもいません。',
+  'explain.chroma.supports': '色みの強さがあなたに合っています。',
+  'explain.chroma.opposes': '色みの強さがあなたに合っていません。',
+  'explain.chroma.neutral': '色みの強さは効いても妨げてもいません。',
+  'explain.contrast.supports': 'コントラストの強さがあなたに合っています。',
+  'explain.contrast.opposes': 'コントラストの強さがあなたに合っていません。',
+  'explain.contrast.neutral': 'コントラストは効いても妨げてもいません。',
+
+  // F-052 — the shopping check (FR-52).
+  'shopping.title': '買う前に',
+  'shopping.origin':
+    'このデバイスのワードローブと照らし合わせます。どこにも送らず、保存もしません。',
+  'shopping.now': '今つくれるコーディネート',
+  'shopping.unlocked': 'これで増えるコーディネート',
+  'shopping.countedAt': '基準点',
+  'shopping.noSlot':
+    'コーディネートはトップス、ボトムス、くつから数えます。この枠がないため数えられません。ほかのふたつの答えは有効です。',
+  'shopping.compatibility': 'あなたへの合い方',
+  'shopping.evidence': 'プロフィールがどれだけ語ったか',
+  'shopping.noProfile': 'カラープロフィールを設定すると、色の合い方をお伝えします。',
+  'shopping.duplicate': '近いものをすでに持っています',
+  'shopping.noDuplicate': 'ワードローブにこれほど近いものはありません。',
+  'shopping.empty': '先にワードローブに追加すると、比べる相手ができます。',
+
   // F-051 — a price arrives with its currency or not at all (FR-46).
   'wardrobe.cost': '購入価格',
   'wardrobe.costHint': '例：45.50',

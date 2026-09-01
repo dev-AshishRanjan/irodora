@@ -30,10 +30,12 @@ import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
+import { Shopping } from '../src/screens/Shopping';
 import { colorOf } from '../src/wardrobe';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
-import { parseWeightContent, preferenceWeight } from '@irodora/recommendation';
+import { engineProfile } from '../src/outfit/builder';
+import { outfitWeights, parseWeightContent, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../src/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 import type { WardrobeStore } from '../src/wardrobe';
@@ -307,6 +309,21 @@ const OUTFIT_CONTEXT = {
     .map((e) => ({ id: e.entry.slug, color: colorOf(outfitRow(e.entry.slug)) })),
 } as const;
 
+/**
+ * What the shopping check needs (F-052).
+ *
+ * Derived from `OUTFIT_CONTEXT` rather than restated: they describe the same person and the
+ * same published content, and two copies of a profile fixture drift the first time one is
+ * edited. The shapes differ only in that coverage wants resolved component weights where the
+ * builder wants the parsed content.
+ */
+const SHOPPING_CONTEXT = {
+  profile: engineProfile(OUTFIT_CONTEXT.profile),
+  rules: OUTFIT_CONTEXT.rules,
+  weights: outfitWeights(OUTFIT_CONTEXT.weights),
+  reference: OUTFIT_CONTEXT.reference,
+} as const;
+
 /** A stored colour row for a published entry. Reference-sourced, so it owes no conditions. */
 function outfitRow(slug: string): SavedColorRow {
   const e = allEntries().find((x) => x.entry.slug === slug);
@@ -567,6 +584,65 @@ const SCREENS: readonly ConformanceSubject[] = [
           context={OUTFIT_CONTEXT}
           initialDraft={[{ slot: 'top', garment: OUTFIT_WARDROBE_PRICED[0]!, locked: false }]}
           store={fakeWearStore(OUTFIT_WARDROBE_PRICED)}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * The shopping check with nothing chosen yet (F-052).
+     *
+     * Draws the picker and the two framing sentences and none of the three answers, which is
+     * the state somebody arrives in. Its own entry because the answered screen draws three
+     * Surfaces this one does not.
+     */
+    name: 'screens/Shopping',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Shopping wardrobe={OUTFIT_WARDROBE} context={SHOPPING_CONTEXT} />, theme),
+  },
+  {
+    /*
+     * The SAME screen with all three answers on it, including a duplicate.
+     *
+     * `initialType` is 'jumper' and the colour is the one `o-1` already carries, so the
+     * duplicate branch draws its list with the measured difference beside it — a numeric line
+     * at `small` that no other subject renders, and the contrast gate can only measure what
+     * something drew.
+     */
+    name: 'screens/Shopping (answered, with a duplicate)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Shopping
+          wardrobe={OUTFIT_WARDROBE}
+          context={SHOPPING_CONTEXT}
+          initialType="jumper"
+          initialSlug={allEntries()[0]!.entry.slug}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * The SAME screen refusing to count outfits, and saying why.
+     *
+     * A scarf fills no slot, so the outfit answer is a sentence where the other subjects draw
+     * numbers. That branch is the one FR-52 is most easily got wrong on — reporting zero — and
+     * a registry that never rendered it would be checking the accessibility of the happy path.
+     */
+    name: 'screens/Shopping (no slot for this garment)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Shopping
+          wardrobe={OUTFIT_WARDROBE}
+          context={SHOPPING_CONTEXT}
+          initialType="scarf"
+          initialSlug={allEntries()[3]!.entry.slug}
         />,
         theme,
       ),

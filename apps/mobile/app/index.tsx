@@ -31,6 +31,9 @@ export default function Index(): React.JSX.Element {
         onOpenLens={() => {
           router.push('/lens');
         }}
+        onOpenShopping={() => {
+          router.push('/shopping');
+        }}
       />
     </>
   );

@@ -89,7 +89,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-49 Palette Studio | F-020 | e2e, a11y | R2 |
 | FR-50 Shareable cards | F-023 | e2e, contrast | R2 |
 | FR-51 Exports | F-056 | test, review | R5 |
-| FR-52 Shopping check | F-052 | test, e2e | R5 |
+| FR-52 Shopping check | F-052, F-123 | test, e2e | R5 |
 | FR-55 Local-only mode | F-039 | e2e | R2 |
 | FR-56 Offline storage | F-041 | test, e2e | R2 |
 | FR-58 Export and deletion | F-035 | test, e2e, review | R2 |

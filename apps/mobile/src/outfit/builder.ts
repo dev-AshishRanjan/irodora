@@ -120,6 +120,12 @@ const pieceOf = (p: Placement): OutfitPiece => ({ slot: p.slot, color: colorOf(p
  * The list is deliberately short and English-only today. Widening it is a content question —
  * the taxonomy is `content/`'s, not this file's — and guessing at it here would be the second
  * place garment vocabulary is defined.
+ *
+ * **The parameter is `Pick<…, 'type'>` rather than `StoredGarment` (F-052).** It only ever read
+ * the type, and the shopping check asks this question about a garment nobody owns — one that
+ * has no id, no colour row and no created-at, because the entire premise is that it has not
+ * been bought. Widening the parameter is what stops that caller from having to fabricate a
+ * stored garment to ask a question about a word.
  */
 const SLOT_WORDS: Readonly<Record<OutfitSlot, readonly string[]>> = {
   top: ['top', 'shirt', 'jumper', 'sweater', 'blouse', 'jacket', 'coat', 'cardigan', 't-shirt'],
@@ -127,7 +133,7 @@ const SLOT_WORDS: Readonly<Record<OutfitSlot, readonly string[]>> = {
   shoe: ['shoe', 'shoes', 'boot', 'boots', 'trainers', 'sneakers', 'sandals', 'loafers'],
 };
 
-export function slotFor(garment: StoredGarment): OutfitSlot | null {
+export function slotFor(garment: Pick<StoredGarment, 'type'>): OutfitSlot | null {
   const type = garment.type.trim().toLowerCase();
   return OUTFIT_SLOTS.find((slot) => SLOT_WORDS[slot].includes(type)) ?? null;
 }

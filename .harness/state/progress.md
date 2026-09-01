@@ -8,6 +8,144 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-052 DONE · three answers the engine already had, and the twelve sentences it could not say
+
+FR-52's shopping check: what does this garment do to the wardrobe I already own. Every answer
+was already an engine call — `coverage`/`applyChange` (F-048), `scoreColor` (F-026),
+`findDuplicates` (F-049) — so the feature is a composition with **one subtraction in it**, and
+that subtraction is the same comparison F-045's builder holds. Nothing here does colour maths;
+E-008 is why.
+
+### The refusals are as much the feature as the answers
+
+| State | The tempting answer | What it would actually say |
+|---|---|---|
+| Type fills no slot | `unlocked: 0` | *"your scarf adds nothing"* — on the authority of a nine-word vocabulary list |
+| No profile | a default profile's score | a claim about somebody nobody asked |
+| Nothing close in the wardrobe | nothing at all | indistinguishable from "not checked" |
+
+Neither refusal is wholesale, and that is the design. **A scarf can still suit you, and a
+person with no profile can still be told they already own something almost identical** — which
+is arguably the most useful thing this screen says. So `shoppingCheck` returns `null` for the
+answer it cannot give and the other two stand.
+
+### The fixture is asserted before anything depends on it
+
+Returning `after.valid` instead of the difference is the mistake this feature is most easily
+got wrong on, and **it is only detectable on a wardrobe that already produces outfits**. On an
+empty one the total and the difference are the same number, and a suite built on that fixture
+passes against the bug it exists for.
+
+So the fixture's own properties — it already produces outfits, and it contains a duplicate pair
+the candidate is *not* part of — are asserted in their own `describe` block first. A fixture
+that quietly stopped having them would turn three real assertions into three vacuous ones with
+nothing going red [[a-decoy-that-is-not-broken-proves-nothing]].
+
+| Mutation | Failed |
+|---|---|
+| `unlocked: after.valid` | **1** — and only because `now` is non-zero |
+| `unlocked: 0` for an unplaceable type | **1** — the refusal test |
+| duplicates unfiltered | **5** |
+
+### E-053 — the engine has been naming keys the app could not render
+
+This is the **first consumer of `scoreColor` in the whole app**, and that turned up a gap two
+releases old: all twelve of its `explain.<factor>.<direction>` keys were in **neither
+catalogue**.
+
+The split is correct — the engine holds no prose, no catalogue and no locale (FR-11, ADR-0056),
+because a sentence produced at scoring time has to be translated at scoring time. The cost is
+that `messageKey` is a plain `string` on the engine's side of the boundary and a `MessageKey`
+only on the app's, so the engine can name a key the catalogue lacks **with typecheck green**.
+E-016 guards the opposite direction and cannot see this at all.
+
+FR-29 asks for a per-factor explanation. The engine had been producing one since R3, into a
+catalogue with no word for it, and nothing could tell — because nothing called it. Same shape as
+[[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]], one boundary over.
+
+**The guard pins the set in both directions, and the second direction is load-bearing.** These
+keys are rendered through a computed lookup — `t(f.messageKey)` — so no source literal exists
+and the existing *"has no key nobody renders"* scan cannot see the consumer. Excluding them from
+that scan is safe *only* because a second assertion says the catalogue declares no `explain.*`
+the engine does not emit. Proven both ways: deleting `explain.chroma.neutral` failed two
+assertions; adding an `explain.sparkle.supports` failed four.
+
+The screen **narrows rather than casts**: `t(key as MessageKey)` would compile and render a
+blank line, so a miss shows the raw key instead — visible and reportable.
+
+`OUTFIT_MESSAGE_KEYS` are still in neither catalogue and `OutfitBuilder` renders the raw
+component name in both locales. That is declared as an **exact** missing set rather than
+filtered out, so the gap stays attributable and a *new* unrenderable key still fails. Filed as
+F-124.
+
+### The plan missed an effect and the compiler found it
+
+`@irodora/optimization` was not a dependency of `apps/mobile`. The plan named the package five
+times without noticing that importing it changes a workspace manifest — which is **E-032**: CI
+installs with `--frozen-lockfile`, install is step nine of seventeen, and a missing lockfile
+entry reads as a total build outage. It has happened here before (F-020, 9ce0926).
+
+Recorded as a revision in the plan file rather than quietly fixed, because a plan silently
+rewritten to match what was built is not a plan.
+
+Two things about that install worth carrying forward, both of which `progress.md` had flagged:
+**it was the first real `pnpm install` in this working tree**, and `packages/corpus` — reached
+through a hand-made junction from `packages/store` — **survived it intact**, checked before and
+after. That warning can now be retired.
+
+### Three findings filed rather than left unrecorded
+
+- **F-123 — the investment signal.** FR-52's table row names four things; this feature's
+  acceptance names three. *"Investment signal"* appears **once in the PRD and is defined
+  nowhere**. The obvious implementation is a projected cost per wear, and **its denominator is
+  invented** — which is the estimate FR-46 forbids, wearing a conditional. It takes an ADR
+  first. `REQUIREMENTS-COVERAGE.md`'s FR-52 row now names both features, so the requirement is
+  not recorded as delivered by work that did not deliver it.
+- **F-124 — the outfit component sentences**, above.
+- **F-125 — `offerReading` is called exactly once in the entire app, always with `'profile'`.**
+  So `takeReading('wardrobe')` in `app/wardrobe/add.tsx` can only ever return `null`, and
+  AddGarment's *"use the Lens reading"* control is **unreachable on a device**. F-043 built the
+  receiver, E-042 records the addressed-mailbox design that made two consumers safe, and the
+  sender for the second address was never added. A consumer with no producer — F-051's lesson a
+  second time, and invisible for the same reason: every test that exercises that path supplies
+  the reading itself, so the fixture is the missing sender.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile **469**, up from 446 |
+| 5 build | **PASS** |
+| 8 a11y · 9 contrast | **PASS** — 133 each |
+| 11 content · color-golden · cvd · security:keys | **PASS** |
+
+**Not run:** `e2e` — it is in this feature's verification list and gate 7 is still pending on
+F-091. Nothing proves *choose a colour → name it → read three answers* works as a **journey**,
+only that each step is correct in isolation. **Fifth feature owing the same thing.**
+
+**Not applicable:** `color-golden` and `cvd` — every judgement is an imported call and the only
+arithmetic is a subtraction. `perf` — no budget is claimed here, though `coverage` is `t × r × s`
+engine calls; the baseline is memoised per wardrobe so that changing the *candidate* costs only
+`applyChange`'s cross-product of the other two slots, which is the saving F-048 exists for.
+
+E-017 fired again: nine codepoints (買 効 妨 照 答 有 持 先 手), subset regenerated to 665,020
+bytes before any gate was declared.
+
+### Deliberately not built
+
+- **A verdict.** No *buy it* / *do not buy it*. Three measurements, each shown with what it was
+  measured against. Turning them into one word would hide the parts that matter behind the part
+  that does not, and the decision is somebody's own money.
+- **The Lens path into this screen.** The criterion does not ask for it, and F-040's first
+  attestation is still outstanding — **no reading has been observed reaching the app on a
+  device** — so a third consumer of that path would be a second dead route. That is F-125.
+- **Storing the check.** Nothing is written. The premise is a garment nobody has bought, and a
+  `shopping_check` table would be state for a decision not yet taken.
+
+---
+
 ## 2026-09-01 — F-051 DONE · the columns were there and nothing had ever written one
 
 R4 is complete, so R5 is the current release and F-051 is its lowest-id eligible feature. Gate

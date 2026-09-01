@@ -27,6 +27,7 @@
     "@irodora/corpus": "workspace:*",
     "@irodora/cvd-engine": "workspace:*",
     "@irodora/design-tokens": "workspace:*",
+    "@irodora/optimization": "workspace:*",
     "@irodora/recommendation": "workspace:*",
     "@irodora/store": "workspace:*",
     "@irodora/ui": "workspace:*",

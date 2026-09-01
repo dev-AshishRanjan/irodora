@@ -59,6 +59,14 @@ export interface HomeProps {
    * until F-097 nothing on any screen led to a camera at all.
    */
   readonly onOpenLens?: () => void;
+  /**
+   * Open the shopping check (F-052). Same shape and same reason as onOpenAtlas.
+   *
+   * Last in the list because it is the only entry that needs something already in the
+   * wardrobe to say anything useful, and a first-run home screen should not lead with the
+   * one door that opens onto "add something first".
+   */
+  readonly onOpenShopping?: () => void;
 }
 
 export function Home({
@@ -68,6 +76,7 @@ export function Home({
   onOpenFinder,
   onOpenProfile,
   onOpenLens,
+  onOpenShopping,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -184,6 +193,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenLens?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openShopping')}
+        variant="secondary"
+        onPress={() => {
+          onOpenShopping?.();
         }}
       />
     </ScrollView>

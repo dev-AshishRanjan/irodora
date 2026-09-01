@@ -246,6 +246,7 @@ export const en = {
    * it is — because nobody has established that (NFR-23 is F-037's study and has not run).
    */
   'home.openLens': 'Read a colour with the camera',
+  'home.openShopping': 'Check something before buying',
   'lens.title': 'Lens',
   'lens.privacy':
     'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
@@ -395,6 +396,47 @@ export const en = {
   'outfit.suggested': 'From your wardrobe',
   'outfit.overall': 'Overall',
   'outfit.empty': 'Nothing in your wardrobe fits a slot yet. Add a top, trousers or shoes.',
+  /*
+   * The compatibility explanation (FR-29, F-052).
+   *
+   * These twelve keys are `@irodora/recommendation`'s `MESSAGE_KEYS`, emitted by `scoreColor`
+   * since R3 and rendered by nothing until now — the engine holds no catalogue by design
+   * (FR-11), and until F-052 nothing in the app called `scoreColor` at all. E-053 is the link,
+   * and `i18n.test.ts` is the guard that stops the engine emitting a key this cannot render.
+   *
+   * `supports` is a fit above 0.66, `opposes` below 0.34, `neutral` in between — so the middle
+   * one says the factor did not weigh in, NOT that it was neither good nor bad in some deeper
+   * sense.
+   */
+  'explain.temperature.supports': 'Its warmth sits with yours.',
+  'explain.temperature.opposes': 'Its warmth works against yours.',
+  'explain.temperature.neutral': 'Its warmth neither helps nor hurts.',
+  'explain.lightness.supports': 'It sits inside your lightness range.',
+  'explain.lightness.opposes': 'It sits outside your lightness range.',
+  'explain.lightness.neutral': 'Its lightness neither helps nor hurts.',
+  'explain.chroma.supports': 'It carries about as much colour as suits you.',
+  'explain.chroma.opposes': 'It carries more or less colour than suits you.',
+  'explain.chroma.neutral': 'How much colour it carries neither helps nor hurts.',
+  'explain.contrast.supports': 'Its contrast is the strength you wear well.',
+  'explain.contrast.opposes': 'Its contrast is stronger or softer than you wear well.',
+  'explain.contrast.neutral': 'Its contrast neither helps nor hurts.',
+
+  // F-052 — the shopping check (FR-52).
+  'shopping.title': 'Before you buy',
+  'shopping.origin':
+    'Checked against your wardrobe on this device. Nothing is sent anywhere, and nothing is saved.',
+  'shopping.now': 'Outfits your wardrobe makes now',
+  'shopping.unlocked': 'New outfits this would add',
+  'shopping.countedAt': 'Counted at',
+  'shopping.noSlot':
+    'Outfits are counted from tops, trousers and shoes. There is no slot for that, so there is no count — the other two answers still hold.',
+  'shopping.compatibility': 'How it suits you',
+  'shopping.evidence': 'How much of your profile was speaking',
+  'shopping.noProfile': 'Set up a colour profile, and this will say how the colour suits you.',
+  'shopping.duplicate': 'You own something close to this already',
+  'shopping.noDuplicate': 'Nothing in your wardrobe is this close.',
+  'shopping.empty': 'Add something to your wardrobe first, and this has something to compare.',
+
   // F-051 — cost per wear, and the three ways there is not one (FR-46).
   'outfit.perWear': 'Per wear',
   'outfit.perWearBasis': 'Price and wears',

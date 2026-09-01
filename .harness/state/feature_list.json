@@ -1646,7 +1646,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-048",
         "F-049"
@@ -1657,7 +1657,9 @@
       "verification": [
         "state",
         "e2e"
-      ]
+      ],
+      "plan": "plans/F-052-shopping-check.md",
+      "notes": "DONE. THREE ANSWERS, THREE ENGINE CALLS, AND ONE SUBTRACTION. `coverage`/`applyChange` count outfits (F-048), `scoreColor` scores a colour against a person (F-026), `findDuplicates` measures how close two garments in a category are (F-049). This feature composes them and performs no colour arithmetic of its own — the same line F-045's builder holds, and the reason both stayed mobile features instead of becoming engine changes (E-008). THE THREE REFUSALS ARE AS MUCH THE FEATURE AS THE THREE ANSWERS. A type that fills no slot returns `outfits: null`, NEVER `unlocked: 0` — zero is an answer, and \"your scarf adds nothing\" on the authority of a nine-word vocabulary list is not that answer. No profile returns `compatibility: null` rather than a score about nobody. Neither refusal is wholesale: a scarf can still suit you, and a person with no profile can still be told they already own something almost identical, which is arguably the most useful thing this screen says. THREE MUTATIONS, EACH FAILING ITS OWN CASE. Returning `after.valid` instead of the difference failed exactly one test — and only because the fixture wardrobe ALREADY PRODUCES OUTFITS. On an empty wardrobe a total and a difference are the same number and that test would have passed against the bug it exists for, so the fixture's own properties are asserted in their own describe block before anything depends on them. Reporting zero for an unplaceable type failed exactly the refusal test; dropping the duplicate filter failed five. FIRST CONSUMER OF `scoreColor` IN THE APP, AND THAT TURNED UP E-053. Its twelve `explain.<factor>.<direction>` keys have been emitted since R3 and NONE was in either catalogue: the engine holds no catalogue by design (FR-11, ADR-0056), `messageKey` is a plain `string` on its side of the boundary, and nothing had ever checked the other end. FR-29 asks for a per-factor explanation and the engine had been producing one for two releases into a catalogue with no word for it. The guard pins the set in BOTH directions, which is what makes it safe to exclude these keys from the existing unused-key scan — they are rendered through a computed lookup, so no source literal exists for that scan to find. Proven by mutation both ways: deleting a key failed two assertions, adding an `explain.sparkle.supports` the engine never emits failed four. THE SCREEN NARROWS RATHER THAN CASTS: `t(key as MessageKey)` would compile and render a blank line, so a miss shows the raw key instead — visible and reportable. THE PLAN MISSED AN EFFECT AND THE COMPILER FOUND IT. `@irodora/optimization` was not a dependency of apps/mobile; the plan named the package five times without noticing that importing it changes a workspace manifest, which is E-032 — CI installs with --frozen-lockfile and install is step nine of seventeen, so a missing lockfile entry reads as a total build outage (it happened in F-020, 9ce0926). Recorded as a plan revision rather than quietly fixed. Two things worth keeping: it was the first real `pnpm install` in this tree, and `packages/corpus` — reached through a hand-made junction — survived it intact, which progress.md had flagged as a risk since F-092. E-017 FIRED AGAIN, nine codepoints this time (買 効 妨 照 答 有 持 先 手), regenerated to 665,020 bytes before any gate was declared. THREE FINDINGS FILED RATHER THAN LEFT UNRECORDED. F-123: the investment signal is FR-52's fourth item, used once in the PRD and defined nowhere, and the obvious implementation — a projected cost per wear — picks its denominator out of the air, so it takes an ADR first; REQUIREMENTS-COVERAGE.md's FR-52 row now names both features. F-124: `OUTFIT_MESSAGE_KEYS` are in neither catalogue and OutfitBuilder renders the raw component name in both locales; declared as an exact gap in the test rather than filtered out, so a NEW unrenderable key still fails. F-125: `offerReading` is called exactly once in the whole app, always with 'profile' — so `takeReading('wardrobe')` can only ever return null and AddGarment's Lens control is unreachable on a device. A consumer with no producer, which is F-051's lesson a second time, one boundary over. GATES RUN, all green: state (18 checks), typecheck, lint, format, test (mobile 469, up from 446), build, a11y (133), contrast (133), content, color-golden, cvd, security:keys. NOT RUN: e2e — it is in this feature's verification list and gate 7 is still pending on F-091, so nothing proves choose-a-colour, name-it, read-three-answers works as a JOURNEY, only that each step is correct in isolation. That is the fifth feature owing the same thing. NOT APPLICABLE: color-golden and cvd — every judgement is an imported call and the only arithmetic is a subtraction; perf — no budget is claimed, though `coverage` is t×r×s engine calls and the baseline is memoised per wardrobe so that changing the CANDIDATE costs only applyChange's cross-product, which is the saving F-048 exists for. DELIBERATELY NOT BUILT. A VERDICT: no \"buy it\" or \"do not buy it\". Three measurements shown with what they were measured against; turning them into one word would hide the parts that matter behind the part that does not. THE LENS PATH INTO THIS SCREEN: the criterion does not ask for it, and F-040's first attestation is still outstanding — no reading has been observed reaching the app on a device — so a third consumer of that path would be a second dead route, which is F-125. STORING THE CHECK: nothing is written, because the premise is a garment nobody has bought."
     },
     {
       "id": "F-053",
@@ -3454,6 +3456,78 @@
         "contrast"
       ],
       "notes": "FOUND WHILE BUILDING F-051, AND FILED RATHER THAN FIXED. FR-41 (browse, filter and group the wardrobe) is mapped in REQUIREMENTS-COVERAGE.md to F-042 with verification `e2e, a11y` — but F-042 is a `packages` feature that built the schema and the repository, and neither of those gates can apply to a package. There is no wardrobe list screen: `apps/mobile/app/wardrobe/` contains exactly one route, `add.tsx`. THE CONSEQUENCE F-051 HIT. Cost per wear had nowhere to live. The line went into OutfitBuilder because that is the only screen where a garment a person owns is on screen, and a price can only be entered at creation because no surface opens a saved garment. Both are correct for F-051 and both are the wrong long-term home. NOT PULLED INTO F-051: a browse screen is a second feature, and building one under this id would be scope nobody reviewed against a requirement. Priority `should` rather than `must` because the app is usable without it; the coverage-map row is the part that is actually wrong today, because it reports a requirement as delivered by work that could not have delivered it."
+    },
+    {
+      "id": "F-123",
+      "title": "The investment signal, once somebody has decided what it means",
+      "requirements": [
+        "FR-52"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-052"
+      ],
+      "openQuestions": [],
+      "acceptance": [
+        "An ADR defines what \"investment signal\" means, with the alternatives taken seriously and the number it rests on named",
+        "The signal is computed from data the person actually recorded, and says so — never from an assumed number of wears",
+        "The shopping check shows it beside the three answers F-052 built"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "notes": "FILED BY F-052, WHICH BUILT THREE OF FR-52'S FOUR THINGS. The PRD row reads \"outfits unlocked, personal compatibility, duplicate warning, investment signal\"; F-052's acceptance list names only the first three, and the acceptance list is the contract. THE TERM IS USED ONCE IN THE PRD AND DEFINED NOWHERE — the only other occurrence in the repository is an archived brainstorm about \"recommended size of wardrobe investment\", which is a different idea. So building it means DECIDING what it means, and that is an ADR before it is code (golden rule 7). WHY THE OBVIOUS IMPLEMENTATION IS THE TRAP. Cost per wear exists as of F-051, so the tempting signal is a projection: \"at 30 wears this would be £1.52 each\". THE 30 IS INVENTED. FR-46's own sentence is \"absent data yields unknown, never an invented estimate\", and a projection whose denominator nobody chose is that estimate wearing a conditional. An honest version would rest on a number the person's own wardrobe produced — their median wears for that garment type, say — which is computable only once wear counts exist in quantity, and F-051 made the first one possible an hour ago. REQUIREMENTS-COVERAGE.md's FR-52 row names F-052 AND this feature, so the requirement is not recorded as delivered by work that did not deliver it."
+    },
+    {
+      "id": "F-124",
+      "title": "The outfit component scores say what they mean, in the reader’s language",
+      "requirements": [
+        "FR-32"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-052"
+      ],
+      "acceptance": [
+        "Every key in OUTFIT_MESSAGE_KEYS has an entry in both catalogues, and the outfit builder renders the sentence rather than the raw component name",
+        "i18n.test.ts's declared gap for OUTFIT_MESSAGE_KEYS is deleted rather than shortened, so the E-053 assertion covers the engine's whole key set"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "FOUND WHILE BUILDING F-052's E-053 GUARD. `scoreOutfit` emits a messageKey per component and NONE of them is in either catalogue; `OutfitBuilder` renders `${c.component}: ${score}` — the raw identifier, in English, in both locales. So a Japanese reader sees six English component names beside six numbers. THE GAP IS DECLARED RATHER THAN EXCLUDED. `i18n.test.ts` asserts the missing set EXACTLY, so this gap is visible and a NEW unrenderable key still fails; the alternative — filtering the outfit keys out of the assertion — would have made the test quietly stop covering them, which is how a check stops checking. NOT PULLED INTO F-052: rendering them is a change to F-045's screen against FR-32, not FR-52, and F-052 had no criterion that touching it would serve."
+    },
+    {
+      "id": "F-125",
+      "title": "The Lens can hand a reading to the wardrobe, which has been able to receive one since F-043",
+      "requirements": [
+        "FR-40"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A reading taken in the Lens can be offered to the wardrobe, so AddGarment's \"use the Lens reading\" control is reachable on a device",
+        "A test asserts every ReadingDestination has at least one producer, so a third destination cannot be added without one"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y"
+      ],
+      "notes": "FOUND WHILE BUILDING F-052, AND IT IS THE F-051 LESSON A SECOND TIME. `READING_DESTINATIONS` is ['profile', 'wardrobe'] and `offerReading` is called EXACTLY ONCE in the whole app — `CameraLens.tsx`, with 'profile'. So `takeReading('wardrobe')` in app/wardrobe/add.tsx can only ever return null, and AddGarment's `wardrobe.fromLens` button is unreachable on a device. F-043 built the receiver, E-042 records the addressed-mailbox design that made two consumers safe, and the SENDER for the second address was never added. A CONSUMER WITH NO PRODUCER — [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]] applied to a mailbox rather than a column, and invisible for the same reason: every test that exercises the wardrobe path supplies the reading itself, so the fixture is the missing sender. THE SECOND CRITERION IS THE POINT. Adding the offer fixes today; asserting that every destination has a producer is what stops the third one repeating this. NOT PULLED INTO F-052: the shopping check deliberately does not take a Lens reading — F-040's first attestation is still outstanding, so no reading has been observed reaching the app on a device, and building a third consumer of a path nobody has seen work would be two dead routes instead of one."
     }
   ]
 }

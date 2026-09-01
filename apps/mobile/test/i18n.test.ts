@@ -29,6 +29,9 @@ import {
   t,
   type MessageKey,
 } from '../src/i18n/index';
+// The engine's own key lists, imported so this test moves when the engine does rather than
+// restating a set that would then be two copies of one contract (E-013's shape).
+import { MESSAGE_KEYS as SCORE_MESSAGE_KEYS, OUTFIT_MESSAGE_KEYS } from '@irodora/recommendation';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.
@@ -56,6 +59,61 @@ describe('the catalogue has content to check', () => {
   it('declares keys, and finds source files to scan', () => {
     expect(MESSAGE_KEYS.length).toBeGreaterThan(0);
     expect(SOURCES.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * E-053 — the engine emits keys and holds no catalogue, and nothing checked the other end.
+ *
+ * `scoreColor` and `scoreOutfit` return `messageKey` strings; rendering them is the app's job
+ * (FR-11, ADR-0056). That is the right split, and it means **the engine can name a key this
+ * catalogue does not have** — with typecheck green, because a `messageKey` is a `string` on
+ * that side of the boundary and only a `MessageKey` on this one.
+ *
+ * Until F-052 nothing in the app called `scoreColor`, so the gap was invisible rather than
+ * absent. It is a gap on both sides and they are recorded differently below, because one is
+ * now a contract this app depends on and the other is a surface nobody has built.
+ */
+describe('the engine cannot emit a key the app is unable to render (E-053)', () => {
+  it('has every compatibility explanation key `scoreColor` can produce', () => {
+    const missing = SCORE_MESSAGE_KEYS.filter((k) => !(k in en));
+
+    expect(missing).toEqual([]);
+  });
+
+  /*
+   * THE OTHER DIRECTION, and it is what lets the unused-key scan below exclude these safely.
+   *
+   * These twelve are rendered through a computed lookup — `t(f.messageKey)` — so no source
+   * literal exists for the scan to find, and without this assertion an `explain.*` key nobody
+   * emits could sit in the catalogue forever, which is exactly the placeholder shape that scan
+   * exists to catch.
+   */
+  it('declares no explanation key the engine does not emit', () => {
+    const declared = MESSAGE_KEYS.filter((k) => k.startsWith('explain.'));
+
+    expect([...declared].sort()).toEqual([...SCORE_MESSAGE_KEYS].sort());
+  });
+
+  /*
+   * THE KNOWN GAP, DECLARED RATHER THAN EXCLUDED.
+   *
+   * `scoreOutfit`'s component keys have no catalogue entries: `OutfitBuilder` renders the raw
+   * component name beside each score, not the engine's sentence. Filtering them out of the
+   * assertion above would make this test silently stop covering them; asserting the missing
+   * set EXACTLY means a new unrenderable key still fails, while the existing gap stays visible
+   * and attributable. The feature that closes it is named in feature_list.json.
+   */
+  it('reports the outfit-component keys as a known gap, exactly — a NEW one still fails', () => {
+    const missing = OUTFIT_MESSAGE_KEYS.filter((k) => !(k in en));
+
+    expect(missing.sort()).toEqual([...OUTFIT_MESSAGE_KEYS].sort());
+  });
+
+  it('DECOY — the check can fail, and it is the membership that decides', () => {
+    // Without this, both assertions above would pass against a `k in en` that was always true.
+    expect('explain.temperature.supports' in en).toBe(true);
+    expect('explain.temperature.nonsense' in en).toBe(false);
   });
 });
 
@@ -171,7 +229,15 @@ describe('every declared key is used, and every used key is declared', () => {
   it('has no key nobody renders', () => {
     // An unused key is a string nobody removed — and it is the shape a copy-paste placeholder
     // hides in, because nothing renders it and nobody reads it.
-    const unused = MESSAGE_KEYS.filter((k) => !ALL_SOURCE.includes(`'${k}'`));
+    //
+    // ENGINE-EMITTED KEYS ARE EXCLUDED, AND NOT AS A FAVOUR (F-052). `scoreColor` returns a
+    // `messageKey` and the screen renders `t(f.messageKey)`, so the literal never appears in
+    // source and this scan — which is a source-literal scan — cannot see the consumer. The
+    // exclusion is safe only because the set is pinned in BOTH directions above: the engine
+    // emits no key the catalogue lacks, and the catalogue declares no `explain.*` the engine
+    // does not emit. Nothing can hide in the gap.
+    const dynamic = new Set<string>(SCORE_MESSAGE_KEYS);
+    const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toEqual([]);
   });
 
