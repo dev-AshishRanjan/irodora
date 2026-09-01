@@ -8,6 +8,133 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-113 DONE · three red gates from three of my own features, and the habit that hid all three
+
+The user pushed this session's work and **CI went red, and so did the release lane**. Three
+separate failures, every one introduced by a feature I had closed as green.
+
+| # | red gate | from | why my run missed it |
+|---|---|---|---|
+| 1 | CI *Verification gates* | **F-103** | `verify:spacing:prove` is a CI step; I ran the check and never its proof |
+| 2 | gate 11 `content` | **F-109** | new Japanese kanji outside the bundled font subset |
+| 3 | gate 16 `artefact` | **F-043** | `expo-image-picker` adds `RECORD_AUDIO` by default |
+
+**The common cause is not three unrelated slips.** I chose which gates to run from each
+feature's `verification` list plus a habitual set. **CI does not choose.** Every one of these
+was reachable from this workstation before the push.
+
+### 1 — F-103 broke the proof of the check it fixed
+
+F-103 turned `spacing.scale` from an array into a named record, updated
+`verify-spacing-scale.mjs` to match — **including a new branch that rejects the array shape** —
+and left that script's own `--prove` path doing `perturbed.spacing.scale.filter(...)`.
+
+`TypeError: .filter is not a function`. **The proof was written against a shape its own check no
+longer accepts**, and I never ran it because the spacing proof is not in F-103's verification
+list; it is a line in `ci.yml`.
+
+Fixed by removing the step **by value** rather than by key — find whichever entry holds 20 and
+rebuild without it. A hard-coded `xl` would become a silent no-op the day somebody renames the
+step, which is the same fragility that caused this. Rebuilt rather than `delete`d because
+`no-dynamic-delete` is a lint rule, which took a second round to learn.
+
+### 2 — F-109 added Japanese without regenerating the font subset
+
+Seventeen keys, twelve kanji the subset did not carry: 学 習 好 回 増 量 限 拠 状 態 操 元.
+
+**This is the same failure F-043 had**, which F-108 fixed and F-045 turned into a tracing step —
+and I did it again. The fix is one command and takes seconds. The entire cost was in not running
+gate 11.
+
+### 3 — F-043's picker brought a microphone permission
+
+```js
+if (microphonePermission !== false)
+  config = withPermissions(config, ['android.permission.RECORD_AUDIO']);
+```
+
+**Opt-out, not opt-in**, for callers who capture video. `wardrobe/picker.ts` passes
+`mediaTypes: ['images']` and nothing in this product records audio. An exhaustive search of
+`node_modules` confirmed this plugin is the only source; the other hits were React Native's
+permission-constant enum.
+
+Gate 16 caught it on the first signed artefact and said exactly the right thing: *"an unexpected
+permission is a capability nobody reviewed."*
+
+**Fixed at the source, never at the expectation.** Adding `RECORD_AUDIO` to
+`EXPECTED_PERMISSIONS` would have turned the gate green and shipped a microphone permission on a
+colour tool — the precise outcome the gate exists to prevent, reached by editing the thing that
+objected. Instead the plugin is listed with `microphonePermission: false` (the only way to pass
+an option, since Expo autolinks it either way), **and** the permission is in
+`blockedPermissions` as a backstop, because plugin options are what a refactor drops.
+
+**Verified as far as this workstation can:** the prebuilt manifest now carries `RECORD_AUDIO`
+with `tools:node="remove"`, the same mechanism that already provably keeps `INTERNET` out of
+shipped APKs, and only `CAMERA` and `VIBRATE` survive from that file. **The merge itself is
+Gradle's**, which needs a JDK this machine does not have — so what is proven here is that the
+manifest asks for the removal, not that the merged APK lacks it. The release lane is what
+confirms it.
+
+### Two things I broke while fixing this
+
+**I killed my own sweep mid-proof and left a mutation behind.** `bench:prove` plants a change in
+`budgets.json` and restores it in a `finally`; `TaskStop` does not run `finally`. `format:check`
+then failed on the file the proof had left without a trailing newline — a red gate caused
+entirely by how I had been running gates. Restored from git, and the proof re-run to completion
+restores it correctly.
+
+**My CI sweep script buffered its own output.** Node fully buffers piped stdout, so a 110-minute
+run showed nothing at all and I could not tell which step it was on. I killed it and ran the
+commands in visible batches instead. A tool that cannot report progress is not a tool you can
+wait on.
+
+### Every runnable `ci.yml` step, individually
+
+Criterion 4, and the point of the whole feature — not a subset chosen by judgement.
+
+| step | result |
+|---|---|
+| state · gate-mirror · stale-rationale · effect-id · state-id · lockfile proofs | **PASS** |
+| token-reach `--prove` | **PASS** |
+| typecheck · format · test · build | **PASS** |
+| golden · cvd · content · content proof | **PASS** |
+| a11y · spacing proof · contrast · contrast proof | **PASS** |
+| bench · bench proof | **PASS** |
+| security · no-inference proof · audit `--prove` | **PASS** |
+| claims proof | **PASS** |
+| lint | **PASS** |
+
+`pnpm install --frozen-lockfile` is the one step this workstation cannot run — the workspace
+links are hand-made junctions and `pnpm install` has never run here. The lockfile was checked by
+hand instead: every workspace dependency this session added is present, and `recommendation`
+correctly no longer lists `corpus`.
+
+**Gate 16 cannot run here and is not claimed.** It needs a built APK, which needs Gradle and a
+JDK; `which java` finds nothing.
+
+### Effects
+
+**E-049, high.** A dependency can ship an Android permission that no import and no config file
+mentions, by two silent mechanisms: its own `AndroidManifest.xml` folded in by the manifest
+merger, or an autolinked Expo config plugin calling `withPermissions` itself. It has now
+happened twice — `expo-file-system` with `INTERNET` and two storage permissions, and
+`expo-image-picker` with `RECORD_AUDIO`. The note records what to do when adding a native
+dependency, and that gate 16's delay is a **tag**, not a pull request.
+
+**F-114 filed** to close most of that delay: `expo prebuild` already runs on every CI build and
+writes a manifest that shows what `app.config.ts` contributes. Its criterion 3 is the honest
+limit — the prebuilt manifest is **not** the merged manifest, so it would catch the
+config-plugin half of E-049 and not the library-manifest half, and a check that let anybody
+believe otherwise would be worse than none.
+
+### What I am taking from this
+
+Running the gates a feature's `verification` list names, plus the ones I am used to, is **a
+choice made by the person most invested in the answer being green.** The list is a floor, and
+`ci.yml` is the actual contract.
+
+---
+
 ## 2026-09-01 — F-109 DONE · the counts reach a screen, and the test that read the wrong text
 
 FR-37 says a person **can see and reset** their preference weights. F-046 built the mechanism and

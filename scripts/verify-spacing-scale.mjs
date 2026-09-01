@@ -413,11 +413,28 @@ async function prove() {
         `  ${GREEN}OK${OFF}  an exemption that matches nothing ${DIM}(exit 1, named)${OFF}`,
       );
 
-    // THE SCALE IS READ, NOT REPEATED. Perturb the manifest and the verdict must follow it; a
-    // checker with its own copy would stay green here, which is exactly the failure to catch.
+    /*
+     * THE SCALE IS READ, NOT REPEATED. Perturb the manifest and the verdict must follow it; a
+     * checker with its own copy would stay green here, which is exactly the failure to catch.
+     *
+     * The step is removed BY VALUE rather than by name, deliberately. F-103 turned the scale
+     * from a positional array into a named record and this line still said `.filter(...)`,
+     * which threw — the proof was written against a shape the check no longer accepts, and it
+     * is the reason CI went red on a change every other gate passed. Deleting whichever entry
+     * holds 20 keeps the case about the VALUE the screens use, so a future rename of `xl`
+     * cannot quietly turn this into a no-op the way a hard-coded key would.
+     */
     const manifestText = readFileSync(MANIFEST, 'utf8');
     const perturbed = JSON.parse(manifestText);
-    perturbed.spacing.scale = perturbed.spacing.scale.filter((s) => s !== 20);
+    const steps = Object.entries(perturbed.spacing.scale);
+    if (!steps.some(([, v]) => v === 20))
+      throw new Error(
+        'the manifest scale no longer contains 20, which this case removes to prove the check ' +
+          'reads the scale — pick another value present in both the scale and a screen',
+      );
+    // Rebuilt without it rather than `delete`d: the key is computed, and a dynamic delete is
+    // banned by lint. Filtering is also nearer the original array `.filter(...)` this replaced.
+    perturbed.spacing.scale = Object.fromEntries(steps.filter(([, v]) => v !== 20));
     writeFileSync(MANIFEST, `${JSON.stringify(perturbed, null, 2)}\n`, 'utf8');
     const followed = runCheck();
     writeFileSync(MANIFEST, manifestText, 'utf8');

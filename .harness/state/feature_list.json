@@ -3202,6 +3202,56 @@
         "state"
       ],
       "notes": "FILED BY F-107, WHICH FIXED security.md BY HAND AND LEFT NO GUARD BEHIND IT. F-107 s criterion 1 names docs/architecture and docs/adr, and the definition of done says acceptance criteria are met exactly, no more and no less — so .harness/rules was corrected but not added to the corpus. WHY IT MATTERS MORE THAN THE DOCS DO: a rules file is read as BINDING. F-107 s own filing notes record the mechanism — F-042 s criterion 4 (\"images decoded only in the worker under hard limits\") was written FROM security.md, so rot in a rules file propagated into a scope file. The widened vocabulary caught that criterion the moment it was added, which is the evidence: the propagation is real and it has happened at least once. WHAT IS ALREADY MEASURED, so this is not a survey: 11 findings across five files. security.md is clean and already carries markers (F-107 wrote them so the file would pass the day this zone is added). The rest: git.md:90 names the generated openapi.json; testing.md:115 says \"Assert axe on every route\"; typescript.md:63-64 describe Zod schemas generating an OpenAPI document and cite superseded ADR-0012; privacy.md:89 carries the same stale consent table F-107 rewrote in privacy-design.md, and privacy.md:114 is a correct sentence that names the retired server in order to deny it and needs the marker. ALSO WORTH DOING HERE: privacy-design.md section 8 still describes sub-processors, international transfers and keeping EU/UK data in-region, none of which the vocabulary can see because none of those words are terms. F-107 found it by reading and left it, having already rewritten sections 2, 5 and 6 of that file."
+    },
+    {
+      "id": "F-113",
+      "title": "Three red gates from three of my own features, and the habit that hid all three",
+      "requirements": [
+        "NFR-20"
+      ],
+      "service": "root",
+      "release": "R4",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-113-three-red-gates.md",
+      "acceptance": [
+        "The spacing-scale proof works against the named-record shape F-103 introduced, watched passing",
+        "The Japanese copy F-109 added is inside the bundled font subset, and gate 11 is green",
+        "The shipped artefact declares no RECORD_AUDIO, and the reason it appeared is fixed at source rather than by widening the expectation",
+        "Every single-line run: command in ci.yml is run locally before this closes, not a chosen subset"
+      ],
+      "verification": [
+        "state",
+        "content",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "DONE. THREE RED GATES, ALL THREE FROM FEATURES I HAD CLOSED AS GREEN, surfaced when the user pushed this session s work. (1) CI Verification gates — F-103 turned spacing.scale into a named record, updated verify-spacing-scale.mjs INCLUDING a branch that rejects the array shape, and left that script s own --prove doing .filter(...) on it. TypeError. The proof was written against a shape its own check no longer accepts. (2) gate 11 content — F-109 s Japanese copy introduced twelve kanji outside the bundled font subset, the SAME failure F-043 had, which F-108 fixed and F-045 made a tracing step. (3) gate 16 artefact — F-043 s expo-image-picker adds RECORD_AUDIO by default (`if (microphonePermission !== false)`), for callers who capture video; this app passes mediaTypes: [images] and records no audio. THE COMMON CAUSE IS NOT THREE SLIPS. I chose which gates to run from each feature s verification list plus a habitual set, and CI does not choose. All three were reachable from this workstation before the push. FIXES. The spacing proof removes the step BY VALUE and rebuilds the object rather than deleting a computed key (no-dynamic-delete, learned on the second round). The font subset was regenerated. RECORD_AUDIO is fixed AT THE SOURCE, never at the expectation: adding it to EXPECTED_PERMISSIONS would have made gate 16 green and shipped a microphone permission on a colour tool, which is the outcome the gate exists to prevent reached by editing the thing that objected. The plugin is listed with microphonePermission: false (the only way to pass an option, since Expo autolinks it either way) AND blockedPermissions carries it as a backstop. VERIFIED AS FAR AS THIS MACHINE ALLOWS: the prebuilt manifest carries RECORD_AUDIO with tools:node=\"remove\", the mechanism that already provably keeps INTERNET out, and only CAMERA and VIBRATE survive from that file. The MERGE is Gradle s and needs a JDK that is not here, so what is proven is that the manifest asks for removal, not that the merged APK lacks it. TWO THINGS I BROKE WHILE FIXING THIS. I killed my own CI sweep mid-proof, and TaskStop does not run a finally — bench:prove left budgets.json mutated, and format:check then failed on a missing trailing newline. A red gate caused entirely by how I was running gates. And the sweep script buffered its own stdout, so a 110-minute run showed nothing and I could not tell which step it was on; a tool that cannot report progress is not one you can wait on. CRITERION 4 — EVERY runnable ci.yml step run individually, not a chosen subset: state, gate-mirror, stale-rationale, effect-id, state-id, lockfile proofs, token-reach --prove, typecheck, lint, claims proof, format, test, golden, build, a11y, spacing proof, contrast, contrast proof, cvd, content, content proof, bench, bench proof, security, no-inference proof, audit --prove — ALL PASS. The one step this workstation cannot run is `pnpm install --frozen-lockfile`; the lockfile was checked by hand instead and every workspace dependency this session added is present. GATE 16 CANNOT RUN HERE and is not claimed. EFFECT E-049 (high): a dependency can ship an Android permission that no import and no config file mentions — its own AndroidManifest folded in by the merger, or an autolinked Expo config plugin calling withPermissions. Twice now: expo-file-system with INTERNET and two storage permissions, expo-image-picker with RECORD_AUDIO. F-114 filed to check the PREBUILT manifest on every pull request, with its own criterion stating the limit — the prebuilt manifest is not the merged one, so it catches the plugin half and not the library half."
+    },
+    {
+      "id": "F-114",
+      "title": "The permission set is checked on every pull request, not only at a tag",
+      "requirements": [
+        "NFR-12",
+        "NFR-20"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-113"
+      ],
+      "acceptance": [
+        "A check reads the PREBUILT AndroidManifest.xml and asserts the permission set it will merge from, watched failing on a planted permission",
+        "It runs in ci.yml, so a dependency that adds a permission fails the pull request that adds it",
+        "It states plainly that it is not gate 16 — it reads a manifest, not an artefact, and cannot see what library manifests merge in"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FILED BY F-113. Gate 16 reads the built APK and is the only thing that catches a dependency shipping a permission (E-049). It runs in release.yml because there is no APK on a pull request — which is correct, and means the delay between introducing a permission and learning about it is a TAG. F-043 added expo-image-picker and RECORD_AUDIO; five features closed before a signed artefact said so. WHAT WOULD CLOSE MOST OF THAT GAP CHEAPLY: `expo prebuild` already runs in the build gate on every CI run, and it writes apps/mobile/android/app/src/main/AndroidManifest.xml. That file shows exactly what app.config.ts contributes — including which permissions carry tools:node=\"remove\" — so a plugin that adds one is visible there, on a pull request, with no Gradle and no JDK. THE HONEST LIMIT, and criterion 3 exists so it is stated rather than discovered: the prebuilt manifest is NOT the merged manifest. USE_BIOMETRIC, USE_FINGERPRINT and DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION are in the shipped APK and in NO file this check would read — they come from library manifests and from AndroidX at Gradle time. So this catches the config-plugin half of E-049 and not the library-manifest half, and a check that let anybody believe otherwise would be worse than no check. Gate 16 stays exactly as it is."
     }
   ]
 }

@@ -1759,6 +1759,38 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-049",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/package.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app.config.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "artefact"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:artefact (16) reads the built APK and asserts the permission set EQUALS EXPECTED_PERMISSIONS in both directions. It is the ONLY thing that catches this class, and it runs in release.yml — so a dependency added on a Monday is caught at the next TAG, not on the pull request that added it. That delay is the cost, and F-114 is filed to close it.",
+      "memory": "memory/effects/a-dependency-can-ship-a-capability-no-source-file-mentions.md",
+      "rationale": "ADDING A DEPENDENCY CAN ADD AN ANDROID PERMISSION, and neither the import nor app.config.ts will mention it. Two mechanisms, both silent: a package ships its own android/src/main/AndroidManifest.xml which the MANIFEST MERGER folds in by design, and a package ships an Expo CONFIG PLUGIN which Expo autolinks and which can call withPermissions itself. THIS HAS NOW HAPPENED TWICE. expo-file-system declares INTERNET, READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE in its own manifest, and it is not even a direct dependency — it arrives transitively and is autolinked. F-043 then added expo-image-picker, whose plugin does `if (microphonePermission !== false) withPermissions([RECORD_AUDIO])` — OPT-OUT, for callers who capture video. This app passes mediaTypes: [images] and records no audio anywhere, and the microphone permission reached a signed artefact. THE FIX IS AT THE SOURCE, NEVER THE EXPECTATION. Adding RECORD_AUDIO to EXPECTED_PERMISSIONS would have turned the gate green and shipped a microphone permission on a colour tool — the precise outcome the gate exists to prevent, reached by editing the thing that objected. The plugin is now listed with microphonePermission: false (the only way to pass it an option, since Expo autolinks it either way) AND the permission is in blockedPermissions, because plugin options are the kind of thing a refactor drops. WHAT TO DO WHEN ADDING A NATIVE DEPENDENCY: read its android manifest and its app.plugin.js before merging, and expect the permission list to be a property of the BUILT FILE rather than of any file you wrote. That is why gate 16 reads the artefact — every other check in this repository looks at source, and source is exactly where this class is invisible.",
+      "confidence": 1,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

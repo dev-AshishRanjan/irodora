@@ -132,6 +132,19 @@ const config: ExpoConfig = {
       // Nothing in a shipped Irodora draws over another app. A colour tool asking for this
       // would be a fair reason to refuse to install it.
       'android.permission.SYSTEM_ALERT_WINDOW',
+      // Added after gate 16 rejected the first signed release APK of the internal lane.
+      //
+      // `expo-image-picker`'s config plugin adds RECORD_AUDIO **by default** — its
+      // `withAndroidImagePickerPermissions` is `if (microphonePermission !== false)`, so the
+      // permission arrives unless it is switched off by name. It is there for callers who pick
+      // or capture VIDEO. This app does not: `wardrobe/picker.ts` passes
+      // `mediaTypes: ['images']`, and nothing in the product records audio at all.
+      //
+      // The plugin is configured with `microphonePermission: false` below, which is the real
+      // fix. This entry is the belt to that pair of braces: `blockedPermissions` survives the
+      // plugin options being dropped in a refactor, and a microphone permission on a colour
+      // tool is the kind of thing a person reads on the install screen and closes the page.
+      'android.permission.RECORD_AUDIO',
     ],
     // NOT blocked, and the omission is a decision: `VIBRATE` also arrives from Expo's default
     // manifest, and unlike the others it is WANTED. `apps/mobile/AGENTS.md` commits to "haptic
@@ -146,7 +159,22 @@ const config: ExpoConfig = {
    * `android/` because that directory is regenerated — see the file's own header, and
    * `AGENTS.md`: hand-edited native projects lose the edit silently on the next prebuild.
    */
-  plugins: ['expo-router', './plugins/withReleaseSigning'],
+  plugins: [
+    'expo-router',
+    /*
+     * LISTED ONLY TO TURN THE MICROPHONE OFF. Expo autolinks this plugin whether or not it
+     * appears here, and its default is to ADD `android.permission.RECORD_AUDIO` — the option is
+     * `if (microphonePermission !== false)`, so the permission is opt-OUT rather than opt-in.
+     * It exists for callers who capture video; `wardrobe/picker.ts` passes `mediaTypes:
+     * ['images']` and this product has no audio anywhere.
+     *
+     * Naming the plugin is the only way to pass it an option. Setting the flag also makes the
+     * plugin block the permission itself, which is why this is the fix and the
+     * `blockedPermissions` entry above is the backstop.
+     */
+    ['expo-image-picker', { microphonePermission: false }],
+    './plugins/withReleaseSigning',
+  ],
 
   experiments: {
     typedRoutes: true,
