@@ -57,7 +57,10 @@ export function emitTypescript(manifest: Manifest): string {
   out.push('} as const;');
   out.push('');
 
-  out.push(`export const SPACING = [${manifest.spacing.scale.join(', ')}] as const;`);
+  out.push('export const SPACING = {');
+  for (const [name, value] of Object.entries(manifest.spacing.scale))
+    out.push(`  ${key(name)}: ${String(value)},`);
+  out.push('} as const;');
   out.push(`export const TAP_TARGET = ${String(manifest.size.tapTarget)} as const;`);
   out.push('');
 

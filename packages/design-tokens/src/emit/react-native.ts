@@ -112,22 +112,27 @@ export function emitReactNative(manifest: Manifest): string {
     out.push(`  ${key(name)}: ${String(value)},`);
   out.push('} as const;');
   out.push('');
-  // The scale is POSITIONAL in all four targets — CSS emits `--space-1..N`, Tailwind
-  // `--spacing-1..N`, and both TypeScript targets an array. `nativeSpacing[2]` is `--space-3`.
-  // Said in the emitted file rather than only here, because the reader of an index is a
-  // component author who will never open this emitter (F-095).
+  // The scale is NAMED in all four targets — `nativeSpacing.md` is CSS's `--space-md` and
+  // Tailwind's `--spacing-md`. Said in the emitted file rather than only here, because the
+  // reader is a component author who will never open this emitter (F-095, F-103).
   out.push('/**');
-  out.push(" * The spacing scale, in order. Index N is CSS's `--space-{N+1}`.");
+  out.push(" * The spacing scale, by name. `nativeSpacing.md` is CSS's `--space-md`.");
   out.push(' *');
-  out.push(' * POSITIONAL, AND THE POSITIONS SHIFT when a step is added or removed — ADR-0074');
-  out.push(' * removed a 14 and added 12 and 16, which moved every index above 1. That was safe');
-  out.push(' * because nothing read this yet. It will not be safe next time, so a change to');
-  out.push(' * `spacing.scale` means reading every index in packages/ui.');
+  out.push(' * NAMED RATHER THAN POSITIONAL, and F-103 is why. This was an array, so a component');
+  out.push(' * wrote `nativeSpacing[2]` and nothing in that expression named 12. ADR-0074 removed');
+  out.push(' * a 14 and added 12 and 16, moving every index above 1 — safe only because nothing');
+  out.push(' * read the scale yet. Five components read it by the time this was fixed, and a');
+  out.push(' * shifted index would have compiled, passed every test, and handed a style prop a');
+  out.push(' * perfectly valid wrong number.');
   out.push(' *');
-  out.push(' * Every step is a multiple of `spacing.base`, and');
+  out.push(' * Removing or renaming a step now fails `typecheck` at every call site that wanted');
+  out.push(' * it. Every step is a multiple of `spacing.base`, and');
   out.push(' * scripts/verify-spacing-scale.mjs fails if that stops being true.');
   out.push(' */');
-  out.push(`export const nativeSpacing = [${manifest.spacing.scale.join(', ')}] as const;`);
+  out.push('export const nativeSpacing = {');
+  for (const [name, value] of Object.entries(manifest.spacing.scale))
+    out.push(`  ${key(name)}: ${String(value)},`);
+  out.push('} as const;');
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
   out.push('');
 

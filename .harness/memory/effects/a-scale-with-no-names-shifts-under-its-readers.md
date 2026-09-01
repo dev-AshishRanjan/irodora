@@ -1,7 +1,12 @@
 # A scale with no names shifts under its readers
 
-**E-036** · from `docs/design/design-system.manifest.json#spacing.scale` · guard `gate:a11y`,
-proven by `verify-spacing-scale.mjs --prove`
+**E-036** · from `docs/design/design-system.manifest.json#spacing.scale` · guard
+`gate:typecheck`, then `gate:a11y` (proven by `verify-spacing-scale.mjs --prove`)
+
+> **Fixed by F-103 on 2026-09-01.** The steps are named now, so the silent failure below cannot
+> happen. Everything from *"What depends on what"* to *"What guards it"* is kept as written
+> because it is the argument that produced the fix — read it as history, and read
+> [Fixed by F-103](#fixed-by-f-103) for what is true today.
 
 ## What depends on what
 
@@ -53,15 +58,47 @@ indices and says so. The guard against renumbering is the doc comment on the emi
 the fact that only five call sites exist — both of which are the kind of protection that works
 until it doesn't.
 
-**The structural fix is names**, the way radius already has them, and it is filed as **F-103**
-rather than done here: it changes the manifest schema and all four emitters, and F-095 had a
-scope.
+**The structural fix is names**, the way radius already has them. It was filed as **F-103**
+rather than done in F-095 — it changes the manifest schema and all four emitters, and F-095 had
+a scope — and **F-103 has since done it.**
 
 ## What this does not catch either
 
 `borderWidth`, and every other numeric style property. They are not spacing. `Swatch.tsx`
 carries `borderWidth: 2`, a real decision that nothing checks — stated so the coverage of this
 link is not read as wider than it is.
+
+## Fixed by F-103
+
+`spacing.scale` is a **named record** in the manifest — `xs` 4, `sm` 8, `md` 12, `lg` 16,
+`xl` 20, `xl2` 28, `xl3` 40, `xl4` 56, `xl5` 96 — following `radius`, which was named all
+along. That asymmetry was the whole complaint.
+
+All four targets emit names:
+
+| target | form |
+|---|---|
+| `tokens.css` | `--irodora-space-xs … --space-xl5` |
+| `tokens.tailwind.css` | `--spacing-xs … --spacing-xl5` |
+| `tokens.ts` | `SPACING.md` |
+| `native.ts` | `nativeSpacing.md` |
+
+The eight index reads across five components became name reads.
+
+**What the fix actually buys, watched rather than asserted:** renaming `md` to `medium` in the
+manifest and regenerating fails `typecheck` at `Chip.tsx:88`, `SearchField.tsx:74` and
+`TextField.tsx:115` — exactly the three call sites that wanted that step, each naming the file,
+the line and the property. The positional array could not do this; renumbering compiled
+everywhere.
+
+**Why the link stays active.** The dependency is unchanged and still high: a change to
+`spacing.scale` still reaches four generated targets and every component that spaces anything,
+and the generated files still have to be regenerated and committed together or they drift.
+**What resolved is the silence**, which was the dangerous half.
+
+**What is still only a convention.** Nothing forces a component to reach for the scale at all,
+and `borderWidth` and every other numeric style property remain unchecked. Both were outside
+this link when it was written and both still are.
 
 ## Related
 

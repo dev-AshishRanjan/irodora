@@ -182,7 +182,7 @@ export interface Manifest {
   readonly cvdPairs: CvdPairs;
   readonly salience: Salience;
   readonly radius: Readonly<Record<string, number>>;
-  readonly spacing: { readonly base: number; readonly scale: readonly number[] };
+  readonly spacing: { readonly base: number; readonly scale: Readonly<Record<string, number>> };
   readonly size: { readonly tapTarget: number };
   readonly typography: Typography;
   readonly elevation: Elevation;
@@ -430,10 +430,18 @@ export function parseManifest(input: unknown): Manifest {
     };
   });
 
+  /*
+   * NAMED, like `radius` below, and F-103 is why: as a positional array a component wrote
+   * `nativeSpacing[2]` and nothing in that expression named 12. Parsed the same way radius is,
+   * `_note` skipped the same way, so the two scales cannot drift apart in how they are read.
+   */
   const spacingRaw = requireRecord(root['spacing'], 'spacing');
-  const scale = spacingRaw['scale'];
-  if (!Array.isArray(scale) || scale.some((s) => typeof s !== 'number'))
-    throw new ManifestError('spacing.scale', 'expected an array of numbers');
+  const spacingScaleRaw = requireRecord(spacingRaw['scale'], 'spacing.scale');
+  const scale: Record<string, number> = {};
+  for (const [name, value] of Object.entries(spacingScaleRaw)) {
+    if (name.startsWith('_')) continue;
+    scale[name] = requireNumber(value, `spacing.scale.${name}`);
+  }
 
   const radiusRaw = requireRecord(root['radius'], 'radius');
   const radius: Record<string, number> = {};
@@ -574,7 +582,7 @@ export function parseManifest(input: unknown): Manifest {
     },
     salience,
     radius,
-    spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale: scale as number[] },
+    spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale },
     size: {
       tapTarget: requireNumber(requireRecord(root['size'], 'size')['tapTarget'], 'size.tapTarget'),
     },

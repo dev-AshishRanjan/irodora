@@ -74,7 +74,17 @@ export const RADIUS = {
   swatch: 0,
 } as const;
 
-export const SPACING = [4, 8, 12, 16, 20, 28, 40, 56, 96] as const;
+export const SPACING = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xl2: 28,
+  xl3: 40,
+  xl4: 56,
+  xl5: 96,
+} as const;
 export const TAP_TARGET = 44 as const;
 
 /** Token names usable for normal-size text: AA 4.5:1 against their surfaces. */

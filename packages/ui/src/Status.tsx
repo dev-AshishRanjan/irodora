@@ -54,9 +54,9 @@ export function Status({ kind, text, adjacentToSample = false }: StatusProps): R
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: nativeSpacing[1],
+        gap: nativeSpacing.sm,
         ...(adjacentToSample
-          ? { backgroundColor: colors['swatch.well'], padding: nativeSpacing[1] }
+          ? { backgroundColor: colors['swatch.well'], padding: nativeSpacing.sm }
           : {}),
       }}
     >

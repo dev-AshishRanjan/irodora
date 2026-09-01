@@ -82,7 +82,7 @@ export function TextField({
   const inert = disabled || loading;
 
   return (
-    <View style={{ gap: nativeSpacing[0] }}>
+    <View style={{ gap: nativeSpacing.xs }}>
       <Text size="label" color="foreground.2" script={script}>
         {label}
       </Text>
@@ -112,7 +112,7 @@ export function TextField({
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
           borderRadius: nativeRadius.sm,
-          paddingHorizontal: nativeSpacing[2],
+          paddingHorizontal: nativeSpacing.md,
           backgroundColor: colors['surface.2'],
           color: colors.foreground,
           fontSize: nativeType[script].body.fontSize,

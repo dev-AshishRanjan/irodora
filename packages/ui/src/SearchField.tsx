@@ -71,7 +71,7 @@ export function SearchField({
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
           borderRadius: nativeRadius.sm,
-          paddingHorizontal: nativeSpacing[2],
+          paddingHorizontal: nativeSpacing.md,
           backgroundColor: colors['surface.2'],
           color: colors.foreground,
           fontSize: nativeType.latin.body.fontSize,

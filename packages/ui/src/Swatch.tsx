@@ -98,9 +98,9 @@ export function Swatch({
         // The mandatory neutral ground. Not decoration — it is what makes the sample
         // readable next to anything else on the screen.
         backgroundColor: colors['swatch.well'],
-        padding: nativeSpacing[1],
+        padding: nativeSpacing.sm,
         alignItems: 'center',
-        gap: nativeSpacing[1],
+        gap: nativeSpacing.sm,
         // Selection is never colour alone: the checkmark below carries it too. Focus is a
         // DIFFERENT treatment from selection — the ring token exists for exactly this, and
         // rendering them the same would make one of the two a state in name only.

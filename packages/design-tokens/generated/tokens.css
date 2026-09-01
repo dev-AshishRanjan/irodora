@@ -129,14 +129,14 @@
   --irodora-radius-xl: 28px;
   --irodora-radius-pill: 999px;
   --irodora-radius-swatch: 0px;
-  --irodora-space-1: 4px;
-  --irodora-space-2: 8px;
-  --irodora-space-3: 12px;
-  --irodora-space-4: 16px;
-  --irodora-space-5: 20px;
-  --irodora-space-6: 28px;
-  --irodora-space-7: 40px;
-  --irodora-space-8: 56px;
-  --irodora-space-9: 96px;
+  --irodora-space-xs: 4px;
+  --irodora-space-sm: 8px;
+  --irodora-space-md: 12px;
+  --irodora-space-lg: 16px;
+  --irodora-space-xl: 20px;
+  --irodora-space-xl2: 28px;
+  --irodora-space-xl3: 40px;
+  --irodora-space-xl4: 56px;
+  --irodora-space-xl5: 96px;
   --irodora-size-tap-target: 44px;
 }

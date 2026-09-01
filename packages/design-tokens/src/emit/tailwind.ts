@@ -41,9 +41,9 @@ export function emitTailwind(manifest: Manifest): string {
   for (const name of Object.keys(manifest.radius))
     out.push(`  --radius-${name}: var(${cssVarName('radius', name)});`);
 
-  manifest.spacing.scale.forEach((_, i) =>
-    out.push(`  --spacing-${String(i + 1)}: var(${cssVarName('space', String(i + 1))});`),
-  );
+  // Named like radius directly above, so the utility is `p-md` rather than `p-3` (F-103).
+  for (const name of Object.keys(manifest.spacing.scale))
+    out.push(`  --spacing-${name}: var(${cssVarName('space', name)});`);
 
   out.push('}');
   out.push('');

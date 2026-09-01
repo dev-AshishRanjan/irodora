@@ -72,9 +72,9 @@ export function emitCss(manifest: Manifest): string {
   out.push(':root {');
   for (const [name, value] of Object.entries(manifest.radius))
     out.push(`  ${cssVarName('radius', name)}: ${String(value)}px;`);
-  manifest.spacing.scale.forEach((value, i) =>
-    out.push(`  ${cssVarName('space', String(i + 1))}: ${String(value)}px;`),
-  );
+  // Named, exactly like radius above — `--space-md`, not `--space-3` (F-103).
+  for (const [name, value] of Object.entries(manifest.spacing.scale))
+    out.push(`  ${cssVarName('space', name)}: ${String(value)}px;`);
   out.push(`  ${cssVarName('size', 'tap-target')}: ${String(manifest.size.tapTarget)}px;`);
   out.push('}');
   out.push('');

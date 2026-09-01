@@ -793,18 +793,18 @@
   },
   "spacing": {
     "base": 4,
-    "scale": [
-      4,
-      8,
-      12,
-      16,
-      20,
-      28,
-      40,
-      56,
-      96
-    ],
-    "_note": "Editorial rhythm: the larger steps carry more of the layout than in a typical dense UI. 間 (ma) is a design element. EVERY STEP IS A MULTIPLE OF `base`, and ADR-0074 is where that stopped being an aspiration: the scale carried a 14, which no padding, margin or gap anywhere in the product used, while 12 and 16 were used 24 times between them and were absent here. The larger steps — 28 upward — are used nowhere yet and are KEPT, because they are rhythm for layouts not built rather than a rule the scale breaks. scripts/verify-spacing-scale.mjs reads this array; nothing repeats it."
+    "scale": {
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 20,
+      "xl2": 28,
+      "xl3": 40,
+      "xl4": 56,
+      "xl5": 96
+    },
+    "_note": "Editorial rhythm: the larger steps carry more of the layout than in a typical dense UI. 間 (ma) is a design element. EVERY STEP IS A MULTIPLE OF `base`, and ADR-0074 is where that stopped being an aspiration: the scale carried a 14, which no padding, margin or gap anywhere in the product used, while 12 and 16 were used 24 times between them and were absent here. The larger steps — xl2 upward — are used nowhere yet and are KEPT, because they are rhythm for layouts not built rather than a rule the scale breaks. scripts/verify-spacing-scale.mjs reads this object; nothing repeats it. THE STEPS ARE NAMED, AND F-103 IS WHY: this was a positional array, so a component wrote `nativeSpacing[2]` and nothing in that expression named 12. ADR-0074 renumbered every index above 1, which was safe only because nothing read the scale — five components read it by the time F-103 ran, and a step inserted or removed would have changed what every index above it meant while every call site still compiled and every style prop still received a valid number. The names follow `radius`, which was a named record all along; that asymmetry was the root cause of F-095."
   },
   "size": {
     "tapTarget": 44,

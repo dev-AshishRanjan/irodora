@@ -158,9 +158,27 @@ function run() {
   console.log(`\n${BOLD}Irodora — spacing scale${OFF}\n`);
 
   const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
-  const scale = manifest.spacing?.scale;
   const base = manifest.spacing?.base;
-  if (!Array.isArray(scale) || scale.length === 0) {
+
+  /*
+   * NAMED SINCE F-103, and read as an object rather than an array. `_note` is skipped the same
+   * way the emitters skip it, so the manifest's prose can never be mistaken for a step.
+   *
+   * FAILS CLOSED ON THE WRONG SHAPE. If `scale` came back as an array — a revert, or a
+   * hand-edit — `Object.values` would silently yield the numbers and this check would pass
+   * while every emitter produced `--space-0..8`. So the shape is asserted, not assumed.
+   */
+  const scaleRaw = manifest.spacing?.scale;
+  if (scaleRaw === null || typeof scaleRaw !== 'object' || Array.isArray(scaleRaw)) {
+    console.log(
+      `${RED}${BOLD}The manifest's spacing scale is not a named object.${OFF} It was a positional array until F-103; a checker that accepted either shape would pass over the regression it exists to catch.\n`,
+    );
+    process.exit(1);
+  }
+  const scale = Object.entries(scaleRaw)
+    .filter(([name]) => !name.startsWith('_'))
+    .map(([, value]) => value);
+  if (scale.length === 0) {
     console.log(
       `${RED}${BOLD}The manifest declares no spacing scale.${OFF} There is nothing to check against.\n`,
     );

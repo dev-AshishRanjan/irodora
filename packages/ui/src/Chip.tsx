@@ -85,7 +85,7 @@ export function Chip({
         minHeight: nativeTapTarget,
         alignItems: 'center',
         borderRadius: nativeRadius.sm,
-        paddingHorizontal: nativeSpacing[2],
+        paddingHorizontal: nativeSpacing.md,
         justifyContent: 'center',
         backgroundColor: background,
         // Focus is a RING, not a fill: it has to be visible on a chip that is already

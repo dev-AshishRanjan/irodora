@@ -8,6 +8,132 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-103 DONE · the scale gets names, and the rename is watched breaking three files
+
+`nativeRadius` was a named record and `nativeSpacing` was a bare array, so a component wrote
+`nativeSpacing[2]` and **nothing in that expression named 12**. F-095 found it and filed it
+rather than folding it in.
+
+By now it was a **live hazard rather than an ergonomic one**. ADR-0074 renumbered every index
+above 1, which was safe only because nothing read the scale — and five components read it.
+
+### The names are the user's call, not mine
+
+Nine steps needed names and there were several defensible answers, so it went to the user with
+three: the t-shirt ladder matching `radius`, role names like `snug`/`section`, or `step1..step9`.
+
+They chose the **t-shirt ladder** — `xs` 4, `sm` 8, `md` 12, `lg` 16, `xl` 20, `xl2` 28,
+`xl3` 40, `xl4` 56, `xl5` 96. It invents no vocabulary: `radius` already established
+`xs`/`sm`/`md`/`lg`/`xl`, and that asymmetry between the two scales was the whole complaint.
+Every key is a valid identifier, so components write `nativeSpacing.md`.
+
+The third option was worth listing to rule out: `step3` still does not name 12 any better than
+`[2]` did, so it satisfies criterion 1's letter and misses its point.
+
+### Criterion 3 says "reordering or inserting fails a check", and that reading is wrong
+
+A named record makes **reordering harmless by construction** — that is the entire point — and a
+check that failed on a harmless edit would be noise somebody eventually disables. What must fail
+is the *dangerous* edit, which after this change is a step **removed or renamed** while a
+component still asks for it.
+
+So the demonstration is the real one: renaming `md` to `medium` in the manifest, regenerating,
+and watching `typecheck` go red at **`Chip.tsx:88`, `SearchField.tsx:74`, `TextField.tsx:115`** —
+exactly the three call sites that wanted that step, each naming file, line and property. Three,
+not five, because only three read `md`. The positional array could not do this: renumbering
+compiled everywhere and handed every style prop a perfectly valid wrong number.
+
+### Criterion 4, byte-compared twice
+
+The four targets — `tokens.css`, `tokens.tailwind.css`, `tokens.ts`, `native.ts` — moved
+together, and regeneration is a **fixed point**: running the generator again leaves all four
+byte-identical. Checked again after a prettier pass reformatted the emitter's source, which
+changed the emitter and not one byte of its output.
+
+**Five emitters exist; four emit spacing.** `heroui.ts` emits none, so it was not touched.
+
+The CSS names changed with everything else — `--irodora-space-1` became `--irodora-space-xs`,
+and Tailwind's `p-1` became `p-xs`. **Nothing consumes them:** the only reference to
+`--spacing-*` in the repository is the generated Tailwind file itself, and there is no web
+surface (ADR-0051). A rename with no call sites.
+
+### The checker had to be taught to fail closed
+
+`verify-spacing-scale.mjs` read `spacing.scale` as an array. Ported to an object it would have
+worked — but `Object.values` on a *reverted* array would silently yield the same numbers, so the
+check would pass while every emitter produced `--space-0..8`. **The shape is now asserted, and
+the decoy is watched:** planting a positional array back into the manifest exits 1 with *"It was
+a positional array until F-103; a checker that accepted either shape would pass over the
+regression it exists to catch."*
+
+The gate also still reports the four unused rhythm steps (28, 40, 56, 96), which the manifest
+keeps on purpose.
+
+### Two things found in passing, one filed and one not
+
+**`verify-token-reach.mjs` claimed something now false.** Its header said `nativeSpacing` *"is
+an array with no names"*, so it was answerable only at binding level. Naming the steps makes it
+answerable at leaf level, the way radius already is — but adding that group would report the
+four unused rhythm steps as unreached and demand a declaration for each. **That is a decision
+about what the scale is for, not a consequence of naming it**, so the comment was corrected and
+the work filed as **F-111** (R5, could).
+
+**`packages/design-tokens/src/manifest.ts` is binary to git.** It contains two literal NUL
+bytes, in `names.join('\0')` — a separator chosen precisely because it cannot appear in a token
+name. Not corruption, and pleasingly it is the *safe* version of the pattern
+[[a-join-is-a-private-encoding-until-somebody-splits-it]] flagged in `Coverage.combinations`
+yesterday, where `|` is a separator that could collide. The cost is that diffs on that file are
+unreadable. Left alone: unrelated to spacing, and swapping the literal for an escape is a
+separate one-line change with its own reasoning.
+
+### The test compared values and could not have compared names
+
+`emit.test.ts` asserted `expect([...SPACING]).toEqual([...manifest.spacing.scale])` — a spread,
+so it only ever checked the **values in order**. Two scales with the same numbers and different
+names would have passed. Now compared as records, and `nativeSpacing` is compared too, which it
+never was.
+
+### Effects
+
+**E-036 updated, not resolved.** It was created for exactly this hazard and its note said in as
+many words *"the structural fix is names … filed as F-103"*. The dependency is unchanged and
+still high — a change to `spacing.scale` still reaches four targets and every component that
+spaces anything. **What resolved is the silence.** The guard is now `gate:typecheck` first and
+`gate:a11y` second, and the recorded limit — *"it cannot see a stale index"* — is void because
+there are no indices. The note keeps its original argument as history and gains a section for
+what is true today.
+
+### Gates
+
+Run one at a time.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** — after renaming a local that collided with typography's `scaleRaw` |
+| 2 lint | **PASS** |
+| 3 format | **PASS** — after one prettier pass on the emitter |
+| 4 test | **PASS** — design-tokens 172, ui 72 |
+| 6 build | **PASS** |
+| contrast | **PASS** — 113 |
+| a11y | **PASS** — 113 |
+
+`contrast` and `a11y` are this feature's own verification list, because it touches the token
+pipeline both gates read. `color-golden` does not apply: **no colour value changes**, only
+spacing names.
+
+**The generator runs from `dist/`,** so the first regeneration failed on the stale build and the
+mutation looked like it changed nothing until design-tokens was rebuilt. Third time this session
+that `dist/` staleness has produced a misleading result — after F-050's bench and F-110's plan
+listing it as a risk.
+
+### Next
+
+R4 holds F-107 and F-109. F-109 is the preference surface, and the surface debt is five features
+deep.
+
+---
+
 ## 2026-09-01 — F-050 DONE · two criteria that contradict each other, and a heuristic seed that did nothing
 
 FR-45 wants *"≥ N outfits from ≤ M garments"* for a 40-item wardrobe. **N and M are the

@@ -40,13 +40,13 @@
   --radius-xl: var(--irodora-radius-xl);
   --radius-pill: var(--irodora-radius-pill);
   --radius-swatch: var(--irodora-radius-swatch);
-  --spacing-1: var(--irodora-space-1);
-  --spacing-2: var(--irodora-space-2);
-  --spacing-3: var(--irodora-space-3);
-  --spacing-4: var(--irodora-space-4);
-  --spacing-5: var(--irodora-space-5);
-  --spacing-6: var(--irodora-space-6);
-  --spacing-7: var(--irodora-space-7);
-  --spacing-8: var(--irodora-space-8);
-  --spacing-9: var(--irodora-space-9);
+  --spacing-xs: var(--irodora-space-xs);
+  --spacing-sm: var(--irodora-space-sm);
+  --spacing-md: var(--irodora-space-md);
+  --spacing-lg: var(--irodora-space-lg);
+  --spacing-xl: var(--irodora-space-xl);
+  --spacing-xl2: var(--irodora-space-xl2);
+  --spacing-xl3: var(--irodora-space-xl3);
+  --spacing-xl4: var(--irodora-space-xl4);
+  --spacing-xl5: var(--irodora-space-xl5);
 }

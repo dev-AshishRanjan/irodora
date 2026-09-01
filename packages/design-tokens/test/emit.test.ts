@@ -28,7 +28,7 @@ import {
   type Manifest,
 } from '../src/index.js';
 import { COLOR, RADIUS, SPACING, STATUS_PAIRING, TAP_TARGET } from '../src/generated/tokens.js';
-import { nativeColors, nativeRadius } from '../src/generated/native.js';
+import { nativeColors, nativeRadius, nativeSpacing } from '../src/generated/native.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE = join(HERE, '..');
@@ -138,7 +138,11 @@ describe('the non-colour scales survive the trip', () => {
   it('radius, spacing and tap target match the manifest', () => {
     expect(RADIUS).toEqual(manifest.radius);
     expect(nativeRadius).toEqual(manifest.radius);
-    expect([...SPACING]).toEqual([...manifest.spacing.scale]);
+    // Compared as RECORDS, the way radius always was. Before F-103 this spread SPACING as an
+    // array, which could only ever check the VALUES — two scales with the same numbers in the
+    // same order but different names would have passed.
+    expect(SPACING).toEqual(manifest.spacing.scale);
+    expect(nativeSpacing).toEqual(manifest.spacing.scale);
     expect(TAP_TARGET).toBe(manifest.size.tapTarget);
   });
 

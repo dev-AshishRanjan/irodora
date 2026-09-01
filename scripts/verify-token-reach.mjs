@@ -149,9 +149,16 @@ function fail(message) {
 /**
  * The names this check is answerable for.
  *
- * Named tokens at leaf level; `nativeSpacing` is an array with no names and
- * `nativeMotion.forbidden` is prose, so both are answerable only at binding level. Said here
- * rather than implied, because a check that claims more coverage than it has is the problem.
+ * Named tokens at leaf level; `nativeMotion.forbidden` is prose, so it is answerable only at
+ * binding level. Said here rather than implied, because a check that claims more coverage than
+ * it has is the problem.
+ *
+ * `nativeSpacing` WAS in that sentence — it was a positional array with no names to be
+ * answerable for. F-103 named its steps, so it *could* now join `radius step` below. It has
+ * not, deliberately: the manifest keeps `xl2`..`xl5` as rhythm for layouts not yet built, so
+ * adding the group would report five steps as unreached and require each to be declared in
+ * `unreached-tokens.json` with a reason. That is a decision about what the scale is FOR, not a
+ * consequence of naming it, so it is filed rather than folded in here (F-111).
  */
 function namesOf(bindings) {
   const colours = new Set([
