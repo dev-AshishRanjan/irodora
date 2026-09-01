@@ -406,6 +406,12 @@ export const en = {
   'preferences.resetIrreversible': 'This cannot be undone.',
   'preferences.resetCancel': 'Keep them',
   'preferences.resetDo': 'Forget them',
+  // F-117 — a screen must never close the app when its native module will not load.
+  'lens.unavailable': 'The camera is not available',
+  'lens.unavailableBody':
+    'This build cannot start the camera, so colour reading by camera is unavailable. Everything else in the app still works — the Atlas, the Finder, Compare and your wardrobe do not need a camera.',
+  'lens.unavailableDetail':
+    'If you are reporting this, the line below is the part that identifies the cause.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

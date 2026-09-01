@@ -3300,6 +3300,32 @@
         "a11y"
       ],
       "notes": "FILED BY F-115, WHICH FIXED THE INSTANCE AND LEFT NO GUARD. `sampleFrame` was a worklet and called `sampleStride`, which was not one; the Lens crashed on its first frame. NOTHING IN THIS REPOSITORY CAN SEE THAT — jest has one runtime and no worklet boundary, typecheck sees an ordinary call, lint sees an import that resolves, and the directive does not change JS-thread behaviour so the tests pass identically either side of the bug. WHY A STATIC CHECK IS THE RIGHT SHAPE HERE: this is a boundary the type system cannot express, which is the same category as verify-engine-purity (no node:* in the engine) and verify-app-imports (Metro resolution). Those are the precedents to follow, including their habit of printing what they cannot see. THE SURFACE IS TINY TODAY — three worklets, all in src/lens — which is exactly when to write the check, because the cost of walking it by hand is about to stop being small. THE LIMIT TO STATE (criterion 3): source analysis cannot follow a function reached through a variable, passed in as a callback, or looked up on an object. A check that let anybody believe it covered those would be worse than none, and the honest version narrows the reading rather than replacing it."
+    },
+    {
+      "id": "F-117",
+      "title": "A screen whose native module will not load must not close the app",
+      "requirements": [
+        "FR-13",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "must",
+      "status": "done",
+      "plan": "plans/F-117-a-screen-must-not-close-the-app.md",
+      "blockedBy": [],
+      "acceptance": [
+        "The camera module is loaded lazily, so a failure to load is a caught rejection rather than a module-evaluation throw the app cannot survive",
+        "The Lens shows what actually failed, in text a person can read out, and says the rest of the app still works",
+        "Pressing the button on a build where the camera cannot start leaves the app running"
+      ],
+      "verification": [
+        "state",
+        "a11y",
+        "contrast",
+        "content"
+      ],
+      "notes": "DONE. THE APP CLOSED BECAUSE THE THROW HAPPENED BEFORE REACT EXISTED. react-native-vision-camera builds its native binding at MODULE SCOPE — NitroModules.createHybridObject('CameraFactory') — so IMPORTING it throws when the HybridObject is not registered. This repository already recorded that exact error in src/lens/permission.ts: \"Failed to get NitroModules: The native NitroModules Turbo/Native-Module could not be found.\" app/lens.tsx imported the camera STATICALLY, so the throw happened while the ROUTE MODULE WAS BEING EVALUATED, before React rendered anything — no error boundary can catch that, and the process went down. F-115 FIXED A REAL DEFECT AND IT WAS NOT THIS ONE. A worklet calling an unmarked function crashes on the first FRAME; this crashes on the BUTTON PRESS, before a camera exists. The distinction was in the first report — \"after we click on the button\" — and I did not weigh it before shipping. WHAT THIS FIXES AND WHAT IT DOES NOT: it fixes the app closing, which is a defect on its own terms and the one thing addressable without the device — one screen s native dependency must never kill the process. It does NOT make the camera work; why the HybridObject is unregistered in that build is still open, and this deliberately does not guess. THREE HYPOTHESES ELIMINATED WITH EVIDENCE, recorded so nobody re-runs them: (1) the Nitro peers are not autolinked — false, expo-modules-autolinking react-native-config, the exact command settings.gradle runs via expoAutolinking.rnConfigCommand, reports all four resolved, and the dependency change was reverted; (2) the worklets babel plugin is missing so worklet is inert — false, babel-preset-expo@57 auto-adds it when it resolves and it resolves from apps/mobile; (3) autolinking shows no Android platform data for the camera stack — not a signal, it shows none for react-native-screens or gesture-handler either and both work. THE TELL I UNDER-WEIGHTED: the APK builds, installs and runs; a module missing from the build fails earlier and louder than one screen closing. THE FIX: React.lazy around the camera inside an error boundary. CameraLens.tsx holds everything needing the native module and is only loaded lazily; CameraUnavailable.tsx shows the error TEXT on purpose, because the failure is structural rather than transient, no retry helps, and \"something went wrong\" would delete the one fact that makes a report actionable; app/lens.tsx uses lazy + Suspense + a small class boundary (a class because componentDidCatch has no hook equivalent, and expo-router s ErrorBoundary is for render errors rather than a module that will not load). Lens.tsx is untouched, so gates 8 and 9 still assert what they did. TWO LINT ERRORS WORTH KEEPING: `unknown | null` is meaningless because unknown absorbs null — replaced with a `caught` flag, which is also more correct since what was thrown may BE null; and JSON.stringify is typed as returning string but returns undefined for undefined, a function or a symbol, so the result is checked rather than trusted. THE FONT SUBSET WAS REGENERATED IN THIS CHANGE rather than after gate 11 went red — F-113 recorded two features ago that forgetting it is this repository s most-repeated mistake. Ten new codepoints, green on the first run. GATES: state, typecheck, lint, format, test (mobile 409), a11y, contrast, content — all PASS. NONE OF THEM CAN CONFIRM THE CAMERA WORKS; they confirm the failure mode changed. STILL NEEDED: the crash log from the device — adb logcat --pid=$(adb shell pidof -s com.irodora.app). The line naming the missing HybridObject is the answer, and it is the one thing this workstation cannot produce. F-040 s attestation that frame processors run on a worklet thread remains OUTSTANDING for exactly this reason."
     }
   ]
 }

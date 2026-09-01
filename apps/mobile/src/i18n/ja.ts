@@ -380,6 +380,11 @@ export const ja: Record<MessageKey, string> = {
   'preferences.resetIrreversible': 'この操作は元に戻せません。',
   'preferences.resetCancel': '削除しない',
   'preferences.resetDo': '削除する',
+  // F-117 — a screen must never close the app when its native module will not load.
+  'lens.unavailable': 'カメラを利用できません',
+  'lens.unavailableBody':
+    'このビルドではカメラを起動できないため、カメラでの色の読み取りは利用できません。アトラス、ファインダー、比較、ワードローブなど、カメラを使わない機能はこれまでどおり使えます。',
+  'lens.unavailableDetail': 'この問題を報告する場合は、原因を特定できるのは次の行です。',
 };
 
 /**

@@ -8,6 +8,116 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-117 DONE · the app closed because the throw happened before React existed
+
+> *Still we are getting the same issue — the app is closing after we click on the button.*
+
+**F-115 fixed a real defect and it was not this one.** A worklet calling an unmarked function
+crashes on the first *frame*; this crashes on the *button press*, before a camera exists. That
+distinction was in the first report — *"after we click on the button"* — and I did not weigh it
+before shipping. The second report is what made me read the timing properly.
+
+### The mechanism
+
+`react-native-vision-camera` builds its native binding at **module scope**:
+
+```ts
+export const VisionCamera = NitroModules.createHybridObject<CameraFactory>('CameraFactory')
+```
+
+So *importing* the library throws when the HybridObject is not registered — and this repository
+had already written down the exact error, in `src/lens/permission.ts`:
+
+```
+Failed to get NitroModules: The native "NitroModules" Turbo/Native-Module could not be found.
+```
+
+`app/lens.tsx` imported the camera **statically**. That throw therefore happened while the route
+module was being *evaluated*, before React rendered anything — **so no error boundary could catch
+it and the process went down.**
+
+### What this fixes and what it does not
+
+**It fixes the app closing**, which is a defect on its own terms and the one thing in the report
+I can address without the device: one screen's native dependency must never kill the process.
+
+**It does not make the camera work.** Why the HybridObject is unregistered in that build is still
+open, and this feature deliberately does not guess — the next run either shows the Lens working
+or shows a screen naming the cause, and either is progress where a closed app was none.
+
+### Three hypotheses eliminated, with evidence
+
+Written down because the next person will otherwise re-run them, and because I was wrong twice.
+
+| hypothesis | why it is false |
+|---|---|
+| The Nitro peers are not autolinked — undeclared, and under pnpm they live only inside VisionCamera's own `node_modules` | `expo-modules-autolinking react-native-config`, the exact command `settings.gradle` runs via `expoAutolinking.rnConfigCommand`, reports all four resolved. The dependency change was reverted. |
+| The worklets babel plugin is missing, so `'worklet'` is inert | `babel-preset-expo@57` auto-adds it when it resolves, and `require.resolve('react-native-worklets/plugin', { paths: ['apps/mobile'] })` succeeds. |
+| Autolinking shows no Android platform data for the camera stack | It shows none for `react-native-screens` or `gesture-handler` either, and both demonstrably work — an artefact of the output mode, not a signal. |
+
+**The tell I under-weighted:** the APK builds, installs and runs. A module missing from the build
+usually fails earlier and louder than one screen closing.
+
+### The fix
+
+`React.lazy` around the camera, inside an error boundary.
+
+- **`CameraLens.tsx`** — everything needing the native module: permission hook, viewfinder,
+  hand-off. Only ever loaded lazily.
+- **`CameraUnavailable.tsx`** — what shows instead. It prints the error text **on purpose**: the
+  failure is structural rather than transient, no retry helps, and the only useful thing a person
+  can do is say what it said. *"Something went wrong"* would delete the one fact that makes the
+  report actionable.
+- **`app/lens.tsx`** — `lazy` + `Suspense` + a small class boundary. A class because
+  `componentDidCatch` has no hook equivalent, and expo-router's own `ErrorBoundary` export is for
+  render errors, not a module that will not load.
+
+`Lens.tsx` is untouched, so everything gates 8 and 9 already assert about it still holds.
+
+### Two lint errors worth keeping
+
+`readonly error: unknown | null` — **`unknown` absorbs `null`**, so the union was meaningless.
+Replaced with a `caught` flag, which is also more correct: what was thrown may legitimately *be*
+null, and a flag distinguishes "the boundary fired" from "it threw nothing".
+
+`JSON.stringify(x) ?? …` — typed as returning `string`, but it returns `undefined` for
+`undefined`, a function or a symbol. The result is checked rather than trusted.
+
+### The font subset, before the gate went red
+
+Three new Japanese strings, ten new codepoints. Regenerated **in this change** rather than after
+gate 11 failed — F-113 recorded that forgetting it is this repository's most-repeated mistake,
+two features ago. Gate 11 green on the first run.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** — after fixing the two above |
+| 3 format | **PASS** |
+| 4 test | **PASS** — mobile 409 |
+| 8 a11y | **PASS** |
+| 9 contrast | **PASS** |
+| 11 content | **PASS** — with the subset regenerated |
+
+**None of these can confirm the camera works.** They confirm the failure mode changed.
+
+### What is still needed
+
+The crash log. One command against the device that reproduces it:
+
+```
+adb logcat --pid=$(adb shell pidof -s com.irodora.app)
+```
+
+The line naming the missing HybridObject or native module is the answer, and it is the one thing
+this workstation cannot produce — no device, no JDK, and F-040's attestation that frame
+processors run on a worklet thread is still **outstanding** for exactly this reason.
+
+---
+
 ## 2026-09-01 — F-115 DONE · the Lens crashed on its first frame, and the cause was three words
 
 > *Read a colour with the camera is not working. It stopping the app.*
