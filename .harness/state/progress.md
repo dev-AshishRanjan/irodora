@@ -8,6 +8,104 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-115 DONE · the Lens crashed on its first frame, and the cause was three words
+
+> *Read a colour with the camera is not working. It stopping the app.*
+
+`sampleFrame` in `viewfinder.tsx` runs on VisionCamera's frame-processor thread and carries
+`'worklet'`. It called `sampleStride` from `camera.ts`, which carried nothing.
+
+**A worklet may only call other worklets.** The Worklets babel plugin captures an unmarked
+import as an ordinary JS-thread function, and invoking it from the frame thread throws — the
+moment a frame arrives, which is the moment the Lens opens.
+
+One missing directive.
+
+### I got the first hypothesis wrong, and the record should say so
+
+I thought the cause was `react-native-vision-camera@5`'s peer dependencies:
+`react-native-nitro-modules` and `react-native-nitro-image` are not declared by the app and,
+under pnpm, are linked **only** inside VisionCamera's own `node_modules` — not in
+`apps/mobile/node_modules`, not at the workspace root. I had the mechanism, the evidence for the
+placement, and a fix half-written.
+
+**It was false.** React Native's autolinker walks the dependency *tree*, not the app's
+`node_modules`, and `expo-modules-autolinking react-native-config` reports all four modules
+resolved. That is also why the APK builds. I reverted the dependency change and the lockfile
+edit that went with it.
+
+The tell I ignored for too long: **the APK builds and installs.** A native module that was not
+linked would have failed earlier and louder than "the app closes when you open one screen".
+
+### What I checked before believing the second answer
+
+- `sampleFrame` — marked. ✓
+- `onFrame` — marked; calls only `sampleFrame` and `scheduleOnRN`. ✓
+- **`sampleStride` — the one cross-module call inside a worklet, unmarked.** ✗
+- everything else in the worklet is `Math.*`, `Uint8Array`, array literals, `frame.*`. ✓
+- `readCaptureSpace` runs in `onSessionConfigSelected`, on the JS thread — correctly unmarked. ✓
+- `pixelFormat: 'rgb'` is valid: `TargetVideoPixelFormat = 'native' | 'yuv' | 'rgb'`. ✓
+
+**Three worklets exist in the whole repository.** After this change every function they reach is
+marked, and that is a complete statement rather than a spot fix.
+
+### The harness had already said this was unproven
+
+F-040's first attestation:
+
+> *VisionCamera frame processors run on a worklet thread and the UI thread never blocks on
+> colour maths* — **outstanding**
+
+Gate 0 has printed that on every run since F-040 closed. The feature shipped with the one claim
+that would have caught this explicitly unproven, and the first person to open the Lens found
+what nobody had run. **An outstanding attestation is not paperwork; it is the list of things
+nobody has run.**
+
+### Why no gate here can catch it — E-050
+
+**Jest has one runtime.** There is no worklet boundary in the test environment, so `sampleStride`
+is an ordinary function that `lens.test.ts` calls directly and passes. Typecheck sees a normal
+call; lint sees an import that resolves.
+
+And the symmetry is the trap: **`'worklet'` does not change JS-thread behaviour**, so the tests
+pass *identically* before and after the fix. No JS-thread test can distinguish the two states,
+which means a green suite was never evidence either way.
+
+Same shape as [[a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check]] — crypto
+real in Node, absent in Hermes, seventeen gates green, and the app dead on the first screen that
+made an id.
+
+Recorded as **E-050**, severity `critical`, with a guard that says plainly there is none that
+runs here.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** |
+| 3 format | **PASS** |
+| 4 test | **PASS** — mobile 409 |
+| 8 a11y | **PASS** |
+
+The passing tests are the evidence for one narrow thing: **the directive changed nothing for the
+JS-thread callers.** They are not evidence that the Lens works.
+
+**I cannot verify the fix.** It needs a device with a camera. What is shown here is that the one
+mechanism which would crash it on the first frame is gone, and that nothing else broke. If it
+still crashes, the next candidates are the frame-output configuration and the device's reported
+`bytesPerRow` — but neither would have crashed *before the first frame arrived*.
+
+### Next
+
+**F-116** filed: a static check that every function reachable from a `'worklet'` carries one
+itself, following calls across modules — the defect was an import, so a same-file check would
+have passed. Its third criterion is the limit: source analysis cannot follow a function reached
+through a variable or passed in as a callback, and a check that let anybody believe otherwise
+would be worse than none. The surface is three worklets today, which is exactly when to write it.
+
+---
+
 ## 2026-09-01 — F-113 DONE · three red gates from three of my own features, and the habit that hid all three
 
 The user pushed this session's work and **CI went red, and so did the release lane**. Three

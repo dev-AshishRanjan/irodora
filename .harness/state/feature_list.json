@@ -3252,6 +3252,54 @@
         "state"
       ],
       "notes": "FILED BY F-113. Gate 16 reads the built APK and is the only thing that catches a dependency shipping a permission (E-049). It runs in release.yml because there is no APK on a pull request — which is correct, and means the delay between introducing a permission and learning about it is a TAG. F-043 added expo-image-picker and RECORD_AUDIO; five features closed before a signed artefact said so. WHAT WOULD CLOSE MOST OF THAT GAP CHEAPLY: `expo prebuild` already runs in the build gate on every CI run, and it writes apps/mobile/android/app/src/main/AndroidManifest.xml. That file shows exactly what app.config.ts contributes — including which permissions carry tools:node=\"remove\" — so a plugin that adds one is visible there, on a pull request, with no Gradle and no JDK. THE HONEST LIMIT, and criterion 3 exists so it is stated rather than discovered: the prebuilt manifest is NOT the merged manifest. USE_BIOMETRIC, USE_FINGERPRINT and DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION are in the shipped APK and in NO file this check would read — they come from library manifests and from AndroidX at Gradle time. So this catches the config-plugin half of E-049 and not the library-manifest half, and a check that let anybody believe otherwise would be worse than no check. Gate 16 stays exactly as it is."
+    },
+    {
+      "id": "F-115",
+      "title": "The Lens crashed on its first frame: a worklet called a function that was not one",
+      "requirements": [
+        "FR-13",
+        "FR-15"
+      ],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-115-the-worklet-called-a-non-worklet.md",
+      "acceptance": [
+        "Every function a worklet calls carries the worklet directive itself, checked across the whole app rather than at the one site that crashed",
+        "The reason it is marked is in the source, so removing the directive reads as a change rather than as tidying",
+        "The record states plainly that no gate here can catch this class, and why"
+      ],
+      "verification": [
+        "state",
+        "a11y"
+      ],
+      "notes": "DONE. THE LENS CRASHED ON ITS FIRST FRAME AND THE CAUSE WAS THREE WORDS. `sampleFrame` in viewfinder.tsx runs on VisionCamera s frame-processor thread and carries 'worklet'; it called `sampleStride` in camera.ts, which carried nothing. A worklet may only call other worklets — the Worklets babel plugin captures an unmarked import as an ordinary JS-thread function and invoking it from the frame thread throws the moment a frame arrives, which is the moment the Lens opens. I GOT THE FIRST HYPOTHESIS WRONG AND THE RECORD SAYS SO. I thought it was react-native-vision-camera@5 s peer dependencies — nitro-modules and nitro-image are not declared by the app and under pnpm are linked ONLY inside VisionCamera s own node_modules. Good mechanism, real evidence for the placement, and FALSE: React Native s autolinker walks the dependency TREE rather than the app s node_modules, and expo-modules-autolinking react-native-config reports all four resolved. That is also why the APK builds. Reverted the dependency change and its lockfile edit. THE TELL I IGNORED TOO LONG: the APK builds and installs — an unlinked native module fails earlier and louder than one screen closing. CHECKED BEFORE BELIEVING THE SECOND ANSWER: sampleFrame marked; onFrame marked and calling only sampleFrame and scheduleOnRN; sampleStride the ONE cross-module call in a worklet and unmarked; everything else Math.*, Uint8Array, array literals and frame.*; readCaptureSpace correctly unmarked because it runs on the JS thread; pixelFormat rgb valid per TargetVideoPixelFormat. THREE WORKLETS EXIST IN THE WHOLE REPOSITORY and after this change every function they reach is marked — a complete statement, not a spot fix. THE HARNESS ALREADY SAID THIS WAS UNPROVEN. F-040 s first attestation — \"VisionCamera frame processors run on a worklet thread and the UI thread never blocks on colour maths\" — is OUTSTANDING, and gate 0 has printed it on every run since F-040 closed. The feature shipped with the one claim that would have caught this explicitly unproven. An outstanding attestation is not paperwork; it is the list of things nobody has run. E-050 (critical): nothing here can catch this class. Jest has ONE runtime and no worklet boundary, so the missing directive is an ordinary function the lens tests call and pass; typecheck sees a normal call; lint sees a resolving import. And 'worklet' does not change JS-thread behaviour, so the tests pass IDENTICALLY either side of the bug — a green suite was never evidence. Same shape as the crypto-in-Hermes lesson. GATES: state, typecheck, format, test (mobile 409), a11y — all PASS. Those passes are evidence for ONE narrow thing: the directive changed nothing for JS-thread callers. THEY ARE NOT EVIDENCE THAT THE LENS WORKS. I cannot verify the fix; it needs a device with a camera. If it still crashes the next candidates are the frame-output configuration and the device s reported bytesPerRow, neither of which would crash BEFORE the first frame. F-116 FILED: a static check that every function reachable from a worklet carries the directive, following calls across modules — the defect was an import, so a same-file check would have passed. Its third criterion is the limit: source analysis cannot follow a function reached through a variable or passed as a callback."
+    },
+    {
+      "id": "F-116",
+      "title": "Every function a worklet reaches must say so itself, checked statically",
+      "requirements": [
+        "NFR-20"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-115"
+      ],
+      "acceptance": [
+        "A check walks every function reachable from a worklet directive and fails when one of them lacks it, watched failing on the exact defect F-115 fixed",
+        "It follows calls across module boundaries, since the defect was an import and a same-file check would have passed",
+        "It states what it cannot see — a function reached through a variable, a callback passed in, or a dynamic property"
+      ],
+      "verification": [
+        "state",
+        "a11y"
+      ],
+      "notes": "FILED BY F-115, WHICH FIXED THE INSTANCE AND LEFT NO GUARD. `sampleFrame` was a worklet and called `sampleStride`, which was not one; the Lens crashed on its first frame. NOTHING IN THIS REPOSITORY CAN SEE THAT — jest has one runtime and no worklet boundary, typecheck sees an ordinary call, lint sees an import that resolves, and the directive does not change JS-thread behaviour so the tests pass identically either side of the bug. WHY A STATIC CHECK IS THE RIGHT SHAPE HERE: this is a boundary the type system cannot express, which is the same category as verify-engine-purity (no node:* in the engine) and verify-app-imports (Metro resolution). Those are the precedents to follow, including their habit of printing what they cannot see. THE SURFACE IS TINY TODAY — three worklets, all in src/lens — which is exactly when to write the check, because the cost of walking it by hand is about to stop being small. THE LIMIT TO STATE (criterion 3): source analysis cannot follow a function reached through a variable, passed in as a callback, or looked up on an object. A check that let anybody believe it covered those would be worse than none, and the honest version narrows the reading rather than replacing it."
     }
   ]
 }

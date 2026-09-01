@@ -107,8 +107,27 @@ export function readCaptureSpace(reported: string | null | undefined): CaptureSp
  *
  * Returns at least 1. A stride of 0 would loop forever on the worklet thread, which on a
  * camera pipeline is not a hang anyone can debug — the preview simply stops.
+ *
+ * ## `'worklet'`, and the app crashed without it
+ *
+ * `sampleFrame` in `viewfinder.tsx` is a worklet — it runs on the frame-processor thread — and
+ * it calls this. **A worklet may only call other worklets.** Without this directive the
+ * Worklets babel plugin captures this as an ordinary JS-thread function, and invoking it from
+ * the frame thread throws the moment the first frame arrives, which took the app down as soon
+ * as the Lens opened.
+ *
+ * It is still an ordinary function everywhere else: the directive makes it *available* on a
+ * worklet runtime, it does not stop the JS thread calling it, which is why the tests below
+ * exercise it directly and always passed.
+ *
+ * **Nothing in this repository can catch this.** Jest has one runtime and no worklet boundary,
+ * so a missing directive is invisible to every gate — the same shape as
+ * `a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check`. The rule to carry:
+ * anything a worklet reaches must say so in its own source, and the caller being marked is not
+ * enough.
  */
 export function sampleStride(regionPixels: number, max = MAX_SAMPLES_PER_FRAME): number {
+  'worklet';
   if (regionPixels <= max) return 1;
   return Math.max(1, Math.ceil(regionPixels / max));
 }
