@@ -8,6 +8,101 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-121 DONE · the frame thread could not say what it threw, and now it can
+
+The device reported F-120's diagnostic:
+
+> **the frame processor ran 51 time(s) but nothing reached the app**
+
+That is the most informative sentence the Lens has produced. In two seconds the worklet was
+entered 51 times — about 25 fps, a healthy camera — `onError` fired **not once**, `onFrameDropped`
+fired **not once**, and neither `deliver` nor `report` ran. Execution dies between
+`entered.setBlocking(...)`, the first statement, and the delivery.
+
+### Why it was silent, which is the part that had to change first
+
+`react-native-vision-camera-worklets` installs our worklet inside its own try/catch
+(`src/createRuntimeThreadProvider.ts`) and sends whatever it catches to `console.error`. **Every
+throw our frame worklet produced was reported — into a log on a phone.** The frame thread has
+been naming this fault on all 51 frames, somewhere nobody can read.
+
+### What I ruled out here rather than asking the device
+
+I ran the app's real Babel pipeline over `camera.ts` and `viewfinder.tsx` and read the output.
+There is no `babel.config.js` in this repository at all, so Expo 57's Metro transformer falls
+back to `expo/internal/babel-preset` (`@expo/metro-config/build/loadBabelConfig.js`), and
+`babel-preset-expo` adds `react-native-worklets/plugin` whenever it resolves — which it does,
+from `apps/mobile`, and it is not gated on `isNodeModule`. The transform shows `sampleStride`,
+`sampleFrame` and `onFrame` all carrying `__workletHash`.
+
+**So F-115's class of fault is not what this is.** The worklet chain is intact.
+
+I also read `scheduleOnRN` in `react-native-worklets@0.11.4`. From a non-RN runtime it takes
+`globalThis.__workletsModuleProxy.scheduleOnRN(fun, globalThis.__serializer(args))`; both globals
+are installed by the native runtime and by the `setupSerializer()` inside `createWorkletRuntime`'s
+initializer, which `createWorkletRuntimeForThread` uses. Its helpers `isWorkletFunction` and
+`RuntimeKind` are a worklet and a plain enum respectively, so neither is a remote function there.
+It is the documented path and it looks well-formed — which is a reason not to accuse it, not a
+reason to trust it with the feature.
+
+Two candidates remain and **neither can be separated from a workstation**: `sampleFrame` throwing
+(most likely at `frame.getPixelBuffer()`, which `hasPixelBuffer` promises a *format* about, not a
+successful call), or `scheduleOnRN` failing out of that runtime.
+
+### The change makes one build settle it either way
+
+1. **A `catch` writing the message to a `Synchronizable`.** A ref cannot be written from a
+   worklet and `scheduleOnRN` is itself a suspect, so the message travels on the one mechanism
+   already proven working on this exact runtime — `entered` is a `Synchronizable`, and it is what
+   produced the number 51.
+2. **A delivery path that does not depend on the push.** The sample is written to a
+   `Synchronizable` *before* `scheduleOnRN` is attempted and the JS side polls at 4 Hz. If the
+   push is the fault, the Lens works on this build rather than after another round trip.
+3. **Reading the pixel buffer is a refusal, not a throw.** `FrameOutcome` exists to carry a reason
+   to the screen; a throw at `getPixelBuffer()` discarded one.
+
+**The fallback costs nothing when the push works.** It early-returns on a `pushed` ref that only
+the `scheduleOnRN` callbacks set — deliberately not `seenFrame`, because a polled reading setting
+*that* flag would switch the poll off after one frame and freeze the viewfinder on a single
+colour. That failure looks like success, which is why it is [E-051](../memory/effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md)
+and not a comment.
+
+**A reading beats an error on screen.** If `scheduleOnRN` is the fault then every frame writes
+*both* a good sample and a thrown message, so the poll reads `latest`, then `refusal`, then
+`thrown` — the throw is reported only when nothing was sampled and nothing was refused.
+
+### What the next screenshot decides
+
+| what appears                     | what it proves                                                  |
+| -------------------------------- | ----------------------------------------------------------------- |
+| **readings that follow the lens** | `scheduleOnRN` was the fault; the fallback is carrying the Lens    |
+| *the frame processor threw: …*    | `sampleFrame` was the fault, and the message names it exactly      |
+| *the pixel buffer could not be …* | `getPixelBuffer()` was the fault, now degraded to a refusal        |
+| *N byte(s) per pixel — planar*    | the negotiated format is not what ADR-0075 asked for               |
+
+Every branch is a sentence on the screen. **None of them is silence.**
+
+### Gates
+
+`state` (18 checks), `typecheck`, `lint`, `format`, `test` (mobile 414), `a11y` (129),
+`contrast` (129) — **all pass**.
+
+**Not run:** the device. Nothing in this repository can execute a worklet, a `Synchronizable` or
+a frame callback — jest has one runtime and no camera, which is the whole reason `Lens` takes a
+node instead of building one. F-040's first attestation is still **outstanding** and is still the
+only thing that could cover any of this.
+
+The Babel transform above is **evidence, not a gate**: I ran it by hand, and nothing in CI would
+notice if a `'worklet'` directive were dropped tomorrow. F-116 is the feature that closes that,
+already filed for R5.
+
+### Deliberately not done
+
+Changing `pixelFormat` or `targetResolution` to see if it helps — that is guessing at a rebuild
+per guess, and ADR-0075 chose `rgb` for a reason that still holds. And promoting the poll to the
+primary path: 4 Hz against NFR-4's 50 ms live-pick budget would be a decision, and decisions take
+an ADR.
+
 ## 2026-09-01 — F-120 DONE · the camera had an error channel and this screen never listened to it
 
 The device reported F-119's diagnostic:

@@ -131,6 +131,29 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
    */
   const entered = useMemo(() => createSynchronizable(0), []);
 
+  /**
+   * The last sample, the last refusal, and the last thrown message — all written on the frame
+   * thread, all read by a poll on the JS thread.
+   *
+   * **This is a second delivery path, not a nicety.** `scheduleOnRN` is the push, and the device
+   * has now shown it delivering nothing while the worklet ran fifty-one times. A `Synchronizable`
+   * is written *before* the push is attempted, so whatever the push depends on and lacks, the
+   * sample still gets out.
+   *
+   * The poll does nothing at all while the push is working — see `pushed` below.
+   */
+  const latest = useMemo(() => createSynchronizable<FrameSample | null>(null), []);
+  const refusal = useMemo(() => createSynchronizable<string | null>(null), []);
+  const thrown = useMemo(() => createSynchronizable<string | null>(null), []);
+
+  /**
+   * Whether `scheduleOnRN` has ever delivered.
+   *
+   * Separate from `seenFrame` on purpose: the poll must not mark the push as working, or one
+   * polled reading would switch the poll off and the Lens would freeze on a single frame.
+   */
+  const pushed = useRef(false);
+
   /*
    * The negotiated capture space. `unknown` until the session says otherwise — see the header:
    * this is the one value that must never be guessed, and the confidence ceiling already prices
@@ -142,6 +165,7 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
   const deliver = useCallback(
     (sample: FrameSample) => {
       seenFrame.current = true;
+      pushed.current = true;
       onReading(
         read(MODE, {
           region: { samples: sample.samples, width: sample.width, height: sample.height },
@@ -163,6 +187,7 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
   const report = useCallback(
     (why: string) => {
       seenFrame.current = true;
+      pushed.current = true;
       onDiagnostic?.(why);
     },
     [onDiagnostic],
@@ -188,6 +213,62 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
       clearTimeout(timer);
     };
   }, [onDiagnostic, entered]);
+
+  /*
+   * THE SECOND DELIVERY PATH.
+   *
+   * The device showed the worklet running fifty-one times while nothing reached the app, which
+   * leaves two possibilities — `sampleFrame` throws, or `scheduleOnRN` cannot reach the RN
+   * runtime from the one VisionCamera built for this thread. This poll answers both: the sample
+   * and any thrown message are written to a Synchronizable BEFORE the push is attempted, so they
+   * survive whichever of the two it is.
+   *
+   * **It costs nothing when the push works.** `pushed` is set only by the `scheduleOnRN`
+   * callbacks, so the first successful push turns this into an early return four times a second.
+   * It is deliberately NOT `seenFrame`: a polled reading setting that flag would switch the poll
+   * off after one frame and freeze the Lens on it.
+   *
+   * Four times a second rather than per frame. A live pick that updates at 4 Hz is usable; the
+   * NFR-4 budget for live pick is 50 ms perceived and this is a fallback, not the design.
+   */
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (pushed.current) return;
+
+      /*
+       * A READING BEATS AN ERROR, and the order is the whole point. If it is `scheduleOnRN`
+       * that fails, then EVERY frame writes both a good sample and a thrown message — and the
+       * app is working, through this path, with nothing worth putting on screen. Reading
+       * `thrown` first would paper a live viewfinder over with an error about a mechanism the
+       * person holding the phone is no longer using.
+       */
+      const sample = latest.getDirty();
+      if (sample !== null) {
+        seenFrame.current = true;
+        onReading(
+          read(MODE, {
+            region: { samples: sample.samples, width: sample.width, height: sample.height },
+            space: sample.space,
+          }),
+        );
+        return;
+      }
+
+      const why = refusal.getDirty();
+      if (why !== null) {
+        seenFrame.current = true;
+        onDiagnostic?.(why);
+        return;
+      }
+
+      // Nothing was sampled and nothing was refused, so the sampling itself is what failed.
+      const failure = thrown.getDirty();
+      if (failure !== null) onDiagnostic?.(`the frame processor threw: ${failure}`);
+    }, 250);
+    return () => {
+      clearInterval(id);
+    };
+  }, [latest, refusal, thrown, onReading, onDiagnostic]);
 
   const frameOutput = useFrameOutput({
     /*
@@ -220,8 +301,34 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
       entered.setBlocking((n) => n + 1);
       try {
         const outcome = sampleFrame(frame, space);
+
+        /*
+         * PUT IT WHERE THE JS THREAD CAN FETCH IT **BEFORE** TRYING TO PUSH IT.
+         *
+         * `scheduleOnRN` is the push, and from a non-RN runtime it goes through
+         * `globalThis.__workletsModuleProxy` and `globalThis.__serializer`. Reading the
+         * worklets source, both should be installed on the runtime
+         * `createWorkletRuntimeForThread` builds — but F-120 watched this worklet run 51 times
+         * and deliver nothing, and "should" is not a thing to stake the feature on. If the push
+         * throws, the sample is lost and looks exactly like a sample never taken. Written here
+         * first, it survives that.
+         */
+        if (outcome.ok) latest.setBlocking(outcome.sample);
+        else refusal.setBlocking(outcome.why);
+
         if (outcome.ok) scheduleOnRN(deliver, outcome.sample);
         else scheduleOnRN(report, outcome.why);
+      } catch (error: unknown) {
+        /*
+         * THE MESSAGE, NOT A SHRUG.
+         *
+         * `react-native-vision-camera-worklets` wraps this callback in its own try/catch and
+         * sends whatever it catches to `console.error` — which on somebody's phone is nowhere.
+         * So a throw here repeats on every frame in total silence: `entered` keeps counting,
+         * the preview stays live, and the screen has nothing to say. This is the sentence that
+         * names it, carried out on the one mechanism already proven to work from this thread.
+         */
+        thrown.setBlocking(error instanceof Error ? error.message : String(error));
       } finally {
         frame.dispose();
       }
@@ -316,7 +423,22 @@ function sampleFrame(frame: Frame, space: CaptureSpace): FrameOutcome {
    */
   if (!frame.hasPixelBuffer) return { ok: false, why: 'the frame has no CPU pixel buffer' };
 
-  const pixels = new Uint8Array(frame.getPixelBuffer());
+  /*
+   * `hasPixelBuffer` is a promise about the format, not about this call succeeding. A throw here
+   * would leave the frame thread with nothing to say — the wrapper in
+   * `react-native-vision-camera-worklets` catches everything `onFrame` throws and sends it to
+   * `console.error`, which is not somewhere the person holding the phone can read. A refusal
+   * carries the reason to the screen instead.
+   */
+  let pixels: Uint8Array;
+  try {
+    pixels = new Uint8Array(frame.getPixelBuffer());
+  } catch (error: unknown) {
+    return {
+      ok: false,
+      why: `the pixel buffer could not be read: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
   const bytesPerPixel = Math.floor(frame.bytesPerRow / frame.width);
   /*
    * Fewer than three bytes per pixel means a planar (YUV) buffer, whose `getPixelBuffer()` the

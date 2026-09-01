@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-08-31",
+  "updated": "2026-09-01",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -1820,6 +1820,38 @@
       "guard": "NONE THAT RUNS HERE, and that is the finding rather than an omission. Jest has ONE runtime and no worklet boundary, so a function missing the directive is an ordinary function that the existing lens tests call directly and pass. Typecheck sees a normal call; lint sees an import that resolves. The only thing that can catch this is a device — F-040s first attestation, which is still OUTSTANDING. F-116 files the static check that would close it.",
       "memory": "memory/effects/a-worklet-may-only-call-worklets-and-jest-has-one-runtime.md",
       "rationale": "THE LENS CRASHED ON ITS FIRST FRAME AND THE CAUSE WAS THREE WORDS. `sampleFrame` runs on VisionCamera's frame-processor thread and carries `'worklet'`. It called `sampleStride` from `camera.ts`, which carried nothing. A worklet may only call other worklets: the Worklets babel plugin captures an unmarked import as an ordinary JS-thread function, and invoking it from the frame thread throws the moment a frame arrives — which is the moment the Lens opens. THE DIRECTIVE IS A PROPERTY OF THE CALLEE, NOT OF THE CALL SITE. Marking `sampleFrame` says nothing about what `sampleFrame` may reach. Every function reachable from a worklet has to declare itself one, in its own source, and a caller being correct is not evidence about its callees. IT IS STILL AN ORDINARY FUNCTION EVERYWHERE ELSE, which is why the existing tests passed before the fix and pass after it. That symmetry is exactly what makes the defect invisible: nothing about the JS-thread behaviour changes, so no JS-thread test can distinguish the two states. WHAT WAS ALREADY WRITTEN DOWN. F-040 attested \"VisionCamera frame processors run on a worklet thread and the UI thread never blocks on colour maths\" and that attestation is OUTSTANDING — gate 0 has printed it on every run since F-040 closed. The feature shipped with the one claim that would have caught this explicitly unproven, and the first person to open the Lens found it. An outstanding attestation is not paperwork; it is a list of the things nobody has run. THE WHOLE SURFACE IS SMALL AND IS NOW ENUMERATED: three worklets exist in this repository — `onFrame` and `sampleFrame` in viewfinder.tsx, `sampleStride` in camera.ts — and after this change every function they reach is marked. `readCaptureSpace` is deliberately NOT marked: it is called from `onSessionConfigSelected`, on the JS thread.",
+      "confidence": 1,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-051",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/src/lens/viewfinder.tsx#pushed"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx#deliver"
+        },
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx#report"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "critical",
+      "guard": "NONE THAT RUNS HERE, and saying so is the point. Jest has one runtime, no worklet boundary and no camera, so neither delivery path executes in any test — the viewfinder is the reason `Lens` takes a node instead of building one. Typecheck sees a boolean ref; lint sees a ref that is read and written. The failure mode is a Lens that still shows A reading, so even a device check has to look at whether the colour CHANGES when the camera moves, not whether one appeared. F-040s first attestation — frame processors run on a worklet thread — is still OUTSTANDING and remains the only thing that could cover this.",
+      "memory": "memory/effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md",
+      "rationale": "THE LENS NOW HAS TWO DELIVERY PATHS AND ONLY ONE FLAG SEPARATES THEM. `scheduleOnRN` pushes a sample from the frame runtime to the JS thread; a `Synchronizable` written BEFORE that push is polled at 4 Hz as a fallback, because F-120 showed the frame worklet running 51 times while nothing arrived. `pushed` is what switches the fallback off, and it is set ONLY inside `deliver` and `report` — the two callbacks `scheduleOnRN` invokes. SET IT FROM THE POLL AND THE LENS FREEZES ON ONE FRAME. The first polled reading would mark the push as working, the interval would early-return forever after, and the screen would hold a single colour that never updates. That is a WORSE failure than the one being fixed, because it looks like success: a reading is on screen, with provenance, at the right confidence. Nothing about it says it is two seconds stale, and nothing about it says it is the same two seconds an hour later. IT IS DELIBERATELY NOT `seenFrame`, and the two are one line apart. `seenFrame` answers \"has anything at all arrived\", which the 2-second timer needs and which the POLL is entitled to set. `pushed` answers \"did the push mechanism work\", which only the push can answer. Collapsing them is the obvious simplification and it is the bug. THE ORDER INSIDE THE POLL IS PART OF THE SAME CONTRACT. If `scheduleOnRN` is what fails, every frame writes BOTH a good sample and a thrown message, so reading `thrown` before `latest` would cover a working viewfinder with an error about a mechanism nobody is using. The throw is reported only when nothing was sampled and nothing was refused. WHY THE FALLBACK IS NOT SIMPLY THE DESIGN: 4 Hz against NFR-4s 50 ms live-pick budget. It is a path that keeps the Lens usable while the device tells us which of the two candidates it is. Promoting it would be a decision, and decisions take an ADR.",
       "confidence": 1,
       "origin": "manual",
       "status": "active"

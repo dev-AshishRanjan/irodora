@@ -137,6 +137,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-formula-with-a-reader-who-can-check-it-by-hand.md](effects/a-formula-with-a-reader-who-can-check-it-by-hand.md) — **E-048** · preferenceWeight fed a ranking nobody saw; now a person reads it beside the counts it came from, so it has to stay explicable.
 - [effects/a-dependency-can-ship-a-capability-no-source-file-mentions.md](effects/a-dependency-can-ship-a-capability-no-source-file-mentions.md) — **E-049** · expo-image-picker adds RECORD_AUDIO by default and expo-file-system declares INTERNET in its own manifest; the permission list is a property of the built file, not of anything you wrote.
 - [effects/a-worklet-may-only-call-worklets-and-jest-has-one-runtime.md](effects/a-worklet-may-only-call-worklets-and-jest-has-one-runtime.md) — **E-050** · the Lens crashed on its first frame because a worklet called an unmarked function; the directive does not change JS-thread behaviour, so no test here can tell the two states apart.
+- [effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md](effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md) — **E-051** · the Lens has two delivery paths and one boolean separates them; set `pushed` from the poll and the viewfinder freezes on a single colour that looks exactly like success.
 
 ## Glossary
 
