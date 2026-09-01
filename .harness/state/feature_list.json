@@ -1671,7 +1671,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [
         "F-040"
       ],
@@ -1695,7 +1695,8 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "notes": "BLOCKED ON OQ-3, WHICH IS OPEN AND CLOSES AS AN ADR RATHER THAN AS A DECISION SOMEBODY MAKES IN PASSING. `next-feature` step 4 is explicit about this, and F-081 is the precedent: a feature whose open question is unresolved is `blocked`, not `backlog`, because *everything* eligible is `backlog` and leaving it there is a status that carries no signal [[a-blocker-outlives-the-state-of-the-world-that-caused-it]]. THE QUESTION IS NOT A DETAIL OF THE IMPLEMENTATION — IT DECIDES WHAT THE FEATURE READS. \"Reference card: manufacture or partner?\" (PRD §10, docs/adr/README.md) determines the patch layout, the patch count and — critically — WHOSE PUBLISHED VALUES the correction solves against. A partner card such as an X-Rite ColorChecker comes with published reference values under a stated illuminant and a licence; a card we manufacture comes with values we measure and must then stand behind. Those are different golden datasets, different provenance, and different licensing obligations under content/AGENTS.md, and code written against a guess at one of them is code that gets deleted. THE SECOND CRITERION CANNOT BE SATISFIED FROM A WORKSTATION EITHER. \"Mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix\" is already declared `attested` and outstanding: it needs physical cards under controlled illumination across the reference device set, which is F-063 — itself blocked on this. So even with OQ-3 closed, half of this feature is a measurement session rather than a commit. WHAT WOULD UNBLOCK IT: an ADR choosing manufacture or partner, naming the card, its published values and their licence. That is a purchasing and rights decision, not an engineering one."
     },
     {
       "id": "F-054",
@@ -1706,7 +1707,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "could",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-040",
         "F-031"
@@ -1719,7 +1720,9 @@
         "state",
         "test",
         "e2e"
-      ]
+      ],
+      "plan": "plans/F-054-outfit-scanner.md",
+      "notes": "DONE. THE SCAN IS ONE REGION WALK TURNED INTO THREE, AND EVERY JUDGEMENT IN IT IS AN ENGINE CALL. A worn outfit is vertically stratified, so the classical-CV question is where the two horizontal boundaries are: measure each row's colour, take the ΔE00 between adjacent rows, and the two largest jumps are the edges. 1-D edge detection over a row profile — deterministic and explainable to somebody who asks why the line is there. Row colours are `aggregate`'s, the jumps are `differenceOklch`'s, the per-band reading is `read('garment-scan', …)`'s, the score is `scoreOutfit`'s; what this file adds is an argmax over numbers the engine produced. THE MANUAL OVERRIDE IS THE ONLY INPUT PATH, which is the strongest form of criterion 2: `scanOutfit` takes bands and does not find them, `proposeBands` is a separate function whose result is one legal argument among many, so \"manual region override always available\" is a property of the API rather than a feature somebody remembered. FIVE MUTATIONS WERE RUN AND TWO OF THEM DID NOT FAIL THE FIRST TIME, WHICH IS THE PART WORTH READING. Removing the BOUNDARY_DELTA_E floor failed 2 tests; scoring a partial outfit failed 1; letting `read` handle an empty band failed 2. But REMOVING THE MINIMUM SEPARATION BETWEEN THE TWO BOUNDARIES PASSED EVERYTHING, and so did REPLACING LINEAR-LIGHT AVERAGING WITH ENCODED AVERAGING. Both because the fixture was too clean: every edge was one row wide, so the jump profile had exactly two non-zero values and any selection rule found them; and every row was ONE VALUE REPEATED, and averaging identical values gives the same answer in any space. TWO FIXTURES WERE ADDED AND BOTH MUTATIONS THEN FAILED. A SOFT_EDGE frame spreads one edge over two rows — which is what a photograph does — so \"take the two largest\" returns one boundary twice and a one-row band unless the separation holds; the assertion is that no band is thinner than a garment could be. A TEXTURED frame alternates a lit and a shaded version of each colour along the row — which is what fabric does — so linear and encoded averaging differ, and the boundary strength can be pinned to the engine's own answer to ten places. That second one matters most: [[averaging-non-linear-srgb-reads-too-dark]] is the most consequential colour bug in this repository, the error is one-directional, and it looks like slightly worse light rather than like a defect. A UNIFORM FIXTURE IS BLIND TO IT, and mine was. `aggregate([])` RETURNS BLACK, AND THAT IS WHY ZERO USABLE PIXELS IS A REFUSAL. `mean([])` is 0 in @irodora/color-sampling — correct for its own callers — so a band whose every pixel was rejected aggregates to rgb [0,0,0] and gets a quality assessment and a confidence attached. Black, reported as a measurement. `partition` is therefore called BEFORE `read`, and an empty result is `noPixels` rather than a dark garment. That is a correctness finding from reading the dependency, not a style choice. THE SCORE SET IS NULL UNLESS EVERY SLOT WAS READ. Two garments and a guess returns a number that looks exactly like a real one, about an outfit nobody is wearing. THE PROVENANCE IS PINNED TO THE WARDROBE'S RATHER THAN SHARED WITH IT. The plan said `colorFromReading` would be extracted so both paths used one helper; reading the code properly, `wardrobe.ts` builds a stored ROW and this builds a `Color` — different functions sharing one DECISION (source, confidence, and the four conditions ADR-0005 requires). A helper with one caller cannot fail; a test asserting the two agree fails if either drifts. Recorded as a plan revision. NOT BUILT, AND FILED AS F-126: the camera surface. `sampleFrame` walks one centre region and widening it is a change to the exact path F-117–F-121 are debugging — as of F-121 no reading has been observed reaching the app on a device, so a second unproven path on top of one would make the next device report ambiguous again. That is F-031's shape: the estimator ships, the surface arrives when the input is real. ALSO NOT BUILT: background removal, person detection, shape analysis — the parts of \"outfit scanning\" that quietly become machine learning, which criterion 2 forbids; slots beyond the three the scoring engine has; and storing a scan. GATES RUN, all green: state (18 checks), typecheck, lint, format, test (mobile 494, up from 469), build, a11y, contrast, content, security:keys. NOT RUN: e2e — in this feature's verification list, gate 7 still pending on F-091; nothing here proves a journey and there is deliberately no journey to prove yet. NOT APPLICABLE: color-golden and cvd, because no new colour maths exists to check — every value is `aggregate`'s, `differenceOklch`'s or `read`'s, and each already has its own golden coverage."
     },
     {
       "id": "F-055",
@@ -3528,6 +3531,33 @@
         "a11y"
       ],
       "notes": "FOUND WHILE BUILDING F-052, AND IT IS THE F-051 LESSON A SECOND TIME. `READING_DESTINATIONS` is ['profile', 'wardrobe'] and `offerReading` is called EXACTLY ONCE in the whole app — `CameraLens.tsx`, with 'profile'. So `takeReading('wardrobe')` in app/wardrobe/add.tsx can only ever return null, and AddGarment's `wardrobe.fromLens` button is unreachable on a device. F-043 built the receiver, E-042 records the addressed-mailbox design that made two consumers safe, and the SENDER for the second address was never added. A CONSUMER WITH NO PRODUCER — [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]] applied to a mailbox rather than a column, and invisible for the same reason: every test that exercises the wardrobe path supplies the reading itself, so the fixture is the missing sender. THE SECOND CRITERION IS THE POINT. Adding the offer fixes today; asserting that every destination has a producer is what stops the third one repeating this. NOT PULLED INTO F-052: the shopping check deliberately does not take a Lens reading — F-040's first attestation is still outstanding, so no reading has been observed reaching the app on a device, and building a third consumer of a path nobody has seen work would be two dead routes instead of one."
+    },
+    {
+      "id": "F-126",
+      "title": "The outfit scanner reaches a camera, once the Lens is known to deliver a reading",
+      "requirements": [
+        "FR-36"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "blocked",
+      "blockedBy": [
+        "F-054"
+      ],
+      "acceptance": [
+        "The frame processor can hand over a whole-frame sample set, not only the centre region, and the frame is still disposed on the worklet thread",
+        "A person can scan an outfit, see the proposed bands over the viewfinder, drag them, and read the per-garment colours and the score set",
+        "A refusal from proposeBands or from any slot reaches the screen as a sentence, never as an empty result"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "contrast",
+        "e2e"
+      ],
+      "notes": "BLOCKED ON F-040'S FIRST ATTESTATION, NOT ON F-054. The scanner's maths, its refusals and its score set landed in F-054 and are tested; what is missing is pixels. `sampleFrame` in viewfinder.tsx walks ONE CENTRE REGION, and widening it to a whole frame is a change to the exact code path F-117 through F-121 have been debugging — as of F-121 NO READING HAS BEEN OBSERVED REACHING THE APP ON A DEVICE, and the build that would settle why is still unrun. Putting a second unproven path on top of an unproven one would make the next device report ambiguous again, which is the specific failure F-120 was filed to remove. THIS IS F-031'S SHAPE AND IT IS DELIBERATE. That feature built six component scores and could not show them; its own note said so, and F-045 rendered them once there was a surface to render them on. Same here: the estimator exists and is checkable, and the surface waits for the input to be real. WHAT UNBLOCKS IT: F-040's attestation — frame processors run on a worklet thread and a reading reaches the app — discharged on a device. Not another commit here. THE THIRD CRITERION IS THE ONE THAT WILL BE TEMPTING TO DROP. `proposeBands` refuses a uniform frame, a frame too short, and a frame with no real boundary; `scanOutfit` refuses a band with no usable pixels. Every one of those is a sentence somebody needs to read, and a screen that renders an empty result for them would put back exactly the ambiguity F-119 removed from the Lens."
     }
   ]
 }

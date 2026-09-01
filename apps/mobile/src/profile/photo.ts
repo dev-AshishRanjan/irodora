@@ -99,8 +99,13 @@ export const PHOTO_LIGHTNESS_SPREAD = 0.18;
  * in: `SPACE_CONFIDENCE_CEILING.unknown` is 0.6 and `reading.confidence` carries it before this
  * function is ever called. What `apps/mobile/AGENTS.md` forbids is *assuming* the space — this
  * branch does not assume it, it records that the platform declined to say and pays for it.
+ *
+ * **The parameter is `Pick<…>` rather than `LensReading` (F-054).** It reads exactly two
+ * fields, and the outfit scanner asks this question about a single ROW of a frame — which has
+ * a colour and a capture space and none of the rest. Widening it is what stops that caller
+ * fabricating a reading, or worse, repeating the `unknown` decision above in a second file.
  */
-export function readingOklch(reading: LensReading): Triple {
+export function readingOklch(reading: Pick<LensReading, 'rgb' | 'space'>): Triple {
   const rgb: Triple = [reading.rgb[0], reading.rgb[1], reading.rgb[2]];
   const xyz = reading.space === 'display-p3' ? displayP3ToXyz(rgb) : srgbToXyz(rgb);
   return xyzToOklch(xyz);

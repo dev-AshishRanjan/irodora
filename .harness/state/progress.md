@@ -8,6 +8,129 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-054 DONE · the outfit scanner, and two mutations my fixture could not see
+
+### F-053 was skipped, honestly
+
+It is the lowest-id feature left in R5 and it carries **OQ-3**, which is open. `next-feature`
+step 4 is explicit: a feature depending on an unresolved open question is blocked, and an open
+question closes as an ADR rather than as a decision somebody makes in passing. F-081 is the
+precedent, and it is `blocked` rather than `backlog` for the reason
+[[a-blocker-outlives-the-state-of-the-world-that-caused-it]] gives — *everything* eligible is
+`backlog`, so leaving it there is a status that carries no signal.
+
+**OQ-3 is not a detail of the implementation; it decides what the feature reads.** *"Reference
+card: manufacture or partner?"* determines the patch layout, the patch count and whose
+**published values** the correction solves against. A partner card comes with reference values
+under a stated illuminant and a licence; one we make comes with values we measure and must
+stand behind. Different golden datasets, different provenance, different obligations under
+`content/AGENTS.md`. Code written against a guess at one of them is code that gets deleted.
+
+F-053 is now `blocked` with that written down. So is everything behind it: F-063 waits on it.
+
+### The scanner
+
+A worn outfit is vertically stratified, so the classical-CV question is **where the two
+horizontal boundaries are**. Measure each row's colour, take the ΔE00 between adjacent rows,
+and the two largest jumps are the edges — 1-D edge detection over a row profile, deterministic,
+and explainable to somebody who asks why the line is there.
+
+Row colours are `aggregate`'s, the jumps are `differenceOklch`'s, the readings are
+`read('garment-scan', …)`'s, the score is `scoreOutfit`'s. **What this file adds is an argmax
+over numbers the engine produced.** A band-finder is exactly where somebody inlines an average
+or a distance, and E-008 is why that would be invisible to any single-platform test.
+
+`scanOutfit` takes bands and does not find them. `proposeBands` is a separate function whose
+result is one legal argument among many — so *"manual region override always available"* is a
+property of the API rather than a feature somebody remembered to add.
+
+### The two mutations that passed, which is the part worth reading
+
+Five mutations were run against twenty-three tests with four named decoys. **Three failed as
+intended. Two passed.**
+
+| Mutation | Why the fixture could not see it |
+|---|---|
+| remove the minimum separation between boundaries | every edge was **one row wide**, so the jump profile had exactly two non-zero values and any selection rule found them |
+| average encoded values instead of linear light | every row was **one value repeated**, and averaging identical values gives the same answer in any space |
+
+The second is [[averaging-non-linear-srgb-reads-too-dark]] — the most consequential colour bug
+in this repository, one-directional, and it reads as slightly worse light rather than as a
+defect. **My fixture was blind to it, and the file's own header listed it as one of the
+dangerous cases.** Believing that header was the mistake; running the mutation is what found
+it.
+
+Two fixtures fixed both:
+
+- **`SOFT_EDGE`** spreads one edge over two rows — what a photograph does. Without the
+  separation rule, "take the two largest" returns one boundary twice and a one-row band. The
+  assertion is a property: no band is thinner than a garment could be.
+- **`TEXTURED`** alternates a lit and a shaded version of each colour along the row — what
+  fabric does. Now linear and encoded averaging differ, and the reported boundary strength is
+  pinned to the engine's own answer to ten places.
+
+Recorded as [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]], with the
+third instance of the same shape from this week: F-052's outfits-unlocked needed a wardrobe
+that already produced outfits, or a difference and a total would have been the same number.
+
+### `aggregate([])` returns black, so an empty band is a refusal
+
+`mean([])` is `0` in `@irodora/color-sampling` — correct for its own callers — so a band whose
+every pixel was rejected aggregates to `rgb: [0, 0, 0]` and gets a quality assessment and a
+confidence attached. **Black, reported as a measurement.**
+
+`partition` is therefore called *before* `read`, and an empty result is `noPixels` rather than
+a dark garment. That is a correctness finding from reading the dependency, not a style choice,
+and it is why the refusal is not a threshold somebody picked.
+
+The score set is `null` unless every slot was read: two garments and a guess returns a number
+that looks exactly like a real one, about an outfit nobody is wearing.
+
+### The plan was revised before implementation, not after
+
+It said `colorFromReading` would be extracted so this file and `wardrobe.ts` shared one helper.
+Reading the code properly: `wardrobe.ts` builds a stored **row** and this builds a **`Color`**.
+Different functions sharing one *decision* — source, confidence, and the four conditions
+ADR-0005 requires. **A helper with one caller cannot fail.** A test asserting the two paths
+agree can, and does if either drifts. That replaced the refactor.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile **494**, up from 469 |
+| 5 build · 8 a11y · 9 contrast · 11 content · security:keys | **PASS** |
+
+**Not run:** `e2e` — in this feature's verification list, gate 7 still pending on F-091. There
+is deliberately no journey to prove yet, which is the next section.
+
+**Not applicable:** `color-golden` and `cvd` — no new colour maths exists to check. Every value
+is `aggregate`'s, `differenceOklch`'s or `read`'s, and each already carries its own golden
+coverage.
+
+### The surface is filed, not built (F-126)
+
+`sampleFrame` walks **one centre region**. Widening it to a whole frame is a change to the exact
+code path F-117 through F-121 have been debugging, and **as of F-121 no reading has been
+observed reaching the app on a device** — the build that would settle why is still unrun.
+Putting a second unproven path on top of an unproven one would make the next device report
+ambiguous again, which is the specific failure F-120 existed to remove.
+
+This is F-031's shape and it is deliberate: that feature built six component scores and could
+not show them, and F-045 rendered them once there was a surface to render them on. F-126 is
+blocked on **F-040's attestation**, not on another commit here.
+
+### Deliberately not built
+
+Background removal, person detection, shape analysis — the parts of "outfit scanning" that
+quietly become machine learning, which criterion 2 forbids. Slots beyond the three the scoring
+engine has: a scarf, a bag and a coat over a jumper are all real and none is a slot. And
+storing a scan: the frame is discarded, and that rule does not bend for a longer region.
+
+---
+
 ## 2026-09-01 — F-052 DONE · three answers the engine already had, and the twelve sentences it could not say
 
 FR-52's shopping check: what does this garment do to the wardrobe I already own. Every answer
