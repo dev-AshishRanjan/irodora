@@ -8,6 +8,89 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-118 DONE · the answer came from the screen that replaced the crash
+
+F-117 turned a process death into a screen that prints what failed. It printed:
+
+> **Cannot use Frame Processors - `react-native-vision-camera-worklets` is not installed!**
+
+`react-native-vision-camera-worklets` is a **separate companion package**, and it was installed
+nowhere in this repository. It is *not* `react-native-worklets`, which has been installed all
+along — that one is Reanimated's worklet runtime; this one is VisionCamera's bridge onto it. The
+Lens uses `useFrameOutput`, so it is required rather than optional.
+
+Thrown by `VisionCameraWorkletsProxy.ts`, from a bare `require` inside a `try`/`catch`.
+
+### Why nothing found this before a device did
+
+VisionCamera declares it in **no dependency field** — not `dependencies`, not
+`peerDependencies`, not `optionalDependencies`. So:
+
+- `pnpm install` has nothing to warn about
+- the lockfile was complete and correct without it
+- typecheck never sees it, because nothing in our source imports it
+- **the APK builds**, because the missing piece is a JS module resolved at runtime
+
+**A dependency that exists only inside a `try` block is invisible to every tool that reads
+dependency metadata.** The only thing that finds it is running the feature — which is what
+F-040's four outstanding attestations have been saying since it closed.
+
+### The fix, and one thing it taught me about pinning
+
+Declared at the same version as VisionCamera, **pinned exactly**.
+
+The first resolution took the bridge to **5.2.3** while the camera stayed at **5.2.2** — allowed
+by the caret I had written, and exactly the drift that would reintroduce a mismatch nothing here
+could catch. `react-native-worklets` and `react-native-reanimated` were already pinned exactly in
+this file; VisionCamera's `^5.2.2` was the outlier. Both camera packages are now `5.2.2` with no
+range, because they are generated together and must move together.
+
+Lockfile regenerated with `--lockfile-only`: 22 lines, the bridge added and two specifiers
+pinned, camera resolution unchanged.
+
+### Three fixes, one bug, and what each was worth
+
+| | |
+|---|---|
+| **F-115** | a worklet calling an unmarked function. A real defect, and **not this crash** — it fires on the first frame, not on the button. |
+| **F-117** | the static import that made the throw uncatchable. **Not the cause either — but it is what produced the diagnosis**, and the app no longer dies. |
+| **F-118** | the missing package. The cause. |
+
+F-115 and F-117 were not wasted, but F-115 was shipped on a hypothesis I had not tested against
+the *timing* in the report, and the report said "after we click on the button" from the start.
+**The lesson is not "guess better" — it is that the first move should have been to make the
+failure speak.** F-117 did that, and the answer arrived in one screenshot.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| lockfile proof | **PASS** |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** |
+| 4 test | **PASS** |
+| 8 a11y · 9 contrast · 11 content | **PASS** |
+
+**None of these can confirm the Lens opens.** For the same reason nothing found the bug here:
+`pnpm install` has never run on this workstation — the workspace links are hand-made junctions —
+so the new package cannot be in `apps/mobile/node_modules`. CI installs from the lockfile; the
+device is what proves it.
+
+### E-049 applies, and the release lane is where it is checked
+
+A new native dependency can bring its own manifest permissions. A worklet bridge should not —
+but *"should not"* is the assumption that let `RECORD_AUDIO` ship two features ago, so gate 16
+on the release lane is where that gets verified, not here.
+
+### If it still fails
+
+The `CameraUnavailable` screen stays. If there is another missing piece it will name itself
+rather than closing the app, which is the property worth keeping regardless of this fix.
+
+---
+
 ## 2026-09-01 — F-117 DONE · the app closed because the throw happened before React existed
 
 > *Still we are getting the same issue — the app is closing after we click on the button.*
