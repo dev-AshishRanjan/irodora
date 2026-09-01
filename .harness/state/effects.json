@@ -1722,6 +1722,43 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-048",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/recommendation/src/preference.ts#preferenceWeight"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Preferences.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/recommendation/src/preference.ts#PREFERENCE_SATURATION"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test — the screen suite recomputes the expected weight with preferenceWeight itself and compares, so a screen carrying its own formula fails (watched: replacing the call with accepted/(accepted+rejected) failed exactly that test and nothing else). gate:typecheck catches the signature. NEITHER REACHES THE PROSE. `preferences.formula` explains the curve in words, in two locales, and no check ties that sentence to the constant it describes — see the rationale.",
+      "memory": "memory/effects/a-formula-with-a-reader-who-can-check-it-by-hand.md",
+      "rationale": "preferenceWeight HAD ONE CALLER, inside the engine, where the number fed a ranking and nobody saw it. F-109 added a second with a different need: the screen renders the number AND THE INPUTS IT CAME FROM, because FR-37 says a person can SEE their preference weights. WHAT CHANGES ABOUT CHANGING THE FORMULA. Before, altering the curve changed a ranking — observable only as different recommendations, and defensible as tuning. Now it changes a number a person is looking at beside the counts it is derived from. F-046 chose \"linear to saturation, then flat\" over a sigmoid FOR THIS EXACT REASON, and said so: \"each of the first eight nets moves it one eighth of the way\" is a sentence somebody can check by hand. That property is only worth anything once there is a screen, and now there is one. THE SCREEN NEVER RECOMPUTES. It imports preferenceWeight rather than reimplementing the curve, and the test recomputes the expected value with the same function instead of asserting literals — so a private copy in the app fails rather than agreeing today and drifting later (E-008s shape, applied to a formula rather than to colour maths). THE GAP THE GUARD DOES NOT COVER: the screen also renders PREFERENCE_SATURATION and a sentence explaining what it means, in English and Japanese. Change the constant and the number on screen follows automatically; change the SHAPE of the curve and the sentence becomes false while every test stays green, because no check ties prose to the behaviour it describes. That is the same class as the claims lint and it is not solved here.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

@@ -134,6 +134,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/nine-symbols-became-public-api-by-crossing-a-package-boundary.md](effects/nine-symbols-became-public-api-by-crossing-a-package-boundary.md) — **E-045** · the compile error is loud and the wrong fix is silent; redeclaring a measured constant to satisfy it is one rule in two places.
 - [effects/a-join-is-a-private-encoding-until-somebody-splits-it.md](effects/a-join-is-a-private-encoding-until-somebody-splits-it.md) — **E-046** · coverage joins ids on a pipe and the capsule solver splits them back; the encoding is a contract now, and an id containing the separator would parse into garments that do not exist.
 - [effects/a-rule-is-a-source-and-scope-files-are-written-from-it.md](effects/a-rule-is-a-source-and-scope-files-are-written-from-it.md) — **E-047** · security.md described a worker tier for nine months and F-042 was planned from it, so a false rule became an acceptance criterion nobody could satisfy.
+- [effects/a-formula-with-a-reader-who-can-check-it-by-hand.md](effects/a-formula-with-a-reader-who-can-check-it-by-hand.md) — **E-048** · preferenceWeight fed a ranking nobody saw; now a person reads it beside the counts it came from, so it has to stay explicable.
 
 ## Glossary
 

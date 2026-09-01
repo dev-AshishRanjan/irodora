@@ -361,6 +361,25 @@ export const ja: Record<MessageKey, string> = {
   'outfit.suggested': 'ワードローブから',
   'outfit.overall': '総合',
   'outfit.empty': 'まだ枠に合う服がありません。トップス、ボトムス、くつを追加してください。',
+  // F-109 — the preference weights are inspectable and resettable (FR-37).
+  'preferences.title': '学習した好み',
+  'preferences.origin':
+    'この端末で、あなたが残した組み合わせと見送った組み合わせから学習します。端末の外には出ません。',
+  'preferences.learned': '色の組み合わせ',
+  'preferences.formula': '重みは回数から計算されます。差が1増えるごとに一定量動き、上限は',
+  'preferences.accepted': '残した',
+  'preferences.rejected': '見送った',
+  'preferences.net': '差',
+  'preferences.weight': '重み',
+  'preferences.empty': 'まだ学習したものはありません。',
+  'preferences.emptyHint': '組み合わせを残すか見送ると、その根拠の数字とともにここに表示されます。',
+  'preferences.resetTitle': 'すべて削除',
+  'preferences.resetHint': '下の組み合わせをすべて削除し、好みのない状態に戻します。',
+  'preferences.reset': 'すべて削除',
+  'preferences.resetCount': '削除する組み合わせ',
+  'preferences.resetIrreversible': 'この操作は元に戻せません。',
+  'preferences.resetCancel': '削除しない',
+  'preferences.resetDo': '削除する',
 };
 
 /**

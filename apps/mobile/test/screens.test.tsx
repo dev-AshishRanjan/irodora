@@ -27,12 +27,14 @@ import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
+import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
 import { colorOf } from '../src/wardrobe';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
-import { parseWeightContent } from '@irodora/recommendation';
+import { parseWeightContent, preferenceWeight } from '@irodora/recommendation';
+import { familyLabel } from '../src/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 import type { WardrobeStore } from '../src/wardrobe';
 import type { ImageSource } from '../src/wardrobe/source';
@@ -361,7 +363,68 @@ const OUTFIT_WARDROBE = [
   outfitGarment('o-3', 'shoes', allEntries()[2]!.entry.slug),
 ];
 
+/**
+ * A preference store with a known shape, so the assertions below can name exact numbers.
+ *
+ * The rows are chosen to make the weight discriminating: green/warm-grey and ochre/mid-blue share a NET
+ * of +3 with very different totals, which is the property `preferenceWeight` HAS — it is a pure
+ * function of the net — and which "accepted over total" would not. A screen carrying its own
+ * formula fails here rather than merely differing.
+ */
+const PREFERENCE_ROWS = [
+  { familyA: 'deep-blue', familyB: 'brown', accepted: 5, rejected: 2 },
+  { familyA: 'green', familyB: 'warm-grey', accepted: 12, rejected: 9 },
+  { familyA: 'rust', familyB: 'violet-grey', accepted: 0, rejected: 4 },
+  { familyA: 'ochre', familyB: 'mid-blue', accepted: 3, rejected: 0 },
+] as const;
+
+function preferenceStore(
+  rows: readonly {
+    readonly familyA: string;
+    readonly familyB: string;
+    readonly accepted: number;
+    readonly rejected: number;
+  }[] = PREFERENCE_ROWS,
+): PreferenceStore & { readonly resets: number[] } {
+  let live = [...rows];
+  const resets: number[] = [];
+  return {
+    resets,
+    listPreferences: () => live,
+    resetPreferences(now: number) {
+      resets.push(now);
+      live = [];
+    },
+  };
+}
+
 const SCREENS: readonly ConformanceSubject[] = [
+  {
+    name: 'screens/Preferences',
+    // `static`, like the rest: its interactive parts are Button, registered in packages/ui
+    // where the suite makes it render focus, active, disabled and loading differently.
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Preferences store={preferenceStore()} />, theme),
+  },
+  {
+    // EMPTY — the state most people see first, and the one a blank list would fail silently.
+    name: 'screens/Preferences (nothing learned)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Preferences store={preferenceStore([])} />, theme),
+  },
+  {
+    /*
+     * MID-CONFIRMATION. The destructive path meets the same contrast and naming bar as the
+     * rest — it is the state a person is least likely to be in and most likely to be harmed by.
+     */
+    name: 'screens/Preferences (confirming a reset)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Preferences store={preferenceStore()} initialConfirming />, theme),
+  },
   {
     name: 'screens/Home',
     // A screen is `static` for now: it reads, it does not yet accept input. The Lens (F-040)
@@ -1789,4 +1852,135 @@ describe('the colour card has headings (A11)', () => {
         'header',
       );
     });
+});
+
+/**
+ * F-109 — the preference weights are inspectable and resettable (FR-37).
+ *
+ * The second criterion is what these exist for: the weight must be shown BESIDE the counts it
+ * comes from, never instead of them. F-046 stored counts rather than a float so the number would
+ * stay explicable, and a screen showing only the multiplier would undo that at the last step.
+ */
+describe('preferences are inspectable, with the counts the weight comes from (F-109)', () => {
+  /**
+   * VISIBLE TEXT ONLY — no accessibility labels.
+   *
+   * This distinction is the whole test. An earlier version collected `accessibilityLabel`
+   * too, and a mutation that stripped the counts from the RENDERED row still passed, because
+   * the label kept carrying them. The screen would have shown a bare `1.19×` to everybody
+   * who can see it and the suite would have been green.
+   */
+  function visibleText(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else visibleText(child, out);
+    }
+    return out;
+  }
+
+  /** Labels only, for the assertion that screen-reader users get the same numbers. */
+  function labelsOf(node: TestNode, out: string[] = []): string[] {
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    for (const child of node.children ?? []) if (typeof child !== 'string') labelsOf(child, out);
+    return out;
+  }
+
+  const shown = (store = preferenceStore()): string =>
+    visibleText(draw(<Preferences store={store} />, 'dark')).join('\u0000');
+
+  it('lists every pairing the person has expressed something about', () => {
+    const text = shown();
+    // Four pairings in, four out. A screen rendering only the first would pass a "shows a
+    // pairing" assertion and lose three.
+    // Reported as a LIST of what is missing, the way the Atlas test does it: a per-row
+    // assertion would stop at the first failure and hide the other three.
+    const missing = PREFERENCE_ROWS.filter(
+      (row) => !text.includes(familyLabel(row.familyA, 'en')),
+    ).map((row) => `${row.familyA}/${row.familyB}`);
+    expect(missing).toEqual([]);
+  });
+
+  it('shows BOTH counts, not only the weight', () => {
+    /*
+     * THE DECOY FOR CRITERION 2. A screen rendering only `1.19×` would satisfy "shows the
+     * weight" and would be exactly the regression F-046's storage decision exists to prevent.
+     * 12 and 9 appear on no other row, so finding them is finding that row's counts.
+     */
+    const text = shown();
+    expect(text).toContain('12');
+    expect(text).toContain('9');
+  });
+
+  it('shows the weight the ENGINE computes, not one the screen invented', () => {
+    const text = shown();
+    // Recomputed from the engine’s own function, per row. A hard-coded expectation would
+    // pass even if the screen carried a private copy of the formula that agreed today.
+    const wrong = PREFERENCE_ROWS.filter((row) => {
+      const expected = preferenceWeight({ accepted: row.accepted, rejected: row.rejected });
+      return !text.includes(expected.toFixed(2));
+    }).map((row) => `${row.familyA}/${row.familyB}`);
+    expect(wrong).toEqual([]);
+  });
+
+  it('gives a screen reader the pairing and both counts in one announcement', () => {
+    /*
+     * The row is one accessibility element on purpose: "Kept 5, Passed 2" announced without
+     * its pairing is a number with no subject. So the label carries the name AND the counts,
+     * and this asserts it independently of the visible text above — the two can drift, and
+     * the sighted assertion above cannot see it.
+     */
+    const labels = labelsOf(draw(<Preferences store={preferenceStore()} />, 'dark'));
+    const row = labels.find((l) => l.includes(familyLabel('green', 'en')));
+    expect(row).toBeDefined();
+    expect(row).toContain('12');
+    expect(row).toContain('9');
+  });
+  it('explains itself when nothing has been learned', () => {
+    const text = visibleText(draw(<Preferences store={preferenceStore([])} />, 'dark')).join(
+      '\u0000',
+    );
+    expect(text).toContain(en['preferences.empty']);
+    expect(text).toContain(en['preferences.emptyHint']);
+  });
+});
+
+describe('reset says what it removes before it removes it (F-109 criterion 3)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    return out;
+  }
+
+  it('names how many pairings go, and warns that it cannot be undone', () => {
+    const text = textOf(
+      draw(<Preferences store={preferenceStore()} initialConfirming />, 'dark'),
+    ).join('\u0000');
+
+    expect(text).toContain(en['preferences.resetCount']);
+    expect(text).toContain(String(PREFERENCE_ROWS.length));
+    expect(text).toContain(en['preferences.resetIrreversible']);
+  });
+
+  it('does NOT touch the store until the confirmation is accepted', () => {
+    /*
+     * THE ASSERTION THAT MATTERS. `resetPreferences` is a hard delete — the repository's only
+     * one — so a reset firing on the first tap would satisfy "reachable" and lose somebody's
+     * data. Rendering the confirmation must not be enough.
+     */
+    const store = preferenceStore();
+    draw(<Preferences store={store} initialConfirming />, 'dark');
+    expect(store.resets).toEqual([]);
+    expect(store.listPreferences()).toHaveLength(PREFERENCE_ROWS.length);
+  });
+});
+
+describe('the preferences route wires the real repository (F-109)', () => {
+  it('imports the device repository and hands it to the screen', () => {
+    const route = readFileSync(join(process.cwd(), 'app', 'preferences.tsx'), 'utf8');
+    expect(route).toContain("from '../src/store/repository'");
+    expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
+  });
 });

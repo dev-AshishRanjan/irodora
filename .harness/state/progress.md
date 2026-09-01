@@ -8,6 +8,122 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-109 DONE · the counts reach a screen, and the test that read the wrong text
+
+FR-37 says a person **can see and reset** their preference weights. F-046 built the mechanism and
+deliberately did not build the surface, so the data was inspectable and resettable **and nothing
+rendered it**. This is the fifth feature in a row that computed something nobody could see, and
+the one that starts paying it back.
+
+### The mutation proved my own test was reading the wrong thing
+
+Criterion 2 is the whole design: the weight must be shown **beside** the counts it comes from,
+never instead of them. So I stripped the counts from the rendered row and ran the suite.
+
+**All seven tests passed.**
+
+My `textOf` helper collected `accessibilityLabel` as well as visible text — a detail copied from
+the Atlas test, where it is right — and the label still carried the counts. The screen would have
+shown a bare `1.19×` to everybody who can see it, and the suite would have been green.
+
+Split into `visibleText` and `labelsOf`. Criterion 2 now asserts on **rendered text only**, and a
+separate test asserts the screen reader gets the pairing and both counts in one announcement —
+because those two can drift and the sighted assertion cannot see it. The mutation then failed
+exactly one test.
+
+I had written the risk into the mutation script's own comment before running it: *"a test that
+happened to be reading the label rather than the text would still pass and would be shown to be
+the wrong test."* It was. That is the argument for mutation testing in one paragraph.
+
+### Three mutations, each failing on its own tests
+
+| mutation | failed |
+|---|---|
+| the rendered row shows only the weight | *shows BOTH counts* — 1 |
+| the reset fires when the confirmation renders | both criterion-3 tests — 2 |
+| the screen computes the weight itself | *shows the weight the ENGINE computes* — 1 |
+
+The second is the one that matters most: `resetPreferences` is a **hard delete**, the
+repository's only one, so a reset firing on the way to the confirmation would still look
+reachable, still render a question, and would already have lost the data by the time the question
+appeared.
+
+### The a11y gate found a real defect
+
+Marking each row `accessible` — correct, because *"Kept 5, Passed 2"* announced without its
+pairing is a number with no subject — makes it a focusable element, and the conformance suite
+requires a role on those. Four findings per theme. Fixed with `accessibilityRole="text"`, which
+is what the row is.
+
+### Two things the requirement did not ask about
+
+**`t()` has no interpolation.** ADR-0056 made the catalogue enumerated TypeScript rather than a
+runtime i18n framework, so there are no placeholders. Composing a sentence from fragments is the
+classic way that breaks in Japanese, where the word order is not English's — so every dynamic
+string here is a **label beside a value**: *"Kept 5"*, 「残した 5」. Not a sentence at all, so
+there is nothing to get the wrong way round. The reset confirmation states the count as a
+labelled value and the warning as its own static sentence, rather than *"Forget all 7 pairings?"*
+
+**`familyLabel` throws on an unknown family.** Deliberately: the content gate guarantees every
+family a *published entry* uses is in the vocabulary. But these are **preferences** — user data
+recorded against whatever the corpus said at the time — so a republished corpus that retired a
+family would make the whole screen throw and take the other rows with it. It degrades one row to
+its slug instead, which is still recognisable enough for somebody deciding whether to reset.
+
+Found by the fixture: my first draft used invented family names and the screen crashed on
+`"blue"`.
+
+### Effects
+
+**E-048.** `preferenceWeight` had one caller, inside the engine, where the number fed a ranking
+nobody saw. It now has a reader **looking at it beside its own inputs**. F-046 chose *"linear to
+saturation, then flat"* over a sigmoid precisely so that *"each of the first eight nets moves it
+one eighth of the way"* would be checkable by hand — a property worth nothing until there was a
+screen, and now load-bearing.
+
+The link records the gap its guard does not cover: the screen renders a **sentence** explaining
+the curve, in two locales, and nothing ties prose to the behaviour it describes.
+
+### Gates
+
+Run one at a time.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** — after one prettier pass |
+| 4 test | **PASS** — mobile 409 |
+| 6 build | **PASS** |
+| a11y | **PASS** — after fixing the role finding |
+| contrast | **PASS** |
+
+`a11y` and `contrast` are this feature's own list and were the point of it. Three conformance
+subjects: populated, empty, and **mid-confirmation** — the destructive path meets the same bar,
+being the state a person is least likely to be in and most likely to be harmed by.
+
+`color-golden` does not apply: **no colour maths is added or changed.**
+
+### Two jest-versus-vitest slips
+
+`expect(value, message)` is a vitest idiom; jest's `expect` takes one argument. Replaced with the
+"missing list" shape the Atlas test already uses, which is better anyway — a per-row assertion
+stops at the first failure and hides the rest.
+
+### R4 is closed
+
+Every R4 feature is done. The surface debt that ran F-046 → F-048 → F-049 → F-110 → F-050 is
+paid for the preference half; coverage, duplicates and capsules still compute things nobody can
+see, each filed rather than claimed.
+
+### Next
+
+R5, and the outstanding device work: F-104's attestation, F-091's emulator, and
+`capsule-solve-p95` — none of which a workstation can settle.
+
+---
+
 ## 2026-09-01 — F-107 DONE · the check that missed its own vocabulary now reads 72 documents
 
 Gate 0's retired-surface check built its subject list from feature criteria, attested criteria

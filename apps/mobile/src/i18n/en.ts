@@ -385,6 +385,27 @@ export const en = {
   'outfit.suggested': 'From your wardrobe',
   'outfit.overall': 'Overall',
   'outfit.empty': 'Nothing in your wardrobe fits a slot yet. Add a top, trousers or shoes.',
+  // F-109 — the preference weights are inspectable and resettable (FR-37).
+  'preferences.title': 'What the app has learned',
+  'preferences.origin':
+    'Learned on this device, from outfits you kept and outfits you passed on. It never leaves the device.',
+  'preferences.learned': 'Colour pairings',
+  'preferences.formula':
+    'The weight is calculated from the counts. Each step of the net moves it part of the way, up to a limit of',
+  'preferences.accepted': 'Kept',
+  'preferences.rejected': 'Passed',
+  'preferences.net': 'Net',
+  'preferences.weight': 'Weight',
+  'preferences.empty': 'Nothing learned yet.',
+  'preferences.emptyHint':
+    'Keep or pass on an outfit and the pairing appears here, with the numbers behind it.',
+  'preferences.resetTitle': 'Forget everything',
+  'preferences.resetHint': 'Removes every pairing below and starts again from no preferences.',
+  'preferences.reset': 'Forget everything',
+  'preferences.resetCount': 'Pairings to forget',
+  'preferences.resetIrreversible': 'This cannot be undone.',
+  'preferences.resetCancel': 'Keep them',
+  'preferences.resetDo': 'Forget them',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */
