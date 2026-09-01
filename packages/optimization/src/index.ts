@@ -11,6 +11,15 @@
  */
 
 export {
+  CAPSULE_DEADLINE_MS,
+  CAPSULE_NODE_BUDGET,
+  solveCapsule,
+  type Capsule,
+  type CapsuleRequest,
+  type CapsuleStop,
+} from './capsule.js';
+
+export {
   applyChange,
   coverage,
   COVERAGE_THRESHOLD,

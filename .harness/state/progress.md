@@ -8,6 +8,144 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-050 DONE · two criteria that contradict each other, and a heuristic seed that did nothing
+
+FR-45 wants *"≥ N outfits from ≤ M garments"* for a 40-item wardrobe. **N and M are the
+question, not constants** — a person asks *"can I get 20 outfits out of 12 things?"* and the
+answer is a specific set, or an honest no.
+
+### The two acceptance criteria cannot both be met as written
+
+- Criterion 2: branch-and-bound with a heuristic seed and **a hard time budget**
+- Criterion 3: returns best-so-far on expiry; the result is **deterministic and reproducible**
+
+A wall-clock deadline plus best-so-far **is not reproducible**. A faster machine explores more
+in 3 s and returns a better subset, so the same wardrobe answers differently on a phone than on
+this workstation. Satisfying criterion 2 literally breaks criterion 3.
+
+Put to the user, who chose the resolution: **two limits.** A deterministic `nodeBudget` is the
+primary stop — same input, same nodes, same answer, anywhere — and the wall clock is a backstop
+carrying NFR-4's 3 s. The result reports `stoppedBy: 'proved' | 'nodes' | 'deadline'`, and
+`reproducible` is exactly `stoppedBy !== 'deadline'`. When the clock does fire the caller is
+**told**, instead of being handed a machine-dependent answer that claims to be reproducible.
+
+At the 40-item size the measurement says the design works: **every solve stops on `nodes`**, so
+the clock is never what ends it and results are identical everywhere. The honest cost is that
+optimality is *not proven* at that size — `stoppedBy: 'nodes'`, best-so-far, target met.
+
+### `coverage()` had already done the colour part
+
+`Coverage.combinations` is every valid outfit as a set of garment ids, already scored against
+`COVERAGE_THRESHOLD`. So this file **never scores an outfit and never touches a colour**; the
+problem reduces to a max-coverage-shaped subset selection, which is NP-hard and is why the
+criterion names branch-and-bound. `color-golden` does not apply, and that is a fact about the
+code rather than a claim about it.
+
+This is F-110's payoff arriving on schedule: `coverage()` is in this package, so the solver
+reads it directly.
+
+### Three defects the mutations found, and one they found in the tests
+
+**The optimality test was not discriminating.** Weakening the bound to over-prune by one went
+**green**. The GRID fixture is symmetric enough that the greedy seed is already optimal, so the
+search never had to do anything and a wrong bound was invisible. Replaced with a fixed-seed LCG
+generating **40 lopsided instances**, each compared against exhaustive search at every target.
+The mutation then failed precisely: *"instance 0, target 7 should need 6 garments: expected 7 to
+be 6."*
+
+**The heuristic seed was a no-op.** An outfit is three garments, so the first garment added
+completes nothing — every candidate scored a gain of zero, `bestGain` started at zero, and the
+greedy loop found no improvement on its first step and returned an **empty seed for every
+wardrobe there is**. Criterion 2 asks for a heuristic seed and there wasn't one; the
+branch-and-bound was doing all the work alone. Fixed by ranking on *potential* — the
+combinations a garment could still reach — with gain as the primary key.
+
+**The greedy-trap fixture did not trap greedy.** `a1` and `a2` sorted first *and* happened to be
+a compatible pair, so index-order selection stumbled into the right answer. Rebuilt so the
+alphabetically-first garments sit in **different** combinations, and it now separates a
+heuristic from an arbitrary prefix.
+
+Four mutations watched failing, each on its own tests:
+
+| mutation | tests failed |
+|---|---|
+| the bound over-prunes by one | 1 — the brute-force sweep |
+| never search, return the seed | 7 |
+| the seed ignores potential | 1 — the ranking test |
+| the original no-op seed, both halves | 3 |
+
+### 46 green tests said nothing about the type error
+
+`noUncheckedIndexedAccess` makes every typed-array read `number | undefined`, and four compound
+assignments (`s.present[c] += 1`) are errors under it. **Vitest transpiles without
+typechecking**, so the whole suite was green while `pnpm build` was red — the same shape as the
+`@ts-expect-error` lesson from F-042, and a reminder that the test gate and the type gate
+answer different questions.
+
+The build failure surfaced through the bench, not the build: `pnpm bench` died on
+*"does not provide an export named 'solveCapsule'"* because the bench resolves through `dist/`.
+That is exactly the stale-`dist` hazard F-110's plan listed as a risk, arriving one feature
+later.
+
+### The budget was committed before the feature, and it stayed put
+
+`capsule-solve-p95` (3000 ms, device-scoped) was written in F-038 with the note that it was
+*"recorded now so the budget is committed before the feature exists rather than chosen to fit
+whatever it turns out to cost."* **Untouched, and still NOT RUN** — a workstation is not the
+slowest supported phone.
+
+The new `capsule-solve-node-p95` is `node-reference` scoped and measures the search itself:
+**p95 166.42 ms, median 135.30 ms, ceiling 400 ms**, 30 runs, at forty garments and 2366
+combinations. Roughly 2.6× the observation, matching the headroom F-048 settled on. Measured
+through the harness after a scratch probe said ~150 ms — close this time, but the probe is not
+the evidence.
+
+Its rationale records the limit that matters: because every solve exhausts the node budget, the
+number is flat across queries and the gate watches **cost per node**, not difficulty. Raising
+`CAPSULE_NODE_BUDGET` would push straight through the ceiling, which is the regression it exists
+to catch.
+
+### Effects
+
+**E-046, high.** `Coverage.combinations` joins sorted ids on `|`, and that was a private
+encoding while `applyChange` only compared whole keys. `solveCapsule` **splits** them, so the
+encoding is now a contract between two modules that no type describes — both sides see `string`.
+Changing the separator fails loudly; a garment id *containing* one parses into the wrong number
+of wrong ids and returns a capsule naming garments that do not exist. Not a live defect — ids
+are UUIDv7 — and recorded because the constraint is written down nowhere else.
+
+### Gates
+
+Run one at a time.
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** — after fixing four `noUncheckedIndexedAccess` errors |
+| 2 lint | **PASS** — after fixing a void-expression arrow and five template literals |
+| 3 format | **PASS** — after two prettier passes |
+| 4 test | **PASS** — optimization 46 (18 capsule + 10 duplicates + 18 coverage) |
+| 6 build | **PASS** |
+| 12 perf | **PASS** — `capsule-solve-node-p95` 166.42 ms against 400 ms |
+
+Not applicable: `color-golden` — **no colour maths is added, changed or called**; also `cvd`,
+`contrast`, `a11y`, `content`, `security`, `artifact`, `e2e`.
+
+### Still not delivered
+
+The surface, for the fifth feature running. F-046, F-048, F-049, F-110 and now F-050 all compute
+things **no person can see**. `service: packages`, no `a11y` in the verification list.
+
+Also not delivered: proof of optimality at forty items, and any evidence about a phone.
+`capsule-solve-p95` stays outstanding until somebody runs it on the slowest device in the
+matrix.
+
+### Next
+
+R4 holds F-103, F-107 and F-109.
+
+---
+
 ## 2026-08-31 — F-110 DONE · a move that changed no assertion, and nine symbols that changed status
 
 F-048 built coverage in `@irodora/recommendation`. Its row said `@irodora/optimization`. F-049

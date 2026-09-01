@@ -1652,6 +1652,38 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-046",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/optimization/src/coverage.ts#Coverage.combinations"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/optimization/src/capsule.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/optimization/test/capsule.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/optimization"
+      ],
+      "severity": "high",
+      "guard": "gate:test — the capsule tests build their fixtures with the SAME join that coverage.ts uses, so a change to the separator or the sort breaks parsing and the brute-force comparison disagrees loudly. NEITHER that nor any type reaches a garment id that CONTAINS the separator, which is the silent case — see the rationale.",
+      "memory": "memory/effects/a-join-is-a-private-encoding-until-somebody-splits-it.md",
+      "rationale": "F-048 built `Coverage.combinations` as a `ReadonlySet<string>` of sorted, `|`-joined garment ids, and documented it as state `applyChange` needs so an increment is a set operation rather than a guess. THE JOIN WAS AN IMPLEMENTATION DETAIL: `applyChange` only ever compares and subtracts whole keys, so it never has to know what is inside one. F-050 SPLITS THEM. `solveCapsule` reads the set as its problem instance and does `c.split('|')` to recover the garment ids, so a private encoding became a contract between two modules the moment a second reader parsed it. Nothing in the type system says so — both sides see `string`. THE LOUD FAILURE AND THE SILENT ONE. Changing the separator, or dropping the sort, breaks parsing in a way the capsule tests catch immediately, because their fixtures build keys with the same join and the brute-force oracle then disagrees. That is fine. The SILENT failure is a garment id that contains a `|`: the key still parses, into the WRONG NUMBER OF WRONG IDS. The solver would then optimise over garments that do not exist and return a capsule naming them, with an outfit count that is internally consistent and wrong. No gate here can see it. WHY IT IS NOT A LIVE DEFECT TODAY: garment ids are UUIDv7 from `@irodora/store` and slot-index strings in fixtures, and neither can contain a separator. This is recorded because THE CONSTRAINT NOW EXISTS AND IS WRITTEN DOWN NOWHERE ELSE — the day an id becomes user-supplied, or a slug, or anything a person types, this is the link that says why that is not free. THE FIX IF IT EVER BINDS is not to escape the separator, which moves the problem, but to carry the combination as the ids it already is rather than a string that has to be taken apart again. That is a change to F-048s public type and it is deliberately not made here: there is no defect to fix yet, and a type change to satisfy a hypothetical is how a small file becomes a large one.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

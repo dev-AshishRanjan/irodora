@@ -46,7 +46,7 @@ import {
 } from '@irodora/recommendation';
 // Coverage moved to the package the feature list named for it (F-110). The budget below still
 // measures the same code over the same fixture, so its ceiling is unchanged.
-import { applyChange, coverage } from '@irodora/optimization';
+import { applyChange, coverage, solveCapsule } from '@irodora/optimization';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..', '..');
@@ -206,7 +206,48 @@ const coverageAdded = {
   color: fromXyz([0.55, 0.57, 0.6], { source: 'reference', confidence: 1, originSpace: 'oklch' }),
 };
 
+/*
+ * A wardrobe of FORTY, because forty is the size FR-45 names and the only size the requirement
+ * makes a claim about. Fourteen tops and thirteen each of trousers and shoes — 2366 valid
+ * combinations at `threshold: 0`, which is the problem instance the solver actually faces.
+ *
+ * Deliberately larger than the coverage wardrobe above. A capsule solve over thirty would be a
+ * different and easier question, and quoting it would be answering a question nobody asked.
+ */
+const capsuleWardrobe = [
+  ['top', 14],
+  ['trouser', 13],
+  ['shoe', 13],
+].flatMap(([slot, n], s) =>
+  Array.from({ length: n }, (_, i) => ({
+    id: `${slot}-${String(i)}`,
+    slot,
+    color: fromXyz([0.2 + i * 0.05 + s * 0.01, 0.22 + i * 0.05, 0.25 + i * 0.05], {
+      source: 'reference',
+      confidence: 1,
+      originSpace: 'oklch',
+    }),
+  })),
+);
+
+const capsuleCoverage = coverage(capsuleWardrobe, {
+  reference: pool,
+  profile,
+  rules,
+  weights: outfitBudgetWeights,
+  threshold: 0,
+});
+
 const MEASUREMENTS = {
+  /*
+   * A realistic question — "twenty outfits out of at most twelve things" — rather than the
+   * cheapest one. At this size the search exhausts its NODE budget rather than the clock, which
+   * is the intended behaviour: the answer is reproducible on every machine, and the wall clock
+   * stays a backstop it never reaches.
+   */
+  'capsule-solve-node-p95': () => {
+    solveCapsule(capsuleCoverage, { targetOutfits: 20, maxGarments: 12 });
+  },
   'coverage-apply-change-p95': () => {
     applyChange(
       coverageBase,
