@@ -35,6 +35,18 @@ import type { LensReading } from './reading';
 export default function CameraLens(): React.JSX.Element {
   const { permission, request } = useLensPermission();
   const [reading, setReading] = useState<LensReading | null>(null);
+  /**
+   * Why there is no reading, when the frame output can say.
+   *
+   * Held here rather than in `Viewfinder` because the screen owns the layout, and cleared the
+   * moment a reading arrives — a stale reason under a live reading would be worse than none.
+   */
+  const [diagnostic, setDiagnostic] = useState<string | null>(null);
+
+  const takeReading = useCallback((next: LensReading) => {
+    setDiagnostic(null);
+    setReading(next);
+  }, []);
 
   /**
    * Hand the reading over and go to profile setup.
@@ -50,8 +62,13 @@ export default function CameraLens(): React.JSX.Element {
 
   return (
     <Lens
-      viewfinder={permission === 'granted' ? <Viewfinder onReading={setReading} /> : null}
+      viewfinder={
+        permission === 'granted' ? (
+          <Viewfinder onReading={takeReading} onDiagnostic={setDiagnostic} />
+        ) : null
+      }
       reading={reading}
+      diagnostic={diagnostic}
       permission={permission}
       onRequestPermission={request}
       onUseForProfile={useForProfile}

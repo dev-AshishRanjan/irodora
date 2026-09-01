@@ -45,7 +45,7 @@
  * F-097's attested criterion, not a claim this file gets to make.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   Camera,
@@ -79,6 +79,14 @@ const MODE = 'live' as const;
 export interface ViewfinderProps {
   /** Called with each reading the frame output produces. */
   readonly onReading: (reading: LensReading) => void;
+  /**
+   * Called when the frame output produces no reading, with the reason.
+   *
+   * Exists because "a live preview and no reading" was the whole of what the Lens could say
+   * about four different failures. The reason reaches the screen rather than a log, because a
+   * log on a phone is not something the person holding it can read.
+   */
+  readonly onDiagnostic?: (why: string) => void;
 }
 
 /**
@@ -104,9 +112,10 @@ export function useLensPermission(): { permission: LensPermission; request: () =
  * with no camera is one this feature does not work on, and the screen's own empty state already
  * says there is no reading.
  */
-export function Viewfinder({ onReading }: ViewfinderProps): React.JSX.Element | null {
+export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.JSX.Element | null {
   const { colors } = useTheme();
   const device = useCameraDevice('back');
+  const seenFrame = useRef(false);
 
   /*
    * The negotiated capture space. `unknown` until the session says otherwise — see the header:
@@ -118,6 +127,7 @@ export function Viewfinder({ onReading }: ViewfinderProps): React.JSX.Element | 
   /** Reduce a frame sample to a reading, on the JS thread, through the engine. */
   const deliver = useCallback(
     (sample: FrameSample) => {
+      seenFrame.current = true;
       onReading(
         read(MODE, {
           region: { samples: sample.samples, width: sample.width, height: sample.height },
@@ -127,6 +137,37 @@ export function Viewfinder({ onReading }: ViewfinderProps): React.JSX.Element | 
     },
     [onReading],
   );
+
+  /**
+   * A refused frame, on the JS thread.
+   *
+   * Sent for every refused frame rather than throttled in the worklet: a worklet cannot hold
+   * state between calls to count them, and React drops a `setState` to an identical string
+   * without re-rendering — so a steady stream of the same reason costs one bridge hop per frame
+   * and no renders. The frames it describes are ones we are doing no work on anyway.
+   */
+  const report = useCallback(
+    (why: string) => {
+      seenFrame.current = true;
+      onDiagnostic?.(why);
+    },
+    [onDiagnostic],
+  );
+
+  /*
+   * THE ONE FAILURE NO FRAME CAN REPORT: no frames at all. If the output never starts, `onFrame`
+   * never runs, so neither `deliver` nor `report` is ever reached and the screen would wait
+   * forever with nothing to say. Two seconds is long enough that a working camera has delivered
+   * many frames and short enough that somebody is still holding the phone up.
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!seenFrame.current) onDiagnostic?.('no frames reached the frame processor');
+    }, 2000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [onDiagnostic]);
 
   const frameOutput = useFrameOutput({
     /*
@@ -147,8 +188,9 @@ export function Viewfinder({ onReading }: ViewfinderProps): React.JSX.Element | 
        * retained, and a stalled preview is not a failure anybody can debug from the outside.
        */
       try {
-        const sample = sampleFrame(frame, space);
-        if (sample !== null) scheduleOnRN(deliver, sample);
+        const outcome = sampleFrame(frame, space);
+        if (outcome.ok) scheduleOnRN(deliver, outcome.sample);
+        else scheduleOnRN(report, outcome.why);
       } finally {
         frame.dispose();
       }
@@ -204,18 +246,46 @@ export function Viewfinder({ onReading }: ViewfinderProps): React.JSX.Element | 
  *
  * **A worklet.** It reads bytes and steps over them; it computes no colour.
  *
- * Returns `null` rather than guessing whenever the buffer is not the shape this can read. A
- * frame it cannot walk is not an RGBA frame by default — that assumption is the one thing this
- * whole module is arranged to avoid.
+ * Refuses rather than guessing whenever the buffer is not the shape this can read. A frame it
+ * cannot walk is not an RGBA frame by default — that assumption is the one thing this whole
+ * module is arranged to avoid.
+ *
+ * ## It now says WHY it refused
+ *
+ * It used to return `null`. Refusing was right; **refusing silently was not.** The Lens showed a
+ * live preview and no reading, forever, with nothing anywhere saying which of four things had
+ * happened — no frames at all, a GPU-only buffer, a planar format, or a region of zero size.
+ * A frame processor that declines every frame and reports nothing is indistinguishable from one
+ * that is not running.
  */
-function sampleFrame(frame: Frame, space: CaptureSpace): FrameSample | null {
+type FrameOutcome =
+  | { readonly ok: true; readonly sample: FrameSample }
+  | { readonly ok: false; readonly why: string };
+
+function sampleFrame(frame: Frame, space: CaptureSpace): FrameOutcome {
   'worklet';
   const size = Math.floor(Math.min(frame.width, frame.height) * REGION_FRACTION);
-  if (size <= 0 || !frame.hasPixelBuffer) return null;
+  if (size <= 0)
+    return { ok: false, why: `frame ${String(frame.width)}x${String(frame.height)} is too small` };
+
+  /*
+   * A GPU-only buffer. `pixelFormat: 'rgb'` asks for CPU-readable RGB, but the negotiated
+   * format is the device's answer rather than our request.
+   */
+  if (!frame.hasPixelBuffer) return { ok: false, why: 'the frame has no CPU pixel buffer' };
 
   const pixels = new Uint8Array(frame.getPixelBuffer());
   const bytesPerPixel = Math.floor(frame.bytesPerRow / frame.width);
-  if (bytesPerPixel < 3) return null;
+  /*
+   * Fewer than three bytes per pixel means a planar (YUV) buffer, whose `getPixelBuffer()` the
+   * library documents as undefined behaviour. Reading it would produce a plausible colour from
+   * the wrong bytes, which is worse than reading nothing.
+   */
+  if (bytesPerPixel < 3)
+    return {
+      ok: false,
+      why: `${String(bytesPerPixel)} byte(s) per pixel — the frame is planar, not RGB`,
+    };
 
   const left = Math.floor((frame.width - size) / 2);
   const top = Math.floor((frame.height - size) / 2);
@@ -239,9 +309,12 @@ function sampleFrame(frame: Frame, space: CaptureSpace): FrameSample | null {
     }
 
   return {
-    samples,
-    space,
-    width: Math.ceil(size / stride),
-    height: Math.ceil(size / stride),
+    ok: true,
+    sample: {
+      samples,
+      space,
+      width: Math.ceil(size / stride),
+      height: Math.ceil(size / stride),
+    },
   };
 }

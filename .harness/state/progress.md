@@ -8,6 +8,92 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-119 DONE · a frame processor that refuses every frame and says nothing looks exactly like one that is not running
+
+> *The lens is opening, but nothing happens when I point the camera at a colour. Is this
+> expected? Is it not wired up?*
+
+**It is wired up.** F-040 built the whole chain and every link is present: `useFrameOutput` with
+an `rgb` pixel format, an `onFrame` worklet, `sampleFrame` walking the centre region,
+`scheduleOnRN` handing the sample across, `read()` reducing it through `@irodora/color-sampling`,
+and `Lens` rendering the result. Every prop and every API was checked against the installed
+VisionCamera 5.2.2 — `outputs`, `onSessionConfigSelected`, `hasPixelBuffer`, `bytesPerRow`,
+`pixelFormat: 'rgb'` — and all of them are real and correctly used.
+
+So something in that chain produces nothing **and says nothing about it.**
+
+### The refusal was right; the silence was not
+
+```ts
+if (size <= 0 || !frame.hasPixelBuffer) return null;
+if (bytesPerPixel < 3) return null;
+```
+
+Refusing is correct — a frame this cannot walk is not an RGBA frame by default, and reading a
+planar buffer would produce a plausible colour from the wrong bytes, which is worse than reading
+nothing. That discipline stays.
+
+But **four different failures all presented identically**: no frames at all, a GPU-only buffer,
+a planar format, a zero-sized region. Every one of them looks like a live preview that never
+produces a reading. A frame processor that declines every frame and reports nothing is
+indistinguishable from one that is not running — which is precisely the ambiguity the report is
+stuck in, and the reason the question "is it even wired up?" was reasonable to ask.
+
+### What changed
+
+`sampleFrame` returns a **discriminated outcome** instead of `null`: the sample, or the reason it
+refused. `onFrame` schedules whichever it got.
+
+**And the failure no frame can report — no frames at all.** If the output never starts, `onFrame`
+never runs, so neither path is reached and the screen waits forever with nothing to say. A
+two-second JS-side timer covers it: long enough that a working camera has delivered many frames,
+short enough that somebody is still holding the phone up.
+
+The reason reaches the **screen**, not a log. A log on a phone is not something the person
+holding it can read, and they are the only one who can see this happen. Same principle as
+F-117's `CameraUnavailable`, which is what produced the last diagnosis in one screenshot.
+
+### Where it is shown, and the mutation that made me add a case
+
+Only in the empty state. **Never beside a reading** — structural, since that branch only exists
+where the reading is null — and **never when access was refused.**
+
+That last one is a real sequence, not a hypothetical: grant access, frames fail, a diagnostic
+lands in state, somebody revokes the permission in Settings and comes back. The screen must
+explain the refusal, not a frame problem from a camera that is no longer running.
+
+**The first version of the suite did not catch it.** Removing the `permission !== 'granted'`
+guard passed every F-119 test. I added the revoked-permission case, and the same mutation now
+fails on exactly that test and nothing else.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** |
+| 1 typecheck | **PASS** |
+| 2 lint | **PASS** |
+| 3 format | **PASS** |
+| 4 test | **PASS** — mobile 414 |
+| 8 a11y · 9 contrast | **PASS** |
+
+A conformance subject was added for granted-with-a-diagnostic, because that line still has to
+meet the same contrast and type rules as everything else — it is the one thing on the screen
+that is not in the product's voice, and it is there to be read out to somebody.
+
+### What this does not do
+
+**It does not make the Lens read a colour.** It makes the Lens say which of four things is
+stopping it. If frames are arriving and being sampled, the failure is downstream in `read()` or
+the display derivation and this will show nothing new — that is the real limit and the next place
+to look.
+
+The diagnostic is sent per refused frame: a worklet cannot hold state to throttle, and React
+drops a `setState` to an identical string without re-rendering, so a steady stream of one reason
+costs a bridge hop per frame and no renders — on frames doing no work anyway.
+
+---
+
 ## 2026-09-01 — F-118 DONE · the answer came from the screen that replaced the crash
 
 F-117 turned a process death into a screen that prints what failed. It printed:

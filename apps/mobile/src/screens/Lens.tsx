@@ -88,6 +88,16 @@ export interface LensProps {
   readonly viewfinder?: React.ReactNode;
   /** The latest reading, or `null` before there is one. */
   readonly reading?: LensReading | null;
+  /**
+   * Why there is no reading, when the frame output can say.
+   *
+   * Shown **only** in the empty state, and never beside a reading. It is not copy in the
+   * product's voice and it is not meant to be: *"waiting"* was the whole of what this screen
+   * could say about four different failures — no frames at all, a GPU-only buffer, a planar
+   * format, a zero-sized region — and a person looking at a live preview that produces nothing
+   * cannot tell those apart, nor report which one they have.
+   */
+  readonly diagnostic?: string | null;
   readonly permission?: LensPermission;
   /** Ask for camera access. Absent in the conformance suite. */
   readonly onRequestPermission?: () => void;
@@ -100,6 +110,7 @@ export interface LensProps {
 export function Lens({
   viewfinder = null,
   reading = null,
+  diagnostic = null,
   permission = 'undetermined',
   onRequestPermission,
   onUseForProfile,
@@ -197,9 +208,16 @@ export function Lens({
          * indistinguishable from having read a grey, and `#000000` is a reading somebody could
          * act on. The empty state says there is no reading, in words.
          */
-        <Text size="small" color="foreground.2" script={script}>
-          {t(permission === 'granted' ? 'lens.waiting' : 'lens.noReading')}
-        </Text>
+        <View style={{ gap: 4 }}>
+          <Text size="small" color="foreground.2" script={script}>
+            {t(permission === 'granted' ? 'lens.waiting' : 'lens.noReading')}
+          </Text>
+          {diagnostic === null || permission !== 'granted' ? null : (
+            <Text size="xs" color="foreground.2" script="latin">
+              {diagnostic}
+            </Text>
+          )}
+        </View>
       ) : (
         <Surface level="1" padding={16}>
           <View style={{ gap: 12 }}>

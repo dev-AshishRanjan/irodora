@@ -658,6 +658,19 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) => draw(<Lens permission="denied" />, theme),
   },
   {
+    /*
+     * GRANTED, AND STILL NOTHING TO SHOW — the state a person sees when the camera is live and
+     * the frame output produces no reading. It exists as its own subject because the diagnostic
+     * line is the only thing on this screen that is not the product's own voice, and it still
+     * has to meet the same contrast and type rules as everything else.
+     */
+    name: 'screens/Lens (waiting, with a diagnostic)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Lens permission="granted" diagnostic="the frame has no CPU pixel buffer" />, theme),
+  },
+  {
     name: 'screens/Lens (reading)',
     kind: 'static',
     /*
@@ -1982,5 +1995,57 @@ describe('the preferences route wires the real repository (F-109)', () => {
     const route = readFileSync(join(process.cwd(), 'app', 'preferences.tsx'), 'utf8');
     expect(route).toContain("from '../src/store/repository'");
     expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
+  });
+});
+
+/**
+ * F-119 — the Lens says why there is no reading.
+ *
+ * "Waiting" was the whole of what this screen could say about four different failures. A person
+ * looking at a live preview that produces nothing cannot tell them apart, and neither could
+ * anybody they reported it to.
+ */
+describe('the Lens says why there is no reading (F-119)', () => {
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    return out;
+  }
+  const why = 'the frame has no CPU pixel buffer';
+
+  it('shows the reason in the empty state', () => {
+    const text = textOf(draw(<Lens permission="granted" diagnostic={why} />, 'dark')).join(
+      '\u0000',
+    );
+    expect(text).toContain(why);
+    expect(text).toContain(en['lens.waiting']);
+  });
+
+  it('never shows it beside a reading', () => {
+    /*
+     * THE DECOY. A stale reason under a live reading would contradict the thing next to it, and
+     * the screen would be arguing with itself — which is worse than saying nothing.
+     */
+    const text = textOf(
+      draw(<Lens permission="granted" reading={SAMPLE_READING} diagnostic={why} />, 'dark'),
+    ).join('\u0000');
+    expect(text).not.toContain(why);
+  });
+
+  it('never shows it when access was refused', () => {
+    /*
+     * A REAL SEQUENCE, not a hypothetical: grant access, frames fail, a diagnostic lands in
+     * state, then somebody revokes the permission in Settings and comes back. The screen must
+     * explain the refusal, not a frame problem from a camera that is no longer running.
+     */
+    const text = textOf(draw(<Lens permission="denied" diagnostic={why} />, 'dark')).join(' ');
+    expect(text).not.toContain(why);
+    expect(text).toContain(en['lens.noReading']);
+  });
+  it('shows nothing extra when there is no diagnostic', () => {
+    const text = textOf(draw(<Lens permission="granted" />, 'dark')).join('\u0000');
+    expect(text).toContain(en['lens.waiting']);
   });
 });
