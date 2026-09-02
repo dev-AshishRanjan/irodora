@@ -12843,3 +12843,101 @@ Shopping renders it for `scoreColor`; adding it here would be scope nobody revie
 
 ---
 
+## 2026-09-02 — F-125 DONE · the second address gets a sender — and a correction to F-122–F-124
+
+### The feature
+
+`READING_DESTINATIONS` is `['profile', 'wardrobe']`. `offerReading` was called **exactly once in
+the whole app** — `CameraLens.tsx`, with `'profile'`. So `takeReading('wardrobe')` in
+`app/wardrobe/add.tsx` could only ever return `null`, and `AddGarment`'s *"use the Lens reading"*
+control was **unreachable on a device**. F-043 built the receiver, E-042 designed the addressing,
+and the sender for the second address was never written.
+
+**One predicate for both destinations.** `worthOffering` reads
+`confidence > CONFIDENCE_NONE && usableSamples > 0` — despite living in `profile/photo.ts`, that
+is not a profile-grade bar but *"this reading has any signal at all"*, and a reading with no
+usable samples is not a colour whatever it is for. A second predicate would have let the wardrobe
+disagree with the profile about what a reading is worth.
+
+**Criterion 2 is the part that stops it recurring.** A source scan over `src/` and `app/` —
+**not** `test/`, because `lens.test.ts` calls `offerReading(READING, 'wardrobe')` itself and
+**the fixture is the missing sender**. It parses the call's second argument rather than matching
+the word, so `handoff.ts`'s own `READING_DESTINATIONS` declaration is not counted as a producer.
+
+E-017 did **not** fire — the new Japanese copy reuses kanji already in the subset. First feature
+in five where it did not.
+
+---
+
+### The correction, and it is the larger half of this entry
+
+**Every mutation harness in this session was broken, and I reported its output as evidence.**
+
+`execSync` spawns through `cmd.exe` on Windows. `./node_modules/.bin/jest` is a bash-ism, so
+every invocation exited non-zero with *"'.' is not recognized as an internal or external
+command"* — which the harness read as *the suite went red*, and called **CAUGHT**.
+
+**Jest never ran. Not once, across 38 mutations in four features. All 38 were reported caught.**
+
+The tell was in the result and I read past it: a **perfect catch rate across four unrelated
+modules**, including mutations aimed at ordering and at branches nothing renders. It surfaced
+only because a fifth mutation was too good to be true — removing a JSX prop that no test renders
+was reported CAUGHT, and nothing in the suite could have seen it.
+
+Re-run with `node node_modules/jest/bin/jest.js`:
+
+| set | claimed | actual |
+|---|---|---|
+| `browse` (F-122) | 8/8 | **5/8**, plus 2 anchors gone stale |
+| `cost` (F-122) | 4/4 | **4/4** |
+| `wardrobe-screen` (F-122) | 5/5 | **5/5** |
+| `investment` (F-123) | 12/12 | **11/12** |
+| `outfit` (F-124) | 5/5 | **5/5** |
+| `lens` (F-125) | 4/4 | **3/4** |
+
+**Three real defects, now fixed:**
+
+- **F-122 — group-size ordering was untested.** The fixture introduced the two-garment family
+  first, so the Map order was *already* size-descending and deleting the sort changed nothing.
+  Replaced with a fixture that introduces the one-garment family first.
+- **F-122 — `UNGROUPED` is unreachable.** `familyOf` returns `null` only for an empty corpus, so
+  a mutation dropping ungrouped garments passes the whole file. **Recorded as unreachable in both
+  the source and the test** rather than covered by a test that would only be checking the corpus
+  is non-empty. Stubbing `familyOf` would test the stub.
+- **F-125 — nothing checked the handler reached the screen.** The scan proved
+  `offerReading(taken, 'wardrobe')` exists; it did not prove `onUseForWardrobe` was passed to
+  `<Lens>`. A producer nobody can trigger is the same defect one level up. Two source assertions
+  added, both ends of the seam.
+
+**One survivor left standing, deliberately:** `investment`'s "sorts the caller's array in place".
+`median` is only ever called with arrays it built moments earlier, so the copy is defensive and
+no caller can observe its absence. `median`'s doc now says that instead of claiming a guarantee
+the suite does not check.
+
+After the fixes: **browse 7/8** (the eighth is the unreachable branch), **investment 11/12** (the
+twelfth cannot matter), everything else clean.
+
+New lesson:
+[[a-mutation-harness-that-cannot-start-the-runner-reports-every-mutation-caught]] — and the rule
+that follows is one line: **run the harness against unmutated source first and require a PASS.**
+A run that only ever observes failure cannot tell failure from not-running.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| 38 mutations, re-run for real | **34 caught, 2 documented as uncheckable, 2 fixed** |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### What this feature still does not prove
+
+**The hand-off has never been observed on a device.** F-040's first attestation is outstanding,
+so no reading has been seen reaching any screen on real hardware. The scan proves a call site
+exists and the assertions prove it is wired; neither proves a colour arrives. Same honest limit
+F-116's static check carries.
+
+---
+

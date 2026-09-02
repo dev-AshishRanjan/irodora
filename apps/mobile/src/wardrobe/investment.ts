@@ -131,7 +131,10 @@ const normalise = (type: string): string => type.trim().toLowerCase();
  * dominates, and rather than a mean, which one unworn-but-priced garment drags. At the counts
  * this operates on — three, four, five — robustness is worth more than any other property.
  *
- * Sorts a copy. Sorting the caller's array would reorder a wardrobe the screen is rendering.
+ * Sorts a copy — DEFENSIVELY, and a mutation removing that copy survives the suite. Every
+ * current caller passes an array this function built moments earlier (`rates`, `wears`), so an
+ * in-place sort would harm nothing today. It is kept because the day somebody passes a stored
+ * array the failure is a wardrobe reordering under a reader, which nothing would report.
  */
 function median(values: readonly number[]): number {
   const sorted = [...values].sort((a, b) => a - b);

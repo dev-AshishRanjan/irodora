@@ -60,6 +60,23 @@ export default function CameraLens(): React.JSX.Element {
     router.push('/profile');
   }, []);
 
+  /**
+   * Hand the reading to the wardrobe and go to the add screen (F-125).
+   *
+   * **This is the call that did not exist.** `READING_DESTINATIONS` has had `'wardrobe'` since
+   * F-043 and `app/wardrobe/add.tsx` has been reading that address ever since, so
+   * `AddGarment`'s "use the Lens reading" control was unreachable on a device — a consumer with
+   * no producer, invisible because every test supplied the reading itself.
+   *
+   * Addressed to `'wardrobe'`, which is the whole of E-042: an unaddressed offer would be eaten
+   * by profile setup if the person passed through it on the way, and neither screen could tell
+   * that from nobody having scanned.
+   */
+  const useForWardrobe = useCallback((taken: LensReading) => {
+    offerReading(taken, 'wardrobe');
+    router.push('/wardrobe/add');
+  }, []);
+
   return (
     <Lens
       viewfinder={
@@ -72,6 +89,7 @@ export default function CameraLens(): React.JSX.Element {
       permission={permission}
       onRequestPermission={request}
       onUseForProfile={useForProfile}
+      onUseForWardrobe={useForWardrobe}
       onOpenColour={(slug) => {
         router.push(`/atlas/${slug}`);
       }}

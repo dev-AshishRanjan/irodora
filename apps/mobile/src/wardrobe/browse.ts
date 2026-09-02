@@ -79,6 +79,11 @@ export function familyOf(garment: StoredGarment): string | null {
  * Garments with no family — see `familyOf` — are collected under `UNGROUPED` rather than dropped.
  * A browse screen that silently showed fewer garments than the wardrobe holds is the failure this
  * avoids, and it is worse than an odd-looking group because nothing about it looks wrong.
+ *
+ * **This branch is unreachable with a published bundle, and therefore untested.** `familyOf`
+ * returns `null` only for an empty corpus, so a mutation that dropped these garments instead of
+ * collecting them passes the whole suite. It is kept so an empty bundle degrades visibly rather
+ * than crashing; `browse.test.ts` records the gap rather than pretending to cover it.
  */
 export const UNGROUPED = 'ungrouped';
 

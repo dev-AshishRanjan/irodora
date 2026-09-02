@@ -267,6 +267,11 @@ export const en = {
   'lens.useForProfile': 'Use this colour for my profile',
   'lens.useForProfileNote':
     'It proposes a starting point you can change. Nothing is saved until you confirm it on the next screen.',
+  // F-125 — the second destination. The wardrobe has been able to RECEIVE a reading since
+  // F-043; nothing sent it one until now.
+  'lens.useForWardrobe': 'Add a garment with this colour',
+  'lens.useForWardrobeNote':
+    'It is recorded as an estimate from this reading, with the conditions it was taken in. Nothing is saved until you add the garment.',
   'lens.light.daylight': 'Daylight',
   'lens.light.warmIndoor': 'Warm indoor light',
   'lens.light.coolIndoor': 'Cool indoor light',

@@ -246,6 +246,10 @@ export const ja: Record<MessageKey, string> = {
   'lens.useForProfile': 'この色を自分の色づくりに使う',
   'lens.useForProfileNote':
     '出発点を提案するだけで、あとから変えられます。次の画面で確認するまで何も保存しません。',
+  // F-125 — the second destination.
+  'lens.useForWardrobe': 'この色で服を追加する',
+  'lens.useForWardrobeNote':
+    'この読み取りからの推定として、そのときの条件とともに記録します。服を追加するまで何も保存しません。',
   'lens.light.daylight': '昼の光',
   'lens.light.warmIndoor': '暖かい室内の光',
   'lens.light.coolIndoor': '涼しい室内の光',

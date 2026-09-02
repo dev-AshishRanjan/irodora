@@ -1006,6 +1006,12 @@ const SCREENS: readonly ConformanceSubject[] = [
           permission="granted"
           reading={SAMPLE_READING}
           onUseForProfile={() => undefined}
+          /*
+            BOTH OFFERS (F-125). The wardrobe hand-off draws a second Button and a second note,
+            and a subject supplying only the profile handler would check the accessibility of a
+            screen that no longer exists.
+          */
+          onUseForWardrobe={() => undefined}
           onOpenColour={() => undefined}
         />,
         theme,

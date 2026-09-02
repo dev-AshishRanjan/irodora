@@ -103,6 +103,16 @@ export interface LensProps {
   readonly onRequestPermission?: () => void;
   /** Hand this reading to profile setup (FR-27). Absent when nothing can receive it. */
   readonly onUseForProfile?: (reading: LensReading) => void;
+  /**
+   * Hand this reading to the wardrobe (FR-40, F-125).
+   *
+   * The wardrobe has been able to RECEIVE one since F-043 — `app/wardrobe/add.tsx` calls
+   * `takeReading('wardrobe')` and `AddGarment` draws a control for it — but **nothing in the
+   * app ever sent one**, so that control could not be reached on a device. A consumer with no
+   * producer [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]], and invisible
+   * because every test supplied the reading itself.
+   */
+  readonly onUseForWardrobe?: (reading: LensReading) => void;
   /** Open a corpus entry. Supplied by the route. */
   readonly onOpenColour?: (slug: string) => void;
 }
@@ -114,6 +124,7 @@ export function Lens({
   permission = 'undetermined',
   onRequestPermission,
   onUseForProfile,
+  onUseForWardrobe,
   onOpenColour,
 }: LensProps = {}): React.JSX.Element {
   const { colors } = useTheme();
@@ -134,7 +145,17 @@ export function Lens({
    * it here as well means the button cannot appear for a reading the next screen would refuse,
    * which is a dead end a person would otherwise find by pressing it.
    */
-  const offerable = reading !== null && onUseForProfile !== undefined && worthOffering(reading);
+  /*
+   * ONE PREDICATE FOR BOTH DESTINATIONS, and `worthOffering` is the right one despite living in
+   * a profile module. Its rule is `confidence > CONFIDENCE_NONE && usableSamples > 0` — not a
+   * profile-grade bar but "this reading has any signal at all", and a reading with no usable
+   * samples is not a colour whatever it is for. A second predicate here would be a second
+   * answer to one question, and the wardrobe would then disagree with the profile about what a
+   * reading is worth.
+   */
+  const usable = reading !== null && worthOffering(reading);
+  const offerable = usable && onUseForProfile !== undefined;
+  const offerableToWardrobe = usable && onUseForWardrobe !== undefined;
 
   return (
     <ScrollView
@@ -320,6 +341,27 @@ export function Lens({
           />
           <Text size="xs" color="foreground.2" script={script}>
             {t('lens.useForProfileNote')}
+          </Text>
+        </View>
+      ) : null}
+
+      {/*
+        SECOND, AND THE ORDER IS DELIBERATE. The profile offer has been here since F-097 and a
+        screen that reorders its controls is one people mis-tap. This is appended rather than
+        inserted, and the note under it says what will be stored — an estimate with the
+        conditions it was taken in (ADR-0005), never a claim that the colour IS a corpus entry.
+      */}
+      {offerableToWardrobe ? (
+        <View style={{ gap: 8 }}>
+          <Button
+            label={t('lens.useForWardrobe')}
+            variant="secondary"
+            onPress={() => {
+              onUseForWardrobe(reading);
+            }}
+          />
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('lens.useForWardrobeNote')}
           </Text>
         </View>
       ) : null}

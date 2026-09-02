@@ -152,11 +152,47 @@ describe('the groups', () => {
     expect(sizes.at(-1)).toBe(1);
   });
 
-  it('orders groups by size, largest first', () => {
-    const groups = groupByColour(wardrobe.garments);
+  /*
+   * THE INSERTION ORDER IS THE ASSERTION, and the first version of this test did not have it.
+   *
+   * `groupByColour` builds a Map, so the natural order is FIRST-SEEN. The wardrobe above
+   * happens to introduce the two-garment family first, which means it is already size-ordered
+   * before the sort runs — and a mutation deleting the sort left this test green.
+   *
+   * This fixture introduces the ONE-garment family first, so the Map order is 1 then 2 and only
+   * the sort can produce 2 then 1 [[a-decoy-that-is-not-broken-proves-nothing]].
+   */
+  it('orders groups by size, largest first — from a wardrobe that is not already in that order', () => {
+    const smallFirst = [
+      garment('x', rowOf(wardrobe.other)),
+      garment('y', rowOf(wardrobe.first)),
+      garment('z', rowOf(wardrobe.alsoFirst ?? wardrobe.first, 'z-dup')),
+    ];
+    const groups = groupByColour(smallFirst);
+
+    // The fixture is only discriminating if the small group really is seen first.
+    expect(familyOf(smallFirst[0]!)).not.toBe(familyOf(smallFirst[1]!));
+    expect(groups[0]!.garments.length).toBe(2);
+    expect(groups.at(-1)!.garments.length).toBe(1);
 
     for (let i = 1; i < groups.length; i += 1)
       expect(groups[i]!.garments.length).toBeLessThanOrEqual(groups[i - 1]!.garments.length);
+  });
+
+  /*
+   * WHAT NOTHING HERE COVERS, SAID OUT LOUD.
+   *
+   * `UNGROUPED` collects garments `familyOf` cannot place — and `familyOf` returns `null` only
+   * when the corpus offers no entry at all, which a published bundle never does. So the branch
+   * is **unreachable in any test that uses the real corpus**, and a mutation that DROPPED
+   * ungrouped garments instead of collecting them passes this whole file.
+   *
+   * It is kept because an empty bundle should degrade visibly rather than crash, and it is
+   * recorded here rather than covered by a test that would only be checking the corpus is
+   * non-empty. Stubbing `familyOf` would test the stub.
+   */
+  it('has a family for every garment the real corpus can place, which is all of them', () => {
+    for (const g of wardrobe.garments) expect(familyOf(g)).not.toBeNull();
   });
 
   it('orders garments within a group by lightness, light first — not by hex', () => {

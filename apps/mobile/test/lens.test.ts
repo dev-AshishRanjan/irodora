@@ -18,7 +18,15 @@ import {
   type LensReading,
 } from '../src/lens/reading';
 import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera';
-import { clearOffer, hasOffer, offerReading, takeReading } from '../src/lens/handoff';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  clearOffer,
+  hasOffer,
+  offerReading,
+  READING_DESTINATIONS,
+  takeReading,
+} from '../src/lens/handoff';
 /*
  * From `../src/lens/permission`, NOT from the viewfinder.
  *
@@ -330,5 +338,120 @@ describe('permission maps to three states, not two', () => {
     expect(permissionState(true, false)).toBe('granted');
     expect(permissionState(false, true)).toBe('undetermined');
     expect(permissionState(false, false)).toBe('denied');
+  });
+});
+
+/**
+ * Every reading destination has a producer that SHIPS (FR-40, F-125, E-042).
+ *
+ * ## Why this is a source scan and not an assertion about behaviour
+ *
+ * `READING_DESTINATIONS` gained `'wardrobe'` in F-043, `app/wardrobe/add.tsx` has called
+ * `takeReading('wardrobe')` ever since, and **nothing in the app ever called
+ * `offerReading(…, 'wardrobe')`.** So `AddGarment`'s "use the Lens reading" control could not be
+ * reached on a device — a consumer with no producer
+ * [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]].
+ *
+ * **No behavioural test could see it.** The mailbox works perfectly: plant an offer, take it,
+ * and every assertion above passes. The bug is that nobody plants one in shipped code — and the
+ * tests plant it themselves, so **the fixture is the missing sender.** That is exactly why the
+ * scan below walks `src/` and `app/` and NOT `test/`: including this file would report a
+ * producer for `'wardrobe'` that does not ship, which is the defect describing itself as fixed.
+ */
+describe('every reading destination has a producer in shipped source', () => {
+  const ROOTS = ['src', 'app'] as const;
+
+  function sourceFiles(root: string, out: string[] = []): string[] {
+    for (const entry of readdirSync(join(process.cwd(), root), { withFileTypes: true })) {
+      const path = join(root, entry.name);
+      if (entry.isDirectory()) sourceFiles(path, out);
+      else if (/\.tsx?$/u.test(entry.name)) out.push(path);
+    }
+    return out;
+  }
+
+  const SHIPPED = ROOTS.flatMap((r) => sourceFiles(r)).map((p) => ({
+    path: p,
+    text: readFileSync(join(process.cwd(), p), 'utf8'),
+  }));
+
+  /**
+   * Files that CALL `offerReading` with this destination as its second argument.
+   *
+   * Parsed rather than matched with a regular expression, and not out of fastidiousness: the
+   * destination has to be the **argument**, not the word. `handoff.ts` declares
+   * `READING_DESTINATIONS = ['profile', 'wardrobe']` and defines `offerReading` itself — a
+   * looser check counts that as a producer for both addresses and then passes forever, which is
+   * the exact failure this test exists to prevent.
+   */
+  const producersOf = (destination: string): string[] =>
+    SHIPPED.filter((f) =>
+      f.text
+        .split('offerReading(')
+        .slice(1)
+        .some((after) => {
+          const args = after.slice(0, after.indexOf(')'));
+          const second = args.split(',').slice(1).join(',').trim();
+          return second === `'${destination}'`;
+        }),
+    ).map((f) => f.path);
+
+  it('finds shipped source to scan at all', () => {
+    // Without this, every assertion below is true of an empty file list.
+    expect(SHIPPED.length).toBeGreaterThan(20);
+  });
+
+  it('scans no test file, because the fixtures here are the missing sender', () => {
+    expect(SHIPPED.filter((f) => f.path.includes('test'))).toEqual([]);
+  });
+
+  it.each([...READING_DESTINATIONS])('has at least one producer for %s', (destination) => {
+    expect(`${destination}: ${String(producersOf(destination).length > 0)}`).toBe(
+      `${destination}: true`,
+    );
+  });
+
+  /*
+   * A PRODUCER NOBODY CAN TRIGGER IS THE SAME DEFECT ONE LEVEL UP.
+   *
+   * The scan above proves `offerReading(taken, 'wardrobe')` exists in shipped source. It does
+   * NOT prove the callback holding it is passed to the screen — and a handler that is never
+   * wired is exactly as dead as a destination that is never offered to. This case was added
+   * because a mutation removing the prop left every other assertion here green.
+   *
+   * Source assertions rather than a render: `CameraLens` imports the viewfinder, which reaches
+   * react-native-vision-camera at module load, so jest cannot mount it. Same reason and same
+   * shape as the route-wiring checks in `screens.test.tsx`.
+   */
+  it('wires each offer to the screen, so the producer can be reached', () => {
+    const camera = readFileSync(join(process.cwd(), 'src', 'lens', 'CameraLens.tsx'), 'utf8');
+
+    expect(camera).toContain('onUseForProfile={useForProfile}');
+    expect(camera).toContain('onUseForWardrobe={useForWardrobe}');
+  });
+
+  it('and the screen declares the props it is handed', () => {
+    // The other end of the same seam. A prop passed under a name the screen does not declare
+    // is silently ignored by React — no error, no warning, and a dead control.
+    const screen = readFileSync(join(process.cwd(), 'src', 'screens', 'Lens.tsx'), 'utf8');
+
+    expect(screen).toContain('readonly onUseForProfile?:');
+    expect(screen).toContain('readonly onUseForWardrobe?:');
+  });
+
+  /*
+   * THE DECOY. Without it, a regex that matched anything would satisfy every case above, and
+   * the check would be measuring that `readFileSync` works.
+   */
+  it('DECOY — a destination nothing offers to has no producer', () => {
+    expect(producersOf('shopping')).toEqual([]);
+    expect(producersOf('nowhere-at-all')).toEqual([]);
+  });
+
+  it('DECOY — the two real destinations are not produced by the same call site', () => {
+    // A regex loose enough to ignore the destination argument would return the same file list
+    // for both, and the per-destination assertions would pass while one address was dead.
+    expect(producersOf('profile')).not.toEqual([]);
+    expect(producersOf('wardrobe')).not.toEqual([]);
   });
 });

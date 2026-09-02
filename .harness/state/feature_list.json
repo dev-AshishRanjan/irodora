@@ -3534,7 +3534,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "A reading taken in the Lens can be offered to the wardrobe, so AddGarment's \"use the Lens reading\" control is reachable on a device",
@@ -3545,7 +3545,8 @@
         "test",
         "a11y"
       ],
-      "notes": "FOUND WHILE BUILDING F-052, AND IT IS THE F-051 LESSON A SECOND TIME. `READING_DESTINATIONS` is ['profile', 'wardrobe'] and `offerReading` is called EXACTLY ONCE in the whole app — `CameraLens.tsx`, with 'profile'. So `takeReading('wardrobe')` in app/wardrobe/add.tsx can only ever return null, and AddGarment's `wardrobe.fromLens` button is unreachable on a device. F-043 built the receiver, E-042 records the addressed-mailbox design that made two consumers safe, and the SENDER for the second address was never added. A CONSUMER WITH NO PRODUCER — [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]] applied to a mailbox rather than a column, and invisible for the same reason: every test that exercises the wardrobe path supplies the reading itself, so the fixture is the missing sender. THE SECOND CRITERION IS THE POINT. Adding the offer fixes today; asserting that every destination has a producer is what stops the third one repeating this. NOT PULLED INTO F-052: the shopping check deliberately does not take a Lens reading — F-040's first attestation is still outstanding, so no reading has been observed reaching the app on a device, and building a third consumer of a path nobody has seen work would be two dead routes instead of one."
+      "notes": "FOUND WHILE BUILDING F-052, AND IT IS THE F-051 LESSON A SECOND TIME. `READING_DESTINATIONS` is ['profile', 'wardrobe'] and `offerReading` is called EXACTLY ONCE in the whole app — `CameraLens.tsx`, with 'profile'. So `takeReading('wardrobe')` in app/wardrobe/add.tsx can only ever return null, and AddGarment's `wardrobe.fromLens` button is unreachable on a device. F-043 built the receiver, E-042 records the addressed-mailbox design that made two consumers safe, and the SENDER for the second address was never added. A CONSUMER WITH NO PRODUCER — [[a-column-nothing-writes-makes-its-own-feature-unfalsifiable]] applied to a mailbox rather than a column, and invisible for the same reason: every test that exercises the wardrobe path supplies the reading itself, so the fixture is the missing sender. THE SECOND CRITERION IS THE POINT. Adding the offer fixes today; asserting that every destination has a producer is what stops the third one repeating this. NOT PULLED INTO F-052: the shopping check deliberately does not take a Lens reading — F-040's first attestation is still outstanding, so no reading has been observed reaching the app on a device, and building a third consumer of a path nobody has seen work would be two dead routes instead of one.",
+      "plan": "plans/F-125-lens-hands-a-reading-to-the-wardrobe.md"
     },
     {
       "id": "F-126",
