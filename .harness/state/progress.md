@@ -8,6 +8,88 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-116 DONE · the crash that no gate could see now has one
+
+**R5's first `must`.** F-115 fixed the instance and left no guard: `sampleFrame` carried the
+directive and called `sampleStride`, which did not, and the Lens crashed on its first frame.
+
+Nothing else here can see that. Jest has one runtime and no worklet boundary, typecheck sees an
+ordinary call, lint sees an import that resolves, and the directive changes no JS-thread
+behaviour — **so every test passes identically either side of the bug.** That symmetry is what
+made it invisible, and it is why this is a static check rather than a test.
+
+### The compiler API, not a regular expression
+
+A regex can find the directive and it can find `name(`. It **cannot** tell a call from a property
+access, an imported function from a local variable, or a shadowed name from the real one — and
+each is a way to be quietly wrong about a boundary whose failure mode is a crash on a device.
+`typescript` was already a devDependency and resolves from `scripts/`, so the honest version cost
+nothing.
+
+### It follows imports because the defect was one
+
+`sampleStride` is declared in `camera.ts` and called from `viewfinder.tsx`, so **a same-file check
+would have passed the exact bug this feature exists for.** The walk resolves a bare-identifier
+callee through the file's own top-level declarations or through a relative import, recurses with
+a visited set keyed by path and node position because the graph may cycle, and treats a nested
+arrow inside a worklet as reachable — it runs on the same thread, so what it calls is reachable
+too.
+
+### The decoy decides whether this survives, and my first version of it was vacuous
+
+`readCaptureSpace` lives in the **same module** as `sampleStride`, carries no directive, and is
+called on the JS thread from `onSessionConfigSelected`. A check that flagged every import of a
+worklet-adjacent module would fire on it — and a check with a false positive gets switched off.
+
+The first draft asserted `readCaptureSpace` was not among the problems of the **clean** tree,
+which has none: true of an empty list, proving nothing. It now asserts it *while `camera.ts` is
+producing a finding*, which is the only state in which the claim means anything.
+
+Six cases, all discriminating: the real tree green first, the unresolved count asserted
+**non-zero**, the three roots found, the cross-module defect firing, a same-file removal firing so
+"it follows imports" is not carried by a case that never needed it, and the decoy.
+
+### Criterion 3 is a printed section, not a sentence in a header
+
+**Twenty-three calls** on the tree as it stands cannot be resolved — mostly `Math.*` and
+`frame.*` — and they are counted and named on every run, green included, so a reader of a pass
+sees the size of the gap rather than inferring there is none.
+
+What source analysis cannot follow: a function reached through a **variable**, one **passed in as
+a callback**, one looked up on a **dynamic property**. And it proves the **source** says so, not
+that Babel emitted it — F-121 established the transform by hand and that stays evidence rather
+than a gate. **The device remains the only thing that proves the whole claim**, and F-040's first
+attestation is still outstanding.
+
+### E-050 gained the guard its own rationale said it lacked
+
+Its `guard` read *"NONE THAT RUNS HERE, and that is the finding rather than an omission."*
+Leaving that would have been [[an-effect-rationale-is-prose-in-a-state-file-and-nothing-executes-it]]
+in reverse — a link claiming a gap that is closed. Both the link and its note now say what the
+check covers, what it was watched failing on, and which half has not changed.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y | **PASS** |
+| gate-mirror proof | **PASS** — 14 active gates |
+| the new check, and its 6-case proof | **PASS** |
+
+**No source in `src/lens` changed** — the three worklets are already correct, and a check that
+required an edit to pass would be reporting its own scaffolding.
+
+**Not run:** `e2e`, `color-golden`, `cvd`, `content`, `perf`.
+
+### Deliberately not built
+
+Checking the emitted bundle for `__workletHash` — that needs the Metro transform in CI and is a
+heavier, different check; F-121's manual run is the current evidence and this does not replace
+it. Any other directive. And any edit to `src/lens`.
+
+---
+
 ## 2026-09-01 — F-114 DONE · half the delay is closed, and knowing which half is the point
 
 Gate 16 reads the built APK and is the only thing that catches a dependency shipping a

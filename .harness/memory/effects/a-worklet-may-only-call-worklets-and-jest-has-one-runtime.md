@@ -65,7 +65,31 @@ marked: it is called from `onSessionConfigSelected`, on the JS thread.
 
 ## Guard
 
-**None that runs here**, and that is the finding rather than an omission. The only thing that
-catches this is a device. [F-116](../../state/feature_list.json) files the static check —
-every function reachable from a `'worklet'` must itself carry one — which is the shape this
-repository already uses for boundaries a type system cannot express.
+**`scripts/verify-worklet-reach.mjs`, since F-116.** It parses `apps/mobile/src` with the
+TypeScript compiler API, takes every function whose body opens with the `'worklet'` prologue as a
+root, walks the calls each makes — **across module boundaries**, because the defect was an import
+and a same-file check would have passed — and fails when a resolved callee carries no directive.
+It runs on every pull request.
+
+**It was watched failing on this exact defect.** `--prove` removes the directive from
+`sampleStride` in `camera.ts` and asserts the finding names it and its caller in
+`viewfinder.tsx`; a second plant removes `sampleFrame`'s, so "it follows imports" is not carried
+by a case that never needed to.
+
+**And on the false positive that would get it switched off.** `readCaptureSpace` lives in the
+same module as `sampleStride`, carries no directive, and is correctly never reported — asserted
+while `camera.ts` IS producing a finding, because on a clean tree "not among the problems" is
+true of an empty list and proves nothing.
+
+### What it still does not see, and this half has not changed
+
+A function reached through a **variable**, one **passed in as a callback**, or one looked up on a
+**dynamic property**. The check counts and names every call it declined to resolve — 23 on the
+tree as it stands, mostly `Math.*` and `frame.*` — on every run including a green one, so a
+reader of a pass sees the size of the gap rather than inferring there is none.
+
+It also proves the **source** says so, not that Babel emitted it. F-121 established the transform
+is intact by running the real pipeline by hand, and that stays evidence rather than a gate.
+
+**The device is still the only thing that proves the whole claim**, and F-040's first attestation
+is still outstanding. What changed is that the half which can regress silently no longer does.

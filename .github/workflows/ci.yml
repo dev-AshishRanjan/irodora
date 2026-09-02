@@ -167,6 +167,21 @@ jobs:
       - name: 'Gate 2 — permission-set proof'
         run: pnpm verify:permissions:prove
 
+      # NOT A GATE. A worklet may only call other worklets: the Worklets babel plugin captures
+      # an unmarked function as an ordinary JS-thread one, and invoking it from the frame thread
+      # throws the moment a frame arrives. F-115's crash was exactly that, and NOTHING ELSE HERE
+      # CAN SEE IT — jest has one runtime, typecheck sees an ordinary call, lint sees an import
+      # that resolves, and the directive changes no JS-thread behaviour, so the tests pass
+      # identically either side of the bug (E-050).
+      #
+      # It proves the SOURCE says so, not that Babel emitted it, and it prints the calls it
+      # cannot resolve on every run.
+      - name: 'Gate 2 — worklet reachability'
+        run: pnpm verify:worklets
+
+      - name: 'Gate 2 — worklet reachability proof'
+        run: pnpm verify:worklets:prove
+
       # ---- gates 7-11: surfaces and content -------------------------------
 
       # Gate 8 runs the scope reporter FIRST — a suite that passes over a component

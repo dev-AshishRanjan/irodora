@@ -64,7 +64,9 @@
     "verify:no-inference:prove": "node scripts/verify-no-inference-proof.mjs",
     "verify:minsdk:prove": "node scripts/verify-android-min-sdk.mjs --prove",
     "verify:permissions": "node scripts/verify-manifest-permissions.mjs",
-    "verify:permissions:prove": "node scripts/verify-manifest-permissions.mjs --prove"
+    "verify:permissions:prove": "node scripts/verify-manifest-permissions.mjs --prove",
+    "verify:worklets": "node scripts/verify-worklet-reach.mjs",
+    "verify:worklets:prove": "node scripts/verify-worklet-reach.mjs --prove"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",
