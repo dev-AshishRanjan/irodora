@@ -30,6 +30,8 @@ import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
 import { Wardrobe } from '../src/screens/Wardrobe';
+import { Export } from '../src/screens/Export';
+import type { FileSink } from '../src/export/sink';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
 import { Shopping } from '../src/screens/Shopping';
 import { Measure, type ReferenceLibrary } from '../src/screens/Measure';
@@ -47,6 +49,7 @@ import {
 } from '@irodora/recommendation';
 import { familyLabel } from '../src/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import type { ExportSubject } from '@irodora/export';
 import type { WardrobeStore } from '../src/wardrobe';
 import type { WearStore } from '../src/wardrobe/cost';
 import type { ImageSource } from '../src/wardrobe/source';
@@ -454,6 +457,31 @@ const SHOPPING_PRICED: readonly StoredGarment[] = [
   },
 ];
 
+/**
+ * A subject to export, and a sink that records nothing (F-129).
+ *
+ * The registry never presses the button, so the sink's behaviour does not matter — what matters
+ * is that the screen renders with something to export and with nothing, because those two draw
+ * almost disjoint trees.
+ */
+const EXPORT_SUBJECT: ExportSubject = {
+  title: 'Evening walk',
+  envelope: { engine: '0.1.0', corpus: CORPUS_LABEL, rules: '2026.08.3' },
+  colours: allEntries()
+    .slice(0, 3)
+    .map((e) => ({
+      id: e.entry.slug,
+      name: e.entry.name.en,
+      hex: e.derived.hex,
+      lab: e.derived.lab,
+      lch: [e.derived.lab[0], Math.hypot(e.derived.lab[1], e.derived.lab[2]), 0] as const,
+      oklch: e.derived.oklch,
+      source: 'reference',
+    })),
+};
+
+const noSink: FileSink = { save: () => Promise.resolve({ kind: 'cancelled' as const }) };
+
 /** The same, one short — the `tooFew` branch, which draws two counts the other never does. */
 const SHOPPING_TOO_FEW: readonly StoredGarment[] = SHOPPING_PRICED.slice(0, 2);
 
@@ -763,6 +791,31 @@ const SCREENS: readonly ConformanceSubject[] = [
         />,
         theme,
       ),
+  },
+  {
+    /*
+     * THE EXPORT SURFACE (F-129, FR-51).
+     *
+     * Six formats built in F-056 and reachable from nothing until now. The chosen format is a
+     * radio row this screen draws itself rather than a registered component, so it is checked
+     * here or nowhere.
+     */
+    name: 'screens/Export',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Export subject={EXPORT_SUBJECT} sink={noSink} />, theme),
+  },
+  {
+    /*
+     * THE SAME SCREEN WITH NOTHING TO EXPORT.
+     *
+     * One sentence where the other draws a palette, six format rows and a button — almost
+     * disjoint trees, and the state a person is in before they have built anything.
+     */
+    name: 'screens/Export (nothing to export)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Export subject={null} sink={noSink} />, theme),
   },
   {
     /*

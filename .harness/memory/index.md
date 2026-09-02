@@ -40,6 +40,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 ### Engineering discipline
 
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
+- [lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md](lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md) — `expect([undefined]).toEqual([])` passes, so a "nothing happened" assertion can be satisfied by something happening; use `toHaveLength(0)`.
 - [lessons/a-gate-that-errors-is-failing-open.md](lessons/a-gate-that-errors-is-failing-open.md) — a check that cannot run is not passing; the same shape appears in authorisation and tenancy.
 - [lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md](lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md) — className resolved by a bundler plugin is absent from the rendered tree, so the contrast gate measures an empty set and stays green.
 - [lessons/provenance-in-the-type-is-what-makes-honesty-structural.md](lessons/provenance-in-the-type-is-what-makes-honesty-structural.md) — ask what makes a guarantee impossible to violate, not what reminds people not to.

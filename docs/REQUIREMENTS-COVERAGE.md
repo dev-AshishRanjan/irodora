@@ -65,7 +65,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-25 Corpus versioning | F-011 | content, test | R1 |
 | FR-26 Guided profile setup | F-026 | e2e, test | R3 |
 | FR-27 Photo-assisted profile | F-027 | test, review | R3 |
-| FR-28 Professional profile entry | F-055 | test | R5 |
+| FR-28 Professional profile entry | F-055, F-129 | test | R5 |
 | FR-29 Compatibility scoring | F-028 | test, perf | R3 |
 | FR-30 Profile is multidimensional | F-026 | typecheck, test | R3 |
 | FR-31 What goes with this | F-030 | test, perf, e2e | R3 |
@@ -88,13 +88,13 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-48 Colour compare | F-019 | e2e, a11y | R2 |
 | FR-49 Palette Studio | F-020 | e2e, a11y | R2 |
 | FR-50 Shareable cards | F-023 | e2e, contrast | R2 |
-| FR-51 Exports | F-056 | test, review | R5 |
+| FR-51 Exports | F-056, F-129 | test, a11y | R5 |
 | FR-52 Shopping check | F-052, F-123 | test, e2e | R5 |
 | FR-55 Local-only mode | F-039 | e2e | R2 |
 | FR-56 Offline storage | F-041 | test, e2e | R2 |
 | FR-58 Export and deletion | F-035 | test, e2e, review | R2 |
 | FR-61 Pro workspace | F-055 | e2e, a11y | R5 |
-| FR-65 PDF reports | F-056 | test, review | R5 |
+| FR-65 PDF reports | F-056, F-129 | test, review | R5 |
 | FR-67 Rules as content | F-029 | test | R3 |
 | FR-68 Editorial review workflow | F-011 | content, e2e | R1 |
 

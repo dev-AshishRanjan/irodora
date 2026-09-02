@@ -3635,7 +3635,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-056"
       ],
@@ -3651,7 +3651,15 @@
         "e2e"
       ],
       "notes": "FILED BY F-056, WHICH BUILT THE FORMATS AND DELIBERATELY NOT THE SURFACE. `service` there is `packages` and its verification list is `state, test` — no a11y, no e2e — and F-035 already owns the export JOURNEY (writing to a file the person chose) with the attestation for it. Wiring six writers to a screen is a mobile feature. THE PDF HALF IS ADR-0080's RECORDED COST. The report is Latin-1 under base-14 Helvetica, so no kanji, no kana, and none of the nine corpus romaji carrying macrons can appear in one; a character it cannot draw is REFUSED BY NAME rather than dropped. Fixing that means a TrueType parser, a cmap walk, a subsetter and a ToUnicode CMap — a font pipeline, which inside an export-formats feature would have been scope nobody reviewed against a requirement. THE IMPORT HALF IS FR-28's SECOND CLAUSE, and it waited for this feature on purpose: an importer written before its exporter has no format to agree with. Now there is one, and the round-trip is assertable. NOT A REASON TO DELAY THE SURFACE: five of the six formats carry every character today, so a person can export a Japanese-titled palette as JSON, CSV, CSS or tokens the moment a screen offers it. FILED AS F-129 AND NOT F-128, which was already taken by a done R4 feature — the id was checked against the list rather than counted from the last one this session touched.",
-      "plan": "plans/F-129-exports-reach-a-screen.md"
+      "plan": "plans/F-129-exports-reach-a-screen.md",
+      "attested": [
+        {
+          "criterion": "A person can export a palette or a batch-compare result in any of the six formats, to a file they chose",
+          "verifiedBy": "A device run of the export flow on iOS and Android: choosing each of the six formats, and placing the resulting file somewhere through the platform share sheet. EVERYTHING BEFORE THE PLATFORM IS GATED HERE — the writers have a contract test over all six, the screen suite drives a format choice and asserts the bytes handed to the sink are the writer’s, and the sink is a port precisely so the package needs no device to be tested. What a device confirms is the binding: that expo-file-system writes the bytes and expo-sharing presents them. FR-51 names `e2e`, and `pnpm test:e2e` exits 1 by design while gate 7 is pending on F-091. ONE THING THE ADAPTER CANNOT DETECT AND THE DEVICE RUN MUST CHECK: `shareAsync` resolves whether or not anything was chosen, so `deviceSink` reports `saved` for a dismissed sheet. `SaveResult.cancelled` exists and this adapter never returns it. If the device run shows that misleading, the fix is a platform-specific result rather than a guess.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-130",
@@ -3719,6 +3727,27 @@
         "state"
       ],
       "notes": "FOUND BY WRITING F-127’S OWN PROGRESS ENTRY, WHICH IS THE THIRD INSTANCE OF F-127’S DEFECT. verify-state.mjs finds links in governed documents with a regex over the whole text, so a CODE SPAN describing a call whose callee is an element access was read as a markdown link whose target is an ellipsis, and gate 0 failed with \"does not resolve\". The sentence was reworded to avoid the syntax — the same workaround F-055 and F-056 took, and the same cost: the sentence that named the shape is gone. SAME CLASS, DIFFERENT SCAN. F-127 fixed verify-unsafe-call-sites.mjs and verify-cache-scope.mjs and deliberately did not sweep the rest; this is the rest arriving on its own. The distinction here is cheaper than either of those: a link inside a code span is not a link, and markdown code spans are delimited by backticks, so no parser is needed — stripping fenced blocks and inline spans before scanning is enough. WHY `could` AND NOT `should`: the false positive costs a rewording in a document, not a broken product, and gate 0 fails loudly rather than passing wrongly. It is filed because a known break is recorded rather than remembered, and because the same defect has now been found three times in three scans, which is the shape of a class rather than a bug. THE SECOND CRITERION IS THE POINT, as it was in F-127: a narrowed matcher that stops matching would pass every document forever, and that is worse than the false positive."
+    },
+    {
+      "id": "F-133",
+      "title": "Eighty-five \"nothing happened\" assertions use a matcher that accepts something",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Every toEqual([]) asserting that a collection received nothing is replaced by toHaveLength(0) or toStrictEqual([])",
+        "A check keeps it that way, or the survey is recorded with the reason each remaining one is sound"
+      ],
+      "verification": [
+        "state",
+        "test"
+      ],
+      "notes": "FOUND BY F-129, WHOSE OWN ASSERTION IT WEAKENED. Jest’s `toEqual([])` PASSES for `[undefined]` — confirmed against this repository’s runner in a throwaway case, because it did not seem plausible. `toEqual` ignores `undefined`, and that extends to array elements and to the length difference they create. THE MUTATION THAT SURVIVED: removing the `return` after the export screen refuses a format made it hand the sink an UNDEFINED file, the recorder pushed it, and `expect(written).toEqual([])` stayed green. TypeScript would have caught the use-before-assignment; jest runs through babel, which strips types. `toHaveLength(0)` catches it, and F-129 changed its own two assertions. EIGHTY-FIVE OTHERS REMAIN, and most are certainly sound: a `filter` or `map` result cannot contain `undefined`, so the trap cannot bite there. That is a JUDGEMENT rather than a check, and this repository has spent several features learning what an unchecked judgement is worth — which is why the survey is filed rather than asserted in a commit message. THE SECOND CRITERION MATTERS MORE THAN THE FIRST. Replacing 85 call sites once leaves nothing stopping the 86th, and a lint rule that flagged every `toEqual([])` would fire on the many that are comparing a VALUE and are correct. The distinction is whether the collection is something the code under test PUSHES INTO, which a rule may not be able to decide — in which case recording the survey, with a reason per site, is the honest outcome and the criterion says so."
     }
   ]
 }

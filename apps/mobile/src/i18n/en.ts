@@ -557,6 +557,26 @@ export const en = {
    *   - `cvdAccessibility` reuses `cvd.none`'s wording — "the three common colour-vision types"
    *     — rather than inventing a second phrase for one simulation.
    */
+  // F-129 — the export surface (FR-51). Six formats built in F-056 and reachable from nothing.
+  'home.openExport': 'Export a palette',
+  'export.title': 'Export',
+  'export.origin':
+    'Written on this device from the palette you chose, at the versions recorded in the file.',
+  'export.subject': 'What to export',
+  'export.format': 'Format',
+  'export.formatCsv': 'CSV — a row per colour',
+  'export.formatJson': 'JSON — every value, and it reads back in',
+  'export.formatCss': 'CSS — custom properties',
+  'export.formatTokens': 'Design tokens — and it reads back in',
+  'export.formatAse': 'ASE — Adobe swatch exchange',
+  'export.formatPdf': 'PDF — a report to look at',
+  'export.save': 'Export',
+  'export.saved': 'Written',
+  'export.cancelled': 'Nothing was saved.',
+  'export.failed': 'It could not be written.',
+  'export.empty': 'Build a palette first, and it can be exported.',
+  'export.refused': 'This format cannot carry one of the characters in it.',
+  'export.versions': 'Recorded in the file',
   'outfit.harmony.supports': 'These colours share a warmth, so they read as chosen together.',
   'outfit.harmony.opposes': 'These colours pull against each other on the warm–cool axis.',
   'outfit.harmony.neutral': 'How these colours relate neither helps nor hurts.',

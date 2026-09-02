@@ -13049,3 +13049,115 @@ empty, because nothing calls `unsafeFromHex`.
 
 ---
 
+## 2026-09-02 — F-129 DONE · the exports reach a screen, and a PDF can draw Japanese
+
+Three independent pieces in one feature card, committed as two increments so the build stayed
+green between them rather than only at the end.
+
+### The import (criterion 3)
+
+`fromJson` and `fromDesignTokens`, and **the round trip is the assertion** rather than a fixture
+comparison: the writer's own output, parsed and written again, byte-identical. A parser checked
+against hand-written fixtures agrees with the fixtures.
+
+**The token format could not round-trip as it stood.** `lch` and `oklch` appear nowhere in it,
+and the rest lived in `$description` — a field the specification defines as being for humans.
+Recovering a subject by parsing that sentence would make the wording load-bearing, so a reword
+would silently change what an import produces: **F-127's mistake, one format along**. The writer
+carries the structured values in `$extensions` now, which is what the specification reserves for
+exactly this, and the description is untouched.
+
+`TextDecoder` is refused for the reason `TextEncoder` already was, so `utf8.ts` gained a
+hand-written decoder — **strict where the encoder substitutes.** The encoder is handed a
+JavaScript string, where a lone surrogate has to become *something*; this is handed a file, where
+a malformed byte means the file is not what it claims.
+
+### The PDF (criterion 2, ADR-0083)
+
+`toPdf(subject, { font })` embeds TrueType bytes whole — `/Type0`, `/Identity-H`, a
+`/CIDFontType2` descendant, `/FontFile2`, and a **`/ToUnicode` CMap** so the text is selectable
+rather than a picture of itself. **With no font, every line of ADR-0080 still holds.**
+
+The parser's ground truth is a font this repository **constructs**. Against the shipped subset the
+expected values would come from the parser, which asserts that the parser agrees with itself —
+ADR-0081's argument in a second domain. The fixture covers printable ASCII, an em dash, a CJK
+ideograph and a macron romaji, with widths from a **rule** rather than a table, so an `hmtx` bug
+returning the first width for every glyph produces different numbers.
+
+### Two real defects the new check found, in code this feature did not set out to touch
+
+**Our own labels were never checked.** `accept()` ran on the title, the colour names and the
+delta ids; the fixed headings went straight into the line list. On the Latin-1 path that looked
+harmless because those labels are Latin-1 by construction — except they are not:
+`Colours — CIELAB (D65)` contains an em dash, and `latin1()` truncates U+2014 to byte 0x14. **A
+control character in the middle of a heading, in every PDF this writer has ever produced.**
+
+On the embedded path the same gap was worse: `glyphRun` falls back to glyph 0, and glyph 0 is
+`.notdef` — a row of boxes, silently, which is precisely what ADR-0080 refused and ADR-0083
+quotes itself refusing. Every drawn line is checked once now, before anything reaches a glyph run.
+
+### The surface (criterion 1)
+
+Two dependencies, a port, a screen, a route, a Home entry. **E-049 fired and the check answered:**
+`expo-file-system` and `expo-sharing` both reach files — the category most likely to bring a
+storage permission — and on modern Android neither does. The plan said the script would settle
+it rather than predicting none, and the prediction would have been right, which is exactly when
+trusting it is a habit worth not forming.
+
+**Criterion 1's device half is recorded as attested**, with what a device run must check written
+down: `shareAsync` resolves whether or not anything was chosen, so `deviceSink` reports `saved`
+for a dismissed sheet and never returns `cancelled`. Saying that in the attestation is better
+than a guess in the adapter.
+
+### The finding that outlives this feature
+
+**Jest's `toEqual([])` passes for `[undefined]`.** Confirmed in a throwaway case, because it did
+not seem plausible.
+
+A mutation removed the `return` after a format refuses, so the screen handed the sink an
+`undefined` file — and `expect(written).toEqual([])` **stayed green**. TypeScript would have
+caught the use-before-assignment; jest runs through babel, which strips types. Both assertions
+are `toHaveLength(0)` now, and the mutation is caught.
+
+**Eighty-five other `toEqual([])` remain in this repository.** Most are certainly sound — a
+`filter` result cannot contain `undefined` — but that is a judgement, and this session has spent
+several features learning what an unchecked judgement is worth. **F-133 is filed** to survey
+them rather than assert them.
+[[jests-toequal-accepts-an-array-of-undefined-as-an-empty-one]]
+
+### Mutations
+
+| set | result |
+|---|---|
+| importers and the decoder | **8/8**, after two proof gaps were closed |
+| the screen and the subject builder | **9/9**, after one stale anchor and one strengthened matcher |
+
+Every run asserts a PASS on unmutated source first.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| `verify-manifest-permissions.mjs` | **PASS** — two kept, unchanged |
+
+**Not run:** `e2e` (gate 7, pending F-091 — the reason criterion 1 is attested), `color-golden`,
+`cvd`, `perf`.
+
+### Three of my own test assertions were wrong
+
+A `/W` regex that stopped inside the array's first entry; a literal glyph id after the fixture
+grew; and a search for `dE00` in a document whose text is glyph ids. Each is corrected in place
+with the reason beside it. The fixture also carried U+85E5 labelled 藍 — that is 藥 — caught by
+the case that uses the real character rather than the fixture's own number.
+
+### Deliberately not built
+
+**A per-document font subsetter** — named in ADR-0083 as the successor, and the reason a report
+carries 674 KB of font. **Importing the other four formats** — criterion 3 names tokens and JSON.
+**A palette chooser on the export screen** — the route exports the most recently saved palette,
+and when Palette Studio grows an "export this one" control it passes its own.
+
+---
+

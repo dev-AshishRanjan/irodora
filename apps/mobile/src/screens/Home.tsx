@@ -83,6 +83,13 @@ export interface HomeProps {
    * nowhere to look at the result.
    */
   readonly onOpenWardrobe?: () => void;
+  /**
+   * Open the export surface (F-129). Same shape and same reason as onOpenAtlas.
+   *
+   * F-056 built six writers with a contract test over all six, and **nothing in the app called
+   * any of them** — six formats and no way to produce a file.
+   */
+  readonly onOpenExport?: () => void;
 }
 
 export function Home({
@@ -95,6 +102,7 @@ export function Home({
   onOpenShopping,
   onOpenMeasure,
   onOpenWardrobe,
+  onOpenExport,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -227,6 +235,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenWardrobe?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openExport')}
+        variant="secondary"
+        onPress={() => {
+          onOpenExport?.();
         }}
       />
 
