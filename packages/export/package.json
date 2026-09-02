@@ -1,0 +1,30 @@
+{
+  "name": "@irodora/export",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Local export formats — CSV, JSON, CSS custom properties, ASE, design tokens and a PDF report. Deterministic bytes, no runtime dependencies.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@irodora/color-core": "workspace:*",
+    "@irodora/color-difference": "workspace:*",
+    "@irodora/color-spaces": "workspace:*"
+  }
+}

@@ -103,6 +103,7 @@ Two rules that matter more than the format:
 | [0077](0077-the-random-source-is-a-port-and-the-app-installs-it.md) | The random source is a port, and the app installs it | Accepted |
 | [0078](0078-wardrobe-images-are-blobs-in-the-encrypted-database.md) | Wardrobe images are BLOBs in the encrypted database, not files beside it | Accepted |
 | [0079](0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md) | The Android minimum is API 26, because the pixel buffer is compiled out below it | Accepted |
+| [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 
 ## Open questions awaiting an ADR
 

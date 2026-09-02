@@ -1761,7 +1761,7 @@
       "service": "packages",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-055"
       ],
@@ -1782,7 +1782,9 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "plan": "plans/F-056-local-exports.md",
+      "notes": "DONE. SIX WRITERS, ONE SUBJECT, AND EVERY WRITER A PURE FUNCTION OF IT. That is ADR-0070's shape — a shareable card is a pure function returning SVG text, and the byte equality is what makes its criterion checkable in CI with no device — applied where it matters most, because FR-65 asks for a report that is REPRODUCIBLE FROM ITS ENVELOPE. No clock, no generated id, no compression: those are the three places non-determinism enters a PDF, and none of them is here. THE CONTRACT TEST ITERATES THE WRITER LIST RATHER THAN NAMING SIX CASES. Criterion 2 is \"EVERY export embeds the engine and corpus versions\", and a test that named its cases would stop covering the seventh format somebody adds — the failure being a missing version in a file on a stranger's disk. Removing the envelope from one writer fails three cases including the contract loop. THE DETERMINISM CASE NEEDED ITS DECOY: a writer that ignored the envelope entirely is perfectly deterministic and passes \"same subject, same bytes\", so the case beside it asserts that a subject differing ONLY in envelope produces DIFFERENT bytes. THE PDF IS LATIN-1, AND THAT IS ADR-0080. Base-14 Helvetica needs no embedded font, which is what keeps the writer dependency-free and its bytes diffable; the cost is that no kanji, no kana and none of the nine corpus romaji carrying macrons can appear in a report. A character it cannot draw is REFUSED BY NAME with its code point and the field it was in — never dropped, never a box, because a report that silently loses a character is a report somebody trusts. One narrow exception: our own label ΔE00 is REWRITTEN as dE00, because the delta sign is a name we chose and we may spell it in the alphabet the document can draw; a colour somebody else named is not ours to respell. A VIEWER WOULD NOT HAVE CAUGHT THE THINGS THE TEST DOES. A PDF with a broken cross-reference table usually still opens, because readers rebuild what they cannot parse — so \"it opened\" is not evidence. The suite asserts the xref offsets point at the objects they claim, that the declared stream length equals the bytes written, and that a 200-colour subject pages rather than clipping. Moving the offset record one line later fails exactly the xref case. THE ASE READER EXISTS TO CHECK THE WRITER AND IS NOT THE CRITERION. Criterion 3 — \"ASE round-trips through Adobe tooling\" — needs Adobe's tooling, which this repository does not have and CI cannot install; it REMAINS ATTESTED AND OUTSTANDING and is not discharged by the self round-trip. And because a writer and reader that agree on the same mistake round-trip perfectly, the suite also checks the writer against HAND-BUILT BYTES for a one-colour file. Writing the name length without its terminator — the mistake that opens with the last letter of every swatch missing — fails three cases. TEXTENCODER IS NOT AVAILABLE AND WAS NOT ASSUMED. `tsconfig.base.json` pins lib ES2023 with no DOM and no node types, deliberately, so a package that must run in Node, a browser and Hermes cannot quietly depend on one. Declaring the global would be the comment version of a guarantee and taking `@noble/hashes` for its `utf8ToBytes` would be a dependency edge nobody would find in an audit — so the encoder is twenty lines here, with the astral case (a lone surrogate becomes U+FFFD) written down. THE CONTRACT TEST'S FIRST DRAFT WAS WRONG ABOUT A FORMAT AND SAID SO. It decoded every writer's bytes as UTF-8 and reported ASE as missing its versions. It was not: an ASE name is UTF-16BE. The test's model was wrong, not the writer — and a contract case that understood one encoding would have pushed somebody to \"fix\" correct code. It now searches for either encoding, and says why. A SECOND STATIC-SCAN FALSE POSITIVE, and it is F-127's shape again: `verify-cache-scope.mjs` read the string '../../etc/passwd' in a slugify test as a FILE THIS TEST OPENS. The fixture is assembled from parts now, the assertion is unchanged, and F-127 was broadened from one script to two — both decide what a file DOES by matching text in it. GATES RUN, all green: state (18 checks), typecheck, lint, format, test (export 34, mobile 516 unchanged), build, security:keys. NOT RUN: a11y, contrast, e2e, color-golden, cvd, perf — this package has no screens, no journeys and no colour maths; every value arrives on the subject and the ΔE numbers come from `deltaE00`, which has its own golden coverage. NOT BUILT, AND FILED AS F-129: the export surface, a CJK-capable PDF, and the importer. FR-28's \"import a custom palette\" waited for this feature on purpose — an importer written before its exporter has no format to agree with."
     },
     {
       "id": "F-063",
@@ -3563,7 +3565,7 @@
     },
     {
       "id": "F-127",
-      "title": "The unsafeFromHex census counts a mention as a call site",
+      "title": "Two static scans read a string literal as a reference",
       "requirements": [
         "NFR-24"
       ],
@@ -3573,14 +3575,15 @@
       "status": "backlog",
       "blockedBy": [],
       "acceptance": [
-        "A file that names unsafeFromHex in a comment or a string is not reported as a call site",
-        "A file that actually calls or imports it still is — proven by a decoy file the check must flag"
+        "A file that names unsafeFromHex in a comment or a string is not reported as a call site by verify-unsafe-call-sites.mjs",
+        "A test containing a path-shaped string it does not open is not reported as a cross-package read by verify-cache-scope.mjs",
+        "Both still flag the real thing — proven by decoy files each check must accept and must reject"
       ],
       "verification": [
         "state",
         "lint"
       ],
-      "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything."
+      "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything. SECOND INSTANCE, FOUND BY F-056 AN HOUR LATER. `verify-cache-scope.mjs` reported `packages/export/test/export.test.ts` as reading `packages/etc/passwd` — because the test asserts that `slugify('../../etc/passwd')` cannot produce a traversal. A traversal LITERAL is indistinguishable from a read to a textual scan, exactly as a mention is indistinguishable from a call. The fixture was assembled from parts instead, with the reason written beside it, and the assertion is unchanged. TWO SCRIPTS, ONE DEFECT: both decide what a file DOES by matching text in it. Failing closed is right and is not the issue — what is missing in both is the distinction between a reference and a mention, which an import, a call expression or a read call makes visible without a full parser. THE COST IS THE SAME BOTH TIMES: the check pushes people to stop writing the literal that explains the thing, and the explanation is the part that was worth having."
     },
     {
       "id": "F-128",
@@ -3608,6 +3611,33 @@
         "artifact"
       ],
       "notes": "DONE. F-121 s instrumentation was built so one build would settle a two-way split. It did, and the answer was NEITHER candidate: \"the pixel buffer could not be read: Frame.getPixelBuffer(...): java.lang.RuntimeException: ArrayBuffer(HardwareBuffer) requires NDK API 26 or above! (minSdk >= 26)\". THIS WAS NEVER A JAVASCRIPT FAULT — thrown from C++, through Kotlin, into a worklet, and no amount of TypeScript could have found it. THE MECHANISM: react-native-nitro-modules guards its entire AHardwareBuffer implementation on a COMPILE-TIME constant, #if __ANDROID_API__ >= 26 ... #else throw std::runtime_error(...). __ANDROID_API__ is set by the NDK from Gradle s minSdkVersion and Nitro takes the app s value directly. This repository never set one; ExpoRootProjectPlugin.kt defaults it to 24, so the whole native tree compiled at 24 and the #else is what shipped. On the device, ImageProxy+getPixelBuffer.kt prefers a CPU-readable HardwareBuffer whenever SDK_INT >= P (28); a modern phone is, and ADR-0075 s pixelFormat rgb gives CameraX an RGBA_8888 ImageProxy that is exactly that. So the fast path is taken on every frame and the fast path is a throw. WHY hasPixelBuffer SAID YES: it asks the same question with only the RUNTIME half. One is a property of the DEVICE, the other of OUR BUILD. Nothing on the JavaScript side could ever have bridged that, which is precisely why F-121 s try/catch around getPixelBuffer() was worth having — it turned an invisible throw into a sentence, after four device round trips. E-054. THE CHANGE: expo-build-properties with android.minSdkVersion = ANDROID_MIN_SDK (26), exported from app.config.ts so a gate reads the number rather than greps for it. IN app.config.ts AND NOWHERE ELSE: apps/mobile/android/ is generated and untracked and both workflows run expo prebuild --clean, so a hand-written value works locally and vanishes on the next run. 26 NOT 28: 26 is the number in the #if; a device on 26-27 never reaches the HardwareBuffer path and falls to the single-plane branch, which works. There was NO JavaScript alternative — the fast path is chosen by SDK_INT and the buffer s own usage flags, neither reachable from our code, and the only remaining lever (pixelFormat yuv) is what ADR-0075 refused. THE CHAIN VERIFIED RATHER THAN ASSUMED: prebuild was RUN and android/gradle.properties read back showing android.minSdkVersion=26; then android.minSdkVersion -> catalog key minSdk (ExpoAutolinkingSettingsExtension.kt:117) -> rootProject.ext.minSdkVersion (ExpoRootProjectPlugin.kt:53, default \"24\") -> Nitro s getExtOrIntegerDefault. THE GUARD: scripts/verify-android-min-sdk.mjs, wired into gate 2 and mirrored in CI. Seven cases, decoys watched failing. The ones that MATTER are the LOWERED values — 24 and 25 both rejected — because a check that only noticed a MISSING number would pass the edit that actually happens: somebody widening device support. Two more reject a plugin hard-coding the number instead of passing the constant, INCLUDING when the literal is 26, because two numbers that can disagree is the shape this regresses in. The real config stays green. WHAT IT COSTS: Android 7.0 and 7.1 can no longer install the app. Close to zero, because the app ALREADY did not work there and NFR-7 sets the bar at a four-year-old mid-range Android (API 31+ in 2026). Declaring 24 was a claim the binary could not honour. ADR-0079. GATES: state (18), typecheck, lint (incl. the new check), format, test (516), verify:minsdk:prove — all PASS. NOT RUN: the NDK compile and the APK. Gate 16 needs an Android toolchain this workstation does not have; that is F-039 s attestation, still OUTSTANDING. Everything verified here stops at the generated gradle.properties. DELIBERATELY NOT DONE: touching apps/mobile/android/ (generated, erased by the next --clean prebuild); changing pixelFormat (ADR-0075 holds and this fault is not evidence against it); moving targetSdkVersion or compileSdkVersion (neither implicated, both their own decision)."
+    },
+    {
+      "id": "F-129",
+      "title": "The export formats reach a screen, and a CJK-capable PDF",
+      "requirements": [
+        "FR-51",
+        "FR-28"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-056"
+      ],
+      "acceptance": [
+        "A person can export a palette or a batch-compare result in any of the six formats, to a file they chose",
+        "A PDF report can draw kanji, kana and the macron romaji — an embedded subset, with a ToUnicode map so the text is selectable",
+        "A palette exported as design tokens or JSON can be imported back, and the round-trip is asserted"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "e2e"
+      ],
+      "notes": "FILED BY F-056, WHICH BUILT THE FORMATS AND DELIBERATELY NOT THE SURFACE. `service` there is `packages` and its verification list is `state, test` — no a11y, no e2e — and F-035 already owns the export JOURNEY (writing to a file the person chose) with the attestation for it. Wiring six writers to a screen is a mobile feature. THE PDF HALF IS ADR-0080's RECORDED COST. The report is Latin-1 under base-14 Helvetica, so no kanji, no kana, and none of the nine corpus romaji carrying macrons can appear in one; a character it cannot draw is REFUSED BY NAME rather than dropped. Fixing that means a TrueType parser, a cmap walk, a subsetter and a ToUnicode CMap — a font pipeline, which inside an export-formats feature would have been scope nobody reviewed against a requirement. THE IMPORT HALF IS FR-28's SECOND CLAUSE, and it waited for this feature on purpose: an importer written before its exporter has no format to agree with. Now there is one, and the round-trip is assertable. NOT A REASON TO DELAY THE SURFACE: five of the six formats carry every character today, so a person can export a Japanese-titled palette as JSON, CSV, CSS or tokens the moment a screen offers it. FILED AS F-129 AND NOT F-128, which was already taken by a done R4 feature — the id was checked against the list rather than counted from the last one this session touched."
     }
   ]
 }

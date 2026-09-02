@@ -8,6 +8,131 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-056 DONE · six formats, and the two scans that read a string as a reference
+
+`@irodora/export` — CSV, JSON, CSS custom properties, ASE, design tokens and a PDF report. One
+subject, six writers, **every writer a pure function of it**. That is ADR-0070's shape applied
+where it matters most: FR-65 asks for a report *reproducible from its envelope*, and a document
+nobody can diff has a criterion nobody can check.
+
+No clock, no generated id, no compression. Those are the three places non-determinism enters a
+PDF and none of them is here.
+
+### The contract test iterates the writer list
+
+Criterion 2 is *"**every** export embeds the engine and corpus versions"*. A test naming six
+cases stops covering the seventh format somebody adds — and the failure is a missing version in
+a file on a stranger's disk. So the loop is over the exported `WRITERS`, and adding one without
+an envelope fails before it ships.
+
+**The determinism case needed its decoy.** A writer that ignored the envelope entirely is
+perfectly deterministic and passes *"same subject, same bytes"*. The case beside it asserts a
+subject differing **only** in envelope produces **different** bytes.
+
+### A viewer would not have caught what the test does
+
+A PDF with a broken cross-reference table usually still opens — readers rebuild what they cannot
+parse. **"It opened" is not evidence.** The suite asserts the xref offsets point at the objects
+they claim, the declared stream length equals the bytes written, and a 200-colour subject pages
+rather than clipping.
+
+| Mutation | Failed |
+|---|---|
+| CSV never quotes | 1 — the name `Indigo, deep` |
+| ASE name length excludes its terminator | 3 |
+| xref offset recorded after the object | 1 |
+| PDF drops what it cannot encode | 2 |
+| a writer ignores the envelope | 3, including the contract loop |
+
+### ADR-0080 — the PDF is Latin-1, and refuses
+
+Base-14 Helvetica needs no embedded font, which keeps the writer dependency-free and its bytes
+diffable. **The cost is real: no kanji, no kana, and none of the nine corpus romaji carrying
+macrons.** A character it cannot draw is refused **by name**, with its code point and the field
+it was in — never dropped, never a box, because a report that silently loses a character is a
+report somebody trusts.
+
+One narrow exception, written down: **our own label `ΔE00` is rewritten as `dE00`.** The delta
+sign is a name we chose and we may spell it in the alphabet the document can draw. A colour
+somebody else named is not ours to respell.
+
+The alternative — a TrueType parser, a `cmap` walk, a subsetter and a `ToUnicode` map — is a
+font pipeline, and adding one inside an export-formats feature is scope nobody reviewed against
+a requirement. Filed as F-129.
+
+### The ASE reader is not the criterion
+
+Criterion 3 is *"ASE round-trips through **Adobe** tooling"* — which this repository does not
+have and CI cannot install. It **remains attested and outstanding**, and the self round-trip does
+not discharge it. And because a writer and reader that agree on the same mistake round-trip
+perfectly, the suite also checks the writer against **hand-built bytes** for a one-colour file.
+
+### `TextEncoder` is not available, and was not assumed
+
+`tsconfig.base.json` pins `lib: ["ES2023"]` with no DOM and no node types — deliberately, so a
+package that must run in Node, a browser and Hermes cannot quietly depend on one. Declaring the
+global would be the comment version of a guarantee; taking `@noble/hashes` for its
+`utf8ToBytes` would be a dependency edge nobody finds in an audit. So the encoder is twenty
+lines here, with the astral case written down: a lone surrogate becomes U+FFFD, because emitting
+bytes that are not UTF-8 and calling the result a file is the other option.
+
+### The contract test was wrong about a format, and says so
+
+Its first draft decoded every writer's bytes as UTF-8 and reported **ASE as missing its
+versions**. It was not — an ASE name is UTF-16BE, so the version is there with a NUL between
+every character. **The test's model of the format was wrong, not the writer**, and a contract
+case that understood one encoding would have pushed somebody to "fix" correct code. It searches
+for either encoding now, and the comment explains which two and why.
+
+### A second static-scan false positive — F-127 broadened
+
+`verify-cache-scope.mjs` reported this package's test as **reading `packages/etc/passwd`**,
+because a `slugify` case asserts that `'../../etc/passwd'` cannot produce a traversal. A
+traversal *literal* is indistinguishable from a read to a textual scan — exactly as a *mention*
+is indistinguishable from a *call* in yesterday's `unsafeFromHex` census.
+
+Two scripts, one defect: **both decide what a file does by matching text in it.** Failing closed
+is right and is not the issue; what is missing in both is the distinction between a reference and
+a mention, which an import, a call expression or a read call makes visible without a full parser.
+The cost is the same both times — the check pushes people to stop writing the literal that
+explains the thing, and the explanation was the part worth having.
+
+The fixture is assembled from parts now, with the reason beside it. The assertion is unchanged.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — export **34**, mobile 516 unchanged |
+| 5 build · security:keys | **PASS** |
+
+**Not run:** `a11y`, `contrast`, `e2e` — this package has no screens and no journeys.
+**Not applicable:** `color-golden`, `cvd`, `perf` — no colour maths. Every value arrives on the
+subject, and the ΔE numbers come from `deltaE00`, which has its own golden coverage.
+
+**E-032 was named in the plan up front this time**, and it was the sharpest version of it: a
+**new package** is a new manifest, and CI installs `--frozen-lockfile`. `pnpm install` ran in
+increment 1 and the lockfile is part of this change.
+
+### Deliberately not built (F-129)
+
+**The follow-up is F-129 and not F-128**, which was already taken by a done R4 feature — the
+pixel-buffer minSdk fix, committed in `f38ec27` while this session was running. The id was
+checked against the list rather than counted from the last one this session had touched, which
+is the mistake the guard in the filing script caught: it skipped the push silently, and the
+follow-up would have gone unfiled if the collision had not shown up in `progress.md`.
+
+The export **surface** — `service` is `packages`, the verification list has no `a11y` and no
+`e2e`, and F-035 already owns the journey of writing to a file the person chose. The
+**CJK-capable PDF**, per ADR-0080. And the **importer**: FR-28's *"import a custom palette"*
+waited for this feature on purpose, because an importer written before its exporter has no
+format to agree with. Five of the six formats carry every character today, so a Japanese-titled
+palette exports fine the moment a screen offers it.
+
+---
+
 ## 2026-09-01 — F-128 DONE · the pixel buffer was compiled out, and the runtime guard could not see it
 
 F-121's instrumentation was built so that one build would settle a two-way split. It did, and the
