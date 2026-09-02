@@ -36,6 +36,15 @@ export {
 } from './illumination.js';
 
 export {
+  extractPattern,
+  PATTERN_COLOURS,
+  PATTERN_TARGET_DELTA_E,
+  PATTERN_TARGET_PROPORTION,
+  type PatternColour,
+  type PatternExtraction,
+} from './pattern.js';
+
+export {
   assessQuality,
   confidenceCeiling,
   QUALITY_CEILING,

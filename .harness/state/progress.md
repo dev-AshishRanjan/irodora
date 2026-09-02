@@ -8,6 +8,121 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-064 DONE · median cut cannot answer this requirement, and the corpus was blind twice
+
+### First, F-091's blocker was re-checked and half of it is gone
+
+Its note said *"the Node upgrade is the prerequisite and no repository change can perform it"*.
+**It has been performed.** Node 24.19.0 and pnpm 11.21.0 are installed and `pnpm install` ran
+cleanly four times this session — twice adding a workspace dependency and once adding a whole
+new package. `ERR_PNPM_UNSUPPORTED_ENGINE` no longer occurs, so *"the tool cannot be added"* is
+false and criterion 1 is implementable here.
+
+What is still true, verified rather than assumed: **there is no JDK.** `JAVA_HOME` points at a
+`jdk-18.0.2.1` directory that does not exist, and neither `java` nor `javac` is on any path. The
+Android SDK and an emulator binary *are* present; there are no AVDs. Without a JDK nothing builds
+an APK to put on one.
+
+That is [[a-blocker-outlives-the-state-of-the-world-that-caused-it]] caught in the act: the
+record said the wall was Node, the wall is now a JDK and a push, and a session selecting F-091 on
+the old note would have gone looking for the wrong thing. The record is corrected, and the
+question it raises — whether criteria 2–4 should be **attested** under ADR-0038, as F-039, F-040
+and F-080 already do for device and CI criteria — is written into the feature rather than decided
+unilaterally.
+
+### The criterion named two things that did not exist
+
+> *Meets **its accuracy target** on **the pattern test corpus** …*
+
+Neither was defined anywhere. NFR-2 is about *capture* accuracy from a physical device matrix
+(F-063 → F-053 → OQ-3, all blocked), and no pattern corpus existed. So this feature had to define
+both — **ADR-0081**, because an accuracy target is a claim about accuracy.
+
+**The target is derived rather than picked.** The corpus is constructed, so its ground truth
+carries no measurement error, and a correct quantiser must recover a two-colour stripe to within
+arithmetic tolerance. `PATTERN_TARGET_DELTA_E` is **1.0** — *below* the ≈2.3 at which a
+difference is generally held to be noticeable — because this is a *did the arithmetic work*
+tolerance, not a perceptual one. A perceptual slack would let a real defect through while looking
+generous.
+
+### Median cut alone cannot answer FR-19
+
+Median cut splits a bucket at its median **position**, so the halves come out with equal
+populations *by construction*. Its bucket sizes are an artefact of the splitting rule, not a fact
+about the image: **the first working version reported a 75/25 stripe as 50/50**, and would have
+reported every two-colour pattern that way. FR-19 asks for *area proportions* — that is the
+requirement unmet, not a rounding error.
+
+The design became two passes. The cut chooses representative colours **without a seed** — which
+matters, because a seed needs a random source, F-077 made randomness a port, and a port is a
+platform API NFR-3 forbids here. A second pass assigns every pixel to its nearest representative
+in OKLab. **The palette is the cut's; the histogram is the image's.** Recorded as a plan revision.
+
+### `partition`'s background rule is single-colour logic
+
+It rejects a pixel more than `backgroundLuminanceDistance` from the region's own median
+luminance — *"something else in frame rather than part of the sample"*. Right for *"what colour
+is this region"*; **exactly wrong** for *"what colours is it made of"*, because in a navy-and-cream
+stripe the median is navy and the cream is the furthest thing from it.
+
+The first test run **rejected all four hundred cream pixels and reported a striped shirt as plain
+navy.** Specular, shadow and alpha are kept — those are about a pixel being *unusable* rather
+than *different* — and `PATTERN_THRESHOLDS` derives from `DEFAULT_THRESHOLDS` so a change to the
+specular or shadow cut still reaches this path.
+
+### The corpus was blind twice, one day after the lesson
+
+| The mutation | Why the corpus could not see it | What was added |
+|---|---|---|
+| return the first cluster member instead of the mean | every hard edge makes each pixel exactly a source colour, so a quantiser and a **counter** score alike | `blendedStripes` — 5 % of the image in colours in no palette |
+| the same, again | a 20 % trimmed mean over a cluster that is 97 % one colour **is** that colour | `graded` — no flat region at all |
+
+[[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]], twice, in the file
+written the day after it. The assertion was also rewritten as a **property** — *a mean of a graded
+cluster is a value the image does not contain* — rather than reconstructing the clustering, which
+an earlier draft did and which failed for a reason unrelated to its claim.
+
+### Two checks caught me and both were right
+
+- **The fixture check caught my own arithmetic.** The check pattern claimed "exactly 50 %" at
+  8-pixel squares. Eight gives five squares per side, twenty-five in total, which cannot be
+  halved — it was 13 to 12, **52 %**. Ten-pixel squares give sixteen and a real half.
+- **The claims lint caught my prose.** *"97 % one exact colour"* contains a banned construction
+  (ADR-0031, NFR-21), and the rule does not care that my meaning was arithmetic. **A lint that
+  trusted intent would be trusting the thing it exists to check.**
+
+### Where it lives, and the field that was corrected
+
+`feature_list.json` said `"package": "@irodora/color-core"`. That package's own header says
+**"Nothing here computes a colour"** — a quantiser there would contradict the boundary it states.
+It went to `@irodora/color-sampling`, and the field was corrected rather than silently ignored.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — color-sampling **38**, mobile 516 unchanged |
+| color-golden · 5 build · security:keys | **PASS** |
+
+Three mutations run, three failures: proportions from the cut's buckets — 4 cases; the background
+rule left on — 6; a member instead of the engine's mean — 3, including the case named for it
+*once `graded` existed*.
+
+**Not run:** `e2e`, `a11y`, `contrast` — no screens, no journeys. `cvd` — no separation change.
+`perf` — no budget claimed, though the extractor is one sort per split plus one assignment pass.
+
+### Deliberately not built
+
+Photographed patterns — licensed content, and a photograph has no exact ground truth to measure
+an extractor against; that is F-063's, attested and blocked. Pattern **classification**, which is
+a different feature and which FR-39 already covers with a free-text field. Any surface. And
+dithering or a palette tuned for re-rendering the image: this extracts what a garment is made of
+and is not an image encoder.
+
+---
+
 ## 2026-09-01 — F-056 DONE · six formats, and the two scans that read a string as a reference
 
 `@irodora/export` — CSV, JSON, CSS custom properties, ASE, design tokens and a PDF report. One

@@ -28,6 +28,7 @@
     "@irodora/color-core": "workspace:*"
   },
   "devDependencies": {
+    "@irodora/color-difference": "workspace:*",
     "vitest": "^4.1.10"
   }
 }
