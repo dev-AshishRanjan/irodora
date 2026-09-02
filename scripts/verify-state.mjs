@@ -1672,9 +1672,126 @@ const GOVERNED = [
   join(ROOT, 'NOTICE.md'),
 ].filter(existsSync);
 
+/**
+ * Markdown with its code removed, so a LINK INSIDE A CODE SPAN is not read as a link (F-132).
+ *
+ * ## Why this exists
+ *
+ * The link finder below is a regular expression over the file's text, and a governed document
+ * that describes code contains code. F-127's own progress entry named a call whose syntax puts a
+ * square bracket beside a parenthesis, and gate 0 reported it as a link to an ellipsis — **the
+ * note explaining a defect was the thing that reproduced it**, for the third time in one session.
+ *
+ * A link inside backticks is not a link **by the format's own rules**, so this is not a
+ * concession to make a check pass: it is the check learning what markdown is.
+ *
+ * ## Replaced with spaces, never deleted
+ *
+ * Every stripped character becomes a space, so offsets do not move. A real broken link elsewhere
+ * in the file is still found, and `brokenLinks` still counts what it counted.
+ *
+ * ## Fenced blocks first, then the longest delimiter
+ *
+ * A fenced block can contain backticks, so removing it first stops its contents being read as
+ * span delimiters. Within the remaining text, `` ``double`` `` is matched before
+ * `` `single` `` — CommonMark's own rule, and the one a naive single-backtick pass gets wrong.
+ *
+ * NOT HANDLED: an unbalanced or nested backtick run beyond two. The shapes this repository
+ * writes are covered by the cases below, and the limit is stated rather than assumed away.
+ */
+function stripCode(text) {
+  const blank = (match) => ' '.repeat(match.length);
+  return text
+    .replace(/^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gmu, blank)
+    .replace(/``[^`]*``/gu, blank)
+    .replace(/`[^`\n]*`/gu, blank);
+}
+
+/*
+ * THE PROOF, IN MEMORY, ON EVERY RUN.
+ *
+ * A stripper that removed everything would satisfy "a link in a code span is not found" and make
+ * the whole link check vacuous — which is worse than the false positive it replaced, because
+ * nobody would ever see it fail [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+const STRIP_CASES = [
+  { name: 'a link in ordinary prose is found', text: 'see [x](./a.md)', links: ['./a.md'] },
+  {
+    name: 'ACCEPT — a link-shaped code span is not a link',
+    text: 'the call `handlers[0](…)` is fine',
+    links: [],
+  },
+  {
+    /*
+     * A FENCE WITH AN INLINE SPAN IN IT, and the fixture is chosen rather than obvious.
+     *
+     * The first version of this case was a bare fence around a link — and it passed WITHOUT
+     * the fenced-block rule, because the double-delimiter rule crosses newlines and happened
+     * to span from the opening fence to the closing one. A mutation deleting the fence rule
+     * survived it, and only running the mutation showed that.
+     *
+     * An inline span inside the block breaks the accident: the delimiters pair with each
+     * other instead, the fences are left behind, and only the fenced-block rule removes the
+     * link [[a-decoy-that-is-not-broken-proves-nothing]].
+     */
+    name: 'ACCEPT — a link inside a fenced block is not a link',
+    text: '\n```\nrun `x` then [x](./a.md)\n```\n',
+    links: [],
+  },
+  {
+    name: 'ACCEPT — the same with an info string, which is how they are actually written',
+    text: '\n```bash\n`x` [x](./a.md)\n```\n',
+    links: [],
+  },
+  {
+    // Tilde fences are equally valid CommonMark and nothing in this repository writes one —
+    // which is exactly why it needs a case rather than an assumption.
+    name: 'ACCEPT — a tilde fence',
+    text: '\n~~~\n[x](./a.md)\n~~~\n',
+    links: [],
+  },
+  {
+    name: 'ACCEPT — a double-backtick span holding a backtick',
+    text: 'as in ``a ` [x](./a.md)`` here',
+    links: [],
+  },
+  {
+    name: 'a real link on the SAME LINE as a code span is still found',
+    text: 'the `fn[0](x)` in [that file](./a.md)',
+    links: ['./a.md'],
+  },
+  {
+    name: 'stripping preserves length, so offsets do not move',
+    text: 'a `b` c',
+    length: 7,
+  },
+];
+
+for (const c of STRIP_CASES) {
+  const stripped = stripCode(c.text);
+  if (c.length !== undefined && stripped.length !== c.length)
+    fail(
+      'links',
+      `stripCode case "${c.name}": length ${String(stripped.length)}, expected ${String(c.length)}`,
+      'A stripper that changes offsets makes every position this gate reports wrong.',
+      'Replace with spaces of equal length rather than deleting.',
+    );
+  if (c.links !== undefined) {
+    const found = [...stripped.matchAll(/\]\(([^)\s#][^)\s]*)\)/g)].map((m) => m[1]);
+    if (found.join('|') !== c.links.join('|'))
+      fail(
+        'links',
+        `stripCode case "${c.name}": found [${found.join(', ')}], expected [${c.links.join(', ')}]`,
+        'The link finder must see real links and not code. A stripper that removes everything ' +
+          'makes this whole check vacuous.',
+        'Fix stripCode rather than the case.',
+      );
+  }
+}
+
 let brokenLinks = 0;
 for (const file of GOVERNED) {
-  const text = readFileSync(file, 'utf8');
+  const text = stripCode(readFileSync(file, 'utf8'));
   for (const m of text.matchAll(/\]\(([^)\s#][^)\s]*)\)/g)) {
     const href = m[1];
     if (/^(https?:|mailto:|#)/.test(href)) continue;

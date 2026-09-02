@@ -213,19 +213,58 @@ function mentionOnly(node) {
  */
 function escapingReads(source, file, packageDir) {
   const found = [];
+  const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
 
-  for (const m of source.matchAll(/join\(\s*([A-Za-z_$][\w$]*|'[^']*'|"[^"]*")([^)]*)\)/gu)) {
-    const rest = [...(m[2] ?? '').matchAll(/'([^']*)'|"([^"]*)"/gu)].map((a) => a[1] ?? a[2] ?? '');
-    if (!rest.includes('..')) continue;
-    const anchor = baseOf(source, m[1], file, packageDir);
-    if (anchor === null) {
-      found.push({ raw: m[0].slice(0, 80), path: null });
-      continue;
+  /*
+   * THE PATH-BUILDING CALL, ON THE TREE (F-132).
+   *
+   * This was a regular expression, and F-127 converted only its SIBLING — the bare-literal
+   * matcher below. So a path-building call written INSIDE A COMMENT was still read as a read,
+   * and F-130's note explaining why a directory had to be derived from a file was the thing that
+   * failed the gate. Fourth instance of that shape in one session, and the second half of a
+   * check that already looked fixed.
+   *
+   * **A matcher narrowed in one of its two branches leaves the defect exactly where it was, and
+   * the passing half makes it look addressed.**
+   *
+   * A comment is not in the syntax tree at all, so the class disappears rather than narrowing.
+   * `baseOf` is unchanged — it works on the anchor's TEXT, which is what the six existing proof
+   * cases exercise.
+   */
+  const visitCall = (node) => {
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+      const name = ts.isIdentifier(callee)
+        ? callee.text
+        : ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.name)
+          ? callee.name.text
+          : null;
+
+      if (name === 'join' || name === 'resolve') {
+        const [first, ...rest] = node.arguments;
+        const segments = rest
+          .filter((a) => ts.isStringLiteral(a) || ts.isNoSubstitutionTemplateLiteral(a))
+          .map((a) => a.text);
+
+        if (first !== undefined && segments.includes('..')) {
+          const anchorText = first.getText(parsed);
+          const anchor = baseOf(source, anchorText, file, packageDir);
+          if (anchor === null) {
+            found.push({ raw: node.getText(parsed).slice(0, 80), path: null });
+          } else {
+            const target = resolve(anchor, ...segments);
+            if (relative(packageDir, target).startsWith('..'))
+              found.push({
+                raw: node.getText(parsed).slice(0, 80),
+                path: relative(ROOT, target).replace(/\\/gu, '/'),
+              });
+          }
+        }
+      }
     }
-    const target = resolve(anchor, ...rest);
-    if (!relative(packageDir, target).startsWith('..')) continue;
-    found.push({ raw: m[0].slice(0, 80), path: relative(ROOT, target).replace(/\\/gu, '/') });
-  }
+    ts.forEachChild(node, visitCall);
+  };
+  ts.forEachChild(parsed, visitCall);
 
   /*
    * THE BARE LITERAL, AND WHAT IT IS DOING THERE (F-127).
@@ -245,7 +284,6 @@ function escapingReads(source, file, packageDir) {
    * handed to a callee this cannot name is still counted — being wrong in that direction costs
    * a sentence, and being wrong in the other costs the check.
    */
-  const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
   const visitLiteral = (node) => {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
       const raw = node.text;
@@ -454,6 +492,20 @@ const CASES = [
   {
     name: 'CONTROL — one level up is the package root, not an escape',
     source: `${HERE_DECL}const P = join(HERE, '..', 'golden', 'x.json');\n`,
+    expect: (found) => found.length === 0,
+  },
+  {
+    /*
+     * THE F-130 SHAPE. A path-building call described in a LINE COMMENT is prose about code, and
+     * the note it appears in exists to explain why the code beside it is written as it is.
+     */
+    name: 'CONTROL — a path-building call inside a line comment',
+    source: `${HERE_DECL}// avoid join(HERE, '..', '..', 'ops', 'x.json') here\nconst P = 1;\n`,
+    expect: (found) => found.length === 0,
+  },
+  {
+    name: 'CONTROL — the same call inside a block comment',
+    source: `${HERE_DECL}/* see join(HERE, '..', '..', 'ops', 'x.json') */\nconst P = 1;\n`,
     expect: (found) => found.length === 0,
   },
   {

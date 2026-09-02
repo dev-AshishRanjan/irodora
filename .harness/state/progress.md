@@ -12997,9 +12997,10 @@ First run: **6/8**.
 - *"the census matches any identifier containing the name"* survived, because my ACCEPT case
   `const notUnsafeFromHexReally = 1` is a **binding** and the mutation loosened the **call**
   matcher. A case that calls it was added.
-- *"an unnameable callee is treated as safe"* survived, because no case had one. A literal whose callee is an
-  element access was added — and writing that sentence with the syntax in it broke gate 0, which
-  is this feature’s own defect in a third scan. Filed as F-132.
+- *"an unnameable callee is treated as safe"* survived, because no case had one. A literal under
+  `handlers[0](…)` was added — and writing that sentence with the syntax in it broke gate 0,
+  which was this feature's own defect in a third scan. **F-132 fixed that scan, and this sentence
+  is written the way it was meant to be** — which is the acceptance test, not the anecdote.
 
 Then 8/8. The most important mutation is the one that makes the matcher **stop matching
 entirely** — that is the real failure of a narrowed check, and it is worse than the false
@@ -13314,6 +13315,78 @@ registry subject.
 fixed by lightness. **Saving a filter** — state for a decision nobody has taken, which F-042 and
 F-052 both refused. **Colour as a filter axis** — the grouping already answers *which colours*,
 and a colour filter on top of a colour grouping would be two answers to one question.
+
+---
+
+## 2026-09-03 — F-132 DONE · a comment is not code, in the last two scans that thought it was
+
+Four instances, three scans, one session — every one firing on **prose written to explain the
+check itself**. F-127 fixed one scan and half of another; this closes the rest.
+
+### What F-127 got half-right, and that is the lesson
+
+It converted `verify-cache-scope.mjs`'s **bare path literal** matcher to a parse and left its
+sibling — the one reading a path-building call — as a regular expression over the file's text.
+Three days later F-130's note naming that call failed the gate.
+
+> **A matcher narrowed in one of its two branches leaves the defect exactly where it was, and the
+> passing half is what stops anybody looking.**
+
+The `join` matcher now walks the syntax tree its sibling already built. **A comment is not in the
+tree**, so the class disappears rather than narrowing. `baseOf` is untouched, and the six original
+proof cases pass unchanged.
+
+### Gate 0's link finder learns what markdown is
+
+Code spans and fenced blocks are stripped before the link pattern runs — **replaced with spaces of
+equal length**, so offsets do not move and a real broken link is still reported at its own
+position. A link inside backticks is not a link *by the format's own rules*; this is the check
+learning the format rather than a concession to make it pass.
+
+### The mutation is what made the fence rule honest
+
+My first fixture was a bare fence around a link — and it **passed without the fenced-block rule**.
+The double-delimiter pass crosses newlines and happened to span from the opening fence to the
+closing one, so deleting the rule changed nothing. Only a fixture with an inline span *inside* the
+block makes it load-bearing. Three fence cases now: an inline span, an info string, and a tilde
+fence — the last because nothing in this repository writes one, which is exactly why it needs a
+case rather than an assumption.
+
+**6 mutations, 6 caught** after that: `stripCode` returning its input, removing everything,
+deleting rather than blanking, losing the fence rule; and the `join` matcher reverted to a regex
+or emptied entirely.
+
+### The acceptance test was putting both sentences back
+
+F-127's progress entry names the element-access call again. F-130's note names the path-building
+call again. **Both gates stay green** — that is the only evidence that the cost has been
+recovered, and it is the same test F-127 used.
+
+### One mistake of my own, worth the line
+
+Fixing four `no-useless-escape` errors, I unescaped **every** backslash-backtick in the file —
+including one inside a template literal, where the escape is what stops the literal ending. The
+parse broke on a line 500 lines from anything this feature touched. A blanket replacement over a
+file with more than one quoting context is the same class of mistake as the scans this feature
+exists to fix: **text edited without regard to what the text is.**
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · content | **PASS** |
+| the cache-scope proof — **11 cases**, up from 9 | **PASS** |
+| gate-mirror | **PASS** |
+| 6 mutations | **6/6**, after the fence fixture was replaced with one that discriminates |
+
+**Not run:** `e2e` (gate 7, pending F-091), `a11y`, `contrast`, `color-golden`, `cvd`, `perf` —
+no surface changed.
+
+### Out of scope, and deliberately
+
+**Any fourth text-matching scan.** Three have now been named across F-127 and this feature. If
+another is found it gets filed, not absorbed — which is how these two came to be fixed at all.
 
 ---
 

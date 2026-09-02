@@ -86,6 +86,42 @@ the ACCEPT cases are not carrying the whole suite. Where the check is a whole-fi
 with no syntax to lean on — a font subset, a banned-phrase list — the workarounds above remain
 right, and `claims.json`'s by-path exemption is the designed version of them.
 
+## Fix ONE branch of a matcher and the defect stays exactly where it was (F-132)
+
+F-127 converted `verify-cache-scope.mjs`'s **bare path literal** matcher to a parse and left its
+sibling — the one reading `join(BASE, '..', …)` — as a regular expression over the file's text.
+
+Three days later F-130's note explaining why a directory had to be derived from a file named that
+call, and the scan read the comment and failed the gate. **The half that had been fixed made the
+half that had not look addressed.**
+
+> A matcher narrowed in one of its two branches leaves the defect exactly where it was, and the
+> passing half is what stops anybody looking.
+
+The same session found it in a third scan: gate 0's link finder read a code span describing a
+call — square bracket beside a parenthesis — as a markdown link. **Four instances, three scans,
+one session**, every one of them firing on prose written to explain the check itself.
+
+### What F-132 did
+
+Both are fixed, and each with fixtures in **both** directions:
+
+- The `join` matcher moved onto the syntax tree its sibling already used. A comment is not in the
+  tree, so the class disappears rather than narrowing.
+- The link finder **strips code spans and fenced blocks first**, replacing them with spaces of
+  equal length so offsets do not move. A link inside backticks is not a link *by markdown's own
+  rules* — this is the check learning the format, not a concession to make it pass.
+
+**And the mutation is what made the fence rule honest.** The first fixture was a bare fence around
+a link, and it passed *without* the fenced-block rule: the double-delimiter pass crosses newlines
+and happened to span from the opening fence to the closing one. Only a fixture with an inline span
+*inside* the block makes the rule load-bearing
+[[a-decoy-that-is-not-broken-proves-nothing]].
+
+**The acceptance test was putting the suppressed sentences back** — F-127's and F-130's — and
+watching both gates stay green. That is the same test F-127 used, and it is the only one that
+proves the cost has actually been recovered.
+
 ## The generalisation worth keeping
 
 > When a check reads raw text, the file's prose is inside its scope. Writing *about* the

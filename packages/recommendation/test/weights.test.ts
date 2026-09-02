@@ -37,17 +37,16 @@ const PUBLISHED = join(__dirname, '..', '..', '..', 'content', 'rules', 'weights
 /**
  * The directory, DERIVED FROM A FILE rather than built as its own path.
  *
- * Building the path to the directory directly resolves to the directory, and
+ * `join(__dirname, '..', '..', '..', 'content', 'rules')` resolves to a directory, and
  * `verify-cache-scope.mjs` reports that as an unaccounted read: `content/rules/**` in
  * `turbo.json` covers what is *inside* the directory, not the directory itself. Taking
  * `dirname` of a path the scan has already accounted for keeps the check strict and needs no
  * new global dependency (E-025).
  *
- * The first version of this note SPELLED THE PATH-BUILDING CALL OUT to explain the problem,
- * and the scan read the comment and failed again — the fourth time this session. F-127 taught
- * that scan to tell a reference from a mention for a bare path LITERAL; the `join(…)` matcher
- * beside it is still a regular expression over the file's text, comments included. Recorded on
- * F-132.
+ * **This sentence could not be written for a day.** The first version of it named that call and
+ * the scan read the comment as a read, failing the gate it was explaining — the fourth instance
+ * of that shape in one session. F-132 moved the `join` matcher onto the syntax tree its sibling
+ * already used, so a comment is no longer code, and the note reads the way it was meant to.
  */
 const RULES = dirname(PUBLISHED);
 const published = (): unknown => JSON.parse(readFileSync(PUBLISHED, 'utf8'));
