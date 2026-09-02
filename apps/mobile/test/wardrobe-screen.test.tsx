@@ -212,3 +212,151 @@ describe('the list', () => {
     expect(screen.queryByText(en['browse.grouping'])).toBeNull();
   });
 });
+
+/**
+ * Narrowing the wardrobe, driven (FR-41, F-131).
+ *
+ * `browse.test.ts` proves the predicate. It cannot prove **the chips reach it** — a screen that
+ * rendered three rows of controls and filtered nothing would leave every assertion there green,
+ * and the conformance registry draws the controls without ever pressing one.
+ */
+describe('the filter controls', () => {
+  const coat = (id: string, season: 'winter' | 'summer'): StoredGarment => ({
+    ...COAT,
+    id,
+    type: 'coat',
+    formality: 'smart',
+    seasons: [season],
+    color: { ...COAT.color, id: `c-${id}` },
+  });
+
+  const WARDROBE: readonly StoredGarment[] = [
+    coat('c-1', 'winter'),
+    coat('c-2', 'summer'),
+    { ...COAT, id: 'j-1', type: 'jumper', formality: 'everyday', seasons: ['winter'] },
+  ];
+
+  const browse = (): void => {
+    render(
+      <ThemeProvider theme="light">
+        <Wardrobe store={{ enrichGarment: () => undefined, listGarments: () => WARDROBE }} />
+      </ThemeProvider>,
+    );
+  };
+
+  /** Every "Edit" control on screen — one per garment shown. */
+  const shownCount = (): number => screen.queryAllByLabelText(en['browse.edit']).length;
+
+  it('shows the whole wardrobe before anything is chosen', () => {
+    browse();
+
+    expect(shownCount()).toBe(WARDROBE.length);
+  });
+
+  it('narrows the list when a type is chosen', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('jumper'));
+
+    expect(shownCount()).toBe(1);
+  });
+
+  it('narrows further when a second axis is chosen, never wider', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('coat'));
+    const afterType = shownCount();
+    fireEvent.press(screen.getByLabelText(en['season.winter']));
+
+    expect(afterType).toBe(2);
+    expect(shownCount()).toBe(1);
+  });
+
+  it('KEEPS THE GROUPING — a narrowed wardrobe is still grouped (criterion 3)', () => {
+    browse();
+    const headingBefore = screen.queryAllByText(en['browse.count'], { exact: false }).length;
+
+    fireEvent.press(screen.getByLabelText('coat'));
+
+    // A group heading and its count are still drawn. A screen that filtered by replacing the
+    // grouped view with a flat list would lose them, and only this case would notice.
+    expect(screen.queryAllByText(en['browse.count'], { exact: false }).length).toBeGreaterThan(0);
+    expect(headingBefore).toBeGreaterThan(0);
+  });
+
+  it('says what is applied, in words', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('coat'));
+
+    expect(screen.getByText(`${en['browse.filterApplied']}: coat`)).toBeTruthy();
+  });
+
+  it('says nothing matched — which is not the same as an empty wardrobe', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('jumper'));
+    fireEvent.press(screen.getByLabelText(en['season.summer']));
+
+    expect(screen.getByText(en['browse.filterNone'])).toBeTruthy();
+    // THE DISTINCTION. One says "add a garment", the other says "clear a filter".
+    expect(screen.queryByText(en['browse.empty'])).toBeNull();
+  });
+
+  it('leaves the controls on screen when nothing matches, so they can be cleared', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('jumper'));
+    fireEvent.press(screen.getByLabelText(en['season.summer']));
+
+    expect(screen.getByLabelText(en['atlas.clear'])).toBeTruthy();
+  });
+
+  /*
+   * THE SELF-ERASING FILTER BAR. The options are derived from the WHOLE wardrobe, not from what
+   * is currently shown — if they came from the shown list, choosing "coat" would remove "jumper"
+   * from the row, and the filter could be narrowed but never changed without clearing first.
+   *
+   * A mutation doing exactly that survived every other case here, because they all check the
+   * RESULT and none checked the controls.
+   */
+  it('leaves the other options on screen, so a filter can be changed rather than only cleared', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('coat'));
+
+    expect(screen.getByLabelText('jumper')).toBeTruthy();
+    expect(screen.getByLabelText(en['season.summer'])).toBeTruthy();
+  });
+
+  it('and choosing that other option moves the filter rather than adding to it', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('coat'));
+    fireEvent.press(screen.getByLabelText('jumper'));
+
+    expect(shownCount()).toBe(1);
+    expect(screen.getByText(`${en['browse.filterApplied']}: jumper`)).toBeTruthy();
+  });
+
+  it('restores the whole wardrobe when cleared', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText('coat'));
+    fireEvent.press(screen.getByLabelText(en['atlas.clear']));
+
+    expect(shownCount()).toBe(WARDROBE.length);
+  });
+
+  /*
+   * THE DECOY. Without it, every case above passes for a screen whose chips are inert and whose
+   * list happens to be short — and "it narrowed" would be a claim about the fixture.
+   */
+  it('DECOY — choosing a value nothing carries shows nothing, not everything', () => {
+    browse();
+
+    fireEvent.press(screen.getByLabelText(en['season.autumn']));
+
+    expect(shownCount()).toBe(0);
+  });
+});

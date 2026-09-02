@@ -30,7 +30,7 @@
  */
 
 import { MINIMUM_CANDIDATES } from '@irodora/color-naming';
-import type { StoredGarment } from '@irodora/store';
+import type { GarmentSeason, StoredGarment } from '@irodora/store';
 import { nearestByLab } from '../finder';
 
 /** One colour family, and the garments nearest to it. */
@@ -122,4 +122,92 @@ export function groupByColour(garments: readonly StoredGarment[]): readonly Ward
 export function textPatch<K extends string>(field: K, value: string): Record<K, string | null> {
   const trimmed = value.trim();
   return { [field]: trimmed === '' ? null : trimmed } as Record<K, string | null>;
+}
+
+/**
+ * What the wardrobe is narrowed by (FR-41, F-131).
+ *
+ * `null` on an axis means *not narrowed by this one*, never *narrowed to nothing*. The
+ * distinction is the whole type: a filter object of three nulls must return the wardrobe
+ * unchanged, and a predicate that read `null` as "match nothing" would leave the screen
+ * permanently empty while every single-axis test passed.
+ */
+export interface WardrobeFilter {
+  /** Free text, as `garment.type` is. Matched normalised. */
+  readonly type: string | null;
+  readonly season: GarmentSeason | null;
+  /** Free text, as `garment.formality` is. Matched normalised. */
+  readonly formality: string | null;
+}
+
+/** Nothing narrowed. Exported so a screen and a test cannot disagree about what "no filter" is. */
+export const NO_FILTER: WardrobeFilter = { type: null, season: null, formality: null };
+
+/**
+ * The same normalisation `familyOf` applies to a type, and `findDuplicates` to a category.
+ *
+ * A wardrobe holding `Coat` and `coat ` has one kind of garment in it, and a filter that offered
+ * two options for it would be reporting a typing habit as a distinction.
+ */
+const fold = (value: string): string => value.trim().toLowerCase();
+
+/**
+ * Whether a garment survives the filter.
+ *
+ * **Every named axis must match** — an axis that ORed would let a two-axis filter return more
+ * than a one-axis filter, which is not what "narrowed by type and season" means to anybody.
+ *
+ * A garment whose `formality` is `null` does not match a formality filter, and that is deliberate
+ * rather than incidental: absent data is not a wildcard. It still appears when the axis is not
+ * narrowed, which is the half that keeps the rule from becoming a hidden exclusion.
+ */
+export function matchesFilter(garment: StoredGarment, filter: WardrobeFilter): boolean {
+  if (filter.type !== null && fold(garment.type) !== fold(filter.type)) return false;
+  if (filter.season !== null && !garment.seasons.includes(filter.season)) return false;
+  if (filter.formality !== null) {
+    if (garment.formality === null) return false;
+    if (fold(garment.formality) !== fold(filter.formality)) return false;
+  }
+  return true;
+}
+
+/** The wardrobe, narrowed. Order is preserved; `groupByColour` decides the order that is shown. */
+export function filterGarments(
+  garments: readonly StoredGarment[],
+  filter: WardrobeFilter,
+): readonly StoredGarment[] {
+  return garments.filter((garment) => matchesFilter(garment, filter));
+}
+
+/**
+ * The values a wardrobe actually contains, per free-text axis.
+ *
+ * **Derived, never a vocabulary.** `garment.type` and `garment.formality` are free text — FR-39
+ * asks for two required fields, not a taxonomy — so there is no list to offer. A fixed one would
+ * filter to nothing for anybody who typed something else, and the screen would look broken to
+ * exactly the person whose wardrobe it is.
+ *
+ * The first spelling of each value is kept, so the chip reads the way somebody typed it while
+ * the matching stays case-insensitive. Sorted, so the controls do not reorder when a garment is
+ * added.
+ */
+export function filterOptions(garments: readonly StoredGarment[]): {
+  readonly types: readonly string[];
+  readonly formalities: readonly string[];
+} {
+  const collect = (values: readonly (string | null)[]): readonly string[] => {
+    const byFold = new Map<string, string>();
+    for (const value of values) {
+      if (value === null) continue;
+      const trimmed = value.trim();
+      if (trimmed === '') continue;
+      if (!byFold.has(fold(trimmed))) byFold.set(fold(trimmed), trimmed);
+    }
+    return [...byFold.values()].sort((a, b) => a.localeCompare(b));
+  };
+
+  return {
+    types: collect(garments.map((g) => g.type)),
+    formalities: collect(garments.map((g) => g.formality)),
+  };
 }

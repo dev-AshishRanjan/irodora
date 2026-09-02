@@ -13250,3 +13250,70 @@ profiles.
 
 ---
 
+## 2026-09-03 — F-131 DONE · FR-41's filter half, and a chip bar that erased itself
+
+F-122 built the browse surface and the colour grouping and **filed this rather than absorbing
+it** — closing the coverage row as fully covered while a third of the requirement was unbuilt
+would have been the defect F-122 existed to fix, wearing a new coat. FR-41 is now covered by
+work that covers it.
+
+### Filter, then group — and never the other way round
+
+`groupByColour` takes a list and returns groups, which is what F-122 built it for. The filter
+composes **in front** of it and the grouping needs no idea that filtering exists, so criterion 3
+holds by construction. A screen that grouped first and dropped garments from the groups would
+leave empty groups behind, and their headings would name colours the reader can no longer see.
+
+### Two kinds of axis, and the difference is in the data
+
+| axis | options | why |
+|---|---|---|
+| **season** | the four `GARMENT_SEASONS` | a closed set the schema defines; all four are offered even when nothing carries one, because a chip that vanished would hide the axis |
+| **type**, **formality** | whatever the wardrobe contains | free text — FR-39 asks for two required fields, not a taxonomy. A fixed list would filter to nothing for anybody who typed something else |
+
+**Absent data is not a wildcard.** A garment with no formality does not match a formality filter,
+and still appears when that axis is not narrowed — the second half is what keeps the rule from
+becoming a hidden exclusion, and it has its own case.
+
+### The mutation that found the self-erasing filter bar
+
+**12 mutations, 11 caught on the first run.** The survivor: *the options are derived from what is
+shown*. Every case I had written checked the **result** — how many garments were listed — and
+none checked the **controls**. So a screen where choosing `coat` removed `jumper` from the row
+passed everything: the filter could be narrowed, but never changed without clearing first.
+
+Two cases now assert the other options survive a choice, and that choosing one **moves** the
+filter rather than adding to it. Then 12/12.
+
+The other eleven are the ones the plan named: each axis dropped, the axes ORed, an empty filter
+matching nothing, `filterOptions` returning a vocabulary, case-folding removed, the composition
+inverted, and the two empty states collapsed into one sentence.
+
+### Nothing matches is not an empty wardrobe
+
+Two situations with two different things to do about them — one says *add a garment*, the other
+says *clear a filter* — and a screen showing one sentence for both would send somebody to add a
+coat they already own. **The controls stay on screen when nothing matches**, because a filter bar
+that disappeared with its own result could not be cleared. Both have their own case and their own
+registry subject.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| gate-mirror | **PASS** |
+| 12 mutations | **12/12**, after the survivor exposed an untested surface |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### Deliberately not built
+
+**Sorting** — FR-41 names browse, filter and group; the order within a group is F-122's and is
+fixed by lightness. **Saving a filter** — state for a decision nobody has taken, which F-042 and
+F-052 both refused. **Colour as a filter axis** — the grouping already answers *which colours*,
+and a colour filter on top of a colour grouping would be two answers to one question.
+
+---
+

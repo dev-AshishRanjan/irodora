@@ -42,6 +42,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import {
   Button,
+  Chip,
   Surface,
   Swatch,
   swatchAccessibleName,
@@ -49,8 +50,16 @@ import {
   TextField,
   useTheme,
 } from '@irodora/ui';
-import type { GarmentEnrichment, StoredGarment } from '@irodora/store';
-import { groupByColour, textPatch, UNGROUPED } from '../wardrobe/browse';
+import { GARMENT_SEASONS, type GarmentEnrichment, type StoredGarment } from '@irodora/store';
+import {
+  filterGarments,
+  filterOptions,
+  groupByColour,
+  NO_FILTER,
+  textPatch,
+  UNGROUPED,
+  type WardrobeFilter,
+} from '../wardrobe/browse';
 import { colorOf } from '../wardrobe';
 import { costEntry, minorToMajor, type CostEntryProblem } from '../wardrobe/cost';
 import { familyLabel } from '../corpus';
@@ -77,6 +86,19 @@ const COST_PROBLEM_KEYS = {
   badCurrency: 'wardrobe.costBadCurrency',
   tooPrecise: 'wardrobe.costTooPrecise',
 } as const satisfies Record<CostEntryProblem, MessageKey>;
+
+/**
+ * Season → the word the Atlas already uses for it (F-131).
+ *
+ * Total over `GARMENT_SEASONS`, so a fifth season added to the schema is a compile error here
+ * rather than a chip with no label.
+ */
+const SEASON_KEYS = {
+  spring: 'season.spring',
+  summer: 'season.summer',
+  autumn: 'season.autumn',
+  winter: 'season.winter',
+} as const satisfies Record<(typeof GARMENT_SEASONS)[number], MessageKey>;
 
 /** The seven text fields, in the order they are drawn. One list, so the form cannot disagree. */
 const TEXT_FIELDS = [
@@ -114,6 +136,69 @@ function seedText(garment: StoredGarment): Record<TextFieldKey, string> {
   };
 }
 
+/**
+ * One axis of the filter, as a row of chips (F-131).
+ *
+ * Modelled on the Atlas's own filter row, and `Chip` rather than a control built here: an
+ * interactive control assembled inside a screen is checked by nothing — the conformance registry
+ * exercises focus, active and disabled states for components registered in `packages/ui`, and a
+ * hand-rolled Pressable has none of that.
+ *
+ * **Choosing the selected chip clears the axis**, so every axis can be widened again without a
+ * separate control per row. The "all" chip says the same thing for a reader who does not know
+ * that.
+ */
+function FilterRow<K extends string>({
+  label,
+  options,
+  selected,
+  onChange,
+  allLabel,
+  script,
+}: {
+  readonly label: string;
+  readonly options: readonly { readonly value: K; readonly label: string }[];
+  readonly selected: K | null;
+  readonly onChange: (value: K | null) => void;
+  readonly allLabel: string;
+  readonly script: 'latin' | 'japanese';
+}): React.JSX.Element | null {
+  // An axis the wardrobe carries no values for is not drawn. A row with only "all" in it is a
+  // control that cannot do anything, and it reads as a feature that is broken rather than absent.
+  if (options.length === 0) return null;
+
+  return (
+    <View style={{ gap: 8 }}>
+      <Text size="label" color="foreground.2" script={script}>
+        {label}
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8 }}
+      >
+        <Chip
+          label={allLabel}
+          selected={selected === null}
+          onPress={() => {
+            onChange(null);
+          }}
+        />
+        {options.map((o) => (
+          <Chip
+            key={o.value}
+            label={o.label}
+            selected={selected === o.value}
+            onPress={() => {
+              onChange(selected === o.value ? null : o.value);
+            }}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 export interface WardrobeProps {
   readonly store: BrowseStore;
   /**
@@ -124,26 +209,50 @@ export interface WardrobeProps {
    * contrast and accessibility nothing has checked.
    */
   readonly initialSelected?: string | null;
+  /**
+   * A filter to arrive with (F-131).
+   *
+   * The registry uses it to render the narrowed and the nothing-matches branches, which are
+   * otherwise reachable only through a tap the static conformance suite never performs.
+   */
+  readonly initialFilter?: WardrobeFilter;
 }
 
-export function Wardrobe({ store, initialSelected = null }: WardrobeProps): React.JSX.Element {
+export function Wardrobe({
+  store,
+  initialSelected = null,
+  initialFilter = NO_FILTER,
+}: WardrobeProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
   const { colors } = useTheme();
 
   const [garments, setGarments] = useState<readonly StoredGarment[]>(() => store.listGarments());
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
   const [saved, setSaved] = useState(false);
+  const [filter, setFilter] = useState<WardrobeFilter>(initialFilter);
 
   const selected = garments.find((g) => g.id === selectedId) ?? null;
 
   /*
-   * The grouping is memoised on the garments, not recomputed per render.
+   * FILTER, THEN GROUP — and never the other way round (F-131, criterion 3).
    *
-   * `familyOf` ranks one colour against the whole corpus, once per garment. That is fine for a
-   * wardrobe of tens and it is not free, and a screen that redid it on every keystroke in the
-   * editor below would be doing the corpus scan while somebody typed a brand.
+   * `groupByColour` takes a list and returns groups, which is what F-122 built it for: the
+   * filter composes in front of it and the grouping needs no idea that filtering exists. A
+   * screen that grouped first and then dropped garments from the groups would leave empty
+   * groups behind, and their headings would name colours the reader can no longer see.
    */
-  const groups = useMemo(() => groupByColour(garments), [garments]);
+  const shown = useMemo(() => filterGarments(garments, filter), [garments, filter]);
+  const groups = useMemo(() => groupByColour(shown), [shown]);
+
+  /*
+   * The options come from the WHOLE wardrobe, not from what is currently shown.
+   *
+   * Deriving them from `shown` would make a chip disappear the moment it was used, so the
+   * filter could be narrowed but never widened without clearing — the classic self-erasing
+   * filter bar.
+   */
+  const options = useMemo(() => filterOptions(garments), [garments]);
+  const narrowed = filter.type !== null || filter.season !== null || filter.formality !== null;
 
   const [text, setText] = useState<Record<TextFieldKey, string>>(() =>
     selected === null ? EMPTY_TEXT : seedText(selected),
@@ -303,13 +412,100 @@ export function Wardrobe({ store, initialSelected = null }: WardrobeProps): Reac
         {t('browse.title')}
       </Text>
 
-      {groups.length === 0 ? (
+      {/*
+        THE CONTROLS COME BEFORE THE RESULT, and are drawn whenever there is a wardrobe at all —
+        including when the filter matches nothing, because a filter bar that disappeared with its
+        own result would leave somebody unable to clear it.
+      */}
+      {garments.length === 0 ? null : (
+        <Surface level="1" padding={12}>
+          <View style={{ gap: 12 }}>
+            <Text size="body" color="foreground" script={script} heading>
+              {t('browse.filters')}
+            </Text>
+
+            <FilterRow
+              label={t('browse.filterType')}
+              options={options.types.map((v) => ({ value: v, label: v }))}
+              selected={filter.type}
+              onChange={(type) => {
+                setFilter((f) => ({ ...f, type }));
+              }}
+              allLabel={t('atlas.all')}
+              script={script}
+            />
+            <FilterRow
+              label={t('browse.filterSeason')}
+              options={GARMENT_SEASONS.map((v) => ({ value: v, label: t(SEASON_KEYS[v]) }))}
+              selected={filter.season}
+              onChange={(season) => {
+                setFilter((f) => ({ ...f, season }));
+              }}
+              allLabel={t('atlas.all')}
+              script={script}
+            />
+            <FilterRow
+              label={t('browse.filterFormality')}
+              options={options.formalities.map((v) => ({ value: v, label: v }))}
+              selected={filter.formality}
+              onChange={(formality) => {
+                setFilter((f) => ({ ...f, formality }));
+              }}
+              allLabel={t('atlas.all')}
+              script={script}
+            />
+
+            {/*
+              WHAT IS CURRENTLY APPLIED, said in words (criterion 1). The selected chips carry it
+              visually; a reader using a screen reader meets them one at a time and would have to
+              hold three rows in their head to know what they were looking at.
+            */}
+            {!narrowed ? null : (
+              <>
+                <Text size="small" color="foreground.2" script={script}>
+                  {`${t('browse.filterApplied')}: ${[
+                    filter.type,
+                    filter.season === null ? null : t(SEASON_KEYS[filter.season]),
+                    filter.formality,
+                  ]
+                    .filter((v) => v !== null)
+                    .join(' · ')}`}
+                </Text>
+                <Button
+                  label={t('atlas.clear')}
+                  variant="secondary"
+                  onPress={() => {
+                    setFilter(NO_FILTER);
+                  }}
+                />
+              </>
+            )}
+          </View>
+        </Surface>
+      )}
+
+      {garments.length === 0 ? (
         <>
           <Text size="body" color="foreground" script={script}>
             {t('browse.empty')}
           </Text>
           <Text size="small" color="foreground.2" script={script}>
             {t('browse.emptyHint')}
+          </Text>
+        </>
+      ) : groups.length === 0 ? (
+        /*
+          NOTHING MATCHES IS NOT AN EMPTY WARDROBE (criterion 2). Two different situations with
+          two different things to do about them — one is "add a garment", the other is "clear a
+          filter" — and a screen that showed one sentence for both would send somebody to add a
+          coat they already own.
+        */
+        <>
+          <Text size="body" color="foreground" script={script}>
+            {t('browse.filterNone')}
+          </Text>
+          <Text size="small" color="foreground.2" script={script}>
+            {t('browse.filterNoneHint')}
           </Text>
         </>
       ) : (

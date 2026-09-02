@@ -558,6 +558,14 @@ export const en = {
    *     — rather than inventing a second phrase for one simulation.
    */
   // F-129 — the export surface (FR-51). Six formats built in F-056 and reachable from nothing.
+  // F-131 — FR-41's filter half. The browse surface and the grouping were F-122's.
+  'browse.filters': 'Narrow it down',
+  'browse.filterType': 'What it is',
+  'browse.filterSeason': 'Season',
+  'browse.filterFormality': 'Formality',
+  'browse.filterNone': 'Nothing matches these filters.',
+  'browse.filterNoneHint': 'Clear them to see the whole wardrobe.',
+  'browse.filterApplied': 'Narrowed by',
   'home.openExport': 'Export a palette',
   'export.title': 'Export',
   'export.origin':

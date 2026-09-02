@@ -3694,7 +3694,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "The wardrobe screen can be narrowed by garment type, season and formality, and the controls say what is currently applied",
@@ -3707,7 +3707,8 @@
         "a11y",
         "contrast"
       ],
-      "notes": "FILED BY F-122, WHICH DELIBERATELY DID NOT BUILD IT. FR-41 is \"browse, filter and group the wardrobe\". F-122 built the browse surface and the colour grouping, and its own acceptance criteria name only those — so filtering was out of scope for the id that was reviewed, and building it there would have been scope nobody checked against a requirement. THIS IS FILED RATHER THAN ABSORBED BECAUSE THE COVERAGE ROW IS THE THING F-122 EXISTED TO FIX. FR-41 was recorded as delivered by F-042, a package feature verified by gates that cannot apply to a package. Letting F-122 close the row as fully covered while a third of the requirement is unbuilt would be the same defect in a new coat — a requirement reported as delivered by work that did not deliver it. THE COLUMNS ARE ALREADY IN THE SCHEMA. `garment.type`, `garment.formality` and the seasons join were built by F-042 and are editable as of F-122, so this is a screen and a predicate rather than a migration. `groupByColour` takes a garment list and returns groups, so a filter composes in front of it with no change to the grouping — which is why F-122 made it a pure function over a list rather than something the screen does while rendering."
+      "notes": "FILED BY F-122, WHICH DELIBERATELY DID NOT BUILD IT. FR-41 is \"browse, filter and group the wardrobe\". F-122 built the browse surface and the colour grouping, and its own acceptance criteria name only those — so filtering was out of scope for the id that was reviewed, and building it there would have been scope nobody checked against a requirement. THIS IS FILED RATHER THAN ABSORBED BECAUSE THE COVERAGE ROW IS THE THING F-122 EXISTED TO FIX. FR-41 was recorded as delivered by F-042, a package feature verified by gates that cannot apply to a package. Letting F-122 close the row as fully covered while a third of the requirement is unbuilt would be the same defect in a new coat — a requirement reported as delivered by work that did not deliver it. THE COLUMNS ARE ALREADY IN THE SCHEMA. `garment.type`, `garment.formality` and the seasons join were built by F-042 and are editable as of F-122, so this is a screen and a predicate rather than a migration. `groupByColour` takes a garment list and returns groups, so a filter composes in front of it with no change to the grouping — which is why F-122 made it a pure function over a list rather than something the screen does while rendering.",
+      "plan": "plans/F-131-the-filter-half.md"
     },
     {
       "id": "F-132",

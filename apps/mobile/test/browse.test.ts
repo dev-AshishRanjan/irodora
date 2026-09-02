@@ -16,8 +16,17 @@
  */
 
 import { allEntries } from '../src/corpus';
-import { familyOf, groupByColour, textPatch, UNGROUPED } from '../src/wardrobe/browse';
-import type { SavedColorRow, StoredGarment } from '@irodora/store';
+import {
+  familyOf,
+  filterGarments,
+  filterOptions,
+  groupByColour,
+  NO_FILTER,
+  textPatch,
+  UNGROUPED,
+  type WardrobeFilter,
+} from '../src/wardrobe/browse';
+import type { GarmentSeason, SavedColorRow, StoredGarment } from '@irodora/store';
 
 /** A stored colour row for a published entry. Reference-sourced, so it owes no conditions. */
 function rowOf(slug: string, id = `c-${slug}`): SavedColorRow {
@@ -251,5 +260,147 @@ describe('an edited field that is emptied clears it', () => {
 
   it('carries exactly the one key it was asked for', () => {
     expect(Object.keys(textPatch('material', 'wool'))).toEqual(['material']);
+  });
+});
+
+/**
+ * Narrowing the wardrobe (FR-41, F-131).
+ *
+ * ## What earns these cases
+ *
+ * A predicate over three optional fields is four lines, and almost every wrong version of it
+ * passes a test that filters by one axis and counts the result. What separates them is the
+ * empty filter, the intersection, and what absent data does — so those are the cases here, and
+ * each has a neighbour that must NOT behave the same way.
+ */
+describe('narrowing the wardrobe', () => {
+  const withFields = (
+    id: string,
+    fields: {
+      readonly type?: string;
+      readonly formality?: string | null;
+      readonly seasons?: readonly GarmentSeason[];
+    },
+  ): StoredGarment => ({
+    ...garment(id, rowOf(SLUGS[0]!, `c-${id}`)),
+    type: fields.type ?? 'jumper',
+    formality: fields.formality ?? null,
+    seasons: fields.seasons ?? [],
+  });
+
+  const WARDROBE: readonly StoredGarment[] = [
+    withFields('coat-winter', { type: 'coat', formality: 'smart', seasons: ['winter'] }),
+    withFields('coat-summer', { type: 'Coat ', formality: 'everyday', seasons: ['summer'] }),
+    withFields('jumper-winter', { type: 'jumper', formality: 'everyday', seasons: ['winter'] }),
+    withFields('shirt-none', { type: 'shirt', formality: null, seasons: [] }),
+  ];
+
+  const ids = (filter: WardrobeFilter): string[] =>
+    filterGarments(WARDROBE, filter).map((g) => g.id);
+
+  /*
+   * THE DECOY THAT MATTERS MOST. A predicate returning `false` for everything satisfies every
+   * "it narrowed" case below and leaves the screen permanently empty.
+   */
+  it('an empty filter returns the whole wardrobe, in its own order', () => {
+    expect(ids(NO_FILTER)).toEqual(WARDROBE.map((g) => g.id));
+  });
+
+  it('narrows by type, folding case and spacing', () => {
+    // 'coat' and 'Coat ' are one kind of garment, not two.
+    expect(ids({ ...NO_FILTER, type: 'coat' })).toEqual(['coat-winter', 'coat-summer']);
+  });
+
+  it('narrows by season', () => {
+    expect(ids({ ...NO_FILTER, season: 'winter' })).toEqual(['coat-winter', 'jumper-winter']);
+  });
+
+  it('narrows by formality', () => {
+    expect(ids({ ...NO_FILTER, formality: 'everyday' })).toEqual(['coat-summer', 'jumper-winter']);
+  });
+
+  /*
+   * THE INTERSECTION DECOY. Each single-axis case above passes for a predicate that ORs its
+   * axes; only a two-axis case can tell them apart, and the fixture is built so the union and
+   * the intersection differ.
+   */
+  it('combines axes with AND — two filters narrow further, never wider', () => {
+    const both = ids({ ...NO_FILTER, type: 'coat', season: 'winter' });
+
+    expect(both).toEqual(['coat-winter']);
+    expect(both.length).toBeLessThan(ids({ ...NO_FILTER, type: 'coat' }).length);
+    expect(both.length).toBeLessThan(ids({ ...NO_FILTER, season: 'winter' }).length);
+  });
+
+  it('a garment with no formality does not match a formality filter', () => {
+    // Absent data is not a wildcard.
+    expect(ids({ ...NO_FILTER, formality: 'smart' })).not.toContain('shirt-none');
+  });
+
+  it('and that garment is still there when formality is not narrowed', () => {
+    // The other half. Without it, "absent data does not match" is indistinguishable from
+    // "absent data is excluded", which would be a hidden filter nobody chose.
+    expect(ids(NO_FILTER)).toContain('shirt-none');
+    expect(ids({ ...NO_FILTER, type: 'shirt' })).toEqual(['shirt-none']);
+  });
+
+  it('a value nothing carries returns nothing, rather than everything', () => {
+    expect(ids({ ...NO_FILTER, type: 'kimono' })).toEqual([]);
+    expect(ids({ ...NO_FILTER, season: 'spring' })).toEqual([]);
+  });
+
+  it('composes in front of the grouping — a narrowed wardrobe is still grouped', () => {
+    // Criterion 3, by construction rather than by the screen remembering.
+    const narrowed = filterGarments(WARDROBE, { ...NO_FILTER, type: 'coat' });
+    const groups = groupByColour(narrowed);
+
+    expect(groups.length).toBeGreaterThan(0);
+    expect(groups.reduce((n, g) => n + g.garments.length, 0)).toBe(narrowed.length);
+  });
+});
+
+describe('the options a wardrobe offers', () => {
+  const withFields = (id: string, type: string, formality: string | null): StoredGarment => ({
+    ...garment(id, rowOf(SLUGS[0]!, `c-${id}`)),
+    type,
+    formality,
+  });
+
+  const WARDROBE: readonly StoredGarment[] = [
+    withFields('a', 'coat', 'smart'),
+    withFields('b', 'Coat ', 'everyday'),
+    withFields('c', 'jumper', null),
+    withFields('d', 'shirt', '  '),
+  ];
+
+  it('offers every value something carries', () => {
+    const { types, formalities } = filterOptions(WARDROBE);
+
+    expect(types).toEqual(['coat', 'jumper', 'shirt']);
+    expect(formalities).toEqual(['everyday', 'smart']);
+  });
+
+  /*
+   * THE DECOY. Without it, an option list that is EMPTY passes "offers no value nothing
+   * carries", and one that is COMPLETE passes "offers every value something carries" — the two
+   * assertions have to be made of the same list for either to mean anything.
+   */
+  it('offers nothing the wardrobe does not carry', () => {
+    const { types, formalities } = filterOptions(WARDROBE);
+
+    expect(types).not.toContain('kimono');
+    expect(formalities).not.toContain('formal');
+    // And a blank formality is not an option — it is an absence with a space in it.
+    expect(formalities).not.toContain('');
+    expect(formalities).not.toContain('  ');
+  });
+
+  it('keeps the first spelling, so a chip reads the way somebody typed it', () => {
+    expect(filterOptions(WARDROBE).types).toContain('coat');
+    expect(filterOptions(WARDROBE).types).not.toContain('Coat ');
+  });
+
+  it('offers nothing for an empty wardrobe, rather than a vocabulary', () => {
+    expect(filterOptions([])).toEqual({ types: [], formalities: [] });
   });
 });

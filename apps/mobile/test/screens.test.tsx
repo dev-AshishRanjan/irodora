@@ -906,6 +906,40 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * THE WARDROBE NARROWED (F-131). Draws three chip rows with one selected, the applied-filter
+     * sentence and a clear control — none of which the unfiltered subject has.
+     */
+    name: 'screens/Wardrobe (narrowed)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+          initialFilter={{ type: 'jumper', season: null, formality: null }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * AND NARROWED TO NOTHING. Two sentences where the others draw groups, and the controls are
+     * still there — a filter bar that vanished with its result could not be cleared.
+     */
+    name: 'screens/Wardrobe (nothing matches)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+          initialFilter={{ type: 'kimono', season: null, formality: null }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * A GARMENT OPEN, and priced — so the amount field is seeded from a stored `cost_minor`
      * rather than starting empty, which is the branch `minorToMajor` exists for.
      */

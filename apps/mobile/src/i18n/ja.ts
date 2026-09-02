@@ -500,6 +500,14 @@ export const ja: Record<MessageKey, string> = {
   'shopping.investmentNeed': '必要な点数',
   // F-124 — the six outfit components (FR-32, E-053). What was measured, never a verdict.
   // F-129 — the export surface (FR-51).
+  // F-131 — FR-41's filter half.
+  'browse.filters': 'しぼりこみ',
+  'browse.filterType': '種類',
+  'browse.filterSeason': '季節',
+  'browse.filterFormality': 'あらたまり度',
+  'browse.filterNone': '条件に合う服がありません。',
+  'browse.filterNoneHint': '解除するとすべての服が表示されます。',
+  'browse.filterApplied': 'しぼりこみ中',
   'home.openExport': '配色を書き出す',
   'export.title': '書き出し',
   'export.origin': '選んだ配色から、このデバイスで作成します。版はファイルに記録します。',

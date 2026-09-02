@@ -78,7 +78,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-38 Alternatives and swaps | F-030 | test, e2e | R3 |
 | FR-39 Wardrobe item model | F-042 | test, typecheck | R4 |
 | FR-40 Add garment | F-043 | e2e, perf | R4 |
-| FR-41 Browse and filter | F-042, F-122, F-131 | test, a11y | R4 |
+| FR-41 Browse and filter | F-042, F-122, F-131 | test, a11y, contrast | R4 |
 | FR-42 Coverage score | F-048 | test, perf | R4 |
 | FR-43 Gap analysis | F-048 | test | R4 |
 | FR-44 Duplicate detection | F-049 | test | R4 |
