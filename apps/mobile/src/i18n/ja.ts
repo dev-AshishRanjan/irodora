@@ -477,6 +477,23 @@ export const ja: Record<MessageKey, string> = {
   'browse.save': '変更を保存',
   'browse.saved': '保存しました。',
   'browse.clearing': '空にした項目は削除されます。',
+  // F-123 — the investment signal (ADR-0082). Two numbers from the reader's own wardrobe, and
+  // deliberately no verdict.
+  'shopping.price': '価格',
+  'shopping.priceHint': '例：180.00',
+  'shopping.investment': 'いま持っているものと比べて',
+  'shopping.breakEven': '手持ちと同じ一回あたりになるまでの着用回数',
+  'shopping.typical': '手持ちを実際に着ている回数',
+  'shopping.investmentBasis': '計算のもと',
+  'shopping.investmentGarments': '点、一回あたり',
+  'shopping.investmentPerWear': 'の計算です',
+  'shopping.investmentYours': 'これはあなた自身の数字です。買うかどうかはご自分で決めてください。',
+  'shopping.investmentNoPrice': '価格を入力すると、手持ちのものと比べられます。',
+  'shopping.investmentNoComparable':
+    '同じ種類で価格と着用回数の両方がそろっているものがないため、比べる相手がありません。',
+  'shopping.investmentTooFew': '同じ種類のものにあと数点、価格と着用回数を記録すると表示されます。',
+  'shopping.investmentHave': '比べられる点数',
+  'shopping.investmentNeed': '必要な点数',
 };
 
 /**

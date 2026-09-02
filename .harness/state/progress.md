@@ -12655,3 +12655,105 @@ decision about where that number belongs rather than a consequence of this scree
 
 ---
 
+## 2026-09-02 — F-123 DONE · the investment signal, and what it refuses to be
+
+FR-52 names four things; F-052 built three. The fourth — *investment signal* — is used **once in
+the PRD and defined nowhere**, so criterion 1 was a decision before it was code:
+[ADR-0082](../../docs/adr/0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md).
+
+### The obvious implementation is the trap, and it is one line
+
+*"At 30 wears this would be £1.52 each."* **The 30 is invented** — nobody chose it, nothing
+measured it, and it is the number the whole sentence rests on. FR-46's own words are *"absent
+data yields unknown, never an invented estimate"*, and a projection whose denominator came from
+nowhere is that estimate wearing a conditional.
+
+The signal is instead **two medians over the person's own comparable garments**:
+
+> *56 wears before it costs what yours cost you. What you actually wear yours: 35.*
+
+Both numbers are theirs, and **neither describes the future.** That is what separates it from
+the projection: it restates an established rate against a price and leaves the judgement where
+it belongs — the same move the naming surface makes when it offers candidates rather than an
+identification.
+
+### Five alternatives, and the one that was nearly built
+
+The ADR takes each seriously first. The near-miss was **projected cost per wear at the person's
+own median wears** — grounded, and my first design. It is still a **forecast**: it predicts a
+wear count for a garment nobody has worn and dresses the prediction as a price. The chosen form
+carries the same two facts and asserts nothing about what will happen.
+
+**A verdict was refused on the record.** "Good investment" is advice about somebody's money from
+a system that knows their wardrobe and nothing about their circumstances, and it is
+unfalsifiable besides.
+
+### The honest downside is in the ADR, not hidden
+
+**It will refuse often, and most for new users.** Three garments of one type, each priced and
+worn, is a real bar — a wardrobe of twenty entered without prices produces `noComparable` every
+time. The `tooFew` refusal **carries its count** so the threshold can be revisited on evidence
+rather than opinion, and the screen turns it into something to do next. That is a mitigation,
+not a fix, and the ADR says so.
+
+### The exponent cancels — and that was worth getting right
+
+`breakEvenWears` is `costMinor / medianMinorPerWear`, and **both operands are in the same
+currency's minor units, so the exponent cancels.** It is the only figure in this product that is
+*invariant* under an edit to `MINOR_UNIT_DIGITS`. What is **not** invariant is the basis line
+underneath, rendered through `formatMinor` — an exponent edit moves that by a factor of ten
+while the wears beside it stay put. E-052 and its note now say exactly that rather than
+something vaguer.
+
+And exponents only cancel when they are **the same** exponent, which is why a comparable must be
+priced in the candidate's currency. The fixture carries a yen coat priced to drag the median if
+it were counted — a single-currency wardrobe rates the filtered and unfiltered implementations
+identically.
+
+### Twelve mutations, and one anchor that had gone stale
+
+`no-non-null-assertion` is an error in `src`, so `median` was rewritten to narrow rather than
+assert — and that **invalidated one mutation's anchor.** The script printed `?? ANCHOR MISSING`
+rather than a pass, which is the whole reason it is written that way
+[[a-decoy-written-against-old-values-quietly-stops-discriminating]]. Re-pointed, then 12/12.
+
+Two more on the wiring (the early return losing the signal; the price never passed through),
+both caught. The signal sits **beside the duplicates, not after the slot check** — a scarf the
+outfit engine cannot place is still a scarf somebody is deciding whether to buy, and only the
+scarf case notices.
+
+### An ADR's refusal is prose too
+
+Every gate would have stayed green if a later feature added `worthIt` to the result. So the
+known branch's keys are **enumerated in a test** — `Object.keys` sorted and compared exactly,
+not `toMatchObject`, which passes for a superset. A mutation adding a verdict was run and the
+suite went red. New lesson:
+[[an-adr-that-refuses-something-needs-a-test-that-can-see-the-refusal]].
+
+### Effects
+
+**E-052** gained a fourth consumer, four targets and the invariance finding above. **E-016**
+fired — the compiler caught it. **E-017** fired — two kanji (際, 決), subset regenerated to 544
+required against 871 in the face.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast | **PASS** |
+| content · gate-mirror | **PASS** |
+| 14 mutations across two modules | **14/14 caught** |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### Deliberately not built
+
+**The price-comparison fallback** for wardrobes with one or two comparables — named in the ADR
+as the likely successor and explicitly not built, because shipping the fallback before there is
+evidence the threshold is wrong is deciding the question the "revisit when" exists to answer.
+**Recording the check** — F-052 refused a `shopping_check` table and the reason has not changed.
+**Any verdict** — refused, on the record, with a test.
+
+---
+

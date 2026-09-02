@@ -360,3 +360,85 @@ describe('the baseline can be supplied, and changes no answer', () => {
     expect(supplied.outfits).toEqual(computed.outfits);
   });
 });
+
+/**
+ * The fourth answer (FR-52, F-123, ADR-0082).
+ *
+ * `investment.test.ts` owns the medians and the refusals. What is left here is the half that
+ * file cannot see: that the signal is **reachable through `shoppingCheck` on the paths where the
+ * other answers are not** — no slot, no profile — because it needs neither.
+ */
+describe('the investment signal', () => {
+  /** The wardrobe with three priced, worn jumpers. Rates 200, 350, 300 per wear. */
+  const PRICED: readonly StoredGarment[] = [
+    { ...garment('p-1', 'jumper', SLUGS[0]!), costMinor: 6000, currency: 'GBP', wearCount: 30 },
+    { ...garment('p-2', 'jumper', SLUGS[1]!), costMinor: 14000, currency: 'GBP', wearCount: 40 },
+    { ...garment('p-3', 'jumper', SLUGS[2]!), costMinor: 9000, currency: 'GBP', wearCount: 30 },
+  ];
+
+  it('answers when the wardrobe can produce one', () => {
+    const check = shoppingCheck(
+      { type: 'jumper', color: colourOfSlug(SLUGS[6]!), costMinor: 18000, currency: 'GBP' },
+      PRICED,
+      CONTEXT,
+    );
+
+    expect(check.investment.known).toBe(true);
+    if (!check.investment.known) throw new Error('unreachable');
+    expect(check.investment.breakEvenWears).toBe(60);
+    expect(check.investment.typicalWears).toBe(30);
+  });
+
+  /*
+   * THE REASON THIS SITS BESIDE THE DUPLICATES RATHER THAN AFTER THE SLOT CHECK. A scarf the
+   * outfit engine cannot place is still a scarf somebody is deciding whether to buy, and the
+   * signal needs no slot. An implementation that returned early would give `outfits: null` AND
+   * no signal, and only this case would notice.
+   */
+  it('answers for a garment the outfit engine cannot place', () => {
+    const scarves: readonly StoredGarment[] = PRICED.map((g) => ({ ...g, type: 'scarf' }));
+    const check = shoppingCheck(
+      { type: 'scarf', color: colourOfSlug(SLUGS[6]!), costMinor: 18000, currency: 'GBP' },
+      scarves,
+      CONTEXT,
+    );
+
+    expect(check.slot).toBeNull();
+    expect(check.outfits).toBeNull();
+    expect(check.investment.known).toBe(true);
+  });
+
+  it('answers for somebody who has never set up a profile', () => {
+    const check = shoppingCheck(
+      { type: 'jumper', color: colourOfSlug(SLUGS[6]!), costMinor: 18000, currency: 'GBP' },
+      PRICED,
+      { ...CONTEXT, profile: null },
+    );
+
+    expect(check.compatibility).toBeNull();
+    expect(check.investment.known).toBe(true);
+  });
+
+  it('refuses when the candidate carries no price, and the other three answers stand', () => {
+    const check = shoppingCheck(
+      { type: 'jumper', color: colourOfSlug(SLUGS[6]!) },
+      PRICED,
+      CONTEXT,
+    );
+
+    expect(check.investment).toEqual({ known: false, reason: 'noPrice' });
+    // DECOY — the refusal is the signal's, not the whole check's.
+    expect(check.slot).not.toBeNull();
+    expect(check.compatibility).not.toBeNull();
+  });
+
+  it('refuses against the unpriced wardrobe the other tests use', () => {
+    const check = shoppingCheck(
+      { type: 'jumper', color: colourOfSlug(SLUGS[6]!), costMinor: 18000, currency: 'GBP' },
+      WARDROBE,
+      CONTEXT,
+    );
+
+    expect(check.investment).toEqual({ known: false, reason: 'noComparable' });
+  });
+});

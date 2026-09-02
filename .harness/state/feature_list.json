@@ -3482,7 +3482,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-052"
       ],
@@ -3496,7 +3496,8 @@
         "state",
         "test"
       ],
-      "notes": "FILED BY F-052, WHICH BUILT THREE OF FR-52'S FOUR THINGS. The PRD row reads \"outfits unlocked, personal compatibility, duplicate warning, investment signal\"; F-052's acceptance list names only the first three, and the acceptance list is the contract. THE TERM IS USED ONCE IN THE PRD AND DEFINED NOWHERE — the only other occurrence in the repository is an archived brainstorm about \"recommended size of wardrobe investment\", which is a different idea. So building it means DECIDING what it means, and that is an ADR before it is code (golden rule 7). WHY THE OBVIOUS IMPLEMENTATION IS THE TRAP. Cost per wear exists as of F-051, so the tempting signal is a projection: \"at 30 wears this would be £1.52 each\". THE 30 IS INVENTED. FR-46's own sentence is \"absent data yields unknown, never an invented estimate\", and a projection whose denominator nobody chose is that estimate wearing a conditional. An honest version would rest on a number the person's own wardrobe produced — their median wears for that garment type, say — which is computable only once wear counts exist in quantity, and F-051 made the first one possible an hour ago. REQUIREMENTS-COVERAGE.md's FR-52 row names F-052 AND this feature, so the requirement is not recorded as delivered by work that did not deliver it."
+      "notes": "FILED BY F-052, WHICH BUILT THREE OF FR-52'S FOUR THINGS. The PRD row reads \"outfits unlocked, personal compatibility, duplicate warning, investment signal\"; F-052's acceptance list names only the first three, and the acceptance list is the contract. THE TERM IS USED ONCE IN THE PRD AND DEFINED NOWHERE — the only other occurrence in the repository is an archived brainstorm about \"recommended size of wardrobe investment\", which is a different idea. So building it means DECIDING what it means, and that is an ADR before it is code (golden rule 7). WHY THE OBVIOUS IMPLEMENTATION IS THE TRAP. Cost per wear exists as of F-051, so the tempting signal is a projection: \"at 30 wears this would be £1.52 each\". THE 30 IS INVENTED. FR-46's own sentence is \"absent data yields unknown, never an invented estimate\", and a projection whose denominator nobody chose is that estimate wearing a conditional. An honest version would rest on a number the person's own wardrobe produced — their median wears for that garment type, say — which is computable only once wear counts exist in quantity, and F-051 made the first one possible an hour ago. REQUIREMENTS-COVERAGE.md's FR-52 row names F-052 AND this feature, so the requirement is not recorded as delivered by work that did not deliver it.",
+      "plan": "plans/F-123-investment-signal.md"
     },
     {
       "id": "F-124",

@@ -82,6 +82,31 @@ caught, but through an unrelated guard, and it would have passed on every ordina
 now pinned by a case at the top of the safe-integer range, where the quotient is not
 representable [[a-decoy-that-is-not-broken-proves-nothing]].
 
+## The one number here that an exponent edit cannot move (F-123)
+
+`investmentSignal` divides one price by another: `costMinor / medianMinorPerWear`. **Both
+operands are in the same currency's minor units, so the exponent cancels.** Change GBP from 2 to
+3 and every stored price is reinterpreted — and the break-even count comes out identical. It is
+the only figure in this product that is *invariant* under an edit to this table.
+
+**What is not invariant is the line underneath it.** The screen renders
+`medianMinorPerWear` through `formatMinor` as the basis, so an exponent edit moves the rate a
+reader sees by a factor of ten while the wear count beside it stays put — two numbers that no
+longer agree, on one line, with nothing failing. Narrower than the consequence this note was
+written for, and stranger to look at.
+
+### And the exponents only cancel when they are the same exponent
+
+A comparable must be priced in the **candidate's** currency. Dividing GBP minor units by JPY
+minor units type-checks, produces a number, and means nothing. There are no exchange rates here
+and inventing one would be the estimate FR-46 forbids with a feed attached — so garments in
+another currency are **excluded, never converted**.
+
+`investment.test.ts` carries a yen coat priced to drag the median if it were counted. A
+single-currency wardrobe rates the filtered and the unfiltered implementation identically, which
+is the whole reason the fixture is not one
+[[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]].
+
 ## What the guard does and does not do
 
 `cost.test.ts` pins **every** non-default entry by value, all twenty-six, plus the default.

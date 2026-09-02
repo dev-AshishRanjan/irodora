@@ -47,6 +47,7 @@ import {
   type RuleSet,
 } from '@irodora/recommendation';
 import type { StoredGarment } from '@irodora/store';
+import { investmentSignal, type InvestmentSignal } from './investment';
 import { slotFor } from '../outfit/builder';
 import { colorOf } from '../wardrobe';
 
@@ -67,6 +68,16 @@ export interface ShoppingCandidate {
   readonly color: Color;
   /** The published family, when the colour has one. Only `gaps` uses it; carried for parity. */
   readonly family?: string | undefined;
+  /**
+   * What it costs, in the currency's minor units, and the code that scales them (F-123).
+   *
+   * **Both or neither**, for the reason `costEntry` enforces on the way in: `cost_minor` does
+   * not record its own exponent, so a price without its currency is a number nobody can read
+   * back (E-052). Optional because the other three answers do not need it — a person can ask
+   * whether a jumper duplicates one they own without telling the app what it costs.
+   */
+  readonly costMinor?: number | null | undefined;
+  readonly currency?: string | null | undefined;
 }
 
 /** What the wardrobe does with a candidate, when it can be placed at all. */
@@ -107,6 +118,17 @@ export interface ShoppingCheck {
   readonly compatibility: CompatibilityScore | null;
   /** Only pairs involving the candidate. Closest first, as `findDuplicates` orders them. */
   readonly duplicates: readonly DuplicatePair[];
+  /**
+   * The investment signal, or the reason there is not one (FR-52, F-123, ADR-0082).
+   *
+   * **Never a verdict.** Two medians over the person's own comparable garments, and the
+   * judgement stays theirs — the ADR records why a projection at an assumed wear count was
+   * refused, and why "good investment" is not a sentence this product is in a position to write.
+   *
+   * Like `compatibility`, it is computed even when the candidate fills no slot: a scarf this
+   * engine cannot place is still a scarf somebody is deciding whether to buy.
+   */
+  readonly investment: InvestmentSignal;
 }
 
 /** Everything the check needs that the wardrobe does not carry. */
@@ -179,10 +201,24 @@ export function shoppingCheck(
   const compatibility =
     context.profile === null ? null : scoreColor(context.profile, candidate.color, context.rules);
 
+  /*
+   * BESIDE THE DUPLICATES, NOT AFTER THE SLOT CHECK. The signal needs neither a slot nor a
+   * profile — it is arithmetic over garments of the same type — so a scarf the outfit engine
+   * cannot place, belonging to somebody who has never set up a profile, still gets one.
+   */
+  const investment = investmentSignal(
+    {
+      type: candidate.type,
+      costMinor: candidate.costMinor ?? null,
+      currency: candidate.currency ?? null,
+    },
+    wardrobe,
+  );
+
   if (slot === null || context.profile === null)
     // No slot, or no profile: `scoreOutfit` needs both, so there is no honest count to give.
     // The other answers stand — which is why this returns them rather than refusing wholesale.
-    return { slot, outfits: null, compatibility, duplicates };
+    return { slot, outfits: null, compatibility, duplicates, investment };
 
   const placeable = wardrobe.map(asCoverageGarment).filter((g): g is CoverageGarment => g !== null);
   const coverageContext: CoverageContext = {
@@ -218,5 +254,6 @@ export function shoppingCheck(
     },
     compatibility,
     duplicates,
+    investment,
   };
 }

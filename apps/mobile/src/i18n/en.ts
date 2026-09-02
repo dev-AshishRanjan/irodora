@@ -519,6 +519,25 @@ export const en = {
   // An emptied field CLEARS it. Said out loud, because the alternative is somebody deleting a
   // brand, seeing it vanish, and not knowing whether it was stored blank or removed.
   'browse.clearing': 'A field you empty is cleared.',
+  // F-123 — the investment signal (ADR-0082). Two numbers from the reader's own wardrobe, and
+  // deliberately no verdict: whether something is worth buying is not a sentence this product
+  // is in a position to write.
+  'shopping.price': 'What it costs',
+  'shopping.priceHint': 'e.g. 180.00',
+  'shopping.investment': 'Against what you already own',
+  'shopping.breakEven': 'Wears before it costs what yours cost you',
+  'shopping.typical': 'What you actually wear yours',
+  'shopping.investmentBasis': 'Measured from',
+  'shopping.investmentGarments': 'you own, at',
+  'shopping.investmentPerWear': 'per wear',
+  'shopping.investmentYours': 'These are your own numbers. Whether it is worth it is your call.',
+  'shopping.investmentNoPrice': 'Add a price, and this compares it with what you already own.',
+  'shopping.investmentNoComparable':
+    'Nothing you own of this kind has both a price and a wear count, so there is nothing to compare against.',
+  'shopping.investmentTooFew':
+    'Record a price and some wears on a few more of these, and this appears.',
+  'shopping.investmentHave': 'Ready to compare',
+  'shopping.investmentNeed': 'Needed',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

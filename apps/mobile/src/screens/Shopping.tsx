@@ -42,6 +42,8 @@ import { allEntries, colorFor } from '../corpus';
 import { slotFor } from '../outfit/builder';
 import { colorOf } from '../wardrobe';
 import { CANDIDATE_ID, shoppingCheck, type ShoppingContext } from '../wardrobe/shopping';
+import { costEntry, formatMinor, type CostEntryProblem } from '../wardrobe/cost';
+import type { InvestmentUnknown } from '../wardrobe/investment';
 import { useMessages } from '../i18n/useMessages';
 import { MESSAGE_KEYS, type MessageKey } from '../i18n/index';
 
@@ -57,12 +59,36 @@ function isMessageKey(key: string): key is MessageKey {
   return (MESSAGE_KEYS as readonly string[]).includes(key);
 }
 
+/**
+ * Why a typed price was not recorded (F-123). Total, so a new problem is a compile error.
+ *
+ * **None of these blocks the check.** A price this screen cannot read is a price it declines to
+ * use for the investment signal — never a question it declines to answer. The other three
+ * answers do not need one at all.
+ */
+const COST_PROBLEM_KEYS = {
+  noAmount: 'wardrobe.costNoAmount',
+  badAmount: 'wardrobe.costBadAmount',
+  badCurrency: 'wardrobe.costBadCurrency',
+  tooPrecise: 'wardrobe.costTooPrecise',
+} as const satisfies Record<CostEntryProblem, MessageKey>;
+
+/** Refusal → sentence. Total, so a new reason cannot render as a blank panel. */
+const REFUSAL_KEYS = {
+  noPrice: 'shopping.investmentNoPrice',
+  noComparable: 'shopping.investmentNoComparable',
+  tooFew: 'shopping.investmentTooFew',
+} as const satisfies Record<InvestmentUnknown, MessageKey>;
+
 export interface ShoppingProps {
   readonly wardrobe: readonly StoredGarment[];
   /** Everything the check needs that the wardrobe does not carry. `baseline` is added here. */
   readonly context: Omit<ShoppingContext, 'baseline'>;
   readonly initialType?: string;
   readonly initialSlug?: string;
+  /** A price already typed. The registry uses these to render the answered branch. */
+  readonly initialAmount?: string;
+  readonly initialCurrency?: string;
 }
 
 export function Shopping({
@@ -70,10 +96,20 @@ export function Shopping({
   context,
   initialType = '',
   initialSlug,
+  initialAmount = '',
+  initialCurrency = '',
 }: ShoppingProps): React.JSX.Element {
   const { t } = useMessages();
   const [type, setType] = useState(initialType);
   const [slug, setSlug] = useState<string | null>(initialSlug ?? null);
+  /*
+   * The price is held as TYPED TEXT, for the reason AddGarment holds it that way: `cost_minor`
+   * is an integer of minor units whose scale comes from the currency, so "180" is not a value
+   * until there is a code beside it — and parsing on every keystroke would fight whoever was
+   * typing one.
+   */
+  const [amountText, setAmountText] = useState(initialAmount);
+  const [currencyText, setCurrencyText] = useState(initialCurrency);
 
   /*
    * The baseline does not depend on the candidate, and it is the expensive half — `t × r × s`
@@ -99,13 +135,29 @@ export function Shopping({
 
   const entry = slug === null ? null : (allEntries().find((e) => e.entry.slug === slug) ?? null);
 
+  const money = costEntry(amountText, currencyText);
+  // Silent until somebody has typed something. An empty optional field is not a mistake.
+  const moneyTyped = amountText.trim() !== '' || currencyText.trim() !== '';
+  const moneyProblem = moneyTyped && !money.ok ? money.problem : null;
+
   const check = useMemo(() => {
     if (entry === null || type.trim() === '') return null;
-    return shoppingCheck({ type, color: colorFor(entry.entry) }, wardrobe, {
+    const priced = money.ok ? money.patch : { costMinor: null, currency: null };
+    return shoppingCheck({ type, color: colorFor(entry.entry), ...priced }, wardrobe, {
       ...context,
       baseline,
     });
-  }, [baseline, context, entry, type, wardrobe]);
+    // `money` is a fresh object every render; its two fields are what the check reads.
+  }, [
+    baseline,
+    context,
+    entry,
+    type,
+    wardrobe,
+    money.ok,
+    money.ok ? money.patch.costMinor : null,
+    money.ok ? money.patch.currency : null,
+  ]);
 
   const choose = useCallback((chosen: string) => {
     setSlug(chosen);
@@ -138,6 +190,24 @@ export function Shopping({
           value={type}
           onChangeText={setType}
         />
+
+        <TextField
+          label={t('shopping.price')}
+          hint={t('shopping.priceHint')}
+          value={amountText}
+          onChangeText={setAmountText}
+        />
+        <TextField
+          label={t('wardrobe.currency')}
+          hint={t('wardrobe.currencyHint')}
+          value={currencyText}
+          onChangeText={setCurrencyText}
+        />
+        {moneyProblem === null ? null : (
+          <Text size="small" color="foreground.2">
+            {t(COST_PROBLEM_KEYS[moneyProblem])}
+          </Text>
+        )}
 
         <Text size="body" color="foreground.2">
           {t('wardrobe.pickColour')}
@@ -262,6 +332,65 @@ export function Shopping({
                         </Text>
                       );
                     })}
+                  </>
+                )}
+              </View>
+            </Surface>
+
+            {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
+            <Surface level="1">
+              <View style={{ padding: 12, gap: 8 }}>
+                <Text size="body" color="foreground" heading>
+                  {t('shopping.investment')}
+                </Text>
+                {!check.investment.known ? (
+                  <>
+                    <Text size="body" color="foreground.2">
+                      {t(REFUSAL_KEYS[check.investment.reason])}
+                    </Text>
+                    {/*
+                      THE COUNT, ON `tooFew` ONLY. ADR-0082's "revisit when" is measured on it,
+                      and on the screen it turns a dead end into something to do next.
+                    */}
+                    {check.investment.reason !== 'tooFew' ? null : (
+                      <>
+                        <Text size="small" color="foreground.2" numeric>
+                          {`${t('shopping.investmentHave')}: ${String(check.investment.have)}`}
+                        </Text>
+                        <Text size="small" color="foreground.2" numeric>
+                          {`${t('shopping.investmentNeed')}: ${String(check.investment.need)}`}
+                        </Text>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {/*
+                      ROUNDED UP, AND ONLY HERE. 65.4 wears is not reached at 65, and the value
+                      itself stays exact — a rounding is a rendering, not a stored claim.
+                    */}
+                    <Text size="body" color="foreground" numeric>
+                      {`${t('shopping.breakEven')}: ${String(Math.ceil(check.investment.breakEvenWears))}`}
+                    </Text>
+                    <Text size="body" color="foreground" numeric>
+                      {`${t('shopping.typical')}: ${String(Math.round(check.investment.typicalWears))}`}
+                    </Text>
+                    {/*
+                      THE BASIS TRAVELS WITH THE NUMBERS. "56 wears" without saying from how many
+                      garments and at what rate is asking to be believed rather than checked —
+                      the same rule the outfit count follows with its threshold.
+                    */}
+                    <Text size="small" color="foreground.2" numeric>
+                      {`${t('shopping.investmentBasis')}: ${String(check.investment.comparableCount)} ${t('shopping.investmentGarments')} ${formatMinor(check.investment.medianMinorPerWear, check.investment.currency)} ${check.investment.currency} ${t('shopping.investmentPerWear')}`}
+                    </Text>
+                    {/*
+                      NO VERDICT (ADR-0082). Whether it is worth the money is not a sentence this
+                      product is in a position to write, and saying so is better than leaving two
+                      numbers to imply one.
+                    */}
+                    <Text size="small" color="foreground.2">
+                      {t('shopping.investmentYours')}
+                    </Text>
                   </>
                 )}
               </View>

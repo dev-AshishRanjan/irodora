@@ -419,6 +419,37 @@ const OUTFIT_WARDROBE = [
  * registry entry for only the first would check the accessibility of the case where the
  * feature has nothing to say.
  */
+/**
+ * Three priced, worn jumpers — enough for the investment signal to answer (F-123, ADR-0082).
+ *
+ * MINIMUM_COMPARABLES is 3, so a fixture of two would render the `tooFew` refusal and the
+ * answered branch would go unchecked in both themes. The rates are 200, 350 and 300 per wear,
+ * so the median is 300 and the numbers on screen are not all the same digit.
+ */
+const SHOPPING_PRICED: readonly StoredGarment[] = [
+  {
+    ...outfitGarment('s-1', 'jumper', allEntries()[0]!.entry.slug),
+    costMinor: 6000,
+    currency: 'GBP',
+    wearCount: 30,
+  },
+  {
+    ...outfitGarment('s-2', 'jumper', allEntries()[1]!.entry.slug),
+    costMinor: 14000,
+    currency: 'GBP',
+    wearCount: 40,
+  },
+  {
+    ...outfitGarment('s-3', 'jumper', allEntries()[2]!.entry.slug),
+    costMinor: 9000,
+    currency: 'GBP',
+    wearCount: 30,
+  },
+];
+
+/** The same, one short — the `tooFew` branch, which draws two counts the other never does. */
+const SHOPPING_TOO_FEW: readonly StoredGarment[] = SHOPPING_PRICED.slice(0, 2);
+
 const OUTFIT_WARDROBE_PRICED = [
   { ...OUTFIT_WARDROBE[0]!, costMinor: 4550, currency: 'GBP', wearCount: 38 },
   ...OUTFIT_WARDROBE.slice(1),
@@ -673,6 +704,55 @@ const SCREENS: readonly ConformanceSubject[] = [
           context={SHOPPING_CONTEXT}
           initialType="scarf"
           initialSlug={allEntries()[3]!.entry.slug}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE INVESTMENT SIGNAL, ANSWERED (F-123, ADR-0082).
+     *
+     * Draws four numeric lines the other Shopping subjects do not — the break-even, the typical
+     * wears, and the basis with its currency — plus the sentence saying the judgement is the
+     * reader's. `initialAmount` and `initialCurrency` are what make it reachable without the
+     * typing the static registry never does.
+     */
+    name: 'screens/Shopping (the investment signal)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Shopping
+          wardrobe={SHOPPING_PRICED}
+          context={SHOPPING_CONTEXT}
+          initialType="jumper"
+          initialSlug={allEntries()[4]!.entry.slug}
+          initialAmount="180.00"
+          initialCurrency="GBP"
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE SAME SCREEN ONE GARMENT SHORT.
+     *
+     * The refusal that carries a count, and the only subject that draws it. A registry entry for
+     * the answered branch alone would check the accessibility of the case where somebody has
+     * already done the recording — which is not the case most people are in.
+     */
+    name: 'screens/Shopping (not enough to compare against)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Shopping
+          wardrobe={SHOPPING_TOO_FEW}
+          context={SHOPPING_CONTEXT}
+          initialType="jumper"
+          initialSlug={allEntries()[4]!.entry.slug}
+          initialAmount="180.00"
+          initialCurrency="GBP"
         />,
         theme,
       ),
@@ -2293,5 +2373,79 @@ describe('the Lens says why there is no reading (F-119)', () => {
   it('shows nothing extra when there is no diagnostic', () => {
     const text = textOf(draw(<Lens permission="granted" />, 'dark')).join('\u0000');
     expect(text).toContain(en['lens.waiting']);
+  });
+});
+
+/**
+ * The investment signal reaches the screen (FR-52, F-123, ADR-0082).
+ *
+ * `investment.test.ts` owns the medians and `shopping.test.ts` owns the fourth answer. What is
+ * left here is the half neither can see: that the **answered branch actually draws numbers**.
+ *
+ * The conformance registry would pass a subject that silently rendered the refusal instead — it
+ * checks contrast and accessibility of whatever was drawn, and a refusal is a perfectly
+ * accessible sentence. Without these assertions, "the answered branch is registered" would be a
+ * claim about a fixture nobody read [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+describe('the investment panel draws what it claims to', () => {
+  function allText(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else allText(child, out);
+    }
+    return out;
+  }
+
+  const shown = (wardrobe: readonly StoredGarment[]): string =>
+    allText(
+      draw(
+        <Shopping
+          wardrobe={wardrobe}
+          context={SHOPPING_CONTEXT}
+          initialType="jumper"
+          initialSlug={allEntries()[4]!.entry.slug}
+          initialAmount="180.00"
+          initialCurrency="GBP"
+        />,
+        'light',
+      ),
+    ).join(' | ');
+
+  it('shows the break-even and the typical wears, rounded for reading', () => {
+    const text = shown(SHOPPING_PRICED);
+
+    // 18000 / 300 = 60 wears; the comparables' median wear count is 30.
+    expect(text).toContain(`${en['shopping.breakEven']}: 60`);
+    expect(text).toContain(`${en['shopping.typical']}: 30`);
+  });
+
+  it('shows the basis beside the numbers, so they can be checked rather than believed', () => {
+    const text = shown(SHOPPING_PRICED);
+
+    expect(text).toContain(en['shopping.investmentBasis']);
+    expect(text).toContain('3');
+    expect(text).toContain('GBP');
+  });
+
+  it('offers no verdict, and says the judgement is the reader’s', () => {
+    const text = shown(SHOPPING_PRICED);
+
+    expect(text).toContain(en['shopping.investmentYours']);
+    // ADR-0082 refuses a verdict. If one is ever added, the copy is where it would appear.
+    for (const word of ['worth it?', 'good buy', 'bargain', 'overpriced'])
+      expect(`${word}: ${String(text.toLowerCase().includes(word))}`).toBe(`${word}: false`);
+  });
+
+  /*
+   * THE DECOY. Without it, every assertion above would be equally true of a screen that drew the
+   * panel unconditionally — and the refusal branch is the one most people will actually see.
+   */
+  it('DECOY — one garment short, it refuses and says how many are needed', () => {
+    const text = shown(SHOPPING_TOO_FEW);
+
+    expect(text).toContain(en['shopping.investmentTooFew']);
+    expect(text).toContain(`${en['shopping.investmentHave']}: 2`);
+    expect(text).toContain(`${en['shopping.investmentNeed']}: 3`);
+    expect(text).not.toContain(en['shopping.breakEven']);
   });
 });
