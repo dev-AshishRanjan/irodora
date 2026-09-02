@@ -58,14 +58,36 @@ Both were proven by mutation, not by reading:
 | delete `explain.chroma.neutral` | (a) **and** (b) |
 | add `explain.sparkle.supports`, which the engine never emits | (b), plus three more |
 
-## The outfit keys are a declared gap, not an exclusion
+## The outfit keys were a declared gap. F-124 closed it
 
-`OUTFIT_MESSAGE_KEYS` have no catalogue entries — `OutfitBuilder` renders the raw component
-name beside each score. The test asserts the **missing set exactly**, so the gap stays visible
-and attributable while a *new* unrenderable key still fails. Filtering them out would have made
-the test quietly stop covering them, which is how a check stops checking.
+`OUTFIT_MESSAGE_KEYS` had no catalogue entries — `OutfitBuilder` rendered the raw component name
+beside each score, so a Japanese reader saw six English identifiers beside six numbers and an
+English reader saw variable names. Eighteen keys: six components × three directions.
 
-## The screen narrows rather than casts
+While it stood, the test asserted the **missing set exactly**, so the gap stayed visible and
+attributable while a *new* unrenderable key still failed. Filtering them out would have made the
+test quietly stop covering them, which is how a check stops checking.
+
+**The gap test was deleted, not shortened.** Keeping it alive with an empty expected set would
+have been a check that passes because it is looking at nothing. Its replacement is the positive
+assertion, in the same shape as the `scoreColor` one above.
+
+### The reverse pin needed a filter that is not `startsWith`
+
+Sixteen ordinary screen keys share the `outfit.` prefix — `outfit.title`, `outfit.overall`,
+`outfit.perWear` — and demanding the engine emit *those* would be absurd. The engine's keys have
+**three** dot-segments; the screen copy has **two**, so the partition is on segment count.
+
+A further test asserts **both sides are non-empty**. A filter matching nothing would satisfy the
+reverse pin the day the engine stopped emitting anything, and that is precisely the failure a
+prefix filter would have hidden [[a-decoy-that-is-not-broken-proves-nothing]].
+
+## The screen narrows rather than casts — and there is one narrowing, not two
+
+`isMessageKey` lived in `Shopping.tsx`. F-124 needed it in `OutfitBuilder` too and **moved it to
+`i18n/index.ts`** rather than copying it: two copies of a narrowing helper are two answers to one
+question, and the day one is corrected the other is the bug. It is a `Set` lookup now rather than
+an `includes` over a 400-key array, because it runs once per component per render.
 
 ```ts
 isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey

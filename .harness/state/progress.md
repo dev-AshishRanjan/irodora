@@ -12757,3 +12757,89 @@ evidence the threshold is wrong is deciding the question the "revisit when" exis
 
 ---
 
+## 2026-09-02 — F-124 DONE · the outfit scores say what they mean, in both languages
+
+`scoreOutfit` emits a `messageKey` per component and **none of the eighteen was in either
+catalogue**. `OutfitBuilder` rendered `${c.component}: ${score}` — so a Japanese reader saw six
+English identifiers beside six numbers, and an English reader saw variable names. This is
+**E-053's declared gap closing on its second source**.
+
+### Two sentences that were easy to get wrong
+
+**`corpusAffinity` is not "how Japanese this is"** — the engine's own header and ADR-0073 say so.
+It is ΔE00 to the nearest published entry, so the copy says *close to colours in the collection*.
+
+**`cvdAccessibility` reuses `cvd.none`'s existing wording** — *"the three common colour-vision
+types"* — rather than inventing a second phrase for one simulation. Both are claims about a
+model, and the product already has a way of saying that.
+
+### The gap test was deleted, not shortened
+
+It had asserted the missing set **exactly**, which is what kept it honest while the gap stood.
+Keeping it alive with an empty expected set would have been a check passing because it is looking
+at nothing. Its replacement is the positive assertion, in the same shape as the `scoreColor` one.
+
+### The reverse pin needed a filter that is not `startsWith`
+
+These keys are rendered through `t(c.messageKey)` — a computed lookup — so the unused-key scan
+cannot see their consumer and has to exclude them, which is safe **only** while the set is pinned
+in both directions.
+
+`startsWith('outfit.')` is the obvious filter and it is wrong: **sixteen ordinary screen keys
+share that prefix** — `outfit.title`, `outfit.overall`, `outfit.perWear`. Demanding the engine
+emit those would be absurd. The engine's have **three** dot-segments and the screen copy has
+**two**, so the partition is on segment count.
+
+And a further test asserts **both sides are non-empty**, because `[] === []` passes: a filter
+matching nothing would satisfy the reverse pin the day the engine stopped emitting anything.
+That is a filter-side instance of
+[[a-negative-test-needs-a-decoy-not-an-empty-fixture]], and its note now carries it.
+
+### One narrowing, not two
+
+`isMessageKey` lived in `Shopping.tsx`; `OutfitBuilder` needed it too. Moved to `i18n/index.ts`
+rather than copied — the day one copy is corrected the other is the bug. A `Set` lookup now,
+because it runs once per component per render rather than once per screen.
+
+### Five mutations, five caught
+
+Rendering the identifier again, dropping the number, rendering the key rather than looking it
+up, deleting a catalogue entry, and adding one nobody emits. The third is the one that matters
+most: `isMessageKey` **narrows rather than casts**, so a missing key renders as a visible raw
+identifier instead of a blank line — which is how this gap was found in the first place.
+
+The screen-level assertion exists because neither existing suite could see this: `i18n.test.ts`
+proves the copy exists, and the conformance registry would rate `harmony — 78` and `harmony: 78`
+identically, since both are perfectly accessible strings.
+
+### Effects
+
+**E-053** closed on its second source; the link gained three targets and its note now carries the
+segment-count reasoning. **E-016** fired — the compiler caught it. **E-017** fired — nine kanji
+(係, 働, 似, 積, 大, 距, 少, 主, 三), subset regenerated to 553 required against 880 in the face.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| 5 mutations | **5/5 caught** |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### What this does not fix
+
+**Eighteen more unreviewed Japanese sentences.** `JA_REVIEWED` is empty and ADR-0060 settled OQ-5
+as a decision rather than an answer — Irodora ships with one editor. The suite's unreviewed count
+goes up by eighteen, which is the honest record rather than something this feature can close.
+
+### Deliberately not built
+
+**Rendering the `evidence` numbers** — `ComponentScore` carries what each component looked at,
+and showing it is a second design question about how much a builder screen should explain. Not
+filed: FR-32 is satisfied by the score and its sentence. **The `factors` decomposition** —
+Shopping renders it for `scoreColor`; adding it here would be scope nobody reviewed.
+
+---
+

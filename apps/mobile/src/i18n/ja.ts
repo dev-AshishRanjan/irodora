@@ -494,6 +494,27 @@ export const ja: Record<MessageKey, string> = {
   'shopping.investmentTooFew': '同じ種類のものにあと数点、価格と着用回数を記録すると表示されます。',
   'shopping.investmentHave': '比べられる点数',
   'shopping.investmentNeed': '必要な点数',
+  // F-124 — the six outfit components (FR-32, E-053). What was measured, never a verdict.
+  'outfit.harmony.supports': '暖かみの方向がそろっていて、選んで組んだように見えます。',
+  'outfit.harmony.opposes': '暖かみの方向がばらついています。',
+  'outfit.harmony.neutral': '色どうしの関係は、どちらにも働いていません。',
+  'outfit.personalFit.supports': 'あなたに似合う色です。面積の大きい服ほど強く効きます。',
+  'outfit.personalFit.opposes': 'あなたには合いにくい色です。面積の大きい服ほど強く効きます。',
+  'outfit.personalFit.neutral': '似合うかどうかは、どちらにも働いていません。',
+  'outfit.contrast.supports': '明るさの差が、あなたに似合う強さです。',
+  'outfit.contrast.opposes': '明るさの差が、あなたに似合う強さより強いか弱いかです。',
+  'outfit.contrast.neutral': '明るさの差は、どちらにも働いていません。',
+  'outfit.corpusAffinity.supports': '収録色に近い色です。',
+  'outfit.corpusAffinity.opposes': '収録色のどれからも離れた色です。',
+  'outfit.corpusAffinity.neutral': '収録色との距離は、どちらにも働いていません。',
+  'outfit.versatility.supports': '面積の大きい服は、収録色の多くと合わせられます。',
+  'outfit.versatility.opposes': '面積の大きい服は、収録色のうち合わせられるものが少なめです。',
+  'outfit.versatility.neutral': '面積の大きい服の合わせやすさは、どちらにも働いていません。',
+  'outfit.cvdAccessibility.supports':
+    '主な三つの色覚型のいずれでも、どの組み合わせも見分けられます。',
+  'outfit.cvdAccessibility.opposes':
+    '主な三つの色覚型のいずれかで、見分けにくい組み合わせがあります。',
+  'outfit.cvdAccessibility.neutral': '見分けやすさは、どちらにも働いていません。',
 };
 
 /**

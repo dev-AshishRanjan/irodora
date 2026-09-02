@@ -57,7 +57,7 @@ import {
   type WearStore,
 } from '../wardrobe/cost';
 import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
+import { isMessageKey, type MessageKey } from '../i18n/index';
 
 /** Slot → label. Total, so a fourth slot is a compile error rather than a blank column. */
 const SLOT_KEYS = {
@@ -293,9 +293,21 @@ export function OutfitBuilder({
                     <Text size="body" color="foreground" numeric>
                       {`${t('outfit.overall')}: ${String(Math.round(best.score.overall))}`}
                     </Text>
+                    {/*
+                     * THE SENTENCE, NOT THE IDENTIFIER (F-124, FR-32).
+                     *
+                     * This rendered `${c.component}: ${score}` — 'corpusAffinity', in English, in
+                     * both locales, because none of the engine's eighteen keys was in either
+                     * catalogue. A Japanese reader saw six English words beside six numbers, and
+                     * an English one saw a variable name.
+                     *
+                     * `isMessageKey` narrows rather than casts, so a key the catalogue lacks
+                     * still renders — as the raw identifier, visibly wrong — instead of blanking
+                     * the line. That is how the gap was found in the first place (E-053).
+                     */}
                     {best.score.components.map((c) => (
                       <Text key={c.component} size="small" color="foreground.2" numeric>
-                        {`${c.component}: ${String(Math.round(c.score))}`}
+                        {`${isMessageKey(c.messageKey) ? t(c.messageKey) : c.messageKey} — ${String(Math.round(c.score))}`}
                       </Text>
                     ))}
                   </View>

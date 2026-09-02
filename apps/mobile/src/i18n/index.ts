@@ -16,7 +16,7 @@
  */
 
 import { getLocales } from 'expo-localization';
-import { en, type MessageKey } from './en';
+import { en, MESSAGE_KEYS, type MessageKey } from './en';
 import { ja } from './ja';
 
 /** The locales that ship. Both from the first release; neither is a fallback for the other. */
@@ -63,6 +63,26 @@ export function deviceLocale(override?: Locale): Locale {
 export function t(locale: Locale, key: MessageKey): string {
   return CATALOGUES[locale][key];
 }
+
+/**
+ * Whether the engine named a key this catalogue has.
+ *
+ * A **narrowing rather than a cast**, so a key the catalogue lacks renders as a visible raw
+ * identifier instead of a blank line or a crash — which is how F-052 found that none of
+ * `OUTFIT_MESSAGE_KEYS` was in either catalogue.
+ *
+ * It lives here rather than in a screen because **two screens need it** (F-124): `Shopping`
+ * renders `scoreColor`'s factors and `OutfitBuilder` renders `scoreOutfit`'s components, and a
+ * second copy of a narrowing helper is a second answer to one question. The engine types these
+ * as `string` deliberately — `@irodora/recommendation` holds no catalogue and must not
+ * (ADR-0056, E-053) — so the narrowing has to happen somewhere on this side of the seam.
+ */
+export function isMessageKey(key: string): key is MessageKey {
+  return (MESSAGE_KEY_SET as ReadonlySet<string>).has(key);
+}
+
+/** Built once. `includes` on a 400-key array, per component, per render, is a linear scan. */
+const MESSAGE_KEY_SET: ReadonlySet<MessageKey> = new Set(MESSAGE_KEYS);
 
 export { en, type MessageKey } from './en';
 export {

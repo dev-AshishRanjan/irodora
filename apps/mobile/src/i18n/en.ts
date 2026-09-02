@@ -538,6 +538,41 @@ export const en = {
     'Record a price and some wears on a few more of these, and this appears.',
   'shopping.investmentHave': 'Ready to compare',
   'shopping.investmentNeed': 'Needed',
+  /*
+   * F-124 — the six outfit components, in the reader's language (FR-32, E-053).
+   *
+   * `scoreOutfit` emits one of these per component and the builder rendered the raw identifier
+   * until now, so a Japanese reader saw six English words beside six numbers.
+   *
+   * Each says WHAT WAS MEASURED, never whether the outfit is good — the register `explain.*`
+   * set in F-030. Two are easy to get wrong and are written deliberately:
+   *
+   *   - `corpusAffinity` is NOT "how Japanese this is" (the engine's own header, ADR-0073). It
+   *     is ΔE00 to the nearest published entry, so the copy says close to the collection.
+   *   - `cvdAccessibility` reuses `cvd.none`'s wording — "the three common colour-vision types"
+   *     — rather than inventing a second phrase for one simulation.
+   */
+  'outfit.harmony.supports': 'These colours share a warmth, so they read as chosen together.',
+  'outfit.harmony.opposes': 'These colours pull against each other on the warm–cool axis.',
+  'outfit.harmony.neutral': 'How these colours relate neither helps nor hurts.',
+  'outfit.personalFit.supports': 'These suit you, and the largest pieces most of all.',
+  'outfit.personalFit.opposes': 'These suit you less well, and the largest pieces count most.',
+  'outfit.personalFit.neutral': 'How well these suit you neither helps nor hurts.',
+  'outfit.contrast.supports': 'The separation between pieces is the strength you wear well.',
+  'outfit.contrast.opposes':
+    'The separation between pieces is stronger or softer than you wear well.',
+  'outfit.contrast.neutral': 'The separation between pieces neither helps nor hurts.',
+  'outfit.corpusAffinity.supports': 'These sit close to colours in the collection.',
+  'outfit.corpusAffinity.opposes': 'These sit far from anything in the collection.',
+  'outfit.corpusAffinity.neutral': 'Their distance from the collection neither helps nor hurts.',
+  'outfit.versatility.supports': 'The largest piece would go with much of the collection.',
+  'outfit.versatility.opposes': 'The largest piece would go with little of the collection.',
+  'outfit.versatility.neutral': 'What the largest piece would go with neither helps nor hurts.',
+  'outfit.cvdAccessibility.supports':
+    'Every pair here stays distinguishable under the three common colour-vision types.',
+  'outfit.cvdAccessibility.opposes':
+    'At least one pair here is hard to tell apart under one of the three common colour-vision types.',
+  'outfit.cvdAccessibility.neutral': 'Telling these apart neither helps nor hurts.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

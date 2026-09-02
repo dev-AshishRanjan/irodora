@@ -45,19 +45,10 @@ import { CANDIDATE_ID, shoppingCheck, type ShoppingContext } from '../wardrobe/s
 import { costEntry, formatMinor, type CostEntryProblem } from '../wardrobe/cost';
 import type { InvestmentUnknown } from '../wardrobe/investment';
 import { useMessages } from '../i18n/useMessages';
-import { MESSAGE_KEYS, type MessageKey } from '../i18n/index';
+import { isMessageKey, type MessageKey } from '../i18n/index';
 
 /** How many corpus entries the picker offers. The same twelve `AddGarment` shows. */
 const PICKER_LIMIT = 12;
-
-/**
- * Whether the engine named a key this catalogue has.
- *
- * A narrowing rather than a cast, so the failure is a visible raw key instead of a blank line.
- */
-function isMessageKey(key: string): key is MessageKey {
-  return (MESSAGE_KEYS as readonly string[]).includes(key);
-}
 
 /**
  * Why a typed price was not recorded (F-123). Total, so a new problem is a compile error.

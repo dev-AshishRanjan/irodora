@@ -3508,7 +3508,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-052"
       ],
@@ -3522,7 +3522,8 @@
         "a11y",
         "contrast"
       ],
-      "notes": "FOUND WHILE BUILDING F-052's E-053 GUARD. `scoreOutfit` emits a messageKey per component and NONE of them is in either catalogue; `OutfitBuilder` renders `${c.component}: ${score}` — the raw identifier, in English, in both locales. So a Japanese reader sees six English component names beside six numbers. THE GAP IS DECLARED RATHER THAN EXCLUDED. `i18n.test.ts` asserts the missing set EXACTLY, so this gap is visible and a NEW unrenderable key still fails; the alternative — filtering the outfit keys out of the assertion — would have made the test quietly stop covering them, which is how a check stops checking. NOT PULLED INTO F-052: rendering them is a change to F-045's screen against FR-32, not FR-52, and F-052 had no criterion that touching it would serve."
+      "notes": "FOUND WHILE BUILDING F-052's E-053 GUARD. `scoreOutfit` emits a messageKey per component and NONE of them is in either catalogue; `OutfitBuilder` renders `${c.component}: ${score}` — the raw identifier, in English, in both locales. So a Japanese reader sees six English component names beside six numbers. THE GAP IS DECLARED RATHER THAN EXCLUDED. `i18n.test.ts` asserts the missing set EXACTLY, so this gap is visible and a NEW unrenderable key still fails; the alternative — filtering the outfit keys out of the assertion — would have made the test quietly stop covering them, which is how a check stops checking. NOT PULLED INTO F-052: rendering them is a change to F-045's screen against FR-32, not FR-52, and F-052 had no criterion that touching it would serve.",
+      "plan": "plans/F-124-outfit-component-sentences.md"
     },
     {
       "id": "F-125",

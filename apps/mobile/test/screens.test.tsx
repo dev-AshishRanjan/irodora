@@ -38,7 +38,13 @@ import { colorOf } from '../src/wardrobe';
 import { ruleSet } from '../src/rules';
 import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
 import { engineProfile } from '../src/outfit/builder';
-import { outfitWeights, parseWeightContent, preferenceWeight } from '@irodora/recommendation';
+import {
+  outfitWeights,
+  parseWeightContent,
+  preferenceWeight,
+  OUTFIT_COMPONENTS,
+  OUTFIT_MESSAGE_KEYS,
+} from '@irodora/recommendation';
 import { familyLabel } from '../src/corpus';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 import type { WardrobeStore } from '../src/wardrobe';
@@ -62,6 +68,7 @@ import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@
 import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
+import { isMessageKey } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
 import { nativeNumericFeature } from '@irodora/design-tokens';
@@ -2447,5 +2454,70 @@ describe('the investment panel draws what it claims to', () => {
     expect(text).toContain(`${en['shopping.investmentHave']}: 2`);
     expect(text).toContain(`${en['shopping.investmentNeed']}: 3`);
     expect(text).not.toContain(en['shopping.breakEven']);
+  });
+});
+
+/**
+ * The outfit component scores say what they mean (FR-32, F-124).
+ *
+ * `i18n.test.ts` proves every key the engine emits has a sentence in both catalogues. It cannot
+ * prove the **screen renders the sentence** — the builder read `c.component` for six features,
+ * and a catalogue full of correct copy nothing looks up would satisfy every assertion there.
+ *
+ * The conformance registry cannot see it either: `harmony — 78` and `harmony: 78` are both
+ * perfectly accessible strings, and a subject still rendering the identifier would pass gates 8
+ * and 9 exactly as it did before this feature [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+describe('the outfit builder renders sentences, not identifiers', () => {
+  function allText(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else allText(child, out);
+    }
+    return out;
+  }
+
+  const built = (): string =>
+    allText(
+      draw(
+        <OutfitBuilder
+          wardrobe={OUTFIT_WARDROBE}
+          context={OUTFIT_CONTEXT}
+          initialDraft={[{ slot: 'top', garment: OUTFIT_WARDROBE[0]!, locked: true }]}
+          store={fakeWearStore(OUTFIT_WARDROBE)}
+        />,
+        'light',
+      ),
+    ).join(' | ');
+
+  it('shows a sentence for a component the engine scored', () => {
+    const text = built();
+    const sentences = OUTFIT_MESSAGE_KEYS.filter((k) => isMessageKey(k) && text.includes(en[k]));
+
+    // At least one of the eighteen is on screen — the outfit has six components and each emits
+    // exactly one key, so a builder rendering sentences at all shows six of these.
+    expect(sentences.length).toBeGreaterThan(0);
+  });
+
+  /*
+   * THE DECOY, and it is the whole assertion. Every component identifier is a substring of its
+   * own key, so a screen still rendering `corpusAffinity: 78` would pass the check above the
+   * moment any ONE sentence happened to appear elsewhere. This is what says the identifiers are
+   * gone.
+   */
+  it('shows no raw component identifier beside a score', () => {
+    const text = built();
+
+    for (const component of OUTFIT_COMPONENTS)
+      expect(`${component}: ${String(text.includes(`${component}: `))}`).toBe(
+        `${component}: false`,
+      );
+  });
+
+  it('keeps the number beside the sentence, because FR-32 asks for the scores', () => {
+    const text = built();
+
+    // The em-dash separator, with a number after it — the shape the builder writes.
+    expect(text).toMatch(/ — \d+/u);
   });
 });

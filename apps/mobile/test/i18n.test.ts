@@ -96,18 +96,48 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
   });
 
   /*
-   * THE KNOWN GAP, DECLARED RATHER THAN EXCLUDED.
+   * THE GAP THAT WAS DECLARED HERE IS CLOSED (F-124).
    *
-   * `scoreOutfit`'s component keys have no catalogue entries: `OutfitBuilder` renders the raw
-   * component name beside each score, not the engine's sentence. Filtering them out of the
-   * assertion above would make this test silently stop covering them; asserting the missing
-   * set EXACTLY means a new unrenderable key still fails, while the existing gap stays visible
-   * and attributable. The feature that closes it is named in feature_list.json.
+   * This test used to assert the missing set EXACTLY — all eighteen of `scoreOutfit`'s component
+   * keys, absent from both catalogues, with `OutfitBuilder` rendering the raw component name
+   * beside each score. It is **deleted rather than shortened**: the assertion below is the same
+   * shape as the `scoreColor` one above, and a gap test kept alive with an empty expected set
+   * would be a check that passes because it is looking at nothing.
    */
-  it('reports the outfit-component keys as a known gap, exactly — a NEW one still fails', () => {
+  it('has every outfit-component key `scoreOutfit` can produce', () => {
     const missing = OUTFIT_MESSAGE_KEYS.filter((k) => !(k in en));
 
-    expect(missing.sort()).toEqual([...OUTFIT_MESSAGE_KEYS].sort());
+    expect(missing).toEqual([]);
+  });
+
+  /*
+   * THE REVERSE, for the same reason the `explain.*` one exists: these are rendered through a
+   * computed lookup, so the unused-key scan below cannot see their consumer and has to exclude
+   * them. The exclusion is safe ONLY while both directions are pinned.
+   *
+   * THE SEGMENT COUNT IS THE FILTER, and it has to be. `outfit.title`, `outfit.overall` and
+   * fourteen others are ordinary screen copy with TWO dot-segments; the engine's have THREE.
+   * A `startsWith('outfit.')` here would demand the engine emit `outfit.title`.
+   */
+  it('declares no outfit-component key the engine does not emit', () => {
+    const declared = MESSAGE_KEYS.filter(
+      (k) => k.startsWith('outfit.') && k.split('.').length === 3,
+    );
+
+    expect([...declared].sort()).toEqual([...OUTFIT_MESSAGE_KEYS].sort());
+  });
+
+  it('DECOY — the segment-count partition has both sides, so the filter is not matching nothing', () => {
+    // Without this, a filter that matched NOTHING would satisfy the assertion above the day
+    // the engine stopped emitting keys, and a filter that matched EVERY outfit key would be
+    // caught only by accident.
+    const outfitKeys = MESSAGE_KEYS.filter((k) => k.startsWith('outfit.'));
+    const screenCopy = outfitKeys.filter((k) => k.split('.').length === 2);
+    const engineKeys = outfitKeys.filter((k) => k.split('.').length === 3);
+
+    expect(screenCopy.length).toBeGreaterThan(0);
+    expect(engineKeys.length).toBeGreaterThan(0);
+    expect(screenCopy.length + engineKeys.length).toBe(outfitKeys.length);
   });
 
   it('DECOY — the check can fail, and it is the membership that decides', () => {
@@ -236,7 +266,9 @@ describe('every declared key is used, and every used key is declared', () => {
     // exclusion is safe only because the set is pinned in BOTH directions above: the engine
     // emits no key the catalogue lacks, and the catalogue declares no `explain.*` the engine
     // does not emit. Nothing can hide in the gap.
-    const dynamic = new Set<string>(SCORE_MESSAGE_KEYS);
+    // F-124 added the outfit component keys to this set for the same reason and under the
+    // same protection: `t(c.messageKey)` in OutfitBuilder, pinned in both directions above.
+    const dynamic = new Set<string>([...SCORE_MESSAGE_KEYS, ...OUTFIT_MESSAGE_KEYS]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toEqual([]);
   });
