@@ -275,3 +275,40 @@ export function formatMinor(minor: number, code: string): string {
   const digits = minorUnitDigits(code);
   return minor.toFixed(digits);
 }
+
+/**
+ * A stored price back into the text somebody typed — `costEntry`'s inverse (F-122).
+ *
+ * ## Not `formatMinor`, and the difference is a factor of a hundred
+ *
+ * `formatMinor` renders **minor units** at the currency's precision, which is what a per-wear
+ * figure is: `formatMinor(4550, 'GBP')` is `'4550.00'` — four thousand five hundred and fifty
+ * pence, shown to two places. Seeding an editable price field with that would offer somebody
+ * "45.50" back as "4550.00", and saving it unchanged would multiply the price by a hundred
+ * every time the screen was opened. The two functions look interchangeable and are not.
+ *
+ * ## String slicing, for the reason `costEntry` concatenates
+ *
+ * `4550 / 100` is exact here but `minor / 10 ** digits` is not exact in general, and a price
+ * field is the last place to introduce a binary rounding — `costEntry` went to the trouble of
+ * never multiplying, and dividing on the way back would give that up at the other end.
+ *
+ * ## `''` for a value this could not have produced
+ *
+ * The column is `INTEGER`, so a non-integer cannot arrive from the store as it stands — which
+ * is exactly why the branch is here rather than assumed away. A price field is not the place to
+ * render a number nobody can edit back, and an empty field is visible; `NaN.00` is not.
+ */
+export function minorToMajor(minor: number, code: string): string {
+  if (!Number.isSafeInteger(minor)) return '';
+
+  const digits = minorUnitDigits(code);
+  const sign = minor < 0 ? '-' : '';
+  const absolute = String(Math.abs(minor));
+  if (digits === 0) return sign + absolute;
+
+  // Padded to at least one whole digit, so 5 minor units in GBP is `0.05` rather than `.05` —
+  // which `costEntry` would then refuse, and the field would be uneditable.
+  const padded = absolute.padStart(digits + 1, '0');
+  return `${sign}${padded.slice(0, -digits)}.${padded.slice(-digits)}`;
+}

@@ -453,6 +453,30 @@ export const ja: Record<MessageKey, string> = {
   'lens.unavailableBody':
     'このビルドではカメラを起動できないため、カメラでの色の読み取りは利用できません。アトラス、ファインダー、比較、ワードローブなど、カメラを使わない機能はこれまでどおり使えます。',
   'lens.unavailableDetail': 'この問題を報告する場合は、原因を特定できるのは次の行です。',
+  // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
+  'home.openWardrobe': 'ワードローブを開く',
+  'browse.title': 'あなたのワードローブ',
+  'browse.empty': 'まだ何もありません',
+  'browse.emptyHint': '服を追加すると、色の近いものごとにまとめてここに表示されます。',
+  'browse.grouping': '収録色にどれだけ近いかでまとめています。',
+  'browse.ungrouped': 'まとめていません',
+  'browse.count': '服の数',
+  'browse.edit': '編集する',
+  'browse.editing': '編集中',
+  'browse.back': 'ワードローブに戻る',
+  'browse.name': '名前',
+  'browse.nameHint': '呼びかた',
+  'browse.pattern': '柄',
+  'browse.patternHint': '無地、ストライプ、チェック',
+  'browse.material': '素材',
+  'browse.materialHint': 'ウール、コットン、リネン',
+  'browse.formality': 'あらたまり度',
+  'browse.formalityHint': 'ふだん着、きれいめ、フォーマル',
+  'browse.purchaseDate': '購入日',
+  'browse.purchaseDateHint': '例：2026-03-14',
+  'browse.save': '変更を保存',
+  'browse.saved': '保存しました。',
+  'browse.clearing': '空にした項目は削除されます。',
 };
 
 /**

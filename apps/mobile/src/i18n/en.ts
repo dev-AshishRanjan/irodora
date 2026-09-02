@@ -491,6 +491,34 @@ export const en = {
     'This build cannot start the camera, so colour reading by camera is unavailable. Everything else in the app still works — the Atlas, the Finder, Compare and your wardrobe do not need a camera.',
   'lens.unavailableDetail':
     'If you are reporting this, the line below is the part that identifies the cause.',
+  // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
+  'home.openWardrobe': 'Open your wardrobe',
+  'browse.title': 'Your wardrobe',
+  'browse.empty': 'Nothing here yet',
+  'browse.emptyHint': 'Add a garment and it appears here, gathered with the colours nearest to it.',
+  // Says what the grouping IS. "Grouped by colour" would let a reader assume the app had decided
+  // each garment's colour has a name; it has decided which published colours it sits nearest to.
+  'browse.grouping': 'Gathered by how near each colour is to the collection.',
+  'browse.ungrouped': 'Not gathered',
+  'browse.count': 'Garments',
+  'browse.edit': 'Edit',
+  'browse.editing': 'Editing',
+  'browse.back': 'Back to the wardrobe',
+  'browse.name': 'Name',
+  'browse.nameHint': 'What you call it',
+  'browse.pattern': 'Pattern',
+  'browse.patternHint': 'Plain, striped, checked',
+  'browse.material': 'Material',
+  'browse.materialHint': 'Wool, cotton, linen',
+  'browse.formality': 'Formality',
+  'browse.formalityHint': 'Everyday, smart, formal',
+  'browse.purchaseDate': 'Bought on',
+  'browse.purchaseDateHint': 'Like 2026-03-14',
+  'browse.save': 'Save changes',
+  'browse.saved': 'Saved.',
+  // An emptied field CLEARS it. Said out loud, because the alternative is somebody deleting a
+  // brand, seeing it vanish, and not knowing whether it was stored blank or removed.
+  'browse.clearing': 'A field you empty is cleared.',
 } as const;
 
 /** Every key the app may render. Derived, never listed twice. */

@@ -12558,3 +12558,100 @@ helped even if it were allowed.
 
 ---
 
+## 2026-09-02 — F-122 DONE · the wardrobe can be looked at, and a garment corrected
+
+`app/wardrobe/` held exactly one route — `add.tsx`. A garment could be created and then never
+seen again, and a price typed once at creation could never be corrected. FR-41 was recorded as
+covered by **F-042** with verification `e2e, a11y` — real work, on a `packages` feature that
+**neither gate can apply to**. A requirement reported as delivered by something that could not
+have delivered it, with nothing disagreeing.
+
+### The grouping is `nearestByLab`'s answer, and the engine refused my first call
+
+FR-41's criterion is *"colour grouping uses perceptual distance, not hex string sorting"*. A
+garment's group is the **family of the published entry it is perceptually nearest to** —
+published vocabulary, published distance, no new colour maths. That settles the Lens-captured
+case for free: a camera colour has no `corpus_slug`, so grouping by slug leaves it ungrouped, and
+**a fixture built only from corpus picks rates the two implementations identically**.
+
+`nameColor` threw on `limit: 1`, and its message is the argument: *a single answer is an
+identification*. Reading the nearest of `MINIMUM_CANDIDATES` is not that floor worked around —
+**a family is not an entry.** Several entries share one, the heading is a family word, and
+nothing says a jumper *is* ai-iro. A vote across the three was considered and rejected: a garment
+saved **as** a published colour would be outvoted out of its own family whenever its two
+runners-up agreed with each other.
+
+### `formatMinor` would have multiplied every price by a hundred
+
+The plan assumed `costEntry`'s inverse existed. It does not: `formatMinor` renders **minor** units
+at the currency's precision — `formatMinor(4550, 'GBP')` is `'4550.00'` — right for a per-wear
+rate, wrong for seeding an editable field that `costEntry` reads back.
+
+Nothing would have caught it by shape. Both take `(number, code)`, both return a string, both are
+"the price at the currency's precision" in English, and **both are identical in JPY** — so a
+fixture built around this product's own currency rates them the same. `minorToMajor` is a
+separate exported symbol for that reason, and `cost.test.ts` asserts the two **differ at GBP and
+agree at JPY**; the agreement is half the assertion.
+
+**And my own exactness claim was unchecked.** `minorToMajor` slices strings rather than dividing,
+"because dividing is not exact in general" — the mutation replacing it with
+`(minor / 10 ** digits).toFixed(digits)` was caught, but through an unrelated guard, and it would
+have passed on every ordinary price. There is now a case at the top of the safe-integer range
+where the quotient is not representable.
+
+### Three suites, and the third exists because the first two cannot see the form
+
+- `browse.test.ts` — grouping and ordering. **8 mutations run, 8 caught**, including sorting by
+  hex instead of lightness, which is FR-41's own distinction.
+- `cost.test.ts` — the round-trip. **4 mutations run, 4 caught.**
+- `wardrobe-screen.test.tsx` — **the first interaction test in this app.** 5 mutations, 5 caught.
+
+That third file is the finding. `browse.test.ts` proves `textPatch` writes `null` for an emptied
+field; it cannot prove the screen calls it, and a form assigning raw text would store `''` where
+somebody meant *remove this* with every assertion still green. The conformance registry cannot
+see it either — the patch is produced by a tap it never performs. **Every screen test here was
+static**, and the app has four screens that write
+[[a-static-render-suite-cannot-check-what-a-form-does-on-save]].
+
+### The third instance of a lesson that already existed
+
+`verify-app-imports.mjs` read my route-wiring assertion's literal specifier as a real import — the
+route sits one level deeper than the two already asserted, whose literals resolve **by
+coincidence**. I assembled it from a variable, and then the **comment explaining the assembly
+spelled the path out**, and the gate failed again. Same gate as F-026, same second failure. The
+note describing this exists and did not prevent it: the shape is only visible once the first fix
+is written. **The re-run is the mechanism; the note is not.**
+
+### FR-41's filter half is filed, not absorbed
+
+The requirement is *browse, filter and group*. This feature's criteria name browse and group.
+Closing the coverage row as fully covered would have been the defect this feature exists to fix,
+wearing a new coat. **F-131** is filed; the row names all three features.
+
+### Effects
+
+**E-016** fired — 25 keys in both locales, caught by the compiler. **E-017** fired — 4 new kanji
+(柄, 材, 更, 項), subset regenerated to 542 required against 869 in the face. **E-052** gained
+three targets and a rationale for the second scale; its memory note now carries the
+`formatMinor` / `minorToMajor` table.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (546 mobile, 21 suites) · 6 build | **PASS** |
+| 8 a11y · 9 contrast · content · gate-mirror | **PASS** |
+| 17 mutations across three suites | **17/17 caught** |
+
+**Not run:** `e2e` (gate 7, still pending on F-091 — now eight features deep), `color-golden`,
+`cvd`, `perf`.
+
+### Deliberately not built
+
+**Filtering** — F-131. **Deleting a garment** — no criterion asks, and a destructive action
+deserves its own design. **Cost-per-wear on this screen** — it is F-051's, and moving it is a
+decision about where that number belongs rather than a consequence of this screen existing.
+
+---
+

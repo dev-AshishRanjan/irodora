@@ -3457,7 +3457,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "A screen lists the wardrobe and groups it by colour using perceptual distance, not hex string sorting (FR-41)",
@@ -3470,7 +3470,8 @@
         "a11y",
         "contrast"
       ],
-      "notes": "FOUND WHILE BUILDING F-051, AND FILED RATHER THAN FIXED. FR-41 (browse, filter and group the wardrobe) is mapped in REQUIREMENTS-COVERAGE.md to F-042 with verification `e2e, a11y` — but F-042 is a `packages` feature that built the schema and the repository, and neither of those gates can apply to a package. There is no wardrobe list screen: `apps/mobile/app/wardrobe/` contains exactly one route, `add.tsx`. THE CONSEQUENCE F-051 HIT. Cost per wear had nowhere to live. The line went into OutfitBuilder because that is the only screen where a garment a person owns is on screen, and a price can only be entered at creation because no surface opens a saved garment. Both are correct for F-051 and both are the wrong long-term home. NOT PULLED INTO F-051: a browse screen is a second feature, and building one under this id would be scope nobody reviewed against a requirement. Priority `should` rather than `must` because the app is usable without it; the coverage-map row is the part that is actually wrong today, because it reports a requirement as delivered by work that could not have delivered it."
+      "notes": "FOUND WHILE BUILDING F-051, AND FILED RATHER THAN FIXED. FR-41 (browse, filter and group the wardrobe) is mapped in REQUIREMENTS-COVERAGE.md to F-042 with verification `e2e, a11y` — but F-042 is a `packages` feature that built the schema and the repository, and neither of those gates can apply to a package. There is no wardrobe list screen: `apps/mobile/app/wardrobe/` contains exactly one route, `add.tsx`. THE CONSEQUENCE F-051 HIT. Cost per wear had nowhere to live. The line went into OutfitBuilder because that is the only screen where a garment a person owns is on screen, and a price can only be entered at creation because no surface opens a saved garment. Both are correct for F-051 and both are the wrong long-term home. NOT PULLED INTO F-051: a browse screen is a second feature, and building one under this id would be scope nobody reviewed against a requirement. Priority `should` rather than `must` because the app is usable without it; the coverage-map row is the part that is actually wrong today, because it reports a requirement as delivered by work that could not have delivered it.",
+      "plan": "plans/F-122-wardrobe-browse-and-edit.md"
     },
     {
       "id": "F-123",
@@ -3669,6 +3670,30 @@
         "content"
       ],
       "notes": "FOUND WHILE BUILDING F-065. FR-34 names NINE occasions — office, casual, date, formal, interview, travel, street, minimal and Japanese-inspired — and the published weights carry FIVE: default, office, casual, formal and japanese-inspired. date, interview, travel, street and minimal have never existed, and OCCASIONS in the engine lists only the five, so nothing anywhere reports the gap. NOT PULLED INTO F-065, which is weather. Adding four occasion profiles is editorial work against a requirement this feature does not claim, and each one needs four weights with four rationales that a reader can argue with — twenty numbers and twenty reasons, written to the standard the existing file sets (\"NO WEIGHT HERE IS SUPPORTED BY A STUDY... a rationale that read like a measurement would be worse than none\"). THE SECOND CRITERION IS THE ONE THAT MATTERS. Publishing four more profiles fixes today; making OCCASIONS the full nine, and refusing a version that carries fewer, is what stops the list and the requirement drifting apart again — which is how they got here."
+    },
+    {
+      "id": "F-131",
+      "title": "FR-41 says browse, filter and group — the filter half is not built",
+      "requirements": [
+        "FR-41"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "The wardrobe screen can be narrowed by garment type, season and formality, and the controls say what is currently applied",
+        "A filter that matches nothing says so, rather than showing an empty list",
+        "Filtering composes with the colour grouping rather than replacing it — a narrowed wardrobe is still grouped"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "FILED BY F-122, WHICH DELIBERATELY DID NOT BUILD IT. FR-41 is \"browse, filter and group the wardrobe\". F-122 built the browse surface and the colour grouping, and its own acceptance criteria name only those — so filtering was out of scope for the id that was reviewed, and building it there would have been scope nobody checked against a requirement. THIS IS FILED RATHER THAN ABSORBED BECAUSE THE COVERAGE ROW IS THE THING F-122 EXISTED TO FIX. FR-41 was recorded as delivered by F-042, a package feature verified by gates that cannot apply to a package. Letting F-122 close the row as fully covered while a third of the requirement is unbuilt would be the same defect in a new coat — a requirement reported as delivered by work that did not deliver it. THE COLUMNS ARE ALREADY IN THE SCHEMA. `garment.type`, `garment.formality` and the seasons join were built by F-042 and are editable as of F-122, so this is a screen and a predicate rather than a migration. `groupByColour` takes a garment list and returns groups, so a filter composes in front of it with no change to the grouping — which is why F-122 made it a pure function over a list rather than something the screen does while rendering."
     }
   ]
 }

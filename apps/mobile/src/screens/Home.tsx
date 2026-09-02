@@ -76,6 +76,13 @@ export interface HomeProps {
    * omitting.
    */
   readonly onOpenMeasure?: () => void;
+  /**
+   * Open the wardrobe (F-122). Same shape and same reason as onOpenAtlas, and another instance
+   * of it: `app/wardrobe/` held only `add.tsx`, so a garment could be created and then never
+   * seen again — the schema, the repository and the add screen all shipped and verified, with
+   * nowhere to look at the result.
+   */
+  readonly onOpenWardrobe?: () => void;
 }
 
 export function Home({
@@ -87,6 +94,7 @@ export function Home({
   onOpenLens,
   onOpenShopping,
   onOpenMeasure,
+  onOpenWardrobe,
 }: HomeProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
@@ -211,6 +219,14 @@ export function Home({
         variant="secondary"
         onPress={() => {
           onOpenShopping?.();
+        }}
+      />
+
+      <Button
+        label={t('home.openWardrobe')}
+        variant="secondary"
+        onPress={() => {
+          onOpenWardrobe?.();
         }}
       />
 

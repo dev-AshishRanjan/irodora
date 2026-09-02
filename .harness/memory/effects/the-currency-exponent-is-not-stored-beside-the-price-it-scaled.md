@@ -54,6 +54,34 @@ one migration: no digest column on `garment_image`, no `image_path`. When a pric
 crosses a boundary, **that** is the feature that adds the column — and this note is what tells
 it to.
 
+## Three readers now, at two different scales (F-122)
+
+The table is read at **write** time by `costEntry` and at **read** time by two functions that
+are not the same thing:
+
+| | what it returns | `4550` in GBP |
+|---|---|---|
+| `formatMinor(minor, code)` | **minor** units at the currency's precision | `'4550.00'` |
+| `minorToMajor(minor, code)` | the **major**-unit text somebody typed | `'45.50'` |
+
+`formatMinor` is right for a cost-per-wear figure, which is a rate in minor units.
+`minorToMajor` is right for seeding an **editable price field**, which `costEntry` then reads
+back — so using `formatMinor` there multiplies the price by a hundred on every save.
+
+**Nothing would have caught that by shape.** Both take `(number, code)`, both return a string,
+both are "the price at the currency's precision" in English, and **both are identical in JPY**
+and every other zero-exponent currency. A fixture built around this product's own currency
+rates them the same [[a-fixture-regular-enough-to-read-is-blind-to-a-whole-class-of-defect]].
+So `cost.test.ts` asserts they **differ at GBP and agree at JPY** — the agreement is half the
+assertion, because it is what makes the disagreement meaningful.
+
+`minorToMajor` slices strings rather than dividing, for the reason `costEntry` concatenates
+rather than multiplying. Unlike `costEntry`, that claim was at first **asserted only by its own
+comment**: the mutation that replaced it with `(minor / 10 ** digits).toFixed(digits)` was
+caught, but through an unrelated guard, and it would have passed on every ordinary price. It is
+now pinned by a case at the top of the safe-integer range, where the quotient is not
+representable [[a-decoy-that-is-not-broken-proves-nothing]].
+
 ## What the guard does and does not do
 
 `cost.test.ts` pins **every** non-default entry by value, all twenty-six, plus the default.

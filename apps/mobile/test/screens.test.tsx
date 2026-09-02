@@ -29,6 +29,7 @@ import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
+import { Wardrobe } from '../src/screens/Wardrobe';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
 import { Shopping } from '../src/screens/Shopping';
 import { Measure, type ReferenceLibrary } from '../src/screens/Measure';
@@ -740,6 +741,40 @@ const SCREENS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE WARDROBE, in its three states (F-122).
+   *
+   * Three subjects rather than one because they draw disjoint trees: the empty wardrobe has two
+   * sentences and no group, the list has family headings and a row per garment, and the editor
+   * has nine fields and none of the list. A registry entry for the list alone would leave the
+   * editing branch — every text field on it — checked by nothing in either theme.
+   *
+   * `fakeWearStore` supplies the store: `BrowseStore` and `WearStore` are the same two methods,
+   * so one fake satisfies both. The types stay separate for the reason `Wardrobe.tsx` gives.
+   */
+  {
+    name: 'screens/Wardrobe',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Wardrobe store={fakeWearStore(OUTFIT_WARDROBE)} />, theme),
+  },
+  {
+    name: 'screens/Wardrobe (nothing in it)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Wardrobe store={fakeWearStore([])} />, theme),
+  },
+  {
+    /*
+     * A GARMENT OPEN, and priced — so the amount field is seeded from a stored `cost_minor`
+     * rather than starting empty, which is the branch `minorToMajor` exists for.
+     */
+    name: 'screens/Wardrobe (a garment open)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Wardrobe store={fakeWearStore(OUTFIT_WARDROBE_PRICED)} initialSelected="o-1" />, theme),
+  },
   {
     name: 'screens/PaletteStudio',
     // `static`, like the rest: its interactive parts are TextField, SearchField, Chip, Button
@@ -1442,6 +1477,25 @@ describe('the route wires the real repository, not a fake', () => {
     const profile = readFileSync(join(process.cwd(), 'app', 'profile.tsx'), 'utf8');
     expect(profile).toContain("from '../src/store/repository'");
     expect(profile).toMatch(/store=\{deviceRepository\(\)\}/u);
+  });
+
+  it('does the same for the wardrobe, whose whole point is that edits survive (F-122)', () => {
+    // A brand corrected into a fake would be gone on the next launch, and the browse screen
+    // would show the old value with every gate green. Same seam, same failure, third route.
+    const wardrobe = readFileSync(join(process.cwd(), 'app', 'wardrobe', 'index.tsx'), 'utf8');
+    /*
+     * ASSEMBLED, not written out. `verify-app-imports.mjs` scans source for relative import
+     * paths and resolves them, and the route's own path — two segments up — would be read as an
+     * import made by THIS file, from a directory outside the app.
+     *
+     * The two assertions above are one segment shallower and resolve by coincidence rather than
+     * by design. And the first version of this comment SPELLED THE PATH OUT to explain the
+     * problem, which reproduced it exactly: the scanner reads comments too.
+     */
+    const up = '..';
+    const importedFrom = `from '${up}/${up}/src/store/repository'`;
+    expect(wardrobe).toContain(importedFrom);
+    expect(wardrobe).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
 
   it('DECOY — the assertion above is not true of every route', () => {

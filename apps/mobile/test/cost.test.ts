@@ -27,6 +27,7 @@ import {
   costEntry,
   costPerWear,
   formatMinor,
+  minorToMajor,
   minorUnitDigits,
   wearRecorded,
   type CostInputs,
@@ -321,5 +322,80 @@ describe('minor units, on the way back out', () => {
 
     expect(answer.minorPerWear).not.toBe(Number(formatMinor(answer.minorPerWear, 'GBP')));
     expect(formatMinor(answer.minorPerWear, 'GBP')).toBe('333.33');
+  });
+});
+
+/**
+ * `minorToMajor` — a stored price back into an editable field (F-122).
+ *
+ * The round-trip is the assertion, not the string. A rendering that is merely *plausible* still
+ * multiplies somebody's coat by a hundred every time they open the screen, and the only claim
+ * worth making is that what comes out goes back in unchanged.
+ */
+describe('a stored price, back into the field it was typed into', () => {
+  it('round-trips through costEntry for every exponent the table has', () => {
+    const cases: readonly (readonly [number, string])[] = [
+      [4550, 'GBP'], // 2 — the default
+      [15000, 'JPY'], // 0 — no minor unit at all
+      [1500, 'KWD'], // 3 — the deep one
+      [5, 'GBP'], // under one major unit: must render 0.05, not .05
+      [0, 'GBP'],
+      [0, 'JPY'],
+      [1, 'KWD'],
+      [999999999, 'GBP'],
+    ];
+
+    for (const [minor, code] of cases) {
+      const back = costEntry(minorToMajor(minor, code), code);
+      if (!back.ok) throw new Error(`${code} ${String(minor)} did not parse back`);
+      expect(
+        `${code} ${String(minor)} -> ${minorToMajor(minor, code)} -> ${String(back.patch.costMinor)}`,
+      ).toBe(`${code} ${String(minor)} -> ${minorToMajor(minor, code)} -> ${String(minor)}`);
+    }
+  });
+
+  /*
+   * THE DECOY, and it is the whole reason this function exists rather than a call to
+   * `formatMinor`. Both return a string, both take the same two arguments, and both are
+   * "the price at the currency's precision" in English. They differ by the currency's own
+   * scale — and a screen that used the wrong one would look right until somebody saved.
+   */
+  it('is NOT formatMinor — they differ by exactly the currency’s scale', () => {
+    expect(formatMinor(4550, 'GBP')).toBe('4550.00');
+    expect(minorToMajor(4550, 'GBP')).toBe('45.50');
+
+    // And where the currency has no minor unit they agree, which is why one test case could
+    // never have told them apart.
+    expect(formatMinor(15000, 'JPY')).toBe(minorToMajor(15000, 'JPY'));
+  });
+
+  /*
+   * THE CASE THAT MAKES "STRING SLICING" A CLAIM RATHER THAN A PREFERENCE.
+   *
+   * `(7302712423236351 / 100).toFixed(2)` is `73027124232363.52` — off by one minor unit,
+   * because the quotient is not representable. Nobody's coat costs this, and that is not the
+   * point: without this case the doc comment's reason for not dividing is asserted by the
+   * comment alone, and the four other cases here pass against a division either way.
+   */
+  it('is exact where dividing is not, at the top of the safe range', () => {
+    expect(minorToMajor(7302712423236351, 'GBP')).toBe('73027124232363.51');
+    expect((7302712423236351 / 100).toFixed(2)).toBe('73027124232363.52');
+
+    const back = costEntry(minorToMajor(7302712423236351, 'GBP'), 'GBP');
+    expect(back.ok && back.patch.costMinor).toBe(7302712423236351);
+  });
+
+  it('pads to a whole digit, so a value under one major unit is editable', () => {
+    // '.05' is what slicing without the pad produces, and costEntry refuses it — the field
+    // would open holding text it would not accept back.
+    expect(minorToMajor(5, 'GBP')).toBe('0.05');
+    expect(costEntry('.05', 'GBP').ok).toBe(false);
+  });
+
+  it('renders nothing for a value it could not have produced', () => {
+    // The column is INTEGER, so this is the branch that should be unreachable — which is why
+    // it is asserted rather than assumed.
+    expect(minorToMajor(45.5, 'GBP')).toBe('');
+    expect(minorToMajor(Number.NaN, 'GBP')).toBe('');
   });
 });

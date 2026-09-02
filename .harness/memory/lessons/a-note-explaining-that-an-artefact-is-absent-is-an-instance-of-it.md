@@ -21,6 +21,21 @@ quoted the specifier, and the gate failed again on the next run.
 subset, so a different word was used. The note **contained that kanji**, and
 `verify-font-coverage.mjs` reported 441 required codepoints with one missing.
 
+**F-122.** `test/screens.test.tsx` asserts that the new wardrobe route imports the device
+repository. The route sits one directory deeper than the two routes already asserted, so its
+specifier has an extra ascent — and written as a literal, `verify-app-imports.mjs` read it as an
+import made by the *test* file, from a directory outside the app. The specifier was assembled
+from a variable. Then the **comment explaining the assembly spelled the path out**, and the gate
+failed again on the next run: same gate as F-026, same second failure, four months later.
+
+That is the part worth recording. This note existed, named the gate, and described the exact
+second failure — and it did not prevent it, because the shape only becomes visible once the
+first fix is already written. **The re-run is the mechanism; the note is not.**
+
+Also worth keeping from F-122: the two assertions this one joined resolve **by coincidence**.
+They name routes one level shallower, so their literal specifiers happen to point at a real
+directory. Nothing about them was more careful — the depth was.
+
 ## Why it keeps happening
 
 These gates read **source text**, and they are right to. A gate that parsed the AST and skipped
