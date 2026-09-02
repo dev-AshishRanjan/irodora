@@ -26,6 +26,7 @@ import {
   assertSubject,
   type ExportFile,
   type ExportSubject,
+  TOKEN_EXTENSION,
 } from './subject.js';
 
 /** RFC 4180: quote when the value contains a delimiter, a quote or a line break. */
@@ -215,6 +216,28 @@ export function toDesignTokens(subject: ExportSubject): ExportFile {
       $value: colour.hex,
       $type: 'color',
       $description: `${colour.name} — CIELAB (D65) ${colour.lab.map(num).join(' ')} · source ${colour.source}`,
+      /*
+       * THE STRUCTURED VALUES, BECAUSE `$description` IS PROSE (F-129).
+       *
+       * The description above is what the specification defines it as: a sentence for a person.
+       * Recovering a subject by PARSING that sentence would make its wording load-bearing, so a
+       * reword would silently change what an import produces — the reference-versus-mention
+       * mistake (F-127) in another format.
+       *
+       * `$extensions` is exactly what the specification reserves for data one tool needs and
+       * others should ignore, so the round trip FR-28 asks for costs no conformance. `lch` and
+       * `oklch` appear here and nowhere else in this format; without them the palette could not
+       * come back whole, however carefully the description were parsed.
+       */
+      $extensions: {
+        [TOKEN_EXTENSION]: {
+          name: colour.name,
+          lab: colour.lab,
+          lch: colour.lch,
+          oklch: colour.oklch,
+          source: colour.source,
+        },
+      },
     };
   }
 

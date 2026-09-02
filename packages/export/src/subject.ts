@@ -71,6 +71,18 @@ export interface ExportSubject {
   readonly deltas?: readonly ExportDelta[] | undefined;
 }
 
+/**
+ * The `$extensions` key the design-token format carries structured colour data under.
+ *
+ * Here rather than in a writer or a reader because it belongs to **the format**, and both ends
+ * have to agree on it: a writer that emitted one key while a reader looked for another would
+ * round-trip nothing, and each file would look correct on its own.
+ *
+ * A reverse-DNS name is what the specification asks for, so two tools writing extensions to the
+ * same token cannot collide.
+ */
+export const TOKEN_EXTENSION = 'com.irodora' as const;
+
 /** A written file, ready for whatever the platform does with bytes. */
 export interface ExportFile {
   /** Derived from the title and the format. **Never supplied by a caller** — see `filenameFor`. */

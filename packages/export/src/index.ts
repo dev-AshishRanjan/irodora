@@ -20,6 +20,7 @@ export {
   ExportError,
   filenameFor,
   slugify,
+  TOKEN_EXTENSION,
   type ExportColour,
   type ExportDelta,
   type ExportFile,
@@ -41,9 +42,13 @@ export {
   type AseFile,
 } from './ase.js';
 
-export { toPdf } from './pdf.js';
+export { toPdf, type PdfOptions } from './pdf.js';
 
-export { concat, latin1, utf8 } from './utf8.js';
+export { FontError, glyphFor, parseTrueType, pdfWidth, type TrueTypeFont } from './truetype.js';
+
+export { concat, fromUtf8, latin1, utf8 } from './utf8.js';
+
+export { fromDesignTokens, fromJson } from './import.js';
 
 /**
  * Every writer, in one list.

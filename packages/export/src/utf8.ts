@@ -89,3 +89,88 @@ export function concat(parts: readonly Uint8Array[]): Uint8Array {
   }
   return out;
 }
+
+/**
+ * A string from UTF-8 bytes — `utf8`'s inverse (F-129).
+ *
+ * `TextDecoder` is refused for the reason `TextEncoder` is, and the reason is at the top of this
+ * file: declaring a global asserts the runtime has something rather than checking it.
+ *
+ * ## Strict, and that is the point
+ *
+ * It **throws** on a malformed sequence rather than substituting `U+FFFD`. The encoder
+ * substitutes because it is handed a JavaScript string, where a lone surrogate is a real thing
+ * that has to become *something*; this is handed a file, where a malformed byte means the file
+ * is not what it claims to be. An importer that silently replaced bad bytes would hand back a
+ * subject nobody wrote, and `fromJson` would then refuse it for a reason that names the wrong
+ * field.
+ *
+ * The three malformed shapes it names are the ones a real file has: a truncated sequence, a
+ * continuation byte that is not one, and an **overlong** encoding — the last being the one a
+ * naive decoder accepts, because it decodes to a valid code point by arithmetic and is
+ * forbidden precisely so that two byte sequences cannot mean one character.
+ */
+export function fromUtf8(bytes: Uint8Array): string {
+  let out = '';
+
+  for (let i = 0; i < bytes.length;) {
+    const first = bytes[i] ?? 0;
+    let code: number;
+    let width: number;
+    let lowest: number;
+
+    if (first < 0x80) {
+      code = first;
+      width = 1;
+      lowest = 0;
+    } else if ((first & 0xe0) === 0xc0) {
+      code = first & 0x1f;
+      width = 2;
+      lowest = 0x80;
+    } else if ((first & 0xf0) === 0xe0) {
+      code = first & 0x0f;
+      width = 3;
+      lowest = 0x800;
+    } else if ((first & 0xf8) === 0xf0) {
+      code = first & 0x07;
+      width = 4;
+      lowest = 0x10000;
+    } else {
+      throw new RangeError(`utf8: byte ${String(i)} is 0x${first.toString(16)}, not a lead byte`);
+    }
+
+    if (i + width > bytes.length)
+      throw new RangeError(`utf8: a ${String(width)}-byte sequence at ${String(i)} is truncated`);
+
+    for (let k = 1; k < width; k += 1) {
+      const next = bytes[i + k] ?? 0;
+      if ((next & 0xc0) !== 0x80)
+        throw new RangeError(
+          `utf8: byte ${String(i + k)} is 0x${next.toString(16)}, not a continuation`,
+        );
+      code = (code << 6) | (next & 0x3f);
+    }
+
+    // OVERLONG. `0xc0 0x80` decodes to U+0000 by arithmetic and is forbidden, because a decoder
+    // that accepts it lets one character be written two ways — which is how a filter checking
+    // for a byte sequence gets walked past.
+    if (code < lowest)
+      throw new RangeError(
+        `utf8: an overlong encoding at ${String(i)} — U+${code.toString(16).toUpperCase()} in ` +
+          `${String(width)} bytes`,
+      );
+    if (code >= 0xd800 && code <= 0xdfff)
+      throw new RangeError(
+        `utf8: a surrogate (U+${code.toString(16).toUpperCase()}) at ${String(i)}`,
+      );
+    if (code > 0x10ffff)
+      throw new RangeError(
+        `utf8: U+${code.toString(16).toUpperCase()} at ${String(i)} is beyond Unicode`,
+      );
+
+    out += String.fromCodePoint(code);
+    i += width;
+  }
+
+  return out;
+}

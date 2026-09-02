@@ -3635,7 +3635,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "in_progress",
       "blockedBy": [
         "F-056"
       ],
@@ -3650,7 +3650,8 @@
         "a11y",
         "e2e"
       ],
-      "notes": "FILED BY F-056, WHICH BUILT THE FORMATS AND DELIBERATELY NOT THE SURFACE. `service` there is `packages` and its verification list is `state, test` — no a11y, no e2e — and F-035 already owns the export JOURNEY (writing to a file the person chose) with the attestation for it. Wiring six writers to a screen is a mobile feature. THE PDF HALF IS ADR-0080's RECORDED COST. The report is Latin-1 under base-14 Helvetica, so no kanji, no kana, and none of the nine corpus romaji carrying macrons can appear in one; a character it cannot draw is REFUSED BY NAME rather than dropped. Fixing that means a TrueType parser, a cmap walk, a subsetter and a ToUnicode CMap — a font pipeline, which inside an export-formats feature would have been scope nobody reviewed against a requirement. THE IMPORT HALF IS FR-28's SECOND CLAUSE, and it waited for this feature on purpose: an importer written before its exporter has no format to agree with. Now there is one, and the round-trip is assertable. NOT A REASON TO DELAY THE SURFACE: five of the six formats carry every character today, so a person can export a Japanese-titled palette as JSON, CSV, CSS or tokens the moment a screen offers it. FILED AS F-129 AND NOT F-128, which was already taken by a done R4 feature — the id was checked against the list rather than counted from the last one this session touched."
+      "notes": "FILED BY F-056, WHICH BUILT THE FORMATS AND DELIBERATELY NOT THE SURFACE. `service` there is `packages` and its verification list is `state, test` — no a11y, no e2e — and F-035 already owns the export JOURNEY (writing to a file the person chose) with the attestation for it. Wiring six writers to a screen is a mobile feature. THE PDF HALF IS ADR-0080's RECORDED COST. The report is Latin-1 under base-14 Helvetica, so no kanji, no kana, and none of the nine corpus romaji carrying macrons can appear in one; a character it cannot draw is REFUSED BY NAME rather than dropped. Fixing that means a TrueType parser, a cmap walk, a subsetter and a ToUnicode CMap — a font pipeline, which inside an export-formats feature would have been scope nobody reviewed against a requirement. THE IMPORT HALF IS FR-28's SECOND CLAUSE, and it waited for this feature on purpose: an importer written before its exporter has no format to agree with. Now there is one, and the round-trip is assertable. NOT A REASON TO DELAY THE SURFACE: five of the six formats carry every character today, so a person can export a Japanese-titled palette as JSON, CSV, CSS or tokens the moment a screen offers it. FILED AS F-129 AND NOT F-128, which was already taken by a done R4 feature — the id was checked against the list rather than counted from the last one this session touched.",
+      "plan": "plans/F-129-exports-reach-a-screen.md"
     },
     {
       "id": "F-130",
