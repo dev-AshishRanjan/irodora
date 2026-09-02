@@ -8,6 +8,85 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-112 DONE · the rules join the scan, and gate 0 caught me skipping the plan
+
+The change is **one entry in a zone list**. The vocabulary, the `retired-ok` marker, the
+historical-ADR filter and the failure reporting are all F-107's; what this adds is that they
+now reach the files a rule is read from.
+
+### I skipped the plan, and the state gate caught it
+
+The zone was widened and all six findings corrected **before any plan file existed**.
+Plan-before-code is a golden rule and gate 0 enforces it — it refused, naming the missing file.
+
+The plan was then written with the slip recorded in it rather than backdated: for the widening
+and the corrections it is a **description**, not a plan, which is precisely the distinction
+`plan-feature` draws.
+
+**Why it felt free is the part worth keeping.** This feature was fully specified in its own
+filing notes — the zones, the eleven findings, the file and line of each — so there seemed to be
+nothing left to decide. There was: the proof approach and the effects had not been thought
+about, and those are the parts a plan is actually for. A feature that arrives fully specified is
+exactly the one where the plan gets skipped.
+
+### Six findings, five corrected, one marked
+
+The ratio is the point. A marker is for a sentence naming the retired thing **in order to deny
+it**; everything else is rot to rewrite.
+
+| Finding | |
+|---|---|
+| `git.md` — commit the generated `openapi.json` | **corrected**: there is none. The generated artefacts that *do* need reviewing are the bundles, the tokens and the font subset |
+| `testing.md` — *"assert axe on every route"* | **corrected**: `axe` is a browser tool, there is no browser, and accessibility is asserted by the conformance suite gate 8 runs |
+| `privacy.md` — a consent table with Cloud sync, Analytics, Marketing email | **corrected**: each needed a server and an account to be about. **A consent row for a capability the product does not have describes a choice nobody is being offered** |
+| `typescript.md` — Zod generating an OpenAPI document, citing superseded ADR-0012 | **corrected**: two uses, not three. `@irodora/contracts` already said so in its own header — this file was the copy that had not moved |
+| `privacy.md` — *"our server could decrypt synced wardrobe images. **There is no server.**"* | **marked**: rewriting it to avoid the word would delete the history that explains why the rule outlived its original reason |
+
+**The marker must be on the same line as the term.** The scan splits on newlines, so a marker on
+the line below exempts the line below. Found by running it, not by reading the script.
+
+### The proof, and the decoy a new zone needs
+
+Five plants in a rules file, one per term, plus two guards. **The decoy is the one that matters
+here:** a zone whose path does not resolve finds nothing and would pass every case by having no
+findings at all — so an unplanted rules file must leave the gate green while all five planted
+terms fire, and the marker must be exempt there too.
+
+Sixteen cases now, all passing. And the middle state was observed for real: the gate was watched
+failing on six genuine findings between adding the zone and fixing them.
+
+### Also corrected, and not a finding
+
+`privacy-design.md` §8 described sub-processors, notification before adding one, and keeping
+EU/UK data in-region. **The vocabulary cannot see any of it** — *sub-processor*, *transfer* and
+*in-region* are not terms, and adding them to catch one paragraph would put them in front of
+every acceptance criterion in the repository.
+
+F-107 found it by reading and left it, recording it in *this* feature's filing notes. Leaving it
+a third time is what golden rule 5 exists to prevent. It now says there are none and why, rather
+than being an absent section whose meaning somebody has to infer.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 5 build | **PASS** |
+| `verify-retired-docs-proof.mjs` | **PASS** — 16 cases |
+
+**Not run, as irrelevant:** `a11y`, `contrast`, `content`, `e2e`, `color-golden`, `cvd`, `perf`
+— no source, no content and no screen changed.
+
+### Deliberately not done
+
+Adding terms to the vocabulary — the list is shared with the criteria scan, and a term added to
+catch one paragraph is evaluated against every criterion in the repository. Touching any other
+rules file. And changing any rule: every rewrite describes the surface that exists in place of
+one that does not, and none of them changes what is required.
+
+---
+
 ## 2026-09-01 — F-111 DONE · the middle state was run on purpose
 
 `verify-token-reach.mjs`'s own header named F-111 as the feature that would do this, so the work

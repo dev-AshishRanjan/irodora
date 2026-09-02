@@ -86,11 +86,14 @@ add it.
 
 | Control | Default |
 |---|---|
-| Cloud sync | **Off** |
-| Analytics | Off in EU/UK; opt-out elsewhere |
-| Image upload | Explicit, per item |
+| Camera access | Explicit, requested in context at the moment of use |
+| Photo library access | Explicit, per pick |
 | Photo-assisted profile | Explicit, per use |
-| Marketing email | Off, double opt-in |
+
+Three, and the list is short because there is nothing else to consent to. Analytics, email
+and a sync toggle each needed a server and an account to be about, and there is neither
+(ADR-0051). A consent row for a capability the product does not have is worse than no row:
+it describes a choice nobody is being offered.
 
 **The product is fully functional with every one of these off.** A privacy control that
 degrades the product into uselessness is not a control; it is a fee.
@@ -111,7 +114,7 @@ it, not the job's exit code.
 ## Language
 
 **We do not say "end-to-end encrypted."** The reason changed with ADR-0051 and the rule did
-not: it used to be that our server could decrypt synced wardrobe images. **There is no server.**
+not: it used to be that our server could decrypt synced wardrobe images. **There is no server.** <!-- retired-ok: names the sync that was removed in order to say it is gone, which is the whole point of the paragraph; rewriting the sentence to avoid the word would delete the history that explains why the rule outlived its original reason -->
 The phrase is still wrong, now for a more basic reason — end-to-end encryption describes data
 protected between two ends, and there is one end. Nothing leaves the device, so there is no
 channel to secure and nothing to be "end to end" about.

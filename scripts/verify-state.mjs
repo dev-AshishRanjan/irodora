@@ -423,7 +423,17 @@ if (featureList && retiredRaw) {
 
     let docsScanned = 0;
     let docsSkipped = 0;
-    for (const zone of ['docs/architecture', 'docs/adr']) {
+    /*
+     * `.harness/rules` IS IN THE LIST BECAUSE A RULE IS READ AS BINDING (F-112).
+     *
+     * F-107 added the two `docs` zones and fixed `security.md` BY HAND, leaving no guard
+     * behind it — its criteria named those two zones and the definition of done says exactly,
+     * no more and no less. The propagation this closes is not hypothetical: F-042's fourth
+     * acceptance criterion was written FROM `security.md`, so rot in a rules file had already
+     * reached a scope file once, and the widened vocabulary caught that criterion the moment
+     * it existed.
+     */
+    for (const zone of ['docs/architecture', 'docs/adr', '.harness/rules']) {
       for (const file of walk(join(ROOT, zone), (p) => p.endsWith('.md'))) {
         const text = readText(file);
         if (text === null) continue;

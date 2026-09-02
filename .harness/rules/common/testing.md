@@ -111,8 +111,13 @@ tests/color-lab/             device measurement harness
 
 ## e2e
 
-- **Real browser, real server.** Not jsdom for anything claiming to be e2e.
-- **Assert axe** on every route.
+- **A real device or emulator.** Not a render tree for anything claiming to be e2e — the
+  whole point is the part a render assertion cannot reach: navigation between routes, a real
+  gesture, a cold start, and whether a socket opened.
+- **Accessibility is asserted by the conformance suite**, not by a browser tool. Every
+  component and every screen is a subject in `packages/ui/src/testing/conformance.ts`, in both
+  themes and both locales, and gate 8 runs it. A route-level sweep would be a second, weaker
+  check of the same thing.
 - **Assert the network**: a Lens scan must transmit no image bytes (NFR-12).
 - **`e2e-full` is serialised, zero retries.** A flaky full-stack gate is a lie — it reports
   a state of the world that it did not observe.

@@ -190,13 +190,21 @@ personalisation, no advertising, no profiling.
 
 ## 8. Sub-processors and transfers
 
-Every sub-processor is listed in
-[`../../compliance/data-governance.md`](../../compliance/data-governance.md) with its
-purpose, location and safeguard. Users are notified before a new one processes their data.
+**There are none, and that is the whole section.**
 
-EU/UK data can be kept in-region — a direct benefit of the deployment portability in
-[ADR-0016](../../adr/0016-deployment-profiles-local-vps-cloud.md). Region is a deployment
-choice, not an architectural rewrite.
+A sub-processor processes personal data on our behalf, and a transfer moves it across a
+border. Both need the data to leave the device, and nothing does
+([ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)). There
+is no server to send it to, no account to attach it to, and no analytics endpoint.
+
+So there is no sub-processor list to keep current, no notice to give before adding one, and no
+in-region question to answer — the data is in exactly one region, which is wherever the phone
+is. This is the section that says so, rather than an absent section somebody has to infer the
+meaning of.
+
+**What would change it:** any feature that transmits anything. There is none planned, and the
+first one would need this section rewritten and a data-governance record before it shipped,
+not after.
 
 ---
 

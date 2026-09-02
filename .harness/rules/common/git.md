@@ -87,7 +87,10 @@ features · a dependency bump with anything else.
 - `.claude/` except `settings.local.json`.
 - `content/` schemas and entries.
 - Lockfiles.
-- The generated `openapi.json` — contract diffs must be visible in review.
+- The generated bundles — the corpus, the rules and the taxonomy modules under
+  `apps/mobile/src/*/generated/`, the design tokens, and the Noto subset. A generated file that
+  is committed is one a reviewer can diff; one that is built at install time is a change nobody
+  sees. Every one of them has a `--check` mode that a gate runs.
 
 ---
 

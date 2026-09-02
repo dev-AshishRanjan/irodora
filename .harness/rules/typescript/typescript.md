@@ -59,9 +59,15 @@ construct, not merely discouraged
 
 ## Schemas are the source of truth
 
-Zod schemas in `@irodora/contracts` generate runtime validation, TypeScript types, and the
-OpenAPI document. **One definition, three uses**, so they cannot drift
-([ADR-0012](../../../docs/adr/0012-backend-fastify-zod-openapi.md)).
+Zod schemas in `@irodora/contracts` generate runtime validation and TypeScript types.
+**One definition, two uses**, so they cannot drift.
+
+There used to be a third — a JSON Schema feeding a generated API document — and it went with
+the server tier ([ADR-0051](../../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)).
+**The package did not become unnecessary when the network did:** a local-first app still has
+boundaries where unvalidated data arrives, and they are the ones most likely to be trusted by
+accident because they feel internal — a SQLite row written by an older build, an imported
+backup a user edited by hand, the corpus bundle, the numbers a native module hands back.
 
 ```ts
 export const colorInputSchema = z.object({ /* … */ });

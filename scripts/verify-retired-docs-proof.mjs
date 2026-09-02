@@ -41,6 +41,15 @@ const flagged = (out, file, term) =>
     .some((l) => l.includes(file) && l.includes('names') && (!term || l.includes(term)));
 
 const PROOF = `${ROOT}/docs/architecture/__proof__.md`;
+/**
+ * The same plant, in a rules file (F-112).
+ *
+ * A rule is read as BINDING, and the propagation is on record: F-042’s fourth acceptance
+ * criterion was written FROM `security.md`, so rot in a rules file had already reached a
+ * scope file once. The zone was watched failing on six real findings when it was added —
+ * this is what keeps it watched after they are fixed.
+ */
+const RULES_PROOF = `${ROOT}/.harness/rules/common/__proof__.md`;
 const SUPERSEDED = `${ROOT}/docs/adr/0012-backend-fastify-zod-openapi.md`;
 
 const cases = [
@@ -54,6 +63,7 @@ const cases = [
 let failures = 0;
 const clean = () => {
   if (existsSync(PROOF)) unlinkSync(PROOF);
+  if (existsSync(RULES_PROOF)) unlinkSync(RULES_PROOF);
 };
 
 clean();
@@ -95,6 +105,41 @@ if (!accFired) failures += 1;
 
 writeFileSync(SUPERSEDED, original);
 
+// --- The rules zone (F-112). Every term, in a file under .harness/rules.
+for (const [term, sentence] of cases) {
+  writeFileSync(RULES_PROOF, `# Proof\n\n${sentence}\n`);
+  const out = run();
+  clean();
+  const fired = flagged(out, '__proof__.md', term);
+  console.log(`${fired ? `${GREEN}RED  ` : `${RED}MISS `}${OFF} .harness/rules — ${term}`);
+  if (!fired) failures += 1;
+}
+
+/*
+ * THE DECOY, and it is the half that matters for a new zone. A zone whose path does not
+ * resolve finds nothing and passes every case above by having no findings at all — so an
+ * unplanted rules file must leave the gate green, and the cases above must have fired.
+ */
+writeFileSync(RULES_PROOF, '# Proof\n\nA rules file that names no retired surface.\n');
+const cleanRules = run();
+clean();
+console.log(
+  `${cleanRules === '' ? `${GREEN}GREEN` : `${RED}FIRED`}${OFF} an unplanted rules file leaves the gate green`,
+);
+if (cleanRules !== '') failures += 1;
+
+// The marker, in the rules zone specifically — the escape hatch has to reach there too.
+writeFileSync(
+  RULES_PROOF,
+  '# Proof\n\nThe API process never touches an image. <!-- retired-ok: deliberate, for the proof -->\n',
+);
+const markedRules = run();
+clean();
+console.log(
+  `${flagged(markedRules, '__proof__.md') ? `${RED}FIRED` : `${GREEN}GREEN`}${OFF} a marked line in a RULES file is exempt`,
+);
+if (flagged(markedRules, '__proof__.md')) failures += 1;
+
 // --- The marker still works in the new zones.
 writeFileSync(
   PROOF,
@@ -116,6 +161,6 @@ console.log(
 if (!restored) failures += 1;
 
 console.log(
-  `\n${failures === 0 ? `${GREEN}Proof passed.` : `${RED}Proof FAILED — ${String(failures)} case(s).`}${OFF} ${String(cases.length + 4)} case(s).`,
+  `\n${failures === 0 ? `${GREEN}Proof passed.` : `${RED}Proof FAILED — ${String(failures)} case(s).`}${OFF} ${String(cases.length * 2 + 6)} case(s).`,
 );
 process.exit(failures === 0 ? 0 : 1);
