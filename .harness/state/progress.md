@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-065 DONE · the content's own provenance decided the design
+
+Occasion was already built — F-029 shipped `OCCASIONS`, `ruleSetFor` and five published profiles
+with a rationale on every weight. **Weather existed nowhere**: the word appears in this feature's
+acceptance and in no requirement, no content file and no source file.
+
+### The design was decided by something already written down
+
+`weights.2026.08.2.json`'s own provenance says:
+
+> *"an occasion is **a different set of the same numbers rather than a modifier applied
+> afterwards**"*
+
+So weather as a multiplier over `occasions[].factors` would have made the published content
+contradict its own stated rule, and publishing every *(occasion × weather)* pair is twenty
+profiles nobody can keep coherent.
+
+**Weather weights the six outfit components instead.** The two dimensions compose by being about
+different questions — occasion owns *does this colour suit this person*, weather owns *how good
+is this outfit* — rather than by fighting over one array. It is also the more defensible claim:
+whether rain makes a colour read as warmer is an assertion nobody can support; whether a wet day
+should weight versatility differently is a preference an editor can state and a reader can argue
+with.
+
+### Criterion 2 is structural, not numerical
+
+*"The recommendation is unchanged and complete without it."* So `outfitWeightsFor` with no
+weather **calls `outfitWeights` and performs no arithmetic at all** — not a neutral profile
+applied and renormalised, which is *approximately* identity. F-046 already set the standard when
+it added preferences to `scoreOutfit`, and this feature's criterion is that sentence promoted to
+an acceptance criterion.
+
+Every movement between weather profiles is a **transfer** between two components, so each block
+sums to one exactly. And `cvdAccessibility` never moves in any of the four: it is an
+accessibility floor rather than a preference, and a weather that lowered it would be this product
+weighting a person out of its own answer. Asserted, so the commitment is checked.
+
+`2026.08.3` supersedes `2026.08.2` and **changes nothing that was in it** — a test compares the
+two files field by field and requires that only `versionId`, `publishedAt`, `provenance` and the
+new block differ. "Supersedes and changes nothing" is a sentence anybody can write into a file.
+
+### The first draft invented weights without reading the block it claimed to match
+
+It set `cvdAccessibility: 0.05` and `harmony: 0.3`, and declared `mild` identical to the base
+outfit block. The base is harmony 0.2, personalFit 0.3, contrast 0.15, corpusAffinity 0.15,
+versatility 0.1, cvdAccessibility 0.1. **Two tests caught it.**
+
+Corrected in place rather than superseded by a `2026.08.4`: immutability protects a version the
+repository has *published*, not a draft that has never been committed.
+
+### The app had a second implementation of `rationaleCount`, and it drifted immediately
+
+`rules.ts` added the occasion factors to the outfit block itself. The moment the engine learned
+to count a third block, the generator wrote **50** and the app recomputed **26** — and *fourteen
+mobile tests failed at once*, every suite that reaches `ruleSet()`.
+
+It now calls the engine's `rationaleCount`, so *"the two came from different generations"* is the
+only thing that check can catch — which is what it is for.
+
+### Five guards fired, and each was resolved rather than worked around
+
+| Guard | What it caught |
+|---|---|
+| `verify-content.mjs` | the ledger digest is **canonical over the parsed object**, not over the file's bytes |
+| the same | the rationale count had to learn about weather, or a whole profile could be added or dropped without the number moving |
+| `generate-rules-bundle.mjs --check` | the app's generated module was stale, which it was |
+| the claims lint | F-064's note **quoted** a banned construction in order to explain it — `en.ts` records hitting the same wall in its own header, and the resolution is the same: name the rule, leave the phrases in `claims.json` |
+| `verify-cache-scope.mjs` | a test read `content/rules` through a **variable** filename. The scan drops any `join` segment that is not a literal and fails closed — its own header says so — and `turbo.json` covers the files under that directory rather than the directory itself. It was right that it could not otherwise tell this suite re-runs when the content changes |
+
+Three mutations run, three failures: ignoring the weather argument — 3 cases including the decoy;
+falling back to the default instead of throwing — 1; accepting a partial weather block — 1.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state | **PASS** — 18 checks |
+| 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — recommendation **139**, mobile 516 |
+| 5 build · 8 a11y · 9 contrast · 11 content · security:keys | **PASS** |
+
+**Not run:** `e2e` — no journey, and not in this feature's list. `color-golden`, `cvd` — no
+colour maths. `perf` — no budget claimed.
+
+### Filed rather than fixed: F-130
+
+**FR-34 names nine occasions and the content publishes five.** `date`, `interview`, `travel`,
+`street` and `minimal` have never existed, and `OCCASIONS` lists only the five, so nothing
+anywhere reports the gap. Adding them is editorial work against a requirement this feature does
+not claim — twenty weights and twenty rationales — and the more important half is making
+`OCCASIONS` the full nine so the list and the requirement cannot drift apart again.
+
+### Deliberately not built
+
+Any surface. A forecast, a location or a network call — there is no server (ADR-0051) and
+location is never requested, which is exactly why the input is **stated rather than fetched**.
+And weather affecting the four colour factors, which is the modifier design the content's own
+provenance rejects.
+
+---
+
 ## 2026-09-01 — F-064 DONE · median cut cannot answer this requirement, and the corpus was blind twice
 
 ### First, F-091's blocker was re-checked and half of it is gone

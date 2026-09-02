@@ -30,7 +30,12 @@
  * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
  */
 
-import { parseWeightContent, ruleSetFor, type RuleSet } from '@irodora/recommendation';
+import {
+  parseWeightContent,
+  rationaleCount,
+  ruleSetFor,
+  type RuleSet,
+} from '@irodora/recommendation';
 import { canonicalize } from '@irodora/corpus';
 import { sha256 } from './corpus';
 import {
@@ -76,12 +81,21 @@ export function ruleSet(): RuleSet {
    * from two different generations — the module would then verify perfectly against its own
    * stale digest.
    */
-  const rationales = content.occasions.reduce((n, o) => n + o.factors.length, 0);
-  const outfit = content.outfit === null ? 0 : Object.keys(content.outfit).length;
-  if (rationales + outfit !== WEIGHTS_RATIONALE_COUNT)
+  /*
+   * `rationaleCount` IS THE ENGINE'S, NOT A SUM WRITTEN HERE (F-065).
+   *
+   * This file used to add the occasion factors to the outfit block itself. That is a second
+   * implementation of one rule, and it drifted the moment the engine learned to count a third
+   * block: the generator wrote 50 and this recomputed 26, and every screen suite that reaches
+   * `ruleSet()` failed at once. The generator and this check now ask the same function, so
+   * "the two came from different generations" is the only thing this can catch — which is what
+   * it is for.
+   */
+  const rationales = rationaleCount(content);
+  if (rationales !== WEIGHTS_RATIONALE_COUNT)
     throw new Error(
       `weights: the generated module records ${String(WEIGHTS_RATIONALE_COUNT)} rationale(s) ` +
-        `and the file carries ${String(rationales + outfit)}. The two came from different ` +
+        `and the file carries ${String(rationales)}. The two came from different ` +
         'generations — run `node scripts/generate-rules-bundle.mjs`.',
     );
 

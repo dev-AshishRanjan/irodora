@@ -1,0 +1,288 @@
+{
+  "versionId": "2026.08.3",
+  "publishedAt": "2026-09-01",
+  "provenance": {
+    "source": "Irodora editorial curation — recommendation weights, 2026",
+    "sourceId": "IRO-ED-003",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial judgement, and nothing here was measured. 2026.08.3 SUPERSEDES 2026.08.2 AND CHANGES NOTHING THAT WAS IN IT: every occasion, factor, weight, rationale, falloff, pole and the whole outfit block is byte-identical, and a test in @irodora/recommendation compares the two files to assert that rather than trusting this sentence. What is added is a `weather` block — four profiles over the SIX OUTFIT COMPONENTS, not over the four colour factors. That placement is this file’s own rule applied: 2026.08.2 says an occasion is \"a different set of the same numbers rather than a modifier applied afterwards\", so a weather multiplier over the factor weights would make this content contradict itself. Occasion owns whether a colour suits a person; weather owns how good an outfit is. They compose by being about different things rather than by fighting over one array. NO WEATHER WEIGHT HERE IS SUPPORTED BY A STUDY, and the rationales say what the reasoning was rather than what was observed. The reasoning is mostly about HOW MUCH GARMENT IS VISIBLE: cold means layers, so more pairs of colours are in view at once and harmony rises to meet personal fit; hot means fewer pieces, so each one is a larger share of what anybody sees and personal fit takes what harmony gives up. Every movement is a transfer between two components, never a change to the total. Wet is the profile that concedes to practicality, and versatility is the only weight this file ever doubles. CVD ACCESSIBILITY IS HELD AT THE BASE WEIGHT IN ALL FOUR AND WILL NOT BE REDUCED BY ANY WEATHER: it is an accessibility floor rather than a preference, and a weather profile that lowered it would be this product weighting a person out of its own answer. MILD IS PUBLISHED IDENTICAL TO THE BASE OUTFIT BLOCK ON PURPOSE — it is what makes the other three readable as departures from something rather than as four unrelated sets.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-01",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-01",
+    "reviewIndependence": "self",
+    "editorialNotes": "Reviewed by its own author (ADR-0060, OQ-5). What a second editor would most likely argue with: `wet` reduces personalFit, and a case can be made that rain is exactly when somebody wants the one colour that reliably suits them rather than the one that goes with everything. The counter-argument, and the reason it is written as it is, is that the wet profile is about what gets worn at all — but the disagreement is real and this note exists so it can be had."
+  },
+  "falloff": {
+    "lightness": 0.25,
+    "chroma": 0.12
+  },
+  "poles": {
+    "warm": 60,
+    "cool": 240
+  },
+  "occasions": [
+    {
+      "occasion": "default",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.35,
+          "rationale": "The heaviest of the four because it is the dimension a profile establishes most directly: three forced choices on one axis, each isolating hue with lightness and chroma held constant. It is also the factor a person can least easily judge for themselves, which is what makes it worth stating."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.3,
+          "rationale": "Close behind temperature. A lightness range is derived from the swatches somebody chose rather than asked about directly, so it is one inference further from the person — but it constrains the large areas of an outfit, which is where a mismatch is most visible."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.2,
+          "rationale": "Lower because tolerance for chroma varies most within a single person: the same wearer accepts far more of it in a scarf than in a coat. Weighting it as heavily as lightness would make the engine refuse colours that work in small areas."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.15,
+          "rationale": "The lightest weight, because it is the factor established with the least direct evidence — the guided flow infers it from three paired comparisons, and the photo path cannot establish it at all and abstains. A weight is not the place to compensate for that; the per-dimension confidence already does."
+        }
+      ]
+    },
+    {
+      "occasion": "office",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.25,
+          "rationale": "Reduced from default. Office dress leans on a narrow, mostly neutral range where temperature differences are small by construction, so weighting it heavily would separate colours that read as interchangeable in the room."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.3,
+          "rationale": "Held at default. Lightness is what distinguishes one neutral from another once chroma is low, so it carries more of the decision here than it does elsewhere even at the same number."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.15,
+          "rationale": "Reduced, and deliberately not to zero. Office palettes are low-chroma, so the axis discriminates less — but a strong colour is still a real choice a person can make, and a zero weight would stop the engine having any opinion about it."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.3,
+          "rationale": "Doubled from default, and the largest single move in this file. When chroma and temperature are both compressed, contrast is most of what remains to distinguish one office outfit from another."
+        }
+      ]
+    },
+    {
+      "occasion": "casual",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.4,
+          "rationale": "Raised. Casual dress has the widest colour range of any context here, so temperature is doing the most work separating what suits a person from what merely fits the occasion."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.25,
+          "rationale": "Slightly reduced. Casual outfits tolerate a wider lightness spread than office or formal dress, so a colour outside the range is a weaker signal than it is elsewhere."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.25,
+          "rationale": "Raised from default. This is the context where a saturated colour is most likely to be worn as a large area rather than an accent, which is exactly when chroma tolerance stops being a detail."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.1,
+          "rationale": "The lowest weight in the file. Casual dress has no convention about separation between pieces, so a preference expressed here says more about the person than about whether the outfit works."
+        }
+      ]
+    },
+    {
+      "occasion": "formal",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.2,
+          "rationale": "The lowest temperature weight here. Formal palettes are narrow and dark, and within that range the warm-cool distinction is small enough that weighting it heavily would produce confident answers about differences nobody sees."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.35,
+          "rationale": "The heaviest factor for this occasion. Formal dress is largely a question of how dark, and a colour outside the range is the most visible way to be wrong in it."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.1,
+          "rationale": "The lowest chroma weight in the file. Formal palettes are near-neutral by convention, so the axis has very little range to discriminate over and a high weight would amplify noise."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.35,
+          "rationale": "Tied for heaviest, for the same reason as the office profile and more so: when both chroma and temperature are compressed, the separation between pieces is most of what is left to judge."
+        }
+      ]
+    },
+    {
+      "occasion": "japanese-inspired",
+      "factors": [
+        {
+          "factor": "temperature",
+          "weight": 0.3,
+          "rationale": "Slightly below default. This corpus is roughly balanced between warm earths and cool indigos, so temperature separates its entries well — but the context is defined by restraint rather than by warmth, which is what the chroma weight expresses."
+        },
+        {
+          "factor": "lightness",
+          "weight": 0.25,
+          "rationale": "Reduced. The traditional pairings this context draws on span a wide lightness range — 藍 against 生成り is most of the axis — so a narrow personal range is a weaker constraint here than elsewhere."
+        },
+        {
+          "factor": "chroma",
+          "weight": 0.35,
+          "rationale": "The heaviest chroma weight in the file, and the one that defines this profile. The restraint that characterises these palettes is a chroma property before it is anything else, so a colour outside the tolerance is the clearest way to be wrong in this context."
+        },
+        {
+          "factor": "contrast",
+          "weight": 0.1,
+          "rationale": "Low. These pairings use both high contrast and near-tonal combinations freely, so a stated preference is a fact about the person rather than about the context, and the engine should weight it accordingly."
+        }
+      ]
+    }
+  ],
+  "outfit": {
+    "harmony": {
+      "weight": 0.2,
+      "rationale": "Second heaviest. Whether the colours of an outfit relate to each other is the question an onlooker answers first, and it is the one an unaided eye is worst at predicting from the pieces separately."
+    },
+    "personalFit": {
+      "weight": 0.3,
+      "rationale": "The heaviest of the six, and the only component resting on something the person told us directly — twelve forced choices, or a reading they confirmed. Every other component is a property of the clothes."
+    },
+    "contrast": {
+      "weight": 0.15,
+      "rationale": "Middling. A contrast preference is real but coarse: three values, established with the least direct evidence of the four colour dimensions, and the photo path cannot establish it at all."
+    },
+    "corpusAffinity": {
+      "weight": 0.15,
+      "rationale": "Deliberately equal to contrast rather than above it. This measures closeness to a curated corpus of Japanese colours — a real distance in dE00 — and NOT whether an outfit is beautiful or authentic. A heavier weight would let a proximity measure dominate an aesthetic question it cannot answer."
+    },
+    "versatility": {
+      "weight": 0.1,
+      "rationale": "Low, because it answers a question about a wardrobe rather than about this outfit. A one-off combination that works is not worse for being hard to repeat, and weighting it heavily would push every recommendation toward neutrals."
+    },
+    "cvdAccessibility": {
+      "weight": 0.1,
+      "rationale": "Low as a WEIGHT and not low in importance — this is the one component computed from a published model rather than from a convention, and F-032 is where a failing separation becomes a flag and an alternative rather than ten points off a score. Burying it in an overall is exactly what golden rule 13 warns against."
+    }
+  },
+  "weather": {
+    "mild": {
+      "harmony": {
+        "weight": 0.2,
+        "rationale": "The base outfit weighting, unchanged. Mild is the state in which no weather argument applies, and publishing it identical to the base block is what makes the other three legible as departures from something rather than as four unrelated sets."
+      },
+      "personalFit": {
+        "weight": 0.3,
+        "rationale": "Unchanged from the base block. Personal fit is the only component resting on something the person told us directly, and nothing about mild weather makes that matter more or less."
+      },
+      "contrast": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Whatever the weather, the differences between the pieces read the same way once somebody is in a room."
+      },
+      "corpusAffinity": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Proximity to the curated corpus is a claim about the colours and not about the day."
+      },
+      "versatility": {
+        "weight": 0.1,
+        "rationale": "Unchanged. Whether a combination repeats across a wardrobe is a question about the wardrobe rather than about the day."
+      },
+      "cvdAccessibility": {
+        "weight": 0.1,
+        "rationale": "Held at the base weight, and deliberately never reduced in any weather. Separation for colour vision is an accessibility floor rather than a preference, and a weather profile that lowered it would be this product weighting a person out of its own answer."
+      }
+    },
+    "hot": {
+      "harmony": {
+        "weight": 0.18,
+        "rationale": "Slightly reduced. Hot weather narrows what is worn to fewer, lighter pieces, so there are fewer relationships for harmony to be about — not because harmony matters less, but because there is less of it in play."
+      },
+      "personalFit": {
+        "weight": 0.32,
+        "rationale": "Raised, and it takes exactly what harmony gave up. With fewer garments each one is a larger share of what anybody sees, so how well a colour suits the person carries more of the outcome than it does under a coat."
+      },
+      "contrast": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Whatever the weather, the differences between the pieces read the same way once somebody is in a room."
+      },
+      "corpusAffinity": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Proximity to the curated corpus is a claim about the colours and not about the day."
+      },
+      "versatility": {
+        "weight": 0.1,
+        "rationale": "Held. A question about the wardrobe rather than about the day."
+      },
+      "cvdAccessibility": {
+        "weight": 0.1,
+        "rationale": "Held at the base weight, and deliberately never reduced in any weather. Separation for colour vision is an accessibility floor rather than a preference, and a weather profile that lowered it would be this product weighting a person out of its own answer."
+      }
+    },
+    "cold": {
+      "harmony": {
+        "weight": 0.25,
+        "rationale": "Raised. Cold means layers, and layers mean more pieces visible at once — more pairs of colours in the same view, which is precisely what the harmony component measures."
+      },
+      "personalFit": {
+        "weight": 0.25,
+        "rationale": "Reduced, and it gives exactly what harmony takes. Under layers a smaller area of any single colour sits near the face, so the personal question carries less of the outcome — it is still the component resting on what the person told us, which is why it stops level with harmony rather than below it."
+      },
+      "contrast": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Whatever the weather, the differences between the pieces read the same way once somebody is in a room."
+      },
+      "corpusAffinity": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Proximity to the curated corpus is a claim about the colours and not about the day."
+      },
+      "versatility": {
+        "weight": 0.1,
+        "rationale": "Held. A question about the wardrobe rather than about the day."
+      },
+      "cvdAccessibility": {
+        "weight": 0.1,
+        "rationale": "Held at the base weight, and deliberately never reduced in any weather. Separation for colour vision is an accessibility floor rather than a preference, and a weather profile that lowered it would be this product weighting a person out of its own answer."
+      }
+    },
+    "wet": {
+      "harmony": {
+        "weight": 0.175,
+        "rationale": "Reduced. A wet day is the one where what somebody actually reaches for is decided by which pieces they are willing to get wet, so a ranking that leaned harder on harmony would be ranking outfits nobody is going to wear."
+      },
+      "personalFit": {
+        "weight": 0.275,
+        "rationale": "Reduced by the same amount as harmony. This is the profile that concedes most to practicality, and the concession is spread across the two aesthetic components rather than taken out of one."
+      },
+      "contrast": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Whatever the weather, the differences between the pieces read the same way once somebody is in a room."
+      },
+      "corpusAffinity": {
+        "weight": 0.15,
+        "rationale": "Held at the base weight. Proximity to the curated corpus is a claim about the colours and not about the day."
+      },
+      "versatility": {
+        "weight": 0.15,
+        "rationale": "Raised by half, and it is the only weight this file moves upward anywhere. Rain is when a combination that works across several other outfits earns its place, because it is the day somebody wears whatever is already reachable and dry. This is a preference and not an observation."
+      },
+      "cvdAccessibility": {
+        "weight": 0.1,
+        "rationale": "Held at the base weight, and deliberately never reduced in any weather. Separation for colour vision is an accessibility floor rather than a preference, and a weather profile that lowered it would be this product weighting a person out of its own answer."
+      }
+    }
+  }
+}

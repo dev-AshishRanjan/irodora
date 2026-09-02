@@ -55,6 +55,21 @@ import { SCORE_FACTORS, type ScoreFactor } from './profile.js';
  * arriving from the content side.
  */
 export const OCCASIONS = ['default', 'office', 'casual', 'formal', 'japanese-inspired'] as const;
+
+/**
+ * The weather states a caller may name (F-065).
+ *
+ * **Four, and concrete.** Not a temperature in degrees and not a forecast code: this is a
+ * weighting profile a person selects, and four states are what an editor can write four
+ * distinct, defensible rationales for. A fifth would need a reason nobody could separate from
+ * the ones either side of it.
+ *
+ * **Nothing here fetches anything.** There is no server (ADR-0051) and `apps/mobile/AGENTS.md`
+ * is explicit that location is never requested. Weather is stated by the caller, which is
+ * exactly why it is optional.
+ */
+export const WEATHERS = ['mild', 'hot', 'cold', 'wet'] as const;
+export type Weather = (typeof WEATHERS)[number];
 export type Occasion = (typeof OCCASIONS)[number];
 
 /** One factor's weight, and the reason it is that number. */
@@ -114,6 +129,22 @@ export interface WeightContent {
    * number nobody published.
    */
   readonly outfit: Readonly<Record<OutfitWeightComponent, WeightedComponent>> | null;
+  /**
+   * Per-weather outfit weights, or `null` for a version published before F-065 (F-065).
+   *
+   * **Weather weights the OUTFIT components, never the four colour factors** — and that is the
+   * content's own rule rather than a convenience. `weights.2026.08.2.json`'s provenance says an
+   * occasion is *"a different set of the same numbers rather than a modifier applied
+   * afterwards"*, so a weather multiplier over `occasions[].factors` would make this file
+   * contradict itself. Occasion owns *does this colour suit this person*; weather owns *how good
+   * is this outfit*. They compose by being about different things.
+   *
+   * `null` for the same reason `outfit` is nullable: two published versions predate this, they
+   * are immutable, and a required field would stop them parsing.
+   */
+  readonly weather: Readonly<
+    Record<Weather, Readonly<Record<OutfitWeightComponent, WeightedComponent>>>
+  > | null;
 }
 
 /** One outfit component's weight, and the reason it is that number. */
@@ -232,6 +263,7 @@ export function parseWeightContent(value: unknown, where: string): WeightContent
     publishedAt,
     occasions,
     outfit: parseOutfitWeights(o['outfit'], `${where}: outfit`),
+    weather: parseWeatherWeights(o['weather'], `${where}: weather`),
   };
   let firstRules: RuleSet | null = null;
   for (const entry of occasions) {
@@ -304,6 +336,76 @@ function parseOutfitWeights(
 }
 
 /**
+ * The per-weather blocks, or `null` when the version predates them.
+ *
+ * Absent and empty are different here for the reason `parseOutfitWeights` gives: a missing key
+ * is a version published before F-065; a present block missing a weather is a publish somebody
+ * got wrong. Every weather in `WEATHERS` must be present, and each one is a **complete** set of
+ * the six components — validated by `parseOutfitWeights` itself, so the sum-to-one rule and the
+ * rationale requirement are checked once and cannot drift between the two blocks.
+ */
+function parseWeatherWeights(
+  value: unknown,
+  where: string,
+): Readonly<Record<Weather, Readonly<Record<OutfitWeightComponent, WeightedComponent>>>> | null {
+  if (value === undefined || value === null) return null;
+  const o = requireObject(value, where);
+
+  for (const key of Object.keys(o))
+    if (!(WEATHERS as readonly string[]).includes(key))
+      throw new RuleError(
+        `${where}.${key} is not a weather this engine reads (${WEATHERS.join(', ')})`,
+      );
+
+  const out: Record<string, Readonly<Record<OutfitWeightComponent, WeightedComponent>>> = {};
+  for (const weather of WEATHERS) {
+    const block = parseOutfitWeights(o[weather], `${where}.${weather}`);
+    if (block === null)
+      throw new RuleError(
+        `${where}.${weather} is missing. A weather block that carries some weathers and not ` +
+          'others would rank an outfit under a context nobody published, which is the same ' +
+          'failure an occasion fallback would be.',
+      );
+    out[weather] = block;
+  }
+  return out as Record<Weather, Readonly<Record<OutfitWeightComponent, WeightedComponent>>>;
+}
+
+/**
+ * The outfit weights, optionally under a weather (F-065).
+ *
+ * **No weather returns `outfitWeights`' own answer, by calling it.** Not a neutral profile
+ * applied and renormalised — that is *approximately* identity, and F-046 already established
+ * that approximately is not good enough: *"the arithmetic is identity rather than approximately
+ * identity. A test asserts that rather than trusting it."* Criterion 2 of this feature is that
+ * sentence as an acceptance criterion, so the guarantee is structural — there is no arithmetic
+ * on the no-weather path at all.
+ *
+ * An unpublished weather throws rather than falling back, for the reason `ruleSetFor` gives:
+ * a silent fallback makes "the cold weighting" and "the weighting nobody configured" the same
+ * sentence on a screen whose whole proposition is explainability.
+ */
+export function outfitWeightsFor(
+  content: WeightContent,
+  weather?: Weather,
+): Readonly<Record<OutfitWeightComponent, number>> {
+  if (weather === undefined) return outfitWeights(content);
+
+  if (content.weather === null)
+    throw new RuleError(
+      `weights ${content.versionId} carry no weather block. That version was published before ` +
+        'weather context existed; publish a version that includes one rather than scoring ' +
+        'against weights nobody chose.',
+    );
+
+  const block = content.weather[weather];
+  return Object.fromEntries(OUTFIT_WEIGHT_COMPONENTS.map((c) => [c, block[c].weight])) as Record<
+    OutfitWeightComponent,
+    number
+  >;
+}
+
+/**
  * The outfit weights for a published version, or a throw naming it.
  *
  * **No fallback.** A version published before F-031 carries none, and substituting a number
@@ -357,7 +459,13 @@ export function rationaleCount(content: WeightContent): number {
   // The outfit block's six count too. A ledger row that recorded only the occasion rationales
   // would let six weights be added, or removed, without the count moving.
   const outfit = content.outfit === null ? 0 : Object.keys(content.outfit).length;
-  return outfit + occasionRationaleCount(content);
+  // And the weather blocks' twenty-four, by exactly the same argument (F-065). A count that
+  // excluded them would let a whole weather profile be added or dropped without moving.
+  const weather =
+    content.weather === null
+      ? 0
+      : Object.values(content.weather).reduce((n, block) => n + Object.keys(block).length, 0);
+  return outfit + weather + occasionRationaleCount(content);
 }
 
 /** The occasion half, kept separate so `rationaleCount` reads as the sum it is. */
