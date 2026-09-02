@@ -142,6 +142,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md](effects/a-fallback-that-marks-itself-as-working-stops-being-a-fallback.md) — **E-051** · the Lens has two delivery paths and one boolean separates them; set `pushed` from the poll and the viewfinder freezes on a single colour that looks exactly like success.
 - [effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md](effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md) — **E-052** · a price is written at a scale the row does not record, so editing one exponent silently reinterprets every price already stored for that currency.
 - [effects/the-engine-names-keys-and-only-the-app-can-render-them.md](effects/the-engine-names-keys-and-only-the-app-can-render-them.md) — **E-053** · `messageKey` is a plain string on the engine’s side of the boundary, so twelve keys were emitted for two releases into a catalogue that had none of them.
+- [effects/a-build-number-decides-which-branch-of-a-dependency-exists.md](effects/a-build-number-decides-which-branch-of-a-dependency-exists.md) — **E-054** · minSdkVersion decided at compile time whether Nitro s AHardwareBuffer support existed at all; hasPixelBuffer reports the device s capability and could never see it.
 
 ## Glossary
 

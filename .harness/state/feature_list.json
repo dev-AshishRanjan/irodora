@@ -3581,6 +3581,33 @@
         "lint"
       ],
       "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything."
+    },
+    {
+      "id": "F-128",
+      "title": "The Lens needs minSdk 26, because the pixel buffer it reads is compiled out below it",
+      "requirements": [
+        "FR-13",
+        "FR-15",
+        "NFR-7"
+      ],
+      "service": "mobile",
+      "release": "R4",
+      "priority": "must",
+      "status": "done",
+      "plan": "plans/F-128-the-pixel-buffer-was-compiled-out.md",
+      "blockedBy": [],
+      "acceptance": [
+        "The Android build sets minSdkVersion 26, so Nitro compiles its AHardwareBuffer support in and Frame.getPixelBuffer() returns a buffer instead of throwing",
+        "The minimum is declared in app.config.ts, which is the only source CI prebuilds from — android/ is generated and untracked",
+        "The decision to leave Expo default 24 is recorded as an ADR, with what it costs",
+        "A check fails if the declared minimum drops below what the Lens needs, rather than the Lens failing on a device"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "artifact"
+      ],
+      "notes": "DONE. F-121 s instrumentation was built so one build would settle a two-way split. It did, and the answer was NEITHER candidate: \"the pixel buffer could not be read: Frame.getPixelBuffer(...): java.lang.RuntimeException: ArrayBuffer(HardwareBuffer) requires NDK API 26 or above! (minSdk >= 26)\". THIS WAS NEVER A JAVASCRIPT FAULT — thrown from C++, through Kotlin, into a worklet, and no amount of TypeScript could have found it. THE MECHANISM: react-native-nitro-modules guards its entire AHardwareBuffer implementation on a COMPILE-TIME constant, #if __ANDROID_API__ >= 26 ... #else throw std::runtime_error(...). __ANDROID_API__ is set by the NDK from Gradle s minSdkVersion and Nitro takes the app s value directly. This repository never set one; ExpoRootProjectPlugin.kt defaults it to 24, so the whole native tree compiled at 24 and the #else is what shipped. On the device, ImageProxy+getPixelBuffer.kt prefers a CPU-readable HardwareBuffer whenever SDK_INT >= P (28); a modern phone is, and ADR-0075 s pixelFormat rgb gives CameraX an RGBA_8888 ImageProxy that is exactly that. So the fast path is taken on every frame and the fast path is a throw. WHY hasPixelBuffer SAID YES: it asks the same question with only the RUNTIME half. One is a property of the DEVICE, the other of OUR BUILD. Nothing on the JavaScript side could ever have bridged that, which is precisely why F-121 s try/catch around getPixelBuffer() was worth having — it turned an invisible throw into a sentence, after four device round trips. E-054. THE CHANGE: expo-build-properties with android.minSdkVersion = ANDROID_MIN_SDK (26), exported from app.config.ts so a gate reads the number rather than greps for it. IN app.config.ts AND NOWHERE ELSE: apps/mobile/android/ is generated and untracked and both workflows run expo prebuild --clean, so a hand-written value works locally and vanishes on the next run. 26 NOT 28: 26 is the number in the #if; a device on 26-27 never reaches the HardwareBuffer path and falls to the single-plane branch, which works. There was NO JavaScript alternative — the fast path is chosen by SDK_INT and the buffer s own usage flags, neither reachable from our code, and the only remaining lever (pixelFormat yuv) is what ADR-0075 refused. THE CHAIN VERIFIED RATHER THAN ASSUMED: prebuild was RUN and android/gradle.properties read back showing android.minSdkVersion=26; then android.minSdkVersion -> catalog key minSdk (ExpoAutolinkingSettingsExtension.kt:117) -> rootProject.ext.minSdkVersion (ExpoRootProjectPlugin.kt:53, default \"24\") -> Nitro s getExtOrIntegerDefault. THE GUARD: scripts/verify-android-min-sdk.mjs, wired into gate 2 and mirrored in CI. Seven cases, decoys watched failing. The ones that MATTER are the LOWERED values — 24 and 25 both rejected — because a check that only noticed a MISSING number would pass the edit that actually happens: somebody widening device support. Two more reject a plugin hard-coding the number instead of passing the constant, INCLUDING when the literal is 26, because two numbers that can disagree is the shape this regresses in. The real config stays green. WHAT IT COSTS: Android 7.0 and 7.1 can no longer install the app. Close to zero, because the app ALREADY did not work there and NFR-7 sets the bar at a four-year-old mid-range Android (API 31+ in 2026). Declaring 24 was a claim the binary could not honour. ADR-0079. GATES: state (18), typecheck, lint (incl. the new check), format, test (516), verify:minsdk:prove — all PASS. NOT RUN: the NDK compile and the APK. Gate 16 needs an Android toolchain this workstation does not have; that is F-039 s attestation, still OUTSTANDING. Everything verified here stops at the generated gradle.properties. DELIBERATELY NOT DONE: touching apps/mobile/android/ (generated, erased by the next --clean prebuild); changing pixelFormat (ADR-0075 holds and this fault is not evidence against it); moving targetSdkVersion or compileSdkVersion (neither implicated, both their own decision)."
     }
   ]
 }

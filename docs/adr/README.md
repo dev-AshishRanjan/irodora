@@ -102,6 +102,7 @@ Two rules that matter more than the format:
 | [0076](0076-a-near-neutral-has-no-temperature-and-scorecolor-now-agrees.md) | A near-neutral has no temperature, and `scoreColor` now agrees | Accepted |
 | [0077](0077-the-random-source-is-a-port-and-the-app-installs-it.md) | The random source is a port, and the app installs it | Accepted |
 | [0078](0078-wardrobe-images-are-blobs-in-the-encrypted-database.md) | Wardrobe images are BLOBs in the encrypted database, not files beside it | Accepted |
+| [0079](0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md) | The Android minimum is API 26, because the pixel buffer is compiled out below it | Accepted |
 
 ## Open questions awaiting an ADR
 

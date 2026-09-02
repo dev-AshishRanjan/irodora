@@ -172,6 +172,17 @@ jobs:
       - name: 'Gate 8 — spacing-scale proof'
         run: pnpm verify:spacing:prove
 
+      # Belongs to gate 2, run here with the other proofs. Seven cases, and the interesting
+      # ones are the LOWERED values rather than the missing one: 24 and 25 both have to be
+      # rejected, because widening device support is a plausible, well-meant edit and it is
+      # what silently removes the Lens. Two more reject a plugin that hard-codes the number
+      # instead of passing the constant — INCLUDING when the literal is the right value —
+      # because two numbers that can disagree is the shape this regresses in. The real config
+      # must stay GREEN, which is the half that stops it being a check that fails on
+      # everything. Plants in memory only; nothing is written to the working tree.
+      - name: 'Gate 2 — Android minimum proof'
+        run: pnpm verify:minsdk:prove
+
       # Gate 7 (e2e) has NO STEP HERE, deliberately, and gates.json records it as
       # status:pending + ciStep:false so the mirror check knows the omission is intentional.
       #

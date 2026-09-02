@@ -64,6 +64,16 @@ if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2_100
       'than one that fails at upload.',
   );
 
+/**
+ * The lowest Android API level this app is built for.
+ *
+ * **It is a colour-correctness requirement, not a taste.** Below 26 the frame pipeline cannot
+ * read a pixel buffer at all — see the `expo-build-properties` entry below and ADR-0079 — so
+ * lowering it does not degrade the Lens, it removes it. Exported so a gate can check the number
+ * instead of grepping for it.
+ */
+export const ANDROID_MIN_SDK = 26;
+
 const config: ExpoConfig = {
   name: 'Irodora',
   slug: 'irodora',
@@ -173,6 +183,24 @@ const config: ExpoConfig = {
      * `blockedPermissions` entry above is the backstop.
      */
     ['expo-image-picker', { microphonePermission: false }],
+    /*
+     * THE LENS DOES NOT WORK BELOW API 26, AND THIS IS THE ONLY PLACE THAT CAN SAY SO.
+     *
+     * `react-native-nitro-modules` guards its whole `AHardwareBuffer` implementation behind
+     * `#if __ANDROID_API__ >= 26`, with a `throw` in the `#else`. `__ANDROID_API__` is set by
+     * the NDK from Gradle's `minSdkVersion`, and Nitro reads the app's value directly. Expo
+     * defaults it to 24 when nothing sets it, so the native tree compiled at 24 and the throw is
+     * what shipped — while `Frame.hasPixelBuffer` kept returning `true`, because it reports what
+     * the DEVICE can do and the fault is in what WE built. ADR-0079.
+     *
+     * 26 rather than 28: 26 is the compile-time requirement. A device on 26–27 never reaches the
+     * HardwareBuffer path — it takes the single-plane branch, which works — so a higher floor
+     * would drop API levels and buy nothing.
+     *
+     * This belongs HERE and not in `android/`, which is generated, untracked, and rebuilt by
+     * `expo prebuild --clean` in both CI workflows.
+     */
+    ['expo-build-properties', { android: { minSdkVersion: ANDROID_MIN_SDK } }],
     './plugins/withReleaseSigning',
   ],
 

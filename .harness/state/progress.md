@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-128 DONE · the pixel buffer was compiled out, and the runtime guard could not see it
+
+F-121's instrumentation was built so that one build would settle a two-way split. It did, and the
+answer was neither of the two things I was weighing:
+
+> **the pixel buffer could not be read: `Frame.getPixelBuffer(...)`:
+> `java.lang.RuntimeException: ArrayBuffer(HardwareBuffer) requires NDK API 26 or above!
+> (minSdk >= 26)`**
+
+**This was never a JavaScript fault.** It is thrown from C++, through Kotlin, into a worklet, and
+no amount of TypeScript could have found it.
+
+### The mechanism
+
+`react-native-nitro-modules` guards its entire `AHardwareBuffer` implementation on a
+**compile-time** constant — `#if __ANDROID_API__ >= 26 … #else throw std::runtime_error(…)`.
+`__ANDROID_API__` is set by the NDK from Gradle's `minSdkVersion`, and Nitro takes the app's value
+directly. **This repository never set one**, and `ExpoRootProjectPlugin.kt` defaults it to 24 — so
+the whole native tree compiled at 24 and the `#else` is what shipped.
+
+On the device, `ImageProxy+getPixelBuffer.kt` prefers a CPU-readable HardwareBuffer whenever
+`SDK_INT >= P` (28). A modern phone is; ADR-0075's `pixelFormat: 'rgb'` gives CameraX an
+RGBA_8888 `ImageProxy` that is exactly that. So the fast path is taken on every frame, and the
+fast path is a `throw`.
+
+### Why `hasPixelBuffer` said yes
+
+Because it asks the same question with only the **runtime** half:
+
+```kotlin
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+  hardwareBuffer?.use { if (it.isCpuReadable) return true }
+}
+```
+
+**One is a property of the device; the other is a property of our build.** Nothing on the
+JavaScript side could ever have bridged that, which is precisely why F-121's `try`/`catch` around
+`getPixelBuffer()` was worth having — it is what turned an invisible throw into this sentence,
+after four device round trips. [E-054](../memory/effects/a-build-number-decides-which-branch-of-a-dependency-exists.md).
+
+### The change
+
+`['expo-build-properties', { android: { minSdkVersion: ANDROID_MIN_SDK } }]` in `app.config.ts`,
+with `ANDROID_MIN_SDK = 26` exported so a gate can read the number rather than grep for it.
+
+**In `app.config.ts` and nowhere else.** `apps/mobile/android/` is generated and untracked, and
+both `android-build.yml` and `release.yml` run `expo prebuild --platform android --clean` — a
+value written into the generated project by hand works locally and vanishes on the next run.
+
+**26, not 28.** 26 is the number in the `#if`. A device on 26–27 never reaches the HardwareBuffer
+path at all; it falls to the single-plane branch, which works. A higher floor drops API levels and
+buys nothing.
+
+There was no JavaScript alternative. The fast path is chosen by `SDK_INT` and by the buffer's own
+usage flags, neither reachable from our code, and the only remaining lever — `pixelFormat: 'yuv'`
+— is exactly what ADR-0075 refused.
+
+### The chain, verified rather than assumed
+
+| step | evidence |
+| --- | --- |
+| `app.config.ts` → `android/gradle.properties` | **observed** — prebuild run, `android.minSdkVersion=26` read back |
+| `android.minSdkVersion` → catalog key `minSdk` | `ExpoAutolinkingSettingsExtension.kt:117` |
+| `minSdk` → `rootProject.ext.minSdkVersion` | `ExpoRootProjectPlugin.kt:53`, default `"24"` |
+| that → Nitro's module | `minSdkVersion getExtOrIntegerDefault("minSdkVersion")` |
+
+### The guard
+
+`scripts/verify-android-min-sdk.mjs`, wired into gate 2 and mirrored in CI. Seven cases, decoys
+watched failing. **The ones that matter are the lowered values** — 24 and 25 are both rejected,
+because a check that only noticed a *missing* number would pass the edit that actually happens:
+somebody widening device support without knowing what it costs. Two more reject a plugin that
+hard-codes the number instead of passing the constant, **including when the literal is 26**,
+because two numbers that can disagree is the shape this regresses in. The real config stays green,
+which is the half that stops it being a check that fails on everything.
+
+### What it costs
+
+Android 7.0 and 7.1 can no longer install the app — stated plainly rather than waved past. The
+cost is close to zero because **the app already did not work there**, and because NFR-7 sets the
+bar at a four-year-old mid-range Android, which in 2026 means API 31 or above. Declaring 24 was a
+claim the binary could not honour.
+
+Recorded as [ADR-0079](../../docs/adr/0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md).
+
+### Gates
+
+`state` (18 checks), `typecheck`, `lint` (including the new check), `format`, `test` (516),
+and `verify:minsdk:prove` — **all pass**.
+
+**Not run:** the NDK compile and the APK. Gate 16 needs an Android toolchain this workstation does
+not have; that is F-039's attestation, still outstanding, and CI is what runs it. Everything
+verified here stops at the generated `gradle.properties`.
+
+### Deliberately not done
+
+Touching `apps/mobile/android/` — generated, untracked, erased by the next `--clean` prebuild.
+Changing `pixelFormat` — ADR-0075 holds, and this fault is not evidence against it. Moving
+`targetSdkVersion` or `compileSdkVersion` — neither is implicated, and both bring behavioural
+changes that belong to their own decision.
+
 ## 2026-09-01 — F-055 DONE · the one place a typed number is allowed to be called a measurement
 
 FR-28 and FR-61: colorimeter entry, Lab/LCh readouts, ΔE00 tables, reference libraries, batch

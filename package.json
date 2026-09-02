@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "node scripts/gate.mjs typecheck",
-    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-cache-scope.mjs",
+    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-cache-scope.mjs && node scripts/verify-android-min-sdk.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/gate.mjs test",
@@ -61,7 +61,8 @@
     "verify:stale:prove": "node scripts/verify-stale-rationale-proof.mjs",
     "verify:lockfile:prove": "node scripts/verify-lockfile-proof.mjs",
     "verify:no-inference": "node scripts/verify-no-inference.mjs",
-    "verify:no-inference:prove": "node scripts/verify-no-inference-proof.mjs"
+    "verify:no-inference:prove": "node scripts/verify-no-inference-proof.mjs",
+    "verify:minsdk:prove": "node scripts/verify-android-min-sdk.mjs --prove"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

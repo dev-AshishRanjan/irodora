@@ -1937,6 +1937,46 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-054",
+      "from": {
+        "kind": "symbol",
+        "ref": "apps/mobile/app.config.ts#ANDROID_MIN_SDK"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx#sampleFrame"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app.config.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "critical",
+      "confidence": 1,
+      "origin": "manual",
+      "status": "active",
+      "guard": "gate:lint — scripts/verify-android-min-sdk.mjs, seven cases with the decoys watched failing. The ones that matter are the LOWERED values: 24 and 25 are both rejected, because a check that only noticed a MISSING number would pass the edit that actually happens — somebody widening device support. Two more reject a plugin that hard-codes the number instead of passing the constant, INCLUDING when the literal is 26, because two numbers that can disagree is the shape this regresses in. The real config must stay green. WHAT THE GUARD CANNOT DO: prove the built APK declares it. That is the artefact gate s job, where aapt2 is an independent oracle, and it runs only in CI.",
+      "memory": "memory/effects/a-build-number-decides-which-branch-of-a-dependency-exists.md",
+      "rationale": "A NUMBER IN A CONFIG FILE DECIDES WHICH BRANCH OF A DEPENDENCY S C++ EXISTS. react-native-nitro-modules guards its entire AHardwareBuffer implementation behind `#if __ANDROID_API__ >= 26`, with a `throw std::runtime_error` in the `#else`. __ANDROID_API__ is set by the NDK toolchain from Gradle s minSdkVersion, and Nitro takes the app s value directly: `minSdkVersion getExtOrIntegerDefault(\"minSdkVersion\")`. This repository never set one, Expo s ProjectConfiguration.kt falls back to `warnIfNotDefined(\"minSdkVersion\", 24)`, and so the `#else` is what shipped. THE GUARD AND THE CALL DISAGREED, AND THAT IS THE PART TO REMEMBER. Frame.hasPixelBuffer returned TRUE the whole time, because it asks the same question with only the RUNTIME half: `if (SDK_INT >= P) hardwareBuffer?.use { if (it.isCpuReadable) return true }`. One is a property of the DEVICE; the other is a property of OUR BUILD. No runtime check on the JavaScript side could ever have bridged that, which is why the try/catch F-121 put around getPixelBuffer() is what turned an invisible throw into a sentence — after four device round trips. IT IS INVISIBLE TO EVERY OTHER CHECK HERE. Jest has no NDK. Typecheck sees an integer. Lint sees a plugin entry that resolves. The failure appears only on a phone, on every frame, inside react-native-vision-camera-worklets own try/catch, as a console.error — which is to say nowhere a person holding the phone can read. WHY IT LIVES IN app.config.ts AND NOWHERE ELSE: apps/mobile/android/ is generated and untracked, and both android-build.yml and release.yml run `expo prebuild --platform android --clean`. A value written into the generated project by hand works locally and vanishes on the next run, which is how a fix becomes a mystery a fortnight later. WHY 26 AND NOT 28: 26 is the number in the #if. A device on API 26 or 27 never reaches the HardwareBuffer path at all — it falls to the single-plane branch, which works at any level — so a higher floor would drop two API levels and buy nothing. WHAT IT COSTS: Android 7.0 and 7.1 can no longer install the app. That cost is close to zero because the app ALREADY did not work there — reading a colour is a core journey and it threw on every frame — and because NFR-7 sets the bar at a four-year-old mid-range Android, which in 2026 means API 31 or above. Declaring 24 was a claim the binary could not honour."
     }
   ]
 }
