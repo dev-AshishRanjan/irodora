@@ -13161,3 +13161,92 @@ and when Palette Studio grows an "export this one" control it passes its own.
 
 ---
 
+## 2026-09-02 — F-130 DONE · nine occasions, and a check that was inside a catch
+
+FR-34 names **nine** occasions. The published weights carried five, `OCCASIONS` listed the same
+five, and nothing reported the gap — **the engine and the content agreed with each other and both
+disagreed with the PRD**, which is why six releases went by without anyone noticing.
+
+`weights.2026.08.4` publishes **ten profiles** (the nine plus `default`), with everything from
+`2026.08.3` carried forward byte-identically.
+
+### The obstacle was the whole design
+
+`parseWeightContent` **required every occasion in `OCCASIONS`**, and gate 11 parses every
+published weight file deliberately — *"an OLD version still has to pass."* So widening the union
+would have failed three immutable files (ADR-0046) for predating a requirement.
+
+**This is the `outfit: null` situation exactly**, and [ADR-0084](../../docs/adr/0084-completeness-moves-from-every-published-version-to-the-newest-one.md)
+gives it the same answer: **completeness moves rather than disappearing.** The parser requires
+`default`, no unknowns and no duplicates; `ruleSetFor` still refuses an occasion a version lacks,
+naming the version; and **gate 11 requires the newest published version to carry all ten.**
+
+The ADR's `Bad` section says the cost plainly: the parser is weaker, and a check in a script can
+be edited by someone who does not know why it exists.
+
+### Twenty weights and twenty rationales
+
+Each profile had to be a defensible re-allocation of the same four numbers rather than a
+different mood, so the five are spread deliberately: **interview** is led by lightness and
+contrast because being unremarkable is its goal; **minimal** is nearly all lightness and contrast
+because removing chroma and temperature from the question is its definition; **street** is the
+only profile where chroma leads, reaching the same weight as japanese-inspired *from the opposite
+direction*; **travel** is the one profile whose argument is about **light** rather than dress; and
+**date** sits closest to default because it is the context least governed by convention.
+
+The editorial note names the two most arguable: street's willingness to accept a colour outside a
+personal lightness range, and travel reducing temperature for a reason about illuminants.
+
+### The mutation that found a check inside a `catch`
+
+**6 mutations, 5 caught, and the survivor was real.** *"Gate 11 stops requiring the newest version
+to be complete"* survived — because the block I had inserted **landed inside the per-file
+`catch` clause**, so it only ran when a file threw, which is never. The gate reported it as
+passing; the check had never executed once.
+
+Two separate mistakes, and the second hid the first:
+
+- **The decoy did not run the code under test.** It recomputed the missing set beside the real
+  one, so emptying the real one left the decoy untouched. One function serves both now.
+- **The block was in the wrong scope**, and nothing said so: a check that never runs looks exactly
+  like a check that passes.
+
+After both: **6/6**.
+
+### The em-dash trap again, fourth time this session
+
+`verify-cache-scope.mjs` reported a read of `content/rules` — the directory, which
+`content/rules/**` covers the *inside* of but not itself. The fix is to derive the directory from
+a file path the scan already accounts for. **Then my note explaining that fix contained the
+path-building call, and the scan read the comment and failed again.**
+
+F-127 taught that scan to tell a reference from a mention for a bare path **literal**; the
+`join(…)` matcher beside it is still a regular expression over the file's text. **A matcher
+narrowed in one of its two branches leaves the defect where it was, and the passing half makes it
+look addressed.** F-132 is widened to cover both.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast | **PASS** |
+| content — 4 versions × 10 occasions, 166 rationales, 29 fixtures | **PASS** |
+| gate-mirror | **PASS** |
+| 6 mutations | **6/6**, after the survivor exposed a check that never ran |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### What this does not fix
+
+**Nothing selects an occasion on any screen.** Five more profiles reach no reader today — the
+`a-generated-value-with-no-consumer` shape, recorded in the file's own derivation note rather
+than left to be discovered. FR-34's criterion is that the weights are content and versioned,
+which is satisfied; a selector is a surface feature against FR-33.
+
+**Twenty more self-reviewed rationales.** `authoredBy` and `verifiedBy` are the same roster id
+and `reviewIndependence` is `self` — ADR-0060's declared position, and the count grows by five
+profiles.
+
+---
+

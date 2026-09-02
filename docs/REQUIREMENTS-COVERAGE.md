@@ -71,7 +71,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-31 What goes with this | F-030 | test, perf, e2e | R3 |
 | FR-32 Outfit scoring | F-031 | test, e2e | R3 |
 | FR-33 Outfit builder | F-045 | e2e, a11y | R4 |
-| FR-34 Occasion weighting | F-029, F-065 | test | R3 |
+| FR-34 Occasion weighting | F-029, F-065, F-130 | test, content | R3 |
 | FR-35 CVD outfit mode | F-032 | cvd, e2e | R3 |
 | FR-36 Outfit scanner | F-054 | test, e2e | R5 |
 | FR-37 Preference feedback | F-046 | test | R4 |

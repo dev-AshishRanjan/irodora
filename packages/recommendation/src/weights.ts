@@ -53,8 +53,23 @@ import { SCORE_FACTORS, type ScoreFactor } from './profile.js';
  * context that reaches no screen — the shape
  * [[a-generated-value-with-no-consumer-satisfies-its-own-test-and-reaches-nothing]] warns about,
  * arriving from the content side.
+ *
+ * **All nine of FR-34's, from F-130.** It listed five for six releases, the published content
+ * carried the same five, and the requirement named nine — so the engine and the content agreed
+ * with each other and both disagreed with the PRD, which is why nothing reported it.
  */
-export const OCCASIONS = ['default', 'office', 'casual', 'formal', 'japanese-inspired'] as const;
+export const OCCASIONS = [
+  'default',
+  'office',
+  'casual',
+  'formal',
+  'japanese-inspired',
+  'date',
+  'interview',
+  'travel',
+  'street',
+  'minimal',
+] as const;
 
 /**
  * The weather states a caller may name (F-065).
@@ -113,7 +128,12 @@ export type OutfitWeightComponent = (typeof OUTFIT_WEIGHT_COMPONENTS)[number];
 export interface WeightContent {
   readonly versionId: string;
   readonly publishedAt: string;
-  /** Every occasion in `OCCASIONS`, exactly once. */
+  /**
+   * The occasions this version carries: each one in `OCCASIONS`, none twice, `default` present.
+   *
+   * **Not necessarily all of them** — see the parser and ADR-0084. An older version carries the
+   * occasions that existed when it was published, and `ruleSetFor` refuses one it lacks.
+   */
   readonly occasions: readonly OccasionWeights[];
   readonly falloff: RuleSet['falloff'];
   readonly poles: RuleSet['poles'];
@@ -242,13 +262,30 @@ export function parseWeightContent(value: unknown, where: string): WeightContent
     return { occasion: occasion as Occasion, factors };
   });
 
-  for (const occasion of OCCASIONS)
-    if (!seen.has(occasion))
-      throw new RuleError(
-        `${where}: no weights for occasion "${occasion}". Every occasion the engine can be ` +
-          'asked for must be published, or selecting it would fall back to something nobody ' +
-          'chose.',
-      );
+  /*
+   * `default` IS REQUIRED; THE REST ARE NOT (ADR-0084).
+   *
+   * This required EVERY occasion in `OCCASIONS`, which was right while the set never grew — and
+   * F-130 grew it. Three published versions carry five profiles, gate 11 parses every published
+   * version deliberately, and ADR-0046 forbids editing any of them: keeping the rule would have
+   * turned a widened union into a red gate on files nobody is allowed to touch. It is the
+   * `outfit: null` situation exactly, and it has the same answer — **a version missing an
+   * occasion predates it.**
+   *
+   * The guarantee the old rule was reaching for lives in `ruleSetFor`, which throws naming the
+   * version rather than falling back to `default`. Nothing about a partial version is silent.
+   *
+   * What replaces the check here is **gate 11 requiring the NEWEST published version to carry
+   * every occasion**. Completeness moved; it did not go away. If that check is ever removed,
+   * `OCCASIONS` and the content drift apart again with nothing to say so — which is what
+   * ADR-0084 records and why the check has a decoy.
+   */
+  if (!seen.has('default'))
+    throw new RuleError(
+      `${where}: no weights for occasion "default". Every other occasion may be absent from an ` +
+        'older version, but a file with no default is one where an unspecified context has no ' +
+        'weighting at all.',
+    );
 
   const falloffRaw = o['falloff'];
   const polesRaw = o['poles'];

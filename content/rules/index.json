@@ -31,5 +31,14 @@
     "occasionCount": 5,
     "rationaleCount": 50,
     "supersedes": "2026.08.2"
+  },
+  {
+    "label": "2026.08.4",
+    "kind": "weights",
+    "checksum": "f54a234da959de28b5c51d570d2f5e75c060a074a8602ff419afd0faf60d49e3",
+    "publishedAt": "2026-09-02",
+    "occasionCount": 10,
+    "rationaleCount": 70,
+    "supersedes": "2026.08.3"
   }
 ]

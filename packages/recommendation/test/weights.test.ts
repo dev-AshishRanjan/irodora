@@ -12,7 +12,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fromSpace } from '@irodora/color-core';
 import {
@@ -28,8 +28,55 @@ import {
   type PersonalProfile,
 } from '../src/index.js';
 
+/**
+ * The FIRST published version, which carries five occasions because five is what existed when
+ * it was published. Every spoiling below is this file plus one surgical change.
+ */
 const PUBLISHED = join(__dirname, '..', '..', '..', 'content', 'rules', 'weights.2026.08.1.json');
+
+/**
+ * The directory, DERIVED FROM A FILE rather than built as its own path.
+ *
+ * Building the path to the directory directly resolves to the directory, and
+ * `verify-cache-scope.mjs` reports that as an unaccounted read: `content/rules/**` in
+ * `turbo.json` covers what is *inside* the directory, not the directory itself. Taking
+ * `dirname` of a path the scan has already accounted for keeps the check strict and needs no
+ * new global dependency (E-025).
+ *
+ * The first version of this note SPELLED THE PATH-BUILDING CALL OUT to explain the problem,
+ * and the scan read the comment and failed again — the fourth time this session. F-127 taught
+ * that scan to tell a reference from a mention for a bare path LITERAL; the `join(…)` matcher
+ * beside it is still a regular expression over the file's text, comments included. Recorded on
+ * F-132.
+ */
+const RULES = dirname(PUBLISHED);
 const published = (): unknown => JSON.parse(readFileSync(PUBLISHED, 'utf8'));
+
+/**
+ * The NEWEST published version — the one a publish must be complete in (ADR-0084).
+ *
+ * Read from the ledger's `supersedes` chain rather than named here: a literal would go stale on
+ * the next publish, and the failure would look like a bug in the content rather than a test
+ * nobody updated. It is also the same rule gate 11 uses, so the two cannot disagree about which
+ * version is current.
+ */
+function newestPublished(): { label: string; content: unknown } {
+  const rows = JSON.parse(readFileSync(join(RULES, 'index.json'), 'utf8')) as {
+    label: string;
+    kind: string;
+    supersedes?: string;
+  }[];
+  const weights = rows.filter((r) => r.kind === 'weights');
+  const superseded = new Set(weights.map((r) => r.supersedes).filter((l) => l !== undefined));
+  const current = weights.filter((r) => !superseded.has(r.label));
+  const only = current[0];
+  if (current.length !== 1 || only === undefined)
+    throw new Error(`the ledger names ${String(current.length)} current weight versions`);
+  return {
+    label: only.label,
+    content: JSON.parse(readFileSync(join(RULES, `weights.${only.label}.json`), 'utf8')),
+  };
+}
 
 /** The published file with one surgical change. Every refusal below is this plus a spoiling. */
 function spoiled(mutate: (draft: Record<string, unknown>) => void): unknown {
@@ -50,14 +97,33 @@ describe('the published weight content', () => {
   it('parses — the baseline, without which every refusal below proves nothing', () => {
     const content = parseWeightContent(published(), 'weights.2026.08.1.json');
     expect(content.versionId).toBe('2026.08.1');
-    expect(content.occasions).toHaveLength(OCCASIONS.length);
-    expect(rationaleCount(content)).toBe(OCCASIONS.length * SCORE_FACTORS.length);
+    expect(content.occasions.length).toBeGreaterThan(0);
+    expect(rationaleCount(content)).toBe(content.occasions.length * SCORE_FACTORS.length);
   });
 
-  it('publishes every occasion the engine can be asked for', () => {
-    // Driven from the engine's own list. An occasion added to the union without content is a
-    // context that would resolve to nothing, and this is where that fails.
+  /*
+   * HISTORY PARSES THOUGH IT IS INCOMPLETE (F-130, ADR-0084).
+   *
+   * This file carries five occasions and the engine now offers ten. Requiring the whole set at
+   * parse time would fail three published, immutable files for predating a requirement — which
+   * is the `outfit: null` situation exactly, and has the same answer.
+   */
+  it('parses a version that carries fewer occasions than the engine offers', () => {
     const content = parseWeightContent(published(), 'x');
+
+    expect(content.occasions.length).toBeLessThan(OCCASIONS.length);
+    for (const { occasion } of content.occasions) expect(OCCASIONS).toContain(occasion);
+  });
+
+  /*
+   * AND THE NEWEST VERSION IS COMPLETE. This is where "every occasion the engine can be asked
+   * for is published" now lives — of the CURRENT content rather than of every version. Gate 11
+   * checks the same thing; this is the half that fails in a package test, close to the union.
+   */
+  it('publishes every occasion the engine can be asked for, in the newest version', () => {
+    const { label, content: raw } = newestPublished();
+    const content = parseWeightContent(raw, `weights.${label}.json`);
+
     expect(content.occasions.map((o) => o.occasion).sort()).toEqual([...OCCASIONS].sort());
   });
 
@@ -75,7 +141,11 @@ describe('the published weight content', () => {
   it('sums to 1 for every occasion, checked by the engine’s own validator', () => {
     // Not re-implemented here: `parseWeightContent` hands each occasion to `parseRuleSet`, so
     // this passing means the code that SCORES accepted them.
-    const content = parseWeightContent(published(), 'x');
+    //
+    // Over the NEWEST version, which carries every occasion — the first one carries five, and
+    // looping over the union against it would be asking a file for a profile that postdates it.
+    const { label, content: raw } = newestPublished();
+    const content = parseWeightContent(raw, `weights.${label}.json`);
     for (const occasion of OCCASIONS) {
       const rules = ruleSetFor(content, occasion);
       const total = SCORE_FACTORS.reduce((n, f) => n + rules.weights[f], 0);
@@ -142,13 +212,18 @@ describe('what a publish is refused for', () => {
     expect(message).toContain('sum to');
   });
 
-  it('a missing occasion, naming what selecting it would have done', () => {
+  /*
+   * THE PARSER'S REFUSAL MOVED (F-130, ADR-0084). It required EVERY occasion in `OCCASIONS`;
+   * it now requires `default`, because three published versions predate the other five and
+   * ADR-0046 forbids editing them.
+   */
+  it('no default occasion, naming what a file without one would leave unweighted', () => {
     let message = '';
     try {
       parseWeightContent(
         spoiled((d) => {
           d['occasions'] = (d['occasions'] as unknown[]).filter(
-            (o) => (o as Record<string, unknown>)['occasion'] !== 'formal',
+            (o) => (o as Record<string, unknown>)['occasion'] !== 'default',
           );
         }),
         'x',
@@ -156,8 +231,37 @@ describe('what a publish is refused for', () => {
     } catch (error) {
       message = error instanceof Error ? error.message : String(error);
     }
-    expect(message).toContain('formal');
-    expect(message).toContain('fall back to something nobody chose');
+    expect(message).toContain('default');
+    expect(message).toContain('no weighting at all');
+  });
+
+  /*
+   * AND A NON-DEFAULT OCCASION IS STILL REFUSED — at USE rather than at parse. This is where
+   * "refused rather than silently partial" lives now, and it is the same sentence a reader
+   * would have got from the parser before.
+   */
+  it('an occasion a version does not carry, refused by ruleSetFor and naming the version', () => {
+    const content = parseWeightContent(published(), 'x');
+    let message = '';
+    try {
+      ruleSetFor(content, 'street');
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toContain('street');
+    expect(message).toContain('2026.08.1');
+    expect(message).toContain('nobody published');
+  });
+
+  it('an occasion the engine does not know', () => {
+    expect(() =>
+      parseWeightContent(
+        spoiled((d) => {
+          (d['occasions'] as Record<string, unknown>[])[1]!['occasion'] = 'brunch';
+        }),
+        'x',
+      ),
+    ).toThrow(/brunch/u);
   });
 
   it('the same occasion twice', () => {
@@ -264,7 +368,10 @@ describe('changing a weight changes rankings, with no code change (FR-67, criter
   ];
 
   const rank = (occasion: Occasion): string[] => {
-    const rules = ruleSetFor(parseWeightContent(published(), 'x'), occasion);
+    // THE NEWEST VERSION, because this loops over the whole union and the first published file
+    // carries five of the ten (ADR-0084).
+    const { label, content: raw } = newestPublished();
+    const rules = ruleSetFor(parseWeightContent(raw, `weights.${label}.json`), occasion);
     return [...CANDIDATES]
       .map((candidate) => ({
         ...candidate,
@@ -274,6 +381,11 @@ describe('changing a weight changes rankings, with no code change (FR-67, criter
       .map((c) => c.name);
   };
 
+  /*
+   * OVER THE NEWEST VERSION. `rank` resolves a RuleSet per occasion, and the first published
+   * file carries five of the ten — asking it for `street` is asking for a profile that
+   * postdates it (ADR-0084).
+   */
   it('produces a DIFFERENT ORDER under a different occasion', () => {
     /*
      * THE ASSERTION FR-67 ACTUALLY MAKES. Not "two scores differ" — that would pass on an

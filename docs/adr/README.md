@@ -107,6 +107,7 @@ Two rules that matter more than the format:
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
 | [0083](0083-a-pdf-report-embeds-a-supplied-font-and-the-parser-is-proven-against-a-constructed-one.md) | A PDF report embeds a font its caller supplies, and the parser is proven against a constructed one | Accepted |
+| [0084](0084-completeness-moves-from-every-published-version-to-the-newest-one.md) | Occasion completeness is required of the newest published version, not of every one | Accepted |
 
 ## Open questions awaiting an ADR
 

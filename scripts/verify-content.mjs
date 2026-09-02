@@ -523,6 +523,19 @@ if (WEIGHTS_FILES.length === 0) {
   process.exit(1);
 }
 
+/**
+ * The newest published weights version, by ledger `publishedAt` then label.
+ *
+ * The FILENAME sort is not enough on its own — `2026.08.10` sorts before `2026.08.4` — so the
+ * ledger's own `supersedes` chain is what says which is current: the one nothing supersedes.
+ */
+function newestWeightsLabel(rows) {
+  const weights = rows.filter((r) => r.kind === 'weights');
+  const superseded = new Set(weights.map((r) => r.supersedes).filter((l) => l !== undefined));
+  const current = weights.filter((r) => !superseded.has(r.label));
+  return current.length === 1 ? current[0].label : null;
+}
+
 let weightRationales = 0;
 let weightFixtures = 0;
 let outfitVersions = 0;
@@ -568,10 +581,15 @@ for (const WEIGHTS_FILE of WEIGHTS_FILES)
     }
 
     /*
-     * Every occasion resolves to a scorable rule set. `ruleSetFor` throws rather than falling
-     * back, so this is what proves selecting a context cannot silently become "the default".
+     * Every occasion THIS VERSION CARRIES resolves to a scorable rule set. `ruleSetFor` throws
+     * rather than falling back, so this is what proves selecting a context cannot silently
+     * become "the default".
+     *
+     * Read from the file rather than from `OCCASIONS` (F-130, ADR-0084): the engine knows ten
+     * and `2026.08.1` carries five, because five is what existed when it was published. Looping
+     * over the union here would fail three immutable files for predating a requirement.
      */
-    for (const occasion of OCCASIONS)
+    for (const { occasion } of content.occasions)
       try {
         const rules = ruleSetFor(content, occasion);
         const total = SCORE_FACTORS.reduce((n, f) => n + rules.weights[f], 0);
@@ -603,8 +621,17 @@ for (const WEIGHTS_FILE of WEIGHTS_FILES)
     spoil('a weight with no rationale', (d) => {
       delete d.occasions[1].factors[0].rationale;
     });
-    spoil('a missing occasion', (d) => {
+    // `default` is the first entry in every published file, so slicing it off is what the
+    // parser still refuses after F-130 moved the rest of the completeness rule to the
+    // newest-version check below.
+    spoil('no default occasion', (d) => {
       d.occasions = d.occasions.slice(1);
+    });
+    spoil('an occasion the engine does not know', (d) => {
+      d.occasions[1].occasion = 'brunch';
+    });
+    spoil('one occasion published twice', (d) => {
+      d.occasions[1].occasion = d.occasions[0].occasion;
     });
     spoil('a factor named twice', (d) => {
       d.occasions[2].factors[3].factor = d.occasions[2].factors[2].factor;
@@ -624,6 +651,65 @@ for (const WEIGHTS_FILE of WEIGHTS_FILES)
   } catch (error) {
     fail(`${WEIGHTS_FILE}: ${error.message}`);
   }
+/*
+ * COMPLETENESS, MOVED HERE FROM THE PARSER (F-130, ADR-0084).
+ *
+ * `parseWeightContent` used to require every occasion in `OCCASIONS`. That was right while the
+ * set never grew, and F-130 grew it — so the rule now lives where it can be true of the CURRENT
+ * content without being false of published history.
+ *
+ * **This check is the only thing holding `OCCASIONS` and the published content together.** If it
+ * is removed, a publish can quietly carry fewer profiles than the engine offers and nothing will
+ * say so, which is exactly the state F-130 was filed against. Its decoy is below for that reason
+ * and not as decoration.
+ */
+{
+  const rows = readJsonFile(join(RULES_DIR, 'index.json'));
+  const newest = Array.isArray(rows) ? newestWeightsLabel(rows) : null;
+  if (newest === null)
+    fail(
+      'content/rules/index.json does not identify one current weights version — either none is ' +
+        'unsuperseded or several are. The supersedes chain is what says which version is the ' +
+        'one a publish must be complete in.',
+    );
+  else {
+    const raw = readJsonFile(join(RULES_DIR, `weights.${newest}.json`));
+    /*
+     * ONE FUNCTION, USED BY THE CHECK AND BY ITS DECOY.
+     *
+     * The first version computed `missing` inline and its decoy recomputed the same thing
+     * beside it — so a mutation emptying the real list left the decoy untouched and
+     * SURVIVED. A decoy that does not run the code under test is a second implementation
+     * agreeing with nothing [[a-decoy-that-is-not-broken-proves-nothing]].
+     */
+    const missingFrom = (document) => {
+      const content = parseWeightContent(document, `weights.${newest}.json`);
+      const carried = new Set(content.occasions.map((o) => o.occasion));
+      return OCCASIONS.filter((o) => !carried.has(o));
+    };
+
+    const missing = missingFrom(raw);
+    if (missing.length > 0)
+      fail(
+        `weights.${newest}.json is the current version and carries no weights for ` +
+          `${missing.join(', ')}. The engine offers ${String(OCCASIONS.length)} occasions; the ` +
+          'newest published version must carry all of them, or selecting one reaches a version ' +
+          'that cannot answer (ADR-0084).',
+      );
+
+    // THE DECOY, THROUGH THE SAME FUNCTION. Remove an occasion and it must be reported.
+    weightFixtures += 1;
+    const spoiled = structuredClone(raw);
+    const dropped = OCCASIONS[1];
+    spoiled.occasions = spoiled.occasions.filter((o) => o.occasion !== dropped);
+    if (!missingFrom(spoiled).includes(dropped))
+      fail(
+        `the newest-version completeness check ACCEPTED content with "${dropped}" removed. ` +
+          'A check nobody has watched reject anything might only be capable of passing.',
+      );
+  }
+}
+
 rulesExercised += 1;
 
 // --- the device-local identities are RESERVED, and content may not use them -----------------

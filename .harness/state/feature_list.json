@@ -3670,7 +3670,7 @@
       "service": "content",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "date, interview, travel, street and minimal are published as occasion profiles, each factor carrying its own rationale",
@@ -3682,7 +3682,8 @@
         "test",
         "content"
       ],
-      "notes": "FOUND WHILE BUILDING F-065. FR-34 names NINE occasions — office, casual, date, formal, interview, travel, street, minimal and Japanese-inspired — and the published weights carry FIVE: default, office, casual, formal and japanese-inspired. date, interview, travel, street and minimal have never existed, and OCCASIONS in the engine lists only the five, so nothing anywhere reports the gap. NOT PULLED INTO F-065, which is weather. Adding four occasion profiles is editorial work against a requirement this feature does not claim, and each one needs four weights with four rationales that a reader can argue with — twenty numbers and twenty reasons, written to the standard the existing file sets (\"NO WEIGHT HERE IS SUPPORTED BY A STUDY... a rationale that read like a measurement would be worse than none\"). THE SECOND CRITERION IS THE ONE THAT MATTERS. Publishing four more profiles fixes today; making OCCASIONS the full nine, and refusing a version that carries fewer, is what stops the list and the requirement drifting apart again — which is how they got here."
+      "notes": "FOUND WHILE BUILDING F-065. FR-34 names NINE occasions — office, casual, date, formal, interview, travel, street, minimal and Japanese-inspired — and the published weights carry FIVE: default, office, casual, formal and japanese-inspired. date, interview, travel, street and minimal have never existed, and OCCASIONS in the engine lists only the five, so nothing anywhere reports the gap. NOT PULLED INTO F-065, which is weather. Adding four occasion profiles is editorial work against a requirement this feature does not claim, and each one needs four weights with four rationales that a reader can argue with — twenty numbers and twenty reasons, written to the standard the existing file sets (\"NO WEIGHT HERE IS SUPPORTED BY A STUDY... a rationale that read like a measurement would be worse than none\"). THE SECOND CRITERION IS THE ONE THAT MATTERS. Publishing four more profiles fixes today; making OCCASIONS the full nine, and refusing a version that carries fewer, is what stops the list and the requirement drifting apart again — which is how they got here.",
+      "plan": "plans/F-130-nine-occasions.md"
     },
     {
       "id": "F-131",
@@ -3710,7 +3711,7 @@
     },
     {
       "id": "F-132",
-      "title": "The governed-document link scan reads a code span as a markdown link",
+      "title": "Two scans still read a comment as code — the link finder and the join matcher",
       "requirements": [
         "NFR-19"
       ],
@@ -3720,13 +3721,14 @@
       "status": "backlog",
       "blockedBy": [],
       "acceptance": [
-        "A code span containing the character sequence that opens a markdown link target is not reported as a broken link",
-        "A real broken link in the same document still fails, proven by decoy documents the check must accept and must reject"
+        "A code span containing the character sequence that opens a markdown link target is not reported as a broken link by verify-state.mjs",
+        "A path-building call written inside a comment is not reported as a read by verify-cache-scope.mjs",
+        "Both still flag the real thing, proven by fixtures each check must accept and must reject"
       ],
       "verification": [
         "state"
       ],
-      "notes": "FOUND BY WRITING F-127’S OWN PROGRESS ENTRY, WHICH IS THE THIRD INSTANCE OF F-127’S DEFECT. verify-state.mjs finds links in governed documents with a regex over the whole text, so a CODE SPAN describing a call whose callee is an element access was read as a markdown link whose target is an ellipsis, and gate 0 failed with \"does not resolve\". The sentence was reworded to avoid the syntax — the same workaround F-055 and F-056 took, and the same cost: the sentence that named the shape is gone. SAME CLASS, DIFFERENT SCAN. F-127 fixed verify-unsafe-call-sites.mjs and verify-cache-scope.mjs and deliberately did not sweep the rest; this is the rest arriving on its own. The distinction here is cheaper than either of those: a link inside a code span is not a link, and markdown code spans are delimited by backticks, so no parser is needed — stripping fenced blocks and inline spans before scanning is enough. WHY `could` AND NOT `should`: the false positive costs a rewording in a document, not a broken product, and gate 0 fails loudly rather than passing wrongly. It is filed because a known break is recorded rather than remembered, and because the same defect has now been found three times in three scans, which is the shape of a class rather than a bug. THE SECOND CRITERION IS THE POINT, as it was in F-127: a narrowed matcher that stops matching would pass every document forever, and that is worse than the false positive."
+      "notes": "FOUND BY WRITING F-127’S OWN PROGRESS ENTRY, WHICH IS THE THIRD INSTANCE OF F-127’S DEFECT. verify-state.mjs finds links in governed documents with a regex over the whole text, so a CODE SPAN describing a call whose callee is an element access was read as a markdown link whose target is an ellipsis, and gate 0 failed with \"does not resolve\". The sentence was reworded to avoid the syntax — the same workaround F-055 and F-056 took, and the same cost: the sentence that named the shape is gone. SAME CLASS, DIFFERENT SCAN. F-127 fixed verify-unsafe-call-sites.mjs and verify-cache-scope.mjs and deliberately did not sweep the rest; this is the rest arriving on its own. The distinction here is cheaper than either of those: a link inside a code span is not a link, and markdown code spans are delimited by backticks, so no parser is needed — stripping fenced blocks and inline spans before scanning is enough. WHY `could` AND NOT `should`: the false positive costs a rewording in a document, not a broken product, and gate 0 fails loudly rather than passing wrongly. It is filed because a known break is recorded rather than remembered, and because the same defect has now been found three times in three scans, which is the shape of a class rather than a bug. THE SECOND CRITERION IS THE POINT, as it was in F-127: a narrowed matcher that stops matching would pass every document forever, and that is worse than the false positive. A SECOND SCAN, FOUND BY F-130 THE SAME DAY. F-127 taught `verify-cache-scope.mjs` to tell a reference from a mention for a bare path LITERAL — it parses those now — but the `join(…)` matcher beside it was left as a regular expression over the file’s text, comments included. F-130’s note explaining why a directory path had to be derived from a file SPELLED THE PATH-BUILDING CALL OUT, and the scan read the comment and failed the gate. Fourth instance of this class in one session, third scan, and the second half of a check F-127 fixed only one half of — which is the part worth recording: a narrowed matcher that is narrowed in ONE of its two branches leaves the defect exactly where it was, and the passing half makes it look addressed."
     },
     {
       "id": "F-133",
