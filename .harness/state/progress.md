@@ -8,6 +8,78 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-111 DONE · the middle state was run on purpose
+
+`verify-token-reach.mjs`'s own header named F-111 as the feature that would do this, so the work
+adds **no mechanism**: one group entry, one declaration, three proof cases.
+
+### The group was added first, and the check watched failing
+
+Four steps — `xl2`, `xl3`, `xl4`, `xl5` — reported unreached, before any declaration existed. A
+declaration written in the same edit as the group would never have been observed doing anything,
+and *"the check now covers spacing"* would have rested on nobody having seen it fail.
+
+| Step | Readers |
+|---|---|
+| `xs` 5 · `sm` 7 · `md` 4 · `lg` 2 · `xl` 2 | reached |
+| `xl2` `xl3` `xl4` `xl5` | **0** |
+
+**F-103's note predicted five and there are four.** `xl` has two readers —
+`CameraUnavailable.tsx` and `Preferences.tsx` — and the note was written before anybody counted.
+The header now says four, and says why.
+
+### The read shape differs from every other group, and getting it wrong would have been quiet
+
+Colour tokens, radius steps and type steps arrive as **string literals in a prop** — `radius="md"`,
+`size="xs"` — which is why those groups carry a `props` list. Spacing arrives as
+`nativeSpacing.md` inside a style object.
+
+So `props` is deliberately **empty**. A plausible-looking `['gap', 'padding', 'margin']` would
+have matched nothing and reported all nine steps as unreached: four true declarations and five
+false ones, each with a reason somebody would have had to invent.
+
+### The wording is the feature
+
+> **rhythm for a layout tier that does not exist, kept on purpose**
+
+Not *"not used yet"*, which is a note that rots into a deletion the first time somebody tidies.
+Deleting 28, 40, 56 and 96 would not remove dead code — it would remove the decision that this
+product leaves space, taken in ADR-0074 when the scale was renumbered onto a four-point grid and
+a `14` that nothing used was dropped **precisely because it broke the rule these four keep**.
+
+One entry rather than four: they share a reason, and four copies of a sentence are four places
+for it to drift.
+
+### Three proof cases, and the first is the one that matters
+
+`lg` has exactly two readers. Removing **one** must not fire the check; removing **both** must. A
+check that named a token while a reader remained would be switched off within a week. The third
+plants a declaration for `md` — which four components read — and asserts the dead-exemption
+direction fires *per group*, not only for colour tokens.
+
+The proof suite is twelve cases now, and every one passes.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test | **PASS** — mobile 516, unchanged |
+| 5 build · 8 a11y · 9 contrast | **PASS** |
+
+Token reach is now **80 names — 44 read, 36 declared**, up from 71/39/32.
+
+**Not run:** `e2e`, `color-golden`, `cvd`, `content`, `perf` — nothing here touches colour,
+content or a journey.
+
+### Deliberately not done
+
+Finding `xl2`..`xl5` a surface. That is a design decision about a layout tier that does not
+exist, and inventing one to satisfy a check is the tail wagging the dog. The declaration exists
+so the decision stays visible until somebody makes it for a real reason.
+
+---
+
 ## 2026-09-01 — F-065 DONE · the content's own provenance decided the design
 
 Occasion was already built — F-029 shipped `OCCASIONS`, `ruleSetFor` and five published profiles

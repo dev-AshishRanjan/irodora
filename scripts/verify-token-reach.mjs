@@ -154,11 +154,10 @@ function fail(message) {
  * it has is the problem.
  *
  * `nativeSpacing` WAS in that sentence — it was a positional array with no names to be
- * answerable for. F-103 named its steps, so it *could* now join `radius step` below. It has
- * not, deliberately: the manifest keeps `xl2`..`xl5` as rhythm for layouts not yet built, so
- * adding the group would report five steps as unreached and require each to be declared in
- * `unreached-tokens.json` with a reason. That is a decision about what the scale is FOR, not a
- * consequence of naming it, so it is filed rather than folded in here (F-111).
+ * answerable for. F-103 named its steps and **F-111 added the group**, so all nine are
+ * answerable at leaf level now: `xs` through `xl` are read, and `xl2`..`xl5` are declared as
+ * rhythm for a layout tier that does not exist. Four rather than the five that sentence
+ * predicted — it was written before anybody counted, and `xl` has two readers.
  */
 function namesOf(bindings) {
   const colours = new Set([
@@ -182,6 +181,23 @@ function namesOf(bindings) {
       names: Object.keys(bindings.get('nativeRadius')),
       owners: ['nativeRadius', 'RADIUS'],
       props: ['radius'],
+    },
+    {
+      /*
+       * SPACING IS READ AS A PROPERTY ACCESS, NEVER AS A PROP LITERAL (F-111).
+       *
+       * `radius` and `size` arrive as `radius="md"` and `size="xs"` — string literals in a
+       * prop, which is why those groups carry a `props` list. Spacing arrives as
+       * `nativeSpacing.md` inside a style object, so the owner-qualified form is the ONLY
+       * shape that reads it and `props` is deliberately empty. Adding a plausible-looking
+       * `['gap', 'padding', 'margin']` here would match nothing and quietly report every step
+       * as unreached, which is four declarations that would all be false.
+       */
+      group: 'spacing step',
+      kind: 'literal',
+      names: Object.keys(bindings.get('nativeSpacing')),
+      owners: ['nativeSpacing', 'SPACING'],
+      props: [],
     },
     {
       group: 'type step',
@@ -588,6 +604,55 @@ async function prove() {
     named(viaMap, 'colour token', 'surface.1') && !named(base, 'colour token', 'surface.1'),
     'removing the map a component resolves through names its values',
     'nativeElevation → surface.1, which no literal anywhere names',
+  );
+
+  /*
+   * THE SPACING GROUP, AND IT IS A DIFFERENT SHAPE FROM EVERY CASE ABOVE (F-111).
+   *
+   * Colour tokens and radius steps are read as string LITERALS, so the plants above remove
+   * quoted names. Spacing is read as a property access — `nativeSpacing.lg` — so a plant that
+   * removed a quoted 'lg' would remove nothing and the case would pass while testing nothing.
+   *
+   * `lg` has exactly two readers, which is what makes both halves possible: remove one and the
+   * check must stay quiet, remove both and it must speak.
+   */
+  const lgReaders = sources()
+    .filter((f) => f.source.includes('nativeSpacing.lg'))
+    .map((f) => rel(f.path));
+
+  let oneLg = new Map();
+  oneLg = without(oneLg, lgReaders[0], 'nativeSpacing.lg');
+  const partialLg = await run(oneLg);
+  say(
+    !named(partialLg, 'spacing step', 'lg') && lgReaders.length > 1,
+    'a spacing step with a reader left is NOT named',
+    `${String(lgReaders.length)} readers, one removed — the decoy`,
+  );
+
+  let allLg = new Map();
+  for (const file of lgReaders) allLg = without(allLg, file, 'nativeSpacing.lg');
+  const removedLg = await run(allLg);
+  say(
+    named(removedLg, 'spacing step', 'lg'),
+    'a spacing step whose LAST reader is removed is named',
+    'nativeSpacing.lg — a property access, not a literal',
+  );
+
+  /*
+   * And the reverse direction for this group specifically. `md` has four readers, so a
+   * declaration for it is a dead exemption — the kind that gets waved through later.
+   */
+  const staleSpacing = declaredCopy();
+  staleSpacing.unreached.push({
+    group: 'spacing step',
+    tokens: ['md'],
+    why: 'A planted declaration for a spacing step four components read, to prove the reverse direction for this group.',
+    cites: 'F-111',
+  });
+  say(
+    (await run(new Map(), staleSpacing)).stale.some((x) => x.name === 'md'),
+    'a declaration for a spacing step that IS read is reported',
+    'the dead-exemption direction, per group',
   );
 
   // A declaration for a token that IS read must fail — the reverse direction.
