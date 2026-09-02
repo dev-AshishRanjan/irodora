@@ -12941,3 +12941,111 @@ F-116's static check carries.
 
 ---
 
+## 2026-09-02 — F-127 DONE · a reference is not a mention, and both sentences are back
+
+Two gate scripts decided **what a file does** by matching text in it:
+
+- `verify-unsafe-call-sites.mjs` used `source.includes('unsafeFromHex')`, so a doc comment
+  **saying the function is not called** was reported as an unreviewed call site (F-055).
+- `verify-cache-scope.mjs` matched any escaping `'../…'` literal, so a test asserting that
+  `slugify('../../etc/passwd')` **cannot** produce a traversal was reported as reading
+  `packages/etc/passwd` (F-056).
+
+Both times the fix was to reword the source until the literal disappeared. **Both times the thing
+deleted was the explanation.**
+
+### Why that cost is worse than a false positive
+
+The census exists because *"every call site is reviewed"* is a sentence about people, and a
+sentence about people is not a check. **A check that cannot tell a call from a sentence teaches
+people to stop writing the sentences** — and the prose it suppressed is exactly the kind that
+says which boundary is being preserved and why.
+
+The wrong fix was available both times and declined: adding the file to `REVIEWED` would have
+declared a call site that does not exist, and pre-approved a real one at that path.
+
+### What counts now
+
+| | reference | mention |
+|---|---|---|
+| the identifier | an import that binds it, or a call of it | a comment, a string, a longer name containing it |
+| the path literal | a module specifier, or an argument to a path/fs function | an argument to a function that is not about paths |
+
+Both are AST-level and neither needs a type-checker; `typescript` was already a devDependency and
+F-116 established the technique. **Failing closed is unchanged** — an unparseable file is
+reported, never skipped.
+
+Three properties of the narrowing are deliberate. `PATH_CALLEES` lists what **counts** rather
+than what does not, so a helper nobody enumerated is treated as a path function and the literal
+is still counted. A callee this cannot name — a call through a variable, an element access — is
+**counted**, because *"I could not tell"* must never read as *"it is fine"*. And a literal bound
+to a variable is still counted: only the call-argument case narrowed.
+
+### Increment 3 was the acceptance test
+
+Criteria 1 and 2 are about what the scripts report. **The proof is putting both suppressed
+sentences back** — `measure.ts` names `unsafeFromHex` again, and `export.test.ts` writes
+`slugify('../../etc/passwd')` as the literal it is about — and watching both gates stay green.
+The census now reports `measure.ts` as *a file that names it without using it*, on every run.
+
+### Two mutations survived the first pass, and both were my proof cases' fault
+
+**8 mutations, and the harness asserts both scripts PASS on unmutated source before mutating
+anything** [[a-mutation-harness-that-cannot-start-the-runner-reports-every-mutation-caught]].
+First run: **6/8**.
+
+- *"the census matches any identifier containing the name"* survived, because my ACCEPT case
+  `const notUnsafeFromHexReally = 1` is a **binding** and the mutation loosened the **call**
+  matcher. A case that calls it was added.
+- *"an unnameable callee is treated as safe"* survived, because no case had one. A literal whose callee is an
+  element access was added — and writing that sentence with the syntax in it broke gate 0, which
+  is this feature’s own defect in a third scan. Filed as F-132.
+
+Then 8/8. The most important mutation is the one that makes the matcher **stop matching
+entirely** — that is the real failure of a narrowed check, and it is worse than the false
+positive it replaced because nobody would ever see it fail.
+
+The census's proof cases run **in memory on every invocation**, so there is no plant to clean up
+and no window where a stray file could be committed. `verify-cache-scope.mjs`'s harness went from
+**6 cases to 9**.
+
+### Effects
+
+**E-025** — its guard is `verify-cache-scope.mjs`, so the link and its note now carry what
+changed, the three properties above, and the two survivors. No new link: nothing shared moved.
+
+The lesson [[a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it]] gained its third
+option. It had advised naming things obliquely and assembling fixtures from parts; those are
+workarounds, and it under-stated their price for four features. **Fixing the check is available
+when there is syntax to lean on** — and where there is not (a font subset, a banned-phrase list)
+the workarounds remain right, with `claims.json`'s by-path exemption as their designed form.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| the census · the scope proof (9/9) | **PASS** |
+| 8 mutations | **8/8 caught**, after 2 proof cases were added |
+
+**One thing worth recording rather than shrugging off.** `verify-gate-mirror.mjs` failed twice
+during this feature. The **second** is fully explained: it asserts that removing each CI step
+makes **gate 0** fail, so it runs gate 0 per case — and gate 0 was red at that moment for the
+broken link above. A red gate 0 makes every one of its cases indistinguishable.
+
+The **first** is not explained. Gate 0 was passing, and gate-mirror has since passed six
+consecutive runs including inside a full sweep. It plants and restores workflow files, so a
+collision remains the likely cause. **Not reproduced** — recorded so a second sighting is a
+second sighting rather than a first.
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### Deliberately not built
+
+**A sweep of the other text-matching gates.** Two are named in this feature's criteria; the rest
+is separate work and would be scope nobody reviewed. **Widening the census** — `REVIEWED` stays
+empty, because nothing calls `unsafeFromHex`.
+
+---
+

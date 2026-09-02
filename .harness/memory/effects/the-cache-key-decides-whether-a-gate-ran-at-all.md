@@ -63,6 +63,37 @@ A path assembled at run time, or read through a helper the scan cannot follow. P
 run rather than implied. Rule 1's polarity limits the damage — an unresolvable ascent fails —
 but a read with no `..` in it is invisible to source analysis.
 
+## A reference is not a mention (F-127)
+
+The scan reported `packages/export/test/export.test.ts` as reading `packages/etc/passwd` —
+because the test asserts that `slugify('../../etc/passwd')` **cannot** produce a traversal. The
+literal was the *subject* of the assertion; nothing opened it.
+
+**The cost was a sentence, not a build.** The fix taken at the time assembled the fixture from
+parts — the assertion survived, and the one line showing what the test was about did not. A check
+that cannot tell a reference from a mention teaches people to stop writing the literals that
+explain the thing.
+
+So the bare-literal matcher **parses** now. A path literal that is an argument to a call whose
+callee is not a path or filesystem function is a mention. Three properties are deliberate:
+
+- **`PATH_CALLEES` lists what counts, not what does not.** A helper nobody enumerated is treated
+  as a path function and the literal is still counted — the safe direction.
+- **A callee this cannot name is counted.** A call through a variable or an element access gives
+  no name, and *"I could not tell"* must never read as *"it is fine"*.
+- **A binding is still counted.** `const P = '../../ops/x.json'` is ambiguous and stays
+  conservative; only the call-argument case narrowed.
+
+**The proof harness went from 6 cases to 9**, and the three new ones are the load-bearing ones:
+the `slugify` shape must be **accepted**, a literal handed straight to `readFileSync` must still
+**fire**, and a literal under an unnameable callee must still be **counted**.
+
+Eight mutations were run across this script and the `unsafeFromHex` census — including one that
+makes the matcher stop matching entirely, which is the failure a narrowed matcher actually has
+and is **worse than the false positive it replaced**, because nobody would ever see it fail.
+**Two survived the first run**, and the cases they demanded were added rather than the mutations
+being dropped.
+
 ## The decision embedded in it
 
 A mismatched toolchain **warns and re-keys**; it does not refuse

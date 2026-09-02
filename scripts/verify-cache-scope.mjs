@@ -39,6 +39,7 @@
  */
 
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import ts from 'typescript';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -139,6 +140,70 @@ function baseOf(source, identifier, file, packageDir, depth = 0) {
 }
 
 /**
+ * Callees for which a path-shaped argument really is a path.
+ *
+ * Deliberately a list of what COUNTS rather than a list of what does not: a new helper nobody
+ * enumerated is then treated as a path function and the literal is counted, which is the safe
+ * direction. `slugify` is not here, and neither is anything else that merely takes a string.
+ */
+const PATH_CALLEES = new Set([
+  'join',
+  'resolve',
+  'relative',
+  'normalize',
+  'readFile',
+  'readFileSync',
+  'readdir',
+  'readdirSync',
+  'open',
+  'openSync',
+  'createReadStream',
+  'stat',
+  'statSync',
+  'existsSync',
+  'access',
+  'accessSync',
+  'writeFile',
+  'writeFileSync',
+  'mkdir',
+  'mkdirSync',
+  'copyFile',
+  'copyFileSync',
+  'rm',
+  'rmSync',
+  'realpath',
+  'realpathSync',
+  'import',
+  'require',
+  'fileURLToPath',
+  'pathToFileURL',
+]);
+
+/**
+ * Whether this literal is a MENTION — an argument to a call that is not about paths.
+ *
+ * An import specifier is not a call argument at all, so it is never a mention: a module
+ * specifier is the most literal kind of reference there is.
+ */
+function mentionOnly(node) {
+  const parent = node.parent;
+  if (parent === undefined || !ts.isCallExpression(parent)) return false;
+  if (!parent.arguments.includes(node)) return false;
+
+  const callee = parent.expression;
+  const name = ts.isIdentifier(callee)
+    ? callee.text
+    : ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.name)
+      ? callee.name.text
+      : null;
+
+  // A callee this cannot name — a call through a variable, an element access, an IIFE. Counted,
+  // because "I could not tell" must never read as "it is fine".
+  if (name === null) return false;
+  return !PATH_CALLEES.has(name);
+}
+
+/**
  * Every read this file makes that lands outside its own package.
  *
  * Both spellings are covered: `join(BASE, '..', '..', 'docs', 'y')` and a literal `'../../y'`.
@@ -162,11 +227,40 @@ function escapingReads(source, file, packageDir) {
     found.push({ raw: m[0].slice(0, 80), path: relative(ROOT, target).replace(/\\/gu, '/') });
   }
 
-  for (const m of source.matchAll(/['"`]((?:\.\.\/)+[^'"`]*)['"`]/gu)) {
-    const target = resolve(dirname(file), m[1] ?? '');
-    if (!relative(packageDir, target).startsWith('..')) continue;
-    found.push({ raw: m[0], path: relative(ROOT, target).replace(/\\/gu, '/') });
-  }
+  /*
+   * THE BARE LITERAL, AND WHAT IT IS DOING THERE (F-127).
+   *
+   * This was a regular expression over the whole file, so a test asserting that
+   * `slugify('../../etc/passwd')` CANNOT produce a traversal was reported as reading
+   * `packages/etc/passwd`. The literal was the subject of the assertion, not a path anybody
+   * opened — and the fix taken at the time was to assemble the fixture from parts, which
+   * deleted the one line that showed what the test was actually about.
+   *
+   * A path literal handed to a function that has nothing to do with paths is a MENTION. The
+   * parse is what makes that visible: a regex can find the literal and can find `name(`, and
+   * cannot tell an argument from a binding, a nested call from a flat one, or a callee it
+   * recognises from one it does not.
+   *
+   * Everything else stays conservative. A literal bound to a variable, sitting in an array, or
+   * handed to a callee this cannot name is still counted — being wrong in that direction costs
+   * a sentence, and being wrong in the other costs the check.
+   */
+  const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
+  const visitLiteral = (node) => {
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      const raw = node.text;
+      if (/^(?:\.\.\/)+/u.test(raw) && !mentionOnly(node)) {
+        const target = resolve(dirname(file), raw);
+        if (relative(packageDir, target).startsWith('..'))
+          found.push({
+            raw: node.getText(parsed).slice(0, 80),
+            path: relative(ROOT, target).replace(/\\/gu, '/'),
+          });
+      }
+    }
+    ts.forEachChild(node, visitLiteral);
+  };
+  ts.forEachChild(parsed, visitLiteral);
 
   return found;
 }
@@ -361,6 +455,34 @@ const CASES = [
     name: 'CONTROL — one level up is the package root, not an escape',
     source: `${HERE_DECL}const P = join(HERE, '..', 'golden', 'x.json');\n`,
     expect: (found) => found.length === 0,
+  },
+  {
+    /*
+     * THE F-056 SHAPE, and the reason this feature exists. The literal is the SUBJECT of the
+     * assertion — the test says a traversal cannot survive `slugify` — and nothing opens it.
+     */
+    name: 'CONTROL — a path literal handed to a function that is not about paths',
+    source: "const out = slugify('../../etc/passwd');\n",
+    expect: (found) => found.length === 0,
+  },
+  {
+    /*
+     * AND THE OTHER HALF. A narrowed matcher that stopped matching would pass every CONTROL
+     * above and check nothing at all; this is the case that says it still fires on a read.
+     */
+    name: 'a path literal handed straight to a read still fires',
+    source: "const t = readFileSync('../../ops/x.json', 'utf8');\n",
+    expect: (found) => found.includes('packages/ops/x.json'),
+  },
+  {
+    /*
+     * A CALLEE THIS CANNOT NAME. `mentionOnly` returns false for it, so the literal is counted
+     * — "I could not tell" must never read as "it is fine". A mutation flipping that to
+     * `return true` survived every other case here, which is why this one exists.
+     */
+    name: 'a path literal under a callee this scan cannot name is still counted',
+    source: "const P = handlers[0]('../../ops/x.json');\n",
+    expect: (found) => found.includes('packages/ops/x.json'),
   },
   {
     name: 'CONTROL — a declared global dependency is accounted for',

@@ -16,9 +16,8 @@
  * The claims lint binds language to provenance: **only `reference` and `calibrated` may appear
  * near the word "measured"** (F-025, NFR-21, ADR-0031). FR-28 names `reference` for this path,
  * and it earns it — an instrument produced the number, which is a different kind of fact from
- * a hex somebody liked the look of. The unchecked hex path in `@irodora/color-core` still
- * records `declared` and is not touched — its census counts a file that so much as NAMES it,
- * which is why this sentence describes it instead.
+ * a hex somebody liked the look of. `unsafeFromHex` — the unchecked path in
+ * `@irodora/color-core` — still records `declared`, and is not called from here.
  *
  * That is also why the parse is strict. A `reference` value is the one thing in this product
  * allowed to be called a measurement, so a typo must not become one.

@@ -178,13 +178,11 @@ describe('the filename slug', () => {
 
   it('collapses runs and trims, so a title cannot make a hidden file', () => {
     expect(slugify('  ...Spring   walk!!  ')).toBe('spring-walk');
-    // ASSEMBLED RATHER THAN WRITTEN AS A LITERAL, and the reason is worth a line.
-    // `verify-cache-scope.mjs` scans a test file for paths it reads outside its package, and
-    // it reported this string as one: a traversal literal is indistinguishable from a read to a
-    // textual scan. The assertion is unchanged — what changed is that the fixture no longer
-    // looks like something this file opens. Filed as part of F-127.
-    const traversal = ['..', '..', 'etc', 'passwd'].join('/');
-    expect(slugify(traversal)).toBe('etc-passwd');
+    // WRITTEN AS THE LITERAL IT IS ABOUT, again (F-127). This was assembled from parts for a
+    // while because `verify-cache-scope.mjs` read the traversal as a path this file OPENS —
+    // and the workaround deleted the one line that showed what the test is for. That scan now
+    // parses, and a literal handed to a function that is not about paths is a mention.
+    expect(slugify('../../etc/passwd')).toBe('etc-passwd');
   });
 });
 

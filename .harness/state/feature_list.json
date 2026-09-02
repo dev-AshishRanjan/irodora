@@ -3584,7 +3584,7 @@
       "service": "root",
       "release": "R5",
       "priority": "could",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "A file that names unsafeFromHex in a comment or a string is not reported as a call site by verify-unsafe-call-sites.mjs",
@@ -3595,7 +3595,8 @@
         "state",
         "lint"
       ],
-      "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything. SECOND INSTANCE, FOUND BY F-056 AN HOUR LATER. `verify-cache-scope.mjs` reported `packages/export/test/export.test.ts` as reading `packages/etc/passwd` — because the test asserts that `slugify('../../etc/passwd')` cannot produce a traversal. A traversal LITERAL is indistinguishable from a read to a textual scan, exactly as a mention is indistinguishable from a call. The fixture was assembled from parts instead, with the reason written beside it, and the assertion is unchanged. TWO SCRIPTS, ONE DEFECT: both decide what a file DOES by matching text in it. Failing closed is right and is not the issue — what is missing in both is the distinction between a reference and a mention, which an import, a call expression or a read call makes visible without a full parser. THE COST IS THE SAME BOTH TIMES: the check pushes people to stop writing the literal that explains the thing, and the explanation is the part that was worth having."
+      "notes": "FOUND BY F-055. `scripts/verify-unsafe-call-sites.mjs` decides a file is a call site with `readFileSync(file).includes('unsafeFromHex')` — a substring match over the whole file, comments included. So `apps/mobile/src/measure.ts` was reported as an UNREVIEWED CALL SITE for a doc comment that said the opposite: that a typed measurement is `reference` while the unchecked hex path stays `declared` and is NOT taken. THE WRONG FIX WAS AVAILABLE AND WAS NOT TAKEN. Adding the file to REVIEWED would have made lint green by declaring a call site that does not exist — and worse, it would have pre-approved a REAL call there, which is the one thing the census exists to prevent. The sentence was reworded to avoid the identifier instead, which is why the comment now describes the function rather than naming it. WHY IT MATTERS BEYOND ONE COMMENT: the check's whole argument is that a sentence about people is not a check. A check that cannot tell a call from a sentence teaches people to stop writing the sentences — and the documentation it suppresses is exactly the kind that says which boundary is being preserved and why. FAILING CLOSED IS RIGHT AND IS NOT THE ISSUE: an import or a call expression is what should trip it, and both are distinguishable from prose without a parser. THE SECOND CRITERION IS THE POINT. `verify-guards.mjs` already carries decoy files that its rules must ACCEPT and must REJECT; this needs the same, or a narrowed matcher will quietly stop matching anything. SECOND INSTANCE, FOUND BY F-056 AN HOUR LATER. `verify-cache-scope.mjs` reported `packages/export/test/export.test.ts` as reading `packages/etc/passwd` — because the test asserts that `slugify('../../etc/passwd')` cannot produce a traversal. A traversal LITERAL is indistinguishable from a read to a textual scan, exactly as a mention is indistinguishable from a call. The fixture was assembled from parts instead, with the reason written beside it, and the assertion is unchanged. TWO SCRIPTS, ONE DEFECT: both decide what a file DOES by matching text in it. Failing closed is right and is not the issue — what is missing in both is the distinction between a reference and a mention, which an import, a call expression or a read call makes visible without a full parser. THE COST IS THE SAME BOTH TIMES: the check pushes people to stop writing the literal that explains the thing, and the explanation is the part that was worth having.",
+      "plan": "plans/F-127-a-reference-is-not-a-mention.md"
     },
     {
       "id": "F-128",
@@ -3697,6 +3698,26 @@
         "contrast"
       ],
       "notes": "FILED BY F-122, WHICH DELIBERATELY DID NOT BUILD IT. FR-41 is \"browse, filter and group the wardrobe\". F-122 built the browse surface and the colour grouping, and its own acceptance criteria name only those — so filtering was out of scope for the id that was reviewed, and building it there would have been scope nobody checked against a requirement. THIS IS FILED RATHER THAN ABSORBED BECAUSE THE COVERAGE ROW IS THE THING F-122 EXISTED TO FIX. FR-41 was recorded as delivered by F-042, a package feature verified by gates that cannot apply to a package. Letting F-122 close the row as fully covered while a third of the requirement is unbuilt would be the same defect in a new coat — a requirement reported as delivered by work that did not deliver it. THE COLUMNS ARE ALREADY IN THE SCHEMA. `garment.type`, `garment.formality` and the seasons join were built by F-042 and are editable as of F-122, so this is a screen and a predicate rather than a migration. `groupByColour` takes a garment list and returns groups, so a filter composes in front of it with no change to the grouping — which is why F-122 made it a pure function over a list rather than something the screen does while rendering."
+    },
+    {
+      "id": "F-132",
+      "title": "The governed-document link scan reads a code span as a markdown link",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A code span containing the character sequence that opens a markdown link target is not reported as a broken link",
+        "A real broken link in the same document still fails, proven by decoy documents the check must accept and must reject"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FOUND BY WRITING F-127’S OWN PROGRESS ENTRY, WHICH IS THE THIRD INSTANCE OF F-127’S DEFECT. verify-state.mjs finds links in governed documents with a regex over the whole text, so a CODE SPAN describing a call whose callee is an element access was read as a markdown link whose target is an ellipsis, and gate 0 failed with \"does not resolve\". The sentence was reworded to avoid the syntax — the same workaround F-055 and F-056 took, and the same cost: the sentence that named the shape is gone. SAME CLASS, DIFFERENT SCAN. F-127 fixed verify-unsafe-call-sites.mjs and verify-cache-scope.mjs and deliberately did not sweep the rest; this is the rest arriving on its own. The distinction here is cheaper than either of those: a link inside a code span is not a link, and markdown code spans are delimited by backticks, so no parser is needed — stripping fenced blocks and inline spans before scanning is enough. WHY `could` AND NOT `should`: the false positive costs a rewording in a document, not a broken product, and gate 0 fails loudly rather than passing wrongly. It is filed because a known break is recorded rather than remembered, and because the same defect has now been found three times in three scans, which is the shape of a class rather than a bug. THE SECOND CRITERION IS THE POINT, as it was in F-127: a narrowed matcher that stops matching would pass every document forever, and that is worse than the false positive."
     }
   ]
 }

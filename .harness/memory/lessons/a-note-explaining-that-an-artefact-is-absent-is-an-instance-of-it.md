@@ -56,6 +56,36 @@ constraint is about.** Documentation and content occupy the same scanned space.
   second instance, and it fails on the following run. Re-run the gate after writing the
   explanation, not only after writing the fix.
 
+## The third option: fix the check (F-127)
+
+The two remedies above are workarounds, and they have a price this note under-stated for four
+features. **What gets deleted is the explanation.** F-055's comment said which boundary was being
+preserved and why `unsafeFromHex` is not called; F-056's fixture said the test was about a path
+traversal. Both survived as assertions and died as prose.
+
+That price is worst on exactly the checks whose whole argument is *"a sentence about people is
+not a check."* A check that cannot tell a call from a sentence **teaches people to stop writing
+the sentences.**
+
+So the third option is to make the check able to tell:
+
+| | reference | mention |
+|---|---|---|
+| an identifier | an import that binds it, or a call of it | a comment, a string, a longer name containing it |
+| a path literal | a module specifier, or an argument to a path/fs function | an argument to a function that is not about paths |
+
+Both distinctions are AST-level and neither needs a type-checker — `ts.createSourceFile` is
+enough, and `typescript` is already a devDependency. F-116 established the technique; F-127
+applied it to `verify-unsafe-call-sites.mjs` and `verify-cache-scope.mjs`, and **put both
+suppressed sentences back as the acceptance test**.
+
+**When to reach for which.** Narrowing a matcher is the more dangerous change: a check that
+accepts everything is worse than the false positive it replaced, because nobody will ever see it
+fail. Do it only with decoys in **both** directions, and mutate the matcher to nothing to prove
+the ACCEPT cases are not carrying the whole suite. Where the check is a whole-file content scan
+with no syntax to lean on — a font subset, a banned-phrase list — the workarounds above remain
+right, and `claims.json`'s by-path exemption is the designed version of them.
+
 ## The generalisation worth keeping
 
 > When a check reads raw text, the file's prose is inside its scope. Writing *about* the
