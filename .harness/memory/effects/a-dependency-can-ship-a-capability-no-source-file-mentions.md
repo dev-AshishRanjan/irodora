@@ -64,4 +64,30 @@ both directions. It is the only thing that catches this.
 
 **It runs in `release.yml`.** So a dependency added on a Monday is caught at the next *tag*, not
 on the pull request that added it — F-043 shipped, and five features closed, before this
-surfaced. Closing that delay is [F-114](../../state/feature_list.json).
+surfaced.
+
+## Half of that delay is closed, and knowing which half is the point (F-114)
+
+`scripts/verify-manifest-permissions.mjs` runs on **every pull request**, after gate 6, and reads
+the manifest `expo prebuild` writes. That file is what `app.config.ts` and its plugins
+contribute — including which permissions carry `tools:node="remove"` — so **the config-plugin
+half of this effect now fails the pull request that introduces it.** No Gradle, no JDK, no
+emulator.
+
+**The library-manifest half is exactly as invisible as it was.** `USE_BIOMETRIC`,
+`USE_FINGERPRINT` and `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` are in the shipped APK and in
+**no file that check reads** — they arrive at Gradle time from AARs in a cache. The check names
+all three on every run, green included, so a reader of a passing result cannot mistake it for a
+claim about the artefact.
+
+So the two are not redundant and neither replaces the other:
+
+| | reads | catches | when |
+|---|---|---|---|
+| `verify-manifest-permissions.mjs` | the prebuilt manifest | what the **config** contributes | every pull request |
+| **gate 16** | the built APK | what the **merger** produces, from any source | every tag |
+
+The expectation is not duplicated between them: gate 16 owns `EXPECTED_PERMISSIONS` and the
+pull-request check derives from it, subtracting the three it cannot see. Adding a permission to
+gate 16's list therefore changes what the earlier check requires, automatically — which is the
+right default, because the exception is the thing that needs justifying.

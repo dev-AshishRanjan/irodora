@@ -62,7 +62,9 @@
     "verify:lockfile:prove": "node scripts/verify-lockfile-proof.mjs",
     "verify:no-inference": "node scripts/verify-no-inference.mjs",
     "verify:no-inference:prove": "node scripts/verify-no-inference-proof.mjs",
-    "verify:minsdk:prove": "node scripts/verify-android-min-sdk.mjs --prove"
+    "verify:minsdk:prove": "node scripts/verify-android-min-sdk.mjs --prove",
+    "verify:permissions": "node scripts/verify-manifest-permissions.mjs",
+    "verify:permissions:prove": "node scripts/verify-manifest-permissions.mjs --prove"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

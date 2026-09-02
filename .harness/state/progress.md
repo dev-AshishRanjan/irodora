@@ -8,6 +8,89 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-01 — F-114 DONE · half the delay is closed, and knowing which half is the point
+
+Gate 16 reads the built APK and is the only thing that catches a dependency shipping a
+permission. It runs in `release.yml` because **there is no APK on a pull request** — so the delay
+between introducing a permission and hearing about it was a *tag*. F-043 added
+`expo-image-picker` and `RECORD_AUDIO`; five features closed before a signed artefact said so.
+
+`expo prebuild` already runs inside gate 6 and writes the Android manifest — exactly what
+`app.config.ts` and its plugins contribute, including which permissions carry
+`tools:node="remove"`. So the config half is readable **on the pull request**, with no Gradle, no
+JDK and no emulator, none of which this workstation has.
+
+### The declared list is derived, and the subtraction runs the other way round
+
+`verify-apk.mjs` owns `EXPECTED_PERMISSIONS`, and its own comment records why: the list *"used to
+be a workflow argument duplicated in two files, and keeping two copies of a security-relevant set
+in agreement is not a thing to rely on a person for."*
+
+So the only new list is `MERGED_AT_GRADLE_TIME` — the three permissions this check is **blind
+to** — and what it expects is the artefact's list *minus* those. **Criterion 3 is data rather
+than a sentence**, and the three names print on every run, green included.
+
+| | reads | catches | when |
+|---|---|---|---|
+| `verify-manifest-permissions.mjs` | the prebuilt manifest | what the **config** contributes | every pull request |
+| **gate 16** | the built APK | what the **merger** produces, from any source | every tag |
+
+E-049's note and guard were updated rather than left saying the delay is open.
+
+### Exporting the constant needed a main-module guard
+
+The first import **printed gate 16's usage text and exited** — `verify-apk.mjs` is a script with
+top-level code. The export and the guard are one change, and gate 16's own 20-case proof was run
+before and after to show no behaviour moved.
+
+### INTERNET is asserted as *removed*, not merely absent
+
+An absent line and a `tools:node="remove"` line are different facts: the second survives a
+library manifest asking for INTERNET and the first does not, because the merger adds silently and
+by design. A manifest with neither is a finding — reported as the **NFR-12** finding rather than
+as an unexpected permission, the same split gate 16 draws. Same red, different fix.
+
+### The first draft of the proof had a case that asserted nothing
+
+The absent-manifest case called `existsSync` on a path nobody had created and printed a tick —
+**a decoration wearing a tick**, which is the exact failure this session has spent a day finding
+elsewhere. It now spawns the script against a `--manifest` path that does not exist and reads the
+exit code.
+
+That state matters more than it looks: `prebuild` not having run is the one in which a green
+result means nobody looked.
+
+**Seven cases, all discriminating.** F-043's actual episode replayed — `RECORD_AUDIO` with its
+removal marker dropped — fires. INTERNET fires two ways. A missing `CAMERA` fires. A permission
+mentioned only in a **comment** is correctly not a declaration. And the real manifest is green
+either side, because a proof where everything is red cannot distinguish a working checker from
+one that fails on everything.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build | **PASS** |
+| gate-mirror proof | **PASS** — 14 active gates mirrored |
+| the new check, and its 7-case proof | **PASS** |
+| gate 16's own 20-case proof | **PASS** — run before and after the export |
+
+**One environment note worth leaving.** Gate 16's proof needs `android.jar`, and `ANDROID_HOME`
+on this workstation points **one level above the SDK** — it is `%LOCALAPPDATA%\Android\` where
+the SDK is at `%LOCALAPPDATA%\Android\Sdk`. The proof passes when it is corrected for the
+invocation. A machine misconfiguration rather than a repository defect, recorded so the next
+session does not read the failure as one.
+
+### Deliberately not done
+
+Reading a library manifest — inside an AAR in the Gradle cache, needing a JDK this machine does
+not have; gate 16 is the answer and it exists. iOS `Info.plist` usage strings, a different shape
+named by no criterion here. And any change to gate 16 or its expected list: one
+security-relevant list has one owner.
+
+---
+
 ## 2026-09-01 — F-112 DONE · the rules join the scan, and gate 0 caught me skipping the plan
 
 The change is **one entry in a zone list**. The vocabulary, the `retired-ok` marker, the

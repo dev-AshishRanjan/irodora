@@ -46,7 +46,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
 
@@ -422,7 +422,7 @@ const INTERNET = 'android.permission.INTERNET';
  * What is BLOCKED instead lives in `app.config.ts`: `INTERNET`, `ACCESS_NETWORK_STATE`,
  * both locations, both external-storage permissions, and `SYSTEM_ALERT_WINDOW`.
  */
-const EXPECTED_PERMISSIONS = [
+export const EXPECTED_PERMISSIONS = [
   'android.permission.CAMERA',
   'android.permission.USE_BIOMETRIC',
   'android.permission.USE_FINGERPRINT',
@@ -1030,9 +1030,23 @@ function parseArgs(argv) {
   return out;
 }
 
-const args = parseArgs(process.argv.slice(2));
+/*
+ * THE CLI RUNS ONLY WHEN THIS FILE IS THE ENTRY POINT (F-114).
+ *
+ * `EXPECTED_PERMISSIONS` is exported so `verify-manifest-permissions.mjs` can derive from it
+ * rather than keeping a second copy — which is the mistake this constant's own comment records
+ * having already been made once, as a workflow argument duplicated in two files. Importing a
+ * module runs its top level, so without this guard the import printed gate 16's usage text and
+ * exited; the export and the guard are one change.
+ */
+const isEntryPoint =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 
-if (args.prove) {
+const args = isEntryPoint ? parseArgs(process.argv.slice(2)) : { prove: false, apk: undefined };
+
+if (!isEntryPoint) {
+  // Imported for its exports. Nothing to run.
+} else if (args.prove) {
   prove();
 } else if (!args.apk || args.apk === true) {
   console.log(

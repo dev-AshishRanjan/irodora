@@ -149,6 +149,24 @@ jobs:
       - name: 'Gate 6 — build'
         run: pnpm build
 
+      # NOT A GATE, and F-114's third criterion is that this says so. Gate 16 reads the built
+      # APK and is the only thing that catches a dependency shipping a permission (E-049); it
+      # runs in release.yml because there is no APK on a pull request, which makes the delay
+      # between introducing a permission and hearing about it a TAG.
+      #
+      # `pnpm build` above runs `expo prebuild`, which writes the Android manifest — so what
+      # app.config.ts and its plugins contribute is readable HERE, on the pull request, with no
+      # Gradle and no JDK. It cannot see what library manifests merge in, and it prints the
+      # three permissions it is blind to on every run.
+      #
+      # Ordered after gate 6 deliberately: an absent manifest fails rather than passing with
+      # nothing to read.
+      - name: 'Gate 2 — permission set (config half)'
+        run: pnpm verify:permissions
+
+      - name: 'Gate 2 — permission-set proof'
+        run: pnpm verify:permissions:prove
+
       # ---- gates 7-11: surfaces and content -------------------------------
 
       # Gate 8 runs the scope reporter FIRST — a suite that passes over a component
