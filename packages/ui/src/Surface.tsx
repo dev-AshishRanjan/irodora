@@ -18,8 +18,9 @@
  */
 
 import { View, type ViewProps } from 'react-native';
-import { nativeElevation, nativeRadius } from '@irodora/design-tokens';
+import { nativeElevation, nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
+import type { SpacingStep } from './layout.js';
 
 /** The elevation levels the manifest declares, as a union derived from it. */
 export type ElevationLevel = keyof typeof nativeElevation;
@@ -27,13 +28,20 @@ export type ElevationLevel = keyof typeof nativeElevation;
 export type SurfaceProps = Omit<ViewProps, 'style'> & {
   readonly level?: ElevationLevel;
   readonly radius?: keyof typeof nativeRadius;
-  readonly padding?: number;
+  /**
+   * Inset, as a step of the spacing scale.
+   *
+   * A STEP NAME rather than a number, and this prop is why the narrowing was needed at all: a
+   * tokenised component with an untokenised prop is the leak that lets a literal back in, and
+   * every one of its call sites passed one. See {@link SpacingStep}.
+   */
+  readonly padding?: SpacingStep;
 };
 
 export function Surface({
   level = '1',
   radius = 'md',
-  padding = 0,
+  padding = 'md',
   children,
   ...rest
 }: SurfaceProps): React.JSX.Element {
@@ -46,7 +54,7 @@ export function Surface({
       style={{
         backgroundColor: colors[token],
         borderRadius: nativeRadius[radius],
-        padding,
+        padding: nativeSpacing[padding],
       }}
     >
       {children}

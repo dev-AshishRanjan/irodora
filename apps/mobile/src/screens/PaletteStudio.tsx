@@ -41,9 +41,20 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Chip, SearchField, Surface, Swatch, Text, TextField, useTheme } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  Button,
+  Chip,
+  Row,
+  Screen,
+  SearchField,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+  TextField,
+} from '@irodora/ui';
 import { PALETTE_ROLES, type PaletteRole } from '@irodora/corpus';
 import { uuidv7 } from '@irodora/store';
 import {
@@ -121,7 +132,6 @@ export function PaletteStudio({
   initialDraft,
   today,
 }: PaletteStudioProps): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script } = useMessages();
 
   const [draft, setDraft] = useState<PaletteDraft>(initialDraft ?? EMPTY_DRAFT);
@@ -181,15 +191,15 @@ export function PaletteStudio({
     const entry = entryBySlug(slug);
     if (entry === null) return null;
     return (
-      <View style={{ gap: 8, paddingVertical: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+      <View style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}>
+        <Row gap="md">
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}
             size={48}
           />
-          <View style={{ gap: 4, flexShrink: 1 }}>
+          <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
             <Text size="body" color="foreground" script={script}>
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>
@@ -198,12 +208,12 @@ export function PaletteStudio({
               {entry.derived.hex}
             </Text>
           </View>
-        </View>
+        </Row>
 
         <Text size="xs" color="foreground.2" script={script}>
           {t('studio.role')}
         </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <Row gap="sm" wrap>
           {PALETTE_ROLES.map((r) => (
             <Chip
               key={r}
@@ -214,9 +224,9 @@ export function PaletteStudio({
               }}
             />
           ))}
-        </View>
+        </Row>
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <Row gap="sm" wrap>
           {/*
             The colour's name is in each label. A screen reader moving through a list of
             members otherwise hears "Move up" four times with nothing to tell them apart, and
@@ -245,19 +255,13 @@ export function PaletteStudio({
               edit(removeMember(draft, slug));
             }}
           />
-        </View>
+        </Row>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('studio.title')}
-      </Text>
+    <Screen title={t('studio.title')} script={script}>
       {/*
         Where this palette came from, in the Studio's own words. NEVER the corpus
         classification label — see the note at the top of this file.
@@ -266,7 +270,7 @@ export function PaletteStudio({
         {t('studio.origin')}
       </Text>
 
-      <Surface level="1" padding={16}>
+      <Surface level="1" padding="lg">
         <TextField
           label={t('studio.name')}
           hint={t('studio.nameHint')}
@@ -278,8 +282,8 @@ export function PaletteStudio({
         />
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.members')}
           </Text>
@@ -288,7 +292,7 @@ export function PaletteStudio({
           </Text>
 
           {draft.members.length === 0 ? (
-            <View style={{ gap: 4, paddingVertical: 8 }}>
+            <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.sm }}>
               <Text size="small" color="foreground" script={script}>
                 {t('studio.empty')}
               </Text>
@@ -301,11 +305,11 @@ export function PaletteStudio({
               <Member key={m.slug} slug={m.slug} role={m.role} index={i} />
             ))
           )}
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.add')}
           </Text>
@@ -321,7 +325,7 @@ export function PaletteStudio({
               }}
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
             >
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <Row gap="sm">
                 <Swatch
                   name={m.entry.name.en}
                   hex={m.derived.hex}
@@ -331,14 +335,14 @@ export function PaletteStudio({
                 <Text size="small" color="foreground.2" script={script}>
                   {`${m.entry.name.kanji} ${m.entry.name.en}`}
                 </Text>
-              </View>
+              </Row>
             </Pressable>
           ))}
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="sm">
           <Button
             label={t('studio.save')}
             disabled={problem !== null}
@@ -361,7 +365,7 @@ export function PaletteStudio({
               {t('studio.saved')}
             </Text>
           ) : null}
-        </View>
+        </Stack>
       </Surface>
 
       {/*
@@ -378,8 +382,8 @@ export function PaletteStudio({
         samples — so the flag carries no colour channel at all, which satisfies golden rule 13
         by having nothing to satisfy.
       */}
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t('cvd.title')}
           </Text>
@@ -389,11 +393,16 @@ export function PaletteStudio({
             </Text>
           ) : (
             separationProblems.map((finding) => (
-              <View key={`${finding.a.id}-${finding.b.id}`} style={{ gap: 8, paddingVertical: 8 }}>
+              <View
+                key={`${finding.a.id}-${finding.b.id}`}
+                style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}
+              >
                 <Text size="small" color="foreground" script={script}>
                   {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
                 </Text>
-                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
+                <View
+                  style={{ flexDirection: 'row', gap: nativeSpacing.sm, alignItems: 'baseline' }}
+                >
                   <Text size="xs" color="foreground.2" script={script}>
                     {t('cvd.separation')}
                   </Text>
@@ -410,7 +419,7 @@ export function PaletteStudio({
                   <View
                     style={{
                       flexDirection: 'row',
-                      gap: 12,
+                      gap: nativeSpacing.md,
                       alignItems: 'center',
                       flexWrap: 'wrap',
                     }}
@@ -440,11 +449,11 @@ export function PaletteStudio({
           <Text size="xs" color="foreground.2" script={script}>
             {t('cvd.method')}
           </Text>
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.yours')}
           </Text>
@@ -454,11 +463,11 @@ export function PaletteStudio({
             </Text>
           ) : (
             stored.map((p) => (
-              <View key={p.id} style={{ gap: 4, paddingVertical: 4 }}>
+              <View key={p.id} style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
                 <Text size="small" color="foreground" script={script}>
                   {p.nameEn}
                 </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                <Row gap="sm" wrap>
                   <Button
                     label={`${t('studio.open')} — ${p.nameEn}`}
                     variant="secondary"
@@ -485,7 +494,7 @@ export function PaletteStudio({
                       setSaved(false);
                     }}
                   />
-                </View>
+                </Row>
               </View>
             ))
           )}
@@ -498,8 +507,8 @@ export function PaletteStudio({
               setSaved(false);
             }}
           />
-        </View>
+        </Stack>
       </Surface>
-    </ScrollView>
+    </Screen>
   );
 }

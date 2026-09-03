@@ -8,6 +8,112 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — R6 opened · F-140 DONE · the design system reaches the screen
+
+**Reported:** the UI looks unprofessional and low-effort, and the report is correct. What the
+audit found is that **the design was never bad — it was never applied.**
+
+### The measurement
+
+[`design-system.manifest.json`](../../docs/design/design-system.manifest.json) specifies an
+editorial fashion product. The application rendered almost none of it:
+
+| the manifest says | the app did |
+|---|---|
+| type from **72px** to 10px | every screen opened at **22px**; `display.1`/`display.2` used **zero** times |
+| spacing to **96**, editorial rhythm | largest step used was **20**, twice; `xl2`…`xl5` used **zero** times |
+| a motion system with easings | **nothing animated**, anywhere |
+| 40 HeroUI components available | **five** used; no sheet, dialog, popover, tab bar or card |
+| 80 token names | **36 declared unreached** — 45 % of the system |
+
+`_layout.tsx` was a bare `<Stack>` and `Home.tsx` was ten identical secondary buttons, so the
+whole product was push navigation over a button list.
+
+**And every gate was green**, because each gap was individually declared and justified in
+[`unreached-tokens.json`](../verification/unreached-tokens.json). Read as a list, that file was an
+itemised description of a product nobody had designed — *"Nothing in the product animates"*,
+*"there is no dialog, bottom sheet or modal anywhere in the app yet"*, *"no screen leads with a
+display size"*. [ADR-0080](../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+is the correction.
+
+> The [`visual-taste`](../skills/visual-taste/SKILL.md) skill **predicted this exact failure** and
+> named it — *"correct-but-lifeless… austerity read as a design direction"*. It happened anyway,
+> because no gate could enforce a skill.
+
+### R6 opened — 16 features, F-140…F-155
+
+Register chosen with the reporter: **editorial fashion** (SSENSE, COS, Aesop), over a
+Blinkit/Zomato-style colour-forward alternative and a split system. The reason is colour science
+before taste — saturated chrome adjacent to a sample shifts its perceived colour, which is why
+`swatch.well` exists. Expressive colour lives in the theme picker (F-153/F-154) instead, where the
+user chooses it and the well stays neutral. Direction:
+[`R6-EDITORIAL-DIRECTION.md`](../../docs/design/R6-EDITORIAL-DIRECTION.md).
+
+Four requirements were missing entirely and were added: **FR-69** identity, **FR-70** appearance,
+**FR-71** wayfinding, **FR-72** contemporary equivalents, plus **NFR-25**.
+
+### F-140 — what shipped
+
+Four primitives in `@irodora/ui` whose every spacing prop is a `SpacingStep`
+(`keyof typeof nativeSpacing`), so **a number does not compile**. `Surface.padding` narrowed from
+`number` to the same type — it was the leak, and `typecheck` named all 32 call sites rather than a
+grep. All 16 screens converted: three codemods that each reported what they declined rather than
+guessing, plus three by hand. Every screen now opens at `display.2` and shares one rhythm.
+
+**Proven, not asserted.** Four `@ts-expect-error` cases, each paired with a decoy asserting the
+valid form still compiles — a prop typed `never` would satisfy every refusal and be worse than the
+gap it closed. Then the union was widened to admit `number` and typecheck went red on exactly
+those four, with a clean baseline either side.
+
+### Three things the work turned up — two were defects in the gates
+
+**Tokenising the literals made `verify-spacing-scale.mjs` blind.** It reads integer literals;
+after the conversion it saw **1** declaration instead of 161, passed cheerfully, and reported all
+nine steps as unused because it could no longer see a single use of any. It resolves
+`nativeSpacing.<step>` now, with a new proof case for an unresolvable reference.
+
+**Both self-proofs had rotted against the change.** The spacing proof anchored on a literal that
+no longer exists; the token-reach proof hard-coded `lg` on the strength of a comment reading *"`lg`
+has exactly two readers"* — true when written, false after the conversion. Both select their
+subject at runtime now. A fixture that rots is the same failure as the thing it proves.
+
+**Two gates disagreed about `xl2`** — the spacing gate cannot resolve `nativeSpacing[step]`,
+token-reach can see `padding = 'xl2'` in a default, and both were right about what they could see.
+Ownership is now single: token-reach decides, the spacing gate reports (E-058).
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (37 tasks, 651 mobile + 92 ui) · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** · 10 cvd | **PASS** |
+| `verify-spacing-scale --prove` (7 planted cases) | **PASS** |
+| `verify-token-reach --prove` (10 cases) | **PASS** |
+| the `SpacingStep` union, mutated | **caught (4 × TS2578)** |
+| `closedBy`, mutated 4 ways | **caught** |
+
+**Not run:** `color-golden`, `content` — no colour maths or corpus changed. `e2e`: gate 7 pending.
+
+### Still owed
+
+**`display.1`, `xl4` and `xl5` are not reached**, and are declared with `closedBy` naming F-146
+and F-147. They are hero values; painting them to satisfy a check is the failure ADR-0080 names in
+its own honest-limit section. The criterion is met in the form the ADR intends — every editorial
+step is either used or owned by a named feature — and it is carried as an outstanding attestation
+rather than called done.
+
+**Nothing looked at a phone.** Every gate reads a rendered tree, and a react-test-renderer tree has
+no viewport and no Yoga pass — which is exactly how F-104 shipped a home screen whose last two
+buttons could not be tapped. This is the largest visual change the product has had. Gate 7 is
+still pending; F-091, F-097 and F-104 already owe the same thing.
+
+**The redesign has not started.** F-140 changed how layout is *expressed*; the visual consequence
+is rhythm and type contrast, not new composition. Home still has its ten buttons. F-145 and F-146
+are where that stops.
+
+---
+
 ## 2026-09-01 — F-116 DONE · the crash that no gate could see now has one
 
 **R5's first `must`.** F-115 fixed the instance and left no guard: `sampleFrame` carried the

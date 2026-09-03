@@ -40,7 +40,7 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import { nativeRadius, nativeTapTarget } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
 
 export type ButtonVariant = 'primary' | 'secondary';
@@ -87,7 +87,7 @@ export function Button({
         minWidth: nativeTapTarget,
         minHeight: nativeTapTarget,
         borderRadius: nativeRadius.pill,
-        paddingHorizontal: 20,
+        paddingHorizontal: nativeSpacing.xl,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: background,

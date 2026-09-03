@@ -29,9 +29,9 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, EmptyState, Surface, Text, useTheme } from '@irodora/ui';
+import { Button, EmptyState, Screen, Stack, Surface, Text } from '@irodora/ui';
 import { ExportError, WRITERS, type ExportFile, type ExportSubject } from '@irodora/export';
 import type { FileSink, SaveResult } from '../export/sink';
 import { useMessages } from '../i18n/useMessages';
@@ -77,7 +77,6 @@ export function Export({
   onBuildPalette,
 }: ExportProps): React.JSX.Element {
   const { t, script } = useMessages();
-  const { colors } = useTheme();
 
   const [format, setFormat] = useState<Format>(initialFormat);
   const [outcome, setOutcome] = useState<SaveResult | null>(null);
@@ -106,13 +105,7 @@ export function Export({
   }, [sink, subject, write]);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('export.title')}
-      </Text>
+    <Screen title={t('export.title')} script={script}>
       <Text size="small" color="foreground.2" script={script}>
         {t('export.origin')}
       </Text>
@@ -130,8 +123,8 @@ export function Export({
         )
       ) : (
         <>
-          <Surface level="1" padding={12}>
-            <View style={{ gap: 8 }}>
+          <Surface level="1" padding="md">
+            <Stack gap="sm">
               <Text size="body" color="foreground" script={script} heading>
                 {t('export.subject')}
               </Text>
@@ -163,7 +156,7 @@ export function Export({
               <Text size="small" color="foreground.2" script={script} numeric>
                 {`${t('export.versions')}: ${subject.envelope.engine} · ${subject.envelope.corpus} · ${subject.envelope.rules}`}
               </Text>
-            </View>
+            </Stack>
           </Surface>
 
           <Text size="body" color="foreground" script={script} heading>
@@ -199,8 +192,8 @@ export function Export({
           <Button label={t('export.save')} onPress={save} />
 
           {refusal === null ? null : (
-            <Surface level="1" padding={12}>
-              <View style={{ gap: 4 }}>
+            <Surface level="1" padding="md">
+              <Stack gap="xs">
                 <Text size="body" color="foreground" script={script}>
                   {t('export.refused')}
                 </Text>
@@ -213,7 +206,7 @@ export function Export({
                 <Text size="small" color="foreground.2" script={script}>
                   {refusal}
                 </Text>
-              </View>
+              </Stack>
             </Surface>
           )}
 
@@ -226,6 +219,6 @@ export function Export({
           )}
         </>
       )}
-    </ScrollView>
+    </Screen>
   );
 }

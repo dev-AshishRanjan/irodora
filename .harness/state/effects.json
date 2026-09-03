@@ -2147,6 +2147,88 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-057",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ui/src/layout.tsx#SpacingStep"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Surface.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/layout.test.tsx"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:typecheck — `SpacingStep` is `keyof typeof nativeSpacing`, so a numeric or unknown step stops compiling at the call site. Pinned by four `@ts-expect-error` cases in packages/ui/test/layout.test.tsx, each paired with a decoy asserting the valid form still compiles; widening the union to admit `number` turns all four into TS2578 \"unused directive\" errors, which was run and observed.",
+      "memory": "memory/effects/spacing-is-a-step-name-so-a-number-cannot-reach-a-screen.md",
+      "rationale": "The layout primitives take a spacing STEP NAME, never a number, and `Surface.padding` was narrowed from `number` to the same type — it was the leak, a tokenised component with an untokenised prop, and all 32 of its call sites passed a literal. THE EFFECT THAT MATTERS IS THE ONE ON THE SCALE ITSELF: because every prop is `keyof typeof nativeSpacing`, renaming or removing a step in the manifest is now a compile error at every surface that wanted it, rather than a silently different number. That is the property ADR-0074 bought when the scale stopped being a positional array, extended from the token module to the screens. THE COST is that a layout needing something the primitives do not express — `flex`, `flexShrink`, `paddingVertical` — cannot use them, because there is deliberately no `style` passthrough: a passthrough would re-admit every literal the types exist to refuse, in the one place nobody greps. Those 44 sites keep a `View` and reference `nativeSpacing.<step>` instead, which is the same guarantee by a weaker mechanism — the value follows the manifest, but nothing stops the next one being written as a number.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-058",
+      "from": {
+        "kind": "contract",
+        "ref": ".harness/verification/unreached-tokens.json#closedBy"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-token-reach.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-spacing-scale.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "scripts",
+        ".harness"
+      ],
+      "severity": "high",
+      "guard": "gate:a11y (verify-token-reach.mjs) — every exemption must carry `closedBy` naming a feature id that exists in feature_list.json and is not `done`, or `null` with a `permanentBecause`. Proven by four mutations, each run and observed to fail: the field removed, a DONE feature named, a non-existent feature named, and `null` with no `permanentBecause`.",
+      "memory": "memory/effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md",
+      "rationale": "THE EXEMPTION FILE READ AS A LIST WAS AN ITEMISED DESCRIPTION OF AN UNDESIGNED PRODUCT — no display type, no editorial spacing, no motion, no dialog, no chart — and every entry was individually true, well argued, and green. `closedBy` is what makes \"not built yet\" and \"abandoned\" different rows. THE COUPLING THIS CREATES IS THE POINT AND ALSO THE RISK: `verify-token-reach.mjs` now READS `feature_list.json`, so the scope subsystem and the token gate are linked where they were independent. Renaming a feature id, or marking one `done` while its exemption stands, now fails gate 8 — which is the intended behaviour and will surprise whoever hits it first. THE SECOND HALF is that `verify-spacing-scale.mjs` deliberately does NOT enforce the same rule: the two gates see different evidence (this one reads style declarations and cannot resolve `nativeSpacing[step]`; token-reach reads step names and sees `padding = 'xl2'` in a default), so two enforcers of one rule would disagree and the disagreement would be settled by whoever was editing. Ownership is single: token-reach decides, and the spacing gate reports.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

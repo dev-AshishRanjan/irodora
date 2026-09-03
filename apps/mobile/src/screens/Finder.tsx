@@ -20,9 +20,9 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { SearchField, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { LEXICON_AXES, type LexiconAxis } from '@irodora/corpus';
 import { find, type FinderKind } from '../finder';
 import { colorFor, type PublishedEntry } from '../corpus';
@@ -61,7 +61,6 @@ export interface FinderProps {
 }
 
 export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script } = useMessages();
   const [query, setQuery] = useState(initialQuery ?? '');
 
@@ -70,7 +69,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
   const result = useMemo(() => find(query), [query]);
   const shown = result.entries.slice(0, LIST_LIMIT);
 
-  function Row({ entry, distance }: { entry: PublishedEntry; distance?: number }) {
+  function ResultRow({ entry, distance }: { entry: PublishedEntry; distance?: number }) {
     return (
       <Pressable
         accessibilityRole="button"
@@ -80,14 +79,21 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         }}
         style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
       >
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: nativeSpacing.md,
+            alignItems: 'center',
+            paddingVertical: nativeSpacing.sm,
+          }}
+        >
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
             color={colorFor(entry.entry)}
             size={40}
           />
-          <View style={{ gap: 4, flexShrink: 1 }}>
+          <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
             <Text size="body" color="foreground" script={script}>
               {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
             </Text>
@@ -117,14 +123,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('finder.title')}
-      </Text>
-
+    <Screen title={t('finder.title')} script={script}>
       <SearchField label={t('finder.search')} value={query} onChangeText={setQuery} />
       <Text size="xs" color="foreground.2" script={script}>
         {t('finder.hint')}
@@ -146,8 +145,8 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
           </Text>
 
           {result.region === undefined ? null : (
-            <Surface level="1" padding={12}>
-              <View style={{ gap: 4 }}>
+            <Surface level="1" padding="md">
+              <Stack gap="xs">
                 <Text size="label" color="foreground.2" script={script} heading>
                   {t('finder.region')}
                 </Text>
@@ -157,7 +156,11 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                   return (
                     <View
                       key={axis}
-                      style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'baseline',
+                        gap: nativeSpacing.sm,
+                      }}
                     >
                       <Text size="small" color="foreground.2" script={script}>
                         {t(AXIS_KEYS[axis])}
@@ -179,27 +182,27 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                 <Text size="xs" color="foreground.2" script={script}>
                   {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
                 </Text>
-              </View>
+              </Stack>
             </Surface>
           )}
 
           {shown.length === 0 ? (
-            <View style={{ gap: 4 }}>
+            <Stack gap="xs">
               <Text size="small" color="foreground" script={script}>
                 {t('finder.none')}
               </Text>
               <Text size="xs" color="foreground.2" script={script}>
                 {t(NOTHING[result.kind])}
               </Text>
-            </View>
+            </Stack>
           ) : (
-            <Surface level="1" padding={12}>
+            <Surface level="1" padding="md">
               <View>
                 <Text size="xs" color="foreground.2" script={script}>
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
                 </Text>
                 {shown.map((entry, i) => (
-                  <Row
+                  <ResultRow
                     key={entry.entry.slug}
                     entry={entry}
                     {...(result.distances === undefined
@@ -212,6 +215,6 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
           )}
         </>
       )}
-    </ScrollView>
+    </Screen>
   );
 }

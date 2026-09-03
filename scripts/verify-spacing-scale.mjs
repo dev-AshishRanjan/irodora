@@ -101,6 +101,27 @@ const declaration = () =>
 const nonLiteral = () =>
   new RegExp(`\\b(${PROPERTIES.join('|')})\\s*:\\s*(?![-\\d\\s]*[\\d])`, 'g');
 
+/**
+ * A property whose value RESOLVES through the scale — `gap: nativeSpacing.sm`.
+ *
+ * ADDED IN F-140, and it is the difference between this gate working and this gate being
+ * decorative. Before that feature the product wrote 147 integer literals and this check read
+ * every one of them. F-140 converted them to token references, which `nonLiteral` classifies as
+ * "not read" — so the run went from 161 declarations checked to **1**, reported a cheerful
+ * pass, and the "used nowhere" line then named all nine steps because it could no longer see a
+ * single use of any of them.
+ *
+ * A check whose subject moved out from under it does not fail; it agrees with everything
+ * [[a-gate-that-errors-is-failing-open]]. So a reference is now read, and it is the form the
+ * codebase is supposed to be written in.
+ *
+ * `nativeSpacing[step]` — the computed form the layout primitives use — resolves to whichever
+ * step the caller passed and cannot be known here. That is the honest limit, and it is fine:
+ * the CALL SITES pass step names, and `typecheck` is what constrains those.
+ */
+const reference = () =>
+  new RegExp(`\\b(${PROPERTIES.join('|')})\\s*:\\s*nativeSpacing\\.([A-Za-z0-9_]+)`, 'g');
+
 function sourceFiles() {
   const found = [];
   const walk = (dir) => {
@@ -126,6 +147,7 @@ const posix = (path) => relative(ROOT, path).replace(/\\/g, '/');
 /** Every spacing declaration in the scanned zones, with enough context to be actionable. */
 export function findDeclarations(files) {
   const declarations = [];
+  const references = [];
   let skipped = 0;
   for (const file of files) {
     const lines = readFileSync(file, 'utf8').split('\n');
@@ -140,10 +162,15 @@ export function findDeclarations(files) {
           property: match[1],
           value: Number(match[2]),
         });
-      skipped += [...line.matchAll(nonLiteral())].length;
+      const resolved = [...line.matchAll(reference())];
+      for (const match of resolved)
+        references.push({ file: posix(file), line: index + 1, step: match[2] });
+      // A reference matches `nonLiteral` too — it is not a plain number. Counting it as
+      // "not read" would report the correct form as a hole.
+      skipped += [...line.matchAll(nonLiteral())].length - resolved.length;
     });
   }
-  return { declarations, skipped };
+  return { declarations, references, skipped };
 }
 
 // --- run -------------------------------------------------------------------------------------
@@ -203,7 +230,7 @@ function run() {
     process.exit(1);
   }
 
-  const { declarations, skipped } = findDeclarations(files);
+  const { declarations, references, skipped } = findDeclarations(files);
   if (declarations.length === 0) {
     console.log(
       `${RED}${BOLD}No spacing declarations found at all.${OFF} That is not a clean product; it is a broken scan.\n`,
@@ -243,7 +270,24 @@ function run() {
     );
   });
 
+  /*
+   * USED means "some surface asks for this step", by either spelling: an integer literal that
+   * happens to equal it, or a `nativeSpacing.<name>` reference. After F-140 almost every use is
+   * the second kind, so a check that counted only the first would report a fully-applied scale
+   * as entirely unused.
+   */
+  const byName = new Map(Object.entries(scaleRaw).filter(([k]) => !k.startsWith('_')));
   const used = new Set(declarations.map((d) => d.value));
+  for (const r of references) {
+    const value = byName.get(r.step);
+    if (value === undefined)
+      problems.push(
+        `${r.file}:${String(r.line)}  nativeSpacing.${r.step} is not a step of the scale. ` +
+          'A reference to a step that does not exist is a compile error at the call site, so ' +
+          'this one is most likely a rename that left a comment or a string behind.',
+      );
+    else used.add(value);
+  }
   const unusedSteps = scale.filter((s) => !used.has(s));
 
   console.log(
@@ -256,13 +300,29 @@ function run() {
         `integer literal. This check says nothing about those.${OFF}`,
     );
 
-  // Reported, never failed. Steps for layouts not yet built are legitimate (ADR-0074 keeps
-  // 28 upward for exactly that reason); a step nobody uses is worth SEEING, not blocking on.
+  /*
+   * REPORTED HERE, ENFORCED IN `verify-token-reach.mjs` (F-140, ADR-0080).
+   *
+   * Until F-140 this line was the only thing anywhere that noticed an unapplied step, and it
+   * was yellow — which is how four editorial steps stayed unused across two releases while
+   * every gate was green. ADR-0080 makes an unreached step a FAILURE with a named owner.
+   *
+   * But the failing check belongs in `verify-token-reach.mjs` rather than here, and the reason
+   * is that the two gates can see different things. This one reads style declarations, so it
+   * cannot resolve `nativeSpacing[step]` — the computed form the layout primitives use, where
+   * the step is whatever the caller passed. token-reach reads the step NAMES, so it sees
+   * `padding = 'xl2'` in a default and counts it.
+   *
+   * Two gates enforcing one rule from different evidence would disagree, and the disagreement
+   * would be resolved by whoever was editing that day. So ownership is single: token-reach
+   * decides, `unreached-tokens.json` records, and this line is information.
+   */
   if (unusedSteps.length > 0)
     console.log(
-      `  ${YELLOW}!${OFF} ${DIM}${String(unusedSteps.length)} step(s) used nowhere: ` +
-        `${unusedSteps.join(', ')}. Rhythm for layouts not built yet, per ADR-0074 — reported ` +
-        `so it stays a decision rather than a habit.${OFF}`,
+      `  ${YELLOW}!${OFF} ${DIM}${String(unusedSteps.length)} step(s) with no literal or ` +
+        `resolvable reference here: ${unusedSteps.join(', ')}. NOT a verdict — this check ` +
+        `cannot see nativeSpacing[step]. verify-token-reach.mjs owns the failing check ` +
+        `(ADR-0080).${OFF}`,
     );
 
   if (offBase.length > 0)
@@ -305,18 +365,33 @@ async function prove() {
     return { code: r.status ?? 1, output: `${r.stdout}${r.stderr}` };
   };
 
+  /*
+   * THE ANCHOR MOVED IN F-140, and the move is the point.
+   *
+   * Every case below used to plant into `<View style={{ gap: 4`, which existed in Home.tsx
+   * because the screens were written in integer literals. F-140 converted them, the anchor
+   * stopped matching, and `--prove` threw instead of silently proving nothing — which is the
+   * behaviour the `planted === original` guard exists for.
+   *
+   * The new anchor is the one `style={{}}` Home still carries: a View with `flexShrink`, which
+   * the layout primitives deliberately do not express. A file with no plantable site at all
+   * would mean this proof had to plant into a file it does not otherwise scan, and a proof
+   * that mutates something unlike its subject proves something else.
+   */
+  const ANCHOR = '<View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>';
+
   const cases = [
     {
       name: 'an off-scale value in a screen',
       expect: 'red',
       matching: /Home\.tsx:\d+\s+gap: 7 is not a step/u,
-      plant: (source) => source.replace('<View style={{ gap: 4', '<View style={{ gap: 7'),
+      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 7, flexShrink: 1 }}>'),
     },
     {
       name: 'a value that was moved off the scale by ADR-0074',
       expect: 'red',
       matching: /gap: 14 is not a step/u,
-      plant: (source) => source.replace('<View style={{ gap: 4', '<View style={{ gap: 14'),
+      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 14, flexShrink: 1 }}>'),
     },
     {
       // The exemption cannot be widened by moving a value into a file that already has one.
@@ -324,7 +399,29 @@ async function prove() {
       expect: 'red',
       matching: /Home\.tsx:\d+\s+padding: 1 is not a step/u,
       plant: (source) =>
-        source.replace('<View style={{ gap: 4', '<View style={{ padding: 1, gap: 4'),
+        source.replace(ANCHOR, '<View style={{ padding: 1, gap: nativeSpacing.xs }}>'),
+    },
+    {
+      /*
+       * THE CASE F-140 ADDED, and the one that keeps this check from going blind.
+       *
+       * Reading `nativeSpacing.<name>` is what stops the gate reporting a fully-tokenised
+       * product as entirely unused. But a reference is only worth reading if a WRONG one is
+       * caught — otherwise the new branch would accept every name and quietly widen the check
+       * into a no-op, which is the failure it was written to repair.
+       */
+      name: 'a reference to a step the scale does not contain',
+      expect: 'red',
+      matching: /Home\.tsx:\d+\s+nativeSpacing\.xl9 is not a step of the scale/u,
+      plant: (source) =>
+        source.replace(ANCHOR, '<View style={{ gap: nativeSpacing.xl9, flexShrink: 1 }}>'),
+    },
+    {
+      // MUST STAY GREEN. The tokenised form is what the codebase is supposed to be written in.
+      name: 'a valid reference to a step — must stay GREEN',
+      expect: 'green',
+      plant: (source) =>
+        source.replace(ANCHOR, '<View style={{ gap: nativeSpacing.xl2, flexShrink: 1 }}>'),
     },
     {
       // MUST STAY GREEN. This repository's styles are heavily commented and the comments
@@ -339,7 +436,7 @@ async function prove() {
       // MUST STAY GREEN. A step of the scale is a step of the scale.
       name: 'a newly added ON-scale value — must stay GREEN',
       expect: 'green',
-      plant: (source) => source.replace('<View style={{ gap: 4', '<View style={{ gap: 28'),
+      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 28, flexShrink: 1 }}>'),
     },
   ];
 
@@ -438,7 +535,23 @@ async function prove() {
     writeFileSync(MANIFEST, `${JSON.stringify(perturbed, null, 2)}\n`, 'utf8');
     const followed = runCheck();
     writeFileSync(MANIFEST, manifestText, 'utf8');
-    if (followed.code === 0 || !/padding: 20 is not a step/u.test(followed.output))
+    /*
+     * EITHER SPELLING IS VALID EVIDENCE, and F-140 is why this now says so.
+     *
+     * The case removes step 20 from the manifest and asserts the check notices. It used to
+     * notice as `padding: 20 is not a step`, because a screen carried that literal. After F-140
+     * the product references `nativeSpacing.xl` instead — five times — so the same mutation
+     * surfaces as an unresolvable reference.
+     *
+     * The check went red either way; only the expected wording was stale, which is a proof
+     * whose subject moved rather than a regression. Accepting both spellings keeps the case
+     * honest if a literal ever comes back, and keeps it from asserting a message shape that has
+     * nothing to do with what it is proving.
+     */
+    const noticed =
+      /padding: 20 is not a step/u.test(followed.output) ||
+      /nativeSpacing\.xl is not a step of the scale/u.test(followed.output);
+    if (followed.code === 0 || !noticed)
       problems.push(
         'removing a step from the MANIFEST did not change the verdict — the check is reading a ' +
           'copy of the scale rather than the scale, and would agree with the manifest only on ' +

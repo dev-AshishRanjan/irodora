@@ -14,7 +14,9 @@
         "TAP_TARGET"
       ],
       "cites": "ADR-0020, ADR-0051",
-      "why": "The web target. apps/mobile is the only surface (ADR-0051), so nothing in the reader zone imports these — their only reader is emit.test.ts, which is precisely the case this check reports. They are emitted anyway because four targets from one manifest is what stops web and mobile drifting the day a web surface exists (ADR-0020). Deleting them would remove the guarantee, not the dead code."
+      "why": "The web target. apps/mobile is the only surface (ADR-0051), so nothing in the reader zone imports these — their only reader is emit.test.ts, which is precisely the case this check reports. They are emitted anyway because four targets from one manifest is what stops web and mobile drifting the day a web surface exists (ADR-0020). Deleting them would remove the guarantee, not the dead code.",
+      "closedBy": null,
+      "permanentBecause": "ADR-0051 — the web target exists so four targets cannot drift"
     },
     {
       "group": "binding",
@@ -25,7 +27,9 @@
         "nativeLargeTextMinPx"
       ],
       "cites": "ADR-0054, F-039",
-      "why": "Emitted to CONSTRAIN, not to paint. TEXT_TOKENS is read only through its derived `TextToken` type, which is what stops `foreground.3` compiling below the large-text floor in Text.tsx. The other three are read in real code only by packages/ui/src/testing/conformance.ts, which this check deliberately does not count as a reader — that exclusion is what makes acceptance criterion 2 mean anything. A value whose job is to be checked against is a real value with no pixel, and that difference belongs here where it can be read rather than inferred."
+      "why": "Emitted to CONSTRAIN, not to paint. TEXT_TOKENS is read only through its derived `TextToken` type, which is what stops `foreground.3` compiling below the large-text floor in Text.tsx. The other three are read in real code only by packages/ui/src/testing/conformance.ts, which this check deliberately does not count as a reader — that exclusion is what makes acceptance criterion 2 mean anything. A value whose job is to be checked against is a real value with no pixel, and that difference belongs here where it can be read rather than inferred.",
+      "closedBy": null,
+      "permanentBecause": "ADR-0054 — emitted to constrain the type, never to paint"
     },
     {
       "group": "binding",
@@ -33,7 +37,8 @@
         "nativeMotion"
       ],
       "cites": "F-092, scripts/verify-motion.mjs",
-      "why": "Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone — the durations and easings exist so that when something does move, the values are already decided rather than invented at the call site. The rule they belong to (motion may not animate a colour) is enforced from the manifest side by verify-motion.mjs, so it is guarded whether or not this binding is imported."
+      "why": "Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone — the durations and easings exist so that when something does move, the values are already decided rather than invented at the call site. The rule they belong to (motion may not animate a colour) is enforced from the manifest side by verify-motion.mjs, so it is guarded whether or not this binding is imported.",
+      "closedBy": "F-144"
     },
     {
       "group": "colour token",
@@ -45,7 +50,8 @@
         "border.on.surface.3"
       ],
       "cites": "F-017, F-087",
-      "why": "Every component that draws a line reaches for `border.strong` instead — the boundary of an outlined control, which is the case the components actually have. `border` is the translucent decorative hairline, and no surface built so far wants one. The four `.on.*` forms are the pre-composited values the contrast gate measured, never something a component reads: a component reads the translucent token and lets the platform composite it."
+      "why": "Every component that draws a line reaches for `border.strong` instead — the boundary of an outlined control, which is the case the components actually have. `border` is the translucent decorative hairline, and no surface built so far wants one. The four `.on.*` forms are the pre-composited values the contrast gate measured, never something a component reads: a component reads the translucent token and lets the platform composite it.",
+      "closedBy": "F-143"
     },
     {
       "group": "colour token",
@@ -57,7 +63,8 @@
         "backdrop.on.surface.3"
       ],
       "cites": "F-026, F-043",
-      "why": "A scrim needs something to sit behind, and there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route. The first flow that needs one is the guided profile setup (F-026), and add-garment (F-043) after it. Same composite story as `border`: the `.on.*` forms are what the contrast gate measured, not what a component reads."
+      "why": "A scrim needs something to sit behind, and there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route. The first flow that needs one is the guided profile setup (F-026), and add-garment (F-043) after it. Same composite story as `border`: the `.on.*` forms are what the contrast gate measured, not what a component reads.",
+      "closedBy": "F-143"
     },
     {
       "group": "colour token",
@@ -69,7 +76,8 @@
         "chart.5"
       ],
       "cites": "F-048, F-055",
-      "why": "There is no chart in the product. The five-step near-achromatic ramp exists because a data series must be distinguishable without hue (golden rule 13), and deciding that under deadline is how a rainbow palette gets shipped. Wardrobe coverage and gap analysis (F-048) is the first surface that plots anything; the professional dE tables (F-055) are the second."
+      "why": "There is no chart in the product. The five-step near-achromatic ramp exists because a data series must be distinguishable without hue (golden rule 13), and deciding that under deadline is how a rainbow palette gets shipped. Wardrobe coverage and gap analysis (F-048) is the first surface that plots anything; the professional dE tables (F-055) are the second.",
+      "closedBy": "F-150"
     },
     {
       "group": "colour token",
@@ -77,7 +85,8 @@
         "foreground.3"
       ],
       "cites": "F-003, F-017",
-      "why": "The token that exists to be restricted, and nothing paints it. Its usage is `largeText` — it fails AA against every surface below the WCAG large-text floor — so Text's `ColorFor<S>` type admits it only at a display or title size. The type permits it; no caller asks for it, and the one place a reader might expect it (the Home micro-label) carries a comment saying that label uses `foreground.2` and NOT this. Found only when this check stopped counting comments as reads: every mention of it in the reader zone is prose about why it is dangerous."
+      "why": "The token that exists to be restricted, and nothing paints it. Its usage is `largeText` — it fails AA against every surface below the WCAG large-text floor — so Text's `ColorFor<S>` type admits it only at a display or title size. The type permits it; no caller asks for it, and the one place a reader might expect it (the Home micro-label) carries a comment saying that label uses `foreground.2` and NOT this. Found only when this check stopped counting comments as reads: every mention of it in the reader zone is prose about why it is dangerous.",
+      "closedBy": "F-148"
     },
     {
       "group": "radius step",
@@ -87,27 +96,27 @@
         "xl"
       ],
       "cites": "F-017",
-      "why": "Steps of a scale that IS used — `sm`, `md`, `pill` and `swatch` are all read, so the scale itself is reaching components and only these three steps have found no surface. That is the ordinary state of a scale: some steps have found no surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it — which is what `nativeSpacing` was until F-095, and why that entry was here and is now gone. The distinction is worth keeping written down, because it decides whether an entry is a note or a defect."
+      "why": "Steps of a scale that IS used — `sm`, `md`, `pill` and `swatch` are all read, so the scale itself is reaching components and only these three steps have found no surface. That is the ordinary state of a scale: some steps have found no surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it — which is what `nativeSpacing` was until F-095, and why that entry was here and is now gone. The distinction is worth keeping written down, because it decides whether an entry is a note or a defect.",
+      "closedBy": "F-143"
     },
     {
       "group": "spacing step",
       "tokens": [
-        "xl2",
-        "xl3",
         "xl4",
         "xl5"
       ],
       "cites": "F-111, ADR-0074, F-103",
-      "why": "RHYTHM FOR A LAYOUT TIER THAT DOES NOT EXIST, KEPT ON PURPOSE — not four steps nobody got round to using. 28, 40, 56 and 96 are the top of an editorial scale whose whole argument is that 間 (ma) is a design element: the manifest says the larger steps carry more of the layout than a typical dense UI would give them, and every screen built so far is a scrolling list or a form, which is the densest thing this product has. `xs` through `xl` are read 20 times across packages/ui and apps/mobile, so the scale itself reaches components and only its top four have found no surface — the ordinary state of a scale, and the same sentence the radius entry above makes about `xs`, `lg` and `xl`. THE WORDING IS THE POINT, and it is why this feature existed separately from F-103. A declaration that said \"not used yet\" is a note that rots into a deletion the first time somebody tidies, and deleting these would not remove dead code: it would remove the decision that this product leaves space, taken in ADR-0074 when the scale was renumbered onto a four-point grid and a 14 that nothing used was dropped precisely BECAUSE it broke the rule these four keep. The first surface that spends one is a display-led layout — the same one waiting on type steps `display.1` and `display.2`, which are unreached for the same reason and are declared two entries below."
+      "why": "THE TOP TWO STEPS OF THE EDITORIAL SCALE — 56 and 96 — and what is left of an entry that covered four. F-140 reached `xl2` (28) and `xl3` (40): they are `Screen`’s page inset and its rhythm between blocks, so every screen in the product now spends them and the two declarations went. THESE TWO ARE DIFFERENT, and it is worth being exact about why rather than carrying the old sentence forward. 56 and 96 are hero rhythm — the space around a single large thing, which needs a surface built around one. Every screen today is a scrolling list or a form. The first that spends one is the Atlas at photograph scale (F-147), which is also where `display.1` goes, and the two are the same design decision seen from the type side and the space side. Reaching them in F-140 would have meant painting a number to satisfy a check, which ADR-0080 names in its own honest-limit section as the failure this field exists to prevent.",
+      "closedBy": "F-147"
     },
     {
       "group": "type step",
       "tokens": [
-        "display.1",
-        "display.2"
+        "display.1"
       ],
       "cites": "F-017",
-      "why": "The 72px and 34px steps. The other five steps are read by 96 `size=` literals across the screens, so the scale reaches components — but no screen leads with a display size; every one of them opens at `title`. Neither is reached by nativeLargeTextSizes listing them either: a membership test is a question nobody answers with the token, which is why this check does not propagate through arrays. The editorial display type the design system was built around is, so far, not on any screen."
+      "why": "THE 72px STEP. `display.2` (34px) was the other half of this entry until F-140, and it is now read by every screen in the product: `Screen` renders its title at that step, which is what closed the gap between a manifest specifying 72-to-10 and an application rendering 22-to-10. `display.1` is deliberately NOT reached by that change. It is a hero size — one element, alone, carrying a page — and a screen title is not that. Putting 72px on seventeen screen titles would have reached the token and produced a worse product, which is exactly the move ADR-0080 warns about: reach is a floor, not a design review. Its surface is Home (F-146), where the wordmark and the product name lead, and it is declared here rather than painted somewhere to make a gate quiet.",
+      "closedBy": "F-146"
     },
     {
       "group": "status kind",
@@ -116,7 +125,8 @@
         "bad"
       ],
       "cites": "ADR-0054, F-031, F-097",
-      "why": "TWO OF THREE, as of F-097. `warn` is read by the Lens, which shows a capture instruction as a status rather than as prose so it carries an icon as well as its words — colour is never the only channel, and neither is a paragraph of grey text nobody scans. `ok` and `bad` are still requested by no caller: `Status` is built, conforms, and reaches gate 8 through the conformance registry, which ADR-0054 allows as a root, so nothing else reports them. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses stays a written-down fact rather than an assumption that it is used somewhere — and F-097 is what turned one third of it from an assumption into a reader."
+      "why": "TWO OF THREE, as of F-097. `warn` is read by the Lens, which shows a capture instruction as a status rather than as prose so it carries an icon as well as its words — colour is never the only channel, and neither is a paragraph of grey text nobody scans. `ok` and `bad` are still requested by no caller: `Status` is built, conforms, and reaches gate 8 through the conformance registry, which ADR-0054 allows as a root, so nothing else reports them. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses stays a written-down fact rather than an assumption that it is used somewhere — and F-097 is what turned one third of it from an assumption into a reader.",
+      "closedBy": "F-149"
     }
   ]
 }

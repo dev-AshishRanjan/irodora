@@ -33,9 +33,18 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Surface, Swatch, swatchAccessibleName, Text, TextField } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  Button,
+  Row,
+  Screen,
+  Surface,
+  Swatch,
+  swatchAccessibleName,
+  Text,
+  TextField,
+} from '@irodora/ui';
 import type { Color } from '@irodora/color-core';
 import { hexOf } from '../engine';
 import {
@@ -137,148 +146,143 @@ export function Measure({
   }, [parsed, space]);
 
   return (
-    <ScrollView>
-      <View style={{ padding: 16, gap: 16 }}>
-        <Text size="title" color="foreground" heading>
-          {t('measure.title')}
-        </Text>
-        <Text size="body" color="foreground.2">
-          {t('measure.origin')}
-        </Text>
+    <Screen title={t('measure.title')}>
+      <Text size="body" color="foreground.2">
+        {t('measure.origin')}
+      </Text>
 
-        {/* ------------------------------------------------- the reference library */}
-        <Text size="body" color="foreground" heading>
-          {t('measure.library')}
-        </Text>
-        {libraries.map((library) => (
-          <Surface key={library.id} level="1">
-            <View style={{ padding: 12, gap: 8 }}>
-              <Text size="body" color="foreground.2">
-                {library.name}
-              </Text>
-              <Text size="small" color="foreground.2">
-                {t('measure.pickReference')}
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {library.entries.map((entry) => (
-                  <Pressable
-                    key={entry.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={swatchAccessibleName(
-                      entry.name,
-                      hexOf(entry.color),
-                      entry.color,
-                    )}
-                    onPress={() => {
-                      setReferenceId(entry.id);
-                    }}
-                    style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
-                  >
-                    <Swatch
-                      name={entry.name}
-                      hex={hexOf(entry.color)}
-                      color={entry.color}
-                      size={44}
-                      selected={referenceId === entry.id}
-                    />
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          </Surface>
-        ))}
-
-        {reference === null ? (
-          <Text size="body" color="foreground.2">
-            {t('measure.noReference')}
-          </Text>
-        ) : (
-          <Text size="body" color="foreground">
-            {`${t('measure.reference')}: ${reference.name}`}
-          </Text>
-        )}
-
-        {/* ------------------------------------------------------ the entry form */}
-        <Surface level="1">
-          <View style={{ padding: 12, gap: 12 }}>
-            <Text size="body" color="foreground" heading>
-              {t('measure.space')}
+      {/* ------------------------------------------------- the reference library */}
+      <Text size="body" color="foreground" heading>
+        {t('measure.library')}
+      </Text>
+      {libraries.map((library) => (
+        <Surface key={library.id} level="1">
+          <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+            <Text size="body" color="foreground.2">
+              {library.name}
             </Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {ENTRY_SPACES.map((candidate) => (
-                <Button
-                  key={candidate}
-                  label={t(SPACE_KEYS[candidate])}
-                  variant={space === candidate ? 'primary' : 'secondary'}
+            <Text size="small" color="foreground.2">
+              {t('measure.pickReference')}
+            </Text>
+            <Row gap="sm" wrap>
+              {library.entries.map((entry) => (
+                <Pressable
+                  key={entry.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={swatchAccessibleName(
+                    entry.name,
+                    hexOf(entry.color),
+                    entry.color,
+                  )}
                   onPress={() => {
-                    setSpace(candidate);
-                    setFields(EMPTY_FIELDS);
+                    setReferenceId(entry.id);
                   }}
-                />
+                  style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+                >
+                  <Swatch
+                    name={entry.name}
+                    hex={hexOf(entry.color)}
+                    color={entry.color}
+                    size={44}
+                    selected={referenceId === entry.id}
+                  />
+                </Pressable>
               ))}
-            </View>
-
-            {([0, 1, 2] as const).map((index) => (
-              <View key={index} style={{ gap: 4 }}>
-                <TextField
-                  label={t(FIELD_KEYS[space][index])}
-                  value={fields[index]}
-                  onChangeText={(value) => {
-                    setField(index, value);
-                  }}
-                  keyboardType="numbers-and-punctuation"
-                  autoCorrect={false}
-                />
-                {/*
-                 * BENEATH THE FIELD IT NAMES, and nowhere else. `parseMeasurement` returns the
-                 * index precisely so this sentence can sit under the one that is wrong.
-                 */}
-                {problem !== null && problem.field === index ? (
-                  <Text size="small" color="foreground.2">
-                    {t(PROBLEM_KEYS[problem.problem])}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-
-            <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} />
+            </Row>
           </View>
         </Surface>
+      ))}
 
-        {/* ------------------------------------------------------------ the table */}
-        <Text size="body" color="foreground" heading>
-          {t('measure.samples')}
+      {reference === null ? (
+        <Text size="body" color="foreground.2">
+          {t('measure.noReference')}
         </Text>
-        {rows.length === 0 ? (
-          <Text size="body" color="foreground.2">
-            {t('measure.empty')}
+      ) : (
+        <Text size="body" color="foreground">
+          {`${t('measure.reference')}: ${reference.name}`}
+        </Text>
+      )}
+
+      {/* ------------------------------------------------------ the entry form */}
+      <Surface level="1">
+        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+          <Text size="body" color="foreground" heading>
+            {t('measure.space')}
           </Text>
-        ) : (
-          rows.map((row) => (
-            <Surface key={row.id} level="1">
-              <View style={{ padding: 12, gap: 4 }}>
-                <Text size="body" color="foreground" numeric>
-                  {`${row.name} — ${t('compare.difference')}: ${row.deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
-                </Text>
-                {/*
-                 * LAB AND LCH BY DEFAULT, each with the space it was computed in named beside
-                 * it. That is criterion 1, and FR-61's own sentence: the same quantity in a
-                 * different space is a different claim.
-                 */}
-                <Text size="small" color="foreground.2" numeric>
-                  {`${t('space.cielab')}: ${row.lab.map((v) => v.toFixed(2)).join('  ')}`}
-                </Text>
-                <Text size="small" color="foreground.2" numeric>
-                  {`${t('coord.lch')}: ${row.lch.map((v) => v.toFixed(2)).join('  ')}`}
-                </Text>
+          <Row gap="sm">
+            {ENTRY_SPACES.map((candidate) => (
+              <Button
+                key={candidate}
+                label={t(SPACE_KEYS[candidate])}
+                variant={space === candidate ? 'primary' : 'secondary'}
+                onPress={() => {
+                  setSpace(candidate);
+                  setFields(EMPTY_FIELDS);
+                }}
+              />
+            ))}
+          </Row>
+
+          {([0, 1, 2] as const).map((index) => (
+            <View key={index} style={{ gap: nativeSpacing.xs }}>
+              <TextField
+                label={t(FIELD_KEYS[space][index])}
+                value={fields[index]}
+                onChangeText={(value) => {
+                  setField(index, value);
+                }}
+                keyboardType="numbers-and-punctuation"
+                autoCorrect={false}
+              />
+              {/*
+               * BENEATH THE FIELD IT NAMES, and nowhere else. `parseMeasurement` returns the
+               * index precisely so this sentence can sit under the one that is wrong.
+               */}
+              {problem !== null && problem.field === index ? (
                 <Text size="small" color="foreground.2">
-                  {`${t('measure.arrivedIn')}: ${row.originSpace}`}
+                  {t(PROBLEM_KEYS[problem.problem])}
                 </Text>
-              </View>
-            </Surface>
-          ))
-        )}
-      </View>
-    </ScrollView>
+              ) : null}
+            </View>
+          ))}
+
+          <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} />
+        </View>
+      </Surface>
+
+      {/* ------------------------------------------------------------ the table */}
+      <Text size="body" color="foreground" heading>
+        {t('measure.samples')}
+      </Text>
+      {rows.length === 0 ? (
+        <Text size="body" color="foreground.2">
+          {t('measure.empty')}
+        </Text>
+      ) : (
+        rows.map((row) => (
+          <Surface key={row.id} level="1">
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.xs }}>
+              <Text size="body" color="foreground" numeric>
+                {`${row.name} — ${t('compare.difference')}: ${row.deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
+              </Text>
+              {/*
+               * LAB AND LCH BY DEFAULT, each with the space it was computed in named beside
+               * it. That is criterion 1, and FR-61's own sentence: the same quantity in a
+               * different space is a different claim.
+               */}
+              <Text size="small" color="foreground.2" numeric>
+                {`${t('space.cielab')}: ${row.lab.map((v) => v.toFixed(2)).join('  ')}`}
+              </Text>
+              <Text size="small" color="foreground.2" numeric>
+                {`${t('coord.lch')}: ${row.lch.map((v) => v.toFixed(2)).join('  ')}`}
+              </Text>
+              <Text size="small" color="foreground.2">
+                {`${t('measure.arrivedIn')}: ${row.originSpace}`}
+              </Text>
+            </View>
+          </Surface>
+        ))
+      )}
+    </Screen>
   );
 }

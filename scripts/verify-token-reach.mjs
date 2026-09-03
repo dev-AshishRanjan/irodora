@@ -86,6 +86,19 @@ const GENERATED = [
 const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 const DECLARATIONS = join(ROOT, '.harness', 'verification', 'unreached-tokens.json');
 
+/**
+ * The feature ids an exemption may name, and which of them are finished (ADR-0080).
+ *
+ * READ from the scope subsystem rather than listed here, for the reason every checker in this
+ * repository reads its subject: a copy agrees with the source on the day it is written and
+ * never again [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+ */
+const FEATURES = JSON.parse(
+  readFileSync(join(ROOT, '.harness', 'state', 'feature_list.json'), 'utf8'),
+).features;
+const FEATURE_IDS = new Set(FEATURES.map((f) => f.id));
+const DONE_FEATURES = new Set(FEATURES.filter((f) => f.status === 'done').map((f) => f.id));
+
 /** Directories whose components may reach a token. `app/` routes paint chrome, so they count. */
 const READER_ZONES = [
   join(ROOT, 'packages', 'ui', 'src'),
@@ -411,6 +424,43 @@ function declarations(known, groupNames, override) {
           'a type step and they are not the same decision.',
       );
 
+    /*
+     * `closedBy` — ADR-0080, and the field this file existed two releases without.
+     *
+     * Every `why` here was true and well argued, and read as a list they were an itemised
+     * description of a product nobody had designed: no display type, no editorial spacing, no
+     * motion, no dialog, no chart. Each was individually reasonable; together they made
+     * "not built yet" indistinguishable from "abandoned", and the gate called it green.
+     *
+     * So an exemption now names the feature that ends it. `null` is allowed and means exempt
+     * by ARCHITECTURE rather than by schedule — and it costs an extra field, deliberately: a
+     * permanent exemption should be a decision somebody recorded, not a sentence somebody
+     * wrote on the way past.
+     */
+    if (!('closedBy' in entry))
+      problems.push(
+        `${at}.closedBy is missing. ADR-0080: an exemption names the feature that will close ` +
+          'it, or `null` with a `permanentBecause` citing the ADR that makes it permanent. ' +
+          'Without it "not built yet" and "abandoned" are the same entry.',
+      );
+    else if (entry.closedBy === null) {
+      if (typeof entry.permanentBecause !== 'string' || entry.permanentBecause.trim() === '')
+        problems.push(
+          `${at}.closedBy is null but there is no \`permanentBecause\`. An exemption that no ` +
+            'feature will ever close is an architectural decision, and it has to say which one.',
+        );
+    } else if (!FEATURE_IDS.has(entry.closedBy))
+      problems.push(
+        `${at}.closedBy is "${String(entry.closedBy)}", which is not a feature id in ` +
+          'feature_list.json. An exemption owned by nothing is the one this ADR exists to stop.',
+      );
+    else if (DONE_FEATURES.has(entry.closedBy))
+      problems.push(
+        `${at}.closedBy is "${String(entry.closedBy)}", which is DONE. Either that feature ` +
+          'reached the token and this entry should go, or it shipped without doing what it ' +
+          'said — and a dead exemption is how the second one hides.',
+      );
+
     for (const token of entry.tokens ?? []) {
       const k = key(entry.group, token);
       if (byToken.has(k))
@@ -536,6 +586,31 @@ function without(overrides, file, needle) {
   return overrides;
 }
 
+/**
+ * Plant by PATTERN rather than by substring (F-140).
+ *
+ * `without` replaces a literal needle, and two things broke on that when the spacing cases were
+ * made to pick their step at runtime:
+ *
+ * 1. **Prefix collision.** `nativeSpacing.xl` is a substring of `nativeSpacing.xl2`, so removing
+ *    the first mangles the second and the case ends up proving something about a step it never
+ *    named.
+ * 2. **Two spellings.** A step is reached as a property access *and*, since the layout
+ *    primitives, as a quoted step name in a default or a JSX prop. Removing one spelling leaves
+ *    the token reached, so the "last reader removed" half fails while the check is right.
+ *
+ * This removes every spelling of one step, with the boundary made explicit.
+ */
+function withoutStep(overrides, file, step) {
+  const path = join(ROOT, file);
+  const source = overrides.get(file) ?? stripComments(readFileSync(path, 'utf8'));
+  const pattern = new RegExp(`nativeSpacing\\.${step}(?![0-9])|['"]${step}['"]`, 'gu');
+  if (!pattern.test(source))
+    throw new Error(`the plant is stale: ${file} does not reach spacing step ${step}`);
+  overrides.set(file, source.replace(pattern, 'REMOVED_BY_PROVE'));
+  return overrides;
+}
+
 /** Every reader file of a literal, so a token can be removed from all of them at once. */
 function readersOfLiteral(needle) {
   return sources()
@@ -613,34 +688,65 @@ async function prove() {
    * quoted names. Spacing is read as a property access — `nativeSpacing.lg` — so a plant that
    * removed a quoted 'lg' would remove nothing and the case would pass while testing nothing.
    *
-   * `lg` has exactly two readers, which is what makes both halves possible: remove one and the
-   * check must stay quiet, remove both and it must speak.
+   * The case needs a step with MORE THAN ONE reader, so that both halves are possible: remove
+   * one and the check must stay quiet, remove all and it must speak.
+   *
+   * THE STEP IS CHOSEN AT RUNTIME, and F-140 is why. This was hard-coded to `lg` on the
+   * strength of a comment reading "`lg` has exactly two readers" — true when it was written.
+   * F-140 converted the screens onto the primitives and left `lg` with exactly one, so the
+   * decoy half started failing: removing its only reader made the check name it, correctly.
+   *
+   * The proof was right and its fixture had rotted, which is the same failure the thing being
+   * proved exists to catch, one level up
+   * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]]. Picking the
+   * most-read step from the tree means the next conversion cannot rot it again.
    */
-  const lgReaders = sources()
-    .filter((f) => f.source.includes('nativeSpacing.lg'))
-    .map((f) => rel(f.path));
+  /*
+   * BOTH SPELLINGS, and the file list has to use the same pattern the plant does.
+   *
+   * Collecting by `includes('nativeSpacing.md')` alone found fourteen files and missed every
+   * screen that reaches `md` as a quoted step name in a JSX prop. The plant then removed
+   * fourteen files' worth of one spelling, the others still reached it, and the case failed
+   * while the check was right — a fixture narrower than the thing it was planting into.
+   */
+  const stepPattern = (s) => new RegExp(`nativeSpacing\\.${s}(?![0-9])|['"]${s}['"]`, 'u');
+  const spacingReaders = new Map();
+  for (const step of ['xs', 'sm', 'md', 'lg', 'xl', 'xl2', 'xl3', 'xl4', 'xl5']) {
+    const files = sources()
+      .filter((f) => stepPattern(step).test(f.source))
+      .map((f) => rel(f.path));
+    if (files.length > 0) spacingReaders.set(step, files);
+  }
+  const ranked = [...spacingReaders].sort((a, b) => b[1].length - a[1].length);
+  if (ranked.length === 0 || ranked[0][1].length < 2)
+    throw new Error(
+      'no spacing step has two readers, so the decoy half of this case cannot be posed. That ' +
+        'is a real finding about the product, not a broken proof — say so rather than ' +
+        'weakening the case.',
+    );
+  const [step, stepReaders] = ranked[0];
 
-  let oneLg = new Map();
-  oneLg = without(oneLg, lgReaders[0], 'nativeSpacing.lg');
-  const partialLg = await run(oneLg);
+  let oneSpacingLeft = new Map();
+  oneSpacingLeft = withoutStep(oneSpacingLeft, stepReaders[0], step);
+  const spacingPartial = await run(oneSpacingLeft);
   say(
-    !named(partialLg, 'spacing step', 'lg') && lgReaders.length > 1,
+    !named(spacingPartial, 'spacing step', step),
     'a spacing step with a reader left is NOT named',
-    `${String(lgReaders.length)} readers, one removed — the decoy`,
+    `${step}: ${String(stepReaders.length)} readers, one removed — the decoy`,
   );
 
-  let allLg = new Map();
-  for (const file of lgReaders) allLg = without(allLg, file, 'nativeSpacing.lg');
-  const removedLg = await run(allLg);
+  let allSpacingRemoved = new Map();
+  for (const file of stepReaders) allSpacingRemoved = withoutStep(allSpacingRemoved, file, step);
+  const spacingRemoved = await run(allSpacingRemoved);
   say(
-    named(removedLg, 'spacing step', 'lg'),
+    named(spacingRemoved, 'spacing step', step),
     'a spacing step whose LAST reader is removed is named',
-    'nativeSpacing.lg — a property access, not a literal',
+    `nativeSpacing.${step} — a property access, not a literal`,
   );
 
   /*
-   * And the reverse direction for this group specifically. `md` has four readers, so a
-   * declaration for it is a dead exemption — the kind that gets waved through later.
+   * And the reverse direction for this group specifically: a declaration for a step that IS
+   * read is a dead exemption — the kind that gets waved through later.
    */
   const staleSpacing = declaredCopy();
   staleSpacing.unreached.push({

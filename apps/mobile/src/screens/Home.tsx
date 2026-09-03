@@ -1,5 +1,6 @@
-import { ScrollView, View } from 'react-native';
-import { Button, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
+import { Button, Row, Screen, Surface, Swatch, Text } from '@irodora/ui';
 import { differenceOklch, displayFromOklch } from '../engine';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -104,52 +105,36 @@ export function Home({
   onOpenWardrobe,
   onOpenExport,
 }: HomeProps = {}): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script } = useMessages();
   const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
   const difference = differenceOklch(INDIGO, BLUE_BLACK);
 
   return (
     /*
-      A SCROLLVIEW, NOT A VIEW (F-104).
- 
-      This was a fixed `View` with `flex: 1`, so anything past the bottom of the screen was
-      simply unreachable — no scroll, no indicator, nothing to tell a person there was more.
-      On a 6-button home screen the last two entry points could not be tapped at all, and the
-      symptom reads as "the app is missing features" rather than as a layout bug.
- 
-      Nothing could have caught it. The conformance suite renders the tree, and every node was
-      present and correct in it: a react-test-renderer tree has no viewport and no Yoga pass, so
-      "rendered" and "reachable" are the same thing there and different things on a phone
-      [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
- 
-      `contentContainerStyle` carries the padding and the gap. Putting them on `style` instead
-      pads the SCROLLER rather than its content, which clips the last child by exactly the
-      bottom padding — the bug one step smaller and much harder to see.
-    */
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 20 }}
-    >
-      {/*
-        `heading` (F-088). A screen reader navigates by heading, and without the role this
-        announced as ordinary text — the screen had no structure to move through at all.
-        ACCESSIBILITY.md A11 states the requirement; the conformance suite asserts the role
-        reaches the rendered node rather than trusting the prop was passed.
-      */}
-      <Text size="title" color="foreground" script={script} heading>
-        {t('home.title')}
-      </Text>
+      F-104'S LESSON NOW LIVES IN THE COMPONENT (F-140).
 
+      This screen was a fixed `View` with `flex: 1`, so everything past the fold was simply
+      unreachable — on a six-button home screen the last two entry points could not be tapped
+      at all, and the symptom reads as "the app is missing features" rather than as a layout
+      bug. Nothing could have caught it: a react-test-renderer tree has no viewport and no Yoga
+      pass, so "rendered" and "reachable" are the same thing there and different things on a
+      phone [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
+
+      `Screen` scrolls by DEFAULT for that reason, and it is the one place the padding-versus-
+      contentContainerStyle distinction is now written down. A screen that genuinely owns its
+      viewport says `scroll={false}` at the call site, which is a decision somebody made rather
+      than a default they inherited.
+    */
+    <Screen title={t('home.title')} script={script}>
       {swatches.map(({ nameKey, display }) => (
-        <Surface key={nameKey} level="1" padding={12}>
-          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+        <Surface key={nameKey} level="1" padding="md">
+          <Row gap="lg">
             {/*
               The Swatch requires a `Color`, not a hex — provenance is in the type, so a
               sample whose origin nobody recorded cannot be rendered (ADR-0005).
             */}
             <Swatch name={t(nameKey)} hex={display.hex} color={display.color} size={72} />
-            <View style={{ gap: 4, flexShrink: 1 }}>
+            <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
               {/*
                 `foreground.2`, not `foreground.3`. At `size="small"` the type will not accept
                 a largeText-only token, so this is a compile error rather than a review note.
@@ -164,7 +149,7 @@ export function Home({
                 {`${t('colour.source')}: ${display.color.provenance.source}`}
               </Text>
             </View>
-          </View>
+          </Row>
         </Surface>
       ))}
 
@@ -253,6 +238,6 @@ export function Home({
           onOpenMeasure?.();
         }}
       />
-    </ScrollView>
+    </Screen>
   );
 }

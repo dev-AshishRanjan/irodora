@@ -33,9 +33,9 @@
  */
 
 import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
-import { Button, Surface, Text, useTheme } from '@irodora/ui';
+import { Button, Screen, Surface, Text } from '@irodora/ui';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -88,7 +88,6 @@ export function Preferences({
   initialConfirming = false,
   now = () => Date.now(),
 }: PreferencesProps): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
   const [version, setVersion] = useState(0);
@@ -105,13 +104,7 @@ export function Preferences({
   }, [store, locale, version]);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: nativeSpacing.xl, gap: nativeSpacing.lg }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('preferences.title')}
-      </Text>
+    <Screen title={t('preferences.title')} script={script}>
       <Text size="small" color="foreground.2" script={script}>
         {t('preferences.origin')}
       </Text>
@@ -121,7 +114,7 @@ export function Preferences({
          * THE STATE MOST PEOPLE SEE FIRST. A blank list reads as a broken screen; this says what
          * would appear here and what puts it there.
          */
-        <Surface level="1" padding={16}>
+        <Surface level="1" padding="lg">
           <View style={{ gap: nativeSpacing.xs }}>
             <Text size="body" color="foreground" script={script}>
               {t('preferences.empty')}
@@ -132,7 +125,7 @@ export function Preferences({
           </View>
         </Surface>
       ) : (
-        <Surface level="1" padding={16}>
+        <Surface level="1" padding="lg">
           <View style={{ gap: nativeSpacing.md }}>
             <Text size="body" color="foreground" script={script} heading>
               {t('preferences.learned')}
@@ -183,7 +176,7 @@ export function Preferences({
         </Surface>
       )}
 
-      <Surface level="1" padding={16}>
+      <Surface level="1" padding="lg">
         <View style={{ gap: nativeSpacing.sm }}>
           <Text size="body" color="foreground" script={script} heading>
             {t('preferences.resetTitle')}
@@ -236,6 +229,6 @@ export function Preferences({
           )}
         </View>
       </Surface>
-    </ScrollView>
+    </Screen>
   );
 }

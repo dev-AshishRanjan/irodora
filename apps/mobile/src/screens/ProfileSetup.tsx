@@ -32,8 +32,9 @@
  */
 
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Button, Chip, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
+import { Button, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { PROFILE_DIMENSIONS, uuidv7, type ProfileDimension } from '@irodora/store';
 import { colorFor, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -156,7 +157,6 @@ export function ProfileSetup({
   initialAnswers,
   reading,
 }: ProfileSetupProps): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script } = useMessages();
 
   const existing = activeProfile(store);
@@ -245,9 +245,9 @@ export function ProfileSetup({
     if (entries.length === 0) return null;
     const names = entries.map((e) => e.entry.name.en).join(' + ');
     return (
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 12 }}>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="md">
+          <Row gap="md">
             {entries.map((e) => (
               <Swatch
                 key={e.entry.slug}
@@ -257,7 +257,7 @@ export function ProfileSetup({
                 size={64}
               />
             ))}
-          </View>
+          </Row>
           {/*
             The names, always. Two swatches a person cannot separate is exactly the case this
             screen has to keep answerable — golden rule 13, and here it is not an edge case but
@@ -272,15 +272,15 @@ export function ProfileSetup({
               answer(trial, option);
             }}
           />
-        </View>
+        </Stack>
       </Surface>
     );
   }
 
   function Dimension({ dimension }: { dimension: ProfileDimension }) {
     return (
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t(DIMENSION_KEYS[dimension])}
           </Text>
@@ -293,7 +293,7 @@ export function ProfileSetup({
             </Text>
           ) : null}
           <DimensionEditor dimension={dimension} />
-        </View>
+        </Stack>
       </Surface>
     );
   }
@@ -395,7 +395,7 @@ export function ProfileSetup({
         </Text>
       );
     return (
-      <View style={{ gap: 8 }}>
+      <Stack gap="sm">
         {candidates.map((slug) => {
           const found = entryBySlug(slug);
           if (found === null) return null;
@@ -403,7 +403,12 @@ export function ProfileSetup({
           return (
             <View
               key={slug}
-              style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}
+              style={{
+                flexDirection: 'row',
+                gap: nativeSpacing.md,
+                alignItems: 'center',
+                flexWrap: 'wrap',
+              }}
             >
               <Swatch
                 name={found.entry.name.en}
@@ -429,22 +434,18 @@ export function ProfileSetup({
             </View>
           );
         })}
-      </View>
+      </Stack>
     );
   }
 
   const Chips = ({ children }: { children: React.ReactNode }): React.JSX.Element => (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{children}</View>
+    <Row gap="sm" wrap>
+      {children}
+    </Row>
   );
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('profile.title')}
-      </Text>
+    <Screen title={t('profile.title')} script={script}>
       {/*
         THE PRIVACY CLAIM, AND IT DEPENDS ON THE PATH. 'profile.privacy' says "No camera",
         which is true of the guided path and became FALSE the moment F-097 gave the photo path
@@ -460,8 +461,8 @@ export function ProfileSetup({
       </Text>
 
       {!showSummary && current !== undefined ? (
-        <View style={{ gap: 12 }}>
-          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
+        <Stack gap="md">
+          <View style={{ flexDirection: 'row', gap: nativeSpacing.sm, alignItems: 'baseline' }}>
             <Text size="small" color="foreground.2" script={script}>
               {t('profile.progress')}
             </Text>
@@ -476,9 +477,9 @@ export function ProfileSetup({
           {current.options.map((option) => (
             <Option key={option.pole} trial={current} option={option} />
           ))}
-        </View>
+        </Stack>
       ) : (
-        <View style={{ gap: 12 }}>
+        <Stack gap="md">
           <Text size="body" color="foreground" script={script} heading>
             {t('profile.summary')}
           </Text>
@@ -542,7 +543,7 @@ export function ProfileSetup({
           <Text size="xs" color="foreground.2" script={script}>
             {t('profile.restartHint')}
           </Text>
-        </View>
+        </Stack>
       )}
 
       <Button
@@ -568,6 +569,6 @@ export function ProfileSetup({
           {t('profile.saved')}
         </Text>
       ) : null}
-    </ScrollView>
+    </Screen>
   );
 }

@@ -14,7 +14,11 @@ import {
   Button,
   Chip,
   EmptyState,
+  Row,
+  Screen,
   SearchField,
+  Section,
+  Stack,
   Status,
   Surface,
   Swatch,
@@ -86,11 +90,48 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   },
   {
+    /*
+     * THE FOUR LAYOUT PRIMITIVES, IN ONE COMPOSED TREE (F-140).
+     *
+     * Registered as one subject rather than four, deliberately: these components have no
+     * appearance of their own — they are transparent, they paint nothing, and each carries a
+     * single flex property. Four separate subjects would render four empty boxes and report
+     * that nothing was wrong with any of them, which is the shape of a check that passes
+     * because it is looking at the wrong thing.
+     *
+     * COMPOSED is what there is to check here. The gates read a rendered tree, so what they
+     * can see is the text inside the layout meeting its ground at the sizes the scale gives
+     * it — the display tier for the screen title, `title` for a section, `label` for an
+     * eyebrow. That is a real contrast question and it had never been asked of the display
+     * tier, because until this feature nothing in the product rendered one.
+     */
+    name: 'Layout',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Screen title="Atlas" eyebrow="Corpus" scroll={false}>
+          <Section title="Harmony" eyebrow="Relationships">
+            <Stack gap="lg">
+              <Row gap="sm" justify="between">
+                <Text size="body" color="foreground">
+                  Ai-nezumi
+                </Text>
+                <Text size="small" color="foreground.2" numeric>
+                  2.14
+                </Text>
+              </Row>
+            </Stack>
+          </Section>
+        </Screen>,
+        theme,
+      ),
+  },
+  {
     name: 'Surface',
     kind: 'static',
     render: (_state, theme) =>
       draw(
-        <Surface level="2" padding={8}>
+        <Surface level="2" padding="sm">
           <Text size="body" color="foreground">
             Ai-nezumi
           </Text>

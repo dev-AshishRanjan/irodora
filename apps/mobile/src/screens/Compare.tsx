@@ -24,9 +24,9 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { SearchField, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Row, Screen, SearchField, Stack, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import { compare, type AxisDelta, type CompareMetrics } from '../compare';
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -88,7 +88,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
 
   if (a === null || b === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: 20 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -111,7 +111,14 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
     readonly space: string;
   }): React.JSX.Element {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, paddingVertical: 8 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          gap: nativeSpacing.sm,
+          paddingVertical: nativeSpacing.sm,
+        }}
+      >
         <View style={{ flex: 1 }}>
           <Text size="small" color="foreground" script={script}>
             {label}
@@ -157,7 +164,14 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
     readonly suffix?: string;
   }): React.JSX.Element {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, paddingVertical: 4 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          gap: nativeSpacing.sm,
+          paddingVertical: nativeSpacing.xs,
+        }}
+      >
         <Text size="small" color="foreground.2" script={script}>
           {label}
         </Text>
@@ -191,19 +205,19 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
   }): React.JSX.Element {
     const found = matches(query);
     return (
-      <Surface level="1" padding={12}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="md">
+        <Stack gap="sm">
           <Text size="label" color="foreground.2" script={script} heading>
             {label}
           </Text>
-          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          <Row gap="md">
             <Swatch
               name={entry.entry.name.en}
               hex={entry.derived.hex}
               color={colorFor(entry.entry)}
               size={56}
             />
-            <View style={{ gap: 4, flexShrink: 1 }}>
+            <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
               <Text size="body" color="foreground" script={script}>
                 {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
               </Text>
@@ -211,7 +225,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
                 {entry.derived.hex}
               </Text>
             </View>
-          </View>
+          </Row>
 
           <SearchField label={t('compare.choose')} value={query} onChangeText={onQuery} />
 
@@ -226,7 +240,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
               }}
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
             >
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+              <Row gap="sm">
                 <Swatch
                   name={m.entry.name.en}
                   hex={m.derived.hex}
@@ -236,23 +250,16 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
                 <Text size="small" color="foreground.2" script={script}>
                   {`${m.entry.name.kanji} ${m.entry.name.en}`}
                 </Text>
-              </View>
+              </Row>
             </Pressable>
           ))}
-        </View>
+        </Stack>
       </Surface>
     );
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('compare.title')}
-      </Text>
-
+    <Screen title={t('compare.title')} script={script}>
       <Slot label={t('compare.slotA')} entry={a} query={aQuery} onQuery={setAQuery} onPick={setA} />
       <Slot label={t('compare.slotB')} entry={b} query={bQuery} onQuery={setBQuery} onPick={setB} />
 
@@ -262,8 +269,8 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
         </Text>
       ) : null}
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.difference')}
           </Text>
@@ -273,11 +280,11 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
             unit={t('unit.deltaE00')}
             space={t('space.cielab')}
           />
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.perAxis')}
           </Text>
@@ -297,16 +304,19 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
             one axis where the obvious arithmetic gives a plausible wrong answer.
           */}
           <AxisRow label={t('axis.oklchH')} axis={metrics.oklch.h} places={1} suffix="°" />
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.separation')}
           </Text>
           {metrics.separation.map((s) => (
-            <View key={s.deficiency} style={{ gap: 4, paddingVertical: 4 }}>
+            <View
+              key={s.deficiency}
+              style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}
+            >
               <Text size="small" color="foreground" script={script}>
                 {t(CVD_KEYS[s.deficiency])}
               </Text>
@@ -338,11 +348,11 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
           <Text size="xs" color="foreground.2" script={script}>
             {t('cvd.note')}
           </Text>
-        </View>
+        </Stack>
       </Surface>
 
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.contrast')}
           </Text>
@@ -370,8 +380,8 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
           <Text size="xs" color="foreground.2" script={script}>
             {t('contrast.apcaNote')}
           </Text>
-        </View>
+        </Stack>
       </Surface>
-    </ScrollView>
+    </Screen>
   );
 }

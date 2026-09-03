@@ -275,6 +275,22 @@ checked on every commit rather than only in production.
 
 ---
 
+### 5.11 Identity, appearance and wayfinding
+
+The product had a design system, a brand document and no applied identity: no mark, no app
+icon, no splash, no theme choice, and a home screen that was a list of buttons. These are the
+requirements that were missing, written after the audit in
+[`docs/design/R6-EDITORIAL-DIRECTION.md`](design/R6-EDITORIAL-DIRECTION.md).
+
+| ID | Requirement | Accepts when | R |
+|---|---|---|---|
+| **FR-69** | **Applied identity** — a mark, a wordmark, an app icon, an adaptive icon and a splash screen | The mark is recognisable in one colour at 16 px and under protan, deutan and tritan simulation ([BRAND.md §7](design/BRAND.md#7-the-mark)); the icon and splash are declared in `app.config.ts` and asserted present in the built artefact, so a placeholder cannot ship | R6 |
+| **FR-70** | **Appearance is chosen, not assumed** — light, dark, system, a set of preloaded themes, and the device accent colour where the platform exposes one | Every selectable theme is derived through the same OKLCh pipeline as the built-in pair and **passes the contrast and CVD checks before it can be applied**; a derived theme that cannot pass is corrected or refused, never shown. The swatch well and keyline stay neutral in every theme | R6 |
+| **FR-71** | **Wayfinding** — a persistent information architecture, not a list of links | Every primary destination is reachable in one interaction from any other; no screen is reachable only by scrolling a stack of buttons; the structure is announced correctly to a screen reader | R6 |
+| **FR-72** | **Contemporary equivalents** — for a traditional entry, the contemporary colours that correspond to it | Each equivalent is either computed (nearest contemporary reference by ΔE00, with the delta shown) or editorial (a recorded note with provenance), and which one it is is stated. Never described as a match; the copy lint enforces it | R6 |
+
+---
+
 ## 6. Non-functional requirements
 
 | ID | Requirement | Accepts when | R |
@@ -298,6 +314,7 @@ checked on every commit rather than only in production.
 | **NFR-22** | **Ethical guardrails.** No dermatological claim, no ethnic or racial classification, no attractiveness or body judgement | Absent from the data model and the copy; a schema check prevents such a field from being added | R3 |
 | **NFR-23** | **Bias testing.** The personal-colour engine is validated across the full skin-tone range | A held-out validation set stratified by ITA° covers every band with a stated minimum sample; per-band accuracy is published internally and a band that underperforms blocks release of that feature | R3 |
 | **NFR-24** | **Maintainability.** Module and package boundaries are machine-enforced | A cross-boundary import fails `lint`; the colour engine cannot import a platform API | R0 |
+| **NFR-25** | **The design system reaches the product.** A token, step or scale that the manifest defines and no surface uses is a design decision nobody applied | `verify-token-reach` and `verify-spacing-scale` treat an unreached editorial step as a **failure**, not a warning; an exemption must name the feature that will use it and expire with that feature ([ADR-0080](adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)) | R6 |
 
 ---
 

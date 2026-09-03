@@ -61,7 +61,7 @@ export function CameraUnavailable({ error }: CameraUnavailableProps): React.JSX.
         {t('lens.unavailableBody')}
       </Text>
 
-      <Surface level="1" padding={16}>
+      <Surface level="1" padding="lg">
         <View style={{ gap: nativeSpacing.xs }}>
           <Text size="small" color="foreground.2" script={script}>
             {t('lens.unavailableDetail')}

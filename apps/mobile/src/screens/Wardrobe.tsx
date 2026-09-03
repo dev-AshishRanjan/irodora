@@ -40,16 +40,19 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import {
   Button,
   Chip,
   EmptyState,
+  Row,
+  Screen,
+  Stack,
   Surface,
   Swatch,
   swatchAccessibleName,
   Text,
   TextField,
-  useTheme,
 } from '@irodora/ui';
 import { GARMENT_SEASONS, type GarmentEnrichment, type StoredGarment } from '@irodora/store';
 import {
@@ -169,14 +172,14 @@ function FilterRow<K extends string>({
   if (options.length === 0) return null;
 
   return (
-    <View style={{ gap: 8 }}>
+    <Stack gap="sm">
       <Text size="label" color="foreground.2" script={script}>
         {label}
       </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8 }}
+        contentContainerStyle={{ gap: nativeSpacing.sm }}
       >
         <Chip
           label={allLabel}
@@ -196,7 +199,7 @@ function FilterRow<K extends string>({
           />
         ))}
       </ScrollView>
-    </View>
+    </Stack>
   );
 }
 
@@ -239,7 +242,6 @@ export function Wardrobe({
   onAddGarment,
 }: WardrobeProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
-  const { colors } = useTheme();
 
   const [garments, setGarments] = useState<readonly StoredGarment[]>(() => store.listGarments());
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected);
@@ -326,16 +328,9 @@ export function Wardrobe({
 
   if (selected !== null)
     return (
-      <ScrollView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{ padding: 20, gap: 16 }}
-      >
-        <Text size="title" color="foreground" script={script} heading>
-          {t('browse.editing')}
-        </Text>
-
-        <Surface level="1" padding={12}>
-          <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+      <Screen title={t('browse.editing')} script={script}>
+        <Surface level="1" padding="md">
+          <Row gap="lg">
             <Swatch
               name={swatchAccessibleName(
                 selected.color.name,
@@ -349,7 +344,7 @@ export function Wardrobe({
             <Text size="body" color="foreground" script={script}>
               {selected.type}
             </Text>
-          </View>
+          </Row>
         </Surface>
 
         <Text size="small" color="foreground.2" script={script}>
@@ -415,18 +410,11 @@ export function Wardrobe({
             setSaved(false);
           }}
         />
-      </ScrollView>
+      </Screen>
     );
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('browse.title')}
-      </Text>
-
+    <Screen title={t('browse.title')} script={script}>
       {/*
         THE PERSISTENT ADD, and it is not the same thing as the empty state's (F-139).
         An empty-state button gets the FIRST garment in. This is how the second one gets in —
@@ -450,8 +438,8 @@ export function Wardrobe({
         own result would leave somebody unable to clear it.
       */}
       {garments.length === 0 ? null : (
-        <Surface level="1" padding={12}>
-          <View style={{ gap: 12 }}>
+        <Surface level="1" padding="md">
+          <Stack gap="md">
             <Text size="body" color="foreground" script={script} heading>
               {t('browse.filters')}
             </Text>
@@ -512,7 +500,7 @@ export function Wardrobe({
                 />
               </>
             )}
-          </View>
+          </Stack>
         </Surface>
       )}
 
@@ -568,8 +556,8 @@ export function Wardrobe({
           </Text>
 
           {groups.map((group) => (
-            <Surface key={group.family} level="1" padding={12}>
-              <View style={{ gap: 12 }}>
+            <Surface key={group.family} level="1" padding="md">
+              <Stack gap="md">
                 {/*
                   THE HEADING IS THE SECOND CHANNEL. A reader who cannot separate two of these
                   greens still reads two family words, and navigates between them by heading.
@@ -586,7 +574,7 @@ export function Wardrobe({
                 {group.garments.map((garment) => (
                   <View
                     key={garment.id}
-                    style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}
+                    style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
                   >
                     <Swatch
                       name={swatchAccessibleName(
@@ -598,7 +586,7 @@ export function Wardrobe({
                       color={colorOf(garment.color)}
                       size={44}
                     />
-                    <View style={{ gap: 4, flexShrink: 1 }}>
+                    <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
                       <Text size="body" color="foreground" script={script}>
                         {garment.name ?? garment.type}
                       </Text>
@@ -617,11 +605,11 @@ export function Wardrobe({
                     />
                   </View>
                 ))}
-              </View>
+              </Stack>
             </Surface>
           ))}
         </>
       )}
-    </ScrollView>
+    </Screen>
   );
 }

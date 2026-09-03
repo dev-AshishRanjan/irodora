@@ -32,9 +32,18 @@
  */
 
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Surface, Swatch, swatchAccessibleName, Text, TextField } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  Button,
+  Row,
+  Screen,
+  Surface,
+  Swatch,
+  swatchAccessibleName,
+  Text,
+  TextField,
+} from '@irodora/ui';
 import { uuidv7, ingestImage, ImageRejected } from '@irodora/store';
 import {
   draftProblem,
@@ -163,170 +172,164 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
   const swatch = draft.colour;
 
   return (
-    <ScrollView>
-      <View style={{ padding: 16, gap: 16 }}>
-        <Text size="title" color="foreground" heading>
-          {t('wardrobe.title')}
-        </Text>
+    <Screen title={t('wardrobe.title')}>
+      <TextField
+        label={t('wardrobe.type')}
+        placeholder={t('wardrobe.typeHint')}
+        value={draft.type}
+        onChangeText={(type) => {
+          setDraft((d) => ({ ...d, type }));
+          setSaved(false);
+        }}
+      />
 
-        <TextField
-          label={t('wardrobe.type')}
-          placeholder={t('wardrobe.typeHint')}
-          value={draft.type}
-          onChangeText={(type) => {
-            setDraft((d) => ({ ...d, type }));
-            setSaved(false);
+      <Text size="body" color="foreground" heading>
+        {t('wardrobe.colour')}
+      </Text>
+
+      {offered == null ? null : (
+        <Button
+          label={t('wardrobe.fromLens')}
+          onPress={() => {
+            setDraft((d) => ({ ...d, colour: { kind: 'reading', reading: offered } }));
           }}
         />
+      )}
 
-        <Text size="body" color="foreground" heading>
-          {t('wardrobe.colour')}
-        </Text>
+      <Text size="body" color="foreground.2">
+        {t('wardrobe.pickColour')}
+      </Text>
+      <Row gap="sm" wrap>
+        {allEntries()
+          .slice(0, 12)
+          .map((entry) => (
+            <Pressable
+              key={entry.entry.slug}
+              accessibilityRole="button"
+              // NAMED, because the a11y check caught twelve unnamed buttons here. A screen
+              // reader announcing "button, button, button" twelve times is the failure that
+              // looks fine on a screenshot. The helper composes the name, the
+              // hex AND the provenance, so the announcement carries what the swatch does.
+              accessibilityLabel={swatchAccessibleName(
+                entry.entry.name.en,
+                entry.derived.hex,
+                colorFor(entry.entry),
+              )}
+              onPress={() => {
+                setDraft((d) => ({ ...d, colour: { kind: 'corpus', slug: entry.entry.slug } }));
+                setSaved(false);
+              }}
+              style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+            >
+              <Swatch
+                name={entry.entry.name.en}
+                hex={entry.derived.hex}
+                color={colorFor(entry.entry)}
+                size={48}
+                selected={swatch?.kind === 'corpus' && swatch.slug === entry.entry.slug}
+              />
+            </Pressable>
+          ))}
+      </Row>
 
-        {offered == null ? null : (
-          <Button
-            label={t('wardrobe.fromLens')}
-            onPress={() => {
-              setDraft((d) => ({ ...d, colour: { kind: 'reading', reading: offered } }));
-            }}
-          />
-        )}
-
+      <Text size="body" color="foreground" heading>
+        {t('wardrobe.photo')}
+      </Text>
+      <Row gap="sm">
+        <Button
+          label={t('wardrobe.photoLibrary')}
+          onPress={() => {
+            void attach(() => imageSource.pickFromLibrary());
+          }}
+        />
+        <Button
+          label={t('wardrobe.photoCamera')}
+          onPress={() => {
+            void attach(() => imageSource.captureWithCamera());
+          }}
+        />
+      </Row>
+      {draft.image === null ? null : (
         <Text size="body" color="foreground.2">
-          {t('wardrobe.pickColour')}
+          {t('wardrobe.photoAttached')}
         </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {allEntries()
-            .slice(0, 12)
-            .map((entry) => (
-              <Pressable
-                key={entry.entry.slug}
-                accessibilityRole="button"
-                // NAMED, because the a11y check caught twelve unnamed buttons here. A screen
-                // reader announcing "button, button, button" twelve times is the failure that
-                // looks fine on a screenshot. The helper composes the name, the
-                // hex AND the provenance, so the announcement carries what the swatch does.
-                accessibilityLabel={swatchAccessibleName(
-                  entry.entry.name.en,
-                  entry.derived.hex,
-                  colorFor(entry.entry),
-                )}
-                onPress={() => {
-                  setDraft((d) => ({ ...d, colour: { kind: 'corpus', slug: entry.entry.slug } }));
-                  setSaved(false);
-                }}
-                style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
-              >
-                <Swatch
-                  name={entry.entry.name.en}
-                  hex={entry.derived.hex}
-                  color={colorFor(entry.entry)}
-                  size={48}
-                  selected={swatch?.kind === 'corpus' && swatch.slug === entry.entry.slug}
-                />
-              </Pressable>
-            ))}
-        </View>
+      )}
+      {imageProblem ? (
+        <Text size="body" color="foreground.2">
+          {t('wardrobe.photoRejected')}
+        </Text>
+      ) : null}
 
-        <Text size="body" color="foreground" heading>
-          {t('wardrobe.photo')}
-        </Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button
-            label={t('wardrobe.photoLibrary')}
-            onPress={() => {
-              void attach(() => imageSource.pickFromLibrary());
+      <Surface level="1">
+        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+          <Text size="body" color="foreground.2">
+            {t('wardrobe.optional')}
+          </Text>
+          <TextField
+            label={t('wardrobe.brand')}
+            value={typeof draft.enrichment.brand === 'string' ? draft.enrichment.brand : ''}
+            onChangeText={(brand) => {
+              setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, brand } }));
             }}
           />
-          <Button
-            label={t('wardrobe.photoCamera')}
-            onPress={() => {
-              void attach(() => imageSource.captureWithCamera());
+          <TextField
+            label={t('wardrobe.size')}
+            value={typeof draft.enrichment.size === 'string' ? draft.enrichment.size : ''}
+            onChangeText={(size) => {
+              setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, size } }));
             }}
           />
-        </View>
-        {draft.image === null ? null : (
-          <Text size="body" color="foreground.2">
-            {t('wardrobe.photoAttached')}
-          </Text>
-        )}
-        {imageProblem ? (
-          <Text size="body" color="foreground.2">
-            {t('wardrobe.photoRejected')}
-          </Text>
-        ) : null}
-
-        <Surface level="1">
-          <View style={{ padding: 12, gap: 12 }}>
+          {/*
+           * TWO FIELDS FOR ONE FACT, and they are deliberately adjacent. A price and its
+           * currency are a single value — `cost_minor` does not record its own scale — so
+           * the pair is what gets stored or nothing is (F-051, FR-46).
+           */}
+          <TextField
+            label={t('wardrobe.cost')}
+            hint={t('wardrobe.costHint')}
+            value={amountText}
+            onChangeText={setAmountText}
+            keyboardType="decimal-pad"
+          />
+          <TextField
+            label={t('wardrobe.currency')}
+            hint={t('wardrobe.currencyHint')}
+            value={currencyText}
+            onChangeText={setCurrencyText}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={3}
+          />
+          {moneyProblem === null ? null : (
             <Text size="body" color="foreground.2">
-              {t('wardrobe.optional')}
+              {`${t('wardrobe.costNotRecorded')} ${t(COST_PROBLEM_KEYS[moneyProblem])}`}
             </Text>
-            <TextField
-              label={t('wardrobe.brand')}
-              value={typeof draft.enrichment.brand === 'string' ? draft.enrichment.brand : ''}
-              onChangeText={(brand) => {
-                setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, brand } }));
-              }}
-            />
-            <TextField
-              label={t('wardrobe.size')}
-              value={typeof draft.enrichment.size === 'string' ? draft.enrichment.size : ''}
-              onChangeText={(size) => {
-                setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, size } }));
-              }}
-            />
-            {/*
-             * TWO FIELDS FOR ONE FACT, and they are deliberately adjacent. A price and its
-             * currency are a single value — `cost_minor` does not record its own scale — so
-             * the pair is what gets stored or nothing is (F-051, FR-46).
-             */}
-            <TextField
-              label={t('wardrobe.cost')}
-              hint={t('wardrobe.costHint')}
-              value={amountText}
-              onChangeText={setAmountText}
-              keyboardType="decimal-pad"
-            />
-            <TextField
-              label={t('wardrobe.currency')}
-              hint={t('wardrobe.currencyHint')}
-              value={currencyText}
-              onChangeText={setCurrencyText}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              maxLength={3}
-            />
-            {moneyProblem === null ? null : (
-              <Text size="body" color="foreground.2">
-                {`${t('wardrobe.costNotRecorded')} ${t(COST_PROBLEM_KEYS[moneyProblem])}`}
-              </Text>
-            )}
-          </View>
-        </Surface>
+          )}
+        </View>
+      </Surface>
 
-        <Button label={t('wardrobe.save')} disabled={problem !== null} onPress={save} />
-        {/*
-         * A disabled control with no stated reason is the accessibility failure that looks like
-         * polish. The sentence is prose rather than a `Status`: F-069 forbids a status colour
-         * beside a colour sample without a `swatch.well` between them, and this screen is
-         * mostly samples — so it carries no colour channel at all, which satisfies golden rule
-         * 13 by having nothing to satisfy.
-         */}
-        {problem === null ? null : (
-          <Text size="body" color="foreground.2">
-            {t(PROBLEM_KEYS[problem])}
-          </Text>
-        )}
-        {saved ? (
-          <Text size="body" color="foreground.2">
-            {t('wardrobe.saved')}
-          </Text>
-        ) : null}
-
-        <Text size="body" color="foreground.2" numeric>
-          {`${t('wardrobe.count')}: ${String(count)}`}
+      <Button label={t('wardrobe.save')} disabled={problem !== null} onPress={save} />
+      {/*
+       * A disabled control with no stated reason is the accessibility failure that looks like
+       * polish. The sentence is prose rather than a `Status`: F-069 forbids a status colour
+       * beside a colour sample without a `swatch.well` between them, and this screen is
+       * mostly samples — so it carries no colour channel at all, which satisfies golden rule
+       * 13 by having nothing to satisfy.
+       */}
+      {problem === null ? null : (
+        <Text size="body" color="foreground.2">
+          {t(PROBLEM_KEYS[problem])}
         </Text>
-      </View>
-    </ScrollView>
+      )}
+      {saved ? (
+        <Text size="body" color="foreground.2">
+          {t('wardrobe.saved')}
+        </Text>
+      ) : null}
+
+      <Text size="body" color="foreground.2" numeric>
+        {`${t('wardrobe.count')}: ${String(count)}`}
+      </Text>
+    </Screen>
   );
 }

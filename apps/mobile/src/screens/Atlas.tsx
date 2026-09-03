@@ -40,8 +40,8 @@
 
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { Chip, SearchField, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Chip, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import {
   allEntries,
   familyLabel,
@@ -137,7 +137,6 @@ export interface AtlasProps {
 }
 
 export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script, locale } = useMessages();
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -160,14 +159,14 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
     readonly onChange: (value: K | null) => void;
   }): React.JSX.Element {
     return (
-      <View style={{ gap: 8 }}>
+      <Stack gap="sm">
         <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+          contentContainerStyle={{ gap: nativeSpacing.sm }}
         >
           <Chip
             label={t('atlas.all')}
@@ -187,19 +186,12 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
             />
           ))}
         </ScrollView>
-      </View>
+      </Stack>
     );
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('atlas.title')}
-      </Text>
-
+    <Screen title={t('atlas.title')} script={script}>
       {/*
         The version is on the root screen rather than buried in a settings page. Which corpus
         the app holds is what makes every value on every detail screen reproducible (FR-25).
@@ -271,7 +263,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
       />
 
       {active ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Row gap="md">
           <Text size="small" color="foreground.2" script={script}>
             {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
           </Text>
@@ -288,23 +280,23 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
               {t('atlas.clear')}
             </Text>
           </Pressable>
-        </View>
+        </Row>
       ) : null}
 
       {shown.length === 0 ? (
-        <Surface level="1" padding={16}>
-          <View style={{ gap: 8 }}>
+        <Surface level="1" padding="lg">
+          <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
               {t('atlas.empty')}
             </Text>
             <Text size="small" color="foreground.2" script={script}>
               {t('atlas.emptyHint')}
             </Text>
-          </View>
+          </Stack>
         </Surface>
       ) : null}
 
-      <View style={{ gap: 8 }}>
+      <Stack gap="sm">
         {shown.map(({ entry, derived }) => (
           <Pressable
             key={entry.slug}
@@ -318,15 +310,15 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
             // pass — and "it happens to be tall enough" is a measurement nobody took.
             style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
           >
-            <Surface level="1" padding={12}>
-              <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Surface level="1" padding="md">
+              <Row gap="md">
                 {/*
                   `derived.hex` — the engine's answer AT PUBLISH TIME, not recomputed here.
                   The Color comes from the entry's own authored XYZ, so this path converts
                   nothing at all.
                 */}
                 <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={56} />
-                <View style={{ gap: 4, flexShrink: 1 }}>
+                <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
                   <Text size="body" color="foreground" script={script}>
                     {`${entry.name.kanji} ${entry.name.en}`}
                   </Text>
@@ -337,11 +329,11 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
                     {`${familyLabel(entry.taxonomy.family, locale)} · ${t(TEMPERATURE_KEYS[entry.taxonomy.temperature])} · ${derived.hex}`}
                   </Text>
                 </View>
-              </View>
+              </Row>
             </Surface>
           </Pressable>
         ))}
-      </View>
-    </ScrollView>
+      </Stack>
+    </Screen>
   );
 }

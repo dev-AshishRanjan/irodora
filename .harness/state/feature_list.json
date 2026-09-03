@@ -21,7 +21,8 @@
     "R2",
     "R3",
     "R4",
-    "R5"
+    "R5",
+    "R6"
   ],
   "features": [
     {
@@ -3946,6 +3947,515 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-140",
+      "title": "The editorial scale the manifest already specifies reaches the screen",
+      "requirements": [
+        "NFR-25",
+        "NFR-8"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "Layout primitives (Screen, Section, Stack, Row) exist in @irodora/ui and carry the spacing scale, so a screen states rhythm rather than a number",
+        "No screen or component in the reader zone contains a raw numeric padding, gap or margin; the lint fails on one",
+        "display.1 and display.2 are read by real surfaces, and xl2..xl5 spacing is read by real layouts",
+        "verify-token-reach and verify-spacing-scale fail on an unreached editorial step rather than reporting it, and every remaining exemption names the feature that will close it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "THE ROOT CAUSE OF THE REPORTED DEFECT, and it is not that the design is bad — the design was never applied. The manifest specifies an editorial fashion product: a type scale running 72px (display.1) to 10px (label), and a spacing scale whose top four steps are 28/40/56/96 with the note that 間 (ma) is a design element and the larger steps carry more of the layout than a dense UI. MEASURED IN THE TREE: display.1 and display.2 are used ZERO times — every screen opens at title (22px), so the scale the product actually renders is 22-to-10 instead of 72-to-10. xl2, xl3, xl4 and xl5 are used ZERO times; the largest spacing any screen uses is xl (20), twice. Radius is read 7 times in the whole app, and 36 of the design system 80 names are declared unreached — 45 percent of it. A SECOND AND WEAKER FINDING sits underneath: 147 padding, gap and margin values in the screens are written as numeric LITERALS rather than through nativeSpacing. verify-spacing-scale confirms every one lands on the scale, so the values are not wrong — but they agree with the scale by inspection rather than by reference, and nothing stops the next one drifting. THE GATE TURNED THIS INTO A PASS. .harness/verification/unreached-tokens.json declares the display steps unreached because \"no screen leads with a display size\", and the editorial spacing steps as \"RHYTHM FOR A LAYOUT TIER THAT DOES NOT EXIST, KEPT ON PURPOSE\", and verify-spacing-scale.mjs:263 reports unused steps in yellow rather than failing. Each declaration is individually reasonable and together they are an itemised description of an unfinished product that every gate calls green. NFR-25 and ADR-0080 are the correction: an unreached editorial step is unfinished work with an owner, not a standing exemption. First in the release because every other R6 feature composes with these primitives. DONE 2026-09-03. FOUR PRIMITIVES in @irodora/ui — Screen, Section, Stack, Row — whose every spacing prop is a `SpacingStep` (`keyof typeof nativeSpacing`), so a number does not compile. `Surface.padding` narrowed from `number` to the same type; it was the leak, and `typecheck` named all 32 call sites rather than a grep. PROVEN RATHER THAN ASSERTED: four `@ts-expect-error` cases, each paired with a decoy asserting the valid form still compiles (a prop typed `never` would satisfy every refusal and be worse than the gap it closed); then the union was widened to admit `number` and typecheck went red on exactly those four as TS2578 unused directives, with a clean baseline either side. ALL 16 SCREENS converted — three codemods, each reporting what it declined rather than guessing, plus three by hand. 60 Views became Stack/Row by real tag matching (not regex, because the closing tag has to move and Views nest four deep); the remaining 44 carry a property the primitives deliberately do not express and reference `nativeSpacing.<step>` instead. Every screen now opens at `display.2` (34px) rather than `title` (22px), and shares one rhythm: `xl2` inset, `xl3` between blocks. THREE THINGS THE WORK TURNED UP, and two were defects in the gates rather than in the product. FIRST: tokenising the literals made `verify-spacing-scale.mjs` BLIND — it reads integer literals, and after the conversion it saw 1 declaration instead of 161, passed cheerfully, and reported all nine steps as unused because it could no longer see a single use of any. It now resolves `nativeSpacing.<step>` references, with a new proof case that a reference to a step the scale does not contain goes red. SECOND: both self-proofs had rotted against the change — the spacing proof anchored on a literal that no longer exists, and the token-reach proof hard-coded `lg` on the strength of a comment reading \"lg has exactly two readers\", true when written and false after the conversion. Both now select their subject at runtime. THIRD: two gates disagreed about `xl2` — the spacing gate cannot resolve `nativeSpacing[step]`, token-reach can see `padding = 'xl2'` in a default, and both were right about what they could see. Ownership is now single (E-058). THE HONEST LIMIT: `display.1`, `xl4` and `xl5` are NOT reached and are declared with `closedBy` naming F-146 and F-147. Painting them to satisfy a check is the failure ADR-0080 names in its own honest-limit section. Criterion 3 is met in the form the ADR intends — every editorial step is either used or owned by a named feature — and this note says which was which. NOT SEEN ON A DEVICE, and it is not an attested criterion because it was never in this feature's acceptance list — recorded here instead so it is not lost. Every gate run reads a rendered tree, and a react-test-renderer tree has no viewport and no Yoga pass, which is exactly how F-104 shipped a home screen whose last two buttons could not be tapped. The type and spacing change is the largest visual change this product has had and nothing in it looked at a phone. Gate 7 is still pending; F-091, F-097 and F-104 already owe the same thing.",
+      "plan": "plans/F-140-the-editorial-scale-reaches-the-screen.md",
+      "effects": [
+        "E-057",
+        "E-058"
+      ],
+      "attested": [
+        {
+          "criterion": "display.1 and display.2 are read by real surfaces, and xl2..xl5 spacing is read by real layouts",
+          "verifiedBy": "PARTLY GATED, PARTLY OUTSTANDING, and the split is the point. GREEN AND ENFORCED: `display.2` is read by every screen title, `xl2` and `xl3` by `Screen`s inset and rhythm — all three declarations were removed and `verify-token-reach.mjs` fails if any is re-declared while reached (the dead-exemption direction, proven). NOT REACHED: `display.1` (72px) and `xl4`/`xl5` (56, 96). These are hero values and the surfaces that want them are F-146 (Home) and F-147 (the Atlas at photograph scale). They are declared with `closedBy` naming those features, which gate 8 now enforces — an exemption pointing at a done or non-existent feature fails, proven by four mutations. So the criterion as written is not fully met, and the mechanism that will close it is in place and blocking rather than a note.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-141",
+      "title": "The mark and the wordmark",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A geometric mark suggesting arranged colour — relationship, adjacency, interval — exists as SVG, and is neither a swatch nor a droplet",
+        "It is recognisable in one colour at 16px, and under protan, deutan and tritan simulation, asserted by the cvd gate rather than by eye",
+        "A wordmark is set from the product type scale and locks with the mark at defined sizes",
+        "Both are components in @irodora/ui, reachable from a real surface, and render in both themes"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "cvd",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "BRAND.md section 7 has specified this since R0 and nothing was ever drawn: the repository contains no mark, no wordmark and no identity asset of any kind. The brief is already written and unusually specific — wordmark-led, a geometric mark suggesting ARRANGED colour rather than a swatch or a droplet, working in one colour at 16px, and \"a mark that depends on colour to be recognisable is disqualified from this product\". That last line makes the cvd gate the acceptance test rather than a review note, which is why this is a gated feature and not a design task. Blocks F-142, which cannot produce an icon without it."
+    },
+    {
+      "id": "F-142",
+      "title": "The app has an icon and a splash screen, and the build proves it",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-141"
+      ],
+      "acceptance": [
+        "app.config.ts declares icon, adaptiveIcon and splash, derived from the mark",
+        "The splash uses the theme background and honours light and dark",
+        "Gate 16 reads the built artefact and fails if a default or placeholder asset reached it",
+        "The Android adaptive icon is checked in both the circular and the squircle mask"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "build",
+        "a11y"
+      ],
+      "notes": "VERIFIED ABSENT: app.config.ts contains no icon, adaptiveIcon or splash key at all. The only splashscreen_logo.png files in the tree are Expo prebuild placeholders under android/app/src/main/res/, which are generated, untracked and rebuilt by expo prebuild --clean — so the app currently ships whatever Expo defaults to. THE GATE READS THE ARTEFACT rather than the config, deliberately: gate 16 already does exactly this for versionName and versionCode after E-018 found that an environment variable which silently defaulted looks identical to one that was set. A placeholder icon is the same failure shape."
+    },
+    {
+      "id": "F-143",
+      "title": "The components the product actually needs, behind the @irodora/ui boundary",
+      "requirements": [
+        "NFR-8",
+        "NFR-9",
+        "NFR-24"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-140"
+      ],
+      "acceptance": [
+        "Sheet, Dialog, Popover, Tabs, Card, Accordion, Avatar, Alert, Toast, Skeleton, ListGroup, Select, Switch, Slider, Separator and Spinner are wrapped, tokenised and exported",
+        "Every wrapper is registered in the conformance registry and rendered by the a11y and contrast gates in both themes and both locales",
+        "The backdrop token is reached by a real scrim",
+        "Focus order, dismissal and the accessibility role of every overlay are asserted, not assumed"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "heroui-native@1.0.8 ships 40 components. The product uses 5 — Button, Chip, Surface, Text and the two fields. UNUSED AND DIRECTLY REQUESTED: bottom-sheet, dialog, popover, tabs, card, accordion, avatar, alert, toast, skeleton, list-group, menu, select, switch, slider, separator, scroll-shadow, tag-group. ADR-0062 already made HeroUI the component foundation and design-tokens/src/emit/heroui.ts already emits a HeroUI theme from the manifest, so this is an ADOPTION gap and not a migration — the bridge exists and 35 components have never been carried across it. CORROBORATED BY THE TOKEN LEDGER: backdrop is declared unreached with the reason \"there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route\". Wrappers stay thin per .harness/rules/frontend/heroui-wrappers.md; the boundary exists so a component cannot take a colour the gates did not check."
+    },
+    {
+      "id": "F-144",
+      "title": "Motion exists, and it may never move a colour",
+      "requirements": [
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-143"
+      ],
+      "acceptance": [
+        "The manifest durations and easings are a typed API, and nothing animates with a literal",
+        "prefers-reduced-motion collapses every duration to zero, asserted rather than described",
+        "verify-motion fails on an animation of a forbidden property, and on a transition that crosses a swatch colour",
+        "Navigation, sheets, overlays and list entrances use it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "The manifest defines durations (micro 120, local 180, view 260), two easings, an animatable allow-list of opacity and transform, and a forbidden list that includes background-color on a swatch and cross-fade between samples. THE TOKEN LEDGER RECORDS THE STATE PLAINLY: \"Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone.\" An app with zero motion reads as unfinished however correct its colours are, and this is the largest single contributor to the reported feeling of low effort after the type scale. The constraint is real and stays: intermediate frames of a colour cross-fade are plausible colours that never existed, so a user reads a value the engine never produced. verify-motion.mjs already exists and currently guards an empty set."
+    },
+    {
+      "id": "F-145",
+      "title": "The app has an information architecture",
+      "requirements": [
+        "FR-71",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-143"
+      ],
+      "acceptance": [
+        "A persistent tab bar carries the primary destinations, and secondary screens are pushed within a tab",
+        "No destination is reachable only by scrolling a list of buttons",
+        "The structure announces correctly to a screen reader, including the selected tab and the tab count",
+        "The Lens is reachable from every tab, because a reading is the product"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "e2e",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "REPORTED, AND CONFIRMED IN THE TREE: app/_layout.tsx is a bare Stack and Home.tsx is ten identical variant=\"secondary\" buttons in a vertical ScrollView. The whole application is push navigation over a button list, which is why every screen reads as a prototype however correct its contents are. This is also the shape F-104 already met once — the button list overflowed the viewport and the last two entry points could not be tapped at all, which was fixed by making the screen scroll rather than by asking why a home screen was a list of ten buttons."
+    },
+    {
+      "id": "F-146",
+      "title": "Home is an editorial surface",
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-145",
+        "F-141"
+      ],
+      "acceptance": [
+        "The screen leads at a display size and carries the wordmark",
+        "It opens on the product rather than on navigation: what was read, what is in the wardrobe, what is worth looking at",
+        "Sample colours are shown at photographic scale on the neutral well, never as a row of chips",
+        "Every state is designed — first run with nothing stored, populated, and loading"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "The current Home is a title, two 72px swatches, three grey lines of secondary text, and ten buttons. Boldness is spent nowhere, so the visual-taste pre-flight fails at its first question — this screen could be any product. The first-run state matters most and does not exist: a person who has stored nothing currently sees the same ten buttons as a person with a full wardrobe."
+    },
+    {
+      "id": "F-147",
+      "title": "The Atlas and the colour card are photographic, not tabular",
+      "requirements": [
+        "FR-20",
+        "FR-50",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-146"
+      ],
+      "acceptance": [
+        "A colour occupies enough of the screen to be judged, on the neutral well, with the keyline intact",
+        "The Japanese name leads at a display size with its reading; romaji and English are subordinate",
+        "Numeric values remain tabular and complete, and stay subordinate to the colour",
+        "Browsing 120 entries is smooth on a four-year-old mid-range Android"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "REPORTED SPECIFICALLY: \"even the color cards are looking very bad\". The Swatch component is not the defect — it is the most rigorous thing in the UI package, with a gamut-verified two-tone keyline proven to hold at least 3:1 against every sRGB sample. What is wrong is COMPOSITION: it is drawn at 72px beside three lines of 13px grey text, so the artefact the product exists to show is the smallest considered element on the screen. This is the surface the visual-taste skill names as the one place to spend boldness — the swatch at photograph scale — and the one place it is currently not spent."
+    },
+    {
+      "id": "F-148",
+      "title": "The colour page is the centrepiece",
+      "requirements": [
+        "FR-20",
+        "FR-23",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-147"
+      ],
+      "acceptance": [
+        "The entry opens with the colour at full bleed above the fold, on its neutral ground",
+        "Description, historical note, classification, family, season and provenance are set as editorial content rather than as a property list",
+        "Harmony, CVD behaviour and nearest neighbours are sections a person can navigate",
+        "Provenance is always visible and never a disclosure a person has to find"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "ColourDetail is where a person spends time and where the corpus earns its provenance work — 120 entries of sourced editorial content, currently presented as stacked label/value rows. High variance is correct here per the visual-taste dials; this is the surface that most justifies an asymmetric editorial layout."
+    },
+    {
+      "id": "F-149",
+      "title": "The Lens is a calm instrument",
+      "requirements": [
+        "FR-15",
+        "FR-17",
+        "FR-18",
+        "NFR-21"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-143",
+        "F-144"
+      ],
+      "acceptance": [
+        "The viewfinder is uncluttered and the reticle is the only bright element",
+        "Illumination, quality and confidence read as one calm readout rather than three warnings",
+        "The result arrives in a sheet that can be acted on without losing the frame",
+        "Every instruction says what to do next, and no copy overstates the reading"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "e2e",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "Low variance and low density deliberately — the visual-taste dials name the Lens as a task surface, so the editorial treatment that suits the Atlas is wrong here. This is also the screen where a sheet earns itself: acting on a reading currently means leaving the camera. The claims lint stays binding on every string."
+    },
+    {
+      "id": "F-150",
+      "title": "The wardrobe is a gallery",
+      "requirements": [
+        "FR-39",
+        "FR-40",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-147"
+      ],
+      "acceptance": [
+        "Garments are shown as images at a size worth looking at, with colour on the neutral well",
+        "Add, edit and filter are reachable without leaving the grid",
+        "Coverage and gaps are shown with the chart tokens, and never by colour alone",
+        "Empty, single-item and large-wardrobe states are all designed"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "The wardrobe is the surface that most resembles a retail product and currently resembles a list. The chart.1..chart.5 tokens are declared unreached with the reason \"There is no chart in the product\" — coverage and gap analysis is the first surface that plots anything, and the near-achromatic ramp exists precisely so a data series stays distinguishable without hue."
+    },
+    {
+      "id": "F-151",
+      "title": "Palette Studio, Compare and Finder",
+      "requirements": [
+        "FR-7",
+        "FR-47",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-147"
+      ],
+      "acceptance": [
+        "Palettes are composed at a size where the relationships between colours can actually be judged",
+        "Compare puts two colours edge to edge with the numbers beneath, not beside",
+        "The Finder leads with its field and results arrive without a layout jump",
+        "Every ΔE00 and score stays tabular and complete"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "Three instrument surfaces sharing one problem: the colours are too small to judge, and the numbers carry the same visual weight as the thing they describe. Compare is the sharpest case — two colours that must be assessed against each other are currently separated by their own metadata."
+    },
+    {
+      "id": "F-152",
+      "title": "The remaining surfaces are brought up to the same standard",
+      "requirements": [
+        "FR-26",
+        "FR-61",
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-148",
+        "F-149",
+        "F-150",
+        "F-151"
+      ],
+      "acceptance": [
+        "Profile setup, Preferences, Shopping, Outfit Builder, Export, Measure and Add Garment all use the layout primitives and the type scale",
+        "Every screen has a designed empty, loading and error state",
+        "No screen retains a raw numeric spacing value or a stack of undifferentiated secondary buttons",
+        "The conformance registry covers every screen in both themes and both locales"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "The sweep that stops the redesign being partial. Explicitly last so the primitives, the components and the four flagship surfaces have settled first — a screen brought up to a standard that is still moving is a screen that gets done twice. Preferences also becomes the natural home for the theme picker from F-153."
+    },
+    {
+      "id": "F-153",
+      "title": "Appearance is chosen: light, dark, system, and a set of themes",
+      "requirements": [
+        "FR-70",
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-140"
+      ],
+      "acceptance": [
+        "A person can choose light, dark, system, or one of several preloaded themes, and the choice persists",
+        "Every preloaded theme is derived through the same OKLCh pipeline as the built-in pair",
+        "No theme can be selected that has not passed the contrast and CVD checks, and the check runs over the derived values rather than over a promise",
+        "The swatch well, the keyline and the chart ramp stay neutral in every theme"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "cvd",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "REQUESTED, referencing Kotatsu-Redo, which ships Material You with preloaded themes. THE STRUCTURAL PROBLEM: theme.tsx resolves nativeColors[name] from a statically generated two-theme table that the contrast gate verifies at BUILD time. N themes means N build-time verifications, which is fine — the real difficulty arrives in F-154 with a theme whose seed is unknown until runtime. THE OPPORTUNITY, and it is real: this product already contains a complete OKLCh, contrast, CVD and gamut-mapping engine with zero runtime dependencies, so it can derive a theme from a seed and PROVE the result accessible, which a fixed tonal palette cannot. THE CONSTRAINT THAT DOES NOT MOVE: chrome colour is what the golden rule about never decorating with colour is about, so a theme tints the chrome and never the ground beneath a sample. The well, the two-tone keyline and the chart ramp stay neutral in every theme, and that is exactly what makes an expressive theme safe in a colour-measurement product."
+    },
+    {
+      "id": "F-154",
+      "title": "The device colour becomes a theme, and the gate runs at runtime",
+      "requirements": [
+        "FR-70",
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-153"
+      ],
+      "acceptance": [
+        "Where the platform exposes a system accent or wallpaper colour, it can seed a theme",
+        "The seed runs through the same derivation and the same contrast and CVD checks as a built-in theme, on device, before it is applied",
+        "A seed that cannot produce a passing theme is corrected within stated bounds, or refused with a reason — never applied unchecked",
+        "Absence of a platform accent is a designed state, not a crash and not a silent fallback"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "cvd",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "The Material You half of the request. Android exposes the dynamic palette from API 31; iOS exposes no user accent, so the honest answer there is the preloaded set from F-153 rather than a fabricated one — and saying so is better than inventing a seed and calling it the device colour. THE INTERESTING PART, and the reason this is separable from F-153: a runtime-derived theme cannot be verified at build time, so the contrast and CVD checks have to run on device against the derived values. That is only possible because the engine has no runtime dependencies and no platform APIs and returns bit-identical observable values everywhere (NFR-3) — the same property that exists for colour correctness turns out to be what makes a provably accessible dynamic theme possible."
+    },
+    {
+      "id": "F-155",
+      "title": "Contemporary equivalents for a traditional colour",
+      "requirements": [
+        "FR-72",
+        "FR-22",
+        "NFR-21"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-148"
+      ],
+      "acceptance": [
+        "A traditional entry shows the contemporary colours that correspond to it",
+        "A computed equivalent shows its ΔE00 and says it was computed; an editorial one shows its note and its provenance",
+        "The two kinds are distinguishable in the type system, so an editorial claim cannot be rendered as a computed one or the reverse",
+        "No copy describes an equivalent as a match, and the claims lint enforces it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "color-golden",
+        "content",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "REPORTED AS MISSING AND IT IS. The schema has carried contemporaryNote_en since F-011 (packages/corpus/src/entry.ts:123) and it is null in every content file — the field was defined and never filled. FR-22 covers contemporary PALETTE SYSTEMS, which is a different thing: it groups colours into editorial sets and does not answer \"for this traditional colour, what would I actually buy today\". THE HONEST DESIGN IS BOTH KINDS, and the distinction is the feature rather than an implementation detail. A COMPUTED equivalent is the nearest contemporary reference by ΔE00 with the delta shown — deterministic, reproducible, and reusing color-difference rather than adding a second implementation of it. An EDITORIAL equivalent is a recorded note with provenance and a reviewer, which the content gate already enforces for every other editorial field. Conflating them is the failure to avoid: a computed neighbour presented as editorial judgement is a claim nobody made — the same move ADR-0005 makes for provenance, applied here."
     }
   ]
 }

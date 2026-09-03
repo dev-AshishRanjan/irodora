@@ -16,9 +16,10 @@
  * nobody can see.
  */
 
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import { SvgXml } from 'react-native-svg';
-import { Surface, Text, useTheme } from '@irodora/ui';
+import { Screen, Stack, Surface, Text, useTheme } from '@irodora/ui';
 import { cardSvg, CARD_HEIGHT, CARD_WIDTH, THUMBNAIL_WIDTH } from '../card';
 import { CORPUS_LABEL, entryBySlug } from '../corpus';
 // The SAME map the detail screen uses. Two copies of the FR-23 vocabulary would drift, and the
@@ -40,7 +41,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
 
   if (entry === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: 20 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -66,18 +67,11 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
   const ratio = CARD_HEIGHT / CARD_WIDTH;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('card.title')}
-      </Text>
-
+    <Screen title={t('card.title')} script={script}>
       <SvgXml xml={svg} width={DISPLAY_WIDTH} height={DISPLAY_WIDTH * ratio} />
 
-      <Surface level="1" padding={12}>
-        <View style={{ gap: 8 }}>
+      <Surface level="1" padding="md">
+        <Stack gap="sm">
           <Text size="label" color="foreground.2" script={script} heading>
             {t('card.thumbnail')}
           </Text>
@@ -86,7 +80,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
             so a person can disagree with the arithmetic in card.test.ts instead of taking it.
           */}
           <SvgXml xml={svg} width={THUMBNAIL_WIDTH} height={THUMBNAIL_WIDTH * ratio} />
-        </View>
+        </Stack>
       </Surface>
 
       <Text size="small" color="foreground.2" script={script}>
@@ -99,6 +93,6 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
       <Text size="xs" color="foreground.2" script={script}>
         {t('card.export')}
       </Text>
-    </ScrollView>
+    </Screen>
   );
 }

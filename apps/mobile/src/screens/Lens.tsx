@@ -40,9 +40,9 @@
  * the lens.
  */
 
-import { ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Status, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Button, Row, Screen, Stack, Status, Surface, Swatch, Text } from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
@@ -127,7 +127,6 @@ export function Lens({
   onUseForWardrobe,
   onOpenColour,
 }: LensProps = {}): React.JSX.Element {
-  const { colors } = useTheme();
   const { t, script } = useMessages();
 
   /*
@@ -158,14 +157,7 @@ export function Lens({
   const offerableToWardrobe = usable && onUseForWardrobe !== undefined;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <Text size="title" color="foreground" script={script} heading>
-        {t('lens.title')}
-      </Text>
-
+    <Screen title={t('lens.title')} script={script}>
       {/*
         The privacy sentence, first and unconditional. It is the same claim
         `NSCameraUsageDescription` makes at the moment permission is requested, and somebody who
@@ -196,8 +188,8 @@ export function Lens({
           <View style={{ minHeight: nativeTapTarget, overflow: 'hidden' }}>{viewfinder}</View>
         </Surface>
       ) : (
-        <Surface level="1" padding={16}>
-          <View style={{ gap: 8 }}>
+        <Surface level="1" padding="lg">
+          <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
               {t(permission === 'denied' ? 'lens.deniedTitle' : 'lens.askTitle')}
             </Text>
@@ -207,7 +199,7 @@ export function Lens({
             {permission === 'undetermined' && onRequestPermission !== undefined ? (
               <Button label={t('lens.ask')} onPress={onRequestPermission} />
             ) : null}
-          </View>
+          </Stack>
         </Surface>
       )}
 
@@ -229,7 +221,7 @@ export function Lens({
          * indistinguishable from having read a grey, and `#000000` is a reading somebody could
          * act on. The empty state says there is no reading, in words.
          */
-        <View style={{ gap: 4 }}>
+        <Stack gap="xs">
           <Text size="small" color="foreground.2" script={script}>
             {t(permission === 'granted' ? 'lens.waiting' : 'lens.noReading')}
           </Text>
@@ -238,16 +230,16 @@ export function Lens({
               {diagnostic}
             </Text>
           )}
-        </View>
+        </Stack>
       ) : (
-        <Surface level="1" padding={16}>
-          <View style={{ gap: 12 }}>
+        <Surface level="1" padding="lg">
+          <Stack gap="md">
             {/*
               FR-17: THE CONDITIONS COME FIRST. Illumination, then the capture space, then how
               sure the reading is — all three before a single colour value, because a number
               shown first has already been read by the time its qualifier arrives.
             */}
-            <View style={{ gap: 4 }}>
+            <Stack gap="xs">
               <Text size="label" color="foreground.2" script={script}>
                 {t('lens.conditions')}
               </Text>
@@ -260,11 +252,11 @@ export function Lens({
               <Text size="small" color="foreground" numeric selectable>
                 {reading.confidence.toFixed(2)}
               </Text>
-            </View>
+            </Stack>
 
-            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Row gap="md">
               <Swatch name={t('lens.reading')} hex={display.hex} color={display.color} size={56} />
-              <View style={{ gap: 4, flexShrink: 1 }}>
+              <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
                 <Text size="body" color="foreground" numeric selectable>
                   {display.hex}
                 </Text>
@@ -281,20 +273,20 @@ export function Lens({
                   {`${t('lens.samples')} ${String(reading.usableSamples)}`}
                 </Text>
               </View>
-            </View>
-          </View>
+            </Row>
+          </Stack>
         </Surface>
       )}
 
       {nearest.length === 0 ? null : (
-        <View style={{ gap: 8 }}>
+        <Stack gap="sm">
           <Text size="label" color="foreground.2" script={script}>
             {t('lens.nearest')}
           </Text>
           {nearest.map(({ entry, deltaE00 }) => (
             <View
               key={entry.entry.slug}
-              style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}
+              style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
             >
               <Swatch
                 name={entry.entry.name.en}
@@ -312,7 +304,7 @@ export function Lens({
                       },
                     })}
               />
-              <View style={{ gap: 4, flexShrink: 1 }}>
+              <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
                 <Text size="small" color="foreground" script={script}>
                   {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
                 </Text>
@@ -322,7 +314,7 @@ export function Lens({
               </View>
             </View>
           ))}
-        </View>
+        </Stack>
       )}
 
       {/*
@@ -332,7 +324,7 @@ export function Lens({
         button and the one every competitor ships.
       */}
       {offerable ? (
-        <View style={{ gap: 8 }}>
+        <Stack gap="sm">
           <Button
             label={t('lens.useForProfile')}
             onPress={() => {
@@ -342,7 +334,7 @@ export function Lens({
           <Text size="xs" color="foreground.2" script={script}>
             {t('lens.useForProfileNote')}
           </Text>
-        </View>
+        </Stack>
       ) : null}
 
       {/*
@@ -352,7 +344,7 @@ export function Lens({
         conditions it was taken in (ADR-0005), never a claim that the colour IS a corpus entry.
       */}
       {offerableToWardrobe ? (
-        <View style={{ gap: 8 }}>
+        <Stack gap="sm">
           <Button
             label={t('lens.useForWardrobe')}
             variant="secondary"
@@ -363,8 +355,8 @@ export function Lens({
           <Text size="xs" color="foreground.2" script={script}>
             {t('lens.useForWardrobeNote')}
           </Text>
-        </View>
+        </Stack>
       ) : null}
-    </ScrollView>
+    </Screen>
   );
 }

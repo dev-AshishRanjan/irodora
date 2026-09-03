@@ -103,6 +103,7 @@ Two rules that matter more than the format:
 | [0077](0077-the-random-source-is-a-port-and-the-app-installs-it.md) | The random source is a port, and the app installs it | Accepted |
 | [0078](0078-wardrobe-images-are-blobs-in-the-encrypted-database.md) | Wardrobe images are BLOBs in the encrypted database, not files beside it | Accepted |
 | [0079](0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md) | The Android minimum is API 26, because the pixel buffer is compiled out below it | Accepted |
+| [0080](0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md) | An unreached design token is unfinished work, not a declared exemption | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

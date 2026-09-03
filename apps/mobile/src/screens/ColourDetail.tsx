@@ -23,10 +23,11 @@
  *    distinction criterion 3 draws, and `verify-guards.mjs` boundary #24 enforces.
  */
 
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
-import { Button, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Button, Row, Screen, Stack, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import {
   colorFor,
   familyLabel,
@@ -129,7 +130,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
 
   if (found === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: 20 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -139,7 +140,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
   const { entry, derived } = found;
 
   /** A labelled row. `value === null` renders the recorded reason where the value would be. */
-  function Row({
+  function DetailRow({
     label,
     value,
     reasonFor,
@@ -150,7 +151,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
   }): React.JSX.Element {
     const reason = reasonFor === undefined ? undefined : entry.unknowns[reasonFor];
     return (
-      <View style={{ gap: 4, paddingVertical: 4 }}>
+      <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
         <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
@@ -173,7 +174,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
     );
   }
 
-  function Section({
+  function DetailSection({
     title,
     children,
   }: {
@@ -181,13 +182,13 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
     readonly children: React.ReactNode;
   }): React.JSX.Element {
     return (
-      <Surface level="1" padding={16}>
-        <View style={{ gap: 4 }}>
+      <Surface level="1" padding="lg">
+        <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
             {title}
           </Text>
           {children}
-        </View>
+        </Stack>
       </Surface>
     );
   }
@@ -201,7 +202,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
   }): React.JSX.Element {
     const resolved: readonly PublishedEntry[] = resolveSlugs(slugs);
     return (
-      <View style={{ gap: 4, paddingVertical: 4 }}>
+      <View style={{ gap: nativeSpacing.xs, paddingVertical: nativeSpacing.xs }}>
         <Text size="label" color="foreground.2" script={script}>
           {label}
         </Text>
@@ -210,9 +211,9 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
             {t('rel.none')}
           </Text>
         ) : (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <Row gap="sm" wrap>
             {resolved.map((r) => (
-              <View key={r.entry.slug} style={{ alignItems: 'center', gap: 4 }}>
+              <View key={r.entry.slug} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
                 <Swatch
                   name={r.entry.name.en}
                   hex={r.derived.hex}
@@ -224,7 +225,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
                 </Text>
               </View>
             ))}
-          </View>
+          </Row>
         )}
       </View>
     );
@@ -250,13 +251,18 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
   }));
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: 20, gap: 16 }}
-    >
-      <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+    /*
+      NO `title` PROP, DELIBERATELY. This screen's heading is the entry's kanji set beside the
+      sample, not a page title above it — the colour and its name are one object here. Passing
+      a title would put a second heading above that pairing and break it.
+
+      That composition is F-148's subject, and this feature deliberately does not touch it: the
+      wrapper changes, the header does not.
+    */
+    <Screen script={script}>
+      <Row gap="lg">
         <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={96} />
-        <View style={{ gap: 4, flexShrink: 1 }}>
+        <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
           <Text size="title" color="foreground" script={script} heading>
             {entry.name.kanji}
           </Text>
@@ -271,58 +277,58 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
             {t(CLASSIFICATION_KEYS[entry.classification])}
           </Text>
         </View>
-      </View>
+      </Row>
 
-      <Section title={t('detail.names')}>
-        <Row label={t('detail.kanji')} value={entry.name.kanji} />
-        <Row label={t('detail.kana')} value={entry.name.kana} />
-        <Row label={t('detail.romaji')} value={entry.name.romaji} />
-        <Row label={t('detail.english')} value={entry.name.en} />
-      </Section>
+      <DetailSection title={t('detail.names')}>
+        <DetailRow label={t('detail.kanji')} value={entry.name.kanji} />
+        <DetailRow label={t('detail.kana')} value={entry.name.kana} />
+        <DetailRow label={t('detail.romaji')} value={entry.name.romaji} />
+        <DetailRow label={t('detail.english')} value={entry.name.en} />
+      </DetailSection>
 
-      <Section title={t('detail.description')}>
+      <DetailSection title={t('detail.description')}>
         <Text size="small" color="foreground" script={script}>
           {entry.editorial.description_en}
         </Text>
         <Text size="small" color="foreground" script="japanese">
           {entry.editorial.description_ja}
         </Text>
-        <Row
+        <DetailRow
           label={t('detail.contemporary')}
           value={entry.editorial.contemporaryNote_en}
           reasonFor="editorial.contemporaryNote_en"
         />
-        <Row
+        <DetailRow
           label={t('detail.fashionUse')}
           value={entry.editorial.fashionUse === null ? null : entry.editorial.fashionUse.join(', ')}
           reasonFor="editorial.fashionUse"
         />
-      </Section>
+      </DetailSection>
 
-      <Section title={t('detail.coordinates')}>
-        <Row label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
-        <Row label={t('coord.lab')} value={triple(derived.lab)} />
-        <Row label={t('coord.lch')} value={triple(derived.lch)} />
-        <Row label={t('coord.oklch')} value={triple(derived.oklch)} />
-        <Row label={t('coord.rgb')} value={triple(derived.rgb)} />
-        <Row label={t('colour.hex')} value={derived.hex} />
+      <DetailSection title={t('detail.coordinates')}>
+        <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
+        <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
+        <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
+        <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
+        <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
+        <DetailRow label={t('colour.hex')} value={derived.hex} />
         {/*
           ADR-0031: "closest digital reference" is only an honest phrase when a number stands
           behind it, so the number is here rather than the phrase alone.
         */}
-        <Row
+        <DetailRow
           label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
           value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
         />
-      </Section>
+      </DetailSection>
 
-      <Section title={t('detail.taxonomy')}>
-        <Row label={t('filter.family')} value={familyLabel(entry.taxonomy.family, locale)} />
-        <Row
+      <DetailSection title={t('detail.taxonomy')}>
+        <DetailRow label={t('filter.family')} value={familyLabel(entry.taxonomy.family, locale)} />
+        <DetailRow
           label={t('filter.temperature')}
           value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
         />
-        <Row
+        <DetailRow
           label={t('filter.lightness')}
           value={
             entry.taxonomy.lightnessBand === null
@@ -331,60 +337,60 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
           }
           reasonFor="taxonomy.lightnessBand"
         />
-        <Row
+        <DetailRow
           label={t('filter.chroma')}
           value={
             entry.taxonomy.chromaBand === null ? null : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
           }
           reasonFor="taxonomy.chromaBand"
         />
-        <Row
+        <DetailRow
           label={t('filter.season')}
           value={seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')}
           reasonFor="taxonomy.season"
         />
-      </Section>
+      </DetailSection>
 
-      <Section title={t('detail.provenance')}>
-        <Row label={t('prov.source')} value={entry.provenance.source} />
-        <Row label={t('prov.sourceId')} value={entry.provenance.sourceId} />
-        <Row
+      <DetailSection title={t('detail.provenance')}>
+        <DetailRow label={t('prov.source')} value={entry.provenance.source} />
+        <DetailRow label={t('prov.sourceId')} value={entry.provenance.sourceId} />
+        <DetailRow
           label={t('prov.sourceType')}
           value={t(SOURCE_TYPE_KEYS[entry.provenance.sourceType])}
         />
-        <Row label={t('prov.licence')} value={entry.provenance.sourceLicence} />
-        <Row
+        <DetailRow label={t('prov.licence')} value={entry.provenance.sourceLicence} />
+        <DetailRow
           label={t('prov.rightsHolder')}
           value={entry.provenance.rightsHolder}
           reasonFor="provenance.rightsHolder"
         />
-        <Row
+        <DetailRow
           label={t('prov.publisher')}
           value={entry.provenance.publisher}
           reasonFor="provenance.publisher"
         />
-        <Row
+        <DetailRow
           label={t('prov.publishedYear')}
           value={
             entry.provenance.publishedYear === null ? null : String(entry.provenance.publishedYear)
           }
           reasonFor="provenance.publishedYear"
         />
-        <Row
+        <DetailRow
           label={t('prov.url')}
           value={entry.provenance.sourceUrl}
           reasonFor="provenance.sourceUrl"
         />
-        <Row label={t('prov.derivation')} value={entry.provenance.derivation} />
-        <Row label={t('prov.author')} value={entry.provenance.authoredBy} />
-        <Row label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
-        <Row label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} />
+        <DetailRow label={t('prov.derivation')} value={entry.provenance.derivation} />
+        <DetailRow label={t('prov.author')} value={entry.provenance.authoredBy} />
+        <DetailRow label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
+        <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} />
         {/*
           F-084's attested criterion, discharged. `self` is a weaker claim than `independent`
           and it is stated in words rather than as a code, because a reader deciding whether to
           trust an entry should not have to know our vocabulary.
         */}
-        <Row
+        <DetailRow
           label={t('prov.independence')}
           value={
             entry.provenance.reviewIndependence === null
@@ -392,44 +398,51 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
               : t(INDEPENDENCE_KEYS[entry.provenance.reviewIndependence])
           }
         />
-        <Row label={t('detail.editorialNotes')} value={entry.provenance.editorialNotes} />
-      </Section>
+        <DetailRow label={t('detail.editorialNotes')} value={entry.provenance.editorialNotes} />
+      </DetailSection>
 
-      <Section title={t('detail.relations')}>
+      <DetailSection title={t('detail.relations')}>
         <RelatedList label={t('rel.related')} slugs={entry.relations.related} />
         <RelatedList label={t('rel.complementary')} slugs={entry.relations.complementary} />
         <RelatedList
           label={t('rel.historicalVariants')}
           slugs={entry.relations.historicalVariants}
         />
-      </Section>
+      </DetailSection>
 
-      <Section title={t('detail.palettes')}>
+      <DetailSection title={t('detail.palettes')}>
         {palettes.length === 0 ? (
           <Text size="small" color="foreground.2" script={script}>
             {t('rel.none')}
           </Text>
         ) : (
           palettes.map(({ palette, role }) => (
-            <Row
+            <DetailRow
               key={palette.slug}
               label={palette.name.en}
               value={`${palette.name.ja} · ${t(ROLE_KEYS[role as keyof typeof ROLE_KEYS])}`}
             />
           ))
         )}
-      </Section>
+      </DetailSection>
 
-      <Section title={t('detail.colourVision')}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingVertical: 4 }}>
-          <View style={{ alignItems: 'center', gap: 4 }}>
+      <DetailSection title={t('detail.colourVision')}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: nativeSpacing.md,
+            paddingVertical: nativeSpacing.xs,
+          }}
+        >
+          <Stack gap="xs" align="center">
             <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={44} />
             <Text size="xs" color="foreground.2" script={script}>
               {t('cvd.normal')}
             </Text>
-          </View>
+          </Stack>
           {cvd.map(({ kind, hex }) => (
-            <View key={kind} style={{ alignItems: 'center', gap: 4 }}>
+            <View key={kind} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
               {/*
                 The accessible name carries which deficiency this is, so the swatches are not
                 distinguished by colour alone (golden rule 13) — which in a colour-vision block
@@ -452,7 +465,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
         <Text size="small" color="foreground.2" script={script}>
           {t('cvd.note')}
         </Text>
-      </Section>
+      </DetailSection>
 
       <Button
         label={t('detail.openCard')}
@@ -461,7 +474,7 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
           onOpenCard?.(slug);
         }}
       />
-    </ScrollView>
+    </Screen>
   );
 }
 

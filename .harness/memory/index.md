@@ -154,6 +154,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-build-number-decides-which-branch-of-a-dependency-exists.md](effects/a-build-number-decides-which-branch-of-a-dependency-exists.md) — **E-054** · minSdkVersion decided at compile time whether Nitro s AHardwareBuffer support existed at all; hasPixelBuffer reports the device s capability and could never see it.
 - [effects/a-journey-nothing-runs-is-a-file-nothing-checks.md](effects/a-journey-nothing-runs-is-a-file-nothing-checks.md) — **E-055** · the route table is a contract with the Atlas journey, because the journey cannot be run here and nothing else notices a moved route.
 - [effects/a-correction-is-only-meaningful-in-the-space-it-was-solved-in.md](effects/a-correction-is-only-meaningful-in-the-space-it-was-solved-in.md) — **E-056** · nine coefficients do not say which transfer function and primaries produced their input, so the capture space travels with the matrix or the matrix is a plausible wrong answer.
+- [effects/spacing-is-a-step-name-so-a-number-cannot-reach-a-screen.md](effects/spacing-is-a-step-name-so-a-number-cannot-reach-a-screen.md) — **E-057** · every spacing prop is a step NAME, so the manifest and the screens are joined by the type system and a number cannot reach a layout at all.
+- [effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md](effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md) — **E-058** · eleven individually-reasonable exemptions were an itemised description of an undesigned product, and the gate called it green; an exemption now names the feature that ends it.
 
 ## Glossary
 

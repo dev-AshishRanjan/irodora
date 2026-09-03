@@ -47,6 +47,7 @@
  */
 
 import { View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
 import { Button } from './Button.js';
 // `TextProps` is generic over its size, and this only forwards `script` — so the prop's type is
 // taken from a concrete instantiation rather than by making this component generic too.
@@ -90,7 +91,7 @@ export function EmptyState(props: EmptyStateProps): React.JSX.Element {
   const { message, hint, script = 'latin' } = props;
 
   return (
-    <View style={{ gap: 8 }}>
+    <View style={{ gap: nativeSpacing.sm }}>
       <Text size="body" color="foreground" script={script}>
         {message}
       </Text>

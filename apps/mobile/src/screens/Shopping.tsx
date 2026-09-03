@@ -33,9 +33,18 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { nativeTapTarget } from '@irodora/design-tokens';
-import { EmptyState, Surface, Swatch, swatchAccessibleName, Text, TextField } from '@irodora/ui';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  EmptyState,
+  Row,
+  Screen,
+  Surface,
+  Swatch,
+  swatchAccessibleName,
+  Text,
+  TextField,
+} from '@irodora/ui';
 import { coverage, type Coverage, type CoverageGarment } from '@irodora/optimization';
 import type { StoredGarment } from '@irodora/store';
 import { allEntries, colorFor } from '../corpus';
@@ -169,244 +178,239 @@ export function Shopping({
   };
 
   return (
-    <ScrollView>
-      <View style={{ padding: 16, gap: 16 }}>
-        <Text size="title" color="foreground" heading>
-          {t('shopping.title')}
+    <Screen title={t('shopping.title')}>
+      <Text size="body" color="foreground.2">
+        {t('shopping.origin')}
+      </Text>
+
+      {/*
+        THE CHECK NEEDS A WARDROBE, AND NOW SAYS HOW TO GET ONE (F-139). This read
+        "Add something to your wardrobe first" and offered nothing to press.
+      */}
+      {wardrobe.length === 0 ? (
+        onAddGarment === undefined ? (
+          <EmptyState message={t('shopping.empty')} resolvedHere />
+        ) : (
+          <EmptyState
+            message={t('shopping.empty')}
+            action={{ label: t('browse.add'), onPress: onAddGarment }}
+          />
+        )
+      ) : null}
+
+      <TextField
+        label={t('wardrobe.type')}
+        hint={t('wardrobe.typeHint')}
+        value={type}
+        onChangeText={setType}
+      />
+
+      <TextField
+        label={t('shopping.price')}
+        hint={t('shopping.priceHint')}
+        value={amountText}
+        onChangeText={setAmountText}
+      />
+      <TextField
+        label={t('wardrobe.currency')}
+        hint={t('wardrobe.currencyHint')}
+        value={currencyText}
+        onChangeText={setCurrencyText}
+      />
+      {moneyProblem === null ? null : (
+        <Text size="small" color="foreground.2">
+          {t(COST_PROBLEM_KEYS[moneyProblem])}
         </Text>
-        <Text size="body" color="foreground.2">
-          {t('shopping.origin')}
-        </Text>
+      )}
 
-        {/*
-          THE CHECK NEEDS A WARDROBE, AND NOW SAYS HOW TO GET ONE (F-139). This read
-          "Add something to your wardrobe first" and offered nothing to press.
-        */}
-        {wardrobe.length === 0 ? (
-          onAddGarment === undefined ? (
-            <EmptyState message={t('shopping.empty')} resolvedHere />
-          ) : (
-            <EmptyState
-              message={t('shopping.empty')}
-              action={{ label: t('browse.add'), onPress: onAddGarment }}
-            />
-          )
-        ) : null}
+      <Text size="body" color="foreground.2">
+        {t('wardrobe.pickColour')}
+      </Text>
+      <Row gap="sm" wrap>
+        {allEntries()
+          .slice(0, PICKER_LIMIT)
+          .map((e) => (
+            <Pressable
+              key={e.entry.slug}
+              accessibilityRole="button"
+              accessibilityLabel={swatchAccessibleName(
+                e.entry.name.en,
+                e.derived.hex,
+                colorFor(e.entry),
+              )}
+              onPress={() => {
+                choose(e.entry.slug);
+              }}
+              style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+            >
+              <Swatch
+                name={e.entry.name.en}
+                hex={e.derived.hex}
+                color={colorFor(e.entry)}
+                size={48}
+                selected={slug === e.entry.slug}
+              />
+            </Pressable>
+          ))}
+      </Row>
 
-        <TextField
-          label={t('wardrobe.type')}
-          hint={t('wardrobe.typeHint')}
-          value={type}
-          onChangeText={setType}
-        />
-
-        <TextField
-          label={t('shopping.price')}
-          hint={t('shopping.priceHint')}
-          value={amountText}
-          onChangeText={setAmountText}
-        />
-        <TextField
-          label={t('wardrobe.currency')}
-          hint={t('wardrobe.currencyHint')}
-          value={currencyText}
-          onChangeText={setCurrencyText}
-        />
-        {moneyProblem === null ? null : (
-          <Text size="small" color="foreground.2">
-            {t(COST_PROBLEM_KEYS[moneyProblem])}
-          </Text>
-        )}
-
-        <Text size="body" color="foreground.2">
-          {t('wardrobe.pickColour')}
-        </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {allEntries()
-            .slice(0, PICKER_LIMIT)
-            .map((e) => (
-              <Pressable
-                key={e.entry.slug}
-                accessibilityRole="button"
-                accessibilityLabel={swatchAccessibleName(
-                  e.entry.name.en,
-                  e.derived.hex,
-                  colorFor(e.entry),
-                )}
-                onPress={() => {
-                  choose(e.entry.slug);
-                }}
-                style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
-              >
-                <Swatch
-                  name={e.entry.name.en}
-                  hex={e.derived.hex}
-                  color={colorFor(e.entry)}
-                  size={48}
-                  selected={slug === e.entry.slug}
-                />
-              </Pressable>
-            ))}
-        </View>
-
-        {check === null ? null : (
-          <>
-            {/* ------------------------------------------------ outfits unlocked (FR-42) */}
-            <Surface level="1">
-              <View style={{ padding: 12, gap: 8 }}>
-                {check.outfits === null ? (
-                  <Text size="body" color="foreground.2">
-                    {t('shopping.noSlot')}
-                  </Text>
-                ) : (
-                  <>
-                    <Text size="body" color="foreground" numeric>
-                      {`${t('shopping.unlocked')}: ${String(check.outfits.unlocked)}`}
-                    </Text>
-                    {/*
-                     * THE COUNT AND THE THRESHOLD TRAVEL TOGETHER. "Three more outfits" is a
-                     * measurement with no units until it says out of how many, and counted at
-                     * what — which is why F-048 exports COVERAGE_THRESHOLD at all.
-                     */}
-                    <Text size="small" color="foreground.2" numeric>
-                      {`${t('shopping.now')}: ${String(check.outfits.now)}`}
-                    </Text>
-                    <Text size="small" color="foreground.2" numeric>
-                      {`${t('shopping.countedAt')}: ${String(check.outfits.threshold)}`}
-                    </Text>
-                  </>
-                )}
-              </View>
-            </Surface>
-
-            {/* ------------------------------------ personal compatibility (FR-29) */}
-            <Surface level="1">
-              <View style={{ padding: 12, gap: 8 }}>
-                {check.compatibility === null ? (
-                  <Text size="body" color="foreground.2">
-                    {t('shopping.noProfile')}
-                  </Text>
-                ) : (
-                  <>
-                    <Text size="body" color="foreground" numeric>
-                      {`${t('shopping.compatibility')}: ${String(check.compatibility.score)}`}
-                    </Text>
-                    {/*
-                     * ALL FOUR FACTORS, ALWAYS, BESIDE THE SCORE. FR-29 asks for a per-factor
-                     * explanation and the engine returns every factor in order — a missing one
-                     * is not an absent opinion, so none is filtered out for being neutral.
-                     */}
-                    {check.compatibility.factors.map((f) => (
-                      <Text key={f.factor} size="small" color="foreground.2">
-                        {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
-                      </Text>
-                    ))}
-                    <Text size="small" color="foreground.2" numeric>
-                      {`${t('shopping.evidence')}: ${check.compatibility.confidence.toFixed(2)}`}
-                    </Text>
-                  </>
-                )}
-              </View>
-            </Surface>
-
-            {/* ------------------------------------------- duplicate warning (FR-44) */}
-            <Surface level="1">
-              <View style={{ padding: 12, gap: 8 }}>
-                {check.duplicates.length === 0 ? (
-                  <Text size="body" color="foreground.2">
-                    {t('shopping.noDuplicate')}
-                  </Text>
-                ) : (
-                  <>
-                    <Text size="body" color="foreground">
-                      {t('shopping.duplicate')}
-                    </Text>
-                    {/*
-                     * WITH THE MEASURED DIFFERENCE, which is half of FR-44's criterion and the
-                     * reason `findDuplicates` returns pairs rather than a boolean.
-                     */}
-                    {check.duplicates.map((pair) => {
-                      // The pair always contains the candidate; the OTHER half is the garment
-                      // somebody owns, and naming it by id is the difference between "you own
-                      // something like this" and "you own THAT jumper".
-                      const other = pair.a.id === CANDIDATE_ID ? pair.b : pair.a;
-                      return (
-                        <Text
-                          key={`${pair.a.id}-${pair.b.id}`}
-                          size="small"
-                          color="foreground.2"
-                          numeric
-                        >
-                          {`${named(other.id)} — ${t('compare.difference')}: ${pair.difference.toFixed(1)}`}
-                        </Text>
-                      );
-                    })}
-                  </>
-                )}
-              </View>
-            </Surface>
-
-            {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
-            <Surface level="1">
-              <View style={{ padding: 12, gap: 8 }}>
-                <Text size="body" color="foreground" heading>
-                  {t('shopping.investment')}
+      {check === null ? null : (
+        <>
+          {/* ------------------------------------------------ outfits unlocked (FR-42) */}
+          <Surface level="1">
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+              {check.outfits === null ? (
+                <Text size="body" color="foreground.2">
+                  {t('shopping.noSlot')}
                 </Text>
-                {!check.investment.known ? (
-                  <>
-                    <Text size="body" color="foreground.2">
-                      {t(REFUSAL_KEYS[check.investment.reason])}
+              ) : (
+                <>
+                  <Text size="body" color="foreground" numeric>
+                    {`${t('shopping.unlocked')}: ${String(check.outfits.unlocked)}`}
+                  </Text>
+                  {/*
+                   * THE COUNT AND THE THRESHOLD TRAVEL TOGETHER. "Three more outfits" is a
+                   * measurement with no units until it says out of how many, and counted at
+                   * what — which is why F-048 exports COVERAGE_THRESHOLD at all.
+                   */}
+                  <Text size="small" color="foreground.2" numeric>
+                    {`${t('shopping.now')}: ${String(check.outfits.now)}`}
+                  </Text>
+                  <Text size="small" color="foreground.2" numeric>
+                    {`${t('shopping.countedAt')}: ${String(check.outfits.threshold)}`}
+                  </Text>
+                </>
+              )}
+            </View>
+          </Surface>
+
+          {/* ------------------------------------ personal compatibility (FR-29) */}
+          <Surface level="1">
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+              {check.compatibility === null ? (
+                <Text size="body" color="foreground.2">
+                  {t('shopping.noProfile')}
+                </Text>
+              ) : (
+                <>
+                  <Text size="body" color="foreground" numeric>
+                    {`${t('shopping.compatibility')}: ${String(check.compatibility.score)}`}
+                  </Text>
+                  {/*
+                   * ALL FOUR FACTORS, ALWAYS, BESIDE THE SCORE. FR-29 asks for a per-factor
+                   * explanation and the engine returns every factor in order — a missing one
+                   * is not an absent opinion, so none is filtered out for being neutral.
+                   */}
+                  {check.compatibility.factors.map((f) => (
+                    <Text key={f.factor} size="small" color="foreground.2">
+                      {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
                     </Text>
-                    {/*
-                      THE COUNT, ON `tooFew` ONLY. ADR-0082's "revisit when" is measured on it,
-                      and on the screen it turns a dead end into something to do next.
-                    */}
-                    {check.investment.reason !== 'tooFew' ? null : (
-                      <>
-                        <Text size="small" color="foreground.2" numeric>
-                          {`${t('shopping.investmentHave')}: ${String(check.investment.have)}`}
-                        </Text>
-                        <Text size="small" color="foreground.2" numeric>
-                          {`${t('shopping.investmentNeed')}: ${String(check.investment.need)}`}
-                        </Text>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {/*
-                      ROUNDED UP, AND ONLY HERE. 65.4 wears is not reached at 65, and the value
-                      itself stays exact — a rounding is a rendering, not a stored claim.
-                    */}
-                    <Text size="body" color="foreground" numeric>
-                      {`${t('shopping.breakEven')}: ${String(Math.ceil(check.investment.breakEvenWears))}`}
-                    </Text>
-                    <Text size="body" color="foreground" numeric>
-                      {`${t('shopping.typical')}: ${String(Math.round(check.investment.typicalWears))}`}
-                    </Text>
-                    {/*
-                      THE BASIS TRAVELS WITH THE NUMBERS. "56 wears" without saying from how many
-                      garments and at what rate is asking to be believed rather than checked —
-                      the same rule the outfit count follows with its threshold.
-                    */}
-                    <Text size="small" color="foreground.2" numeric>
-                      {`${t('shopping.investmentBasis')}: ${String(check.investment.comparableCount)} ${t('shopping.investmentGarments')} ${formatMinor(check.investment.medianMinorPerWear, check.investment.currency)} ${check.investment.currency} ${t('shopping.investmentPerWear')}`}
-                    </Text>
-                    {/*
-                      NO VERDICT (ADR-0082). Whether it is worth the money is not a sentence this
-                      product is in a position to write, and saying so is better than leaving two
-                      numbers to imply one.
-                    */}
-                    <Text size="small" color="foreground.2">
-                      {t('shopping.investmentYours')}
-                    </Text>
-                  </>
-                )}
-              </View>
-            </Surface>
-          </>
-        )}
-      </View>
-    </ScrollView>
+                  ))}
+                  <Text size="small" color="foreground.2" numeric>
+                    {`${t('shopping.evidence')}: ${check.compatibility.confidence.toFixed(2)}`}
+                  </Text>
+                </>
+              )}
+            </View>
+          </Surface>
+
+          {/* ------------------------------------------- duplicate warning (FR-44) */}
+          <Surface level="1">
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+              {check.duplicates.length === 0 ? (
+                <Text size="body" color="foreground.2">
+                  {t('shopping.noDuplicate')}
+                </Text>
+              ) : (
+                <>
+                  <Text size="body" color="foreground">
+                    {t('shopping.duplicate')}
+                  </Text>
+                  {/*
+                   * WITH THE MEASURED DIFFERENCE, which is half of FR-44's criterion and the
+                   * reason `findDuplicates` returns pairs rather than a boolean.
+                   */}
+                  {check.duplicates.map((pair) => {
+                    // The pair always contains the candidate; the OTHER half is the garment
+                    // somebody owns, and naming it by id is the difference between "you own
+                    // something like this" and "you own THAT jumper".
+                    const other = pair.a.id === CANDIDATE_ID ? pair.b : pair.a;
+                    return (
+                      <Text
+                        key={`${pair.a.id}-${pair.b.id}`}
+                        size="small"
+                        color="foreground.2"
+                        numeric
+                      >
+                        {`${named(other.id)} — ${t('compare.difference')}: ${pair.difference.toFixed(1)}`}
+                      </Text>
+                    );
+                  })}
+                </>
+              )}
+            </View>
+          </Surface>
+
+          {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
+          <Surface level="1">
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+              <Text size="body" color="foreground" heading>
+                {t('shopping.investment')}
+              </Text>
+              {!check.investment.known ? (
+                <>
+                  <Text size="body" color="foreground.2">
+                    {t(REFUSAL_KEYS[check.investment.reason])}
+                  </Text>
+                  {/*
+                    THE COUNT, ON `tooFew` ONLY. ADR-0082's "revisit when" is measured on it,
+                    and on the screen it turns a dead end into something to do next.
+                  */}
+                  {check.investment.reason !== 'tooFew' ? null : (
+                    <>
+                      <Text size="small" color="foreground.2" numeric>
+                        {`${t('shopping.investmentHave')}: ${String(check.investment.have)}`}
+                      </Text>
+                      <Text size="small" color="foreground.2" numeric>
+                        {`${t('shopping.investmentNeed')}: ${String(check.investment.need)}`}
+                      </Text>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/*
+                    ROUNDED UP, AND ONLY HERE. 65.4 wears is not reached at 65, and the value
+                    itself stays exact — a rounding is a rendering, not a stored claim.
+                  */}
+                  <Text size="body" color="foreground" numeric>
+                    {`${t('shopping.breakEven')}: ${String(Math.ceil(check.investment.breakEvenWears))}`}
+                  </Text>
+                  <Text size="body" color="foreground" numeric>
+                    {`${t('shopping.typical')}: ${String(Math.round(check.investment.typicalWears))}`}
+                  </Text>
+                  {/*
+                    THE BASIS TRAVELS WITH THE NUMBERS. "56 wears" without saying from how many
+                    garments and at what rate is asking to be believed rather than checked —
+                    the same rule the outfit count follows with its threshold.
+                  */}
+                  <Text size="small" color="foreground.2" numeric>
+                    {`${t('shopping.investmentBasis')}: ${String(check.investment.comparableCount)} ${t('shopping.investmentGarments')} ${formatMinor(check.investment.medianMinorPerWear, check.investment.currency)} ${check.investment.currency} ${t('shopping.investmentPerWear')}`}
+                  </Text>
+                  {/*
+                    NO VERDICT (ADR-0082). Whether it is worth the money is not a sentence this
+                    product is in a position to write, and saying so is better than leaving two
+                    numbers to imply one.
+                  */}
+                  <Text size="small" color="foreground.2">
+                    {t('shopping.investmentYours')}
+                  </Text>
+                </>
+              )}
+            </View>
+          </Surface>
+        </>
+      )}
+    </Screen>
   );
 }

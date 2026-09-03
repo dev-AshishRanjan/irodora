@@ -97,6 +97,10 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-65 PDF reports | F-056, F-129 | test, review | R5 |
 | FR-67 Rules as content | F-029 | test | R3 |
 | FR-68 Editorial review workflow | F-011 | content, e2e | R1 |
+| FR-69 Applied identity | F-141, F-142 | cvd, a11y, artifact | R6 |
+| FR-70 Appearance is chosen | F-153, F-154 | cvd, a11y, contrast | R6 |
+| FR-71 Wayfinding | F-145, F-146 | e2e, a11y | R6 |
+| FR-72 Contemporary equivalents | F-155 | color-golden, content, lint | R6 |
 
 ## Non-functional requirements
 
@@ -121,6 +125,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-22 Ethical guardrails | F-037 | test, typecheck | R3 |
 | NFR-23 Bias testing | F-027, F-037 | test, review | R3 |
 | NFR-24 Boundary enforcement | F-001, F-002, F-072, F-073 | lint | R0 |
+| NFR-25 The design system reaches the product | F-140, F-143, F-144 | lint, a11y, contrast | R6 |
 
 ---
 
