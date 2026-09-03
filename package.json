@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "node scripts/gate.mjs typecheck",
-    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-empty-assertions.mjs && node scripts/verify-cache-scope.mjs && node scripts/verify-android-min-sdk.mjs",
+    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-empty-assertions.mjs && node scripts/verify-cache-scope.mjs && node scripts/verify-android-min-sdk.mjs && node scripts/verify-gate-mirror-proof.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/gate.mjs test",
@@ -67,7 +67,8 @@
     "verify:permissions:prove": "node scripts/verify-manifest-permissions.mjs --prove",
     "verify:worklets": "node scripts/verify-worklet-reach.mjs",
     "verify:worklets:prove": "node scripts/verify-worklet-reach.mjs --prove",
-    "verify:empty-assertions": "node scripts/verify-empty-assertions.mjs"
+    "verify:empty-assertions": "node scripts/verify-empty-assertions.mjs",
+    "verify:mirror:prove": "node scripts/verify-gate-mirror-proof.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

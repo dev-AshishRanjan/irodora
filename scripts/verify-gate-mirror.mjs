@@ -116,12 +116,21 @@ function conditionOutStepRunning(yaml, command) {
   const indent = /^(\s*)/.exec(lines[runIndex])[1];
   return [
     ...lines.slice(0, runIndex),
-    `${indent}if: false # planted by verify-gate-mirror.mjs`,
+    `${indent}if: false # ${PLANT_MARKER}`,
     ...lines.slice(runIndex),
   ].join('\n');
 }
 
 console.log(`\n${BOLD}Irodora — gate ↔ CI mirror proof${OFF}\n`);
+
+/**
+ * The comment every plant carries.
+ *
+ * A named constant so the planter below and the guard above it cannot disagree about what a
+ * plant looks like — a guard searching for one string while the planter wrote another would
+ * report a clean tree over a disabled gate.
+ */
+const PLANT_MARKER = 'planted by verify-gate-mirror.mjs';
 
 const gates = JSON.parse(readFileSync(GATES, 'utf8'));
 const active = gates.gates.filter((g) => g.status === 'active' && g.ciStep !== false);
@@ -138,6 +147,56 @@ const workflows = new Map(
     return [w, { path, original: readFileSync(path, 'utf8') }];
   }),
 );
+
+/**
+ * REFUSE TO START ON A LEFTOVER PLANT (F-134).
+ *
+ * The restore below lives in a `finally`, and **a `finally` does not run when the process is
+ * killed** — which a timeout does. An interrupted run therefore leaves a workflow with a
+ * blocking gate conditioned out, and the next `git add -A` commits it. A CI step that never
+ * runs is exactly the failure this script exists to detect: it would be disabled by its own
+ * scaffolding.
+ *
+ * **This check matters more than the signal handlers**, because it is the one that covers what
+ * a handler cannot: `SIGKILL`, a crash inside the handler, a machine losing power.
+ *
+ * It also stops a subtler failure. The map above saves each workflow's bytes AS FOUND — so a
+ * second run over a leftover plant would save the planted text as the "original" and restore it
+ * faithfully, **preserving the disabled step while reporting a clean run.**
+ */
+for (const [workflow, { original }] of workflows)
+  if (original.includes(PLANT_MARKER)) {
+    console.log(
+      `  ${RED}✗ ${workflow} already contains a plant from an earlier run${OFF}\n` +
+        `    ${DIM}An interrupted run leaves one behind: the restore is in a \`finally\`, and a\n` +
+        `    killed process skips one. Running now would save the plant as the original and\n` +
+        `    restore it faithfully — a disabled CI step, reported as a clean run.${OFF}\n\n` +
+        `    ${BOLD}Run: git checkout ${workflow}${OFF}\n`,
+    );
+    process.exit(1);
+  }
+
+/**
+ * Restore on a signal, then re-raise (F-134).
+ *
+ * Necessary and NOT SUFFICIENT — `SIGKILL` cannot be handled at all, which is why the refusal
+ * above exists and why this is the second mechanism rather than the only one.
+ *
+ * Re-raising rather than exiting 0: a caller that asked the process to stop should see that it
+ * stopped. `128 + signal` is the convention a shell reports.
+ */
+const restoreAll = () => {
+  for (const { path, original } of workflows.values()) writeFileSync(path, original, 'utf8');
+};
+for (const [signal, number] of [
+  ['SIGINT', 2],
+  ['SIGTERM', 15],
+])
+  process.on(signal, () => {
+    restoreAll();
+    console.log(`\n${DIM}${signal} — workflows restored.${OFF}\n`);
+    process.exit(128 + number);
+  });
 
 const notEnforced = [];
 const couldNotRun = [];

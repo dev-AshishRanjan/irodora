@@ -13462,3 +13462,64 @@ covering shapes nobody has watched fail would be a guess wearing a check.
 
 ---
 
+## 2026-09-03 — F-134 DONE · a `finally` does not run when you are killed
+
+`verify-gate-mirror.mjs` plants `if: false` onto a CI step and restores in a `finally` —
+byte-for-byte verified, careful work for the case it anticipated. **A `finally` does not run when
+the process is killed**, and a timeout kills. An interrupted run therefore left a workflow with a
+blocking gate conditioned out, and the next `git add -A` would have committed it.
+
+**The script that exists because gate 11 nearly shipped skipped for the whole of R1 could disable
+a gate itself.**
+
+### Two mechanisms, and the second matters more
+
+**Restore on a signal**, then re-raise as `128 + signal` — a caller that asked the process to stop
+should see that it stopped.
+
+**Refuse to start on a leftover plant.** This is the one that closes the hole, because it covers
+what a handler cannot: `SIGKILL`, a crash inside the handler, a machine losing power. It also
+stops a subtler failure — the current code saves each workflow's bytes *as found*, so a second run
+over a leftover plant would save the plant as the "original" and **restore it faithfully,
+preserving the disabled step while reporting a clean run.**
+
+The marker became a named constant so the planter and the guard cannot disagree about what a
+plant looks like.
+
+### The proof caught me shipping a handler that does nothing here
+
+Criterion 3 says *proven by a run that is actually interrupted, not by reading the handler*. So
+`verify-gate-mirror-proof.mjs` spawns the script, **polls until the plant is genuinely on disk**
+— a fixed delay is a race that passes on a fast machine — sends `SIGTERM`, and compares the
+workflow byte for byte.
+
+It failed. **`SIGTERM` is uncatchable on Windows**: Node maps `child.kill('SIGTERM')` to
+`TerminateProcess`, so no handler runs, exactly as with `SIGKILL`. I would have shipped a handler
+that does nothing on the platform I develop on and never known.
+
+CI is `ubuntu-latest`, so the handler is real protection where the gate actually runs. On win32
+the proof **requires the refusal instead** and says why — not a skip, and not a pass it has not
+earned. The closing line was rewritten too: it said *"the handler was watched firing"*, which on
+this platform was simply false.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · content | **PASS** |
+| gate-mirror, and its new proof — inside `lint` | **PASS** |
+| the working tree, after a proof that deliberately kills a process mid-write | **clean** |
+
+**Not run:** `e2e` (gate 7, pending F-091), `a11y`, `contrast`, `color-golden`, `cvd`, `perf` —
+no surface changed.
+
+### Out of scope, and named rather than absorbed
+
+**`verify-cache-scope.mjs` plants a test file** and restores it in a `finally` too. It has the
+same shape and it is **not** fixed here — the plant is an untracked fixture rather than a tracked
+workflow, so an orphan is noise rather than a disabled gate. If that turns out to matter it gets
+filed, which is how this feature came to exist.
+
+---
+
