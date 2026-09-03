@@ -13621,3 +13621,65 @@ Nothing. Tree clean, no staged changes, no scaffolding.
 
 ---
 
+## 2026-09-03 — DECISIONS · OQ-3 closed, and F-091's undischargeable criteria named
+
+Not a feature. The handoff above said two decisions were the only thing blocking R5, and both
+were put to the person who has to make them rather than guessed at. Both were answered.
+
+### OQ-3 — a partner card ([ADR-0085](../../docs/adr/0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md))
+
+The reference for calibrated scan is a commercially published colour target used with **its
+vendor's own published values**, cited the way every corpus entry is cited. Manufacturing one
+would have made this product the authority on a physical colour standard, and it has no
+spectrophotometer, no controlled illumination and no measurement protocol — golden rule 11 does
+not let it make that claim.
+
+**The ADR deliberately does not state the card's values or its licence terms.** Writing them
+from memory would be fabricated provenance in the one place it would be least forgivable, so
+confirming them from the vendor's own documentation is an obligation on F-053 rather than a
+line in the decision. If those terms forbid redistribution, the values are not vendored: the
+correction reads a file the person supplies for their own card, and the limitation is recorded
+rather than worked around.
+
+**F-053 is unblocked** (`blocked` → `backlog`, `openQuestions` cleared). F-063 sits behind it as
+before. **Closing OQ-3 unblocked the code, not the claim** — NFR-2's ΔE00 improvement is still
+`attested` and outstanding on F-053, and F-063 is the session that discharges it.
+
+### F-091 — criteria 2–4 attested under [ADR-0038](../../docs/adr/0038-every-acceptance-criterion-names-its-check.md)
+
+F-091 has four criteria. The first — *a surface declares a `test:e2e` task* — is a commit, and it
+is what the feature now builds. The other three need a device or an emulator and a CI run, and
+neither is reachable from this workstation: **there is no JDK** (`JAVA_HOME` points at a
+directory that does not exist).
+
+They are now recorded as attested and outstanding, blocking release:
+
+| | |
+|---|---|
+| **2** | the Atlas journey completes on a device or emulator |
+| **3** | no socket opens during that journey, asserted by the suite |
+| **4** | gate 7 moves to active with a real CI step, and removing it turns gate 0 red |
+
+**Leaving them unrecorded was the worse option.** Fifteen features have now reported `e2e` as
+*not run*, and every one of those reports was honest — but the gap lived in fifteen commit
+messages rather than against a feature, which is exactly the shape ADR-0038 exists to convert
+into a named obligation. **An attested criterion is a debt with an owner; a repeated "not run"
+is a habit.** **F-091 is unblocked.**
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state — now 18 checks, **53** warnings (three new attested) | **PASS** |
+| 2 lint · 3 format | **PASS** |
+
+**Not run:** everything else — no source changed. `e2e` remains pending on F-091, which is now
+buildable rather than blocked.
+
+### Next
+
+**F-053** (R5, `backlog`, blocker F-040 done) and **F-091** (R2, `backlog`, no blockers) are both
+eligible. R2 precedes R5, so F-091 is next.
+
+---
+

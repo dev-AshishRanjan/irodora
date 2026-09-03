@@ -385,8 +385,13 @@ honestly and cheap to build dishonestly — and the difference is visible.
 
 | ID | Question | Needed by |
 |---|---|---|
-| OQ-3 | Reference card: manufacture or partner? | R5 |
 | OQ-6 | Apple Developer Program enrolment — individual or organisation, and who holds the certificates | R3 |
+
+**OQ-3 is closed by [ADR-0085](adr/0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md).** The reference card is a partner card and its
+values are cited rather than measured — a card we manufactured would make us the authority on a
+physical colour standard, and this product has no spectrophotometer and no measurement protocol.
+What the card is, what its published values are and what their licence permits are confirmed by
+F-053 from the vendor's own documentation, not asserted in the decision.
 
 **OQ-5 is closed by [ADR-0060](adr/0060-one-editor-and-self-review-is-declared-rather-than-assumed.md).** The product ships with one editor, and `provenance.reviewIndependence` records
 whether an entry was reviewed by somebody other than its author. That is a weaker control than

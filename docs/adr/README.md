@@ -108,6 +108,7 @@ Two rules that matter more than the format:
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
 | [0083](0083-a-pdf-report-embeds-a-supplied-font-and-the-parser-is-proven-against-a-constructed-one.md) | A PDF report embeds a font its caller supplies, and the parser is proven against a constructed one | Accepted |
 | [0084](0084-completeness-moves-from-every-published-version-to-the-newest-one.md) | Occasion completeness is required of the newest published version, not of every one | Accepted |
+| [0085](0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md) | The reference card is a partner card, and its values are cited rather than measured | Accepted |
 
 ## Open questions awaiting an ADR
 
@@ -116,13 +117,18 @@ feature that depends on it and closes as an ADR, not as a conversation.
 
 | ID | Question | Needed by |
 |---|---|---|
-| OQ-3 | Reference card — manufacture or partner | M3 |
 | OQ-6 | Apple Developer Program enrolment — individual or organisation | M3 |
 
 **Closed by [ADR-0051](0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md), not
 by an answer.** OQ-1 (OIDC provider) and OQ-2 (billing provider) asked which vendor to pick
 for capabilities the product no longer has. There is no account and no monetisation in the
 first release, so both questions are void rather than open.
+
+**OQ-3 is closed by [ADR-0085](0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md) as a DECISION about provenance.** The reference is a
+commercially published colour target used with its vendor's own published values, cited the way
+every corpus entry is. Manufacturing would have made us the authority on a physical colour
+standard, which golden rule 11 does not let this product claim. The exact card, its values and
+their licence are confirmed by F-053 rather than asserted here.
 
 **OQ-5 is closed by [ADR-0060](0060-one-editor-and-self-review-is-declared-rather-than-assumed.md) as a DECISION, not an answer.** Irodora ships with one editor and an entry declares whether
 its reviewer was its author. A Japanese editorial reviewer is still wanted; when one joins
