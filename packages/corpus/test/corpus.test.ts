@@ -303,7 +303,7 @@ describe('a corpus with nothing wrong', () => {
       entries: [entry('fixture-a'), entry('fixture-b')],
       palettes: [palette('fixture-p', ['fixture-a', 'fixture-b'])],
     };
-    expect(checkCorpus(input, { allowFixtureSlugs: true })).toEqual([]);
+    expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
   });
 });
 
@@ -343,7 +343,7 @@ describe('relations must resolve', () => {
       ],
       palettes: [],
     };
-    expect(checkCorpus(input, { allowFixtureSlugs: true })).toEqual([]);
+    expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
   });
 });
 
@@ -369,7 +369,7 @@ describe('fixture slugs cannot become content', () => {
 
   it('allows them when the gate is deliberately running its own fixtures', () => {
     const input = { ...base, entries: [entry('fixture-a')], palettes: [] };
-    expect(checkCorpus(input, { allowFixtureSlugs: true })).toEqual([]);
+    expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
   });
 });
 
@@ -404,7 +404,7 @@ describe('editorial identity across the corpus', () => {
       entries: [entry('fixture-a', { status: 'draft', provenance: draftProvenance })],
       palettes: [],
     };
-    expect(checkCorpus(input, { allowFixtureSlugs: true })).toEqual([]);
+    expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
   });
 });
 

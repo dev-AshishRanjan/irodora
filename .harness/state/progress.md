@@ -13035,10 +13035,11 @@ during this feature. The **second** is fully explained: it asserts that removing
 makes **gate 0** fail, so it runs gate 0 per case — and gate 0 was red at that moment for the
 broken link above. A red gate 0 makes every one of its cases indistinguishable.
 
-The **first** is not explained. Gate 0 was passing, and gate-mirror has since passed six
-consecutive runs including inside a full sweep. It plants and restores workflow files, so a
-collision remains the likely cause. **Not reproduced** — recorded so a second sighting is a
-second sighting rather than a first.
+The **first** was not explained at the time. **F-133 explained it:** an interrupted gate-mirror
+run leaves its plant — `if: false` on a CI step — in the working tree, because the restore is in
+a `finally` and a killed process skips one. Gate 0 then fails inside gate-mirror’s child process
+while a direct run, after the tree has been restored, passes. **F-134 is filed** to make the
+script refuse to start on a leftover plant, and to restore on a signal.
 
 **Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
 
@@ -13387,6 +13388,77 @@ no surface changed.
 
 **Any fourth text-matching scan.** Three have now been named across F-127 and this feature. If
 another is found it gets filed, not absorbed — which is how these two came to be fixed at all.
+
+---
+
+## 2026-09-03 — F-133 DONE · emptiness is a length, and a plant that outlived its run
+
+`expect([undefined]).toEqual([])` **passes.** F-129 found it the expensive way — a mutation
+handed a sink an `undefined` file and the "nothing was written" assertion stayed green.
+
+### The survey was declined, and that is the decision
+
+Criterion 2 offered a choice: a check, **or** a survey recording why each remaining site is
+sound. Most of the eighty-five were sound — a `filter` result cannot hold `undefined`. **But
+"most were sound" is a fact about today's code, not a rule**, and this session has spent several
+features learning what an unchecked judgement is worth.
+
+So `toEqual([])` is **banned outright**: no allowlist, because the banned form is never the better
+choice. `toHaveLength(0)` where emptiness is the claim, `toStrictEqual([])` where the value is —
+and **both were watched rejecting `[undefined]`** before either was recommended.
+
+**89 assertions converted across 34 files, and the whole suite stayed green** — which says every
+one of them was a genuine emptiness claim rather than a value comparison.
+
+### The check failed on its own first run
+
+It reported F-129's comment explaining why `toHaveLength(0)` is used instead. **Fifth instance in
+one session of a note reproducing the defect it describes — in the feature written to close the
+fourth.** F-132's answer applied unchanged: the check parses, and a comment is not in the syntax
+tree. Two ACCEPT cases now cover the comment and the string.
+
+**6 mutations, 6 caught**, including reverting the check to text-matching.
+
+### The plan came after the code, and gate 0 said so
+
+I claimed F-133 and went straight to converting. Golden rule 3 says a plan exists before any
+source is edited, and the `state` gate caught it — the same slip as F-112. The plan is written
+with that recorded at the top rather than backdated, because one pretending to predate its
+feature is worth less than one admitting it does not.
+
+### And the plant that outlived its run
+
+Gate-mirror failed in the sweep while gate 0 passed directly. **The cause:**
+`verify-gate-mirror.mjs` plants `if: false` onto a CI step and restores in a `finally` — and **a
+`finally` does not run when the process is killed.** A timeout kills. So an interrupted run
+leaves a workflow file with a blocking gate conditioned out, and the next `git add -A` would
+commit it.
+
+Checked against `HEAD`: **no commit carries it.** The tree was restored and every gate re-run.
+
+**This also explains F-127's "not reproduced" gate-mirror failure**, and that entry is corrected
+rather than left standing — the mechanism is the same, and a leftover plant makes gate 0 fail
+inside the child process while a direct run afterwards passes. **F-134 is filed**: restore on a
+signal, and refuse to start when a plant is already present.
+
+That is the sharpest instance today of a check disabled by its own scaffolding — the script that
+exists because gate 11 nearly shipped skipped for the whole of R1 can disable a gate itself.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · content | **PASS** |
+| gate-mirror, after the leftover plant was cleared | **PASS** |
+| 6 mutations | **6/6** |
+
+**Not run:** `e2e` (gate 7, pending F-091), `color-golden`, `cvd`, `perf`.
+
+### Out of scope
+
+**`toEqual({})` and other empty containers.** The hole demonstrated is the array one; a rule
+covering shapes nobody has watched fail would be a guess wearing a check.
 
 ---
 

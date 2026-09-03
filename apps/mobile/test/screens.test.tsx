@@ -1169,7 +1169,7 @@ describe('the Atlas root reaches every colour (F-018 criterion 1)', () => {
     const missing = allEntries()
       .map((e) => e.entry.name.en)
       .filter((name) => !text.includes(name));
-    expect(missing).toEqual([]);
+    expect(missing).toHaveLength(0);
   });
 
   it('draws a swatch for every entry, not only its name', () => {
@@ -1625,7 +1625,7 @@ describe('no screen puts a status colour beside a colour sample (F-069)', () => 
     for (const theme of ['light', 'dark'] as const) {
       const tree = subject.render('default', theme);
       expect(tree).not.toBeNull();
-      expect(checkStatusAdjacency(tree!, theme, subject.sampleValues ?? [])).toEqual([]);
+      expect(checkStatusAdjacency(tree!, theme, subject.sampleValues ?? [])).toHaveLength(0);
     }
   });
 });
@@ -2337,7 +2337,7 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
     const missing = PREFERENCE_ROWS.filter(
       (row) => !text.includes(familyLabel(row.familyA, 'en')),
     ).map((row) => `${row.familyA}/${row.familyB}`);
-    expect(missing).toEqual([]);
+    expect(missing).toHaveLength(0);
   });
 
   it('shows BOTH counts, not only the weight', () => {
@@ -2359,7 +2359,7 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
       const expected = preferenceWeight({ accepted: row.accepted, rejected: row.rejected });
       return !text.includes(expected.toFixed(2));
     }).map((row) => `${row.familyA}/${row.familyB}`);
-    expect(wrong).toEqual([]);
+    expect(wrong).toHaveLength(0);
   });
 
   it('gives a screen reader the pairing and both counts in one announcement', () => {
@@ -2411,7 +2411,7 @@ describe('reset says what it removes before it removes it (F-109 criterion 3)', 
      */
     const store = preferenceStore();
     draw(<Preferences store={store} initialConfirming />, 'dark');
-    expect(store.resets).toEqual([]);
+    expect(store.resets).toHaveLength(0);
     expect(store.listPreferences()).toHaveLength(PREFERENCE_ROWS.length);
   });
 });

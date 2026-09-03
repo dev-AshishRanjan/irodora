@@ -119,7 +119,7 @@ describe('the weight ladder', () => {
   });
 
   it('is empty for an empty palette rather than throwing', () => {
-    expect(deriveWeights(0)).toEqual([]);
+    expect(deriveWeights(0)).toHaveLength(0);
   });
 });
 

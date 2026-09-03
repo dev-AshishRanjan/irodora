@@ -82,11 +82,11 @@ describe('no authoring slug reaches a Japanese reader', () => {
   };
 
   it('shows none on the Atlas — filter chips and list rows in one pass', () => {
-    expect(leaks(<Atlas />)).toEqual([]);
+    expect(leaks(<Atlas />)).toHaveLength(0);
   });
 
   it('shows none on the colour detail screen', () => {
-    expect(leaks(<ColourDetail slug={ENTRY.entry.slug} />)).toEqual([]);
+    expect(leaks(<ColourDetail slug={ENTRY.entry.slug} />)).toHaveLength(0);
   });
 
   /*

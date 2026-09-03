@@ -152,6 +152,6 @@ describe('grouping a wardrobe', () => {
   });
 
   it('groups nothing into nothing', () => {
-    expect(groupByColor([])).toEqual([]);
+    expect(groupByColor([])).toHaveLength(0);
   });
 });

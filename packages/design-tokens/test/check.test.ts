@@ -131,7 +131,7 @@ describe('checkContrast — the comparison itself', () => {
     for (const r of results) expect(r.passes).toBe(r.wcag >= r.required);
 
     const failing = results.filter((r) => !r.passes);
-    expect(failing, 'the committed manifest should have no failing pairing').toEqual([]);
+    expect(failing, 'the committed manifest should have no failing pairing').toHaveLength(0);
 
     // …and the same function must report `false` when the ratio is genuinely short. Built by
     // pairing two real surfaces one step apart, which is nowhere near 4.5:1.
@@ -163,7 +163,7 @@ describe('checkContrast — the comparison itself', () => {
 
 describe('checkChromaCeiling', () => {
   it('is clean on the committed manifest', () => {
-    expect(checkChromaCeiling(manifest)).toEqual([]);
+    expect(checkChromaCeiling(manifest)).toHaveLength(0);
   });
 
   it('reports a chromatic token with no recorded exception', () => {
@@ -199,7 +199,7 @@ describe('checkChromaCeiling', () => {
 
 describe('checkSalience — the rank holds in every theme', () => {
   it('the shipped manifest passes, in both themes', () => {
-    expect(checkSalience(manifest)).toEqual([]);
+    expect(checkSalience(manifest)).toHaveLength(0);
   });
 
   /**

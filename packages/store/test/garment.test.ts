@@ -72,8 +72,8 @@ describe('creating a garment', () => {
     expect(stored?.purchaseDate).toBeNull();
     expect(stored?.costMinor).toBeNull();
     expect(stored?.currency).toBeNull();
-    expect(stored?.seasons).toEqual([]);
-    expect(stored?.colors).toEqual([]);
+    expect(stored?.seasons).toHaveLength(0);
+    expect(stored?.colors).toHaveLength(0);
     // The one non-null default, and it is a count rather than a claim about the garment.
     expect(stored?.wearCount).toBe(0);
     repo.close();
@@ -151,7 +151,7 @@ describe('enrichment', () => {
     expect(repo.getGarment(id)?.seasons).toEqual(['autumn']);
 
     repo.enrichGarment(id, { seasons: [] }, NOW + 4);
-    expect(repo.getGarment(id)?.seasons).toEqual([]);
+    expect(repo.getGarment(id)?.seasons).toHaveLength(0);
     repo.close();
   });
 
@@ -207,7 +207,7 @@ describe('deleting a garment', () => {
     );
 
     repo.deleteGarment(id, NOW + 2);
-    expect(repo.listGarments()).toEqual([]);
+    expect(repo.listGarments()).toHaveLength(0);
     // Readable by id, because a tombstoned row is deleted rather than missing.
     expect(repo.getGarment(id)?.deletedAt).toBe(NOW + 2);
     // And its children went with it. WHICH rows and WHICH op, never a count: a count passes

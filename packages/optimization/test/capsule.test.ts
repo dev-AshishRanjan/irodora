@@ -346,21 +346,21 @@ describe('the two limits', () => {
 describe('nothing to solve', () => {
   it('returns an empty capsule for an empty wardrobe', () => {
     const got = solve([], { targetOutfits: 3, maxGarments: 5 });
-    expect(got.garments).toEqual([]);
+    expect(got.garments).toHaveLength(0);
     expect(got.outfits).toBe(0);
     expect(got.meetsTarget).toBe(false);
   });
 
   it('returns nothing when no garments are allowed', () => {
     const got = solve(GRID, { targetOutfits: 1, maxGarments: 0 });
-    expect(got.garments).toEqual([]);
+    expect(got.garments).toHaveLength(0);
     expect(got.meetsTarget).toBe(false);
   });
 
   it('treats a target of zero as already met, with an empty capsule', () => {
     const got = solve(GRID, { targetOutfits: 0, maxGarments: 5 });
     expect(got.meetsTarget).toBe(true);
-    expect(got.garments).toEqual([]);
+    expect(got.garments).toHaveLength(0);
   });
 
   it('never returns a garment that appears in no valid outfit', () => {

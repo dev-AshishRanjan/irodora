@@ -161,7 +161,7 @@ describe('locking constrains generation', () => {
     draft = setLocked(place(draft, 'trouser', WARDROBE[2]!), 'trouser', true);
     draft = setLocked(place(draft, 'shoe', WARDROBE[4]!), 'shoe', true);
     // An empty list, not a throw: "everything is decided" is a state, not an error.
-    expect(run(draft)).toEqual([]);
+    expect(run(draft)).toHaveLength(0);
   });
 
   it('does not treat an UNLOCKED placement as a constraint', () => {

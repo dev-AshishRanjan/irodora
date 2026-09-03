@@ -370,8 +370,8 @@ describe('how long it takes, and what that number is NOT', () => {
 describe('the edges', () => {
   it('returns empty for an empty pool rather than throwing', () => {
     const result = recommendForSlot(INPUT, 'trouser', [], profile(), RULES);
-    expect(result.ranked).toEqual([]);
-    expect(result.alternatives).toEqual([]);
+    expect(result.ranked).toHaveLength(0);
+    expect(result.alternatives).toHaveLength(0);
     expect(result.considered).toBe(0);
     expect(result.scored).toBe(0);
   });

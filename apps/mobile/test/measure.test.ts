@@ -249,7 +249,7 @@ describe('the batch table', () => {
   });
 
   it('returns nothing for an empty batch rather than throwing', () => {
-    expect(batchCompare(reference, [])).toEqual([]);
+    expect(batchCompare(reference, [])).toHaveLength(0);
   });
 });
 

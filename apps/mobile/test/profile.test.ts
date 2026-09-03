@@ -97,7 +97,7 @@ const only = (slugs: readonly string[]): string => {
 describe('every trial is about the axis it claims', () => {
   it('names only slugs the published corpus has', () => {
     const missing = trialSlugs().filter((s) => entryBySlug(s) === null);
-    expect(missing).toEqual([]);
+    expect(missing).toHaveLength(0);
   });
 
   it('asks three questions per axis, and no more', () => {
@@ -222,7 +222,7 @@ describe('the guided flow reaches no camera', () => {
     const offenders = guidedSources()
       .filter(({ text }) => CAMERA.test(text))
       .map(({ file }) => file);
-    expect(offenders).toEqual([]);
+    expect(offenders).toHaveLength(0);
   });
 
   it('does not depend on the photo path either', () => {

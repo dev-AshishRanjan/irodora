@@ -143,10 +143,10 @@ describe('a profile round-trips', () => {
 
     expect(repo.getProfile(id)?.deletedAt).toBe(2000);
     expect(repo.getProfile('never-existed')).toBeUndefined();
-    expect(repo.listProfiles()).toEqual([]);
+    expect(repo.listProfiles()).toHaveLength(0);
     // The list entries go too. They are tombstoned explicitly rather than left to a cascade
     // that a soft delete never fires.
-    expect(repo.getProfile(id)?.neutrals).toEqual([]);
+    expect(repo.getProfile(id)?.neutrals).toHaveLength(0);
     repo.close();
   });
 });
@@ -179,7 +179,7 @@ describe('the migration', () => {
     // only checks the new table exists.
     expect(driver.query<{ id: string }>('SELECT id FROM palette')).toEqual([{ id: 'kept' }]);
     const repo = createRepository(driver, info);
-    expect(repo.listProfiles()).toEqual([]);
+    expect(repo.listProfiles()).toHaveLength(0);
     repo.close();
   });
 });

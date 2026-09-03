@@ -58,7 +58,7 @@ describe('routing a query (FR-47)', () => {
     // An all-letter hex without a hash searches names and finds nothing. With the hash it is
     // unambiguous. This is asserted so the trade-off is visible rather than discovered.
     expect(find('ffffff').kind).toBe('name');
-    expect(find('ffffff').entries).toEqual([]);
+    expect(find('ffffff').entries).toHaveLength(0);
     expect(find('#ffffff').kind).toBe('hex');
   });
 
@@ -76,7 +76,7 @@ describe('routing a query (FR-47)', () => {
 
   it('answers an empty query with nothing rather than everything', () => {
     expect(find('   ').kind).toBe('empty');
-    expect(find('   ').entries).toEqual([]);
+    expect(find('   ').entries).toHaveLength(0);
   });
 });
 
@@ -203,6 +203,6 @@ describe('name search covers every form (FR-47)', () => {
   });
 
   it('returns nothing for a query that matches nothing, rather than everything', () => {
-    expect(byName('zzzzzznotacolour')).toEqual([]);
+    expect(byName('zzzzzznotacolour')).toHaveLength(0);
   });
 });

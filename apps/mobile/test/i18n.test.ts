@@ -78,7 +78,7 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
   it('has every compatibility explanation key `scoreColor` can produce', () => {
     const missing = SCORE_MESSAGE_KEYS.filter((k) => !(k in en));
 
-    expect(missing).toEqual([]);
+    expect(missing).toHaveLength(0);
   });
 
   /*
@@ -107,7 +107,7 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
   it('has every outfit-component key `scoreOutfit` can produce', () => {
     const missing = OUTFIT_MESSAGE_KEYS.filter((k) => !(k in en));
 
-    expect(missing).toEqual([]);
+    expect(missing).toHaveLength(0);
   });
 
   /*
@@ -270,7 +270,7 @@ describe('every declared key is used, and every used key is declared', () => {
     // same protection: `t(c.messageKey)` in OutfitBuilder, pinned in both directions above.
     const dynamic = new Set<string>([...SCORE_MESSAGE_KEYS, ...OUTFIT_MESSAGE_KEYS]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
-    expect(unused).toEqual([]);
+    expect(unused).toHaveLength(0);
   });
 
   it('references no key the catalogue does not declare', () => {

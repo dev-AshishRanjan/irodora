@@ -229,7 +229,7 @@ describe('the groups', () => {
   });
 
   it('returns nothing for an empty wardrobe rather than a group of nothing', () => {
-    expect(groupByColour([])).toEqual([]);
+    expect(groupByColour([])).toHaveLength(0);
   });
 
   it('never invents a family key of its own', () => {
@@ -345,8 +345,8 @@ describe('narrowing the wardrobe', () => {
   });
 
   it('a value nothing carries returns nothing, rather than everything', () => {
-    expect(ids({ ...NO_FILTER, type: 'kimono' })).toEqual([]);
-    expect(ids({ ...NO_FILTER, season: 'spring' })).toEqual([]);
+    expect(ids({ ...NO_FILTER, type: 'kimono' })).toHaveLength(0);
+    expect(ids({ ...NO_FILTER, season: 'spring' })).toHaveLength(0);
   });
 
   it('composes in front of the grouping — a narrowed wardrobe is still grouped', () => {

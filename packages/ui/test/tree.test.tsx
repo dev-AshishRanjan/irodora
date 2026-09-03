@@ -65,7 +65,7 @@ describe('an unresolvable colour is a failure, not a skip', () => {
     const painted = paintedColors(tree(<CompliantSwatch />), 'light');
     expect(painted.length).toBeGreaterThan(0);
     const unresolved = painted.filter((p) => p.resolution.kind === 'unresolved');
-    expect(unresolved).toEqual([]);
+    expect(unresolved).toHaveLength(0);
   });
 
   it('reports the hand-typed hex as unresolved rather than passing over it', () => {
@@ -94,7 +94,7 @@ describe('the small-text check, and the inheritance that hides it', () => {
     // The positive half, and it is the one that makes the negatives mean something: the
     // compliant fixture uses foreground.3 at 19px, so a check that simply flagged the token
     // would fail here.
-    expect(violations(<CompliantSwatch />)).toEqual([]);
+    expect(violations(<CompliantSwatch />)).toHaveLength(0);
   });
 
   it('catches the flat case — foreground.3 declared at 13px', () => {
@@ -117,7 +117,7 @@ describe('the small-text check, and the inheritance that hides it', () => {
     // inheritance the inner node falls back to 14 px and gets reported as a violation that
     // does not exist. A check that over-reports gets switched off, so this matters as much as
     // the under-reporting case.
-    expect(violations(<InheritedLargeText />)).toEqual([]);
+    expect(violations(<InheritedLargeText />)).toHaveLength(0);
   });
 
   it('models the inheritance rather than defaulting — the inner node reports 13, not 14', () => {

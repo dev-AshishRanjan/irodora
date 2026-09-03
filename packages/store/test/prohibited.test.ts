@@ -145,7 +145,9 @@ describe('what it must NOT reject', () => {
   it('leaves palette_member.weight alone', () => {
     // `body_` is prefixed for exactly this: a bare `weight` pattern would refuse the column
     // the palette weight ladder writes, and the rule would be removed within a release.
-    expect(findProhibited('ALTER TABLE palette_member ADD COLUMN weight REAL;', 'x')).toEqual([]);
+    expect(findProhibited('ALTER TABLE palette_member ADD COLUMN weight REAL;', 'x')).toHaveLength(
+      0,
+    );
   });
 
   it('leaves a comment discussing the rule alone', () => {
@@ -156,14 +158,14 @@ describe('what it must NOT reject', () => {
       '-- There is no skin colour column here, and NFR-22 is why.\n' +
       '/* Not an ethnicity classification, not a race field. */\n' +
       'ALTER TABLE personal_color_profile ADD COLUMN method TEXT;';
-    expect(findProhibited(sql, 'x')).toEqual([]);
+    expect(findProhibited(sql, 'x')).toHaveLength(0);
     // And the stripping is asserted directly, because it is the part most likely to be wrong.
     expect(sqlCode(sql)).not.toContain('NFR-22');
     expect(sqlCode(sql)).toContain('ADD COLUMN method TEXT');
   });
 
   it('does not treat "bracelet" as "race"', () => {
-    expect(findProhibited('ALTER TABLE garment ADD COLUMN bracelet TEXT;', 'x')).toEqual([]);
+    expect(findProhibited('ALTER TABLE garment ADD COLUMN bracelet TEXT;', 'x')).toHaveLength(0);
   });
 
   it('does not treat "percentage" — or five other ordinary words — as "age"', () => {
@@ -181,7 +183,7 @@ describe('what it must NOT reject', () => {
       'usage_count',
       'percentage',
     ])
-      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toEqual([]);
+      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toHaveLength(0);
   });
 
   it('does not treat "manager" or "condition" as health', () => {
@@ -189,7 +191,7 @@ describe('what it must NOT reject', () => {
     // it is an ordinary word in a codebase. The families name what a FIELD would be called, not
     // every word a health claim might use.
     for (const word of ['manager_id', 'condition_code'])
-      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toEqual([]);
+      expect(findProhibited(`ALTER TABLE garment ADD COLUMN ${word} TEXT;`, 'x')).toHaveLength(0);
   });
 
   it('DOES flag `healthy_margin`, and that false positive is accepted deliberately', () => {
@@ -233,7 +235,7 @@ describe('a database that already has the column', () => {
     }).not.toThrow();
     // And the repository still works, so "it opened" is a fact about a usable database rather
     // than about a function that returned.
-    expect(repo.listProfiles()).toEqual([]);
+    expect(repo.listProfiles()).toHaveLength(0);
     expect(uuidv7()).toMatch(/^[0-9a-f]{8}-/);
     repo.close();
   });

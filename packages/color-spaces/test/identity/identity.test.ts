@@ -184,7 +184,7 @@ describe('the Node execution', () => {
       findings,
       `NFR-3: this platform does not reproduce the committed fixture (F-083).\n  ` +
         findings.join('\n  '),
-    ).toEqual([]);
+    ).toHaveLength(0);
   });
 
   it('the recorded hex really is the value, not a rounded rendering of it', () => {

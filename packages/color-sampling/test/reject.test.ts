@@ -67,14 +67,14 @@ describe('each rule rejects, and the rejected pixel mattered', () => {
 
     expect(reasons(onBrightWall)).toEqual(['background']);
     // And the dark fabric itself is NOT rejected, which an absolute shadow cut would have done.
-    expect(partition(darkFabric).rejected).toEqual([]);
+    expect(partition(darkFabric).rejected).toHaveLength(0);
   });
 
   it('keeps a clean region entirely — the baseline the four cases are measured against', () => {
     // Without this, every assertion above could pass on a rule that rejects everything.
     const clean = fabric(1000);
     const { kept, rejected } = partition(clean);
-    expect(rejected).toEqual([]);
+    expect(rejected).toHaveLength(0);
     expect(kept).toHaveLength(1000);
   });
 });
@@ -86,7 +86,7 @@ describe('the statistics resist what the rules miss', () => {
     const clean = aggregate(fabric(99));
     // The outlier sits inside every rejection threshold, so it is KEPT — and the median is
     // what stops it mattering.
-    expect(partition(region).rejected).toEqual([]);
+    expect(partition(region).rejected).toHaveLength(0);
     expect(a.median.r).toBeCloseTo(clean.median.r, 3);
     expect(a.mean.r).not.toBeCloseTo(clean.mean.r, 4);
   });

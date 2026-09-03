@@ -102,7 +102,7 @@ describe('the export is offered BEFORE anything is destroyed', () => {
     expect(h.order).toEqual(['offerExport', 'write', 'confirmErase']);
     expect(out.erased).toBe(true);
     expect(out.backupPath).toContain('irodora-backup-');
-    expect(repo.listColors()).toEqual([]);
+    expect(repo.listColors()).toHaveLength(0);
     repo.close();
   });
 

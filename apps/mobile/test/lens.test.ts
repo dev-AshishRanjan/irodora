@@ -402,7 +402,7 @@ describe('every reading destination has a producer in shipped source', () => {
   });
 
   it('scans no test file, because the fixtures here are the missing sender', () => {
-    expect(SHIPPED.filter((f) => f.path.includes('test'))).toEqual([]);
+    expect(SHIPPED.filter((f) => f.path.includes('test'))).toHaveLength(0);
   });
 
   it.each([...READING_DESTINATIONS])('has at least one producer for %s', (destination) => {
@@ -444,14 +444,14 @@ describe('every reading destination has a producer in shipped source', () => {
    * the check would be measuring that `readFileSync` works.
    */
   it('DECOY — a destination nothing offers to has no producer', () => {
-    expect(producersOf('shopping')).toEqual([]);
-    expect(producersOf('nowhere-at-all')).toEqual([]);
+    expect(producersOf('shopping')).toHaveLength(0);
+    expect(producersOf('nowhere-at-all')).toHaveLength(0);
   });
 
   it('DECOY — the two real destinations are not produced by the same call site', () => {
     // A regex loose enough to ignore the destination argument would return the same file list
     // for both, and the per-destination assertions would pass while one address was dead.
-    expect(producersOf('profile')).not.toEqual([]);
-    expect(producersOf('wardrobe')).not.toEqual([]);
+    expect(producersOf('profile')).not.toHaveLength(0);
+    expect(producersOf('wardrobe')).not.toHaveLength(0);
   });
 });

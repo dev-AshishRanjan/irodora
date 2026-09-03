@@ -207,7 +207,7 @@ describe('erasure is proven by re-query, never by a return value', () => {
 
     const [row] = source.driver.query<{ n: number }>('SELECT COUNT(*) AS n FROM saved_color');
     expect(row?.n).toBeGreaterThan(0);
-    expect(source.repo.listColors()).toEqual([]);
+    expect(source.repo.listColors()).toHaveLength(0);
     source.repo.close();
   });
 });

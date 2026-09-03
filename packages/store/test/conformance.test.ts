@@ -113,7 +113,7 @@ describe('the repository keeps its own rules, not the driver', () => {
 
     expect(repo.getColor(id)?.deleted_at).toBe(2000);
     expect(repo.getColor('never-existed')).toBeUndefined();
-    expect(repo.listColors()).toEqual([]);
+    expect(repo.listColors()).toHaveLength(0);
     repo.close();
   });
 });

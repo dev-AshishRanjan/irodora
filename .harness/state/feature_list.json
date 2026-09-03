@@ -3741,7 +3741,7 @@
       "service": "root",
       "release": "R5",
       "priority": "could",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "Every toEqual([]) asserting that a collection received nothing is replaced by toHaveLength(0) or toStrictEqual([])",
@@ -3751,7 +3751,30 @@
         "state",
         "test"
       ],
-      "notes": "FOUND BY F-129, WHOSE OWN ASSERTION IT WEAKENED. Jest’s `toEqual([])` PASSES for `[undefined]` — confirmed against this repository’s runner in a throwaway case, because it did not seem plausible. `toEqual` ignores `undefined`, and that extends to array elements and to the length difference they create. THE MUTATION THAT SURVIVED: removing the `return` after the export screen refuses a format made it hand the sink an UNDEFINED file, the recorder pushed it, and `expect(written).toEqual([])` stayed green. TypeScript would have caught the use-before-assignment; jest runs through babel, which strips types. `toHaveLength(0)` catches it, and F-129 changed its own two assertions. EIGHTY-FIVE OTHERS REMAIN, and most are certainly sound: a `filter` or `map` result cannot contain `undefined`, so the trap cannot bite there. That is a JUDGEMENT rather than a check, and this repository has spent several features learning what an unchecked judgement is worth — which is why the survey is filed rather than asserted in a commit message. THE SECOND CRITERION MATTERS MORE THAN THE FIRST. Replacing 85 call sites once leaves nothing stopping the 86th, and a lint rule that flagged every `toEqual([])` would fire on the many that are comparing a VALUE and are correct. The distinction is whether the collection is something the code under test PUSHES INTO, which a rule may not be able to decide — in which case recording the survey, with a reason per site, is the honest outcome and the criterion says so."
+      "notes": "FOUND BY F-129, WHOSE OWN ASSERTION IT WEAKENED. Jest’s `toEqual([])` PASSES for `[undefined]` — confirmed against this repository’s runner in a throwaway case, because it did not seem plausible. `toEqual` ignores `undefined`, and that extends to array elements and to the length difference they create. THE MUTATION THAT SURVIVED: removing the `return` after the export screen refuses a format made it hand the sink an UNDEFINED file, the recorder pushed it, and `expect(written).toEqual([])` stayed green. TypeScript would have caught the use-before-assignment; jest runs through babel, which strips types. `toHaveLength(0)` catches it, and F-129 changed its own two assertions. EIGHTY-FIVE OTHERS REMAIN, and most are certainly sound: a `filter` or `map` result cannot contain `undefined`, so the trap cannot bite there. That is a JUDGEMENT rather than a check, and this repository has spent several features learning what an unchecked judgement is worth — which is why the survey is filed rather than asserted in a commit message. THE SECOND CRITERION MATTERS MORE THAN THE FIRST. Replacing 85 call sites once leaves nothing stopping the 86th, and a lint rule that flagged every `toEqual([])` would fire on the many that are comparing a VALUE and are correct. The distinction is whether the collection is something the code under test PUSHES INTO, which a rule may not be able to decide — in which case recording the survey, with a reason per site, is the honest outcome and the criterion says so.",
+      "plan": "plans/F-133-emptiness-is-a-length.md"
+    },
+    {
+      "id": "F-134",
+      "title": "An interrupted gate-mirror run leaves a disabled CI step in the working tree",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A gate-mirror run interrupted by SIGINT or SIGTERM restores every workflow it planted into, and says that it did",
+        "A planted workflow left over from any cause is detected and refused before the next run plants another",
+        "Both are proven by a run that is actually interrupted, not by reading the handler"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FOUND BY F-133, AND IT EXPLAINS AN EARLIER UNEXPLAINED FAILURE. `verify-gate-mirror.mjs` plants `if: false # planted by verify-gate-mirror.mjs` onto a CI step, runs gate 0, and restores the workflow in a `finally` — verified byte-for-byte, which is careful work. **A `finally` does not run when the process is KILLED**, and a timeout kills. So an interrupted run leaves a workflow file modified, with a blocking gate conditioned out. THE CONSEQUENCE IS WORSE THAN A DIRTY TREE. The next `git add -A` commits it, and a CI step that never runs is exactly the failure this script exists to detect — gate 11 nearly shipped skipped for the whole of R1, which is why the script was written. It would be disabled by its own scaffolding. Nothing carried it into a commit this time, checked against HEAD, but only because the interruption happened after the last commit rather than before the next one. IT ALSO EXPLAINS F-127. That feature recorded a gate-mirror failure as \"not reproduced, not explained\" — gate 0 was passing when run directly and gate-mirror reported it red. This is the mechanism: a leftover plant makes gate 0 fail inside the child process while a direct run of the same script, after the tree was restored by something else, passes. The progress entry for F-127 should be corrected when this is built. WHAT TO BUILD: signal handlers that restore and re-raise, and — more importantly, because a handler can be missed too — a check at STARTUP that refuses to run when a plant is already present, naming the file and the git command that clears it. The third criterion is the one that matters: a handler nobody has watched fire is a handler that might only be capable of being read."
     }
   ]
 }

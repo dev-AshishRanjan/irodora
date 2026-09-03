@@ -57,7 +57,7 @@ describe('finding the pairs that are hard to tell apart', () => {
 
   it('does NOT flag a pair it says is fine — the other half', () => {
     // Without this, "it flags hard pairs" is equally true of a function that flags everything.
-    expect(findSeparationProblems([checked(EASY_A), checked(EASY_B)])).toEqual([]);
+    expect(findSeparationProblems([checked(EASY_A), checked(EASY_B)])).toHaveLength(0);
   });
 
   it('reports the pair, not a colour', () => {
@@ -93,8 +93,8 @@ describe('finding the pairs that are hard to tell apart', () => {
   });
 
   it('finds nothing in a set of one, and nothing in an empty set', () => {
-    expect(findSeparationProblems([checked(HARD_A)])).toEqual([]);
-    expect(findSeparationProblems([])).toEqual([]);
+    expect(findSeparationProblems([checked(HARD_A)])).toHaveLength(0);
+    expect(findSeparationProblems([])).toHaveLength(0);
   });
 });
 

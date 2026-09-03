@@ -258,10 +258,10 @@ describe('editing a palette', () => {
     repo.savePalette(draft(id), 1000);
     repo.deletePalette(id, 2000);
 
-    expect(repo.listPalettes()).toEqual([]);
+    expect(repo.listPalettes()).toHaveLength(0);
     // Still retrievable by id — "you deleted this" and "this was never here" differ.
     expect(repo.getPalette(id)?.deletedAt).toBe(2000);
-    expect(repo.getPalette(id)?.members).toEqual([]);
+    expect(repo.getPalette(id)?.members).toHaveLength(0);
     // The colours survive: one saved once may be in another palette.
     expect(repo.listColors()).toHaveLength(3);
     repo.close();

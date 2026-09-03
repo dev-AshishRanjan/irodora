@@ -122,11 +122,11 @@ describe('reset', () => {
 
     repo.resetPreferences(NOW + 2);
 
-    expect(repo.listPreferences()).toEqual([]);
+    expect(repo.listPreferences()).toHaveLength(0);
     const trail = repo
       .changeLog()
       .filter((e) => e.table_name === 'pairing_preference' && e.row_id !== 'all');
-    expect(trail).toEqual([]);
+    expect(trail).toHaveLength(0);
     repo.close();
   });
 

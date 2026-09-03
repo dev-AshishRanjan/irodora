@@ -282,7 +282,7 @@ describe('a garment the outfit engine cannot place', () => {
     // A scarf can suit you, and it can be a duplicate of another scarf. Refusing wholesale
     // would throw away the two answers that are still available.
     expect(check.compatibility).not.toBeNull();
-    expect(check.duplicates).toEqual([]);
+    expect(check.duplicates).toHaveLength(0);
   });
 });
 
@@ -336,7 +336,7 @@ describe('the duplicate warning', () => {
       CONTEXT,
     );
 
-    expect(check.duplicates).toEqual([]);
+    expect(check.duplicates).toHaveLength(0);
   });
 
   it('does not flag across categories, because a jumper is not a duplicate of trousers', () => {
@@ -347,7 +347,7 @@ describe('the duplicate warning', () => {
     );
 
     // The same colour as g-01 and g-06, but they are jumpers.
-    expect(check.duplicates).toEqual([]);
+    expect(check.duplicates).toHaveLength(0);
   });
 });
 

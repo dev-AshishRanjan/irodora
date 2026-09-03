@@ -488,7 +488,7 @@ describe('a status colour may not sit beside a colour sample (F-069)', () => {
     // THE HALF THAT MAKES THE RULE USABLE. Without it the rule could be "flag any status
     // colour anywhere near anything", which would pass the negative above and be switched
     // off within a week — worse than no rule.
-    expect(check('light', true)).toEqual([]);
+    expect(check('light', true)).toHaveLength(0);
   });
 
   it('does not flag the real components, which is asserted FIRST for a reason', () => {
@@ -497,14 +497,14 @@ describe('a status colour may not sit beside a colour sample (F-069)', () => {
       for (const state of REQUIRED_STATES[subject.kind]) {
         const tree = subject.render(state, 'light');
         if (tree === null) continue;
-        expect(checkStatusAdjacency(tree, 'light', subject.sampleValues ?? [])).toEqual([]);
+        expect(checkStatusAdjacency(tree, 'light', subject.sampleValues ?? [])).toHaveLength(0);
       }
   });
 
   it('holds in both themes', () => {
     // The two themes are authored independently; a status token's value differs between them.
     expect(check('dark')).toHaveLength(1);
-    expect(check('dark', true)).toEqual([]);
+    expect(check('dark', true)).toHaveLength(0);
   });
 });
 
@@ -567,7 +567,7 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
       </Text>,
       'light',
     );
-    expect(variants(tree)).toEqual([]);
+    expect(variants(tree)).toHaveLength(0);
   });
 
   it('uses the manifest value rather than a literal', () => {

@@ -91,7 +91,7 @@ describe('hex only (ADR-0063)', () => {
     const offenders = declarations(css).filter((l) =>
       /(?:oklch|color-mix|rgba?|hsla?|lab|lch)\(/u.test(l),
     );
-    expect(offenders).toEqual([]);
+    expect(offenders).toHaveLength(0);
   });
 
   it('every colour declaration is #RRGGBB or #RRGGBBAA', () => {
@@ -174,8 +174,8 @@ describe('DECOY — the emitter refuses to write a failing stylesheet', () => {
 
   it('the unbroken manifest emits cleanly, so the decoy is the difference', () => {
     expect(() => emitHeroui(manifest)).not.toThrow();
-    expect(herouiTheme(manifest, 'dark').findings).toEqual([]);
-    expect(herouiTheme(manifest, 'light').findings).toEqual([]);
+    expect(herouiTheme(manifest, 'dark').findings).toHaveLength(0);
+    expect(herouiTheme(manifest, 'light').findings).toHaveLength(0);
   });
 });
 
@@ -202,10 +202,10 @@ describe('the hex-only rule is enforced by the emitter, not only by this test', 
       '  --accent-hover: #DBD9D6; /* mix(--accent 90%, --accent-foreground 10%) */',
       '}',
     ].join('\n');
-    expect(nonHexDeclarations(good)).toEqual([]);
+    expect(nonHexDeclarations(good)).toHaveLength(0);
   });
 
   it('the real emitted stylesheet has none', () => {
-    expect(nonHexDeclarations(emitHeroui(manifest))).toEqual([]);
+    expect(nonHexDeclarations(emitHeroui(manifest))).toHaveLength(0);
   });
 });

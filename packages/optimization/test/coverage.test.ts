@@ -290,7 +290,7 @@ describe('what a gap reports', () => {
   it('offers nothing that would unlock nothing', () => {
     // A gap nobody would benefit from filling is not a gap. With an impossible threshold no
     // projected garment unlocks anything, so there is nothing to say.
-    expect(gaps(WARDROBE, LEXICON, context(101))).toEqual([]);
+    expect(gaps(WARDROBE, LEXICON, context(101))).toHaveLength(0);
   });
 
   it('orders by what it would unlock, with a total tie-break', () => {

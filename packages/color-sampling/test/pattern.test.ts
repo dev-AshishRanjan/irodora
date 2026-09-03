@@ -351,7 +351,7 @@ describe('pixels that should not count', () => {
     const allBlown = build(() => px(1.05, 1.05, 1.05));
     const { colours, usable } = extractPattern(allBlown, 2);
 
-    expect(colours).toEqual([]);
+    expect(colours).toHaveLength(0);
     expect(usable).toBe(0);
   });
 });

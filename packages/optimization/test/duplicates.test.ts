@@ -59,7 +59,7 @@ describe('what gets flagged', () => {
   });
 
   it('does NOT flag a far pair', () => {
-    expect(findDuplicates([item('a', 'jumper', NAVY), item('b', 'jumper', RUST)])).toEqual([]);
+    expect(findDuplicates([item('a', 'jumper', NAVY), item('b', 'jumper', RUST)])).toHaveLength(0);
   });
 
   it('does NOT flag across categories', () => {
@@ -69,7 +69,7 @@ describe('what gets flagged', () => {
      * duplicates their navy trousers, which is the one thing FR-44's wording rules out.
      */
     const pairs = findDuplicates([item('a', 'jumper', NAVY), item('b', 'trousers', NAVY)]);
-    expect(pairs).toEqual([]);
+    expect(pairs).toHaveLength(0);
   });
 
   it('treats a category typed differently as the same category', () => {
@@ -91,7 +91,7 @@ describe('the boundary is exact, and strict', () => {
     const exact = distance(NAVY, NEAR_NAVY);
     expect(
       findDuplicates([item('a', 'jumper', NAVY), item('b', 'jumper', NEAR_NAVY)], exact),
-    ).toEqual([]);
+    ).toHaveLength(0);
     // And just above it, the same pair is a duplicate — so the exclusion is the boundary and
     // not a function that flags nothing.
     expect(
@@ -113,7 +113,7 @@ describe('each unordered pair appears once', () => {
   });
 
   it('never pairs an item with itself', () => {
-    expect(findDuplicates([item('a', 'jumper', NAVY)])).toEqual([]);
+    expect(findDuplicates([item('a', 'jumper', NAVY)])).toHaveLength(0);
   });
 });
 
@@ -139,6 +139,6 @@ describe('ordering', () => {
 
 describe('nothing to compare', () => {
   it('returns nothing rather than throwing', () => {
-    expect(findDuplicates([])).toEqual([]);
+    expect(findDuplicates([])).toHaveLength(0);
   });
 });
