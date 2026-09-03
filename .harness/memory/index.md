@@ -41,6 +41,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
 - [lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md](lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md) — `expect([undefined]).toEqual([])` passes, so a "nothing happened" assertion can be satisfied by something happening; use `toHaveLength(0)`.
+- [lessons/a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it.md](lessons/a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it.md) — prettier formats `.yaml`, so a generator emitting double quotes made `format` and `--check` demand different bytes of the same file, forever.
 - [lessons/a-gate-that-errors-is-failing-open.md](lessons/a-gate-that-errors-is-failing-open.md) — a check that cannot run is not passing; the same shape appears in authorisation and tenancy.
 - [lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md](lessons/a-style-engine-that-resolves-in-metro-is-invisible-to-jest.md) — className resolved by a bundler plugin is absent from the rendered tree, so the contrast gate measures an empty set and stays green.
 - [lessons/provenance-in-the-type-is-what-makes-honesty-structural.md](lessons/provenance-in-the-type-is-what-makes-honesty-structural.md) — ask what makes a guarantee impossible to violate, not what reminds people not to.
@@ -147,6 +148,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md](effects/the-currency-exponent-is-not-stored-beside-the-price-it-scaled.md) — **E-052** · a price is written at a scale the row does not record, so editing one exponent silently reinterprets every price already stored for that currency.
 - [effects/the-engine-names-keys-and-only-the-app-can-render-them.md](effects/the-engine-names-keys-and-only-the-app-can-render-them.md) — **E-053** · `messageKey` is a plain string on the engine’s side of the boundary, so twelve keys were emitted for two releases into a catalogue that had none of them.
 - [effects/a-build-number-decides-which-branch-of-a-dependency-exists.md](effects/a-build-number-decides-which-branch-of-a-dependency-exists.md) — **E-054** · minSdkVersion decided at compile time whether Nitro s AHardwareBuffer support existed at all; hasPixelBuffer reports the device s capability and could never see it.
+- [effects/a-journey-nothing-runs-is-a-file-nothing-checks.md](effects/a-journey-nothing-runs-is-a-file-nothing-checks.md) — **E-055** · the route table is a contract with the Atlas journey, because the journey cannot be run here and nothing else notices a moved route.
 
 ## Glossary
 

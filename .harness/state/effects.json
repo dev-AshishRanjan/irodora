@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-01",
+  "updated": "2026-09-03",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -518,6 +518,18 @@
         {
           "kind": "package",
           "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/journeys/atlas.journey.json"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/e2e/atlas.yaml"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -525,9 +537,9 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck",
+      "guard": "gate:typecheck (every TypeScript call site) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs, which tsc cannot see)",
       "memory": "memory/effects/the-message-key-set-is-a-contract-with-every-render-site.md",
-      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves.",
+      "rationale": "The English catalogue is the SOURCE of MessageKey, and ja is typed Record<MessageKey, string>. Adding a key therefore breaks ja at compile time and removing one breaks every call site — which is the intended behaviour and the whole completeness mechanism (ADR-0056). The guard is the COMPILER, not a script: a missing key and an extra key are both tsc failures, so unlike a completeness script there is nothing to wire into a gate, nothing to skip and nothing to switch off. WHAT THE TYPE CANNOT SEE is covered by apps/mobile/test/i18n.test.ts: a ja value copy-pasted from the English satisfies Record<MessageKey, string> perfectly, so the test asserts Japanese SCRIPT is present in every prose value rather than merely that the strings differ. A new Japanese string can also introduce a codepoint the bundled font lacks — that is E-017, and the two links share this file as their trigger. F-018 TOOK THE CATALOGUE FROM 9 KEYS TO 103, which changes what this link costs rather than what it means: every one needs a written Japanese string, and F-017’s attested criterion — that a competent speaker has read them — is now roughly eleven times larger than when it was written. TWO THINGS THE EXISTING TESTS CAUGHT ON THE WAY IN, both of them design errors rather than typos. `atlas.of` was an ENGLISH SENTENCE PATTERN forced onto Japanese: \"Showing 24 of 120\" reorders completely in Japanese, and the key was deleted rather than translated — the screen renders digits and a solidus instead. And IDENTICAL_BY_DESIGN is capped at three deliberately, so the five colour-space names became NOTATION_KEYS, a category governed by an anchored shape and a length cap instead of a longer list of favours; the ad-hoc list is now EMPTY. Its decoy immediately caught the first shape admitting \"Not recorded\", twelve characters of ordinary prose. F-019 added 29 more keys and DELETED THREE that should never have been keys: `:1`, `°` and `/100` are fragments of a formatted number rather than symbol names, and `NOTATION_SHAPE` rejected them. Keeping them would have meant widening the shape until a fragment of prose could qualify, or three more entries in a list capped at three. The words stay in the catalogue; the punctuation moved into the value. F-028 ADDED A SOURCE OF KEYS THE COMPILER CANNOT SEE. `@irodora/recommendation` emits `explain.<factor>.<direction>` on every score and holds no catalogue, no locale and no formatter — deliberately, because a sentence produced at scoring time has to be translated at scoring time and a stored recommendation becomes a stored English string (FR-11). The consequence is that the completeness mechanism that makes THIS link safe — `MessageKey` derived from `en`, so a missing key fails `tsc` — CANNOT REACH IT: the engine has no idea `MessageKey` exists, and the app does not import the engine. So the key set is exported as DATA (`MESSAGE_KEYS`, twelve keys, asserted complete and unique in the package) for a test on the app side to drive from. THAT TEST DOES NOT EXIST YET AND MUST NOT: the app renders no score until F-030, and `i18n.test.ts` fails on a key nobody renders — so adding the twelve keys now would trade one hole for a different one. The contract is therefore recorded here and the check is owed by F-030, which is the first feature able to satisfy both halves. F-091 ADDED A READER THAT IS NOT THE APP AND THAT `tsc` CANNOT SEE. The Atlas journey selects on the strings the app renders, so its spec names MESSAGE KEYS and scripts/generate-e2e-flows.mjs resolves them through this file — imported, not parsed, under Node 24 type stripping, so it is the object the app renders from rather than a regex’s opinion of it. The completeness mechanism that makes this link safe cannot reach a JSON spec: a renamed key breaks `ja` and every call site at compile time, and the journey silently not at all. So the guard here is a SECOND one — `generate-e2e-flows.mjs --check`, in `lint` — and it matters more than usual because the journey CANNOT BE RUN on this workstation (no JDK, no emulator; F-091 criteria 2 to 4 are attested). A hand-written flow would have gone wrong at the first rename with every gate green, which is why ADR-0086 generates it instead.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -1086,6 +1098,18 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/profile/photo.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/journeys/atlas.journey.json"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/e2e/atlas.yaml"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1093,9 +1117,9 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:test (apps/mobile/test/profile.test.ts — every trial checked against the published OKLCh)",
+      "guard": "gate:test (apps/mobile/test/profile.test.ts — every trial checked against the published OKLCh) + script:generate-e2e-flows.mjs --check in gate:lint (the journey specs)",
       "memory": "memory/effects/a-declared-pair-of-slugs-is-a-claim-about-published-values.md",
-      "rationale": "TWELVE CONSTANTS NAME CORPUS SLUGS AND ENCODE A CLAIM ABOUT THE VALUES BEHIND THEM: that each comparison separates on its own axis and stays matched on the others. Nothing in the type system holds that. A temperature trial is two entries matched in OKLCh L and C and opposed in hue class — move one entry 0.05 in L at the next publish and the same question is now partly about lightness, the answer still tallies, the profile still looks reasonable, and NOTHING ON THE SCREEN LOOKS DIFFERENT. This is E-022’s shape aimed at a different destination: E-022 asks whether the bundle the app reads is the one that was published; this asks whether a constant DESCRIBING the bundle’s contents still means what it said. The guard reads the published values rather than the authored ones and names the trial that fails, with a decoy asserting the separation thresholds can reject a pair — without it \"every trial clears the bound\" would also be true of a bound of zero. It is severity high rather than medium because the failure is silent by construction and the output is a personal profile that F-028 will weight recommendations by. F-027 ADDED A SECOND CONSUMER THAT DOES NOT NAME A SLUG. `photo.ts` calls the same three list derivations over the same published entries, so a corpus publish moves a photo estimate’s neutrals, accents and avoid list exactly as it moves a guided one — and unlike the trials, nothing about that dependency is visible as a constant somebody could read. It is caught because the two paths SHARE the derivations rather than agreeing today: the guided tests assert those lists exactly, so a change reaching one path fails there.",
+      "rationale": "TWELVE CONSTANTS NAME CORPUS SLUGS AND ENCODE A CLAIM ABOUT THE VALUES BEHIND THEM: that each comparison separates on its own axis and stays matched on the others. Nothing in the type system holds that. A temperature trial is two entries matched in OKLCh L and C and opposed in hue class — move one entry 0.05 in L at the next publish and the same question is now partly about lightness, the answer still tallies, the profile still looks reasonable, and NOTHING ON THE SCREEN LOOKS DIFFERENT. This is E-022’s shape aimed at a different destination: E-022 asks whether the bundle the app reads is the one that was published; this asks whether a constant DESCRIBING the bundle’s contents still means what it said. The guard reads the published values rather than the authored ones and names the trial that fails, with a decoy asserting the separation thresholds can reject a pair — without it \"every trial clears the bound\" would also be true of a bound of zero. It is severity high rather than medium because the failure is silent by construction and the output is a personal profile that F-028 will weight recommendations by. F-027 ADDED A SECOND CONSUMER THAT DOES NOT NAME A SLUG. `photo.ts` calls the same three list derivations over the same published entries, so a corpus publish moves a photo estimate’s neutrals, accents and avoid list exactly as it moves a guided one — and unlike the trials, nothing about that dependency is visible as a constant somebody could read. It is caught because the two paths SHARE the derivations rather than agreeing today: the guided tests assert those lists exactly, so a change reaching one path fails there. F-091 ADDED THE ATLAS JOURNEY, which opens a colour BY SLUG and asserts on its published names. Unpublishing an entry, or renaming one, therefore breaks a journey — and does so invisibly, because nothing runs it here. `generate-e2e-flows.mjs --check` resolves every slug against this bundle in `lint`. It also refuses a selector whose text appears inside ANOTHER entry’s names: Maestro matches on a substring, so two matching rows would tap whichever the framework reached first, and that is a flake nobody could reproduce from reading the flow.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -2017,6 +2041,46 @@
       "guard": "gate:lint — scripts/verify-android-min-sdk.mjs, seven cases with the decoys watched failing. The ones that matter are the LOWERED values: 24 and 25 are both rejected, because a check that only noticed a MISSING number would pass the edit that actually happens — somebody widening device support. Two more reject a plugin that hard-codes the number instead of passing the constant, INCLUDING when the literal is 26, because two numbers that can disagree is the shape this regresses in. The real config must stay green. WHAT THE GUARD CANNOT DO: prove the built APK declares it. That is the artefact gate s job, where aapt2 is an independent oracle, and it runs only in CI.",
       "memory": "memory/effects/a-build-number-decides-which-branch-of-a-dependency-exists.md",
       "rationale": "A NUMBER IN A CONFIG FILE DECIDES WHICH BRANCH OF A DEPENDENCY S C++ EXISTS. react-native-nitro-modules guards its entire AHardwareBuffer implementation behind `#if __ANDROID_API__ >= 26`, with a `throw std::runtime_error` in the `#else`. __ANDROID_API__ is set by the NDK toolchain from Gradle s minSdkVersion, and Nitro takes the app s value directly: `minSdkVersion getExtOrIntegerDefault(\"minSdkVersion\")`. This repository never set one, Expo s ProjectConfiguration.kt falls back to `warnIfNotDefined(\"minSdkVersion\", 24)`, and so the `#else` is what shipped. THE GUARD AND THE CALL DISAGREED, AND THAT IS THE PART TO REMEMBER. Frame.hasPixelBuffer returned TRUE the whole time, because it asks the same question with only the RUNTIME half: `if (SDK_INT >= P) hardwareBuffer?.use { if (it.isCpuReadable) return true }`. One is a property of the DEVICE; the other is a property of OUR BUILD. No runtime check on the JavaScript side could ever have bridged that, which is why the try/catch F-121 put around getPixelBuffer() is what turned an invisible throw into a sentence — after four device round trips. IT IS INVISIBLE TO EVERY OTHER CHECK HERE. Jest has no NDK. Typecheck sees an integer. Lint sees a plugin entry that resolves. The failure appears only on a phone, on every frame, inside react-native-vision-camera-worklets own try/catch, as a console.error — which is to say nowhere a person holding the phone can read. WHY IT LIVES IN app.config.ts AND NOWHERE ELSE: apps/mobile/android/ is generated and untracked, and both android-build.yml and release.yml run `expo prebuild --platform android --clean`. A value written into the generated project by hand works locally and vanishes on the next run, which is how a fix becomes a mystery a fortnight later. WHY 26 AND NOT 28: 26 is the number in the #if. A device on API 26 or 27 never reaches the HardwareBuffer path at all — it falls to the single-plane branch, which works at any level — so a higher floor would drop two API levels and buy nothing. WHAT IT COSTS: Android 7.0 and 7.1 can no longer install the app. That cost is close to zero because the app ALREADY did not work there — reading a colour is a core journey and it threw on every frame — and because NFR-7 sets the bar at a four-year-old mid-range Android, which in 2026 means API 31 or above. Declaring 24 was a claim the binary could not honour."
+    },
+    {
+      "id": "E-055",
+      "from": {
+        "kind": "contract",
+        "ref": "apps/mobile/app/ (the expo-router route table)"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/e2e/journeys/atlas.journey.json"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/e2e/atlas.yaml"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-e2e-flows.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "script:generate-e2e-flows.mjs --check (in gate:lint)",
+      "memory": "memory/effects/a-journey-nothing-runs-is-a-file-nothing-checks.md",
+      "rationale": "A journey walks BETWEEN SCREENS, so it depends on the route table in a way no render test does: react-test-renderer mounts a screen without a navigator, which is precisely why \"rendered\" and \"reachable\" are the same sentence there and different sentences on a phone. Renaming `app/atlas/[slug].tsx` breaks the Atlas journey and breaks nothing else that would notice. Each step may therefore declare the `route` it expects to be on; the declaration changes no output and exists only so a moved file fails the build. SEVERITY IS medium RATHER THAN high because the route assertion is advisory to the RUN — a wrong route breaks a journey, not the app — but it is the only guard of its kind: the run that would otherwise catch it needs a device, and F-091 criteria 2 to 4 are attested for want of a JDK. THE GUARD CANNOT SEE that the screen at a route renders the key a step asserts. Checking that means reading a `.tsx` for `t(...)` occurrences, which is source analysis of the kind that has mistaken a comment for code five times in this repository (F-122, F-127, F-130, F-132, F-133). Named rather than attempted.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

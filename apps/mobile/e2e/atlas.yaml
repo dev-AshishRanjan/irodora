@@ -1,0 +1,28 @@
+# GENERATED from apps/mobile/e2e/journeys/atlas.journey.json —
+# do not edit. Run `node scripts/generate-e2e-flows.mjs` after changing the spec.
+#
+# The Atlas journey — launch, browse, filter, open a colour, read its provenance
+# F-091 criterion 2. Everything this walks past is covered by a render test, and a
+# render test cannot tell reachable from rendered: react-test-renderer mounts a screen
+# without a navigator, so "the row is in the tree" and "a person can tap it" are the same
+# sentence there and different sentences on a phone.
+#
+# Selectors resolved against corpus 2026.08.1 and the English catalogue.
+appId: com.irodora.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'The engine is running on this device'
+- tapOn: 'Browse the colours'
+- assertVisible: 'Colour Atlas'
+- assertVisible: 'Filters'
+- tapOn: 'Search by name or reading'
+- inputText: 'aki-batake'
+- assertVisible: 'Autumn Field'
+- tapOn: 'Autumn Field'
+- assertVisible: '秋畑'
+- assertVisible: 'Where this colour came from'
+- assertVisible: 'Source'
+- assertVisible: 'Coordinates'
+- back
+- assertVisible: 'Colour Atlas'

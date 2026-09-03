@@ -109,6 +109,7 @@ Two rules that matter more than the format:
 | [0083](0083-a-pdf-report-embeds-a-supplied-font-and-the-parser-is-proven-against-a-constructed-one.md) | A PDF report embeds a font its caller supplies, and the parser is proven against a constructed one | Accepted |
 | [0084](0084-completeness-moves-from-every-published-version-to-the-newest-one.md) | Occasion completeness is required of the newest published version, not of every one | Accepted |
 | [0085](0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md) | The reference card is a partner card, and its values are cited rather than measured | Accepted |
+| [0086](0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md) | The journey is a Maestro flow generated from a spec, not a hand-written one | Accepted |
 
 ## Open questions awaiting an ADR
 

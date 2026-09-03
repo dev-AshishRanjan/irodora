@@ -12,13 +12,24 @@
  * request carried no image", and it is checkable as *the process opened no socket*.
  *
  * A gate whose charter outruns its subject has two honest options: leave it pending until the
- * whole charter is met, or activate it and say on every run what it does not cover. Gate 7 is
- * **pending** today for a reason this file enforces: nothing in the workspace declares a
- * `test:e2e` task, so there is no surface to run. It activates with F-039, the Expo app.
+ * whole charter is met, or activate it and say on every run what it does not cover.
  *
  * It **fails if it finds no surface to run**. `pnpm test:e2e` was once `turbo run test:e2e` with
  * nothing in the workspace declaring that task: a green gate over zero suites, which is the
  * failing-open shape this repository keeps finding and keeps answering the same way.
+ *
+ * ## Why gate 7 is still `pending` — and it is NO LONGER for want of a surface
+ *
+ * **F-091 supplied one.** `apps/mobile` declares `test:e2e`, and this file exits 0 rather than
+ * refusing. The paragraph that used to stand here said the opposite — *"nothing in the workspace
+ * declares a `test:e2e` task"* — and it was made false by the same commit that edited this file
+ * to add the sentence at the bottom of the report. A comment the code has outgrown, in the file
+ * the feature was editing [[a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it]].
+ *
+ * The reason now is **F-091's criterion 4**, which is `attested`: the gate cannot be moved to
+ * `active` until a CI run has actually executed a journey, and no CI run has. The journey exists
+ * and its selectors are checked in `lint`; what is missing is a device and a run
+ * ([ADR-0086](../docs/adr/0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md)).
  */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -97,15 +108,25 @@ if (surfaces.length === 0) {
   console.error(
     '  NO surface declares a `test:e2e` script. Gate 7 would pass over an empty set, which is\n' +
       '  a gate failing open. Refusing to report that as coverage.\n\n' +
-      '  This is expected while gate 7 is `pending`: the API surface it used to run went with\n' +
-      '  the server tier (ADR-0051) and the app surface arrives with F-039. gates.json records\n' +
-      '  the gate as pending with ciStep:false, so CI does not invoke this script yet. If you\n' +
-      '  are seeing this from CI, the gate was activated without a surface to run.\n',
+      '  THIS IS NO LONGER EXPECTED. F-091 gave apps/mobile a `test:e2e` task, so reaching\n' +
+      '  this branch means it was removed or renamed. The API surface this gate used to run\n' +
+      '  went with the server tier (ADR-0051); the app surface is the only one left.\n',
   );
   process.exit(1);
 }
 
 console.log(`  running: ${surfaces.map((surface) => surface.name).join(', ')}\n`);
+
+/*
+ * `covered` means A SUITE EXISTS FOR THIS ITEM. It does not mean the suite passed, and it
+ * cannot: this report is printed BEFORE anything runs. The run is what `test:e2e` does next,
+ * and it exits non-zero when there is no device rather than reporting a pass it did not earn.
+ *
+ * Spelled out because the first covered line arrived with F-091, whose journey is written,
+ * checked against the app's own catalogue and corpus, and RUN NOWHERE — criteria 2 to 4 are
+ * attested. A reader seeing `covered` next to it should know exactly which of those it means.
+ */
+console.log('  covered = a suite exists to run. Whether it passes is the run, below.\n');
 
 const unmet = [];
 for (const { item, requires, feature } of CHARTER) {

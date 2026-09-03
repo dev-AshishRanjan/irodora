@@ -13683,3 +13683,130 @@ eligible. R2 precedes R5, so F-091 is next.
 
 ---
 
+## 2026-09-03 — F-091 DONE · a journey that can be checked before it can be run
+
+Gate 7 has been `pending` since it was written. `e2e-scope.mjs` refuses to report coverage over
+an empty set and **nothing in the workspace declared a `test:e2e` task**, so the gate had no
+subject — and fifteen features listed `e2e` in their verification and reported it *not run*.
+
+`apps/mobile` declares one now. **Criterion 1 is met**; criteria 2–4 were declared `attested`
+this morning and are named debts rather than silence.
+
+### The hazard, which was the whole design problem
+
+A journey selects on the strings the app renders — a message key, a colour's published name, a
+route. **None of those is checked by anything when the journey cannot run**, and it cannot run
+here: no JDK, no AVD. Committing a hand-written YAML would have satisfied the letter of
+criterion 1 and created a fresh place for rot: wrong at the first rename, silently, with every
+gate green. That is the failing-open shape `e2e-scope.mjs` exists to refuse, and introducing a
+new instance of it in the feature that closes one would have been a poor joke.
+
+So the flow is **generated from a spec** ([ADR-0086](../../docs/adr/0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md)). The spec names a key, a slug and a route; the generator
+resolves each against the app's own sources and `--check` fails when the committed flow is no
+longer what they produce. The sources are **imported, not parsed** — Node 24 strips the types,
+so `en.ts` here is the object the app renders from rather than a regex's opinion of it.
+
+| what changes | what broke before | what breaks now |
+|---|---|---|
+| a message key is renamed | the app and its tests | …and the journey, in `lint` |
+| a corpus entry is unpublished | the bundle digest | …and any journey that opened it |
+| a route file is renamed | the app | …and any journey that navigated to it |
+
+**Maestro**, over Detox and Appium: not an npm dependency, so nothing enters the lockfile and
+E-032 is untouched; black-box, so the app under test is the app that ships; and its flows are
+**data**, which is the property every check above depends on. There is no static check for
+arbitrary JavaScript.
+
+### `test:e2e` refuses rather than passes
+
+With no Maestro CLI it **exits non-zero** and says so. Gate 7 therefore stays `pending` with
+`ciStep: false` — that is criterion 4, and it is attested. `e2e-scope.mjs` gained a sentence for
+the same reason: **`covered` means a suite exists to run, not that it passed.** The first
+`covered` line arrived with a journey that has never been executed.
+
+### Two things the work found
+
+**A generated file must be generated the way the formatter would leave it.** The generator
+emitted double-quoted YAML; prettier writes single quotes. Both gates were then correct and
+permanently opposed — `format:check` demanding one file and `--check` the other. Fixed in the
+generator, which is the half that must yield. Single quotes turned out to be right anyway: the
+selectors are regular expressions, and a single-quoted YAML scalar leaves a backslash alone.
+[[a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it]]
+
+**`--prove` as a flag on the generator deadlocked.** The proof imports `renderFlow`, so a flag
+made the module import the file that imports it; the symptom was a top-level `await` that never
+settled. It is a separate entry point now. Nothing is planted on disk either — `renderFlow` is
+pure, so every mutation is an object literal, and there is no interrupted run that can leave a
+fixture behind (the failure F-134 had just finished fixing elsewhere).
+
+### The evaluator returned FAIL, and it was right
+
+An independent pass took a scratch copy of the generator, **mutated the subject eleven ways and
+caught all eleven** — so the guard is real. It then failed the feature on the definition of
+done, and every finding was fixed before this entry was written:
+
+**Two claims this commit itself falsified and left standing.** `e2e-scope.mjs`'s own header
+still said *"nothing in the workspace declares a `test:e2e` task"* — in the file the feature was
+editing, six lines above the honesty sentence it added. And `gates.json` still gave that as the
+reason gate 7 is `pending`; **the reason is now criterion 4**, which is a different reason and
+the one a future session needs. This is F-132's lesson inverted: not a comment mistaken for
+code, but a comment the code outgrew.
+
+**An ADR sentence claiming a check that was never written** — *"looks for the Maestro CLI and a
+device"*. It looks for the CLI. With Maestro present and nothing attached, Maestro's own exit
+stops the task, which is still fail-closed — but golden rule 11 does not stop applying to an
+ADR. Corrected in the ADR, the runner and the plan.
+
+**Three gaps in the guard, all closed rather than documented.** The ambiguity rule covered
+colours and not message keys, and the catalogue holds 21 duplicated strings — `compare.title`
+and `home.openCompare` are both *"Compare two colours"*. A **`tap`** on a doubled string now
+fails; `assertVisible` deliberately does not, because an assertion either element satisfies is
+still true, and **both halves are now asserted** so the exemption cannot rot into a bug. The
+`route` declaration was optional per step, so a spec could quietly stop declaring any — **at
+least one is now required**. And the proof's *"the committed flow, unedited"* assertion passed
+freshly regenerated text and never opened the file; it reads from disk now.
+
+Also fixed: the missing `effects` array on F-091, and two effect `guard` fields that named only
+`gate:typecheck` — the guard their own new rationale says cannot reach a JSON spec.
+
+### The proof
+
+Fifteen assertions, and **the real spec is required to render first** — a harness that cannot
+evaluate its subject reports every mutation as caught, which cost 38 false results earlier in
+this session. Refused: an unknown message key · an unpublished colour · a route that is not a
+file · a step verb outside the vocabulary · a step naming both a key and a colour · an unknown
+name field · **a colour whose name appears inside another colour's** · **a `tap` on a message
+whose text appears in another key** · a spec declaring no route at all · a message containing a
+line break. Allowed, and asserted: the same collision on an `assertVisible`. Then the drift half
+through `drift()` — **the function `--check` itself calls**, not a copy — reading the committed
+file: unedited is *up to date*, one edited word is *drifted*, a spec with no flow is *missing*.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state (18 checks, 53 warnings) · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · content · gate-mirror (14 active gates) | **PASS** |
+| 7 e2e | **REFUSED, correctly** — no Maestro CLI; exits non-zero |
+
+**Not run:** `a11y`, `contrast`, `color-golden`, `cvd`, `perf` — no screen and no colour maths
+changed. Worth stating plainly: `typecheck` and `test` add **no evidence for this feature**.
+Every file it adds is `.mjs`, `.json` or `.yaml`, and none is seen by `tsc` or by jest. The
+evidence is `lint`, the proof, and the evaluator's mutation run.
+
+### Effects
+
+**E-016** and **E-030** gained the journey as a dependent: the catalogue and the published
+corpus now have a reader `tsc` cannot see, and both `guard` fields now name it. **E-055** is new
+— the route table is a contract with the journeys, because a journey is the only artefact here
+that depends on navigation and cannot be run.
+[[a-journey-nothing-runs-is-a-file-nothing-checks]]
+
+### Still owed
+
+Criteria 2–4, attested and outstanding: the device run, the socket assertion, and gate 7's
+activation with a CI step. Five of six charter items remain `NOT COVERED` and belong to F-039,
+F-040 and F-041.
+
+---
+
