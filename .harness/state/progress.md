@@ -13980,3 +13980,106 @@ card, values and licence are still unread, which is why nothing is vendored.
 
 ---
 
+## Handoff — 2026-09-03 (second)
+
+**Feature:** none in flight. **Everything that remains needs a device, a purchase, or an
+artefact somebody has launched** — which is why this is a handoff and not a checkpoint.
+
+### Done this session
+
+| | |
+|---|---|
+| **ADR-0085** | OQ-3 closed — a partner card, values cited rather than measured |
+| **F-091** | the e2e harness: a journey that can be checked before it can be run — ADR-0086 |
+| **F-053** | calibrated scan: a correction solved from values somebody else published — ADR-0087 |
+
+Also: **F-091's criteria 2–4 declared `attested`**, which converted a gap fifteen commit
+messages deep into a named obligation.
+
+**Filed rather than half-built:** F-135 (multi-region frame sampling), F-136 (the calibration
+audit record's writer and reader).
+
+### Both reviews returned failures, and both were right
+
+**F-091 — the evaluator returned FAIL.** It mutated the generator eleven ways and caught all
+eleven, then failed the feature on the definition of done: two claims the commit itself had
+falsified and left standing (`e2e-scope.mjs`'s header still said nothing declared `test:e2e`,
+six lines above the honesty sentence the same commit added; `gates.json` still gave that as the
+reason gate 7 is pending), an ADR sentence claiming a device check that was never written, and
+three gaps in the guard. All fixed before it was recorded done.
+
+**F-053 — the colour-science review returned CHANGES REQUIRED.** It verified what I could not
+verify about my own work — the P3 path recovers the exact matrix to 2.6e-14, the homography
+matches Heckbert term for term, the Spearman floor holds against a 200 000-trial simulation —
+and found **three silent-wrong-answer paths**. Then mutating my own fixes found **three of four
+had no test**. [[a-fix-made-in-review-is-the-one-most-likely-to-ship-untested]]
+
+### Next action
+
+**There is no feature that can be finished on this workstation.** Three are technically
+eligible and none is buildable here:
+
+| | |
+|---|---|
+| **F-086** (R3) | its own notes require *"an artefact somebody has actually launched"*, and F-085's attestation for that is outstanding. Two of its four criteria need a Gradle build. **Deliberately skipped**, with the decision recorded. |
+| **F-063** (R5) | the device colour lab. Physical measurement across a device matrix — the session that discharges NFR-2 and unblocks every accuracy claim in the product. |
+| **F-135** (R5) | multi-region frame sampling. A worklet on the frame thread; F-116 exists because a missing worklet directive crashed the Lens while every test passed. |
+
+**What would unblock the most: a JDK and a phone.** `JAVA_HOME` points at a
+`jdk-18.0.2.1` directory that does not exist, and there are no AVDs. The Android SDK is present.
+
+### Gates
+
+- **Ran, all green:** `state` (18 checks, 53 attested warnings) · `typecheck` · `lint` ·
+  `format` · `test` · `build` · `color-golden` · `content` · `gitleaks` · `gate-mirror` ·
+  engine purity.
+- **NOT run:** `e2e` (refuses, correctly — no Maestro CLI, no device), `cvd`, `a11y`,
+  `contrast`, `perf`.
+- **Failing:** none.
+
+### Decisions made
+
+- **ADR-0085** — the reference card is a **partner** card; its values are cited, never measured
+  by us. Three obligations attach, and **obligation 2 is unmet**: the vendor's card, values and
+  licence are unread, which is why F-053 vendors nothing.
+- **ADR-0086** — the e2e journey is a **Maestro flow generated from a spec**, so a renamed key,
+  an unpublished colour or a moved route fails in `lint` on a machine that cannot run it.
+- **ADR-0087** — a calibrated reading **does not get a higher confidence** until somebody has
+  measured that it deserves one. The cost is stated: calibrated mode gives the user no visible
+  benefit until F-063.
+- **OQ-6 left open**, deliberately. It is an Apple Developer Program enrolment — a purchase and
+  a legal-entity choice — and it blocks only F-081 (`should`).
+
+### Blocked on
+
+**Nothing that a commit here can move.** The queue is now three kinds of debt:
+
+1. **A device.** F-063, F-135, F-126, and **51 attested criteria** across the release.
+2. **A CI run.** F-091's criterion 4 — gate 7 cannot move to `active` until a run has executed a
+   journey.
+3. **A purchase.** OQ-6 → F-081. And ADR-0085's obligation 2 → the vendor's licence.
+
+### Watch out
+
+- **`pnpm test:e2e` exits non-zero here, by design.** No Maestro CLI, no device. It refuses
+  rather than reporting a pass over nothing. That is not a broken build.
+- **A stale `blockedBy` was found and corrected** on F-126: the field said `["F-054"]`, F-054 is
+  done, and the first line of its own note said the blocker was F-040's attestation *and not
+  F-054*. Worth a look at others — nothing checks that a `blockedBy` agrees with its note.
+- **F-126 and F-135 overlap** and neither noticed the other. Both change `sampleFrame` beyond
+  the centre region. A region **list** subsumes both; whichever is built first should settle the
+  signature.
+- **A generated file must be generated the way `prettier` would leave it**, or `format` and a
+  `--check` demand different bytes of the same file forever.
+- **`PATH` needs Node 24 prepended:**
+  `export PATH="/c/Users/ASUS/AppData/Roaming/nvm/v24.19.0:$PATH"`.
+
+### Lessons captured
+
+`a-generated-file-must-be-generated-the-way-the-formatter-would-leave-it` ·
+`a-fix-made-in-review-is-the-one-most-likely-to-ship-untested` · effect notes
+`a-journey-nothing-runs-is-a-file-nothing-checks` (E-055) and
+`a-correction-is-only-meaningful-in-the-space-it-was-solved-in` (E-056).
+
+---
+
