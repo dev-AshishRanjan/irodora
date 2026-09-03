@@ -13523,3 +13523,101 @@ filed, which is how this feature came to exist.
 
 ---
 
+## Handoff — 2026-09-03
+
+**Feature:** none in flight. **R5 has no eligible feature left**, and that is the reason this is
+a handoff rather than a checkpoint.
+
+### Done
+
+Fourteen features closed this session, each committed separately with its gates recorded:
+
+| | |
+|---|---|
+| **F-122** | the wardrobe gets a browse surface, and FR-41 stops being covered by a package |
+| **F-123** | the investment signal — ADR-0082, two numbers from your own wardrobe, no verdict |
+| **F-124** | the outfit component scores say what they mean, in both languages |
+| **F-125** | the Lens can hand a reading to the wardrobe, which could receive one since F-043 |
+| **F-127** | a reference is not a mention, in two static scans |
+| **F-129** | the exports reach a screen, and a PDF can draw Japanese — ADR-0083 |
+| **F-130** | nine occasions published — ADR-0084 |
+| **F-131** | FR-41's filter half |
+| **F-132** | a comment is not code, in the last two scans that thought it was |
+| **F-133** | `toEqual([])` banned; 89 assertions converted |
+| **F-134** | an interrupted gate-mirror no longer leaves a disabled CI step behind |
+
+Filed rather than absorbed, and then built: **F-131, F-132, F-133, F-134** — every one found by
+the feature before it.
+
+**Three ADRs:** 0082 (investment signal), 0083 (embedded font), 0084 (occasion completeness).
+
+### In flight
+
+Nothing. Tree clean, no staged changes, no scaffolding.
+
+### Next action
+
+**Answer OQ-3.** It is the only thing that unblocks product work in R5.
+
+### Gates
+
+- **Ran, all green:** `state` (18 checks, 51 attested warnings) · `typecheck` · `lint` ·
+  `format` · `test` (635 mobile + every package) · `build` · `a11y` · `contrast` · `content` ·
+  `gitleaks` · `gate-mirror` and its new proof.
+- **NOT run:** `e2e` (gate 7 — pending F-091, see *Blocked on*), `color-golden`, `cvd`, `perf`.
+- **Failing:** none.
+
+### Decisions made
+
+- **ADR-0082** — the investment signal is `breakEvenWears` and `typicalWears`, both medians over
+  the person's own comparable garments, and **no verdict**. A projection at an assumed wear count
+  is what FR-46 forbids; a verdict is advice about somebody's money.
+- **ADR-0083** — `toPdf(subject, { font })` embeds the app's existing subset whole. The
+  per-document subsetter is named as the successor and the 674 KB cost is recorded.
+- **ADR-0084** — occasion completeness moved from *every published version* to *the newest one*,
+  because widening `OCCASIONS` would otherwise fail three files ADR-0046 forbids editing.
+- **`toEqual([])` banned rather than surveyed** (F-133). The survey was the weaker half of the
+  criterion and was declined: *"most were sound"* is a fact about today's code, not a rule.
+
+### Blocked on
+
+**Two decisions, neither of them a coding task, both raised repeatedly this session:**
+
+1. **OQ-3 — the reference card: manufacture, or partner?** Blocks **F-053** directly and
+   **F-063** through it. Those two carry NFR-2, so the accuracy claims they exist to substantiate
+   stay unsubstantiated until this is answered.
+2. **F-091's criteria 2–4 — declare `attested` under ADR-0038, or not?** This is what keeps
+   **gate 7 (`e2e`) unrunnable**. Every feature this session reported it as *not run* for that
+   reason — now fifteen features deep. **F-126** is separately blocked on F-040's first device
+   attestation, which is the same shape: a claim nothing in CI can discharge.
+
+**51 attested criteria are now outstanding**, and they are the release's real remaining work.
+
+### Watch out
+
+- **`verify-gate-mirror.mjs` plants into `.github/workflows/ci.yml`.** F-134 made it refuse to
+  start on a leftover plant, but **on Windows `SIGTERM` is uncatchable** — an interrupted run
+  still leaves one. If gate 0 fails with *"has a CI step guarded by `if: false`"*, run
+  `git checkout .github/workflows/ci.yml`. It is not a real failure.
+- **Mutation harnesses must invoke `node node_modules/jest/bin/jest.js`.** `execSync` spawns
+  cmd.exe on Windows, so `./node_modules/.bin/jest` never runs and **every mutation reports as
+  caught**. That cost 38 false results before it was noticed.
+  See [[a-mutation-harness-that-cannot-start-the-runner-reports-every-mutation-caught]].
+- **`PATH` needs Node 24 prepended** on this machine:
+  `export PATH="/c/Users/ASUS/AppData/Roaming/nvm/v24.19.0:$PATH"`.
+- **Five text-matching scans read prose as code** during this session. Three are fixed (F-127,
+  F-132) and the habit that remains is: after writing a comment that explains a check, **re-run
+  that check**.
+- **`toEqual([])` is now a lint failure.** Use `toHaveLength(0)`.
+
+### Lessons captured
+
+`a-static-render-suite-cannot-check-what-a-form-does-on-save` ·
+`an-adr-that-refuses-something-needs-a-test-that-can-see-the-refusal` ·
+`a-mutation-harness-that-cannot-start-the-runner-reports-every-mutation-caught` ·
+`jests-toequal-accepts-an-array-of-undefined-as-an-empty-one` · and additions to
+`a-note-explaining-that-an-artefact-is-absent-is-an-instance-of-it` and
+`a-negative-test-needs-a-decoy-not-an-empty-fixture`.
+
+---
+
