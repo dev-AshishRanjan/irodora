@@ -13810,3 +13810,173 @@ F-040 and F-041.
 
 ---
 
+## 2026-09-03 — F-053 DONE · a correction solved from values somebody else published
+
+**FR-16.** With a reference card in frame: solve a correction from what the camera observed to
+what the card's publisher says those patches are, apply it, label the result `calibrated`, and
+keep the matrix and its residual so the measurement can be audited afterwards.
+
+**Selected out of release order, deliberately, and the choice was put to the person who owns
+it.** R3's only eligible feature was F-086, whose own notes require *"an artefact somebody has
+actually launched"* — and F-085's attestation for exactly that is still outstanding. F-086 also
+needs a Gradle build for two of its four criteria, which this workstation cannot run. Skipping
+it was the recorded call, not a silent one.
+
+### What ADR-0085 forbade, and what that turned out to be worth
+
+Obligation 2 of yesterday's decision: *the exact card, its published values and their licence
+must be confirmed from the vendor's own documentation before any value is committed.* That has
+not happened. **So no reference values ship.** A `ReferenceCard` is an *input*, carrying its own
+source, publisher, illuminant, observer and licence — which is the shape obligation 3 requires
+anyway if the licence forbids redistribution. Building only that path costs nothing and removes
+the one temptation that would have been worst to give in to.
+
+**Constructed fixtures turned out to be the stronger test, not the compromise.** A real card's
+values would let a suite assert that *some* matrix comes out. A constructed reference plus a
+**known** distortion has an exactly known answer: the golden suite asserts recovery to **1e-9
+mean ΔE00**, and the uncorrected values are asserted to be genuinely far off so the figure is
+not passing on a distortion that did nothing.
+
+### The four pieces
+
+**`solveCorrection`** — least squares 3×3, normal equations, Gaussian elimination with partial
+pivoting, **fitted in linear light**. Reports mean and max ΔE00 before and after. It computes no
+"improvement", compares against no threshold and returns no verdict: that is NFR-2, it is
+`attested` on this feature, and F-063's device matrix is what discharges it.
+
+**`verifyCard`** — presence and orientation **from the patch values**, not from edge detection.
+A quad detector that mis-detects still produces a correction, and a wrong correction is applied
+silently to every reading taken with it. The card's whole purpose is that its patches have known
+relative values, so a Spearman rank correlation against the published order answers "is a card
+there" without any image processing. The floor is **3σ of the null distribution** rather than a
+number somebody liked.
+
+**`patchRegions`** — the closed-form unit-square-to-quad homography. The test asserts it
+**differs from bilinear interpolation by tens of pixels** mid-card, which is the whole reason it
+exists: bilinear agrees at the corners and drifts in the middle, sampling the border beside each
+patch instead of the patch.
+
+**Migration 7** — a `calibration` table with the nine coefficients, both residuals, the card's
+identity and `STRICT` + `CHECK` constraints, plus a nullable `saved_color.calibration_id`. It
+joined the backup format on its own through `SYNC_TABLES` — **E-023 predicting itself again** —
+and that is asserted rather than discovered.
+
+### ADR-0087 — the confidence does not go up
+
+The architecture said calibrated mode *"raises the confidence ceiling"*. It does not, and the
+deviation has an ADR. Raising it asserts that correction improves accuracy, which is **NFR-2** —
+attested, undischarged, and the one number in this product where an expectation must not stand
+in for a measurement. Confidence is built from things that were observed, and *"this reading
+went through a correction"* is an observation about the code path.
+
+**The cost is real and is written down: calibrated mode currently gives the user no visible
+benefit.** They buy a card, scan it, and the number is identical. The residual is recorded
+instead, which is per-reading and can say that one particular correction went badly where a
+ceiling could not — and when F-063 runs, the evidence is already sitting beside every calibrated
+reading taken until then.
+
+### The colour-science review returned CHANGES REQUIRED, with measurements
+
+An independent domain pass verified what I could not verify about my own work: the P3 path
+recovers the exact linear-P3→linear-sRGB matrix to **2.6e-14** (and would have reported 2.077
+ΔE00 for a perfect camera had `observedXyz` used the wrong primaries), the homography matches
+Heckbert term for term, the Spearman floor is right to a **200 000-trial simulation** (0.072 %
+false accepts against a 0.135 % normal approximation), and the linear-light discipline holds
+end to end including the app boundary. It then found three silent-wrong-answer paths.
+
+| | |
+|---|---|
+| **A1** | `verifyCard` tested `correlation >= required` **first** and never compared it with the rotated fit. A nearly-symmetric card read upside down was accepted as upright — every patch paired with the wrong published value, and a matrix solved from the mismatch. The silent wrong correction the module exists to prevent, produced by the module. |
+| **A2** | the **affine** branch of `projection` had no degeneracy check while the projective branch did, so four identical points were accepted and 24 patch regions collapsed onto one spot |
+| **A3** | a self-intersecting corner list mapped the card's centre to (300, 1200) on a card 400 pixels tall |
+
+All three fixed, plus `assertCard` now refuses a card that is rotationally indistinguishable at
+all — the stronger half, because such a card can never be used safely.
+
+**And then the fixes were mutated, which is how three of them turned out to have no test.**
+Reverting each guard in the real source and re-running found **A1 caught, A1b/A2/A3 SURVIVED**.
+Tests added; all four now caught. A guard nobody proved is a guard nobody has.
+
+### Coverage the rules require and the first suite did not have
+
+The original fixture's darkest encoded component was **0.12** against an sRGB breakpoint of
+**0.04045**, and its darkest Y was **0.0134** against a Lab ε of **0.008856**. So a package whose
+central claim is about the darks exercised neither the transfer function's linear segment nor
+Lab's κ branch, and every reference value was inside sRGB so the fit never had an out-of-gamut
+**target** — which a real ColorChecker's cyan, blue and orange all are.
+
+Two more cards, a coverage golden suite, and the property tests `fast-check` was declared for
+and never imported. **Nothing was hiding a defect**, which is the ordinary outcome and not a
+reason to have skipped them. Two things did surface:
+
+- the near-black fit's residual is **3.0e-9**, not the mid-tone suite's 1e-9. The fit is exact
+  either way; ΔE00's κ-branch slope amplifies float rounding at low luminance. Recorded as a
+  bound **with its reason** rather than widened until green.
+- `fast-check` immediately broke my own idempotence property with a uniform 0.7 gain: I had
+  applied the correction to the card's *references* rather than to the observations, so it
+  recovered `M⁻¹` instead of the identity. **The property was mis-stated, not the code** — and a
+  hand-picked matrix would have produced a wrong number that looked like noise.
+
+### Three claims the package's own numbers contradicted
+
+Fixed, because rule 11 applies to a comment as much as to copy.
+
+**"Wrong in the darks"** — measured, the encoded-space fit's error is *largest in the lights*
+(2.73 ΔE00 at L\*≈98 against 0.59 at L\*≈41). The direction is right, the localisation was not,
+and it is a different mechanism from the averaging trap it was equated to.
+
+**"A black-level lift" listed among the non-linear terms** — flare is **affine**, and the
+successor it calls for is a **3×4**, not a polynomial. A 1 % veiling lift costs **3.6 ΔE00** on a
+dark patch, which is the error landing hardest on the colours this corpus is made of.
+
+**"A determinant that is zero here"** — it is −240000 for the square fixture. The affine branch
+is an optimisation, not a necessity, and calling it load-bearing would stop the next reader
+checking it.
+
+Also: the correlation cap **loosens** the evidence rather than tightening it (ρ = 0.9 at n = 6 is
+2.0σ; ρ = 0.63 at n = 24 is 3σ), and a 3σ per-decision bar polled at 30 fps is a **6.3 % false
+accept within three seconds** — named for F-135, which is what will wire it to a preview.
+
+**And one over-claim the API itself produced:** a 3-patch fit reproduces its own three patches
+exactly and reports `after.mean = 1.5e-14` for a matrix 0.48 ΔE00 out on a fourth colour. The
+doc said so; the return value did not. `degreesOfFreedom` is now on the `Correction` and in the
+database, so an audit surface cannot render "0.00 ΔE00" without the number that says what it is
+worth.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state (18 checks, 53 warnings) · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (60 in the new package, 136 in the store) · 5 color-golden · 6 build · content | **PASS** |
+| gitleaks · engine purity (in `lint`) | **PASS** |
+
+**Not run:** `cvd` (nothing touches separation or recommendation), `a11y`/`contrast` (no
+screen), `e2e` (gate 7 pending, F-091 criteria attested), `perf`.
+
+### Effects
+
+**E-023** — migration 7 reaches both drivers and the backup format, and the stakes differ from
+the usual table: a `calibrated` colour is a *claim* that a correction was applied, so a backup
+that dropped the corrections would leave every such claim unfalsifiable while looking intact.
+**E-032** — the first new workspace package since that link was written; the lockfile moved with
+the manifest. **E-056** is new: nine coefficients do not say which transfer function and
+primaries produced their input, so the capture space travels with the matrix everywhere — and
+`unknown` is refused rather than assumed, which is a real limitation on real devices.
+[[a-correction-is-only-meaningful-in-the-space-it-was-solved-in]]
+
+### Filed rather than half-built
+
+**F-135** — the frame processor reads one centred region; twenty-four patch regions changes the
+worklet contract and needs a device. **F-136** — the writer and reader for the audit record,
+behind F-135, because a repository method with no caller is the shape this repository keeps
+warning itself about. The precedent is F-081 and F-086, both of which say the same thing.
+
+### Still owed
+
+**Criterion 2 is `attested` and outstanding** — mean ΔE00 improving by 50 % or more on the
+device matrix, which is F-063's session. And **ADR-0085's obligation 2 is unmet**: the vendor's
+card, values and licence are still unread, which is why nothing is vendored.
+
+---
+

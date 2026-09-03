@@ -790,6 +790,14 @@
         {
           "kind": "doc",
           "ref": "docs/architecture/data-model.md"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/test/calibration.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/archive.ts"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -800,7 +808,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/a-migration-reaches-two-drivers-and-a-backup-format.md",
-      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply.",
+      "rationale": "A MIGRATION IS APPLIED ON A STRANGER’S PHONE AND CANNOT BE ROLLED BACK. There is no server to coordinate one, and `migrate.ts` has no `down` on purpose — correcting a bad migration means shipping the next one. So every dependent has to move in the same commit. The three that are not obvious: THE ARCHIVE reads `SELECT *`, so a new column silently joins the backup format and the canonical digest FR-58 compares byte for byte; THE CONFORMANCE SUITE is what makes a green CI run say anything about the device driver, so a table the suite does not exercise is a table proven on `node:sqlite` alone; and `SCHEMA_VERSION` gates an older build opening a newer database, which now REFUSES rather than guessing — correct, and reachable for the first time since F-020 raised it to 2. The guard is gate:test rather than typecheck because none of this is a type error: SQL is a string, and a column the repository forgot to write is a runtime null on a device. F-026 EXERCISED EVERY CLAUSE ABOVE AND ADDED ONE. Migration 3 brings two tables — `personal_color_profile` and `profile_dimension_color` — so `SYNC_TABLES` grew, and because `ARCHIVE_TABLES = [...SYNC_TABLES]` the backup format and its canonical digest took both WITHOUT ANYONE EDITING archive.ts. That is the link working by construction rather than by vigilance, and it is the reason the derivation of ARCHIVE_TABLES from SYNC_TABLES is worth more than a second list would be. Three conformance checks were added for the same reason F-020 added two: a profile is written across two tables and twenty-four columns, so its durability and its rollback are different claims from a single row’s. THE NEW CLAUSE IS NFR-22: `migrate()` now refuses a ladder that would add a prohibited column AND a database that already has one, so a migration is no longer only a thing that must be accompanied — it is a thing that can be REJECTED. `prohibited.ts` is therefore a dependent of this link in a direction the others are not: it reads MIGRATIONS as data, and a migration written without knowing it exists still cannot apply. MIGRATION 7 (F-053) ADDED `calibration` AND A NULLABLE `saved_color.calibration_id`. The table joins SYNC_TABLES, and because archive.ts reads `SELECT *` over that list, it joined the backup format and its canonical digest WITHOUT anybody editing archive.ts — which is this link predicting itself again, and is asserted deliberately in packages/store/test/calibration.test.ts rather than discovered from a restore that came back without its corrections. THE STAKES ARE DIFFERENT FROM THE USUAL TABLE: a `calibrated` colour is a CLAIM that a correction was applied, so a backup that dropped the corrections would leave every such claim unfalsifiable while looking intact. The new CHECK constraints are the other half — STRICT plus CHECK is what refuses a max residual below its own mean, or a space no correction can be applied in, both of which are silently meaningless rather than loudly broken and would only surface when F-063 read the numbers back.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -1174,6 +1182,10 @@
         {
           "kind": "gate",
           "ref": "state"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/color-calibration"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1186,7 +1198,7 @@
       "severity": "critical",
       "guard": "gate:state (verify-state.mjs section 7b, proven by verify-lockfile-proof.mjs)",
       "memory": "memory/effects/a-manifest-and-the-lockfile-must-move-together.md",
-      "rationale": "EVERY WORKSPACE MANIFEST IS AN INPUT TO ONE SHARED ARTEFACT, and every gate is downstream of it. pnpm-workspace.yaml names the projects and carries the overrides; each package.json declares dependencies; pnpm-lock.yaml resolves all of them at once; and CI installs with `pnpm install --frozen-lockfile`, which refuses unless the lockfile resolves exactly what the manifests declare — three dependency sections, compared VERBATIM, plus overrides. Install is step nine of the CI job and the seventeen steps after it do not run when it fails, so a three-line omission in a generated file reads as a total build outage. IT HAPPENED: F-020 (9ce0926) added `@irodora/corpus: workspace:*` to packages/store and nothing regenerated the lockfile, and three pushes were red on an install step nobody had touched. THE REASON IT IS CRITICAL RATHER THAN HIGH is that it broke while every local signal said it was fine: pnpm could not run on the workstation at all (Node 22 and pnpm 9 against engines demanding 24 and 11), a hand-made junction stood in for the workspace link, and imports, typecheck and tests all passed against it. A dependency edge that lives in three places — the manifest, the lockfile, node_modules — can be true in two of them and false where it counts, with no compiler error and no failing test. GUARDED IN GATE 0 rather than at install, because gate 0 runs before install, on Node built-ins, on a clean clone, and is therefore the only check that can report a stale lockfile to somebody who cannot run pnpm. Projects come from the globs rather than a hard-coded list, and a glob the parser cannot expand FAILS rather than being skipped. PROVEN by verify-lockfile-proof.mjs: seven cases, five red and two green, the second control being a project that declares nothing — `tests/bench: {}` is that shape, and reading it as absent would have failed a correct lockfile on day one.",
+      "rationale": "EVERY WORKSPACE MANIFEST IS AN INPUT TO ONE SHARED ARTEFACT, and every gate is downstream of it. pnpm-workspace.yaml names the projects and carries the overrides; each package.json declares dependencies; pnpm-lock.yaml resolves all of them at once; and CI installs with `pnpm install --frozen-lockfile`, which refuses unless the lockfile resolves exactly what the manifests declare — three dependency sections, compared VERBATIM, plus overrides. Install is step nine of the CI job and the seventeen steps after it do not run when it fails, so a three-line omission in a generated file reads as a total build outage. IT HAPPENED: F-020 (9ce0926) added `@irodora/corpus: workspace:*` to packages/store and nothing regenerated the lockfile, and three pushes were red on an install step nobody had touched. THE REASON IT IS CRITICAL RATHER THAN HIGH is that it broke while every local signal said it was fine: pnpm could not run on the workstation at all (Node 22 and pnpm 9 against engines demanding 24 and 11), a hand-made junction stood in for the workspace link, and imports, typecheck and tests all passed against it. A dependency edge that lives in three places — the manifest, the lockfile, node_modules — can be true in two of them and false where it counts, with no compiler error and no failing test. GUARDED IN GATE 0 rather than at install, because gate 0 runs before install, on Node built-ins, on a clean clone, and is therefore the only check that can report a stale lockfile to somebody who cannot run pnpm. Projects come from the globs rather than a hard-coded list, and a glob the parser cannot expand FAILS rather than being skipped. PROVEN by verify-lockfile-proof.mjs: seven cases, five red and two green, the second control being a project that declares nothing — `tests/bench: {}` is that shape, and reading it as absent would have failed a correct lockfile on day one. F-053 ADDED `@irodora/color-calibration`, the first new workspace package since this link was written. `pnpm install` ran and the lockfile moved with the manifest, which is the whole content of this link — recorded because a new package is exactly the change that produces a lockfile diff somebody is tempted to leave out of the commit.",
       "confidence": 1,
       "origin": "manual",
       "status": "active",
@@ -2079,6 +2091,52 @@
       "memory": "memory/effects/a-journey-nothing-runs-is-a-file-nothing-checks.md",
       "rationale": "A journey walks BETWEEN SCREENS, so it depends on the route table in a way no render test does: react-test-renderer mounts a screen without a navigator, which is precisely why \"rendered\" and \"reachable\" are the same sentence there and different sentences on a phone. Renaming `app/atlas/[slug].tsx` breaks the Atlas journey and breaks nothing else that would notice. Each step may therefore declare the `route` it expects to be on; the declaration changes no output and exists only so a moved file fails the build. SEVERITY IS medium RATHER THAN high because the route assertion is advisory to the RUN — a wrong route breaks a journey, not the app — but it is the only guard of its kind: the run that would otherwise catch it needs a device, and F-091 criteria 2 to 4 are attested for want of a JDK. THE GUARD CANNOT SEE that the screen at a route renders the key a step asserts. Checking that means reading a `.tsx` for `t(...)` occurrences, which is source analysis of the kind that has mistaken a comment for code five times in this repository (F-122, F-127, F-130, F-132, F-133). Named rather than attempted.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-056",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/color-calibration/src/solve.ts#Correction"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/calibration.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/schema.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/calibration.test.ts"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/store/test/calibration.test.ts"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0087-a-calibrated-reading-does-not-get-a-higher-confidence-until-it-is-measured.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/color-calibration",
+        "apps/mobile",
+        "packages/store"
+      ],
+      "severity": "high",
+      "guard": "gate:test (apps/mobile/test/calibration.test.ts pins the refusals; packages/store/test/calibration.test.ts pins the CHECK on `space`) + gate:typecheck (ObservedSpace has no `unknown` member)",
+      "memory": "memory/effects/a-correction-is-only-meaningful-in-the-space-it-was-solved-in.md",
+      "rationale": "A correction matrix maps LINEAR CAPTURE RGB to linear sRGB, and which transfer function and which primaries produced its input is not recoverable from the nine coefficients. Applying an sRGB-solved matrix to Display P3 values produces a plausible colour that is wrong, and wrong most in the saturated hues this product exists for — the same error shape `readCaptureSpace` was written to refuse. So `space` travels with the matrix EVERYWHERE: on the `Correction`, through `calibrate()` which refuses a mismatch, and into the database as a CHECKed column. THE `unknown` CASE IS THE ONE THAT COSTS SOMETHING: a camera that will not report its capture space cannot be calibrated at all, because linearising with the wrong curve is not a smaller error than not calibrating. That is refused rather than assumed, which means calibrated scan does not work on every device and the limitation is real. THE SECOND HALF of this link is the CLAIM: a corrected reading is labelled `calibrated`, which the claims lint treats as one of two sources permitted near the word \"measured\" — so anything that widened what may carry that label widens what the product may say. ADR-0087 is why the CONFIDENCE does not move with it: the label describes the method, the confidence describes the quality, and conflating them would assert NFR-2 before F-063 has measured it.",
+      "confidence": 0.95,
       "origin": "manual",
       "status": "active"
     }

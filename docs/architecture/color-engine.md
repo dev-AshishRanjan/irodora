@@ -169,9 +169,17 @@ It is deliberately *not* a sum — a sum lets four good signals hide one disqual
 
 **Calibrated mode** (FR-16) adds: detect the reference card → locate patches → solve a
 3×3 (or polynomial) correction from observed to known patch values → apply to the
-garment sample → set `source: 'calibrated'` and raise the confidence ceiling. The
-correction matrix and its residual error are stored with the result, so a calibrated
-measurement can be audited after the fact.
+garment sample → set `source: 'calibrated'`. The correction matrix and its residual error are
+stored with the result, so a calibrated measurement can be audited after the fact.
+
+> **The confidence ceiling is NOT raised**, and this paragraph used to say it was.
+> [ADR-0087](../adr/0087-a-calibrated-reading-does-not-get-a-higher-confidence-until-it-is-measured.md)
+> decided otherwise in F-053: raising it asserts that correction improves accuracy, which is
+> **NFR-2** — `attested`, and discharged by F-063's device matrix session, which has not
+> happened. Confidence is built from things that were observed, and *"this reading went
+> through a correction"* is an observation about the code path rather than about the colour.
+> What is recorded instead is the **residual**, which is per-reading and can say that a
+> particular correction went badly where a ceiling could not.
 
 ---
 

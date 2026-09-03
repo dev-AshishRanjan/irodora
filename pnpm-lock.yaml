@@ -57,6 +57,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@irodora/color-calibration':
+        specifier: workspace:*
+        version: link:../../packages/color-calibration
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../../packages/color-core
@@ -208,6 +211,25 @@ importers:
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
+
+  packages/color-calibration:
+    dependencies:
+      '@irodora/color-difference':
+        specifier: workspace:*
+        version: link:../color-difference
+      '@irodora/color-spaces':
+        specifier: workspace:*
+        version: link:../color-spaces
+    devDependencies:
+      '@irodora/testing':
+        specifier: workspace:*
+        version: link:../testing
+      fast-check:
+        specifier: ^4.9.0
+        version: 4.9.0
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))

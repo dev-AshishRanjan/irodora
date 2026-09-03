@@ -110,6 +110,7 @@ Two rules that matter more than the format:
 | [0084](0084-completeness-moves-from-every-published-version-to-the-newest-one.md) | Occasion completeness is required of the newest published version, not of every one | Accepted |
 | [0085](0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md) | The reference card is a partner card, and its values are cited rather than measured | Accepted |
 | [0086](0086-the-journey-is-a-maestro-flow-generated-from-a-spec.md) | The journey is a Maestro flow generated from a spec, not a hand-written one | Accepted |
+| [0087](0087-a-calibrated-reading-does-not-get-a-higher-confidence-until-it-is-measured.md) | A calibrated reading does not get a higher confidence until somebody has measured that it deserves one | Accepted |
 
 ## Open questions awaiting an ADR
 

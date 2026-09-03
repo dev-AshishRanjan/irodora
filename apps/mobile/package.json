@@ -19,6 +19,7 @@
     "clean": "rimraf dist .expo *.tsbuildinfo"
   },
   "dependencies": {
+    "@irodora/color-calibration": "workspace:*",
     "@irodora/color-core": "workspace:*",
     "@irodora/color-difference": "workspace:*",
     "@irodora/color-naming": "workspace:*",

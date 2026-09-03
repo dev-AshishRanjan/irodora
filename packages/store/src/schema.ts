@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -448,6 +448,80 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
         ON pairing_preference (deleted_at) WHERE deleted_at IS NULL;
     `,
   },
+  {
+    version: 7,
+    /**
+     * The audit record for a calibrated reading (F-053, FR-16).
+     *
+     * ## Why a correction is stored at all
+     *
+     * A `calibrated` colour is a claim that a correction was applied. Without the correction
+     * itself, that claim is unfalsifiable after the fact — nobody can ask *which* card, *how
+     * well did it fit*, or *was the card even in frame*. The nine coefficients and two ΔE00
+     * figures are what make "calibrated" auditable rather than decorative.
+     *
+     * ## The residual is here and the confidence is not adjusted
+     *
+     * ADR-0087: a calibrated reading keeps the confidence its capture earned, because raising
+     * it would assert NFR-2's improvement before F-063 has measured it. `residual_after_mean`
+     * is the honest substitute, and it is stored per-correction precisely so that session has
+     * evidence waiting for it.
+     *
+     * ## Columns rather than a JSON blob
+     *
+     * Nine REAL columns is more typing than one TEXT column holding JSON, and it is what STRICT
+     * can check. A blob would accept a string where a coefficient belongs, and would need
+     * parsing before anything could ask "which corrections fitted badly" — the query F-063
+     * exists to run.
+     *
+     * ## The card is identified, not stored
+     *
+     * `card_id` and `card_source` record WHICH published values were solved against. The
+     * values themselves are not copied here: they may be a vendor's, under a licence that does
+     * not permit redistribution (ADR-0085 obligation 3), and a database row is redistribution
+     * as much as a file in `content/` is.
+     */
+    up: `
+      CREATE TABLE calibration (
+        ${SYNC_COLUMNS},
+        card_id       TEXT    NOT NULL,
+        -- Which publication the reference values came from, as the card declared it. Cited,
+        -- never measured by us (ADR-0085) — so the citation travels with the audit record.
+        card_source   TEXT    NOT NULL,
+        -- The space the matrix's INPUT is in. A correction applied to values in a different
+        -- space is a wrong answer that looks right, so it is not inferable and not optional.
+        space         TEXT    NOT NULL CHECK (space IN ('srgb','display-p3','linear')),
+        patch_count   INTEGER NOT NULL CHECK (patch_count >= 3),
+        -- patch_count * 3 - 9. AT ZERO THE RESIDUAL BELOW IS NOT EVIDENCE: a 3-patch fit
+        -- reproduces its own three patches exactly and reports ~1e-14 for a matrix that may be
+        -- arbitrarily wrong about every colour that was not on the card. Stored so an audit
+        -- surface cannot render "0.00 ΔE00" without the number that says what that is worth.
+        degrees_of_freedom INTEGER NOT NULL CHECK (degrees_of_freedom >= 0),
+        m00 REAL NOT NULL, m01 REAL NOT NULL, m02 REAL NOT NULL,
+        m10 REAL NOT NULL, m11 REAL NOT NULL, m12 REAL NOT NULL,
+        m20 REAL NOT NULL, m21 REAL NOT NULL, m22 REAL NOT NULL,
+        -- ΔE00 against the published values, before and after the correction. Recorded, not
+        -- compared: this table stores what was measured, and NFR-2's improvement claim is
+        -- F-063's to make.
+        residual_before_mean REAL NOT NULL CHECK (residual_before_mean >= 0.0),
+        residual_before_max  REAL NOT NULL CHECK (residual_before_max  >= 0.0),
+        residual_after_mean  REAL NOT NULL CHECK (residual_after_mean  >= 0.0),
+        residual_after_max   REAL NOT NULL CHECK (residual_after_max   >= 0.0),
+        CHECK (residual_before_max >= residual_before_mean),
+        CHECK (residual_after_max  >= residual_after_mean)
+      ) STRICT;
+
+      CREATE INDEX calibration_live ON calibration (deleted_at) WHERE deleted_at IS NULL;
+
+      -- Which correction produced a colour. NULL for every row written before this migration
+      -- and for every uncalibrated reading since — an uncorrected capture has no correction,
+      -- and a default here would invent one.
+      ALTER TABLE saved_color ADD COLUMN calibration_id TEXT REFERENCES calibration(id);
+
+      CREATE INDEX saved_color_calibration
+        ON saved_color (calibration_id) WHERE calibration_id IS NOT NULL;
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -462,5 +536,6 @@ export const SYNC_TABLES = [
   'garment_color',
   'garment_image',
   'pairing_preference',
+  'calibration',
 ] as const;
 export type SyncTable = (typeof SYNC_TABLES)[number];

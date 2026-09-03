@@ -1671,7 +1671,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-040"
       ],
@@ -1693,7 +1693,13 @@
           "status": "outstanding"
         }
       ],
-      "notes": "BLOCKED ON OQ-3, WHICH IS OPEN AND CLOSES AS AN ADR RATHER THAN AS A DECISION SOMEBODY MAKES IN PASSING. `next-feature` step 4 is explicit about this, and F-081 is the precedent: a feature whose open question is unresolved is `blocked`, not `backlog`, because *everything* eligible is `backlog` and leaving it there is a status that carries no signal [[a-blocker-outlives-the-state-of-the-world-that-caused-it]]. THE QUESTION IS NOT A DETAIL OF THE IMPLEMENTATION — IT DECIDES WHAT THE FEATURE READS. \"Reference card: manufacture or partner?\" (PRD §10, docs/adr/README.md) determines the patch layout, the patch count and — critically — WHOSE PUBLISHED VALUES the correction solves against. A partner card such as an X-Rite ColorChecker comes with published reference values under a stated illuminant and a licence; a card we manufacture comes with values we measure and must then stand behind. Those are different golden datasets, different provenance, and different licensing obligations under content/AGENTS.md, and code written against a guess at one of them is code that gets deleted. THE SECOND CRITERION CANNOT BE SATISFIED FROM A WORKSTATION EITHER. \"Mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix\" is already declared `attested` and outstanding: it needs physical cards under controlled illumination across the reference device set, which is F-063 — itself blocked on this. So even with OQ-3 closed, half of this feature is a measurement session rather than a commit. WHAT WOULD UNBLOCK IT: an ADR choosing manufacture or partner, naming the card, its published values and their licence. That is a purchasing and rights decision, not an engineering one. OQ-3 IS CLOSED BY ADR-0085: a PARTNER card, with the vendor’s own published values cited rather than measured by us. Manufacturing would have made this product the authority on a physical colour standard, which golden rule 11 does not let it claim without a spectrophotometer, controlled illumination and a measurement protocol it does not have. THREE OBLIGATIONS COME WITH THE DECISION AND THIS FEATURE OWES ALL THREE: the values enter `content/` with a source, a publisher, a stated illuminant and observer, and a licence, the same as every corpus entry; the exact card, its values and its terms are confirmed FROM THE VENDOR’S OWN DOCUMENTATION before anything is committed, because stating them from memory would be fabricated provenance in the one place it would be least forgivable; and if the licence forbids redistribution the values are not vendored, the correction reads a file the user supplies for their own card, and that limitation is recorded rather than worked around. WHAT IS STILL OWED AFTER THE CODE: criterion 2 is `attested` and outstanding — the device matrix session is F-063’s. Closing OQ-3 unblocked the code, not the claim."
+      "notes": "BLOCKED ON OQ-3, WHICH IS OPEN AND CLOSES AS AN ADR RATHER THAN AS A DECISION SOMEBODY MAKES IN PASSING. `next-feature` step 4 is explicit about this, and F-081 is the precedent: a feature whose open question is unresolved is `blocked`, not `backlog`, because *everything* eligible is `backlog` and leaving it there is a status that carries no signal [[a-blocker-outlives-the-state-of-the-world-that-caused-it]]. THE QUESTION IS NOT A DETAIL OF THE IMPLEMENTATION — IT DECIDES WHAT THE FEATURE READS. \"Reference card: manufacture or partner?\" (PRD §10, docs/adr/README.md) determines the patch layout, the patch count and — critically — WHOSE PUBLISHED VALUES the correction solves against. A partner card such as an X-Rite ColorChecker comes with published reference values under a stated illuminant and a licence; a card we manufacture comes with values we measure and must then stand behind. Those are different golden datasets, different provenance, and different licensing obligations under content/AGENTS.md, and code written against a guess at one of them is code that gets deleted. THE SECOND CRITERION CANNOT BE SATISFIED FROM A WORKSTATION EITHER. \"Mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix\" is already declared `attested` and outstanding: it needs physical cards under controlled illumination across the reference device set, which is F-063 — itself blocked on this. So even with OQ-3 closed, half of this feature is a measurement session rather than a commit. WHAT WOULD UNBLOCK IT: an ADR choosing manufacture or partner, naming the card, its published values and their licence. That is a purchasing and rights decision, not an engineering one. OQ-3 IS CLOSED BY ADR-0085: a PARTNER card, with the vendor’s own published values cited rather than measured by us. Manufacturing would have made this product the authority on a physical colour standard, which golden rule 11 does not let it claim without a spectrophotometer, controlled illumination and a measurement protocol it does not have. THREE OBLIGATIONS COME WITH THE DECISION AND THIS FEATURE OWES ALL THREE: the values enter `content/` with a source, a publisher, a stated illuminant and observer, and a licence, the same as every corpus entry; the exact card, its values and its terms are confirmed FROM THE VENDOR’S OWN DOCUMENTATION before anything is committed, because stating them from memory would be fabricated provenance in the one place it would be least forgivable; and if the licence forbids redistribution the values are not vendored, the correction reads a file the user supplies for their own card, and that limitation is recorded rather than worked around. WHAT IS STILL OWED AFTER THE CODE: criterion 2 is `attested` and outstanding — the device matrix session is F-063’s. Closing OQ-3 unblocked the code, not the claim. BUILT 2026-09-03, OUT OF RELEASE ORDER AND DELIBERATELY — R3’s only eligible feature was F-086, whose own notes require an artefact somebody has actually launched, and F-085’s attestation for exactly that is outstanding. The choice was put to the person who owns it rather than taken quietly. WHAT SHIPPED: `@irodora/color-calibration` — solveCorrection (least-squares 3x3 in linear light, reporting mean and max ΔE00 before and after, computing no improvement and returning no verdict), verifyCard (presence and orientation from the patch VALUES via a Spearman rank correlation with a floor derived as 3 sigma of the null distribution, not from edge detection), patchRegions (closed-form unit-square-to-quad homography), and assertCard. NO REFERENCE VALUES ARE VENDORED: ADR-0085 obligation 2 is unmet, so the card is an INPUT carrying its own source, publisher, illuminant, observer and licence — which is obligation 3’s shape anyway. Every fixture is constructed and says so, and that turned out to be the stronger test: a known distortion has an exactly known inverse, so the golden suite asserts recovery to 1e-9 rather than \"a matrix came out\". ADR-0087 DECIDED THE CONFIDENCE DOES NOT RISE, deviating from docs/architecture/color-engine.md: raising it asserts NFR-2, which is this feature’s own attested criterion. The residual is recorded instead. The cost is real and written down — calibrated mode gives the user no visible benefit until F-063. A COLOUR-SCIENCE REVIEW RETURNED CHANGES REQUIRED and was right: three silent-wrong-answer paths (verifyCard accepted upright without comparing the rotated fit; the affine branch of projection had no degeneracy check; a self-intersecting corner list mapped the card centre outside the card), all fixed — and MUTATING THE FIXES FOUND THREE OF THEM HAD NO TEST, which is now corrected and re-proven. Golden coverage gained near-black (below the sRGB breakpoint and Lab epsilon), out-of-gamut targets, and the property tests fast-check was declared for and never imported — which immediately broke a mis-stated idempotence property of mine. Three comment claims the package’s own numbers contradicted were corrected, and `degreesOfFreedom` was added to the Correction and the schema because a 3-patch fit reported a perfect residual for a matrix 0.48 ΔE00 out on a fourth colour. FILED RATHER THAN HALF-BUILT: F-135 (multi-region frame sampling — needs a device) and F-136 (the audit record’s writer and reader, behind F-135).",
+      "plan": "plans/F-053-a-correction-solved-from-values-somebody-else-published.md",
+      "effects": [
+        "E-023",
+        "E-032",
+        "E-056"
+      ]
     },
     {
       "id": "F-054",
@@ -3799,6 +3805,58 @@
       ],
       "notes": "FOUND BY F-133, AND IT EXPLAINS AN EARLIER UNEXPLAINED FAILURE. `verify-gate-mirror.mjs` plants `if: false # planted by verify-gate-mirror.mjs` onto a CI step, runs gate 0, and restores the workflow in a `finally` — verified byte-for-byte, which is careful work. **A `finally` does not run when the process is KILLED**, and a timeout kills. So an interrupted run leaves a workflow file modified, with a blocking gate conditioned out. THE CONSEQUENCE IS WORSE THAN A DIRTY TREE. The next `git add -A` commits it, and a CI step that never runs is exactly the failure this script exists to detect — gate 11 nearly shipped skipped for the whole of R1, which is why the script was written. It would be disabled by its own scaffolding. Nothing carried it into a commit this time, checked against HEAD, but only because the interruption happened after the last commit rather than before the next one. IT ALSO EXPLAINS F-127. That feature recorded a gate-mirror failure as \"not reproduced, not explained\" — gate 0 was passing when run directly and gate-mirror reported it red. This is the mechanism: a leftover plant makes gate 0 fail inside the child process while a direct run of the same script, after the tree was restored by something else, passes. The progress entry for F-127 should be corrected when this is built. WHAT TO BUILD: signal handlers that restore and re-raise, and — more importantly, because a handler can be missed too — a check at STARTUP that refuses to run when a plant is already present, naming the file and the git command that clears it. The third criterion is the one that matters: a handler nobody has watched fire is a handler that might only be capable of being read.",
       "plan": "plans/F-134-a-finally-does-not-run-when-you-are-killed.md"
+    },
+    {
+      "id": "F-135",
+      "title": "The frame processor samples many regions, so a card can be read at all",
+      "requirements": [
+        "FR-16"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [
+        "F-053"
+      ],
+      "acceptance": [
+        "sampleFrame reads a list of regions rather than one centred square, and returns one aggregate per region",
+        "The Lens has a calibrate mode with an on-screen guide the card is aligned to, and the guide supplies the four corners",
+        "A card held in the guide produces a solved correction on a device, and a card absent or upside down produces the refusal verifyCard already returns",
+        "The per-frame cost of reading 24 regions is measured on a device and recorded, not assumed"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "e2e"
+      ],
+      "notes": "FILED BY F-053 RATHER THAN HALF-BUILT INSIDE IT, on the precedent of F-081 (\"deliberately NOT half-built\") and F-086 (\"deliberately not done in F-085\"). F-053 delivered the maths: patchRegions maps a card grid through a homography, verifyCard decides presence and orientation from the values, solveCorrection fits the 3x3 in linear light and reports the residual. NONE OF IT HAS A LIVE INPUT. `sampleFrame` in apps/mobile/src/lens/viewfinder.tsx reads ONE centred square region; reading 24 patch regions changes the frame-processor contract, and that is a worklet running on the frame thread where a JS render tree cannot follow it (E-050: a worklet may only call worklets, and jest has one runtime). WHY IT CANNOT BE DONE ON THIS WORKSTATION: there is no JDK (JAVA_HOME points at a jdk-18.0.2.1 directory that does not exist) and no AVD, so nothing can build an APK to run a frame processor in. Writing the worklet blind would mean shipping the one kind of code this repository has already been burnt by — F-116 exists because a missing worklet directive crashed the Lens on its first frame while every test passed identically either side of the bug. THE COST QUESTION IS REAL AND IS CRITERION 4: sampleStride bounds one region to MAX_SAMPLES_PER_FRAME; 24 regions is 24 times the walk, on the frame thread, and whether that holds a preview at usable frame rate is a measurement rather than a guess."
+    },
+    {
+      "id": "F-136",
+      "title": "A calibration is stored, listed, and can be retired",
+      "requirements": [
+        "FR-16"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-135"
+      ],
+      "acceptance": [
+        "A solved correction is written to the calibration table and linked from the colours it produced",
+        "A person can see which corrections exist, when each was solved, and how well each fitted",
+        "A correction can be retired without deleting the colours that were taken with it"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "FILED BY F-053. Migration 7 created the `calibration` table and a nullable `saved_color.calibration_id`, with CHECK constraints and an archive path (E-023), and the store test proves all of it. WHAT DOES NOT EXIST IS A WRITER OR A READER: nothing yet inserts a row, because nothing can solve a correction from a live camera until F-135, and a repository method with no caller is the shape [[a-generated-value-with-no-consumer-satisfies-its-own-test-and-reaches-nothing]] warns about. The schema landed first deliberately — a migration is forward-only and never edited afterwards, so it is better settled while the shape of a Correction is fresh than bolted on beside a screen. CRITERION 3 IS THE ONE WITH A TRAP IN IT: retiring a correction must not orphan the colours solved with it, because a `calibrated` colour whose correction is gone is a claim nobody can audit — which is the exact property the table exists to provide. Soft-delete via `deleted_at`, and the FK stays."
     }
   ]
 }
