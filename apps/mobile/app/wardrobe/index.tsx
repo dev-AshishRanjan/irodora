@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Wardrobe } from '../../src/screens/Wardrobe';
 import { deviceRepository } from '../../src/store/repository';
 
@@ -14,11 +14,25 @@ import { deviceRepository } from '../../src/store/repository';
  * `/wardrobe` rather than `/wardrobe/browse`: this is what the segment is *for*, and `add.tsx`
  * sits beside it as the thing you do to a wardrobe rather than a peer of it.
  */
+/*
+ * THE ROUTE MAKES THE WIRE, NOT THE SCREEN (F-139).
+ *
+ * A screen that called `router.push` itself could not be rendered by the conformance suite —
+ * `useRouter` needs a navigator around it — and that suite is where the accessibility and
+ * contrast guarantees are actually checked. So the screen takes a callback and this supplies
+ * it, which is the convention `app/index.tsx` already uses for ten destinations.
+ */
 export default function WardrobeRoute(): React.JSX.Element {
+  const router = useRouter();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Wardrobe store={deviceRepository()} />
+      <Wardrobe
+        store={deviceRepository()}
+        onAddGarment={() => {
+          router.push('/wardrobe/add');
+        }}
+      />
     </>
   );
 }

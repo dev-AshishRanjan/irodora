@@ -13,6 +13,7 @@ import { nativeNumericFeature } from '@irodora/design-tokens';
 import {
   Button,
   Chip,
+  EmptyState,
   SearchField,
   Status,
   Surface,
@@ -61,6 +62,29 @@ const SAMPLE = fromSpace('oklch', [0.42, 0.09, 264], { source: 'declared', confi
  * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
  */
 const SUBJECTS: readonly ConformanceSubject[] = [
+  {
+    /*
+     * BOTH MEMBERS OF THE UNION ARE RENDERED, and they are almost disjoint trees (F-139).
+     *
+     * The `action` form draws a Button; the `resolvedHere` form draws none. Registering only
+     * one would check the accessibility of half a component — and the half that draws a control
+     * is the half the feature exists for.
+     */
+    name: 'EmptyState',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <>
+          <EmptyState
+            message="Nothing here yet"
+            hint="Add a garment and it appears here."
+            action={{ label: 'Add a garment', onPress: () => undefined }}
+          />
+          <EmptyState message="No colour matches these filters." resolvedHere />
+        </>,
+        theme,
+      ),
+  },
   {
     name: 'Surface',
     kind: 'static',

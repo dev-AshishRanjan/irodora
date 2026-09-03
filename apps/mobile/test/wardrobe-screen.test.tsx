@@ -360,3 +360,88 @@ describe('the filter controls', () => {
     expect(shownCount()).toBe(0);
   });
 });
+
+describe('the way out of an empty wardrobe (F-139)', () => {
+  const empty = { enrichGarment: () => undefined, listGarments: () => [] };
+
+  const show = (onAddGarment?: () => void): void => {
+    render(
+      <ThemeProvider theme="light">
+        {onAddGarment === undefined ? (
+          <Wardrobe store={empty} />
+        ) : (
+          <Wardrobe store={empty} onAddGarment={onAddGarment} />
+        )}
+      </ThemeProvider>,
+    );
+  };
+
+  it('offers a control that reaches the add screen, and presses through to it', () => {
+    /*
+     * The defect: `/wardrobe/add` was reachable only from the Lens, after a camera reading. The
+     * hint said "add a garment" and there was nothing to press. Asserting the PRESS rather than
+     * the label, because a button wired to nothing renders identically to one that works
+     * [[a-static-render-suite-cannot-check-what-a-form-does-on-save]].
+     */
+    const pressed: true[] = [];
+    show(() => {
+      pressed.push(true);
+    });
+
+    fireEvent.press(screen.getByLabelText(en['browse.add']));
+    expect(pressed).toHaveLength(1);
+  });
+
+  it('still explains itself when there is nowhere to go', () => {
+    // The other member of EmptyState's union. The prose stays; only the control is absent.
+    show();
+
+    expect(screen.getByText(en['browse.empty'])).toBeTruthy();
+    expect(screen.queryByLabelText(en['browse.add'])).toBeNull();
+  });
+
+  it('offers the control when the wardrobe is NOT empty, because the second garment needs it too', () => {
+    const pressed: true[] = [];
+    render(
+      <ThemeProvider theme="light">
+        <Wardrobe
+          store={{ enrichGarment: () => undefined, listGarments: () => [COAT] }}
+          onAddGarment={() => {
+            pressed.push(true);
+          }}
+        />
+      </ThemeProvider>,
+    );
+
+    fireEvent.press(screen.getByLabelText(en['browse.add']));
+    expect(pressed).toHaveLength(1);
+  });
+
+  it('DOES NOT offer it when a FILTER matched nothing — a different situation', () => {
+    /*
+     * The decoy, and the distinction `Wardrobe.tsx` already argued for: "one is 'add a garment',
+     * the other is 'clear a filter'". A wardrobe with garments in it that a filter has narrowed
+     * to nothing must not tell somebody to go and add another one — the thing to do is clear the
+     * filter, and it is on this screen.
+     *
+     * Without this case, a screen that offered "add a garment" for BOTH branches would pass
+     * every other assertion in this file.
+     */
+    render(
+      <ThemeProvider theme="light">
+        <Wardrobe
+          store={{ enrichGarment: () => undefined, listGarments: () => [COAT] }}
+          initialFilter={{ season: null, formality: null, type: 'nothing-matches-this' }}
+          onAddGarment={() => undefined}
+        />
+      </ThemeProvider>,
+    );
+
+    // Exactly ONE add control on the screen. The wardrobe is not empty, so the persistent one
+    // is drawn and the empty state's is not — two buttons with one accessible name is what the
+    // first draft shipped, and the suite caught it.
+    expect(screen.getAllByLabelText(en['browse.add'])).toHaveLength(1);
+    // And the narrowed branch offers the filter's own way out rather than a second add.
+    expect(screen.getByText(en['browse.filterNone'])).toBeTruthy();
+  });
+});

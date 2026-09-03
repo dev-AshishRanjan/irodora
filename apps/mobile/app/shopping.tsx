@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { outfitWeights, parseWeightContent } from '@irodora/recommendation';
 import { Shopping } from '../src/screens/Shopping';
 import { colorOf } from '../src/wardrobe';
@@ -32,6 +32,7 @@ import { deviceRepository } from '../src/store/repository';
  * guaranteed identical answer. The same memo `app/outfit.tsx` holds, for the same reason.
  */
 export default function ShoppingRoute(): React.JSX.Element {
+  const router = useRouter();
   const repo = deviceRepository();
   const stored = activeProfile(repo);
 
@@ -74,7 +75,13 @@ export default function ShoppingRoute(): React.JSX.Element {
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Shopping wardrobe={repo.listGarments()} context={context} />
+      <Shopping
+        wardrobe={repo.listGarments()}
+        context={context}
+        onAddGarment={() => {
+          router.push('/wardrobe/add');
+        }}
+      />
     </>
   );
 }

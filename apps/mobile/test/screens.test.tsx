@@ -642,6 +642,28 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * NOTHING WEARABLE, WITH THE WAY OUT (F-139).
+     *
+     * This branch had NO registry subject at all, so `outfit.empty` was a sentence the a11y and
+     * contrast gates never rendered — and the control F-139 adds beside it would have been
+     * unchecked for the same reason. An empty wardrobe is also the state a new person is in.
+     */
+    name: 'screens/OutfitBuilder (nothing wearable)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <OutfitBuilder
+          wardrobe={[]}
+          context={OUTFIT_CONTEXT}
+          store={fakeWearStore([])}
+          onAddGarment={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * The SAME screen with a slot locked and scores on it.
      *
      * The empty and composed branches are almost disjoint: an empty builder draws no swatch,
@@ -697,6 +719,23 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<Shopping wardrobe={OUTFIT_WARDROBE} context={SHOPPING_CONTEXT} />, theme),
+  },
+  {
+    /*
+     * NOTHING TO COMPARE AGAINST BECAUSE THERE IS NO WARDROBE (F-139).
+     *
+     * Distinct from "not enough to compare against", which HAS garments and too few comparable
+     * ones. This branch had no registry subject, so `shopping.empty` was never rendered by the
+     * a11y or contrast gates — and it is the first thing a new person sees on this screen.
+     */
+    name: 'screens/Shopping (no wardrobe at all)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Shopping wardrobe={[]} context={SHOPPING_CONTEXT} onAddGarment={() => undefined} />,
+        theme,
+      ),
   },
   {
     /*
@@ -815,6 +854,17 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Export (nothing to export)',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Export subject={null} sink={noSink} onBuildPalette={() => undefined} />, theme),
+  },
+  {
+    /*
+     * The same empty subject with NO route supplied — `EmptyState`'s other union member, which
+     * renders the sentence and no control. Both branches are reachable, so both are drawn.
+     */
+    name: 'screens/Export (nothing to export, nowhere to go)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Export subject={null} sink={noSink} />, theme),
   },
   {
@@ -893,13 +943,34 @@ const SCREENS: readonly ConformanceSubject[] = [
    * so one fake satisfies both. The types stay separate for the reason `Wardrobe.tsx` gives.
    */
   {
+    /* Carries the persistent add control (F-139), which is drawn whether or not it is empty. */
     name: 'screens/Wardrobe',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Wardrobe store={fakeWearStore(OUTFIT_WARDROBE)} />, theme),
+    render: (_state, theme) =>
+      draw(
+        <Wardrobe store={fakeWearStore(OUTFIT_WARDROBE)} onAddGarment={() => undefined} />,
+        theme,
+      ),
   },
   {
+    /*
+     * THE EMPTY WARDROBE, WITH THE WAY OUT (F-139). Draws the empty state's action, which is
+     * the control the whole feature exists to add — and an unrendered control is one whose
+     * contrast and accessibility nothing has checked.
+     */
     name: 'screens/Wardrobe (nothing in it)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Wardrobe store={fakeWearStore([])} onAddGarment={() => undefined} />, theme),
+  },
+  {
+    /*
+     * The same screen with NO route supplied, which is the other member of `EmptyState`'s
+     * union. It renders prose and no control; both branches are reachable, so both are drawn.
+     */
+    name: 'screens/Wardrobe (nothing in it, nowhere to go)',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Wardrobe store={fakeWearStore([])} />, theme),

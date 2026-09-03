@@ -19,6 +19,7 @@ import {
 } from '@irodora/design-tokens';
 import { useColorScheme as rnUseColorScheme } from 'react-native';
 import {
+  EmptyState,
   Icon,
   ICON_TOKENS,
   resolveThemeName,
@@ -297,4 +298,51 @@ describe('Japanese line breaking is REQUESTED, which is all a render tree can pr
   // Written as a comment rather than as a passing test. `expect(true).toBe(true)` under a
   // descriptive name reads as coverage in a test report and is worth nothing — which is one
   // of the six assertion shapes this feature's plan lists as grounds for rejection.
+});
+
+/**
+ * The compile-time half of F-139, and the reason `EmptyState` is a union rather than a rule.
+ *
+ * `tsc` errors on an UNUSED `@ts-expect-error`, so each of these is an assertion in both
+ * directions: it passes only while the careless form is still refused, and it starts failing
+ * the moment somebody widens the type. Same arrangement `color-core`'s `color.test.ts` uses
+ * for ADR-0005's positional provenance.
+ */
+describe('an empty state has to say where its action lives (F-139)', () => {
+  it('refuses one that declares neither', () => {
+    // @ts-expect-error — neither `action` nor `resolvedHere`. A rule in a document would have
+    // let this through; this is what makes the careless version unbuildable.
+    const neither = <EmptyState message="Nothing here yet" />;
+    expect(neither).toBeTruthy();
+  });
+
+  it('refuses one that declares both', () => {
+    const both = (
+      // @ts-expect-error — both members at once, which claims the action is here AND elsewhere.
+      <EmptyState
+        message="Nothing here yet"
+        resolvedHere
+        action={{ label: 'Add a garment', onPress: () => undefined }}
+      />
+    );
+    expect(both).toBeTruthy();
+  });
+
+  it('accepts each form on its own — the decoy for the two refusals above', () => {
+    /*
+     * Without this, a type that rejected EVERY EmptyState would satisfy both cases and be far
+     * worse than the gap it closed [[a-decoy-that-is-not-broken-proves-nothing]].
+     */
+    const elsewhere = (
+      <EmptyState
+        message="Nothing here yet"
+        hint="Add a garment and it appears here."
+        action={{ label: 'Add a garment', onPress: () => undefined }}
+      />
+    );
+    const here = <EmptyState message="No colour matches these filters." resolvedHere />;
+
+    expect(elsewhere).toBeTruthy();
+    expect(here).toBeTruthy();
+  });
 });

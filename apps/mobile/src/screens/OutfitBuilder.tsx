@@ -37,7 +37,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Surface, Swatch, swatchAccessibleName, Text } from '@irodora/ui';
+import { Button, EmptyState, Surface, Swatch, swatchAccessibleName, Text } from '@irodora/ui';
 import { OUTFIT_SLOTS, type OutfitSlot } from '@irodora/recommendation';
 import type { StoredGarment } from '@irodora/store';
 import {
@@ -92,6 +92,18 @@ export interface OutfitBuilderProps {
    * way — and the narrow port is what stops this screen from being able to create a garment.
    */
   readonly store: WearStore;
+  /**
+   * Go to the screen that adds a garment (F-139).
+   *
+   * This screen depends on a wardrobe and said so — "Nothing in your wardrobe fits a slot yet.
+   * Add a top, trousers or shoes." — with no way to get there. Optional, and the ROUTE supplies
+   * it: a screen that called `router.push` itself could not be rendered by the conformance
+   * suite, which is where accessibility is actually checked.
+   *
+   * Note the narrow `WearStore` above is what stops THIS screen creating a garment itself —
+   * so pointing at the screen that can is the only honest way out of the empty state.
+   */
+  readonly onAddGarment?: (() => void) | undefined;
 }
 
 export function OutfitBuilder({
@@ -99,6 +111,7 @@ export function OutfitBuilder({
   context,
   initialDraft,
   store,
+  onAddGarment,
 }: OutfitBuilderProps): React.JSX.Element {
   const { t } = useMessages();
   const [draft, setDraft] = useState<OutfitDraft>(initialDraft ?? []);
@@ -171,10 +184,19 @@ export function OutfitBuilder({
           {t('outfit.title')}
         </Text>
 
+        {/*
+          NOTHING FITS A SLOT, AND NOW THERE IS A WAY TO CHANGE THAT (F-139). This named the
+          action — "add a top, trousers or shoes" — and offered nothing to press.
+        */}
         {wearable.length === 0 ? (
-          <Text size="body" color="foreground.2">
-            {t('outfit.empty')}
-          </Text>
+          onAddGarment === undefined ? (
+            <EmptyState message={t('outfit.empty')} resolvedHere />
+          ) : (
+            <EmptyState
+              message={t('outfit.empty')}
+              action={{ label: t('browse.add'), onPress: onAddGarment }}
+            />
+          )
         ) : null}
 
         {OUTFIT_SLOTS.map((slot) => {

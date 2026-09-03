@@ -31,7 +31,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Surface, Text, useTheme } from '@irodora/ui';
+import { Button, EmptyState, Surface, Text, useTheme } from '@irodora/ui';
 import { ExportError, WRITERS, type ExportFile, type ExportSubject } from '@irodora/export';
 import type { FileSink, SaveResult } from '../export/sink';
 import { useMessages } from '../i18n/useMessages';
@@ -61,9 +61,21 @@ export interface ExportProps {
   readonly sink: FileSink;
   /** The format selected on arrival. The registry uses it to render a chosen state. */
   readonly initialFormat?: Format;
+  /**
+   * Go to the screen that builds a palette (F-139).
+   *
+   * Its own destination rather than the wardrobe's: this screen said "Build a palette first"
+   * and offered nothing to press. Optional, and the ROUTE supplies it.
+   */
+  readonly onBuildPalette?: (() => void) | undefined;
 }
 
-export function Export({ subject, sink, initialFormat = 'json' }: ExportProps): React.JSX.Element {
+export function Export({
+  subject,
+  sink,
+  initialFormat = 'json',
+  onBuildPalette,
+}: ExportProps): React.JSX.Element {
   const { t, script } = useMessages();
   const { colors } = useTheme();
 
@@ -105,10 +117,17 @@ export function Export({ subject, sink, initialFormat = 'json' }: ExportProps): 
         {t('export.origin')}
       </Text>
 
+      {/* NOTHING TO EXPORT, AND NOW A WAY TO MAKE SOMETHING (F-139). */}
       {subject === null ? (
-        <Text size="body" color="foreground.2" script={script}>
-          {t('export.empty')}
-        </Text>
+        onBuildPalette === undefined ? (
+          <EmptyState message={t('export.empty')} script={script} resolvedHere />
+        ) : (
+          <EmptyState
+            message={t('export.empty')}
+            script={script}
+            action={{ label: t('export.buildPalette'), onPress: onBuildPalette }}
+          />
+        )
       ) : (
         <>
           <Surface level="1" padding={12}>

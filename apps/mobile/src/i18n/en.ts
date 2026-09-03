@@ -501,6 +501,14 @@ export const en = {
   'browse.title': 'Your wardrobe',
   'browse.empty': 'Nothing here yet',
   'browse.emptyHint': 'Add a garment and it appears here, gathered with the colours nearest to it.',
+  /*
+   * THE WAY OUT OF AN EMPTY WARDROBE, and of the two screens that depend on one (F-139).
+   *
+   * One key for one action, reused by the wardrobe, the outfit builder and the shopping check.
+   * Three labels for one destination would drift, and somebody who learned the word on one
+   * screen would meet a different one on the next.
+   */
+  'browse.add': 'Add a garment',
   // Says what the grouping IS. "Grouped by colour" would let a reader assume the app had decided
   // each garment's colour has a name; it has decided which published colours it sits nearest to.
   'browse.grouping': 'Gathered by how near each colour is to the collection.',
@@ -583,6 +591,8 @@ export const en = {
   'export.cancelled': 'Nothing was saved.',
   'export.failed': 'It could not be written.',
   'export.empty': 'Build a palette first, and it can be exported.',
+  /** Its own label rather than `browse.add`: a different destination, so a different word. */
+  'export.buildPalette': 'Build a palette',
   'export.refused': 'This format cannot carry one of the characters in it.',
   'export.versions': 'Recorded in the file',
   'outfit.harmony.supports': 'These colours share a warmth, so they read as chosen together.',

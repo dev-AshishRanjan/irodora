@@ -35,7 +35,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Surface, Swatch, swatchAccessibleName, Text, TextField } from '@irodora/ui';
+import { EmptyState, Surface, Swatch, swatchAccessibleName, Text, TextField } from '@irodora/ui';
 import { coverage, type Coverage, type CoverageGarment } from '@irodora/optimization';
 import type { StoredGarment } from '@irodora/store';
 import { allEntries, colorFor } from '../corpus';
@@ -80,6 +80,14 @@ export interface ShoppingProps {
   /** A price already typed. The registry uses these to render the answered branch. */
   readonly initialAmount?: string;
   readonly initialCurrency?: string;
+  /**
+   * Go to the screen that adds a garment (F-139).
+   *
+   * This screen depends on a wardrobe and said so — "Add something to your wardrobe first" — with no way to get there.
+   * Optional, and the ROUTE supplies it: a screen that called `router.push` itself could not
+   * be rendered by the conformance suite, which is where accessibility is actually checked.
+   */
+  readonly onAddGarment?: (() => void) | undefined;
 }
 
 export function Shopping({
@@ -89,6 +97,7 @@ export function Shopping({
   initialSlug,
   initialAmount = '',
   initialCurrency = '',
+  onAddGarment,
 }: ShoppingProps): React.JSX.Element {
   const { t } = useMessages();
   const [type, setType] = useState(initialType);
@@ -169,10 +178,19 @@ export function Shopping({
           {t('shopping.origin')}
         </Text>
 
+        {/*
+          THE CHECK NEEDS A WARDROBE, AND NOW SAYS HOW TO GET ONE (F-139). This read
+          "Add something to your wardrobe first" and offered nothing to press.
+        */}
         {wardrobe.length === 0 ? (
-          <Text size="body" color="foreground.2">
-            {t('shopping.empty')}
-          </Text>
+          onAddGarment === undefined ? (
+            <EmptyState message={t('shopping.empty')} resolvedHere />
+          ) : (
+            <EmptyState
+              message={t('shopping.empty')}
+              action={{ label: t('browse.add'), onPress: onAddGarment }}
+            />
+          )
         ) : null}
 
         <TextField

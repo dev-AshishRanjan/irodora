@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Export } from '../src/screens/Export';
 import { deviceSink } from '../src/export/device';
 import { paletteSubject } from '../src/export/subject';
@@ -23,6 +23,7 @@ import { deviceRepository } from '../src/store/repository';
  * nothing.
  */
 export default function ExportRoute(): React.JSX.Element {
+  const router = useRouter();
   const subject = useMemo(() => {
     const palettes = deviceRepository().listPalettes();
     // The LAST one, because `listPalettes` is in creation order and the most recent is what
@@ -34,7 +35,13 @@ export default function ExportRoute(): React.JSX.Element {
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Export subject={subject} sink={deviceSink()} />
+      <Export
+        subject={subject}
+        sink={deviceSink()}
+        onBuildPalette={() => {
+          router.push('/palettes');
+        }}
+      />
     </>
   );
 }

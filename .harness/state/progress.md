@@ -14339,3 +14339,106 @@ frame what three sessions of green gates could not.
 
 ---
 
+## 2026-09-03 — F-139 DONE · an empty dependency offers the way to fill it
+
+Reported from the app: *"there is no option to add wardrobe in the app, and some screen works on
+wardrobe like, check something before buying"* — with a rule attached: **whenever a screen
+depends on something and that something is empty, give it a button to go and create it.**
+
+### The bug was worse than "no button"
+
+`/wardrobe/add` existed as a route and the **only** thing linking to it was the Lens, after a
+successful camera reading. Open the wardrobe directly and there was no way to put anything in
+it — and while the frame processor was throwing on every frame (F-138), no way **at all**.
+
+Three more screens named an action and offered nothing to press:
+
+| screen | what it said | where the action lives |
+|---|---|---|
+| Wardrobe | "Add a garment and it appears here…" | `/wardrobe/add` |
+| OutfitBuilder | "Nothing in your wardrobe fits a slot yet." | `/wardrobe/add` |
+| Shopping | "Add something to your wardrobe first…" | `/wardrobe/add` |
+| Export | "Build a palette first…" | `/palettes` |
+
+Four others were already right, and they are what the rule turns on: Atlas, Finder, Palette
+Studio and Measure keep their action **on the screen** — a filter to clear, a field to type in.
+The line is *where the action lives*, not *whether the screen is empty*.
+
+**The repository had already argued for this and half-applied it.** `Wardrobe.tsx`'s own comment
+says *"one is 'add a garment', the other is 'clear a filter'"* — and only the filter case got a
+button.
+
+### Structural, not documented — and the compiler is the guard
+
+`EmptyState` in `@irodora/ui` takes a **discriminated union**:
+
+```ts
+type Resolution =
+  | { readonly action: EmptyAction; readonly resolvedHere?: never }
+  | { readonly resolvedHere: true; readonly action?: never };
+```
+
+There is no way to render an empty state without declaring which kind it is. That is
+[ADR-0005](../../docs/adr/0005-measurement-provenance-is-a-type.md)'s move applied to a product
+rule: the careless version is **unbuildable**. A documented rule would have relied on the next
+screen's author remembering it — and this repository has now watched a prose-reading check fail
+five separate times.
+
+**`resolvedHere` has no default**, deliberately. A default is a thing people accept without
+reading, and accepting it is the mistake being prevented.
+
+**Proven, not asserted.** Two `@ts-expect-error` cases pin the refusals — neither member, and
+both at once — plus a decoy that each form alone still compiles, because a type that rejected
+*every* `EmptyState` would satisfy both refusals and be worse than the gap it closed. Then the
+union was collapsed to both-optional and `typecheck` went red on the now-unused directives:
+
+```
+caught  the union collapses to both-optional (via the unused @ts-expect-error directives)
+        test/components.test.tsx(313,5): error TS2578: Unused '@ts-expect-error' directive.
+```
+
+### Three things the work turned up
+
+**A duplicate control with one accessible name.** The first draft rendered the persistent add
+button *and* the empty state's, so an empty wardrobe had two buttons both called "Add a
+garment" — which a screen reader announces twice. The suite caught it as *"Found multiple
+elements with accessibility label"*. One affordance per screen now: the empty state owns it
+while the wardrobe is empty, the persistent control owns it afterwards.
+
+**The gap the reported rule did not cover.** An empty-state button gets the **first** garment
+in. The second one needs a control that is there when the screen is *not* empty — which is why
+criterion 1 is separate, and why the wardrobe has both.
+
+**Two empty branches had no registry subject at all.** `shopping.empty` and `outfit.empty` were
+sentences the `a11y` and `contrast` gates had never rendered, so the controls added beside them
+would have been unchecked for the same reason. Both screens gained an empty subject, and the
+wardrobe and export subjects gained siblings that render the *other* union member — an
+unrendered branch is one whose contrast nothing has measured.
+
+`a11y-scope.mjs` also did its job immediately: a new `@irodora/ui` component that no conformance
+registry reached failed the gate before any of its behaviour was checked.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · **8 a11y** · **9 contrast** | **PASS** |
+| the union, mutated | **caught** |
+
+**Not run:** `color-golden`, `cvd` — no colour maths changed. `e2e`: gate 7 pending.
+
+### Still owed
+
+**Two Japanese strings are mine** — `browse.add` 「服を追加」 and `export.buildPalette`
+「配色を作る」 — written to match the register of the existing catalogue. F-017's attested
+criterion asks that a competent speaker read the catalogue, and these join the queue rather than
+being assumed correct.
+
+**And the honest limit of the guarantee:** a screen that renders a bare `<Text>` for its empty
+branch bypasses `EmptyState` entirely, and `tsc` cannot see that. The five known sites are
+converted and the component is the obvious thing to reach for next — that is not the same as
+the gap being closed.
+
+---
+

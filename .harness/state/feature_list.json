@@ -3907,6 +3907,45 @@
       "effects": [
         "E-050"
       ]
+    },
+    {
+      "id": "F-139",
+      "title": "An empty dependency offers the way to fill it",
+      "requirements": [
+        "FR-41",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "A garment can be added from the wardrobe screen, whether it is empty or not",
+        "Every empty state whose action lives on another screen offers a control that goes there",
+        "An empty state cannot be written without declaring whether its action is here or elsewhere, and the compiler is what enforces it",
+        "Both locales render the new controls, and the conformance registry covers the branches"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "REPORTED FROM THE APP: \"there is no option to add wardrobe in the app, and some screen works on wardrobe like, check something before buying\". Confirmed — `/wardrobe/add` exists as a route and the ONLY thing that links to it is the Lens, after a successful camera reading (CameraLens.tsx). Open the wardrobe directly and there is no way to add anything, ever. It was doubly unreachable while the frame processor threw on every frame (F-138). THE RULE THE REPORT ASKS FOR, and it is a product rule rather than a bug: when a screen depends on data that lives elsewhere and that data is empty, the empty state must offer the route to go and create it. FOUR SCREENS SAY WHAT TO DO AND GIVE NO WAY TO DO IT: Wardrobe (`browse.emptyHint`), OutfitBuilder (`outfit.empty`), Shopping (`shopping.empty`) and Export (`export.empty`). Four others are already correct because their action is on the same screen — Atlas, Finder, Palette Studio and Measure — which is the distinction the rule turns on. THE CODEBASE ALREADY ARGUED FOR THIS AND ONLY HALF-APPLIED IT: Wardrobe.tsx’s own comment says \"one is ‘add a garment’, the other is ‘clear a filter’\" — and only the filter case got a button. A GAP THE STATED RULE DOES NOT COVER, and it is why criterion 1 is separate: an empty-state button adds the FIRST garment and not the second. The wardrobe needs a persistent add action as well as an empty-state one. STRUCTURAL RATHER THAN ADVISORY, decided with the reporter: an `EmptyState` whose props are a DISCRIMINATED UNION over `action` and `resolvedHere`, so a screen cannot render one without saying which kind it is and `tsc` is the guard — the same move ADR-0005 makes for provenance. A documented rule would rely on the next screen’s author remembering. DONE 2026-09-03. `EmptyState` in @irodora/ui takes a DISCRIMINATED UNION over `action` and `resolvedHere`, so an empty state cannot be written without declaring where its action lives — proven by two `@ts-expect-error` cases (neither member, both members) plus a decoy that each valid form still compiles, and then by collapsing the union and watching `typecheck` go red on the now-unused directives. Five branches converted across four screens; the four routes wire `router.push` the way `app/index.tsx` already does for ten destinations, so no screen calls the router itself and every branch stays renderable by the conformance suite. THREE THINGS THE WORK TURNED UP. The first draft rendered the persistent add control AND the empty state’s, giving an empty wardrobe two buttons with the identical accessible name \"Add a garment\" — caught by the suite as \"Found multiple elements with accessibility label\", and now one affordance per screen. The reported rule did not cover the SECOND garment: an empty-state button gets the first one in, which is why criterion 1 is separate. And two empty branches (`shopping.empty`, `outfit.empty`) had NO registry subject at all, so the a11y and contrast gates had never rendered them — both screens gained one, and the wardrobe and export subjects gained siblings rendering the other union member. THE HONEST LIMIT: a screen that renders a bare `<Text>` for an empty branch bypasses `EmptyState` entirely and `tsc` cannot see it. The known sites are converted; the gap is narrower, not closed.",
+      "plan": "plans/F-139-an-empty-dependency-offers-the-way-to-fill-it.md",
+      "effects": [
+        "E-016"
+      ],
+      "attested": [
+        {
+          "criterion": "Both locales render the new controls, and the conformance registry covers the branches",
+          "verifiedBy": "The registry half is GATED and green — five empty branches now render, including two (`shopping.empty`, `outfit.empty`) that had no subject at all before, so `a11y` and `contrast` had never drawn them. WHAT IS ATTESTED is the Japanese half: `browse.add` 「服を追加」 and `export.buildPalette` 「配色を作る」 are mine, written to match the register of the existing catalogue, and `i18n.test.ts` can only check that they carry Japanese script rather than that they read well. F-017 already carries \"a competent speaker has read them\" and these join that queue.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     }
   ]
 }

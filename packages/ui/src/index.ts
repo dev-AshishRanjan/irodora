@@ -24,6 +24,7 @@ export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
 export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
+export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState.js';
 export { SearchField, type SearchFieldProps } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
 export { Swatch, swatchAccessibleName, type SwatchProps } from './Swatch.js';

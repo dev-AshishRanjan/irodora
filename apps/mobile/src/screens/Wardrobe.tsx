@@ -43,6 +43,7 @@ import { ScrollView, View } from 'react-native';
 import {
   Button,
   Chip,
+  EmptyState,
   Surface,
   Swatch,
   swatchAccessibleName,
@@ -216,12 +217,26 @@ export interface WardrobeProps {
    * otherwise reachable only through a tap the static conformance suite never performs.
    */
   readonly initialFilter?: WardrobeFilter;
+  /**
+   * Go to the screen that adds a garment (F-139).
+   *
+   * `/wardrobe/add` existed as a route and the ONLY thing linking to it was the Lens, after a
+   * successful camera reading — so a person who opened the wardrobe directly could not put
+   * anything in it, and while the frame processor was throwing on every frame (F-138) there was
+   * no way at all.
+   *
+   * Optional, and the ROUTE supplies it, which is the convention `Home` uses for ten
+   * destinations: a screen that called `router.push` itself could not be rendered by the
+   * conformance suite, which is where the accessibility guarantees are actually checked.
+   */
+  readonly onAddGarment?: (() => void) | undefined;
 }
 
 export function Wardrobe({
   store,
   initialSelected = null,
   initialFilter = NO_FILTER,
+  onAddGarment,
 }: WardrobeProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
   const { colors } = useTheme();
@@ -413,6 +428,23 @@ export function Wardrobe({
       </Text>
 
       {/*
+        THE PERSISTENT ADD, and it is not the same thing as the empty state's (F-139).
+        An empty-state button gets the FIRST garment in. This is how the second one gets in —
+        without it, adding remains a thing you can only do once, or through the Lens.
+
+        DRAWN ONLY WHEN THERE IS SOMETHING HERE, and the first draft got that wrong: with both
+        controls rendered an empty wardrobe had TWO buttons carrying the accessible name "Add a
+        garment", which a screen reader announces twice and which the suite caught as
+        "Found multiple elements with accessibility label". One affordance per screen — the
+        empty state owns it when the wardrobe is empty, this owns it afterwards.
+      */}
+      {garments.length === 0 || onAddGarment === undefined ? null : (
+        <View style={{ alignItems: 'flex-start' }}>
+          <Button label={t('browse.add')} variant="secondary" onPress={onAddGarment} />
+        </View>
+      )}
+
+      {/*
         THE CONTROLS COME BEFORE THE RESULT, and are drawn whenever there is a wardrobe at all —
         including when the filter matches nothing, because a filter bar that disappeared with its
         own result would leave somebody unable to clear it.
@@ -485,14 +517,27 @@ export function Wardrobe({
       )}
 
       {garments.length === 0 ? (
-        <>
-          <Text size="body" color="foreground" script={script}>
-            {t('browse.empty')}
-          </Text>
-          <Text size="small" color="foreground.2" script={script}>
-            {t('browse.emptyHint')}
-          </Text>
-        </>
+        /*
+          AN EMPTY WARDROBE NOW OFFERS THE WAY TO FILL IT (F-139). The hint said "add a garment"
+          and there was nothing to press; the only route to `/wardrobe/add` was through the
+          Lens. `EmptyState`'s props are a union, so this could not have been written without
+          declaring whether the action is here or elsewhere.
+        */
+        onAddGarment === undefined ? (
+          <EmptyState
+            message={t('browse.empty')}
+            hint={t('browse.emptyHint')}
+            script={script}
+            resolvedHere
+          />
+        ) : (
+          <EmptyState
+            message={t('browse.empty')}
+            hint={t('browse.emptyHint')}
+            script={script}
+            action={{ label: t('browse.add'), onPress: onAddGarment }}
+          />
+        )
       ) : groups.length === 0 ? (
         /*
           NOTHING MATCHES IS NOT AN EMPTY WARDROBE (criterion 2). Two different situations with
@@ -500,14 +545,17 @@ export function Wardrobe({
           filter" — and a screen that showed one sentence for both would send somebody to add a
           coat they already own.
         */
-        <>
-          <Text size="body" color="foreground" script={script}>
-            {t('browse.filterNone')}
-          </Text>
-          <Text size="small" color="foreground.2" script={script}>
-            {t('browse.filterNoneHint')}
-          </Text>
-        </>
+        /*
+          THE ACTION IS ON THIS SCREEN, so `resolvedHere` (F-139). Clearing the filter is a
+          control the bar above already draws — offering "add a garment" here would send
+          somebody to buy a coat they already own.
+        */
+        <EmptyState
+          message={t('browse.filterNone')}
+          hint={t('browse.filterNoneHint')}
+          script={script}
+          resolvedHere
+        />
       ) : (
         <>
           {/*

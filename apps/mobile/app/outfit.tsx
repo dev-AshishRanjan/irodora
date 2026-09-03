@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { parseWeightContent } from '@irodora/recommendation';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
 import { colorOf } from '../src/wardrobe';
@@ -29,6 +29,7 @@ import { deviceRepository } from '../src/store/repository';
  * somebody nobody asked, so the route sends them to set one up instead of inventing it.
  */
 export default function OutfitRoute(): React.JSX.Element {
+  const router = useRouter();
   const repo = deviceRepository();
   const stored = activeProfile(repo);
 
@@ -80,6 +81,9 @@ export default function OutfitRoute(): React.JSX.Element {
             rules: context.rules,
             weights: context.weights,
             reference: context.reference,
+          }}
+          onAddGarment={() => {
+            router.push('/wardrobe/add');
           }}
         />
       )}
