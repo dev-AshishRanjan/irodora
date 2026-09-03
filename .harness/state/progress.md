@@ -14224,9 +14224,15 @@ unverified. Both halves were run before calling this fixed:
   min-sdk, contrast and its proof, cvd, content and its proof, bench and its proof, security,
   no-inference proof, audit proof.
 
-**What is still not proven:** that it passes on `ubuntu-latest`. Everything above ran on win32,
-and case-sensitivity is the difference a Windows run cannot see. The pre-install half is now
-exercised under CI's real condition, which is where the divergence was.
+**CONFIRMED ON THE RUNNER.** Pushed as `68943ef`;
+[run 41](https://github.com/dev-AshishRanjan/irodora/actions/runs/33751418726) is **green — 41 of
+41 steps succeeded, none skipped, 454 s**. Run 40 was 14 s with 33 steps skipped, so this is the
+first full traversal of the workflow since F-118 landed, and the first green CI since run 36.
+
+The one risk left after the local sweep was case-sensitivity, which a Windows run cannot see.
+Checked separately against git's exact-case index: **814 relative imports, 0 real mismatches** —
+the only four flagged are the deliberately fake fixtures inside `verify-app-imports.mjs`'s own
+self-test (`../src/thing`, `../src/nope`).
 
 ### The lesson
 
