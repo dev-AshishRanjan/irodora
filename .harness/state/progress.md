@@ -8,6 +8,93 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-141 DONE · the mark and the wordmark
+
+[`BRAND.md` §7](../../docs/design/BRAND.md#7-the-mark) has specified an identity since R0 and
+nothing was ever drawn. The repository had no mark, no wordmark, and no identity asset of any
+kind.
+
+### The mark is two fields and the interval between them
+
+On a 24-unit grid: two identical rectangles, 7 × 14. The horizontal gap between them is **4**,
+and the vertical offset between them is **also 4** — one quantity, stated on both axes.
+
+That equality is the whole idea, and it is the only part of a *design* a test can hold. Two
+rectangles that merely sit near each other are adjacent; two whose separation and displacement
+are the same measured quantity are **arranged**, which is what the brief asks for. 間 (*ma*) is
+the subject of the mark rather than the space left over by it.
+
+**Rejected on the way:** three bars of increasing height (a bar chart, and on the visual-taste
+cliché list); nested rectangles (that *is* a swatch, excluded by the brief in as many words);
+overlapping circles for colour mixing (wrong about the product — this measures colour, it does
+not mix it, and circles contradict *"rectilinear… swatches are true rectangles"*); a third field
+(busier, not more meaningful — *interval* needs exactly two edges).
+
+### One geometry, two renderers
+
+`Mark` draws two `View`s, so `@irodora/ui` gains no dependency — the mark is two rectangles and
+does not need SVG to be one. `markSvg` emits the same rectangles as a string, because F-142
+needs a **file** and an icon pipeline cannot render a React component into one. Both read `MARK`
+and neither carries its own numbers; the test asserts they agree rectangle by rectangle (E-059).
+
+That is what stops the shipped icon drifting from the mark in the app — the usual failure, where
+somebody exports a PNG from a drawing tool and it has no relationship to the code from that day
+onward.
+
+### The CVD half is a count, not a simulation
+
+Running protan/deutan/tritan over this mark would map one colour to one colour and report no
+confusion. That is **true of any single-colour document**, so the check would pass whatever it
+was given — simulation theatre, a check that cannot fail.
+
+The property that actually satisfies the brief is that there is only **one** colour to map. So
+that is what is counted, with a two-colour decoy that must fail the count, or the count asserts
+nothing.
+
+### The gate caught a false reach — the most reusable thing here
+
+`WordmarkSize` first listed `'display.1'`; a wordmark is the obvious home for the largest type
+step. `verify-token-reach.mjs` immediately reported `display.1` as **reached**, because the
+string appears in that union and the check reads string literals.
+
+**It was right to complain and wrong about the fact: a type literal is not a painted pixel.**
+Nothing rendered at 72 px — a union member only says something *could*. Leaving it would have
+closed F-146's exemption with a promise instead of a surface, which is exactly the laundering
+[ADR-0080](../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+exists to prevent, arriving from a direction that ADR does not anticipate. The union was
+narrowed; F-146 widens it when Home actually leads at that size.
+
+### Reached from a real surface
+
+The wordmark is Home's heading, replacing a `title` that was never one: `home.title` reads *"The
+engine is running on this device"* — a statement that sat in the title slot because that was the
+only slot there was. It now sits below as the sentence it is. **This is not the Home redesign;
+the ten buttons are still there.** F-146 is that.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** · **10 cvd** | **PASS** |
+| the one-colour count, with a two-colour decoy | **discriminates** |
+
+**Not run:** `color-golden`, `content` — no colour maths or corpus changed. `e2e`: gate 7 pending.
+
+### Still owed
+
+**Whether the mark is any good is attested, not gated.** The brief's exclusions are met by
+construction and the interval equality is asserted, but a mark is a design object and this is one
+designer's answer to a brief. No test closes that, and pretending otherwise would be the
+measurement-claims failure applied to design. Somebody should look at it and disagree if they
+disagree.
+
+**Not seen on a device**, and not seen at 16 px on a real screen — the size the brief actually
+constrains. The geometry says the interval is 2.67 px there; a phone is where that becomes a fact.
+
+---
+
 ## 2026-09-03 — R6 opened · F-140 DONE · the design system reaches the screen
 
 **Reported:** the UI looks unprofessional and low-effort, and the report is correct. What the

@@ -14,6 +14,7 @@ import {
   Button,
   Chip,
   EmptyState,
+  Mark,
   Row,
   Screen,
   SearchField,
@@ -25,6 +26,7 @@ import {
   Text,
   TextField,
   ThemeProvider,
+  Wordmark,
 } from '../src/index.js';
 import {
   checkAll,
@@ -85,6 +87,30 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             action={{ label: 'Add a garment', onPress: () => undefined }}
           />
           <EmptyState message="No colour matches these filters." resolvedHere />
+        </>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE IDENTITY (F-141).
+     *
+     * Both members, because they are different accessibility objects rather than two sizes of
+     * one thing. A standing-alone `Mark` is an `image` with a name; the same mark inside a
+     * `Wordmark` is DECORATIVE, because the word beside it is real text and a labelled mark
+     * would make a screen reader say the product name twice.
+     *
+     * Registering only the lockup would leave the labelled form — the splash, a bare header —
+     * checked by nothing, and it is the form where getting the label wrong actually costs
+     * somebody something.
+     */
+    name: 'Brand',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <>
+          <Wordmark size="display.2" />
+          <Mark size={16} label="Irodora" />
         </>,
         theme,
       ),

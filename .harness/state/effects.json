@@ -2229,6 +2229,44 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-059",
+      "from": {
+        "kind": "contract",
+        "ref": "packages/ui/src/brand.tsx#MARK"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/brand.tsx"
+        },
+        {
+          "kind": "test",
+          "ref": "packages/ui/test/brand.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/icon.png",
+          "exists": false
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test (packages/ui/test/brand.test.tsx) — the interval equality is asserted, and the SVG and the component are asserted to draw the same rectangles. gate:cvd via the one-fill count, with a two-colour decoy that must fail it.",
+      "memory": "memory/effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md",
+      "rationale": "ONE GEOMETRY, TWO RENDERERS. `Mark` draws Views for the app; `markSvg` emits a string because F-142 needs a FILE and an icon pipeline cannot render a React component into one. Both read `MARK` and neither carries its own numbers, so the icon on a home screen cannot drift from the mark inside the app — which is precisely what happens when somebody exports a PNG from a drawing tool and commits it beside the code. THE REVERSE IS ALSO TRUE AND WORTH SAYING: changing `MARK` changes the shipped icon and the store listing, so an edit that looks like a component tweak is not one. THE INTERVAL EQUALITY IS THE IDENTITY: the gap between the fields and the offset between them are the same number, which is what makes the mark an arrangement rather than an adjacency (BRAND.md section 7). A later edit that nudged one field would leave something that still reads as a mark and has stopped being this one; the test fails on it. THE CVD GUARANTEE IS A COUNT, NOT A SIMULATION — a simulation over a single-colour document maps one colour to one colour and reports no confusion, which is true of any such document and would therefore pass whatever it was given. The honest property is that there is only one colour to map, and a two-colour decoy proves the count distinguishes. THE ICON PATH IS DECLARED BEFORE IT EXISTS (exists: false), so the dependency is recorded while it is still a decision — rather than after somebody has exported a PNG by hand and there is nothing left to link it to.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

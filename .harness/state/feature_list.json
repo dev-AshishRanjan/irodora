@@ -3998,7 +3998,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "A geometric mark suggesting arranged colour — relationship, adjacency, interval — exists as SVG, and is neither a swatch nor a droplet",
@@ -4015,7 +4015,19 @@
         "a11y",
         "contrast"
       ],
-      "notes": "BRAND.md section 7 has specified this since R0 and nothing was ever drawn: the repository contains no mark, no wordmark and no identity asset of any kind. The brief is already written and unusually specific — wordmark-led, a geometric mark suggesting ARRANGED colour rather than a swatch or a droplet, working in one colour at 16px, and \"a mark that depends on colour to be recognisable is disqualified from this product\". That last line makes the cvd gate the acceptance test rather than a review note, which is why this is a gated feature and not a design task. Blocks F-142, which cannot produce an icon without it."
+      "notes": "BRAND.md section 7 has specified this since R0 and nothing was ever drawn: the repository contains no mark, no wordmark and no identity asset of any kind. The brief is already written and unusually specific — wordmark-led, a geometric mark suggesting ARRANGED colour rather than a swatch or a droplet, working in one colour at 16px, and \"a mark that depends on colour to be recognisable is disqualified from this product\". That last line makes the cvd gate the acceptance test rather than a review note, which is why this is a gated feature and not a design task. Blocks F-142, which cannot produce an icon without it. DONE 2026-09-03. THE MARK IS TWO FIELDS AND THE INTERVAL BETWEEN THEM. On a 24-unit grid the horizontal gap between them is 4 and the vertical offset is ALSO 4 — one quantity, stated on both axes. That equality is the whole idea and the only part of a design a test can hold: two rectangles that merely sit near each other are adjacent; two whose separation and displacement are the same measured quantity are ARRANGED, which is what BRAND.md section 7 asks for. Rejected on the way: three bars of increasing height (a bar chart, and on the visual-taste cliche list), nested rectangles (that IS a swatch, excluded in as many words), overlapping circles for colour mixing (wrong about the product — this measures colour, it does not mix it), and a third field (busier, not more meaningful — interval needs exactly two edges). ONE GEOMETRY, TWO RENDERERS: `Mark` draws two Views so @irodora/ui gains no dependency, and `markSvg` emits the same rectangles as a string because F-142 needs a file. Asserted to agree rectangle by rectangle (E-059). THE CVD HALF IS A COUNT, NOT A SIMULATION, and the distinction is the point: running protan/deutan/tritan over a single-colour document maps one colour to one colour and reports no confusion — true of ANY such document, so it would pass whatever it was given. The property that satisfies the brief is that there is only one colour to map, so that is what is counted, with a two-colour decoy that must fail the count or the count asserts nothing. THE GATE CAUGHT A FALSE REACH, and it is the most reusable thing here: `WordmarkSize` first listed `display.1`, and verify-token-reach immediately reported that step as REACHED because the string appears in the union and the check reads string literals. It was right to complain and wrong about the fact — a TYPE LITERAL IS NOT A PAINTED PIXEL. Nothing rendered at 72px. Leaving it would have closed F-146's exemption with a promise instead of a surface, which is the laundering ADR-0080 exists to stop arriving from a direction that ADR does not anticipate. The union was narrowed; F-146 widens it when Home actually leads at that size. REACHED FROM A REAL SURFACE: the wordmark is Home's heading, replacing a `title` that was never one — `home.title` reads \"The engine is running on this device\", a statement that sat in the title slot because that was the only slot there was, and it now sits below as the sentence it is.",
+      "plan": "plans/F-141-the-mark-and-the-wordmark.md",
+      "effects": [
+        "E-059"
+      ],
+      "attested": [
+        {
+          "criterion": "A geometric mark suggesting arranged colour — relationship, adjacency, interval — exists as SVG, and is neither a swatch nor a droplet",
+          "verifiedBy": "THE CHECKABLE HALF IS GATED: the interval equality (gap === offset) is asserted, the two fields are asserted identical, the ink is asserted square and centred, and the SVG and the component are asserted to draw the same rectangles. WHAT IS ATTESTED is whether it is any GOOD. A mark is a design object and this is one designer's answer to a brief; no test closes that, and pretending otherwise would be the measurement-claims failure applied to design. The brief's exclusions are met by construction and argued in the source — not a swatch (a swatch is one filled rectangle with a keyline; this is two unfilled-of-meaning fields and their interval), not a droplet, not a bar chart. A designer or the product owner should look at it and disagree if they disagree.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-142",

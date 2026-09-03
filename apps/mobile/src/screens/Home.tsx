@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
-import { Button, Row, Screen, Surface, Swatch, Text } from '@irodora/ui';
+import { Button, Row, Screen, Surface, Swatch, Text, Wordmark } from '@irodora/ui';
 import { differenceOklch, displayFromOklch } from '../engine';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -125,7 +125,25 @@ export function Home({
       viewport says `scroll={false}` at the call site, which is a decision somebody made rather
       than a default they inherited.
     */
-    <Screen title={t('home.title')} script={script}>
+    <Screen script={script}>
+      {/*
+        THE WORDMARK IS HOME'S HEADING (F-141), and it replaces a `title` that was never one.
+
+        `home.title` reads "The engine is running on this device" — a statement about the
+        product, set at the top of the page in the title slot because that was the only slot
+        there was. It is not a heading and never was, so it moves below as the sentence it is,
+        and the identity takes the position a front door's heading belongs in.
+
+        This is not the Home redesign — that is F-146, and the ten buttons below are still
+        there. It is the smallest change that puts the mark on a real surface, which is this
+        feature's fourth criterion: a component nobody renders is a component nobody checks
+        [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
+      */}
+      <Wordmark size="display.2" script={script} heading />
+      <Text size="body" color="foreground.2" script={script}>
+        {t('home.title')}
+      </Text>
+
       {swatches.map(({ nameKey, display }) => (
         <Surface key={nameKey} level="1" padding="md">
           <Row gap="lg">

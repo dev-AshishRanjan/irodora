@@ -42,5 +42,17 @@ export {
   type SpacingStep,
   type StackProps,
 } from './layout.js';
+export {
+  Mark,
+  MARK,
+  MARK_MIN_SIZE,
+  markFields,
+  markSvg,
+  narrowestFeature,
+  Wordmark,
+  type MarkProps,
+  type WordmarkProps,
+  type WordmarkSize,
+} from './brand.js';
 
 export const UI_VERSION = '0.0.0' as const;
