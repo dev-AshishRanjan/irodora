@@ -14255,3 +14255,87 @@ of CI green, and gate 0 is precisely where the two part company.
 
 ---
 
+## 2026-09-03 — F-138 DONE · a worklet cannot read a captured variable from a parameter default
+
+Reported from a phone: the Lens showed **"the frame processor threw: Property
+`MAX_SAMPLES_PER_FRAME` doesn't exist"** over a live preview, with no reading. FR-15 asks for a
+sampled colour and the frame processor threw on every frame instead.
+
+### Root cause, from the plugin's output rather than from reasoning
+
+The source looked unremarkable, and the `'worklet'` directive F-116 added was correctly in
+place:
+
+```ts
+export function sampleStride(regionPixels: number, max = MAX_SAMPLES_PER_FRAME): number {
+  'worklet';
+```
+
+**My first hypothesis was wrong**, and it is worth recording because it was plausible: I assumed
+the babel plugin fails to *capture* identifiers that appear in parameter defaults. Opening
+`getClosure` in the installed plugin disproved it — it calls `funPath.traverse`, which visits
+params. The constant **is** captured.
+
+Transforming `camera.ts` with the real plugin showed what actually ships:
+
+```js
+"(function sampleStride_cameraTs1(regionPixels,max=MAX_SAMPLES_PER_FRAME){
+    const{MAX_SAMPLES_PER_FRAME}=this.__closure;
+    if(regionPixels<=max)return 1; … })"
+```
+
+**The closure is unpacked as the first statement of the body. A parameter default is evaluated
+before the body runs**, in the parameter scope, which cannot see a body-level `const`. The name
+resolves against the worklet runtime's global object, where nothing of that name exists.
+
+### Why three sessions of green gates could not see it
+
+It throws only when the default is **used**. `sampleFrame` calls `sampleStride(size * size)`
+with one argument, so it fired on every frame — while every test calls it on the JS thread,
+where the real module binding exists. Jest has one runtime and no worklet boundary, so both
+arities work there either way.
+
+This is F-116's shape one layer in. That feature made the `'worklet'` **directive** checkable;
+this is about what a correctly-marked worklet may then **reference**.
+
+### The fix, and the check
+
+`sampleStride` takes `max?: number` and reads `const cap = max ?? MAX_SAMPLES_PER_FRAME` in the
+body. Confirmed by re-reading the plugin's emitted code — the parameter list no longer carries a
+captured name and the closure unpack now precedes the read.
+
+`scripts/verify-worklet-defaults.mjs` enforces the rule across every worklet in the app. **It
+runs the plugin and reads what it emitted** rather than re-deriving what the plugin would do —
+the wrong first hypothesis is exactly the argument for that: a re-derived rule can be confidently
+wrong, and the plugin cannot disagree with itself.
+
+It resolves `@babel/core` and the plugin **through the app's own dependency graph**, not by a
+literal `node_modules/.pnpm/<name>@<hash>/` path — that shortcut is what left a dead link in a
+plan file and turned CI red for four pushes, earlier today.
+
+**The sweep found exactly one instance** across three emitted worklets, so the fix is contained.
+
+`--prove` asserts the refusal **and two controls that must stay green**: the same captured name
+read from the *body*, and a *literal* default. Without those, a check that rejected every
+default parameter would pass the negative case and be worse than the hole it fills.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint (which now runs both worklet checks) · 3 format | **PASS** |
+| 4 test (33 in the lens suite) · 6 build | **PASS** |
+| `verify-worklet-defaults --prove` — 5 cases · `verify-worklet-reach` | **PASS** |
+
+**Not run:** `color-golden`, `cvd`, `a11y`, `contrast`, `perf` — no colour maths and no screen
+changed. `e2e`: gate 7 pending.
+
+### Still owed, and it is the point
+
+**The fix is verified against the plugin's output, not against a device.** F-040's attestation
+is what closes that — and this defect is the argument for why it matters. A device found in one
+frame what three sessions of green gates could not.
+[[a-worklet-unpacks-its-closure-in-the-body-so-a-parameter-default-cannot-read-it]]
+
+---
+

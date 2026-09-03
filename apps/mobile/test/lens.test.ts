@@ -253,6 +253,29 @@ describe('the sample that crosses the bridge is bounded', () => {
     // pixels are discarded on the other side.
     expect(MAX_SAMPLES_PER_FRAME).toBeGreaterThan(1000);
   });
+
+  it('honours an explicit cap, and falls back to the constant without one (F-138)', () => {
+    /*
+     * `max` stopped being a parameter DEFAULT and became an optional read in the body, because
+     * a worklet unpacks its closure as the first statement of its body and a default is
+     * evaluated before that — which threw `Property 'MAX_SAMPLES_PER_FRAME' doesn't exist` on
+     * every frame, on a device, while every test here passed.
+     *
+     * These assertions cannot see that: jest has one runtime and no worklet boundary, so both
+     * arities work either way. They are here to pin the BEHAVIOUR the rewrite had to preserve
+     * — `verify-worklet-defaults.mjs` is what checks the thing that actually broke.
+     */
+    expect(sampleStride(1000, 100)).toBe(10);
+    expect(sampleStride(50, 100)).toBe(1);
+
+    // No second argument: the cap is the constant, read from the body.
+    expect(sampleStride(MAX_SAMPLES_PER_FRAME)).toBe(1);
+    expect(sampleStride(MAX_SAMPLES_PER_FRAME * 4)).toBe(4);
+
+    // `undefined` passed explicitly must take the same branch as an omitted argument — `??`
+    // and a default agree here, and a future rewrite to `||` would not.
+    expect(sampleStride(MAX_SAMPLES_PER_FRAME * 4, undefined)).toBe(4);
+  });
 });
 
 describe('the hand-off to profile setup (F-097)', () => {

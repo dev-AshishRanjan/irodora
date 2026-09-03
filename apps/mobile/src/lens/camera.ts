@@ -125,9 +125,31 @@ export function readCaptureSpace(reported: string | null | undefined): CaptureSp
  * `a-global-that-exists-in-your-test-runtime-is-invisible-to-every-check`. The rule to carry:
  * anything a worklet reaches must say so in its own source, and the caller being marked is not
  * enough.
+ *
+ * ## The cap is read in the BODY, and it threw on every frame when it was not (F-138)
+ *
+ * This was `max = MAX_SAMPLES_PER_FRAME` — a parameter default — and the Lens showed
+ * *"the frame processor threw: Property 'MAX_SAMPLES_PER_FRAME' doesn't exist"* over a live
+ * preview. The plugin captures the constant correctly; it is in `__closure`. What it also does
+ * is unpack the closure as the **first statement of the body**:
+ *
+ * ```js
+ * (function sampleStride(regionPixels, max = MAX_SAMPLES_PER_FRAME) {
+ *   const { MAX_SAMPLES_PER_FRAME } = this.__closure;   // too late
+ * ```
+ *
+ * A parameter default is evaluated **before** the body, in the parameter scope, which cannot
+ * see a body-level `const`. The lookup falls through to the worklet runtime's global object,
+ * where nothing of that name exists.
+ *
+ * So the rule, one layer in from F-116's: **a worklet may reference a captured variable only
+ * from its body.** `verify-worklet-defaults.mjs` enforces it by reading the plugin's own
+ * emitted code, and every test here passed throughout because they call this on the JS thread,
+ * where the real module binding exists.
  */
-export function sampleStride(regionPixels: number, max = MAX_SAMPLES_PER_FRAME): number {
+export function sampleStride(regionPixels: number, max?: number): number {
   'worklet';
-  if (regionPixels <= max) return 1;
-  return Math.max(1, Math.ceil(regionPixels / max));
+  const cap = max ?? MAX_SAMPLES_PER_FRAME;
+  if (regionPixels <= cap) return 1;
+  return Math.max(1, Math.ceil(regionPixels / cap));
 }

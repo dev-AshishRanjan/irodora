@@ -3880,6 +3880,33 @@
       ],
       "notes": "FOUND WHILE SURVEYING WHAT REMAINED AFTER F-053, and the finding was in F-126: its `blockedBy` said [\"F-054\"] while F-054 was DONE, and the first line of its own note said the blocker was F-040’s attestation \"AND NOT F-054\". The field and the prose disagreed for as long as both existed and NOTHING NOTICED — gate 0’s blockers check only fires in one direction, when a feature is in_progress/done/in_review and a blocker is not done. A feature sitting `blocked` while every blocker is done is invisible to it. CORRECTING F-126 MADE THE HOLE WORSE, WHICH IS WHY THIS IS A FEATURE. Emptying its `blockedBy` traded a WRONG machine-readable reason for NO machine-readable reason: the status now rests entirely on prose. The sweep found exactly two `blocked` features whose blockers are all done — F-081, legitimately, because it carries `openQuestions: [\"OQ-6\"]`, and F-126, which carries nothing. THE REAL GAP IS THAT `blocked` HAS THREE CAUSES AND THE SCHEMA EXPRESSES TWO: an unfinished dependency (`blockedBy`), an unanswered question (`openQuestions`), and — unrepresentable today — an OUTSTANDING ATTESTED CRITERION on another feature. That third one is not rare: F-126 waits on F-040, which is `done` and owes four outstanding attestations, and 51 attested criteria are outstanding across the release. A cause a schema cannot express is a cause that ends up in prose, and prose in a state file rots [[prose-in-a-state-file-rots-and-no-schema-can-see-it]]. DONE 2026-09-03. `blockedByAttestation` is a schema field; gate 0 refuses a `blocked` feature with no machine-readable reason, refuses a reference to a feature that owes no outstanding attestation (which makes it self-cleaning), and refuses one to a feature that does not exist. F-126 now declares blockedByAttestation: [\"F-040\"]. THE PROOF CAUGHT ME TESTING A COPY OF THE RULE RATHER THAN THE GATE: verify-state.mjs exports nothing, so the proof re-implements the predicate, and mutating the three new checks out of the gate found TWO OF THREE SURVIVED — the copy caught them while the gate’s own version was unguarded, which is this feature’s defect one level up. Fixed with a read-only `--features <path>` override so the real script can be spawned against a mutated list in the temp directory; planting at the real path and restoring is what F-134 is the account of. Every mutation now caught, and three shapes are asserted to still be ACCEPTED so the check cannot quietly become one that refuses everything.",
       "plan": "plans/F-137-a-blocked-feature-has-to-say-what-is-blocking-it.md"
+    },
+    {
+      "id": "F-138",
+      "title": "A worklet cannot read a captured variable from a parameter default",
+      "requirements": [
+        "FR-15"
+      ],
+      "service": "mobile",
+      "release": "R5",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "sampleStride reads MAX_SAMPLES_PER_FRAME from its body rather than from a parameter default, and the Lens returns a reading instead of throwing",
+        "A static check refuses any worklet whose parameter default reads a name unpacked from __closure",
+        "The check is proven against the real defect, and against a control that must stay green"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FOUND ON A DEVICE, which is the only place it could be found. The Lens showed \"the frame processor threw: Property ‘MAX_SAMPLES_PER_FRAME’ doesn’t exist\" over a live preview. ROOT CAUSE, from the plugin’s own output rather than from reasoning: the worklets babel plugin captures the constant correctly — it IS in `__closure` — but it unpacks the closure as the FIRST STATEMENT OF THE BODY: `const {MAX_SAMPLES_PER_FRAME} = this.__closure;`. A parameter default is evaluated BEFORE the body runs, in the parameter scope, which cannot see a body-level `const`. The lookup falls through to the worklet runtime’s global object, where nothing of that name exists. IT ONLY THROWS WHEN THE DEFAULT IS ACTUALLY USED. `sampleFrame` calls `sampleStride(size * size)` with one argument, so the default is evaluated on every frame. Every test calls it on the JS thread, where the real module binding exists, so all of them passed — the same shape as F-116, one layer in: that feature made the DIRECTIVE checkable and this is about what a correctly-marked worklet may then reference. THE SWEEP FOUND EXACTLY ONE INSTANCE across three emitted worklets, so the fix is contained and the check is cheap. It is `must` because the Lens is unusable without it: FR-15 asks for a reading and the frame processor throws on every frame instead. DONE 2026-09-03. `sampleStride` reads the cap in its body (`max ?? MAX_SAMPLES_PER_FRAME`) and the emitted worklet was re-read from the plugin to confirm the parameter list no longer carries a captured name. `scripts/verify-worklet-defaults.mjs` enforces the rule across every worklet in the app by transforming with the real plugin and reading its output, with `--prove` asserting the refusal AND two controls that must stay green — a captured name read in the body, and a literal default — so the check cannot quietly become one that rejects every default parameter. WHAT IS STILL OWED: the fix is verified against the plugin’s output and not against a device. F-040’s attestation is what closes that, and this defect is the argument for why it matters — three sessions of gates could not see it.",
+      "plan": "plans/F-138-a-worklet-cannot-read-a-captured-variable-from-a-parameter-default.md",
+      "effects": [
+        "E-050"
+      ]
     }
   ]
 }
