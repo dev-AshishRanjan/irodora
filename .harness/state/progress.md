@@ -14165,3 +14165,87 @@ that a debt exists. Named in the plan rather than pretended away.
 
 ---
 
+## 2026-09-03 — FIX · CI had been red for four pushes, and every local run was green
+
+Reported failing: [run 40](https://github.com/dev-AshishRanjan/irodora/actions/runs/33748287945),
+on `88c79bd` (F-137). It failed in **14 seconds**, at **Gate 0 — state**, with every one of the
+other 33 steps skipped.
+
+### Root cause
+
+`.harness/plans/F-118-frame-processors-need-a-package.md:21` linked to a source file inside
+`node_modules/.pnpm/react-native-vision-camera@_ab4365e…/`. Gate 0's governed-document link
+check resolves every relative link with `existsSync`.
+
+**Gate 0 runs before the `Install` step** — deliberately, so a broken state file fails in
+seconds rather than after a five-minute install. So the same commit produced two verdicts:
+
+| | `node_modules` | verdict |
+|---|---|---|
+| a workstation that has installed | present | **pass** |
+| a CI runner at gate 0 | absent | **fail** |
+
+**Not a regression from F-137.** The link arrived in `a5e623f` — `fix(F-118)` — and CI has been
+red ever since: **runs 37, 38, 39 and 40** (F-119, F-120, F-121, F-137). Four sessions ran gate 0
+locally, saw green, and had no reason to look further. F-137 is simply the latest commit to be
+pushed against it. The path also carries a pnpm content hash that moves whenever the lockfile
+does, so it was unstable even on the machine where it resolved — F-053's `pnpm install` for the
+new calibration package could have broken it locally too.
+
+### The fix, in two parts
+
+**The instance** — the plan names the file in backticks instead of linking to it. A plan has no
+business linking into `node_modules`: uncommitted, machine-specific, hash-unstable, and absent
+when gate 0 runs.
+
+**The class** — gate 0 now **refuses** a governed link into any directory git does not track
+(`node_modules`, `dist`, `.turbo`, `.expo`, `coverage`, `build`), with a message that says why.
+Refused rather than ignored: ignoring would restore determinism and leave the link rotting.
+
+The refusal is checked **before** `existsSync`, so it fires whether or not the target is there.
+Verified by creating the file and re-running — gate 0 still exits 1. That is the actual defect
+fixed: **the verdict no longer depends on what anybody has installed.**
+
+A `UNTRACKED_LINK_CASES` self-test sits beside the existing `STRIP_CASES` block, nine cases in
+both directions — including `rebuilding-the-corpus.md`, which must **not** match, because a
+pattern that matched the substring `build` would delete the real link check while looking like
+a fix [[a-decoy-that-is-not-broken-proves-nothing]].
+
+### Fixing the first error is not finishing
+
+Everything after gate 0 had been skipped for four runs, so the rest of the workflow was
+unverified. Both halves were run before calling this fixed:
+
+- **Every pre-install step, with no `node_modules`** — a copy built from `git ls-files` alone.
+  All seven exit 0: `verify-state`, `verify-gate-mirror`, `stale-rationale`, `effect-id`,
+  `state-id`, `lockfile`, `token-reach --prove`.
+- **Every post-install step**, 25 of them, all exit 0 — typecheck, lint, claims proof, format,
+  test, golden, build, permissions and its proof, worklets and its proof, a11y, spacing,
+  min-sdk, contrast and its proof, cvd, content and its proof, bench and its proof, security,
+  no-inference proof, audit proof.
+
+**What is still not proven:** that it passes on `ubuntu-latest`. Everything above ran on win32,
+and case-sensitivity is the difference a Windows run cannot see. The pre-install half is now
+exercised under CI's real condition, which is where the divergence was.
+
+### The lesson
+
+**A check that consults the filesystem must not consult anything git does not track**, or its
+result is a fact about the machine rather than about the commit — and the two only diverge where
+nobody is watching.
+[[a-gate-that-reads-the-filesystem-answers-differently-before-install]]
+
+The reproduction is one command and would have caught this in seconds, any time in four
+sessions:
+
+```bash
+git ls-files -z | xargs -0 -I{} sh -c 'mkdir -p "$0/$(dirname "{}")" && cp "{}" "$0/{}"' /tmp/bare
+cd /tmp/bare && node scripts/verify-state.mjs
+```
+
+**And a correction to this session's own record.** The handoff above reported gates green and
+said nothing about CI, because nothing had been pushed from here. Local green was never evidence
+of CI green, and gate 0 is precisely where the two part company.
+
+---
+

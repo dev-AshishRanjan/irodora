@@ -1852,12 +1852,76 @@ for (const c of STRIP_CASES) {
   }
 }
 
+/**
+ * Directories git does not track, so a link into one is answered by whether somebody has run
+ * a build — not by what the commit contains.
+ *
+ * THIS IS WHY CI WAS RED FOR FOUR PUSHES AND EVERY LOCAL RUN WAS GREEN. F-118's plan linked to
+ * a file under `node_modules/.pnpm/…`; `existsSync` said yes on a workstation that had
+ * installed and no on a runner, and **gate 0 runs before the Install step** — deliberately, so
+ * that a broken state file fails in seconds rather than after a five-minute install. So the
+ * same commit produced two different verdicts, and the one nobody saw was the true one.
+ *
+ * Refused rather than ignored, and with its own message. Ignoring would restore determinism and
+ * leave the link rotting; the path also carries a pnpm content hash
+ * (`react-native-vision-camera@_ab4365e…`) that changes whenever the lockfile does, so it is
+ * unstable even on the machine where it resolves.
+ */
+const UNTRACKED_DIRECTORIES = /(^|\/)(node_modules|dist|\.turbo|\.expo|coverage|build)\//;
+
+/*
+ * The rule is self-tested here, beside `STRIP_CASES`, for the reason this whole block exists:
+ * the defect it fixes was invisible for four pushes because nothing checked it, and a rule
+ * whose only evidence is that the repository currently happens to pass is not checked.
+ *
+ * Both directions. A pattern that matched everything would also make the real link check
+ * disappear, which is a worse failure than the one being fixed
+ * [[a-decoy-that-is-not-broken-proves-nothing]].
+ */
+const UNTRACKED_LINK_CASES = [
+  { href: '../../node_modules/.pnpm/x/y.ts', match: true, why: 'the F-118 instance' },
+  { href: 'node_modules/foo/index.js', match: true, why: 'at the start of a path' },
+  { href: '../packages/ui/dist/index.d.ts', match: true, why: 'a build output' },
+  { href: '../../apps/mobile/.expo/x.json', match: true, why: 'a tool cache' },
+  { href: 'android/app/build/outputs/x.apk', match: true, why: 'a Gradle output' },
+  { href: '../state/feature_list.json', match: false, why: 'an ordinary committed file' },
+  { href: './0085-the-card.md', match: false, why: 'a sibling document' },
+  { href: '../../packages/color-core/src/provenance.ts', match: false, why: 'committed source' },
+  {
+    href: '../../docs/architecture/rebuilding-the-corpus.md',
+    match: false,
+    why: 'a path CONTAINING "build" as part of a word, which must not match',
+  },
+];
+
+for (const c of UNTRACKED_LINK_CASES)
+  if (UNTRACKED_DIRECTORIES.test(c.href) !== c.match)
+    fail(
+      'links',
+      `untracked-link rule ${c.match ? 'missed' : 'wrongly matched'} "${c.href}" (${c.why})`,
+      'The rule that keeps gate 0 deterministic between a workstation and a runner is itself unchecked if this does not hold.',
+      'Correct UNTRACKED_DIRECTORIES, or the case if the case is wrong.',
+    );
+
 let brokenLinks = 0;
 for (const file of GOVERNED) {
   const text = stripCode(readFileSync(file, 'utf8'));
   for (const m of text.matchAll(/\]\(([^)\s#][^)\s]*)\)/g)) {
     const href = m[1];
     if (/^(https?:|mailto:|#)/.test(href)) continue;
+
+    if (UNTRACKED_DIRECTORIES.test(href)) {
+      brokenLinks++;
+      if (brokenLinks <= 15)
+        fail(
+          'links',
+          `${posix(relative(ROOT, file))} → ${href} points into a directory git does not track`,
+          'Whether it resolves depends on whether somebody has run an install or a build, so the same commit gets two different verdicts — and gate 0 runs BEFORE the install step, so the failing one is the one CI sees.',
+          'Name the file in backticks instead of linking to it, or link to something committed.',
+        );
+      continue;
+    }
+
     const target = resolve(dirname(file), href.split('#')[0]);
     if (!existsSync(target)) {
       brokenLinks++;

@@ -17,8 +17,8 @@ F-117 replaced a process death with a screen that prints what failed. The screen
 
 > **Cannot use Frame Processors - `react-native-vision-camera-worklets` is not installed!**
 
-That is thrown by
-[`VisionCameraWorkletsProxy.ts`](../../node_modules/.pnpm/react-native-vision-camera@_ab4365e84294c741aa74f897670555c3/node_modules/react-native-vision-camera/src/third-party/VisionCameraWorkletsProxy.ts):
+That is thrown by `VisionCameraWorkletsProxy.ts`, in
+`react-native-vision-camera/src/third-party/` inside the installed dependency:
 
 ```ts
 const module = require('react-native-vision-camera-worklets')
