@@ -219,10 +219,29 @@ const checkSchema = (name, schemaPath, dataPath) => {
 
 /* ============================================================ 1. state schemas */
 
+/*
+ * `--features <path>` reads the feature list from somewhere else. It exists for ONE caller:
+ * `verify-blocked-reason-proof.mjs`, which has to watch THIS script refuse a broken list.
+ *
+ * Without it that proof can only re-implement the rule and check its own copy, and a copy is
+ * not the gate — removing the check here would leave every case in the proof still green,
+ * which is precisely the defect F-137 exists to close, one level up
+ * [[a-fix-made-in-review-is-the-one-most-likely-to-ship-untested]].
+ *
+ * The alternative was planting a broken list at the real path and restoring it, and F-134 is
+ * the account of what that costs: a `finally` does not run when the process is killed, and the
+ * leftover plant was a disabled gate. A read-only override cannot leave anything behind.
+ */
+const featuresFlag = process.argv.indexOf('--features');
+const featuresPath =
+  featuresFlag === -1
+    ? join(HARNESS, 'state/feature_list.json')
+    : (process.argv[featuresFlag + 1] ?? join(HARNESS, 'state/feature_list.json'));
+
 const featureList = checkSchema(
   'feature_list',
   join(HARNESS, 'state/schemas/feature_list.schema.json'),
-  join(HARNESS, 'state/feature_list.json'),
+  featuresPath,
 );
 
 const effects = checkSchema(
@@ -262,6 +281,50 @@ if (featureList) {
           `${f.id} is ${f.status} but its blocker ${blocker} is ${b.status}`,
           'Working on a feature whose dependency is unfinished produces work that cannot be verified.',
           `Finish ${blocker} first, or correct the blockedBy list.`,
+        );
+    }
+
+    /*
+     * F-137. THE CHECK ABOVE FIRES IN ONE DIRECTION ONLY, and the other one is where the rot
+     * lives: a feature sitting at `blocked` while every blocker is `done` was invisible.
+     *
+     * F-126 sat there. Its `blockedBy` said `["F-054"]`, F-054 was done, and the first line of
+     * its own note said the blocker was F-040's attestation "AND NOT F-054". The field and the
+     * prose disagreed for as long as both existed and nothing looked.
+     *
+     * `blocked` has three causes. Two had fields; the third — an outstanding attested criterion
+     * on another feature — had none, so it lived in prose, and prose in a state file rots
+     * [[prose-in-a-state-file-rots-and-no-schema-can-see-it]].
+     */
+    for (const owed of f.blockedByAttestation ?? []) {
+      const owes = byId.get(owed);
+      if (!owes)
+        fail(
+          'blockers',
+          `${f.id} waits on an attestation from ${owed}, which does not exist`,
+          'A dangling reference means the dependency graph is wrong.',
+          `Remove it from ${f.id}.blockedByAttestation, or add the missing feature.`,
+        );
+      else if (!(owes.attested ?? []).some((a) => a.status === 'outstanding'))
+        fail(
+          'blockers',
+          `${f.id} waits on an attestation from ${owed}, which owes none`,
+          'This is the half that makes the field self-cleaning. A debt that has been paid must stop blocking the feature that was waiting for it — otherwise the reference outlives the state of the world that caused it.',
+          `Unblock ${f.id}, or point it at the feature that actually owes the attestation.`,
+        );
+    }
+
+    if (f.status === 'blocked') {
+      const unmet = (f.blockedBy ?? []).filter((id) => byId.get(id)?.status !== 'done');
+      const reasons =
+        unmet.length + (f.openQuestions ?? []).length + (f.blockedByAttestation ?? []).length;
+
+      if (reasons === 0)
+        fail(
+          'blockers',
+          `${f.id} is blocked and no field says why`,
+          'A reason that lives only in prose cannot be checked, and stops being true without anything noticing. `blocked` is the status a session reads to decide what to work on next.',
+          `Give ${f.id} an unfinished "blockedBy", an "openQuestions" entry, or a "blockedByAttestation" naming the feature that owes one.`,
         );
     }
 

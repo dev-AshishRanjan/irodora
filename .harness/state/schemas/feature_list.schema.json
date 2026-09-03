@@ -5,63 +5,165 @@
   "description": "The scope subsystem. The scheduler picks from it, the verifier judges against it, and the handoff reports from it. wip_limit is 1 and is enforced by the state gate.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "project", "updated", "policy", "statuses", "releases", "features"],
+  "required": [
+    "version",
+    "project",
+    "updated",
+    "policy",
+    "statuses",
+    "releases",
+    "features"
+  ],
   "properties": {
-    "$schemaRef": { "type": "string" },
-    "version": { "type": "integer", "minimum": 1 },
-    "project": { "type": "string" },
-    "updated": { "type": "string", "format": "date" },
+    "$schemaRef": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "project": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
     "policy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["wip_limit", "ordering"],
+      "required": [
+        "wip_limit",
+        "ordering"
+      ],
       "properties": {
-        "wip_limit": { "type": "integer", "minimum": 1, "maximum": 1 },
-        "ordering": { "type": "string" }
+        "wip_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "ordering": {
+          "type": "string"
+        }
       }
     },
-    "statuses": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-    "releases": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-    "features": { "type": "array", "items": { "$ref": "#/$defs/feature" } }
+    "statuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "releases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/feature"
+      }
+    }
   },
   "$defs": {
     "feature": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "title", "requirements", "service", "release", "priority", "status"],
+      "required": [
+        "id",
+        "title",
+        "requirements",
+        "service",
+        "release",
+        "priority",
+        "status"
+      ],
       "properties": {
-        "id": { "type": "string", "pattern": "^F-[0-9]{3}$" },
-        "title": { "type": "string", "minLength": 3 },
+        "id": {
+          "type": "string",
+          "pattern": "^F-[0-9]{3}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 3
+        },
         "requirements": {
           "type": "array",
           "minItems": 1,
-          "items": { "type": "string", "pattern": "^(FR|NFR)-[0-9]+$" },
+          "items": {
+            "type": "string",
+            "pattern": "^(FR|NFR)-[0-9]+$"
+          },
           "description": "Every id must exist in docs/PRD.md. Checked by the state gate in both directions."
         },
         "service": {
           "type": "string",
-          "enum": ["root", "mobile", "packages", "content", "tests"]
+          "enum": [
+            "root",
+            "mobile",
+            "packages",
+            "content",
+            "tests"
+          ]
         },
-        "package": { "type": "string" },
-        "release": { "type": "string", "pattern": "^R[0-9]+$" },
-        "priority": { "type": "string", "enum": ["must", "should", "could", "wont"] },
+        "package": {
+          "type": "string"
+        },
+        "release": {
+          "type": "string",
+          "pattern": "^R[0-9]+$"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "must",
+            "should",
+            "could",
+            "wont"
+          ]
+        },
         "status": {
           "type": "string",
-          "enum": ["backlog", "todo", "in_progress", "blocked", "in_review", "done"]
+          "enum": [
+            "backlog",
+            "todo",
+            "in_progress",
+            "blocked",
+            "in_review",
+            "done"
+          ]
         },
         "blockedBy": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^F-[0-9]{3}$" },
+          "items": {
+            "type": "string",
+            "pattern": "^F-[0-9]{3}$"
+          },
           "description": "Every one must be `done` before this may become in_progress or done."
+        },
+        "blockedByAttestation": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^F-[0-9]{3}$"
+          },
+          "description": "Feature ids that owe an OUTSTANDING attested criterion this one waits on. The third cause of `blocked`, which had no field until F-137 and so lived in prose: a feature can be `done` and still owe an attestation, so `blockedBy` cannot express it. The state gate checks that each named feature really does own an outstanding attestation, which makes the reference self-cleaning — when the debt is paid the reference goes stale and the gate says so."
         },
         "acceptance": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "The contract. No more, no less — extra scope is as much a failure as missing scope."
         },
         "verification": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Gate ids from .harness/verification/gates.json."
         },
         "attested": {
@@ -70,7 +172,12 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["criterion", "verifiedBy", "blocks", "status"],
+            "required": [
+              "criterion",
+              "verifiedBy",
+              "blocks",
+              "status"
+            ],
             "properties": {
               "criterion": {
                 "type": "string",
@@ -81,8 +188,18 @@
                 "minLength": 12,
                 "description": "The activity that proves it — named specifically. 'Manual testing' is not an answer."
               },
-              "blocks": { "enum": ["release", "nothing"] },
-              "status": { "enum": ["outstanding", "verified"] },
+              "blocks": {
+                "enum": [
+                  "release",
+                  "nothing"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "outstanding",
+                  "verified"
+                ]
+              },
               "evidence": {
                 "type": "string",
                 "description": "Where the verification is recorded. Required once status is `verified`."
@@ -90,14 +207,28 @@
             }
           }
         },
-        "effects": { "type": "array", "items": { "type": "string", "pattern": "^E-[0-9]{3}$" } },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^E-[0-9]{3}$"
+          }
+        },
         "openQuestions": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^OQ-[0-9]+$" },
+          "items": {
+            "type": "string",
+            "pattern": "^OQ-[0-9]+$"
+          },
           "description": "An unresolved open question BLOCKS this feature. It closes as an ADR, not as a conversation."
         },
-        "plan": { "type": "string", "description": "Path to the plan file, relative to .harness/." },
-        "notes": { "type": "string" }
+        "plan": {
+          "type": "string",
+          "description": "Path to the plan file, relative to .harness/."
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     }
   }

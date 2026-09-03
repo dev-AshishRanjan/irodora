@@ -14083,3 +14083,85 @@ eligible and none is buildable here:
 
 ---
 
+## 2026-09-03 — F-137 DONE · a blocked feature has to say what is blocking it, in a field
+
+Found while surveying what remained after F-053, in the survey itself: **F-126's `blockedBy`
+said `["F-054"]` and F-054 was `done`**, while the first line of its own note said the blocker
+was F-040's attestation *"AND NOT F-054"*. The field and the prose disagreed for as long as both
+existed and nothing noticed, because **gate 0's blockers check fires in one direction only** —
+when a feature is `in_progress`/`done`/`in_review` and a blocker is not done. A feature sitting
+at `blocked` while every blocker is finished was invisible to it.
+
+### Correcting the instance made the hole worse, which is why this is a feature
+
+Emptying F-126's `blockedBy` traded a **wrong** machine-readable reason for **no** machine-
+readable reason. The status then rested entirely on prose, and prose in a state file rots
+[[prose-in-a-state-file-rots-and-no-schema-can-see-it]].
+
+The sweep found exactly two `blocked` features whose blockers are all done: **F-081**,
+legitimately, because it carries `openQuestions: ["OQ-6"]` — and **F-126**, carrying nothing.
+
+### `blocked` has three causes and the schema expressed two
+
+| cause | field | example |
+|---|---|---|
+| a dependency is unfinished | `blockedBy` | the ordinary case |
+| a question is unanswered | `openQuestions` | F-081 on OQ-6 |
+| **an attested criterion elsewhere is outstanding** | **nothing** | F-126 on F-040 |
+
+The third is not exotic. F-126 waits on F-040, which is `done` and owes **four** outstanding
+attestations, and there are 51 outstanding attested criteria across the release. **A cause a
+schema cannot express is a cause that ends up in prose.**
+
+So `blockedByAttestation` is a real field now, and the gate checks two things about it: that the
+named feature exists, and that it **actually owes an outstanding attestation**. The second half
+is what makes the reference **self-cleaning** — when F-040's debt is finally paid, F-126's
+reference goes stale and the gate says so, instead of the feature sitting blocked against
+something somebody already discharged. That is
+[[a-blocker-outlives-the-state-of-the-world-that-caused-it]] with a check under it.
+
+### The proof caught me testing a copy of the rule instead of the gate
+
+`verify-state.mjs` exports nothing, so the proof re-implements the predicate — and a copy is
+not the gate. Mutating the three new checks out of `verify-state.mjs` found:
+
+```
+caught    the blocked-with-no-reason check is deleted from the GATE
+SURVIVED  the stale-attestation check is deleted from the GATE
+SURVIVED  the dangling-attestation-reference check is deleted from the GATE
+```
+
+Two of three. The copy caught them and the gate's own version was unguarded — **the same defect
+this feature exists to close, one level up**, and the lesson written yesterday arriving the very
+next time it applied [[a-fix-made-in-review-is-the-one-most-likely-to-ship-untested]].
+
+Fixed by spawning the real script for all three, via a new read-only **`--features <path>`**
+override pointed at a mutated list in the system temp directory. Read-only on purpose: planting
+a broken list at the real path and restoring it is what F-134 is the account of — a `finally`
+does not run when the process is killed, and the leftover plant was a disabled gate. Re-run:
+**every mutation caught.**
+
+**And the decoys run in both directions.** A check that refused everything would pass every
+negative case here and be worse than the hole it filled, so three shapes are asserted to still
+be *accepted*: the untouched list, a genuinely unfinished blocker, and a non-`blocked` feature
+with no reason at all.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state (18 checks, 53 warnings) · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · gate-mirror (14 active) · gitleaks | **PASS** |
+| the new proof, ten cases, inside `lint` | **PASS** |
+
+**Not run:** `color-golden`, `cvd`, `a11y`, `contrast`, `e2e`, `perf` — no colour maths, no
+screen, no journey.
+
+### What this does not do
+
+**It does not unblock anything.** F-126 stays `blocked`; its reason is now checkable rather than
+absent. And the check cannot tell whether the attestation named is *the one that matters* — only
+that a debt exists. Named in the plan rather than pretended away.
+
+---
+
