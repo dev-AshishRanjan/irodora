@@ -550,6 +550,9 @@ importers:
       '@irodora/color-core':
         specifier: workspace:*
         version: link:../color-core
+      '@irodora/color-difference':
+        specifier: workspace:*
+        version: link:../color-difference
       '@irodora/design-tokens':
         specifier: workspace:*
         version: link:../design-tokens

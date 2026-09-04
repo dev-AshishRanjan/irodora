@@ -176,6 +176,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md](effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md) — **E-076** · two fixed widths overflowed most phones, and nothing in the repository lays anything out, so only a person holding one could see it.
 - [effects/a-rule-can-be-right-about-the-thing-and-wrong-about-the-value.md](effects/a-rule-can-be-right-about-the-thing-and-wrong-about-the-value.md) — **E-077** · a parse-time rule cited a reason that turned out to permit what it forbade, and the document argued the other way with its own worked example.
 - [effects/the-last-literal-is-what-keeps-a-scan-honest.md](effects/the-last-literal-is-what-keeps-a-scan-honest.md) — **E-078** · extracting a constant took a source scan to zero matches, and only its refusal to accept an empty result caught it.
+- [effects/a-component-can-satisfy-the-letter-of-its-own-proof.md](effects/a-component-can-satisfy-the-letter-of-its-own-proof.md) — **E-079** · the gamut proof measured the better of two tones and the component drew them in a fixed order, so every assertion passed while pale samples were ringed in white.
+- [effects/active-means-two-different-things.md](effects/active-means-two-different-things.md) — **E-080** · a rule about the selected state flagged three components where active means pressed, and a selected state was built for something that can never be seen.
 
 ## Glossary
 

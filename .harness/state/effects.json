@@ -2873,6 +2873,63 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-079",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Swatch.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/test/swatch-edge.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "gate:test — `swatch-keyline.test.tsx` asserts the dark tone goes against a pale sample and the light tone against a dark one, in both themes and against the tokens as they actually ship. One case asserts BOTH tones are still drawn, because choosing which is adjacent must not become choosing to draw one. gate:contrast — `swatch-edge.test.ts` is untouched and still passes: it already measured the better of the two, which is now the one that is used.",
+      "memory": "memory/effects/a-component-can-satisfy-the-letter-of-its-own-proof.md",
+      "rationale": "THE PROOF ASSUMED SOMETHING THE COMPONENT DID NOT DO. `swatch-edge.test.ts` scans the sRGB gamut with `worstCase([tone, inverse])` — it takes the BETTER of the two tones against each sample and asserts the worst such best clears the non-text floor. That is the guarantee: for any sample, at least one of these two contrasts. THE COMPONENT DREW THEM IN A FIXED ORDER: `swatch.hairline` always touched the sample, `swatch.hairline.inverse` always sat outside it. Every assertion passed, because one of the two WAS adjacent and against roughly half of all samples it was the good one. On the dark theme `hairline` is `#F6F5F3`, so every pale sample was ringed in white — reported as \"a white border/outline … around colors. This looks unprofessional\". THE FIX USES THE SAME EVIDENCE AND NEEDED NO NEW MEASUREMENT: put the better tone against the sample every time, which is what the proof had been assuming all along. The other tone stays a pixel further out doing the job it always did — guaranteeing an edge against the WELL, which is a known colour and therefore the easy half. THE GENERAL SHAPE: a proof can be about a PROPERTY the implementation never claimed to have. \"One of these two works\" was true of the component; \"the one that works is the one you see\" was true only of the test. The gap between them was invisible for five months because every assertion was green.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-080",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/testing/conformance.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y — the rule fires only where a subject declares `selectable: true`, and three cases prove it discriminates: a highlight-only component is reported, the same component passes once it announces, and a non-selectable one is left alone. That third case is the one the first draft failed.",
+      "memory": "memory/effects/active-means-two-different-things.md",
+      "rationale": "THE SUITE CHECKED `disabled` AND `loading` AND SAID NOTHING ABOUT `active`, so a component could render a selected state that a screen reader could not tell from the default. The tree-difference assertion did not help: it requires SOME difference between states, and a changed background satisfies it while telling a non-sighted user nothing. THE FIRST DRAFT OF THE RULE WAS WRONG AND THE SUITE CAUGHT IT IMMEDIATELY — requiring `accessibilityState.selected` for every active subject flagged `Button`, `SearchField` and `TextField`, because `active` means \"being pressed or typed into\" there rather than \"chosen\". Three false positives on components doing nothing wrong, which is exactly how a rule gets deleted rather than fixed. `active` IS OVERLOADED AND NO TREE CAN DISAMBIGUATE IT, so the registry declares which subjects it means selection for — one word, beside the component, the same shape as `sampleValues` and `forbiddenNames`, both of which are also facts a rendered tree cannot report. A SECOND CORRECTION IN THE SAME FEATURE: I first marked the wardrobe gallery cell as selected, and that state can NEVER BE SEEN — tapping a cell renders the editor, which replaces the grid. It would have been unreachable code with a passing test. What the cell was actually missing was press feedback, which is a different report entirely.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

@@ -27,6 +27,7 @@
 
 import { Pressable, View } from 'react-native';
 import type { Color } from '@irodora/color-core';
+import { wcagContrast } from '@irodora/color-difference';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Text } from './Text.js';
 import { useTheme } from './theme.js';
@@ -96,6 +97,50 @@ export function swatchCorner(size: number): { readonly sample: number; readonly 
   return { sample, keyline: sample + KEYLINE_INSET };
 }
 
+/**
+ * Which of the two keyline tones sits against the sample.
+ *
+ * ## The proof already assumed this; the component did not do it
+ *
+ * `swatch-edge.test.ts` scans the sRGB gamut with `worstCase([tone, inverse])` — it takes the
+ * BETTER OF THE TWO against each sample and asserts the worst such best clears the floor. So the
+ * guarantee has always been *"for any sample, at least one of these two contrasts"*.
+ *
+ * The component drew them in a FIXED order regardless: `swatch.hairline` always touched the
+ * sample and `swatch.hairline.inverse` always sat outside it. That satisfies the letter of the
+ * proof — one of the two is adjacent, and against a mid-tone it is the good one about half the
+ * time — while producing the thing that was reported: on the dark theme `hairline` is
+ * near-white, so **every pale sample was ringed in white**.
+ *
+ * Choosing puts the better tone against the sample every time. It is strictly stronger than what
+ * was proved, uses the same evidence, and removes the halo for exactly the samples that showed it.
+ *
+ * The other tone still exists, one pixel further out, doing the job it always did: guaranteeing
+ * an edge against the WELL, which is a known colour, so it is the easy half.
+ */
+export function keylineTones(
+  hex: string,
+  tone: string,
+  inverse: string,
+): { readonly inner: string; readonly outer: string } {
+  const sample = rgbOf(hex);
+  return wcagContrast(sample, rgbOf(tone)) >= wcagContrast(sample, rgbOf(inverse))
+    ? { inner: tone, outer: inverse }
+    : { inner: inverse, outer: tone };
+}
+
+/**
+ * A `#rrggbb` as the engine's 0–1 triple.
+ *
+ * Local because it is three lines and the alternative is a dependency on a parser for a format
+ * this component already receives as a string. It does NOT parse shorthand or alpha: every hex
+ * reaching a swatch comes from `derived.hex` or a garment row, both of which are six digits.
+ */
+function rgbOf(hex: string): readonly [number, number, number] {
+  const n = Number.parseInt(hex.replace('#', ''), 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
 /** The width of each of the two opaque hairlines. One device pixel, by design (F-068). */
 const KEYLINE_INSET = 1;
 
@@ -110,8 +155,9 @@ export function Swatch({
   loading = false,
   onPress,
 }: SwatchProps): React.JSX.Element {
-  const corner = swatchCorner(size);
   const { colors } = useTheme();
+  const corner = swatchCorner(size);
+  const keyline = keylineTones(hex, colors['swatch.hairline'], colors['swatch.hairline.inverse']);
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
 
@@ -174,7 +220,7 @@ export function Swatch({
            * here the number has to be visible to the scan that governs it.
            */
           padding: 1,
-          backgroundColor: colors['swatch.hairline.inverse'],
+          backgroundColor: keyline.outer,
           borderRadius: corner.keyline,
         }}
       >
@@ -187,7 +233,7 @@ export function Swatch({
             // would round while the sample beneath it did not.
             borderRadius: corner.sample,
             borderWidth: KEYLINE_INSET,
-            borderColor: colors['swatch.hairline'],
+            borderColor: keyline.inner,
           }}
         />
       </View>

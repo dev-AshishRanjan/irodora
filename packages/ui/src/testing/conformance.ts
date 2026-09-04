@@ -47,6 +47,19 @@ export const REQUIRED_STATES: Readonly<Record<ComponentKind, readonly string[]>>
   static: ['default'],
 };
 
+/**
+ * Whether a subject's `active` state means SELECTED.
+ *
+ * `active` is overloaded and that is the whole reason this is declared rather than inferred. For
+ * a `Chip` or a `Swatch` it means *this one is chosen*; for a `Button`, a `SearchField` or a
+ * `TextField` it means *this one is being pressed or typed into*. A rule that required
+ * `accessibilityState.selected` for every active subject flagged all three of the latter, which
+ * is a false positive on a component doing nothing wrong.
+ *
+ * So the registry says which is which. One word per subject, visible to a reviewer beside the
+ * component it describes — the same shape as `sampleValues` and `forbiddenNames`, which are also
+ * facts about a component that no tree can report.
+ */
 /** A component under test, and how to render it in a given state. */
 export interface ConformanceSubject {
   readonly name: string;
@@ -58,6 +71,8 @@ export interface ConformanceSubject {
    * satisfies every "has a label" check while telling a screen-reader user nothing.
    */
   readonly forbiddenNames?: readonly string[];
+  /** Whether `active` means SELECTED for this component. See the note above. */
+  readonly selectable?: boolean;
   /**
    * Why this subject paints no colour at all — a REASON, never a boolean.
    *
@@ -244,6 +259,30 @@ export function checkSubject(
           at('state-not-announced', `${p.path.join('>')} is disabled but does not say so`);
         if (state === 'loading' && p.accessibilityState?.['busy'] !== true)
           at('state-not-announced', `${p.path.join('>')} is loading but is not marked busy`);
+        /*
+         * ACTIVE MEANS SELECTED, AND IT HAS TO SAY SO.
+         *
+         * `disabled` and `loading` were checked and `active` was not, so a component could
+         * render an active state that looked identical to its default and nothing would notice
+         * — the tree-difference assertion below only requires SOME difference, which a changed
+         * background alone satisfies while telling a screen-reader user nothing.
+         *
+         * Reported as: *"Anytime we select something, it should be marked/highlighted … if it's
+         * selectable"*. That is two requirements, and this is the one a test can hold: a person
+         * who cannot see the highlight must still be told. `Chip` and `Swatch` both do it
+         * already — a tick in the accessible name AND `accessibilityState.selected` — and the
+         * rule is what stops the next selectable thing shipping with neither.
+         */
+        if (
+          subject.selectable === true &&
+          state === 'active' &&
+          p.accessibilityState?.['selected'] !== true
+        )
+          at(
+            'state-not-announced',
+            `${p.path.join('>')} is selected but does not say so — a highlight a screen reader ` +
+              'cannot read is not a second channel',
+          );
       }
     }
 

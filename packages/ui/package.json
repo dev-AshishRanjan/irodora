@@ -30,7 +30,8 @@
   },
   "dependencies": {
     "@irodora/color-core": "workspace:*",
-    "@irodora/design-tokens": "workspace:*"
+    "@irodora/design-tokens": "workspace:*",
+    "@irodora/color-difference": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=19.2.0",

@@ -4886,7 +4886,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-161"
       ],
@@ -4904,7 +4904,26 @@
         "contrast",
         "cvd"
       ],
-      "notes": "TWO REPORTS THAT TURN OUT TO BE ONE SUBJECT: things do not show they are selected, and there are white outlines that look unprofessional. Both are about what a surface says about its own state. THE OUTLINES ARE TWO DIFFERENT CAUSES and both are named: the tab bar sets `borderTopWidth: 1` in `border.strong`, and the halo \"around colors\" is the swatch keyline, whose OUTER ring is `#F6F5F3` in the light theme — a near-white ring around every sample. The ring is load-bearing but its ORDER is not, and dark-outside reads as a considered keyline rather than a cheap halo. SELECTION ALREADY HAS ONE GOOD EXAMPLE: `Swatch` renders a tick and `accessibilityState.selected`, and `Tabs` paints a ground plus an indicator rule. The wardrobe cells, the filter chips and the palette pickers have nothing."
+      "notes": "TWO REPORTS THAT TURN OUT TO BE ONE SUBJECT: things do not show they are selected, and there are white outlines that look unprofessional. Both are about what a surface says about its own state. THE OUTLINES ARE TWO DIFFERENT CAUSES and both are named: the tab bar sets `borderTopWidth: 1` in `border.strong`, and the halo \"around colors\" is the swatch keyline, whose OUTER ring is `#F6F5F3` in the light theme — a near-white ring around every sample. The ring is load-bearing but its ORDER is not, and dark-outside reads as a considered keyline rather than a cheap halo. SELECTION ALREADY HAS ONE GOOD EXAMPLE: `Swatch` renders a tick and `accessibilityState.selected`, and `Tabs` paints a ground plus an indicator rule. The wardrobe cells, the filter chips and the palette pickers have nothing. DONE 2026-09-05. THE NAVBAR RULE IS GONE — `surface.1` already separates the bar from `background`, which is what a tonal elevation system is for, and a line on top of a tint is the system not trusting itself. THE HALO WAS THE COMPONENT IGNORING ITS OWN PROOF (E-079): `swatch-edge.test.ts` measures the BETTER of the two keyline tones against every sample in the gamut, and `Swatch` drew them in a fixed order — so on the dark theme, where `swatch.hairline` is near-white, every pale sample was ringed in white. Choosing the better tone for the inner ring is strictly stronger than what was proved and needed no new measurement. Both tones are still drawn, and a test asserts that, because choosing which is adjacent must not become choosing to draw one. THE SELECTION RULE, AND TWO CORRECTIONS (E-080). The suite checked `disabled` and `loading` and said nothing about `active`. The first draft required `selected` for every active subject and flagged Button, SearchField and TextField, where `active` means pressed rather than chosen — so the registry declares it. And I first marked the wardrobe cell as selected before finding that state is UNREACHABLE: tapping a cell renders the editor, which replaces the grid. What the cell actually lacked was press feedback. THE PLAN WAS WRITTEN AFTER THE WORK STARTED and gate 0 caught it, which is the rule doing its job on me.",
+      "plan": "plans/F-163-selection-is-visible.md",
+      "effects": [
+        "E-079",
+        "E-080"
+      ],
+      "attested": [
+        {
+          "criterion": "Anything selectable shows whether it is selected, in more than one channel",
+          "verifiedBy": "ENFORCED FOR EVERYTHING THE REGISTRY DECLARES, WHICH IS NOT THE SAME AS EVERYTHING. `Chip` and `Swatch` carry three channels and the rule now holds them to it, with decoys proving it catches a highlight-only component and leaves a non-selectable one alone. WHAT IS NOT GUARANTEED is that `selectable: true` has been put on every component that deserves it — the flag is a declaration, and a component whose author forgets it is exempt by omission. That is the price of `active` being overloaded, and the honest alternative was three false positives that would have got the rule deleted. A survey found no current gap: the selectable surfaces in the product are chips and swatches.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "No surface carries a border it did not choose — the tab bar rule and the swatch halo both go",
+          "verifiedBy": "BOTH ARE GONE IN THE SOURCE AND NEITHER HAS BEEN SEEN. The navbar rule is deleted and the keyline now puts its better tone against the sample, asserted against the shipped tokens in both themes. WHAT NEEDS A DEVICE is whether the result reads as intended: the keyline choice means two swatches side by side can have differently-coloured edges — each correct for its own colour — and whether that reads as considered or as inconsistent is a judgement nobody has made. It is also the first change where a component picks a colour per instance rather than per theme.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-164",

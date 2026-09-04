@@ -28,7 +28,13 @@ export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
 export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState.js';
 export { SearchField, type SearchFieldProps } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
-export { Swatch, swatchAccessibleName, swatchCorner, type SwatchProps } from './Swatch.js';
+export {
+  Swatch,
+  swatchAccessibleName,
+  swatchCorner,
+  keylineTones,
+  type SwatchProps,
+} from './Swatch.js';
 export {
   Screen,
   Section,

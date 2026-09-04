@@ -302,6 +302,15 @@ const COLUMNS = 2;
 /** The swatch on a cell. Large enough to judge against the photograph it sits on. */
 const CELL_SWATCH = 32;
 
+/**
+ * How far a pressed cell fades.
+ *
+ * Enough to register, not enough to look broken. It is an opacity rather than a tint because
+ * tinting a cell would change the photograph and the colour sample inside it, which is the one
+ * thing this grid exists to show honestly.
+ */
+const PRESSED_OPACITY = 0.7;
+
 interface CellProps {
   readonly garment: StoredGarment;
   /** How wide a cell is, measured once by the screen. */
@@ -352,7 +361,17 @@ function GarmentCell({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={{ flex: 1 / COLUMNS }}
+      /*
+        PRESS FEEDBACK, NOT SELECTION — and the difference is why the first attempt here was
+        wrong. A cell is not selectable: tapping it opens the editor, which REPLACES the grid, so
+        a "selected cell" is a state nobody could ever see. What was missing is the other half of
+        the report — that a tap should visibly register.
+
+        Opacity, because `motion.animatable` is opacity and transform, and `verify-motion`
+        rejects anything else. HeroUI's own pressables do this for free; a hand-rolled
+        `Pressable` has a static style and gives no sign it was touched.
+      */
+      style={({ pressed }) => ({ flex: 1 / COLUMNS, opacity: pressed ? PRESSED_OPACITY : 1 })}
     >
       <Stack gap="sm">
         <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.md }}>

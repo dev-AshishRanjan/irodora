@@ -8,6 +8,97 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-163 DONE · the halo was the component ignoring its own proof
+
+### The plan came second, and gate 0 said so
+
+Golden rule 3 is that a plan exists before source is edited. It did not, gate 0 refused, and the
+plan was written from what the code turned out to be — which is worse than planning first and
+better than pretending the order was different. **Two of the four things below are corrections to
+my own first attempt**, and both were caught by checks rather than by review.
+
+### The white ring around every colour
+
+`swatch-edge.test.ts` scans the sRGB gamut with `worstCase([tone, inverse])` — it takes **the
+better of the two** keyline tones against each sample and asserts the worst such best clears the
+floor. The guarantee has always been *"for any sample, at least one of these two contrasts"*.
+
+**The component drew them in a fixed order.** `swatch.hairline` always touched the sample. On the
+dark theme that token is `#F6F5F3`, so **every pale sample was ringed in white** — while every
+assertion stayed green, because one of the two *was* adjacent and against about half of all
+samples it was the good one.
+
+Choosing the better tone for the inner ring is **strictly stronger than what was proved and needed
+no new measurement** (E-079). The other tone stays a pixel further out, guaranteeing an edge
+against the *well* — a known colour, and the easy half. A test asserts both are still drawn,
+because choosing which is adjacent must not quietly become choosing to draw one.
+
+> *"One of these two works"* was true of the component.
+> *"The one that works is the one you see"* was true only of the test.
+
+### The navbar rule
+
+`tabBarStyle` set `borderTopWidth: 1`. `surface.1` already separates the bar from `background` —
+that is what a tonal elevation system is for, and ADR-0044's *"elevation lifts by tint, never by
+shadow"* is the same argument one step along. A line on top of a tint is the system not trusting
+itself.
+
+### Selection: better than reported, and missing a rule
+
+`Chip` and `Swatch` already carry three channels — a tick in the accessible name,
+`accessibilityState.selected`, and a ground change — and `ProfileSetup` uses `Chip` for every band.
+The selectable things *were* marked.
+
+What was missing was a **rule**, so the next one cannot ship with only a highlight. The suite
+checked `disabled` and `loading` and said nothing about `active`; the tree-difference assertion
+does not cover it, because a changed background is a difference that tells a non-sighted user
+nothing.
+
+**The first draft flagged `Button`, `SearchField` and `TextField`** — where `active` means *being
+pressed*, not *chosen*. Three false positives on components doing nothing wrong, which is how a
+rule gets deleted rather than fixed. `active` is overloaded and no tree can disambiguate it, so the
+registry declares it: `selectable: true`, one word, the same shape as `sampleValues` (E-080).
+
+### And a selected state that could never be seen
+
+I marked the open garment's cell in the gallery. **Tapping a cell renders the editor, which
+replaces the grid** — so a marked cell is unreachable. It would have shipped as dead code with a
+passing test, which is the worst combination, because the test makes it look considered.
+
+What the cell actually lacked was the other half of the report: **a tap should visibly register**.
+It is a hand-rolled `Pressable` with a static style, so nothing happened until the editor appeared.
+Opacity on press, because `motion.animatable` is opacity and transform and `verify-motion` rejects
+anything else.
+
+*"Mark what is selected"* and *"show that a tap registered"* arrived in one sentence and are
+different requests.
+
+### Verification
+
+| ran | result |
+| --- | --- |
+| `pnpm verify:ci` — all 33 runnable CI steps | **PASS** |
+| 137 ui · 692 mobile | **PASS** |
+| the selection rule, caught and cleared, plus a non-selectable decoy | **PASS** |
+
+`swatch-edge.test.ts` is untouched and still passes — it already measured the tone that is now
+used.
+
+### Still owed
+
+**Nobody has seen either change.** The keyline one is the more interesting risk: which tone touches
+a sample now depends on the sample, so **two swatches side by side can have differently-coloured
+edges** — each correct for its own colour. Whether that reads as considered or as inconsistent is
+a judgement, and it is the first place a component picks a colour per instance rather than per
+theme.
+
+**`selectable: true` is a declaration, so a component whose author forgets it is exempt by
+omission.** That is the price of `active` being overloaded; the alternative was three false
+positives and a deleted rule. A survey found no current gap — the selectable surfaces are chips and
+swatches.
+
+---
+
 ## 2026-09-05 — F-161 DONE · the sample has corners, and the guard survived
 
 ### The register was chosen again

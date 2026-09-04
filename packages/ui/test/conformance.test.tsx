@@ -7,9 +7,10 @@
  * be capable of passing [[a-decoy-that-is-not-broken-proves-nothing]].
  */
 
+import { Pressable } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeNumericFeature } from '@irodora/design-tokens';
+import { nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Appear,
   Bands,
@@ -360,6 +361,8 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   {
     name: 'Chip',
     kind: 'interactive',
+    // Same as Swatch: a filter chip that is on says so in its name and in its state.
+    selectable: true,
     // 'chip' and 'filter' are what the role already tells a screen reader. A control whose
     // whole name is its own type says nothing about WHICH filter it is.
     forbiddenNames: ['chip', 'filter'],
@@ -485,6 +488,9 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   {
     name: 'Swatch',
     kind: 'interactive',
+    // `active` means CHOSEN here — the sample carries a tick in its accessible name and
+    // `accessibilityState.selected`, and the rule is what stops that being dropped.
+    selectable: true,
     // The name a screen reader must never hear for this component.
     forbiddenNames: ['swatch', 'sample'],
     // The sample itself is DATA — an arbitrary colour is not a token by definition. Declared
@@ -794,6 +800,77 @@ describe('the swatch carries what ACCESSIBILITY.md section 5 requires', () => {
     );
     expect(off).not.toContain('✓');
     expect(on).toContain('✓');
+  });
+});
+
+describe('a selectable component has to announce that it is selected (F-163)', () => {
+  /*
+   * THE RULE, WATCHED CATCHING SOMETHING. Without this the check would be satisfied by a
+   * registry in which nothing declared `selectable`, which is the state the suite was in before
+   * F-163 and is indistinguishable from the rule working.
+   */
+  const highlightOnly: ConformanceSubject = {
+    name: 'HighlightOnly',
+    kind: 'interactive',
+    selectable: true,
+    render: (state, theme) =>
+      draw(
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="A colour"
+          // A BACKGROUND AND NOTHING ELSE. This is exactly what "marked/highlighted" looks like
+          // when it is implemented as a colour change and nothing more — and it satisfies the
+          // suite's distinct-trees assertion, because the trees ARE distinct.
+          accessibilityState={{ disabled: state === 'disabled', busy: state === 'loading' }}
+          style={{
+            minWidth: nativeTapTarget,
+            minHeight: nativeTapTarget,
+            backgroundColor: state === 'active' ? '#333333' : '#EEEEEE',
+          }}
+        />,
+        theme,
+      ),
+  };
+
+  it('is reported when the selected state is a highlight nobody can hear', () => {
+    const findings = checkSubject(highlightOnly, ['light']);
+    expect(findings.map((f) => f.rule)).toContain('state-not-announced');
+  });
+
+  it('DECOY — the same component passes once it says so', () => {
+    const announced: ConformanceSubject = {
+      ...highlightOnly,
+      render: (state, theme) =>
+        draw(
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={state === 'active' ? 'A colour ✓' : 'A colour'}
+            accessibilityState={{
+              selected: state === 'active',
+              disabled: state === 'disabled',
+              busy: state === 'loading',
+            }}
+            style={{
+              minWidth: nativeTapTarget,
+              minHeight: nativeTapTarget,
+              backgroundColor: state === 'active' ? '#333333' : '#EEEEEE',
+            }}
+          />,
+          theme,
+        ),
+    };
+    expect(checkSubject(announced, ['light']).map((f) => f.rule)).not.toContain(
+      'state-not-announced',
+    );
+  });
+
+  it('and a component that is NOT selectable is left alone', () => {
+    // The false positive this rule had on its first draft: `active` means "being pressed" for a
+    // Button, and requiring `selected` there flagged three components doing nothing wrong.
+    const pressable: ConformanceSubject = { ...highlightOnly, selectable: false };
+    expect(checkSubject(pressable, ['light']).map((f) => f.rule)).not.toContain(
+      'state-not-announced',
+    );
   });
 });
 

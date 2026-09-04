@@ -108,9 +108,15 @@ export default function TabLayout(): React.JSX.Element {
         // Every colour on the bar comes from the manifest. React Navigation's defaults are its
         // own blue and its own greys, and neither has ever been measured by the contrast gate.
         tabBarStyle: {
+          /*
+            NO RULE ABOVE THE BAR. It carried `borderTopWidth: 1` in `border.strong`, which the
+            reporter saw as "a white border/outline … in navbar" and called unprofessional.
+            `surface.1` already separates the bar from `background` — that is what a tonal
+            elevation system is FOR, and ADR-0044's "elevation lifts by tint, never by shadow"
+            is the same argument one step along. A line on top of a tint is the system not
+            trusting itself.
+          */
           backgroundColor: colors['surface.1'],
-          borderTopColor: colors['border.strong'],
-          borderTopWidth: 1,
           /*
             THE INSET IS MEASURED, NOT ASSUMED.
 
