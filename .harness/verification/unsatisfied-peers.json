@@ -2,11 +2,6 @@
   "$comment": "Peer-dependency issues reported by `pnpm peers check` that this repository accepts. Read by scripts/verify-peer-deps.mjs, which fails on an issue that is NOT listed here AND on an entry here that matches nothing pnpm reports. Both directions, because a dead acceptance is how a live gap hides behind it. Added by F-143.",
   "unsatisfied": [
     {
-      "peer": "react-native-gesture-handler",
-      "why": "A MAJOR VERSION APART, AND ACCEPTED ONLY FOR COMPONENTS PROVEN NOT TO REACH IT. Expo SDK 57 ships gesture-handler 3.2.1; heroui-native@1.0.8 declares ^2.28.0 and has not caught up. Pinning back to v2 is not available — the SDK versions it as a unit with Reanimated and Screens, and ADR-0062's whole argument for HeroUI was that it sits on the SDK's own native stack rather than beside it. WHICH COMPONENTS REACH IT WAS MEASURED, NOT ASSUMED, and the first draft of this entry got it wrong: it claimed Dialog was safe because it is 'portal-and-press'. Grepping the built library says otherwise — lib/module/components/dialog/dialog.js imports GestureDetector, because Dialog.Content supports drag-to-dismiss. Popover and Tabs import nothing from gesture-handler, and those are the two F-143 wraps. BLOCKED UNTIL F-157: Dialog, BottomSheet, Slider, and Menu's drag-dismiss. None is wrapped, none is exported, and none is reachable from a screen — so this entry is not 'we accept a broken gesture stack', it is 'nothing in the product runs on it, and the feature that would has to fix this first'.",
-      "cites": "F-143, F-157, ADR-0062"
-    },
-    {
       "peer": "react-dom",
       "why": "WEB, AND THIS PRODUCT HAS NO WEB SURFACE (ADR-0051). The requesters are @radix-ui/* and vaul, which arrive under a transitive tooling dependency and render DOM. `apps/mobile` is the only surface; nothing in it imports React DOM, the boundary guard fails on a screen that tries, and the app.config.ts platform list is iOS and Android. Installing react-dom to satisfy a package the product never loads would add a dependency to quiet a warning, which is the trade this register exists to refuse. It is listed rather than filtered so that the day a web target IS considered, this is a decision somebody re-reads rather than a line in a script.",
       "cites": "F-143, ADR-0051"

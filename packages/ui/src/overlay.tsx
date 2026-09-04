@@ -19,22 +19,22 @@
  * So each component here takes one declarative shape. **The wrapper earns its place by removing
  * the ways to be wrong**, not by re-exporting.
  *
- * ## What is deliberately NOT here, and it is not an oversight
+ * ## Why `Dialog` and `Sheet` arrived a feature late
  *
- * **`Dialog` and `Sheet`.** Both reach `react-native-gesture-handler` — `dialog.js` imports
- * `GestureDetector` for drag-to-dismiss, and the sheet is `@gorhom/bottom-sheet` throughout — and
- * `pnpm peers check` reports 3.2.1 installed against HeroUI's declared `^2.28.0`. A major version
- * apart, under exactly the behaviour those two exist for. `@gorhom/bottom-sheet` is not in the
- * store at all, so the sheet could never have rendered either.
+ * F-143 shipped only `Popover` and `Tabs`, because `pnpm peers check` had just reported
+ * `react-native-gesture-handler` 3.2.1 installed against HeroUI's declared `^2.28.0` and it was
+ * not yet known whether that was a stale range or a real break.
  *
- * F-157 resolves the version question; these two arrive with it. Shipping them now would mean
- * shipping the one part of a component that cannot be tested here and is most likely to be
- * broken. **Popover and Tabs import nothing from gesture-handler — measured, not assumed.**
+ * **It was a real break.** RNGH 3 moved `GestureDetector` out of the package root into a `v3`
+ * subtree and did not re-export it; HeroUI imports it from the root in eleven places, so the
+ * symbol was `undefined` and every component using it — Dialog, BottomSheet, Slider, Menu —
+ * would have thrown on render rather than degrading. F-157 pinned the tree to 2.32.0, where the
+ * root exports it again, and these two arrived with that ([ADR-0081](../../../docs/adr/0081-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
  */
 
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Popover as HeroPopover, Tabs as HeroTabs } from 'heroui-native';
+import { Dialog as HeroDialog, Popover as HeroPopover, Tabs as HeroTabs } from 'heroui-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
@@ -265,5 +265,77 @@ export function Tabs({
         <View style={{ paddingTop: nativeSpacing.lg }}>{children}</View>
       )}
     </HeroTabs>
+  );
+}
+
+export interface DialogProps {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  /** The dialog's accessible name. Required — an unnamed dialog is announced as a blank group. */
+  readonly title: string;
+  readonly description?: string;
+  /** What the scrim announces. Caller-supplied: `@irodora/ui` owns no copy (ADR-0056). */
+  readonly closeLabel: string;
+  readonly script?: Script;
+  readonly children?: React.ReactNode;
+  readonly testID?: string;
+}
+
+/**
+ * A modal panel, centred, over a scrim.
+ *
+ * **No `Trigger`.** HeroUI's compound form pairs the dialog with the control that opens it;
+ * this takes `open` and `onOpenChange` instead, because a confirmation is almost never opened by
+ * the control that sits next to it — it is opened by a destructive action three levels down a
+ * screen, and threading a trigger there means rendering the dialog there too.
+ *
+ * `Dialog.Content` is where HeroUI reaches for `GestureDetector`, for drag-to-dismiss. That is
+ * the import F-157 was about; see the header.
+ */
+export function Dialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  closeLabel,
+  script = 'latin',
+  children,
+  testID,
+}: DialogProps): React.JSX.Element {
+  const { colors } = useTheme();
+  return (
+    <HeroDialog isOpen={open} onOpenChange={onOpenChange}>
+      <HeroDialog.Portal>
+        <HeroDialog.Overlay
+          accessibilityRole="button"
+          accessibilityLabel={closeLabel}
+          style={{ backgroundColor: colors.backdrop }}
+        />
+        <HeroDialog.Content
+          testID={testID}
+          // The same refusal as Popover's: undefined lets the active library theme decide the
+          // layer, and one of its choices is a blur. A blur tints what it surrounds.
+          background={null}
+          style={{
+            backgroundColor: colors['surface.2'],
+            borderRadius: nativeRadius.lg,
+            borderWidth: 1,
+            borderColor: colors['border.strong'],
+            padding: nativeSpacing.xl,
+            gap: nativeSpacing.md,
+          }}
+        >
+          <Text size="title" color="foreground" script={script} heading>
+            {title}
+          </Text>
+          {description === undefined ? null : (
+            <Text size="body" color="foreground.2" script={script}>
+              {description}
+            </Text>
+          )}
+          {children}
+        </HeroDialog.Content>
+      </HeroDialog.Portal>
+    </HeroDialog>
   );
 }

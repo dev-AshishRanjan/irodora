@@ -159,6 +159,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md](effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md) — **E-059** · one geometry, two renderers, so the shipped icon cannot drift from the mark in the app — and a type literal can make a token look reached while nothing draws it.
 - [effects/the-app-config-now-evaluates-design-tokens.md](effects/the-app-config-now-evaluates-design-tokens.md) — **E-060** · the Expo config is evaluated code now, so the launch screen and the first painted frame cannot disagree about the background.
 - [effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md](effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md) — **E-061** · a major-version peer mismatch sat under every gesture component with every gate green, and the first checker written to find it got two of three findings wrong by reimplementing its subject.
+- [effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md](effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md) — **E-062** · a jest mock stubbed the very symbol a major version had removed, so four components that would crash on render sat behind a green suite for two releases.
 
 ## Glossary
 

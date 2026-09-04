@@ -8,6 +8,86 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-157 DONE · the gesture stack agrees with itself
+
+F-143's peer gate reported `react-native-gesture-handler` 3.2.1 against `heroui-native`'s declared
+`^2.28.0`. This established whether that was a stale range or a real break.
+
+### It was a real break
+
+| fact | evidence |
+|---|---|
+| HeroUI imports `Gesture` **and `GestureDetector`** from the package root | 11 sites in `lib/module` |
+| RNGH 3.2.1 exports `Gesture` from the root | `export { GestureObjects as Gesture }` |
+| RNGH 3.2.1 **does not export `GestureDetector`** | absent from `src/index.ts` and the built index |
+| It moved to a v3 subtree | `lib/module/v3/detectors/GestureDetector.js` |
+
+An `import { X }` of a missing named export yields `undefined` **silently**. Rendering an element
+whose type is `undefined` throws. **Dialog, BottomSheet, Slider and Menu would have crashed on
+render**, not degraded.
+
+### The mock was supplying the missing export
+
+`packages/ui/jest.setup.js` stubbed `GestureDetector: ({ children }) => children`. It had a real
+reason — RNGH 3 throws at import under this resolver — and its effect was that **the conformance
+suite was green on a tree the device could never build.**
+
+> A mock that stubs **behaviour** is a test decision. A mock that stubs **existence** is a test
+> that has stopped describing the product.
+
+### Two recorded reasons were wrong
+
+ADR-0062 and the mock's comment both said *"downgrading breaks `expo-router`"*. `expo-router`'s
+peer range is `*`. `react-native-drawer-layout` asks `>= 2.0.0`. `expo` declares nothing.
+**Our own `package.json` was the only thing forcing 3.x**, and no ADR said why — a sentence
+carried forward without being checked against the file it describes.
+
+### The fix
+
+Pinned to `^2.32.0` ([ADR-0081](../../docs/adr/0081-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)),
+the mock **removed** rather than updated, and `@gorhom/bottom-sheet` installed — an *optional*
+peer, which is why the gate never reported it, and absent from the store entirely, so the sheet
+could never have rendered whatever the version had been.
+
+`gesture-stack.test.tsx` asserts the **symbol**, not the version: a range can be satisfied by a
+package that moved the symbol, and only that breaks the app.
+
+**Dialog is the proof.** It wraps HeroUI's Dialog, whose `Content` is exactly where
+`GestureDetector` is reached, and it now renders and conforms in both themes with no mock.
+
+### Registering it found a second bug — in the harness
+
+`checkSubject` renders light then dark in one test without unmounting. Harmless for an ordinary
+component; for the first **portalled** subject, the light dialog was still mounted in the shared
+portal host when the dark tree was captured, so the dark subject came back carrying light-theme
+colours. Three `colour-literal` findings that were a true observation of an impossible tree.
+`draw()` now unmounts. The theme context was never at fault — a `useTheme()` probe inside the
+portal returns the theme the provider was given.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (111 in `@irodora/ui`, no gesture mock) · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** | **PASS** |
+| `pnpm peers check` | gesture-handler issue **gone** |
+
+### Still owed
+
+**The pin is unverified natively, and that is the largest unproven change in the release.** RNGH
+2.32 supports the New Architecture and names no RN version, but "supports Fabric" and "builds
+against RN 0.86" are different claims. A `prebuild --clean` is required, and the symptom of
+skipping it is a crash at mount that reads like a code error.
+
+**No sheet is wrapped.** F-158 owns it and is now *unblocked* rather than blocked. Its value is
+the drag, which jest cannot exercise at all.
+
+**The gate cannot see the other direction.** When HeroUI widens to RNGH 3, staying on 2.x becomes
+the stale decision, and a satisfied-but-outdated peer is silent.
+
+---
+
 ## 2026-09-03 — F-143 DONE · the overlay family, and a peer nobody had asked about
 
 Scope narrowed twice, both times by measurement rather than by preference.

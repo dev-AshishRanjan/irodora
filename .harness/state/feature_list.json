@@ -4540,7 +4540,7 @@
       "service": "root",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-143"
       ],
@@ -4556,7 +4556,49 @@
         "test",
         "a11y"
       ],
-      "notes": "FOUND BY F-143 AND BLOCKING THE COMPONENT THE REPORTER ASKED FOR BY NAME. `pnpm peers check` reports react-native-gesture-handler 3.2.1 installed against heroui-native@1.0.8 declaring ^2.28.0 — a MAJOR version apart, under every gesture-driven component in the library. Nothing had noticed because nothing had asked; the peer gate added in F-143 is what asks. WHY IT CANNOT SIMPLY BE PINNED BACK: Expo SDK 57 versions gesture-handler as a unit with Reanimated, Worklets and Screens, and pnpm-workspace.yaml already carries overrides for two of those pinned to what VisionCamera resolves (ADR-0062, F-087) — the tree has three consumers with different opinions and the last time this was resolved by taking the newest, three copies of a native module ended up installed. THREE CANDIDATE ROUTES, none free: wait for a heroui-native release that widens the range; add a workspace override pinning gesture-handler to 2.x and verify the SDK still works; or drop HeroUI for the gesture components and hand-roll the sheet on Reanimated, which is what ADR-0062 chose HeroUI to avoid. WHAT IS BLOCKED UNTIL THIS CLOSES: BottomSheet (@gorhom/bottom-sheet is also absent from the store entirely, so it could never have rendered), Slider, and Menu drag-dismiss. F-143 wrapped Dialog, Popover and Tabs precisely because none of them reaches a gesture recogniser, so the overlay family ships and the sheet waits for an answer rather than for a crash."
+      "notes": "FOUND BY F-143 AND BLOCKING THE COMPONENT THE REPORTER ASKED FOR BY NAME. `pnpm peers check` reports react-native-gesture-handler 3.2.1 installed against heroui-native@1.0.8 declaring ^2.28.0 — a MAJOR version apart, under every gesture-driven component in the library. Nothing had noticed because nothing had asked; the peer gate added in F-143 is what asks. WHY IT CANNOT SIMPLY BE PINNED BACK: Expo SDK 57 versions gesture-handler as a unit with Reanimated, Worklets and Screens, and pnpm-workspace.yaml already carries overrides for two of those pinned to what VisionCamera resolves (ADR-0062, F-087) — the tree has three consumers with different opinions and the last time this was resolved by taking the newest, three copies of a native module ended up installed. THREE CANDIDATE ROUTES, none free: wait for a heroui-native release that widens the range; add a workspace override pinning gesture-handler to 2.x and verify the SDK still works; or drop HeroUI for the gesture components and hand-roll the sheet on Reanimated, which is what ADR-0062 chose HeroUI to avoid. WHAT IS BLOCKED UNTIL THIS CLOSES: BottomSheet (@gorhom/bottom-sheet is also absent from the store entirely, so it could never have rendered), Slider, and Menu drag-dismiss. F-143 wrapped Dialog, Popover and Tabs precisely because none of them reaches a gesture recogniser, so the overlay family ships and the sheet waits for an answer rather than for a crash. DONE 2026-09-03. IT WAS A REAL BREAK, NOT A STALE RANGE, and the measurement is what settled it: heroui-native imports Gesture AND GestureDetector from the package root in eleven places; RNGH 3.2.1 exports Gesture from the root and does NOT export GestureDetector, which moved to lib/module/v3/detectors and is re-exported only from lib/module/v3. An import of a missing named export yields undefined silently, and rendering an element whose type is undefined throws — so Dialog, BottomSheet, Slider and Menu would have CRASHED on render, not degraded. TWO RECORDED REASONS TURNED OUT TO BE WRONG. ADR-0062 and jest.setup.js both said downgrading breaks expo-router; expo-router declares its gesture-handler peer as `*`, drawer-layout as >=2.0.0, and expo itself declares no constraint at all. Our own package.json was the only thing forcing 3.x, and no ADR said why. THE MOCK WAS SUPPLYING THE MISSING EXPORT: jest.setup.js stubbed GestureDetector and replaced Gesture with a two-method shim, so the conformance suite was green on a tree the device could never build. It is removed rather than updated — on 2.32.0 the real module loads under the harness. A mock that stubs BEHAVIOUR is a test decision; one that stubs EXISTENCE is a test that has stopped describing the product. PINNED to ^2.32.0 (ADR-0081), @gorhom/bottom-sheet installed alongside — an OPTIONAL peer, which is why the peer gate never reported it, and absent from the store entirely, so BottomSheet could never have rendered whatever the version had been. THE DIALOG IS THE PROOF: it wraps HeroUI Dialog, whose Content is exactly where GestureDetector is reached, and it now renders and conforms in both themes with no mock. REGISTERING IT FOUND A SECOND BUG, in the harness rather than the product: checkSubject renders light then dark in one test without unmounting, which is harmless for an ordinary component and not for a PORTALLED one — the light dialog was still mounted in the shared portal host when the dark tree was captured, so the dark subject came back carrying light-theme colours and the suite reported three colour-literal findings that were a true observation of an impossible tree. `draw` now unmounts. The theme context was never the problem: a useTheme() probe inside the portal returns the theme the provider was given.",
+      "plan": "plans/F-157-the-gesture-stack-agrees-with-itself.md",
+      "effects": [
+        "E-062"
+      ],
+      "attested": [
+        {
+          "criterion": "A bottom sheet mounts, drags and dismisses on a device — the behaviour that is the whole reason to use one",
+          "verifiedBy": "NOT DONE, AND NOT PARTIALLY DONE. No sheet is wrapped: this feature fixed the stack and proved it with Dialog, which reaches the same GestureDetector import. @gorhom/bottom-sheet is now installed, so the sheet is unblocked rather than blocked, and F-158 owns it. THE DEEPER LIMIT APPLIES TO EVERYTHING HERE: jest has no native module, so mounting is the furthest this harness reaches and a DRAG cannot happen in it at all. The pin itself is also unverified natively — RNGH 2.32 supports the New Architecture and names no RN version, but \"supports Fabric\" and \"builds against RN 0.86\" are different claims and only a device build settles the second. This is the largest unverified change in the release so far, and ADR-0081 says so in its own consequences.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-158",
+      "title": "The bottom sheet, on a stack that can carry it",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-157"
+      ],
+      "acceptance": [
+        "Sheet is wrapped, tokenised and exported, with the same collapsed API the other overlays take",
+        "It is registered in the conformance registry, rendered open, and paints the backdrop scrim",
+        "The Lens result is presented in one, so a reading can be acted on without leaving the frame",
+        "A person can open, drag and dismiss it on a device"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "UNBLOCKED BY F-157 rather than created by it. The sheet was the component the reporter named first and it had two separate things wrong with it: heroui-native reaches GestureDetector, which RNGH 3 had moved out of the package root, and @gorhom/bottom-sheet — an OPTIONAL peer, so the peer gate never reported it — was absent from the store entirely. Both are fixed: the stack is pinned to 2.32.0 (ADR-0081) and gorhom 5.2.14 is installed. WHAT MAKES THIS DIFFERENT FROM THE OTHER OVERLAYS is that its value IS the gesture. Popover and Tabs are portal-and-press and a rendered tree tells you most of what you need; a sheet that mounts but does not drag is a modal with a bad shape. So criterion 4 is a device criterion and cannot be discharged in jest — it should be attested honestly rather than implied by a passing suite. THE CONSUMER IS THE LENS (F-149): acting on a reading currently means leaving the camera, which is the specific thing a sheet fixes."
     }
   ]
 }

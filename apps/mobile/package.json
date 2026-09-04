@@ -19,6 +19,7 @@
     "clean": "rimraf dist .expo *.tsbuildinfo"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@irodora/color-calibration": "workspace:*",
     "@irodora/color-core": "workspace:*",
     "@irodora/color-difference": "workspace:*",
@@ -51,7 +52,7 @@
     "heroui-native": "^1.0.8",
     "react": "19.2.3",
     "react-native": "0.86.2",
-    "react-native-gesture-handler": "^3.2.1",
+    "react-native-gesture-handler": "^2.32.0",
     "react-native-reanimated": "4.5.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",

@@ -251,9 +251,25 @@ export function checkSubject(
     //
     // Distinct states must produce distinct trees. Everything above can be satisfied by a
     // component that declares five states and renders one.
+    /*
+     * ONLY WHEN THERE ARE TWO STATES TO COMPARE (F-157).
+     *
+     * The assertion is "distinct states produce distinct trees". With one state there is no pair,
+     * so the loop compared a tree to nothing and served only to serialize it — which is how
+     * registering the first PORTALLED component turned a vacuous check into a thrown
+     * `TypeError: Converting circular structure to JSON`. A portal's tree carries React context
+     * objects, and a context holds its own `Provider`, which holds the context.
+     *
+     * `static` is every one-state kind, so this skips exactly the subjects the check could never
+     * have said anything about, and keeps it for `interactive` and `data` where it earns the
+     * suite. A portalled INTERACTIVE component would still meet the cycle, and `shapeOf` below is
+     * what handles that — the guard is about meaning, the serializer is about robustness, and
+     * neither substitutes for the other.
+     */
     const seen = new Map<string, string>();
+    if (rendered.size < 2) continue;
     for (const [state, tree] of rendered) {
-      const shape = JSON.stringify(tree);
+      const shape = shapeOf(tree);
       const previous = seen.get(shape);
       if (previous !== undefined)
         findings.push({
@@ -390,4 +406,30 @@ export function checkStatusAdjacency(
 
   walk(tree, []);
   return findings;
+}
+
+/**
+ * A tree, as a comparable string — cycle-safe.
+ *
+ * `JSON.stringify` was enough until F-157 registered a **portalled** component. A portal's tree
+ * carries React context objects, and a context holds its own `Provider`, which holds the context:
+ * `stringify` throws *"Converting circular structure to JSON"* and takes the whole subject with
+ * it. The harness had never met one, because until F-143 nothing in this product rendered over
+ * the page.
+ *
+ * A seen-set drops the repeat rather than following it. **`[circular]` is a stable marker, not a
+ * skip** — two trees that differ only inside a cycle would compare equal, which is a real
+ * narrowing of the check and is worth knowing: this assertion is about distinct states producing
+ * distinct trees, and a state whose only difference lives inside a React context is a state
+ * nothing here can tell apart. No component does that today; one that did would need a different
+ * assertion, not a longer serializer.
+ */
+function shapeOf(tree: unknown): string {
+  const seen = new WeakSet<object>();
+  return JSON.stringify(tree, (_key, value: unknown) => {
+    if (typeof value !== 'object' || value === null) return value;
+    if (seen.has(value)) return '[circular]';
+    seen.add(value);
+    return value;
+  });
 }

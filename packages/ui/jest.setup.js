@@ -1,27 +1,32 @@
 /**
- * What the render harness needs before it can see a HeroUI tree (ADR-0062, F-087).
+ * What the render harness needs before it can see a HeroUI tree (ADR-0062, F-087, F-157).
  *
- * One mock, and it is not cosmetic. `react-native-gesture-handler` v3 calls worklets'
- * `getUIRuntimeHolder` from an `Immediate` at import time. Under
- * `react-native-worklets/jest/resolver.js` — which the config uses so worklets resolves to a
- * build that exists outside a native runtime — that call throws, asynchronously, and jest
- * attributes the throw to whichever test happened to be running.
+ * ## The mock that used to be here, and why it is gone
  *
- * HeroUI declares `react-native-gesture-handler@^2.28.0`; this tree resolves **3.2.1**, via
- * `expo-router`. That mismatch is accepted in ADR-0062 rather than solved — downgrading breaks
- * `expo-router` — and this is the first place it costs something.
+ * This file carried a `react-native-gesture-handler` mock that stubbed `GestureDetector` and
+ * replaced `Gesture` with `{ Pan: () => ({ onUpdate: () => ({}) }) }`. It was written for v3,
+ * whose import-time call into worklets throws under the resolver this config uses.
  *
- * The mock is safe for what these tests assert. The gates here read the accessibility TREE
- * (ADR-0055); they never drive a gesture. A test that genuinely needs gesture behaviour cannot
- * use this harness and must say so.
+ * **It also hid the defect F-143 eventually found by other means.** RNGH 3 moved `GestureDetector`
+ * out of the package root; HeroUI imports it from the root in eleven places, so every one of them
+ * was `undefined` and Dialog, BottomSheet, Slider and Menu would have thrown on render. The mock
+ * *supplied* `GestureDetector`, so the suite was green on a tree the device could never run
+ * [[a-mock-that-supplies-a-missing-export-hides-the-fact-that-it-is-missing]].
+ *
+ * Its comment also recorded a reason that turned out not to hold: *"downgrading breaks
+ * `expo-router`"*. `expo-router`'s peer range on gesture-handler is `*`, `react-native-drawer-layout`
+ * asks for `>= 2.0.0`, and `expo` itself declares no constraint at all — **nothing in the tree
+ * required 3.x except our own `package.json`**. That is what ADR-0081 pinned.
+ *
+ * ## What replaces it
+ *
+ * Nothing. On 2.32.0 the real module loads under this harness, `GestureDetector` is a real
+ * component, and `Gesture.Pan()` returns a real builder — so the suite now renders what a device
+ * would render rather than a shape this file invented.
+ *
+ * **If a mock is ever needed here again, it must not supply a symbol the real package lacks.**
+ * Stubbing behaviour is a test decision; stubbing existence is a test that has stopped describing
+ * the product.
  */
 
-jest.mock('react-native-gesture-handler', () => {
-  const actual = jest.requireActual('react-native-gesture-handler/jestSetup.js');
-  return {
-    ...actual,
-    GestureHandlerRootView: 'GestureHandlerRootView',
-    GestureDetector: ({ children }) => children,
-    Gesture: { Pan: () => ({ onUpdate: () => ({}) }) },
-  };
-});
+export {};

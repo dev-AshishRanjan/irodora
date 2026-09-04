@@ -13,6 +13,7 @@ import { nativeNumericFeature } from '@irodora/design-tokens';
 import {
   Button,
   Chip,
+  Dialog,
   EmptyState,
   Mark,
   Popover,
@@ -52,9 +53,29 @@ import {
   UnlabelledTextInput,
 } from './fixtures/subjects.js';
 
-/** Render inside a forced theme, and hand back the walkable tree. */
+/**
+ * Render inside a forced theme, and hand back the walkable tree.
+ *
+ * **The tree is unmounted before it is returned (F-157), and that is not tidiness.**
+ * `checkSubject` renders each subject in light and then in dark, in one test, without React
+ * Native Testing Library's between-test cleanup running in between. For an ordinary component
+ * that is harmless — each `render()` owns its own tree.
+ *
+ * A PORTALLED component is different. Its content mounts into a host that lives outside the tree
+ * and is shared, so the light render's dialog was still mounted when the dark one was captured —
+ * and the dark subject came back carrying light-theme colours. The conformance suite reported it
+ * as three `colour-literal` findings, which is a true observation of a tree that no device would
+ * ever build.
+ *
+ * The theme context itself was never the problem: probing a `useTheme()` inside the portal
+ * returns the theme the provider was given. It was two mounts overlapping, which is a property of
+ * the harness rather than of the component — and it only became visible when the first portalled
+ * component was registered.
+ */
 function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
-  const json = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>).toJSON();
+  const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
+  const json = rendered.toJSON();
+  rendered.unmount();
   if (json === null) throw new Error('rendered nothing');
   return Array.isArray(json) ? { type: 'Root', props: {}, children: json } : json;
 }
@@ -116,6 +137,32 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           title="Mixed lighting"
           closeLabel="Close"
           description="Two light sources of different colour temperature reached the sample."
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE DIALOG (F-157), RENDERED OPEN — the component that proves the pin.
+     *
+     * HeroUI reaches for GestureDetector inside Dialog.Content, for drag-to-dismiss. Under RNGH 3
+     * that symbol was undefined and this subject would have thrown; under 2.32.0 it is a real
+     * component. It renders here WITHOUT a gesture-handler mock, so what is checked is the tree a
+     * device would build rather than a shape jest.setup.js invented.
+     *
+     * It is also the first PORTALLED subject, which is what surfaced the overlapping-mount bug in
+     * the draw() helper above.
+     */
+    name: 'Dialog',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Dialog
+          open
+          onOpenChange={() => undefined}
+          title="Reset what the app has learned?"
+          description="The counts behind every preference are removed. Your wardrobe is untouched."
+          closeLabel="Close"
         />,
         theme,
       ),
