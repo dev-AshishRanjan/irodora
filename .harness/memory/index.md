@@ -164,6 +164,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md](effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md) — **E-064** · a test that walked the mounted tree to prove reachability went red when the list virtualised; the proxy broke and the property did not.
 - [effects/the-page-inset-is-what-stops-a-colour-bleeding.md](effects/the-page-inset-is-what-stops-a-colour-bleeding.md) — **E-065** · the page inset that keeps every screen aligned is the same thing that stops one colour reaching the edge, so it moved down a level rather than being punched through.
 - [effects/a-deleted-ui-section-leaves-live-locale-keys.md](effects/a-deleted-ui-section-leaves-live-locale-keys.md) — **E-066** · five labels outlived the section that read them; typecheck holds the two locales identical and says nothing about whether a key is reached.
+- [effects/a-new-engine-can-make-an-old-gate-blind.md](effects/a-new-engine-can-make-an-old-gate-blind.md) — **E-067** · the motion gate reported a clean scan of a codebase it could no longer read, and the giveaway number was the same one it had printed truthfully for every release before.
+- [effects/one-setting-three-mechanisms-and-only-one-is-asserted.md](effects/one-setting-three-mechanisms-and-only-one-is-asserted.md) — **E-068** · reduced motion is honoured at three layers by three different owners, and only the one this repository owns has a test behind it.
 
 ## Glossary
 

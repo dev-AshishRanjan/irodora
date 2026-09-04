@@ -11,6 +11,7 @@ import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeNumericFeature } from '@irodora/design-tokens';
 import {
+  Appear,
   Button,
   Chip,
   Dialog,
@@ -352,6 +353,29 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: 'Status',
     kind: 'static',
     render: (_state, theme) => draw(<Status kind="bad" text="Could not read this colour" />, theme),
+  },
+  {
+    /*
+     * REGISTERED FOR THE REASON `Status` WAS. `Appear` is reachable from the Atlas, so it is
+     * not orphaned — but reachable is not the same as CHECKED IN BOTH THEMES, and an animated
+     * wrapper is exactly the kind of component that can quietly paint or hide something.
+     *
+     * The subject renders a swatch inside it, which is the shape the product actually uses and
+     * the shape `verify-motion` explicitly allows: the WRAPPER animates, the sample does not.
+     * If `Appear` ever put a background or an opacity floor on its child, the swatch's own
+     * conformance rules — its neutral well, its keyline, its accessible name — would be read
+     * through this wrapper here and would fail.
+     */
+    name: 'Appear',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Appear index={1}>
+          <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} onPress={() => undefined} />
+        </Appear>,
+        theme,
+      ),
   },
   {
     name: 'Swatch',

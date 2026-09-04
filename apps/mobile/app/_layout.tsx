@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
-import { ThemeProvider, useTheme } from '@irodora/ui';
+import { durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 
 /*
@@ -44,6 +44,19 @@ function Chrome(): React.JSX.Element {
       <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
+          /*
+            THE SCREEN TRANSITION (F-144). `view` (260) is the manifest's duration for one
+            screen replacing another, and it is passed rather than left to the platform default
+            so that a push moves at the same speed as everything else in the product.
+
+            WHAT IS VERIFIED HERE is that the token reaches the navigator. WHAT IS NOT is the
+            frame timing: `animationDuration` is honoured by the native stack for some
+            animation types and not others, and never on the web. Reduced motion is handled by
+            the OS for screen transitions — this is the one seam where the platform owns it,
+            which is why `durations` is read directly and not through `useMotion`.
+          */
+          animation: 'slide_from_right',
+          animationDuration: durations.view,
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.foreground,
           contentStyle: { backgroundColor: colors.background },

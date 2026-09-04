@@ -32,15 +32,6 @@
       "permanentBecause": "ADR-0054 — emitted to constrain the type, never to paint"
     },
     {
-      "group": "binding",
-      "tokens": [
-        "nativeMotion"
-      ],
-      "cites": "F-092, scripts/verify-motion.mjs",
-      "why": "Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone — the durations and easings exist so that when something does move, the values are already decided rather than invented at the call site. The rule they belong to (motion may not animate a colour) is enforced from the manifest side by verify-motion.mjs, so it is guarded whether or not this binding is imported.",
-      "closedBy": "F-144"
-    },
-    {
       "group": "colour token",
       "tokens": [
         "border",

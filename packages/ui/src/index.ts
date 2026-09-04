@@ -63,5 +63,15 @@ export {
   type TabItem,
   type TabsProps,
 } from './overlay.js';
+export {
+  Appear,
+  durations,
+  overlayKeyframes,
+  useMotion,
+  type AppearProps,
+  type DurationStep,
+  type EasingName,
+  type MotionValues,
+} from './motion.js';
 
 export const UI_VERSION = '0.0.0' as const;

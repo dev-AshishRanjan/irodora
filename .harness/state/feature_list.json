@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-03",
+  "updated": "2026-09-04",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -4129,7 +4129,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-143"
       ],
@@ -4146,7 +4146,20 @@
         "test",
         "a11y"
       ],
-      "notes": "The manifest defines durations (micro 120, local 180, view 260), two easings, an animatable allow-list of opacity and transform, and a forbidden list that includes background-color on a swatch and cross-fade between samples. THE TOKEN LEDGER RECORDS THE STATE PLAINLY: \"Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone.\" An app with zero motion reads as unfinished however correct its colours are, and this is the largest single contributor to the reported feeling of low effort after the type scale. The constraint is real and stays: intermediate frames of a colour cross-fade are plausible colours that never existed, so a user reads a value the engine never produced. verify-motion.mjs already exists and currently guards an empty set."
+      "notes": "The manifest defines durations (micro 120, local 180, view 260), two easings, an animatable allow-list of opacity and transform, and a forbidden list that includes background-color on a swatch and cross-fade between samples. THE TOKEN LEDGER RECORDS THE STATE PLAINLY: \"Nothing in the product animates. There is no Animated, no withTiming and no transition anywhere in the reader zone.\" An app with zero motion reads as unfinished however correct its colours are, and this is the largest single contributor to the reported feeling of low effort after the type scale. The constraint is real and stays: intermediate frames of a colour cross-fade are plausible colours that never existed, so a user reads a value the engine never produced. verify-motion.mjs already exists and currently guards an empty set. DONE 2026-09-04. THE PRODUCT MOVES NOW. `packages/ui/src/motion.tsx` is the typed API: `DurationStep` and `EasingName` are unions derived from the manifest, `useMotion()` returns durations that are ZERO under reduced motion, `Appear` is a fade-and-rise wrapper with no `style` prop, and `overlayKeyframes` is the timing HeroUI overlays take. REANIMATED, NOT RN `Animated`, and the reason is structural rather than preferential: heroui-native declares `react-native-reanimated` as a REQUIRED peer (its `peerDependenciesMeta` marks three others optional and reanimated is not among them), so it is already unavoidable in every tree that renders this package — and HeroUI Dialog and Popover take their timing as reanimated `Keyframe`s, so there is no other way to give an overlay our durations at all. `Animated` would have meant two engines in one app and overlays left on somebody else’s 200ms. THE GATE WAS BLIND AND ITS OUTPUT SAID SO WITHOUT SOUNDING LIKE IT: \"0 with an Animated style literal\", printed while scanning a file full of animations. The scan reads a JSX attribute; reanimated writes a worklet. Three checks added (E-067) with twenty --prove cases in both directions, including the two that matter most — `transform: [{ translateY }]` must be ALLOWED, and `.duration(nativeMotion.durations.micro)` must be allowed, or each check bans the thing it exists to protect. TOKEN REACH 53 -> 54: `nativeMotion` was declared unreached with `closedBy: F-144`, and the gate caught the exemption going stale the moment the binding was imported. ONE FRAME IS OWED TO REDUCED-MOTION USERS and it is written down rather than hidden: `isReduceMotionEnabled()` is async on both platforms, so `Appear` starts hidden and reaches rest on the next frame. Reanimated’s synchronous `useReducedMotion()` would close it and is not used, because its cached answer is always `false` under jest and seeding from it would add a line no test could observe.",
+      "plan": "plans/F-144-motion-may-never-move-a-colour.md",
+      "effects": [
+        "E-067",
+        "E-068"
+      ],
+      "attested": [
+        {
+          "criterion": "Navigation, sheets, overlays and list entrances use it",
+          "verifiedBy": "THREE OF FOUR, AND THE FOURTH IS NOT A SHORTFALL — IT IS A FEATURE THAT EXISTS. There is no bottom sheet in the product: `BottomSheet` appears only in `overlay.tsx`’s prose and in the Lens viewfinder’s comments. F-158 builds one, and building it here to satisfy a checkbox would be scope creep into a feature already in the list. Navigation, overlays and the Atlas list entrance are wired and checked. WHAT IS ALSO NOT VERIFIED, on the navigation half: `animationDuration` is honoured by the native stack for some animation types and not others, and never on the web. That the TOKEN reaches the navigator is verified by reading the source; that a push actually takes 260ms is not, and would need a device.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-145",

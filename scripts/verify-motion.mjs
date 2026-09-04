@@ -169,6 +169,116 @@ function colourAnimationOptIns(source) {
   return findings;
 }
 
+/**
+ * The keys of a REANIMATED animated style — the half the literal scan structurally cannot see.
+ *
+ * `animatedStyleKeys` above reads `<Animated.X style={{…}}>`. **Reanimated never writes that.**
+ * It writes `useAnimatedStyle(() => ({ opacity: … }))`, and a worklet's return object is not a
+ * JSX attribute, so the existing scan reports zero animated elements for a file full of them.
+ * F-144 introduced the engine; without this the gate would have gone quiet at exactly the moment
+ * it acquired something to check.
+ *
+ * A `Keyframe` is the same problem one level deeper: its argument is `{ 0: {…}, 100: {…} }`,
+ * so the properties are the keys of the FRAMES, not of the object itself.
+ */
+function reanimatedStyleKeys(source) {
+  const findings = [];
+
+  // `useAnimatedStyle(() => ({ … }))` — the arrow-returning-object form, which is the only one
+  // this codebase uses and the only one worth claiming to read.
+  for (const m of source.matchAll(/useAnimatedStyle\(\s*\(\)\s*=>\s*\(\{([\s\S]*?)\}\)\s*\)/gu)) {
+    for (const key of topLevelKeys(m[1] ?? ''))
+      findings.push({ component: 'useAnimatedStyle', property: key });
+  }
+
+  // `new Keyframe({ 0: { … }, 100: { … } })` — read one level in.
+  for (const m of source.matchAll(/new Keyframe\(\{([\s\S]*?)\}\)/gu)) {
+    for (const frame of (m[1] ?? '').matchAll(/\d+\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/gu))
+      for (const key of topLevelKeys(frame[1] ?? ''))
+        findings.push({ component: 'Keyframe', property: key });
+  }
+
+  return findings;
+}
+
+/**
+ * The keys of an object literal, ignoring anything nested inside braces or brackets.
+ *
+ * `transform: [{ translateY: … }]` must report `transform` and NOT `translateY` — the second is
+ * a transform component, which the allow-list covers by covering `transform`. Counting it would
+ * make the check reject its own allowed case, which is the failure mode that gets a gate
+ * switched off rather than fixed.
+ */
+function topLevelKeys(body) {
+  const keys = [];
+  let depth = 0;
+  let atKeyPosition = true;
+  for (let i = 0; i < body.length; i += 1) {
+    const ch = body[i];
+    if (ch === '{' || ch === '[' || ch === '(') depth += 1;
+    else if (ch === '}' || ch === ']' || ch === ')') depth -= 1;
+    else if (ch === ',' && depth === 0) atKeyPosition = true;
+    else if (depth === 0 && atKeyPosition && /[A-Za-z_$]/u.test(ch)) {
+      const rest = /^([A-Za-z_$][\w$]*)\s*:/u.exec(body.slice(i));
+      if (rest !== null) {
+        keys.push(rest[1]);
+        atKeyPosition = false;
+      }
+    }
+  }
+  return keys;
+}
+
+/**
+ * A duration written as a number instead of taken from the scale.
+ *
+ * Criterion 1 of F-144 is *"the manifest durations and easings are a typed API, and nothing
+ * animates with a literal"*. A literal is how a scale stops being a scale: 200 here and 250
+ * there are both defensible on their own, and together they are the reason an app reads as
+ * assembled from parts. `nativeMotion.durations.local` is a decision; `180` is a number that
+ * happens to match one today.
+ *
+ * Only a BARE NUMERIC literal is a finding. `duration: duration('local')`,
+ * `.duration(nativeMotion.durations.micro)` and any variable all pass — a check that rejected
+ * every mention of `duration` would ban the typed API it exists to enforce.
+ */
+function durationLiterals(source) {
+  const findings = [];
+  for (const m of source.matchAll(/(?:^|[^\w.])duration\s*:\s*(-?\d+(?:\.\d+)?)\b/gu))
+    findings.push({ component: 'a duration literal', property: `duration: ${m[1]}` });
+  for (const m of source.matchAll(/\.duration\(\s*(-?\d+(?:\.\d+)?)\s*\)/gu))
+    findings.push({ component: 'a duration literal', property: `.duration(${m[1]})` });
+  return findings;
+}
+
+/**
+ * A transition applied to a SWATCH — criterion 3's second half, stated mechanically.
+ *
+ * The manifest forbids *"cross-fade between samples"* in prose, and prose is not checkable. The
+ * mechanical form is a layout or shared-element transition on a colour sample: reanimated
+ * interpolates between the two, and **every intermediate frame is a colour the engine never
+ * produced.** `sharedTransitionTag` is the exact shape — it exists to morph one element into
+ * another — and `layout`, `entering` and `exiting` reach the same place when the thing
+ * entering and the thing leaving are two different colours.
+ *
+ * These are PROPS, not style keys, so nothing else in this file can see them.
+ *
+ * `Appear` is how a swatch is allowed to arrive: it wraps the sample and animates the WRAPPER's
+ * opacity and offset, so the colour itself is never interpolated — it is either drawn or not.
+ */
+const SWATCH_TRANSITION_PROPS = ['sharedTransitionTag', 'layout', 'entering', 'exiting'];
+
+function swatchTransitions(source) {
+  const findings = [];
+  for (const m of source.matchAll(/<Swatch\b([^>]*)>/gu)) {
+    const attrs = m[1] ?? '';
+    for (const prop of SWATCH_TRANSITION_PROPS)
+      if (new RegExp(`(?:^|\\s)${prop}\\s*=`, 'u').test(attrs))
+        findings.push({ component: 'Swatch', property: `${prop} (a transition across a sample)` });
+  }
+  return findings;
+}
+
 function run(allowed) {
   const violations = [];
   let scanned = 0;
@@ -192,6 +302,19 @@ function run(allowed) {
           component: `HeroUI ${prop}`,
           property: `backgroundColor (via ${prop}=${value})`,
         });
+
+      // THE THREE F-144 ADDED, each seeing something none of the others can.
+      const reanimated = reanimatedStyleKeys(source);
+      if (reanimated.length > 0) animatedElements += 1;
+      for (const { component, property } of reanimated)
+        if (!allowed.has(property))
+          violations.push({ file: relative(ROOT, file), component, property });
+
+      for (const f of durationLiterals(source))
+        violations.push({ file: relative(ROOT, file), ...f });
+
+      for (const f of swatchTransitions(source))
+        violations.push({ file: relative(ROOT, file), ...f });
     }
 
   return { violations, scanned, animatedElements };
@@ -241,6 +364,106 @@ if (process.argv.includes('--prove')) {
     },
   ];
 
+  /*
+   * THE THREE F-144 ADDED. These are whole planted FILES rather than a style fragment or a
+   * single attribute, because what each one checks is not a JSX attribute: a worklet's return
+   * object, a call argument, and a prop on someone else's component.
+   *
+   * Every one has a decoy that must PASS beside the one that must fail, and two of them are
+   * the real point. `transform: [{ translateY }]` must be ALLOWED — a check that read the
+   * nested key would reject the one animation this product is built on. And
+   * `.duration(nativeMotion.durations.micro)` must be allowed, or the literal check bans the
+   * typed API it exists to enforce.
+   */
+  const sourceCases = [
+    {
+      name: 'a reanimated style animating backgroundColor',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () => useAnimatedStyle(() => ({ backgroundColor: c.value }));\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a reanimated style animating opacity and a transform',
+      body:
+        "import { useAnimatedStyle } from 'react-native-reanimated';\n" +
+        'export const s = () =>\n' +
+        '  useAnimatedStyle(() => ({ opacity: p.value, transform: [{ translateY: y.value }] }));\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a Keyframe cross-fading a colour',
+      body:
+        "import { Keyframe } from 'react-native-reanimated';\n" +
+        'export const k = new Keyframe({ 0: { backgroundColor: a }, 100: { backgroundColor: b } });\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a Keyframe fading opacity',
+      body:
+        "import { Keyframe } from 'react-native-reanimated';\n" +
+        'export const k = new Keyframe({ 0: { opacity: 0 }, 100: { opacity: 1 } });\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a duration written as a number',
+      body:
+        "import { withTiming } from 'react-native-reanimated';\n" +
+        'export const a = withTiming(1, { duration: 250 });\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a duration taken from the scale',
+      body:
+        "import { withTiming } from 'react-native-reanimated';\n" +
+        "import { nativeMotion } from '@irodora/design-tokens';\n" +
+        'export const a = withTiming(1, { duration: nativeMotion.durations.local });\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a Keyframe given a literal duration',
+      body:
+        "import { Keyframe } from 'react-native-reanimated';\n" +
+        'export const k = new Keyframe({ 0: { opacity: 0 } }).duration(200);\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a Keyframe given a duration from the scale',
+      body:
+        "import { Keyframe } from 'react-native-reanimated';\n" +
+        "import { nativeMotion } from '@irodora/design-tokens';\n" +
+        'export const k = new Keyframe({ 0: { opacity: 0 } }).duration(nativeMotion.durations.micro);\n',
+      shouldFail: false,
+    },
+    {
+      name: 'a shared-element transition on a swatch',
+      body:
+        "import { Swatch } from './Swatch.js';\n" +
+        'export const V = () => <Swatch color={c} sharedTransitionTag="sample" />;\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a layout transition on a swatch',
+      body:
+        "import { Swatch } from './Swatch.js';\n" +
+        "import { LinearTransition } from 'react-native-reanimated';\n" +
+        'export const V = () => <Swatch color={c} layout={LinearTransition} />;\n',
+      shouldFail: true,
+    },
+    {
+      name: 'a swatch inside Appear — the allowed way for a sample to arrive',
+      body:
+        "import { Swatch } from './Swatch.js';\n" +
+        "import { Appear } from './motion.js';\n" +
+        'export const V = () => (\n' +
+        '  <Appear index={2}>\n' +
+        '    <Swatch color={c} />\n' +
+        '  </Appear>\n' +
+        ');\n',
+      shouldFail: false,
+    },
+  ];
+
   let bad = 0;
   const baseline = run(allowed).violations.length;
   if (baseline !== 0) {
@@ -283,6 +506,17 @@ if (process.argv.includes('--prove')) {
     );
   }
 
+  for (const c of sourceCases) {
+    writeFileSync(planted, c.body);
+    const found = run(allowed).violations.length > 0;
+    unlinkSync(planted);
+    const ok = found === c.shouldFail;
+    if (!ok) bad += 1;
+    console.log(
+      `  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${c.name} ${DIM}${c.shouldFail ? 'rejected' : 'allowed'}${OFF}`,
+    );
+  }
+
   if (existsSync(planted)) unlinkSync(planted);
   if (bad > 0) {
     console.log(`\n${RED}${BOLD}The check does not discriminate.${OFF}\n`);
@@ -304,7 +538,7 @@ console.log(
     `not a copy).${OFF}`,
 );
 console.log(
-  `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062). NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
+  `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062); reanimated's useAnimatedStyle and Keyframe bodies, which are worklets rather than JSX and which the literal scan above is structurally blind to; duration literals, which is how a scale stops being a scale; and layout or shared-element transitions on a Swatch, which is 'cross-fade between samples' stated mechanically. NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
     `by a helper. This is source analysis, and the rendered tree CANNOT see an animated ` +
     `colour — it resolves to a concrete value indistinguishable from a static one.${OFF}`,
 );

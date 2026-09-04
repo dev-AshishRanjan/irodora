@@ -8,6 +8,140 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-04 — F-144 DONE · the product moves, and the gate that guarded it had gone blind
+
+Nothing in the app animated. The manifest has defined motion since F-003 — three durations, two
+easings, an allow-list of `opacity` and `transform` — and the token ledger recorded the state
+plainly: _"There is no `Animated`, no `withTiming` and no transition anywhere in the reader
+zone."_ `verify-motion.mjs` had been guarding an empty set since F-143.
+
+An app with zero motion reads as unfinished however correct its colours are. After the type
+scale this is the largest single contributor to the reported feeling of low effort.
+
+### Reanimated, and the reason is structural
+
+Not preference, and probed rather than assumed. `heroui-native@1.0.8` declares
+`react-native-reanimated` as a **required** peer — its `peerDependenciesMeta` marks
+`@gorhom/bottom-sheet`, `expo-blur` and `react-native-screens` optional, and reanimated is not
+among them. `packages/ui` declares heroui-native as a peer, so **reanimated was already
+unavoidable in every tree that renders this package**. Choosing it cost no new dependency.
+
+And HeroUI's Dialog and Popover take their timing as reanimated `Keyframe`s. There is no other
+way to give an overlay our durations at all. RN `Animated` would have meant two animation
+engines in one app and overlays left on somebody else's 200ms.
+
+Both jest configs already resolve the real reanimated through
+`react-native-worklets/jest/resolver.js`, and `packages/ui/jest.config.mjs` already records why
+it is not mocked. The animation code under test is the animation code that ships.
+
+### What the API is
+
+`packages/ui/src/motion.tsx`. `DurationStep` and `EasingName` are unions derived from the
+manifest. `useMotion()` subscribes to `AccessibilityInfo` and returns durations that are **zero**
+under reduced motion — for all three steps, with nothing left to tune down. `Appear` is a
+fade-and-rise wrapper. `overlayKeyframes` is the timing HeroUI overlays take.
+
+`Appear` has **no `style` prop and no way to say what it animates**, for the reason `Screen` has
+no `style`: an allow-list cannot be enforced at a call site that can pass anything. The stagger
+delay is derived from the row index, capped at six — 120 rows staggered individually is seven
+seconds, which is a loading screen rather than an entrance.
+
+### The gate had gone blind, and its output said so without sounding like it
+
+```
+106 source file(s) scanned; 0 with an Animated style literal.
+No forbidden animation.
+```
+
+Printed while scanning a file full of animations.
+
+The scan reads `<Animated.X style={{…}}>`. **Reanimated never writes that** — it writes
+`useAnimatedStyle(() => ({ opacity: … }))`, a worklet returning an object, and a `Keyframe` whose
+properties are the keys of its _frames_ rather than of its argument. Neither is a JSX attribute.
+
+**The gate did not fail and did not warn.** It reported a clean scan of a codebase it could no
+longer read, and the number that gives it away — zero animated elements in an app that had just
+started animating — is exactly the number it had printed truthfully for every release before
+this one. E-067: a checker's blind spot is a property of the technology it scans, not of the rule
+it enforces, so adopting a library is the moment to re-derive what it can still see. Nothing
+prompts that, because the check keeps passing.
+
+**Three checks added, twenty `--prove` cases, decoys in both directions.** The keys of a
+`useAnimatedStyle` or `Keyframe` body must be on the allow-list; a bare numeric `duration:` or
+`.duration(n)` is rejected while `nativeMotion.durations.*` passes; and
+`sharedTransitionTag` / `layout` / `entering` / `exiting` on a `<Swatch>` is rejected — that last
+is _"cross-fade between samples"_ stated mechanically, since it is a prop rather than a style key
+and nothing existing could see it.
+
+The two that must **pass** carry the most weight. `transform: [{ translateY }]` must be allowed,
+or the check rejects the one animation this product is built on. And
+`.duration(nativeMotion.durations.micro)` must be allowed, or the literal check bans the typed API
+it exists to enforce. A gate that flags its own legitimate case is switched off within a week.
+
+### One setting, three mechanisms, one of them checked
+
+Reduced motion is honoured in three places by three owners, and E-068 records the asymmetry
+rather than leaving it to be rediscovered:
+
+| Where              | Mechanism                                       | Asserted?      |
+| ------------------ | ----------------------------------------------- | -------------- |
+| `useMotion()`      | `AccessibilityInfo`, returns 0                  | **yes**        |
+| `overlayKeyframes` | `ReduceMotion.System`; reanimated decides       | no — cannot be |
+| screen transitions | the native stack; the OS decides                | no — not ours  |
+
+`isReduceMotionEnabled()` is asynchronous on both platforms, so no component can know the answer
+at mount. `Appear` starts hidden and reaches rest on the next frame — about **16ms of
+invisibility** for a user who asked for no motion. Reanimated's synchronous `useReducedMotion()`
+would close that window and is deliberately not used: its answer is module state cached at import,
+always `false` under jest, so seeding from it would add a line no test could observe. An
+unverified line that removes 16ms is a worse trade than a verified one that does not.
+
+### Two things the tests got wrong first
+
+`props.style` on an animated element is the style array **as it was at mount** — the starting
+frame, permanently. The first assertions read `undefined` and then `0`. `getAnimatedStyle` is
+reanimated's own accessor and is the only thing that can watch an animation finish.
+
+`advanceAnimationByTime` is **deprecated in reanimated's own source** and is a trap without fake
+timers: with real ones it advances nothing, and the value read back is whatever the test happened
+to catch. That is how one advance read 0.877 and a longer one read 0.673 — not a slow animation
+but a test measuring the suite's own latency. `jest.useFakeTimers()` and
+`jest.advanceTimersByTime` directly.
+
+### Verification
+
+| ran                                                    | result       |
+| ------------------------------------------------------ | ------------ |
+| 0 state · 1 typecheck · 2 lint · 3 format               | **PASS**     |
+| 4 test · 6 build · 8 a11y · 9 contrast · 10 cvd · 15 security | **PASS** |
+| motion gate · `--prove` 20 cases                       | **PASS**     |
+| 122 ui · 672 mobile                                    | **PASS**     |
+
+**Token reach 53 → 54.** `nativeMotion` was declared unreached with `closedBy: F-144`, and the
+gate caught the exemption going stale the moment the binding was imported.
+
+**Not run:** `color-golden` — no colour maths changed. `e2e`: gate 7 still pending.
+
+### Still owed
+
+**Three of the four sites, and the fourth is a feature rather than a shortfall.** There is no
+bottom sheet in the product — `BottomSheet` appears only in `overlay.tsx`'s prose and the Lens
+viewfinder's comments. **F-158** builds one and consumes this API. Building it here to satisfy a
+checkbox would be scope creep into a feature already in the list.
+
+**The navigation half is verified only as far as the token.** `animationDuration` is honoured by
+the native stack for some animation types and not others, and never on the web. That the token
+reaches the navigator is read from source; that a push takes 260ms needs a device.
+
+**Whether any of it reads as considered is unverified, and it is the point of the feature.** The
+durations are on a scale and the entrance staggers and then stops — whether 180ms with a
+`cubic-bezier(0.16, 1, 0.3, 1)` rise of 12px reads as editorial or as a fade somebody added needs
+a phone in a hand. The specific risk is the Atlas: six staggered rows is a decision made against a
+list of 120, and if it drags on a real scroll the answer is fewer staggered rows or none — not a
+shorter duration.
+
+---
+
 ## 2026-09-03 — F-148 DONE · the colour page is the centrepiece
 
 The whole product points at this screen. It opened with a **96px swatch beside three lines of

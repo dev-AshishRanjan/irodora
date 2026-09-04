@@ -36,6 +36,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Dialog as HeroDialog, Popover as HeroPopover, Tabs as HeroTabs } from 'heroui-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { overlayKeyframes } from './motion.js';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
@@ -138,6 +139,13 @@ export function Popover({
         />
         <HeroPopover.Content
           presentation="popover"
+          /*
+            OUR TIMING RATHER THAN HeroUI's (F-144). Its defaults are 200ms in and 150ms out;
+            neither is on our scale, and an overlay that moves at a different speed from the
+            screen behind it is the specific thing that reads as assembled from parts. These are
+            `local` (180) and `micro` (120), and both animate opacity and scale only.
+          */
+          animation={overlayKeyframes}
           /*
             `null` REMOVES THE BACKGROUND LAYER, and this is the one line in the file that the
             wrapper rule names outright.
@@ -313,6 +321,8 @@ export function Dialog({
         />
         <HeroDialog.Content
           testID={testID}
+          // The same timing as Popover, and for the same reason (F-144).
+          animation={overlayKeyframes}
           // The same refusal as Popover's: undefined lets the active library theme decide the
           // layer, and one of its choices is a blur. A blur tints what it surrounds.
           background={null}

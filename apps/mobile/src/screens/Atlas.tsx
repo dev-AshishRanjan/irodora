@@ -41,7 +41,7 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Chip, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Appear, Chip, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import {
   allEntries,
   familyLabel,
@@ -422,16 +422,28 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
         */
         ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xl5 }}
         ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xl4 }} />}
-        renderItem={({ item }) => (
-          <AtlasEntry
-            item={item}
-            locale={locale}
-            script={script}
-            t={t}
-            onSelect={() => {
-              onSelect?.(item.entry.slug);
-            }}
-          />
+        renderItem={({ item, index }) => (
+          /*
+            THE ENTRANCE (F-144). Each entry fades and rises, staggered behind the one above it
+            for the first few rows and then together — 120 rows staggered individually would
+            take seven seconds, which is a loading screen rather than an entrance.
+
+            `Appear` WRAPS the entry rather than animating it. The colour itself is never
+            interpolated: the wrapper's opacity moves and the sample underneath is either drawn
+            or not. A transition applied to the `Swatch` would cross two colours the engine
+            never produced, and `verify-motion` rejects exactly that shape.
+          */
+          <Appear index={index}>
+            <AtlasEntry
+              item={item}
+              locale={locale}
+              script={script}
+              t={t}
+              onSelect={() => {
+                onSelect?.(item.entry.slug);
+              }}
+            />
+          </Appear>
         )}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: nativeSpacing.xl3 }}

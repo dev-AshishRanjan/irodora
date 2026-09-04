@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-03",
+  "updated": "2026-09-04",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2503,6 +2503,68 @@
       "memory": "memory/effects/a-deleted-ui-section-leaves-live-locale-keys.md",
       "rationale": "THE HERO ABSORBED THE NAMES SECTION, and five label keys died with it — `detail.names`, `detail.kanji`, `detail.kana`, `detail.romaji`, `detail.english`. Nothing FAILS when a key outlives its caller: it is a valid string in two locales that no screen reads, and the app is smaller and correct without it. That is the whole hazard — dead strings are the cheapest thing in a codebase to leave behind, and the translation cost of the next locale is paid per key, including the ones nobody renders. THE GUARD IS REAL BUT NARROW: typecheck holds the two locales identical, which is what stops a half-deletion, and it says nothing about whether a key is REACHED. Token reach has a gate for exactly this question and strings do not. If the corpus of dead keys ever grows past what a reader can hold, the answer is the same shape as `verify-token-reach.mjs`: enumerate the keys, grep the callers, and make the exemptions name a closing feature — ADR-0088.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-067",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/motion.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-motion.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "motion"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:motion — three checks added, each with --prove decoys in BOTH directions. The keys of a `useAnimatedStyle` or `Keyframe` body must be in `motion.animatable`; a bare numeric `duration:` or `.duration(n)` is rejected while `nativeMotion.durations.*` passes; and `sharedTransitionTag` / `layout` / `entering` / `exiting` on a `<Swatch>` is rejected while a `<Swatch>` inside `<Appear>` passes. Twenty cases, all discriminating. The two that must PASS carry the weight: a check that read `translateY` out of `transform: [{…}]` would reject the one animation this product is built on, and a check that rejected every mention of `duration` would ban the typed API it exists to enforce.",
+      "memory": "memory/effects/a-new-engine-can-make-an-old-gate-blind.md",
+      "rationale": "THE GATE WENT QUIET AT THE MOMENT IT ACQUIRED SOMETHING TO CHECK, and the output said so in a line nobody would read as an alarm: \"106 source files scanned; 0 with an Animated style literal\" — printed while `motion.tsx` sat in the scan animating opacity and a transform. The scan reads `<Animated.X style={{…}}>`, which is React Native's form. REANIMATED NEVER WRITES THAT: it writes `useAnimatedStyle(() => ({ opacity: … }))`, a worklet returning an object, and a `Keyframe` whose properties are the keys of its FRAMES rather than of its argument. Both are invisible to a JSX-attribute regex. The gate would have stayed green through a cross-fading swatch, which is the one thing it exists to stop. WHAT MAKES THIS THE DANGEROUS SHAPE rather than an ordinary gap: the gate did not fail, and it did not warn. It reported a clean scan of a codebase it could no longer see, and the number that would have given it away — zero animated elements in an app that had just started animating — is exactly the number it had printed truthfully for every release before this one. A GATE'S BLIND SPOT IS A PROPERTY OF THE TECHNOLOGY IT SCANS, not of the rule it enforces, so adopting a new library is the moment to re-derive what the checker can see. Nothing prompts that; the check keeps passing.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-068",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/motion.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/overlay.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test — the `useMotion` half is ASSERTED: `AccessibilityInfo` is driven, all three durations read 0, and a mid-session `reduceMotionChanged` collapses them without a remount. The other two are NOT asserted and cannot be from here. `overlayKeyframes` hands the decision to reanimated (`ReduceMotion.System`), whose answer lives on the UI thread; the navigator hands it to the OS. Both are the correct owner for their layer, and neither is a claim this repository can check.",
+      "memory": "memory/effects/one-setting-three-mechanisms-and-only-one-is-asserted.md",
+      "rationale": "REDUCED MOTION IS ONE USER SETTING AND THIS FEATURE OBEYS IT THREE DIFFERENT WAYS, because the three layers own different things. `useMotion` subscribes to `AccessibilityInfo` and returns zero — ours, and the one F-144 criterion 2 requires to be \"asserted rather than described\". `overlayKeyframes` is a VALUE rather than a hook, so it cannot consult anything itself; it carries `ReduceMotion.System` and reanimated checks the platform when it runs the animation. A screen transition is not ours at all: the native stack animates it and the OS honours the setting at a level no JavaScript sees. THE HAZARD IS THAT ALL THREE LOOK ALIKE FROM THE OUTSIDE — three places that \"handle reduced motion\" — while only one of them is checked, and a reader who assumes uniform coverage will trust the other two more than the evidence allows. Stated here so the asymmetry is a recorded fact rather than something a future reader has to rediscover by finding no test. THE SECOND THING WORTH KNOWING: `isReduceMotionEnabled()` is ASYNCHRONOUS on both platforms, so no component can know the answer at mount. `Appear` starts hidden and reaches rest on the frame after it learns — about 16ms of invisibility for a user who asked for no motion. Reanimated's synchronous `useReducedMotion()` would close that window and is deliberately not used: its answer is module state cached at import, always `false` under jest, so seeding from it would add a line no test could observe. An unverified line that removes 16ms is a worse trade than a verified one that does not.",
+      "confidence": 0.85,
       "origin": "manual",
       "status": "active"
     }
