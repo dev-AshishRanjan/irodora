@@ -157,6 +157,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/spacing-is-a-step-name-so-a-number-cannot-reach-a-screen.md](effects/spacing-is-a-step-name-so-a-number-cannot-reach-a-screen.md) — **E-057** · every spacing prop is a step NAME, so the manifest and the screens are joined by the type system and a number cannot reach a layout at all.
 - [effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md](effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md) — **E-058** · eleven individually-reasonable exemptions were an itemised description of an undesigned product, and the gate called it green; an exemption now names the feature that ends it.
 - [effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md](effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md) — **E-059** · one geometry, two renderers, so the shipped icon cannot drift from the mark in the app — and a type literal can make a token look reached while nothing draws it.
+- [effects/the-app-config-now-evaluates-design-tokens.md](effects/the-app-config-now-evaluates-design-tokens.md) — **E-060** · the Expo config is evaluated code now, so the launch screen and the first painted frame cannot disagree about the background.
 
 ## Glossary
 

@@ -49,8 +49,19 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
 import { ciError } from './annotate.mjs';
+import { decodePng, carriesMark } from './png.mjs';
+import { expectedSignature } from './generate-brand-assets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * Where Android keeps a launcher icon or a splash logo, at any density.
+ *
+ * Both are checked because they fail differently: an icon is what a person sees on the home
+ * screen forever, and a splash is what they see for 400ms and nobody screenshots.
+ */
+const ICON_ENTRY =
+  /^res\/(mipmap|drawable)[^/]*\/(ic_launcher[^/]*|splashscreen_logo)\.(png|webp)$/u;
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -508,6 +519,46 @@ export function checkApk(apkPath, expected) {
   const check = (ok, what, detail) => {
     if (!ok) failures.push({ what, detail });
   };
+
+  // ---- FR-69: the identity reached the artefact (F-142) ------------------------------
+  //
+  // Until F-142 there was no icon in `app.config.ts` at all, so the app shipped Expo's default.
+  // This asserts that what is IN THE FILE carries our mark.
+  //
+  // A SHAPE, NOT A HASH, and the two obvious alternatives are both wrong. Byte-comparing against
+  // our source PNG fails every correct build, because Android generates density variants.
+  // Refusing a known placeholder's hash refuses exactly one bad file and waves through the next
+  // one. Proportions survive resizing, so `carriesMark` is a POSITIVE assertion that our mark is
+  // present rather than a list of things it must not be.
+  if (expected.markSignature !== undefined) {
+    const icons = [...entries.keys()].filter((n) => ICON_ENTRY.test(n));
+    check(
+      icons.length > 0,
+      'no launcher icon in the artefact',
+      'nothing under res/ matches an icon or splash resource. Either the config lost its `icon` ' +
+        'key, or prebuild did not run — and an APK with no icon of ours is one wearing Expo’s.',
+    );
+
+    // PNG only. Android may emit WebP for some densities and this decoder does not read it —
+    // said out loud rather than silently passing, because a check that skips everything it
+    // cannot parse reports success for a file it never looked at.
+    const readable = icons.filter((n) => n.endsWith('.png'));
+    if (icons.length > 0 && readable.length === 0)
+      notes.push(
+        `${String(icons.length)} icon resource(s) found, none of them PNG (Android re-encoded ` +
+          'them, most likely to WebP). The mark could not be read from this artefact.',
+      );
+
+    for (const name of readable) {
+      let verdict;
+      try {
+        verdict = carriesMark(decodePng(readEntry(buf, entries.get(name))), expected.markSignature);
+      } catch (error) {
+        verdict = { ok: false, why: `could not be decoded: ${error.message}` };
+      }
+      check(verdict.ok, `${name} does not carry the mark`, verdict.why);
+    }
+  }
 
   // ---- NFR-12, as a property of the file --------------------------------------------
   const network = manifest.permissions.filter((p) => NETWORK_PERMISSIONS.includes(p));
@@ -1061,6 +1112,21 @@ if (!isEntryPoint) {
   console.log(`\n${BOLD}Irodora — gate 16: the artefact${OFF}  ${DIM}${apkPath}${OFF}\n`);
 
   const expected = { requireSignature: args['allow-unsigned'] !== true };
+
+  /*
+   * THE MARK'S PROPORTIONS ARE COMPUTED, NOT PASSED (F-142).
+   *
+   * Deliberately not a `--expect-mark` flag, for the reason the permission list above stopped
+   * being one: a security- or identity-relevant expectation duplicated into a workflow file is
+   * two copies to keep in agreement, and keeping two copies in agreement is not a thing to rely
+   * on a person for. `expectedSignature()` derives them from the same `MARK` the assets were
+   * generated from, so the gate and the icon cannot disagree about what the mark is.
+   *
+   * `--skip-mark` exists for an artefact that legitimately has no icon of ours — nothing builds
+   * one today, and the flag is here so that case is stated rather than silently tolerated.
+   */
+  if (args['skip-mark'] !== true) expected.markSignature = expectedSignature();
+
   if (args['expect-package']) expected.package = String(args['expect-package']);
   if (args['expect-version-code']) expected.versionCode = Number(args['expect-version-code']);
   if (args['expect-version-name']) expected.versionName = String(args['expect-version-name']);

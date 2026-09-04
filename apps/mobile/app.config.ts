@@ -1,4 +1,5 @@
 import type { ExpoConfig } from 'expo/config';
+import { nativeColors } from '@irodora/design-tokens';
 
 /**
  * Irodora — the app. The only surface ([ADR-0051](../../docs/adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)).
@@ -87,6 +88,23 @@ const config: ExpoConfig = {
   // field is not part of ExpoConfig any more — setting it would be a typecheck error, and
   // reading its absence as "we forgot" is the mistake this comment exists to prevent.
 
+  /*
+   * THE IDENTITY (F-142, FR-69).
+   *
+   * These four PNGs are GENERATED from `MARK` in `packages/ui/src/brand.tsx` by
+   * `scripts/generate-brand-assets.mjs`, and `--check` byte-compares them on every lint run.
+   * Editing one by hand is a gate failure.
+   *
+   * That matters more here than it looks. The usual way an app gets an icon is that somebody
+   * exports a PNG from a drawing tool and commits it — after which the file has no relationship
+   * to the code at all, the mark can move, and the icon stays whatever it was on the day it was
+   * exported. An app icon is the one asset you stop seeing after a week, so nobody notices.
+   *
+   * Until this feature there was no `icon`, no `adaptiveIcon` and no `splash` here AT ALL — not
+   * misconfigured, absent — so the app shipped whatever Expo defaults to, on both platforms.
+   */
+  icon: './assets/brand/icon.png',
+
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.irodora.app',
@@ -106,6 +124,21 @@ const config: ExpoConfig = {
   android: {
     package: 'com.irodora.app',
     versionCode,
+    /*
+     * THE FOREGROUND IS TRANSPARENT AND SMALLER THAN THE ICON, and the number behind that is
+     * Android's rather than a taste: an adaptive icon is masked to a shape the launcher chooses,
+     * and only the central **66 of 108** units are guaranteed visible — a circle of Ø 625.8 px on
+     * this 1024 canvas. The mark's ink is 432 px square, so its diagonal is 610.9 and it fits
+     * inside that circle whichever mask the device applies. `brand-assets.test.mjs` asserts the
+     * arithmetic rather than trusting this comment.
+     *
+     * `backgroundColor` is the manifest's dark `background`, so the two layers compose into the
+     * same image `icon.png` already is.
+     */
+    adaptiveIcon: {
+      foregroundImage: './assets/brand/adaptive-icon.png',
+      backgroundColor: nativeColors.dark.background,
+    },
     // NFR-12, as a build-time fact rather than a promise. `INTERNET` is absent from the
     // permission list AND blocked, because a library that declares it would otherwise have it
     // merged in silently.
@@ -201,6 +234,36 @@ const config: ExpoConfig = {
      * `expo prebuild --clean` in both CI workflows.
      */
     ['expo-build-properties', { android: { minSdkVersion: ANDROID_MIN_SDK } }],
+    /*
+     * THE SPLASH (F-142), AND WHY IT IS A PLUGIN RATHER THAN A CONFIG KEY.
+     *
+     * SDK 52 removed the top-level `splash` key; in SDK 57 the only `splash` left on
+     * `ExpoConfig` is `web.splash`, for a PWA this product does not have. So the splash is
+     * configured here or it is not configured at all — and "not at all" is what shipped until
+     * now, which meant Expo's default template splash reached the artefact.
+     *
+     * `expo-splash-screen` was added as a dependency for this. It is first-party Expo at the
+     * SDK's own version, it is what `expo prebuild` already assumed (the placeholder
+     * `splashscreen_logo.png` files under `android/` are its output), and it adds no permission.
+     *
+     * BOTH THEMES, from the manifest. The image is the mark in each theme's `foreground` on a
+     * transparent ground, composited over that theme's `background` — so the launch screen is
+     * the same two colours the first painted frame will be, and there is no flash of the wrong
+     * polarity between them. `imageWidth` is 40 % of the narrow edge of a typical phone, which
+     * keeps the mark well inside the safe area on every aspect ratio.
+     */
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/brand/splash-icon-light.png',
+        backgroundColor: nativeColors.light.background,
+        imageWidth: 160,
+        dark: {
+          image: './assets/brand/splash-icon-dark.png',
+          backgroundColor: nativeColors.dark.background,
+        },
+      },
+    ],
     './plugins/withReleaseSigning',
   ],
 

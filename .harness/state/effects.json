@@ -2267,6 +2267,44 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-060",
+      "from": {
+        "kind": "package",
+        "ref": "packages/design-tokens"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app.config.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-brand-assets.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "build"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/design-tokens",
+        "scripts"
+      ],
+      "severity": "medium",
+      "guard": "gate:build — `expo prebuild` cannot produce a config until @irodora/design-tokens resolves, so a broken build order fails there rather than shipping the wrong colour. gate:lint — `generate-brand-assets.mjs --check` byte-compares the four PNGs against what MARK and the manifest currently produce, proven by mutating one byte and watching it go red.",
+      "memory": "memory/effects/the-app-config-now-evaluates-design-tokens.md",
+      "rationale": "app.config.ts NOW IMPORTS `nativeColors` and uses it for the adaptive icon background and both splash backgrounds, so the config is evaluated code with a build-order dependency where it previously imported only types. THE ALTERNATIVE WAS THREE HEX LITERALS, which would have been correct on the day they were typed and would then have been the only colours in the product the contrast gate never sees. THE SPECIFIC DEFECT THIS PREVENTS: the splash is composited from the theme background and the app’s first frame paints the same token; if the two disagree the user sees a change of polarity at launch, which lasts 400ms and is therefore never filed. THE NARROWER THING IT DOES NOT DO: icon.png’s ground is baked into the PNG because a PNG has pixels. It follows a manifest change only when the generator is RUN — `--check` in lint is what turns \"somebody remembered\" into \"the build failed\", so the icon does not track the manifest continuously, it is checked against it continuously.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

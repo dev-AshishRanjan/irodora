@@ -4038,7 +4038,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-141"
       ],
@@ -4055,7 +4055,26 @@
         "build",
         "a11y"
       ],
-      "notes": "VERIFIED ABSENT: app.config.ts contains no icon, adaptiveIcon or splash key at all. The only splashscreen_logo.png files in the tree are Expo prebuild placeholders under android/app/src/main/res/, which are generated, untracked and rebuilt by expo prebuild --clean — so the app currently ships whatever Expo defaults to. THE GATE READS THE ARTEFACT rather than the config, deliberately: gate 16 already does exactly this for versionName and versionCode after E-018 found that an environment variable which silently defaulted looks identical to one that was set. A placeholder icon is the same failure shape."
+      "notes": "VERIFIED ABSENT: app.config.ts contains no icon, adaptiveIcon or splash key at all. The only splashscreen_logo.png files in the tree are Expo prebuild placeholders under android/app/src/main/res/, which are generated, untracked and rebuilt by expo prebuild --clean — so the app currently ships whatever Expo defaults to. THE GATE READS THE ARTEFACT rather than the config, deliberately: gate 16 already does exactly this for versionName and versionCode after E-018 found that an environment variable which silently defaulted looks identical to one that was set. A placeholder icon is the same failure shape. DONE 2026-09-03. FOUR PNGs, GENERATED RATHER THAN DRAWN. The mark is two axis-aligned rectangles on a flat ground, so every pixel is computable — `scripts/png.mjs` encodes and decodes 8-bit RGBA with node:zlib and nothing else, and `generate-brand-assets.mjs` emits icon, adaptive-icon and both splash images from MARK and the manifest. No rasteriser, no native binary on three platforms, and byte-identical output everywhere. `--check` runs in lint and byte-compares, so a hand-edited icon is a gate failure — proven by flipping one byte and watching it go red. GEOMETRY CHOSEN SO EVERY NUMBER IS AN INTEGER, because a fractional edge is a soft edge: icon draws the grid at 768 of 1024 (unit 32, ink 576 = 56.25%, clear of the iOS squircle); the adaptive foreground draws it at 576 (ink 432, diagonal 610.9) because Android guarantees only the central 66/108 — a circle of 625.8 — so the arithmetic is asserted rather than eyeballed. THE SPLASH NEEDED A DEPENDENCY: SDK 52 removed the top-level `splash` key and in SDK 57 the only one left on ExpoConfig is `web.splash`, for a PWA this product does not have. So `expo-splash-screen` was added — first-party Expo at the SDK version, already assumed by prebuild (the placeholder splashscreen_logo.png files under android/ are its output), adding no permission. It brought no new advisory: the xmldom count in the lockfile is 6 before and 6 after. GATE 16 CHECKS A SHAPE, NOT A HASH, and the two obvious alternatives are both wrong — byte-comparing against our source PNG fails every correct build because Android generates density variants, and refusing a known placeholder hash refuses exactly one bad file and waves through the next. Proportions survive resizing, so `carriesMark` decodes the icon and asserts the middle row reads ground-field-interval-field-ground in the mark’s own proportions: a POSITIVE assertion that our mark is there. The expected numbers are COMPUTED from MARK rather than passed as a flag, for the reason the permission list stopped being one — two copies of an identity-relevant expectation is two copies to keep in agreement. THE CONFIG COLOURS COME FROM THE MANIFEST (E-060): app.config.ts imports nativeColors, so the launch background and the first painted frame cannot disagree and flash a change of polarity at startup.",
+      "plan": "plans/F-142-the-app-has-an-icon-and-a-splash.md",
+      "effects": [
+        "E-059",
+        "E-060"
+      ],
+      "attested": [
+        {
+          "criterion": "Gate 16 reads the built artefact and fails if a default or placeholder asset reached it",
+          "verifiedBy": "THE LOGIC IS PROVEN, THE INTEGRATION IS NOT, and the difference is worth stating plainly. `generate-brand-assets.mjs --prove` runs nine cases that exercise every line of the encoder, the decoder and the signature: a 4x4 round-trip (without which the hand-rolled pair could be wrong TOGETHER and agree with each other), all four assets recognised, and two decoys refused — a solid block, which is the placeholder shape, and two bars in the wrong proportion, without which a signature that accepted anything with ink in it would assert nothing. WHAT WAS NOT RUN is `checkApk` against an actual APK. There is no Android SDK on this machine, and gate 16’s own `--prove` refuses to run without aapt2 and android.jar rather than pretending — so the zip-plumbing path is wired and unexecuted. It is the same path the existing manifest and signer assertions already use, which is the argument for confidence and not a substitute for having run it. First CI release build discharges this.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The Android adaptive icon is checked in both the circular and the squircle mask",
+          "verifiedBy": "ASSERTED AS ARITHMETIC, NOT AS AN IMAGE. Android guarantees only the central 66/108 of an adaptive icon survives WHATEVER mask a launcher applies — circle, squircle, rounded square, teardrop — so the check that covers every mask is that the ink fits the guaranteed circle: diagonal 610.9 against a diameter of 625.8, asserted in `--prove`. That is stronger than checking two specific masks, because it covers masks no one has shipped yet. WHAT IT IS NOT is a look at the result: nobody has seen this icon on an Android launcher, and \"fits the safe zone\" and \"looks right at 48dp beside other icons\" are different claims.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-143",

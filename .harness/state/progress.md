@@ -8,6 +8,76 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-142 DONE · the app has an icon and a splash, generated from the mark
+
+`app.config.ts` had no `icon`, no `adaptiveIcon` and no `splash` — not misconfigured, **absent**
+— so the app shipped whatever Expo defaults to, on both platforms.
+
+### Generated, never drawn
+
+The mark is two axis-aligned rectangles on a flat ground, so every pixel is computable.
+[`scripts/png.mjs`](../../scripts/png.mjs) encodes and decodes 8-bit RGBA with `node:zlib` and
+nothing else; [`generate-brand-assets.mjs`](../../scripts/generate-brand-assets.mjs) emits the
+icon, the adaptive foreground and both splash images from `MARK` and the manifest. No rasteriser,
+no native binary on three platforms, byte-identical output everywhere.
+
+`--check` runs in `lint` and byte-compares, so **a hand-edited icon is a gate failure** — proven
+by flipping one byte and watching it go red. That matters more than it looks: the usual way an
+app gets an icon is that somebody exports a PNG from a drawing tool and commits it, after which
+the file has no relationship to the code at all. An app icon is the one asset you stop seeing
+after a week.
+
+### Every number is an integer, because a fractional edge is a soft edge
+
+| asset | grid at | unit | ink | why |
+|---|---:|---:|---:|---|
+| `icon` | 768 / 1024 | 32 | 576 (56.25 %) | clear of the iOS squircle |
+| `adaptive-icon` | 576 / 1024 | 24 | 432 | Android guarantees only the central **66/108** — Ø 625.8; the ink's diagonal is 610.9 |
+
+### The splash needed a dependency, and the reason is Expo's
+
+SDK 52 removed the top-level `splash` key; in SDK 57 the only `splash` left on `ExpoConfig` is
+`web.splash`, for a PWA this product does not have. So `expo-splash-screen` was added —
+first-party Expo at the SDK's own version, already assumed by `prebuild` (the placeholder
+`splashscreen_logo.png` files under `android/` are its output), adding no permission. **It
+brought no new advisory:** the `xmldom` count in the lockfile is 6 before and 6 after.
+
+### Gate 16 checks a shape, not a hash
+
+Two obvious implementations are both wrong. Byte-comparing the APK's icon against our source PNG
+**fails every correct build**, because Android generates density variants. Refusing a known
+placeholder's hash refuses exactly one bad file and waves through the next.
+
+Proportions survive resizing — so `carriesMark` decodes the icon and asserts the middle row reads
+ground · field · interval · field · ground in the mark's own proportions. A **positive**
+assertion that our mark is there, rather than a list of things it must not be. The expected
+numbers are computed from `MARK` rather than passed as a flag, for the reason the permission list
+stopped being one.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · 8 a11y | **PASS** |
+| 15 security (advisories) · lockfile proof | **PASS** |
+| `brand:assets:prove` — 9 cases, 2 decoys | **PASS** |
+| one byte flipped in `icon.png` | **caught** |
+
+**Not run:** gate 16 against a real APK — no Android SDK on this machine, and its own `--prove`
+refuses to run without `aapt2` rather than pretending. Attested.
+
+### Still owed
+
+**Nobody has seen the icon on a launcher.** "Fits the safe zone" and "looks right at 48 dp beside
+other icons" are different claims, and only the first is checked.
+
+**The APK path is wired and unexecuted.** It is the same zip-plumbing the existing manifest and
+signer assertions already use — an argument for confidence, not a substitute for having run it.
+The first CI release build discharges it.
+
+---
+
 ## 2026-09-03 — F-141 DONE · the mark and the wordmark
 
 [`BRAND.md` §7](../../docs/design/BRAND.md#7-the-mark) has specified an identity since R0 and
