@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
@@ -94,9 +95,22 @@ export default function RootLayout(): React.JSX.Element {
   });
   if (!loaded) return <></>;
 
+  /*
+   * THE SAFE-AREA PROVIDER IS EXPLICIT, not inherited.
+   *
+   * expo-router mounts one of its own, and relying on that is how the app ended up painting
+   * under the status bar for three features without anyone noticing: F-145 turned the header
+   * off, nothing else was insetting anything, and there was no place in our source that said
+   * insets were somebody's job.
+   *
+   * Rendered here so the dependency is visible where the tree is assembled. A nested provider
+   * is supported and inherits, so this is safe whether or not the router supplies one.
+   */
   return (
-    <ThemeProvider>
-      <Chrome />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <Chrome />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

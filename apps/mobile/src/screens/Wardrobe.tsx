@@ -39,7 +39,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Image, Pressable, SectionList, ScrollView, View } from 'react-native';
+import { Image, Pressable, SectionList, ScrollView, useWindowDimensions, View } from 'react-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import {
   Bands,
@@ -304,6 +304,8 @@ const CELL_SWATCH = 32;
 
 interface CellProps {
   readonly garment: StoredGarment;
+  /** How wide a cell is, measured once by the screen. */
+  readonly photoSize: number;
   readonly uri: GarmentImageUri;
   readonly label: string;
   readonly script: Script;
@@ -337,7 +339,14 @@ interface CellProps {
  * the product is about, and showing it at cell scale is a complete presentation rather than a
  * degraded one.
  */
-function GarmentCell({ garment, uri, label, script, onPress }: CellProps): React.JSX.Element {
+function GarmentCell({
+  garment,
+  uri,
+  label,
+  photoSize,
+  script,
+  onPress,
+}: CellProps): React.JSX.Element {
   return (
     <Pressable
       onPress={onPress}
@@ -356,7 +365,7 @@ function GarmentCell({ garment, uri, label, script, onPress }: CellProps): React
               )}
               hex={garment.color.hex}
               color={colorOf(garment.color)}
-              size={CELL_PHOTO}
+              size={photoSize}
             />
           ) : (
             <>
@@ -397,8 +406,18 @@ function GarmentCell({ garment, uri, label, script, onPress }: CellProps): React
   );
 }
 
-/** The colour a photo-less cell is drawn at. Square, to match a photographed cell exactly. */
-const CELL_PHOTO = 160;
+/**
+ * The horizontal space a two-column grid does NOT get for its cells.
+ *
+ * The `Surface` padding either side, plus the gap between the two columns. Subtracting it from
+ * the window is what makes a cell fit BY CONSTRUCTION rather than by a number somebody checked
+ * on one phone.
+ *
+ * IT WAS `CELL_PHOTO = 160`, and two of those plus a 12pt gap is 332 — more than a 360pt
+ * Android leaves after padding, and far more than a 320pt iPhone SE. The grid overflowed on
+ * every phone narrower than about 390pt, which is most of them.
+ */
+const GRID_GUTTERS = nativeSpacing.md * 2 + nativeSpacing.md;
 
 export function Wardrobe({
   store,
@@ -436,6 +455,10 @@ export function Wardrobe({
    * is the thing it reads through — a new store is a different wardrobe.
    */
   const images = useMemo(() => galleryImages(store), [store]);
+
+  // One measurement for the whole grid. Re-renders on rotation, which a constant cannot.
+  const { width } = useWindowDimensions();
+  const photoSize = Math.floor((width - GRID_GUTTERS) / COLUMNS);
 
   /**
    * The groups, chunked into rows of {@link COLUMNS}.
@@ -861,6 +884,7 @@ export function Wardrobe({
                   <GarmentCell
                     key={garment.id}
                     garment={garment}
+                    photoSize={photoSize}
                     uri={images.uri(garment.id)}
                     label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
                       garment.color.name,

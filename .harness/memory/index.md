@@ -172,6 +172,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md](effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md) — **E-072** · a contrast rule attaches to the situation rather than the component: the reticle had the keyline problem and nobody saw it, because a reticle is not a swatch.
 - [effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md](effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md) — **E-073** · a cheap-list split survived in the schema and would have died in the first caller; the guard is a test that counts calls rather than checking the picture appears.
 - [effects/a-ramp-decided-before-the-first-chart.md](effects/a-ramp-decided-before-the-first-chart.md) — **E-074** · the chart palette was chosen when there was nothing to plot, which is the only time such a decision is cheap.
+- [effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md](effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md) — **E-075** · a framework default was load-bearing without appearing anywhere in our source, so turning it off changed something nobody had written.
+- [effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md](effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md) — **E-076** · two fixed widths overflowed most phones, and nothing in the repository lays anything out, so only a person holding one could see it.
 
 ## Glossary
 

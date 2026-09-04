@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-04",
+  "updated": "2026-09-05",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -2748,6 +2748,63 @@
       "memory": "memory/effects/a-ramp-decided-before-the-first-chart.md",
       "rationale": "FIVE TOKENS HAD BEEN EMITTED AND UNREAD SINCE F-048, with the reason \"There is no chart in the product\" and F-150 named as the feature that would change it. That is the ADR-0088 discipline working as designed for once: the exemption predicted a closer, and the closer closed it. THE RAMP IS NEAR-ACHROMATIC AND THAT WAS DECIDED FIRST. The manifest says why, in the reason it gives for leaving the tokens out of the contrast pairings: a series is separated by lightness, marker shape and a direct label, NOT by contrast against a surface. Deciding that with a chart already half-built is how a rainbow palette ships — the decision was made when there was nothing to plot precisely so it could not be made under deadline. WHAT THE COMPONENT OWES BECAUSE OF THAT: every band carries its own words and its own number as text, so the reading survives with the bars removed. Marker shape is NOT used and the omission is written down rather than left as a gap — shape separates SERIES, there is one series here, and the ramp encodes ORDER within it, so a shape channel would be distinguishing things that are not different. The moment a second series appears, shape is the channel to reach for. THE NUMBERS STAY HONEST TOO: `valid` is a count at a threshold this build chose and `wouldUnlock` is a projection from a synthetic colour at a region centre — there is no such garment. Golden rule 11 applies to a chart as much as to a sentence, and both notes are rendered rather than kept in a comment.",
       "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-075",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/_layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/layout.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "guard": "gate:lint — `verify-viewport.mjs` fails a screen that reads insets anywhere but the two files that own them, and fails a layout constant larger than the narrowest supported viewport can hold. Seven --prove cases, both directions, including a comment that mentions a large width and must stay green: this repository discusses its own numbers by name, and a check that fires on prose is removed within a day.",
+      "memory": "memory/effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md",
+      "rationale": "F-145 SET `headerShown: false` AND THE APP STARTED PAINTING UNDER THE STATUS BAR. The decision was right — a navigation bar above a tab bar is two headers for one page — and it had a consequence nobody could see from the diff: react-navigation INSETS A HEADER FOR YOU, so the header had been the only thing holding content off the hardware. Nothing in our source claimed that job; `grep -rn \"SafeArea|useSafeAreaInsets\"` over the app and the UI package returned NOTHING, and `react-native-safe-area-context` was a declared dependency whose provider was in every rendered tree with no consumer. THE REPORTER NAMED THE COMMIT WITHOUT KNOWING IT: \"we were not having this issue previously\". THE TAB BAR HAD THE SAME SHAPE OF DEFECT ONE LAYER DOWN, and its comment stated it out loud — `height: Platform.OS === \"ios\" ? 88 : 68` with \"iOS adds its own safe-area inset below this\". An explicit height is precisely what STOPS react-navigation applying the inset, and Android with gesture navigation has a bottom inset that 68 knows nothing about. It is derived now, with no platform branch: the inset already differs per device, so branching on the platform is guessing at the thing the API reports. THE GENERAL SHAPE: a framework default can be load-bearing without appearing anywhere in your source, and turning it off is a change to something you never wrote. The only durable answer is to make the responsibility explicit — one file owns insets, and a gate says so.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-076",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:lint — no numeric `width`, `height` or `size` in a screen may exceed 264, which is 320pt minus the largest padding a screen applies either side. Both offending constants are now derived from `useWindowDimensions()`, which cannot overflow because it is computed from what it has to fit inside.",
+      "memory": "memory/effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md",
+      "rationale": "TWO FIXED PIXEL WIDTHS OVERFLOWED MOST PHONES, and the arithmetic is not close. `CELL_PHOTO = 160` in a two-column grid needs 332 with its gap; a 360pt Android leaves 304 after padding and a 320pt iPhone SE leaves 264 — so the wardrobe gallery overflowed on EVERY phone narrower than about 390pt, which is most Android hardware. `HERO = 320` on the colour page needs the full 320 and an SE offers 312. Both are mine, from F-148 and F-150, and both are the same mistake made twice within two features: a size picked against one imagined screen. WHAT MAKES THIS INVISIBLE TO EVERY EXISTING CHECK is that react-test-renderer does not lay anything out. The conformance suite reads a tree, the contrast gate reads colours, and neither has a viewport — so a number larger than the screen is indistinguishable from a number that fits. It took a person holding a phone. THE FIX IS NOT A SMALLER NUMBER, and that is the part worth keeping: a smaller constant is wrong on a different device. Deriving from `useWindowDimensions()` makes the size a consequence of the space rather than a guess about it, and it re-renders on rotation and on a foldable opening, which a constant cannot. The gate cannot check layout — it says so on every run — but it can check the shape that shipped twice.",
+      "confidence": 0.85,
       "origin": "manual",
       "status": "active"
     }

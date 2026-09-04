@@ -46,7 +46,9 @@
  * has to, and takes it from the theme rather than naming a colour.
  */
 
+import { useContext } from 'react';
 import { ScrollView, View, type ViewProps } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing, type nativeType } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
@@ -319,7 +321,45 @@ export function Screen({
     </>
   );
 
-  const inset = { padding: nativeSpacing[padding], gap: nativeSpacing[gap] } as const;
+  /*
+   * THE DEVICE'S OWN INSETS, ADDED TO THE SCALE — the only place in the app that reads them.
+   *
+   * Nothing consumed insets at all until this. It worked before F-145 because the root Stack
+   * SHOWED A HEADER and react-navigation insets a header for you; `headerShown: false` was
+   * right — a navigation bar above a tab bar is two headers for one page — and it removed the
+   * only thing holding content off the status bar.
+   *
+   * ADDED TO THE TOKEN PADDING RATHER THAN REPLACING IT. A screen keeps its own rhythm; the
+   * inset is what keeps that rhythm clear of the hardware. Replacing would make a notched phone
+   * and a flat one lay out differently for no reason a designer chose.
+   *
+   * NOT THE BOTTOM. Every screen in this app sits inside the tab navigator, which occupies the
+   * bottom edge and takes that inset itself. Adding it here as well would count it twice, and
+   * the gap under a phone's home indicator would be the size of two.
+   *
+   * ONE PLACE, and `verify-viewport.mjs` enforces that: a per-screen inset is a per-screen
+   * decision, and the next screen forgets.
+   *
+   * ## The context, not `useSafeAreaInsets()`
+   *
+   * The hook THROWS when no provider is above it — *"No safe area value available"* — which is
+   * the right behaviour for an app and the wrong behaviour for this component. A `Screen` is
+   * rendered by the conformance suite, by three dozen screen tests and by the a11y gate, none of
+   * which is an app and none of which has a navigator.
+   *
+   * Reading the context directly is what the hook does minus the throw, and the fallback is
+   * ZERO INSETS — which is exactly what a device with no notch reports, so it is a real value
+   * rather than a stand-in. The place where a missing provider genuinely IS a defect is the app
+   * root, and `app/_layout.tsx` renders one explicitly rather than trusting expo-router to.
+   */
+  const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  const inset = {
+    paddingTop: nativeSpacing[padding] + insets.top,
+    paddingBottom: nativeSpacing[padding],
+    paddingLeft: nativeSpacing[padding] + insets.left,
+    paddingRight: nativeSpacing[padding] + insets.right,
+    gap: nativeSpacing[gap],
+  } as const;
 
   if (!scroll)
     return (

@@ -24,7 +24,7 @@
  */
 
 import { useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
@@ -111,13 +111,18 @@ const CVD_KEYS: Record<Deficiency, MessageKey> = {
 const CVD_SEVERITY = 1;
 
 /**
- * How tall the colour is drawn at the top of this page.
+ * How the colour is sized at the top of this page.
  *
- * A colour is judged by AREA, and this page exists to let somebody judge one. 320 is roughly the
- * width of a phone, so the sample is square and edge to edge — the largest a colour appears
- * anywhere in the product, which is correct for the surface the whole corpus points at.
+ * A colour is judged by AREA, and this page exists to let somebody judge one — so it is as wide
+ * as the screen allows and square.
+ *
+ * IT WAS `320`, A NUMBER, and that was wrong on the smallest phone worth supporting: an iPhone
+ * SE is 320pt wide, `Screen padding="xs"` takes 4 from each side, and 320 does not fit in 312.
+ * The reporter saw overflow. A size chosen against one imagined screen is a size that is wrong
+ * on every other one — and the fix is not a smaller number, it is deriving it from what it has
+ * to fit inside.
  */
-const HERO = 320;
+const HERO_INSET = nativeSpacing.xs * 2;
 
 const triple = (t: readonly number[], places = 3): string =>
   t.map((n) => n.toFixed(places)).join('  ');
@@ -171,6 +176,11 @@ export function ColourDetail({
    * Controlled, because `Tabs` is — a tab set whose selection lives inside the component cannot
    * be driven by a conformance subject, and that is what makes every panel checkable.
    */
+  // Square, and as wide as the page allows. `useWindowDimensions` re-renders on rotation and
+  // on a foldable opening, which a constant cannot do.
+  const { width } = useWindowDimensions();
+  const heroSize = width - HERO_INSET;
+
   const [panel, setPanel] = useState<DerivedPanel>(initialPanel);
 
   /** A labelled row. `value === null` renders the recorded reason where the value would be. */
@@ -312,7 +322,7 @@ export function ColourDetail({
         come with it, which is why the sample can be this large without the page around it
         shifting how the colour reads.
       */}
-      <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={HERO} />
+      <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={heroSize} />
 
       <Stack padding="xl2" gap="xl3">
         <Stack gap="xs">

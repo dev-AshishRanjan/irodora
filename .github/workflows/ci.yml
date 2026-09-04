@@ -179,6 +179,11 @@ jobs:
       - name: 'Gate 2 — worklet reachability'
         run: pnpm verify:worklets
 
+      # The two halves of F-159: insets read in one place, and no layout constant larger
+      # than the narrowest supported screen. Both shipped broken for weeks with every gate green.
+      - name: 'Gate 2 — viewport proof'
+        run: pnpm verify:viewport:prove
+
       - name: 'Gate 2 — worklet reachability proof'
         run: pnpm verify:worklets:prove
 

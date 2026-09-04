@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
-import { Platform, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import { nativeColors, nativeSpacing, nativeType } from '@irodora/design-tokens';
 import { Text, useTheme } from '@irodora/ui';
 import { useMessages } from '../../src/i18n/useMessages';
@@ -97,6 +98,8 @@ export default function TabLayout(): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
 
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -108,9 +111,22 @@ export default function TabLayout(): React.JSX.Element {
           backgroundColor: colors['surface.1'],
           borderTopColor: colors['border.strong'],
           borderTopWidth: 1,
-          // The bar is taller than the default to fit the indicator above the label without
-          // crowding either. iOS adds its own safe-area inset below this.
-          height: Platform.OS === 'ios' ? 88 : 68,
+          /*
+            THE INSET IS MEASURED, NOT ASSUMED.
+
+            This read `height: Platform.OS === 'ios' ? 88 : 68` with the comment "iOS adds its
+            own safe-area inset below this" — an assumption, and the wrong one twice over. An
+            explicit `height` is precisely what stops react-navigation applying the inset
+            itself, and Android with gesture navigation has a bottom inset that 68 knows nothing
+            about.
+
+            NO `Platform.OS` BRANCH EITHER. The inset already differs per device; branching on
+            the platform is guessing at the thing the API reports. `BASE` is what the bar needs
+            for an indicator above a label — a design value, chosen — and the inset is what the
+            hardware needs, measured.
+          */
+          height: TAB_BAR_BASE + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: nativeSpacing.sm,
         },
         sceneStyle: { backgroundColor: colors.background },
@@ -155,3 +171,12 @@ export default function TabLayout(): React.JSX.Element {
  */
 export const TAB_BAR_COLORS = nativeColors;
 export const TAB_LABEL_STEP = nativeType.latin.label;
+
+/**
+ * The bar's own height, before the device's inset is added.
+ *
+ * A DESIGN VALUE AND IT STAYS ONE: it is what fits the selected indicator above the label
+ * without crowding either. Deriving the inset does not derive this, and pretending otherwise
+ * would be dressing a chosen number as a measured one.
+ */
+const TAB_BAR_BASE = 68;

@@ -46,7 +46,7 @@
  * ```
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -159,6 +159,85 @@ function classify(step) {
  * This cannot prevent a kill. What it can do is make the aftermath loud instead of silent, on
  * the next run, before anything is committed.
  */
+/**
+ * Every tracked file a mutation proof writes to.
+ *
+ * DERIVED FROM THE PROOFS, not listed here. A hand-kept list would drift the first time a new
+ * proof planted somewhere new — which is the same disease this whole script exists to treat, one
+ * level along.
+ *
+ * The shape it looks for is the one every proof in this repository uses: a path constant built
+ * with `join(ROOT, …)` that is later handed to `writeFileSync`.
+ */
+const AMBIGUOUS_NAMES = new Set(['package.json', 'tsconfig.json', 'index.ts', 'index.tsx']);
+
+function plantTargets() {
+  const targets = new Set();
+  const scriptDirs = [join(ROOT, 'scripts'), join(ROOT, 'tests', 'bench', 'src')];
+
+  for (const dir of scriptDirs) {
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!/\.mjs$/u.test(entry)) continue;
+      const source = readFileSync(join(dir, entry), 'utf8');
+      if (!source.includes('writeFileSync')) continue;
+
+      /*
+       * `const NAME = join(<base>, …, 'file.json');` where NAME is also written to.
+       *
+       * MATCHED BY FILENAME, not by the assembled path. The proofs build their paths three
+       * different ways — from `ROOT`, from `dirname(fileURLToPath(import.meta.url))`, and with
+       * `'..'` segments — and reconstructing each shape is a path resolver written in a regex.
+       * `budgets.json` was missed by the first version for exactly that reason.
+       *
+       * A filename can in principle collide with an unrelated file. That errs toward REPORTING,
+       * which is the right direction for a warning whose whole job is to be noticed.
+       */
+      /*
+       * A PATH WRITTEN AS A PLAIN STRING, which is the other half of how these scripts address
+       * their targets. `verify-state-id-proof.mjs` holds
+       * `const GATES = '.harness/verification/gates.json'` and passes it through a helper — no
+       * `join`, no direct `writeFileSync` on the constant — so the shape below missed it, and
+       * that is the file whose leftover plant failed gate 0 with a duplicate gate id.
+       *
+       * Any repo-relative path in a script that writes files is a candidate. It over-collects;
+       * `AMBIGUOUS_NAMES` and the fact that this is a WARNING rather than a failure are what
+       * keep that from being noise.
+       */
+      for (const m of source.matchAll(/'([\w.@-]+(?:\/[\w.@-]+)+\.[a-z]{2,5})'/gu)) {
+        const file = m[1].split('/').pop();
+        if (file !== undefined && !AMBIGUOUS_NAMES.has(file)) targets.add(file);
+      }
+
+      for (const m of source.matchAll(/const\s+(\w+)\s*=\s*join\(([^)]*)\)/gu)) {
+        const [, name, args] = m;
+        if (!new RegExp(`writeFileSync\\(\\s*${name}\\b`, 'u').test(source)) continue;
+        const parts = [...args.matchAll(/'([^']+)'/gu)].map((a) => a[1]);
+        const file = parts.at(-1);
+        if (file === undefined || !file.includes('.')) continue;
+        /*
+         * UBIQUITOUS NAMES ARE SKIPPED. `verify-peer-deps` plants into
+         * `packages/store/package.json`, and matching on the basename alone then flags EVERY
+         * `package.json` in the repository — including the one legitimately edited to add the
+         * script this warning lives in.
+         *
+         * A warning that fires on ordinary work is a warning people stop reading, which is
+         * exactly the outcome that would make the three real incidents recur. Skipping these
+         * loses a real finding only if a proof plants into a `package.json` AND is killed AND
+         * nothing else notices — and `pnpm install --frozen-lockfile` runs a few steps later.
+         */
+        if (!AMBIGUOUS_NAMES.has(file)) targets.add(file);
+      }
+    }
+  }
+  return targets;
+}
+
 function dirtyFiles() {
   const result = spawnSync('git', ['status', '--porcelain=v1'], {
     cwd: ROOT,
@@ -198,6 +277,44 @@ console.log(
 );
 
 const dirtyBefore = dirtyFiles();
+
+/*
+ * INHERITED DAMAGE, reported BEFORE anything runs.
+ *
+ * The comparison further down catches what THIS run breaks. It cannot catch what a PREVIOUS run
+ * broke — a proof killed before its `finally`, whose plant was already in the tree when this one
+ * started. That has now happened three times, to three different files:
+ *
+ *   .github/workflows/ci.yml            an `if: false` on a gate step
+ *   tests/bench/budgets.json            a ceiling nothing can pass
+ *   docs/design/design-system.manifest.json   a status colour moved on top of another
+ *
+ * The last one is the reason this is worth the code: it failed eight design-token tests in a
+ * package nothing in that session had touched, and `git add -A` would have committed a broken
+ * colour system.
+ */
+if (dirtyBefore !== null) {
+  /*
+   * COMPARED BY FILENAME, because that is what `plantTargets` collects.
+   *
+   * This read `plantTargets().filter((f) => dirtyBefore.has(f))` — basenames against full paths
+   * — so it matched exactly one thing in the repository: `package.json`, which happens to be
+   * both. It reported the file I had legitimately edited and stayed silent about the four that
+   * had actually been left behind. A guard that reports only the false positive is worse than
+   * none, because it teaches the reader to skip it.
+   */
+  const targets = plantTargets();
+  const planted = [...dirtyBefore].filter((f) => targets.has(f.split('/').pop() ?? f));
+  if (planted.length > 0) {
+    console.log(
+      `${RED}${BOLD}${String(planted.length)} file(s) a mutation proof plants into are already modified.${OFF}\n` +
+        `${DIM}  Most likely a proof killed before its restore ran — a \`finally\` does not survive\n` +
+        `  a timeout or a Ctrl+C. If you did not edit these yourself, restore them first:${OFF}\n`,
+    );
+    for (const file of planted) console.log(`  ${YELLOW}!${OFF} git checkout ${file}`);
+    console.log();
+  }
+}
 
 const failures = [];
 let ran = 0;

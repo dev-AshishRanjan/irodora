@@ -4738,7 +4738,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "Every screen clears the status bar, the notch and the home indicator, on both platforms",
@@ -4752,7 +4752,26 @@
         "test",
         "a11y"
       ],
-      "notes": "REPORTED FROM A DEVICE, AND A REGRESSION I CAUSED. Nothing in the app handles insets — there is no SafeAreaView and no useSafeAreaInsets anywhere in the screens, the layout primitives, or either _layout. It worked before F-145 because the root Stack SHOWED A HEADER, and react-navigation insets a header for you; F-145 set headerShown: false for the tab group and removed the only thing providing top inset. The reporter said \"we were not having this issue previously\", which is exactly right and names the commit. THE FIX BELONGS IN `Screen`, not in twenty screens: a per-screen inset is a per-screen decision, and the next screen will forget. `react-native-safe-area-context` is already in the tree (expo-router depends on it) and `RNCSafeAreaProvider` is already in every rendered test tree, so the provider exists and nothing consumes it."
+      "notes": "REPORTED FROM A DEVICE, AND A REGRESSION I CAUSED. Nothing in the app handles insets — there is no SafeAreaView and no useSafeAreaInsets anywhere in the screens, the layout primitives, or either _layout. It worked before F-145 because the root Stack SHOWED A HEADER, and react-navigation insets a header for you; F-145 set headerShown: false for the tab group and removed the only thing providing top inset. The reporter said \"we were not having this issue previously\", which is exactly right and names the commit. THE FIX BELONGS IN `Screen`, not in twenty screens: a per-screen inset is a per-screen decision, and the next screen will forget. `react-native-safe-area-context` is already in the tree (expo-router depends on it) and `RNCSafeAreaProvider` is already in every rendered test tree, so the provider exists and nothing consumes it. DONE 2026-09-05. INSETS ARE CONSUMED IN ONE PLACE, `Screen`, added to the token padding rather than replacing it — a screen keeps its own rhythm and the inset is what keeps that rhythm clear of the hardware. NOT the bottom: every screen sits inside the tab navigator, which owns that edge and now takes the inset itself. THE CONTEXT RATHER THAN THE HOOK: `useSafeAreaInsets()` THROWS without a provider, which is right for an app and wrong for a component the conformance suite renders three dozen times; reading `SafeAreaInsetsContext` with a zero fallback is the hook minus the throw, and zero is what a phone with no notch actually reports. The app root renders a provider explicitly rather than trusting expo-router to. THE TAB BAR MEASURES ITS INSET instead of asserting one — its comment said \"iOS adds its own safe-area inset below this\" beside an explicit height, which is exactly what stops react-navigation adding it. TWO OVERFLOWING CONSTANTS, both mine: `CELL_PHOTO` needed 332pt in a grid a 360pt Android gives 304, and `HERO` needed 320 where an SE gives 312. Derived from the window now. FOUR LEFTOVER PLANTS were found in the tree during this feature — `ci.yml`, `budgets.json`, the design manifest and `gates.json` — each from a mutation proof killed before its `finally`, and the manifest one failed eight design-token tests in a package this session had not touched. `verify:ci` now reports them before it runs.",
+      "plan": "plans/F-159-the-app-respects-the-device.md",
+      "effects": [
+        "E-075",
+        "E-076"
+      ],
+      "attested": [
+        {
+          "criterion": "Every screen clears the status bar, the notch and the home indicator, on both platforms",
+          "verifiedBy": "THE MECHANISM IS CHECKED; THE CLEARANCE IS NOT. Verified here: exactly one file reads insets, the value is added to the padding rather than replacing it, the tab bar derives its height from the reported inset with no platform branch, and a gate fails any screen that reaches for insets itself. WHAT IS NOT VERIFIED is that the result actually clears the hardware, because insets are ZERO in jest — there is no notch in a test runner, so every rendered assertion is about a device with no inset to clear. This needs the reporter to look at the same build that produced the complaint. The specific risk is the bottom edge: `Screen` deliberately does not add it, on the reasoning that the tab navigator owns that space, and if that reasoning is wrong the fix looks like content sitting under the home indicator on a gesture-navigation Android.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "No screen overflows its horizontal bounds at any supported width",
+          "verifiedBy": "THE TWO KNOWN CONSTANTS ARE GONE AND THE CLASS IS GUARDED; THE CLAIM IS BROADER THAN THE EVIDENCE. `verify-viewport` fails any numeric width, height or size in a screen larger than the narrowest viewport can hold, and both offenders are now derived from the window. But NOTHING HERE RUNS A LAYOUT ENGINE — the gate says so on every run — so overflow through accumulated padding, an unbreakable Japanese string, or a flex child that refuses to shrink is invisible to it. The reporter said \"some UI/UX are breaking for mobile devices\"; two causes were found and measured, and whether those were the only two is unknown until somebody opens every screen on a 320pt device.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-160",

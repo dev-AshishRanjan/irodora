@@ -8,6 +8,114 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-159 DONE · the header was the only thing insetting anything
+
+### The diagnosis names the commit
+
+F-145 set `headerShown: false` on the tab group. That decision was right — a navigation bar above
+a tab bar is two headers for one page — and it had a consequence invisible in the diff:
+**react-navigation insets a header for you**, so the header had been the only thing holding
+content off the status bar.
+
+```
+grep -rn "SafeArea|useSafeAreaInsets" apps/mobile packages/ui/src   →   nothing
+```
+
+`react-native-safe-area-context` was a declared dependency. Its provider was in every rendered
+test tree. **Nothing consumed it.** The reporter's *"we were not having this issue previously"*
+named the commit without knowing it.
+
+**A framework default can be load-bearing without appearing anywhere in your source** (E-075), and
+you cannot grep for a responsibility nobody has taken. `Screen` owns insets now, its docblock says
+why, and `verify-viewport` fails anyone else who reaches for them.
+
+### Two smaller decisions inside that
+
+**The context, not the hook.** `useSafeAreaInsets()` throws without a provider — right for an app,
+wrong for a component the conformance suite renders three dozen times, none of which is an app.
+`SafeAreaInsetsContext` with a zero fallback is the hook minus the throw, and zero is what a phone
+with no notch actually reports. The app root renders a provider explicitly rather than trusting
+expo-router to.
+
+**Top, left and right — never bottom.** Every screen sits inside the tab navigator, which owns
+that edge and now takes the inset itself. Adding it in both places would make the gap under a home
+indicator the size of two.
+
+### The tab bar asserted an inset instead of measuring one
+
+```ts
+// … iOS adds its own safe-area inset below this.
+height: Platform.OS === 'ios' ? 88 : 68,
+```
+
+An explicit `height` is **precisely what stops** react-navigation applying the inset, and Android
+with gesture navigation has a bottom inset that `68` knows nothing about. The comment recorded an
+assumption in the tone of a measurement.
+
+Derived now, with **no platform branch**: the inset already differs per device, so branching on the
+platform is guessing at the thing the API reports. `BASE` stays a chosen number and is labelled as
+one.
+
+### Two constants that overflowed most phones
+
+| constant | needs | 320pt | 360pt | 390pt |
+| --- | --- | --- | --- | --- |
+| `CELL_PHOTO` ×2 + gap | 332 | **264** ✗ | **304** ✗ | 334 ✓ |
+| `HERO` in `padding="xs"` | 320 | **312** ✗ | 352 ✓ | 382 ✓ |
+
+The wardrobe gallery overflowed on every phone narrower than about 390pt. Both are mine, two
+features apart, the same mistake twice.
+
+**Nothing in this repository lays anything out**, so a number larger than the screen is
+indistinguishable from one that fits — it took a person holding a phone. And **the fix is not a
+smaller number** (E-076); a smaller constant is wrong on a different device. Both derive from
+`useWindowDimensions()` now, which also re-renders on rotation.
+
+### Four leftover plants, found in one feature
+
+The tree was carrying mutations from proofs that had been **killed before their `finally` ran**:
+
+| file | plant | from |
+| --- | --- | --- |
+| `.github/workflows/ci.yml` | `if: false` on a gate step | gate-mirror proof |
+| `tests/bench/budgets.json` | `ceilingMs: 0.0001` | bench proof |
+| `docs/design/design-system.manifest.json` | `status.ok` moved onto `status.warn` | CVD proof |
+| `.harness/verification/gates.json` | a duplicate gate id | state-id proof |
+
+The manifest one **failed eight design-token tests in a package this session had never touched**,
+and every one of them would have been committed by `git add -A`.
+
+`verify:ci` now reads `git status` before it runs and names any file a mutation proof plants into
+that is already modified. The plant targets are **derived from the proofs themselves** rather than
+listed, because a hand-kept list drifts — which is the disease this whole script treats.
+
+Getting that right took three attempts, and the second is the instructive one: it compared
+basenames against full paths, so it matched exactly one thing — `package.json`, which happens to be
+both. **It reported the file I had legitimately edited and stayed silent about the four that were
+actually broken.** A guard that surfaces only its own false positive is worse than none.
+
+### Verification
+
+| ran | result |
+| --- | --- |
+| `pnpm verify:ci` — all 33 runnable CI steps | **PASS** |
+| viewport gate · 7 `--prove` cases, both directions | **PASS** |
+| 692 mobile · 124 ui | **PASS** |
+
+### Still owed
+
+**Insets are zero in jest.** There is no notch in a test runner, so every rendered assertion here
+is about a device with nothing to clear. The mechanism is checked; the clearance is not. The
+specific risk is the bottom edge — `Screen` deliberately leaves it to the tab navigator, and if
+that reasoning is wrong it looks like content under the home indicator on a gesture-navigation
+Android.
+
+**"Some UI/UX are breaking" was a broader report than two constants.** Two causes were found and
+measured. Whether they were the only two is unknown until somebody opens every screen on a 320pt
+device — and the gate cannot help, because it does not lay anything out and says so on every run.
+
+---
+
 ## 2026-09-05 — FIX · the sheet that could not be dismissed, and seven tasks from a device
 
 The reporter has been running a build. Sixteen items came back; four are regressions I caused,
