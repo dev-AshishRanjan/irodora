@@ -4249,7 +4249,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-146"
       ],
@@ -4267,7 +4267,25 @@
         "a11y",
         "contrast"
       ],
-      "notes": "REPORTED SPECIFICALLY: \"even the color cards are looking very bad\". The Swatch component is not the defect — it is the most rigorous thing in the UI package, with a gamut-verified two-tone keyline proven to hold at least 3:1 against every sRGB sample. What is wrong is COMPOSITION: it is drawn at 72px beside three lines of 13px grey text, so the artefact the product exists to show is the smallest considered element on the screen. This is the surface the visual-taste skill names as the one place to spend boldness — the swatch at photograph scale — and the one place it is currently not spent."
+      "notes": "REPORTED SPECIFICALLY: \"even the color cards are looking very bad\". The Swatch component is not the defect — it is the most rigorous thing in the UI package, with a gamut-verified two-tone keyline proven to hold at least 3:1 against every sRGB sample. What is wrong is COMPOSITION: it is drawn at 72px beside three lines of 13px grey text, so the artefact the product exists to show is the smallest considered element on the screen. This is the surface the visual-taste skill names as the one place to spend boldness — the swatch at photograph scale — and the one place it is currently not spent. DONE 2026-09-03. ONE COLUMN, NOT TWO, and the reason is criterion 2: a 2-column grid gives a cell about 160px wide on a phone, and 34px kanji does not sit in that without wrapping. Full width makes the colour genuinely photographic AND leaves the name room to lead. The colour is a 180px band on its well with the keyline intact, the kanji is at display.2, the kana beneath it, and romaji, English and the hex subordinate. CONCATENATION WAS THE TELL: the old row had `${kanji} ${en}` on one line and `${family} · ${temperature} · ${hex}` on another — five fields flattened into two Text nodes because nothing had decided their relative weight, which is why the type scale had nowhere to apply on this screen. VIRTUALISED, and that is criterion 4 rather than a nicety: there was no virtualisation anywhere in this app, and the Atlas mounted 120 subtrees eagerly inside Screen's ScrollView. It is a FlatList now with the corpus line, search and filters as its ListHeaderComponent, and `Screen scroll={false}` — the only correct arrangement, because a VirtualizedList inside a plain ScrollView is a documented React Native error and is what a naive \"add a FlatList\" produces. xl4 AND xl5 ARE SPENT HERE, closing the last spacing exemption: xl5 (96) between the controls and the work, xl4 (56) between entries, each of which is a single large object. THE SPACING SCALE IS NOW FULLY REACHED and token reach is 50 -> 52. TWO TESTS WENT RED AND NEITHER WAS A REGRESSION (E-064): F-018 criterion 1 asserted reachability by walking the rendered tree for all 120 names, which was a fair proxy only while the screen mounted everything. Reachable was never the same as simultaneously rendered — the assertion moved to the list data, and the swatch assertion became a correspondence within the rendered window so it still says an entry is a colour and not only a name.",
+      "plan": "plans/F-147-the-atlas-is-photographic.md",
+      "effects": [
+        "E-064"
+      ],
+      "attested": [
+        {
+          "criterion": "Browsing 120 entries is smooth on a four-year-old mid-range Android",
+          "verifiedBy": "NOT MEASURED, AND THE CHANGE IS STILL THE RIGHT ONE. Virtualisation replaced 120 eagerly-mounted subtrees with a window of about six, and `initialNumToRender`, `windowSize` and `removeClippedSubviews` are set from the entry height rather than left at the defaults — roughly four screens of runway on a 640px viewport. But \"smooth\" is a frame time on a device, `perf` is not in this feature's gates because nothing here can run it, and the repository has no phone. What is asserted is the ARCHITECTURE (a FlatList, not nested in a ScrollView, given all 120 rows); what is claimed is nothing about frames.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "A colour occupies enough of the screen to be judged, on the neutral well, with the keyline intact",
+          "verifiedBy": "THE MECHANICS ARE GATED AND THE JUDGEMENT IS NOT. The `Swatch` is unchanged, so the mandatory well and the gamut-verified two-tone keyline come with it and the contrast gate still measures them; the size went from 56px to a 180px full-width band, which is a number in the source. WHETHER 180px IS \"ENOUGH TO BE JUDGED\" is the Irodora-specific test from the visual-taste skill — put a real garment colour on screen inside this interface and see whether you can judge it accurately — and that needs a screen and a person. Nobody has done it. A full-width band also means more scrolling than a grid, which is the trade the register asks for and is worth somebody disagreeing with.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-148",

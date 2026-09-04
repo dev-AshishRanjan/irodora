@@ -8,6 +8,80 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-147 DONE · the Atlas is photographic
+
+120 rows of **56px swatch beside three lines of concatenated text**, all mounted at once. The
+reporter named this one: *"even the color cards are looking very bad"*.
+
+The `Swatch` was never the defect — it is the most rigorous component in the UI package.
+**Composition was**: the artefact the product exists to show was the smallest considered element
+on the screen.
+
+### One column, not two
+
+A 2-column grid gives a cell ~160px on a phone, and 34px kanji does not sit in that. Full width
+makes the colour genuinely photographic *and* leaves the name room to lead.
+
+| element | was | is |
+|---|---|---|
+| the colour | 56px square | **180px full-width band**, on its well, keyline intact |
+| the name | `${kanji} ${en}` at 15px | **kanji at `display.2`**, kana beneath |
+| romaji, English, hex | in the same 13px string | separate nodes, subordinate; the hex `numeric` |
+
+**Concatenation was the tell.** Five fields flattened into two `Text` nodes because nothing had
+decided their relative weight — which is exactly why the type scale had nowhere to apply here.
+
+### Virtualised, and that is criterion 4 rather than a nicety
+
+There was **no virtualisation anywhere in this app**. The Atlas mounted 120 subtrees eagerly
+inside `Screen`'s `ScrollView`.
+
+It is a `FlatList` now, with the corpus line, search and filters as its `ListHeaderComponent` and
+`Screen scroll={false}`. That is the only correct arrangement — a `VirtualizedList` inside a plain
+`ScrollView` is a documented React Native error, and it is what a naive "add a FlatList" produces.
+
+### The spacing scale is now fully reached
+
+`xl5` (96) between the controls and the work; `xl4` (56) between entries, each of which is a
+single large object. Their exemption named this feature and it is gone. **Token reach 50 → 52.**
+
+### Two tests went red and neither was a regression
+
+F-018 criterion 1 — *"every corpus entry reachable in 3 interactions or fewer"* — asserted
+reachability by **walking the rendered tree for all 120 names**. A fair proxy only while the
+screen mounted everything.
+
+**Reachable was never the same as simultaneously rendered.** The assertion moved to the list's
+`data`, which still carries all 120 under no filter — stronger in one respect, because it says the
+corpus reaches the list rather than that a renderer happened to mount it. The swatch assertion
+kept its own separate point and became a correspondence *within the rendered window*: every entry
+whose kanji is present must have its hex present.
+
+Weakening one and keeping the other would have left "it draws colours" unchecked — the tempting
+move when a test goes red for a reason you believe is benign. Recorded as E-064.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (672 mobile, 111 ui) · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** | **PASS** |
+
+### Still owed
+
+**"Smooth on a four-year-old mid-range Android" is not measured.** The architecture is asserted —
+a FlatList, not nested, given all 120 rows, with window sizes set from the entry height rather
+than left at defaults. Frame times are not, and `perf` is not in this feature's gates because
+nothing here can run it.
+
+**Whether 180px is "enough to be judged"** is the Irodora-specific test — put a real garment
+colour on screen and see if you can judge it — and it needs a screen and a person. A full-width
+band also means more scrolling than a grid: the trade the register asks for, and worth somebody
+disagreeing with.
+
+---
+
 ## 2026-09-03 — F-146 DONE · Home is an editorial surface
 
 Home was a title, two 72px swatches, three lines of grey text, and **ten identical secondary

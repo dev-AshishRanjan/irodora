@@ -161,6 +161,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md](effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md) — **E-061** · a major-version peer mismatch sat under every gesture component with every gate green, and the first checker written to find it got two of three findings wrong by reimplementing its subject.
 - [effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md](effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md) — **E-062** · a jest mock stubbed the very symbol a major version had removed, so four components that would crash on render sat behind a green suite for two releases.
 - [effects/a-push-target-is-a-string-so-nothing-checks-it.md](effects/a-push-target-is-a-string-so-nothing-checks-it.md) — **E-063** · sixteen routes moved and thirteen navigation targets were rewritten with nothing able to tell correct from almost-correct.
+- [effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md](effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md) — **E-064** · a test that walked the mounted tree to prove reachability went red when the list virtualised; the proxy broke and the property did not.
 
 ## Glossary
 

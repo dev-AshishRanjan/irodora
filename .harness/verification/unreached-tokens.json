@@ -99,16 +99,6 @@
       "closedBy": "F-156"
     },
     {
-      "group": "spacing step",
-      "tokens": [
-        "xl4",
-        "xl5"
-      ],
-      "cites": "F-111, ADR-0074, F-103",
-      "why": "THE TOP TWO STEPS OF THE EDITORIAL SCALE — 56 and 96 — and what is left of an entry that covered four. F-140 reached `xl2` (28) and `xl3` (40): they are `Screen`’s page inset and its rhythm between blocks, so every screen in the product now spends them and the two declarations went. THESE TWO ARE DIFFERENT, and it is worth being exact about why rather than carrying the old sentence forward. 56 and 96 are hero rhythm — the space around a single large thing, which needs a surface built around one. Every screen today is a scrolling list or a form. The first that spends one is the Atlas at photograph scale (F-147), which is also where `display.1` goes, and the two are the same design decision seen from the type side and the space side. Reaching them in F-140 would have meant painting a number to satisfy a check, which ADR-0088 names in its own honest-limit section as the failure this field exists to prevent.",
-      "closedBy": "F-147"
-    },
-    {
       "group": "status kind",
       "tokens": [
         "ok",

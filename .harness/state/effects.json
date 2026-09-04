@@ -2416,6 +2416,34 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-064",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Atlas.tsx"
+      },
+      "to": [
+        {
+          "kind": "test",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test — F-018 criterion 1 now reads the list data (all 120 slugs under no filter) rather than walking the mounted tree, and the swatch assertion is a correspondence WITHIN the rendered window: every entry whose kanji is present must have its hex present. Both survive virtualisation; neither was weakened.",
+      "memory": "memory/effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md",
+      "rationale": "THE ATLAS VIRTUALISES NOW, and two tests went red immediately — neither a regression. F-018 criterion 1 is \"every corpus entry reachable in 3 interactions or fewer\", and it was asserted by walking the rendered tree for all 120 names. That was a fair proxy while the screen mounted every entry eagerly, which is exactly what criterion 4 of THIS feature rules out. REACHABLE WAS NEVER THE SAME AS SIMULTANEOUSLY RENDERED: the proxy broke and the property did not. The assertion moved to where the property is legible — the list data — which is stronger in one respect, because it says the corpus reaches the list rather than that a particular renderer mounted it. THE SECOND TEST HAD A DIFFERENT POINT and kept it: an entry is a COLOUR, not only a name. It compares the rendered window against itself, so it survives virtualisation. Weakening one and keeping the other would have left \"it draws colours\" unchecked, which is the tempting move when a test goes red for a reason you believe is benign. THE LATENT VERSION OF THIS: any test that counts nodes to prove coverage has the same problem, and the two readings are indistinguishable until something virtualises. Nothing else in the app does today.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

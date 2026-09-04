@@ -1292,10 +1292,21 @@ describe('the home screen has structure a screen reader can navigate (A11)', () 
 /**
  * Criterion 1 — **every corpus entry reachable in 3 interactions or fewer**.
  *
- * Asserted by walking the RENDERED tree for all 120 slugs with no filter applied, rather than
- * by counting interactions by hand. The design is what makes the count checkable: the root
- * lists the whole corpus, so reaching any entry is scroll-and-tap, and "reachable" does not
- * depend on a filter set nobody enumerated.
+ * ## The proxy changed in F-147, and the property did not
+ *
+ * This used to walk the RENDERED tree for all 120 names. That was a fair proxy while the Atlas
+ * mounted every entry eagerly — and F-147 made it virtualise, because 120 eagerly-mounted
+ * subtrees is exactly what criterion 4 ("smooth on a four-year-old mid-range Android") rules
+ * out. Only a handful are in the tree at any moment now.
+ *
+ * **Reachable was never the same as simultaneously rendered.** The design that makes the
+ * interaction count checkable is unchanged: the root lists the whole corpus with no filter, so
+ * reaching any entry is scroll-and-tap. What changed is where that fact is legible — it is the
+ * list's `data`, not the mounted subtree.
+ *
+ * So the first assertion reads the list's data, and the second keeps the original point — that
+ * an entry is a SWATCH and not only a name — against the window that is actually rendered.
+ * Weakening one and keeping the other would have left "it draws colours" unchecked.
  */
 describe('the Atlas root reaches every colour (F-018 criterion 1)', () => {
   function textOf(node: TestNode, out: string[] = []): string[] {
@@ -1308,18 +1319,43 @@ describe('the Atlas root reaches every colour (F-018 criterion 1)', () => {
     return out;
   }
 
-  it('renders every entry in the corpus with no filter applied', () => {
-    const text = textOf(draw(<Atlas />, 'light')).join('\u0000');
+  /** The list node, found by the prop only a virtualised list carries. */
+  function listData(node: TestNode): readonly { entry: { slug: string } }[] | null {
+    const data: unknown = node.props['data'];
+    if (Array.isArray(data) && node.props['renderItem'] !== undefined)
+      return data as readonly { entry: { slug: string } }[];
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      const found = listData(child);
+      if (found !== null) return found;
+    }
+    return null;
+  }
+
+  it('gives the list every entry in the corpus with no filter applied', () => {
+    const data = listData(draw(<Atlas />, 'light'));
+    expect(data).not.toBeNull();
+    const slugs = new Set((data ?? []).map((e) => e.entry.slug));
     const missing = allEntries()
-      .map((e) => e.entry.name.en)
-      .filter((name) => !text.includes(name));
+      .map((e) => e.entry.slug)
+      .filter((slug) => !slugs.has(slug));
     expect(missing).toHaveLength(0);
+    expect(slugs.size).toBe(CORPUS_ENTRY_COUNT);
   });
 
-  it('draws a swatch for every entry, not only its name', () => {
-    const hexes = new Set(textOf(draw(<Atlas />, 'light')));
-    const shown = allEntries().filter((e) => [...hexes].some((h) => h.includes(e.derived.hex)));
-    expect(shown).toHaveLength(CORPUS_ENTRY_COUNT);
+  it('draws a swatch for every entry it renders, not only its name', () => {
+    /*
+     * The RENDERED window rather than all 120, and the assertion is a correspondence rather than
+     * a count: every entry whose NAME is in the tree must also have its HEX there. That is the
+     * original point — an entry is a colour, not a label — and it survives virtualisation
+     * because it compares the window against itself rather than against the corpus.
+     */
+    const text = textOf(draw(<Atlas />, 'light'));
+    const joined = text.join('\u0000');
+    const rendered = allEntries().filter((e) => joined.includes(e.entry.name.kanji));
+    expect(rendered.length).toBeGreaterThan(0);
+    const withoutSwatch = rendered.filter((e) => !joined.includes(e.derived.hex));
+    expect(withoutSwatch).toHaveLength(0);
   });
 });
 
