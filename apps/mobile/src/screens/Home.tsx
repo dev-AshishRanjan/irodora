@@ -1,261 +1,242 @@
-import { View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
-import { Button, Row, Screen, Surface, Swatch, Text, Wordmark } from '@irodora/ui';
-import { differenceOklch, displayFromOklch } from '../engine';
-import { useMessages } from '../i18n/useMessages';
-import type { MessageKey } from '../i18n/index';
-import type { Triple } from '@irodora/color-spaces';
-
 /**
- * The home screen's CONTENT, separated from its route.
+ * The front door (F-146, FR-71).
  *
- * `app/index.tsx` owns the navigation options (`Stack.Screen`) and nothing else. That split is
- * not cosmetic: `Stack.Screen` throws *"Couldn't find a route object"* outside a navigator, so
- * a screen that sets its own options can only be rendered by mounting a navigator around it —
- * and the conformance suite would then be testing expo-router rather than the screen.
+ * ## What it was
  *
- * ## Two defects the conformance suite found here
+ * A title, two swatches at 72px, three lines of grey text, and **ten identical secondary
+ * buttons**. Boldness was spent nowhere, so the visual-taste pre-flight failed at its first
+ * question: this screen could have been any product.
  *
- * **The theme was read, not received.** This screen called `useColorScheme()` directly, so
- * asking it to render `dark` produced light colours — every token unresolvable in the theme it
- * was told to be in. It reads `useTheme()` now, which is the whole reason `ThemeProvider`
- * exists: a component that decides its own theme cannot be checked in the other one.
+ * F-145 gave those buttons a tab bar to be replaced by. **They are gone**: every destination is a
+ * tab or lives inside one, and leaving the list would mean the tab bar had been added *beside*
+ * the old navigation rather than instead of it.
  *
- * **`foreground.3` at 13 px and 14 px, five times.** A `largeText` token, restricted by the
- * manifest to >= 18.66 px. Now impossible rather than fixed — `<Text size="small">` will not
- * accept that token, and the failure is a compile error at the call site.
+ * ## What it is
  *
- * Every value here is still computed by the engine at render time. Nothing on this screen is a
- * typed colour, and after F-017 nothing on it is a typed user-facing string either.
+ * The wordmark at `display.1` — 72px, the top of the scale, and the token whose exemption named
+ * this feature. Then three blocks, in the order of what a person came for:
+ *
+ * 1. **The last reading**, at photographic scale on its neutral well.
+ * 2. **The wardrobe** — a count, and the colours in it.
+ * 3. **Today's colour** — one corpus entry, chosen by the date.
+ *
+ * ## Where the boldness is spent
+ *
+ * On the colours, at size. The visual-taste skill names that as the one place to spend it on this
+ * product, and everything else here holds still: one type scale, one rule per section, no
+ * accent, no card that is not a `Surface`.
+ *
+ * ## What it does not decide
+ *
+ * Which colour appears anywhere. [`../home.ts`](../home.ts) works that out, and it is pure — so
+ * the rule for "today's colour" is written where somebody can disagree with it rather than
+ * buried in a render.
  */
 
-/** Two colours a person could actually be deciding between. Declared, not measured. */
-const INDIGO: Triple = [0.42, 0.09, 264];
-const BLUE_BLACK: Triple = [0.32, 0.05, 268];
-const SAMPLES: readonly { readonly nameKey: MessageKey; readonly oklch: Triple }[] = [
-  { nameKey: 'sample.indigo', oklch: INDIGO },
-  { nameKey: 'sample.blueBlack', oklch: BLUE_BLACK },
-];
+import { useMemo } from 'react';
+import { Pressable, View } from 'react-native';
+import { nativeSpacing } from '@irodora/design-tokens';
+import { Button, Row, Screen, Section, Stack, Swatch, Text, Wordmark } from '@irodora/ui';
+import { entrySwatch, homeContent, isFirstRun } from '../home';
+import { colorOf } from '../wardrobe';
+import { useMessages } from '../i18n/useMessages';
+import type { SavedColorRow, StoredGarment } from '@irodora/store';
 
-export interface HomeProps {
-  /**
-   * Open the Atlas. Supplied by the route, absent in the conformance suite.
-   *
-   * Home is where a person lands, so an Atlas with no route to it would be the shape of
-   * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]] — 120 colours, every gate
-   * green, and nothing on screen leading to any of them.
-   */
-  readonly onOpenAtlas?: () => void;
-  /** Open Compare. Same shape and same reason as onOpenAtlas. */
-  readonly onOpenCompare?: () => void;
-  /** Open Palette Studio. Same shape and same reason as onOpenAtlas. */
-  readonly onOpenStudio?: () => void;
-  /** Open the Colour Finder. Same shape and same reason as onOpenAtlas. */
-  readonly onOpenFinder?: () => void;
-  /** Open guided profile setup. Same shape and same reason as onOpenAtlas. */
-  readonly onOpenProfile?: () => void;
-  /**
-   * Open the Lens. Same shape and same reason as onOpenAtlas, and the sharpest instance of it:
-   * `read()` and four capture modes shipped in F-040 and `estimateFromReading` in F-027, and
-   * until F-097 nothing on any screen led to a camera at all.
-   */
-  readonly onOpenLens?: () => void;
-  /**
-   * Open the shopping check (F-052). Same shape and same reason as onOpenAtlas.
-   *
-   * Last in the list because it is the only entry that needs something already in the
-   * wardrobe to say anything useful, and a first-run home screen should not lead with the
-   * one door that opens onto "add something first".
-   */
-  readonly onOpenShopping?: () => void;
-  /**
-   * Open the professional surface (F-055). Same shape and same reason as onOpenAtlas.
-   *
-   * **No entitlement check guards this entry, and there is none to add.** FR-61 says the
-   * professional readouts are available to every user *because none exists* (ADR-0051), so the
-   * button is unconditional — which is a decision worth stating rather than a line worth
-   * omitting.
-   */
-  readonly onOpenMeasure?: () => void;
-  /**
-   * Open the wardrobe (F-122). Same shape and same reason as onOpenAtlas, and another instance
-   * of it: `app/wardrobe/` held only `add.tsx`, so a garment could be created and then never
-   * seen again — the schema, the repository and the add screen all shipped and verified, with
-   * nowhere to look at the result.
-   */
-  readonly onOpenWardrobe?: () => void;
-  /**
-   * Open the export surface (F-129). Same shape and same reason as onOpenAtlas.
-   *
-   * F-056 built six writers with a contract test over all six, and **nothing in the app called
-   * any of them** — six formats and no way to produce a file.
-   */
-  readonly onOpenExport?: () => void;
+/** What this screen needs from the repository, and nothing else, so a test can supply it. */
+export interface HomeStore {
+  listColors(): readonly SavedColorRow[];
+  listGarments(): readonly StoredGarment[];
 }
 
+export interface HomeProps {
+  readonly store: HomeStore;
+  /** Injected so a conformance subject can render a fixed day rather than the machine's. */
+  readonly now?: () => number;
+  /** Open the Lens. Supplied by the route; the tab bar is the other way there. */
+  readonly onOpenLens?: () => void;
+  /** Open the Atlas — specifically, today's colour. */
+  readonly onOpenColour?: (slug: string) => void;
+  /** Add a garment, from the first-run wardrobe block. */
+  readonly onAddGarment?: () => void;
+}
+
+/**
+ * The size a colour is shown at here.
+ *
+ * 140px rather than the 72 this screen used, and it is the single change that most decides
+ * whether the page reads as a product or as a form. A swatch at 72 beside three lines of 13px
+ * text makes the artefact the product exists to show the smallest considered thing on the screen.
+ */
+const SAMPLE = 140;
+
 export function Home({
-  onOpenAtlas,
-  onOpenCompare,
-  onOpenStudio,
-  onOpenFinder,
-  onOpenProfile,
+  store,
+  now = () => Date.now(),
   onOpenLens,
-  onOpenShopping,
-  onOpenMeasure,
-  onOpenWardrobe,
-  onOpenExport,
-}: HomeProps = {}): React.JSX.Element {
+  onOpenColour,
+  onAddGarment,
+}: HomeProps): React.JSX.Element {
   const { t, script } = useMessages();
-  const swatches = SAMPLES.map((s) => ({ ...s, display: displayFromOklch(s.oklch) }));
-  const difference = differenceOklch(INDIGO, BLUE_BLACK);
+
+  // The store is read once per render and the selection is pure, so this memo is about not
+  // re-scanning the wardrobe on every re-render rather than about correctness.
+  const content = useMemo(
+    () => homeContent(store.listColors(), store.listGarments(), now()),
+    [store, now],
+  );
+  const first = isFirstRun(content);
 
   return (
-    /*
-      F-104'S LESSON NOW LIVES IN THE COMPONENT (F-140).
-
-      This screen was a fixed `View` with `flex: 1`, so everything past the fold was simply
-      unreachable — on a six-button home screen the last two entry points could not be tapped
-      at all, and the symptom reads as "the app is missing features" rather than as a layout
-      bug. Nothing could have caught it: a react-test-renderer tree has no viewport and no Yoga
-      pass, so "rendered" and "reachable" are the same thing there and different things on a
-      phone [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
-
-      `Screen` scrolls by DEFAULT for that reason, and it is the one place the padding-versus-
-      contentContainerStyle distinction is now written down. A screen that genuinely owns its
-      viewport says `scroll={false}` at the call site, which is a decision somebody made rather
-      than a default they inherited.
-    */
     <Screen script={script}>
       {/*
-        THE WORDMARK IS HOME'S HEADING (F-141), and it replaces a `title` that was never one.
-
-        `home.title` reads "The engine is running on this device" — a statement about the
-        product, set at the top of the page in the title slot because that was the only slot
-        there was. It is not a heading and never was, so it moves below as the sentence it is,
-        and the identity takes the position a front door's heading belongs in.
-
-        This is not the Home redesign — that is F-146, and the ten buttons below are still
-        there. It is the smallest change that puts the mark on a real surface, which is this
-        feature's fourth criterion: a component nobody renders is a component nobody checks
-        [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
+        `display.1`. The token has existed since F-003 and was declared unreached with the reason
+        "no screen leads with a display size; every one of them opens at `title`". This is the
+        screen that leads with one, and the declaration is gone.
       */}
-      <Wordmark size="display.2" script={script} heading />
-      <Text size="body" color="foreground.2" script={script}>
-        {t('home.title')}
-      </Text>
+      <Wordmark size="display.1" script={script} heading />
 
-      {swatches.map(({ nameKey, display }) => (
-        <Surface key={nameKey} level="1" padding="md">
-          <Row gap="lg">
+      {/* THE LAST READING. */}
+      <Section title={t('home.lastReading')} script={script}>
+        {content.lastReading === null ? (
+          <Stack gap="lg">
+            <Text size="body" color="foreground.2" script={script}>
+              {t('home.noReadings')}
+            </Text>
+            <Text size="small" color="foreground.2" script={script}>
+              {t('home.noReadingsHint')}
+            </Text>
+            <Button
+              label={t('home.takeReading')}
+              onPress={() => {
+                onOpenLens?.();
+              }}
+            />
+          </Stack>
+        ) : (
+          <Row gap="lg" align="start">
             {/*
-              The Swatch requires a `Color`, not a hex — provenance is in the type, so a
-              sample whose origin nobody recorded cannot be rendered (ADR-0005).
+              The Swatch requires a `Color`, so a reading with no provenance cannot be drawn
+              (ADR-0005). The row carries its own — `source` and `confidence` are NOT NULL columns
+              precisely so this is always true.
             */}
-            <Swatch name={t(nameKey)} hex={display.hex} color={display.color} size={72} />
-            <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
+            <Swatch
+              name={content.lastReading.name}
+              hex={content.lastReading.hex}
+              color={colorOf(content.lastReading)}
+              size={SAMPLE}
+            />
+            <Stack gap="xs">
+              <Text size="title" color="foreground" script={script}>
+                {content.lastReading.name}
+              </Text>
+              <Text size="small" color="foreground.2" numeric selectable>
+                {content.lastReading.hex}
+              </Text>
               {/*
-                `foreground.2`, not `foreground.3`. At `size="small"` the type will not accept
-                a largeText-only token, so this is a compile error rather than a review note.
+                The source, always. A reading's origin is what makes it checkable, and hiding it
+                behind a tap is what ADR-0005 and FR-24 exist to prevent.
               */}
-              <Text size="small" color="foreground.2" script={script}>
-                {`${t('colour.hex')} ${display.hex}`}
+              <Text size="xs" color="foreground.2" script={script}>
+                {content.lastReading.source}
               </Text>
-              <Text size="small" color="foreground.2" script={script}>
-                {`${t('colour.coordinates')} ${display.oklch.map((n) => n.toFixed(3)).join(' ')}`}
-              </Text>
-              <Text size="small" color="foreground.2" script={script}>
-                {`${t('colour.source')}: ${display.color.provenance.source}`}
-              </Text>
-            </View>
+            </Stack>
           </Row>
-        </Surface>
-      ))}
+        )}
+      </Section>
 
-      <Text size="small" color="foreground.2" script={script}>
-        {`${t('colour.difference')} ${t('colour.differenceUnit')} ${difference.toFixed(2)}`}
-      </Text>
-      <Text size="small" color="foreground.2" script={script}>
-        {t('home.offline')}
-      </Text>
+      {/* THE WARDROBE. */}
+      <Section title={t('home.wardrobe')} script={script}>
+        {content.wardrobe.count === 0 ? (
+          <Stack gap="lg">
+            <Text size="body" color="foreground.2" script={script}>
+              {t('home.wardrobeEmpty')}
+            </Text>
+            <Text size="small" color="foreground.2" script={script}>
+              {t('home.wardrobeEmptyHint')}
+            </Text>
+            <Button
+              label={t('home.addGarment')}
+              variant="secondary"
+              onPress={() => {
+                onAddGarment?.();
+              }}
+            />
+          </Stack>
+        ) : (
+          <Stack gap="md">
+            <Text size="display.2" color="foreground" numeric>
+              {String(content.wardrobe.count)}
+            </Text>
+            <Text size="label" color="foreground.2" script={script}>
+              {t('home.wardrobeCount')}
+            </Text>
+            <Row gap="sm" wrap>
+              {content.wardrobe.colors.map((c) => (
+                <Swatch key={c.id} name={c.name} hex={c.hex} color={colorOf(c)} size={44} />
+              ))}
+            </Row>
+          </Stack>
+        )}
+      </Section>
 
-      <Button
-        label={t('home.openAtlas')}
-        onPress={() => {
-          onOpenAtlas?.();
-        }}
-      />
+      {/* TODAY. Always present — the corpus always has 120 entries. */}
+      {content.today === null ? null : (
+        <Section title={t('home.today')} script={script}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={content.today.entry.name.en}
+            onPress={() => {
+              if (content.today !== null) onOpenColour?.(content.today.entry.slug);
+            }}
+          >
+            <Row gap="lg" align="start">
+              <Swatch
+                name={content.today.entry.name.en}
+                {...entrySwatch(content.today)}
+                size={SAMPLE}
+              />
+              <Stack gap="xs">
+                {/*
+                  The kanji leads, with the reading beneath it. That order is the corpus's own —
+                  the entry is a Japanese colour and its name is the Japanese one; the English is
+                  a gloss.
+                */}
+                <Text size="title" color="foreground" script="japanese">
+                  {content.today.entry.name.kanji}
+                </Text>
+                <Text size="small" color="foreground.2" script="japanese">
+                  {content.today.entry.name.kana}
+                </Text>
+                <Text size="small" color="foreground.2" script={script}>
+                  {content.today.entry.name.en}
+                </Text>
+              </Stack>
+            </Row>
+          </Pressable>
+          {/*
+            SAYS WHAT IT IS. Not "chosen for you", not "recommended" — a rotation by date, and
+            the note says so. The claims lint is binding here and a front door is where an
+            overstatement would be least noticed.
+          */}
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('home.todayNote')}
+          </Text>
+        </Section>
+      )}
 
-      <Button
-        label={t('home.openCompare')}
-        variant="secondary"
-        onPress={() => {
-          onOpenCompare?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openStudio')}
-        variant="secondary"
-        onPress={() => {
-          onOpenStudio?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openFinder')}
-        variant="secondary"
-        onPress={() => {
-          onOpenFinder?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openProfile')}
-        variant="secondary"
-        onPress={() => {
-          onOpenProfile?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openLens')}
-        variant="secondary"
-        onPress={() => {
-          onOpenLens?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openShopping')}
-        variant="secondary"
-        onPress={() => {
-          onOpenShopping?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openWardrobe')}
-        variant="secondary"
-        onPress={() => {
-          onOpenWardrobe?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openExport')}
-        variant="secondary"
-        onPress={() => {
-          onOpenExport?.();
-        }}
-      />
-
-      <Button
-        label={t('home.openMeasure')}
-        variant="secondary"
-        onPress={() => {
-          onOpenMeasure?.();
-        }}
-      />
+      {/*
+        The one statement that was the old `home.title`: "The engine is running on this device."
+        It sits at the foot as the sentence it always was, rather than at the top in a title slot
+        because that was the only slot there was.
+      */}
+      <View style={{ paddingTop: first ? nativeSpacing.xl2 : nativeSpacing.lg }}>
+        <Text size="xs" color="foreground.2" script={script}>
+          {t('home.title')}
+        </Text>
+        <Text size="xs" color="foreground.2" script={script}>
+          {t('home.offline')}
+        </Text>
+      </View>
     </Screen>
   );
 }

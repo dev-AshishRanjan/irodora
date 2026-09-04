@@ -33,19 +33,25 @@ export const en = {
   'tab.lens': 'Lens',
   'tab.wardrobe': 'Wardrobe',
   'tab.profile': 'Profile',
+  // HOME (F-146). The front door, after the ten buttons went.
+  'home.lastReading': 'Last reading',
+  'home.noReadings': 'No readings yet',
+  'home.noReadingsHint': 'Point the Lens at something and it appears here.',
+  'home.takeReading': 'Open the Lens',
+  'home.wardrobe': 'Wardrobe',
+  'home.wardrobeCount': 'pieces',
+  'home.wardrobeEmpty': 'Nothing added yet',
+  'home.wardrobeEmptyHint': 'A garment you add is stored on this device and nowhere else.',
+  'home.addGarment': 'Add a garment',
+  'home.today': 'Today',
+  'home.todayNote': 'One entry from the corpus, by the date. It changes tomorrow.',
   'home.title': 'The engine is running on this device',
   'home.offline': 'Computed here, offline. Nothing was sent anywhere.',
   'colour.hex': 'Hex',
-  'colour.coordinates': 'OKLCh',
-  'colour.source': 'Source',
-  'colour.difference': 'Difference',
   /** The unit is a name, not a claim — ΔE00 is a defined quantity, not an accuracy statement. */
   'colour.differenceUnit': 'ΔE00',
-  'sample.indigo': 'Indigo',
-  'sample.blueBlack': 'Blue-black',
 
   'atlas.title': 'Colour Atlas',
-  'home.openAtlas': 'Browse the colours',
 
   'compare.title': 'Compare two colours',
   'compare.slotA': 'First colour',
@@ -76,7 +82,6 @@ export const en = {
   'separation.deltaE00': 'Difference when simulated',
   'separation.lightness': 'Lightness difference',
   'separation.severity': 'Simulated at the strongest tabulated severity.',
-  'home.openCompare': 'Compare two colours',
   'atlas.corpus': 'Corpus',
   'atlas.colours': 'colours',
   'atlas.palettes': 'palettes',
@@ -170,7 +175,6 @@ export const en = {
   'cvd.note':
     'Simulated on this device with a published model, at its strongest tabulated severity. A simulation is a model, not what another person sees.',
   // F-020 — Palette Studio (FR-49).
-  'home.openStudio': 'Build a palette',
   'studio.title': 'Palette Studio',
   'studio.origin': 'Made by you, on this device. It is not part of the Irodora corpus.',
   'studio.name': 'Palette name',
@@ -197,7 +201,6 @@ export const en = {
   'studio.problem.noName': 'Give the palette a name before saving.',
   'studio.problem.other': 'This palette cannot be saved yet.',
   // F-021 — Colour Finder (FR-47).
-  'home.openFinder': 'Find a colour',
   'finder.title': 'Colour Finder',
   'finder.search': 'Name, reading, hex, or a phrase',
   'finder.hint': 'Try a name, a hex like #526A6B, or “dark muted green”.',
@@ -231,7 +234,6 @@ export const en = {
    * budget nobody has measured, and a sentence quoting it would be the claim the budget was
    * carefully written not to make.
    */
-  'home.openProfile': 'Build your colour profile',
   'profile.title': 'Your colour profile',
   'profile.privacy': 'No camera. Everything stays on this device.',
   /*
@@ -253,8 +255,6 @@ export const en = {
    * `calibrated` (ADR-0031). It reads, it says how sure it is, and it never says how accurate
    * it is — because nobody has established that (NFR-23 is F-037's study and has not run).
    */
-  'home.openLens': 'Read a colour with the camera',
-  'home.openShopping': 'Check something before buying',
   'lens.title': 'Lens',
   'lens.privacy':
     'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
@@ -422,7 +422,6 @@ export const en = {
    * sense.
    */
   // F-055 — professional surfaces: colorimeter entry and the ΔE00 table (FR-28, FR-61).
-  'home.openMeasure': 'Enter measurements from an instrument',
   'measure.title': 'Measurements and differences',
   'measure.origin':
     'Values you enter from your own instrument, compared on this device against a published library. Nothing is sent anywhere, and nothing is saved.',
@@ -505,7 +504,6 @@ export const en = {
   'lens.unavailableDetail':
     'If you are reporting this, the line below is the part that identifies the cause.',
   // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
-  'home.openWardrobe': 'Open your wardrobe',
   'browse.title': 'Your wardrobe',
   'browse.empty': 'Nothing here yet',
   'browse.emptyHint': 'Add a garment and it appears here, gathered with the colours nearest to it.',
@@ -582,7 +580,6 @@ export const en = {
   'browse.filterNone': 'Nothing matches these filters.',
   'browse.filterNoneHint': 'Clear them to see the whole wardrobe.',
   'browse.filterApplied': 'Narrowed by',
-  'home.openExport': 'Export a palette',
   'export.title': 'Export',
   'export.origin':
     'Written on this device from the palette you chose, at the versions recorded in the file.',

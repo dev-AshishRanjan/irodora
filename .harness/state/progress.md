@@ -8,6 +8,82 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-146 DONE · Home is an editorial surface
+
+Home was a title, two 72px swatches, three lines of grey text, and **ten identical secondary
+buttons**. Boldness was spent nowhere, so the visual-taste pre-flight failed at its first
+question: this screen could have been any product.
+
+### What it is now
+
+**The wordmark at `display.1`** — 72px, the top of the scale, and the token whose exemption named
+this feature: *"Its surface is Home (F-146), where the wordmark and the product name lead."* The
+exemption is gone, and `verify-token-reach` fails on one that outlived its owner.
+
+`WordmarkSize` was widened at the same time. F-141 had narrowed it precisely because a type
+literal offering `display.1` made the gate report the token as reached while nothing painted it —
+it is admitted now because something does. **Token reach 47 → 50, and every step of the type
+scale is in use.**
+
+**Three blocks replace the buttons**, in the order of what a person came for: the last reading,
+the wardrobe, and today. **Colours at 140px rather than 72** — the single change that most
+decides whether the page reads as a product or as a form.
+
+### Two things in the selection worth the separate module
+
+`src/home.ts` is pure, and two of its rules are the kind that are wrong for a year:
+
+- **`lastReading` filters `deleted_at`.** A soft-deleted reading is still a row, and Home shows
+  exactly one — so without it, a person deletes a reading and the front door keeps presenting it
+  as their last.
+- **Today's colour uses the LOCAL day.** Dividing the epoch by 86 400 000 gives the UTC day, so a
+  person in Tokyo would see it change at 09:00 — a visible wrong answer in the product's second
+  locale.
+
+It is a **rotation**, and the copy says so. Not "chosen for you": a front door is where an
+overstatement would be least noticed.
+
+### Four gates fired, and every one was right
+
+| gate | what it caught |
+|---|---|
+| i18n unused keys | **15 orphaned keys** — the ten `home.open*`, the two hard-coded samples, three readouts |
+| i18n both-directions | removing `colour.coordinates` left a dead `NOTATION_KEYS` entry |
+| conformance | an undeclared colour literal — 曇りガラス `#C5CFD4`, the entry the fixed date selects |
+| FR-48 decoy | *"a screen that asks for no tabular figures has none"* broke, because Home now has two |
+
+The decoy points at the **first-run** state now, which genuinely has none.
+
+### The kind was wrong, and that is worth recording
+
+Registering Home as `data` made the suite demand loading and error states. `deviceRepository()`
+opens SQLite **synchronously** and `listColors()` is a synchronous read — **there is no moment at
+which this screen waits.** Declaring `data` asked for a spinner that could never appear.
+
+It stayed `static`, **acceptance criterion 4 was corrected** to name the two states that exist,
+and `home-states.test.tsx` asserts they render different trees — the assertion that earns the
+others, because every `getByText` in that file would pass on a screen rendering both branches at
+once.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (672 mobile, 111 ui) · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** | **PASS** |
+
+### Still owed
+
+**This is the first screen judged on whether it looks good, and nothing gates that.** A static
+preview built from the same tokens was reviewed — a different and weaker thing than seeing it on
+a phone. 72px is a quarter of a narrow screen's width and nothing here has rendered it on one.
+
+**Whether it is a good front door** — the order of the blocks, whether the first-run state invites
+rather than apologises — should be judged by somebody who did not build it.
+
+---
+
 ## 2026-09-03 — F-145 DONE · the app has an information architecture
 
 `_layout.tsx` was a bare `<Stack>` and `index.tsx` pushed ten routes from a scrolling list of

@@ -1,49 +1,37 @@
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Home } from '../../src/screens/Home';
+import { deviceRepository } from '../../src/store/repository';
 
 /**
- * The route. Navigation options only.
+ * The route. The one wire the screen cannot make itself, and nothing else.
  *
- * The screen's content is `src/screens/Home.tsx` so it can be rendered — and therefore
- * checked — without mounting a navigator around it.
+ * ## Ten callbacks became three
+ *
+ * This route used to hand `Home` ten `onOpen*` props, one per button, because the button list
+ * WAS the navigation. F-145 made the tab bar the navigation and F-146 removed the list, so what
+ * is left are the three places Home still leads to directly — and each is a link out of a block
+ * rather than an entry in a menu.
+ *
+ * `Stack.Screen` is gone too: this route is inside the tab group now, and the tab layout owns
+ * the chrome. Setting options here would put a navigation bar above the tab bar's own screen.
  */
 export default function Index(): React.JSX.Element {
   const router = useRouter();
   return (
-    <>
-      <Stack.Screen options={{ title: 'Irodora' }} />
-      <Home
-        onOpenAtlas={() => {
-          router.push('/atlas');
-        }}
-        onOpenCompare={() => {
-          router.push('/atlas/compare');
-        }}
-        onOpenStudio={() => {
-          router.push('/atlas/palettes');
-        }}
-        onOpenFinder={() => {
-          router.push('/atlas/find');
-        }}
-        onOpenProfile={() => {
-          router.push('/profile');
-        }}
-        onOpenLens={() => {
-          router.push('/lens');
-        }}
-        onOpenShopping={() => {
-          router.push('/wardrobe/shopping');
-        }}
-        onOpenWardrobe={() => {
-          router.push('/wardrobe');
-        }}
-        onOpenExport={() => {
-          router.push('/profile/export');
-        }}
-        onOpenMeasure={() => {
-          router.push('/profile/measure');
-        }}
-      />
-    </>
+    <Home
+      // The REAL repository, not a fake. `screens.test.tsx` asserts this for every route that
+      // takes one, because a screen wired to an in-memory store looks identical until a person
+      // closes the app.
+      store={deviceRepository()}
+      onOpenLens={() => {
+        router.push('/lens');
+      }}
+      onAddGarment={() => {
+        router.push('/wardrobe/add');
+      }}
+      onOpenColour={(slug) => {
+        router.push(`/atlas/${slug}`);
+      }}
+    />
   );
 }

@@ -29,18 +29,24 @@ export const ja: Record<MessageKey, string> = {
   'tab.lens': 'レンズ',
   'tab.wardrobe': '衣装',
   'tab.profile': 'プロフィール',
+  // ホーム (F-146)。日本語として書き下ろしたもので、英語の訳ではない (ADR-0028)。
+  'home.lastReading': '最後の測定',
+  'home.noReadings': 'まだ測定がありません',
+  'home.noReadingsHint': 'レンズを向けると、ここに表示されます。',
+  'home.takeReading': 'レンズを開く',
+  'home.wardrobe': '衣装',
+  'home.wardrobeCount': '点',
+  'home.wardrobeEmpty': 'まだ登録がありません',
+  'home.wardrobeEmptyHint': '追加した衣服はこの端末にのみ保存されます。',
+  'home.addGarment': '衣服を追加',
+  'home.today': '今日の色',
+  'home.todayNote': '日付で選ばれた色図鑑の一色です。明日は変わります。',
   'home.title': 'このデバイスでエンジンが動作しています',
   'home.offline': 'ここで計算しました。どこにも送信していません。',
   'colour.hex': '16進',
-  'colour.coordinates': 'OKLCh',
-  'colour.source': '出典',
-  'colour.difference': '色差',
   'colour.differenceUnit': 'ΔE00',
-  'sample.indigo': '藍',
-  'sample.blueBlack': '藍墨茶',
 
   'atlas.title': '色の一覧',
-  'home.openAtlas': '色を見る',
 
   'compare.title': '2色をくらべる',
   'compare.slotA': '1つめの色',
@@ -71,7 +77,6 @@ export const ja: Record<MessageKey, string> = {
   'separation.deltaE00': '模擬したときの色差',
   'separation.lightness': '明度の差',
   'separation.severity': '表にある中でもっとも強い段階で模擬しています。',
-  'home.openCompare': '2色をくらべる',
   'atlas.corpus': '収録版',
   'atlas.colours': '色',
   'atlas.palettes': '配色',
@@ -165,7 +170,6 @@ export const ja: Record<MessageKey, string> = {
   'cvd.note':
     'この端末で、公開されたモデルの最も強い段階で計算した模擬表示です。模擬はモデルであり、他の人に見えているものではありません。',
   // F-020 — Palette Studio (FR-49).
-  'home.openStudio': '配色をつくる',
   'studio.title': '配色スタジオ',
   'studio.origin': 'この端末であなたが作った配色です。Irodoraの収録色ではありません。',
   'studio.name': '配色の名前',
@@ -191,7 +195,6 @@ export const ja: Record<MessageKey, string> = {
   'studio.problem.noName': '保存するには、名前をつけてください。',
   'studio.problem.other': 'この配色はまだ保存できません。',
   // F-021 — Colour Finder (FR-47).
-  'home.openFinder': '色をさがす',
   'finder.title': '色さがし',
   'finder.search': '名前・読み・16進・ことば',
   'finder.hint': '名前、#526A6B のような16進、「暗いくすんだ緑」などで探せます。',
@@ -227,13 +230,10 @@ export const ja: Record<MessageKey, string> = {
    * transliteration; 合わせやすい色 / 合わせにくい色 say what a neutral and an avoid-list
    * actually are, where 中立色 would be a translation of our word for it.
    */
-  'home.openProfile': '自分の色をつくる',
   'profile.title': '自分の色',
   'profile.privacy': 'カメラは使いません。すべてこのデバイスの中だけです。',
   'profile.privacyPhoto':
     'カメラは一度だけ見て、写真はすぐに捨てました。すべてこのデバイスの中だけです。',
-  'home.openLens': 'カメラで色を読む',
-  'home.openShopping': '買う前に確かめる',
   'lens.title': 'レンズ',
   'lens.privacy': '映像はこのデバイスの中だけで見て、すぐに捨てます。保存も送信もしません。',
   'lens.viewfinder': 'カメラの映像です。画面の中心にある色を続けて読みます。',
@@ -362,7 +362,6 @@ export const ja: Record<MessageKey, string> = {
   'wardrobe.count': 'ワードローブの中',
   // The compatibility explanation (FR-29, F-052) — @irodora/recommendation's MESSAGE_KEYS.
   // F-055 — professional surfaces: colorimeter entry and the ΔE00 table (FR-28, FR-61).
-  'home.openMeasure': '測定値を入力する',
   'measure.title': '測定値と色差',
   'measure.origin':
     'お手持ちの測定器の値を入力すると、この端末で収録版と照らし合わせます。どこにも送らず、保存もしません。',
@@ -465,7 +464,6 @@ export const ja: Record<MessageKey, string> = {
     'このビルドではカメラを起動できないため、カメラでの色の読み取りは利用できません。アトラス、ファインダー、比較、ワードローブなど、カメラを使わない機能はこれまでどおり使えます。',
   'lens.unavailableDetail': 'この問題を報告する場合は、原因を特定できるのは次の行です。',
   // F-122 — the wardrobe gets somewhere to be looked at, and a garment somewhere to be corrected.
-  'home.openWardrobe': 'ワードローブを開く',
   'browse.title': 'あなたのワードローブ',
   'browse.empty': 'まだ何もありません',
   'browse.emptyHint': '服を追加すると、色の近いものごとにまとめてここに表示されます。',
@@ -516,7 +514,6 @@ export const ja: Record<MessageKey, string> = {
   'browse.filterNone': '条件に合う服がありません。',
   'browse.filterNoneHint': '解除するとすべての服が表示されます。',
   'browse.filterApplied': 'しぼりこみ中',
-  'home.openExport': '配色を書き出す',
   'export.title': '書き出し',
   'export.origin': '選んだ配色から、このデバイスで作成します。版はファイルに記録します。',
   'export.subject': '書き出すもの',
@@ -584,7 +581,6 @@ export const IDENTICAL_BY_DESIGN: readonly MessageKey[] = [];
  * something a test can check rather than by an assertion in a comment.
  */
 export const NOTATION_KEYS: readonly MessageKey[] = [
-  'colour.coordinates',
   'colour.differenceUnit',
   'coord.xyz',
   'coord.lab',

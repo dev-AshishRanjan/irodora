@@ -22,7 +22,7 @@ import {
   type ConformanceSubject,
   type TestNode,
 } from '@irodora/ui/testing';
-import { Home } from '../src/screens/Home';
+import { Home, type HomeStore } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
@@ -199,6 +199,55 @@ const DRAFT: PaletteDraft = {
     { slug: allEntries()[2]!.entry.slug, role: 'accent' },
   ],
 };
+
+/**
+ * Home's port, in memory (F-146).
+ *
+ * Rows are REAL-SHAPED rather than partial: Home hands each one to `colorOf`, which reads the
+ * XYZ triple, the source and the confidence. A partial row would throw at render, and the
+ * failure would read as a bug in the component rather than in the fixture.
+ *
+ * `empty` is the state most people see on a first run, and it is the one a fixture is most
+ * likely to skip — so it is the default here and the populated case is opt-in.
+ */
+function fakeHome(populated = false): HomeStore {
+  const row = (id: string, created: number): SavedColorRow =>
+    ({
+      id,
+      created_at: created,
+      updated_at: created,
+      deleted_at: null,
+      name: id === 'r1' ? 'Ai-nezumi' : 'Kakishibu',
+      xyz_x: 0.1712,
+      xyz_y: 0.1699,
+      xyz_z: 0.2381,
+      lab_l: 48.2,
+      lab_a: -1.1,
+      lab_b: -6.4,
+      oklch_l: 0.52,
+      oklch_c: 0.03,
+      oklch_h: 264,
+      hex: '#6E7480',
+      source: 'declared',
+      confidence: 1,
+      corpus_slug: null,
+    }) as unknown as SavedColorRow;
+
+  const garment = (id: string, created: number): StoredGarment =>
+    ({
+      id,
+      createdAt: created,
+      updatedAt: created,
+      deletedAt: null,
+      type: 'shirt',
+      color: row(`${id}-c`, created),
+    }) as unknown as StoredGarment;
+
+  return {
+    listColors: () => (populated ? [row('r1', 100), row('r2', 900)] : []),
+    listGarments: () => (populated ? [garment('g1', 10), garment('g2', 20)] : []),
+  };
+}
 
 /**
  * The wardrobe port, in memory. Same reason as `fakeStore`: `expo-sqlite` needs a device.
@@ -564,13 +613,37 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     name: 'screens/Home',
-    // A screen is `static` for now: it reads, it does not yet accept input. The Lens (F-040)
-    // brings the next interactive screen.
+    /*
+     * `static`, and F-146 tried `data` first — which was wrong for a reason worth recording.
+     *
+     * `data` requires default, loading, error and empty. Home has a first-run state and a
+     * populated one, and it has NO loading and no error: `deviceRepository()` opens SQLite
+     * synchronously and `listColors()` is a synchronous read, so there is no moment at which
+     * this screen is waiting. Declaring `data` made the suite ask for a spinner that could never
+     * appear, and the honest answer is not to invent one to satisfy a kind.
+     *
+     * The first-run/populated distinction is real and IS checked — by `home-states.test.tsx`,
+     * which asserts the two render different trees and that the empty one offers its two
+     * actions. The conformance kinds are a fixed vocabulary, and this screen does not fit one.
+     */
     kind: 'static',
-    // The two samples the screen renders are DATA — arbitrary colours, not tokens. Declared
-    // here in the registry rather than marked on the screen, so forgetting is a failure.
-    sampleValues: ['#334B7E', '#28324D'],
-    render: (_state, theme) => draw(<Home />, theme),
+    /*
+     * Two colours, both DATA rather than tokens, and both must be declared here in the registry
+     * rather than marked on the screen — so forgetting one is a failure rather than an exemption
+     * a component granted itself.
+     *
+     * `#6E7480` is the stored reading the fixture returns. `#C5CFD4` is 曇りガラス, the corpus
+     * entry `colourOfTheDay` selects for the fixed date below — stable only BECAUSE the date is
+     * fixed. A live clock would rotate it and this list would go stale overnight with no source
+     * change, which is the whole reason `now` is injected.
+     *
+     * The two hexes that used to be here were F-017's hard-coded INDIGO and BLUE_BLACK. F-146
+     * removed them: the screen shows what is actually stored now, and inventing two colours to
+     * fill a front door was part of what made it read as a demo.
+     */
+    sampleValues: ['#6E7480', '#C5CFD4'],
+    render: (_state, theme) =>
+      draw(<Home store={fakeHome(true)} now={() => Date.UTC(2026, 8, 3, 12)} />, theme),
   },
   {
     name: 'screens/Atlas',
@@ -1212,7 +1285,7 @@ describe('the home screen has structure a screen reader can navigate (A11)', () 
 
   for (const theme of ['light', 'dark'] as const)
     it(`announces its title as a heading in ${theme}`, () => {
-      expect(roles(draw(<Home />, theme))).toContain('header');
+      expect(roles(draw(<Home store={fakeHome(true)} />, theme))).toContain('header');
     });
 });
 
@@ -1515,7 +1588,18 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
    * be measuring nothing.
    */
   it('DECOY — a screen that asks for no tabular figures has none', () => {
-    expect(numericNodes(draw(<Home />, 'light'))).toHaveLength(0);
+    /*
+     * HOME IN ITS FIRST-RUN STATE, and the state matters since F-146.
+     *
+     * Home used to render no numbers at all, so any Home was a valid decoy. It now shows a hex
+     * and a wardrobe count — both correctly `numeric` — so the POPULATED screen has two tabular
+     * nodes and stopped being a screen that asks for none.
+     *
+     * The first-run state still asks for none: no reading, no count, and today's colour is a
+     * kanji, a reading and an English gloss. That is a real screen rendering real text without
+     * the prop, which is what this decoy needs to be worth anything.
+     */
+    expect(numericNodes(draw(<Home store={fakeHome(false)} />, 'light'))).toHaveLength(0);
   });
 });
 

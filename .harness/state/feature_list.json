@@ -4201,7 +4201,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-145",
         "F-141"
@@ -4210,7 +4210,7 @@
         "The screen leads at a display size and carries the wordmark",
         "It opens on the product rather than on navigation: what was read, what is in the wardrobe, what is worth looking at",
         "Sample colours are shown at photographic scale on the neutral well, never as a row of chips",
-        "Every state is designed — first run with nothing stored, populated, and loading"
+        "The first-run and populated states are both designed, and render different trees"
       ],
       "verification": [
         "state",
@@ -4220,7 +4220,23 @@
         "a11y",
         "contrast"
       ],
-      "notes": "The current Home is a title, two 72px swatches, three grey lines of secondary text, and ten buttons. Boldness is spent nowhere, so the visual-taste pre-flight fails at its first question — this screen could be any product. The first-run state matters most and does not exist: a person who has stored nothing currently sees the same ten buttons as a person with a full wardrobe."
+      "notes": "The current Home is a title, two 72px swatches, three grey lines of secondary text, and ten buttons. Boldness is spent nowhere, so the visual-taste pre-flight fails at its first question — this screen could be any product. The first-run state matters most and does not exist: a person who has stored nothing currently sees the same ten buttons as a person with a full wardrobe. DONE 2026-09-03. THE WORDMARK AT display.1 — 72px, the top of the scale, and the token whose exemption named this feature (\"Its surface is Home (F-146), where the wordmark and the product name lead\"). The exemption is gone and verify-token-reach fails on one that outlived its owner, so the two cannot drift. `WordmarkSize` was widened at the same time: F-141 had narrowed it precisely because a type literal offering display.1 made the gate report the token as reached while nothing painted it, and it is admitted now because something does. TOKEN REACH 47 -> 50, and every step of the type scale is now used. THE TEN BUTTONS ARE GONE. Every destination is a tab or lives inside one after F-145, so leaving the list would have meant the tab bar was added BESIDE the old navigation rather than instead of it. Three blocks replace them, in the order of what a person came for: the last reading, the wardrobe, and today. COLOURS AT 140px RATHER THAN 72, which is the single change that most decides whether the page reads as a product or as a form — a swatch at 72 beside three lines of 13px text makes the artefact the product exists to show the smallest considered thing on the screen. THE SELECTION IS PURE (src/home.ts): which reading is most recent, what the wardrobe holds, which entry is today. Two things in it are worth the separate module. First, `lastReading` FILTERS deleted_at — a soft-deleted reading is still a row, and Home shows exactly one, so without the filter a person deletes a reading and the front door keeps presenting it as their last. Second, today's colour is derived from the LOCAL day rather than the epoch: dividing the epoch by 86400000 gives the UTC day, so a person in Tokyo would see it change at 09:00, which is a visible wrong answer in the product's second locale. It is a ROTATION and the copy says so — not \"chosen for you\", because a front door is where an overstatement would be least noticed. FOUR GATES FIRED AND EACH WAS RIGHT. The i18n unused-key check found 15 orphaned keys — the ten home.open* buttons, the two hard-coded INDIGO/BLUE_BLACK samples, and three readouts — and removing `colour.coordinates` then made its NOTATION_KEYS entry dead, which the both-directions rule caught. The conformance suite found an undeclared colour literal (the corpus entry the fixed date selects, 曇りガラス #C5CFD4). And the FR-48 decoy — \"a screen that asks for no tabular figures has none\" — broke because Home now has two; it points at the FIRST-RUN state now, which genuinely has none. THE KIND WAS WRONG AND THAT IS RECORDED: registering Home as `data` made the suite demand loading and error states. deviceRepository() opens SQLite synchronously and listColors() is a synchronous read, so there is no moment at which this screen waits. It stayed `static`, criterion 4 was corrected to name the two states that exist, and home-states.test.tsx asserts they render different trees — the assertion that earns the others, because every getByText in that file would pass on a screen rendering both branches at once.",
+      "plan": "plans/F-146-home-is-an-editorial-surface.md",
+      "effects": [],
+      "attested": [
+        {
+          "criterion": "The screen leads at a display size and carries the wordmark",
+          "verifiedBy": "GATED. `display.1` is asserted reached by verify-token-reach, which also fails if its exemption is left behind — so the wordmark cannot quietly stop leading without the gate noticing. WHAT IS NOT GATED is whether it LOOKS right at that size on a phone: 72px is a quarter of a narrow screen's width, and nothing here has rendered it on one. A static preview built from the same tokens was reviewed instead, which is a different and weaker thing than seeing it.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "It opens on the product rather than on navigation: what was read, what is in the wardrobe, what is worth looking at",
+          "verifiedBy": "STRUCTURALLY TRUE AND NOT AESTHETICALLY VERIFIED. The three blocks are asserted present, the ten buttons are asserted absent, and the pure selection behind each is unit-tested including the deleted-row and local-day cases. WHAT NO GATE CAN SAY is whether this is a good front door — whether the order is right, whether the first-run state invites rather than apologises, whether a person opening it understands what the product is. The visual-taste pre-flight is the closest thing and it is a checklist a person runs. This is the first screen in the release judged on that, and it should be looked at by somebody who did not build it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-147",

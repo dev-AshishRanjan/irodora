@@ -109,15 +109,6 @@
       "closedBy": "F-147"
     },
     {
-      "group": "type step",
-      "tokens": [
-        "display.1"
-      ],
-      "cites": "F-017",
-      "why": "THE 72px STEP. `display.2` (34px) was the other half of this entry until F-140, and it is now read by every screen in the product: `Screen` renders its title at that step, which is what closed the gap between a manifest specifying 72-to-10 and an application rendering 22-to-10. `display.1` is deliberately NOT reached by that change. It is a hero size — one element, alone, carrying a page — and a screen title is not that. Putting 72px on seventeen screen titles would have reached the token and produced a worse product, which is exactly the move ADR-0088 warns about: reach is a floor, not a design review. Its surface is Home (F-146), where the wordmark and the product name lead, and it is declared here rather than painted somewhere to make a gate quiet.",
-      "closedBy": "F-146"
-    },
-    {
       "group": "status kind",
       "tokens": [
         "ok",

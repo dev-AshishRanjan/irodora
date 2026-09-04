@@ -209,9 +209,15 @@ export function Mark({
  * surface — the exact laundering ADR-0088 exists to stop, arriving from a direction that ADR
  * does not anticipate.
  *
- * F-146 widens this when Home actually leads at that size.
+ * **F-146 widened it, and only then.** Home now leads with the wordmark at 72px, so the union
+ * admits `display.1` because something renders one — not because something might. The exemption
+ * in `unreached-tokens.json` went at the same time, and `verify-token-reach` fails on a
+ * declaration that outlived its owner, so the two cannot drift apart.
  */
-export type WordmarkSize = Extract<keyof typeof nativeType.latin, 'display.2' | 'title'>;
+export type WordmarkSize = Extract<
+  keyof typeof nativeType.latin,
+  'display.1' | 'display.2' | 'title'
+>;
 
 export interface WordmarkProps {
   readonly size?: WordmarkSize;
