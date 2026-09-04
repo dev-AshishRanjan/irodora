@@ -669,16 +669,47 @@ async function prove() {
   );
 
   /*
-   * The closure is load-bearing, and `surface.1` is the token that proves it: no component
-   * names it as a literal anywhere, so its ONLY reader is `Surface.tsx` resolving through
-   * `nativeElevation`. `background` would not do — eight screens paint it directly, so
-   * removing the map leaves it reached and the case would pass without testing anything.
+   * THE CLOSURE IS LOAD-BEARING, AND THIS CASE USED TO PROVE IT BY ACCIDENT.
+   *
+   * It was one assertion: remove `nativeElevation` from `Surface.tsx`, and `surface.1` must be
+   * reported unreached. That worked only while `surface.1` had NO literal reader anywhere, and
+   * the comment said so — *"no component names it as a literal"*. True when written.
+   *
+   * F-143 gave `Tabs` a selected-tab ground and F-145 gave the tab bar a background, both
+   * `colors['surface.1']`. From then on removing the map left the token reached by a literal,
+   * the case stopped discriminating, and CI was red for every push afterwards. **The check was
+   * right and its fixture had rotted** — the same failure the check itself exists to catch,
+   * one level up [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+   *
+   * Re-picking a token with no literal readers would buy one release and rot the same way, so
+   * the case is now TWO halves that hold however many literal readers the token acquires:
+   *
+   *   A. every LITERAL reader removed, the map KEPT      → must NOT be named
+   *   B. every literal reader removed AND the map too    → MUST be named
+   *
+   * A is the assertion the old case never actually made: it is the one that says resolving
+   * THROUGH the map counts as reaching. B is the discrimination half. Together they isolate
+   * the map as the cause, which a single assertion against a token with one reader could only
+   * imply.
    */
-  const viaMap = await run(without(new Map(), 'packages/ui/src/Surface.tsx', 'nativeElevation'));
+  const MAP_FILE = 'packages/ui/src/Surface.tsx';
+  const VIA_MAP = 'surface.1';
+  const literalReaders = readersOfLiteral(`'${VIA_MAP}'`).filter((f) => f !== MAP_FILE);
+
+  let literalsGone = new Map();
+  for (const file of literalReaders) literalsGone = without(literalsGone, file, `'${VIA_MAP}'`);
+  const throughMapOnly = await run(new Map(literalsGone));
   say(
-    named(viaMap, 'colour token', 'surface.1') && !named(base, 'colour token', 'surface.1'),
+    !named(throughMapOnly, 'colour token', VIA_MAP) && !named(base, 'colour token', VIA_MAP),
+    'a token reached ONLY through a map is not named',
+    `${VIA_MAP} via nativeElevation, with ${String(literalReaders.length)} literal reader(s) removed`,
+  );
+
+  const viaMap = await run(without(new Map(literalsGone), MAP_FILE, 'nativeElevation'));
+  say(
+    named(viaMap, 'colour token', VIA_MAP),
     'removing the map a component resolves through names its values',
-    'nativeElevation → surface.1, which no literal anywhere names',
+    `nativeElevation → ${VIA_MAP}, with every literal reader already gone`,
   );
 
   /*

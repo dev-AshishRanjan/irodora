@@ -94,7 +94,51 @@ async function loadSources() {
         'script cannot answer — fix the config.',
     );
 
-  return { messages: en, entries, routes: routeFiles(), appId: android, corpus: CORPUS_LABEL };
+  return {
+    messages: en,
+    entries,
+    routes: routeFiles(),
+    appId: android,
+    corpus: CORPUS_LABEL,
+    testIDs: declaredTestIDs(),
+  };
+}
+
+/**
+ * Every test id the app sets, read from source.
+ *
+ * A journey that selects on an id must not be able to invent one. Read rather than declared in
+ * a list here, so an id removed from a component fails the generator instead of producing a
+ * flow that passes review and fails on a phone.
+ *
+ * Template literals are expanded where the interpolation is a member of a literal array in the
+ * same file — which is how the tab bar writes its five ids. An id assembled any other way is
+ * not seen, and a journey naming it is refused, which is the safe direction.
+ */
+function declaredTestIDs() {
+  const found = new Set();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!/\.tsx?$/u.test(entry.name)) continue;
+      const text = readFileSync(full, 'utf8');
+
+      for (const m of text.matchAll(/testID[:=]\s*\{?\s*['"]([^'"]+)['"]/gu)) found.add(m[1]);
+
+      // `tabBarButtonTestID: \`tab-\${tab.name}\`` — a prefix plus a member of a literal list.
+      for (const m of text.matchAll(/TestID[:=]\s*\{?\s*`([^`$]*)\$\{[^}]+\}`/gu)) {
+        const prefix = m[1];
+        for (const n of text.matchAll(/name:\s*'([^']+)'/gu)) found.add(`${prefix}${n[1]}`);
+      }
+    }
+  };
+  walk(join(ROOT, 'apps', 'mobile', 'app'));
+  walk(join(ROOT, 'apps', 'mobile', 'src'));
+  return found;
 }
 
 /** Every route file under `apps/mobile/app`, relative and slash-separated. */
@@ -161,9 +205,34 @@ function selector(step, sources) {
   const hasKey = typeof step.key === 'string';
   const hasColour = typeof step.colour === 'string';
 
-  if (hasKey === hasColour)
+  /*
+   * A TEST ID, for the one case a visible string cannot address.
+   *
+   * Every other selector in a journey is text a person can see, which is the property that
+   * makes these flows readable and makes them fail when the product's own words change. An id
+   * gives that up, so it is available only where text CANNOT work — and the rule above is what
+   * decides that: the Atlas tab reads "Atlas", the screen title is "Colour Atlas", and a tap on
+   * the first would match both.
+   *
+   * It is checked against the source that declares it rather than trusted, so an id that no
+   * longer exists fails here instead of on a device.
+   */
+  if (step.testID !== undefined) {
+    if (!sources.testIDs.has(step.testID))
+      return {
+        problem:
+          `test id "${step.testID}" is declared by no component. A journey may only select on ` +
+          'an id the app actually sets, or it is a flow that passes review and fails on a phone.',
+      };
+    return { id: step.testID };
+  }
+
+  const named = [hasKey, hasColour, step.testID !== undefined].filter(Boolean).length;
+  if (named !== 1)
     return {
-      problem: `must name exactly one of "key" or "colour" (got ${hasKey ? 'both' : 'neither'})`,
+      problem:
+        `must name exactly one of "key", "colour" or "testID" (got ${String(named)}). A step ` +
+        'that names two selectors is a step whose author has not decided what it addresses.',
     };
 
   if (hasKey) {
@@ -267,7 +336,13 @@ function renderStep(step, index, sources) {
 
   if (step.do === 'assertVisible')
     return { lines: [`- assertVisible: ${scalar(literal(resolved.text))}`] };
-  if (step.do === 'tap') return { lines: [`- tapOn: ${scalar(literal(resolved.text))}`] };
+  if (step.do === 'tap')
+    return {
+      lines:
+        resolved.id === undefined
+          ? [`- tapOn: ${scalar(literal(resolved.text))}`]
+          : [`- tapOn:`, `    id: ${scalar(literal(resolved.id))}`],
+    };
 
   // inputText types into whatever was last tapped, and what it types is text rather than a
   // pattern — so it is NOT escaped as a regex. The spec's own step order is what puts the
@@ -321,7 +396,10 @@ export function renderFlow(spec, sources) {
     `# ${spec.title}`,
     ...String(spec.why)
       .split('\n')
-      .map((line) => `# ${line}`),
+      // NO TRAILING SPACE ON AN EMPTY LINE. A `why` with a blank line between paragraphs
+      // used to emit `"# "`, which prettier strips — so the committed flow and the
+      // generated one differed by one invisible character and `--check` reported DRIFTED.
+      .map((line) => (line === '' ? '#' : `# ${line}`)),
     '#',
     `# Selectors resolved against corpus ${sources.corpus} and the English catalogue.`,
   ];

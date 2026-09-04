@@ -125,6 +125,18 @@ export default function TabLayout(): React.JSX.Element {
             // route segment — "index", "atlas" — which is the file name rather than the word a
             // person reading the bar sees.
             tabBarAccessibilityLabel: t(tab.labelKey),
+            /*
+              A STABLE ID FOR THE PRIMARY NAVIGATION, and it is not a convenience.
+
+              A flow selects on the text a person sees, which is right almost everywhere and
+              impossible here: the Atlas tab reads "Atlas" and the screen behind it is titled
+              "Colour Atlas", so a text selector matches two elements and a tap must not
+              choose. The alternatives were renaming product copy to suit a test, or letting
+              the journey tap something ambiguous. Both are worse than an id.
+
+              Derived from the route name, so it cannot drift from the tab it addresses.
+            */
+            tabBarButtonTestID: `tab-${tab.name}`,
             tabBarIcon: ({ focused }) => (
               <TabLabel label={t(tab.labelKey)} focused={focused} script={script} />
             ),

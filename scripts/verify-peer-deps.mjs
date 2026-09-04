@@ -66,6 +66,10 @@ export function askPnpm() {
       throw new Error(
         '`pnpm peers check` produced no output and failed. The gate could not see its subject, ' +
           'which is not the same as finding nothing.',
+        // The original is attached rather than swallowed: when this fires, the useful detail is
+        // whatever pnpm actually did — a missing binary, a workspace it could not resolve — and
+        // this message alone would send the reader looking in the wrong place.
+        { cause: error },
       );
   }
   return out;

@@ -144,7 +144,21 @@ jobs:
       # The cryptographic half, same as the release lane. An internal build held to a weaker
       # standard is an internal build that stops predicting what production will do.
       - name: Verify the signature
-        run: "$ANDROID_HOME/build-tools/36.0.0/apksigner verify --verbose --print-certs '${{ steps.apk.outputs.path }}'"
+        # THE NEWEST BUILD-TOOLS, NOT A PINNED ONE. This read
+        # `$ANDROID_HOME/build-tools/36.0.0/apksigner`, and the version installed on the
+        # runner is the runner image's choice, not ours: gate 16 reported cross-checking
+        # against build-tools **37.0.0** on the same job. The day 36.0.0 leaves the image,
+        # a pinned path fails here — after a twenty-minute Gradle build — with a "no such
+        # file" that says nothing about signing.
+        #
+        # apksigner is backward compatible with older APKs, so newest is the safe choice,
+        # and it fails loudly rather than silently if the SDK has none at all.
+        run: |
+          set -euo pipefail
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          test -n "$APKSIGNER" || { echo "::error::no apksigner in $ANDROID_HOME/build-tools"; exit 1; }
+          echo "using $APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs '${{ steps.apk.outputs.path }}'
 
       - name: 'Gate 16 — artifact'
         run: node scripts/verify-apk.mjs --apk "${{ steps.apk.outputs.path }}" --expect-package com.irodora.app --expect-version-code "${{ github.run_number }}" --expect-version-name "0.0.0-internal.${{ github.run_number }}" --expect-signer-sha256 "${{ vars.ANDROID_SIGNER_SHA256 }}"

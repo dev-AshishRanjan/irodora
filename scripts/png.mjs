@@ -175,10 +175,22 @@ export function decodePng(buf) {
       const s = x * bpp;
       const d = (y * width + x) * 4;
       // Widened to RGBA whatever came in, so every caller sees one shape.
-      if (channels === 1) ((out[d] = out[d + 1] = out[d + 2] = line[s]), (out[d + 3] = 255));
-      else if (channels === 2)
-        ((out[d] = out[d + 1] = out[d + 2] = line[s]), (out[d + 3] = line[s + 1]));
-      else {
+      //
+      // BRACED, and each assignment is its own statement. These two branches were written as
+      // comma expressions to fit on one line; prettier then wrapped them in the parentheses a
+      // sequence expression needs, and `no-unused-expressions` refused them — correctly, since
+      // a comma expression evaluated for its side effects is exactly what that rule is for.
+      if (channels === 1) {
+        out[d] = line[s];
+        out[d + 1] = line[s];
+        out[d + 2] = line[s];
+        out[d + 3] = 255;
+      } else if (channels === 2) {
+        out[d] = line[s];
+        out[d + 1] = line[s];
+        out[d + 2] = line[s];
+        out[d + 3] = line[s + 1];
+      } else {
         out[d] = line[s];
         out[d + 1] = line[s + 1];
         out[d + 2] = line[s + 2];

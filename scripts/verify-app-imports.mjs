@@ -99,6 +99,46 @@ function sourceFiles(dir) {
   });
 }
 
+/**
+ * Whether the character at `index` sits inside a string literal on its own line.
+ *
+ * THE CHECKER USED TO COUNT AN ASSERTION AS AN IMPORT. F-145 added tests that assert on the
+ * import a generated route file contains:
+ *
+ * ```ts
+ * expect(route).toContain("from '../../../src/store/repository'");
+ * ```
+ *
+ * `IMPORT_PATTERN` matched the quoted text, resolved it from the TEST file's directory — three
+ * levels above the app, where nothing is — and reported three imports that will not resolve.
+ * All three were real strings and none of them was an import.
+ *
+ * A false positive is worse here than a miss. This gate exists because Metro resolves
+ * differently from `tsc`, and the only way it keeps earning that is by being believed; three
+ * findings that cannot be fixed because there is nothing wrong is how a gate gets a
+ * `--no-verify` habit built around it.
+ *
+ * Line-scoped and quote-counting rather than a parser: an import statement and its specifier
+ * are on one line in every file this scans, and a real parser for four file types is a much
+ * larger thing to get wrong. Escapes are honoured so that `'it\\'s'` does not flip the state.
+ */
+function insideStringLiteral(line, index) {
+  let quote = null;
+  for (let i = 0; i < index; i++) {
+    const ch = line[i];
+    if (ch === '\\') {
+      i++;
+      continue;
+    }
+    if (quote === null) {
+      if (ch === "'" || ch === '"' || ch === '`') quote = ch;
+    } else if (ch === quote) {
+      quote = null;
+    }
+  }
+  return quote !== null;
+}
+
 /** Every unresolved relative import under `apps/mobile`. Data, so `--prove` can assert on it. */
 export function unresolvedImports(appRoot = APP) {
   const problems = [];
@@ -107,7 +147,16 @@ export function unresolvedImports(appRoot = APP) {
   for (const group of SCANNED)
     for (const file of sourceFiles(join(appRoot, group))) {
       const text = readFileSync(file, 'utf8');
-      for (const [, , specifier] of text.matchAll(IMPORT_PATTERN)) {
+      for (const match of text.matchAll(IMPORT_PATTERN)) {
+        const specifier = match[2];
+        // Which line the match is on, and where in it — so a quoted specifier inside an
+        // assertion can be told from an import statement. See `insideStringLiteral`.
+        const before = text.slice(0, match.index);
+        const lineStart = before.lastIndexOf('\n') + 1;
+        const lineEnd = text.indexOf('\n', match.index);
+        const line = text.slice(lineStart, lineEnd < 0 ? text.length : lineEnd);
+        if (insideStringLiteral(line, match.index - lineStart)) continue;
+
         checked++;
         const base = resolve(dirname(file), specifier);
         if (ASSET_EXTS.test(specifier)) {
@@ -156,6 +205,22 @@ function prove() {
       name: 'a bare specifier, which this deliberately does not judge',
       source: "import { View } from 'react-native';\n",
       mustFail: false,
+    },
+    {
+      // F-145's false positive, as a case. A test that asserts on the import ANOTHER file
+      // contains is quoting a specifier, not importing one — and resolving it from the test's
+      // own directory is meaningless.
+      name: 'a specifier quoted inside an assertion — data, not an import',
+      source: 'expect(route).toContain("from \'../src/nowhere-at-all\'");\n',
+      mustFail: false,
+    },
+    {
+      // THE OTHER HALF, and it is the one that matters: the quote rule must not become a way
+      // to hide a broken import. A real import on a line that ALSO contains a string stays
+      // visible.
+      name: 'a real broken import on a line that also carries a string',
+      source: "import { nope } from '../src/nope'; // note: 'quoted text here'\n",
+      mustFail: true,
     },
     {
       name: 'extensionless again (the baseline either side)',

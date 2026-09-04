@@ -2728,7 +2728,7 @@ describe('the Lens says why there is no reading (F-119)', () => {
      * state, then somebody revokes the permission in Settings and comes back. The screen must
      * explain the refusal, not a frame problem from a camera that is no longer running.
      */
-    const text = textOf(draw(<Lens permission="denied" diagnostic={why} />, 'dark')).join(' ');
+    const text = textOf(draw(<Lens permission="denied" diagnostic={why} />, 'dark')).join('\u0000');
     expect(text).not.toContain(why);
     expect(text).toContain(en['lens.noReading']);
   });

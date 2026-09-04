@@ -74,7 +74,9 @@ describe('the wardrobe summary', () => {
     // zero; a null would make it render nothing, which is the state it is trying to replace.
     const s = wardrobeSummary([]);
     expect(s.count).toBe(0);
-    expect(s.colors).toEqual([]);
+    // `toHaveLength(0)` rather than `toEqual([])`: the latter accepts an array holding
+    // `undefined`, so it does not assert emptiness at all (F-133). Emptiness is the claim here.
+    expect(s.colors).toHaveLength(0);
   });
 });
 

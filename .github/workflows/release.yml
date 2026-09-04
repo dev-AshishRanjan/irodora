@@ -187,9 +187,17 @@ jobs:
       # The cryptographic half. apksigner answers "is this correctly signed"; gate 16 below
       # answers "and was it signed by us". They are different questions and both are asked.
       - name: Verify the signature
+        # THE NEWEST BUILD-TOOLS, NOT A PINNED ONE. Which version is installed is the runner
+        # image's choice, not ours — gate 16 reported cross-checking against 37.0.0 while
+        # this line asked for 36.0.0. The day 36.0.0 leaves the image, a pinned path fails
+        # here, after the build, with a "no such file" that says nothing about signing.
+        #
+        # apksigner is backward compatible with older APKs, so newest is the safe choice.
         run: |
           set -euo pipefail
-          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          test -n "$APKSIGNER" || { echo "::error::no apksigner in $ANDROID_HOME/build-tools"; exit 1; }
+          echo "using $APKSIGNER"
           "$APKSIGNER" verify --verbose --print-certs "${{ steps.artefacts.outputs.apk }}"
 
       - name: 'Gate 16 — artifact'

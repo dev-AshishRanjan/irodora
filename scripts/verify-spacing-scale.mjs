@@ -357,7 +357,44 @@ function run() {
  * restore it leaves a corrupted repository, and `git add -A` commits it.
  */
 async function prove() {
-  const TARGET = join(ROOT, 'apps/mobile/src/screens/Home.tsx');
+  /*
+   * THE TARGET IS CHOSEN AT RUNTIME, AND THE PLANT IS APPENDED RATHER THAN SUBSTITUTED.
+   *
+   * This is the THIRD time this proof's plant site has moved, and the first two fixes were the
+   * wrong shape. It planted into `<View style={{ gap: 4` until F-140 tokenised the screens;
+   * the fix was to re-anchor on `<View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>`, the
+   * one raw `style={{}}` Home still carried. F-146 rewrote Home onto the layout primitives and
+   * that one went too, so `--prove` threw again — correctly, and for the third time.
+   *
+   * BOTH FIXES RE-ANCHORED ON A LITERAL FROM A FILE THE DESIGN SYSTEM IS ACTIVELY EMPTYING.
+   * Every screen conversion removes exactly the construct this proof was reaching for, so each
+   * re-anchoring bought one release. The old comment even named the trap — *"a file with no
+   * plantable site at all"* — and then chose another site that could disappear.
+   *
+   * So nothing is substituted. A synthetic block is APPENDED to a scanned screen, which needs
+   * the file to be scanned and needs nothing whatsoever of its contents. It cannot rot, because
+   * there is no longer anything for the tree to move.
+   *
+   * THE TARGET IS STILL A REAL SCANNED SCREEN, which is the half of the old design worth
+   * keeping: *"a proof that mutates something unlike its subject proves something else"*. It is
+   * selected from the check's own file list rather than named here, and the exempt file is
+   * excluded — one case below requires a file that carries no exemption.
+   */
+  const EXEMPT_FILES = new Set(
+    JSON.parse(readFileSync(EXEMPTIONS, 'utf8')).exempt.map((e) => e.file),
+  );
+  const TARGET = sourceFiles()
+    .filter((f) => f !== null)
+    .filter((f) => posix(f).startsWith('apps/mobile/src/screens/'))
+    .filter((f) => !EXEMPT_FILES.has(posix(f)))
+    .sort()[0];
+  if (TARGET === undefined)
+    throw new Error(
+      'no scanned, non-exempt screen to plant into — this proof needs one, and refusing is ' +
+        'the only honest option: a proof with nowhere to plant proves nothing.',
+    );
+  const TARGET_NAME = posix(TARGET).split('/').pop();
+
   const runCheck = () => {
     const r = spawnSync(process.execPath, [join(ROOT, 'scripts/verify-spacing-scale.mjs')], {
       encoding: 'utf8',
@@ -365,41 +402,37 @@ async function prove() {
     return { code: r.status ?? 1, output: `${r.stdout}${r.stderr}` };
   };
 
-  /*
-   * THE ANCHOR MOVED IN F-140, and the move is the point.
+  /**
+   * A planted declaration, appended to the target.
    *
-   * Every case below used to plant into `<View style={{ gap: 4`, which existed in Home.tsx
-   * because the screens were written in integer literals. F-140 converted them, the anchor
-   * stopped matching, and `--prove` threw instead of silently proving nothing — which is the
-   * behaviour the `planted === original` guard exists for.
-   *
-   * The new anchor is the one `style={{}}` Home still carries: a View with `flexShrink`, which
-   * the layout primitives deliberately do not express. A file with no plantable site at all
-   * would mean this proof had to plant into a file it does not otherwise scan, and a proof
-   * that mutates something unlike its subject proves something else.
+   * Written as a bare object rather than as JSX: the check scans for spacing PROPERTIES, not
+   * for elements, so this is the same shape it reads everywhere else while depending on no
+   * component, no import and nothing already in the file.
    */
-  const ANCHOR = '<View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>';
+  const plantValue = (declaration) => (source) =>
+    `${source}
+const __spacingProofProbe = { ${declaration} };
+`;
 
   const cases = [
     {
       name: 'an off-scale value in a screen',
       expect: 'red',
-      matching: /Home\.tsx:\d+\s+gap: 7 is not a step/u,
-      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 7, flexShrink: 1 }}>'),
+      matching: new RegExp(`${TARGET_NAME}:\\d+\\s+gap: 7 is not a step`, 'u'),
+      plant: plantValue('gap: 7'),
     },
     {
       name: 'a value that was moved off the scale by ADR-0074',
       expect: 'red',
       matching: /gap: 14 is not a step/u,
-      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 14, flexShrink: 1 }}>'),
+      plant: plantValue('gap: 14'),
     },
     {
       // The exemption cannot be widened by moving a value into a file that already has one.
       name: 'the hairline value in a file that is not the exempt one',
       expect: 'red',
-      matching: /Home\.tsx:\d+\s+padding: 1 is not a step/u,
-      plant: (source) =>
-        source.replace(ANCHOR, '<View style={{ padding: 1, gap: nativeSpacing.xs }}>'),
+      matching: new RegExp(`${TARGET_NAME}:\\d+\\s+padding: 1 is not a step`, 'u'),
+      plant: plantValue('padding: 1'),
     },
     {
       /*
@@ -412,16 +445,17 @@ async function prove() {
        */
       name: 'a reference to a step the scale does not contain',
       expect: 'red',
-      matching: /Home\.tsx:\d+\s+nativeSpacing\.xl9 is not a step of the scale/u,
-      plant: (source) =>
-        source.replace(ANCHOR, '<View style={{ gap: nativeSpacing.xl9, flexShrink: 1 }}>'),
+      matching: new RegExp(
+        `${TARGET_NAME}:\\d+\\s+nativeSpacing\\.xl9 is not a step of the scale`,
+        'u',
+      ),
+      plant: (source) => plantValue('gap: nativeSpacing.xl9')(source),
     },
     {
       // MUST STAY GREEN. The tokenised form is what the codebase is supposed to be written in.
       name: 'a valid reference to a step — must stay GREEN',
       expect: 'green',
-      plant: (source) =>
-        source.replace(ANCHOR, '<View style={{ gap: nativeSpacing.xl2, flexShrink: 1 }}>'),
+      plant: (source) => plantValue('gap: nativeSpacing.xl2')(source),
     },
     {
       // MUST STAY GREEN. This repository's styles are heavily commented and the comments
@@ -436,7 +470,7 @@ async function prove() {
       // MUST STAY GREEN. A step of the scale is a step of the scale.
       name: 'a newly added ON-scale value — must stay GREEN',
       expect: 'green',
-      plant: (source) => source.replace(ANCHOR, '<View style={{ gap: 28, flexShrink: 1 }}>'),
+      plant: plantValue('gap: 28'),
     },
   ];
 
@@ -460,7 +494,10 @@ async function prove() {
     for (const testCase of cases) {
       const planted = testCase.plant(original);
       if (planted === original)
-        throw new Error(`the proof's anchor is gone from Home.tsx: ${testCase.name}`);
+        throw new Error(
+          `the plant changed nothing in ${TARGET_NAME}: ${testCase.name}. Every plant appends, ` +
+            'so this means the append itself failed rather than that an anchor moved.',
+        );
       writeFileSync(TARGET, planted, 'utf8');
       const { code, output } = runCheck();
       writeFileSync(TARGET, original, 'utf8');

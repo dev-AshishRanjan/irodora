@@ -335,15 +335,58 @@ if (process.argv.includes('--prove')) {
   const CAMERA = join(ZONE, 'lens', 'camera.ts');
   const VIEWFINDER = join(ZONE, 'lens', 'viewfinder.tsx');
 
-  /** A copy of the tree with one directive removed from one function. */
-  const without = (path, marker) => {
+  /**
+   * A copy of the tree with one function's worklet directive removed.
+   *
+   * THE PLANT NAMES A FUNCTION, NOT A SIGNATURE, and that is a correction rather than a
+   * refactor. It used to hold the callee's whole declaration as a string literal, down to
+   * the parameter list and return type. F-138 changed that signature — it removed a
+   * parameter default, because a worklet cannot read a captured variable from one — so the
+   * marker stopped matching and --prove threw.
+   *
+   * **The proof was right and its fixture had rotted**, which is the same failure the thing
+   * being proved exists to catch, one level up
+   * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+   *
+   * Worse than the outage: a transcribed signature makes this proof throw whenever the
+   * callee is EDITED, which is the moment its coverage matters most. A NAME survives every
+   * change to parameters, return type and modifiers, and still identifies one function.
+   *
+   * The directive must be the first statement — that is what the language requires and what
+   * the check reads — so the search is bounded to that position. An unbounded search would
+   * happily strip the NEXT function's directive and prove something else.
+   */
+  const without = (path, functionName) => {
     const copy = new Map(real);
     const text = copy.get(path);
     if (text === undefined) throw new Error(`${rel(path)} is not in the zone`);
-    const at = text.indexOf(marker);
-    if (at < 0)
-      throw new Error(`the plant is stale: ${rel(path)} has no ${JSON.stringify(marker)}`);
-    copy.set(path, text.replace(marker, marker.replace(/'worklet';\s*/u, '')));
+
+    /*
+     * ANCHORED TO THE START OF A LINE, because a docblock quoting the function is not the
+     * function. F-138's own comment in camera.ts quotes the EMITTED form of this very
+     * callee — `(function sampleStride(regionPixels, max = MAX_SAMPLES_PER_FRAME) {` — and
+     * an unanchored search matched that comment, found the wrong brace, and reported the
+     * directive missing from a function that has one.
+     */
+    const header = new RegExp(`^(?:export\\s+)?function\\s+${functionName}\\s*\\(`, 'mu').exec(
+      text,
+    );
+    if (header === null)
+      throw new Error(
+        `the plant is stale: ${rel(path)} declares no function named ${functionName}. ` +
+          'Refusing rather than planting nothing: a plant that changes nothing proves nothing.',
+      );
+
+    const open = text.indexOf('{', header.index);
+    const directive = open < 0 ? null : /^\s*'worklet';\s*/u.exec(text.slice(open + 1));
+    if (directive === null)
+      throw new Error(
+        `the plant is stale: ${functionName} in ${rel(path)} no longer opens with a worklet ` +
+          'directive, so there is nothing here to remove and this case can no longer test ' +
+          'what it claims to.',
+      );
+
+    copy.set(path, text.slice(0, open + 1) + text.slice(open + 1 + directive[0].length));
     return copy;
   };
 
@@ -374,12 +417,7 @@ if (process.argv.includes('--prove')) {
    * CRITERION 1, AND IT IS F-115's EXACT DEFECT. `sampleStride` is in camera.ts and its caller
    * is in viewfinder.tsx, so this is ALSO criterion 2: a same-file check passes here.
    */
-  const crossModule = analyse(
-    without(
-      CAMERA,
-      "export function sampleStride(regionPixels: number, max = MAX_SAMPLES_PER_FRAME): number {\n  'worklet';\n",
-    ),
-  );
+  const crossModule = analyse(without(CAMERA, 'sampleStride'));
   say(
     crossModule.problems.some((p) => p.name === 'sampleStride'),
     "F-115's defect fires — a callee in ANOTHER module loses its directive",
@@ -387,12 +425,7 @@ if (process.argv.includes('--prove')) {
   );
 
   // The same-file half, so "it follows imports" is not carried by a case that never needed to.
-  const sameFile = analyse(
-    without(
-      VIEWFINDER,
-      "function sampleFrame(frame: Frame, space: CaptureSpace): FrameOutcome {\n  'worklet';\n",
-    ),
-  );
+  const sameFile = analyse(without(VIEWFINDER, 'sampleFrame'));
   say(
     sameFile.problems.some((p) => p.name === 'sampleFrame'),
     'a callee in the SAME file fires too',

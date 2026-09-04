@@ -1,27 +1,74 @@
 {
   "name": "atlas",
   "title": "The Atlas journey — launch, browse, filter, open a colour, read its provenance",
-  "why": "F-091 criterion 2. Everything this walks past is covered by a render test, and a\nrender test cannot tell reachable from rendered: react-test-renderer mounts a screen\nwithout a navigator, so \"the row is in the tree\" and \"a person can tap it\" are the same\nsentence there and different sentences on a phone.",
+  "why": "F-091 criterion 2. Everything this walks past is covered by a render test, and a\nrender test cannot tell reachable from rendered: react-test-renderer mounts a screen\nwithout a navigator, so \"the row is in the tree\" and \"a person can tap it\" are the same\nsentence there and different sentences on a phone.\n\nSTEP 3 WALKS THE TAB BAR, not a button on Home. It used to tap `home.openAtlas`, one of the ten buttons Home carried until F-146 rewrote it as an editorial surface; F-145 had already made the Atlas a TAB. The journey kept tapping a control that no longer existed, and the generator caught it — the key was not in the catalogue. That is the point of a journey being generated from keys rather than from strings: a removed control fails the build instead of failing on a device.",
   "steps": [
-    { "do": "launch", "clearState": true },
-    { "do": "assertVisible", "key": "home.title", "route": "(tabs)/index.tsx" },
-    { "do": "tap", "key": "home.openAtlas" },
-    { "do": "assertVisible", "key": "atlas.title", "route": "(tabs)/atlas/index.tsx" },
-    { "do": "assertVisible", "key": "atlas.filters" },
-    { "do": "tap", "key": "atlas.search" },
-    { "do": "inputText", "colour": "aki-batake", "field": "romaji" },
-    { "do": "assertVisible", "colour": "aki-batake", "field": "en" },
-    { "do": "tap", "colour": "aki-batake", "field": "en" },
+    {
+      "do": "launch",
+      "clearState": true
+    },
+    {
+      "do": "assertVisible",
+      "key": "home.title",
+      "route": "(tabs)/index.tsx"
+    },
+    {
+      "do": "tap",
+      "testID": "tab-atlas"
+    },
+    {
+      "do": "assertVisible",
+      "key": "atlas.title",
+      "route": "(tabs)/atlas/index.tsx"
+    },
+    {
+      "do": "assertVisible",
+      "key": "atlas.filters"
+    },
+    {
+      "do": "tap",
+      "key": "atlas.search"
+    },
+    {
+      "do": "inputText",
+      "colour": "aki-batake",
+      "field": "romaji"
+    },
+    {
+      "do": "assertVisible",
+      "colour": "aki-batake",
+      "field": "en"
+    },
+    {
+      "do": "tap",
+      "colour": "aki-batake",
+      "field": "en"
+    },
     {
       "do": "assertVisible",
       "colour": "aki-batake",
       "field": "kanji",
       "route": "(tabs)/atlas/[slug].tsx"
     },
-    { "do": "assertVisible", "key": "detail.provenance" },
-    { "do": "assertVisible", "key": "prov.source" },
-    { "do": "assertVisible", "key": "detail.coordinates" },
-    { "do": "back" },
-    { "do": "assertVisible", "key": "atlas.title", "route": "(tabs)/atlas/index.tsx" }
+    {
+      "do": "assertVisible",
+      "key": "detail.provenance"
+    },
+    {
+      "do": "assertVisible",
+      "key": "prov.source"
+    },
+    {
+      "do": "assertVisible",
+      "key": "detail.coordinates"
+    },
+    {
+      "do": "back"
+    },
+    {
+      "do": "assertVisible",
+      "key": "atlas.title",
+      "route": "(tabs)/atlas/index.tsx"
+    }
   ]
 }

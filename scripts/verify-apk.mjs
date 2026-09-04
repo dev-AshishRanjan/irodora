@@ -399,11 +399,25 @@ function readWithAapt2(aapt2, apkPath) {
   );
   const permissions = [...badging.matchAll(/^uses-permission: name='([^']*)'/gm)].map((m) => m[1]);
 
+  /*
+   * THE ICON PATHS AS PACKAGED, which is the one thing a name scan cannot recover.
+   *
+   * badging prints the launcher icon per density —
+   * application-icon-320:'res/xx.webp' — and the application: line repeats the default.
+   * These are the paths ANDROID will load, whatever they have been renamed to, which is
+   * exactly what is needed once the build has thrown the original names away.
+   */
+  const icons = [
+    ...badging.matchAll(/^application-icon-\d+:'([^']*)'/gm),
+    ...badging.matchAll(/^application:.*\bicon='([^']*)'/gm),
+  ].map((m) => m[1]);
+
   return {
     package: packageLine ? packageLine[1] : null,
     versionCode: packageLine ? Number(packageLine[2]) : null,
     versionName: packageLine ? packageLine[3] : null,
     permissions: [...new Set(permissions)].sort(),
+    icons: [...new Set(icons)].filter((i) => i !== '').sort(),
   };
 }
 
@@ -516,6 +530,13 @@ export function checkApk(apkPath, expected) {
   const failures = [];
   const notes = [];
 
+  /*
+   * READ ONCE, UP HERE, because two checks need it now: the cross-check at the bottom, and
+   * the icon check, which cannot resolve a shortened resource path without it.
+   */
+  const aapt2 = findAapt2();
+  const oracle = aapt2 ? readWithAapt2(aapt2, apkPath) : null;
+
   const check = (ok, what, detail) => {
     if (!ok) failures.push({ what, detail });
   };
@@ -531,12 +552,57 @@ export function checkApk(apkPath, expected) {
   // one. Proportions survive resizing, so `carriesMark` is a POSITIVE assertion that our mark is
   // present rather than a list of things it must not be.
   if (expected.markSignature !== undefined) {
-    const icons = [...entries.keys()].filter((n) => ICON_ENTRY.test(n));
+    let icons = [...entries.keys()].filter((n) => ICON_ENTRY.test(n));
+
+    /*
+     * WHEN THE NAMES ARE GONE, ASK WHAT ANDROID WOULD LOAD.
+     *
+     * ICON_ENTRY matches res/mipmap-hdpi-v4/ic_launcher.webp and its relatives, which is what
+     * an APK contains — until it is a RELEASE build. AGP runs optimizeReleaseResources by
+     * default, and one of the things it does is SHORTEN RESOURCE PATHS: every file under res/
+     * is renamed to something like res/xa.webp. Nothing matched, and the check concluded the
+     * artefact had no icon at all.
+     *
+     * That is what happened the first time this lane built a release variant rather than a
+     * debug one. The message it printed named two causes — the config lost its icon key, or
+     * prebuild did not run — and the real one was neither: the config was correct, prebuild
+     * had run, and the resources were all present under names it could not recognise. A
+     * confident wrong diagnosis is worse than none, because it sends the reader to the two
+     * places that are fine.
+     *
+     * So the name scan stays as the fast path and aapt2 answers when it finds nothing.
+     * badging reports the icon paths AS PACKAGED, which is what Android itself resolves
+     * through resources.arsc — not a second opinion, but the only source of truth once a
+     * name has been discarded.
+     *
+     * WHAT THIS DOES NOT DO is quietly pass when aapt2 is missing. A check that cannot see
+     * its subject says so [[a-gate-that-errors-is-failing-open]].
+     */
+    if (icons.length === 0 && oracle !== null) {
+      const packaged = oracle.icons.filter((n) => entries.has(n));
+      if (packaged.length > 0) {
+        icons = packaged;
+        notes.push(
+          `the resource paths in this artefact are SHORTENED — ${String(packaged.length)} ` +
+            `icon(s) resolved through aapt2 instead (${packaged.slice(0, 3).join()}). ` +
+            'That is AGP optimizeReleaseResources, on by default for a release variant: the ' +
+            'name scan is correct for a debug build and structurally blind to this one.',
+        );
+      }
+    }
+
     check(
       icons.length > 0,
       'no launcher icon in the artefact',
-      'nothing under res/ matches an icon or splash resource. Either the config lost its `icon` ' +
-        'key, or prebuild did not run — and an APK with no icon of ours is one wearing Expo’s.',
+      oracle === null
+        ? 'nothing under res/ matches an icon or splash resource, AND aapt2 was not available ' +
+            'to say what the launcher would load. A release build renames every resource path, ' +
+            'so the name scan alone cannot tell an artefact with no icon from one whose paths ' +
+            'were shortened. Install the Android SDK build-tools and run it again rather than ' +
+            'reading this as a verdict.'
+        : 'neither the resource names nor aapt2 report a launcher icon. Either the config ' +
+            'lost its icon key, or prebuild did not run — and an APK with no icon of ours is ' +
+            'one wearing Expo’s.',
     );
 
     // PNG only. Android may emit WebP for some densities and this decoder does not read it —
@@ -646,9 +712,7 @@ export function checkApk(apkPath, expected) {
   }
 
   // ---- the independent reading --------------------------------------------------------
-  const aapt2 = findAapt2();
-  if (aapt2) {
-    const oracle = readWithAapt2(aapt2, apkPath);
+  if (oracle !== null) {
     const disagreements = [];
     if (oracle.package !== manifest.package)
       disagreements.push(`package: ours ${String(manifest.package)} vs ${String(oracle.package)}`);

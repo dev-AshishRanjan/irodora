@@ -77,7 +77,8 @@
     "verify:peers": "node scripts/verify-peer-deps.mjs",
     "verify:peers:prove": "node scripts/verify-peer-deps.mjs --prove",
     "verify:routes": "node scripts/verify-route-targets.mjs",
-    "verify:routes:prove": "node scripts/verify-route-targets.mjs --prove"
+    "verify:routes:prove": "node scripts/verify-route-targets.mjs --prove",
+    "verify:ci": "node scripts/verify-ci.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",
