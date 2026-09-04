@@ -2444,6 +2444,67 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-065",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:lint — `padding` takes a SpacingStep and nothing else, so the spacing gate still sees every inset in the app as a token rather than a number; a literal cannot be passed. gate:test — the layout conformance subjects assert the padding lands on the rendered node, and a screen that sets neither `Screen padding` nor a body padding is not a case the primitives can express silently: `Screen` still defaults to `xl2`, so opting out is a deliberate `padding=\"xs\"` at the call site.",
+      "memory": "memory/effects/the-page-inset-is-what-stops-a-colour-bleeding.md",
+      "rationale": "A FULL-BLEED HERO IS A LAYOUT PROBLEM, NOT A STYLING ONE. `Screen` has always owned the page inset — that is why every screen in the app lines up — and an inset is exactly the thing that stops a colour reaching the edge. F-148 needed one colour to bleed and everything below it to stay aligned, so the inset moved off the page and onto the content: `Screen padding=\"xs\"`, and the body `Stack` pads itself. THE TWO ALTERNATIVES WERE BOTH WORSE. A negative margin needs the `style` escape hatch the primitives exist to refuse, and it puts a magic number next to a token scale. Wrapping the body in a `Surface` gets padding for free but paints elevation nobody asked for, which on this page would put a card between the eye and the colour. THE LATENT RISK IS DOUBLE PADDING: a screen that keeps the `Screen` default AND pads its body now insets twice, and nothing fails — it just looks wrong by 24px. That is invisible to every gate, because both values are legal tokens. The mitigation is that `padding` on a flow is opt-in and unset everywhere except here; the moment a second screen wants it, the pattern is worth a rule rather than a prop.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-066",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/i18n/en.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "low",
+      "guard": "gate:typecheck — `ja` is typed AGAINST `en`, so the two locales cannot drift: a key deleted from one and left in the other is a type error, in both directions. Removing five keys from `en` alone would not compile.",
+      "memory": "memory/effects/a-deleted-ui-section-leaves-live-locale-keys.md",
+      "rationale": "THE HERO ABSORBED THE NAMES SECTION, and five label keys died with it — `detail.names`, `detail.kanji`, `detail.kana`, `detail.romaji`, `detail.english`. Nothing FAILS when a key outlives its caller: it is a valid string in two locales that no screen reads, and the app is smaller and correct without it. That is the whole hazard — dead strings are the cheapest thing in a codebase to leave behind, and the translation cost of the next locale is paid per key, including the ones nobody renders. THE GUARD IS REAL BUT NARROW: typecheck holds the two locales identical, which is what stops a half-deletion, and it says nothing about whether a key is REACHED. Token reach has a gate for exactly this question and strings do not. If the corpus of dead keys ever grows past what a reader can hold, the answer is the same shape as `verify-token-reach.mjs`: enumerate the keys, grep the callers, and make the exemptions name a closing feature — ADR-0088.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

@@ -8,6 +8,108 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-148 DONE · the colour page is the centrepiece
+
+The whole product points at this screen. It opened with a **96px swatch beside three lines of
+text**, then eight sections of label/value pairs in the same 13px type — the colour was the
+smallest considered thing on the page about the colour.
+
+### The colour is now 320px, edge to edge
+
+A colour is judged by **area**. There is no substitute; a small sample of a desaturated ground
+reads as a different colour than the same value at size, which is the entire reason a fan deck
+is the size it is.
+
+`Screen` owns the page inset, and an inset is exactly the thing that stops a child reaching the
+edge. So the inset moved down a level: `Screen padding="xs"`, and the body pads itself through a
+new `padding` prop on `Stack` and `Row`.
+
+The two alternatives were worse. A **negative margin** needs the `style` escape hatch these
+primitives exist to refuse, and writes a magic number beside a token scale. **Wrapping the body
+in a `Surface`** gets padding free and paints elevation nobody asked for — a card between the eye
+and the colour, on the one page that must not have one.
+
+`Swatch` itself is untouched, so the mandatory neutral well and the gamut-verified two-tone
+keyline came with it, and the contrast gate still measures both.
+
+### The names section is gone
+
+The hero carries all four forms — kanji at `display.2`, kana beneath it, romaji at `display.2` in
+`foreground.3`, English at `body`. A separate section repeating them was a table of contents for
+something already on screen.
+
+Five locale keys died with it. Nothing fails when a key outlives its caller, which is the hazard:
+**E-066** records that typecheck holds the two locales *identical* but says nothing about whether
+a key is *reached*. Colour tokens have a gate for that question. Strings do not.
+
+### The descriptions are prose now
+
+They moved from `small` (13px — the size this page used for label/value pairs) to `body` (15px,
+1.65 Latin / 1.85 Japanese leading). That is the step the scale defines for **reading** rather
+than scanning. 120 entries of sourced editorial writing were being presented as another field.
+
+### Where the tab line is drawn
+
+Harmony, colour-vision simulation and nearest neighbours moved into `Tabs`. A tab is a
+**disclosure** — what is inside is a tap away rather than on the page — so what goes in is only
+what the engine **computes**.
+
+Everything the record **asserts** stays outside: the names, the coordinates, the classification,
+the whole provenance block. F-018 criterion 4 says provenance is never a disclosure a person has
+to find, and FR-24 put it on the colour surface rather than on a legal page.
+
+`foreground.3` is painted for the first time, at `display.2` on the romaji — large, decorative,
+subordinate, which is its declared role exactly. **Token reach 52 → 53**, and its exemption is
+closed.
+
+### Two things I got wrong, and the gates caught both
+
+**The contrast manifest.** I added `pairsWith: ['background', 'surface.1']` to `foreground.3` so
+the gate could measure it. Gate 9 refused it on a structural rule I did not know: *a `largeText`
+token is listed **by the surfaces that carry it**, so the surface stays the thing that decides
+where it may appear.* The surfaces already listed it — the pairing was always declared and always
+measured, at **3.17:1** worst case against a 3.0 threshold. Painting the token needed no manifest
+change at all. Reverted in full.
+
+**Two F-018 criterion-4 tests went red** on content moved behind tabs. Predicted in the plan, and
+resolved the way **E-064** resolved the Atlas: *reachable is not the same as mounted*. The
+component takes an `initialPanel` — the injection `PaletteStudio` and `Preferences` already use —
+and the tests reach the panel rather than the assertion being weakened. Everything the record
+asserts is still checked **with no panel opened**, which is the check on that split rather than a
+coincidence.
+
+`exactOptionalPropertyTypes` then rejected `initialPanel={panel}` for an optional `panel`:
+explicit `undefined` is not omission, and omission is what makes the component use its own
+default. The prop is spread conditionally.
+
+### Verification
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · **8 a11y** · **9 contrast** | **PASS** |
+| 672 mobile · 111 ui | **PASS** |
+
+**Not run:** `color-golden`, `cvd` — no colour maths changed; the CVD *panel* moved, the
+simulation did not. `e2e`: gate 7 still pending.
+
+### Still owed
+
+**Nobody has looked at this on a screen.** Both attested criteria are outstanding for the same
+reason, and on this page it matters more than anywhere else: at full bleed there is nothing
+between the sample and the eye except the well and the keyline. This is the **best case** in the
+product. If the register fails here it fails everywhere, and no gate can tell me.
+
+**The tab line is a judgement, not a finding.** Relations are authored data, so a reasonable
+person could argue they belong on the page rather than a tap away. If somebody expects harmony
+*beside* the colour, the tabs were the wrong answer and this page should be long instead.
+
+**The double-padding hazard is real and ungated** (E-065): a screen that keeps the `Screen`
+default *and* pads its body insets twice, silently, with two legal tokens. One call site today.
+A second is the signal that this needs a rule rather than a prop.
+
+---
+
 ## 2026-09-03 — F-147 DONE · the Atlas is photographic
 
 120 rows of **56px swatch beside three lines of concatenated text**, all mounted at once. The

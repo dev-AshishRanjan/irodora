@@ -80,15 +80,6 @@
       "closedBy": "F-150"
     },
     {
-      "group": "colour token",
-      "tokens": [
-        "foreground.3"
-      ],
-      "cites": "F-003, F-017",
-      "why": "The token that exists to be restricted, and nothing paints it. Its usage is `largeText` — it fails AA against every surface below the WCAG large-text floor — so Text's `ColorFor<S>` type admits it only at a display or title size. The type permits it; no caller asks for it, and the one place a reader might expect it (the Home micro-label) carries a comment saying that label uses `foreground.2` and NOT this. Found only when this check stopped counting comments as reads: every mention of it in the reader zone is prose about why it is dangerous.",
-      "closedBy": "F-148"
-    },
-    {
       "group": "radius step",
       "tokens": [
         "xs",

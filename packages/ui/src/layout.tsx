@@ -94,6 +94,18 @@ const JUSTIFY = {
 type FlowProps = Omit<ViewProps, 'style'> & {
   readonly gap?: SpacingStep;
   readonly align?: Align;
+  /**
+   * Inset, as a step of the scale.
+   *
+   * Added in F-148 for **full bleed**. A page whose hero runs edge to edge cannot take its inset
+   * from `Screen` — the inset is what stops it bleeding — so the page sets `Screen padding="xs"`
+   * and pads the rest of its content here instead.
+   *
+   * Without this the only ways to get there were a negative margin (which needs the `style`
+   * escape hatch these primitives exist to refuse) or wrapping the body in a `Surface`, which
+   * paints elevation nobody asked for.
+   */
+  readonly padding?: SpacingStep;
 };
 
 export type StackProps = FlowProps;
@@ -106,7 +118,13 @@ export type StackProps = FlowProps;
  * optional again. A caller who genuinely wants children touching says `gap="xs"` or nests a
  * `View`, and both of those are visible in review.
  */
-export function Stack({ gap = 'md', align, children, ...rest }: StackProps): React.JSX.Element {
+export function Stack({
+  gap = 'md',
+  align,
+  padding,
+  children,
+  ...rest
+}: StackProps): React.JSX.Element {
   return (
     <View
       {...rest}
@@ -114,6 +132,7 @@ export function Stack({ gap = 'md', align, children, ...rest }: StackProps): Rea
         flexDirection: 'column',
         gap: nativeSpacing[gap],
         ...(align === undefined ? {} : { alignItems: ALIGN[align] }),
+        ...(padding === undefined ? {} : { padding: nativeSpacing[padding] }),
       }}
     >
       {children}
@@ -138,6 +157,7 @@ export function Row({
   align = 'center',
   justify,
   wrap = false,
+  padding,
   children,
   ...rest
 }: RowProps): React.JSX.Element {
@@ -150,6 +170,7 @@ export function Row({
         alignItems: ALIGN[align],
         ...(justify === undefined ? {} : { justifyContent: JUSTIFY[justify] }),
         ...(wrap ? { flexWrap: 'wrap' } : {}),
+        ...(padding === undefined ? {} : { padding: nativeSpacing[padding] }),
       }}
     >
       {children}

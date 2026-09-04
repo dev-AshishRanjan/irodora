@@ -162,6 +162,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md](effects/a-mock-that-supplies-a-missing-export-hides-that-it-is-missing.md) — **E-062** · a jest mock stubbed the very symbol a major version had removed, so four components that would crash on render sat behind a green suite for two releases.
 - [effects/a-push-target-is-a-string-so-nothing-checks-it.md](effects/a-push-target-is-a-string-so-nothing-checks-it.md) — **E-063** · sixteen routes moved and thirteen navigation targets were rewritten with nothing able to tell correct from almost-correct.
 - [effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md](effects/virtualisation-breaks-a-rendered-tree-proxy-not-the-property.md) — **E-064** · a test that walked the mounted tree to prove reachability went red when the list virtualised; the proxy broke and the property did not.
+- [effects/the-page-inset-is-what-stops-a-colour-bleeding.md](effects/the-page-inset-is-what-stops-a-colour-bleeding.md) — **E-065** · the page inset that keeps every screen aligned is the same thing that stops one colour reaching the edge, so it moved down a level rather than being punched through.
+- [effects/a-deleted-ui-section-leaves-live-locale-keys.md](effects/a-deleted-ui-section-leaves-live-locale-keys.md) — **E-066** · five labels outlived the section that read them; typecheck holds the two locales identical and says nothing about whether a key is reached.
 
 ## Glossary
 

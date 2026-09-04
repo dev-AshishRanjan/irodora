@@ -4298,7 +4298,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-147"
       ],
@@ -4316,7 +4316,23 @@
         "a11y",
         "contrast"
       ],
-      "notes": "ColourDetail is where a person spends time and where the corpus earns its provenance work — 120 entries of sourced editorial content, currently presented as stacked label/value rows. High variance is correct here per the visual-taste dials; this is the surface that most justifies an asymmetric editorial layout."
+      "notes": "ColourDetail is where a person spends time and where the corpus earns its provenance work — 120 entries of sourced editorial content, currently presented as stacked label/value rows. High variance is correct here per the visual-taste dials; this is the surface that most justifies an asymmetric editorial layout. DONE 2026-09-03. THE COLOUR IS FULL BLEED AT 320px, edge to edge, above the fold. It was 96px beside three lines of text. `Screen` takes `padding=\"xs\"` here and the body pads itself through a new `padding` prop on `Stack` — the page inset is exactly the thing that stops a colour bleeding, so it had to move off the page and onto the content. The alternatives were a negative margin, which needs the `style` escape hatch the primitives exist to refuse, or wrapping the body in a `Surface`, which paints elevation nobody asked for. THE NAMES SECTION IS GONE — the hero carries all four forms, so five label keys (detail.names, kanji, kana, romaji, english) became dead and were removed. The two descriptions moved from `small` (13px, the size this page used for label/value pairs) to `body` (15px at 1.65 Latin / 1.85 Japanese leading), which is the step the scale defines for READING rather than scanning: they are what 120 entries of sourced editorial work produced, and they were being presented as another field. THE DERIVED MATERIAL IS BEHIND TABS and the line is drawn deliberately: a tab is a DISCLOSURE, so what goes in is only what the engine COMPUTES — harmony, a CVD simulation, nearest neighbours. Everything the record ASSERTS — names, coordinates, classification, the whole provenance block — stays outside, because criterion 4 says provenance is never a disclosure a person has to find and FR-24 put it on the colour surface rather than on a legal page. `foreground.3` IS PAINTED for the first time, at display.2 on the romaji: large, decorative, subordinate, which is exactly its declared role. TOKEN REACH 52 -> 53. TWO THINGS I GOT WRONG AND THE GATES CAUGHT. First, I added a `pairsWith` to `foreground.3` so the contrast gate could measure it — and the gate refused it with a structural rule I did not know: \"a largeText token is listed BY THE SURFACES that carry it, so the surface stays the thing that decides where it may appear\". The surfaces already listed it; the pairing was always declared and always measured at 3.17:1 worst case against a 3.0 threshold. The manifest change was reverted in full and painting the token needed none. Second, two F-018 criterion-4 tests went red on content moved behind tabs — predicted in the plan, and resolved the same way E-064 resolved the Atlas: reachable is not the same as always mounted, so the component gained an `initialPanel` injection (the pattern PaletteStudio and Preferences already use) and the tests reach the panel rather than the assertion being weakened. Everything the RECORD asserts is still checked with no panel opened, which is the check on that split rather than a coincidence.",
+      "plan": "plans/F-148-the-colour-page-is-the-centrepiece.md",
+      "effects": [],
+      "attested": [
+        {
+          "criterion": "The entry opens with the colour at full bleed above the fold, on its neutral ground",
+          "verifiedBy": "THE MECHANICS ARE IN THE SOURCE AND THE JUDGEMENT IS NOT. The `Swatch` is unchanged, so the mandatory neutral well and the gamut-verified two-tone keyline come with it and the contrast gate still measures them; the size is 320px edge to edge, and `Screen padding=\"xs\"` with a self-padding body is what makes \"edge\" mean edge. WHAT IS NOT VERIFIED is the thing this whole page exists for: the Irodora test — put a real garment colour on screen inside this interface and see whether you can judge it accurately. At full bleed there is nothing between the sample and the eye except the well and the keyline, so this is the best case in the product; if the register fails here it fails everywhere. Nobody has looked at it on a screen.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Harmony, CVD behaviour and nearest neighbours are sections a person can navigate",
+          "verifiedBy": "BUILT AND CHECKED, BUT THE SPLIT IS A JUDGEMENT. Each panel renders when selected and the unselected ones do not, asserted from the tree. What no gate can say is whether the LINE is right: record outside the tabs, derived inside. Relations are authored data, so a reasonable person could argue they belong on the page rather than a tap away — and if it turns out somebody expects harmony beside the colour rather than behind a tab, the tabs were the wrong answer and this page should be long instead. That is a question for somebody using it, not for a test.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-149",

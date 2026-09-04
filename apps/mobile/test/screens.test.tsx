@@ -24,7 +24,7 @@ import {
 } from '@irodora/ui/testing';
 import { Home, type HomeStore } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
-import { ColourDetail } from '../src/screens/ColourDetail';
+import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
@@ -1378,8 +1378,28 @@ describe('colour detail shows what the record carries (F-018 criterion 4)', () =
     return out;
   }
 
-  const shown = (slug: string): string =>
-    textOf(draw(<ColourDetail slug={slug} />, 'light')).join('\u0000');
+  /**
+   * The page's text, with a derived panel optionally opened.
+   *
+   * F-148 put harmony, colour vision and neighbours behind tabs, so those three are REACHABLE
+   * rather than always mounted — the same distinction E-064 records for the Atlas. A test that
+   * asserts by content has to reach them, and `initialPanel` is how, exactly as `PaletteStudio`
+   * takes `initialDraft`.
+   *
+   * Everything the RECORD asserts — the four name forms, the coordinates, the classification
+   * and the whole provenance block — is still asserted with **no panel opened**, because none
+   * of it is behind a tab. That is criterion 4 of F-148: provenance never becomes a disclosure.
+   */
+  const shown = (slug: string, panel?: DerivedPanel): string =>
+    textOf(
+      draw(
+        // SPREAD RATHER THAN PASSED: `exactOptionalPropertyTypes` is on, so an explicit
+        // `undefined` is not the same as omitting the prop — and omitting is what makes the
+        // component fall back to its own default.
+        <ColourDetail slug={slug} {...(panel === undefined ? {} : { initialPanel: panel })} />,
+        'light',
+      ),
+    ).join('\u0000');
 
   it('shows all four name forms', () => {
     const { entry } = WITH_COMPLEMENT;
@@ -1449,9 +1469,9 @@ describe('colour detail shows what the record carries (F-018 criterion 4)', () =
 
   it('renders relations, including the EMPTY case', () => {
     expect(WITHOUT_COMPLEMENT.entry.relations.complementary).toHaveLength(0);
-    expect(shown(WITHOUT_COMPLEMENT.entry.slug)).toContain('None recorded');
+    expect(shown(WITHOUT_COMPLEMENT.entry.slug, 'related')).toContain('None recorded');
 
-    const withText = shown(WITH_COMPLEMENT.entry.slug);
+    const withText = shown(WITH_COMPLEMENT.entry.slug, 'related');
     for (const slug of WITH_COMPLEMENT.entry.relations.related) {
       const related = allEntries().find((e) => e.entry.slug === slug)!;
       expect(withText).toContain(related.entry.name.en);
@@ -1465,7 +1485,7 @@ describe('colour detail shows what the record carries (F-018 criterion 4)', () =
   });
 
   it('shows a colour-vision block whose swatches are named, not colour-coded', () => {
-    const text = shown(WITH_COMPLEMENT.entry.slug);
+    const text = shown(WITH_COMPLEMENT.entry.slug, 'vision');
     for (const label of ['Red-weak (protan)', 'Green-weak (deutan)', 'Blue-weak (tritan)'])
       expect(text).toContain(label);
   });

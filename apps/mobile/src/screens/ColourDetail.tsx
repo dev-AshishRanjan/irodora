@@ -23,11 +23,12 @@
  *    distinction criterion 3 draws, and `verify-guards.mjs` boundary #24 enforces.
  */
 
+import { useState } from 'react';
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
-import { Button, Row, Screen, Stack, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import { Button, Row, Screen, Stack, Surface, Swatch, Tabs, Text, useTheme } from '@irodora/ui';
 import {
   colorFor,
   familyLabel,
@@ -109,6 +110,15 @@ const CVD_KEYS: Record<Deficiency, MessageKey> = {
  */
 const CVD_SEVERITY = 1;
 
+/**
+ * How tall the colour is drawn at the top of this page.
+ *
+ * A colour is judged by AREA, and this page exists to let somebody judge one. 320 is roughly the
+ * width of a phone, so the sample is square and edge to edge — the largest a colour appears
+ * anywhere in the product, which is correct for the surface the whole corpus points at.
+ */
+const HERO = 320;
+
 const triple = (t: readonly number[], places = 3): string =>
   t.map((n) => n.toFixed(places)).join('  ');
 
@@ -121,9 +131,25 @@ export interface ColourDetailProps {
    * can reach [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
    */
   readonly onOpenCard?: (slug: string) => void;
+  /**
+   * Which derived panel opens first.
+   *
+   * Injected the way `PaletteStudio` takes `initialDraft` and `Preferences` takes
+   * `initialConfirming`: a panel whose selection lives only inside the component is a panel no
+   * test can reach, and F-018's criterion 4 asserts by CONTENT — so without this the material
+   * behind a tab would be unreachable to the check rather than merely un-mounted.
+   */
+  readonly initialPanel?: DerivedPanel;
 }
 
-export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX.Element {
+/** The three derived panels. A union so a typo is a compile error rather than a blank tab. */
+export type DerivedPanel = 'harmony' | 'vision' | 'related';
+
+export function ColourDetail({
+  slug,
+  onOpenCard,
+  initialPanel = 'harmony',
+}: ColourDetailProps): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script, locale } = useMessages();
   const found = entryBySlug(slug);
@@ -138,6 +164,14 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
     );
 
   const { entry, derived } = found;
+
+  /**
+   * Which derived panel is open.
+   *
+   * Controlled, because `Tabs` is — a tab set whose selection lives inside the component cannot
+   * be driven by a conformance subject, and that is what makes every panel checkable.
+   */
+  const [panel, setPanel] = useState<DerivedPanel>(initialPanel);
 
   /** A labelled row. `value === null` renders the recorded reason where the value would be. */
   function DetailRow({
@@ -259,12 +293,48 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
       That composition is F-148's subject, and this feature deliberately does not touch it: the
       wrapper changes, the header does not.
     */
-    <Screen script={script}>
-      <Row gap="lg">
-        <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={96} />
-        <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-          <Text size="title" color="foreground" script={script} heading>
+    /*
+      `padding="xs"` ON THE SCREEN, and the body pads itself. That is what makes the hero below
+      run edge to edge: the page inset is exactly the thing that stops a colour bleeding, so it
+      moves off the page and onto the content.
+    */
+    <Screen script={script} padding="xs" gap="xl3">
+      {/*
+        THE COLOUR, FULL BLEED, ABOVE THE FOLD (criterion 1).
+
+        This is the one place the visual-taste skill says to spend boldness on this product, and
+        it was being spent at 96px beside three lines of text. `HERO` is deliberately a large
+        number: a colour is judged by AREA, and the Irodora test — put a real garment colour on
+        screen and see whether you can judge it — has its best case here, where nothing sits
+        between the sample and the eye except the well and the keyline.
+
+        The `Swatch` is unchanged. Its mandatory neutral well and gamut-verified two-tone keyline
+        come with it, which is why the sample can be this large without the page around it
+        shifting how the colour reads.
+      */}
+      <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={HERO} />
+
+      <Stack padding="xl2" gap="xl3">
+        <Stack gap="xs">
+          {/*
+            The name leads in Japanese and the English is a gloss — the corpus's own order. The
+            romaji sits between them at a display size in `foreground.3`, which is the token that
+            exists for exactly this: large, decorative, subordinate. Nothing had ever painted it.
+
+            ITS OWN `pairsWith` IS EMPTY, AND THAT IS CORRECT — a first attempt here added one and
+            the contrast gate refused it: a largeText token is listed BY THE SURFACES that carry
+            it, so the surface stays the thing that decides where it may appear. The pairing was
+            already declared from that side, and the gate already measured it: 3.17:1 at worst
+            against a 3.0 large-text threshold. Painting it needed no manifest change at all.
+          */}
+          <Text size="display.2" color="foreground" script="japanese" heading>
             {entry.name.kanji}
+          </Text>
+          <Text size="body" color="foreground.2" script="japanese">
+            {entry.name.kana}
+          </Text>
+          <Text size="display.2" color="foreground.3" script={script}>
+            {entry.name.romaji}
           </Text>
           <Text size="body" color="foreground" script={script}>
             {entry.name.en}
@@ -273,207 +343,249 @@ export function ColourDetail({ slug, onOpenCard }: ColourDetailProps): React.JSX
             FR-23, on the surface. This label is the difference between an honest corpus and a
             corpus that merely stores an honest field.
           */}
-          <Text size="small" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script}>
             {t(CLASSIFICATION_KEYS[entry.classification])}
           </Text>
-        </View>
-      </Row>
+        </Stack>
 
-      <DetailSection title={t('detail.names')}>
-        <DetailRow label={t('detail.kanji')} value={entry.name.kanji} />
-        <DetailRow label={t('detail.kana')} value={entry.name.kana} />
-        <DetailRow label={t('detail.romaji')} value={entry.name.romaji} />
-        <DetailRow label={t('detail.english')} value={entry.name.en} />
-      </DetailSection>
+        <DetailSection title={t('detail.description')}>
+          {/*
+          PROSE, NOT ROWS. These two paragraphs are what 120 entries of sourced editorial work
+          produced, and they were set at `small` — 13px, the size this page used for label/value
+          pairs — which presented them as another field. `body` is 15px with 1.65 leading in
+          Latin and 1.85 in Japanese, which is the step the scale defines for reading rather than
+          for scanning.
+        */}
+          <Text size="body" color="foreground" script={script}>
+            {entry.editorial.description_en}
+          </Text>
+          <Text size="body" color="foreground" script="japanese">
+            {entry.editorial.description_ja}
+          </Text>
+          <DetailRow
+            label={t('detail.contemporary')}
+            value={entry.editorial.contemporaryNote_en}
+            reasonFor="editorial.contemporaryNote_en"
+          />
+          <DetailRow
+            label={t('detail.fashionUse')}
+            value={
+              entry.editorial.fashionUse === null ? null : entry.editorial.fashionUse.join(', ')
+            }
+            reasonFor="editorial.fashionUse"
+          />
+        </DetailSection>
 
-      <DetailSection title={t('detail.description')}>
-        <Text size="small" color="foreground" script={script}>
-          {entry.editorial.description_en}
-        </Text>
-        <Text size="small" color="foreground" script="japanese">
-          {entry.editorial.description_ja}
-        </Text>
-        <DetailRow
-          label={t('detail.contemporary')}
-          value={entry.editorial.contemporaryNote_en}
-          reasonFor="editorial.contemporaryNote_en"
-        />
-        <DetailRow
-          label={t('detail.fashionUse')}
-          value={entry.editorial.fashionUse === null ? null : entry.editorial.fashionUse.join(', ')}
-          reasonFor="editorial.fashionUse"
-        />
-      </DetailSection>
-
-      <DetailSection title={t('detail.coordinates')}>
-        <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
-        <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
-        <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
-        <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
-        <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
-        <DetailRow label={t('colour.hex')} value={derived.hex} />
-        {/*
+        <DetailSection title={t('detail.coordinates')}>
+          <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
+          <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
+          <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
+          <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
+          <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
+          <DetailRow label={t('colour.hex')} value={derived.hex} />
+          {/*
           ADR-0031: "closest digital reference" is only an honest phrase when a number stands
           behind it, so the number is here rather than the phrase alone.
         */}
-        <DetailRow
-          label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
-          value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
-        />
-      </DetailSection>
+          <DetailRow
+            label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
+            value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
+          />
+        </DetailSection>
 
-      <DetailSection title={t('detail.taxonomy')}>
-        <DetailRow label={t('filter.family')} value={familyLabel(entry.taxonomy.family, locale)} />
-        <DetailRow
-          label={t('filter.temperature')}
-          value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
-        />
-        <DetailRow
-          label={t('filter.lightness')}
-          value={
-            entry.taxonomy.lightnessBand === null
-              ? null
-              : t(LIGHTNESS_KEYS[entry.taxonomy.lightnessBand])
-          }
-          reasonFor="taxonomy.lightnessBand"
-        />
-        <DetailRow
-          label={t('filter.chroma')}
-          value={
-            entry.taxonomy.chromaBand === null ? null : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
-          }
-          reasonFor="taxonomy.chromaBand"
-        />
-        <DetailRow
-          label={t('filter.season')}
-          value={seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')}
-          reasonFor="taxonomy.season"
-        />
-      </DetailSection>
+        <DetailSection title={t('detail.taxonomy')}>
+          <DetailRow
+            label={t('filter.family')}
+            value={familyLabel(entry.taxonomy.family, locale)}
+          />
+          <DetailRow
+            label={t('filter.temperature')}
+            value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
+          />
+          <DetailRow
+            label={t('filter.lightness')}
+            value={
+              entry.taxonomy.lightnessBand === null
+                ? null
+                : t(LIGHTNESS_KEYS[entry.taxonomy.lightnessBand])
+            }
+            reasonFor="taxonomy.lightnessBand"
+          />
+          <DetailRow
+            label={t('filter.chroma')}
+            value={
+              entry.taxonomy.chromaBand === null ? null : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
+            }
+            reasonFor="taxonomy.chromaBand"
+          />
+          <DetailRow
+            label={t('filter.season')}
+            value={seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')}
+            reasonFor="taxonomy.season"
+          />
+        </DetailSection>
 
-      <DetailSection title={t('detail.provenance')}>
-        <DetailRow label={t('prov.source')} value={entry.provenance.source} />
-        <DetailRow label={t('prov.sourceId')} value={entry.provenance.sourceId} />
-        <DetailRow
-          label={t('prov.sourceType')}
-          value={t(SOURCE_TYPE_KEYS[entry.provenance.sourceType])}
-        />
-        <DetailRow label={t('prov.licence')} value={entry.provenance.sourceLicence} />
-        <DetailRow
-          label={t('prov.rightsHolder')}
-          value={entry.provenance.rightsHolder}
-          reasonFor="provenance.rightsHolder"
-        />
-        <DetailRow
-          label={t('prov.publisher')}
-          value={entry.provenance.publisher}
-          reasonFor="provenance.publisher"
-        />
-        <DetailRow
-          label={t('prov.publishedYear')}
-          value={
-            entry.provenance.publishedYear === null ? null : String(entry.provenance.publishedYear)
-          }
-          reasonFor="provenance.publishedYear"
-        />
-        <DetailRow
-          label={t('prov.url')}
-          value={entry.provenance.sourceUrl}
-          reasonFor="provenance.sourceUrl"
-        />
-        <DetailRow label={t('prov.derivation')} value={entry.provenance.derivation} />
-        <DetailRow label={t('prov.author')} value={entry.provenance.authoredBy} />
-        <DetailRow label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
-        <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} />
-        {/*
+        <DetailSection title={t('detail.provenance')}>
+          <DetailRow label={t('prov.source')} value={entry.provenance.source} />
+          <DetailRow label={t('prov.sourceId')} value={entry.provenance.sourceId} />
+          <DetailRow
+            label={t('prov.sourceType')}
+            value={t(SOURCE_TYPE_KEYS[entry.provenance.sourceType])}
+          />
+          <DetailRow label={t('prov.licence')} value={entry.provenance.sourceLicence} />
+          <DetailRow
+            label={t('prov.rightsHolder')}
+            value={entry.provenance.rightsHolder}
+            reasonFor="provenance.rightsHolder"
+          />
+          <DetailRow
+            label={t('prov.publisher')}
+            value={entry.provenance.publisher}
+            reasonFor="provenance.publisher"
+          />
+          <DetailRow
+            label={t('prov.publishedYear')}
+            value={
+              entry.provenance.publishedYear === null
+                ? null
+                : String(entry.provenance.publishedYear)
+            }
+            reasonFor="provenance.publishedYear"
+          />
+          <DetailRow
+            label={t('prov.url')}
+            value={entry.provenance.sourceUrl}
+            reasonFor="provenance.sourceUrl"
+          />
+          <DetailRow label={t('prov.derivation')} value={entry.provenance.derivation} />
+          <DetailRow label={t('prov.author')} value={entry.provenance.authoredBy} />
+          <DetailRow label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
+          <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} />
+          {/*
           F-084's attested criterion, discharged. `self` is a weaker claim than `independent`
           and it is stated in words rather than as a code, because a reader deciding whether to
           trust an entry should not have to know our vocabulary.
         */}
-        <DetailRow
-          label={t('prov.independence')}
-          value={
-            entry.provenance.reviewIndependence === null
-              ? null
-              : t(INDEPENDENCE_KEYS[entry.provenance.reviewIndependence])
-          }
-        />
-        <DetailRow label={t('detail.editorialNotes')} value={entry.provenance.editorialNotes} />
-      </DetailSection>
+          <DetailRow
+            label={t('prov.independence')}
+            value={
+              entry.provenance.reviewIndependence === null
+                ? null
+                : t(INDEPENDENCE_KEYS[entry.provenance.reviewIndependence])
+            }
+          />
+          <DetailRow label={t('detail.editorialNotes')} value={entry.provenance.editorialNotes} />
+        </DetailSection>
 
-      <DetailSection title={t('detail.relations')}>
-        <RelatedList label={t('rel.related')} slugs={entry.relations.related} />
-        <RelatedList label={t('rel.complementary')} slugs={entry.relations.complementary} />
-        <RelatedList
-          label={t('rel.historicalVariants')}
-          slugs={entry.relations.historicalVariants}
-        />
-      </DetailSection>
+        {/*
+        THE DERIVED MATERIAL, BEHIND TABS (criterion 3) — and the line is drawn deliberately.
 
-      <DetailSection title={t('detail.palettes')}>
-        {palettes.length === 0 ? (
-          <Text size="small" color="foreground.2" script={script}>
-            {t('rel.none')}
-          </Text>
-        ) : (
-          palettes.map(({ palette, role }) => (
-            <DetailRow
-              key={palette.slug}
-              label={palette.name.en}
-              value={`${palette.name.ja} · ${t(ROLE_KEYS[role as keyof typeof ROLE_KEYS])}`}
-            />
-          ))
-        )}
-      </DetailSection>
+        A tab is a DISCLOSURE: what is inside one is a tap away rather than on the page. So what
+        goes in is only what the engine COMPUTES — harmony, a CVD simulation, nearest neighbours.
+        Everything the RECORD ASSERTS — the names, the coordinates, the classification, the
+        provenance — stays outside, because criterion 4 says provenance is "never a disclosure a
+        person has to find" and FR-24 put it on the colour surface rather than on a legal page.
 
-      <DetailSection title={t('detail.colourVision')}>
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: nativeSpacing.md,
-            paddingVertical: nativeSpacing.xs,
+        F-018's criterion-4 test asserts by CONTENT, so anything moved in here leaves the
+        rendered tree and that test goes red. It did not, which is the check on this paragraph
+        rather than a coincidence.
+      */}
+        <Tabs
+          items={[
+            { value: 'harmony', label: t('detail.palettes') },
+            { value: 'vision', label: t('detail.colourVision') },
+            { value: 'related', label: t('detail.relations') },
+          ]}
+          value={panel}
+          onValueChange={(v) => {
+            setPanel(v as DerivedPanel);
           }}
+          script={script}
         >
-          <Stack gap="xs" align="center">
-            <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={44} />
-            <Text size="xs" color="foreground.2" script={script}>
-              {t('cvd.normal')}
-            </Text>
-          </Stack>
-          {cvd.map(({ kind, hex }) => (
-            <View key={kind} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
-              {/*
+          {panel === 'harmony' ? (
+            <DetailSection title={t('detail.palettes')}>
+              {palettes.length === 0 ? (
+                <Text size="small" color="foreground.2" script={script}>
+                  {t('rel.none')}
+                </Text>
+              ) : (
+                palettes.map(({ palette, role }) => (
+                  <DetailRow
+                    key={palette.slug}
+                    label={palette.name.en}
+                    value={`${palette.name.ja} · ${t(ROLE_KEYS[role as keyof typeof ROLE_KEYS])}`}
+                  />
+                ))
+              )}
+            </DetailSection>
+          ) : null}
+          {panel === 'vision' ? (
+            <DetailSection title={t('detail.colourVision')}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: nativeSpacing.md,
+                  paddingVertical: nativeSpacing.xs,
+                }}
+              >
+                <Stack gap="xs" align="center">
+                  <Swatch
+                    name={entry.name.en}
+                    hex={derived.hex}
+                    color={colorFor(entry)}
+                    size={44}
+                  />
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('cvd.normal')}
+                  </Text>
+                </Stack>
+                {cvd.map(({ kind, hex }) => (
+                  <View key={kind} style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
+                    {/*
                 The accessible name carries which deficiency this is, so the swatches are not
                 distinguished by colour alone (golden rule 13) — which in a colour-vision block
                 would be a particularly poor joke. The `Color` is still the corpus entry's,
                 because provenance describes where the COLOUR came from and the simulation is a
                 rendering of it, not a second measurement.
               */}
-              <Swatch
-                name={`${entry.name.en} — ${t(CVD_KEYS[kind])}`}
-                hex={hex}
-                color={colorFor(entry)}
-                size={44}
-              />
-              <Text size="xs" color="foreground.2" script={script}>
-                {t(CVD_KEYS[kind])}
+                    <Swatch
+                      name={`${entry.name.en} — ${t(CVD_KEYS[kind])}`}
+                      hex={hex}
+                      color={colorFor(entry)}
+                      size={44}
+                    />
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t(CVD_KEYS[kind])}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              <Text size="small" color="foreground.2" script={script}>
+                {t('cvd.note')}
               </Text>
-            </View>
-          ))}
-        </View>
-        <Text size="small" color="foreground.2" script={script}>
-          {t('cvd.note')}
-        </Text>
-      </DetailSection>
+            </DetailSection>
+          ) : null}
+          {panel === 'related' ? (
+            <DetailSection title={t('detail.relations')}>
+              <RelatedList label={t('rel.related')} slugs={entry.relations.related} />
+              <RelatedList label={t('rel.complementary')} slugs={entry.relations.complementary} />
+              <RelatedList
+                label={t('rel.historicalVariants')}
+                slugs={entry.relations.historicalVariants}
+              />
+            </DetailSection>
+          ) : null}
+        </Tabs>
 
-      <Button
-        label={t('detail.openCard')}
-        variant="secondary"
-        onPress={() => {
-          onOpenCard?.(slug);
-        }}
-      />
+        <Button
+          label={t('detail.openCard')}
+          variant="secondary"
+          onPress={() => {
+            onOpenCard?.(slug);
+          }}
+        />
+      </Stack>
     </Screen>
   );
 }
