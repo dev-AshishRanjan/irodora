@@ -4359,7 +4359,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-143",
         "F-144",
@@ -4380,7 +4380,26 @@
         "a11y",
         "contrast"
       ],
-      "notes": "Low variance and low density deliberately — the visual-taste dials name the Lens as a task surface, so the editorial treatment that suits the Atlas is wrong here. This is also the screen where a sheet earns itself: acting on a reading currently means leaving the camera. The claims lint stays binding on every string. BLOCKED BY F-158 AS WELL, recorded 2026-09-04 when F-149 was selected and the dependency turned out to be missing from the field. Criterion 3 says the result \"arrives in a sheet\", and `@irodora/ui` exports no Sheet — F-158 criterion 1 is what creates one, and F-158 criterion 3 is the SAME sentence about the Lens written from the other side. Building a sheet inside F-149 would be scope creep into a feature that already exists. F-158 is eligible today (F-157 is done, and @gorhom/bottom-sheet 5.2.14 is in the store), so the order simply inverts. F-137 is the precedent: a blocked feature has to say what is blocking it, in a field rather than in a note somebody has to read."
+      "notes": "Low variance and low density deliberately — the visual-taste dials name the Lens as a task surface, so the editorial treatment that suits the Atlas is wrong here. This is also the screen where a sheet earns itself: acting on a reading currently means leaving the camera. The claims lint stays binding on every string. BLOCKED BY F-158 AS WELL, recorded 2026-09-04 when F-149 was selected and the dependency turned out to be missing from the field. Criterion 3 says the result \"arrives in a sheet\", and `@irodora/ui` exports no Sheet — F-158 criterion 1 is what creates one, and F-158 criterion 3 is the SAME sentence about the Lens written from the other side. Building a sheet inside F-149 would be scope creep into a feature that already exists. F-158 is eligible today (F-157 is done, and @gorhom/bottom-sheet 5.2.14 is in the store), so the order simply inverts. F-137 is the precedent: a blocked feature has to say what is blocking it, in a field rather than in a note somebody has to read. DONE 2026-09-04. THE HEADLINE IS FR-18: `LensReading` has carried `quality: excellent | good | fair | poor` since R2 and NO SCREEN RENDERED IT — `grep -rn \"\\.quality\" apps/mobile/src --include=*.tsx` returned nothing. What the Lens showed instead was `confidence.toFixed(2)`, a bare decimal whose own type comment reads \"Never a probability\". FR-18 says the classification is what \"blocks a confident claim and returns a specific, actionable instruction\", so the one word a person can act on was being discarded in favour of a number they cannot interpret. ONE READOUT REPLACES THREE ELEMENTS (criterion 2): quality, light and colour space each named, then the confidence figure subordinate with its scale stated, then the instruction under \"To improve it\". The order is FR-17's and a test asserts the ORDER rather than mere presence — a presence-only test would pass on the arrangement the requirement exists to forbid. THE AMBER STATUS IS GONE, which left `Status` with no reader anywhere in the product (E-071). THE RETICLE HAD THE SWATCH KEYLINE PROBLEM (E-072): a single `border.strong` rule over an arbitrary camera image, which is exactly the case F-068 proved a single tone cannot handle, and a CLOSED border around the sample, which is the simultaneous-contrast hazard `swatch.well` exists to prevent applied to the live subject. It is now two-tone corner marks, reusing the gamut-verified pair, derived from `REGION_FRACTION` rather than repeating `45%`/`10%` beside it — the old overlay stated the same fact twice and would have gone on pointing at the old area the moment the sampled region moved.",
+      "plan": "plans/F-149-the-lens-is-a-calm-instrument.md",
+      "effects": [
+        "E-071",
+        "E-072"
+      ],
+      "attested": [
+        {
+          "criterion": "The viewfinder is uncluttered and the reticle is the only bright element",
+          "verifiedBy": "THE MECHANICS ARE CHECKED AND THE IMPRESSION IS NOT. What is verified: the reticle carries both gamut-verified tones, it no longer encloses the sample region, its position is derived from the fraction the engine actually samples, and the amber Status that competed with it is gone — leaving nothing else on the screen with a light tone. WHAT IS NOT VERIFIED is whether corner marks at a tenth of the frame read as \"point this at the thing\" on a phone held at arm's length, or whether 12px arms are the right length. That needs a device and a garment. The specific risk is that the marks are too subtle in bright daylight, which is the condition this surface is most used in and the one no test here can create.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Illumination, quality and confidence read as one calm readout rather than three warnings",
+          "verifiedBy": "THE STRUCTURE IS ASSERTED, THE CALM IS NOT. Tests cover that all three facts appear, that the quality band is the engine's own word, that the classification precedes the number, and that nothing appears when there is no reading. WHAT NO TEST CAN SAY is whether five stacked label/value rows read as one readout or as a small table — the failure mode here is not loudness but tedium, and the honest check is somebody glancing at it after a capture and knowing immediately whether to try again. If it reads as a table, the answer is fewer lines rather than a return to three elements.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-150",

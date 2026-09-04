@@ -2693,6 +2693,78 @@ describe('the preferences route wires the real repository (F-109)', () => {
  * looking at a live preview that produces nothing cannot tell them apart, and neither could
  * anybody they reported it to.
  */
+describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-18)', () => {
+  // Local, as every other block in this file keeps one. Reads the accessibility label as well
+  // as the text, so a value announced but not printed still counts as shown.
+  function textOf(node: TestNode, out: string[] = []): string[] {
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') out.push(child);
+      else textOf(child, out);
+    }
+    const label: unknown = node.props['accessibilityLabel'];
+    if (typeof label === 'string') out.push(label);
+    return out;
+  }
+
+  /** A reading with something to say about itself: poor capture, mixed light, an instruction. */
+  const POOR: LensReading = {
+    rgb: [0.4, 0.38, 0.36],
+    space: 'display-p3',
+    usableSamples: 1100,
+    variance: 0.09,
+    illumination: 'mixed',
+    quality: 'poor',
+    confidence: 0.21,
+    instruction: 'Move closer and fill the marked area.',
+  };
+
+  const shown = (reading: LensReading): string =>
+    textOf(draw(<Lens permission="granted" reading={reading} />, 'light')).join(' \u0000 ');
+
+  it('shows the quality band — the FR-18 word that reached no screen until now', () => {
+    // The engine has classified every capture since R2 and nothing rendered it. What the
+    // screen showed instead was `confidence.toFixed(2)`, whose own type says it is never a
+    // probability. This is the assertion that the word arrives.
+    expect(shown(POOR)).toContain(en['lens.quality.poor']);
+    expect(shown(SAMPLE_READING)).toContain(en['lens.quality.excellent']);
+  });
+
+  it('names all three conditions, and the value after them (FR-17)', () => {
+    const text = shown(POOR);
+    for (const label of [en['lens.quality'], en['lens.light'], en['lens.space']])
+      expect(text).toContain(label);
+    expect(text).toContain(en['lens.light.mixed']);
+    expect(text).toContain(en['lens.space.displayP3']);
+
+    // ORDER, not merely presence. FR-17's requirement is that the classification is shown
+    // BEFORE the result, "because a number shown first has already been read by the time its
+    // qualifier arrives" — so a test that only checked presence would pass on the arrangement
+    // the requirement exists to forbid.
+    expect(text.indexOf(en['lens.quality.poor'])).toBeLessThan(text.indexOf('0.21'));
+  });
+
+  it('keeps the confidence figure, subordinate and with its scale stated', () => {
+    const text = shown(POOR);
+    // Kept rather than hidden: it is the honest ceiling FR-15 produces, and removing it would
+    // conceal how far the engine is willing to go. The label is what stops a bare 0.21 reading
+    // as a percentage.
+    expect(text).toContain('0.21');
+    expect(text).toContain(en['lens.confidence']);
+  });
+
+  it('gives the instruction as a next step, not as a warning (criterion 4)', () => {
+    const text = shown(POOR);
+    expect(text).toContain(en['lens.next']);
+    expect(text).toContain(POOR.instruction);
+  });
+
+  it('says nothing about conditions when there is no reading', () => {
+    const text = textOf(draw(<Lens permission="granted" />, 'light')).join(' \u0000 ');
+    for (const label of [en['lens.quality'], en['lens.light'], en['lens.next']])
+      expect(text).not.toContain(label);
+  });
+});
+
 describe('the Lens says why there is no reading (F-119)', () => {
   function textOf(node: TestNode, out: string[] = []): string[] {
     for (const child of node.children ?? []) {

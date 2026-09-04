@@ -46,7 +46,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type DimensionValue } from 'react-native';
 import {
   Camera,
   useCameraDevice,
@@ -72,6 +72,63 @@ import { permissionState, type LensPermission } from './permission';
  * clear FR-15's floor of 1000 usable samples on any camera this would run on.
  */
 export const REGION_FRACTION = 0.1;
+
+/**
+ * Where the reticle's corner marks sit, derived from {@link REGION_FRACTION}.
+ *
+ * DERIVED, NEVER TYPED TWICE. The old overlay hard-coded `left: '45%'` and `width: '10%'`
+ * beside a `REGION_FRACTION` of `0.1` — two statements of one fact, and the marks would have
+ * gone on pointing at the old area the moment the sampled region changed. A reticle that lies
+ * about where the colour is read is worse than none: it is an instruction to aim somewhere the
+ * engine is not looking.
+ */
+const REGION_PERCENT = REGION_FRACTION * 100;
+
+/**
+ * How far the region sits from each edge.
+ *
+ * ONE VALUE, NOT TWO: the region is a centred square, so the inset from left equals the inset
+ * from right. It was briefly written as two constants holding the same expression, which is a
+ * place for them to drift apart.
+ *
+ * Typed as `DimensionValue` so the percentage is a percentage to TypeScript as well: a bare
+ * template produces `string`, and `ViewStyle.left` takes the template-literal type
+ * \`\${number}%\` rather than any string.
+ */
+//
+// `String()` around the number, then asserted: `restrict-template-expressions` refuses a
+// bare number in a template, and `String()` produces a plain `string` which is not the
+// template-literal type `ViewStyle.left` wants. The assertion is the seam between those two
+// rules, and it is safe by construction — the expression is a number and the suffix is a
+// literal `%`.
+const REGION_EDGE = `${String((100 - REGION_PERCENT) / 2)}%` as DimensionValue;
+
+/** How long each arm of a corner mark is. Short enough to mark a corner, not to draw a box. */
+const BRACKET = 12;
+
+/** The four corners, each with the two borders that make its L. */
+const CORNERS = [
+  {
+    key: 'top-left',
+    at: { left: REGION_EDGE, top: REGION_EDGE },
+    outer: { borderTopWidth: 1, borderLeftWidth: 1 },
+  },
+  {
+    key: 'top-right',
+    at: { right: REGION_EDGE, top: REGION_EDGE },
+    outer: { borderTopWidth: 1, borderRightWidth: 1 },
+  },
+  {
+    key: 'bottom-left',
+    at: { left: REGION_EDGE, bottom: REGION_EDGE },
+    outer: { borderBottomWidth: 1, borderLeftWidth: 1 },
+  },
+  {
+    key: 'bottom-right',
+    at: { right: REGION_EDGE, bottom: REGION_EDGE },
+    outer: { borderBottomWidth: 1, borderRightWidth: 1 },
+  },
+] as const;
 
 /** FR-13's mode, and the ceiling that goes with it (`MODE_CEILING.live` is 0.7). */
 const MODE = 'live' as const;
@@ -367,24 +424,50 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
         }}
       />
       {/*
-        THE CROSSHAIR. An outline rather than a filled shape: anything opaque over the region
-        would change what the person sees of the colour they are pointing at, which is the one
-        thing this surface exists to show them honestly.
+        THE RETICLE (F-149), and both changes to it are colour science rather than taste.
+
+        IT DOES NOT ENCLOSE THE REGION. It was a closed 2px rule on all four sides, and a hard
+        border around a colour changes how that colour reads — simultaneous contrast is the
+        entire reason `swatch.well` exists, and this is that hazard applied to the live subject
+        somebody is judging. Corner marks say where the sample is taken without framing it, so
+        what surrounds the colour is the scene rather than our rule.
+
+        IT IS TWO-TONE, for the reason `Swatch`'s keyline is (F-068): the other side of this
+        line is an arbitrary camera image. A single grey — `border.strong` — is nearly
+        invisible over a pale garment, on the one surface where the marker must always be
+        findable. The same gamut-verified pair is reused rather than a new one invented: the
+        better of the two tones reaches 4.23 against the worst possible sample and they differ
+        from each other by ~18:1 whatever sits behind them.
 
         `pointerEvents="none"` so the overlay never swallows a gesture meant for the camera.
       */}
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-        <View
-          style={{
-            position: 'absolute',
-            left: '45%',
-            top: '45%',
-            width: '10%',
-            height: '10%',
-            borderWidth: 2,
-            borderColor: colors['border.strong'],
-          }}
-        />
+        {CORNERS.map((corner) => (
+          <View
+            key={corner.key}
+            style={{
+              position: 'absolute',
+              ...corner.at,
+              width: BRACKET,
+              height: BRACKET,
+              ...corner.outer,
+              borderColor: colors['swatch.hairline.inverse'],
+            }}
+          >
+            {/*
+              The inner tone, inset by the outer's own border so the two read as parallel
+              hairlines rather than as one thick edge — the same nesting `Swatch` uses.
+            */}
+            <View
+              style={{
+                width: BRACKET,
+                height: BRACKET,
+                ...corner.outer,
+                borderColor: colors['swatch.hairline'],
+              }}
+            />
+          </View>
+        ))}
       </View>
     </View>
   );

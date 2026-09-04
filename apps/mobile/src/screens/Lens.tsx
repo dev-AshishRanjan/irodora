@@ -43,7 +43,7 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Row, Screen, Sheet, Stack, Status, Surface, Swatch, Text } from '@irodora/ui';
+import { Button, Row, Screen, Sheet, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
@@ -67,6 +67,29 @@ const SPACE_KEYS: Readonly<Record<CaptureSpace, MessageKey>> = {
   srgb: 'lens.space.srgb',
   'display-p3': 'lens.space.displayP3',
   unknown: 'lens.space.unknown',
+};
+
+/**
+ * Capture quality → its label. **FR-18's classification, on screen for the first time.**
+ *
+ * The engine has produced this word since R2 — `'excellent' | 'good' | 'fair' | 'poor'` — and
+ * no screen rendered it. What the Lens showed instead was `confidence.toFixed(2)`, a bare
+ * decimal whose own type comment reads *"Never a probability"* and which looks like nothing
+ * else.
+ *
+ * FR-18 is explicit that the classification is what *"blocks a confident claim and returns a
+ * specific, actionable instruction"*. A word a person can act on was being discarded in favour
+ * of a number they cannot interpret.
+ *
+ * The label describes the CAPTURE, never the colour. "Good" means the frame was well exposed
+ * and evenly lit; it says nothing about how close the reading is to the garment, and NFR-21
+ * would not allow it to.
+ */
+const QUALITY_KEYS: Readonly<Record<LensReading['quality'], MessageKey>> = {
+  excellent: 'lens.quality.excellent',
+  good: 'lens.quality.good',
+  fair: 'lens.quality.fair',
+  poor: 'lens.quality.poor',
 };
 
 /** Illumination → its label. FR-17 shows this BEFORE the value, never as a footnote. */
@@ -217,18 +240,6 @@ export function Lens({
         </Surface>
       )}
 
-      {/*
-        The instruction, when the capture assessment produced one, and OUTSIDE the reading card
-        on purpose: a status token may not sit beside a colour sample without the `swatch.well`
-        separator (F-069), and the honest way to satisfy that is not to sit beside one.
-
-        `warn` rather than `bad`: a reading with an instruction is usable and improvable, which
-        is a different thing from a reading that failed.
-      */}
-      {reading === null || reading.instruction === '' ? null : (
-        <Status kind="warn" text={reading.instruction} />
-      )}
-
       {reading === null || display === null ? (
         /*
          * NOT a placeholder swatch and not a zero. A neutral rectangle where the colour goes is
@@ -281,19 +292,86 @@ export function Lens({
                   sure the reading is — all three before a single colour value, because a number
                   shown first has already been read by the time its qualifier arrives.
                 */}
+                {/*
+                  ONE READOUT, WHERE THERE WERE THREE ELEMENTS (criterion 2).
+
+                  It was a "Conditions" pair, a "Confidence" pair, and — on the screen behind
+                  this sheet — an amber `Status` carrying the instruction. Three things, one of
+                  them styled as a fault, for what is a single description of one capture.
+
+                  THE ORDER IS FR-17'S and it has not moved: the conditions come before the
+                  value, because a number shown first has already been read by the time its
+                  qualifier arrives. What changed is that the conditions now include the one the
+                  engine actually classifies.
+
+                  NO STATUS, NO AMBER. A poor reading says "Poor", which is a word rather than a
+                  colour — so NFR-9's rule about colour never being the only channel is met by
+                  there being no colour channel to depend on at all. An instruction is guidance
+                  about the NEXT capture, not a report of something broken.
+                */}
                 <Stack gap="xs">
                   <Text size="label" color="foreground.2" script={script}>
-                    {t('lens.conditions')}
+                    {t('lens.readout')}
                   </Text>
-                  <Text size="small" color="foreground" script={script}>
-                    {`${t(ILLUMINATION_KEYS[reading.illumination])} · ${t(SPACE_KEYS[reading.space])}`}
-                  </Text>
-                  <Text size="small" color="foreground.2" script={script}>
-                    {t('lens.confidence')}
-                  </Text>
-                  <Text size="small" color="foreground" numeric selectable>
-                    {reading.confidence.toFixed(2)}
-                  </Text>
+
+                  <Row gap="sm">
+                    <Text size="small" color="foreground.2" script={script}>
+                      {t('lens.quality')}
+                    </Text>
+                    <Text size="small" color="foreground" script={script}>
+                      {t(QUALITY_KEYS[reading.quality])}
+                    </Text>
+                  </Row>
+
+                  <Row gap="sm">
+                    <Text size="small" color="foreground.2" script={script}>
+                      {t('lens.light')}
+                    </Text>
+                    <Text size="small" color="foreground" script={script}>
+                      {t(ILLUMINATION_KEYS[reading.illumination])}
+                    </Text>
+                  </Row>
+
+                  <Row gap="sm">
+                    <Text size="small" color="foreground.2" script={script}>
+                      {t('lens.space')}
+                    </Text>
+                    <Text size="small" color="foreground" script={script}>
+                      {t(SPACE_KEYS[reading.space])}
+                    </Text>
+                  </Row>
+
+                  {/*
+                    THE NUMBER STAYS, AND STOPS BEING THE HEADLINE. FR-15 produces it and it is
+                    the honest ceiling, so removing it would be hiding the one figure that says
+                    how far the engine is willing to go. It is subordinate to the word above,
+                    and its label states the scale — a bare 0.87 reads as a percentage to
+                    everyone who has ever seen one.
+                  */}
+                  <Row gap="sm">
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t('lens.confidence')}
+                    </Text>
+                    <Text size="xs" color="foreground.2" numeric selectable>
+                      {reading.confidence.toFixed(2)}
+                    </Text>
+                  </Row>
+
+                  {/*
+                    WHAT TO DO NEXT (criterion 4, FR-18). Inside the readout rather than shouted
+                    from the screen behind it: it belongs to this capture, and it is the sentence
+                    the assessment produced for it.
+                  */}
+                  {reading.instruction === '' ? null : (
+                    <Stack gap="xs">
+                      <Text size="xs" color="foreground.2" script={script}>
+                        {t('lens.next')}
+                      </Text>
+                      <Text size="small" color="foreground" script={script}>
+                        {reading.instruction}
+                      </Text>
+                    </Stack>
+                  )}
                 </Stack>
 
                 <Row gap="md">

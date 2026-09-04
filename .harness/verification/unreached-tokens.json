@@ -1,7 +1,7 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-09-01",
+  "updated": "2026-09-04",
   "$groupComment": "`group` is required because `xs` is a radius step AND a type step, and they are not the same decision. One of them is read by 22 `size=\"xs\"` literals; the other is read by nothing.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
@@ -84,11 +84,12 @@
       "group": "status kind",
       "tokens": [
         "ok",
+        "warn",
         "bad"
       ],
-      "cites": "ADR-0054, F-031, F-097",
-      "why": "TWO OF THREE, as of F-097. `warn` is read by the Lens, which shows a capture instruction as a status rather than as prose so it carries an icon as well as its words — colour is never the only channel, and neither is a paragraph of grey text nobody scans. `ok` and `bad` are still requested by no caller: `Status` is built, conforms, and reaches gate 8 through the conformance registry, which ADR-0054 allows as a root, so nothing else reports them. The first surface that shows one is outfit scoring and explainability (F-031). This entry exists so that a status channel nobody uses stays a written-down fact rather than an assumption that it is used somewhere — and F-097 is what turned one third of it from an assumption into a reader.",
-      "closedBy": "F-149"
+      "cites": "ADR-0054, F-097, F-149, F-152",
+      "why": "THREE OF THREE, AND THIS ENTRY EXPECTED THE OPPOSITE. It read \"two of three\" and named F-149 as the feature that would close it, on the strength of F-097 having made the Lens render its capture instruction as a `warn`. F-149 removed that reader: its criterion 2 asks for illumination, quality and confidence to read as ONE CALM READOUT \"rather than three warnings\", and an amber banner was the loudest thing on a screen whose only bright element is meant to be the reticle. The instruction did not disappear — it sits inside the readout under \"To improve it\", beside the quality word that produced it, which is nearer to what FR-18 asks for than a banner detached from its cause. So `warn` lost its only reader and this exemption GREW rather than closing. THE PREVIOUS OWNER WAS WRONG AND THE GATE CAUGHT IT: this said the first surface to show a status would be outfit scoring (F-031), and F-031 is DONE without having shown one — which is the exact shape ADR-0088 describes, an exemption pointing at a feature that shipped without doing what the entry claimed. F-152 is the owner now, and specifically its criterion 2: \"every screen has a designed empty, loading and error state\". An error state IS a `bad` status — that is what ADR-0044 built the three channels for — so the sweep that gives every remaining surface its error state is the work that reaches these. THE DISTINCTION THE WHOLE ENTRY TURNS ON: a status says something is GOOD or BAD, and a capture readout says what the conditions WERE. The Lens describes; it does not judge, which is why it stopped reaching for a status at all.",
+      "closedBy": "F-152"
     }
   ]
 }

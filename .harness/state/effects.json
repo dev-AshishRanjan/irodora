@@ -2628,6 +2628,63 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-071",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Lens.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unreached-tokens.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y — token reach names a status kind the moment its last reader goes, and it did. The exemption now covers all three kinds and names F-152 as the closing feature, whose criterion 2 is \"every screen has a designed empty, loading and error state\" — an error state IS a `bad` status, which is what ADR-0044 built the three channels for.",
+      "memory": "memory/effects/an-exemption-can-name-the-feature-that-widens-it.md",
+      "rationale": "REMOVING ONE COMPONENT FROM ONE SCREEN LEFT AN ENTIRE DESIGN SUBSYSTEM WITH NO READER. The Lens showed its capture instruction as `Status kind=\"warn\"`, and it was the only `Status` anywhere in the product. F-149 criterion 2 asks for illumination, quality and confidence to read as ONE CALM READOUT \"rather than three warnings\", and an amber banner was the loudest thing on a screen whose only bright element is meant to be the reticle — so the instruction moved inside the readout, under \"To improve it\", beside the quality word that produced it. That is nearer to what FR-18 asks for than a banner detached from its cause. THE EXEMPTION IT LANDED IN WAS EXPECTING THE OPPOSITE: it read \"two of three\" and named **F-149 itself** as the feature that would close it, on the strength of F-097 having added that one reader. So the entry predicted this feature would finish the job and this feature undid it — which is only visible because the gate refuses a `closedBy` pointing at a done feature. THE FIRST REPLACEMENT OWNER WAS ALSO WRONG, and the same check caught that too: the entry had said outfit scoring (F-031) would be the first surface to show a status, and F-031 is DONE without having shown one. An exemption pointing at a feature that shipped without doing what the entry claimed is the exact shape ADR-0088 describes. THE DISTINCTION THE WHOLE THING TURNS ON, now written down: a status says something is GOOD or BAD; a capture readout says what the conditions WERE. The Lens describes rather than judges, which is why it stopped reaching for a status at all — and why the surfaces that DO judge are the ones that will reach these tokens.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-072",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/viewfinder.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:contrast — the reticle reuses `swatch.hairline` and `swatch.hairline.inverse`, the pair `packages/design-tokens/test/swatch-edge.test.ts` scans the whole sRGB gamut for: the better tone reaches 4.23 against the worst possible sample and the two differ from each other by ~18:1 whatever sits behind them. A new pair invented for the reticle would have carried no such evidence, and nothing here would have measured it — the camera image is not a token.",
+      "memory": "memory/effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md",
+      "rationale": "THE RETICLE HAD THE PROBLEM THE SWATCH KEYLINE WAS BUILT TO SOLVE, AND NOBODY HAD NOTICED BECAUSE IT IS NOT A SWATCH. It was a single 2px rule in `border.strong` — a UI border token, chosen for drawing edges on our own surfaces, where the other side of the line is a known ground. Over a live camera image the other side is an ARBITRARY COLOUR, which is precisely the case F-068 proved a single tone cannot handle: a single hairline measured 1.00 against its own colour, \"not a weak edge but NO EDGE AT ALL\". On the one surface where the marker must always be findable, it was nearly invisible over a pale garment. SECOND, AND LESS OBVIOUS: it was a CLOSED border on all four sides, and a hard rule around a colour changes how that colour reads. Simultaneous contrast is the entire reason `swatch.well` exists, and this was that hazard applied to the live subject somebody is judging — the product framing the thing it is asking you to look at. Corner marks say where the sample is taken without enclosing it. THE GENERAL SHAPE: a contrast rule attaches to the SITUATION, not to the component. \"A line whose other side we do not control\" is the situation, and it occurs wherever the product draws over content — a reticle today, a crop handle or a magnifier tomorrow. The tokens for it already existed and were gamut-verified; what was missing was noticing that this was the same problem.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
