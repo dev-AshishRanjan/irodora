@@ -166,6 +166,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-deleted-ui-section-leaves-live-locale-keys.md](effects/a-deleted-ui-section-leaves-live-locale-keys.md) — **E-066** · five labels outlived the section that read them; typecheck holds the two locales identical and says nothing about whether a key is reached.
 - [effects/a-new-engine-can-make-an-old-gate-blind.md](effects/a-new-engine-can-make-an-old-gate-blind.md) — **E-067** · the motion gate reported a clean scan of a codebase it could no longer read, and the giveaway number was the same one it had printed truthfully for every release before.
 - [effects/one-setting-three-mechanisms-and-only-one-is-asserted.md](effects/one-setting-three-mechanisms-and-only-one-is-asserted.md) — **E-068** · reduced motion is honoured at three layers by three different owners, and only the one this repository owns has a test behind it.
+- [effects/the-first-animated-portal-breaks-two-harness-assumptions-at-once.md](effects/the-first-animated-portal-breaks-two-harness-assumptions-at-once.md) — **E-069** · the first subject that both animates and portals broke two unwritten harness assumptions, and neither failure was reported anywhere near its cause.
+- [effects/a-fix-applied-to-one-package-is-not-applied-to-its-twin.md](effects/a-fix-applied-to-one-package-is-not-applied-to-its-twin.md) — **E-070** · F-157 removed a mock from one package and left its copy in the other, where it had been supplying almost none of the module it claimed to for two releases.
 
 ## Glossary
 

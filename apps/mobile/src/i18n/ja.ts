@@ -240,6 +240,8 @@ export const ja: Record<MessageKey, string> = {
     'このアプリのカメラ利用がオフになっています。端末の設定から戻せます。ほかの機能はカメラがなくても使えます。',
   'lens.waiting': '画面の中心を色に合わせてください。',
   'lens.noReading': 'まだ色を読んでいません。',
+  'lens.sheetTitle': 'この読み取り',
+  'lens.sheetClose': '読み取りを閉じてカメラに戻る',
   'lens.conditions': '読み取りの条件',
   'lens.confidence': 'この読み取りの確からしさ（0 から 1）',
   'lens.reading': '中心で読んだ色',

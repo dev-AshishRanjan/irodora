@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-04 — F-158 DONE · the sheet, and three failures that each pointed somewhere else
+
+### Worked before F-149, not after
+
+F-149 was selected first, by id. Its criterion 3 reads *"The result arrives in a sheet that can
+be acted on without losing the frame"* — and `@irodora/ui` exported no `Sheet`. F-158 criterion 3
+is **the same sentence written from the other side**.
+
+Building a sheet inside F-149 would have been scope creep into a feature that already existed. So
+the dependency went into `blockedBy` where a blocked feature says what blocks it (F-137's
+precedent), F-149 returned to backlog, and the order inverted.
+
+### The background layer, found by probing rather than by reading
+
+`BottomSheet.Content` accepts gorhom's `backgroundStyle`. A style walk over a rendered sheet
+shows **it does not reach the tree**. What does is `rgba(0, 0, 0, 0.75)` — HeroUI's own
+background layer, "decided by the active library theme", painting the ground **behind a colour
+reading**.
+
+That is the hazard `background={null}` closes on `Dialog` and `Popover`, and it is worse here
+because a sheet is where a sample is shown. A custom `backgroundComponent` puts `surface.2`,
+`radius.lg` and `border.strong` back where the contrast gate measures them.
+
+`Sheet` otherwise takes `Dialog`'s API exactly — same prop names, same order, same meanings — so
+a reviewer can see the scrim, the title level and the script handling are the **same decisions**
+rather than three that happen to agree today.
+
+### Where the Lens line is drawn
+
+**Into the sheet:** the reading card, the nearest names, both offers. All three are about the
+colour, and acting on them used to mean scrolling the camera off the screen.
+
+**Left on the screen:** the privacy line, the viewfinder, the permission states, and the capture
+instruction. The instruction especially — it says what to change **about the frame**, so putting
+it in a panel over the frame is telling somebody to adjust something they can no longer see.
+
+The sheet opens when a reading arrives and closes on dismissal; a new reading opens it again.
+Dismissing is not *"I am done"* — it is *"let me see the frame"*, and the next reading is a new
+answer to the question they went back to ask.
+
+### Three failures, none of which looked like itself
+
+**A queued animation frame overflowed the stack, in another test.** A gorhom sheet animates, so
+reanimated installs a mapper; `extractInputs` walks any plain object among its inputs with
+`Object.values`. That walk reaches React Native's module namespace, trips `DevMenu`, then
+`SettingsManager`, and once those are stubbed recurses through the module graph until the stack is
+gone. **The overflow is what proved stubbing was the wrong road** — the fix is not to survive the
+walk but not to take it, and a rendered-tree check has no business advancing time. It fires
+*after* the render returns, so jest blamed whichever test was running: an unrelated F-069
+assertion started failing the moment a sheet joined the registry.
+
+**A portalled subject outlived its render, and looked like a theme bug.** `apps/mobile`'s `draw()`
+never unmounted — harmless while every subject was inline. A sheet renders into a shared host, so
+the light render was still mounted when the dark one was captured and the dark subject reported
+`#F7F6F3` for its ground: **the light palette on a dark tree**. `packages/ui`'s `draw()` learned
+this in F-143; this harness had never rendered anything portalled, so the lesson never reached it
+(E-069).
+
+**The gesture mock F-157 removed was still here.** `apps/mobile/jest.setup.js` had the twin, and
+its docblock still asserted two things F-157 disproved. The invisible half is what it did: it
+spread `jestSetup.js` — a **setup script**, not the module — so everything past three hand-listed
+names was `undefined`, in every mobile test, for two releases. It surfaced as
+`Cannot read properties of undefined (reading 'UNDETERMINED')`, which is not a name anyone would
+predict. Removed rather than corrected, the way F-157 removed its copy (E-070).
+
+### A fourth, latent, now closed
+
+Both jest configs set `setupFiles`, which **overrides the preset's array rather than extending
+it**. React Native's own jest setup — the file that mocks the native modules that cannot exist
+outside a device — had never loaded in either package. Nothing had reached a lazy native getter
+until a sheet did. Both configs now spread the preset's list, so whatever it adds next arrives
+without an edit.
+
+### Verification
+
+| ran                                                              | result   |
+| ---------------------------------------------------------------- | -------- |
+| 0 state · 1 typecheck · 2 lint · 3 format                        | **PASS** |
+| 4 test · 6 build · 8 a11y · 9 contrast · 10 cvd · motion · peers  | **PASS** |
+| 123 ui · 672 mobile — now against the **real** gesture stack      | **PASS** |
+
+**Not run:** `color-golden` — no colour maths changed. `e2e`: gate 7 still pending.
+
+### Still owed
+
+**Criterion 4 is not discharged and cannot be from here.** A passing suite covers that the sheet
+mounts, that its children are in the tree, that the scrim and ground come from tokens in both
+themes, and that a `Swatch` inside it satisfies every rule it satisfies anywhere else. It does not
+cover the thing a sheet is *for*: whether the pan gesture composes with the content inside it,
+whether the dismiss threshold feels right, whether it settles rather than snapping. **A sheet that
+mounts but does not drag is a modal with a bad shape, and every assertion here would still pass.**
+
+This is also the surface where a residual problem with F-157's pin would appear first — gorhom is
+the heaviest consumer of gesture-handler in the tree.
+
+**Nothing found E-070, and nothing would find the next one.** It surfaced because a feature
+happened to need the real dependency. The two jest harnesses are copies; the corrections applied
+to them are not.
+
+---
+
 ## 2026-09-04 — F-144 DONE · the product moves, and the gate that guarded it had gone blind
 
 Nothing in the app animated. The manifest has defined motion since F-003 — three durations, two

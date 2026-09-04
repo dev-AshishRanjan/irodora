@@ -2567,6 +2567,67 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-069",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/overlay.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test — both conformance harnesses now hold fake timers and never advance them, and the mobile `draw()` unmounts before the next subject. The first stops the animation ticking; the second stops a portalled subject outliving the tree that mounted it. Neither weakens an assertion: these are rendered-tree checks, and no assertion in either file was ever about a frame.",
+      "memory": "memory/effects/the-first-animated-portal-breaks-two-harness-assumptions-at-once.md",
+      "rationale": "THE FIRST ANIMATED, PORTALLED SUBJECT BROKE TWO HARNESS ASSUMPTIONS THAT HAD BEEN SAFE FOR EVERY COMPONENT BEFORE IT, and both presented as something other than what they were. FIRST, THE TIMER. A gorhom sheet animates, so reanimated installs a mapper; when the mapper ticks, `extractInputs` walks any PLAIN OBJECT among its inputs with `Object.values`. Under this harness that walk reaches React Native's own module namespace, trips its lazy native getters one at a time — `DevMenu`, then `SettingsManager` — and, once those are stubbed, recurses through the module graph until the stack is gone. It fires on a QUEUED FRAME AFTER THE RENDER RETURNS, so jest attributes it to whichever test happens to be running: an unrelated F-069 assertion started failing the moment a sheet joined the registry. Stubbing each native module as it appeared was the wrong road and the stack overflow is what proved it — the fix is not to survive the walk but not to take it, and a rendered-tree check has no reason to advance time. IT IS A HARNESS ARTEFACT RATHER THAN A DEFECT: on a device the same code runs through the native worklets runtime, and if the mapper's input really were the RN namespace, every app shipping this library would overflow on first open. SECOND, THE PORTAL. `apps/mobile`'s `draw()` rendered and never unmounted, which was harmless while every subject was inline. A sheet renders into a SHARED host that outlives its tree, so the light render was still mounted when the dark one was captured and the dark subject reported `#F7F6F3` for its ground — THE LIGHT PALETTE ON A DARK TREE. It reads exactly like a theme bug in the new component. `packages/ui`'s `draw()` had learned this in F-143; this harness had never rendered anything portalled, so the lesson had not reached it. A FIX APPLIED TO ONE HARNESS IS NOT APPLIED TO THE OTHER, and nothing in either file says the other exists.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-070",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/jest.setup.js"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test — the mock is removed rather than corrected, so 672 mobile tests now render against the real `react-native-gesture-handler@2.32.0`. That is the guard: a symbol the package does not export is `undefined` again, and rendering an element whose type is `undefined` throws, which is what a device would do.",
+      "memory": "memory/effects/a-fix-applied-to-one-package-is-not-applied-to-its-twin.md",
+      "rationale": "F-157 REMOVED THIS MOCK FROM `packages/ui` AND LEFT ITS TWIN HERE. By F-158 the surviving copy asserted two things that were no longer true — that the tree resolves gesture-handler 3.2.1, and that downgrading breaks `expo-router` — both disproved by the feature that fixed the other file. Stale comments are the visible half. THE INVISIBLE HALF IS WHAT IT ACTUALLY DID: it spread `jest.requireActual('react-native-gesture-handler/jestSetup.js')`, which is a SETUP SCRIPT rather than the module, so the package's real exports were never present. Everything past the three names the mock listed by hand was `undefined`. Nothing noticed for two releases because nothing reached that far — until a bottom sheet did, and failed on `State.UNDETERMINED`, which is not a name anybody would predict. THE GENERAL SHAPE, and it is the reason this is recorded rather than fixed quietly: a fix applied to one package is not applied to its twin, and nothing in either file mentions the other. The two harnesses were copies; the correction was not. What made this one findable was a feature that needed the real dependency — which is to say it was found by luck of scheduling rather than by any check, and there is still no check that would find the next one.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

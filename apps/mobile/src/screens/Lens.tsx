@@ -40,9 +40,10 @@
  * the lens.
  */
 
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Row, Screen, Stack, Status, Surface, Swatch, Text } from '@irodora/ui';
+import { Button, Row, Screen, Sheet, Stack, Status, Surface, Swatch, Text } from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
@@ -152,6 +153,19 @@ export function Lens({
    * answer to one question, and the wardrobe would then disagree with the profile about what a
    * reading is worth.
    */
+  /*
+   * THE SHEET FOLLOWS THE READING (F-158).
+   *
+   * It opens when a reading arrives and closes when the person dismisses it; a NEW reading opens
+   * it again, which is why the effect keys on the reading itself rather than on whether one
+   * exists. Dismissing is not "I am done with the Lens" — it is "let me see the frame" — and the
+   * next reading is a new answer to the question they went back to ask.
+   */
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => {
+    if (reading !== null) setSheetOpen(true);
+  }, [reading]);
+
   const usable = reading !== null && worthOffering(reading);
   const offerable = usable && onUseForProfile !== undefined;
   const offerableToWardrobe = usable && onUseForWardrobe !== undefined;
@@ -231,132 +245,167 @@ export function Lens({
             </Text>
           )}
         </Stack>
-      ) : (
-        <Surface level="1" padding="lg">
-          <Stack gap="md">
-            {/*
-              FR-17: THE CONDITIONS COME FIRST. Illumination, then the capture space, then how
-              sure the reading is — all three before a single colour value, because a number
-              shown first has already been read by the time its qualifier arrives.
-            */}
-            <Stack gap="xs">
-              <Text size="label" color="foreground.2" script={script}>
-                {t('lens.conditions')}
-              </Text>
-              <Text size="small" color="foreground" script={script}>
-                {`${t(ILLUMINATION_KEYS[reading.illumination])} · ${t(SPACE_KEYS[reading.space])}`}
-              </Text>
-              <Text size="small" color="foreground.2" script={script}>
-                {t('lens.confidence')}
-              </Text>
-              <Text size="small" color="foreground" numeric selectable>
-                {reading.confidence.toFixed(2)}
-              </Text>
-            </Stack>
+      ) : null}
+      {/*
+        THE READING LIVES IN A SHEET (F-158), and the split is where the copy points.
 
-            <Row gap="md">
-              <Swatch name={t('lens.reading')} hex={display.hex} color={display.color} size={56} />
-              <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-                <Text size="body" color="foreground" numeric selectable>
-                  {display.hex}
-                </Text>
+        WHAT MOVED: the reading card, the nearest names, and both offers. All three are about the
+        COLOUR, and acting on them used to mean scrolling the camera off the screen — a person
+        deciding whether to keep a reading was doing it without the frame it came from.
+
+        WHAT STAYED: the privacy line, the viewfinder, the permission states, and the capture
+        instruction. The instruction especially, and this is the whole reason there is a line to
+        draw: it says what to change ABOUT THE FRAME, so putting it in a panel over the frame is
+        telling somebody to adjust something they can no longer see.
+      */}
+      <Sheet
+        open={sheetOpen && display !== null}
+        onOpenChange={setSheetOpen}
+        title={t('lens.sheetTitle')}
+        closeLabel={t('lens.sheetClose')}
+        script={script}
+      >
+        {/*
+          GUARDED, AND NOT BECAUSE OF THE SHEET'S OWN STATE. `open` decides what is VISIBLE;
+          children are constructed either way, so every one of these reads `reading` and
+          `display` whether or not the panel is on screen. The old ternary carried this guard and
+          the move dropped it — four Lens tests went red on `Cannot read properties of null`,
+          before any of them had opened a sheet.
+        */}
+        {reading === null || display === null ? null : (
+          <>
+            <Surface level="1" padding="lg">
+              <Stack gap="md">
                 {/*
-                  OKLCh with its units, like every other number in this app (FR-48). Three
-                  decimals on L and C and one on h is what the corpus prints, so a reading and a
-                  published entry can be compared by eye without one looking more precise than
-                  the other.
+                  FR-17: THE CONDITIONS COME FIRST. Illumination, then the capture space, then how
+                  sure the reading is — all three before a single colour value, because a number
+                  shown first has already been read by the time its qualifier arrives.
                 */}
-                <Text size="small" color="foreground.2" numeric selectable>
-                  {`L ${display.oklch[0].toFixed(3)}  C ${display.oklch[1].toFixed(3)}  h ${display.oklch[2].toFixed(1)}°`}
+                <Stack gap="xs">
+                  <Text size="label" color="foreground.2" script={script}>
+                    {t('lens.conditions')}
+                  </Text>
+                  <Text size="small" color="foreground" script={script}>
+                    {`${t(ILLUMINATION_KEYS[reading.illumination])} · ${t(SPACE_KEYS[reading.space])}`}
+                  </Text>
+                  <Text size="small" color="foreground.2" script={script}>
+                    {t('lens.confidence')}
+                  </Text>
+                  <Text size="small" color="foreground" numeric selectable>
+                    {reading.confidence.toFixed(2)}
+                  </Text>
+                </Stack>
+
+                <Row gap="md">
+                  <Swatch
+                    name={t('lens.reading')}
+                    hex={display.hex}
+                    color={display.color}
+                    size={56}
+                  />
+                  <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
+                    <Text size="body" color="foreground" numeric selectable>
+                      {display.hex}
+                    </Text>
+                    {/*
+                      OKLCh with its units, like every other number in this app (FR-48). Three
+                      decimals on L and C and one on h is what the corpus prints, so a reading and a
+                      published entry can be compared by eye without one looking more precise than
+                      the other.
+                    */}
+                    <Text size="small" color="foreground.2" numeric selectable>
+                      {`L ${display.oklch[0].toFixed(3)}  C ${display.oklch[1].toFixed(3)}  h ${display.oklch[2].toFixed(1)}°`}
+                    </Text>
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {`${t('lens.samples')} ${String(reading.usableSamples)}`}
+                    </Text>
+                  </View>
+                </Row>
+              </Stack>
+            </Surface>
+
+            {nearest.length === 0 ? null : (
+              <Stack gap="sm">
+                <Text size="label" color="foreground.2" script={script}>
+                  {t('lens.nearest')}
                 </Text>
+                {nearest.map(({ entry, deltaE00 }) => (
+                  <View
+                    key={entry.entry.slug}
+                    style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
+                  >
+                    <Swatch
+                      name={entry.entry.name.en}
+                      hex={entry.derived.hex}
+                      color={colorFor(entry.entry)}
+                      size={32}
+                      // Spread, not `onPress={... : undefined}`: under `exactOptionalPropertyTypes`
+                      // an absent handler and a present-and-undefined one are different things, and
+                      // `Swatch` renders a Pressable for the first case only.
+                      {...(onOpenColour === undefined
+                        ? {}
+                        : {
+                            onPress: () => {
+                              onOpenColour(entry.entry.slug);
+                            },
+                          })}
+                    />
+                    <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
+                      <Text size="small" color="foreground" script={script}>
+                        {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
+                      </Text>
+                      <Text size="xs" color="foreground.2" numeric selectable>
+                        {`${deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </Stack>
+            )}
+
+            {/*
+            FR-27's hand-off. An OFFER, and the note says what it will and will not do: it proposes
+            a starting point, every dimension stays editable, and nothing is saved until the person
+            says so on the next screen. That is not reassurance — it is the difference between this
+            button and the one every competitor ships.
+          */}
+            {offerable ? (
+              <Stack gap="sm">
+                <Button
+                  label={t('lens.useForProfile')}
+                  onPress={() => {
+                    onUseForProfile(reading);
+                  }}
+                />
                 <Text size="xs" color="foreground.2" script={script}>
-                  {`${t('lens.samples')} ${String(reading.usableSamples)}`}
+                  {t('lens.useForProfileNote')}
                 </Text>
-              </View>
-            </Row>
-          </Stack>
-        </Surface>
-      )}
+              </Stack>
+            ) : null}
 
-      {nearest.length === 0 ? null : (
-        <Stack gap="sm">
-          <Text size="label" color="foreground.2" script={script}>
-            {t('lens.nearest')}
-          </Text>
-          {nearest.map(({ entry, deltaE00 }) => (
-            <View
-              key={entry.entry.slug}
-              style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
-            >
-              <Swatch
-                name={entry.entry.name.en}
-                hex={entry.derived.hex}
-                color={colorFor(entry.entry)}
-                size={32}
-                // Spread, not `onPress={... : undefined}`: under `exactOptionalPropertyTypes`
-                // an absent handler and a present-and-undefined one are different things, and
-                // `Swatch` renders a Pressable for the first case only.
-                {...(onOpenColour === undefined
-                  ? {}
-                  : {
-                      onPress: () => {
-                        onOpenColour(entry.entry.slug);
-                      },
-                    })}
-              />
-              <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-                <Text size="small" color="foreground" script={script}>
-                  {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
+            {/*
+            SECOND, AND THE ORDER IS DELIBERATE. The profile offer has been here since F-097 and a
+            screen that reorders its controls is one people mis-tap. This is appended rather than
+            inserted, and the note under it says what will be stored — an estimate with the
+            conditions it was taken in (ADR-0005), never a claim that the colour IS a corpus entry.
+          */}
+            {offerableToWardrobe ? (
+              <Stack gap="sm">
+                <Button
+                  label={t('lens.useForWardrobe')}
+                  variant="secondary"
+                  onPress={() => {
+                    onUseForWardrobe(reading);
+                  }}
+                />
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('lens.useForWardrobeNote')}
                 </Text>
-                <Text size="xs" color="foreground.2" numeric selectable>
-                  {`${deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </Stack>
-      )}
-
-      {/*
-        FR-27's hand-off. An OFFER, and the note says what it will and will not do: it proposes
-        a starting point, every dimension stays editable, and nothing is saved until the person
-        says so on the next screen. That is not reassurance — it is the difference between this
-        button and the one every competitor ships.
-      */}
-      {offerable ? (
-        <Stack gap="sm">
-          <Button
-            label={t('lens.useForProfile')}
-            onPress={() => {
-              onUseForProfile(reading);
-            }}
-          />
-          <Text size="xs" color="foreground.2" script={script}>
-            {t('lens.useForProfileNote')}
-          </Text>
-        </Stack>
-      ) : null}
-
-      {/*
-        SECOND, AND THE ORDER IS DELIBERATE. The profile offer has been here since F-097 and a
-        screen that reorders its controls is one people mis-tap. This is appended rather than
-        inserted, and the note under it says what will be stored — an estimate with the
-        conditions it was taken in (ADR-0005), never a claim that the colour IS a corpus entry.
-      */}
-      {offerableToWardrobe ? (
-        <Stack gap="sm">
-          <Button
-            label={t('lens.useForWardrobe')}
-            variant="secondary"
-            onPress={() => {
-              onUseForWardrobe(reading);
-            }}
-          />
-          <Text size="xs" color="foreground.2" script={script}>
-            {t('lens.useForWardrobeNote')}
-          </Text>
-        </Stack>
-      ) : null}
+              </Stack>
+            ) : null}
+          </>
+        )}
+      </Sheet>
     </Screen>
   );
 }

@@ -79,8 +79,44 @@ import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/c
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
 
+/*
+ * TIME IS HELD STILL, AND NEVER ADVANCED (F-158).
+ *
+ * These are questions about a RENDERED TREE — what colour is on a node, what a screen reader
+ * would announce. None is about frame 4, and nothing here has ever advanced a timer.
+ *
+ * It became load-bearing when the Lens acquired a sheet. A gorhom sheet animates, so reanimated
+ * installs a mapper, and when the mapper ticks `extractInputs` walks its plain-object inputs
+ * with `Object.values`; under this harness that walk reaches React Native's module namespace,
+ * trips its lazy native getters (`DevMenu`, `SettingsManager`, …) and then recurses through the
+ * module graph until the stack is gone. It fires on a queued frame AFTER the render, so jest
+ * attributes it to whichever test is running — which is how it presents as an unrelated failure.
+ *
+ * A harness artefact, not a defect in the sheet: on a device the same code runs through the
+ * native worklets runtime, and if the mapper's input really were the RN namespace, every app
+ * using this library would overflow on first open.
+ */
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
-  const json = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>).toJSON();
+  const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
+  const json = rendered.toJSON();
+  /*
+   * UNMOUNTED BEFORE THE NEXT SUBJECT, and this is not tidiness.
+   *
+   * A portalled component — a sheet, a dialog — renders into a SHARED host that outlives the
+   * tree that put it there. Without this, the light render's sheet was still mounted when the
+   * dark one was captured, so the dark subject reported `#F7F6F3` for its ground: the LIGHT
+   * palette, on a dark tree. It reads as a theme bug in the component and it is a leak in the
+   * harness. `packages/ui`'s `draw()` learned the same thing in F-143; this one had never
+   * rendered anything portalled until now.
+   */
+  rendered.unmount();
   if (json === null) throw new Error('rendered nothing');
   return Array.isArray(json) ? { type: 'Root', props: {}, children: json } : json;
 }

@@ -34,7 +34,12 @@
 
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Dialog as HeroDialog, Popover as HeroPopover, Tabs as HeroTabs } from 'heroui-native';
+import {
+  BottomSheet as HeroBottomSheet,
+  Dialog as HeroDialog,
+  Popover as HeroPopover,
+  Tabs as HeroTabs,
+} from 'heroui-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { overlayKeyframes } from './motion.js';
 import { useTheme } from './theme.js';
@@ -347,5 +352,121 @@ export function Dialog({
         </HeroDialog.Content>
       </HeroDialog.Portal>
     </HeroDialog>
+  );
+}
+
+export interface SheetProps {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  /** The sheet's accessible name. Required, for the reason `Dialog`'s is. */
+  readonly title: string;
+  readonly description?: string;
+  /** What the scrim announces. Caller-supplied: `@irodora/ui` owns no copy (ADR-0056). */
+  readonly closeLabel: string;
+  readonly script?: Script;
+  readonly children?: React.ReactNode;
+  readonly testID?: string;
+}
+
+/**
+ * A panel that rises from the bottom edge, over a scrim, and can be dragged away.
+ *
+ * ## The API is `Dialog`'s, deliberately
+ *
+ * Same prop names, same order, same meanings. Somebody who has used `Dialog` can use this
+ * without reading it — and a reviewer comparing the two can see at a glance that the scrim, the
+ * title level and the script handling are the SAME decisions rather than three independent ones
+ * that happen to agree today.
+ *
+ * ## What a sheet is for, and why the Lens needed one
+ *
+ * A dialog INTERRUPTS: it takes the screen, and what is behind it is context you are done with.
+ * A sheet COEXISTS: what is behind it is still the thing you are working on. The Lens is the
+ * case that makes the difference concrete — a reading is about the frame it was taken from, and
+ * acting on it used to mean scrolling the camera off the screen.
+ *
+ * ## The background layer is refused, and this one was found by probing rather than by reading
+ *
+ * `BottomSheet.Content` accepts gorhom's `backgroundStyle`. **It does not reach the tree.** A
+ * style walk over a rendered sheet returns `rgba(0, 0, 0, 0.75)` instead — HeroUI's own
+ * background layer, "decided by the active library theme", painting a colour nobody in this
+ * repository chose.
+ *
+ * That is the hazard `background={null}` closes on `Dialog` and `Popover`, and it is worse
+ * here: a sheet is where a colour READING is shown, so the ground behind the sample would be
+ * decided by the theme. Simultaneous contrast is the whole reason `swatch.well` exists.
+ *
+ * So the background is a component of ours — a plain `View` painted from `surface.2` with the
+ * top corners and an edge, all through `style`, where the contrast gate measures it.
+ *
+ * ## Height comes from the content
+ *
+ * No snap points. A result sheet fixed at a fraction of the screen is either cropping the result
+ * or padding it, and the content is the only thing that knows which.
+ */
+export function Sheet({
+  open,
+  onOpenChange,
+  title,
+  description,
+  closeLabel,
+  script = 'latin',
+  children,
+  testID,
+}: SheetProps): React.JSX.Element {
+  const { colors } = useTheme();
+  return (
+    <HeroBottomSheet isOpen={open} onOpenChange={onOpenChange}>
+      <HeroBottomSheet.Portal>
+        <HeroBottomSheet.Overlay
+          accessibilityRole="button"
+          accessibilityLabel={closeLabel}
+          style={{ backgroundColor: colors.backdrop }}
+        />
+        <HeroBottomSheet.Content
+          // NO `testID` HERE: `BottomSheet.Content` does not accept one — it forwards a gorhom
+          // ref rather than view props. It goes on the content container below, which is the
+          // node a test would want anyway, because it is the one holding the children.
+          enablePanDownToClose
+          /*
+            OUR GROUND, NOT THE LIBRARY'S. `backgroundStyle` is accepted and then ignored — the
+            docblock above records what a rendered tree actually contains without this. The
+            component paints the same three tokens `Dialog.Content` does, minus the bottom
+            corners, which a sheet does not have because its bottom edge is the screen.
+          */
+          backgroundComponent={({ style }) => (
+            <View
+              style={[
+                style,
+                {
+                  backgroundColor: colors['surface.2'],
+                  borderTopLeftRadius: nativeRadius.lg,
+                  borderTopRightRadius: nativeRadius.lg,
+                  borderWidth: 1,
+                  borderColor: colors['border.strong'],
+                },
+              ]}
+            />
+          )}
+          // The drag handle is the only affordance saying this panel moves, so it is drawn from
+          // a border token rather than left to the library's grey.
+          handleIndicatorStyle={{ backgroundColor: colors['border.strong'] }}
+          contentContainerProps={{
+            ...(testID === undefined ? {} : { testID }),
+            style: { padding: nativeSpacing.xl, gap: nativeSpacing.md },
+          }}
+        >
+          <Text size="title" color="foreground" script={script} heading>
+            {title}
+          </Text>
+          {description === undefined ? null : (
+            <Text size="body" color="foreground.2" script={script}>
+              {description}
+            </Text>
+          )}
+          {children}
+        </HeroBottomSheet.Content>
+      </HeroBottomSheet.Portal>
+    </HeroBottomSheet>
   );
 }

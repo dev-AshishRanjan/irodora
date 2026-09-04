@@ -22,6 +22,7 @@ import {
   Screen,
   SearchField,
   Section,
+  Sheet,
   Stack,
   Status,
   Surface,
@@ -82,6 +83,47 @@ function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
 }
 
 /** A colour that carries provenance, which is what Swatch requires by type (ADR-0005). */
+/*
+ * TIME IS HELD STILL FOR EVERY SUBJECT, AND NEVER ADVANCED. Added by F-158.
+ *
+ * A conformance subject is a question about a RENDERED TREE — what colour is on this node, what
+ * a screen reader would announce, whether a status sits beside a sample. None of those questions
+ * is about frame 4, and this suite has never advanced a timer.
+ *
+ * It became load-bearing with the sheet. A gorhom sheet animates, so reanimated installs a
+ * mapper, and when the mapper ticks `extractInputs` walks its inputs with `Object.values` for
+ * any PLAIN OBJECT it is given. Under this harness that walk reaches React Native's own module
+ * namespace and recurses through the module graph until the stack is gone:
+ *
+ * ```
+ * RangeError: Maximum call stack size exceeded
+ *   at Object.values (<anonymous>)
+ *   at extractInputs (react-native-reanimated/src/mappers.ts:189)
+ *   at mockedRequestAnimationFrame (react-native-worklets/.../uiRuntime)
+ * ```
+ *
+ * IT IS A HARNESS ARTEFACT, NOT A DEFECT IN THE SHEET, and the reasoning is worth keeping
+ * because the failure looks exactly like a product bug. On a device the same code runs through
+ * the native worklets runtime and gorhom is used at scale; if the mapper's input really were the
+ * React Native namespace, every app shipping this library would overflow on first open. What
+ * differs here is the non-native worklets build the resolver loads, which drives mappers from a
+ * mocked `requestAnimationFrame`.
+ *
+ * IT WAS ALSO ARRIVING FROM THE WRONG PLACE. The throw happens on a queued frame AFTER the
+ * render returns, so jest attributes it to whichever test is running when the timer fires — how
+ * an unrelated F-069 assertion started failing the moment a sheet joined this registry.
+ *
+ * WHAT THIS DOES NOT COVER: whether the sheet's animation is correct, or whether it drags. Both
+ * need a device, and F-158's criterion 4 is attested rather than asserted for exactly that
+ * reason.
+ */
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 const SAMPLE = fromSpace('oklch', [0.42, 0.09, 264], { source: 'declared', confidence: 1 });
 
 /**
@@ -165,6 +207,37 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           description="The counts behind every preference are removed. Your wardrobe is untouched."
           closeLabel="Close"
         />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * RENDERED OPEN, and a sheet is the subject where that matters most. Registered closed it
+     * would assert NOTHING — the tree would be empty and every rule would pass vacuously, which
+     * is the shape of a subject that looks like coverage and is not.
+     *
+     * IT CONTAINS A SWATCH because that is what the Lens puts in one, and because it is the case
+     * that makes the background finding dangerous. `BottomSheet.Content` accepts gorhom's
+     * `backgroundStyle` and then ignores it; without the component's own background layer the
+     * ground under this sample is `rgba(0, 0, 0, 0.75)`, chosen by the library's theme. A
+     * colour read against a ground nobody picked is the simultaneous-contrast problem the whole
+     * `swatch.well` rule exists to prevent — and this subject is what makes the contrast gate
+     * measure the ground that is actually there.
+     */
+    name: 'Sheet',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Sheet
+          open
+          onOpenChange={() => undefined}
+          title="This reading"
+          description="An estimate, taken in the light you were standing in."
+          closeLabel="Close"
+        >
+          <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} />
+        </Sheet>,
         theme,
       ),
   },

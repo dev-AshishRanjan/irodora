@@ -262,6 +262,8 @@ export const en = {
     'Camera access was turned off for Irodora. You can turn it back on in your device settings. Everything else in the app works without it.',
   'lens.waiting': 'Point the centre of the frame at a colour.',
   'lens.noReading': 'No colour has been read yet.',
+  'lens.sheetTitle': 'This reading',
+  'lens.sheetClose': 'Close the reading and go back to the frame',
   'lens.conditions': 'Conditions',
   'lens.confidence': 'How sure this reading is, from 0 to 1',
   'lens.reading': 'The colour under the crosshair',

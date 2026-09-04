@@ -57,9 +57,11 @@ export {
 export {
   Dialog,
   Popover,
+  Sheet,
   Tabs,
   type DialogProps,
   type PopoverProps,
+  type SheetProps,
   type TabItem,
   type TabsProps,
 } from './overlay.js';

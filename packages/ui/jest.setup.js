@@ -1,5 +1,5 @@
 /**
- * What the render harness needs before it can see a HeroUI tree (ADR-0062, F-087, F-157).
+ * What the render harness needs before it can see a HeroUI tree (ADR-0062, F-087, F-157, F-158).
  *
  * ## The mock that used to be here, and why it is gone
  *
@@ -20,9 +20,9 @@
  *
  * ## What replaces it
  *
- * Nothing. On 2.32.0 the real module loads under this harness, `GestureDetector` is a real
- * component, and `Gesture.Pan()` returns a real builder — so the suite now renders what a device
- * would render rather than a shape this file invented.
+ * Nothing, for gesture-handler. On 2.32.0 the real module loads under this harness,
+ * `GestureDetector` is a real component, and `Gesture.Pan()` returns a real builder — so the suite
+ * renders what a device would render rather than a shape this file invented.
  *
  * **If a mock is ever needed here again, it must not supply a symbol the real package lacks.**
  * Stubbing behaviour is a test decision; stubbing existence is a test that has stopped describing

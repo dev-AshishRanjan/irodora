@@ -4362,7 +4362,8 @@
       "status": "backlog",
       "blockedBy": [
         "F-143",
-        "F-144"
+        "F-144",
+        "F-158"
       ],
       "acceptance": [
         "The viewfinder is uncluttered and the reticle is the only bright element",
@@ -4379,7 +4380,7 @@
         "a11y",
         "contrast"
       ],
-      "notes": "Low variance and low density deliberately — the visual-taste dials name the Lens as a task surface, so the editorial treatment that suits the Atlas is wrong here. This is also the screen where a sheet earns itself: acting on a reading currently means leaving the camera. The claims lint stays binding on every string."
+      "notes": "Low variance and low density deliberately — the visual-taste dials name the Lens as a task surface, so the editorial treatment that suits the Atlas is wrong here. This is also the screen where a sheet earns itself: acting on a reading currently means leaving the camera. The claims lint stays binding on every string. BLOCKED BY F-158 AS WELL, recorded 2026-09-04 when F-149 was selected and the dependency turned out to be missing from the field. Criterion 3 says the result \"arrives in a sheet\", and `@irodora/ui` exports no Sheet — F-158 criterion 1 is what creates one, and F-158 criterion 3 is the SAME sentence about the Lens written from the other side. Building a sheet inside F-149 would be scope creep into a feature that already exists. F-158 is eligible today (F-157 is done, and @gorhom/bottom-sheet 5.2.14 is in the store), so the order simply inverts. F-137 is the precedent: a blocked feature has to say what is blocking it, in a field rather than in a note somebody has to read."
     },
     {
       "id": "F-150",
@@ -4655,7 +4656,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-157"
       ],
@@ -4673,7 +4674,20 @@
         "a11y",
         "contrast"
       ],
-      "notes": "UNBLOCKED BY F-157 rather than created by it. The sheet was the component the reporter named first and it had two separate things wrong with it: heroui-native reaches GestureDetector, which RNGH 3 had moved out of the package root, and @gorhom/bottom-sheet — an OPTIONAL peer, so the peer gate never reported it — was absent from the store entirely. Both are fixed: the stack is pinned to 2.32.0 (ADR-0089) and gorhom 5.2.14 is installed. WHAT MAKES THIS DIFFERENT FROM THE OTHER OVERLAYS is that its value IS the gesture. Popover and Tabs are portal-and-press and a rendered tree tells you most of what you need; a sheet that mounts but does not drag is a modal with a bad shape. So criterion 4 is a device criterion and cannot be discharged in jest — it should be attested honestly rather than implied by a passing suite. THE CONSUMER IS THE LENS (F-149): acting on a reading currently means leaving the camera, which is the specific thing a sheet fixes."
+      "notes": "UNBLOCKED BY F-157 rather than created by it. The sheet was the component the reporter named first and it had two separate things wrong with it: heroui-native reaches GestureDetector, which RNGH 3 had moved out of the package root, and @gorhom/bottom-sheet — an OPTIONAL peer, so the peer gate never reported it — was absent from the store entirely. Both are fixed: the stack is pinned to 2.32.0 (ADR-0089) and gorhom 5.2.14 is installed. WHAT MAKES THIS DIFFERENT FROM THE OTHER OVERLAYS is that its value IS the gesture. Popover and Tabs are portal-and-press and a rendered tree tells you most of what you need; a sheet that mounts but does not drag is a modal with a bad shape. So criterion 4 is a device criterion and cannot be discharged in jest — it should be attested honestly rather than implied by a passing suite. THE CONSUMER IS THE LENS (F-149): acting on a reading currently means leaving the camera, which is the specific thing a sheet fixes. DONE 2026-09-04, AND WORKED BEFORE F-149 RATHER THAN AFTER IT. F-149 was selected first by id; its criterion 3 says the Lens result \"arrives in a sheet\", and `@irodora/ui` exported none. F-158 criterion 3 is the same sentence from the other side, so the dependency was recorded in F-149's `blockedBy` (F-137's precedent) and the order inverted. `Sheet` LIVES IN THE OVERLAY FAMILY with `Dialog`'s collapsed API — same prop names, same order, same meanings — so a reviewer can see the scrim, the title level and the script handling are the SAME decisions rather than three that happen to agree. THE BACKGROUND LAYER IS REFUSED, and this was found by probing rather than by reading: `BottomSheet.Content` accepts gorhom's `backgroundStyle` and then IGNORES it — a style walk over a rendered sheet returns `rgba(0, 0, 0, 0.75)` instead, HeroUI's own layer, painting a ground nobody here chose behind a colour reading. A custom `backgroundComponent` puts `surface.2` back where the contrast gate measures it. THE LENS READING, THE NEAREST NAMES AND BOTH OFFERS MOVED IN; the privacy line, the viewfinder, the permission states and the capture instruction stayed out — the instruction especially, because it says what to change ABOUT THE FRAME and a panel over the frame is telling somebody to adjust something they can no longer see. THREE THINGS BROKE AND NONE LOOKED LIKE ITSELF. A queued animation frame walked React Native's module namespace and overflowed the stack, attributed to whichever test was running (E-069). The mobile `draw()` never unmounted, so a portalled sheet from the light render was still mounted when the dark one was captured — the dark subject reported the LIGHT palette, which reads exactly like a theme bug in the new component (E-069). And `apps/mobile/jest.setup.js` still carried the gesture mock F-157 removed from `packages/ui`, spreading a SETUP SCRIPT in place of the module, so everything past three hand-listed names was `undefined` (E-070). A FOURTH, LATENT AND NOW FIXED: both jest configs set `setupFiles`, which OVERRIDES the preset's array rather than extending it — React Native's own jest setup had never loaded in either package.",
+      "plan": "plans/F-158-the-bottom-sheet-on-a-stack-that-can-carry-it.md",
+      "effects": [
+        "E-069",
+        "E-070"
+      ],
+      "attested": [
+        {
+          "criterion": "A person can open, drag and dismiss it on a device",
+          "verifiedBy": "NOT DISCHARGED, AND IT CANNOT BE FROM HERE. What a passing suite covers is that the sheet MOUNTS, that its children are in the tree, that the scrim is painted from `backdrop` and the ground from `surface.2` in both themes, and that a `Swatch` inside it satisfies every rule it satisfies anywhere else. What it does not cover is the thing a sheet is FOR: whether the pan gesture composes with the content inside it, whether the drag-to-dismiss threshold feels right, and whether it settles rather than snapping. A sheet that mounts but does not drag is a modal with a bad shape, and every assertion in this repository would still pass. The gesture stack is also the thing F-157 has just pinned and gorhom is its heaviest consumer, so this is the surface where a residual problem in that pin would appear first.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     }
   ]
 }

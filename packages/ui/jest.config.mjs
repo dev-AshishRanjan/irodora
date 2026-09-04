@@ -13,6 +13,8 @@
  * [[peerdependencies-did-not-name-the-constraint-that-broke-the-install]].
  */
 
+import preset from 'jest-expo/jest-preset.js';
+
 /** @type {import('jest').Config} */
 export default {
   preset: 'jest-expo',
@@ -54,6 +56,24 @@ export default {
   //    omits `useReducedMotion`, which HeroUI's animation provider calls on first render.
   resolver: 'react-native-worklets/jest/resolver.js',
 
-  // 3. gesture-handler v3 against HeroUI's declared ^2.28.0. See jest.setup.js.
-  setupFiles: ['<rootDir>/jest.setup.js'],
+  /*
+   * 3. THE PRESET'S OWN SETUP FILES, KEPT — and this line replaced them until F-158.
+   *
+   * `setupFiles` in a config OVERRIDES the preset's array rather than extending it, and
+   * `jest-expo` supplies two: React Native's official `@react-native/jest-preset/jest/setup.js`
+   * and Expo's. RN's is the one that mocks the native modules that do not exist outside a
+   * device — `SettingsManager`, `DevMenu`, and the rest of `TurboModuleRegistry.getEnforcing`.
+   *
+   * **They had never loaded here.** Nothing noticed, because nothing in the suite had reached a
+   * lazy native getter — until a bottom sheet did. A sheet animates, so reanimated installs a
+   * mapper; `extractInputs` walks any PLAIN OBJECT among its inputs with `Object.values`, that
+   * walk reaches React Native's module namespace, and the namespace's lazy getters call
+   * `getEnforcing` one after another. It throws on a timer after the render, so it presents as
+   * an unattributable async failure rather than as a render error, and stubbing each module as
+   * it appears is a game with no end.
+   *
+   * Spread rather than listed: whatever the preset adds next arrives without an edit here, which
+   * is the property that was missing.
+   */
+  setupFiles: [...(preset.setupFiles ?? []), '<rootDir>/jest.setup.js'],
 };
