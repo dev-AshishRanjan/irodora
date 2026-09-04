@@ -8,6 +8,101 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-162 DONE · icons, and the colour scan that could not see them
+
+### A glyph and a word, not one or the other
+
+F-145 made the tab bar typographic on purpose. The reporter asked for icons. **Both is strictly
+better for NFR-9 than either**: shape and word are two channels where the bar had one plus a
+colour, and the selected indicator rule makes three.
+
+The icon takes the label's colour rather than one of its own — a glyph that changed hue on
+selection would add a fourth channel saying nothing the other three do not.
+
+### A second registry, not three more entries
+
+`Icon`'s test asserts coverage **both ways**: every icon token the manifest declares in
+`statusPairing` has a glyph, and every glyph is a declared token. A tab is not a status, so forcing
+five navigation entries into `statusPairing` would have been a lie about what those entries are —
+they exist because a status expressible only as colour cannot be constructed.
+
+So the same discipline is applied to its own subject: every tab has a glyph, every glyph belongs to
+a tab, **and no two tabs share a shape** — because two tabs with one silhouette means the shape
+channel is saying nothing.
+
+### SVG, which does not reverse ADR-0057
+
+That decision is about **fonts**: a font maps a codepoint to a glyph at render time, and a missing
+mapping is a tofu box nobody sees in review. An SVG path is the shape itself, in the source, with
+no lookup to fail.
+
+`react-native-svg` is a required heroui-native peer, so it was already unavoidable — the same
+argument that admitted reanimated in F-144 and safe-area-context in F-159.
+
+**The paths are ours rather than Lucide's.** Vendoring artwork carries the provenance obligations
+`content/AGENTS.md` sets for everything else this product ships, and five geometric glyphs matching
+a mark already made of rectangles is more coherent than a general-purpose set. *One family, one
+source* becomes true by construction — and more so after `Rect`'s deprecated `x`/`y` forced every
+glyph to become a `Path`.
+
+### The colour scan could not see any of it
+
+`paintedColors` read five properties out of `style`, because that is where React Native paints.
+**SVG paints through props.** So the first SVG component was reported as painting **no colour at
+all** — and the registry offers an escape hatch for exactly that report. Taking it would have given
+the product a colour surface no gate measures (E-081).
+
+Same family as E-067, one technology along: *a checker is correct about the technology it was
+written against, and a second one expressing the same thing differently is a blind spot that
+arrives with no failure.*
+
+It arrives **parsed**, which is what took longest:
+
+```json
+{"stroke": {"type": 0, "payload": 4279439632}}
+```
+
+`4279439632` is `0xFF131110`. Even a scan looking at the right property finds an object.
+
+### The first thing it found was not the new code
+
+`ColourCard` renders the exported card through `SvgXml`, and the `<svg>` root declared **no fill**,
+so the library injected `#000000` on the group. Every shape happened to set its own, so nothing
+looked wrong — **any element added later without one would have painted solid black.**
+
+A limit is recorded rather than worked around: a `TSpan` takes a hard black default from the parser
+regardless of its `<text>` parent, an enclosing group, or a root fill. All three were tried, and an
+explicit `<tspan fill>` produced a *nested* tspan with the same black. That node is excluded,
+because the colour a person sees is on the `RNSVGText` above it and the **exported SVG string** —
+which is what a card is — has correct fills. Contorting a shared artefact to satisfy a preview
+renderer would have been the worse trade.
+
+### Criterion 2 is a restraint
+
+> *"Icons appear where they carry meaning and nowhere else"* — and the reporter said it twice.
+
+Icons went into the tab bar and **nowhere else**. Every other surface keeps its words.
+
+### Verification
+
+| ran | result |
+| --- | --- |
+| `pnpm verify:ci` — all 33 runnable CI steps | **PASS** |
+| 138 ui · 695 mobile | **PASS** |
+| the tab registry, both directions, plus no shared shapes | **PASS** |
+
+### Still owed
+
+**Nobody has looked at the bar.** Difference is asserted; *legibility* is not, and that is the
+property NFR-9 is actually about. The specific risk is the wardrobe glyph — the least conventional
+of the five and the one most likely to read as an unrecognisable pair of rectangles at 20px.
+
+**Optical balance is the part a designer would spend the time on.** One grid, one weight, one
+primitive make the family consistent by construction; whether the five look *even* beside each
+other is a judgement, and this is a first pass.
+
+---
+
 ## 2026-09-05 — F-163 DONE · the halo was the component ignoring its own proof
 
 ### The plan came second, and gate 0 said so

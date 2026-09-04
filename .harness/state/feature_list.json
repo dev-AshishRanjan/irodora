@@ -4858,7 +4858,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-161"
       ],
@@ -4875,7 +4875,25 @@
         "a11y",
         "cvd"
       ],
-      "notes": "F-145 made the tabs TYPOGRAPHIC on purpose — 10px uppercase labels at the `label` step — and the reporter wants icons. Icons plus labels is strictly better for NFR-9 than either alone: shape and word are two channels where the current bar has one and a colour. THE CONSTRAINT THAT DECIDES THE SOURCE: `Icon` draws shapes as Views rather than a font, because an icon font reintroduces the tofu failure ADR-0057 exists to prevent, and NFR-9 needs the SHAPES to differ rather than the colours. Lucide is geometric and MIT-licensed, and its paths can be drawn through react-native-svg, which is already a HeroUI peer. MINIMAL, AND THE REPORTER SAID SO TWICE: \"use icons where they are relevant, makes sense. Not too much, keep things minimal.\""
+      "notes": "F-145 made the tabs TYPOGRAPHIC on purpose — 10px uppercase labels at the `label` step — and the reporter wants icons. Icons plus labels is strictly better for NFR-9 than either alone: shape and word are two channels where the current bar has one and a colour. THE CONSTRAINT THAT DECIDES THE SOURCE: `Icon` draws shapes as Views rather than a font, because an icon font reintroduces the tofu failure ADR-0057 exists to prevent, and NFR-9 needs the SHAPES to differ rather than the colours. Lucide is geometric and MIT-licensed, and its paths can be drawn through react-native-svg, which is already a HeroUI peer. MINIMAL, AND THE REPORTER SAID SO TWICE: \"use icons where they are relevant, makes sense. Not too much, keep things minimal.\" DONE 2026-09-05. THE TAB BAR CARRIES A GLYPH AND A WORD, which is strictly better for NFR-9 than either: shape and word are two channels where the bar had one plus a colour, and the indicator rule makes three. The icon takes the label's colour rather than one of its own — a glyph that changed hue on selection would add a fourth channel saying nothing the other three do not. A SECOND REGISTRY, NOT THREE MORE ENTRIES: `Icon`'s test asserts every glyph is a token the manifest declares in `statusPairing`, and a tab is not a status, so forcing five navigation entries in there would have been a lie about what those entries are. The same both-directions discipline is applied to the tab list instead, plus a case that no two tabs share a shape. DRAWN AS SVG, WHICH DOES NOT REVERSE ADR-0057: that decision is about FONTS, where a missing codepoint renders as tofu silently; an SVG path is the shape itself, in the source, with no lookup to fail. `react-native-svg` is a required heroui-native peer, so it was already unavoidable — the same argument as reanimated in F-144 and safe-area-context in F-159. The paths are ours rather than Lucide's, because vendoring artwork carries the provenance obligations `content/AGENTS.md` sets for everything else, and five geometric glyphs matching a mark made of rectangles is more coherent anyway. THE SCAN COULD NOT SEE ANY OF IT (E-081): `paintedColors` read `style` only, and SVG paints through props — so the first SVG component was reported as painting nothing, and the fix immediately found a PRE-EXISTING black default in `ColourCard`'s exported card.",
+      "plan": "plans/F-162-navigation-and-iconography.md",
+      "effects": [
+        "E-081"
+      ],
+      "attested": [
+        {
+          "criterion": "The tab bar is icons with labels, and the icon shapes differ from one another",
+          "verifiedBy": "DIFFERENCE IS ASSERTED; LEGIBILITY IS NOT. A test proves no two tabs share a glyph, both directions of the registry are checked, and the conformance subject renders all five together in both themes so the colour rules see the whole family at once. WHAT IS NOT VERIFIED is whether a house, four squares, a circle in a frame, two overlapping shapes and a head over an arc are actually told apart at 20px on a phone. That is the property NFR-9 is about and no gate can hold it. The specific risk is the wardrobe glyph, which is the least conventional of the five and the one most likely to read as an unrecognisable pair of rectangles.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The icon set is one family, drawn from one source, with no mixed metaphors",
+          "verifiedBy": "TRUE BY CONSTRUCTION AND UNEVEN IN EXECUTION. One 24 grid, one stroke weight, one primitive — every glyph is a `Path`, after `Rect`'s deprecated `x`/`y` props forced the change and made the family literally one shape type. WHAT A PERSON WOULD JUDGE is optical balance: five glyphs drawn by hand will not be as even as a professional set, and weight, apparent size and the relationship between them across the bar are exactly what an icon designer spends the time on. This is a first pass and it has not been looked at.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-163",

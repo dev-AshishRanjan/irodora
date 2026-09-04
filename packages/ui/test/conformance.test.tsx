@@ -19,6 +19,8 @@ import {
   Dialog,
   EmptyState,
   Mark,
+  NavIcon,
+  NAV_ICON_NAMES,
   Popover,
   Row,
   Screen,
@@ -482,6 +484,27 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             { label: 'In 25 or more', value: 0 },
           ]}
         />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * ALL FIVE AT ONCE, because the property that matters is that they DIFFER. A subject
+     * rendering one glyph would check that a glyph renders; rendering the set is what puts the
+     * whole family in front of the colour-literal and both-themes rules together.
+     *
+     * They are decorative — the tab carries the accessible name — so the check that matters
+     * here is that none of them names a colour of its own.
+     */
+    name: 'NavIcon',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Row gap="sm">
+          {NAV_ICON_NAMES.map((name) => (
+            <NavIcon key={name} name={name} color="#131110" />
+          ))}
+        </Row>,
         theme,
       ),
   },

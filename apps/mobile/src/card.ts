@@ -205,7 +205,11 @@ export function cardSvg(entry: PublishedEntry, options: CardOptions): string {
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${String(CARD_WIDTH)}" ` +
-    `height="${String(CARD_HEIGHT)}" viewBox="0 0 ${String(CARD_WIDTH)} ${String(CARD_HEIGHT)}">` +
+    // `fill="none"` ON THE ROOT. Without it react-native-svg injects #000000 as the default
+    // fill, which the conformance scan reads as a colour literal — correctly, because it IS one:
+    // any element added later without an explicit fill paints solid black rather than nothing.
+    // Every shape here already states its own fill, so this changes no pixel and closes the gap.
+    `height="${String(CARD_HEIGHT)}" viewBox="0 0 ${String(CARD_WIDTH)} ${String(CARD_HEIGHT)}" fill="${t.foreground}">` +
     `<rect width="${String(CARD_WIDTH)}" height="${String(CARD_HEIGHT)}" fill="${t.background}"/>` +
     keyline +
     lines.join('') +

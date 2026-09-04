@@ -2930,6 +2930,43 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-081",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/NavIcon.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/tree.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/card.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:a11y — `paintedColors` now reads `fill` and `stroke` from SVG props as well as from `style`, and decodes react-native-svg's parsed form. The conformance suite caught the blindness within one run of registering the first SVG component, and caught a pre-existing black default in `ColourCard` immediately afterwards.",
+      "memory": "memory/effects/a-second-technology-a-second-blind-spot.md",
+      "rationale": "THE CONTRAST SCAN COULD NOT SEE SVG. `paintedColors` read five properties out of `style`, which is where React Native paints — and SVG paints through PROPS: `<Path stroke=\"#131110\" />`. So the first component drawn as SVG was reported as painting NO COLOUR AT ALL, and had that finding been waved through with `paintsNoColour`, the product would have gained a colour surface no gate measures. This is the same family as E-067, where reanimated made the motion gate blind by writing worklets instead of JSX style literals — a checker is correct about the technology it was written against, and a second technology expressing the same thing differently is a blind spot that arrives with no failure. IT ARRIVES PARSED, WHICH IS THE PART THAT TOOK THE LONGEST: react-native-svg resolves a colour to `{type: 0, payload: 4279439632}` before the tree is built, and 4279439632 is 0xFF131110 — so even a scan looking at the right property finds an object rather than a string. THE FIRST THING IT FOUND WAS NOT MINE. `ColourCard` renders the exported card through `SvgXml`, and the `<svg>` root declared no fill, so react-native-svg injected `#000000` on the group: any element added later without an explicit fill would have painted solid black. A LIMIT IS RECORDED RATHER THAN WORKED AROUND: a `TSpan` gets a hard black default from the parser regardless of its `<text>` parent, an enclosing group, or a root fill — all three were tried, and wrapping the content in an explicit `<tspan fill>` produced a nested tspan with the same black. That node is excluded, because the colour a person sees is on the `RNSVGText` above it and the exported SVG string has correct fills. Contorting a shared artefact to satisfy a preview renderer would have been the worse trade.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

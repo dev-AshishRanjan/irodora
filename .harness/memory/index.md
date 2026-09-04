@@ -178,6 +178,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-last-literal-is-what-keeps-a-scan-honest.md](effects/the-last-literal-is-what-keeps-a-scan-honest.md) — **E-078** · extracting a constant took a source scan to zero matches, and only its refusal to accept an empty result caught it.
 - [effects/a-component-can-satisfy-the-letter-of-its-own-proof.md](effects/a-component-can-satisfy-the-letter-of-its-own-proof.md) — **E-079** · the gamut proof measured the better of two tones and the component drew them in a fixed order, so every assertion passed while pale samples were ringed in white.
 - [effects/active-means-two-different-things.md](effects/active-means-two-different-things.md) — **E-080** · a rule about the selected state flagged three components where active means pressed, and a selected state was built for something that can never be seen.
+- [effects/a-second-technology-a-second-blind-spot.md](effects/a-second-technology-a-second-blind-spot.md) — **E-081** · the colour scan read styles and SVG paints through props, so the first SVG component was reported as painting nothing — and fixing it found a black default nobody had chosen.
 
 ## Glossary
 

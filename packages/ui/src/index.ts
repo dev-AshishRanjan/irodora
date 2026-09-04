@@ -19,6 +19,7 @@ export {
   type ThemeValue,
 } from './theme.js';
 export { Text, type ColorFor, type LargeTypeSize, type TextProps, type TypeSize } from './Text.js';
+export { NavIcon, NAV_ICON_NAMES, type NavIconName, type NavIconProps } from './NavIcon.js';
 export { Icon, ICON_TOKENS, type IconProps, type IconToken } from './Icon.js';
 export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';

@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from 'react-native';
 import { nativeColors, nativeSpacing, nativeType } from '@irodora/design-tokens';
-import { Text, useTheme } from '@irodora/ui';
+import { NavIcon, Text, useTheme, type NavIconName } from '@irodora/ui';
 import { useMessages } from '../../src/i18n/useMessages';
 import type { MessageKey } from '../../src/i18n/index';
 
@@ -48,13 +48,17 @@ import type { MessageKey } from '../../src/i18n/index';
  */
 
 /** The five, in bar order. The Lens is third because the centre is where a thumb rests. */
-const TABS = [
-  { name: 'index', labelKey: 'tab.home' },
-  { name: 'atlas', labelKey: 'tab.atlas' },
-  { name: 'lens', labelKey: 'tab.lens' },
-  { name: 'wardrobe', labelKey: 'tab.wardrobe' },
-  { name: 'profile', labelKey: 'tab.profile' },
-] as const satisfies readonly { readonly name: string; readonly labelKey: MessageKey }[];
+export const TABS = [
+  { name: 'index', labelKey: 'tab.home', icon: 'home' },
+  { name: 'atlas', labelKey: 'tab.atlas', icon: 'atlas' },
+  { name: 'lens', labelKey: 'tab.lens', icon: 'lens' },
+  { name: 'wardrobe', labelKey: 'tab.wardrobe', icon: 'wardrobe' },
+  { name: 'profile', labelKey: 'tab.profile', icon: 'profile' },
+] as const satisfies readonly {
+  readonly name: string;
+  readonly labelKey: MessageKey;
+  readonly icon: NavIconName;
+}[];
 
 /**
  * One tab's label and its indicator.
@@ -65,10 +69,12 @@ const TABS = [
  */
 function TabLabel({
   label,
+  icon,
   focused,
   script,
 }: {
   readonly label: string;
+  readonly icon: NavIconName;
   readonly focused: boolean;
   readonly script: 'latin' | 'japanese';
 }): React.JSX.Element {
@@ -87,6 +93,18 @@ function TabLabel({
           backgroundColor: focused ? colors.foreground : 'transparent',
         }}
       />
+      {/*
+        THE GLYPH AND THE WORD, not one or the other.
+
+        F-145 made this bar typographic on purpose and the reporter asked for icons. Both is
+        strictly better for NFR-9 than either: shape and word are two channels where the bar
+        previously had one plus a colour, and the indicator rule above makes three.
+
+        The icon takes the same colour as the label rather than a colour of its own — a glyph
+        that changed hue on selection would be adding a fourth channel that says nothing the
+        other three do not.
+      */}
+      <NavIcon name={icon} color={focused ? colors.foreground : colors['foreground.2']} />
       <Text size="label" color={focused ? 'foreground' : 'foreground.2'} script={script}>
         {label}
       </Text>
@@ -160,7 +178,7 @@ export default function TabLayout(): React.JSX.Element {
             */
             tabBarButtonTestID: `tab-${tab.name}`,
             tabBarIcon: ({ focused }) => (
-              <TabLabel label={t(tab.labelKey)} focused={focused} script={script} />
+              <TabLabel label={t(tab.labelKey)} icon={tab.icon} focused={focused} script={script} />
             ),
           }}
         />
