@@ -524,8 +524,22 @@ export const en = {
   // each garment's colour has a name; it has decided which published colours it sits nearest to.
   'browse.grouping': 'Gathered by how near each colour is to the collection.',
   'browse.ungrouped': 'Not gathered',
+  'browse.coverage': 'How your wardrobe combines',
+  'browse.coverageNote':
+    'Counted at the score threshold this build uses. It is a count of combinations, not a judgement of them.',
+  'browse.coverageUnit': 'garments',
+  'browse.band.none': 'In no outfit',
+  'browse.band.few': 'In 1 to 3 outfits',
+  'browse.band.some': 'In 4 to 9 outfits',
+  'browse.band.many': 'In 10 to 24 outfits',
+  'browse.band.most': 'In 25 outfits or more',
+  'browse.gaps': 'What would open the most up',
+  'browse.gapsNote':
+    'Each figure is a projection from a colour at the centre of the region, not a measurement of a garment you own.',
+  'browse.gapsUnit': 'more outfits',
+  'browse.coverageOne':
+    'One garment does not combine with anything yet. Add a second and this fills in.',
   'browse.count': 'Garments',
-  'browse.edit': 'Edit',
   'browse.editing': 'Editing',
   'browse.back': 'Back to the wardrobe',
   'browse.name': 'Name',

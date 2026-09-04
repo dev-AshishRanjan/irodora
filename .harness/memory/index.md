@@ -170,6 +170,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-fix-applied-to-one-package-is-not-applied-to-its-twin.md](effects/a-fix-applied-to-one-package-is-not-applied-to-its-twin.md) — **E-070** · F-157 removed a mock from one package and left its copy in the other, where it had been supplying almost none of the module it claimed to for two releases.
 - [effects/an-exemption-can-name-the-feature-that-widens-it.md](effects/an-exemption-can-name-the-feature-that-widens-it.md) — **E-071** · an exemption named the very feature that would close it, and that feature removed its last reader instead.
 - [effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md](effects/a-line-over-a-camera-image-has-the-swatch-keyline-problem.md) — **E-072** · a contrast rule attaches to the situation rather than the component: the reticle had the keyline problem and nobody saw it, because a reticle is not a swatch.
+- [effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md](effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md) — **E-073** · a cheap-list split survived in the schema and would have died in the first caller; the guard is a test that counts calls rather than checking the picture appears.
+- [effects/a-ramp-decided-before-the-first-chart.md](effects/a-ramp-decided-before-the-first-chart.md) — **E-074** · the chart palette was chosen when there was nothing to plot, which is the only time such a decision is cheap.
 
 ## Glossary
 

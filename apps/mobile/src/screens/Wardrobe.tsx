@@ -39,9 +39,10 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
+import { Image, Pressable, SectionList, ScrollView, View } from 'react-native';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import {
+  Bands,
   Button,
   Chip,
   EmptyState,
@@ -53,8 +54,10 @@ import {
   swatchAccessibleName,
   Text,
   TextField,
+  type Script,
 } from '@irodora/ui';
 import { GARMENT_SEASONS, type GarmentEnrichment, type StoredGarment } from '@irodora/store';
+import type { Coverage, Gap } from '@irodora/optimization';
 import {
   filterGarments,
   filterOptions,
@@ -65,6 +68,7 @@ import {
   type WardrobeFilter,
 } from '../wardrobe/browse';
 import { colorOf } from '../wardrobe';
+import { galleryImages, type GarmentImageStore, type GarmentImageUri } from '../wardrobe/gallery';
 import { costEntry, minorToMajor, type CostEntryProblem } from '../wardrobe/cost';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -78,7 +82,7 @@ import type { MessageKey } from '../i18n/index';
  * each other: the day this editor needs `deleteGarment`, widening a merged type would hand the
  * outfit builder a delete it must not have. Narrow ports are cheap; a wrong one is not.
  */
-export interface BrowseStore {
+export interface BrowseStore extends GarmentImageStore {
   enrichGarment(id: string, patch: GarmentEnrichment, now: number): void;
   listGarments(): readonly StoredGarment[];
 }
@@ -206,6 +210,20 @@ function FilterRow<K extends string>({
 export interface WardrobeProps {
   readonly store: BrowseStore;
   /**
+   * What the wardrobe combines into, already computed.
+   *
+   * PASSED RATHER THAN COMPUTED HERE, and the reason is what this screen is for: it shows a
+   * wardrobe, it does not score one. `coverage()` needs a profile, a reference set, the rule
+   * set and the weights — four things a gallery has no business assembling, and the route
+   * already assembles them for `Shopping`.
+   *
+   * Optional because it is genuinely absent: without a profile there is nothing to count
+   * against, and the section is not drawn rather than drawn empty.
+   */
+  readonly coverage?: Coverage | undefined;
+  /** The regions that would add the most, already computed. Same reasoning as {@link coverage}. */
+  readonly gaps?: readonly Gap[] | undefined;
+  /**
    * A garment to open on arrival.
    *
    * The registry uses it to render the editing branch, which is otherwise reachable only through
@@ -235,8 +253,157 @@ export interface WardrobeProps {
   readonly onAddGarment?: (() => void) | undefined;
 }
 
+/**
+ * How many cells fit across. Two, and the reason is the subject rather than the screen.
+ *
+ * A garment photograph has to be big enough to recognise the garment — not the category, the
+ * GARMENT, the one in the wardrobe. Three across on a phone is a thumbnail grid, which is a
+ * different product: it answers "how many do I have" rather than "which one is that".
+ */
+/**
+ * How garments are bucketed by how many outfits they appear in.
+ *
+ * FIVE BUCKETS BECAUSE THE RAMP HAS FIVE STEPS — not the other way round. The ramp is a fixed
+ * design decision (`chart.1`–`chart.5`) and the buckets are chosen to fit it, because a chart
+ * that needed a sixth tone would be asking the design system to move for a convenience.
+ *
+ * THE EDGES ARE FIXED AND STATED. Deriving them from the data would make two wardrobes
+ * incomparable and would make the chart change shape as garments were added — which reads as
+ * the wardrobe changing when only the scale did. They are round numbers a person can hold: none,
+ * a few, several, many, most.
+ */
+const BANDS = [
+  { key: 'browse.band.none', upTo: 0 },
+  { key: 'browse.band.few', upTo: 3 },
+  { key: 'browse.band.some', upTo: 9 },
+  { key: 'browse.band.many', upTo: 24 },
+  { key: 'browse.band.most', upTo: Number.POSITIVE_INFINITY },
+] as const satisfies readonly { readonly key: MessageKey; readonly upTo: number }[];
+
+/**
+ * Count the garments in each band.
+ *
+ * Exported so it can be tested without rendering: the bucketing is the part with edges, and an
+ * off-by-one at a boundary is invisible in a bar and obvious in a number.
+ */
+export function coverageBands(perGarment: ReadonlyMap<string, number>): readonly number[] {
+  const counts = BANDS.map(() => 0);
+  for (const outfits of perGarment.values()) {
+    const at = BANDS.findIndex((b) => outfits <= b.upTo);
+    // `findIndex` cannot miss: the last band's ceiling is infinity. Guarded anyway, because a
+    // silent `-1` would write to the end of the array and lose a garment.
+    if (at >= 0) counts[at] = (counts[at] ?? 0) + 1;
+  }
+  return counts;
+}
+
+const COLUMNS = 2;
+
+/** The swatch on a cell. Large enough to judge against the photograph it sits on. */
+const CELL_SWATCH = 32;
+
+interface CellProps {
+  readonly garment: StoredGarment;
+  readonly uri: GarmentImageUri;
+  readonly label: string;
+  readonly script: Script;
+  readonly onPress: () => void;
+}
+
+/**
+ * One garment in the gallery.
+ *
+ * ## The whole cell opens the editor
+ *
+ * It used to be a row with a secondary `Button` marked "Edit" beside it, so a wardrobe of forty
+ * garments carried forty buttons. **A gallery cell that needs a separate control to open it is a
+ * list with pictures** — and the button was also the thing that fixed the row height, which is
+ * why the swatch was 44px.
+ *
+ * ## The photograph is the ground and the colour sits on it
+ *
+ * Which is criterion 1, and it is also the honest order: the photograph says which garment this
+ * is, and the swatch says what colour the product MEASURED — a distinction that matters, because
+ * a photograph is not a colour reading and must never be read as one. They are drawn as two
+ * things for that reason rather than blended into one.
+ *
+ * `Swatch` is unchanged, so the mandatory neutral well comes with it. That well is doing more
+ * work here than anywhere else in the product: the surround is an arbitrary photograph, which is
+ * the worst case for simultaneous contrast.
+ *
+ * ## Without a photograph the colour becomes the cell
+ *
+ * Not a placeholder icon and not an empty frame. A garment with no picture still has the thing
+ * the product is about, and showing it at cell scale is a complete presentation rather than a
+ * degraded one.
+ */
+function GarmentCell({ garment, uri, label, script, onPress }: CellProps): React.JSX.Element {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={{ flex: 1 / COLUMNS }}
+    >
+      <Stack gap="sm">
+        <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.md }}>
+          {uri === null ? (
+            <Swatch
+              name={swatchAccessibleName(
+                garment.color.name,
+                garment.color.hex,
+                colorOf(garment.color),
+              )}
+              hex={garment.color.hex}
+              color={colorOf(garment.color)}
+              size={CELL_PHOTO}
+            />
+          ) : (
+            <>
+              <Image
+                source={{ uri }}
+                style={{ width: '100%', height: '100%' }}
+                // `cover`, so a garment shot in portrait is not letterboxed into a square with
+                // bands of ground either side — the cell is a window onto the photograph rather
+                // than a frame around it.
+                resizeMode="cover"
+                // The photograph is DECORATIVE to a screen reader: the cell already carries an
+                // accessible name naming the garment and its measured colour, and a second
+                // announcement of "image" adds nothing a person can act on.
+                accessible={false}
+              />
+              <View
+                style={{ position: 'absolute', left: nativeSpacing.sm, bottom: nativeSpacing.sm }}
+              >
+                <Swatch
+                  name={swatchAccessibleName(
+                    garment.color.name,
+                    garment.color.hex,
+                    colorOf(garment.color),
+                  )}
+                  hex={garment.color.hex}
+                  color={colorOf(garment.color)}
+                  size={CELL_SWATCH}
+                />
+              </View>
+            </>
+          )}
+        </View>
+        <Text size="small" color="foreground" script={script}>
+          {garment.name ?? garment.type}
+        </Text>
+      </Stack>
+    </Pressable>
+  );
+}
+
+/** The colour a photo-less cell is drawn at. Square, to match a photographed cell exactly. */
+const CELL_PHOTO = 160;
+
 export function Wardrobe({
   store,
+  coverage,
+  gaps,
   initialSelected = null,
   initialFilter = NO_FILTER,
   onAddGarment,
@@ -260,6 +427,37 @@ export function Wardrobe({
    */
   const shown = useMemo(() => filterGarments(garments, filter), [garments, filter]);
   const groups = useMemo(() => groupByColour(shown), [shown]);
+
+  /*
+   * THE IMAGE ACCESSOR, held for the life of this screen.
+   *
+   * Not a module-level cache: that would outlive the wardrobe it describes and hand a stale
+   * photograph to a garment whose picture had changed. `useMemo` on `store` because the store
+   * is the thing it reads through — a new store is a different wardrobe.
+   */
+  const images = useMemo(() => galleryImages(store), [store]);
+
+  /**
+   * The groups, chunked into rows of {@link COLUMNS}.
+   *
+   * The chunking is here rather than in the renderer so that a section's row count is a fact
+   * about the data — which is what `SectionList` keys and virtualises on.
+   */
+  const sections = useMemo(
+    () =>
+      groups.map((group) => {
+        const rows: StoredGarment[][] = [];
+        for (let i = 0; i < group.garments.length; i += COLUMNS)
+          rows.push([...group.garments.slice(i, i + COLUMNS)]);
+        return {
+          title:
+            group.family === UNGROUPED ? t('browse.ungrouped') : familyLabel(group.family, locale),
+          count: group.garments.length,
+          data: rows,
+        };
+      }),
+    [groups, locale, t],
+  );
 
   /*
    * The options come from the WHOLE wardrobe, not from what is currently shown.
@@ -555,59 +753,142 @@ export function Wardrobe({
             {t('browse.grouping')}
           </Text>
 
-          {groups.map((group) => (
-            <Surface key={group.family} level="1" padding="md">
-              <Stack gap="md">
-                {/*
-                  THE HEADING IS THE SECOND CHANNEL. A reader who cannot separate two of these
-                  greens still reads two family words, and navigates between them by heading.
-                */}
-                <Text size="body" color="foreground" script={script} heading>
-                  {group.family === UNGROUPED
-                    ? t('browse.ungrouped')
-                    : familyLabel(group.family, locale)}
-                </Text>
-                <Text size="small" color="foreground.2" script={script}>
-                  {`${t('browse.count')}: ${String(group.garments.length)}`}
-                </Text>
+          {/*
+            COVERAGE AND GAPS (criterion 3) — the first chart in the product.
 
-                {group.garments.map((garment) => (
-                  <View
-                    key={garment.id}
-                    style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
-                  >
-                    <Swatch
-                      name={swatchAccessibleName(
-                        garment.color.name,
-                        garment.color.hex,
-                        colorOf(garment.color),
-                      )}
-                      hex={garment.color.hex}
-                      color={colorOf(garment.color)}
-                      size={44}
+            `chart.1`–`chart.5` had been emitted and unread since F-048 with the reason "there is
+            no chart in the product", and this feature was named as the one that would change
+            that. The ramp is near-achromatic on purpose: a data series must stay separable
+            without hue (golden rule 13), and that was decided before there was anything to plot
+            so it could not be decided under deadline.
+
+            NEVER BY COLOUR ALONE. Every band carries its own words and its own number, so the
+            whole reading survives with the bars removed — which is not a fallback but the
+            primary text.
+
+            BOTH NOTES ARE LOAD-BEARING, not hedging. `valid` is a count at a threshold this
+            build chose, and `wouldUnlock` is a projection from a synthetic colour at a region's
+            centre — there is no such garment. Golden rule 11 applies to a chart as much as to a
+            sentence.
+          */}
+          {coverage === undefined ? null : (
+            <Surface level="1" padding="md">
+              <Stack gap="md">
+                <Text size="body" color="foreground" script={script} heading>
+                  {t('browse.coverage')}
+                </Text>
+                {garments.length < 2 ? (
+                  <Text size="small" color="foreground.2" script={script}>
+                    {t('browse.coverageOne')}
+                  </Text>
+                ) : (
+                  <>
+                    <Bands
+                      unit={t('browse.coverageUnit')}
+                      script={script}
+                      bands={coverageBands(coverage.perGarment).map((value, i) => ({
+                        label: t(BANDS[i]?.key ?? 'browse.band.most'),
+                        value,
+                      }))}
                     />
-                    <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-                      <Text size="body" color="foreground" script={script}>
-                        {garment.name ?? garment.type}
-                      </Text>
-                      {garment.name === null ? null : (
-                        <Text size="small" color="foreground.2" script={script}>
-                          {garment.type}
-                        </Text>
-                      )}
-                    </View>
-                    <Button
-                      label={t('browse.edit')}
-                      variant="secondary"
-                      onPress={() => {
-                        open(garment);
-                      }}
-                    />
-                  </View>
-                ))}
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t('browse.coverageNote')}
+                    </Text>
+                  </>
+                )}
               </Stack>
             </Surface>
-          ))}
+          )}
+
+          {gaps === undefined || gaps.length === 0 ? null : (
+            <Surface level="1" padding="md">
+              <Stack gap="md">
+                <Text size="body" color="foreground" script={script} heading>
+                  {t('browse.gaps')}
+                </Text>
+                <Bands
+                  unit={t('browse.gapsUnit')}
+                  script={script}
+                  bands={gaps.map((gap) => ({
+                    // THE PUBLISHED WORDS, never this screen's. `Gap.terms` comes from the
+                    // phrase lexicon with a rationale an editor wrote, which is the only reason
+                    // a phrase like "warm light neutral" can appear in the product at all.
+                    label: gap.terms.join(' '),
+                    value: gap.wouldUnlock,
+                  }))}
+                />
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('browse.gapsNote')}
+                </Text>
+              </Stack>
+            </Surface>
+          )}
+
+          {/*
+            THE GALLERY (F-150 criteria 1, 2 and 4).
+
+            A `SectionList` OVER ROWS, which is the shape that keeps two things that pull in
+            opposite directions. `numColumns` does not exist on `SectionList`, so each section's
+            garments are chunked into rows of {@link COLUMNS} and a ROW is the item.
+
+            WHY VIRTUALISE AT ALL: every visible cell asks for a photograph, and each one is a
+            BLOB read plus a base64 encode. The cache in `gallery.ts` holds twelve — about a
+            screen — so drawing a hundred cells at once would thrash it and decode a hundred
+            photographs to show twelve. Virtualising is what makes the cache's bound the right
+            bound rather than an arbitrary one.
+
+            WHY KEEP THE SECTIONS: the family heading is the SECOND CHANNEL. A reader who cannot
+            separate two of these greens still reads two family words and navigates by heading —
+            and a flat grid with the family word repeated on every cell would keep the word while
+            losing the navigation.
+          */}
+          <SectionList
+            sections={sections}
+            keyExtractor={(row) => row.map((g) => g.id).join('|')}
+            renderSectionHeader={({ section }) => (
+              <Stack gap="xs" padding="sm">
+                <Text size="body" color="foreground" script={script} heading>
+                  {section.title}
+                </Text>
+                <Text size="small" color="foreground.2" script={script}>
+                  {`${t('browse.count')}: ${String(section.count)}`}
+                </Text>
+              </Stack>
+            )}
+            renderItem={({ item: row }) => (
+              <Row gap="md" align="start">
+                {row.map((garment) => (
+                  <GarmentCell
+                    key={garment.id}
+                    garment={garment}
+                    uri={images.uri(garment.id)}
+                    label={`${garment.name ?? garment.type} — ${swatchAccessibleName(
+                      garment.color.name,
+                      garment.color.hex,
+                      colorOf(garment.color),
+                    )}`}
+                    script={script}
+                    onPress={() => {
+                      open(garment);
+                    }}
+                  />
+                ))}
+                {/*
+                  A ROW OF ONE STILL OCCUPIES TWO COLUMNS. Without this the last cell of an odd
+                  section stretches to full width and reads as a different, larger kind of thing
+                  — which is the single-garment state (criterion 4) arriving by accident in the
+                  middle of a large wardrobe.
+                */}
+                {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
+              </Row>
+            )}
+            ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.md }} />}
+            SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
+            scrollEnabled={false}
+            initialNumToRender={4}
+            windowSize={5}
+            removeClippedSubviews
+          />
         </>
       )}
     </Screen>

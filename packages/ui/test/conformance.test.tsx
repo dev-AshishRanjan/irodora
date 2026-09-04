@@ -12,6 +12,7 @@ import { fromSpace } from '@irodora/color-core';
 import { nativeNumericFeature } from '@irodora/design-tokens';
 import {
   Appear,
+  Bands,
   Button,
   Chip,
   Dialog,
@@ -447,6 +448,36 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         <Appear index={1}>
           <Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} onPress={() => undefined} />
         </Appear>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE FIRST CHART IN THE PRODUCT, and the subject that makes its one rule checkable.
+     *
+     * `chart.1`–`chart.5` are a near-achromatic ramp, chosen so that hue is never the channel
+     * separating a series (golden rule 13). A conformance subject cannot judge whether a chart
+     * is READABLE — but it can hold the thing that makes it readable without colour: every band
+     * carries its own label and its own number as TEXT, so the rendered tree contains the whole
+     * reading with the bars removed.
+     *
+     * FIVE BANDS, because five is the ramp. A subject with three would leave two tones drawn by
+     * nothing and reached by nothing, which is exactly the state `chart.*` was in before this.
+     */
+    name: 'Bands',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Bands
+          unit="garments"
+          bands={[
+            { label: 'In no outfit', value: 2 },
+            { label: 'In 1 to 3', value: 5 },
+            { label: 'In 4 to 9', value: 9 },
+            { label: 'In 10 to 24', value: 4 },
+            { label: 'In 25 or more', value: 0 },
+          ]}
+        />,
         theme,
       ),
   },

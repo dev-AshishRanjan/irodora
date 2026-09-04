@@ -4412,7 +4412,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-147"
       ],
@@ -4430,7 +4430,26 @@
         "a11y",
         "contrast"
       ],
-      "notes": "The wardrobe is the surface that most resembles a retail product and currently resembles a list. The chart.1..chart.5 tokens are declared unreached with the reason \"There is no chart in the product\" — coverage and gap analysis is the first surface that plots anything, and the near-achromatic ramp exists precisely so a data series stays distinguishable without hue."
+      "notes": "The wardrobe is the surface that most resembles a retail product and currently resembles a list. The chart.1..chart.5 tokens are declared unreached with the reason \"There is no chart in the product\" — coverage and gap analysis is the first surface that plots anything, and the near-achromatic ramp exists precisely so a data series stays distinguishable without hue. DONE 2026-09-04. THE PHOTOGRAPHS HAD NEVER BEEN READ BACK: `garment_image` has existed since F-042 and `AddGarment` writes one, and no screen displayed it — the wardrobe was a list of 44px swatches beside names, with a secondary \"Edit\" button on every row. It is now a two-column gallery: the photograph is the cell, the measured colour sits on it as a `Swatch` with its mandatory well, and a garment with no picture shows its colour at cell scale rather than a placeholder. THE CELL IS THE AFFORDANCE — forty garments no longer means forty buttons, and a gallery cell that needs a separate control to open it is a list with pictures. THE COST IS PART OF THE INTERFACE (E-073): the schema keeps image bytes in their own table so the list query stays cheap, and a gallery is the first surface that could undo that WITHOUT EDITING IT. `galleryImages` splits the same two questions the schema splits and the tests COUNT THE CALLS — metadata for every cell, bytes only for a visible one, and a garment with no photograph remembered as an answer rather than re-queried. `SectionList` virtualises, which is what makes a bounded cache the right shape rather than one that thrashes; the family headings survive as the second channel NFR-9 wants. THE FIRST CHART IN THE PRODUCT (E-074): `chart.1`–`chart.5` had been emitted and unread since F-048 naming F-150 as their closer, and `Bands` closes all five at once — every band carrying its label and its number as TEXT, so the whole reading survives with the bars removed. Marker shape is deliberately unused and the reason is written down. TOKEN REACH 53 -> 58. Both notes under the charts are load-bearing rather than hedging: `valid` is a count at a threshold this build chose, and `wouldUnlock` is a projection from a synthetic colour — there is no such garment.",
+      "plan": "plans/F-150-the-wardrobe-is-a-gallery.md",
+      "effects": [
+        "E-073",
+        "E-074"
+      ],
+      "attested": [
+        {
+          "criterion": "Garments are shown as images at a size worth looking at, with colour on the neutral well",
+          "verifiedBy": "THE STRUCTURE IS CHECKED AND THE SIZE IS A JUDGEMENT. Verified: the photograph renders from the BLOB through a `data:` URI, the encoder round-trips across a chunk boundary, the colour is a `Swatch` so its neutral well and gamut-verified keyline come with it, and a garment with no photograph draws its colour at the same square. WHAT IS NOT VERIFIED is whether two columns is right. It was chosen so the cell answers \"which garment is that\" rather than \"how many do I have\" — but nobody has held a phone with a real wardrobe in it, and the failure mode is specific: if the photographs are shot against a busy background the cell reads as clutter and the swatch sitting on it is the worst case for simultaneous contrast in the product.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Coverage and gaps are shown with the chart tokens, and never by colour alone",
+          "verifiedBy": "THE COLOUR-INDEPENDENCE IS ASSERTED; THE READABILITY IS NOT. Every band carries its label and its number as text, and the conformance subject renders all five in both themes — so \"never by colour alone\" is a property the tree holds rather than a claim. The bucket edges are asserted one by one, because a boundary is where an off-by-one hides and it is invisible in a bar. WHAT NO TEST CAN SAY is whether five greys separated only by lightness are actually distinguishable on a phone at arm's length, in daylight, at the sizes this draws them. That is the question the near-achromatic ramp was chosen to answer well, and it has never been looked at.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-151",

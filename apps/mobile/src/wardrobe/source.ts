@@ -52,6 +52,31 @@ export interface ImageSource {
  * something polyfills it — the same class of assumption that crashed the app in F-104, where
  * `crypto` was real in every runtime except the one that ships.
  */
+/**
+ * Encode bytes as a base64 payload.
+ *
+ * The inverse of {@link bytesFromBase64}, and it exists for one reason: React Native's
+ * `<Image>` takes a URI, and the only URI a BLOB held in SQLCipher can have is a `data:` one.
+ * The photograph is deliberately NOT a file on disk — an `image_path` column would have made
+ * NFR-13 false while looking like it satisfied it — so there is no path to hand to `<Image>`
+ * and there was never going to be.
+ *
+ * `btoa` for the same reason `atob` is used above: this runs in Hermes, where `Buffer` does
+ * not exist unless something polyfills it.
+ *
+ * CHUNKED, because `String.fromCharCode(...bytes)` on a photograph is a spread of a hundred
+ * thousand arguments and Hermes throws before it is slow. The chunk size is well under any
+ * engine's argument limit and the concatenation is linear.
+ */
+const CHUNK = 0x8000;
+
+export function base64FromBytes(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK)
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  return btoa(binary);
+}
+
 export function bytesFromBase64(base64: string): Uint8Array {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);

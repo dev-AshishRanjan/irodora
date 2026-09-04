@@ -8,6 +8,129 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-04 — F-150 DONE · the wardrobe stops being a list, and the product plots something
+
+### The photographs had never been read back
+
+`garment_image` has existed since F-042. `AddGarment` writes one. **No screen displayed it.**
+
+So the wardrobe was a list: a 44px swatch, a name, and a secondary **Edit** button on every row —
+forty garments meaning forty buttons. Everything about it was a table, including the swatch being
+too small to judge and the name doing the work the colour should do.
+
+It is now a two-column gallery. The photograph is the cell; the measured colour sits on it as a
+`Swatch`, so the mandatory neutral well and the gamut-verified keyline come with it — and that
+well is doing more work here than anywhere else in the product, because the surround is an
+arbitrary photograph.
+
+A garment with no picture shows **its colour at cell scale**, not a placeholder icon. It still has
+the thing the product is about.
+
+**The cell is the affordance.** A gallery cell that needs a separate control to open it is a list
+with pictures.
+
+### The cost is part of the interface
+
+The schema keeps image bytes in their own table, and its comment says why: *"the split is what
+makes the list query cheap."*
+
+**A gallery is the first surface that could undo that without editing it.** Twelve visible cells
+in a wardrobe of forty, and the obvious implementation reads forty BLOBs and base64-encodes each
+one to draw twelve. The database unchanged, the comment still true, the property gone.
+
+So `galleryImages` splits the same two questions the schema splits — metadata for every cell,
+bytes only for a visible one — and **the tests count the calls**:
+
+- "has a photograph" never touches the BLOB
+- a garment is read once, however often its cell re-renders
+- a garment with **no** photograph is remembered as an answer rather than re-queried
+
+That last one is the easy mistake: written as `cached !== undefined` rather than `cache.has()`,
+every photo-less garment re-queries on every frame, which is the common case in a new wardrobe.
+
+Virtualisation and the cache bound are **one decision, not two** (E-073). A bounded cache in front
+of an unbounded render thrashes — it evicts what it just stored and decodes forty photographs to
+show twelve, slightly worse than no cache at all. `SectionList` over chunked rows is what makes
+twelve the right number to hold, and it keeps the family headings, which are the second channel
+NFR-9 wants.
+
+### The first chart in the product
+
+`chart.1`–`chart.5` were emitted and read by nothing since F-048, with the reason *"There is no
+chart in the product"* and **F-150 named as the closer**. It closed — five tokens at once, and the
+entry deleted rather than re-pointed. **Token reach 53 → 58.**
+
+The ramp is near-achromatic and that was decided first. The manifest says why, in the reason it
+gives for leaving the tokens out of the contrast pairings: a series is separated by lightness,
+marker shape and a direct label, *not* by contrast against a surface. **Deciding that with a chart
+half-built is how a rainbow palette ships**; deciding it when there is nothing to plot costs
+nothing and cannot be argued down by a deadline (E-074).
+
+That reason is a specification, and `Bands` owes it three things. Every band carries its own words
+and its own number **as text**, so the whole reading survives with the bars removed — not a
+fallback, the primary reading. Lightness carries order. There is no legend, because a legend is a
+lookup table between colour and meaning, which is the exact structure that fails without colour.
+
+**Marker shape is deliberately unused**, and writing that down mattered more than using it: shape
+separates *series*, there is one series here, and the ramp encodes order within it.
+
+Both notes under the charts are load-bearing rather than hedging. `valid` is a count at a
+threshold this build chose; `wouldUnlock` is a projection from a synthetic colour at a region's
+centre — **there is no such garment**. Golden rule 11 applies to a chart as much as to a sentence,
+and a bar is more persuasive than a paragraph.
+
+### Three things the gates caught
+
+**A `WearStore` was being passed to the Wardrobe.** Its docblock is explicit that it *"cannot
+create a garment or write an image"* — so when `BrowseStore` grew two image methods, six
+conformance subjects stopped compiling. The fix was to **compose** rather than widen: a port that
+grows a method per caller stops being a statement about what a screen needs.
+
+**The Japanese band labels were bare numerals.** The i18n check refused them — every key whose
+English is prose must carry Japanese script — and it was right about more than script: *"In 1 to
+3"* leaves *what* to the reader, and the value beside it counts garments while the label counts
+outfits. Both locales now name their own unit.
+
+**The gate-mirror proof left its plant in a tracked file, twice.** It kills a child that has
+`ci.yml` open, and on Windows the handle can outlive `TerminateProcess` — so its verification READ
+threw and the restore, which came after, never ran. That is the defect the proof exists to check
+for, committed by the check itself. The read now retries briefly and **the restore is
+unconditional**; three consecutive runs leave the tree clean.
+
+### Verification
+
+| ran | result |
+| --- | --- |
+| `pnpm verify:ci` — all 32 runnable CI steps | **PASS** |
+| 687 mobile · 124 ui | **PASS** |
+| token reach 53 → 58 · claims lint | **PASS** |
+
+Font subset regenerated for the new Japanese copy — third time in three features.
+
+### Still owed
+
+**Nobody has seen this with a real wardrobe in it.** Both attested criteria are outstanding, and
+each has a specific failure mode a test cannot reach:
+
+- **Two columns** was chosen so a cell answers *"which garment is that"* rather than *"how many do
+  I have"*. If the photographs are shot against a busy background, the cell reads as clutter — and
+  the swatch sitting on one is the worst case for simultaneous contrast in the product.
+- **Five greys separated only by lightness** is exactly what the near-achromatic ramp was chosen
+  to do well. Whether they are actually distinguishable on a phone at arm's length, in daylight,
+  at the size this draws them, has never been looked at.
+
+**The coverage section needs a profile, and that is a real state rather than a gap.** The route
+assembles the context and passes it; without a profile there is nothing to count against, so the
+section is omitted rather than drawn empty. A wardrobe is useful before anybody has answered a
+single trial.
+
+**`referenceSet()` moved out of the shopping route to get there.** It is twenty fields per corpus
+entry, most of them the nulls that say *this is a published reference, not something we measured* —
+and the moment a second route needed it, the choice was to copy those twenty fields or to share
+them. A copy would have been two statements about what a corpus entry's provenance IS.
+
+---
+
 ## 2026-09-04 — F-149 DONE · the Lens describes, and stopped shouting
 
 The dials for this surface were already set and were not being followed:

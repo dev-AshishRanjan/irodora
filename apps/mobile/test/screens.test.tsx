@@ -29,7 +29,7 @@ import { Compare } from '../src/screens/Compare';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
-import { Wardrobe } from '../src/screens/Wardrobe';
+import { Wardrobe, type BrowseStore } from '../src/screens/Wardrobe';
 import { Export } from '../src/screens/Export';
 import type { FileSink } from '../src/export/sink';
 import { OutfitBuilder } from '../src/screens/OutfitBuilder';
@@ -306,6 +306,16 @@ function fakeWardrobe(): WardrobeStore & { readonly written: NewGarment[] } {
       /* Likewise. `garment-image.test.ts` is where the bytes are actually asserted. */
     },
     listGarments: () => [],
+    /*
+     * NO PHOTOGRAPHS, and that is a real state rather than a stub for one.
+     *
+     * A garment with no picture is the common case in a new wardrobe, and the gallery draws its
+     * colour at cell scale for it. Returning `undefined` here means every screen test in this
+     * file exercises that branch — the one where the product still has something to show.
+     * `gallery.test.ts` covers the branch with bytes, where cost can be counted.
+     */
+    getGarmentImageInfo: () => undefined,
+    getGarmentImage: () => undefined,
   };
 }
 
@@ -582,6 +592,27 @@ function fakeWearStore(garments: readonly StoredGarment[]): WearStore {
       /* The screen calls this on a tap the static registry never performs. */
     },
     listGarments: () => garments,
+  };
+}
+
+/**
+ * The same garments, as a store the WARDROBE screen accepts.
+ *
+ * `WearStore` is the outfit builder's port and its docblock is explicit that it *"cannot create
+ * a garment or write an image"*. The Wardrobe gallery reads photographs, so its `BrowseStore`
+ * asks for two more methods — and the honest way to satisfy both is to COMPOSE rather than to
+ * widen `WearStore` until it satisfies everything. A port that grows a method for each new
+ * caller stops being a statement about what a screen needs.
+ *
+ * No photographs: the registry's subjects are about layout and announcement, and the
+ * no-picture branch is the one every new wardrobe is in. `gallery.test.ts` covers the branch
+ * with bytes, where the cost can be counted.
+ */
+function fakeBrowseStore(garments: readonly StoredGarment[]): BrowseStore {
+  return {
+    ...fakeWearStore(garments),
+    getGarmentImageInfo: () => undefined,
+    getGarmentImage: () => undefined,
   };
 }
 
@@ -1058,7 +1089,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(
-        <Wardrobe store={fakeWearStore(OUTFIT_WARDROBE)} onAddGarment={() => undefined} />,
+        <Wardrobe store={fakeBrowseStore(OUTFIT_WARDROBE)} onAddGarment={() => undefined} />,
         theme,
       ),
   },
@@ -1072,7 +1103,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<Wardrobe store={fakeWearStore([])} onAddGarment={() => undefined} />, theme),
+      draw(<Wardrobe store={fakeBrowseStore([])} onAddGarment={() => undefined} />, theme),
   },
   {
     /*
@@ -1082,7 +1113,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Wardrobe (nothing in it, nowhere to go)',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Wardrobe store={fakeWearStore([])} />, theme),
+    render: (_state, theme) => draw(<Wardrobe store={fakeBrowseStore([])} />, theme),
   },
   {
     /*
@@ -1095,7 +1126,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <Wardrobe
-          store={fakeWearStore(OUTFIT_WARDROBE)}
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
           initialFilter={{ type: 'jumper', season: null, formality: null }}
         />,
         theme,
@@ -1112,7 +1143,7 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <Wardrobe
-          store={fakeWearStore(OUTFIT_WARDROBE)}
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
           initialFilter={{ type: 'kimono', season: null, formality: null }}
         />,
         theme,
@@ -1127,7 +1158,10 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<Wardrobe store={fakeWearStore(OUTFIT_WARDROBE_PRICED)} initialSelected="o-1" />, theme),
+      draw(
+        <Wardrobe store={fakeBrowseStore(OUTFIT_WARDROBE_PRICED)} initialSelected="o-1" />,
+        theme,
+      ),
   },
   {
     name: 'screens/PaletteStudio',
@@ -1931,7 +1965,22 @@ describe('the route wires the real repository, not a fake', () => {
     const up = '..';
     const importedFrom = `from '${up}/${up}/${up}/src/store/repository'`;
     expect(wardrobe).toContain(importedFrom);
-    expect(wardrobe).toMatch(/store=\{deviceRepository\(\)\}/u);
+
+    /*
+     * THE REPOSITORY REACHES THE SCREEN — asserted as two facts rather than as one expression.
+     *
+     * This read `store={deviceRepository()}` as a literal, which was true while the route was
+     * four lines long. F-150 gave the route a coverage computation that needs the same handle
+     * twice, so it became `const repo = deviceRepository()` and `store={repo}` — and the
+     * assertion broke on a refactor that changed nothing about what it was checking.
+     *
+     * The property is: this route calls the REAL repository, and hands it to the screen as
+     * `store`. Both halves are still checked; neither is pinned to one way of writing it
+     * [[virtualisation-breaks-a-rendered-tree-proxy-not-the-property]]. The decoy below is what
+     * stops this weakening into "the file mentions a repository somewhere".
+     */
+    expect(wardrobe).toMatch(/deviceRepository\(\)/u);
+    expect(wardrobe).toMatch(/store=\{(?:deviceRepository\(\)|repo)\}/u);
   });
 
   it('DECOY — the assertion above is not true of every route', () => {

@@ -58,19 +58,6 @@
       "permanentBecause": "ADR-0044 — the .on.* forms are what the contrast gate measured, not what a component reads: a component reads the translucent token and lets the platform composite it. No surface will ever paint them."
     },
     {
-      "group": "colour token",
-      "tokens": [
-        "chart.1",
-        "chart.2",
-        "chart.3",
-        "chart.4",
-        "chart.5"
-      ],
-      "cites": "F-048, F-055",
-      "why": "There is no chart in the product. The five-step near-achromatic ramp exists because a data series must be distinguishable without hue (golden rule 13), and deciding that under deadline is how a rainbow palette gets shipped. Wardrobe coverage and gap analysis (F-048) is the first surface that plots anything; the professional dE tables (F-055) are the second.",
-      "closedBy": "F-150"
-    },
-    {
       "group": "radius step",
       "tokens": [
         "xs",

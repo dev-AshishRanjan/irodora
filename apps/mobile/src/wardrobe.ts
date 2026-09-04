@@ -40,6 +40,7 @@ import type {
   SavedColorRow,
   SanitisedImage,
   StoredGarment,
+  GarmentImageInfo,
 } from '@irodora/store';
 import { CORPUS_LABEL, entryBySlug } from './corpus';
 import { displayFromOklch } from './engine';
@@ -59,6 +60,18 @@ export interface WardrobeStore {
   enrichGarment(id: string, patch: GarmentEnrichment, now: number): void;
   putGarmentImage(garmentId: string, image: SanitisedImage, now: number): void;
   listGarments(): readonly StoredGarment[];
+  /**
+   * The metadata of a garment's photograph, without the photograph.
+   *
+   * THE SPLIT IS THE POINT, and it is the schema's rather than this interface's: `garment_image`
+   * keeps the bytes in their own table so that "does this garment have a picture, and what shape
+   * is it" costs nothing. A gallery needs exactly that for every cell and the bytes for only the
+   * visible ones, so reading through this first is what keeps a forty-garment wardrobe from
+   * decoding forty photographs to draw twelve.
+   */
+  getGarmentImageInfo(garmentId: string): GarmentImageInfo | undefined;
+  /** The photograph itself. Ask only for a cell that is actually on screen. */
+  getGarmentImage(garmentId: string): Uint8Array | undefined;
 }
 
 /** Where a draft's colour came from. The four paths of FR-40 reduce to two colour origins. */

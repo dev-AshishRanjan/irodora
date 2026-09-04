@@ -20,9 +20,10 @@
  */
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { swatchAccessibleName, ThemeProvider } from '@irodora/ui';
 import { Wardrobe } from '../src/screens/Wardrobe';
 import { allEntries } from '../src/corpus';
+import { colorOf } from '../src/wardrobe';
 import { en } from '../src/i18n/en';
 import type { GarmentEnrichment, SavedColorRow, StoredGarment } from '@irodora/store';
 
@@ -89,6 +90,9 @@ function open(garment: StoredGarment = COAT): Written[] {
       written.push({ id, patch });
     },
     listGarments: () => [garment],
+    // no photographs — the common case in a new wardrobe, and the branch that draws the colour at cell scale.
+    getGarmentImageInfo: () => undefined,
+    getGarmentImage: () => undefined,
   };
 
   render(
@@ -98,6 +102,34 @@ function open(garment: StoredGarment = COAT): Written[] {
   );
   return written;
 }
+
+/**
+ * A gallery cell's accessible name, as the screen composes it.
+ *
+ * Mirrored here rather than exported from the screen: a test that imported the composer would
+ * agree with it by construction and would not notice the day it stopped naming the colour
+ * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]]. Written out, it fails
+ * when the announcement changes — which is the point, because this string is the whole of what
+ * a screen-reader user gets from a photograph.
+ */
+const cellLabel = (garment: StoredGarment): string =>
+  `${garment.name ?? garment.type} — ${swatchAccessibleName(
+    garment.color.name,
+    garment.color.hex,
+    colorOf(garment.color),
+  )}`;
+
+/**
+ * A store with no photographs.
+ *
+ * Spread into every double here. Four of them were written inline, and each would have had to
+ * grow the same two methods — which is how one gets missed and a test fails on
+ * `getGarmentImageInfo is not a function` in a file about filters.
+ */
+const NO_IMAGES = {
+  getGarmentImageInfo: () => undefined,
+  getGarmentImage: () => undefined,
+} as const;
 
 const save = (): void => {
   fireEvent.press(screen.getByLabelText(en['browse.save']));
@@ -190,20 +222,38 @@ describe('the list', () => {
           store={{
             enrichGarment: () => undefined,
             listGarments: () => [COAT],
+            // no photographs — the common case in a new wardrobe, and the branch that draws the colour at cell scale.
+            getGarmentImageInfo: () => undefined,
+            getGarmentImage: () => undefined,
           }}
         />
       </ThemeProvider>,
     );
 
     expect(screen.queryByText(en['browse.editing'])).toBeNull();
-    fireEvent.press(screen.getByLabelText(en['browse.edit']));
+    /*
+      THE CELL IS THE AFFORDANCE NOW (F-150 criterion 2). It was a secondary "Edit" button on
+      every row, so a wardrobe of forty garments carried forty buttons — and a gallery cell that
+      needs a separate control to open it is a list with pictures.
+
+      The assertion is not weakened by reaching for a different element: what it checks is that
+      the editor is REACHABLE from the browse screen, which is the same property either way.
+    */
+    fireEvent.press(screen.getByLabelText(cellLabel(COAT)));
     expect(screen.getByText(en['browse.editing'])).toBeTruthy();
   });
 
   it('says the wardrobe is empty rather than drawing an empty list', () => {
     render(
       <ThemeProvider theme="light">
-        <Wardrobe store={{ enrichGarment: () => undefined, listGarments: () => [] }} />
+        <Wardrobe
+          store={{
+            enrichGarment: () => undefined,
+            listGarments: () => [],
+            getGarmentImageInfo: () => undefined,
+            getGarmentImage: () => undefined,
+          }}
+        />
       </ThemeProvider>,
     );
 
@@ -239,13 +289,30 @@ describe('the filter controls', () => {
   const browse = (): void => {
     render(
       <ThemeProvider theme="light">
-        <Wardrobe store={{ enrichGarment: () => undefined, listGarments: () => WARDROBE }} />
+        <Wardrobe
+          store={{
+            enrichGarment: () => undefined,
+            listGarments: () => WARDROBE,
+            getGarmentImageInfo: () => undefined,
+            getGarmentImage: () => undefined,
+          }}
+        />
       </ThemeProvider>,
     );
   };
 
   /** Every "Edit" control on screen — one per garment shown. */
-  const shownCount = (): number => screen.queryAllByLabelText(en['browse.edit']).length;
+  /*
+    HOW MANY GARMENTS ARE ON SCREEN, counted by CELLS rather than by edit buttons.
+
+    It used to count the "Edit" controls, which worked only because there was exactly one per
+    garment. Counting the thing itself is what the filter tests were always trying to say.
+  */
+  const shownCount = (): number =>
+    screen.queryAllByRole('button').filter((n) => {
+      const label: unknown = n.props['accessibilityLabel'];
+      return typeof label === 'string' && label.includes('—');
+    }).length;
 
   it('shows the whole wardrobe before anything is chosen', () => {
     browse();
@@ -362,7 +429,7 @@ describe('the filter controls', () => {
 });
 
 describe('the way out of an empty wardrobe (F-139)', () => {
-  const empty = { enrichGarment: () => undefined, listGarments: () => [] };
+  const empty = { enrichGarment: () => undefined, listGarments: () => [], ...NO_IMAGES };
 
   const show = (onAddGarment?: () => void): void => {
     render(
@@ -405,7 +472,7 @@ describe('the way out of an empty wardrobe (F-139)', () => {
     render(
       <ThemeProvider theme="light">
         <Wardrobe
-          store={{ enrichGarment: () => undefined, listGarments: () => [COAT] }}
+          store={{ enrichGarment: () => undefined, listGarments: () => [COAT], ...NO_IMAGES }}
           onAddGarment={() => {
             pressed.push(true);
           }}
@@ -430,7 +497,7 @@ describe('the way out of an empty wardrobe (F-139)', () => {
     render(
       <ThemeProvider theme="light">
         <Wardrobe
-          store={{ enrichGarment: () => undefined, listGarments: () => [COAT] }}
+          store={{ enrichGarment: () => undefined, listGarments: () => [COAT], ...NO_IMAGES }}
           initialFilter={{ season: null, formality: null, type: 'nothing-matches-this' }}
           onAddGarment={() => undefined}
         />

@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { outfitWeights, parseWeightContent } from '@irodora/recommendation';
 import { Shopping } from '../../../src/screens/Shopping';
-import { colorOf } from '../../../src/wardrobe';
-import { allEntries } from '../../../src/corpus';
+import { referenceSet } from '../../../src/wardrobe/reference';
 import { ruleSet } from '../../../src/rules';
 import { WEIGHTS_TEXT } from '../../../src/rules/generated/weights';
 import { activeProfile, toWorking } from '../../../src/profile/store';
@@ -41,33 +40,7 @@ export default function ShoppingRoute(): React.JSX.Element {
       profile: stored === null ? null : engineProfile(toWorking(stored)),
       rules: ruleSet(),
       weights: outfitWeights(parseWeightContent(JSON.parse(WEIGHTS_TEXT), 'weights.json')),
-      reference: allEntries().map((e) => ({
-        id: e.entry.slug,
-        color: colorOf({
-          id: e.entry.slug,
-          created_at: 0,
-          updated_at: 0,
-          deleted_at: null,
-          name: e.entry.name.en,
-          xyz_x: e.entry.color.xyz[0],
-          xyz_y: e.entry.color.xyz[1],
-          xyz_z: e.entry.color.xyz[2],
-          lab_l: e.derived.lab[0],
-          lab_a: e.derived.lab[1],
-          lab_b: e.derived.lab[2],
-          oklch_l: e.derived.oklch[0],
-          oklch_c: e.derived.oklch[1],
-          oklch_h: e.derived.oklch[2],
-          hex: e.derived.hex,
-          source: 'reference',
-          confidence: 1,
-          corpus_slug: e.entry.slug,
-          capture_illuminant: null,
-          capture_quality: null,
-          capture_samples: null,
-          capture_variance: null,
-        }),
-      })),
+      reference: referenceSet(),
     }),
     [stored],
   );

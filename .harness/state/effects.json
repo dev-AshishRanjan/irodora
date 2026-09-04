@@ -2685,6 +2685,71 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-073",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/wardrobe/gallery.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/schema.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:test — `gallery.test.ts` counts what the store was ASKED for, not only what it returned. Three assertions carry it: \"has a photograph\" reads metadata and never the BLOB (`blobCalls()` is 0); a garment is read once however often its cell re-renders; and a garment with NO photograph is remembered as an answer rather than re-queried. Plus the SectionList virtualises, which is what makes the cache bound the right bound rather than an arbitrary one.",
+      "memory": "memory/effects/a-gallery-can-undo-a-schema-decision-without-touching-it.md",
+      "rationale": "THE PHOTOGRAPHS HAD NEVER BEEN READ BACK. `garment_image` has existed since F-042 and `AddGarment` writes to it; nothing displayed one, so the wardrobe was a list of 44px swatches beside names. The schema comment explains the shape it was given: the bytes live in their own table so that the LIST QUERY IS CHEAP. A gallery is the first surface that could undo that decision WITHOUT EDITING IT — twelve visible cells in a wardrobe of forty, and the obvious implementation reads forty BLOBs and base64-encodes each one to draw twelve. The database would be unchanged, the comment would still be true, and the property it describes would be gone. SO THE COST IS PART OF THE INTERFACE. `galleryImages` splits the two questions the schema splits — \"is there a picture\" is metadata and asked for every cell; \"what are its bytes\" is the BLOB and asked only for a cell on screen — and the tests count the calls rather than trusting the shape. THE SECOND HALF IS VIRTUALISATION, and the two are one decision: a bounded cache in front of an unbounded render is a cache that thrashes, so `SectionList` is what makes twelve the right number to hold. THE GENERAL SHAPE: a performance decision recorded in one layer can be defeated by a caller that never touches it, and the only durable guard is a test that measures the COST rather than the RESULT.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-074",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Bands.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unreached-tokens.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y — token reach closes five names at once, and the exemption is deleted rather than re-pointed at another feature. gate:contrast — the manifest marks these `unchecked` with a reason that is now a design obligation rather than a note: separation is by lightness, marker shape and a direct label, so the conformance subject renders all five bands and every one carries its label and its number as TEXT. The whole reading survives with the bars removed.",
+      "memory": "memory/effects/a-ramp-decided-before-the-first-chart.md",
+      "rationale": "FIVE TOKENS HAD BEEN EMITTED AND UNREAD SINCE F-048, with the reason \"There is no chart in the product\" and F-150 named as the feature that would change it. That is the ADR-0088 discipline working as designed for once: the exemption predicted a closer, and the closer closed it. THE RAMP IS NEAR-ACHROMATIC AND THAT WAS DECIDED FIRST. The manifest says why, in the reason it gives for leaving the tokens out of the contrast pairings: a series is separated by lightness, marker shape and a direct label, NOT by contrast against a surface. Deciding that with a chart already half-built is how a rainbow palette ships — the decision was made when there was nothing to plot precisely so it could not be made under deadline. WHAT THE COMPONENT OWES BECAUSE OF THAT: every band carries its own words and its own number as text, so the reading survives with the bars removed. Marker shape is NOT used and the omission is written down rather than left as a gap — shape separates SERIES, there is one series here, and the ramp encodes ORDER within it, so a shape channel would be distinguishing things that are not different. The moment a second series appears, shape is the channel to reach for. THE NUMBERS STAY HONEST TOO: `valid` is a count at a threshold this build chose and `wouldUnlock` is a projection from a synthetic colour at a region centre — there is no such garment. Golden rule 11 applies to a chart as much as to a sentence, and both notes are rendered rather than kept in a comment.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

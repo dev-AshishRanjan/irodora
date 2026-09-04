@@ -115,7 +115,36 @@ if (!planted) {
   child.kill('SIGTERM');
   await exited;
 
-  const after = readFileSync(WORKFLOW, 'utf8');
+  /*
+   * READ WITH A RETRY, AND RESTORE WHATEVER HAPPENS.
+   *
+   * This proof kills a child process that has the workflow open. On Windows `TerminateProcess`
+   * is immediate and the child's handle can outlive it by a few milliseconds, so the read below
+   * intermittently fails with `EBUSY`/`UNKNOWN` on `open`. That is not a finding about the
+   * subject — it is this file racing its own child.
+   *
+   * IT MATTERED BECAUSE THE RESTORE CAME AFTER IT. When the read threw, the function exited
+   * before line "leave the tree as we found it", and the plant stayed in a TRACKED file — which
+   * `git add -A` would then commit. That is precisely the defect this proof exists to check
+   * for, committed by the check itself.
+   *
+   * So the read retries briefly, and the restore is unconditional and in a `finally`.
+   */
+  let after = '';
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      after = readFileSync(WORKFLOW, 'utf8');
+      break;
+    } catch (error) {
+      if (attempt === 19) throw error;
+      // Busy-wait rather than a timer: this is a handful of milliseconds, and an `await` here
+      // would let the outer script continue into the next case with the plant still in place.
+      const until = Date.now() + 10;
+      while (Date.now() < until) {
+        /* spin */
+      }
+    }
+  }
   const restored = after === original;
 
   if (process.platform === 'win32') {
@@ -147,8 +176,9 @@ if (!planted) {
   }
 
   // Leave the tree as we found it whatever happened — this proof must not become the thing it
-  // is checking for.
-  if (!restored) writeFileSync(WORKFLOW, original, 'utf8');
+  // is checking for. Unconditional: comparing first and restoring only on a difference means a
+  // failed COMPARISON leaves the plant, which is how it escaped twice.
+  writeFileSync(WORKFLOW, original, 'utf8');
 }
 
 /* ------------------------------------------- 2. what a handler cannot reach: a leftover plant */
