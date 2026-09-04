@@ -22,7 +22,7 @@
  *
  * ## A format that refuses is not a failure of the export
  *
- * `toPdf` refuses a character it cannot draw, by name (ADR-0080, ADR-0083). That is a property
+ * `toPdf` refuses a character it cannot draw, by name (ADR-0088, ADR-0083). That is a property
  * of **that format**, not of the palette — the other five carry every character — so the screen
  * says which format cannot take it and leaves the rest available. A screen that reported "export
  * failed" would send somebody looking for a broken feature.

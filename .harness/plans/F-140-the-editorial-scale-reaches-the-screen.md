@@ -121,7 +121,7 @@ node scripts/verify-token-reach.mjs --prove
 
 **`display.1` (72px) and `xl4`/`xl5` (56/96) may not be honestly reachable in this feature.**
 They are hero values, and the surfaces that want them are F-146 (Home) and F-147 (Atlas).
-Painting them somewhere merely to satisfy a check would be the exact failure ADR-0080 names in
+Painting them somewhere merely to satisfy a check would be the exact failure ADR-0088 names in
 its own "honest limit" section — reach is a floor, not a design review.
 
 **Resolution, decided now rather than discovered later:** whichever of them F-140 cannot reach

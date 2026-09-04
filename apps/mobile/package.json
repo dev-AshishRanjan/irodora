@@ -36,6 +36,7 @@
     "@irodora/store": "workspace:*",
     "@irodora/ui": "workspace:*",
     "@noble/hashes": "2.3.0",
+    "@react-navigation/bottom-tabs": "^7.18.18",
     "expo": "~57.0.14",
     "expo-build-properties": "~57.0.12",
     "expo-crypto": "^57.0.1",

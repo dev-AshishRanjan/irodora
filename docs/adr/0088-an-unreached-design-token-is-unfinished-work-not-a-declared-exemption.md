@@ -1,4 +1,4 @@
-# ADR-0080 — An unreached design token is unfinished work, not a declared exemption
+# ADR-0088 — An unreached design token is unfinished work, not a declared exemption
 
 ## Status
 

@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { Preferences } from '../src/screens/Preferences';
-import { deviceRepository } from '../src/store/repository';
+import { Preferences } from '../../../src/screens/Preferences';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.

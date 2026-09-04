@@ -1,4 +1,4 @@
-# ADR-0080 — The PDF report is Latin-1 and refuses what it cannot draw
+# ADR-0088 — The PDF report is Latin-1 and refuses what it cannot draw
 
 ## Status
 

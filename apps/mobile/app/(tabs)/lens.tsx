@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
 import { Stack } from 'expo-router';
-import { CameraUnavailable } from '../src/lens/CameraUnavailable';
+import { CameraUnavailable } from '../../src/lens/CameraUnavailable';
 
 /**
  * The route. Navigation options, and the one thing this file exists to guarantee: **pressing
@@ -24,7 +24,7 @@ import { CameraUnavailable } from '../src/lens/CameraUnavailable';
  * have had all along: **one screen's native dependency must not be able to take down the app.**
  */
 
-const CameraLens = lazy(async () => import('../src/lens/CameraLens'));
+const CameraLens = lazy(async () => import('../../src/lens/CameraLens'));
 
 /**
  * `caught` rather than a nullable error, because `unknown` already includes `null` — and what

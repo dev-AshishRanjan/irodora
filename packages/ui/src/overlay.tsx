@@ -29,7 +29,7 @@
  * subtree and did not re-export it; HeroUI imports it from the root in eleven places, so the
  * symbol was `undefined` and every component using it — Dialog, BottomSheet, Slider, Menu —
  * would have thrown on render rather than degrading. F-157 pinned the tree to 2.32.0, where the
- * root exports it again, and these two arrived with that ([ADR-0081](../../../docs/adr/0081-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
+ * root exports it again, and these two arrived with that ([ADR-0089](../../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
  */
 
 import { useState } from 'react';

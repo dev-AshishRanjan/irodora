@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { Atlas } from '../../src/screens/Atlas';
+import { Atlas } from '../../../src/screens/Atlas';
 
 /**
  * The route. Navigation options and the one navigation callback, and nothing else.

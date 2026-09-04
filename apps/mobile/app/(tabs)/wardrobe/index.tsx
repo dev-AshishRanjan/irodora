@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
-import { Wardrobe } from '../../src/screens/Wardrobe';
-import { deviceRepository } from '../../src/store/repository';
+import { Wardrobe } from '../../../src/screens/Wardrobe';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.

@@ -1715,25 +1715,31 @@ describe('no screen puts a status colour beside a colour sample (F-069)', () => 
  * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
  */
 describe('the route wires the real repository, not a fake', () => {
-  const route = readFileSync(join(process.cwd(), 'app', 'palettes.tsx'), 'utf8');
+  const route = readFileSync(join(process.cwd(), 'app', '(tabs)', 'atlas', 'palettes.tsx'), 'utf8');
 
   it('imports the device repository and hands it to the screen', () => {
-    expect(route).toContain("from '../src/store/repository'");
+    expect(route).toContain("from '../../../src/store/repository'");
     expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
 
   it('does the same for guided setup, whose port is the other half of this seam', () => {
     // F-026. A profile the person spent twelve comparisons on, written to a fake, would be
     // gone on the next launch — and every assertion in this file would still be green.
-    const profile = readFileSync(join(process.cwd(), 'app', 'profile.tsx'), 'utf8');
-    expect(profile).toContain("from '../src/store/repository'");
+    const profile = readFileSync(
+      join(process.cwd(), 'app', '(tabs)', 'profile', 'index.tsx'),
+      'utf8',
+    );
+    expect(profile).toContain("from '../../../src/store/repository'");
     expect(profile).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
 
   it('does the same for the wardrobe, whose whole point is that edits survive (F-122)', () => {
     // A brand corrected into a fake would be gone on the next launch, and the browse screen
     // would show the old value with every gate green. Same seam, same failure, third route.
-    const wardrobe = readFileSync(join(process.cwd(), 'app', 'wardrobe', 'index.tsx'), 'utf8');
+    const wardrobe = readFileSync(
+      join(process.cwd(), 'app', '(tabs)', 'wardrobe', 'index.tsx'),
+      'utf8',
+    );
     /*
      * ASSEMBLED, not written out. `verify-app-imports.mjs` scans source for relative import
      * paths and resolves them, and the route's own path — two segments up — would be read as an
@@ -1743,8 +1749,11 @@ describe('the route wires the real repository, not a fake', () => {
      * by design. And the first version of this comment SPELLED THE PATH OUT to explain the
      * problem, which reproduced it exactly: the scanner reads comments too.
      */
+    // THREE segments since F-145, not two: the route moved from `app/wardrobe/index.tsx` to
+    // `app/(tabs)/wardrobe/index.tsx`, so everything under `app/` sits one level deeper. Still
+    // assembled rather than written out, for the reason above — the scanner reads comments too.
     const up = '..';
-    const importedFrom = `from '${up}/${up}/src/store/repository'`;
+    const importedFrom = `from '${up}/${up}/${up}/src/store/repository'`;
     expect(wardrobe).toContain(importedFrom);
     expect(wardrobe).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
@@ -1752,7 +1761,10 @@ describe('the route wires the real repository, not a fake', () => {
   it('DECOY — the assertion above is not true of every route', () => {
     // Without this, "the file contains a string" would pass for any file at all, and the
     // check would be measuring that `readFileSync` works.
-    const compare = readFileSync(join(process.cwd(), 'app', 'compare.tsx'), 'utf8');
+    const compare = readFileSync(
+      join(process.cwd(), 'app', '(tabs)', 'atlas', 'compare.tsx'),
+      'utf8',
+    );
     expect(compare).not.toContain('deviceRepository');
   });
 
@@ -2489,8 +2501,11 @@ describe('reset says what it removes before it removes it (F-109 criterion 3)', 
 
 describe('the preferences route wires the real repository (F-109)', () => {
   it('imports the device repository and hands it to the screen', () => {
-    const route = readFileSync(join(process.cwd(), 'app', 'preferences.tsx'), 'utf8');
-    expect(route).toContain("from '../src/store/repository'");
+    const route = readFileSync(
+      join(process.cwd(), 'app', '(tabs)', 'profile', 'preferences.tsx'),
+      'utf8',
+    );
+    expect(route).toContain("from '../../../src/store/repository'");
     expect(route).toMatch(/store=\{deviceRepository\(\)\}/u);
   });
 });

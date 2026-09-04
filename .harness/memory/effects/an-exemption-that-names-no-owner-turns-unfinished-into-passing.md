@@ -2,7 +2,7 @@
 
 **Link:** `.harness/verification/unreached-tokens.json#closedBy` → `verify-token-reach.mjs`,
 `verify-spacing-scale.mjs`, `feature_list.json`,
-[ADR-0080](../../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+[ADR-0088](../../../docs/adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
 **Guard:** `gate:a11y` **Severity:** high **Feature:** F-140
 
 ---
@@ -60,7 +60,7 @@ Reached and removed from the file: `xl2`, `xl3` (now `Screen`'s inset and rhythm
 `backdrop` and `border` → F-143, `chart.*` → F-150, `foreground.3` → F-148, status `ok`/`bad` →
 F-149. Those were not reached because reaching them honestly needs the surfaces that want them.
 Painting `display.1` on seventeen screen titles would have satisfied the check and produced a
-worse product — reach is a floor, not a design review, and ADR-0080 says so in its own
+worse product — reach is a floor, not a design review, and ADR-0088 says so in its own
 honest-limit section.
 
 ## Related

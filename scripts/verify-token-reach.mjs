@@ -87,7 +87,7 @@ const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 const DECLARATIONS = join(ROOT, '.harness', 'verification', 'unreached-tokens.json');
 
 /**
- * The feature ids an exemption may name, and which of them are finished (ADR-0080).
+ * The feature ids an exemption may name, and which of them are finished (ADR-0088).
  *
  * READ from the scope subsystem rather than listed here, for the reason every checker in this
  * repository reads its subject: a copy agrees with the source on the day it is written and
@@ -425,7 +425,7 @@ function declarations(known, groupNames, override) {
       );
 
     /*
-     * `closedBy` — ADR-0080, and the field this file existed two releases without.
+     * `closedBy` — ADR-0088, and the field this file existed two releases without.
      *
      * Every `why` here was true and well argued, and read as a list they were an itemised
      * description of a product nobody had designed: no display type, no editorial spacing, no
@@ -439,7 +439,7 @@ function declarations(known, groupNames, override) {
      */
     if (!('closedBy' in entry))
       problems.push(
-        `${at}.closedBy is missing. ADR-0080: an exemption names the feature that will close ` +
+        `${at}.closedBy is missing. ADR-0088: an exemption names the feature that will close ` +
           'it, or `null` with a `permanentBecause` citing the ADR that makes it permanent. ' +
           'Without it "not built yet" and "abandoned" are the same entry.',
       );

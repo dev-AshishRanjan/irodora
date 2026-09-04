@@ -59,7 +59,7 @@ build one from scratch — a second way to assemble a subject would be a second 
 
 ## B — the PDF that can draw Japanese
 
-**ADR first.** ADR-0080 decided Latin-1 and recorded the cost; this changes that decision for the
+**ADR first.** ADR-0088 decided Latin-1 and recorded the cost; this changes that decision for the
 case where a font is supplied, so it needs its own ADR that says what replaced it and what the
 new cost is. Written before the code.
 
@@ -143,7 +143,7 @@ turbo.json                                     — the font as a global dependen
 | **E-017** Japanese copy → the font subset | New ja strings | **`script:verify-font-coverage.mjs`** |
 | **E-016** `en.ts` → `ja.ts` and every render site | New keys | **`gate:typecheck`** |
 | **E-025** a test that reads past its package | If a `packages/export` test reads the app's font asset | **`script:verify-cache-scope.mjs`** — declare it in `turbo.json` or use a fixture |
-| ADR-0080's Latin-1 decision | Partially superseded | the new ADR, and the refusal tests that stay |
+| ADR-0088's Latin-1 decision | Partially superseded | the new ADR, and the refusal tests that stay |
 
 **No new effect link expected.** If the font path turns out to couple the app's asset pipeline to
 the PDF writer, that **is** a new link and will be opened rather than noted.
@@ -155,10 +155,10 @@ the PDF writer, that **is** a new link and will be opened rather than noted.
   **The decoy:** a hand-mangled export must be refused by name, or "it parsed" is the only claim.
 - **TrueType (B):** widths for a known glyph against the font's own `hmtx`; a cmap lookup for a
   kanji, a kana and a macron; **a codepoint the subset lacks must be refused**, not mapped to
-  glyph 0 — `.notdef` in a report is the silent-loss failure ADR-0080 refused.
+  glyph 0 — `.notdef` in a report is the silent-loss failure ADR-0088 refused.
 - **PDF (B):** the ToUnicode CMap is present and maps the glyphs actually drawn; the bytes are
   still deterministic for one subject; **the Latin-1 path is unchanged when no font is passed**,
-  which is what keeps ADR-0080's refusal tests meaningful.
+  which is what keeps ADR-0088's refusal tests meaningful.
 - **The screen (A):** an interaction test — choose a format, press export, assert the **bytes
   handed to the sink** are the writer's. A static registry subject cannot see that, which is
   `wardrobe-screen.test.tsx`'s lesson applied again.

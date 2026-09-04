@@ -1,7 +1,7 @@
 # E-062 — A mock that supplies a missing export hides that it is missing
 
 **Link:** `apps/mobile`'s gesture-handler version → `packages/ui/jest.setup.js`, `overlay.tsx`,
-[ADR-0081](../../../docs/adr/0081-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)
+[ADR-0089](../../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)
 **Guard:** `gate:lint` + `gesture-stack.test.tsx` **Severity:** high **Feature:** F-157
 
 ---
@@ -61,7 +61,7 @@ JS-level fix, verified at the JS level, unproven where it runs.
 
 `verify-peer-deps.mjs` reports **unmet** peers. When `heroui-native` widens its range to RNGH 3,
 staying on 2.x becomes the stale decision — and a satisfied-but-outdated peer is silent. Whoever
-upgrades HeroUI has to re-read ADR-0081; nothing will prompt them.
+upgrades HeroUI has to re-read ADR-0089; nothing will prompt them.
 
 ## A second bug, in the harness rather than the product
 

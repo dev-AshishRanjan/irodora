@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { PaletteStudio } from '../src/screens/PaletteStudio';
-import { deviceRepository } from '../src/store/repository';
+import { PaletteStudio } from '../../../src/screens/PaletteStudio';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.

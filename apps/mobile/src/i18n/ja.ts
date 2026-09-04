@@ -22,6 +22,13 @@
 import type { MessageKey } from './en';
 
 export const ja: Record<MessageKey, string> = {
+  // 日本語 tab labels. Kept to two or three characters where the word allows it — the bar
+  // gives each tab a fifth of the width, and kanji at 10px need the room more than Latin does.
+  'tab.home': 'ホーム',
+  'tab.atlas': '色図鑑',
+  'tab.lens': 'レンズ',
+  'tab.wardrobe': '衣装',
+  'tab.profile': 'プロフィール',
   'home.title': 'このデバイスでエンジンが動作しています',
   'home.offline': 'ここで計算しました。どこにも送信していません。',
   'colour.hex': '16進',

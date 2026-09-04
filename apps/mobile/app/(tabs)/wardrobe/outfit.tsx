@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { parseWeightContent } from '@irodora/recommendation';
-import { OutfitBuilder } from '../src/screens/OutfitBuilder';
-import { colorOf } from '../src/wardrobe';
-import { allEntries } from '../src/corpus';
-import { ruleSet } from '../src/rules';
-import { WEIGHTS_TEXT } from '../src/rules/generated/weights';
-import { activeProfile, toWorking } from '../src/profile/store';
-import { deviceRepository } from '../src/store/repository';
+import { OutfitBuilder } from '../../../src/screens/OutfitBuilder';
+import { colorOf } from '../../../src/wardrobe';
+import { allEntries } from '../../../src/corpus';
+import { ruleSet } from '../../../src/rules';
+import { WEIGHTS_TEXT } from '../../../src/rules/generated/weights';
+import { activeProfile, toWorking } from '../../../src/profile/store';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the wires the screen cannot make itself.

@@ -13,7 +13,7 @@
   "scripts": {
     "verify:state": "node scripts/verify-state.mjs",
     "typecheck": "node scripts/gate.mjs typecheck",
-    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-empty-assertions.mjs && node scripts/verify-cache-scope.mjs && node scripts/verify-android-min-sdk.mjs && node scripts/verify-gate-mirror-proof.mjs && node scripts/generate-e2e-flows.mjs --check && node scripts/e2e-flows-proof.mjs && node scripts/verify-blocked-reason-proof.mjs && node scripts/verify-worklet-defaults.mjs && node scripts/generate-brand-assets.mjs --check && node scripts/verify-peer-deps.mjs",
+    "lint": "node scripts/gate.mjs lint && eslint scripts && node scripts/verify-guards.mjs && node scripts/verify-engine-purity.mjs && node scripts/verify-unsafe-call-sites.mjs && node scripts/verify-claims.mjs && node scripts/verify-motion.mjs && node scripts/verify-app-imports.mjs && node scripts/verify-empty-assertions.mjs && node scripts/verify-cache-scope.mjs && node scripts/verify-android-min-sdk.mjs && node scripts/verify-gate-mirror-proof.mjs && node scripts/generate-e2e-flows.mjs --check && node scripts/e2e-flows-proof.mjs && node scripts/verify-blocked-reason-proof.mjs && node scripts/verify-worklet-defaults.mjs && node scripts/generate-brand-assets.mjs --check && node scripts/verify-peer-deps.mjs && node scripts/verify-route-targets.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/gate.mjs test",
@@ -75,7 +75,9 @@
     "brand:assets": "node scripts/generate-brand-assets.mjs",
     "brand:assets:prove": "node scripts/generate-brand-assets.mjs --prove",
     "verify:peers": "node scripts/verify-peer-deps.mjs",
-    "verify:peers:prove": "node scripts/verify-peer-deps.mjs --prove"
+    "verify:peers:prove": "node scripts/verify-peer-deps.mjs --prove",
+    "verify:routes": "node scripts/verify-route-targets.mjs",
+    "verify:routes:prove": "node scripts/verify-route-targets.mjs --prove"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.0",

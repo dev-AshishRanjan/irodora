@@ -8,6 +8,86 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-145 DONE · the app has an information architecture
+
+`_layout.tsx` was a bare `<Stack>` and `index.tsx` pushed ten routes from a scrolling list of
+identical buttons. The whole product was push navigation over that list.
+
+### Five tabs
+
+**Home · Atlas · Lens · Wardrobe · Profile**, with the Lens in the centre because a reading is the
+product and the centre is where a thumb rests.
+
+Sixteen routes moved into a `(tabs)` group, and Atlas, Wardrobe and Profile each got **their own
+Stack layout**. Without one, every file in those directories would be a *sibling* of the tab
+rather than a push onto it: opening a colour would replace the Atlas, and going back would leave
+the tab entirely.
+
+**Every route now has a tab that owns it** — before this, `/palettes` and `/compare` were reachable
+*only* by scrolling past nine buttons on Home. And the Lens is reachable from everywhere by
+construction rather than by adding a control to nine screens.
+
+### The bar is typographic, and that is flagged rather than settled
+
+`@irodora/ui` has three icons — check, alert, cross — drawn as `View`s because an icon font
+reintroduces the tofu failure ADR-0057 exists to prevent. A tab bar needs five more, and inventing
+an icon language inside a *navigation* feature is how a product ends up with five icons nobody
+designed.
+
+So the tabs are set in the **`label` step**: 10px, uppercase, 0.16em tracking. The selected tab
+carries **three channels** (NFR-9): a different foreground token, a visible indicator rule, and
+`accessibilityState.selected`.
+
+> A text-only tab bar is unusual on mobile and Apple's HIG assumes icons. It suits the register
+> and it may read as unfinished to somebody who did not choose that register. **For the reporter
+> to judge** — if it does, icons are a later feature and none of this lockup changes.
+
+### The gate this feature needed did not exist
+
+A push target is a **string**. It compiles whether or not the route exists, and expo-router types
+them only through a file the *dev server* generates — absent on a clean checkout, which is what CI
+is. Moving sixteen routes and rewriting thirteen targets, **nothing could have told correct from
+almost-correct**.
+
+`verify-route-targets.mjs` resolves all 20 targets against the 16 routes, understanding that a
+group is not part of the URL. It caught a real leftover immediately, and restoring the pre-move
+`/palettes` target reproduces the failure with file and line.
+
+### Four existing guards fired, and every one was right
+
+| guard | what it refused |
+|---|---|
+| the e2e journey (E-055) | route **files** that had moved |
+| `screens.test.tsx` | five route paths read by hand, and one import depth assembled from segments |
+| the effect graph | three stale paths in `effects.json` |
+| the ADR index | **two numbers I had already used** — 0080 and 0081 were taken, so mine became 0088 and 0089 |
+
+The last one is worth recording as a mistake rather than a near-miss: two ADRs were written under
+numbers that already existed, and only the index check caught it.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test (651 mobile, 111 ui) · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** | **PASS** |
+| `verify:routes:prove` — 7 cases | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending repo-wide, and it is in this feature's declared gates.
+That is pre-existing and is precisely why the route check was worth writing.
+
+### Still owed
+
+**The shell is checked by almost nothing.** The conformance suite renders screens *outside* a
+navigator on purpose — `Stack.Screen` throws otherwise — so the tab bar's announced state and tab
+count are not gated. A tab bar that mounts in jest can still be wrong on a phone.
+
+**Deep links change.** Moving a route into a group changes its URL. Nothing depends on a specific
+deep link yet; this is the moment that stops being true cheaply.
+
+---
+
 ## 2026-09-03 — F-157 DONE · the gesture stack agrees with itself
 
 F-143's peer gate reported `react-native-gesture-handler` 3.2.1 against `heroui-native`'s declared
@@ -44,7 +124,7 @@ carried forward without being checked against the file it describes.
 
 ### The fix
 
-Pinned to `^2.32.0` ([ADR-0081](../../docs/adr/0081-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)),
+Pinned to `^2.32.0` ([ADR-0089](../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)),
 the mock **removed** rather than updated, and `@gorhom/bottom-sheet` installed — an *optional*
 peer, which is why the gate never reported it, and absent from the store entirely, so the sheet
 could never have rendered whatever the version had been.
@@ -287,7 +367,7 @@ string appears in that union and the check reads string literals.
 **It was right to complain and wrong about the fact: a type literal is not a painted pixel.**
 Nothing rendered at 72 px — a union member only says something *could*. Leaving it would have
 closed F-146's exemption with a promise instead of a surface, which is exactly the laundering
-[ADR-0080](../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+[ADR-0088](../../docs/adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
 exists to prevent, arriving from a direction that ADR does not anticipate. The union was
 narrowed; F-146 widens it when Home actually leads at that size.
 
@@ -347,7 +427,7 @@ whole product was push navigation over a button list.
 [`unreached-tokens.json`](../verification/unreached-tokens.json). Read as a list, that file was an
 itemised description of a product nobody had designed — *"Nothing in the product animates"*,
 *"there is no dialog, bottom sheet or modal anywhere in the app yet"*, *"no screen leads with a
-display size"*. [ADR-0080](../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+display size"*. [ADR-0088](../../docs/adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
 is the correction.
 
 > The [`visual-taste`](../skills/visual-taste/SKILL.md) skill **predicted this exact failure** and
@@ -412,7 +492,7 @@ Ownership is now single: token-reach decides, the spacing gate reports (E-058).
 ### Still owed
 
 **`display.1`, `xl4` and `xl5` are not reached**, and are declared with `closedBy` naming F-146
-and F-147. They are hero values; painting them to satisfy a check is the failure ADR-0080 names in
+and F-147. They are hero values; painting them to satisfy a check is the failure ADR-0088 names in
 its own honest-limit section. The criterion is met in the form the ADR intends — every editorial
 step is either used or owned by a named feature — and it is carried as an outstanding attestation
 rather than called done.
@@ -873,7 +953,7 @@ unilaterally.
 
 Neither was defined anywhere. NFR-2 is about *capture* accuracy from a physical device matrix
 (F-063 → F-053 → OQ-3, all blocked), and no pattern corpus existed. So this feature had to define
-both — **ADR-0081**, because an accuracy target is a claim about accuracy.
+both — **ADR-0089**, because an accuracy target is a claim about accuracy.
 
 **The target is derived rather than picked.** The corpus is constructed, so its ground truth
 carries no measurement error, and a correct quantiser must recover a two-colour stripe to within
@@ -996,7 +1076,7 @@ rather than clipping.
 | PDF drops what it cannot encode | 2 |
 | a writer ignores the envelope | 3, including the contract loop |
 
-### ADR-0080 — the PDF is Latin-1, and refuses
+### ADR-0088 — the PDF is Latin-1, and refuses
 
 Base-14 Helvetica needs no embedded font, which keeps the writer dependency-free and its bytes
 diffable. **The cost is real: no kanji, no kana, and none of the nine corpus romaji carrying
@@ -1078,7 +1158,7 @@ follow-up would have gone unfiled if the collision had not shown up in `progress
 
 The export **surface** — `service` is `packages`, the verification list has no `a11y` and no
 `e2e`, and F-035 already owns the journey of writing to a file the person chose. The
-**CJK-capable PDF**, per ADR-0080. And the **importer**: FR-28's *"import a custom palette"*
+**CJK-capable PDF**, per ADR-0088. And the **importer**: FR-28's *"import a custom palette"*
 waited for this feature on purpose, because an importer written before its exporter has no
 format to agree with. Five of the six formats carry every character today, so a Japanese-titled
 palette exports fine the moment a screen offers it.
@@ -13498,11 +13578,11 @@ a malformed byte means the file is not what it claims.
 
 `toPdf(subject, { font })` embeds TrueType bytes whole — `/Type0`, `/Identity-H`, a
 `/CIDFontType2` descendant, `/FontFile2`, and a **`/ToUnicode` CMap** so the text is selectable
-rather than a picture of itself. **With no font, every line of ADR-0080 still holds.**
+rather than a picture of itself. **With no font, every line of ADR-0088 still holds.**
 
 The parser's ground truth is a font this repository **constructs**. Against the shipped subset the
 expected values would come from the parser, which asserts that the parser agrees with itself —
-ADR-0081's argument in a second domain. The fixture covers printable ASCII, an em dash, a CJK
+ADR-0089's argument in a second domain. The fixture covers printable ASCII, an em dash, a CJK
 ideograph and a macron romaji, with widths from a **rule** rather than a table, so an `hmtx` bug
 returning the first width for every glyph produces different numbers.
 
@@ -13515,7 +13595,7 @@ harmless because those labels are Latin-1 by construction — except they are no
 control character in the middle of a heading, in every PDF this writer has ever produced.**
 
 On the embedded path the same gap was worse: `glyphRun` falls back to glyph 0, and glyph 0 is
-`.notdef` — a row of boxes, silently, which is precisely what ADR-0080 refused and ADR-0083
+`.notdef` — a row of boxes, silently, which is precisely what ADR-0088 refused and ADR-0083
 quotes itself refusing. Every drawn line is checked once now, before anything reaches a glyph run.
 
 ### The surface (criterion 1)

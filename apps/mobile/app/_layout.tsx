@@ -48,7 +48,20 @@ function Chrome(): React.JSX.Element {
           headerTintColor: colors.foreground,
           contentStyle: { backgroundColor: colors.background },
         }}
-      />
+      >
+        {/*
+          THE ROOT STACK NOW HOLDS ONE THING: the tab group (F-145).
+
+          Its header is off because the tabs own the chrome below it — leaving it on puts a
+          navigation bar above the tab bar's own screens, which is two headers for one page and
+          is the first thing that looks wrong when a flat route table is grouped.
+
+          The stack stays rather than being replaced by `<Tabs>` directly, because a modal or a
+          full-screen route that must sit ABOVE the bar — a camera permission prompt, say — has
+          nowhere else to go.
+        */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
     </>
   );
 }

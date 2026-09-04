@@ -42,7 +42,7 @@ three obligations, and two of them shape this design before a line is written:
   rests on.
 
 Every fixture in the tests is therefore **constructed and labelled as constructed** — the
-[ADR-0081](../../docs/adr/0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) pattern, which
+[ADR-0089](../../docs/adr/0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) pattern, which
 is stronger here than a real card would be: a synthetic reference plus a **known** distortion
 has an exactly known answer, and a real card's values would not.
 

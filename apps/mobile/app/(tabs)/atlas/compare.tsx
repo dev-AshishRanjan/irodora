@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { Compare } from '../src/screens/Compare';
+import { Compare } from '../../../src/screens/Compare';
 
 /**
  * The route. Navigation options only.

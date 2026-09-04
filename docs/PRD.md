@@ -314,7 +314,7 @@ requirements that were missing, written after the audit in
 | **NFR-22** | **Ethical guardrails.** No dermatological claim, no ethnic or racial classification, no attractiveness or body judgement | Absent from the data model and the copy; a schema check prevents such a field from being added | R3 |
 | **NFR-23** | **Bias testing.** The personal-colour engine is validated across the full skin-tone range | A held-out validation set stratified by ITA° covers every band with a stated minimum sample; per-band accuracy is published internally and a band that underperforms blocks release of that feature | R3 |
 | **NFR-24** | **Maintainability.** Module and package boundaries are machine-enforced | A cross-boundary import fails `lint`; the colour engine cannot import a platform API | R0 |
-| **NFR-25** | **The design system reaches the product.** A token, step or scale that the manifest defines and no surface uses is a design decision nobody applied | `verify-token-reach` and `verify-spacing-scale` treat an unreached editorial step as a **failure**, not a warning; an exemption must name the feature that will use it and expire with that feature ([ADR-0080](adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)) | R6 |
+| **NFR-25** | **The design system reaches the product.** A token, step or scale that the manifest defines and no surface uses is a design decision nobody applied | `verify-token-reach` and `verify-spacing-scale` treat an unreached editorial step as a **failure**, not a warning; an exemption must name the feature that will use it and expire with that feature ([ADR-0088](adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)) | R6 |
 
 ---
 

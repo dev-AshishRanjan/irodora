@@ -206,7 +206,7 @@ export function Mark({
  * It was right to complain and wrong about the fact, which is the interesting part: **a type
  * literal is not a painted pixel.** Nothing renders at 72 px; a union member merely says
  * something could. Leaving it would have closed F-146's exemption with a promise instead of a
- * surface — the exact laundering ADR-0080 exists to stop, arriving from a direction that ADR
+ * surface — the exact laundering ADR-0088 exists to stop, arriving from a direction that ADR
  * does not anticipate.
  *
  * F-146 widens this when Home actually leads at that size.

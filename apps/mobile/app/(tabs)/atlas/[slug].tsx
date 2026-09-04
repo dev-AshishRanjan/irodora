@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { ColourDetail } from '../../src/screens/ColourDetail';
+import { ColourDetail } from '../../../src/screens/ColourDetail';
 
 /**
  * The colour detail route. Navigation options and the parameter, and nothing else.
@@ -22,7 +22,7 @@ export default function ColourDetailRoute(): React.JSX.Element {
       <ColourDetail
         slug={slug}
         onOpenCard={(s) => {
-          router.push(`/card/${s}`);
+          router.push(`/atlas/card/${s}`);
         }}
       />
     </>

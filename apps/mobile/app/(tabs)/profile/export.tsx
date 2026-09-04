@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Stack, useRouter } from 'expo-router';
-import { Export } from '../src/screens/Export';
-import { deviceSink } from '../src/export/device';
-import { paletteSubject } from '../src/export/subject';
-import { deviceRepository } from '../src/store/repository';
+import { Export } from '../../../src/screens/Export';
+import { deviceSink } from '../../../src/export/device';
+import { paletteSubject } from '../../../src/export/subject';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the two wires the screen cannot make itself.
@@ -39,7 +39,7 @@ export default function ExportRoute(): React.JSX.Element {
         subject={subject}
         sink={deviceSink()}
         onBuildPalette={() => {
-          router.push('/palettes');
+          router.push('/atlas/palettes');
         }}
       />
     </>

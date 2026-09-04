@@ -3,7 +3,7 @@
 ## Status
 
 **Accepted** — supersedes the Latin-1-only half of
-[ADR-0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md), whose refusal
+[ADR-0088](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md), whose refusal
 behaviour it keeps.
 
 ## Date
@@ -12,7 +12,7 @@ behaviour it keeps.
 
 ## Context
 
-[ADR-0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) chose base-14
+[ADR-0088](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) chose base-14
 Helvetica and WinAnsi, and recorded the cost precisely: **no kanji, no kana, and none of the nine
 corpus romaji carrying macrons can appear in a PDF.** A character the writer cannot encode is
 refused by name rather than dropped.
@@ -32,9 +32,9 @@ Two constraints shape every option:
 ## Decision
 
 **1. The font is a parameter, never a file this package reads.** `toPdf(subject, { font })` takes
-TrueType bytes. **With no font, behaviour is exactly as ADR-0080 decided it**: Helvetica,
+TrueType bytes. **With no font, behaviour is exactly as ADR-0088 decided it**: Helvetica,
 WinAnsi, and a character it cannot encode refused by name. Every existing caller keeps working
-and every one of ADR-0080's refusal tests keeps its meaning.
+and every one of ADR-0088's refusal tests keeps its meaning.
 
 **2. With a font, the PDF embeds it whole as a `/FontFile2`**, drawn through a `/Type0` font with
 `/Encoding /Identity-H` and a `/CIDFontType2` descendant, and carries a **`/ToUnicode` CMap** so
@@ -77,11 +77,11 @@ problem and can change without touching this package.
 
 | Alternative | Why not |
 |---|---|
-| **Keep Latin-1 and refuse** (ADR-0080 unchanged) | Honest, tested, and cost nothing to maintain. It also means the flagship export cannot print `藍色`, which is not a limitation this product can keep explaining. |
+| **Keep Latin-1 and refuse** (ADR-0088 unchanged) | Honest, tested, and cost nothing to maintain. It also means the flagship export cannot print `藍色`, which is not a limitation this product can keep explaining. |
 | **A per-document subsetter** | The right long-term answer: a 20 KB PDF instead of 700 KB. It means rewriting `glyf`, `loca`, `hmtx` and `cmap` and recomputing `checkSumAdjustment` — a second font pipeline with its own failure modes, no gate, and a failure that is a corrupt file rather than a loud error. Named here as the successor rather than attempted inside a feature about export surfaces. |
 | **A font library** (`fontkit`, `opentype.js`) | Would do the subsetting properly and immediately. It is a runtime dependency in a package whose no-dependency rule exists so the bytes are ours to diff, and it would decide parts of the output no test here could pin. |
 | **Render text to paths** | No font embedding and no encoding questions at all. The text stops being text: not selectable, not searchable, not copyable — which is precisely what criterion 2's ToUnicode clause exists to prevent. |
-| **Prove the parser against the shipped subset** | The obvious test, and the weak one: the expected values would have to come from the parser itself, so it would assert that the parser agrees with the parser. A constructed font has known metrics **by construction**, which is [ADR-0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md)'s argument in a different domain. |
+| **Prove the parser against the shipped subset** | The obvious test, and the weak one: the expected values would have to come from the parser itself, so it would assert that the parser agrees with the parser. A constructed font has known metrics **by construction**, which is [ADR-0089](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md)'s argument in a different domain. |
 
 ## Revisit when
 

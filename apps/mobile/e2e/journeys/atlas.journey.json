@@ -4,9 +4,9 @@
   "why": "F-091 criterion 2. Everything this walks past is covered by a render test, and a\nrender test cannot tell reachable from rendered: react-test-renderer mounts a screen\nwithout a navigator, so \"the row is in the tree\" and \"a person can tap it\" are the same\nsentence there and different sentences on a phone.",
   "steps": [
     { "do": "launch", "clearState": true },
-    { "do": "assertVisible", "key": "home.title", "route": "index.tsx" },
+    { "do": "assertVisible", "key": "home.title", "route": "(tabs)/index.tsx" },
     { "do": "tap", "key": "home.openAtlas" },
-    { "do": "assertVisible", "key": "atlas.title", "route": "atlas/index.tsx" },
+    { "do": "assertVisible", "key": "atlas.title", "route": "(tabs)/atlas/index.tsx" },
     { "do": "assertVisible", "key": "atlas.filters" },
     { "do": "tap", "key": "atlas.search" },
     { "do": "inputText", "colour": "aki-batake", "field": "romaji" },
@@ -16,12 +16,12 @@
       "do": "assertVisible",
       "colour": "aki-batake",
       "field": "kanji",
-      "route": "atlas/[slug].tsx"
+      "route": "(tabs)/atlas/[slug].tsx"
     },
     { "do": "assertVisible", "key": "detail.provenance" },
     { "do": "assertVisible", "key": "prov.source" },
     { "do": "assertVisible", "key": "detail.coordinates" },
     { "do": "back" },
-    { "do": "assertVisible", "key": "atlas.title", "route": "atlas/index.tsx" }
+    { "do": "assertVisible", "key": "atlas.title", "route": "(tabs)/atlas/index.tsx" }
   ]
 }

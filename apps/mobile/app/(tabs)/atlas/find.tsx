@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { Finder } from '../src/screens/Finder';
+import { Finder } from '../../../src/screens/Finder';
 
 /**
  * The route. Navigation options and one callback.

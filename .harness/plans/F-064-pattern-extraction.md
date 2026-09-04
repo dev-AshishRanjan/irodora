@@ -32,7 +32,7 @@ is blocked. And there is no pattern test corpus: nothing matching `*pattern*` ex
 
 So this feature has to define both, and **that is an ADR, not a choice made in passing** —
 golden rule 7, and golden rule 11 twice over, because an accuracy target is a claim about
-accuracy. ADR-0081 is part of this feature.
+accuracy. ADR-0089 is part of this feature.
 
 **The target is derived rather than picked.** The corpus is *constructed*, so its ground truth
 is exact by construction — a striped image built from two known colours in a known ratio has no
@@ -105,7 +105,7 @@ Five decisions, each of which has a plausible wrong version:
 | 1 | The constructed corpus generator — stripes, checks, blocks, print, **and a blended-edge variant** | `test` |
 | 2 | `extractPattern`: median cut, proportions, ranking | `test` |
 | 3 | The accuracy assertion over the corpus, at the ADR's target | `test`, `test:golden` |
-| 4 | ADR-0081; the feature's `package` field corrected | `state` |
+| 4 | ADR-0089; the feature's `package` field corrected | `state` |
 
 ## The fixture must not be too clean, and this is where that bites
 

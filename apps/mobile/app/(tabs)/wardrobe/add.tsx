@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Stack } from 'expo-router';
-import { AddGarment } from '../../src/screens/AddGarment';
-import { takeReading } from '../../src/lens/handoff';
-import { devicePicker } from '../../src/wardrobe/picker';
-import { deviceRepository } from '../../src/store/repository';
+import { AddGarment } from '../../../src/screens/AddGarment';
+import { takeReading } from '../../../src/lens/handoff';
+import { devicePicker } from '../../../src/wardrobe/picker';
+import { deviceRepository } from '../../../src/store/repository';
 
 /**
  * The route. Navigation options, and the two wires the screen cannot make itself.

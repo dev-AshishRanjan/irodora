@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Stack } from 'expo-router';
-import { Measure, type ReferenceLibrary } from '../src/screens/Measure';
-import { allEntries, colorFor, CORPUS_LABEL, entryBySlug } from '../src/corpus';
-import { deviceRepository } from '../src/store/repository';
-import { deviceLocale } from '../src/i18n/index';
+import { Measure, type ReferenceLibrary } from '../../../src/screens/Measure';
+import { allEntries, colorFor, CORPUS_LABEL, entryBySlug } from '../../../src/corpus';
+import { deviceRepository } from '../../../src/store/repository';
+import { deviceLocale } from '../../../src/i18n/index';
 
 /**
  * The route. Navigation options, and the libraries the screen cannot assemble itself.

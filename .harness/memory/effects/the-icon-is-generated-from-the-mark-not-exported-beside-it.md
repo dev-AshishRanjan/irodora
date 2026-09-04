@@ -48,7 +48,7 @@ string appears in that union and the check reads string literals.
 It was right to complain and wrong about the fact. **A type literal is not a painted pixel.**
 Nothing rendered at 72 px; a union member only says something *could*. Leaving it would have
 closed F-146's exemption with a promise instead of a surface — which is exactly the laundering
-[ADR-0080](../../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+[ADR-0088](../../../docs/adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
 exists to prevent, arriving from a direction that ADR does not anticipate.
 
 The union was narrowed instead. **A token can be "reached" by a type that offers it and by

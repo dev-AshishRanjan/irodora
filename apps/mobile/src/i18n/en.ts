@@ -25,6 +25,14 @@
  */
 
 export const en = {
+  // THE TAB BAR (F-145). One word each, because the bar sets them at 10px uppercase and a
+  // two-word tab wraps or truncates on a narrow phone. They are the product's own names for
+  // these surfaces (BRAND.md section 8) rather than generic ones: Atlas, not Library.
+  'tab.home': 'Home',
+  'tab.atlas': 'Atlas',
+  'tab.lens': 'Lens',
+  'tab.wardrobe': 'Wardrobe',
+  'tab.profile': 'Profile',
   'home.title': 'The engine is running on this device',
   'home.offline': 'Computed here, offline. Nothing was sent anywhere.',
   'colour.hex': 'Hex',

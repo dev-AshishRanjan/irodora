@@ -43,7 +43,7 @@ is push navigation over a button list.
 
 **And every gate was green**, because each gap had been individually declared and justified in
 [`unreached-tokens.json`](../../.harness/verification/unreached-tokens.json). That file is
-addressed by [ADR-0080](../adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md).
+addressed by [ADR-0088](../adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md).
 
 > The [`visual-taste`](../../.harness/skills/visual-taste/SKILL.md) skill predicted this exact
 > failure and named it: *"the first wireframe pass produced a correct-but-lifeless spec

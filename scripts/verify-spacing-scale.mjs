@@ -301,11 +301,11 @@ function run() {
     );
 
   /*
-   * REPORTED HERE, ENFORCED IN `verify-token-reach.mjs` (F-140, ADR-0080).
+   * REPORTED HERE, ENFORCED IN `verify-token-reach.mjs` (F-140, ADR-0088).
    *
    * Until F-140 this line was the only thing anywhere that noticed an unapplied step, and it
    * was yellow — which is how four editorial steps stayed unused across two releases while
-   * every gate was green. ADR-0080 makes an unreached step a FAILURE with a named owner.
+   * every gate was green. ADR-0088 makes an unreached step a FAILURE with a named owner.
    *
    * But the failing check belongs in `verify-token-reach.mjs` rather than here, and the reason
    * is that the two gates can see different things. This one reads style declarations, so it
@@ -322,7 +322,7 @@ function run() {
       `  ${YELLOW}!${OFF} ${DIM}${String(unusedSteps.length)} step(s) with no literal or ` +
         `resolvable reference here: ${unusedSteps.join(', ')}. NOT a verdict — this check ` +
         `cannot see nativeSpacing[step]. verify-token-reach.mjs owns the failing check ` +
-        `(ADR-0080).${OFF}`,
+        `(ADR-0088).${OFF}`,
     );
 
   if (offBase.length > 0)

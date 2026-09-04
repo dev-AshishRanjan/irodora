@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Stack } from 'expo-router';
-import { ProfileSetup } from '../src/screens/ProfileSetup';
-import { deviceRepository } from '../src/store/repository';
-import { takeReading } from '../src/lens/handoff';
+import { ProfileSetup } from '../../../src/screens/ProfileSetup';
+import { deviceRepository } from '../../../src/store/repository';
+import { takeReading } from '../../../src/lens/handoff';
 
 /**
  * The route. Navigation options and the store, and nothing else.

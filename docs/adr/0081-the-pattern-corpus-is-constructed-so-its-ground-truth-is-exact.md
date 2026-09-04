@@ -1,4 +1,4 @@
-# ADR-0081 — The pattern corpus is constructed, so its ground truth is exact
+# ADR-0089 — The pattern corpus is constructed, so its ground truth is exact
 
 ## Status
 

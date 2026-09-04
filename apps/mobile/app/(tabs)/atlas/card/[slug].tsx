@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ColourCard } from '../../src/screens/ColourCard';
+import { ColourCard } from '../../../../src/screens/ColourCard';
 
 /**
  * The colour card route. Navigation options and the parameter, and nothing else.

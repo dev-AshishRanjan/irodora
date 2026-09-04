@@ -1,7 +1,7 @@
 # E-057 — Spacing is a step name, so a number cannot reach a screen
 
 **Link:** `packages/ui/src/layout.tsx#SpacingStep` → `Surface.tsx`, every screen, `layout.test.tsx`,
-[ADR-0080](../../../docs/adr/0080-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
+[ADR-0088](../../../docs/adr/0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md)
 **Guard:** `gate:typecheck` **Severity:** medium **Feature:** F-140
 
 ---
