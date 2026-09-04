@@ -1283,10 +1283,97 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
-      draw(<Lens permission="granted" diagnostic="the frame has no CPU pixel buffer" />, theme),
+      draw(
+        <Lens
+          permission="granted"
+          mode="live"
+          diagnostic="the frame has no CPU pixel buffer"
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+        />,
+        theme,
+      ),
   },
   {
-    name: 'screens/Lens (reading)',
+    /*
+     * AT REST, AND IT IS THE STATE MOST PEOPLE WILL SEE MOST OFTEN (F-160).
+     *
+     * Still mode with nothing captured: a preview, the shutter, the two mode chips and the
+     * sentence that says what the chosen mode does. It has no readout of any kind, which is the
+     * point — a Lens nobody has asked anything of has read nothing.
+     */
+    name: 'screens/Lens (still, at rest)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens permission="granted" onCapture={() => undefined} onModeChange={() => undefined} />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * LIVE, WITH THE STRIP UP. FR-13's continuous pick draws a swatch, a hex, an OKLCh line and
+     * a name — none of which the resting state has, and all of which have to meet the same
+     * contrast and type rules as the sheet does.
+     */
+    name: 'screens/Lens (live)',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, displayFromOklch(readingOklch(SAMPLE_READING)).hex],
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          mode="live"
+          live={SAMPLE_READING}
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * MID-CAPTURE. The shutter is `loading`, which changes both its label and its fill, and a
+     * busy control still has to clear contrast — the state where that is easiest to get wrong.
+     */
+    name: 'screens/Lens (awaiting a capture)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          awaiting
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE CAPTURE THAT NEVER CAME BACK. Its own subject because the sentence is drawn at
+     * `foreground` rather than `foreground.2` — it is the one line on this screen reporting
+     * that something the person did produced nothing, and it should not be quieter than the
+     * hint above it.
+     */
+    name: 'screens/Lens (nothing was read)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          failed
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    name: 'screens/Lens (a capture on screen)',
     kind: 'static',
     /*
      * The reading's OWN colour is a declared sample value.
@@ -1305,7 +1392,10 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(
         <Lens
           permission="granted"
-          reading={SAMPLE_READING}
+          capture={SAMPLE_READING}
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+          onDismiss={() => undefined}
           onUseForProfile={() => undefined}
           /*
             BOTH OFFERS (F-125). The wardrobe hand-off draws a second Button and a second note,
@@ -2768,7 +2858,7 @@ describe('the Lens readout carries what the engine classified (F-149, FR-17, FR-
   };
 
   const shown = (reading: LensReading): string =>
-    textOf(draw(<Lens permission="granted" reading={reading} />, 'light')).join(' \u0000 ');
+    textOf(draw(<Lens permission="granted" capture={reading} />, 'light')).join(' \u0000 ');
 
   it('shows the quality band — the FR-18 word that reached no screen until now', () => {
     // The engine has classified every capture since R2 and nothing rendered it. What the
@@ -2825,9 +2915,11 @@ describe('the Lens says why there is no reading (F-119)', () => {
   const why = 'the frame has no CPU pixel buffer';
 
   it('shows the reason in the empty state', () => {
-    const text = textOf(draw(<Lens permission="granted" diagnostic={why} />, 'dark')).join(
-      '\u0000',
-    );
+    // LIVE MODE, because that is the only state in which the app is waiting for a frame at all.
+    // In still mode nothing has been asked for, so there is nothing to be waiting on — F-160.
+    const text = textOf(
+      draw(<Lens permission="granted" mode="live" diagnostic={why} />, 'dark'),
+    ).join('\u0000');
     expect(text).toContain(why);
     expect(text).toContain(en['lens.waiting']);
   });
@@ -2838,7 +2930,7 @@ describe('the Lens says why there is no reading (F-119)', () => {
      * the screen would be arguing with itself — which is worse than saying nothing.
      */
     const text = textOf(
-      draw(<Lens permission="granted" reading={SAMPLE_READING} diagnostic={why} />, 'dark'),
+      draw(<Lens permission="granted" capture={SAMPLE_READING} diagnostic={why} />, 'dark'),
     ).join('\u0000');
     expect(text).not.toContain(why);
   });
@@ -2854,8 +2946,22 @@ describe('the Lens says why there is no reading (F-119)', () => {
     expect(text).toContain(en['lens.noReading']);
   });
   it('shows nothing extra when there is no diagnostic', () => {
-    const text = textOf(draw(<Lens permission="granted" />, 'dark')).join('\u0000');
+    const text = textOf(draw(<Lens permission="granted" mode="live" />, 'dark')).join('\u0000');
     expect(text).toContain(en['lens.waiting']);
+  });
+
+  it('says nothing at all while nothing has been asked for (F-160)', () => {
+    /*
+     * THE RESTING STATE, and it is the decoy for every assertion above. The old screen said
+     * "Point the centre of the frame at a colour" the moment permission was granted, because it
+     * WAS reading — continuously, whether or not anybody wanted it to. Still mode is the fix,
+     * and a line telling somebody to wait for a reading nobody requested would be the old
+     * behaviour surviving in the copy.
+     */
+    const text = textOf(draw(<Lens permission="granted" />, 'dark')).join('\u0000');
+    expect(text).not.toContain(en['lens.waiting']);
+    expect(text).toContain(en['lens.capture']);
+    expect(text).toContain(en['lens.mode.stillHint']);
   });
 });
 

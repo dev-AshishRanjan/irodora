@@ -44,6 +44,15 @@ export type CaptureMode = (typeof CAPTURE_MODES)[number];
  * when the pixels happen to be good. `manual` is a typed value — nothing was measured, so
  * there is nothing to be uncertain about.
  *
+ * `precision` is REACHED, as of F-160, and for a long time it was not: the viewfinder read
+ * every frame as `live`, so the product had never shown anybody a colour that was not
+ * discounted for an unsettled crosshair. A frame taken because somebody aimed and pressed is the interaction
+ * FR-15 and the PRD's J2 journey both call a precision pick, and
+ * [ADR-0091](../../../../docs/adr/0091-a-deliberate-capture-is-fr-15s-precision-pick.md) argues
+ * that against [ADR-0087](../../../../docs/adr/0087-a-calibrated-reading-does-not-get-a-higher-confidence-until-it-is-measured.md):
+ * these are PENALTIES for weak interactions, and not applying one whose stated reason does not
+ * hold is a different act from claiming a reading is more accurate.
+ *
  * Conventions, not measurements (NFR-2).
  */
 export const MODE_CEILING: Readonly<Record<CaptureMode, number>> = {

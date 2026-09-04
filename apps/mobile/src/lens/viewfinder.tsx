@@ -45,7 +45,7 @@
  * F-097's attested criterion, not a claim this file gets to make.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type DimensionValue } from 'react-native';
 import {
   Camera,
@@ -58,6 +58,7 @@ import {
 import { createSynchronizable, scheduleOnRN } from 'react-native-worklets';
 import { useTheme } from '@irodora/ui';
 import { readCaptureSpace, sampleStride, type FrameSample } from './camera';
+import { modeFor, type CaptureKind, type SampleDemand } from './capture';
 import { read } from './modes';
 import type { CaptureSpace, LensReading } from './reading';
 // From `./permission`, which imports nothing native — so the mapping stays testable while
@@ -130,12 +131,33 @@ const CORNERS = [
   },
 ] as const;
 
-/** FR-13's mode, and the ceiling that goes with it (`MODE_CEILING.live` is 0.7). */
-const MODE = 'live' as const;
+/**
+ * How long a demand for frames waits before it says nothing arrived.
+ *
+ * Two seconds is long enough that a working camera has delivered many frames and short enough
+ * that somebody is still holding the phone up.
+ */
+const FRAME_TIMEOUT_MS = 2000;
 
 export interface ViewfinderProps {
-  /** Called with each reading the frame output produces. */
-  readonly onReading: (reading: LensReading) => void;
+  /**
+   * What this viewfinder is being asked for (F-160).
+   *
+   * **`off` is the resting state**, and it is the whole of what "optimised and controlled"
+   * meant when it was reported. The worklet reads this before it touches the pixel buffer, so
+   * an idle Lens costs one compare per frame instead of a walk over a region, a bridge hop and
+   * a render several times a second.
+   */
+  readonly demand: SampleDemand;
+  /**
+   * Called with each reading the frame output produces, and **what it was sampled for**.
+   *
+   * The kind travels with the reading rather than being looked up when it lands: a frame is in
+   * flight for a few milliseconds, and reading the demand at delivery time would occasionally
+   * label a live frame as a deliberate capture. The two carry different confidence ceilings
+   * (ADR-0091), so that is a claim about a reading rather than a cosmetic mix-up.
+   */
+  readonly onReading: (reading: LensReading, of: CaptureKind) => void;
   /**
    * Called when the frame output produces no reading, with the reason.
    *
@@ -169,7 +191,11 @@ export function useLensPermission(): { permission: LensPermission; request: () =
  * with no camera is one this feature does not work on, and the screen's own empty state already
  * says there is no reading.
  */
-export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.JSX.Element | null {
+function ViewfinderView({
+  demand,
+  onReading,
+  onDiagnostic,
+}: ViewfinderProps): React.JSX.Element | null {
   const { colors } = useTheme();
   const device = useCameraDevice('back');
   const seenFrame = useRef(false);
@@ -199,6 +225,20 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
    *
    * The poll does nothing at all while the push is working — see `pushed` below.
    */
+  /**
+   * What the frame thread should be doing, where the frame thread can read it.
+   *
+   * A `Synchronizable` because a worklet cannot read a ref: the JS runtime's memory is not the
+   * frame runtime's. Mirrored from the prop by an effect rather than captured in the worklet's
+   * closure, because capturing it would rebuild `onFrame` on every change — and rebuilding the
+   * frame output is a session reconfiguration, which is a visible stutter in the preview for
+   * something that should be a single write.
+   */
+  const demanded = useMemo(() => createSynchronizable<SampleDemand>('off'), []);
+  useEffect(() => {
+    demanded.setBlocking(demand);
+  }, [demanded, demand]);
+
   const latest = useMemo(() => createSynchronizable<FrameSample | null>(null), []);
   const refusal = useMemo(() => createSynchronizable<string | null>(null), []);
   const thrown = useMemo(() => createSynchronizable<string | null>(null), []);
@@ -218,16 +258,22 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
    */
   const [space, setSpace] = useState<CaptureSpace>('unknown');
 
-  /** Reduce a frame sample to a reading, on the JS thread, through the engine. */
+  /**
+   * Reduce a frame sample to a reading, on the JS thread, through the engine.
+   *
+   * `of` is the demand the frame was SAMPLED under, forwarded from the worklet rather than read
+   * from the prop here — see {@link ViewfinderProps.onReading}.
+   */
   const deliver = useCallback(
-    (sample: FrameSample) => {
+    (sample: FrameSample, of: CaptureKind) => {
       seenFrame.current = true;
       pushed.current = true;
       onReading(
-        read(MODE, {
+        read(modeFor(of), {
           region: { samples: sample.samples, width: sample.width, height: sample.height },
           space: sample.space,
         }),
+        of,
       );
     },
     [onReading],
@@ -253,10 +299,19 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
   /*
    * THE ONE FAILURE NO FRAME CAN REPORT: no frames at all. If the output never starts, `onFrame`
    * never runs, so neither `deliver` nor `report` is ever reached and the screen would wait
-   * forever with nothing to say. Two seconds is long enough that a working camera has delivered
-   * many frames and short enough that somebody is still holding the phone up.
+   * forever with nothing to say.
+   *
+   * SCOPED TO A DEMAND (F-160), and it has to be. A Lens at rest is not asking for frames, so a
+   * timer running there would report "the camera delivered no frames" about a camera nobody had
+   * asked anything of — a fault message for the resting state of the screen.
+   *
+   * `seenFrame` resets with each new demand, because each one is a fresh expectation. If the
+   * camera is genuinely broken, every shutter press says so, which is right: the person pressed,
+   * and nothing came back.
    */
   useEffect(() => {
+    if (demand === 'off') return undefined;
+    seenFrame.current = false;
     const timer = setTimeout(() => {
       if (seenFrame.current) return;
       const frames = entered.getBlocking();
@@ -265,11 +320,11 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
           ? 'the frame processor was never called — the camera delivered no frames to it'
           : `the frame processor ran ${String(frames)} time(s) but nothing reached the app`,
       );
-    }, 2000);
+    }, FRAME_TIMEOUT_MS);
     return () => {
       clearTimeout(timer);
     };
-  }, [onDiagnostic, entered]);
+  }, [demand, onDiagnostic, entered]);
 
   /*
    * THE SECOND DELIVERY PATH.
@@ -291,6 +346,10 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
   useEffect(() => {
     const id = setInterval(() => {
       if (pushed.current) return;
+      // The fallback path obeys the same demand the worklet does, or a Lens at rest would keep
+      // delivering the last sample the frame thread happened to leave behind.
+      const want = demanded.getDirty();
+      if (want === 'off') return;
 
       /*
        * A READING BEATS AN ERROR, and the order is the whole point. If it is `scheduleOnRN`
@@ -303,10 +362,11 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
       if (sample !== null) {
         seenFrame.current = true;
         onReading(
-          read(MODE, {
+          read(modeFor(want), {
             region: { samples: sample.samples, width: sample.width, height: sample.height },
             space: sample.space,
           }),
+          want,
         );
         return;
       }
@@ -325,7 +385,7 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
     return () => {
       clearInterval(id);
     };
-  }, [latest, refusal, thrown, onReading, onDiagnostic]);
+  }, [latest, refusal, thrown, demanded, onReading, onDiagnostic]);
 
   const frameOutput = useFrameOutput({
     /*
@@ -357,6 +417,17 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
       // FIRST, before anything that can throw: the frame thread reached this callback.
       entered.setBlocking((n) => n + 1);
       try {
+        /*
+         * THE GATE, AND IT IS THE POINT OF F-160.
+         *
+         * Counted first and checked second: `entered` still rises while the Lens is at rest, so
+         * the diagnostic can tell "no frames are arriving" from "frames are arriving and nobody
+         * asked for a colour". Everything expensive is below this line — the pixel-buffer read,
+         * the walk over the region, the bridge hop, the render.
+         */
+        const want = demanded.getBlocking();
+        if (want === 'off') return;
+
         const outcome = sampleFrame(frame, space);
 
         /*
@@ -373,7 +444,7 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
         if (outcome.ok) latest.setBlocking(outcome.sample);
         else refusal.setBlocking(outcome.why);
 
-        if (outcome.ok) scheduleOnRN(deliver, outcome.sample);
+        if (outcome.ok) scheduleOnRN(deliver, outcome.sample, want);
         else scheduleOnRN(report, outcome.why);
       } catch (error: unknown) {
         /*
@@ -472,6 +543,17 @@ export function Viewfinder({ onReading, onDiagnostic }: ViewfinderProps): React.
     </View>
   );
 }
+
+/**
+ * The live viewfinder, memoised.
+ *
+ * `memo` is not decoration here. In live mode the screen above re-renders at frame rate — that
+ * is what a live readout IS — and every one of those renders would otherwise rebuild the
+ * `Camera` element and its frame output. All three props are stable across those renders
+ * (`demand` is a string, the two callbacks are `useCallback`s over a dispatch), so React bails
+ * out and the camera session is left alone.
+ */
+export const Viewfinder = memo(ViewfinderView);
 
 /**
  * Walk the centre region of a frame and return a bounded sample.

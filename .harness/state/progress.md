@@ -8,6 +8,145 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-160 DONE · the Lens captures on purpose
+
+### Three symptoms, one missing concept
+
+Reported from a device: the result panel could not be dismissed, live mode was *"uncontrolled and
+unusable"*, and there was no way to stop it. Those are not three tweaks. **The Lens had no idea
+what a capture was.** It sampled every frame, pushed a reading several times a second, and the
+panel was opened by the arrival of a reading — so a dismissal survived for one frame.
+
+Once a capture exists, all three follow. A panel is about *one* capture, so dismissing it means
+something. "Stop" is coherent because something is running. And sampling can be switched off,
+which is what "controlled" actually requires.
+
+### The latch is gone, and that is the fix
+
+F-158 answered the wrong question. A dismissal latch asks *has this person closed it*; the real
+question is *is there a capture to show*. Ask the second and the latch disappears:
+
+**the panel is open exactly when a held capture exists**, and dismissing clears the capture.
+
+No flag, no remembering that somebody said no, and no way for a frame to reopen what was closed.
+
+### The camera stops
+
+`demandFor` is `off` at rest in still mode **and** while a result is on screen. The worklet reads
+that before it touches the pixel buffer, so an idle Lens costs one compare per frame instead of a
+walk over a region, a bridge hop and a render.
+
+`entered` is still counted **above** the gate, deliberately — so the diagnostic can still tell
+*no frames are arriving* from *frames are arriving and nobody asked for a colour*.
+
+### The stop is the mode
+
+Two chips, not a third control. A toggle says what it will do next; a chip says what is true now,
+and *which mode is active* was exactly what could not be known. Choosing **Tap to read** while live
+is running **is** the stop. A separate Stop button would be a second way to say one thing, and the
+two would eventually disagree.
+
+### FR-15 is reachable for the first time
+
+Every reading this product had ever shown anybody was read as `live` and capped at **0.7**, because
+the viewfinder held `const MODE = 'live'`. A deliberate capture is the **precision pick** the PRD's
+J2 journey names, and [ADR-0091](../../docs/adr/0091-a-deliberate-capture-is-fr-15s-precision-pick.md)
+argues that against ADR-0087, which refused a ceiling raise for calibrated mode.
+
+The distinction it turns on: `MODE_CEILING` is a set of **penalties**, each documented with the
+interaction that earns it. Live's is for *"the person has not chosen a region and the camera has not
+settled"*. Not applying it to a frame where both are false is a different act from claiming a
+reading is more accurate — and every other ceiling still binds, so the number still comes from the
+capture space, the illumination and the quality.
+
+### The finding: a claim entered through a parameter (E-082)
+
+The live strip needed a name. Three names reordering fifteen times a second is unreadable, so:
+
+```ts
+export const LENS_LIVE_NAME_LIMIT = 1;
+```
+
+`nameColor` **threw**: *"a single answer is an identification, and this product does not assert
+that a colour IS a corpus entry"*.
+
+The premise was right and the conclusion was forbidden. Nothing looked wrong — `1` is a valid
+integer, it type-checks, it renders — and the screen would have shipped a swatch reading *this is
+Ai* underneath it. Claims discipline is usually discussed as **copy**; this was a `limit` argument,
+three layers from anything a person reads, chosen by someone thinking about legibility.
+
+**Cardinality is a claim.** One result is an identification; three are a comparison.
+
+The guard was in the right place: `packages/color-naming` knows nothing about screens and caught
+it anyway, because the constraint lives at the function that produces the answer rather than at
+each surface that consumes it. It **throws rather than clamping** — a clamp would have returned
+three names, the strip would have looked wrong, and the search would have gone to the layout.
+
+The layout problem had a better answer anyway: three names on **one** line.
+
+### Same family, second instance, same feature
+
+The demand travels **with** the sample from the frame thread:
+
+```ts
+scheduleOnRN(deliver, outcome.sample, want);   // not: read the current mode when it lands
+```
+
+A frame is in flight for milliseconds. Reading the mode at delivery would occasionally label a live
+frame a deliberate capture — and under ADR-0091 those carry different ceilings. That is a claim
+about a reading, decided by a race. Provenance is attached where the fact is created.
+
+### Gallery import left this feature
+
+Item 7 is now **F-166**, and the split is the point rather than a deferral. It is not a fourth
+control: reading pixels out of a picked image needs a **decoder**, and this repository has
+deliberately never had one — `packages/store/src/image.ts` bounds every wardrobe photograph by
+reading its header and says so in its own words, *"this module never decodes anything"*, because a
+decoder bomb is a few kilobytes that expands into gigabytes and a phone has no process to spend
+containing it.
+
+Two more questions come with it. An imported photograph has **no stated capture space and no stated
+illumination**, and may have been filtered or screenshotted — `MODE_CEILING` has no entry for that
+and inventing one is what ADR-0087 refuses. And *which part* of the image is FR-14 territory: the
+centre of a photograph is not the garment.
+
+Bundling a dependency decision, a security review and a claims question into a UX diff would have
+hidden all three. It is next in the loop.
+
+### The screen holds no state at all now
+
+Which is why the conformance registry draws **eight** Lens subjects where it drew four — still at
+rest, live, awaiting, nothing-was-read, plus the four that existed. None of those states could be
+reached from outside while the flag lived inside the component.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 5 color-golden · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** · 10 cvd · **11 content** · 12 perf · 15 security | **PASS** |
+| every mutation proof in the workflow | **caught** |
+
+710 mobile tests. **Gate 11 caught the Japanese copy**: 届, 試 and 止 were not in the committed font
+subset, which is ADR-0057 working exactly as designed — adding copy is changing the font.
+`generate-font-subset.mjs` regenerated it; 906 codepoints, 684 KB from a 9.6 MB source.
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**None of the worklet gating has run.** jest has no frame thread, so whether `demanded.getBlocking()`
+really returns `off` on a device — and whether the early return precedes the pixel-buffer read in the
+*emitted* worklet — is a device fact. F-138 already found this exact class once: the Worklets plugin
+unpacks a closure as the first statement of the body, and `verify-worklet-defaults.mjs` covers the
+parameter-default form of that mistake and not this one.
+
+**And the sheet is still invisible to every test here.** gorhom mounts its content open or shut, so
+"a drag dismisses it" — the thing originally reported — remains something only a phone can answer.
+
+---
+
 ## 2026-09-05 — F-162 DONE · icons, and the colour scan that could not see them
 
 ### A glyph and a word, not one or the other
@@ -456,7 +595,8 @@ somebody commits it.
 | # | reported | where it goes |
 |---|---|---|
 | 3, 2 | no safe area; overflow | **F-159** |
-| 5, 6, 7, 8 | capture modes, stop, gallery, PhonePe register | **F-160** |
+| 5, 6, 8 | capture modes, stop, PhonePe register | **F-160** |
+| 7 | read a colour from a gallery image | **F-166**, split out of F-160 |
 | 16, 9, 11 | soft-minimal register, roundness, rhythm | **F-161** |
 | 4, 12 | tab icons, icons where they earn it | **F-162** |
 | 10, 13 | selected states; stray outlines | **F-163** |

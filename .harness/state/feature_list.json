@@ -4785,15 +4785,15 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-159"
       ],
       "acceptance": [
-        "A reading is something a person takes: manual by default, with a live mode they choose",
+        "A reading is something a person takes: still by default, with a live mode they choose",
         "The result sheet can be dismissed and stays dismissed until the next capture",
-        "A gallery image can be read, not only the live camera",
-        "Live mode has a stop, and says which mode is active without being asked"
+        "Live mode has a stop, and says which mode is active without being asked",
+        "A Lens nobody has asked for a colour does not sample one"
       ],
       "verification": [
         "typecheck",
@@ -4801,7 +4801,62 @@
         "test",
         "a11y"
       ],
-      "notes": "THREE REPORTED SYMPTOMS, ONE MISSING CONCEPT: the Lens has no idea what A CAPTURE is. It reads continuously and pushes a new reading object several times a second, so F-158 wrote `useEffect(() => { if (reading !== null) setSheetOpen(true) }, [reading])` and every frame forces the sheet back open — dismiss it and the next frame reopens it. The note I wrote at the time said \"the next reading is a new answer to the question they went back to ask\", which is true of a discrete capture and exactly wrong for a stream. AUTO/MANUAL, THE STOP CONTROL AND GALLERY IMPORT ARE NOT THREE TWEAKS — all three follow from making a capture a thing that exists. Once it does, a sheet is about ONE capture and dismissal means something; a gallery image is a third source beside live and manual; and \"stop\" is coherent because there is something running. THE REGISTER IS A PAYMENT APP: the reporter named PhonePe, and the comparison is apt — a scanner with one obvious action, the frame doing the work, and no reading until the person asks for one."
+      "notes": "THREE REPORTED SYMPTOMS, ONE MISSING CONCEPT: the Lens has no idea what A CAPTURE is. It reads continuously and pushes a new reading object several times a second, so F-158 wrote `useEffect(() => { if (reading !== null) setSheetOpen(true) }, [reading])` and every frame forces the sheet back open — dismiss it and the next frame reopens it. The note I wrote at the time said \"the next reading is a new answer to the question they went back to ask\", which is true of a discrete capture and exactly wrong for a stream. AUTO/MANUAL, THE STOP CONTROL AND GALLERY IMPORT ARE NOT THREE TWEAKS — all three follow from making a capture a thing that exists. Once it does, a sheet is about ONE capture and dismissal means something; a gallery image is a third source beside live and manual; and \"stop\" is coherent because there is something running. THE REGISTER IS A PAYMENT APP: the reporter named PhonePe, and the comparison is apt — a scanner with one obvious action, the frame doing the work, and no reading until the person asks for one. DONE 2026-09-05. THE CONCEPT LANDED AND THE THREE SYMPTOMS WENT WITH IT. A capture is now a thing (`lens/capture.ts`), and the F-158 defect is gone for a STRUCTURAL reason rather than a latched one: the panel is open exactly when a held capture exists, so a dismissal that clears the capture cannot be undone by a frame. The dismissal latch is deleted, along with its test. THE SAMPLING STOPS, which is what \"uncontrolled and unusable\" was about: `demandFor` is `off` at rest in still mode AND while a result is on screen, the worklet reads that before it touches the pixel buffer, and `entered` is still counted above the gate so the diagnostic can tell \"no frames arriving\" from \"frames arriving and nobody asked\". THE STOP IS THE MODE: two chips rather than a third control, because a toggle says what it will do next while a chip says what is true now — and which mode was active was precisely what could not be known. FR-15 IS REACHABLE FOR THE FIRST TIME: every reading the product had ever shown was read as `live` and capped at 0.7; a deliberate capture is the precision pick the PRD J2 journey names, argued in ADR-0091 against ADR-0087 — these are PENALTIES for weak interactions, and not applying one whose stated reason does not hold is a different act from claiming accuracy. THE SCREEN NOW HOLDS NO STATE AT ALL, so the conformance registry draws eight Lens subjects where it drew four — still, live, awaiting, failed, and the four that existed. GALLERY IMPORT LEFT THIS FEATURE and is F-166. It is not a fourth control: reading pixels out of a picked image needs a DECODER this app does not have and deliberately avoids — `packages/store/src/image.ts` bounds hostile images by reading headers and says in its own words \"this module never decodes anything\". Adding one is a dependency decision with a security review, and an imported photograph has no stated illumination and may have been edited, which is a claims question with no answer in `MODE_CEILING`. Bundling that into a UX feature would have hidden a security and claims decision inside a screen diff. THE FINDING (E-082): `nameColor` REFUSED a limit of 1 for the live readout — one name under a swatch is an identification — and caught a claim three layers from the screen that would have made it.",
+      "plan": "plans/F-160-the-lens-captures-on-purpose.md",
+      "effects": [
+        "E-082"
+      ],
+      "attested": [
+        {
+          "criterion": "A Lens nobody has asked for a colour does not sample one",
+          "verifiedBy": "THE DECISION IS PROVEN; THE SAVING IS NOT MEASURED. `demandFor` is asserted `off` at rest and while a result is up, and that assertion is the decoy the rest of the suite needs — every other test in `lens-capture.test.ts` would pass against a machine that sampled continuously. WHAT NO GATE HERE CAN SEE is the frame thread. jest has no worklet runtime, so whether `demanded.getBlocking()` actually returns `off` on a device, whether the early return really precedes the pixel-buffer read in the emitted worklet, and what any of it does to battery or thermals are all device facts. The specific risk is the one F-138 already found once: the Worklets plugin unpacks a closure as the FIRST statement of the body, and a captured Synchronizable read before that would throw on every frame — `verify-worklet-defaults.mjs` covers the parameter-default form of that mistake and nothing covers this one.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The result sheet can be dismissed and stays dismissed until the next capture",
+          "verifiedBy": "PROVEN AS A SEQUENCE, UNVERIFIABLE AS A GESTURE. The reducer is replayed with the exact sequence reported from the device — capture, dismiss, four live frames — and the panel stays shut. WHAT IS STILL UNSEEN is the sheet itself: gorhom mounts its content whether open or shut and visibility is animation state on the UI thread, so no rendered assertion in this repository can distinguish a panel that closed from one that did not. Whether a drag-down actually dismisses, and whether the scrim tap reaches `onOpenChange`, are the two things the reporter originally could not do and neither is checkable here.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Live mode has a stop, and says which mode is active without being asked",
+          "verifiedBy": "THE STATE IS CHECKED; THE READING OF IT IS NOT. `Chip` carries selection in three channels (fill, a ✓ in the accessible name, `accessibilityState.selected`), the conformance registry draws both modes in both themes, and the reducer proves choosing `still` sets the demand to `off`. WHAT A PERSON WOULD JUDGE is whether two chips and a sentence actually read as \"this is running, press here to stop it\" while holding a phone — and whether \"Tap to read\" is understood as the stop, which is the one piece of this design that asks somebody to make an inference. A separate button labelled Stop was rejected as a second way to say one thing; that trade has not been tested on anybody.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-166",
+      "title": "A colour can be read from an image, not only from the camera",
+      "requirements": [
+        "FR-40",
+        "FR-14",
+        "NFR-14",
+        "NFR-21"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-160"
+      ],
+      "acceptance": [
+        "An image from the library can be read for its colour, through the same engine path as a capture",
+        "The bytes are bounded before anything decodes them, and a hostile file is refused with a reason",
+        "The reading says it came from a photograph, and its confidence reflects what a photograph cannot state",
+        "The person chooses which part of the image is read, rather than the app assuming the centre"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "security"
+      ],
+      "notes": "SPLIT OUT OF F-160, and the split is the point rather than a deferral. It was reported as one of four Lens tweaks — \"in lens add option for import image from gallery\" — and it is not a control. IT NEEDS A DECODER, and this repository has deliberately never had one: `packages/store/src/image.ts` bounds every wardrobe photograph by READING ITS HEADER and says so in its own words — \"every limit below is enforced by reading the header, and this module never decodes anything\" — because a decoder bomb is a few kilobytes that expands into gigabytes and there is no process on a phone to spend containing it. So the first question is HOW pixels are obtained: a platform decoder through a native module (Skia `MakeImageFromEncoded` + `readPixels` is the standard answer, and a large dependency), or a pure-JS decoder running on already-bounded bytes (no native build, and it is our code doing the risky part). That is an ADR and a security review, not a screen diff. THE SECOND QUESTION IS A CLAIM: an imported photograph has no stated capture space, no stated illumination, and may have been filtered, re-encoded, or screenshotted from a shop listing. `MODE_CEILING` has no entry for that and inventing one is exactly what ADR-0087 refuses to do without a measurement. THE THIRD IS FR-14 territory: which part of the image? The centre of a photograph is not the garment, and assuming it is would produce a confident reading of somebody's sofa. WHY IT IS STILL \"must\": FR-40 lists image upload as one of four ways to add a garment, and the Lens is where a person will look for it."
     },
     {
       "id": "F-161",

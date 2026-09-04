@@ -253,13 +253,22 @@ export const en = {
   'lens.title': 'Lens',
   'lens.privacy':
     'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
-  'lens.viewfinder': 'Camera view. The colour under the centre of the frame is read continuously.',
+  'lens.viewfinder': 'Camera view. The Lens reads the colour under the centre of the frame.',
   'lens.askTitle': 'The Lens needs the camera',
   'lens.askBody': 'Only to read the colour in front of it. No picture is kept.',
   'lens.ask': 'Allow the camera',
   'lens.deniedTitle': 'The camera is not available',
   'lens.deniedBody':
     'Camera access was turned off for Irodora. You can turn it back on in your device settings. Everything else in the app works without it.',
+  'lens.capture': 'Read this colour',
+  'lens.capturing': 'Reading…',
+  'lens.captureFailed': 'Nothing was read. The camera sent no frame to read from — try again.',
+  'lens.mode.still': 'Tap to read',
+  'lens.mode.live': 'Live',
+  'lens.mode.stillHint': 'Nothing is read until you tap. The camera is showing a preview only.',
+  'lens.mode.liveHint':
+    'The colour under the frame is read continuously. Choose “Tap to read” to stop.',
+  'lens.liveReadout': 'Reading now',
   'lens.waiting': 'Point the centre of the frame at a colour.',
   'lens.noReading': 'No colour has been read yet.',
   'lens.sheetTitle': 'This reading',

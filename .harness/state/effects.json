@@ -2967,6 +2967,47 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-082",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/capture.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/color-naming"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/color-naming"
+      ],
+      "severity": "high",
+      "guard": "gate:test — `nameColor` refuses a limit below three at the function that produces the answer, so the claim was caught three layers from the screen that would have made it; `lens-capture.test.ts` asserts the demand is `off` at rest, which is the decoy every other assertion in that file would pass without; gate:content named the three Japanese codepoints two new sentences added to the required set.",
+      "memory": "memory/effects/one-name-under-a-swatch-is-a-claim-and-the-engine-refused-it.md",
+      "rationale": "A CLAIM CAN ENTER THROUGH A PARAMETER. The Lens gained FR-13 live readout, and a list of three names reordering itself fifteen times a second is unreadable — so the limit was set to 1. The premise was right and the conclusion was forbidden: `nameColor` threw with \"a single answer is an identification, and this product does not assert that a colour IS a corpus entry (FR-7, ADR-0031)\". Nothing about the code looked wrong. 1 is a valid integer, the call type-checks, the strip renders, and the screen would have shipped a swatch reading THIS IS AI under it. Claims discipline is usually discussed as copy — NFR-21 lint over the word \"measured\" — and this was not copy; it was a `limit` argument chosen for a layout reason by somebody thinking about legibility. CARDINALITY IS A CLAIM: one result is an identification, three are a comparison, and the difference is not presentational. THE GUARD WAS IN THE RIGHT PLACE: `packages/color-naming` knows nothing about screens and caught it anyway, because the constraint lives at the function that produces the answer rather than at each surface that consumes it — a UI-side rule would have to be written per surface and the one written last would ship. `assertLimit` throws rather than clamping, deliberately, and the message says why; a clamp would have returned three names, the strip would have looked wrong, and the search would have gone to the layout for a defect that was in the reasoning. THE LAYOUT PROBLEM HAD A BETTER ANSWER — three names on ONE line rather than three — so the refusal cost the design nothing and found the better version. SAME FAMILY, SECOND INSTANCE, SAME FEATURE: the frame thread now samples under a demand (off/live/capture) and the demand TRAVELS WITH THE SAMPLE rather than being read when the sample lands. A frame is in flight for a few milliseconds; reading the mode at delivery would occasionally label a live frame as a deliberate capture, and under ADR-0091 those carry different confidence ceilings — a claim about a reading, decided by a race. Provenance is attached where the fact is created, never looked up where it arrives.",
+      "confidence": 0.92,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
