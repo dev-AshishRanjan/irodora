@@ -158,6 +158,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md](effects/an-exemption-that-names-no-owner-turns-unfinished-into-passing.md) — **E-058** · eleven individually-reasonable exemptions were an itemised description of an undesigned product, and the gate called it green; an exemption now names the feature that ends it.
 - [effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md](effects/the-icon-is-generated-from-the-mark-not-exported-beside-it.md) — **E-059** · one geometry, two renderers, so the shipped icon cannot drift from the mark in the app — and a type literal can make a token look reached while nothing draws it.
 - [effects/the-app-config-now-evaluates-design-tokens.md](effects/the-app-config-now-evaluates-design-tokens.md) — **E-060** · the Expo config is evaluated code now, so the launch screen and the first painted frame cannot disagree about the background.
+- [effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md](effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md) — **E-061** · a major-version peer mismatch sat under every gesture component with every gate green, and the first checker written to find it got two of three findings wrong by reimplementing its subject.
 
 ## Glossary
 

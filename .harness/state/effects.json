@@ -2305,6 +2305,39 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-061",
+      "from": {
+        "kind": "contract",
+        "ref": ".harness/verification/unsatisfied-peers.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-peer-deps.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/overlay.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "guard": "gate:lint (verify-peer-deps.mjs) — parses `pnpm peers check` and fails on any issue not declared, AND on a declaration matching nothing pnpm reports. Proven by seven cases over a fixed sample: both report shapes read, an undeclared issue surfaced, a declared one not, a dead acceptance reported, and empty output parsed rather than crashing.",
+      "memory": "memory/effects/a-peer-that-resolves-by-luck-is-not-a-dependency.md",
+      "rationale": "react-native-gesture-handler 3.2.1 is installed against heroui-native 1.0.8 declaring ^2.28.0 — a MAJOR version apart, under every gesture-driven component in the library — and nothing had noticed because nothing had asked. THE ACCEPTANCE IS WHAT COUPLES THESE: the register silences a real pnpm warning, so what may be WRAPPED in overlay.tsx now depends on what that register says is safe. The line was drawn by grepping the built library rather than by reading the docs, and the first draft got it wrong: Dialog looked like a portal-and-press component and lib/module/components/dialog/dialog.js imports GestureDetector for drag-to-dismiss. Popover and Tabs import nothing from gesture-handler, so those two ship and Dialog joins BottomSheet, Slider and Menu behind F-157. THE TRAP THIS LEAVES, said out loud: an acceptance is checked in both directions but nothing checks that its REASON is still true. The react-dom entry says this product has no web surface; the day a web target is considered that sentence is false and the gate stays green.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

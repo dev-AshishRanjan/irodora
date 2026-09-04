@@ -54,5 +54,6 @@ export {
   type WordmarkProps,
   type WordmarkSize,
 } from './brand.js';
+export { Popover, Tabs, type PopoverProps, type TabItem, type TabsProps } from './overlay.js';
 
 export const UI_VERSION = '0.0.0' as const;

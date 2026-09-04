@@ -15,6 +15,7 @@ import {
   Chip,
   EmptyState,
   Mark,
+  Popover,
   Row,
   Screen,
   SearchField,
@@ -23,6 +24,7 @@ import {
   Status,
   Surface,
   Swatch,
+  Tabs,
   Text,
   TextField,
   ThemeProvider,
@@ -88,6 +90,58 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           />
           <EmptyState message="No colour matches these filters." resolvedHere />
         </>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE OVERLAY FAMILY (F-143), RENDERED OPEN.
+     *
+     * `open` is forced rather than left to a press, and that is the whole reason this subject is
+     * worth having. A popover renders NOTHING when closed, so a subject that did not open it
+     * would check an empty tree and report that nothing was wrong with it — the shape of a
+     * conformance case that can only pass.
+     *
+     * Open, the gates can see the two things that matter: the scrim painting `backdrop`, which
+     * no surface in this product had ever painted, and the panel's own ground against the text
+     * on it. Both are real contrast questions and neither had been asked.
+     */
+    name: 'Popover',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Popover
+          open
+          triggerLabel="Why this reading?"
+          title="Mixed lighting"
+          closeLabel="Close"
+          description="Two light sources of different colour temperature reached the sample."
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * TABS, WITH A SELECTION. Rendering them all unselected would leave the selected treatment —
+     * a different ground, a heavier foreground, and `accessibilityState.selected` — checked by
+     * nothing, and that treatment is the only thing distinguishing one tab from another.
+     */
+    name: 'Tabs',
+    kind: 'static',
+    render: (_state, theme) =>
+      draw(
+        <Tabs
+          items={[
+            { value: 'harmony', label: 'Harmony' },
+            { value: 'vision', label: 'Colour vision' },
+          ]}
+          value="harmony"
+          onValueChange={() => undefined}
+        >
+          <Text size="body" color="foreground">
+            Ai-nezumi
+          </Text>
+        </Tabs>,
         theme,
       ),
   },

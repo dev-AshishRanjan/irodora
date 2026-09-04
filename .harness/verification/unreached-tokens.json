@@ -50,21 +50,21 @@
         "border.on.surface.3"
       ],
       "cites": "F-017, F-087",
-      "why": "Every component that draws a line reaches for `border.strong` instead — the boundary of an outlined control, which is the case the components actually have. `border` is the translucent decorative hairline, and no surface built so far wants one. The four `.on.*` forms are the pre-composited values the contrast gate measured, never something a component reads: a component reads the translucent token and lets the platform composite it.",
-      "closedBy": "F-143"
+      "why": "THE TRANSLUCENT DECORATIVE HAIRLINE, still painted by nothing. Every component that draws a line reaches for `border.strong` instead — the boundary of an OUTLINED control, where WCAG 1.4.11 applies directly and 3:1 is not optional. F-143 was the previous owner and did not close it, which is worth stating plainly rather than quietly re-assigning: the popover panel it added is an outlined surface and took `border.strong` like everything before it. A DECORATIVE hairline is a different thing — a rule between rows that separates without bounding, and this product has had no row list to put one between. The form controls (F-156) bring the first: a list group whose items need dividing but not enclosing. The four `.on.*` forms are permanent whatever happens to `border` itself — they are the pre-composited values the contrast gate measured, never something a component reads.",
+      "closedBy": "F-156"
     },
     {
       "group": "colour token",
       "tokens": [
-        "backdrop",
         "backdrop.on.background",
         "backdrop.on.surface.1",
         "backdrop.on.surface.2",
         "backdrop.on.surface.3"
       ],
       "cites": "F-026, F-043",
-      "why": "A scrim needs something to sit behind, and there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route. The first flow that needs one is the guided profile setup (F-026), and add-garment (F-043) after it. Same composite story as `border`: the `.on.*` forms are what the contrast gate measured, not what a component reads.",
-      "closedBy": "F-143"
+      "why": "THE FOUR PRE-COMPOSITED FORMS, and what is left of an entry that also held `backdrop` itself. F-143 painted the scrim: `Popover.Overlay` takes `backdrop`, which is the first time anything in this product dimmed the page behind something — the old reason read \"there is no dialog, bottom sheet or modal anywhere in the app yet\", and now there is. THESE FOUR ARE DIFFERENT IN KIND RATHER THAN IN SCHEDULE, which is why they take `closedBy: null`. `backdrop.on.background` and its siblings are the values the CONTRAST GATE composited so it could measure a translucent token against each ground it may sit on — an rgba() has no contrast ratio until something is behind it. A component never reads one: it reads the translucent token and lets the platform composite. No surface will ever paint them, so no feature can close this.",
+      "closedBy": null,
+      "permanentBecause": "ADR-0044 — the .on.* forms are what the contrast gate measured, not what a component reads: a component reads the translucent token and lets the platform composite it. No surface will ever paint them."
     },
     {
       "group": "colour token",
@@ -92,12 +92,11 @@
       "group": "radius step",
       "tokens": [
         "xs",
-        "lg",
         "xl"
       ],
       "cites": "F-017",
-      "why": "Steps of a scale that IS used — `sm`, `md`, `pill` and `swatch` are all read, so the scale itself is reaching components and only these three steps have found no surface. That is the ordinary state of a scale: some steps have found no surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it — which is what `nativeSpacing` was until F-095, and why that entry was here and is now gone. The distinction is worth keeping written down, because it decides whether an entry is a note or a defect.",
-      "closedBy": "F-143"
+      "why": "TWO STEPS OF A SCALE THAT IS USED. `sm`, `md`, `pill` and `swatch` are read, and F-143 added `lg` for the popover panel — the first raised surface in this product with a corner, which is why the step had found no home before. `xs` and `xl` have still found none. That is the ordinary state of a scale: some steps have not met their surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it, which is what `nativeSpacing` was until F-095 — and the distinction is what decides whether an entry here is a note or a defect. The form controls (F-156) are where a smaller and a larger radius arrive.",
+      "closedBy": "F-156"
     },
     {
       "group": "spacing step",

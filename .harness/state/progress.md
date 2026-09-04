@@ -8,6 +8,83 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-03 — F-143 DONE · the overlay family, and a peer nobody had asked about
+
+Scope narrowed twice, both times by measurement rather than by preference.
+
+### First: the rule disqualified half the list
+
+[`heroui-wrappers.md`](../rules/frontend/heroui-wrappers.md) — *"Wrap HeroUI when there is
+BEHAVIOUR to inherit. Do not wrap it for provenance."* Card, Avatar, Separator and ListGroup are
+styled boxes; `Surface` and `Stack` already are those, and wrapping adds a dependency edge that
+buys nothing. HeroUI's Alert is a **banner** and cannot carry
+[ADR-0044](../../docs/adr/0044-status-tokens-corrected-and-status-colour-is-text.md)'s three
+channels inline, so `Status` stays ours.
+
+### Second: `pnpm peers check` found something under everything
+
+**`react-native-gesture-handler` 3.2.1 installed against `heroui-native@1.0.8`'s declared
+`^2.28.0`** — a major version apart, under every gesture-driven component in the library. Expo
+SDK 57 ships v3; HeroUI has not caught up. Every gate was green, because nothing had asked.
+
+**Which components reach it was grepped, not assumed — and the first answer was wrong.** The
+acceptance draft called Dialog safe as a "portal-and-press" component;
+`lib/module/components/dialog/dialog.js` imports `GestureDetector` for drag-to-dismiss. Popover
+and Tabs import nothing from gesture-handler. So those two shipped, and **Dialog and Sheet moved
+to F-157** — which also has to deal with `@gorhom/bottom-sheet` being absent from the store
+entirely, so the sheet could never have rendered.
+
+### The gate was rewritten mid-feature, and that is the lesson
+
+The first `verify-peer-deps.mjs` walked the pnpm store and decided for itself what "satisfied"
+meant. It reported nine problems and **two of its three headline findings were false**:
+`tailwind-merge` looked undeclared because it was resolved from `packages/ui` rather than
+`apps/mobile`, which declares it; `expo-blur` and `@gorhom/bottom-sheet` looked missing when
+HeroUI declares both **optional**.
+
+`pnpm peers check` already answers this correctly. The gate now parses *its* output and adds only
+what pnpm lacks — a register of accepted mismatches with a reason and an owner, checked in both
+directions. [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]], and this one did
+not manage day one.
+
+### The conformance suite found a real defect in the first wrapper
+
+`Popover.Trigger` renders a bare pressable `View`, so a perfectly good `<Text>` passed as
+`trigger` became **a button with no role and no accessible name**, in both themes — with the
+scrim beside it as a full-screen unnamed tap target.
+
+The API changed in response: `triggerLabel` and `closeLabel` are strings the caller supplies, so
+the wrapper owns the role and the name and a caller **cannot** pass a trigger that has neither.
+That is the wrapper earning its place — removing the ways to be wrong, not re-exporting.
+
+### Two tokens reached for the first time
+
+`backdrop` — declared unreached since F-003 with the reason *"there is no dialog, bottom sheet or
+modal anywhere in the app yet"*. There is now a scrim. And `radius.lg`, by the popover panel: the
+first raised surface in the product with a corner.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test · 6 build · **8 a11y** · **9 contrast** | **PASS** |
+| `verify:peers:prove` — 7 cases | **PASS** |
+| the unnamed trigger | **caught by the conformance suite** |
+
+### Still owed
+
+**Nothing has mounted a portal on a phone.** That Popover and Tabs do not import gesture-handler
+is a fact about the built library. That they *work* is not established — jest renders a tree and
+has no native module to disagree with, and a major-version gesture stack is exactly the class of
+problem that appears at mount.
+
+**An acceptance silences a real warning, and nothing checks that its reason is still true.** The
+`react-dom` entry says this product has no web surface; the day one is considered, that sentence
+is false and the gate stays green.
+
+---
+
 ## 2026-09-03 — F-142 DONE · the app has an icon and a splash, generated from the mark
 
 `app.config.ts` had no `icon`, no `adaptiveIcon` and no `splash` — not misconfigured, **absent**

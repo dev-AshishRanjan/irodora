@@ -4087,15 +4087,15 @@
       "service": "packages",
       "release": "R6",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-140"
       ],
       "acceptance": [
-        "Sheet, Dialog, Popover, Tabs, Card, Accordion, Avatar, Alert, Toast, Skeleton, ListGroup, Select, Switch, Slider, Separator and Spinner are wrapped, tokenised and exported",
-        "Every wrapper is registered in the conformance registry and rendered by the a11y and contrast gates in both themes and both locales",
+        "Popover and Tabs are wrapped, tokenised and exported — the HeroUI components proven not to reach the mismatched gesture stack",
+        "Every wrapper is registered in the conformance registry and rendered by the a11y and contrast gates in both themes",
         "The backdrop token is reached by a real scrim",
-        "Focus order, dismissal and the accessibility role of every overlay are asserted, not assumed"
+        "Every peer-dependency issue pnpm reports is either resolved or declared with a reason and an owner, and a declaration matching nothing fails"
       ],
       "verification": [
         "state",
@@ -4105,7 +4105,19 @@
         "a11y",
         "contrast"
       ],
-      "notes": "heroui-native@1.0.8 ships 40 components. The product uses 5 — Button, Chip, Surface, Text and the two fields. UNUSED AND DIRECTLY REQUESTED: bottom-sheet, dialog, popover, tabs, card, accordion, avatar, alert, toast, skeleton, list-group, menu, select, switch, slider, separator, scroll-shadow, tag-group. ADR-0062 already made HeroUI the component foundation and design-tokens/src/emit/heroui.ts already emits a HeroUI theme from the manifest, so this is an ADOPTION gap and not a migration — the bridge exists and 35 components have never been carried across it. CORROBORATED BY THE TOKEN LEDGER: backdrop is declared unreached with the reason \"there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route\". Wrappers stay thin per .harness/rules/frontend/heroui-wrappers.md; the boundary exists so a component cannot take a colour the gates did not check."
+      "notes": "heroui-native@1.0.8 ships 40 components. The product uses 5 — Button, Chip, Surface, Text and the two fields. UNUSED AND DIRECTLY REQUESTED: bottom-sheet, dialog, popover, tabs, card, accordion, avatar, alert, toast, skeleton, list-group, menu, select, switch, slider, separator, scroll-shadow, tag-group. ADR-0062 already made HeroUI the component foundation and design-tokens/src/emit/heroui.ts already emits a HeroUI theme from the manifest, so this is an ADOPTION gap and not a migration — the bridge exists and 35 components have never been carried across it. CORROBORATED BY THE TOKEN LEDGER: backdrop is declared unreached with the reason \"there is no dialog, bottom sheet or modal anywhere in the app yet — every screen in apps/mobile/src/screens is a full route\". Wrappers stay thin per .harness/rules/frontend/heroui-wrappers.md; the boundary exists so a component cannot take a colour the gates did not check. SCOPE REVISED BEFORE IMPLEMENTATION, on two findings. FIRST, THE RULE DISQUALIFIES HALF THE ORIGINAL LIST: .harness/rules/frontend/heroui-wrappers.md says wrap HeroUI when there is BEHAVIOUR to inherit and never for provenance, and it names Card, Avatar, Separator and ListGroup as things not to wrap — they are styled boxes, and Surface and Stack already are those. It also records that HeroUI Alert is a BANNER and cannot carry ADR-0044 three channels inline, so Status stays ours. Writing sixteen wrappers would have added eleven dependency edges that buy nothing, which is the opposite of what ADR-0062 decided. SECOND, THREE PEER DEPENDENCIES OF heroui-native ARE UNSATISFIED and nothing had noticed: tailwind-merge, @gorhom/bottom-sheet and expo-blur. tailwind-merge is imported by helpers/external/utils/cn.js, which select, slider and pressable-feedback styles all reach — and it resolves today ONLY because some other package hoisted it into node_modules/.pnpm/node_modules, which is resolution by luck rather than by declaration. @gorhom/bottom-sheet is absent from the store entirely, so BottomSheet could never have rendered; the jest probe that \"passed\" only proved the export exists, not that it mounts. expo-blur is absent too and STAYS absent: the rule forbids the blur path outright, because a blur tints what it surrounds and that is the simultaneous-contrast hazard swatch.well exists to prevent. The form controls — Switch, Select, Slider, Accordion — are real wraps with real behaviour and move to F-156 rather than being dropped. DONE 2026-09-03. SCOPE NARROWED TWICE, both times by measurement. First against .harness/rules/frontend/heroui-wrappers.md, which disqualifies Card, Avatar, Separator, ListGroup (styled boxes — Surface and Stack already are those) and Alert (HeroUI ships a BANNER, which cannot carry ADR-0044 three channels inline). Then by the peer gate: `pnpm peers check` reports react-native-gesture-handler 3.2.1 against heroui-native declaring ^2.28.0, a MAJOR version apart under every gesture-driven component, and nothing had noticed because nothing had asked. WHICH COMPONENTS REACH IT WAS GREPPED, NOT ASSUMED, and the first draft of the acceptance was wrong: it called Dialog safe as a portal-and-press component, and lib/module/components/dialog/dialog.js imports GestureDetector for drag-to-dismiss. Popover and Tabs import nothing from gesture-handler; those two shipped, Dialog and Sheet went to F-157. THE PEER GATE ITSELF WAS REWRITTEN MID-FEATURE. The first version walked the pnpm store and decided for itself what satisfied meant; it reported nine problems and two of its three headline findings were FALSE — tailwind-merge looked undeclared because it was resolved from packages/ui rather than apps/mobile which declares it, and expo-blur and @gorhom/bottom-sheet looked missing when heroui-native declares both optional. `pnpm peers check` already answers this correctly, so the gate now parses ITS output and adds only the register pnpm lacks. A checker that reimplements its subject agrees with it on day one, and that one did not manage day one. THE CONFORMANCE SUITE FOUND A REAL DEFECT IN THE FIRST WRAPPER: HeroUI Popover.Trigger renders a bare pressable View, so a perfectly good Text passed as `trigger` became a button with no role and no accessible name, in both themes — and the scrim was a full-screen unnamed tap target beside it. The API changed in response: `triggerLabel` and `closeLabel` are strings the caller supplies, so the wrapper owns the role and the name and a caller cannot pass a trigger that has neither. BACKDROP IS PAINTED for the first time — the token has existed since F-003 with the reason \"there is no dialog, bottom sheet or modal anywhere in the app yet\", and now there is a scrim. radius.lg is reached too, by the popover panel — the first raised surface in the product with a corner.",
+      "plan": "plans/F-143-the-components-the-product-needs.md",
+      "effects": [
+        "E-061"
+      ],
+      "attested": [
+        {
+          "criterion": "Popover and Tabs are wrapped, tokenised and exported — the HeroUI components proven not to reach the mismatched gesture stack",
+          "verifiedBy": "THE EXCLUSION IS GATED AND THE INCLUSION IS NOT, which is the honest way round to say it. That Popover and Tabs import nothing from react-native-gesture-handler is a fact about the built library, greppable and re-checkable. That they therefore WORK on a device is not established: nothing here has mounted a portal on a phone, and the gesture stack being a major version out is exactly the class of problem that shows up at mount rather than at import. jest renders the tree and has no native module to disagree with. F-157 and the first device run discharge this together.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-144",
@@ -4487,6 +4499,64 @@
         "contrast"
       ],
       "notes": "REPORTED AS MISSING AND IT IS. The schema has carried contemporaryNote_en since F-011 (packages/corpus/src/entry.ts:123) and it is null in every content file — the field was defined and never filled. FR-22 covers contemporary PALETTE SYSTEMS, which is a different thing: it groups colours into editorial sets and does not answer \"for this traditional colour, what would I actually buy today\". THE HONEST DESIGN IS BOTH KINDS, and the distinction is the feature rather than an implementation detail. A COMPUTED equivalent is the nearest contemporary reference by ΔE00 with the delta shown — deterministic, reproducible, and reusing color-difference rather than adding a second implementation of it. An EDITORIAL equivalent is a recorded note with provenance and a reviewer, which the content gate already enforces for every other editorial field. Conflating them is the failure to avoid: a computed neighbour presented as editorial judgement is a claim nobody made — the same move ADR-0005 makes for provenance, applied here."
+    },
+    {
+      "id": "F-156",
+      "title": "The form controls: Switch, Select, Slider, Accordion",
+      "requirements": [
+        "NFR-8",
+        "NFR-9",
+        "NFR-24"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-143"
+      ],
+      "acceptance": [
+        "Switch, Select, Slider and Accordion are wrapped, tokenised and exported",
+        "Each is registered in the conformance registry with every state its kind requires",
+        "The accessibility state each one reports — checked, expanded, value — is asserted from the rendered tree rather than from the prop"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "SPLIT OUT OF F-143 when its scope was corrected against .harness/rules/frontend/heroui-wrappers.md. These four are legitimately WRAPS — each has behaviour that is tedious to get right and invisible to a sighted developer with a mouse: gesture handling and a checked state a screen reader must hear (Switch), list keyboard handling and focus return (Select), drag with an announced value (Slider), an expanded state and managed focus (Accordion). They are separated from the overlay family because they share no portal, no scrim and no dismissal — F-143 is one problem four times over, and this is a different one. THE CONSUMERS ARE ALREADY WAITING: Preferences has toggles, AddGarment has fields, Palette Studio and the profile trials have ranges, and the colour page (F-148) wants sections. Their `radius` steps xs, lg and xl are declared unreached against F-143 and one of these two features closes that."
+    },
+    {
+      "id": "F-157",
+      "title": "The gesture stack agrees with itself, so a sheet can be adopted",
+      "requirements": [
+        "NFR-8",
+        "NFR-24"
+      ],
+      "service": "root",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-143"
+      ],
+      "acceptance": [
+        "`pnpm peers check` reports no unmet gesture-handler peer, and the acceptance for it is removed from unsatisfied-peers.json rather than reworded",
+        "A bottom sheet mounts, drags and dismisses on a device — the behaviour that is the whole reason to use one",
+        "The resolution is recorded as an ADR if it changes a pinned version, because ADR-0062 pinned this stack deliberately"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "FOUND BY F-143 AND BLOCKING THE COMPONENT THE REPORTER ASKED FOR BY NAME. `pnpm peers check` reports react-native-gesture-handler 3.2.1 installed against heroui-native@1.0.8 declaring ^2.28.0 — a MAJOR version apart, under every gesture-driven component in the library. Nothing had noticed because nothing had asked; the peer gate added in F-143 is what asks. WHY IT CANNOT SIMPLY BE PINNED BACK: Expo SDK 57 versions gesture-handler as a unit with Reanimated, Worklets and Screens, and pnpm-workspace.yaml already carries overrides for two of those pinned to what VisionCamera resolves (ADR-0062, F-087) — the tree has three consumers with different opinions and the last time this was resolved by taking the newest, three copies of a native module ended up installed. THREE CANDIDATE ROUTES, none free: wait for a heroui-native release that widens the range; add a workspace override pinning gesture-handler to 2.x and verify the SDK still works; or drop HeroUI for the gesture components and hand-roll the sheet on Reanimated, which is what ADR-0062 chose HeroUI to avoid. WHAT IS BLOCKED UNTIL THIS CLOSES: BottomSheet (@gorhom/bottom-sheet is also absent from the store entirely, so it could never have rendered), Slider, and Menu drag-dismiss. F-143 wrapped Dialog, Popover and Tabs precisely because none of them reaches a gesture recogniser, so the overlay family ships and the sheet waits for an answer rather than for a crash."
     }
   ]
 }
