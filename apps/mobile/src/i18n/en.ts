@@ -264,7 +264,6 @@ export const en = {
   'lens.noReading': 'No colour has been read yet.',
   'lens.sheetTitle': 'This reading',
   'lens.sheetClose': 'Close the reading and go back to the frame',
-  'lens.readout': 'This reading',
   'lens.quality': 'Capture',
   'lens.quality.excellent': 'Excellent',
   'lens.quality.good': 'Good',

@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-04",
+  "updated": "2026-09-05",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -4600,7 +4600,8 @@
         "A traditional entry shows the contemporary colours that correspond to it",
         "A computed equivalent shows its ΔE00 and says it was computed; an editorial one shows its note and its provenance",
         "The two kinds are distinguishable in the type system, so an editorial claim cannot be rendered as a computed one or the reverse",
-        "No copy describes an equivalent as a match, and the claims lint enforces it"
+        "No copy describes an equivalent as a match, and the claims lint enforces it",
+        "A reading in the Lens leads to the contemporary colours of its nearest entry, on their own screen"
       ],
       "verification": [
         "state",
@@ -4612,7 +4613,7 @@
         "a11y",
         "contrast"
       ],
-      "notes": "REPORTED AS MISSING AND IT IS. The schema has carried contemporaryNote_en since F-011 (packages/corpus/src/entry.ts:123) and it is null in every content file — the field was defined and never filled. FR-22 covers contemporary PALETTE SYSTEMS, which is a different thing: it groups colours into editorial sets and does not answer \"for this traditional colour, what would I actually buy today\". THE HONEST DESIGN IS BOTH KINDS, and the distinction is the feature rather than an implementation detail. A COMPUTED equivalent is the nearest contemporary reference by ΔE00 with the delta shown — deterministic, reproducible, and reusing color-difference rather than adding a second implementation of it. An EDITORIAL equivalent is a recorded note with provenance and a reviewer, which the content gate already enforces for every other editorial field. Conflating them is the failure to avoid: a computed neighbour presented as editorial judgement is a claim nobody made — the same move ADR-0005 makes for provenance, applied here."
+      "notes": "REPORTED AS MISSING AND IT IS. The schema has carried contemporaryNote_en since F-011 (packages/corpus/src/entry.ts:123) and it is null in every content file — the field was defined and never filled. FR-22 covers contemporary PALETTE SYSTEMS, which is a different thing: it groups colours into editorial sets and does not answer \"for this traditional colour, what would I actually buy today\". THE HONEST DESIGN IS BOTH KINDS, and the distinction is the feature rather than an implementation detail. A COMPUTED equivalent is the nearest contemporary reference by ΔE00 with the delta shown — deterministic, reproducible, and reusing color-difference rather than adding a second implementation of it. An EDITORIAL equivalent is a recorded note with provenance and a reviewer, which the content gate already enforces for every other editorial field. Conflating them is the failure to avoid: a computed neighbour presented as editorial judgement is a claim nobody made — the same move ADR-0005 makes for provenance, applied here. THE ENTRY POINT IS FROM THE LENS, added 2026-09-05 after the reporter described the flow: somebody reads a colour, learns what it is, and then wants to know what they could actually buy in it. The link goes on the READING, not the list — the reporter was explicit that the Lens itself stays decluttered, so this is a way OUT of that screen rather than more content on it."
     },
     {
       "id": "F-156",
@@ -4726,6 +4727,203 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-159",
+      "title": "The app respects the device, not the simulator",
+      "requirements": [
+        "NFR-9",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "Every screen clears the status bar, the notch and the home indicator, on both platforms",
+        "No screen overflows its horizontal bounds at any supported width",
+        "The safe-area treatment is expressed once, in the layout primitives, not per screen",
+        "A check fails a screen that paints into an inset area"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "REPORTED FROM A DEVICE, AND A REGRESSION I CAUSED. Nothing in the app handles insets — there is no SafeAreaView and no useSafeAreaInsets anywhere in the screens, the layout primitives, or either _layout. It worked before F-145 because the root Stack SHOWED A HEADER, and react-navigation insets a header for you; F-145 set headerShown: false for the tab group and removed the only thing providing top inset. The reporter said \"we were not having this issue previously\", which is exactly right and names the commit. THE FIX BELONGS IN `Screen`, not in twenty screens: a per-screen inset is a per-screen decision, and the next screen will forget. `react-native-safe-area-context` is already in the tree (expo-router depends on it) and `RNCSafeAreaProvider` is already in every rendered test tree, so the provider exists and nothing consumes it."
+    },
+    {
+      "id": "F-160",
+      "title": "The Lens captures on purpose",
+      "requirements": [
+        "FR-13",
+        "FR-15",
+        "FR-40",
+        "NFR-21"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-159"
+      ],
+      "acceptance": [
+        "A reading is something a person takes: manual by default, with a live mode they choose",
+        "The result sheet can be dismissed and stays dismissed until the next capture",
+        "A gallery image can be read, not only the live camera",
+        "Live mode has a stop, and says which mode is active without being asked"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "THREE REPORTED SYMPTOMS, ONE MISSING CONCEPT: the Lens has no idea what A CAPTURE is. It reads continuously and pushes a new reading object several times a second, so F-158 wrote `useEffect(() => { if (reading !== null) setSheetOpen(true) }, [reading])` and every frame forces the sheet back open — dismiss it and the next frame reopens it. The note I wrote at the time said \"the next reading is a new answer to the question they went back to ask\", which is true of a discrete capture and exactly wrong for a stream. AUTO/MANUAL, THE STOP CONTROL AND GALLERY IMPORT ARE NOT THREE TWEAKS — all three follow from making a capture a thing that exists. Once it does, a sheet is about ONE capture and dismissal means something; a gallery image is a third source beside live and manual; and \"stop\" is coherent because there is something running. THE REGISTER IS A PAYMENT APP: the reporter named PhonePe, and the comparison is apt — a scanner with one obvious action, the frame doing the work, and no reading until the person asks for one."
+    },
+    {
+      "id": "F-161",
+      "title": "The register becomes soft minimal, and roundness reaches the sample",
+      "requirements": [
+        "NFR-9",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "The radius scale reaches every container: cards, cells, sheets, fields, chips",
+        "The colour sample is rounded, and its two-tone keyline is re-proved at the rounded geometry",
+        "Surface tints and rhythm are warmer and more generous than the editorial draft",
+        "An ADR records the reversal of `radius.swatch: 0` with the evidence that replaced it"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "contrast",
+        "a11y"
+      ],
+      "notes": "THE REGISTER WAS CHOSEN AGAIN, DELIBERATELY. The first pick was editorial fashion (SSENSE/COS/Aesop/Muji) and F-146 to F-150 were built against it; the reporter has now twice asked for something cute and warm alongside enterprise-grade, and chose SOFT MINIMAL — Muji/Ghibli — over both an overtly kawaii direction and staying austere. Keep the restraint, add warmth: rounder corners, softer tints, more generous space, a friendlier scale. THE SAMPLE IS ROUNDED TOO, and the reporter was explicit — \"I don't care if we have to change ADR\". `radius.swatch` is 0 and documented as \"0, forever\" on the argument that a square is how colour is shown in a fan deck and that rounding changes perceived area. That argument is real and it loses to the person who has to look at the product. WHAT DOES NOT CHANGE IS THE KEYLINE: F-068 measured a single hairline at 1.00 against its own colour — no edge at all — and the two-tone pair is what fixes it. Roundness was asked for; giving up an accessibility guarantee was not. `swatch-edge.test.ts` is re-proved at the rounded geometry, where the corners are the new worst case."
+    },
+    {
+      "id": "F-162",
+      "title": "Navigation and iconography",
+      "requirements": [
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-161"
+      ],
+      "acceptance": [
+        "The tab bar is icons with labels, and the icon shapes differ from one another",
+        "Icons appear where they carry meaning and nowhere else",
+        "No icon is the only channel for anything",
+        "The icon set is one family, drawn from one source, with no mixed metaphors"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "cvd"
+      ],
+      "notes": "F-145 made the tabs TYPOGRAPHIC on purpose — 10px uppercase labels at the `label` step — and the reporter wants icons. Icons plus labels is strictly better for NFR-9 than either alone: shape and word are two channels where the current bar has one and a colour. THE CONSTRAINT THAT DECIDES THE SOURCE: `Icon` draws shapes as Views rather than a font, because an icon font reintroduces the tofu failure ADR-0057 exists to prevent, and NFR-9 needs the SHAPES to differ rather than the colours. Lucide is geometric and MIT-licensed, and its paths can be drawn through react-native-svg, which is already a HeroUI peer. MINIMAL, AND THE REPORTER SAID SO TWICE: \"use icons where they are relevant, makes sense. Not too much, keep things minimal.\""
+    },
+    {
+      "id": "F-163",
+      "title": "Selection is visible, and nothing has a stray outline",
+      "requirements": [
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-161"
+      ],
+      "acceptance": [
+        "Anything selectable shows whether it is selected, in more than one channel",
+        "The selected state is a token decision, not a per-screen one",
+        "No surface carries a border it did not choose — the tab bar rule and the swatch halo both go",
+        "A conformance rule fails a selectable element with no selected treatment"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "TWO REPORTS THAT TURN OUT TO BE ONE SUBJECT: things do not show they are selected, and there are white outlines that look unprofessional. Both are about what a surface says about its own state. THE OUTLINES ARE TWO DIFFERENT CAUSES and both are named: the tab bar sets `borderTopWidth: 1` in `border.strong`, and the halo \"around colors\" is the swatch keyline, whose OUTER ring is `#F6F5F3` in the light theme — a near-white ring around every sample. The ring is load-bearing but its ORDER is not, and dark-outside reads as a considered keyline rather than a cheap halo. SELECTION ALREADY HAS ONE GOOD EXAMPLE: `Swatch` renders a tick and `accessibilityState.selected`, and `Tabs` paints a ground plus an indicator rule. The wardrobe cells, the filter chips and the palette pickers have nothing."
+    },
+    {
+      "id": "F-164",
+      "title": "Home is worth the first impression",
+      "requirements": [
+        "FR-1"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-161",
+        "F-162",
+        "F-163"
+      ],
+      "acceptance": [
+        "The first screen states what the product is for without a paragraph",
+        "Sections are visibly distinct, with rhythm rather than a single column of blocks",
+        "Every element on it earns its place; nothing is there because it was available",
+        "It reads as finished on a phone, not as a list of what exists"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "F-146 REWROTE HOME AND THE REPORTER STILL CALLS IT UNPROFESSIONAL AND UNORGANISED. That is worth taking at face value rather than defending: F-146 replaced ten identical buttons with three editorial sections, which was the right direction and evidently not far enough. LAST, ON PURPOSE — Home inherits everything: the register (F-161), the icon set (F-162) and the selected states (F-163). Doing it before those is doing it twice, which is what F-152 already says about the sweep."
+    },
+    {
+      "id": "F-165",
+      "title": "The mark is redrawn",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "packages",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-161"
+      ],
+      "acceptance": [
+        "The mark says something about colour, and reads at 16px as well as on a splash",
+        "It is generated from geometry in source, so the icon cannot drift from the wordmark",
+        "Gate 16 still reads it out of the built artefact",
+        "The app icon, the adaptive icon and both splashes are regenerated from it"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "artifact"
+      ],
+      "notes": "REPORTED AS NOT RELEVANT AND NOT PROFESSIONAL. F-141 drew two offset rectangles on a 24 grid — an abstraction of two colours meeting, which is defensible in a sentence and evidently does not read as anything on a home screen. WHAT MUST SURVIVE IS THE MACHINERY, not the shape: `MARK` is geometry in source, `markSvg` and `generate-brand-assets.mjs` emit every asset from it, and gate 16 reads the result back out of the APK by proportion rather than by hash. That pipeline is why the icon cannot drift from the wordmark, and it is worth more than the marks it has drawn so far."
     }
   ]
 }

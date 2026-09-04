@@ -242,7 +242,6 @@ export const ja: Record<MessageKey, string> = {
   'lens.noReading': 'まだ色を読んでいません。',
   'lens.sheetTitle': 'この読み取り',
   'lens.sheetClose': '読み取りを閉じてカメラに戻る',
-  'lens.readout': 'この読み取り',
   'lens.quality': '撮影状態',
   'lens.quality.excellent': '非常に良い',
   'lens.quality.good': '良い',

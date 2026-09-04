@@ -137,6 +137,45 @@ function classify(step) {
   return { run: true };
 }
 
+/**
+ * What git thinks is modified, right now.
+ *
+ * ## Why this runs before and after
+ *
+ * Several of the steps below are MUTATION PROOFS: they plant a deliberate defect into a tracked
+ * file, watch the check reject it, and restore. Every one of them restores in a `finally` — and
+ * a `finally` does not run when the process is KILLED, which is what a timeout, a Ctrl+C or a
+ * closed terminal does.
+ *
+ * That has now happened twice, to two different files:
+ *
+ * - `.github/workflows/ci.yml` kept an `if: false` planted onto a gate step
+ * - `tests/bench/budgets.json` kept a `ceilingMs` of `0.0001`
+ *
+ * Both are TRACKED, so `git add -A` would have committed them — a disabled CI step and a
+ * performance budget nothing can pass. Neither shows up as a failure; the second one surfaced
+ * only because prettier happened to disagree with the plant's formatting.
+ *
+ * This cannot prevent a kill. What it can do is make the aftermath loud instead of silent, on
+ * the next run, before anything is committed.
+ */
+function dirtyFiles() {
+  const result = spawnSync('git', ['status', '--porcelain=v1'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return null;
+  return new Set(
+    (result.stdout ?? '')
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      // Untracked files are not the hazard — a leftover plant is a MODIFICATION to something
+      // git already knows about, and scratch files would make this noisy enough to ignore.
+      .filter((line) => !line.startsWith('??'))
+      .map((line) => line.slice(3).trim()),
+  );
+}
+
 const steps = stepsFrom(readFileSync(WORKFLOW, 'utf8'));
 if (steps.length === 0) {
   console.log(`\n${RED}${BOLD}No steps were read from ci.yml.${OFF} Refusing to report success.\n`);
@@ -157,6 +196,8 @@ const keepGoing = process.argv.includes('--all');
 console.log(
   `\n${BOLD}CI, locally${OFF} ${DIM}${String(steps.length)} step(s) read from .github/workflows/ci.yml${OFF}\n`,
 );
+
+const dirtyBefore = dirtyFiles();
 
 const failures = [];
 let ran = 0;
@@ -192,6 +233,24 @@ for (const step of steps) {
 }
 
 console.log();
+
+/*
+ * THE TREE, COMPARED. Reported whether the run passed or failed: a leftover plant is worse on a
+ * green run, because that is the one somebody commits.
+ */
+const dirtyAfter = dirtyFiles();
+if (dirtyBefore !== null && dirtyAfter !== null) {
+  const appeared = [...dirtyAfter].filter((f) => !dirtyBefore.has(f));
+  if (appeared.length > 0) {
+    console.log(
+      `${RED}${BOLD}This run modified ${String(appeared.length)} tracked file(s) it should not have.${OFF}\n` +
+        `${DIM}  Almost certainly a mutation proof that was killed before its restore ran — a\n` +
+        `  \`finally\` does not survive a timeout or a Ctrl+C. Check each, then restore:${OFF}\n`,
+    );
+    for (const file of appeared) console.log(`  ${YELLOW}!${OFF} git checkout ${file}`);
+    console.log();
+  }
+}
 
 if (failures.length === 0) {
   console.log(

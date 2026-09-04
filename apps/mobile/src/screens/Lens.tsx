@@ -40,7 +40,7 @@
  * the lens.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Button, Row, Screen, Sheet, Stack, Surface, Swatch, Text } from '@irodora/ui';
@@ -48,6 +48,7 @@ import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
 import { readingOklch, worthOffering } from '../profile/photo';
+import { nextSheetState, SHEET_CLOSED } from '../lens/sheet';
 import type { CaptureSpace, LensReading } from '../lens/reading';
 import type { LensPermission } from '../lens/permission';
 import { useMessages } from '../i18n/useMessages';
@@ -177,17 +178,22 @@ export function Lens({
    * reading is worth.
    */
   /*
-   * THE SHEET FOLLOWS THE READING (F-158).
+   * THE SHEET FOLLOWS A REDUCER, NOT AN EFFECT (F-158's defect, fixed).
    *
-   * It opens when a reading arrives and closes when the person dismisses it; a NEW reading opens
-   * it again, which is why the effect keys on the reading itself rather than on whether one
-   * exists. Dismissing is not "I am done with the Lens" — it is "let me see the frame" — and the
-   * next reading is a new answer to the question they went back to ask.
+   * The rule and the reasoning live in `lens/sheet.ts`, because a rendered test cannot see
+   * this: a `Sheet` produces the SAME TREE open or shut — gorhom mounts its content either way
+   * and visibility is animation state on the UI thread. The sequence is asserted where a
+   * sequence can be.
    */
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheet, dispatch] = useReducer(nextSheetState, SHEET_CLOSED);
+
   useEffect(() => {
-    if (reading !== null) setSheetOpen(true);
+    if (reading !== null) dispatch({ kind: 'reading' });
   }, [reading]);
+
+  const onSheetOpenChange = useCallback((open: boolean) => {
+    dispatch(open ? { kind: 'requested' } : { kind: 'dismissed' });
+  }, []);
 
   const usable = reading !== null && worthOffering(reading);
   const offerable = usable && onUseForProfile !== undefined;
@@ -270,8 +276,8 @@ export function Lens({
         telling somebody to adjust something they can no longer see.
       */}
       <Sheet
-        open={sheetOpen && display !== null}
-        onOpenChange={setSheetOpen}
+        open={sheet.open && display !== null}
+        onOpenChange={onSheetOpenChange}
         title={t('lens.sheetTitle')}
         closeLabel={t('lens.sheetClose')}
         script={script}
@@ -309,11 +315,12 @@ export function Lens({
                   there being no colour channel to depend on at all. An instruction is guidance
                   about the NEXT capture, not a report of something broken.
                 */}
+                {/*
+                  NO HEADING OF ITS OWN. This carried `lens.readout` — "This reading" — which is
+                  word for word the sheet's title, so the panel said it twice with nothing
+                  between. The sheet names the thing; its content does not need to name it again.
+                */}
                 <Stack gap="xs">
-                  <Text size="label" color="foreground.2" script={script}>
-                    {t('lens.readout')}
-                  </Text>
-
                   <Row gap="sm">
                     <Text size="small" color="foreground.2" script={script}>
                       {t('lens.quality')}

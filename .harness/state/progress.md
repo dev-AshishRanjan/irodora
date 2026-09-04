@@ -8,6 +8,100 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — FIX · the sheet that could not be dismissed, and seven tasks from a device
+
+The reporter has been running a build. Sixteen items came back; four are regressions I caused,
+and this entry fixes the one that made a screen unusable. The rest are recorded as work.
+
+### The Lens sheet reopened on every frame
+
+Reported as *"we are not able to go back"*. F-158 wrote:
+
+```ts
+useEffect(() => { if (reading !== null) setSheetOpen(true); }, [reading]);
+```
+
+`reading` is a **new object several times a second**. Dismiss the sheet, and the next frame put
+it back. My note at the time read *"the next reading is a new answer to the question they went
+back to ask"* — true of a capture somebody takes, and exactly wrong for a stream.
+
+**The Lens has no concept of a capture**, and that one absence is behind three of the sixteen
+reports: the sheet that will not close, the auto-reading that cannot be controlled, and the
+missing gallery import. F-160 introduces it; this fixes the symptom that blocks the screen.
+
+### A rendered test could not have caught it, and that is the part worth keeping
+
+Probed rather than assumed: a `Sheet` renders **the same tree open or shut**. gorhom mounts its
+content either way and visibility lives in animation state on the UI thread, so `queryByText`
+finds the title, the scrim and the children in both cases.
+
+That is one step past E-069. There, *reachable* was not *mounted*; here, **mounted is not
+visible**. A screen test would have passed against the broken version and the fixed one
+identically.
+
+So the decision moved into `lens/sheet.ts` as a reducer over events — `reading`, `dismissed`,
+`requested` — and the sequence is asserted where a sequence can be. The case that matters replays
+a dismissal followed by four more frames. One assertion checks identity rather than equality: a
+reducer returning a fresh object per frame would re-render the screen four times a second for a
+value that had not changed.
+
+`lens.readout` and `lens.sheetTitle` were also **the same words** — "This reading" — so the panel
+said it twice. The heading is gone; the sheet names the thing, its contents need not.
+
+### The second tracked file left dirty by a killed proof
+
+`tests/bench/budgets.json` was sitting modified with `ceilingMs: 0.0001` — a plant from
+`bench:prove`. Its restore is already unconditional and in a `finally`, and **a `finally` does not
+run when the process is killed**, which is what a timeout or a Ctrl+C does. The same thing
+happened to `ci.yml` earlier in the week.
+
+Both are tracked, so `git add -A` would have committed a disabled CI step and a budget nothing can
+pass. Neither surfaces as a failure — this one showed up only because prettier disagreed with the
+plant's formatting.
+
+`verify:ci` cannot prevent a kill. It now **reads `git status` before and after** and names any
+tracked file the run modified, so the aftermath is loud on the next run rather than silent until
+somebody commits it.
+
+### The other fifteen, as tasks
+
+| # | reported | where it goes |
+|---|---|---|
+| 3, 2 | no safe area; overflow | **F-159** |
+| 5, 6, 7, 8 | capture modes, stop, gallery, PhonePe register | **F-160** |
+| 16, 9, 11 | soft-minimal register, roundness, rhythm | **F-161** |
+| 4, 12 | tab icons, icons where they earn it | **F-162** |
+| 10, 13 | selected states; stray outlines | **F-163** |
+| 14 | Home again | **F-164** |
+| 1 | the mark | **F-165** |
+| 15 | contemporary colours | **F-155**, which already existed |
+
+Two decisions were put to the reporter rather than guessed. The register is now **soft minimal —
+Muji/Ghibli**, chosen over an overtly kawaii direction and over staying austere. And roundness
+reaches the sample: *"I don't care if we have to change ADR"*. The two-tone keyline stays —
+roundness was asked for, giving up F-068's contrast guarantee was not — and its edge test is
+re-proved at the rounded geometry in F-161.
+
+**F-159 is diagnosed already.** Nothing in the app handles insets: no `SafeAreaView`, no
+`useSafeAreaInsets`, anywhere. It worked before F-145 because the root `Stack` showed a header and
+react-navigation insets headers for you; `headerShown: false` removed the only thing providing top
+inset. The reporter's *"we were not having this issue previously"* names the commit exactly.
+
+### Verification
+
+| ran | result |
+|---|---|
+| `pnpm verify:ci` — all 32 runnable CI steps | **PASS** |
+| 692 mobile · 124 ui | **PASS** |
+
+### Still owed
+
+**The dismissal latch is a stopgap and says so.** Once closed, the sheet stays closed until the
+person asks for it back — which is right, and is not the same as the Lens knowing what a capture
+is. F-160 is that.
+
+---
+
 ## 2026-09-04 — F-150 DONE · the wardrobe stops being a list, and the product plots something
 
 ### The photographs had never been read back
