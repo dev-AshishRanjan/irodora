@@ -14,12 +14,20 @@
 > **Soft chrome, unaltered colour.**
 
 Everything is generous — 20 px cards, 28 px containers, full pills, 44 px targets, warm
-neutrals. Except the swatch, which is `radius: 0` at every size, forever.
+neutrals. **The swatch is generous too, in proportion** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
 
-Corner radius removes sampled area from exactly the region the eye uses to judge a large flat
-colour, and the effect grows as the swatch shrinks — at 24 px a 10 px radius eats a fifth of
-the shape. Surrounded by softness, the hard edge reads as *deliberate precision* rather than
-as something unstyled. **The tension between the two is the design idea.**
+This said `radius: 0` at every size, forever, and argued the case well: corner radius removes
+sampled area from exactly the region the eye uses to judge a large flat colour, *"and the effect
+grows as the swatch shrinks — at 24 px a 10 px radius eats a fifth of the shape"*.
+
+**That worked example is the reason the rule changed rather than the reason it held.** 10 px on
+24 px is a ratio of 0.42, and it does cost about 15 % of the sample. The corner shipped now is a
+ratio of **0.125**, which costs **1.34 %** at every size — because a rounded square loses
+`(4 − π)r²`, so the fraction lost depends on radius *relative to* size, exactly as that sentence
+says. The manifest declares the ceiling and refuses a ratio that exceeds it.
+
+What is given up is the older idea that a hard edge surrounded by softness reads as *deliberate
+precision*. It is a real idea and it lost to the person looking at the product, who asked twice.
 
 ### Where it comes from
 
@@ -91,7 +99,11 @@ is why this is checked over the rendered tree (`checkStatusAdjacency`, F-069) ra
 token pairing. No `pairsWith` can express it: the other side of the adjacency is an arbitrary
 garment colour.
 
-**`radius.swatch: 0`** — an inviolable rule, sitting inside an otherwise generous radius scale.
+**`radius.swatchRatio: 0.125`, bounded by `_maxSampledAreaLoss`** — the corner is a ratio, so
+the fraction of the sample it costs is the same at 24 px and at 380 px, and the manifest refuses a
+ratio that costs more than 2 % ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
+This was `radius.swatch: 0`, described here as inviolable; what was inviolable turned out to be
+the AREA, and that is what the loader now enforces.
 
 **`chromaCeiling`** — surfaces and text may not exceed chroma 0.01 without a recorded
 exception. The interface is near-achromatic *by rule*, so the garment colour is the only

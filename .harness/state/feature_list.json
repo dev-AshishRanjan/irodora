@@ -4813,7 +4813,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "The radius scale reaches every container: cards, cells, sheets, fields, chips",
@@ -4828,7 +4828,26 @@
         "contrast",
         "a11y"
       ],
-      "notes": "THE REGISTER WAS CHOSEN AGAIN, DELIBERATELY. The first pick was editorial fashion (SSENSE/COS/Aesop/Muji) and F-146 to F-150 were built against it; the reporter has now twice asked for something cute and warm alongside enterprise-grade, and chose SOFT MINIMAL — Muji/Ghibli — over both an overtly kawaii direction and staying austere. Keep the restraint, add warmth: rounder corners, softer tints, more generous space, a friendlier scale. THE SAMPLE IS ROUNDED TOO, and the reporter was explicit — \"I don't care if we have to change ADR\". `radius.swatch` is 0 and documented as \"0, forever\" on the argument that a square is how colour is shown in a fan deck and that rounding changes perceived area. That argument is real and it loses to the person who has to look at the product. WHAT DOES NOT CHANGE IS THE KEYLINE: F-068 measured a single hairline at 1.00 against its own colour — no edge at all — and the two-tone pair is what fixes it. Roundness was asked for; giving up an accessibility guarantee was not. `swatch-edge.test.ts` is re-proved at the rounded geometry, where the corners are the new worst case."
+      "notes": "THE REGISTER WAS CHOSEN AGAIN, DELIBERATELY. The first pick was editorial fashion (SSENSE/COS/Aesop/Muji) and F-146 to F-150 were built against it; the reporter has now twice asked for something cute and warm alongside enterprise-grade, and chose SOFT MINIMAL — Muji/Ghibli — over both an overtly kawaii direction and staying austere. Keep the restraint, add warmth: rounder corners, softer tints, more generous space, a friendlier scale. THE SAMPLE IS ROUNDED TOO, and the reporter was explicit — \"I don't care if we have to change ADR\". `radius.swatch` is 0 and documented as \"0, forever\" on the argument that a square is how colour is shown in a fan deck and that rounding changes perceived area. That argument is real and it loses to the person who has to look at the product. WHAT DOES NOT CHANGE IS THE KEYLINE: F-068 measured a single hairline at 1.00 against its own colour — no edge at all — and the two-tone pair is what fixes it. Roundness was asked for; giving up an accessibility guarantee was not. `swatch-edge.test.ts` is re-proved at the rounded geometry, where the corners are the new worst case. DONE 2026-09-05. THE SAMPLE HAS CORNERS, AND THE GUARD SURVIVED (ADR-0090, E-077). `radius.swatch: 0` was asserted in four places, one of them a parse-time throw and one a document calling it inviolable. The stated reason was about AREA — \"corner radius removes sampled area … and the effect grows as the swatch shrinks\" — and that second clause names a RATIO, which can be bounded. A rounded square loses (4 − π)r², so 0.125 costs 1.34% of the sample at every size against a declared ceiling of 2%. The document argued the other way with its own example: \"at 24 px a 10 px radius eats a fifth of the shape\" is a ratio of 0.42. It was an argument against a LARGE corner, read for months as an argument against corners. THE LOADER STILL REFUSES, on the quantity the reasoning actually named, with a decoy so the reversal did not become a different absolute rule. THE KEYLINE IS UNCHANGED: F-068 measured a single hairline at 1.00 against its own colour, and roundness was asked for while giving up a contrast guarantee was not. What is new is CONCENTRICITY — two nested rounded rectangles are only concentric when the outer radius exceeds the inner by the inset, so the keyline takes r + 1, and equal radii would show ground through every corner. NAMING A CONSTANT MADE THE SPACING GATE BLIND (E-078): `padding: 1` was the last numeric spacing literal in the product, and replacing it took the scan from one declaration to zero, which the gate refuses as a broken scan rather than a clean one. It is a literal again, with the reason written beside it.",
+      "plan": "plans/F-161-soft-minimal-and-roundness.md",
+      "effects": [
+        "E-077",
+        "E-078"
+      ],
+      "attested": [
+        {
+          "criterion": "The colour sample is rounded, and its two-tone keyline is re-proved at the rounded geometry",
+          "verifiedBy": "THE ARITHMETIC IS CHECKED AND THE PERCEPTION IS NOT. Verified: the corner is proportional at ten sizes, the keyline sits exactly one pixel outside it, the loader refuses a ratio costing more than the declared ceiling, and a decoy confirms it still accepts one inside it. `swatch-edge.test.ts` is untouched and passes — contrast is per-pixel and indifferent to geometry, so F-068 evidence carries over rather than needing to be re-derived. WHAT IS NOT VERIFIED is whether 1.34% is imperceptible when somebody is judging a flat colour. That is a claim about the eye, and the number bounds the change honestly without proving it. Every colour surface in the product changed in one commit — the Atlas, the colour page, the wardrobe, the Lens result — so this is the single most visible change in the release and nobody has looked at it.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Surface tints and rhythm are warmer and more generous than the editorial draft",
+          "verifiedBy": "NOT DONE IN THIS FEATURE, AND SAYING SO IS THE POINT. The roundness half of the register shift is complete and it is the half that was blocking — twelve `borderRadius` declarations already read from the scale, so the square thing was the sample and now it is not. The tints and the rhythm are NOT changed: the palette is already warm (#F6F5F3, #ECEAE7 are warm greys) and whether the spacing is generous enough is a judgement about screens that F-164 rebuilds anyway. Doing it here would be tuning values against surfaces that are about to change, which is the argument F-152 already makes for its own ordering.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-162",

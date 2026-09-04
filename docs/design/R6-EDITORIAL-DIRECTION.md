@@ -109,8 +109,11 @@ Everything else holds still. A page with three bold moves has none.
 These are constraints, not preferences, and no feature in R6 may relax one.
 
 1. **Colour is never the only channel.** Anywhere. Ever.
-2. **The swatch keeps `radius: 0`.** Corner radius removes sampled area from exactly the
-   region the eye uses to judge a flat colour, and the effect grows as the swatch shrinks.
+2. **A swatch corner is bounded by the area it removes** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
+   This read "the swatch keeps `radius: 0`", on the reasoning that a corner removes sampled area
+   from exactly the region the eye uses to judge a flat colour and that the effect grows as the
+   swatch shrinks. The second half is why it is a RATIO now — 0.125, costing 1.34 % of the sample
+   at every size — rather than zero. The bound stayed; the value moved.
 3. **The swatch well, the two-tone keyline and the chart ramp stay neutral in every theme**,
    including a device-seeded one.
 4. **Motion may never alter a colour mid-transition.** Intermediate frames of a cross-fade are

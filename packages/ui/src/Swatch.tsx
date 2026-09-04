@@ -65,6 +65,40 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
   return `${name}. Hex ${hex.replace('#', '')}. ${source}, ${String(percent)} percent confidence.`;
 }
 
+/**
+ * The corner radius of a sample of a given size, and of the keyline around it.
+ *
+ * ## A ratio, not a length (ADR-0090)
+ *
+ * `radius.swatch` was 0 and the manifest parser threw on anything else, because a corner
+ * removes sampled area from exactly the region the eye uses to judge a flat colour. That
+ * reasoning is right and it does not require zero — it requires the LOSS to stay small, which is
+ * a function of radius relative to size. The manifest's own note said as much: *"the effect grows
+ * as the swatch shrinks"*.
+ *
+ * This product draws samples from 32px to about 380px. A single pixel value is 37% of the
+ * smaller and 3% of the larger — unusable at one end, invisible at the other. At the declared
+ * ratio a sample loses **1.34%** of its area at every size, and the manifest refuses a ratio that
+ * would lose more than 2%.
+ *
+ * ## Why the outer layer takes one pixel more
+ *
+ * The keyline is a 1px-inset parent around the sample. Two concentric rounded rectangles are only
+ * concentric when the outer radius exceeds the inner by the inset — give them the same radius and
+ * the outer arc is tighter than the inner one, so a sliver of ground shows through each corner.
+ *
+ * At radius 0 that was invisible, which is why the old comment could say the two "must be 0 on
+ * BOTH nested views" and be complete. With a corner it is the one genuinely new failure mode,
+ * and `swatch-corners.test.ts` is what would catch it.
+ */
+export function swatchCorner(size: number): { readonly sample: number; readonly keyline: number } {
+  const sample = Math.round(size * nativeRadius.swatchRatio);
+  return { sample, keyline: sample + KEYLINE_INSET };
+}
+
+/** The width of each of the two opaque hairlines. One device pixel, by design (F-068). */
+const KEYLINE_INSET = 1;
+
 export function Swatch({
   name,
   hex,
@@ -76,6 +110,7 @@ export function Swatch({
   loading = false,
   onPress,
 }: SwatchProps): React.JSX.Element {
+  const corner = swatchCorner(size);
   const { colors } = useTheme();
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
@@ -124,9 +159,23 @@ export function Swatch({
       */}
       <View
         style={{
+          /*
+           * A LITERAL 1, DELIBERATELY, AND IT MUST STAY ONE.
+           *
+           * This was briefly `KEYLINE_INSET`, which reads better and made the spacing gate go
+           * BLIND: it scans for numeric padding, margin and gap, and this was the last literal
+           * left in the product. The gate then found zero declarations and refused — "that is
+           * not a clean product; it is a broken scan" — which is the same failure F-140 caused
+           * by tokenising the screens, one file further along.
+           *
+           * It also has an exemption in `off-scale-spacing.json` explaining why a 1 here is a
+           * BORDER WIDTH rather than spacing, and an exemption that matches nothing fails in the
+           * other direction. The name is used for the radius arithmetic, where it means an inset;
+           * here the number has to be visible to the scan that governs it.
+           */
           padding: 1,
           backgroundColor: colors['swatch.hairline.inverse'],
-          borderRadius: nativeRadius.swatch,
+          borderRadius: corner.keyline,
         }}
       >
         <View
@@ -136,8 +185,8 @@ export function Swatch({
             backgroundColor: hex,
             // radius 0, forever — and it must be 0 on BOTH nested views, or the keyline
             // would round while the sample beneath it did not.
-            borderRadius: nativeRadius.swatch,
-            borderWidth: 1,
+            borderRadius: corner.sample,
+            borderWidth: KEYLINE_INSET,
             borderColor: colors['swatch.hairline'],
           }}
         />

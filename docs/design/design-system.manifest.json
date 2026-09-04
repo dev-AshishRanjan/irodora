@@ -782,14 +782,15 @@
     "adr": "0053"
   },
   "radius": {
-    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. swatch is 0 and never changes: corner radius removes sampled area from exactly the region the eye uses to judge a flat colour, and the effect grows as the swatch shrinks.",
+    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. A SWATCH CORNER IS A RATIO, NOT A LENGTH (ADR-0090): the objection to rounding a sample is the sampled AREA it removes, which is a function of radius relative to size — the reason the old note gave for fixing it at 0 was that the effect grows as the swatch shrinks. This product draws samples from 32px to about 380px, so any single pixel value is unusable at one end and invisible at the other. A rounded square loses (4 - pi)r^2, so the fraction lost is 0.8584 * ratio^2: at 0.125 that is 1.34%. maxSampledAreaLoss is what the parser enforces, so the ratio cannot be raised to something perceptually significant without the manifest failing to parse.",
     "xs": 6,
     "sm": 10,
     "md": 14,
     "lg": 20,
     "xl": 28,
     "pill": 999,
-    "swatch": 0
+    "swatchRatio": 0.125,
+    "_maxSampledAreaLoss": 0.02
   },
   "spacing": {
     "base": 4,

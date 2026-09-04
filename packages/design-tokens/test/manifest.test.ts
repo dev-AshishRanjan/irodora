@@ -192,8 +192,21 @@ describe('what the loader refuses', () => {
     ).toThrow(/status\.terrible/u);
   });
 
-  it('a swatch radius that is not 0', () => {
-    expect(() => parseManifest(withValue(['radius', 'swatch'], 4))).toThrow(/swatch radius is 0/u);
+  it('a swatch corner that removes more of the sample than the ceiling permits', () => {
+    /*
+     * THE REFUSAL SURVIVED THE REVERSAL, which is the point of ADR-0090. It used to read "not
+     * 0"; it now reads "removes more area than declared" — the thing the zero stood in for.
+     * 0.5 is a corner half the sample's width, which takes 21% of it; the manifest permits 2%.
+     */
+    expect(() => parseManifest(withValue(['radius', 'swatchRatio'], 0.5))).toThrow(
+      /removes 21\.\d\d% of the sample/u,
+    );
+  });
+
+  it('DECOY — a corner inside the ceiling is accepted', () => {
+    // Without this the case above would pass for a loader that rejected every ratio, turning a
+    // reversal into a different absolute rule.
+    expect(() => parseManifest(withValue(['radius', 'swatchRatio'], 0.1))).not.toThrow();
   });
 
   it('an OKLCh lightness outside [0,1]', () => {

@@ -2807,6 +2807,72 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-077",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/manifest.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/DESIGN-SYSTEM.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "docs"
+      ],
+      "severity": "high",
+      "guard": "gate:test — the parse-time refusal survived the reversal rather than being deleted. `manifest.test.ts` asserts that a ratio of 0.5 (21% of the sample) throws AND that 0.1 (0.86%) does not, so the reversal did not become a different absolute rule. `swatch-corners.test.ts` asserts the keyline sits exactly one pixel outside the sample at ten sizes — the one failure mode rounding newly makes possible. `swatch-edge.test.ts` is untouched and still passes: contrast is per-pixel and indifferent to geometry.",
+      "memory": "memory/effects/a-rule-can-be-right-about-the-thing-and-wrong-about-the-value.md",
+      "rationale": "FOUR PLACES ASSERTED `radius.swatch: 0` — the manifest, a parse-time throw, a conformance test named \"is radius 0, at every size, forever\", and two design documents, one calling it *inviolable*. The reporter asked for roundness and authorised the reversal. WHAT MADE THE REVERSAL POSSIBLE RATHER THAN MERELY PERMITTED is that the stated reason was about AREA, not about zero: \"corner radius removes sampled area from exactly the region the eye uses to judge a flat colour, and the effect grows as the swatch shrinks\". That second clause says the quantity that matters is radius RELATIVE TO SIZE — which is a ratio, and a ratio can be bounded. A rounded square loses (4 − π)r², so the fraction lost is 0.8584 × ratio²: 1.34% at the 0.125 shipped, against a declared ceiling of 2%. THE DOCUMENT ARGUED THE OTHER WAY WITH ITS OWN EXAMPLE: \"at 24 px a 10 px radius eats a fifth of the shape\" is a ratio of 0.42 costing about 15%. It was an argument against a LARGE corner, and it was read for five months as an argument against corners. SO THE GUARD WAS RESTATED, NOT REMOVED, and that is the part worth carrying: the loader still refuses, on the quantity the original reasoning actually named. A reversal that deletes the check leaves nothing to stop the next person setting 0.5; a reversal that restates it keeps the intent and moves the value.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-078",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Swatch.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/verification/off-scale-spacing.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y — `verify-spacing-scale.mjs` refuses a scan that finds nothing at all: \"No spacing declarations found at all. That is not a clean product; it is a broken scan.\" That refusal is the only reason this was caught, and it caught it within one run of the change.",
+      "memory": "memory/effects/the-last-literal-is-what-keeps-a-scan-honest.md",
+      "rationale": "NAMING A CONSTANT MADE A GATE BLIND, FOR THE SECOND TIME. `Swatch` draws its two-tone keyline as a 1px-inset parent, written `padding: 1`, and F-161 replaced it with `KEYLINE_INSET` because the number now also feeds the corner arithmetic. It reads better. It was also THE LAST NUMERIC SPACING LITERAL IN THE PRODUCT — the spacing gate went from one declaration to zero and refused, correctly, because a scanner that finds nothing cannot tell a clean codebase from a broken regex. F-140 did the same thing at scale: tokenising the screens took the scan from 161 declarations to 1, and the fix then was to teach it to read `nativeSpacing.<step>` as a reference. TWO THINGS DEPEND ON THAT LITERAL BEING VISIBLE. The scan needs a subject, and the EXEMPTION needs a match: `off-scale-spacing.json` documents at length why a 1 here is a border width sized to the device pixel rather than spacing, and an exemption matching nothing fails in the other direction — which is the check working from both ends. THE GENERAL SHAPE: a source-scanning gate is a contract with the way the source is WRITTEN, and every refactor that improves readability is a candidate for breaking it silently. The gates that survive this are the ones that refuse an empty result.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

@@ -28,6 +28,7 @@ import {
   Status,
   Surface,
   Swatch,
+  swatchCorner,
   Tabs,
   Text,
   TextField,
@@ -762,12 +763,24 @@ describe('the swatch carries what ACCESSIBILITY.md section 5 requires', () => {
     expect(tree).toContain('percent confidence');
   });
 
-  it('is radius 0, at every size, forever', () => {
-    for (const size of [24, 72, 400]) {
+  it('rounds in proportion, and the keyline stays concentric (ADR-0090)', () => {
+    /*
+     * THIS ASSERTED  AT EVERY SIZE, FOREVER. ADR-0090 reversed that: the
+     * objection was the sampled AREA a corner removes, which is a function of radius relative to
+     * size, so the corner is a ratio and the manifest bounds what it may cost.
+     *
+     * What is asserted instead is the property that replaced it — the sample is rounded in
+     * proportion, and the keyline around it is exactly one pixel wider, which is what keeps two
+     * nested rounded rectangles concentric. Equal radii would show ground through each corner.
+     */
+    for (const size of [24, 72, 240]) {
+      const { sample, keyline } = swatchCorner(size);
       const tree = JSON.stringify(
         draw(<Swatch name="Ai-nezumi" hex="#526A6B" color={SAMPLE} size={size} />, 'light'),
       );
-      expect(tree).toContain('"borderRadius":0');
+      expect(tree).toContain(`"borderRadius":${String(sample)}`);
+      expect(tree).toContain(`"borderRadius":${String(keyline)}`);
+      expect(keyline - sample).toBe(1);
     }
   });
 

@@ -449,11 +449,41 @@ export function parseManifest(input: unknown): Manifest {
     if (name.startsWith('_')) continue;
     radius[name] = requireNumber(value, `radius.${name}`);
   }
-  if (radius['swatch'] !== 0)
+  /*
+   * THE SWATCH CORNER IS BOUNDED BY THE AREA IT REMOVES (ADR-0090).
+   *
+   * This read `if (radius['swatch'] !== 0) throw`, with the reason that a corner removes sampled
+   * area from exactly the region the eye uses to judge a flat colour. That reasoning is right and
+   * it does not require zero — it requires the loss to be SMALL, and the manifest's own note said
+   * so: "the effect grows as the swatch shrinks".
+   *
+   * A rounded square of side s with corner radius r loses (4 - pi)r^2, so the fraction of the
+   * sample lost is 0.8584 * (r/s)^2. Expressing the corner as a RATIO makes that fraction
+   * constant at every size, which is what a product drawing samples from 32px to 380px needs; a
+   * single pixel value is 37% of the smaller and 3% of the larger.
+   *
+   * The guard is not removed, it is restated as the thing it was always about. A ratio cannot be
+   * raised to something perceptually significant without this refusing to parse.
+   */
+  const swatchRatio = requireNumber(radiusRaw['swatchRatio'], 'radius.swatchRatio');
+  /*
+   * UNDERSCORED, so it is NOT emitted as a token.
+   *
+   * It is a parse-time CONSTRAINT, not a radius anything draws with — and the loop above skips
+   * `_`-prefixed keys, which is the manifest's existing way of saying "this is for the loader".
+   * Emitted, it reached no component and token reach flagged it, correctly: a value in the radius
+   * record looks like a corner somebody could set, and this one is a ceiling on what a corner may
+   * cost.
+   */
+  const maxLoss = requireNumber(radiusRaw['_maxSampledAreaLoss'], 'radius._maxSampledAreaLoss');
+  const lost = (4 - Math.PI) * swatchRatio * swatchRatio;
+  if (swatchRatio < 0 || lost > maxLoss)
     throw new ManifestError(
-      'radius.swatch',
-      'the swatch radius is 0 and does not change. A corner radius removes sampled area ' +
-        'from exactly the region the eye uses to judge a flat colour.',
+      'radius.swatchRatio',
+      `a corner of ${String(swatchRatio)} removes ${(lost * 100).toFixed(2)}% of the sample, ` +
+        `and the declared ceiling is ${(maxLoss * 100).toFixed(2)}%. A corner radius removes ` +
+        'sampled area from exactly the region the eye uses to judge a flat colour, so how much ' +
+        'it removes is the thing that has to stay bounded.',
     );
 
   // --- typography ---------------------------------------------------------------------

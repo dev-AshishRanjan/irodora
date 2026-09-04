@@ -146,10 +146,29 @@ describe('the non-colour scales survive the trip', () => {
     expect(TAP_TARGET).toBe(manifest.size.tapTarget);
   });
 
-  it('the swatch radius is 0 in every target', () => {
-    expect(RADIUS.swatch).toBe(0);
-    expect(nativeRadius.swatch).toBe(0);
-    expect(read('generated', 'tokens.css')).toContain('--irodora-radius-swatch: 0px;');
+  it('the swatch corner reaches every target as a bounded ratio', () => {
+    /*
+     * ADR-0090 REPLACED THE VALUE WITH A BOUND. This asserted `RADIUS.swatch === 0` and that the
+     * CSS carried `--irodora-radius-swatch: 0px` — a test pinning the old decision, which had to
+     * change with it or it would have been a check disagreeing with the thing it checks.
+     *
+     * What survives is the shape of the guarantee: the corner reaches every target, and it
+     * removes less of the sample than the manifest permits.
+     */
+    expect(RADIUS.swatchRatio).toBe(manifest.radius['swatchRatio']);
+    expect(nativeRadius.swatchRatio).toBe(RADIUS.swatchRatio);
+    /*
+     * THE CEILING IS NOT ASSERTED HERE, and that is the right division rather than an omission.
+     *
+     * This file's question is "does the manifest reach every target intact". The ceiling is a
+     * LOADER CONSTRAINT and is deliberately not emitted — it is underscored, so the parser skips
+     * it when building the radius record, which also means the parsed manifest object does not
+     * carry it and this file could not read it without re-reading the JSON.
+     *
+     * `manifest.test.ts` owns it, with a refusal and a decoy: a ratio that loses 21% throws, and
+     * one that loses 0.86% does not.
+     */
+    expect(read('generated', 'tokens.css')).toContain('--irodora-radius-swatchRatio');
   });
 
   it('the status pairing reaches TypeScript intact', () => {

@@ -8,6 +8,100 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-161 DONE · the sample has corners, and the guard survived
+
+### The register was chosen again
+
+Editorial fashion was the first pick, and F-146 to F-150 were built against it. The reporter has
+now twice asked for something cute and warm *alongside* enterprise-grade, and chose **soft minimal
+— Muji/Ghibli** over both an overtly kawaii direction and staying austere.
+
+Most of the product was already rounded: twelve `borderRadius` declarations in `packages/ui`
+read from a scale described as *"Material-3-scaled and generous"*. **The square thing was the
+swatch**, on every screen, at every size. That is what read as hard.
+
+### `radius.swatch: 0` was asserted in four places, one of them a throw
+
+The manifest, a parse-time `ManifestError`, a conformance test named *"is radius 0, at every size,
+forever"*, and two design documents — one calling it **inviolable**.
+
+What made the reversal possible rather than merely permitted is that **the stated reason was about
+area, not about zero**:
+
+> corner radius removes sampled area from exactly the region the eye uses to judge a flat colour,
+> **and the effect grows as the swatch shrinks**
+
+That second clause names radius *relative to size*. Which is a ratio, and a ratio can be bounded. A
+rounded square loses `(4 − π)r²`, so the fraction lost is `0.8584 · ratio²`:
+
+| ratio | lost |
+| --- | --- |
+| **0.125** (shipped) | **1.34 %** |
+| 0.153 | 2.00 % — the declared ceiling |
+| 0.42 | 15 % |
+
+**The document argued the other way with its own example.** *"At 24 px a 10 px radius eats a fifth
+of the shape"* is a ratio of 0.42. It was an argument against a *large* corner, and it was read for
+five months as an argument against corners — the evidence for the reversal was sitting inside the
+rule it was supporting (E-077).
+
+### The guard was restated, not deleted
+
+The loader still refuses, on the quantity the reasoning actually named: a ratio costing more than
+`_maxSampledAreaLoss` throws. And a **decoy** asserts it still accepts one inside the ceiling, so
+the reversal did not quietly become a different absolute rule.
+
+**The keyline is untouched.** F-068 measured a single hairline at **1.00 against its own colour** —
+not a weak edge but none at all. Roundness was asked for; giving up a contrast guarantee was not.
+`swatch-edge.test.ts` still passes unchanged, because contrast is per-pixel and indifferent to
+geometry.
+
+**What is genuinely new is concentricity.** Two nested rounded rectangles are only concentric when
+the outer radius exceeds the inner by the inset, so the keyline takes `r + 1`. Equal radii show a
+sliver of ground through every corner. At radius 0 that could not happen, which is why the old
+comment could say the two "must be 0 on BOTH nested views" and be complete.
+
+### Naming a constant made the spacing gate blind
+
+`padding: 1` became `KEYLINE_INSET`, which reads better — and it was **the last numeric spacing
+literal in the product**. The scan went from one declaration to zero and the gate refused:
+
+> No spacing declarations found at all. That is not a clean product; it is a broken scan.
+
+That refusal is the whole value: a scanner finding nothing cannot tell a clean codebase from a
+broken regex. F-140 did the same thing at scale — tokenising the screens took it from 161
+declarations to 1. Two things needed the number visible: the scan needs a subject, and
+`off-scale-spacing.json`'s entry needs a match, because an exemption matching nothing fails in the
+other direction (E-078).
+
+It is a literal again, with the reason written beside it.
+
+### Verification
+
+| ran | result |
+| --- | --- |
+| `pnpm verify:ci` — all 33 runnable CI steps | **PASS** |
+| 173 design-tokens · 129 ui · 692 mobile | **PASS** |
+| the loader's refusal, and its decoy | **PASS** |
+
+ADR-0090 records the reversal, the arithmetic, and what replaced the old guard. Three documents
+that asserted the rule now point at it rather than contradicting the code.
+
+### Still owed
+
+**Nobody has looked at it.** This is the single most visible change in the release — every colour
+surface in the product changed in one commit, because a system that rounds some samples and not
+others is worse than either choice. The arithmetic bounds the change; **1.34 % is small, and
+whether *small* is *unnoticeable* when judging a flat colour is a claim about the eye that nobody
+here has tested.**
+
+**Half the register shift is not done.** The roundness half was the blocking half and it is
+complete. Tints and rhythm are unchanged: the palette is already warm, and whether the spacing is
+generous enough is a judgement about screens that F-164 rebuilds anyway. Tuning values against
+surfaces about to change is doing the work twice.
+
+---
+
 ## 2026-09-05 — F-159 DONE · the header was the only thing insetting anything
 
 ### The diagnosis names the commit

@@ -174,6 +174,8 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-ramp-decided-before-the-first-chart.md](effects/a-ramp-decided-before-the-first-chart.md) — **E-074** · the chart palette was chosen when there was nothing to plot, which is the only time such a decision is cheap.
 - [effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md](effects/turning-off-a-header-turned-off-the-only-thing-insetting-anything.md) — **E-075** · a framework default was load-bearing without appearing anywhere in our source, so turning it off changed something nobody had written.
 - [effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md](effects/a-size-chosen-against-one-screen-is-wrong-on-every-other.md) — **E-076** · two fixed widths overflowed most phones, and nothing in the repository lays anything out, so only a person holding one could see it.
+- [effects/a-rule-can-be-right-about-the-thing-and-wrong-about-the-value.md](effects/a-rule-can-be-right-about-the-thing-and-wrong-about-the-value.md) — **E-077** · a parse-time rule cited a reason that turned out to permit what it forbade, and the document argued the other way with its own worked example.
+- [effects/the-last-literal-is-what-keeps-a-scan-honest.md](effects/the-last-literal-is-what-keeps-a-scan-honest.md) — **E-078** · extracting a constant took a source scan to zero matches, and only its refusal to accept an empty result caught it.
 
 ## Glossary
 
