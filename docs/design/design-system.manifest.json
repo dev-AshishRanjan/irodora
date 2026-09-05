@@ -786,15 +786,15 @@
     "adr": "0053"
   },
   "radius": {
-    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. A SWATCH CORNER IS A RATIO, NOT A LENGTH (ADR-0090): the objection to rounding a sample is the sampled AREA it removes, which is a function of radius relative to size — the reason the old note gave for fixing it at 0 was that the effect grows as the swatch shrinks. This product draws samples from 32px to about 380px, so any single pixel value is unusable at one end and invisible at the other. A rounded square loses (4 - pi)r^2, so the fraction lost is 0.8584 * ratio^2: at 0.125 that is 1.34%. maxSampledAreaLoss is what the parser enforces, so the ratio cannot be raised to something perceptually significant without the manifest failing to parse.",
+    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. A SWATCH CORNER IS A RATIO, NOT A LENGTH (ADR-0090): this product draws samples from 32px to about 380px, so any single pixel value is unusable at one end and invisible at the other. WHAT BOUNDS IT CHANGED IN ADR-0094. It was the sampled AREA a corner removes, capped at 2%, which capped the ratio near 0.15 and left a 44px swatch with a 5.5px corner — a rectangle with the edges taken off, reported as such. Area was the wrong measure: colour appearance does depend on area, and it needs an order-of-magnitude change to matter, so the difference between losing 1.3% and 5.4% is not something anyone can see. What actually degrades a sample is the corner growing until the shape stops being a field and becomes a blob — at ratio 0.5 a square is a circle, and a circle is a worse container for judging a colour because proportionally more of it is edge, which is where simultaneous contrast acts. So the bound is now the STRAIGHT PART OF EACH EDGE: side - 2r >= side/2 gives ratio <= 0.25, at which half of every edge is still a straight run of colour. minStraightEdgeFraction is what the parser enforces. The corner is additionally CAPPED at radius.xl in Swatch.tsx, because a pure ratio gives the hero an 85px corner, which is a curve rather than a corner.",
     "xs": 6,
     "sm": 10,
     "md": 14,
     "lg": 20,
     "xl": 28,
     "pill": 999,
-    "swatchRatio": 0.125,
-    "_maxSampledAreaLoss": 0.02
+    "swatchRatio": 0.25,
+    "_minStraightEdgeFraction": 0.5
   },
   "spacing": {
     "base": 4,

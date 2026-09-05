@@ -3158,6 +3158,43 @@
       "confidence": 0.94,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-087",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/manifest.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Swatch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unreached-tokens.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "gate:a11y — `swatch-corners.test.tsx` asserts the straight fraction at every size the product actually draws, the cap in BOTH directions (a decoy proves the cap is not simply the answer everywhere), and the keyline staying exactly one unit outside the sample across the cap. The parse-time refusal is enforced by the manifest loader and has now survived two rewrites, with a decoy that must be accepted.",
+      "memory": "memory/effects/a-bound-can-be-rigorous-about-the-wrong-quantity.md",
+      "rationale": "A BOUND CAN BE RIGOROUS ABOUT THE WRONG QUANTITY, and then no value inside it is any good. ADR-0090 reversed `radius.swatch: 0` and made the corner a RATIO — right, and kept — bounded by `_maxSampledAreaLoss: 0.02`, enforced at parse time. A rounded square loses 0.8584·ratio², so that ceiling caps the ratio near 0.153, which leaves a 44px swatch with a 5.5px corner. Reported twice as still rectangular, and it was: THERE IS NO VALUE INSIDE THAT BOUND THAT LOOKS ANY DIFFERENT. So the question was never which number to pick. AREA WAS THE WRONG MEASURE. The area effect on colour appearance is real and needs an ORDER OF MAGNITUDE to matter — the difference between a swatch losing 1.3% of itself and losing 5.4% is not perceptible in any condition. The bound was rigorous about a quantity that does not carry the risk. WHAT ACTUALLY DEGRADES A SAMPLE is the corner growing until the shape stops being a FIELD: at ratio 0.5 a square is a circle, and a circle is a worse container for judging a colour because proportionally more of it is edge, which is where simultaneous contrast acts — the physics `swatch.well` exists for. So the bound is the straight run left on each edge: side − 2r ≥ side·f, and at f = 0.5 the ratio may reach 0.25. The value is a CONSEQUENCE of the criterion rather than a number chosen to reach a look, which is the difference between this and raising the old ceiling until 0.25 fit through it. AND A PURE RATIO IS WRONG AT THE TOP: at 0.25 the hero takes an 85px corner, which is a curve, at exactly the size where the flat field matters most. Capped at `radius.xl` — no new number, the top of the existing scale. THE MEASUREMENT CAME FIRST, which the feature note demanded: every card already took `md` and read as rounded, and the hero at ~340px already had a 42px corner. Only the 32–56px samples were rectangles, and those are what fill the Atlas, the wardrobe grid and every readout. The report said 'the main colour container of colour' and was exactly right. THE GATE CAUGHT THE CONSEQUENCE IN THE OTHER DIRECTION: `radius.xl` was declared unreached, the cap gave it its first reader, and gate 8's dead-exemption check refused the stale declaration — so a feature about roundness closed half of a token exemption and the entry now names only `xs`.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

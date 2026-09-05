@@ -61,11 +61,10 @@
     {
       "group": "radius step",
       "tokens": [
-        "xs",
-        "xl"
+        "xs"
       ],
-      "cites": "F-017",
-      "why": "TWO STEPS OF A SCALE THAT IS USED. `sm`, `md`, `pill` and `swatch` are read, and F-143 added `lg` for the popover panel — the first raised surface in this product with a corner, which is why the step had found no home before. `xs` and `xl` have still found none. That is the ordinary state of a scale: some steps have not met their surface yet. It is a different thing from a scale that reaches NOTHING while hand-written values contradict it, which is what `nativeSpacing` was until F-095 — and the distinction is what decides whether an entry here is a note or a defect. The form controls (F-156) are where a smaller and a larger radius arrive.",
+      "cites": "F-017, F-169",
+      "why": "ONE STEP OF A SCALE THAT IS USED, down from two. `sm`, `md`, `pill` and `swatch` are read, F-143 added `lg` for the popover panel, and F-169 gave `xl` its first reader — it is the CAP on a swatch corner, the largest corner this design system draws, which is what stops a pure ratio giving the hero an 85px curve (ADR-0094). `xs` has still found no home. That is the ordinary state of a scale: some steps have not met their surface yet, and it is a different thing from a scale that reaches NOTHING while hand-written values contradict it, which is what `nativeSpacing` was until F-095. The form controls (F-156) are where a smaller radius arrives.",
       "closedBy": "F-156"
     },
     {

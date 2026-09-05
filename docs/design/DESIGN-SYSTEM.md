@@ -99,11 +99,21 @@ is why this is checked over the rendered tree (`checkStatusAdjacency`, F-069) ra
 token pairing. No `pairsWith` can express it: the other side of the adjacency is an arbitrary
 garment colour.
 
-**`radius.swatchRatio: 0.125`, bounded by `_maxSampledAreaLoss`** — the corner is a ratio, so
-the fraction of the sample it costs is the same at 24 px and at 380 px, and the manifest refuses a
-ratio that costs more than 2 % ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
-This was `radius.swatch: 0`, described here as inviolable; what was inviolable turned out to be
-the AREA, and that is what the loader now enforces.
+**`radius.swatchRatio: 0.25`, bounded by `_minStraightEdgeFraction`** — the corner is a ratio, so
+a chip and a card round alike — capped at `radius.xl`, because a pure ratio gives the hero an
+85 px corner, which is a curve rather than a corner.
+
+This was `radius.swatch: 0`, described here as inviolable.
+[ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)
+replaced the zero with a bound on the AREA a corner removes, and
+[ADR-0094](../adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) replaced that bound
+in turn: area was the wrong measure. Colour appearance does depend on area and needs an
+order-of-magnitude change to matter, so the difference between losing 1.3 % and 5.4 % of a swatch
+is invisible — while the 2 % ceiling held the corner at 5.5 px on a 44 px swatch, which is a
+rectangle with the edges taken off. **What degrades a sample is the corner growing until the
+shape stops being a field**: at ratio 0.5 a square is a circle, and a circle is a worse container
+for judging a colour because proportionally more of it is edge, which is where simultaneous
+contrast acts. So the loader now enforces that half of every edge stays straight.
 
 **`chromaCeiling`** — surfaces and text may not exceed chroma 0.01 without a recorded
 exception. The interface is near-achromatic *by rule*, so the garment colour is the only

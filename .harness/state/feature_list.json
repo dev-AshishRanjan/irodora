@@ -4977,7 +4977,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-167"
       ],
@@ -4991,7 +4991,25 @@
         "lint",
         "test"
       ],
-      "notes": "ADR-0090 MADE THE CORNER A RATIO AND THE RATIO IS TOO SMALL. `swatchRatio` is 0.125, bounded by `_maxSampledAreaLoss` of 2% — a rounded square loses 0.8584 * ratio^2, so 0.125 costs 1.34% and the guard caps the ratio at about 0.1526. At the 56px swatch in the Lens sheet that is a 7px corner, which is a rectangle with the edges taken off. Reported as \"the main color container of color is still rectangular\". THE QUESTION TO ANSWER FIRST is what `_maxSampledAreaLoss` is actually protecting. Its stated reason is that a swatch's job is to show an AREA of colour and rounding removes some — a real perceptual argument about area and colour appearance, not a taste one. So this is not \"raise the number until it looks right\": either the bound is about judging a colour and 2% is defensible, in which case the roundness has to come from the CONTAINERS around the sample rather than the sample, or the bound is arbitrary and needs replacing with one that is not. FIND THE CONTAINER THE REPORTER MEANT before changing the sample: the hero block on a colour, the card in a list and the swatch are three different surfaces and only one of them is a sample."
+      "notes": "ADR-0090 MADE THE CORNER A RATIO AND THE RATIO IS TOO SMALL. `swatchRatio` is 0.125, bounded by `_maxSampledAreaLoss` of 2% — a rounded square loses 0.8584 * ratio^2, so 0.125 costs 1.34% and the guard caps the ratio at about 0.1526. At the 56px swatch in the Lens sheet that is a 7px corner, which is a rectangle with the edges taken off. Reported as \"the main color container of color is still rectangular\". THE QUESTION TO ANSWER FIRST is what `_maxSampledAreaLoss` is actually protecting. Its stated reason is that a swatch's job is to show an AREA of colour and rounding removes some — a real perceptual argument about area and colour appearance, not a taste one. So this is not \"raise the number until it looks right\": either the bound is about judging a colour and 2% is defensible, in which case the roundness has to come from the CONTAINERS around the sample rather than the sample, or the bound is arbitrary and needs replacing with one that is not. FIND THE CONTAINER THE REPORTER MEANT before changing the sample: the hero block on a colour, the card in a list and the swatch are three different surfaces and only one of them is a sample. DONE 2026-09-06. THE MEASUREMENT CAME FIRST, as the note demanded: every `Surface` already took `md` (14) and read as rounded, and the hero swatch at ~340px already had a 42px corner. ONLY THE 32–56px SAMPLES WERE RECTANGLES — 5.5px at 44, 7px at 56 — and those are what fill the Atlas, the wardrobe grid, the nearest-colour lists and every readout. The report said \"the main colour container of colour\" and was exactly right. THE BOUND WAS RIGOROUS ABOUT THE WRONG QUANTITY (ADR-0094): `_maxSampledAreaLoss` capped the ratio near 0.153, so no value inside it looked any different — and area was never the risk, because the area effect needs an order of magnitude to matter and 1.3% against 5.4% is imperceptible. What degrades a sample is the corner growing until the shape stops being a FIELD, so the bound is now the straight run left on each edge: side − 2r ≥ side/2 gives ratio ≤ 0.25, and 0.25 is a CONSEQUENCE rather than a number chosen to reach a look. CAPPED AT `radius.xl`, because a pure ratio gives the hero an 85px curve at exactly the size where the flat field matters most — and no new number, the cap is the top of the existing scale. THE GATE CAUGHT THE OTHER DIRECTION: `radius.xl` was declared unreached and the cap gave it its first reader, so gate 8 refused the stale declaration and the exemption now names only `xs`. NOT TOUCHED: the `Surface` radius — every card already takes `md`, nobody overrides it, and changing the card scale in the same commit would be changing something nobody asked about while claiming to answer something they did.",
+      "plan": "plans/F-169-roundness-reaches-the-sample.md",
+      "effects": [
+        "E-087"
+      ],
+      "attested": [
+        {
+          "criterion": "The large colour surfaces read as rounded at the sizes the product actually draws them",
+          "verifiedBy": "THE ARITHMETIC IS ASSERTED AT THE REAL SIZES rather than against an abstraction: 32 → 8, 44 → 11, 56 → 14, 100 → 25, 340 → 28, with the straight fraction checked at each and the cap checked in both directions. WHAT NOBODY HAS DONE IS LOOK AT IT. Whether 11px on a 44px swatch reads as \"Apple-like\" is a judgement made on a phone, and this is the third visual feature in a row to owe exactly that.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Whatever bound replaces the current one is argued rather than raised until it looks right",
+          "verifiedBy": "ARGUED, AND THE ARGUMENT IS FALSIFIABLE. The claim is that the area effect needs an order-of-magnitude change to matter, so a bound on area cannot be the thing protecting a sample — and that the real limit is the shape ceasing to be a field, which at ratio 0.5 is literally a circle. A colour scientist could disagree with the first half; ADR-0094 states it plainly enough to be disagreed with, which is the point. WHAT IS NOT DONE is a review by one: `.harness/rules/color/color-science.md` asks for the colour-scientist subagent on engine work, and this is a design token rather than the engine — a line that is defensible and was not tested against anybody.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-170",

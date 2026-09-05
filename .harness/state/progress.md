@@ -8,6 +8,107 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-169 DONE · the bound was rigorous about the wrong quantity
+
+*"When I said I need roundness in color card, I said for every containers, the main color
+container of color is still rectangular."*
+
+### The measurement came first, and it moved the target
+
+| surface | radius | reads as |
+|---|---:|---|
+| `Surface` — every card, `radius="md"` | 14 px | rounded |
+| `Swatch` hero on a colour page (~340 px) | 42 px | rounded |
+| **`Swatch` in a list or grid (44 px)** | **5.5 px** | **a rectangle** |
+| **`Swatch` in the Lens readout (56 px)** | **7 px** | **a rectangle** |
+
+The cards were already fine and so was the hero. **Only the 32–56 px samples were rectangles** —
+which are what fill the Atlas, the wardrobe grid, the nearest-colour lists and every readout.
+
+The report said *the main colour container of colour* and was exactly right. Going straight to
+"make things rounder" would have changed the cards and left the actual complaint in place.
+
+### No value inside the bound would have looked any different
+
+ADR-0090 had already done the hard part: it reversed `radius.swatch: 0` and made the corner a
+**ratio**, which is right and survives. It then bounded that ratio by `_maxSampledAreaLoss: 0.02`,
+enforced at parse time so nobody could quietly raise it.
+
+A rounded square loses `(4 − π)r²`, so the lost fraction is `0.8584 · ratio²` — and that ceiling
+caps the ratio at about **0.153**. Five and a half pixels on a 44 px swatch is the *best* that
+bound permits.
+
+So the question was never which number to pick.
+
+### Area was the wrong measure
+
+The area effect on colour appearance is real — larger samples read lighter and more colourful —
+and it needs an **order-of-magnitude** change to matter. The difference between a swatch losing
+1.3 % of itself and losing 5.4 % is not perceptible to anybody, in any condition.
+
+**The bound was rigorous, enforced at parse time, impossible to fudge, and about a quantity that
+does not carry the risk.** That is a specific failure worth naming: a constraint can be perfectly
+well engineered and still be measuring something *adjacent* to what it protects. It looks like a
+good constraint from the inside — a formula, a refusal, a decoy — and the only symptom is that
+everything it permits is wrong.
+
+What actually degrades a sample is the corner growing until the shape stops being a **field**. At
+`ratio = 0.5` a square is a circle, and a circle is a worse container for judging a colour:
+proportionally more of it is edge, and edge is where simultaneous contrast acts — the physics
+`swatch.well` exists for.
+
+```
+side − 2r ≥ side · f      →      ratio ≤ (1 − f) / 2      →      f = 0.5 gives 0.25
+```
+
+**0.25 is a consequence rather than a target.** That is the whole difference between this and
+raising the old ceiling until 0.25 fit through it — which was available, would have taken one
+line, and would have left a bound still measuring the wrong thing. ([ADR-0094](../../docs/adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md))
+
+### And a pure ratio is wrong at the top
+
+At 0.25 the hero would take an **85 px** corner — a curve, at exactly the size where the flat
+field matters most. Capped at `radius.xl`, the largest corner the system draws anywhere. No new
+number: the cap is the top of the existing scale and moves when the scale does.
+
+```
+ 32 px →  8      44 px → 11      56 px → 14      100 px → 25      340 px → 28 (capped)
+```
+
+### The gate caught the consequence going the other way
+
+`radius.xl` was declared unreached. The cap gave it its first reader, and gate 8's
+**dead-exemption** direction refused the stale declaration:
+
+> `radius step xl is declared unreached, and is read by packages/ui/src/Swatch.tsx`
+> Remove the declaration. A dead exemption is how a live one gets waved through later.
+
+A feature about roundness closed half a token exemption, and the check that noticed was the one
+looking for exemptions that had outlived their reason.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| `swatch-corners.test.tsx` — 7 cases, 2 of them decoys | **PASS** |
+| the parse-time refusal, with a decoy that must be accepted | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**Nobody has looked at it** — the third visual feature in a row to owe exactly that. And the
+argument about the area effect is stated plainly enough to be disagreed with, which is
+deliberate: it has not been put to a colour scientist, because a design token is not the engine
+and the rule that asks for that review does not reach here.
+
+**Not touched:** the `Surface` radius. Every card already takes `md`, nobody overrides it, and
+changing the card scale in the same commit would be changing something nobody asked about while
+claiming to answer something they did.
+
+---
+
 ## 2026-09-06 — F-171 DONE · two thorough checks, and neither of them looked at a pair
 
 Reported: *"There is some color contrast issue in the app, in many places."* Gate 9 was green.

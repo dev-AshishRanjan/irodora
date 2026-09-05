@@ -475,15 +475,39 @@ export function parseManifest(input: unknown): Manifest {
    * record looks like a corner somebody could set, and this one is a ceiling on what a corner may
    * cost.
    */
-  const maxLoss = requireNumber(radiusRaw['_maxSampledAreaLoss'], 'radius._maxSampledAreaLoss');
-  const lost = (4 - Math.PI) * swatchRatio * swatchRatio;
-  if (swatchRatio < 0 || lost > maxLoss)
+  const minStraight = requireNumber(
+    radiusRaw['_minStraightEdgeFraction'],
+    'radius._minStraightEdgeFraction',
+  );
+
+  /*
+   * WHAT BOUNDS A SWATCH CORNER, AND WHY THIS IS THE SECOND ANSWER (ADR-0094).
+   *
+   * It was the sampled AREA a corner removes — `(4 - π)r²` — capped at 2%, which held the ratio
+   * near 0.15 and left a 44px swatch with a 5.5px corner. That was reported as a rectangle,
+   * twice, and it was: there is no value inside that bound which looks any different.
+   *
+   * **Area was the wrong measure.** Colour appearance does depend on area, and it needs an
+   * order-of-magnitude change to matter; the difference between losing 1.3% and 5.4% of a swatch
+   * is not something anybody can see.
+   *
+   * What actually degrades a sample is the corner growing until the shape stops being a FIELD
+   * and starts being a blob. At `ratio = 0.5` a square is a circle, and a circle is a worse
+   * container for judging a colour: proportionally more of it is edge, and edge is where
+   * simultaneous contrast acts — the physics `swatch.well` exists for.
+   *
+   * So the bound is the straight run left on each edge. `side - 2r >= side · f` rearranges to
+   * `ratio <= (1 - f) / 2`, and at `f = 0.5` that is 0.25: half of every edge is still a
+   * straight run of colour, and the sample reads as a rectangle with softened corners rather
+   * than as a curve.
+   */
+  const straight = 1 - 2 * swatchRatio;
+  if (swatchRatio < 0 || straight < minStraight)
     throw new ManifestError(
       'radius.swatchRatio',
-      `a corner of ${String(swatchRatio)} removes ${(lost * 100).toFixed(2)}% of the sample, ` +
-        `and the declared ceiling is ${(maxLoss * 100).toFixed(2)}%. A corner radius removes ` +
-        'sampled area from exactly the region the eye uses to judge a flat colour, so how much ' +
-        'it removes is the thing that has to stay bounded.',
+      `a corner of ${String(swatchRatio)} leaves ${(straight * 100).toFixed(1)}% of each edge ` +
+        `straight, and the declared floor is ${(minStraight * 100).toFixed(1)}%. Past that the ` +
+        'corners meet and the sample stops being a field of colour — which is what it is for.',
     );
 
   // --- typography ---------------------------------------------------------------------

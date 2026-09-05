@@ -184,6 +184,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md](effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md) — **E-084** · a boundary applied as spacing is correct at exactly one scroll position, and that position is the one everybody looks at.
 - [effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md](effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md) — **E-085** · the safe-zone assertion carried the old mark numbers and would have passed while Android clipped the new one.
 - [effects/two-thorough-checks-and-neither-looked-at-a-pair.md](effects/two-thorough-checks-and-neither-looked-at-a-pair.md) — **E-086** · gate 9 checks the manifest, the suite checks one colour at a time, and the space between them was unmeasured for a year.
+- [effects/a-bound-can-be-rigorous-about-the-wrong-quantity.md](effects/a-bound-can-be-rigorous-about-the-wrong-quantity.md) — **E-087** · the swatch corner was capped by the area it removes, which is not what makes a sample hard to judge.
 
 ## Glossary
 

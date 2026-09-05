@@ -71,7 +71,7 @@ export const RADIUS = {
   lg: 20,
   xl: 28,
   pill: 999,
-  swatchRatio: 0.125,
+  swatchRatio: 0.25,
 } as const;
 
 export const SPACING = {

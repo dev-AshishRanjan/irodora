@@ -69,7 +69,7 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
 /**
  * The corner radius of a sample of a given size, and of the keyline around it.
  *
- * ## A ratio, not a length (ADR-0090)
+ * ## A ratio, not a length (ADR-0090), bounded by what stays straight (ADR-0094)
  *
  * `radius.swatch` was 0 and the manifest parser threw on anything else, because a corner
  * removes sampled area from exactly the region the eye uses to judge a flat colour. That
@@ -92,8 +92,24 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
  * BOTH nested views" and be complete. With a corner it is the one genuinely new failure mode,
  * and `swatch-corners.test.ts` is what would catch it.
  */
+/**
+ * The largest corner a sample may take, however big it is.
+ *
+ * **A pure ratio is right in the middle of the range and wrong at the top.** ADR-0090 made the
+ * corner a ratio for a good reason — this product draws samples from 32px to about 380px, and a
+ * single pixel value is invisible at one end and overwhelming at the other. But at 0.25 the hero
+ * on a colour page would take an 85px corner, which is not a corner: it is a curve, and the
+ * sample stops reading as a rectangle at exactly the size where the flat field matters most.
+ *
+ * `radius.xl` is the largest corner this design system draws anywhere. Beyond it a sample would
+ * be rounder than every other container in the product, which is a statement nobody made.
+ *
+ * NOT A NEW NUMBER: the cap is the top of the existing scale, so it moves when the scale does.
+ */
+const SWATCH_MAX_CORNER = nativeRadius.xl;
+
 export function swatchCorner(size: number): { readonly sample: number; readonly keyline: number } {
-  const sample = Math.round(size * nativeRadius.swatchRatio);
+  const sample = Math.min(Math.round(size * nativeRadius.swatchRatio), SWATCH_MAX_CORNER);
   return { sample, keyline: sample + KEYLINE_INSET };
 }
 
