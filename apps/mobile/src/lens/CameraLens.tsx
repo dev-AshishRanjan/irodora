@@ -30,9 +30,17 @@
  * sequence, and the screen is presentational — so what lives in the one file jest cannot render
  * is a `useReducer`, a timer, and a derivation. That is the arrangement F-160 was after: the
  * untestable file should hold the least interesting code in the feature.
+ *
+ * ## The photograph arrives through a port, for the reason the wardrobe's does
+ *
+ * `expo-image-picker` needs a device, a permission dialogue and a person, so
+ * `app/(tabs)/lens.tsx` supplies an {@link ImageSource} and this calls it. That keeps the one
+ * device-bound step out of everything that decodes, bounds or draws — `lens/photo.ts` is a pure
+ * module with a test that reads real files, and the screen is renderable with a photograph
+ * already open.
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { Lens } from '../screens/Lens';
 import { Viewfinder, useLensPermission } from './viewfinder';
@@ -45,9 +53,25 @@ import {
   type CaptureKind,
   type LensMode,
 } from './capture';
+import {
+  ImageRejected,
+  openPhoto,
+  PHOTO_CENTRE,
+  PhotoUnreadable,
+  readPhoto,
+  type DecodedPhoto,
+  type PhotoPoint,
+} from './photo';
+import { base64FromBytes } from '../wardrobe/source';
+import type { ImageSource } from '../wardrobe/source';
 import type { LensReading } from './reading';
 
-export default function CameraLens(): React.JSX.Element {
+export interface CameraLensProps {
+  /** The photo library, as a port. Supplied by the route; see the header. */
+  readonly imageSource: ImageSource;
+}
+
+export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.Element {
   const { permission, request } = useLensPermission();
   const [capture, dispatch] = useReducer(nextCapture, CAPTURE_IDLE);
   /**
@@ -57,6 +81,16 @@ export default function CameraLens(): React.JSX.Element {
    * moment a reading arrives — a stale reason under a live reading would be worse than none.
    */
   const [diagnostic, setDiagnostic] = useState<string | null>(null);
+
+  /**
+   * The decoded photograph — up to a hundred megabytes of it.
+   *
+   * A ref rather than reducer state, deliberately. Only the shutter handler reads these pixels,
+   * nothing renders from them, and React compares state on every dispatch: putting a buffer this
+   * size where a live readout dispatches at frame rate would be work with no result. What the
+   * screen needs — the URI, the dimensions, the chosen point — is in the reducer.
+   */
+  const photoPixels = useRef<DecodedPhoto | null>(null);
 
   /**
    * What the frame processor should be doing.
@@ -71,8 +105,86 @@ export default function CameraLens(): React.JSX.Element {
     dispatch({ kind: 'reading', reading, of });
   }, []);
 
+  /**
+   * Take a reading.
+   *
+   * TWO PATHS, ONE CONTROL. A photograph is already decoded, so its reading exists the moment
+   * the shutter is pressed and is dispatched directly — there is nothing to await and no frame
+   * to time out. The camera has to be asked, so it goes through `shutter` and the demand.
+   */
   const onCapture = useCallback(() => {
-    dispatch({ kind: 'shutter' });
+    const photo = photoPixels.current;
+    if (photo === null) {
+      dispatch({ kind: 'shutter' });
+      return;
+    }
+    dispatch({ kind: 'reading', reading: readPhoto(photo, pointRef.current), of: 'capture' });
+  }, []);
+
+  /**
+   * Where in the photograph to read, mirrored out of the reducer.
+   *
+   * `onCapture` must not depend on the point, or it would be rebuilt on every tap and the
+   * memoised viewfinder below would lose its bail-out. A ref written during commit is the
+   * value at the moment the shutter is pressed, which is the only moment it is read.
+   */
+  const pointRef = useRef<PhotoPoint>(PHOTO_CENTRE);
+
+  const onPoint = useCallback((at: PhotoPoint) => {
+    pointRef.current = at;
+    dispatch({ kind: 'point', at });
+  }, []);
+
+  /**
+   * Open a photograph: pick it, bound it, decode it.
+   *
+   * THE ORDER IS THE SECURITY PROPERTY. `openPhoto` runs `ingestImage` first — bytes, then the
+   * type from the magic numbers, then the pixel count from the header — and only then decodes.
+   * Nothing here can hand raw bytes to a decoder, because `decodePhoto` does not accept them.
+   *
+   * Both refusals reach the screen as a sentence rather than a log. `ImageRejected` means the
+   * file was not accepted at all; `PhotoUnreadable` means it was and then could not be read.
+   * They are different enough to be worth telling apart, and a person who picked a 40-megapixel
+   * panorama should be told that rather than shown a shrug.
+   */
+  const onOpenPhoto = useCallback(async () => {
+    dispatch({ kind: 'opening' });
+    try {
+      const bytes = await imageSource.pickFromLibrary();
+      if (bytes === null) {
+        dispatch({ kind: 'cancelled' });
+        return;
+      }
+
+      const { photo, image } = openPhoto(bytes);
+      photoPixels.current = photo;
+      pointRef.current = PHOTO_CENTRE;
+      setDiagnostic(null);
+      dispatch({
+        kind: 'photo',
+        photo: {
+          // The SANITISED bytes, which are also the ones that were decoded — so what is shown
+          // and what is measured are the same image, EXIF rotation included (or rather
+          // excluded, from both).
+          uri: `data:image/${image.format};base64,${base64FromBytes(image.bytes)}`,
+          width: image.width,
+          height: image.height,
+          at: PHOTO_CENTRE,
+        },
+      });
+    } catch (error: unknown) {
+      if (!(error instanceof ImageRejected) && !(error instanceof PhotoUnreadable)) throw error;
+      photoPixels.current = null;
+      setDiagnostic(error.message);
+      dispatch({ kind: 'refused' });
+    }
+  }, [imageSource]);
+
+  const onUseCamera = useCallback(() => {
+    photoPixels.current = null;
+    pointRef.current = PHOTO_CENTRE;
+    setDiagnostic(null);
+    dispatch({ kind: 'camera' });
   }, []);
 
   const onModeChange = useCallback((mode: LensMode) => {
@@ -158,8 +270,15 @@ export default function CameraLens(): React.JSX.Element {
       diagnostic={diagnostic}
       permission={permission}
       onRequestPermission={request}
+      photo={capture.photo}
+      opening={capture.opening}
       onCapture={onCapture}
       onModeChange={onModeChange}
+      onOpenPhoto={() => {
+        void onOpenPhoto();
+      }}
+      onUseCamera={onUseCamera}
+      onPoint={onPoint}
       onDismiss={onDismiss}
       onUseForProfile={useForProfile}
       onUseForWardrobe={useForWardrobe}

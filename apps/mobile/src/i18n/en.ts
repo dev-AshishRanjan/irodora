@@ -269,6 +269,13 @@ export const en = {
   'lens.mode.liveHint':
     'The colour under the frame is read continuously. Choose “Tap to read” to stop.',
   'lens.liveReadout': 'Reading now',
+  'lens.openPhoto': 'Read a photo instead',
+  'lens.opening': 'Opening the photo…',
+  'lens.useCamera': 'Use the camera instead',
+  'lens.photoTarget': 'The photo. Tap the part of it you want read.',
+  'lens.photoHint':
+    'Tap the photo to choose what is read. A photo does not say what light it was taken in, or whether it was edited, so the reading is less sure than one taken here.',
+  'lens.photoFailed': 'That photo could not be read.',
   'lens.waiting': 'Point the centre of the frame at a colour.',
   'lens.noReading': 'No colour has been read yet.',
   'lens.sheetTitle': 'This reading',

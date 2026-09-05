@@ -26,6 +26,7 @@
  */
 
 import type { CaptureMode } from './modes';
+import type { PhotoPoint } from './photo';
 import type { LensReading } from './reading';
 
 /**
@@ -55,8 +56,42 @@ export type CaptureKind = 'live' | 'capture';
  */
 export type SampleDemand = 'off' | CaptureKind;
 
+/**
+ * A photograph the person opened, as the screen needs it.
+ *
+ * **The pixels are not here.** They are megabytes and only the shutter handler needs them, so
+ * they stay beside the picker in `CameraLens` while this carries what has to be drawn. A reducer
+ * whose state is compared by React on every dispatch is the wrong place for a 96 MB buffer.
+ *
+ * `uri` is a `data:` URI over the SANITISED bytes — the same ones that were decoded. That is
+ * what makes a tap land where the person aimed: `ingestImage` strips EXIF, Orientation included,
+ * so displaying the original and reading the stripped copy would put a rotation between what is
+ * seen and what is measured.
+ */
+export interface PhotoState {
+  readonly uri: string;
+  readonly width: number;
+  readonly height: number;
+  /** Where in it to read, in fractions. Starts at the middle; a tap moves it. */
+  readonly at: PhotoPoint;
+}
+
+/** What the last attempt to take a reading failed at, or `null` if nothing has. */
+export type CaptureFailure = 'capture' | 'photo';
+
 export interface CaptureState {
   readonly mode: LensMode;
+  /**
+   * The photograph being read, or `null` for the camera.
+   *
+   * A THIRD SOURCE beside still and live, not a fourth mode: the mode chips are about how the
+   * CAMERA takes readings, and a photograph is not the camera. While one is open the camera
+   * samples nothing at all — {@link demandFor} sees to that — which is both the honest thing and
+   * the reason opening a photograph does not quietly cost battery.
+   */
+  readonly photo: PhotoState | null;
+  /** A photograph is being fetched and decoded. Seconds, on a large file. */
+  readonly opening: boolean;
   /**
    * The capture being shown, frozen.
    *
@@ -77,13 +112,18 @@ export interface CaptureState {
   /** The shutter has been pressed and no frame has come back yet. */
   readonly awaiting: boolean;
   /**
-   * The last capture asked for a frame and never got one.
+   * What the last attempt failed at, or `null`.
    *
    * A flag rather than nothing, because the alternative is a button that goes back to its
    * resting label with no explanation — a silent failure in the one interaction this feature
    * exists to make deliberate.
+   *
+   * TWO VALUES RATHER THAN A BOOLEAN, because they are two different sentences. A camera that
+   * sent no frame and a photograph that could not be read have nothing in common except that
+   * neither produced a colour, and telling somebody "nothing was read" for both is the
+   * behaviour F-119 removed from this screen once already.
    */
-  readonly failed: boolean;
+  readonly failed: CaptureFailure | null;
 }
 
 export type CaptureEvent =
@@ -96,14 +136,28 @@ export type CaptureEvent =
   /** The person chose a mode. Choosing `still` while live is running is the stop. */
   | { readonly kind: 'mode'; readonly mode: LensMode }
   /** Long enough has passed that the capture is not coming. */
-  | { readonly kind: 'timeout' };
+  | { readonly kind: 'timeout' }
+  /** The picker was opened. */
+  | { readonly kind: 'opening' }
+  /** A photograph was opened, bounded and decoded. */
+  | { readonly kind: 'photo'; readonly photo: PhotoState }
+  /** The person backed out of the picker. Ordinary, not a failure. */
+  | { readonly kind: 'cancelled' }
+  /** The file was refused or could not be read. The reason travels as the diagnostic. */
+  | { readonly kind: 'refused' }
+  /** The person tapped the photograph. */
+  | { readonly kind: 'point'; readonly at: PhotoPoint }
+  /** Back to the camera. */
+  | { readonly kind: 'camera' };
 
 export const CAPTURE_IDLE: CaptureState = {
   mode: 'still',
+  photo: null,
+  opening: false,
   held: null,
   live: null,
   awaiting: false,
-  failed: false,
+  failed: null,
 };
 
 /**
@@ -125,17 +179,26 @@ export const CAPTURE_TIMEOUT_MS = 4000;
 export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureState {
   switch (event.kind) {
     case 'shutter':
+      // A photograph is read where it sits — there is no frame to wait for, so the screen
+      // dispatches the reading directly and this never sets `awaiting` for one.
+      if (prev.photo !== null) return prev;
       // Pressing again while a result is up is a RE-CAPTURE, not a no-op: the person is
       // looking at the frame behind the panel and asking for that instead.
-      return prev.awaiting ? prev : { ...prev, held: null, awaiting: true, failed: false };
+      return prev.awaiting ? prev : { ...prev, held: null, awaiting: true, failed: null };
 
     case 'reading':
       if (event.of === 'capture') {
-        // A capture reading with nothing awaiting it is a frame that was already in flight when
-        // the shutter was released. Dropping it is right — showing a result nobody asked for is
-        // the behaviour this feature exists to remove.
-        return prev.awaiting
-          ? { ...prev, held: event.reading, awaiting: false, failed: false }
+        /*
+         * A capture reading with nothing awaiting it is a frame that was already in flight when
+         * the shutter was released. Dropping it is right — showing a result nobody asked for is
+         * the behaviour this feature exists to remove.
+         *
+         * A PHOTOGRAPH IS THE EXCEPTION, and not a loophole: nothing is in flight from a
+         * photograph. Its pixels are already decoded, so the reading exists the moment the
+         * shutter is pressed and there is no window for an unbidden one to arrive in.
+         */
+        return prev.awaiting || prev.photo !== null
+          ? { ...prev, held: event.reading, awaiting: false, failed: null }
           : prev;
       }
       // A live reading never disturbs a capture, in either direction: not while one is being
@@ -154,13 +217,43 @@ export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureSta
 
     case 'mode':
       // A mode change starts clean. Carrying a held capture across it would leave a result on
-      // screen belonging to an interaction the person has just left.
-      return prev.mode === event.mode
+      // screen belonging to an interaction the person has just left. It also puts the camera
+      // back, because the chips are about how the CAMERA reads.
+      return prev.mode === event.mode && prev.photo === null
         ? prev
-        : { mode: event.mode, held: null, live: null, awaiting: false, failed: false };
+        : { ...CAPTURE_IDLE, mode: event.mode };
 
     case 'timeout':
-      return prev.awaiting ? { ...prev, awaiting: false, failed: true } : prev;
+      return prev.awaiting ? { ...prev, awaiting: false, failed: 'capture' } : prev;
+
+    case 'opening':
+      // The held capture goes now rather than when the photograph arrives: the person has left
+      // that reading behind, and a result panel sitting over a picker is a panel about the last
+      // thing they did.
+      return { ...prev, opening: true, held: null, awaiting: false, failed: null };
+
+    case 'photo':
+      return { ...CAPTURE_IDLE, mode: prev.mode, photo: event.photo };
+
+    case 'cancelled':
+      // Backing out of the picker is a decision, not a failure. Nothing is said about it.
+      return prev.opening ? { ...prev, opening: false } : prev;
+
+    case 'refused':
+      return { ...prev, opening: false, photo: null, failed: 'photo' };
+
+    case 'point':
+      /*
+       * THE HELD READING GOES WITH THE TAP. It was taken at the old point, so leaving it up
+       * while the reticle sits somewhere else would put a colour on screen beside a mark saying
+       * it came from a different part of the picture.
+       */
+      return prev.photo === null
+        ? prev
+        : { ...prev, photo: { ...prev.photo, at: event.at }, held: null };
+
+    case 'camera':
+      return prev.photo === null && !prev.opening ? prev : { ...CAPTURE_IDLE, mode: prev.mode };
   }
 }
 
@@ -175,6 +268,10 @@ export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureSta
  * a panel somebody is reading is what "uncontrolled" meant.
  */
 export function demandFor(state: CaptureState): SampleDemand {
+  // A PHOTOGRAPH SILENCES THE CAMERA, and it is checked first for that reason: whatever else is
+  // true — live mode chosen, a capture awaited — nothing on screen is coming from the lens while
+  // a picture is being read, so nothing should be sampled from it.
+  if (state.photo !== null || state.opening) return 'off';
   if (state.awaiting) return 'capture';
   if (state.held !== null) return 'off';
   return state.mode === 'live' ? 'live' : 'off';

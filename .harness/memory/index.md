@@ -180,6 +180,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/active-means-two-different-things.md](effects/active-means-two-different-things.md) — **E-080** · a rule about the selected state flagged three components where active means pressed, and a selected state was built for something that can never be seen.
 - [effects/a-second-technology-a-second-blind-spot.md](effects/a-second-technology-a-second-blind-spot.md) — **E-081** · the colour scan read styles and SVG paints through props, so the first SVG component was reported as painting nothing — and fixing it found a black default nobody had chosen.
 - [effects/one-name-under-a-swatch-is-a-claim-and-the-engine-refused-it.md](effects/one-name-under-a-swatch-is-a-claim-and-the-engine-refused-it.md) — **E-082** · a live readout asked for one nearest name and the naming engine refused: cardinality is a claim, and it entered through a limit argument three layers from the screen.
+- [effects/a-dependency-can-be-wrong-about-the-runtime-it-will-run-in.md](effects/a-dependency-can-be-wrong-about-the-runtime-it-will-run-in.md) — **E-083** · a correct, maintained library threw on import because Expo TextDecoder does not do latin1 — and it wanted it for chunks we strip anyway.
 
 ## Glossary
 

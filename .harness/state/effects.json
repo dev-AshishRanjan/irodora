@@ -3008,6 +3008,47 @@
       "confidence": 0.92,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-083",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/photo.ts"
+      },
+      "to": [
+        {
+          "kind": "package",
+          "ref": "@irodora/store"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/jest.config.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/capture.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/store"
+      ],
+      "severity": "high",
+      "guard": "gate:test — `decodePhoto` accepts only `SanitisedImage`, so bytes nobody bounded do not type-check at the call site; a hand-built PNG (stored deflate blocks, CRC32 and Adler32 computed in the test) proves the reader against a file no encoder produced; a test asserts an imported reading never exceeds SPACE_CONFIDENCE_CEILING.unknown, which fires the day anyone parses the ICC profile `ingestImage` keeps. gate:security — advisories on both new dependencies.",
+      "memory": "memory/effects/a-dependency-can-be-wrong-about-the-runtime-it-will-run-in.md",
+      "rationale": "A DEPENDENCY CAN BE CORRECT AND STILL WRONG ABOUT THE RUNTIME IT WILL RUN IN. `fast-png` was the obvious PNG decoder — pure JS, MIT, maintained — and it installed, type-checked, and threw on import: `RangeError: Unknown encoding: latin1`, from `new TextDecoder('latin1')` AT MODULE SCOPE, because Expo's TextDecoder polyfill supports UTF-8 only. Nothing was wrong with the library; it is correct in Node and in a browser and unusable in this app, and the incompatibility is not a property of either side alone, so no amount of reading its source would have said so. JEST CAUGHT IT ONLY BECAUSE jest-expo INSTALLS THE SAME POLYFILL THE APP SHIPS — the same property that was missing when the `.js`-suffix module mapper let jest resolve what Metro would not, and the first bundle failed fifteen minutes into a Gradle build. The rule: a new dependency is not verified by installing and type-checking it, but by importing it in the runtime that will run it. AND THE FEATURE IT BROKE ON IS ONE WE DESTROY UPSTREAM: `fast-png` wanted TextDecoder for PNG text chunks — tEXt, zTXt, iTXt — every one of which `ingestImage` strips before anything sees the file, because a wardrobe photograph's metadata carries a home address. So the replacement is not another decoder: `fflate` does the inflate, which is hard and security-relevant, and the chunk walk plus the five scanline filters are written here, about a hundred lines of a fully specified format. THE SPLIT IS SAFE BECAUSE OF THE FIXTURE: the test writes a PNG byte by byte using only STORED deflate blocks, so no encoder is involved anywhere and a round-trip — which would have been the reader agreeing with itself — is not what is being asserted. The JPEG has no such option and the test says so rather than implying more than it proves; its tolerance is 2 rather than 0 because JPEG's colour transform is lossy at any quality, and the number is explained rather than widened until green. A CLAIM THAT WOULD HAVE ARRIVED AS A SIDE EFFECT: an imported photograph is `space: 'unknown'`, capped at 0.6 by a ceiling that already existed, so no number was invented for imported images. But `ingestImage` deliberately KEEPS the ICC profile — so the day somebody parses it, an imported photograph moves silently from 0.6 to garment-scan's 0.9, an accuracy claim arriving as a side effect of a colour-management feature. A test fires on that day. General form: when a bound is load-bearing because of something currently unknown, write the test that fires when it stops being unknown.",
+      "confidence": 0.93,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

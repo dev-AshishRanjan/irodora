@@ -8,6 +8,145 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-166 DONE · a colour from a photograph, and the decoder that would not run here
+
+### The hard part was never the button
+
+Reported as one of four Lens tweaks. It is not a control: **this repository had never decoded an
+image**, deliberately. `packages/store/src/image.ts` bounds every wardrobe photograph by reading
+its header and says so in its own words — *"this module never decodes anything"* — because a
+decoder bomb is a few kilobytes that expands into gigabytes and a phone has no process to spend
+containing it.
+
+### The decode is JavaScript, and the reasons are in this order
+
+1. **Memory safety.** A pure-JS decoder facing an arbitrary user file can exhaust memory or spin.
+   It cannot corrupt memory. A native decoder fails the other way.
+2. **Determinism.** Platform decoders differ between iOS and Android in IDCT precision and chroma
+   upsampling. NFR-3 should not have *which phone decoded it* as an input to a colour.
+3. **It can be checked here.** A native path would have been entirely device-attested — a whole
+   input path with no gate coverage at all.
+
+The cost is stated rather than hidden: **the decode blocks the JS thread**, seconds on a large
+photograph, where a native decoder would not. ([ADR-0092](../../docs/adr/0092-pixels-come-out-of-a-file-in-javascript.md))
+
+### The trust boundary did not move
+
+`decodePhoto` takes the branded `SanitisedImage`, so **bytes nobody bounded do not compile at the
+call site** — the same move `LensReading` makes for camera frames. `ingestImage` still runs first:
+byte count, then type from the magic numbers, then pixel count from the header, and only then
+does anything expand.
+
+Bounded twice more after that. `maxPixels` is halved to 24 million, because these two numbers
+bound different things — the wardrobe's protects a decoder *elsewhere*, this one sizes an
+allocation **this process is about to make**. And the PNG inflate is handed an output buffer of
+exactly the size IHDR implies, which is stronger than a limit: there is only one correct answer
+and it is known before a byte is inflated.
+
+### A dependency can be correct and still wrong about its runtime (E-083)
+
+`fast-png` was the obvious choice — pure JS, MIT, maintained. It installed, it type-checked, and
+importing it threw:
+
+```
+RangeError: Unknown encoding: latin1 (normalized: latin1)
+```
+
+`new TextDecoder('latin1')` **at module scope**, against Expo's UTF-8-only polyfill.
+
+Nothing is wrong with the library. It is correct in Node and correct in a browser and unusable
+here, and the incompatibility is not a property of either side alone — no amount of reading its
+source would have said so.
+
+**jest caught it only because jest-expo installs the same polyfill the app ships.** That is the
+same property that was missing when a `.js`-suffix module mapper let jest resolve what Metro
+would not, and the first bundle failed fifteen minutes into a Gradle build. The rule: *a new
+dependency is not verified by installing and type-checking it — it is verified by importing it in
+the runtime that will run it.*
+
+**And it wanted `TextDecoder` for PNG's text chunks**, every one of which `ingestImage` strips
+before anything sees the file, because a photograph's metadata carries a home address. The
+dependency was carrying a feature we destroy upstream, and breaking on it.
+
+So the PNG reader is **ours**: `fflate` keeps the inflate, which is hard and security-relevant,
+and the chunk walk plus the five scanline filters are about a hundred lines of a fully specified
+format.
+
+### The fixture is what makes that split safe
+
+The test writes a PNG **byte by byte** — signature, IHDR, an IDAT whose zlib stream uses only
+*stored* deflate blocks, IEND, with the CRC32 and Adler32 computed in the test. No encoder is
+involved anywhere.
+
+That matters more than usual once the reader is ours: **a round-trip fixture would have been the
+reader agreeing with itself**, which is no check at all.
+
+The JPEG has no such option and the test says so instead of implying more than it proves. Its
+tolerance is **2 rather than 0**, because JPEG's colour transform is lossy at any quality — the
+first run measured 178 for an input of 180. The number is explained rather than widened until
+green; a tolerance nobody can justify is one that gets widened again.
+
+### No confidence number was invented
+
+A photograph does not state its colour space, so it is read as `unknown` and capped at **0.6** by
+a ceiling written long before this feature. That is ADR-0087 pointed the way it points, and the
+counterpart to ADR-0091 one feature earlier: there, a penalty whose reason did not hold was not
+applied; here, a bound whose reason *does* hold was left to do its work.
+
+**And there is a test for the day that stops being true.** `ingestImage` deliberately *keeps* the
+ICC profile — so the day somebody parses it, an imported photograph would move silently from 0.6
+to `garment-scan`'s 0.9: an accuracy claim arriving as a side effect of a colour-management
+feature. The assertion fails on that day and names the reason.
+
+The general form worth carrying: **when a bound is load-bearing because of something currently
+unknown, write the test that fires when it stops being unknown.**
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 5 color-golden · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** · 10 cvd · **11 content** · 12 perf · **15 security** | **PASS** |
+| every mutation proof in the workflow | **caught** |
+
+737 mobile tests, 31 suites. Gate 15 covers both new dependencies. Gate 11 caught the Japanese
+copy again — 工, from 「加工」 — and the subset was regenerated; 907 codepoints.
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### One more, and it is the worst variant of an old one yet
+
+The lockfile proof went red mid-feature with `got: (nothing)` — a checker reporting that its
+own subject was fine. The cause: `verify-lockfile-proof.mjs` plants a whole workspace
+**directory**, `tests/__proof-with-deps__`, and one had been left on disk by a killed run.
+
+The tracked-tree guard in `verify:ci` could not see it — that guard compares TRACKED files, and
+this plant is untracked. Left alone it is inert. Then `pnpm add` ran, saw a workspace project
+the lockfile had no importer for, did the helpful thing, and **wrote one into `pnpm-lock.yaml`**.
+After which the proof case that exists to catch exactly that shape re-created its plant, found it
+already resolved, and reported nothing.
+
+So the rule generalises past *restore what you plant*: **an untracked plant can reach a tracked
+file through a tool.** `verify-ci.mjs` now looks for the directories as well as the files.
+
+(`git` treats `pnpm-lock.yaml` as binary, so `git diff` showed a size change and nothing else.
+`git show HEAD:pnpm-lock.yaml` is what settled where the line came from.)
+
+### Still owed
+
+**The picker has never opened.** Everything from the bytes onward is checked against real files;
+`expo-image-picker` itself, a real phone photograph, and whether a multi-megabyte `data:` URI
+renders are device facts. The specific risk is memory — four bytes a pixel makes a 24-megapixel
+photograph a 96 MB allocation plus the decoder's working set, and low-end Android is where that
+goes wrong first.
+
+**And a garment saved from an imported photograph is indistinguishable, in the store, from one
+read live.** Both are `estimated`, which is true of both and less than the whole truth. Recording
+which is a schema change and was not this feature — named here rather than discovered later.
+
+---
+
 ## 2026-09-05 — F-160 DONE · the Lens captures on purpose
 
 ### Three symptoms, one missing concept

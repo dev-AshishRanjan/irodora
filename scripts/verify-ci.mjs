@@ -316,6 +316,43 @@ if (dirtyBefore !== null) {
   }
 }
 
+/*
+ * THE SAME DISEASE, ONE STEP INDIRECT — and the guard above cannot see it.
+ *
+ * `verify-lockfile-proof.mjs` plants a whole workspace project: `tests/__proof-with-deps__`,
+ * a DIRECTORY, untracked. Everything above compares TRACKED files, so a leftover plant of this
+ * shape is invisible to it — and left on disk it is inert, right up until somebody runs
+ * `pnpm add`. Then pnpm sees a workspace project the lockfile has no importer for, does the
+ * helpful thing, and writes one.
+ *
+ * That is what happened in F-166: the lockfile acquired an importer for a proof fixture, and
+ * the proof case it exists for — *"a new workspace project WITH dependencies and no importer is
+ * caught"* — went green-to-red with `got: (nothing)`, because the plant it re-created was
+ * already resolved. A checker reporting that its own subject is fine.
+ *
+ * So the rule generalises past "restore the files you plant": **an untracked plant can reach a
+ * tracked file through a tool.** This looks for the directories rather than the files.
+ */
+const strayPlants = (() => {
+  // `git clean -nd` lists what WOULD be removed. It writes nothing, and it is the only thing
+  // that reports an untracked directory rather than the files inside it.
+  const shown = spawnSync('git', ['clean', '-nd', '--', 'tests/'], { cwd: ROOT, encoding: 'utf8' });
+  return (shown.stdout ?? '')
+    .split('\n')
+    .map((line) => line.replace(/^Would remove /u, '').trim())
+    .filter((line) => line.includes('__proof'));
+})();
+
+if (strayPlants.length > 0) {
+  console.log(
+    `${RED}${BOLD}${String(strayPlants.length)} proof workspace project(s) left on disk.${OFF}\n` +
+      `${DIM}  A proof killed before its restore ran. These are untracked, so nothing above sees\n` +
+      `  them — and \`pnpm install\` will quietly add an importer for each to the lockfile:${OFF}\n`,
+  );
+  for (const path of strayPlants) console.log(`  ${YELLOW}!${OFF} rm -rf ${path}`);
+  console.log();
+}
+
 const failures = [];
 let ran = 0;
 let skipped = 0;

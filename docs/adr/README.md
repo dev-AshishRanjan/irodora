@@ -107,6 +107,7 @@ Two rules that matter more than the format:
 | [0089](0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md) | The gesture stack is pinned to the version HeroUI was built against | Accepted |
 | [0090](0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md) | A swatch corner is bounded by the area it removes, not fixed at zero | Accepted |
 | [0091](0091-a-deliberate-capture-is-fr-15s-precision-pick.md) | A deliberate capture is FR-15 precision pick, and that is not the ceiling raise ADR-0087 refused | Accepted |
+| [0092](0092-pixels-come-out-of-a-file-in-javascript.md) | Pixels come out of a file in JavaScript, and the PNG walk is ours | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

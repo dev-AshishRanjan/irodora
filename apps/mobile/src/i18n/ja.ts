@@ -248,6 +248,13 @@ export const ja: Record<MessageKey, string> = {
   'lens.mode.liveHint':
     '画面の中心の色を続けて読んでいます。止めるには「タップして読む」を選んでください。',
   'lens.liveReadout': '読み取り中の色',
+  'lens.openPhoto': '写真から読む',
+  'lens.opening': '写真を開いています…',
+  'lens.useCamera': 'カメラに戻る',
+  'lens.photoTarget': '写真です。読み取りたい部分をタップしてください。',
+  'lens.photoHint':
+    '写真をタップして読み取る部分を選びます。写真はどんな光で撮られたか、加工されたかを示しません。そのため、その場で読むよりも確かさは低くなります。',
+  'lens.photoFailed': 'この写真は読み取れませんでした。',
   'lens.waiting': '画面の中心を色に合わせてください。',
   'lens.noReading': 'まだ色を読んでいません。',
   'lens.sheetTitle': 'この読み取り',

@@ -51,14 +51,34 @@
  * the lens.
  */
 
-import { View } from 'react-native';
+import { useRef } from 'react';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+  type DimensionValue,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Button, Chip, Row, Screen, Sheet, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import {
+  Button,
+  Chip,
+  Row,
+  Screen,
+  Sheet,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+  useTheme,
+} from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
 import { readingOklch, worthOffering } from '../profile/photo';
-import { LENS_MODES, type LensMode } from '../lens/capture';
+import { LENS_MODES, type CaptureFailure, type LensMode, type PhotoState } from '../lens/capture';
+import { pointFrom, reticleBox, type PhotoPoint } from '../lens/photo';
 import type { CaptureSpace, LensReading } from '../lens/reading';
 import type { LensPermission } from '../lens/permission';
 import { useMessages } from '../i18n/useMessages';
@@ -133,6 +153,48 @@ const ILLUMINATION_KEYS: Readonly<Record<LensReading['illumination'], MessageKey
   unknown: 'lens.light.unknown',
 };
 
+/**
+ * How long each arm of the photograph's corner marks is.
+ *
+ * The viewfinder's `BRACKET`, restated rather than imported, because that one lives in a file
+ * this one must not import — it reaches the camera. The two are the same length for the same
+ * reason and would look wrong if they were not, which is a real cost of the split and is
+ * cheaper than making this screen unrenderable.
+ */
+const BRACKET = 12;
+
+/**
+ * A number as a percentage a style will accept.
+ *
+ * `restrict-template-expressions` refuses a bare number in a template and `String()` produces a
+ * plain `string`, which is not the template-literal type `ViewStyle.left` wants. The assertion is
+ * the seam between those two rules and is safe by construction — a number, then a literal `%`.
+ * `viewfinder.tsx` carries the same three lines for the same pair of rules.
+ */
+const percent = (value: number): DimensionValue => `${String(value)}%` as DimensionValue;
+
+/** The four corners of the reticle, each with the two borders that make its L. */
+const PHOTO_CORNERS = [
+  { key: 'top-left', at: { left: 0, top: 0 }, edge: { borderTopWidth: 1, borderLeftWidth: 1 } },
+  { key: 'top-right', at: { right: 0, top: 0 }, edge: { borderTopWidth: 1, borderRightWidth: 1 } },
+  {
+    key: 'bottom-left',
+    at: { left: 0, bottom: 0 },
+    edge: { borderBottomWidth: 1, borderLeftWidth: 1 },
+  },
+  {
+    key: 'bottom-right',
+    at: { right: 0, bottom: 0 },
+    edge: { borderBottomWidth: 1, borderRightWidth: 1 },
+  },
+] as const;
+
+/** What the last attempt failed at → the sentence that says so. */
+const FAILURE_KEYS: Readonly<Record<CaptureFailure, MessageKey>> = {
+  capture: 'lens.captureFailed',
+  photo: 'lens.photoFailed',
+};
+
 /** Mode → the chip that chooses it, and the sentence that says what it does. */
 const MODE_KEYS: Readonly<
   Record<LensMode, { readonly label: MessageKey; readonly hint: MessageKey }>
@@ -166,10 +228,19 @@ export interface LensProps {
   readonly live?: LensReading | null;
   /** How the Lens is taking readings. */
   readonly mode?: LensMode;
+  /**
+   * The photograph being read, or `null` for the camera.
+   *
+   * When one is here it replaces the viewfinder entirely — the camera is not sampling, so a
+   * live preview under a picture would be a moving image nothing was reading.
+   */
+  readonly photo?: PhotoState | null;
+  /** A photograph is being fetched and decoded. */
+  readonly opening?: boolean;
   /** The shutter has been pressed and no frame has come back yet. */
   readonly awaiting?: boolean;
-  /** The last capture asked for a frame and never got one. */
-  readonly failed?: boolean;
+  /** What the last attempt failed at, or `null`. */
+  readonly failed?: CaptureFailure | null;
   /**
    * Why there is no reading, when the frame output can say.
    *
@@ -186,6 +257,12 @@ export interface LensProps {
   readonly onCapture?: () => void;
   /** Choose how readings are taken. Choosing `still` while live is running is the stop. */
   readonly onModeChange?: (mode: LensMode) => void;
+  /** Open a photograph from the library (FR-40). */
+  readonly onOpenPhoto?: () => void;
+  /** Put the photograph away and go back to the camera. */
+  readonly onUseCamera?: () => void;
+  /** The person tapped the photograph. Fractions of its width and height. */
+  readonly onPoint?: (at: PhotoPoint) => void;
   /** Close the result and go back to the frame. */
   readonly onDismiss?: () => void;
   /** Hand this reading to profile setup (FR-27). Absent when nothing can receive it. */
@@ -209,19 +286,37 @@ export function Lens({
   capture = null,
   live = null,
   mode = 'still',
+  photo = null,
+  opening = false,
   awaiting = false,
-  failed = false,
+  failed = null,
   diagnostic = null,
   permission = 'undetermined',
   onRequestPermission,
   onCapture,
   onModeChange,
+  onOpenPhoto,
+  onUseCamera,
+  onPoint,
   onDismiss,
   onUseForProfile,
   onUseForWardrobe,
   onOpenColour,
 }: LensProps = {}): React.JSX.Element {
   const { t, script } = useMessages();
+  const { colors } = useTheme();
+
+  /*
+   * THE MEASURED SIZE OF THE PHOTOGRAPH ON SCREEN, in a ref rather than in state.
+   *
+   * A press reports `locationX` and `locationY` relative to the pressable and says nothing about
+   * how big it is, so the fractions need the laid-out size — and nothing RENDERS from that size,
+   * so putting it in state would re-render the screen for a value only a handler reads.
+   *
+   * It stays a ref for the same reason this file has no other state: the F-158 defect was a
+   * screen holding a fact about the reading, and this is a fact about the box.
+   */
+  const photoBox = useRef({ width: 0, height: 0 });
 
   /*
    * Everything derived from the capture, in one place, so a `null` capture has one branch
@@ -267,7 +362,89 @@ export function Lens({
         {t('lens.privacy')}
       </Text>
 
-      {granted ? (
+      {photo !== null ? (
+        /*
+          THE PHOTOGRAPH, WHERE THE CAMERA WOULD BE.
+
+          Its container takes the picture's own aspect ratio, which is what makes the tap
+          arithmetic honest: with the box the same shape as the image, the image exactly fills it
+          under any resize mode, so a fraction of the box is the same fraction of the picture.
+          A letterboxed `contain` would put bars in the measurement and a `cover` would crop it,
+          and either would mean the reticle sat somewhere the reading did not come from.
+        */
+        <Surface level="1">
+          <Pressable
+            accessibilityRole="adjustable"
+            accessibilityLabel={t('lens.photoTarget')}
+            style={{ aspectRatio: photo.width / photo.height, width: '100%' }}
+            onLayout={(event: LayoutChangeEvent) => {
+              photoBox.current = event.nativeEvent.layout;
+            }}
+            onPress={(event) => {
+              onPoint?.(
+                pointFrom(
+                  event.nativeEvent.locationX,
+                  event.nativeEvent.locationY,
+                  photoBox.current,
+                ),
+              );
+            }}
+          >
+            <Image
+              source={{ uri: photo.uri }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+              accessible={false}
+            />
+            {/*
+              THE RETICLE, over the region that will actually be read — `reticleBox` is the same
+              clamp `sampleAt` applies, in fractions, so the marks cannot point somewhere the
+              engine is not looking. Two tones for the reason the viewfinder's are (F-068): the
+              other side of this line is an arbitrary photograph, and a single grey disappears
+              over a pale one.
+            */}
+            <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+              {(() => {
+                const box = reticleBox(photo, photo.at);
+                return (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: percent(box.left),
+                      top: percent(box.top),
+                      width: percent(box.width),
+                      height: percent(box.height),
+                    }}
+                  >
+                    {PHOTO_CORNERS.map((corner) => (
+                      <View
+                        key={corner.key}
+                        style={{
+                          position: 'absolute',
+                          ...corner.at,
+                          width: BRACKET,
+                          height: BRACKET,
+                          ...corner.edge,
+                          borderColor: colors['swatch.hairline.inverse'],
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: BRACKET,
+                            height: BRACKET,
+                            ...corner.edge,
+                            borderColor: colors['swatch.hairline'],
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()}
+            </View>
+          </Pressable>
+        </Surface>
+      ) : granted ? (
         // `Surface level="1"` rather than `colors['surface.1']`. The token is RESOLVED through
         // `nativeElevation` rather than named by a literal, which is how every other surface in
         // the app reaches its background — and gate 8's own proof depends on that being true:
@@ -314,12 +491,36 @@ export function Lens({
         `loading` rather than a separate spinner: the button already announces `busy` through
         `accessibilityState`, so the wait is stated to a screen reader as well as drawn.
       */}
-      {granted ? (
+      {granted || photo !== null ? (
         <Stack gap="md">
           <Button
             label={t(awaiting ? 'lens.capturing' : 'lens.capture')}
             loading={awaiting}
+            disabled={opening}
             {...(onCapture === undefined ? {} : { onPress: onCapture })}
+          />
+
+          {/*
+            FR-40'S FOURTH PATH, and it is a control rather than a mode.
+
+            Beside the shutter rather than among the chips: the chips choose how the CAMERA
+            reads, and a photograph is not the camera — it is a different thing to read. While
+            one is open this button becomes the way back, which is one control for one axis
+            instead of two that can disagree about which source is live.
+          */}
+          <Button
+            label={t(
+              photo !== null ? 'lens.useCamera' : opening ? 'lens.opening' : 'lens.openPhoto',
+            )}
+            variant="secondary"
+            loading={opening}
+            {...(photo !== null
+              ? onUseCamera === undefined
+                ? {}
+                : { onPress: onUseCamera }
+              : onOpenPhoto === undefined
+                ? {}
+                : { onPress: onOpenPhoto })}
           />
 
           {/*
@@ -335,20 +536,22 @@ export function Lens({
             what state the Lens was in.
           */}
           <Row gap="sm" wrap>
-            {LENS_MODES.map((option) => (
-              <Chip
-                key={option}
-                label={t(MODE_KEYS[option].label)}
-                selected={mode === option}
-                {...(onModeChange === undefined
-                  ? {}
-                  : {
-                      onPress: () => {
-                        onModeChange(option);
-                      },
-                    })}
-              />
-            ))}
+            {photo !== null
+              ? null
+              : LENS_MODES.map((option) => (
+                  <Chip
+                    key={option}
+                    label={t(MODE_KEYS[option].label)}
+                    selected={mode === option}
+                    {...(onModeChange === undefined
+                      ? {}
+                      : {
+                          onPress: () => {
+                            onModeChange(option);
+                          },
+                        })}
+                  />
+                ))}
           </Row>
 
           {/*
@@ -356,7 +559,7 @@ export function Lens({
             what that means — including, in live mode, where the stop is.
           */}
           <Text size="xs" color="foreground.2" script={script}>
-            {t(MODE_KEYS[mode].hint)}
+            {t(photo === null ? MODE_KEYS[mode].hint : 'lens.photoHint')}
           </Text>
         </Stack>
       ) : null}
@@ -371,20 +574,20 @@ export function Lens({
       */}
       {capture === null ? (
         <Stack gap="xs">
-          {!granted ? (
+          {failed !== null ? (
+            <Text size="small" color="foreground" script={script}>
+              {t(FAILURE_KEYS[failed])}
+            </Text>
+          ) : !granted && photo === null ? (
             <Text size="small" color="foreground.2" script={script}>
               {t('lens.noReading')}
             </Text>
-          ) : failed ? (
-            <Text size="small" color="foreground" script={script}>
-              {t('lens.captureFailed')}
-            </Text>
-          ) : mode === 'live' && live === null ? (
+          ) : photo !== null ? null : mode === 'live' && live === null ? (
             <Text size="small" color="foreground.2" script={script}>
               {t('lens.waiting')}
             </Text>
           ) : null}
-          {diagnostic === null || !granted ? null : (
+          {diagnostic === null || (!granted && photo === null) ? null : (
             <Text size="xs" color="foreground.2" script="latin">
               {diagnostic}
             </Text>

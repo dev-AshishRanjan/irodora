@@ -1,6 +1,7 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
 import { Stack } from 'expo-router';
 import { CameraUnavailable } from '../../src/lens/CameraUnavailable';
+import { devicePicker } from '../../src/wardrobe/picker';
 
 /**
  * The route. Navigation options, and the one thing this file exists to guarantee: **pressing
@@ -67,7 +68,7 @@ export default function LensRoute(): React.JSX.Element {
           on a working build and a spinner would flash. On a broken one the boundary takes over.
         */}
         <Suspense fallback={null}>
-          <CameraLens />
+          <CameraLens imageSource={devicePicker()} />
         </Suspense>
       </CameraBoundary>
     </>

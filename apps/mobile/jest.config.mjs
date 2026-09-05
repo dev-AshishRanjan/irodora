@@ -53,8 +53,14 @@ export default {
   //    `@noble` is on the list for the same reason and a different package (F-018,
   //    ADR-0066): `@noble/hashes` is ESM-only, so untransformed it dies on `import` before a
   //    single corpus assertion runs. Metro handles it natively — this line is the jest half.
+  //
+  //    `fflate` joins them for F-166 (ADR-0092), ESM-only in the same way and failing in the
+  //    same words: `Cannot use import statement outside a module`, from a file the runtime
+  //    never transformed. `jpeg-js` is deliberately NOT here — it is CommonJS and needs
+  //    nothing, and adding it would suggest this list is about "our dependencies" rather than
+  //    about ESM.
   transformIgnorePatterns: [
-    '/node_modules/(?!(\\.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|heroui-native|uniwind|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|@gorhom|@noble))',
+    '/node_modules/(?!(\\.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|heroui-native|uniwind|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|@gorhom|@noble|fflate))',
     '/node_modules/react-native-reanimated/plugin/',
     '/node_modules/@react-native/babel-preset/',
   ],

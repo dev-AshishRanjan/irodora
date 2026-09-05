@@ -1365,9 +1365,60 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(
         <Lens
           permission="granted"
-          failed
+          failed="capture"
           onCapture={() => undefined}
           onModeChange={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * A PHOTOGRAPH OPEN (F-166). A different tree from every subject above: no viewfinder, no
+     * mode chips, a picture with a reticle over it, and a control that has become the way back
+     * to the camera. The reticle's two tones are checked here for the reason they exist — the
+     * other side of that line is an arbitrary photograph.
+     */
+    name: 'screens/Lens (a photograph open)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          photo={{
+            // A 1×1 transparent GIF's worth of nothing, as a PNG. No pixels are read here —
+            // this subject checks the chrome around the picture, not the picture.
+            uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII=',
+            width: 1200,
+            height: 900,
+            at: { x: 0.4, y: 0.6 },
+          }}
+          onCapture={() => undefined}
+          onUseCamera={() => undefined}
+          onPoint={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE PHOTOGRAPH THAT COULD NOT BE READ, with the reason under it. The refusal sentence and
+     * the diagnostic are drawn at different weights and both have to clear contrast — and this
+     * is the one place a person sees a message written by a decoder rather than by us.
+     */
+    name: 'screens/Lens (a photograph refused)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          failed="photo"
+          diagnostic="this PNG stores 16 bits a channel, and the Lens reads 8"
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+          onOpenPhoto={() => undefined}
         />,
         theme,
       ),

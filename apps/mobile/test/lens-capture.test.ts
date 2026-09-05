@@ -118,12 +118,14 @@ describe('a capture is something a person takes', () => {
     expect(after(captured()).held).toBeNull();
   });
 
-  it('says so when a capture never comes back', () => {
+  it('says so when a capture never comes back, and says which thing failed', () => {
     const state = after(shutter, timeout);
     expect(state.awaiting).toBe(false);
-    expect(state.failed).toBe(true);
+    // NOT a boolean. A camera that sent no frame and a photograph that could not be read are
+    // two different sentences, and one flag for both is what F-119 removed from this screen.
+    expect(state.failed).toBe('capture');
     // And pressing again clears it, rather than leaving the last failure under a live attempt.
-    expect(after(shutter, timeout, shutter).failed).toBe(false);
+    expect(after(shutter, timeout, shutter).failed).toBeNull();
   });
 
   it('ignores a timeout that has nothing to time out', () => {
@@ -167,6 +169,70 @@ describe('live mode is chosen, runs, and stops', () => {
     // Clearing it would blank the readout for one frame every time somebody closed a result.
     const held = after(goLive, live(), shutter, captured());
     expect(nextCapture(held, dismissed).live).toEqual(held.live);
+  });
+});
+
+describe('a photograph is a third source, and it silences the camera', () => {
+  const photo = {
+    uri: 'data:image/png;base64,AAAA',
+    width: 400,
+    height: 300,
+    at: { x: 0.5, y: 0.5 },
+  } as const;
+
+  const opening = { kind: 'opening' } as const;
+  const opened = { kind: 'photo', photo } as const;
+  const cancelled = { kind: 'cancelled' } as const;
+  const refused = { kind: 'refused' } as const;
+  const camera = { kind: 'camera' } as const;
+
+  it('stops sampling the moment the picker opens, and while a photograph is up', () => {
+    /*
+     * THE ONE THAT MATTERS HERE. Live mode is running; the person opens a photograph. Nothing on
+     * screen is coming from the lens any more, so nothing should be read from it — and the
+     * `photo` check comes FIRST in `demandFor` for exactly that reason: whatever else is true,
+     * a picture is not the camera.
+     */
+    expect(demandFor(after(goLive, opening))).toBe('off');
+    expect(demandFor(after(goLive, opening, opened))).toBe('off');
+  });
+
+  it('gives the camera back when the photograph is put away', () => {
+    expect(demandFor(after(goLive, opening, opened, camera))).toBe('live');
+  });
+
+  it('treats backing out of the picker as a decision, not a failure', () => {
+    const state = after(opening, cancelled);
+    expect(state.opening).toBe(false);
+    expect(state.failed).toBeNull();
+  });
+
+  it('says a photograph failed differently from a capture failing', () => {
+    expect(after(opening, refused).failed).toBe('photo');
+    expect(after(shutter, timeout).failed).toBe('capture');
+  });
+
+  it('reads where the person tapped, and drops the reading taken at the old point', () => {
+    const held = after(opening, opened, captured());
+    expect(held.held).not.toBeNull();
+
+    const moved = nextCapture(held, { kind: 'point', at: { x: 0.2, y: 0.8 } });
+    expect(moved.photo?.at).toEqual({ x: 0.2, y: 0.8 });
+    // A colour on screen beside a reticle sitting somewhere else is the screen contradicting
+    // itself about where the number came from.
+    expect(moved.held).toBeNull();
+  });
+
+  it('holds a reading from a photograph without one having been awaited', () => {
+    // Nothing is in flight from a photograph — the pixels are already decoded — so there is no
+    // window for an unbidden reading to arrive in, and the shutter never waits for a frame.
+    expect(after(opening, opened, captured()).held).not.toBeNull();
+    expect(after(opening, opened).awaiting).toBe(false);
+    expect(nextCapture(after(opening, opened), shutter).awaiting).toBe(false);
+  });
+
+  it('ignores a tap when there is no photograph', () => {
+    expect(nextCapture(CAPTURE_IDLE, { kind: 'point', at: { x: 0.1, y: 0.1 } })).toBe(CAPTURE_IDLE);
   });
 });
 
