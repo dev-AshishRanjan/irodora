@@ -158,24 +158,33 @@ work in one colour, at 16 px, and under protan, deutan and tritan simulation.
 
 ### What was drawn
 
-**彡 — the radical that means colour in 彩**, the character in *irodoru*, the verb this product
-is named after. Three equal strokes at 45°, where the stroke thickness, the gap between strokes
-and each stroke horizontal shear are **one quantity** (`MARK.interval`).
+**梅鉢 — a plum-blossom kamon.** Five discs around a sixth, at the interval. It reads two ways
+at once and both are true: a **kamon**, which is where geometric corporate identity comes from in
+Japan and has for centuries; and **five colours arranged around a centre**, which is adjacency and
+interval — the direction above, said in the plainest way available.
 
-It answers the pre-flight question the first attempt could not: *could this be any other
-product?* No — it is a piece of the subject own writing rather than an abstraction of it.
+梅 is a corpus colour family, in a corpus where most colours are named after plants. The blossom
+is the product own subject rather than decoration borrowed from Japan.
 
-45 degrees is a manufacturing decision as much as a visual one. Shear equals thickness, so the
-edge advances exactly one pixel per pixel row at every size the generator will build, and no edge
-ever lands between pixels. A mark whose edges are soft at 48 px has lost what makes it legible
-at 16.
+The geometry is **two numbers**: the orbit, and the interval. Both radii are solved from them, so
+the gap between neighbouring petals and the gap between a petal and the eye are equal by
+construction. That is F-141 real idea — 間, the interval as the subject of the mark rather than
+the space left over by it — kept, and given a figure that reads.
 
-**The first attempt (F-141) was two offset rectangles, and it was reported as not relevant and
-not professional twice.** The audit is in [`packages/ui/src/brand.tsx`](../../packages/ui/src/brand.tsx)
-rather than repeated here, along with the alternatives that were rejected and why. The machinery
-survived the redraw unchanged, and that was always the valuable part: the geometry lives in
-source, every asset is generated from it, and gate 16 reads the mark back out of the built APK by
-proportion rather than by hash.
+**Inside the app the mark is one colour. The app icon carries five**
+([ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md)):
+the disqualifying line above is about recognisability rather than about ink, the silhouette is a
+rosette however it is filled, and a test asserts exactly that by comparing the five-colour
+silhouette against the one-colour one. Every surface inside the app is used to judge a garment
+colour; a home screen is not.
+
+**Two earlier attempts were rejected**, and both for one reason: they were abstract geometric
+minimalism, which is what *not relevant* meant. F-141 drew two offset rectangles; the first F-165
+pass drew 彡, the radical that means colour in 彩, as three 45° strokes. The audits are in
+[](../../packages/ui/src/brand.tsx) rather than repeated here.
+
+The machinery survived all three: the geometry lives in source, every asset is generated from it,
+and gate 16 reads the mark back out of the built APK by proportion rather than by hash.
 
 ---
 

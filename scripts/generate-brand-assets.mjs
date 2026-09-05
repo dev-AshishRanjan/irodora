@@ -11,22 +11,32 @@
  * exports a PNG from a drawing tool and commits it — produces a file with no relationship to the
  * code from that moment on, and an app icon is the one asset you stop seeing after a week.
  *
- * ## The geometry, and why every number is an integer
+ * ## The geometry, and why the edges are sampled rather than snapped
  *
- * A fractional edge is a soft edge, and a mark whose edges are soft at 48 px has lost the thing
- * that makes it legible at 16.
+ * This drew rectangles until F-165, and refused any size where the grid unit was not a whole
+ * number: a fractional edge is a soft edge, and a mark whose edges are soft at 48 px has lost
+ * what makes it legible at 16.
  *
- * | asset | canvas | grid at | unit | ink | why that size |
+ * **A circle has no straight edges to snap.** So the rule changed rather than the goal: every
+ * pixel is sampled `SUPERSAMPLE`× in each direction and the coverage becomes the blend, which is
+ * what an anti-aliased edge IS. Snapping a curve to whole pixels is not sharpness, it is
+ * staircasing — the same mistake one dimension down.
+ *
+ * The integer-unit check stays, because it keeps the six discs in exact proportion to each other
+ * at every size and makes the signature below arithmetic rather than approximate.
+ *
+ * | asset | canvas | grid at | unit | reach | why that size |
  * |---|---:|---:|---:|---:|---|
- * | `icon` | 1024 | 768 | 32 | 640 (62.5 %) | iOS squircle-masks the corners; the ink's farthest point is 452 from centre against about 629 of squircle |
- * | `adaptive-icon` | 1024 | 504 | 21 | 420 | Android guarantees only a **66/108** circle — Ø 625.8, so the ink's corner must sit inside Ø 594 |
- * | `splash-icon-*` | 1024 | 768 | 32 | 640 | Expo composites it over the theme background |
+ * | `icon` | 1024 | 768 | 32 | 358 | iOS squircle-masks the corners; the ink is a disc well inside them |
+ * | `adaptive-icon` | 1024 | 648 | 27 | 302 | Android guarantees only a **66/108** circle — radius 312.9 |
+ * | `splash-icon-*` | 1024 | 768 | 32 | 358 | Expo composites it over the theme background |
  *
- * **The adaptive grid shrank with F-165 and the proof is what said so.** The mark's ink box grew
- * from 18 grid units to 20, and its corners are ink — a stroke's end is exactly the far point —
- * so at the old 576 the diagonal reached 679 against a guaranteed 626 and Android would have
- * clipped it. The safe-zone assertion carried a hard-coded `432` from the old geometry and would
- * have gone on passing; it is derived now, which is the only reason this was visible at all.
+ * ## The icon carries colour and the app does not
+ *
+ * [ADR-0093](../docs/adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md).
+ * Five petals, five corpus colours, pinned by slug below and checked against the published
+ * bundle by `--prove` — so a corpus republish that moves one of them fails loudly instead of
+ * silently redrawing the app icon.
  *
  * ```
  * node scripts/generate-brand-assets.mjs
@@ -65,25 +75,82 @@ function markGeometry() {
       );
     return Number(m[1]);
   };
-  return {
-    grid: pick('grid: (\\d+)', 'the grid'),
-    interval: pick('interval: (\\d+)', 'the interval'),
-    strokes: pick('strokes: (\\d+)', 'the stroke count'),
-    length: pick('length: (\\d+)', 'the stroke length'),
-    x: pick('origin: \\{ x: (\\d+)', 'the origin x'),
-    y: pick('origin: \\{ x: \\d+, y: (\\d+)', 'the origin y'),
-  };
+  const grid = pick('grid: (\\d+)', 'the grid');
+  const petals = pick('petals: (\\d+)', 'the petal count');
+  const orbit = pick('orbit: (\\d+)', 'the orbit');
+  const interval = pick('interval: (\\d+)', 'the interval');
+
+  /*
+   * THE RADII ARE SOLVED, HERE AND IN THE COMPONENT, FROM THE SAME TWO NUMBERS.
+   *
+   * Reading them out of the source instead would mean parsing an expression rather than a
+   * literal — and writing them down here would be a second copy of the one thing the mark is:
+   * both gaps are the interval, exactly, because the radii come out of it.
+   */
+  const petal = (2 * orbit * Math.sin(Math.PI / petals) - interval) / 2;
+  const eye = orbit - petal - interval;
+
+  return { grid, petals, orbit, interval, petal, eye };
 }
 
-/** Colours, from the manifest. The icon introduces none of its own. */
+/** The six discs, in the component's order. The generator's copy of `markDiscs()`, derived. */
+function discs(g) {
+  const c = g.grid / 2;
+  const out = [{ cx: c, cy: c, r: g.eye, role: 'eye' }];
+  for (let i = 0; i < g.petals; i++) {
+    const angle = (i / g.petals) * 2 * Math.PI;
+    out.push({
+      cx: c + g.orbit * Math.sin(angle),
+      cy: c - g.orbit * Math.cos(angle),
+      r: g.petal,
+      role: 'petal',
+    });
+  }
+  return out;
+}
+
+/**
+ * The five petals, pinned by slug.
+ *
+ * **From the corpus, which is where every colour in this product comes from** — but PINNED
+ * rather than read at build time, so a corpus republish cannot silently redraw the app icon.
+ * `--prove` checks each hex against the published bundle and fails by name if one has moved,
+ * which turns a silent redraw into a decision somebody has to make.
+ *
+ * A year, in five colours: the hues are spread across the circle so the mark reads as *colours*
+ * rather than as a tint, and the lightnesses are held between OKLCh 0.53 and 0.64 so they sit
+ * together calmly rather than shouting past each other. That restraint is the register the
+ * product chose — soft minimal — applied to the one surface allowed any colour at all.
+ */
+const PETALS = [
+  { slug: 'mi-aka', hex: '#AC473E', name: '実赤 Fruit Red' },
+  { slug: 'aki-batake', hex: '#9F7850', name: '秋畑 Autumn Field' },
+  { slug: 'natsu-kage', hex: '#4E8164', name: '夏影 Summer Shade' },
+  { slug: 'oki-nagi', hex: '#449AAC', name: '沖凪 Calm Offing' },
+  { slug: 'yoru-kawa', hex: '#507DB3', name: '夜川 Night River' },
+];
+
+/** Colours, from the manifest and the corpus. The icon invents none of its own. */
 function palette() {
   const m = JSON.parse(readFileSync(join(ROOT, 'docs/design/design-system.manifest.json'), 'utf8'));
   const hex = (theme, token) => m.color[theme][token].srgb;
   return {
+    lightGround: hex('light', 'background'),
     darkGround: hex('dark', 'background'),
     darkInk: hex('dark', 'foreground'),
     lightInk: hex('light', 'foreground'),
+    petals: PETALS.map((p) => p.hex),
   };
+}
+
+/** Every published entry's derived hex, by slug. Read only by `--prove`. */
+function corpusHexes() {
+  const src = readFileSync(join(ROOT, 'apps/mobile/src/corpus/generated/bundle.ts'), 'utf8');
+  const match = /export const CORPUS_BUNDLE_TEXT = ("[\s\S]*?");\n/.exec(src);
+  if (match === null) throw new Error('could not read the corpus bundle text');
+  const by = new Map();
+  for (const e of JSON.parse(JSON.parse(match[1])).entries) by.set(e.entry.slug, e.derived.hex);
+  return by;
 }
 
 const rgb = (hex) => {
@@ -92,23 +159,34 @@ const rgb = (hex) => {
 };
 
 /**
+ * How many samples per pixel, per axis.
+ *
+ * Four means sixteen samples a pixel and seventeen possible coverages — more than an eight-bit
+ * channel can distinguish at these contrasts, and cheap: a 1024 canvas is sixteen million
+ * samples, which is a fraction of a second and happens four times per run.
+ */
+const SUPERSAMPLE = 4;
+
+/**
  * Draw the mark onto a flat canvas.
  *
  * `ground === null` means transparent, which is what the adaptive-icon foreground and both
  * splash images need — Android and Expo composite them over a colour of their own.
+ *
+ * `ink` is `{ eye, petals }`: one colour for the anchor and one per petal, or a single-entry
+ * `petals` for the monochrome mark. The discs do not overlap — the gap between them is the
+ * interval — so each is blended independently and the order does not matter.
  */
 function render(canvas, gridPx, ink, ground, g) {
   const unit = gridPx / g.grid;
   if (!Number.isInteger(unit))
     throw new Error(
-      `unit is ${String(unit)}px and must be a whole number — a fractional unit puts the mark's ` +
-        'edges between pixels, which is a soft edge at exactly the sizes the brief constrains.',
+      `unit is ${String(unit)}px and must be a whole number — a fractional unit puts the six discs` +
+        ' out of proportion with each other and makes the artefact signature approximate.',
     );
 
   const offset = (canvas - gridPx) / 2;
   const [gr, gg, gb] = ground === null ? [0, 0, 0] : rgb(ground);
-  const [ir, ig, ib] = rgb(ink);
-
   const px = Buffer.alloc(canvas * canvas * 4);
   for (let i = 0; i < canvas * canvas; i++) {
     px[i * 4] = gr;
@@ -117,32 +195,51 @@ function render(canvas, gridPx, ink, ground, g) {
     px[i * 4 + 3] = ground === null ? 0 : 255;
   }
 
-  /*
-   * THE THREE STROKES, EACH A 45° BAND (F-165).
-   *
-   * Every stroke's position is DERIVED from the interval — thickness, gap and shear are one
-   * quantity (E-059), so writing any of them separately here would be a second copy of the mark.
-   *
-   * The shear is exactly one pixel per pixel row, and that is not a coincidence: shear equals
-   * thickness in grid units, so both scale by `unit` and the ratio is 1 at every size the
-   * integer-unit check above admits. Every edge lands on a pixel boundary, which is what keeps
-   * the mark hard at 16 px.
-   */
-  for (let i = 0; i < g.strokes; i++) {
-    const top = offset + (g.y + i * g.interval * 2) * unit;
-    const bottom = top + g.interval * unit;
-    for (let y = top; y < bottom; y++) {
-      // Zero on the lowest row, one interval on the highest — the lower edge is the origin.
-      const shear = bottom - 1 - y;
-      const x0 = offset + g.x * unit + shear;
-      for (let x = x0; x < x0 + g.length * unit; x++) {
+  let petal = -1;
+  for (const disc of discs(g)) {
+    const fill =
+      disc.role === 'eye' ? ink.eye : ((petal += 1), ink.petals[petal % ink.petals.length]);
+    const [ir, ig, ib] = rgb(fill);
+
+    const cx = offset + disc.cx * unit;
+    const cy = offset + disc.cy * unit;
+    const r = disc.r * unit;
+    const from = Math.max(0, Math.floor(cy - r) - 1);
+    const to = Math.min(canvas, Math.ceil(cy + r) + 1);
+    const left = Math.max(0, Math.floor(cx - r) - 1);
+    const right = Math.min(canvas, Math.ceil(cx + r) + 1);
+
+    for (let y = from; y < to; y++)
+      for (let x = left; x < right; x++) {
+        /*
+         * COVERAGE, NOT A HIT TEST. A circle's edge falls between pixels wherever it likes, and
+         * the honest answer for a pixel the edge crosses is "partly" — which is what an
+         * anti-aliased edge is. Snapping to whole pixels would be staircasing, not sharpness.
+         */
+        let hits = 0;
+        for (let sy = 0; sy < SUPERSAMPLE; sy++)
+          for (let sx = 0; sx < SUPERSAMPLE; sx++) {
+            const dx = x + (sx + 0.5) / SUPERSAMPLE - cx;
+            const dy = y + (sy + 0.5) / SUPERSAMPLE - cy;
+            if (dx * dx + dy * dy <= r * r) hits += 1;
+          }
+        if (hits === 0) continue;
+
+        const alpha = hits / (SUPERSAMPLE * SUPERSAMPLE);
         const d = (y * canvas + x) * 4;
-        px[d] = ir;
-        px[d + 1] = ig;
-        px[d + 2] = ib;
-        px[d + 3] = 255;
+        // Over a transparent ground the colour is the ink and only the alpha carries coverage;
+        // over an opaque one the ink is blended into what is already there.
+        if (ground === null) {
+          px[d] = ir;
+          px[d + 1] = ig;
+          px[d + 2] = ib;
+          px[d + 3] = Math.round(alpha * 255);
+        } else {
+          px[d] = Math.round(px[d] * (1 - alpha) + ir * alpha);
+          px[d + 1] = Math.round(px[d + 1] * (1 - alpha) + ig * alpha);
+          px[d + 2] = Math.round(px[d + 2] * (1 - alpha) + ib * alpha);
+        }
       }
-    }
   }
   return encodePng(canvas, canvas, px);
 }
@@ -154,60 +251,73 @@ export const ADAPTIVE_SAFE_FRACTION = 66 / 108;
 /**
  * The grid the Android foreground is drawn on.
  *
- * Smaller than the other three, and the number is a consequence rather than a preference: the
- * ink box is 20 grid units square and its corners are ink, so the farthest point from the centre
- * is `10 * sqrt(2)` units. At 21 px a unit that is 297 against the 313 Android guarantees.
- *
- * It must also divide the grid exactly — `render` refuses a fractional unit, because a
- * fractional unit puts the mark's edges between pixels.
+ * A consequence rather than a preference: the ink reaches `orbit + petal` units from the centre,
+ * so the unit may be at most `312.9 / reach`. It must also divide the grid exactly, and 27 is
+ * the largest whole number that does both.
  */
-const ADAPTIVE_GRID = 504;
-
-/**
- * How far the ink reaches from the centre of the canvas, in pixels.
- *
- * **Derived, and it had to become derived.** This was `432 * Math.SQRT2` — the old mark's ink
- * box, written down. F-165's ink box is larger, and a hard-coded figure would have gone on
- * asserting that a shape it no longer describes fits inside a circle it no longer fits.
- *
- * The corners of the box ARE ink here: a stroke's end is the far point, so the bounding box's
- * half-diagonal is the honest radius rather than a conservative one.
- */
-export function inkRadius(gridPx, geometry = markGeometry()) {
-  const unit = gridPx / geometry.grid;
-  // The ink spans from the origin to the far end of the sheared stroke, on both axes.
-  const span = Math.max(
-    geometry.length + geometry.interval,
-    geometry.strokes * geometry.interval * 2 - geometry.interval,
-  );
-  return ((span * unit) / 2) * Math.SQRT2;
-}
+const ADAPTIVE_GRID = 648;
 
 export function assets() {
   const g = markGeometry();
   const p = palette();
+
+  /*
+   * THE ICON IS THE ONE SURFACE WITH COLOUR (ADR-0093), and it is the one surface with nothing
+   * to compete with: a home screen has no garment in it. Everywhere inside the app the mark is
+   * a single token, because every screen there is being used to judge a colour.
+   *
+   * The ground is the LIGHT background — warm off-white. Among a screen of saturated icons a
+   * pale one is the distinctive choice rather than the timid one, and it is the same ground the
+   * product's own light theme uses.
+   */
+  const colour = { eye: p.lightInk, petals: p.petals };
+  const monoLight = { eye: p.lightInk, petals: [p.lightInk] };
+  const monoDark = { eye: p.darkInk, petals: [p.darkInk] };
+
   return [
     // iOS and the store. OPAQUE — iOS rejects an app icon with an alpha channel.
-    { file: 'icon.png', bytes: render(CANVAS, 768, p.darkInk, p.darkGround, g) },
+    { file: 'icon.png', bytes: render(CANVAS, 768, colour, p.lightGround, g) },
     // Android's foreground layer. Transparent; `adaptiveIcon.backgroundColor` is the other half.
-    { file: 'adaptive-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, p.darkInk, null, g) },
-    // Expo composites each of these over its theme's background.
-    { file: 'splash-icon-light.png', bytes: render(CANVAS, 768, p.lightInk, null, g) },
-    { file: 'splash-icon-dark.png', bytes: render(CANVAS, 768, p.darkInk, null, g) },
+    { file: 'adaptive-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, colour, null, g) },
+    /*
+     * THE SPLASHES STAY MONOCHROME. A splash is inside the app: it is the first thing before a
+     * surface where colours are judged, and a five-colour blossom there would set the eye up
+     * with five colours it has to forget. The icon has done its job by then.
+     */
+    { file: 'splash-icon-light.png', bytes: render(CANVAS, 768, monoLight, null, g) },
+    { file: 'splash-icon-dark.png', bytes: render(CANVAS, 768, monoDark, null, g) },
   ];
 }
 
 /**
- * What the centre COLUMN of an asset should look like, as fractions of its height.
+ * What the middle ROW of an asset should look like, as fractions of its width.
  *
- * One number for both the strokes and the gaps, because in this mark they are one number — see
- * `MARK.interval`. A signature with two independent figures in it would let the artefact drift
- * away from the idea while still matching the check.
+ * The row crosses five things: the two petals either side of the centre, the eye, and the two
+ * gaps between them. It does NOT cross the two lower petals, which sit clear of it — so the
+ * signature is a symmetric five-run pattern that a solid disc, a ring, or any of this mark's own
+ * predecessors would fail.
+ *
+ * Every figure is derived. The petals' chord in particular is arithmetic rather than a
+ * measurement: the row passes a known distance from a petal's centre, and the half-chord follows.
  */
 export function expectedSignature(gridPx = 768, canvas = CANVAS) {
   const g = markGeometry();
   const unit = gridPx / g.grid;
-  return { strokes: g.strokes, interval: (g.interval * unit) / canvas };
+  const middle = g.grid / 2;
+
+  // The two petals the middle row crosses are the pair nearest the horizontal — for five petals
+  // with one pointing up, that is the second and the fifth.
+  const side = discs(g).filter((d) => d.role === 'petal' && Math.abs(d.cy - middle) < d.r);
+  const offCentre = Math.abs((side[0]?.cy ?? middle) - middle);
+  const halfChord = Math.sqrt(Math.max(0, g.petal * g.petal - offCentre * offCentre));
+
+  const petalWidth = (2 * halfChord * unit) / canvas;
+  const eyeWidth = (2 * g.eye * unit) / canvas;
+  // Edge of the eye to edge of the petal, along the row.
+  const gapWidth =
+    ((Math.abs((side[0]?.cx ?? 0) - middle) + halfChord - g.eye) * unit) / canvas - petalWidth;
+
+  return { petals: petalWidth, eye: eyeWidth, gap: gapWidth };
 }
 
 /*
@@ -272,41 +382,45 @@ function prove() {
 
   // 3. THE DECOYS. A signature that accepts anything is worth nothing.
   const g = markGeometry();
+  const mono = { eye: '#F6F4F1', petals: ['#F6F4F1'] };
 
   const solid = decodePng(
-    render(256, 192, '#F6F4F1', '#090807', {
-      ...g,
-      strokes: 1,
-      interval: 20,
-      length: 20,
-      x: 2,
-      y: 2,
-    }),
+    render(256, 192, mono, '#090807', { ...g, petals: 1, orbit: 0, eye: 10, petal: 10 }),
   );
   say(
     !carriesMark(solid, expectedSignature(768)).ok,
-    'a solid block is REFUSED',
-    'ink everywhere, one run down the centre',
+    'a solid disc is REFUSED',
+    'ink in the middle, one run across',
   );
 
-  const twoBars = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, strokes: 2 }));
+  const noEye = decodePng(render(256, 192, mono, '#090807', { ...g, eye: 0 }));
   say(
-    !carriesMark(twoBars, expectedSignature(768)).ok,
-    'TWO strokes are REFUSED — the count is part of the mark',
-    'the shape F-141 shipped would not pass as this one',
+    !carriesMark(noEye, expectedSignature(768)).ok,
+    'the blossom with no centre is REFUSED',
+    'five petals is not this mark',
   );
 
-  const wrongInterval = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, interval: 2 }));
+  const fourPetals = decodePng(render(256, 192, mono, '#090807', { ...g, petals: 4 }));
   say(
-    !carriesMark(wrongInterval, expectedSignature(768)).ok,
-    'three strokes in the WRONG proportion are REFUSED',
-    'ink is present, the count is right, and the equality is not',
+    !carriesMark(fourPetals, expectedSignature(768)).ok,
+    'FOUR petals are REFUSED — the count is part of the mark',
+    'the row crosses a different pattern',
   );
 
-  // 4. The Android safe zone, as arithmetic rather than a screenshot — and DERIVED from the
-  //    geometry, because the version that carried the old mark's numbers would have passed while
-  //    Android clipped the new one.
-  const reach = inkRadius(ADAPTIVE_GRID, g);
+  // 4. The petals are the corpus's, and still are.
+  const published = corpusHexes();
+  for (const p of PETALS) {
+    const now = published.get(p.slug);
+    say(
+      now === p.hex,
+      `${p.name} is still ${p.hex}`,
+      now === p.hex ? `corpus entry ${p.slug}` : `the corpus now says ${String(now)} — decide`,
+    );
+  }
+
+  // 4b. The Android safe zone, as arithmetic rather than a screenshot — and DERIVED, because a
+  //     written-down figure would go on passing about a shape it no longer described (E-085).
+  const reach = ((g.orbit + g.petal) * ADAPTIVE_GRID) / g.grid;
   const safeRadius = (CANVAS * ADAPTIVE_SAFE_FRACTION) / 2;
   say(
     reach <= safeRadius,
@@ -314,11 +428,11 @@ function prove() {
     `ink reaches ${reach.toFixed(1)} from centre ≤ ${safeRadius.toFixed(1)}`,
   );
 
-  const tooBig = inkRadius(576, g);
+  const tooBig = ((g.orbit + g.petal) * 768) / g.grid;
   say(
     tooBig > safeRadius,
     'the grid this mark CANNOT use is refused',
-    `at 576 the ink would reach ${tooBig.toFixed(1)} — the check is not vacuous`,
+    `at 768 the ink would reach ${tooBig.toFixed(1)} — the check is not vacuous`,
   );
 
   // 5. --check notices a single changed byte.
@@ -333,7 +447,7 @@ function prove() {
   }
   console.log(
     `\n${GREEN}${BOLD}The brand assets check discriminates.${OFF} ` +
-      `${DIM}Round-trip, four assets, three decoys, the safe zone and the grid it cannot use.${OFF}\n`,
+      `${DIM}Round-trip, four assets, three decoys, five pinned corpus colours, the safe zone.${OFF}\n`,
   );
 }
 

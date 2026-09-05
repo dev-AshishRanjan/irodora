@@ -277,47 +277,53 @@ function axisSignature({ width, height, rgba }, axis) {
 /**
  * Does this image carry the mark?
  *
- * The mark's centre COLUMN crosses: ground, stroke, interval, stroke, interval, stroke, ground
- * (F-165). Down rather than across, because a horizontal scan of three stacked strokes crosses
- * exactly one of them and reports a single run — which a solid block produces too.
+ * The mark's middle ROW crosses five things: the petal on the left, the gap, the eye, the gap,
+ * the petal on the right. It does NOT cross the two lower petals, which sit clear of it — so the
+ * signature is a symmetric five-run pattern, and a solid disc, a ring, a four-petal blossom or
+ * any of this mark's own predecessors fail it.
  *
- * **Every one of those five ink-and-interval runs is the same measured quantity**, which is the
- * mark's own idea and therefore the strongest thing to assert about an artefact: a shape that
- * merely has ink in the right places fails on the equality.
- *
- * `tolerance` is generous because the caller may be looking at an icon a build tool resized to
- * 48 px — the proportions survive that, a couple of percent of rounding does not.
+ * **Proportions survive resizing**, which is why the check is written as fractions: the caller
+ * may be looking at an icon a build tool resized to 48 px. `tolerance` is generous for the
+ * rounding that costs, and not generous enough for a different shape.
  */
 export function carriesMark(image, expected, tolerance = 0.03) {
-  const runs = columnSignature(image);
+  const runs = rowSignature(image);
   const ink = runs.filter((r) => r.ink);
-  if (ink.length !== expected.strokes)
+  if (ink.length !== 3)
     return {
       ok: false,
-      why: `${String(ink.length)} ink run(s) down the centre column, expected ${String(expected.strokes)}`,
+      why: `${String(ink.length)} ink run(s) across the middle row, expected 3`,
     };
 
-  // The interior gaps only: the ground above the first stroke and below the last are margins,
-  // and their size depends on how the caller cropped or padded the image.
+  // The interior gaps only: the ground either side of the blossom is margin, and its size
+  // depends on how the caller cropped or padded the image.
   const gaps = runs.filter((r, i) => !r.ink && i > 0 && i < runs.length - 1);
-  if (gaps.length !== expected.strokes - 1)
-    return {
-      ok: false,
-      why: `${String(gaps.length)} interval(s) between the strokes, expected ${String(expected.strokes - 1)}`,
-    };
+  if (gaps.length !== 2)
+    return { ok: false, why: `${String(gaps.length)} gap(s) inside the mark, expected 2` };
 
-  for (const [name, actual] of [
-    ...ink.map((r, i) => [`stroke ${String(i + 1)}`, r.fraction]),
-    ...gaps.map((r, i) => [`interval ${String(i + 1)}`, r.fraction]),
+  for (const [name, actual, want] of [
+    ['the left petal', ink[0].fraction, expected.petals],
+    ['the gap to the eye', gaps[0].fraction, expected.gap],
+    ['the eye', ink[1].fraction, expected.eye],
+    ['the gap from the eye', gaps[1].fraction, expected.gap],
+    ['the right petal', ink[2].fraction, expected.petals],
   ])
-    if (Math.abs(actual - expected.interval) > tolerance)
+    if (Math.abs(actual - want) > tolerance)
       return {
         ok: false,
-        why: `${name} is ${(actual * 100).toFixed(1)}% of the height, expected ${(expected.interval * 100).toFixed(1)}%`,
+        why: `${name} is ${(actual * 100).toFixed(1)}% of the width, expected ${(want * 100).toFixed(1)}%`,
       };
+
+  /*
+   * SYMMETRY, WHICH THE FRACTIONS ALONE DO NOT GUARANTEE. Two petals within tolerance of the
+   * expected width could still differ from each other by twice it — a blossom leaning to one
+   * side, which is exactly what a mis-centred or partly-cropped icon looks like.
+   */
+  if (Math.abs(ink[0].fraction - ink[2].fraction) > tolerance)
+    return { ok: false, why: 'the two petals differ from each other — the mark is not centred' };
 
   return {
     ok: true,
-    why: 'three strokes and two intervals down the centre, every one the same quantity',
+    why: 'petal · gap · eye · gap · petal, symmetric, in the mark’s proportions',
   };
 }

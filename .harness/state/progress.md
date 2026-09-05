@@ -8,6 +8,96 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-165 REDRAWN AGAIN · the mark is a plum blossom, and the icon has colour in it
+
+彡 was rejected too. Third attempt, and this time the diagnosis was about the approach rather
+than the shape.
+
+### Both earlier marks failed for one reason
+
+**Abstract geometric minimalism is what "not relevant" meant.** Two offset rectangles; three 45°
+strokes. A person has a second to work out what an app is, and an abstraction gives them no route
+— however good the sentence explaining it, and the sentence for 彡 was a good one.
+
+### And a second, quieter cause that had been sitting there for three features
+
+`brand.test.tsx` asserted **exactly one `fill`** in the emitted SVG and called that the CVD
+guarantee. That made monochrome a **property of the build rather than a decision**, and it went
+unexamined through two redraws:
+
+> a colour product whose icon has no colour in it, held there by a test nobody re-read.
+
+The brief says a mark must not **depend** on colour to be recognisable. Counting fills is a
+different claim and a weaker one — it is true of a blank page.
+
+**A test can enforce a decision nobody made.** The fill count was written to express a real
+requirement, drifted into standing for a different one, and then constrained three features. When
+a check is the reason something cannot change, read what it actually asserts before believing it
+is the requirement.
+
+### 梅鉢
+
+Five discs around a sixth, at the interval. It reads two ways at once and both are true:
+
+- a **kamon** — which is where geometric corporate identity comes from in Japan, and has for
+  centuries. Mitsubishi is three rhombi.
+- **five colours arranged around a centre**, which is adjacency and interval — the brief own
+  words — said in the plainest way available.
+
+梅 is a corpus colour family, in a corpus where most colours are named after plants. The blossom
+is the product own subject rather than decoration borrowed from Japan.
+
+The geometry is **two numbers**: orbit and interval. Both radii are *solved* from them, so the
+petal-to-petal gap and the petal-to-eye gap are equal by construction — to ten decimal places,
+asserted. That is F-141 idea, 間, kept for the third time and finally given a figure that reads.
+
+### The icon carries colour; the app does not (ADR-0093)
+
+Five corpus entries, pinned by slug — 実赤 Fruit Red, 秋畑 Autumn Field, 夏影 Summer Shade,
+沖凪 Calm Offing, 夜川 Night River. Hues spread across the circle so it reads as *colours*;
+lightness held between OKLCh 0.53 and 0.64 so they sit together calmly. A year, in five colours.
+
+`--prove` checks each hex against the published bundle, so a corpus republish becomes a decision
+somebody makes rather than a silent redraw of the app icon.
+
+**Inside the app the mark stays one token**, and that is the load-bearing half: every surface
+there is used to judge a garment colour, and five colours in a header is five colours of
+interference. A home screen has no garment in it.
+
+The CVD check now renders the mark in five colours and in one and compares the **silhouette**,
+with a decoy that fails when the geometry moves — which is the property the brief actually states
+and which counting fills could never have said.
+
+### The generator learned to anti-alias
+
+It refused any size where the grid unit was not a whole number, on the ground that *a fractional
+edge is a soft edge*. **A circle has no straight edges to snap**, so the rule changed rather than
+the goal: every pixel is sampled 4×4 and the coverage becomes the blend. Snapping a curve to
+whole pixels is staircasing, not sharpness. The integer-unit check stays, because it keeps the
+six discs in exact proportion and keeps the artefact signature arithmetic.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| `generate-brand-assets.mjs --prove` — **16 checks**, 3 decoys, 5 pinned colours | **PASS** |
+| gate 16 (reads the mark out of an APK) | **NOT RUN** — no APK built since the redraw |
+
+A hex literal in `markSvg` fallback was refused by lint, correctly — *a value typed here is
+checked by neither gate*. The fix was not to import a token but to **refuse an empty colour
+list**: a mark with no colour to draw in is a caller error, and inventing one would hide it
+behind a document that looked fine.
+
+### Still owed
+
+**Nobody has looked at it on a home screen** — and two marks have now been rejected at exactly
+that step, which is the strongest evidence available that this is the criterion that matters and
+the one no gate here can discharge. The icon went to the reporter directly rather than waiting
+for a build.
+
+---
+
 ## 2026-09-06 — F-165 DONE · the mark is the radical of its own name
 
 ### The audit, before the redraw
