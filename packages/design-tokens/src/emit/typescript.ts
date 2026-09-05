@@ -99,6 +99,40 @@ export function emitTypescript(manifest: Manifest): string {
   out.push('export type LargeTextToken = (typeof LARGE_TEXT_TOKENS)[number];');
   out.push('');
 
+  /*
+   * EVERY DECLARED PAIRING, BOTH WAYS (F-171).
+   *
+   * Gate 9 checks the pairings the manifest declares. The conformance suite checks that every
+   * colour a component paints resolves to a token. **Neither of them looks at a pair on a
+   * screen** — a component may put a token on a ground the manifest never paired it with, and
+   * both halves stay green while the combination has never been measured by anything. The
+   * gate's own charter calls a used-but-undeclared pairing a failure; nothing could detect
+   * "used", because nothing read what components render.
+   *
+   * Emitting the declarations is what lets the suite close that: it can now ask whether the
+   * pair it just found rendered is one gate 9 has an opinion about.
+   *
+   * SYMMETRIC, because a pairing is a fact about two colours rather than about an order.
+   * `background` declares `foreground`; the suite meets them the other way round, as text on a
+   * ground, and a one-directional map would report every screen in the product.
+   */
+  {
+    const [reference] = THEMES;
+    const pairs = new Set<string>();
+    for (const [name, token] of Object.entries(manifest.color[reference]))
+      // `pairsWith` is required by the schema — every token declares one, empty for the ones
+      // no pairing covers — so there is nothing to default here.
+      for (const other of token.pairsWith) {
+        pairs.add(`${name}|${other}`);
+        pairs.add(`${other}|${name}`);
+      }
+    out.push('/** Every declared pairing, as `a|b` both ways. DERIVED from the manifest. */');
+    out.push(
+      `export const DECLARED_PAIRINGS = [${[...pairs].sort().map(quote).join(', ')}] as const;`,
+    );
+    out.push('');
+  }
+
   out.push('export const STATUS_PAIRING = {');
   for (const [name, entry] of Object.entries(manifest.statusPairing))
     out.push(

@@ -10,7 +10,7 @@
 import { Pressable } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
-import { nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
+import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Appear,
   Bands,
@@ -894,6 +894,87 @@ describe('a selectable component has to announce that it is selected (F-163)', (
     expect(checkSubject(pressable, ['light']).map((f) => f.rule)).not.toContain(
       'state-not-announced',
     );
+  });
+});
+
+/**
+ * F-171 — the pair on the screen.
+ *
+ * ## The hole this closes, and how long it was open
+ *
+ * Gate 9 checks the pairings the **manifest declares**, exhaustively: both themes, WCAG and APCA,
+ * eleven CVD severities, translucency composited over every declared ground. The suite above
+ * checks that every colour a component paints **resolves to a token**. Both are thorough, and
+ * **neither of them ever looked at a pair on a screen.**
+ *
+ * So a component could draw `foreground` on `swatch.well` — two tokens, each individually fine,
+ * a combination the manifest never declared — and every gate stayed green over a combination
+ * nothing had measured. `Swatch` does exactly that, 546 times across the screens, which is what
+ * the F-171 audit found.
+ *
+ * Gate 9's charter already called a used-but-undeclared pairing a failure. Nothing could detect
+ * *used*, because nothing read what the components render.
+ *
+ * ## What the audit found, which is the part worth saying out loud
+ *
+ * **Nothing was failing.** Every rendered text pair across the components and all twenty-odd
+ * screens clears its WCAG floor, in both themes, with the lowest at 3.35 against a floor of 3.
+ * The one undeclared pairing measures 13.06 and 15.28. So this rule is not a fix for a defect —
+ * it is the check that was missing, added while it is green, which is the only time it is cheap.
+ */
+describe('the pair on the screen has to be one the manifest declared (F-171)', () => {
+  const probe = (ground: string, ink: string): ConformanceSubject => ({
+    name: 'Probe',
+    kind: 'static',
+    render: (_state, theme) =>
+      theme === 'light'
+        ? ({
+            type: 'View',
+            props: { style: { backgroundColor: ground } },
+            children: [
+              {
+                type: 'Text',
+                props: { style: { color: ink, fontSize: 13 } },
+                children: ['nearly'],
+              },
+            ],
+          } satisfies TestNode)
+        : null,
+  });
+
+  const pairFindings = (subject: ConformanceSubject) =>
+    checkSubject(subject, ['light']).filter((f) => f.rule === 'pair-undeclared');
+
+  it('reports a pair no `pairsWith` covers, even when both sides are tokens', () => {
+    /*
+     * `status.warn` pairs with background, surface.1 and surface.2 — not with `swatch.well`.
+     * Both colours resolve to tokens; not one check that existed before this said a word.
+     */
+    const reported = pairFindings(
+      probe(nativeColors.light['swatch.well'], nativeColors.light['status.warn']),
+    );
+    expect(reported.length).toBeGreaterThan(0);
+    expect(reported[0]?.detail).toContain('swatch.well');
+  });
+
+  it('DECOY — the same tree passes once the ground is one the pairing declares', () => {
+    /*
+     * Without this the rule could be reporting every pair in the product and the case above
+     * would still pass. Same text, same token, a ground the manifest actually declares for it.
+     */
+    expect(
+      pairFindings(probe(nativeColors.light['surface.1'], nativeColors.light['status.warn'])),
+    ).toHaveLength(0);
+  });
+
+  it('says nothing about a pair it cannot resolve, rather than guessing', () => {
+    /*
+     * A swatch draws its sample on the well, and a sample is by construction not a token. The
+     * rule reports only pairs where BOTH sides resolve — an unresolved colour is the
+     * colour-literal rule's business, and reporting it here as well would be two findings for
+     * one fact, the second of them false: nothing declares a pairing with an arbitrary garment.
+     */
+    expect(pairFindings(probe('#7A5C3E', nativeColors.light.foreground))).toHaveLength(0);
   });
 });
 

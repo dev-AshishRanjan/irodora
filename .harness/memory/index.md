@@ -183,6 +183,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-dependency-can-be-wrong-about-the-runtime-it-will-run-in.md](effects/a-dependency-can-be-wrong-about-the-runtime-it-will-run-in.md) — **E-083** · a correct, maintained library threw on import because Expo TextDecoder does not do latin1 — and it wanted it for chunks we strip anyway.
 - [effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md](effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md) — **E-084** · a boundary applied as spacing is correct at exactly one scroll position, and that position is the one everybody looks at.
 - [effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md](effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md) — **E-085** · the safe-zone assertion carried the old mark numbers and would have passed while Android clipped the new one.
+- [effects/two-thorough-checks-and-neither-looked-at-a-pair.md](effects/two-thorough-checks-and-neither-looked-at-a-pair.md) — **E-086** · gate 9 checks the manifest, the suite checks one colour at a time, and the space between them was unmeasured for a year.
 
 ## Glossary
 

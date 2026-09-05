@@ -29,8 +29,20 @@
  */
 
 import type { Theme } from '@irodora/design-tokens';
-import { LARGE_TEXT_TOKENS, nativeLargeTextMinPx, nativeTapTarget } from '@irodora/design-tokens';
-import { paintedColors, pressableNodes, resolveTextNodes, type TestNode } from './tree.js';
+import {
+  DECLARED_PAIRINGS,
+  LARGE_TEXT_TOKENS,
+  nativeColors,
+  nativeLargeTextMinPx,
+  nativeTapTarget,
+} from '@irodora/design-tokens';
+import {
+  paintedColors,
+  pressableNodes,
+  renderedPairs,
+  resolveTextNodes,
+  type TestNode,
+} from './tree.js';
 import { isStatusToken } from './tokens.js';
 
 export type ComponentKind = 'interactive' | 'data' | 'static';
@@ -184,6 +196,48 @@ export function checkSubject(
             'token through `style` instead. If it genuinely paints nothing, say why in ' +
             '`paintsNoColour` on the registry entry.',
         );
+
+      /*
+       * --- THE PAIR ON THE SCREEN (F-171) -------------------------------------------
+       *
+       * Gate 9 checks the pairings the MANIFEST declares — thoroughly, in both themes, against
+       * WCAG and APCA and eleven CVD severities. The loop below checks that every colour a
+       * component paints resolves to a TOKEN. **Neither of them looks at a pair.**
+       *
+       * So a component could put `foreground` on `swatch.well` — both tokens, both individually
+       * fine, a combination the manifest never declared — and every check in this repository
+       * stayed green over a combination nothing had ever measured. It did: 546 times across the
+       * screens, which is what the F-171 audit found and what this rule now reports.
+       *
+       * Gate 9's own charter says a used-but-undeclared pairing is a failure. Nothing could
+       * detect "used", because nothing read what the components render. This does.
+       *
+       * WHAT IT STILL CANNOT SEE, stated so a green run is not read as more than it is:
+       * a placeholder (a prop, not a text child), text drawn over an arbitrary sample colour
+       * (which has no token by construction), and every non-text mark — borders, rings,
+       * indicators — which carry `uncheckedReason` in the manifest and are gate 9's business.
+       */
+      // Widened once. `DECLARED_PAIRINGS` is a tuple of string literals, and whether it contains
+      // a key built at runtime is not a question that type can answer.
+      const declaredPairs: readonly string[] = DECLARED_PAIRINGS;
+
+      for (const pair of renderedPairs(tree, theme, nativeColors[theme].background)) {
+        const { foreground, background } = pair;
+        if (foreground.kind !== 'token' || background.kind !== 'token') continue;
+        // A value several tokens share is declared if ANY of its readings is: what a person sees
+        // is the two colours, and which name we happen to print for them is not the question.
+        const declared = foreground.tokens.some((f) =>
+          background.tokens.some((b) => declaredPairs.includes(`${f}|${b}`)),
+        );
+        if (declared) continue;
+        at(
+          'pair-undeclared',
+          `"${pair.text.slice(0, 32)}" draws ${foreground.tokens.join('/')} on ` +
+            `${background.tokens.join('/')}, which no \`pairsWith\` declares — so gate 9 has ` +
+            'never measured it. Declare the pairing in the manifest, or draw it on a ground that ' +
+            'is declared.',
+        );
+      }
 
       // --- every colour resolves to a token -------------------------------------------
       // Unresolved is a FAILURE, never a skip: skipping it fails open on exactly the input

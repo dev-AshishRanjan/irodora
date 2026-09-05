@@ -5030,7 +5030,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "The audit names what the gate does not currently measure, surface by surface, before anything is changed",
@@ -5044,7 +5044,25 @@
         "contrast",
         "a11y"
       ],
-      "notes": "REPORTED AS \"some color contrast issue in the app, in many places\", AND THE GATE IS GREEN. Those two facts together are the finding: gate 9 checks every declared pairing in both themes and passes, so whatever the reporter is seeing is in something the gate does not measure. That is the same shape as E-067, E-081 and E-069 — a checker correct about its own scope, blind outside it — and the answer is to widen the scope rather than to hunt pixels. THE CANDIDATES, none confirmed: chrome painted by React Navigation and by HeroUI internals rather than by us; the disabled and pressed states of controls, which the conformance suite renders but may not measure; placeholder text; text drawn OVER a sample colour, which by construction has no token; and the sheet's own background, which is ours only because HeroUI ignored the prop. START WITH THE AUDIT AND REPORT IT. If the audit finds nothing, say so and ask for a screenshot rather than changing colours until something looks different."
+      "notes": "REPORTED AS \"some color contrast issue in the app, in many places\", AND THE GATE IS GREEN. Those two facts together are the finding: gate 9 checks every declared pairing in both themes and passes, so whatever the reporter is seeing is in something the gate does not measure. That is the same shape as E-067, E-081 and E-069 — a checker correct about its own scope, blind outside it — and the answer is to widen the scope rather than to hunt pixels. THE CANDIDATES, none confirmed: chrome painted by React Navigation and by HeroUI internals rather than by us; the disabled and pressed states of controls, which the conformance suite renders but may not measure; placeholder text; text drawn OVER a sample colour, which by construction has no token; and the sheet's own background, which is ours only because HeroUI ignored the prop. START WITH THE AUDIT AND REPORT IT. If the audit finds nothing, say so and ask for a screenshot rather than changing colours until something looks different. DONE 2026-09-06. THE AUDIT RAN FIRST AND FOUND NOTHING FAILING, which is the headline. Every rendered text pair — every component, all twenty-odd screens, both themes — clears its WCAG floor: lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5. WHAT IT DID FIND is that nothing had ever looked at a pair at all. Gate 9 checks the pairings the MANIFEST declares; the conformance suite checks that every painted colour resolves to a TOKEN; neither is a statement about a combination on a screen. `Swatch` draws `foreground` on `swatch.well` 546 times and the manifest never declared it — and gate 9 own charter already called a used-but-undeclared pairing a failure, with no way to detect \"used\". THE GAP IS CLOSED: `DECLARED_PAIRINGS` is emitted from the manifest, `renderedPairs` walks a tree carrying the nearest painted ground down through it, and `pair-undeclared` reports any pair no declaration covers — with three cases including a decoy that must pass and one that must stay silent. The one real finding was declared in the manifest rather than exempted, so gate 9 measures it now (13.06 and 15.28). ADDED WHILE GREEN, which is the only time a check is cheap.",
+      "effects": [
+        "E-086"
+      ],
+      "plan": "plans/F-171-the-pair-on-the-screen.md",
+      "attested": [
+        {
+          "criterion": "The audit names what the gate does not currently measure, surface by surface, before anything is changed",
+          "verifiedBy": "DONE, AND THE RESULT IS RECORDED RATHER THAN ACTED ON. The audit enumerated every rendered pair in both packages before a line of the rule was written, and the finding was that nothing fails. What remains unmeasured is named in `memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md`: a placeholder is a prop rather than a text child; text over an arbitrary sample colour has no token by construction; every non-text mark carries an `uncheckedReason`; and anything HeroUI paints through `className` is resolved in Metro, which jest never runs. WHAT IS NOT DISCHARGED is the report itself — the reporter sees a contrast problem somewhere and the audit cannot reproduce it. That needs a screenshot, and asking for one is better than changing colours until something looks different.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Nothing is fixed by exempting it",
+          "verifiedBy": "THE ONE FINDING WAS DECLARED, NOT EXEMPTED. `swatch.well` now names `foreground` in its `pairsWith`, so gate 9 measures the pair like every other — 13.06 dark, 15.28 light. The only exemption added anywhere was for `DECLARED_PAIRINGS` under gate 8, and it is the same kind as `TEXT_TOKENS`: a value emitted to constrain rather than to paint, which a component reading would be a component deciding whether its own colours are allowed.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-161",

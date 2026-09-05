@@ -3120,6 +3120,44 @@
       "confidence": 0.93,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-086",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/testing/conformance.ts"
+      },
+      "to": [
+        {
+          "kind": "package",
+          "ref": "@irodora/design-tokens"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "packages/design-tokens",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:a11y — the `pair-undeclared` rule walks every conformance subject and reports a rendered foreground-over-ground pair that no `pairsWith` declares, with three cases: it fires on `status.warn` over `swatch.well`, it does NOT fire once the ground is declared, and it stays silent on a pair it cannot resolve. `DECLARED_PAIRINGS` is emitted from the manifest so the rule and gate 9 cannot disagree about what was declared.",
+      "memory": "memory/effects/two-thorough-checks-and-neither-looked-at-a-pair.md",
+      "rationale": "TWO THOROUGH CHECKS, AND NEITHER OF THEM LOOKED AT A PAIR. Gate 9 checks every pairing the MANIFEST declares — both themes, WCAG and APCA, eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground they name and judged on the worst. The conformance suite checks that every colour a component PAINTS resolves to a token, with the exemption declared in the registry rather than on the component. Both are serious and neither is a statement about a COMBINATION on a screen: gate 9's subject is a JSON file and the suite's subject is one colour at a time. So `Swatch` drew `foreground` on `swatch.well` — two tokens, each individually correct, a combination the manifest never declared — 546 times across the screens, with every gate green over something nothing had measured. THE SHARPEST PART IS THAT GATE 9's OWN CHARTER ALREADY SAYS a used-but-undeclared pairing is a failure; nothing could detect USED, because nothing read what the components render, so the rule existed as a sentence for a year. THE GENERAL FORM, and it differs from the blind spots recorded before it: nothing new arrived and neither checker was wrong on its own terms — the hole was the JOIN, present from the day the second check was written, and being green is what kept it invisible. Ask of a pair of checks not whether each is thorough but what is true of the product that neither one is a statement about. WHAT THE AUDIT FOUND IS THAT NOTHING WAS FAILING: every rendered text pair across every component and all twenty-odd screens clears its WCAG floor in both themes — lowest 3.35 against a floor of 3 for large text, lowest normal-text 6.32 against 4.5 — and the one undeclared pairing measures 13.06 and 15.28. So the rule went in WHILE IT WAS GREEN, which is the only time a check is cheap, and the reporter's problem is somewhere else; saying that plainly is better than changing colours until something looks different. STILL UNMEASURED, deliberately recorded: a placeholder (a prop, not a text child), text over an arbitrary sample colour (not a token by construction), every non-text mark (each carries an uncheckedReason that is a correct reading of WCAG 1.4.11 — though `border` at 8% alpha is INVISIBLE rather than sufficient, and those are not the same claim), and anything HeroUI paints through className, which Uniwind resolves in Metro.",
+      "confidence": 0.94,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

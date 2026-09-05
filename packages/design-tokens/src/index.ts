@@ -77,6 +77,7 @@ export { emitReactNative } from './emit/react-native.js';
 
 export {
   COLOR,
+  DECLARED_PAIRINGS,
   LARGE_TEXT_TOKENS,
   RADIUS,
   SPACING,

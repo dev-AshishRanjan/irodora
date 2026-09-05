@@ -8,6 +8,103 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-171 DONE · two thorough checks, and neither of them looked at a pair
+
+Reported: *"There is some color contrast issue in the app, in many places."* Gate 9 was green.
+Those two facts together were the feature.
+
+### The audit ran first, and found nothing failing
+
+Every rendered text pair — every component, all twenty-odd screens, both themes:
+
+| | lowest measured | floor |
+|---|---:|---:|
+| large text | 3.35 — `foreground.3` on `background`, 34 px | 3.0 |
+| normal text | 6.32 — `foreground.2` on `surface.2` | 4.5 |
+
+**Nothing fails.** So the reporter's problem is somewhere the audit cannot reach, and saying that
+plainly is better than changing colours until something looks different.
+
+### What it did find: nothing had ever looked at a pair
+
+Gate 9 is a serious check — every pairing the **manifest** declares, both themes, WCAG and APCA,
+eleven Machado severities plus Vienot dichromacy, translucent tokens composited over every ground
+they name and judged on the worst. The conformance suite is serious too: **every colour a
+component paints resolves to a token**, with the exemption declared in the registry rather than
+on the component.
+
+**Neither of them is a statement about a combination on a screen.** Gate 9's subject is a JSON
+file; the suite's subject is one colour at a time.
+
+So `Swatch` draws `foreground` on `swatch.well` — two tokens, each individually correct, a
+combination the manifest never declared — **546 times across the screens**, with every gate green
+over something nothing had measured.
+
+The sharpest part: **gate 9's own charter already says a used-but-undeclared pairing is a
+failure.** Nothing could detect *used*, because nothing read what the components render. The rule
+existed as a sentence for a year.
+
+### The shape of it, which is new
+
+This is not the blind spot recorded three times before — a checker correct about the technology
+it was written against. **Nothing new arrived.** Neither check is wrong or incomplete on its own
+terms. The gap is the **join**, and it was there from the day the second check was written.
+
+> Ask of a pair of checks not whether each is thorough, but what is true of the product that
+> neither one is a statement about.
+
+### Closed while green
+
+`DECLARED_PAIRINGS` is emitted from the manifest — symmetric, because a pairing is a fact about
+two colours rather than about an order. `renderedPairs` walks a tree carrying the nearest painted
+ground **down** through it, while the text style crosses only `Text` — the rule a naive walk gets
+wrong in the safe-looking direction. `pair-undeclared` reports what no declaration covers.
+
+Three cases, and the middle one is the point: a pair no `pairsWith` covers is reported; the same
+tree with a declared ground is **not**; and a pair whose ground is an arbitrary sample is passed
+over rather than guessed at. Without the second, the rule could be reporting every pair in the
+product and the first would still pass.
+
+The one real finding was **declared, not exempted**: `swatch.well` now names `foreground`, so
+gate 9 measures it like everything else.
+
+**A check is cheap to add exactly once — before it has anything to report.**
+
+### What still has no check
+
+Recorded rather than implied: a **placeholder** is a prop and not a text child; **text over an
+arbitrary sample colour** has no token by construction; every **non-text mark** carries an
+`uncheckedReason` that is a correct reading of WCAG 1.4.11 — though `border` at 8 % alpha is
+*invisible* rather than *sufficient*, and those are not the same claim; and anything **HeroUI
+paints through `className`** is resolved in Metro, which jest never runs.
+
+### Two gates caught me on the way
+
+`verify-state` failed on a feature `in_progress` with no plan file — golden rule 3, the second
+time it has caught that. The audit ran first correctly, because this feature's own first
+criterion demands it; I then started building without coming back to write the plan. It is
+written now and says so at the top rather than pretending the findings were a prediction.
+
+Gate 8 reported `DECLARED_PAIRINGS` as a token no component reaches — correct, and it belongs
+with `TEXT_TOKENS` under *emitted to constrain, not to paint*. A component reading it would be a
+component deciding whether its own colours are allowed.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| the pair rule, three cases including a decoy that must pass | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**The report is not reproduced.** The audit cannot find what was seen on the device, and the
+honest next step is a screenshot of one bad spot rather than adjusting colours on a hunch.
+
+---
+
 ## 2026-09-06 — F-165 REDRAWN AGAIN · the mark is a plum blossom, and the icon has colour in it
 
 彡 was rejected too. Third attempt, and this time the diagnosis was about the approach rather

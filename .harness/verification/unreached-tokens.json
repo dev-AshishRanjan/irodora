@@ -1,7 +1,7 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-09-04",
+  "updated": "2026-09-06",
   "$groupComment": "`group` is required because `xs` is a radius step AND a type step, and they are not the same decision. One of them is read by 22 `size=\"xs\"` literals; the other is read by nothing.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
@@ -24,10 +24,11 @@
         "TEXT_TOKENS",
         "LARGE_TEXT_TOKENS",
         "nativeSmallTextSizes",
-        "nativeLargeTextMinPx"
+        "nativeLargeTextMinPx",
+        "DECLARED_PAIRINGS"
       ],
-      "cites": "ADR-0054, F-039",
-      "why": "Emitted to CONSTRAIN, not to paint. TEXT_TOKENS is read only through its derived `TextToken` type, which is what stops `foreground.3` compiling below the large-text floor in Text.tsx. The other three are read in real code only by packages/ui/src/testing/conformance.ts, which this check deliberately does not count as a reader — that exclusion is what makes acceptance criterion 2 mean anything. A value whose job is to be checked against is a real value with no pixel, and that difference belongs here where it can be read rather than inferred.",
+      "cites": "ADR-0054, F-039, F-171",
+      "why": "Emitted to CONSTRAIN, not to paint. TEXT_TOKENS is read only through its derived `TextToken` type, which is what stops `foreground.3` compiling below the large-text floor in Text.tsx. The other three are read in real code only by packages/ui/src/testing/conformance.ts, which this check deliberately does not count as a reader — that exclusion is what makes acceptance criterion 2 mean anything. A value whose job is to be checked against is a real value with no pixel, and that difference belongs here where it can be read rather than inferred. DECLARED_PAIRINGS joins them for F-171 and is the clearest case of the kind: it is the manifest pairsWith graph, emitted so the conformance suite can ask whether a pair it just found RENDERED is one gate 9 has an opinion about. Gate 9 checks the pairings the manifest declares; the suite checks that every painted colour resolves to a token; neither of them looked at a pair on a screen, so a component could draw two perfectly good tokens in a combination nothing had ever measured — and one did, 546 times. A component will never read this value, because reading it would be a component deciding whether its own colours are allowed.",
       "closedBy": null,
       "permanentBecause": "ADR-0054 — emitted to constrain the type, never to paint"
     },

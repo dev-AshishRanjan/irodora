@@ -383,3 +383,108 @@ export function paintedColors(
   walk(root, []);
   return out;
 }
+
+/** A foreground drawn over a ground, as it actually appears in a rendered tree. */
+export interface RenderedPair {
+  /** The text's colour, resolved. */
+  readonly foreground: ColorResolution;
+  /** The nearest ancestor that painted a background, resolved. */
+  readonly background: ColorResolution;
+  /** Effective size in points, after inheritance and the platform default. */
+  readonly fontSize: number;
+  readonly fontWeight: string | undefined;
+  /** The visible string, so a finding names something a person can point at. */
+  readonly text: string;
+  /** Ancestor host types, outermost first. */
+  readonly path: readonly string[];
+}
+
+/**
+ * Every foreground-over-ground pair a tree actually draws (F-171).
+ *
+ * ## What this exists to see, and why nothing saw it before
+ *
+ * Gate 9 checks the pairings the **manifest declares** — every `pairsWith` combination, in both
+ * themes, against WCAG and APCA and eleven CVD severities. It is thorough about its subject and
+ * its subject is a JSON file.
+ *
+ * The conformance suite checks that every colour a component paints **resolves to a token**. It
+ * is thorough about its subject and its subject is one colour at a time.
+ *
+ * **Neither of them looks at a pair on a screen.** A component may put `foreground.3` on
+ * `surface.3` — both tokens, both individually fine, a combination the manifest never declared
+ * and therefore a combination no gate has ever measured. That is the gap the reporter was
+ * standing in front of when they said the contrast was wrong in many places while every gate was
+ * green.
+ *
+ * ## The ground is inherited, and the walk is the whole difficulty
+ *
+ * A `Text` almost never paints its own background. Its ground is the nearest ancestor that
+ * painted one — which may be several levels up, and which changes as the walk descends. Carrying
+ * it down is the only way to know what a given string is actually drawn on.
+ *
+ * `fallback` is what a node with no painted ancestor sits on. For a screen that is the page; for
+ * a component rendered bare in a conformance suite it is whatever the app would put behind it,
+ * which the caller states rather than this guessing.
+ */
+export function renderedPairs(
+  root: TestNode,
+  theme: Theme,
+  fallback: string,
+): readonly RenderedPair[] {
+  const out: RenderedPair[] = [];
+
+  const walk = (
+    node: TestNode,
+    inherited: TextStyle,
+    ground: string,
+    path: readonly string[],
+  ): void => {
+    const isText = node.type === 'Text';
+    const style = flattenStyle(node.props['style']);
+    const here = path.concat(node.type);
+
+    // The same inheritance rule `resolveTextNodes` uses: text style crosses `Text` and nothing
+    // else. A View resets it, which is what makes a naive walk wrong in the safe-looking
+    // direction.
+    const nextInherited: TextStyle = isText
+      ? {
+          fontSize: numberOrUndefined(style['fontSize']) ?? inherited.fontSize,
+          color: stringOrUndefined(style['color']) ?? inherited.color,
+          fontWeight: weightOrUndefined(style['fontWeight']) ?? inherited.fontWeight,
+        }
+      : EMPTY_TEXT_STYLE;
+
+    /*
+     * THE GROUND DESCENDS THROUGH EVERYTHING, unlike the text style. A background painted on a
+     * wrapper is behind every string under it however many Views intervene — and a translucent
+     * one is deliberately NOT composited here: this reports what is painted, and what a
+     * translucent token means over each of its grounds is gate 9's arithmetic rather than a
+     * second implementation of it.
+     */
+    const painted = stringOrUndefined(style['backgroundColor']);
+    const nextGround = painted !== undefined && painted !== 'transparent' ? painted : ground;
+
+    if (isText) {
+      const text = (node.children ?? []).filter((c): c is string => typeof c === 'string').join('');
+      const color = nextInherited.color;
+      // A string with no colour has not been drawn in anything this can measure — the platform
+      // default is not a token and reporting it as a pair would invent a finding.
+      if (text !== '' && color !== undefined)
+        out.push({
+          foreground: resolveColor(color, theme),
+          background: resolveColor(nextGround, theme),
+          fontSize: nextInherited.fontSize ?? RN_DEFAULT_FONT_SIZE,
+          fontWeight: nextInherited.fontWeight,
+          text,
+          path: here,
+        });
+    }
+
+    for (const child of node.children ?? [])
+      if (isNode(child)) walk(child, nextInherited, nextGround, here);
+  };
+
+  walk(root, EMPTY_TEXT_STYLE, fallback, []);
+  return out;
+}

@@ -101,7 +101,9 @@
         "srgb": "#2B2A28",
         "usage": "surface",
         "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
-        "pairsWith": []
+        "pairsWith": [
+          "foreground"
+        ]
       },
       "swatch.hairline": {
         "oklch": {
@@ -449,7 +451,9 @@
         "srgb": "#ECEAE7",
         "usage": "surface",
         "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
-        "pairsWith": []
+        "pairsWith": [
+          "foreground"
+        ]
       },
       "swatch.hairline": {
         "oklch": {
