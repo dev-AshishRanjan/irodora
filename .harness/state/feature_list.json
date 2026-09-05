@@ -4883,6 +4883,170 @@
       ]
     },
     {
+      "id": "F-167",
+      "title": "The safe area is a boundary, not padding on the content",
+      "requirements": [
+        "NFR-9",
+        "FR-71"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "Content cannot scroll underneath the status bar on any screen",
+        "The app background still paints behind the status bar, so there is no band of platform colour",
+        "The inset is still read in exactly one place, and a test asserts it is applied ABOVE the scroller rather than inside it"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "REPORTED TWICE, AND F-159 FIXED THE WRONG HALF. That feature added `paddingTop: nativeSpacing[padding] + insets.top` to the Screen, and put it on `contentContainerStyle` — which pads the CONTENT INSIDE THE SCROLLER. At rest it looks right, which is why it was accepted; the moment anybody scrolls, the content moves up under the status bar and the battery and the clock sit on top of it. Reported as \"the battery and all native data is coming as a patch over our UI\". THE INSET IS A LAYOUT BOUNDARY, not spacing: the scroll viewport itself has to start below the hardware, so the content is CLIPPED there rather than merely offset. That means an ancestor of the ScrollView carries it, not the content container. `paddingTop` on the ScrollView's own `style` is the tempting one-line version and is the documented React Native trap — padding on a ScrollView style does not behave as a viewport inset. THE BACKGROUND MUST STILL PAINT BEHIND IT, or the notch area shows a band of platform colour, which is the failure in the other direction. A TEST CAN SEE THIS, which is the part worth having: the assertion is structural — the inset is on an ancestor of the scroller and the token padding is on the content — and that is exactly the property F-159 got wrong. DONE 2026-09-05. THE INSET MOVED FROM THE CONTENT TO AN ANCESTOR OF THE SCROLLER, which is the whole change: a ScrollView clips to its frame, so a boundary has to move the frame and content then has nowhere to go. `hardware` and `rhythm` are now two objects rather than one sum, because they are two different kinds of value — the shape of the phone and a decision a designer made — and merging them is what hid the difference. THE BACKGROUND STILL PAINTS BEHIND THE STATUS BAR, deliberately: the wrapper reaches the edge and is opaque, so the notch area is the app ground rather than a band of platform colour, which is the same defect pointing the other way. `contentInsetAdjustmentBehavior=\"never\"` because iOS adds its own safe-area inset unless told not to, and that would be counted twice on exactly the phones this is for. NOT `paddingTop` ON THE SCROLLVIEW STYLE (React Native documented trap, and indirectly the reason the defect existed) and NOT `SafeAreaView` (throws without a provider, which is every context this component is rendered in that is not an app). The visible top space is unchanged — same two numbers, added in different places.",
+      "plan": "plans/F-167-the-safe-area-is-a-boundary.md",
+      "effects": [
+        "E-084"
+      ],
+      "attested": [
+        {
+          "criterion": "Content cannot scroll underneath the status bar on any screen",
+          "verifiedBy": "THE STRUCTURE IS PROVEN; THE BEHAVIOUR CANNOT BE. The test asserts the inset is on an ancestor of the scroller and absent from its content container, and it was planted against the F-159 shape and failed two cases — so this is a fix with a check that would have caught the defect. WHAT NO GATE HERE CAN SEE is the behaviour itself: `react-test-renderer` has no viewport, no scrolling and no status bar, so \"content stops at the boundary\" is not observable in this repository and never will be. That is why the defect survived a green suite twice, and it is why the assertion is written against the structure that causes the behaviour rather than something adjacent that happens to be checkable.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The app background still paints behind the status bar, so there is no band of platform colour",
+          "verifiedBy": "ASSERTED AS A TOKEN, NOT AS A PIXEL. The wrapper carries `colors.background` and `flex: 1`, and gate 9 measures that token like every other. WHAT IS UNVERIFIED is whether it actually reaches the top edge on a device — that depends on the status bar being translucent and on `expo-status-bar` being configured the way `app/_layout.tsx` sets it, neither of which this repository can render. The failure it would produce is visible immediately and in one glance, which is the one mercy: a white or black band above the content.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-168",
+      "title": "The tab bar is icons alone",
+      "requirements": [
+        "NFR-9",
+        "FR-71"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "acceptance": [
+        "The bar draws a glyph and no word, and nothing in it wraps at the narrowest supported width",
+        "The word survives as the accessible name, so a screen reader announces it unchanged",
+        "Selection is still carried by more than colour"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "F-162 DREW BOTH ON PURPOSE AND THE REPORTER SAID NO, TWICE. The argument then was NFR-9 — shape and word are two channels where the bar had one — and it produced a bar whose labels WRAP TO A SECOND LINE on a real phone: five words at the label step across a phone width does not fit, and the icon above each one made it worse rather than better. A channel that overflows is not a channel. WHAT REPLACES THE WORD FOR NFR-9: selection keeps the indicator rule and the foreground token — two channels, so colour is still not alone — and the word moves into `tabBarAccessibilityLabel`, where it already is, so nothing is lost for a screen reader. WHAT IS GENUINELY LOST is a sighted person who does not recognise a glyph, and that is the cost of the decision rather than an argument against it: it is what every navigation bar on a phone does, and the glyphs are ours to make legible. The bar height was sized for an indicator above a label and shrinks with the label. DONE 2026-09-05. THE WORD IS GONE FROM THE BAR AND KEPT WHERE IT IS ANNOUNCED. `Text` is no longer imported by the layout at all, which is a stronger statement than one element being removed from one call site, and `tabBarAccessibilityLabel` carries the word exactly as before — so a screen reader lost nothing. THE GLYPH GREW from 20 to 26 because it is now the only visual identity a tab has, and the bar base fell from 68 to 56 because it was sized for an indicator above a LINE OF TYPE; a test asserts what is left still clears `nativeTapTarget` before any device inset, since a bar that FITS is not the same as a bar you can hit. SELECTION STILL CARRIES THREE CHANNELS — the indicator rule, the foreground token and `accessibilityState.selected` — and the indicator matters more than it did with a label under it, because two visual channels are what stop this bar from answering \"which tab am I on\" in colour alone. WHAT IS GENUINELY LOST is a sighted person who does not recognise a shape. That is the cost of the decision rather than an argument against it, and it makes F-162 outstanding legibility attestation load-bearing rather than merely desirable.",
+      "plan": "plans/F-168-the-tab-bar-is-icons-alone.md",
+      "effects": [
+        "E-084"
+      ],
+      "attested": [
+        {
+          "criterion": "The bar draws a glyph and no word, and nothing in it wraps at the narrowest supported width",
+          "verifiedBy": "THE FIRST HALF IS PROVEN AND THE SECOND IS UNVERIFIABLE HERE. `Text` is not imported by the tab layout, the icon slot draws `TabGlyph`, and `tabBarShowLabel` is false — so there is no text left to wrap. WHAT NOTHING IN THIS REPOSITORY CAN SEE is the wrapping that caused this: `react-test-renderer` measures no text and has no width, so five labels overflowing across a phone was invisible to a green suite and stays invisible. The assertion is that the cause is gone, not that the symptom is.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Selection is still carried by more than colour",
+          "verifiedBy": "THE INDICATOR AND THE TOKEN ARE BOTH DRAWN AND BOTH CHECKED — the conformance registry renders the bar in both themes and gate 9 measures the pairing. WHAT A PERSON WOULD JUDGE is whether a 2px rule 20px wide above a glyph actually reads as \"you are here\" at arm length, which is the same class of question as whether the glyphs are distinguishable and has the same answer: nobody has looked. It matters more now than it did in F-162, because the label that was covering for it is gone.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-169",
+      "title": "Roundness reaches the colour containers themselves",
+      "requirements": [
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-167"
+      ],
+      "acceptance": [
+        "The large colour surfaces read as rounded at the sizes the product actually draws them",
+        "Whatever bound replaces the current one is argued rather than raised until it looks right",
+        "The keyline stays concentric with the sample at every size"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test"
+      ],
+      "notes": "ADR-0090 MADE THE CORNER A RATIO AND THE RATIO IS TOO SMALL. `swatchRatio` is 0.125, bounded by `_maxSampledAreaLoss` of 2% — a rounded square loses 0.8584 * ratio^2, so 0.125 costs 1.34% and the guard caps the ratio at about 0.1526. At the 56px swatch in the Lens sheet that is a 7px corner, which is a rectangle with the edges taken off. Reported as \"the main color container of color is still rectangular\". THE QUESTION TO ANSWER FIRST is what `_maxSampledAreaLoss` is actually protecting. Its stated reason is that a swatch's job is to show an AREA of colour and rounding removes some — a real perceptual argument about area and colour appearance, not a taste one. So this is not \"raise the number until it looks right\": either the bound is about judging a colour and 2% is defensible, in which case the roundness has to come from the CONTAINERS around the sample rather than the sample, or the bound is arbitrary and needs replacing with one that is not. FIND THE CONTAINER THE REPORTER MEANT before changing the sample: the hero block on a colour, the card in a list and the swatch are three different surfaces and only one of them is a sample."
+    },
+    {
+      "id": "F-170",
+      "title": "The crosshair moves",
+      "requirements": [
+        "FR-13",
+        "FR-15"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-166"
+      ],
+      "acceptance": [
+        "A tap on the live viewfinder moves the sampled region there, and the marks move with it",
+        "The region is read where the marks are drawn, at every position including the edges",
+        "The point survives a mode change and resets when it should"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "THE HALF F-166 ALREADY BUILT. `lens/photo.ts` has `pointFrom`, `reticleBox` and a clamp that keeps the region inside the image, all pure and all tested against a four-quadrant fixture — and the live viewfinder still hard-centres its region in the worklet: `left = (frame.width - size) / 2`. So this is mostly consolidation: one geometry module, two surfaces, and the camera stops being the one that cannot move. WHAT IS NEW is getting the point to the frame thread. It goes the way the demand goes (F-160) — a `Synchronizable` written from an effect and read inside the worklet before the walk — because capturing it in the closure would rebuild the frame output on every tap, and rebuilding the frame output is a session reconfiguration."
+    },
+    {
+      "id": "F-171",
+      "title": "The contrast gate reaches the states it has never checked",
+      "requirements": [
+        "NFR-9",
+        "NFR-19"
+      ],
+      "service": "mobile",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "The audit names what the gate does not currently measure, surface by surface, before anything is changed",
+        "Every gap that is real is either closed in the gate or recorded as a feature",
+        "Nothing is fixed by exempting it"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "contrast",
+        "a11y"
+      ],
+      "notes": "REPORTED AS \"some color contrast issue in the app, in many places\", AND THE GATE IS GREEN. Those two facts together are the finding: gate 9 checks every declared pairing in both themes and passes, so whatever the reporter is seeing is in something the gate does not measure. That is the same shape as E-067, E-081 and E-069 — a checker correct about its own scope, blind outside it — and the answer is to widen the scope rather than to hunt pixels. THE CANDIDATES, none confirmed: chrome painted by React Navigation and by HeroUI internals rather than by us; the disabled and pressed states of controls, which the conformance suite renders but may not measure; placeholder text; text drawn OVER a sample colour, which by construction has no token; and the sheet's own background, which is ours only because HeroUI ignored the prop. START WITH THE AUDIT AND REPORT IT. If the audit finds nothing, say so and ask for a screenshot rather than changing colours until something looks different."
+    },
+    {
       "id": "F-161",
       "title": "The register becomes soft minimal, and roundness reaches the sample",
       "requirements": [
@@ -5060,7 +5224,7 @@
       ],
       "service": "packages",
       "release": "R6",
-      "priority": "should",
+      "priority": "must",
       "status": "todo",
       "blockedBy": [
         "F-161"
@@ -5077,7 +5241,7 @@
         "test",
         "artifact"
       ],
-      "notes": "REPORTED AS NOT RELEVANT AND NOT PROFESSIONAL. F-141 drew two offset rectangles on a 24 grid — an abstraction of two colours meeting, which is defensible in a sentence and evidently does not read as anything on a home screen. WHAT MUST SURVIVE IS THE MACHINERY, not the shape: `MARK` is geometry in source, `markSvg` and `generate-brand-assets.mjs` emit every asset from it, and gate 16 reads the result back out of the APK by proportion rather than by hash. That pipeline is why the icon cannot drift from the wordmark, and it is worth more than the marks it has drawn so far."
+      "notes": "REPORTED AS NOT RELEVANT AND NOT PROFESSIONAL. F-141 drew two offset rectangles on a 24 grid — an abstraction of two colours meeting, which is defensible in a sentence and evidently does not read as anything on a home screen. WHAT MUST SURVIVE IS THE MACHINERY, not the shape: `MARK` is geometry in source, `markSvg` and `generate-brand-assets.mjs` emit every asset from it, and gate 16 reads the result back out of the APK by proportion rather than by hash. That pipeline is why the icon cannot drift from the wordmark, and it is worth more than the marks it has drawn so far. REPORTED A SECOND TIME 2026-09-05, first item of six: \"The Logo/Icon of this project is not good... still hasn't been fixed\". Raised to must and moved up the order — a reporter naming the same thing twice is the strongest signal this list gets."
     }
   ]
 }

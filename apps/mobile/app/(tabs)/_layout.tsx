@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from 'react-native';
-import { nativeColors, nativeSpacing, nativeType } from '@irodora/design-tokens';
-import { NavIcon, Text, useTheme, type NavIconName } from '@irodora/ui';
+import { nativeColors, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import { NavIcon, useTheme, type NavIconName } from '@irodora/ui';
 import { useMessages } from '../../src/i18n/useMessages';
 import type { MessageKey } from '../../src/i18n/index';
 
@@ -27,24 +27,29 @@ import type { MessageKey } from '../../src/i18n/index';
  * Criterion 4 asks for that, and the tab bar delivers it by construction rather than by adding a
  * button to nine screens. It sits in the centre because a reading is the product.
  *
- * ## Why the bar is typographic
+ * ## Glyphs, and no words (F-168)
  *
- * `@irodora/ui` has three icons — check, alert, cross — drawn as `View`s because ADR-0057 refuses
- * an icon font. A tab bar needs five more, and inventing an icon language inside a navigation
- * feature is how a product ends up with five icons nobody designed.
+ * The bar was typographic (F-145), then a glyph AND a word (F-162), and it is now the glyph
+ * alone — because the middle version **wrapped to a second line on a real phone**. Five words at
+ * the 10px label step with 0.16em tracking do not fit across a phone width, and a glyph above
+ * each one made the lockup taller without making the words narrower.
  *
- * So the tabs are set in the **`label` step**: 10px, uppercase, 0.16em tracking. That step exists
- * for exactly this, it is the bottom of the scale the editorial direction is built on, and
- * near-monochrome retail apps navigate this way. It is the register rather than a shortcut — and
- * if it reads as unfinished on a device, icons are a later feature and none of this lockup
- * changes.
+ * F-162's argument was about information: shape and word are two channels where the bar had one.
+ * The failure was about space, and **a channel that overflows is not a channel** — a wrapped
+ * label is worse than no label, so space wins.
  *
- * ## The selected tab carries three channels
+ * ## The selected tab still carries three channels
  *
- * NFR-9 and golden rule 13. Colour alone would fail, and so would weight alone for somebody not
- * looking: the active tab has a **different foreground token**, a **visible indicator rule**, and
- * **`accessibilityState.selected`**. `Tabs.Screen` sets the last one through React Navigation;
- * the first two are drawn here, and `tabs.test.tsx` asserts an inactive tab has neither.
+ * NFR-9 and golden rule 13. Colour alone would fail, and so would shape alone for somebody not
+ * looking: the active tab has a **visible indicator rule**, a **different foreground token**, and
+ * **`accessibilityState.selected`**. `Tabs.Screen` sets the last through React Navigation; the
+ * first two are drawn here, and the test asserts an inactive tab has neither.
+ *
+ * **The word is not deleted — it moves.** `tabBarAccessibilityLabel` carries it, so a screen
+ * reader announces "Atlas" exactly as it did before. What is genuinely lost is a sighted person
+ * who does not recognise a shape, and that is the cost of the decision rather than an argument
+ * against it: it is what every navigation bar on a phone does, and it makes the legibility of
+ * five hand-drawn glyphs load-bearing rather than merely desirable.
  */
 
 /** The five, in bar order. The Lens is third because the centre is where a thumb rests. */
@@ -61,30 +66,39 @@ export const TABS = [
 }[];
 
 /**
- * One tab's label and its indicator.
+ * How big a glyph is when it is the only thing identifying a tab.
  *
- * Rendered rather than handed to `tabBarLabel` as a string, because a string would take React
- * Navigation's own typography and colour — and colour that does not come from a token is colour
- * the contrast gate never measured.
+ * `NavIcon`'s own default is 20, chosen when a word sat under it and carried the identity. With
+ * the word gone the shape is doing all the work, so it grows — and it is a constant here rather
+ * than a literal at the call site because it is a decision about this bar rather than about the
+ * component.
  */
-function TabLabel({
-  label,
+const TAB_GLYPH = 26;
+
+/**
+ * One tab: its glyph and its indicator.
+ *
+ * Drawn rather than handed to React Navigation as a name, because its own icon slot would take
+ * its own typography and colour — and colour that does not come from a token is colour the
+ * contrast gate never measured.
+ */
+function TabGlyph({
   icon,
   focused,
-  script,
 }: {
-  readonly label: string;
   readonly icon: NavIconName;
   readonly focused: boolean;
-  readonly script: 'latin' | 'japanese';
 }): React.JSX.Element {
   const { colors } = useTheme();
   return (
     <View style={{ alignItems: 'center', gap: nativeSpacing.xs }}>
       {/*
         THE INDICATOR, and it is a channel rather than a decoration. A rule above the active
-        label is the second of the three NFR-9 requires; the third is the token below, and the
+        glyph is the second of the three NFR-9 requires; the third is the token below, and the
         first is the `selected` state React Navigation sets.
+
+        It matters MORE now than it did with a label under it: two visual channels are what stop
+        this bar from saying "which tab am I on" in colour alone.
       */}
       <View
         style={{
@@ -93,28 +107,19 @@ function TabLabel({
           backgroundColor: focused ? colors.foreground : 'transparent',
         }}
       />
-      {/*
-        THE GLYPH AND THE WORD, not one or the other.
-
-        F-145 made this bar typographic on purpose and the reporter asked for icons. Both is
-        strictly better for NFR-9 than either: shape and word are two channels where the bar
-        previously had one plus a colour, and the indicator rule above makes three.
-
-        The icon takes the same colour as the label rather than a colour of its own — a glyph
-        that changed hue on selection would be adding a fourth channel that says nothing the
-        other three do not.
-      */}
-      <NavIcon name={icon} color={focused ? colors.foreground : colors['foreground.2']} />
-      <Text size="label" color={focused ? 'foreground' : 'foreground.2'} script={script}>
-        {label}
-      </Text>
+      <NavIcon
+        name={icon}
+        size={TAB_GLYPH}
+        color={focused ? colors.foreground : colors['foreground.2']}
+      />
     </View>
   );
 }
 
 export default function TabLayout(): React.JSX.Element {
   const { colors } = useTheme();
-  const { t, script } = useMessages();
+  // `script` is gone with the label: the bar draws no type, so nothing on it needs a script.
+  const { t } = useMessages();
 
   const insets = useSafeAreaInsets();
 
@@ -177,9 +182,7 @@ export default function TabLayout(): React.JSX.Element {
               Derived from the route name, so it cannot drift from the tab it addresses.
             */
             tabBarButtonTestID: `tab-${tab.name}`,
-            tabBarIcon: ({ focused }) => (
-              <TabLabel label={t(tab.labelKey)} icon={tab.icon} focused={focused} script={script} />
-            ),
+            tabBarIcon: ({ focused }) => <TabGlyph icon={tab.icon} focused={focused} />,
           }}
         />
       ))}
@@ -196,11 +199,21 @@ export default function TabLayout(): React.JSX.Element {
 export const TAB_BAR_COLORS = nativeColors;
 export const TAB_LABEL_STEP = nativeType.latin.label;
 
+/** Exported so the test can assert the bar clears a tap target rather than restating 56. */
+export const TAB_BAR_HEIGHT = () => TAB_BAR_BASE;
+
+/** The minimum a tab must be. Re-exported so the assertion reads against one source. */
+export const TAB_MINIMUM = nativeTapTarget;
+
 /**
  * The bar's own height, before the device's inset is added.
  *
- * A DESIGN VALUE AND IT STAYS ONE: it is what fits the selected indicator above the label
+ * A DESIGN VALUE AND IT STAYS ONE: it is what fits the selected indicator above a 26px glyph
  * without crowding either. Deriving the inset does not derive this, and pretending otherwise
  * would be dressing a chosen number as a measured one.
+ *
+ * It was 68 while a label sat under the glyph. Losing a line of type loses about twelve points
+ * of it, and what is left still clears `nativeTapTarget` comfortably before any inset is added —
+ * which the test asserts, because a bar that fits is not the same as a bar you can hit.
  */
-const TAB_BAR_BASE = 68;
+const TAB_BAR_BASE = 56;

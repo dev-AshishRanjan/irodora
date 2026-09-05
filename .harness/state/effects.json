@@ -3049,6 +3049,39 @@
       "confidence": 0.93,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-084",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/_layout.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:test — `layout.test.tsx` asserts STRUCTURALLY that the inset is on an ancestor of the scroller and absent from its content container, which is the exact property F-159 got wrong; planted against the F-159 shape it fails two cases. The behaviour itself is unobservable here and always will be — react-test-renderer has no viewport.",
+      "memory": "memory/effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md",
+      "rationale": "A BOUNDARY APPLIED AS SPACING IS CORRECT AT EXACTLY ONE SCROLL POSITION. F-159 read the safe area, added it to the token padding, and put the sum on `contentContainerStyle` — which pads the content INSIDE the scroller. The first screenful sits in the right place, which is why it was accepted, and every pixel after it travels under the status bar; reported from the next build as \"the battery and all native data is coming as a patch over our UI\". Two things had been merged that are not the same kind of thing: `nativeSpacing[padding]` is a design value that sets the rhythm, and `insets.top` is the shape of the hardware saying where the app may draw at all. A ScrollView clips to its FRAME, so the boundary has to move the frame — an ancestor carries it and the content container keeps only the rhythm. THE WORST KIND OF WRONG, because the one position it is right at is the one everybody looks at. TWO NEAR-MISSES: `paddingTop` on the ScrollView own `style` is the tempting one-liner and is React Native documented trap, which is indirectly why the bug existed at all; and `SafeAreaView` is the idiomatic answer and throws without a provider, which `Screen` is rendered without by the conformance suite, three dozen screen tests and the a11y gate. WHY NO TEST CAUGHT IT: react-test-renderer has no viewport, no scrolling and no status bar, so \"content stops at the boundary\" is not observable and never will be. The new assertion is STRUCTURAL — the inset is on an ancestor of the scroller, not inside its content — which is the property that was wrong rather than a proxy for it. When the behaviour is invisible to the harness, assert the structure that causes it. SAME REPORT, SAME SHAPE, ONE LINE UP: F-162 drew a glyph AND a word in each tab arguing NFR-9, and five words at the 10px label step wrapped to a second line across a phone width. The argument was about information and the failure was about space. A channel that overflows is not a channel.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

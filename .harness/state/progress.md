@@ -8,6 +8,106 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-05 — F-167, F-168 DONE · a boundary is not spacing, and a channel that overflows is not a channel
+
+A second device report, six items. One of them — the mark — was already **F-165** and stays where
+it is, raised to `must` because a reporter naming the same thing twice is the strongest signal
+this list gets. Four became **F-169** (roundness on the colour containers), **F-170** (a movable
+crosshair), **F-171** (the contrast audit) and the two below. The two below went first because
+they are the ones where I had already claimed the work was done.
+
+### The first screenful looked right, and everything after it scrolled under the notch
+
+F-159 read the safe area, added it to the token padding, and put the sum on
+`contentContainerStyle`:
+
+```ts
+paddingTop: nativeSpacing[padding] + insets.top   // inside the scroller
+```
+
+That pads the **content**. The first screenful sits exactly where it should — which is why it was
+accepted, by me and by the person looking at it — and every pixel after it travels under the
+status bar. Reported from the next build: *"the battery and all native data is coming as a patch
+over our UI"*.
+
+**Two things had been merged that are not the same kind of thing.** `nativeSpacing[padding]` is a
+design value that sets the product's rhythm. `insets.top` is the shape of the hardware saying
+where the app may draw at all. Adding them gives a number that is correct **once**, at scroll
+offset zero — and that is the worst kind of wrong, because the one position it is right at is the
+one everybody looks at.
+
+A `ScrollView` clips to its **frame**. So the boundary has to move the frame, which means an
+ancestor carries it and the content container keeps only the rhythm. Content then has nowhere to
+go.
+
+### Two near-misses, both worth knowing
+
+`paddingTop` on the ScrollView's own `style` is the tempting one-line fix and is React Native's
+documented trap — padding there does not act as a viewport inset, which is why every guide sends
+people to `contentContainerStyle` and therefore, indirectly, why this bug existed at all.
+
+`SafeAreaView` is the idiomatic answer and cannot be used: it calls `useSafeAreaInsets`
+internally, which **throws** without a provider — and `Screen` is rendered by the conformance
+suite, three dozen screen tests and the a11y gate, none of which is an app.
+
+Also `contentInsetAdjustmentBehavior="never"`, because iOS adds a safe-area inset of its own
+unless told not to, and that would be counted twice on exactly the phones this is for.
+
+### No test could have caught it. The new one asserts the structure instead
+
+`react-test-renderer` has no viewport, no scrolling and no status bar, so *"content stops at the
+boundary"* is not observable here and never will be. That is why a green suite shipped this
+twice.
+
+What **is** observable is the structure that produces it: whether the inset sits on an ancestor of
+the scroller or inside its content. That is the assertion — the exact property that was wrong,
+not a proxy for it. **Planted against the F-159 shape it fails two cases.**
+
+The rule worth carrying: *when the behaviour is invisible to the harness, assert the structure
+that causes it.*
+
+### And the same shape one line up: the tab labels wrapped
+
+F-162 drew a glyph **and** a word in each tab, arguing NFR-9 — shape and word are two channels
+where the bar had one plus a colour. Five words at the 10px label step with 0.16em tracking do not
+fit across a phone width. They wrapped to a second line.
+
+The argument was about **information**; the failure was about **space**, and space wins. A channel
+that overflows is not a channel.
+
+The word moved to `tabBarAccessibilityLabel` — where it already was — so a screen reader lost
+nothing. The glyph grew 20 → 26 because it is now a tab's only visual identity, and the bar base
+fell 68 → 56 because it was sized for an indicator above a line of type. A test asserts what is
+left still clears `nativeTapTarget` before any device inset, because **a bar that fits is not the
+same as a bar you can hit**.
+
+Selection still carries three channels — the indicator rule, the foreground token, and
+`accessibilityState.selected` — and the indicator matters more than it did with a label under it.
+
+**What is genuinely lost** is a sighted person who does not recognise a shape. That is the cost of
+the decision rather than an argument against it, and it makes F-162's outstanding legibility
+attestation load-bearing rather than merely desirable.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps**, twice (once per feature) | **PASS** |
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 5 color-golden · 6 build | **PASS** |
+| **8 a11y** · **9 contrast** · 10 cvd · 11 content · 12 perf · 15 security | **PASS** |
+| the F-159 shape, planted against the new test | **caught** (2 cases) |
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**Neither symptom is checkable here.** Content scrolling under a status bar needs a viewport; text
+wrapping needs text measurement. Both assertions are about the *cause* being gone, which is the
+strongest thing this repository can say about either — and both are recorded as outstanding
+device attestations rather than as fixed.
+
+---
+
 ## 2026-09-05 — F-166 DONE · a colour from a photograph, and the decoder that would not run here
 
 ### The hard part was never the button

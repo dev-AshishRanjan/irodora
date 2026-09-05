@@ -17,6 +17,7 @@
  */
 
 import { render } from '@testing-library/react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { Row, Screen, Section, Stack, Surface, Text, ThemeProvider } from '../src/index.js';
 
@@ -176,5 +177,95 @@ describe('spacing cannot be expressed as a number (F-140)', () => {
     // would give back everything the types above refuse, in the one place nobody greps.
     const bad = <Stack style={{ gap: 8 }} />;
     expect(bad).toBeTruthy();
+  });
+});
+
+/**
+ * F-167 — the safe area is a boundary, not padding on the content.
+ *
+ * ## The assertion is structural on purpose
+ *
+ * F-159 added `insets.top` to the token padding and put the sum on `contentContainerStyle`. That
+ * pads the content INSIDE the scroller, so the first screenful looks right and everything after
+ * it scrolls under the status bar. It shipped, and it was reported from a device twice.
+ *
+ * **No test here could have caught the behaviour.** `react-test-renderer` has no viewport, no
+ * scrolling and no status bar, so "content stops at the boundary" is not observable — which is
+ * exactly why the defect survived a green suite.
+ *
+ * What IS observable is the structure that causes it: whether the inset is applied to an
+ * ancestor of the scroller or to its content. So that is what is asserted, and it is the precise
+ * property that was wrong rather than a proxy for it.
+ */
+describe('the status bar inset moves the scroller, not the content inside it (F-167)', () => {
+  const INSET = { top: 47, bottom: 34, left: 0, right: 0 };
+
+  const withInsets = (node: React.JSX.Element) =>
+    render(
+      <SafeAreaInsetsContext.Provider value={INSET}>
+        <ThemeProvider theme="light">{node}</ThemeProvider>
+      </SafeAreaInsetsContext.Provider>,
+    );
+
+  /** Every ancestor's flattened style, innermost first. */
+  const flatten = (style: unknown): Record<string, unknown> =>
+    Array.isArray(style)
+      ? (Object.assign({}, ...(style as object[])) as Record<string, unknown>)
+      : ((style ?? {}) as Record<string, unknown>);
+
+  it('never puts the inset on the content container', () => {
+    /*
+     * THE DEFECT ITSELF. The content container carries the product's rhythm and nothing else —
+     * if the inset is in here, it is spacing, and spacing scrolls.
+     */
+    const tree = withInsets(<Screen testID="page" />);
+    const content = flatten(tree.getByTestId('page').props['contentContainerStyle']);
+
+    expect(content['padding']).toBe(nativeSpacing.xl2);
+    expect(content['paddingTop']).toBeUndefined();
+    for (const value of Object.values(content)) expect(value).not.toBe(INSET.top);
+  });
+
+  it('puts it on an ancestor of the scroller, where it moves the frame', () => {
+    /*
+     * THE DECOY FOR THE ABOVE. A `Screen` that simply dropped the inset would satisfy every
+     * assertion in the previous case and paint under the notch permanently. This one requires
+     * the inset to be somewhere, and somewhere specific: above the thing that scrolls.
+     */
+    const tree = withInsets(<Screen testID="page" />);
+    let node = tree.getByTestId('page').parent;
+    let found = false;
+    while (node !== null && !found) {
+      found = flatten(node.props['style'])['paddingTop'] === INSET.top;
+      node = node.parent;
+    }
+    expect(found).toBe(true);
+  });
+
+  it('keeps the bottom to the tab bar, which takes that inset itself', () => {
+    // Counting it here as well would make the gap under the home indicator twice the size.
+    const tree = withInsets(<Screen testID="page" />);
+    let node: typeof tree.getByTestId extends never
+      ? never
+      : ReturnType<typeof tree.getByTestId> | null = tree.getByTestId('page');
+    while (node !== null) {
+      expect(flatten(node.props['style'])['paddingBottom']).not.toBe(INSET.bottom);
+      node = node.parent;
+    }
+  });
+
+  it('lays out exactly as before on a phone with no notch', () => {
+    /*
+     * The fallback is a REAL VALUE rather than a stand-in: zero insets is what a flat phone
+     * reports, and it is what every test and the whole a11y gate render under, since none of
+     * them is an app with a provider.
+     */
+    const tree = render(
+      <ThemeProvider theme="light">
+        <Screen testID="page" />
+      </ThemeProvider>,
+    );
+    const content = flatten(tree.getByTestId('page').props['contentContainerStyle']);
+    expect(content['padding']).toBe(nativeSpacing.xl2);
   });
 });

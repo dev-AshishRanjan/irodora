@@ -10,8 +10,11 @@
  * it is applied again here to the thing it now governs.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { NAV_ICON_NAMES } from '@irodora/ui';
-import { TABS } from '../app/(tabs)/_layout';
+import { TABS, TAB_BAR_HEIGHT, TAB_MINIMUM } from '../app/(tabs)/_layout';
+import { en } from '../src/i18n/en';
 
 describe('the tab bar and the navigation glyphs agree', () => {
   it('every tab names a glyph that exists', () => {
@@ -32,5 +35,52 @@ describe('the tab bar and the navigation glyphs agree', () => {
     // Two tabs with one shape is the failure NFR-9 is about: the bar would carry a label
     // channel and a colour channel, and the shape channel would be saying nothing.
     expect(new Set(TABS.map((t) => t.icon)).size).toBe(TABS.length);
+  });
+});
+
+/**
+ * F-168 — the bar draws glyphs and no words.
+ *
+ * ## What can be asserted here and what cannot
+ *
+ * The defect was that five labels **wrap to a second line** across a phone width. Nothing in this
+ * repository can see that: `react-test-renderer` measures no text and has no width, so the
+ * overflow was invisible to a green suite and stays invisible.
+ *
+ * What is assertable is that there is no text left to wrap, and — the half that matters more —
+ * that removing it cost a screen reader nothing.
+ */
+describe('the bar carries a glyph, and the word only where it is announced (F-168)', () => {
+  it('draws no label text', () => {
+    /*
+     * By construction rather than by rendering: `TabGlyph` is not exported and React Navigation
+     * will not mount without a navigator. What the source can be held to is that the tab's
+     * visual element is the glyph — so this asserts the shape of the option that draws it.
+     */
+    const source = readFileSync(join(__dirname, '..', 'app', '(tabs)', '_layout.tsx'), 'utf8');
+    expect(source).toContain('tabBarShowLabel: false');
+    expect(source).toContain('tabBarIcon: ({ focused }) => <TabGlyph');
+    // The `<Text>` that wrapped. Its absence is the fix; `Text` is no longer imported at all,
+    // which is a stronger statement than the element being gone from one call site.
+    expect(source).not.toMatch(/import \{[^}]*\bText\b[^}]*\} from '@irodora\/ui'/u);
+  });
+
+  it('still announces every tab by name', () => {
+    /*
+     * THE DECOY, and it is the assertion that keeps this from being a regression. A bar that
+     * simply deleted the words would satisfy everything above and would leave a screen-reader
+     * user with five unnamed buttons. Every tab still resolves to a real message.
+     */
+    for (const tab of TABS) {
+      const word = en[tab.labelKey];
+      expect(`${tab.name}: ${typeof word}`).toBe(`${tab.name}: string`);
+      expect(word.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps the bar tappable without the line of type it lost', () => {
+    // A bar that FITS is not the same as a bar you can hit. The base is what the design chose;
+    // the minimum is what a finger needs, and the device inset is added on top of both.
+    expect(TAB_BAR_HEIGHT()).toBeGreaterThanOrEqual(TAB_MINIMUM);
   });
 });

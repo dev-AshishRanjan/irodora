@@ -322,16 +322,12 @@ export function Screen({
   );
 
   /*
-   * THE DEVICE'S OWN INSETS, ADDED TO THE SCALE — the only place in the app that reads them.
+   * THE DEVICE'S OWN INSETS — the only place in the app that reads them.
    *
-   * Nothing consumed insets at all until this. It worked before F-145 because the root Stack
+   * Nothing consumed insets at all until F-159. It worked before F-145 because the root Stack
    * SHOWED A HEADER and react-navigation insets a header for you; `headerShown: false` was
    * right — a navigation bar above a tab bar is two headers for one page — and it removed the
    * only thing holding content off the status bar.
-   *
-   * ADDED TO THE TOKEN PADDING RATHER THAN REPLACING IT. A screen keeps its own rhythm; the
-   * inset is what keeps that rhythm clear of the hardware. Replacing would make a notched phone
-   * and a flat one lay out differently for no reason a designer chose.
    *
    * NOT THE BOTTOM. Every screen in this app sits inside the tab navigator, which occupies the
    * bottom edge and takes that inset itself. Adding it here as well would count it twice, and
@@ -353,36 +349,71 @@ export function Screen({
    * root, and `app/_layout.tsx` renders one explicitly rather than trusting expo-router to.
    */
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 };
-  const inset = {
-    paddingTop: nativeSpacing[padding] + insets.top,
-    paddingBottom: nativeSpacing[padding],
-    paddingLeft: nativeSpacing[padding] + insets.left,
-    paddingRight: nativeSpacing[padding] + insets.right,
+
+  /*
+   * THE HARDWARE, AND IT IS A BOUNDARY RATHER THAN SPACING (F-167).
+   *
+   * F-159 added this to the token padding and put the sum on `contentContainerStyle`. That pads
+   * the CONTENT INSIDE THE SCROLLER: the first screenful sits in the right place — which is why
+   * it was accepted — and every pixel after it travels under the notch. Reported from a device
+   * as *"the battery and all native data is coming as a patch over our UI"*.
+   *
+   * A `ScrollView` clips to its own frame. So the inset has to move the FRAME, which means it
+   * belongs on an ancestor: content then cannot reach the status bar because there is nowhere
+   * for it to go. It is not spacing and it never was — the product's rhythm is a design value
+   * and this is the shape of the hardware, and merging them is what hid the difference.
+   *
+   * NOT `paddingTop` ON THE SCROLLVIEW'S OWN `style`, which is the tempting one-line version:
+   * padding on a ScrollView style does not act as a viewport inset, which is the documented
+   * trap that sends everybody to `contentContainerStyle` in the first place.
+   *
+   * NOT `SafeAreaView`, which calls `useSafeAreaInsets` internally and therefore throws in every
+   * context this component is rendered in that is not an app.
+   */
+  const hardware = {
+    paddingTop: insets.top,
+    paddingLeft: insets.left,
+    paddingRight: insets.right,
+  } as const;
+
+  /** The product's own rhythm, unchanged. A screen keeps this whatever the phone looks like. */
+  const rhythm = {
+    padding: nativeSpacing[padding],
     gap: nativeSpacing[gap],
   } as const;
 
+  /*
+   * THE BACKGROUND PAINTS BEHIND THE STATUS BAR, and that is deliberate rather than an oversight
+   * of the above. The wrapper reaches the edge of the screen and is opaque, so the notch area
+   * is the app's ground; without it a phone would show a band of platform colour above the
+   * content, which is the same defect pointing the other way.
+   */
+  const ground = { flex: 1, backgroundColor: colors.background, ...hardware } as const;
+
   if (!scroll)
     return (
-      <View
-        {...rest}
-        style={{
-          flex: 1,
-          backgroundColor: colors.background,
-          flexDirection: 'column',
-          ...inset,
-        }}
-      >
-        {content}
+      <View style={ground}>
+        <View {...rest} style={{ flex: 1, flexDirection: 'column', ...rhythm }}>
+          {content}
+        </View>
       </View>
     );
 
   return (
-    <ScrollView
-      {...rest}
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ flexDirection: 'column', ...inset }}
-    >
-      {content}
-    </ScrollView>
+    <View style={ground}>
+      <ScrollView
+        {...rest}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexDirection: 'column', ...rhythm }}
+        /*
+          iOS ADJUSTS CONTENT INSETS FOR SAFE AREAS BY ITSELF unless told not to, and the wrapper
+          above has already done it. Left at the default this would be counted twice on exactly
+          the phones that have a notch — the devices the fix is for.
+        */
+        contentInsetAdjustmentBehavior="never"
+      >
+        {content}
+      </ScrollView>
+    </View>
   );
 }
