@@ -8,6 +8,124 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-165 DONE · the mark is the radical of its own name
+
+### The audit, before the redraw
+
+The `visual-taste` skill requires this stated specifically, because a redesign you cannot justify
+is one you should not make. What was wrong with F-141's two offset rectangles:
+
+- **No closed silhouette.** Two free-floating slabs. An icon on a home screen needs one figure you
+  could trace; this asked the eye to perform the arranging the concept claimed as its subject.
+- **The idea was legible only in prose.** The equality of gap and offset — the whole point — is
+  invisible without measuring. A mark that needs its caption is a diagram.
+- **It read as something else.** Two offset bars is a pause glyph or a chart fragment. The
+  rejection table ruled out three bars as "a bar chart" and then shipped two.
+- **Nothing in it was colour, and nothing was Japanese.** The brief asks for *arranged colour*,
+  and a person looking at it had no route to the product.
+
+### 彡
+
+**The radical that means colour in 彩** — the character in *irodoru*, the verb this product is
+named after. Three equal strokes at 45°, where the thickness, the gap between strokes and each
+stroke's horizontal shear are **one quantity**.
+
+That is the answer to the pre-flight question the first attempt could not give — *could this be
+any other product?* — because it is a piece of the subject's own writing rather than an
+abstraction of it.
+
+F-141's real idea survives: 間, the interval as the subject of the mark rather than the space left
+over by it. What it lacked was a figure.
+
+```
+    ████████████████
+   ████████████████
+    ████████████████        one quantity, used three times:
+   ████████████████         thickness = gap = shear
+    ████████████████
+   ████████████████
+```
+
+**45° is a manufacturing decision as much as a visual one.** Shear equals thickness, so both scale
+by the grid unit and the edge advances exactly one pixel per pixel row at every size the generator
+will build. No edge ever lands between pixels — which is the condition the generator already
+refuses to build without, and the reason a mark stays hard at 16 px.
+
+**Monochrome, and the register decided that.** Filling the strokes with corpus colours would say
+"colour app" louder, and it contradicts the soft-minimal direction that was chosen as well as
+BRAND.md's disqualifying line.
+
+### The machinery survived, and it caught two things (E-085)
+
+The pipeline was always worth more than any mark it had drawn: geometry in source, every asset
+generated from it, the mark read back out of the built APK by proportion rather than by hash. It
+was left alone deliberately — and **two of its checks turned out to be about a shape that no
+longer existed.**
+
+**The safe zone.** `--prove` asserted the Android adaptive icon fits the 66/108 circle Android
+guarantees:
+
+```js
+const inkDiagonal = 432 * Math.SQRT2;   // 432 = the OLD ink box at the 576 grid
+```
+
+The new ink box is 20 grid units rather than 18, and **its corners are ink** — a stroke's end is
+exactly the far point. At the same grid the ink would have reached **339 px against a guaranteed
+313**, and Android would have cut the corners off the icon.
+
+**The check would have gone on passing**, asserting a true fact about a shape the product no
+longer had. Derived, it failed immediately and forced the adaptive grid from 576 to **504** — a
+consequence rather than a preference, since the unit must stay a whole number and 21 is the
+largest that fits.
+
+**The signature.** `carriesMark` scanned the middle **row** for two ink runs — a fact about two
+fields side by side. Three stacked strokes give a horizontal scan exactly one run, which is what a
+solid block gives. It would not have failed; it would have stopped meaning anything. It reads the
+centre **column** now: five alternations, every one the same quantity, which is the mark's own
+idea.
+
+### The rule, and why deriving is only half
+
+**A check written as a constant is a check about the code that existed when it was typed.** Fine
+for something genuinely fixed — Android's 66/108 is Android's. Not fine for anything derived from
+a thing that can change shape, and the failure is silent in the worst way: it still passes.
+
+Deriving it is half. A derived check can still be vacuous, so each one gained a companion that
+must **fail**: `inkRadius(576)` must exceed the safe radius, and **two strokes** must be refused —
+because two strokes is the shape this repository shipped last year, and a check that accepts what
+it replaced is not checking the replacement.
+
+Nothing else would have caught either. `--check` byte-compares the four PNGs, so a regenerated
+asset always matches — itself. Gate 16 needs an APK, and none is built per push.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| `generate-brand-assets.mjs --prove` — 11 checks, **3 decoys** | **PASS** |
+| `--check` byte-compares all four assets | **PASS** |
+| gate 16 (reads the mark out of an APK) | **NOT RUN** — no APK built since the redraw |
+
+**Also not run:** `e2e` — gate 7 is still pending.
+
+### A third variant of the plant problem
+
+Mid-feature `verify-content-proof.mjs` failed on Windows with `EPERM` removing a fixture
+directory, and its restore threw **after** deleting the contents — leaving four tracked fixture
+files gone from the working tree. A `finally` does not survive a timeout, does not survive a kill,
+and on Windows does not survive a file handle somebody else is holding. `verify-ci`'s tracked-tree
+guard is the only reason a `git add -A` did not commit the deletions.
+
+### Still owed
+
+**Nobody has looked at it on a home screen** — the criterion that actually matters, and the same
+one F-162 owes for the tab glyphs. The specific risk is that three parallel 45° strokes read as
+speed lines rather than as a written form. The icon was sent to the reporter directly rather than
+waiting for the next build.
+
+---
+
 ## 2026-09-05 — F-167, F-168 DONE · a boundary is not spacing, and a channel that overflows is not a channel
 
 A second device report, six items. One of them — the mark — was already **F-165** and stays where

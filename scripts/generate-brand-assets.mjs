@@ -18,9 +18,15 @@
  *
  * | asset | canvas | grid at | unit | ink | why that size |
  * |---|---:|---:|---:|---:|---|
- * | `icon` | 1024 | 768 | 32 | 576 (56.25 %) | iOS squircle-masks the corners; 56 % keeps the mark clear of them |
- * | `adaptive-icon` | 1024 | 576 | 24 | 432 | Android guarantees only a **66/108** circle — Ø 625.8. The ink's diagonal is 610.9 |
- * | `splash-icon-*` | 1024 | 768 | 32 | 576 | Expo composites it over the theme background |
+ * | `icon` | 1024 | 768 | 32 | 640 (62.5 %) | iOS squircle-masks the corners; the ink's farthest point is 452 from centre against about 629 of squircle |
+ * | `adaptive-icon` | 1024 | 504 | 21 | 420 | Android guarantees only a **66/108** circle — Ø 625.8, so the ink's corner must sit inside Ø 594 |
+ * | `splash-icon-*` | 1024 | 768 | 32 | 640 | Expo composites it over the theme background |
+ *
+ * **The adaptive grid shrank with F-165 and the proof is what said so.** The mark's ink box grew
+ * from 18 grid units to 20, and its corners are ink — a stroke's end is exactly the far point —
+ * so at the old 576 the diagonal reached 679 against a guaranteed 626 and Android would have
+ * clipped it. The safe-zone assertion carried a hard-coded `432` from the old geometry and would
+ * have gone on passing; it is derived now, which is the only reason this was visible at all.
  *
  * ```
  * node scripts/generate-brand-assets.mjs
@@ -62,8 +68,8 @@ function markGeometry() {
   return {
     grid: pick('grid: (\\d+)', 'the grid'),
     interval: pick('interval: (\\d+)', 'the interval'),
-    width: pick('field: \\{ width: (\\d+)', 'the field width'),
-    height: pick('width: \\d+, height: (\\d+)', 'the field height'),
+    strokes: pick('strokes: (\\d+)', 'the stroke count'),
+    length: pick('length: (\\d+)', 'the stroke length'),
     x: pick('origin: \\{ x: (\\d+)', 'the origin x'),
     y: pick('origin: \\{ x: \\d+, y: (\\d+)', 'the origin y'),
   };
@@ -111,24 +117,32 @@ function render(canvas, gridPx, ink, ground, g) {
     px[i * 4 + 3] = ground === null ? 0 : 255;
   }
 
-  // The two fields. The second one's position is DERIVED — the gap and the offset are the same
-  // interval, which is the mark (E-059), so writing either number here would be a second copy.
-  const fields = [
-    { x: g.x, y: g.y },
-    { x: g.x + g.width + g.interval, y: g.y + g.interval },
-  ];
-
-  for (const f of fields) {
-    const x0 = offset + f.x * unit,
-      y0 = offset + f.y * unit;
-    for (let y = y0; y < y0 + g.height * unit; y++)
-      for (let x = x0; x < x0 + g.width * unit; x++) {
+  /*
+   * THE THREE STROKES, EACH A 45° BAND (F-165).
+   *
+   * Every stroke's position is DERIVED from the interval — thickness, gap and shear are one
+   * quantity (E-059), so writing any of them separately here would be a second copy of the mark.
+   *
+   * The shear is exactly one pixel per pixel row, and that is not a coincidence: shear equals
+   * thickness in grid units, so both scale by `unit` and the ratio is 1 at every size the
+   * integer-unit check above admits. Every edge lands on a pixel boundary, which is what keeps
+   * the mark hard at 16 px.
+   */
+  for (let i = 0; i < g.strokes; i++) {
+    const top = offset + (g.y + i * g.interval * 2) * unit;
+    const bottom = top + g.interval * unit;
+    for (let y = top; y < bottom; y++) {
+      // Zero on the lowest row, one interval on the highest — the lower edge is the origin.
+      const shear = bottom - 1 - y;
+      const x0 = offset + g.x * unit + shear;
+      for (let x = x0; x < x0 + g.length * unit; x++) {
         const d = (y * canvas + x) * 4;
         px[d] = ir;
         px[d + 1] = ig;
         px[d + 2] = ib;
         px[d + 3] = 255;
       }
+    }
   }
   return encodePng(canvas, canvas, px);
 }
@@ -137,6 +151,38 @@ const CANVAS = 1024;
 /** Android guarantees only the central 66/108 of an adaptive icon is visible. */
 export const ADAPTIVE_SAFE_FRACTION = 66 / 108;
 
+/**
+ * The grid the Android foreground is drawn on.
+ *
+ * Smaller than the other three, and the number is a consequence rather than a preference: the
+ * ink box is 20 grid units square and its corners are ink, so the farthest point from the centre
+ * is `10 * sqrt(2)` units. At 21 px a unit that is 297 against the 313 Android guarantees.
+ *
+ * It must also divide the grid exactly — `render` refuses a fractional unit, because a
+ * fractional unit puts the mark's edges between pixels.
+ */
+const ADAPTIVE_GRID = 504;
+
+/**
+ * How far the ink reaches from the centre of the canvas, in pixels.
+ *
+ * **Derived, and it had to become derived.** This was `432 * Math.SQRT2` — the old mark's ink
+ * box, written down. F-165's ink box is larger, and a hard-coded figure would have gone on
+ * asserting that a shape it no longer describes fits inside a circle it no longer fits.
+ *
+ * The corners of the box ARE ink here: a stroke's end is the far point, so the bounding box's
+ * half-diagonal is the honest radius rather than a conservative one.
+ */
+export function inkRadius(gridPx, geometry = markGeometry()) {
+  const unit = gridPx / geometry.grid;
+  // The ink spans from the origin to the far end of the sheared stroke, on both axes.
+  const span = Math.max(
+    geometry.length + geometry.interval,
+    geometry.strokes * geometry.interval * 2 - geometry.interval,
+  );
+  return ((span * unit) / 2) * Math.SQRT2;
+}
+
 export function assets() {
   const g = markGeometry();
   const p = palette();
@@ -144,18 +190,24 @@ export function assets() {
     // iOS and the store. OPAQUE — iOS rejects an app icon with an alpha channel.
     { file: 'icon.png', bytes: render(CANVAS, 768, p.darkInk, p.darkGround, g) },
     // Android's foreground layer. Transparent; `adaptiveIcon.backgroundColor` is the other half.
-    { file: 'adaptive-icon.png', bytes: render(CANVAS, 576, p.darkInk, null, g) },
+    { file: 'adaptive-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, p.darkInk, null, g) },
     // Expo composites each of these over its theme's background.
     { file: 'splash-icon-light.png', bytes: render(CANVAS, 768, p.lightInk, null, g) },
     { file: 'splash-icon-dark.png', bytes: render(CANVAS, 768, p.darkInk, null, g) },
   ];
 }
 
-/** What the middle row of an asset should look like, as fractions of its width. */
+/**
+ * What the centre COLUMN of an asset should look like, as fractions of its height.
+ *
+ * One number for both the strokes and the gaps, because in this mark they are one number — see
+ * `MARK.interval`. A signature with two independent figures in it would let the artefact drift
+ * away from the idea while still matching the check.
+ */
 export function expectedSignature(gridPx = 768, canvas = CANVAS) {
   const g = markGeometry();
   const unit = gridPx / g.grid;
-  return { field: (g.width * unit) / canvas, interval: (g.interval * unit) / canvas };
+  return { strokes: g.strokes, interval: (g.interval * unit) / canvas };
 }
 
 /*
@@ -179,7 +231,7 @@ if (invoked) {
  * The encoder, the decoder and the shape signature are all written here rather than depended on,
  * so all three could be wrong *together* and agree with each other — which is the failure mode
  * of any hand-rolled pair. The round-trip catches an encoder that lies to its own decoder; the
- * two decoys catch a signature that would accept anything with ink in it.
+ * three decoys catch a signature that would accept anything with ink in it.
  *
  * **Nothing is written to the working tree**: the mutations happen in memory.
  */
@@ -220,27 +272,53 @@ function prove() {
 
   // 3. THE DECOYS. A signature that accepts anything is worth nothing.
   const g = markGeometry();
-  const flat = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, interval: 0, width: 18 }));
+
+  const solid = decodePng(
+    render(256, 192, '#F6F4F1', '#090807', {
+      ...g,
+      strokes: 1,
+      interval: 20,
+      length: 20,
+      x: 2,
+      y: 2,
+    }),
+  );
   say(
-    !carriesMark(flat, expectedSignature(768)).ok,
+    !carriesMark(solid, expectedSignature(768)).ok,
     'a solid block is REFUSED',
-    'the placeholder shape — one field, no interval',
+    'ink everywhere, one run down the centre',
   );
 
-  const wrong = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, width: 2 }));
+  const twoBars = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, strokes: 2 }));
   say(
-    !carriesMark(wrong, expectedSignature(768)).ok,
-    'two bars in the WRONG proportion are REFUSED',
-    'ink is present and the mark is not',
+    !carriesMark(twoBars, expectedSignature(768)).ok,
+    'TWO strokes are REFUSED — the count is part of the mark',
+    'the shape F-141 shipped would not pass as this one',
   );
 
-  // 4. The Android safe zone, as arithmetic rather than a screenshot.
-  const inkDiagonal = 432 * Math.SQRT2;
-  const safe = CANVAS * ADAPTIVE_SAFE_FRACTION;
+  const wrongInterval = decodePng(render(256, 192, '#F6F4F1', '#090807', { ...g, interval: 2 }));
   say(
-    inkDiagonal <= safe,
+    !carriesMark(wrongInterval, expectedSignature(768)).ok,
+    'three strokes in the WRONG proportion are REFUSED',
+    'ink is present, the count is right, and the equality is not',
+  );
+
+  // 4. The Android safe zone, as arithmetic rather than a screenshot — and DERIVED from the
+  //    geometry, because the version that carried the old mark's numbers would have passed while
+  //    Android clipped the new one.
+  const reach = inkRadius(ADAPTIVE_GRID, g);
+  const safeRadius = (CANVAS * ADAPTIVE_SAFE_FRACTION) / 2;
+  say(
+    reach <= safeRadius,
     'the adaptive icon fits the 66/108 safe circle',
-    `ink diagonal ${inkDiagonal.toFixed(1)} ≤ Ø ${safe.toFixed(1)}`,
+    `ink reaches ${reach.toFixed(1)} from centre ≤ ${safeRadius.toFixed(1)}`,
+  );
+
+  const tooBig = inkRadius(576, g);
+  say(
+    tooBig > safeRadius,
+    'the grid this mark CANNOT use is refused',
+    `at 576 the ink would reach ${tooBig.toFixed(1)} — the check is not vacuous`,
   );
 
   // 5. --check notices a single changed byte.
@@ -255,7 +333,7 @@ function prove() {
   }
   console.log(
     `\n${GREEN}${BOLD}The brand assets check discriminates.${OFF} ` +
-      `${DIM}Round-trip, four assets, two decoys, the safe zone.${OFF}\n`,
+      `${DIM}Round-trip, four assets, three decoys, the safe zone and the grid it cannot use.${OFF}\n`,
   );
 }
 

@@ -225,9 +225,29 @@ export function decodePng(buf) {
  * whose luminance differs from the first pixel of the row — which is how a light mark on dark
  * and a dark mark on light are the same measurement.
  */
-export function rowSignature({ width, height, rgba }) {
-  const y = Math.floor(height / 2);
-  const at = (x) => {
+export function rowSignature(image) {
+  return axisSignature(image, 'row');
+}
+
+/**
+ * The same scan, down a column.
+ *
+ * The mark is three strokes stacked with an interval between them (F-165), so the run that
+ * carries its proportions is **vertical**: a horizontal scan crosses one stroke and reports a
+ * single run, which a solid block would also produce. Down the centre the signature is
+ * ground · stroke · interval · stroke · interval · stroke · ground — five alternations, and
+ * every one of those five is the same measured quantity.
+ */
+export function columnSignature(image) {
+  return axisSignature(image, 'column');
+}
+
+/** One scan, either way. `fraction` is of the scanned dimension. */
+function axisSignature({ width, height, rgba }, axis) {
+  const along = axis === 'row' ? width : height;
+  const fixed = Math.floor((axis === 'row' ? height : width) / 2);
+  const at = (i) => {
+    const [x, y] = axis === 'row' ? [i, fixed] : [fixed, i];
     const d = (y * width + x) * 4;
     return { r: rgba[d], g: rgba[d + 1], b: rgba[d + 2], a: rgba[d + 3] };
   };
@@ -241,45 +261,63 @@ export function rowSignature({ width, height, rgba }) {
   const runs = [];
   let current = isInk(at(0));
   let length = 0;
-  for (let x = 0; x < width; x++) {
-    const here = isInk(at(x));
+  for (let i = 0; i < along; i++) {
+    const here = isInk(at(i));
     if (here === current) length += 1;
     else {
-      runs.push({ ink: current, fraction: length / width });
+      runs.push({ ink: current, fraction: length / along });
       current = here;
       length = 1;
     }
   }
-  runs.push({ ink: current, fraction: length / width });
+  runs.push({ ink: current, fraction: length / along });
   return runs;
 }
 
 /**
  * Does this image carry the mark?
  *
- * The mark's middle row crosses: ground, field, interval, field, ground. `tolerance` is
- * generous because the caller may be looking at an icon that was resized to 48 px by a build
- * tool — the proportions survive that, a couple of percent of rounding does not.
+ * The mark's centre COLUMN crosses: ground, stroke, interval, stroke, interval, stroke, ground
+ * (F-165). Down rather than across, because a horizontal scan of three stacked strokes crosses
+ * exactly one of them and reports a single run — which a solid block produces too.
+ *
+ * **Every one of those five ink-and-interval runs is the same measured quantity**, which is the
+ * mark's own idea and therefore the strongest thing to assert about an artefact: a shape that
+ * merely has ink in the right places fails on the equality.
+ *
+ * `tolerance` is generous because the caller may be looking at an icon a build tool resized to
+ * 48 px — the proportions survive that, a couple of percent of rounding does not.
  */
 export function carriesMark(image, expected, tolerance = 0.03) {
-  const runs = rowSignature(image);
+  const runs = columnSignature(image);
   const ink = runs.filter((r) => r.ink);
-  if (ink.length !== 2)
-    return { ok: false, why: `${String(ink.length)} ink run(s) across the middle row, expected 2` };
+  if (ink.length !== expected.strokes)
+    return {
+      ok: false,
+      why: `${String(ink.length)} ink run(s) down the centre column, expected ${String(expected.strokes)}`,
+    };
 
-  const gap = runs.find((r, i) => !r.ink && i > 0 && i < runs.length - 1);
-  if (gap === undefined) return { ok: false, why: 'no interval between the two fields' };
+  // The interior gaps only: the ground above the first stroke and below the last are margins,
+  // and their size depends on how the caller cropped or padded the image.
+  const gaps = runs.filter((r, i) => !r.ink && i > 0 && i < runs.length - 1);
+  if (gaps.length !== expected.strokes - 1)
+    return {
+      ok: false,
+      why: `${String(gaps.length)} interval(s) between the strokes, expected ${String(expected.strokes - 1)}`,
+    };
 
-  for (const [name, actual, want] of [
-    ['first field', ink[0].fraction, expected.field],
-    ['interval', gap.fraction, expected.interval],
-    ['second field', ink[1].fraction, expected.field],
+  for (const [name, actual] of [
+    ...ink.map((r, i) => [`stroke ${String(i + 1)}`, r.fraction]),
+    ...gaps.map((r, i) => [`interval ${String(i + 1)}`, r.fraction]),
   ])
-    if (Math.abs(actual - want) > tolerance)
+    if (Math.abs(actual - expected.interval) > tolerance)
       return {
         ok: false,
-        why: `${name} is ${(actual * 100).toFixed(1)}% of the width, expected ${(want * 100).toFixed(1)}%`,
+        why: `${name} is ${(actual * 100).toFixed(1)}% of the height, expected ${(expected.interval * 100).toFixed(1)}%`,
       };
 
-  return { ok: true, why: 'ground · field · interval · field · ground, in the mark’s proportions' };
+  return {
+    ok: true,
+    why: 'three strokes and two intervals down the centre, every one the same quantity',
+  };
 }

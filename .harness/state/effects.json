@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-05",
+  "updated": "2026-09-06",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3080,6 +3080,44 @@
       "memory": "memory/effects/the-first-screenful-looks-right-and-the-rest-scrolls-under-the-notch.md",
       "rationale": "A BOUNDARY APPLIED AS SPACING IS CORRECT AT EXACTLY ONE SCROLL POSITION. F-159 read the safe area, added it to the token padding, and put the sum on `contentContainerStyle` — which pads the content INSIDE the scroller. The first screenful sits in the right place, which is why it was accepted, and every pixel after it travels under the status bar; reported from the next build as \"the battery and all native data is coming as a patch over our UI\". Two things had been merged that are not the same kind of thing: `nativeSpacing[padding]` is a design value that sets the rhythm, and `insets.top` is the shape of the hardware saying where the app may draw at all. A ScrollView clips to its FRAME, so the boundary has to move the frame — an ancestor carries it and the content container keeps only the rhythm. THE WORST KIND OF WRONG, because the one position it is right at is the one everybody looks at. TWO NEAR-MISSES: `paddingTop` on the ScrollView own `style` is the tempting one-liner and is React Native documented trap, which is indirectly why the bug existed at all; and `SafeAreaView` is the idiomatic answer and throws without a provider, which `Screen` is rendered without by the conformance suite, three dozen screen tests and the a11y gate. WHY NO TEST CAUGHT IT: react-test-renderer has no viewport, no scrolling and no status bar, so \"content stops at the boundary\" is not observable and never will be. The new assertion is STRUCTURAL — the inset is on an ancestor of the scroller, not inside its content — which is the property that was wrong rather than a proxy for it. When the behaviour is invisible to the harness, assert the structure that causes it. SAME REPORT, SAME SHAPE, ONE LINE UP: F-162 drew a glyph AND a word in each tab arguing NFR-9, and five words at the 10px label step wrapped to a second line across a phone width. The argument was about information and the failure was about space. A channel that overflows is not a channel.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-085",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/brand.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/generate-brand-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/png.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-apk.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "scripts",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "gate:artifact — `generate-brand-assets.mjs --prove` now runs eleven checks with THREE decoys (a solid block, two strokes, three strokes at the wrong interval) and asserts the Android safe zone from the geometry rather than from a written-down number; `--check` byte-compares every asset; the generator reads MARK out of the component source and throws by name when a field moves.",
+      "memory": "memory/effects/a-derived-check-catches-the-change-a-written-down-one-waves-through.md",
+      "rationale": "THE SAFE-ZONE ASSERTION CARRIED THE OLD MARK'S NUMBERS AND WOULD HAVE PASSED WHILE ANDROID CLIPPED THE NEW ONE. `generate-brand-assets.mjs --prove` checked that the adaptive icon fits Android's guaranteed 66/108 circle with `const inkDiagonal = 432 * Math.SQRT2` — 432 being the F-141 mark's ink box at the 576 grid, written down. F-165's ink box is 20 grid units rather than 18, and its CORNERS ARE INK because a stroke's end is exactly the far point, so at the same grid the ink would have reached 339 against a guaranteed 313 and Android would have cut the corners off the icon. THE CHECK WOULD HAVE GONE ON PASSING, because it was asserting a fact about a shape it no longer described. Deriving it — `inkRadius(gridPx, geometry)` — made the failure visible immediately and forced the adaptive grid from 576 down to 504, which is a consequence rather than a preference: the unit must stay a whole number or the generator refuses to build, and 21 is the largest that fits. A SECOND DECOY WENT IN WITH IT: `inkRadius(576)` must EXCEED the safe radius, so the check cannot become vacuous again by drifting to a mark small enough to pass anything. THE SAME SHAPE AS THE SIGNATURE, one step along: `carriesMark` read the middle ROW for two ink runs, which is a fact about two side-by-side fields and says nothing about three stacked strokes — a horizontal scan of the new mark crosses one stroke and reports a single run, exactly as a solid block would. It reads the centre COLUMN now, where the signature is five alternations every one of which is the same quantity, and the two-stroke decoy proves the shape F-141 shipped would not pass as this one. GENERAL FORM: a check written as a constant is a check about the code that existed when it was typed. When the thing being checked can change shape, the check has to be derived from the shape — and it needs a decoy that fails, or deriving it only moves where the vacuum is.",
+      "confidence": 0.93,
       "origin": "manual",
       "status": "active"
     }

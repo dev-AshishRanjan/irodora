@@ -156,6 +156,27 @@ work in one colour, at 16 px, and under protan, deutan and tritan simulation.
 
 **A mark that depends on colour to be recognisable is disqualified from this product.**
 
+### What was drawn
+
+**彡 — the radical that means colour in 彩**, the character in *irodoru*, the verb this product
+is named after. Three equal strokes at 45°, where the stroke thickness, the gap between strokes
+and each stroke horizontal shear are **one quantity** (`MARK.interval`).
+
+It answers the pre-flight question the first attempt could not: *could this be any other
+product?* No — it is a piece of the subject own writing rather than an abstraction of it.
+
+45 degrees is a manufacturing decision as much as a visual one. Shear equals thickness, so the
+edge advances exactly one pixel per pixel row at every size the generator will build, and no edge
+ever lands between pixels. A mark whose edges are soft at 48 px has lost what makes it legible
+at 16.
+
+**The first attempt (F-141) was two offset rectangles, and it was reported as not relevant and
+not professional twice.** The audit is in [`packages/ui/src/brand.tsx`](../../packages/ui/src/brand.tsx)
+rather than repeated here, along with the alternatives that were rejected and why. The machinery
+survived the redraw unchanged, and that was always the valuable part: the geometry lives in
+source, every asset is generated from it, and gate 16 reads the mark back out of the built APK by
+proportion rather than by hash.
+
 ---
 
 ## 8. Naming inside the product

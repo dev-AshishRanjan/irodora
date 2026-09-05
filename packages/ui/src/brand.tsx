@@ -1,61 +1,83 @@
 /**
- * The mark and the wordmark (F-141, FR-69).
+ * The mark and the wordmark (F-141, F-165, FR-69).
  *
  * ## The brief this answers
  *
- * [`BRAND.md` §7](../../../docs/design/BRAND.md#7-the-mark) has specified an identity since R0
- * and nothing was ever drawn: *"a wordmark-led identity with a geometric mark suggesting
- * **arranged** colour — relationship, adjacency, interval — rather than a swatch or a droplet.
- * It must work in one colour, at 16 px, and under protan, deutan and tritan simulation."*
+ * [`BRAND.md` §7](../../../docs/design/BRAND.md#7-the-mark) has specified an identity since R0:
+ * *"a wordmark-led identity with a geometric mark suggesting **arranged** colour — relationship,
+ * adjacency, interval — rather than a swatch or a droplet. It must work in one colour, at 16 px,
+ * and under protan, deutan and tritan simulation."*
  *
  * And the line that turns a review note into a gate: **"a mark that depends on colour to be
  * recognisable is disqualified from this product."**
  *
- * ## The mark is two fields and the interval between them
+ * ## The mark is 彡 — the radical that means colour in 彩
  *
- * Two identical rectangles on a 24-unit grid. The horizontal gap between them is 4, and the
- * vertical offset between them is **also 4** — one quantity, stated on both axes.
+ * 彩 is the character in *irodoru*, the verb this product is named after, and 彡 is the part of
+ * it that carries the meaning: pattern, ornament, colour laid on. **The mark is a piece of the
+ * subject's own writing rather than an abstraction of it** — which is the whole answer to
+ * *"could this be any other product?"*, and the answer the shape it replaces did not have.
  *
  * ```
- *   ┌─────┐            ← left field, y 3..17
- *   │     │  ┌─────┐   ← right field, y 7..21 — offset by the interval
- *   │     │  │     │
- *   └─────┘  │     │
- *      ↑  ↑  └─────┘
- *      the gap is the same 4
+ *        ▄▄▄▄▄▄▄▄▄▄▄▄          three equal strokes
+ *       ▄▄▄▄▄▄▄▄▄▄▄▄           thickness = gap = shear = the interval
+ *        ▄▄▄▄▄▄▄▄▄▄▄▄
+ *       ▄▄▄▄▄▄▄▄▄▄▄▄
+ *        ▄▄▄▄▄▄▄▄▄▄▄▄
+ *       ▄▄▄▄▄▄▄▄▄▄▄▄
  * ```
  *
- * That equality is the whole idea, and it is the reason this is a mark rather than a shape.
- * Two rectangles that merely sit near each other are adjacent; two whose separation and whose
- * displacement are *the same measured quantity* are **arranged**. 間 (*ma*) — the interval as a
- * design element, from [`BRAND.md` §6](../../../docs/design/BRAND.md#6-visual-direction) — is
- * the subject of the mark rather than the space left over by it.
+ * **One quantity, used three times.** F-141's real idea was 間 (*ma*) — the interval as the
+ * subject of the mark rather than the space left over by it — and that idea survives; what it
+ * lacked was a figure. Here the interval is the stroke's thickness, the gap between strokes, and
+ * the horizontal displacement from a stroke's bottom edge to its top. Change it and the whole
+ * mark rescales without changing what it is.
  *
- * It is also the one thing about the mark that can be asserted instead of admired, and
- * `brand.test.tsx` asserts it.
+ * ## 45° is a manufacturing decision, not a stylistic one
+ *
+ * Shear equals thickness, so the edge advances **exactly one pixel per pixel row** at any scale
+ * where the grid unit is a whole number — which is the condition
+ * [`generate-brand-assets.mjs`](../../../scripts/generate-brand-assets.mjs) already refuses to
+ * build without. Every edge lands on a pixel boundary. A mark whose edges are soft at 48 px has
+ * lost the thing that makes it legible at 16.
+ *
+ * ## What the first attempt got wrong
+ *
+ * F-141 drew two identical rectangles displaced by the interval, and it was reported as *"not
+ * relevant and not professional"* twice. The audit, because a redesign you cannot justify is one
+ * you should not make:
+ *
+ * | what was wrong | why it mattered |
+ * |---|---|
+ * | no closed silhouette — two free-floating slabs | an icon on a home screen needs one figure you could trace; this asked the eye to do the arranging the concept claimed as its subject |
+ * | the idea was legible only in prose | the equality of gap and offset is invisible without measuring, and a mark that needs its caption is a diagram |
+ * | it read as something else | two offset bars is a pause glyph or a chart fragment — the rejection table ruled out three bars as "a bar chart" and then shipped two |
+ * | nothing in it was colour, and nothing was Japanese | the brief asks for *arranged colour*, and a person looking at it had no route to the product |
  *
  * ## What it deliberately is not
  *
  * | rejected | because |
  * |---|---|
- * | three bars of increasing height | a bar chart — generic, and on the visual-taste cliché list |
+ * | bars of increasing height | a bar chart — generic, and on the visual-taste cliché list |
  * | nested rectangles, a sample on its well | that **is** a swatch, excluded by the brief in as many words |
- * | overlapping circles, colour mixing | wrong about the product: this measures colour, it does not mix it — and circles contradict *"rectilinear… swatches are true rectangles"* |
- * | a droplet | excluded by the brief |
- * | three fields rather than two | busier, not more meaningful. *Interval* needs exactly two edges; a third only costs legibility at 16 px |
+ * | overlapping fields, colour mixing | wrong about the product: this measures colour, it does not mix it |
+ * | a droplet, a hue wheel, an aperture | the first two are excluded by the brief; the third says *camera* rather than *colour*, and every camera app has one |
+ * | filling the strokes with corpus colours | more obviously "a colour app", and it contradicts the register the product chose — soft minimal, which is monochrome — as well as the disqualifying line above |
  *
  * ## One geometry, two renderers
  *
- * {@link Mark} draws two `View`s, so `@irodora/ui` gains no dependency — the mark is two
- * rectangles and does not need SVG to be one. {@link markSvg} emits the same rectangles as a
- * string, because F-142's icon pipeline needs a **file** and cannot consume a React component.
+ * {@link Mark} and {@link markSvg} both read {@link MARK} and neither carries its own numbers.
+ * That is `cardSvg`'s arrangement one level smaller, and the reason is the same: two copies of a
+ * geometry drift, and the copy that drifts is the one on the artefact that leaves the app.
  *
- * Both read {@link MARK} and neither carries its own numbers. That is `cardSvg`'s arrangement
- * one level smaller, and the reason is the same: two copies of a geometry drift, and the copy
- * that drifts is the one on the artefact that leaves the app.
+ * Both now draw **polygons**. The component used two `View`s so the package would stay
+ * dependency-free; `react-native-svg` has been a required `@irodora/ui` peer since F-162, so the
+ * argument expired — and a sheared stroke as a `View` would need a transform, which is a second
+ * way of expressing the same geometry and therefore a second thing to get wrong.
  */
 
 import { View, type ViewProps } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { nativeType } from '@irodora/design-tokens';
 import { useTheme, type ThemeColors } from './theme.js';
 import { Text } from './Text.js';
@@ -74,22 +96,63 @@ import type { Script } from './layout.js';
 export const MARK = {
   /** The coordinate system everything below is expressed in. */
   grid: 24,
-  /** 間. The gap between the fields, and the displacement between them. */
+  /**
+   * 間. The stroke's thickness, the gap between strokes, AND the horizontal shear of each
+   * stroke.
+   *
+   * **One number used three times, not three numbers that happen to agree.** Writing it once is
+   * what stops a later edit turning the mark into a different idea while it still looks about
+   * right — and the shear being equal to the thickness is what puts every edge at 45°, which is
+   * the only angle a raster grid renders without softening.
+   */
   interval: 4,
-  /** One field. Both are identical; only their position differs. */
-  field: { width: 7, height: 14 },
-  /** The left field's origin. The right one is derived, never written down. */
-  origin: { x: 3, y: 3 },
+  /** How many strokes. Three, because 彡 is three. */
+  strokes: 3,
+  /** The horizontal run of one stroke's lower edge. */
+  length: 16,
+  /** The lower-left corner of the first stroke's lower edge. Everything else is derived. */
+  origin: { x: 2, y: 2 },
 } as const;
 
-/** The two fields, in drawing order. Derived from {@link MARK}, so the equality cannot drift. */
-export function markFields(): readonly { x: number; y: number; width: number; height: number }[] {
-  const { interval, field, origin } = MARK;
-  return [
-    { x: origin.x, y: origin.y, ...field },
-    // The gap AND the offset are the same `interval`. This line is the mark.
-    { x: origin.x + field.width + interval, y: origin.y + interval, ...field },
-  ];
+/** One stroke, as the four corners of a parallelogram, clockwise from its upper left. */
+export type MarkStroke = readonly (readonly [number, number])[];
+
+/**
+ * The three strokes, in drawing order. Derived from {@link MARK}, so the equalities cannot drift.
+ *
+ * Each stroke is a parallelogram: the lower edge runs from `x` to `x + length`, and the upper
+ * edge is the same run displaced right by `interval` and up by `interval`. Those two being the
+ * same number is what makes the slant exactly 45°.
+ */
+export function markStrokes(): readonly MarkStroke[] {
+  const { interval, strokes, length, origin } = MARK;
+  return Array.from({ length: strokes }, (_unused, i) => {
+    // Stroke i sits one thickness and one gap below the one before it — two intervals.
+    const top = origin.y + i * interval * 2;
+    const bottom = top + interval;
+    const left = origin.x;
+    return [
+      [left + interval, top],
+      [left + interval + length, top],
+      [left + length, bottom],
+      [left, bottom],
+    ] as const;
+  });
+}
+
+/** The ink's bounding box, derived rather than stated. Used to prove the mark sits centred. */
+export function markBounds(): {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+} {
+  const points = markStrokes().flat();
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
 }
 
 /**
@@ -106,17 +169,28 @@ export function markFields(): readonly { x: number; y: number; width: number; he
  * fail it.
  */
 export function markSvg(color: string, size: number = MARK.grid): string {
-  const rects = markFields()
-    .map(
-      (r) =>
-        `<rect x="${String(r.x)}" y="${String(r.y)}" ` +
-        `width="${String(r.width)}" height="${String(r.height)}" fill="${color}"/>`,
-    )
+  const strokes = markStrokes()
+    .map((stroke) => `<path d="${pathOf(stroke)}" fill="${color}"/>`)
     .join('');
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${String(size)}" height="${String(size)}" ` +
-    `viewBox="0 0 ${String(MARK.grid)} ${String(MARK.grid)}">${rects}</svg>`
+    `viewBox="0 0 ${String(MARK.grid)} ${String(MARK.grid)}">${strokes}</svg>`
   );
+}
+
+/**
+ * A stroke as SVG path data. **One formatter, so the two renderers cannot disagree.**
+ *
+ * A path rather than a polygon, and the reason is that react-native-svg lowers `<Polygon>` to a
+ * `Path` and discards the `points` prop on the way — so the component and the emitted document
+ * would have been comparable only through a conversion, which is a third expression of one
+ * geometry. Emitting `d` from both makes the assertion a string equality.
+ */
+export function pathOf(stroke: MarkStroke): string {
+  const [start, ...rest] = stroke;
+  if (start === undefined) throw new Error('a stroke with no corners cannot be drawn');
+  const line = rest.map(([x, y]) => `L${String(x)} ${String(y)}`).join(' ');
+  return `M${String(start[0])} ${String(start[1])} ${line} Z`;
 }
 
 /** How small the mark is allowed to be drawn. The brief's number, not a guess. */
@@ -125,8 +199,9 @@ export const MARK_MIN_SIZE = 16;
 /**
  * The narrowest thing in the mark, at a given rendered size.
  *
- * The interval, not the field — the gap is what closes up first, and a mark whose gap has
- * closed is one rectangle. Exported so the test asserts a number rather than a screenshot.
+ * The interval — which is now both the stroke and the gap between strokes, so one number answers
+ * for both. A mark whose gaps have closed is a filled block; a mark whose strokes have closed is
+ * nothing at all. Exported so the test asserts a number rather than a screenshot.
  */
 export function narrowestFeature(size: number): number {
   return (MARK.interval / MARK.grid) * size;
@@ -150,8 +225,10 @@ export interface MarkProps extends Omit<ViewProps, 'style' | 'accessibilityRole'
 /**
  * The mark.
  *
- * Two `View`s rather than an SVG, so the UI package stays dependency-free. At these sizes there
- * is nothing an SVG would render that two absolutely-positioned rectangles do not.
+ * The same polygons {@link markSvg} emits, through `react-native-svg` — which has been a required
+ * `@irodora/ui` peer since F-162. A sheared stroke drawn as a `View` would need a transform, and
+ * a transform is a second way of expressing one geometry: a second thing to get wrong, in the
+ * renderer that is not the one on the home screen.
  */
 export function Mark({
   size = MARK_MIN_SIZE,
@@ -160,7 +237,6 @@ export function Mark({
   ...rest
 }: MarkProps = {}): React.JSX.Element {
   const { colors } = useTheme();
-  const scale = size / MARK.grid;
   const fill = colors[color];
 
   return (
@@ -178,19 +254,22 @@ export function Mark({
         : { accessible: true, accessibilityRole: 'image' as const, accessibilityLabel: label })}
       style={{ width: size, height: size }}
     >
-      {markFields().map((r) => (
-        <View
-          key={`${String(r.x)}-${String(r.y)}`}
-          style={{
-            position: 'absolute',
-            left: r.x * scale,
-            top: r.y * scale,
-            width: r.width * scale,
-            height: r.height * scale,
-            backgroundColor: fill,
-          }}
-        />
-      ))}
+      {/*
+        NO DEFAULT FILL ON THE ROOT. react-native-svg injects `fill: #000000` onto the root group
+        when none is given, which is a colour no token declared and which E-081 found the hard way
+        on a card nobody had looked at. Every polygon states its own.
+      */}
+      <Svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${String(MARK.grid)} ${String(MARK.grid)}`}
+        fill="none"
+        accessible={false}
+      >
+        {markStrokes().map((stroke) => (
+          <Path key={pathOf(stroke)} d={pathOf(stroke)} fill={fill} />
+        ))}
+      </Svg>
     </View>
   );
 }

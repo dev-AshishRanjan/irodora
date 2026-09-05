@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-05",
+  "updated": "2026-09-06",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -5225,7 +5225,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-161"
       ],
@@ -5241,7 +5241,25 @@
         "test",
         "artifact"
       ],
-      "notes": "REPORTED AS NOT RELEVANT AND NOT PROFESSIONAL. F-141 drew two offset rectangles on a 24 grid — an abstraction of two colours meeting, which is defensible in a sentence and evidently does not read as anything on a home screen. WHAT MUST SURVIVE IS THE MACHINERY, not the shape: `MARK` is geometry in source, `markSvg` and `generate-brand-assets.mjs` emit every asset from it, and gate 16 reads the result back out of the APK by proportion rather than by hash. That pipeline is why the icon cannot drift from the wordmark, and it is worth more than the marks it has drawn so far. REPORTED A SECOND TIME 2026-09-05, first item of six: \"The Logo/Icon of this project is not good... still hasn't been fixed\". Raised to must and moved up the order — a reporter naming the same thing twice is the strongest signal this list gets."
+      "notes": "REPORTED AS NOT RELEVANT AND NOT PROFESSIONAL. F-141 drew two offset rectangles on a 24 grid — an abstraction of two colours meeting, which is defensible in a sentence and evidently does not read as anything on a home screen. WHAT MUST SURVIVE IS THE MACHINERY, not the shape: `MARK` is geometry in source, `markSvg` and `generate-brand-assets.mjs` emit every asset from it, and gate 16 reads the result back out of the APK by proportion rather than by hash. That pipeline is why the icon cannot drift from the wordmark, and it is worth more than the marks it has drawn so far. REPORTED A SECOND TIME 2026-09-05, first item of six: \"The Logo/Icon of this project is not good... still hasn't been fixed\". Raised to must and moved up the order — a reporter naming the same thing twice is the strongest signal this list gets. DONE 2026-09-06. THE MARK IS 彡 — the radical that means colour in 彩, the character in *irodoru*, the verb the product is named after. That is the answer to the pre-flight question the first attempt could not give: it is a piece of the subject's own writing rather than an abstraction of it, so it could not be any other product's mark. Three equal strokes where the thickness, the gap and the shear are ONE QUANTITY — which keeps F-141's real idea (間, the interval as the subject rather than the leftover) and finally gives it a figure. 45° IS A MANUFACTURING DECISION as much as a visual one: shear equals thickness, so the edge advances exactly one pixel per pixel row at every size the generator will build and no edge lands between pixels. THE AUDIT IS IN THE SOURCE rather than in a commit message — no closed silhouette, an idea legible only in prose, a shape that read as a pause glyph, and nothing in it that was either colour or Japanese. MONOCHROME, AND THE REGISTER DECIDED IT: filling the strokes with corpus colours would say \"colour app\" louder and contradict the soft-minimal direction the reporter chose, as well as BRAND.md's disqualifying line. THE MACHINERY SURVIVED UNCHANGED, which was always the valuable part — and it CAUGHT THINGS (E-085): the Android safe-zone check carried the old mark's numbers and would have passed while the new one was clipped, and the artefact signature read a row where this mark needs a column.",
+      "plan": "plans/F-165-the-mark-is-redrawn.md",
+      "effects": [
+        "E-085"
+      ],
+      "attested": [
+        {
+          "criterion": "The mark says something about colour, and reads at 16px as well as on a splash",
+          "verifiedBy": "THE ARITHMETIC IS PROVEN AND THE READING IS NOT. The narrowest feature at 16px is asserted against a pixel floor, every edge is at 45° so nothing softens at any built size, and the ink sits centred with equal margins. WHAT NOBODY HAS DONE IS LOOK AT IT ON A HOME SCREEN — the criterion that actually matters here, and the same one F-162 owes for the tab glyphs. The specific risk is that three parallel 45° strokes read as speed lines or a strike-through rather than as a written form; the second risk is that a person who cannot read the radical has no route to the meaning, which is acceptable only if the shape works on its own.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Gate 16 still reads it out of the built artefact",
+          "verifiedBy": "PROVEN AGAINST GENERATED ASSETS, NOT AGAINST AN APK. `--prove` decodes all four assets and finds the signature in each, and three decoys fail it — including two strokes, which is the shape F-141 shipped. WHAT HAS NOT RUN is gate 16 itself: it reads the icon out of a built APK, and no APK has been built since the mark changed. The proportions survive a build tool resizing an icon, which is why the check is written as proportions — but that is a property of the design rather than an observation, until a run of gate 16 says otherwise.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     }
   ]
 }
