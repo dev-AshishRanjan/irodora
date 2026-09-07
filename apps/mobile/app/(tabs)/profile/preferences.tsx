@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { Preferences } from '../../../src/screens/Preferences';
 import { deviceRepository } from '../../../src/store/repository';
+import { useAppearance } from '../../../src/appearance';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.
@@ -15,10 +16,18 @@ import { deviceRepository } from '../../../src/store/repository';
  * merely compiles.
  */
 export default function PreferencesRoute(): React.JSX.Element {
+  /*
+   * THE ROUTE READS THE HOOK, and the screen takes props (F-153). `useAppearance()` throws
+   * outside its provider and the conformance suite renders `Preferences` without one — a
+   * screen that reached for the context could not be checked by the suite where the
+   * accessibility guarantees are actually verified. The same seam as the repository, one
+   * level up.
+   */
+  const { appearance, choose } = useAppearance();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Preferences store={deviceRepository()} />
+      <Preferences store={deviceRepository()} appearance={appearance} onChooseAppearance={choose} />
     </>
   );
 }

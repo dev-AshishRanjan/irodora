@@ -11,7 +11,11 @@
  */
 
 export {
+  DEFAULT_APPEARANCE,
+  formatAppearance,
+  parseAppearance,
   resolveThemeName,
+  type Appearance,
   ThemeProvider,
   useTheme,
   type ThemeColors,

@@ -64,6 +64,174 @@
   --irodora-color-swatch-hairline-inverse: #F6F5F3;
 }
 
+[data-theme="fuka.dark"] {
+  --irodora-color-background: #06090B;
+  --irodora-color-surface-1: #0D1114;
+  --irodora-color-surface-2: #16191C;
+  --irodora-color-surface-3: #1E2225;
+  --irodora-color-swatch-well: #2B2A28;
+  --irodora-color-swatch-hairline: #F6F5F3;
+  --irodora-color-foreground: #EFF6FB;
+  --irodora-color-foreground-2: #9EA4A9;
+  --irodora-color-foreground-3: #7B8186;
+  --irodora-color-link: #EFF6FB;
+  --irodora-color-border: rgba(255, 255, 255, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
+  --irodora-color-border-strong: #767A7E;
+  --irodora-color-inverse: #EFF6FB;
+  --irodora-color-inverse-foreground: #080C0E;
+  --irodora-color-ring: #719DC4;
+  --irodora-color-status-ok: #49AB79;
+  --irodora-color-status-warn: #D58D25;
+  --irodora-color-status-bad: #FEAAAC;
+  --irodora-color-chart-1: #F5F5F5;
+  --irodora-color-chart-2: #B7B7B7;
+  --irodora-color-chart-3: #808080;
+  --irodora-color-chart-4: #525252;
+  --irodora-color-chart-5: #303030;
+  --irodora-color-swatch-hairline-inverse: #131110;
+}
+
+[data-theme="fuka.light"] {
+  --irodora-color-background: #F9FCFF;
+  --irodora-color-surface-1: #FFFFFF;
+  --irodora-color-surface-2: #F1F7FB;
+  --irodora-color-surface-3: #EAEFF3;
+  --irodora-color-swatch-well: #ECEAE7;
+  --irodora-color-swatch-hairline: #131110;
+  --irodora-color-foreground: #111619;
+  --irodora-color-foreground-2: #565C60;
+  --irodora-color-foreground-3: #858C90;
+  --irodora-color-link: #111619;
+  --irodora-color-border: rgba(0, 0, 0, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
+  --irodora-color-border-strong: #7B8084;
+  --irodora-color-inverse: #111619;
+  --irodora-color-inverse-foreground: #F9FCFF;
+  --irodora-color-ring: #426D95;
+  --irodora-color-status-ok: #387B58;
+  --irodora-color-status-warn: #976213;
+  --irodora-color-status-bad: #861116;
+  --irodora-color-chart-1: #161616;
+  --irodora-color-chart-2: #484848;
+  --irodora-color-chart-3: #7A7A7A;
+  --irodora-color-chart-4: #ABABAB;
+  --irodora-color-chart-5: #D4D4D4;
+  --irodora-color-swatch-hairline-inverse: #F6F5F3;
+}
+
+[data-theme="yama.dark"] {
+  --irodora-color-background: #0B0706;
+  --irodora-color-surface-1: #140F0E;
+  --irodora-color-surface-2: #1C1816;
+  --irodora-color-surface-3: #25201E;
+  --irodora-color-swatch-well: #2B2A28;
+  --irodora-color-swatch-hairline: #F6F5F3;
+  --irodora-color-foreground: #FBF2EF;
+  --irodora-color-foreground-2: #A9A19E;
+  --irodora-color-foreground-3: #867E7C;
+  --irodora-color-link: #FBF2EF;
+  --irodora-color-border: rgba(255, 255, 255, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
+  --irodora-color-border-strong: #7E7876;
+  --irodora-color-inverse: #FBF2EF;
+  --irodora-color-inverse-foreground: #0E0A09;
+  --irodora-color-ring: #719DC4;
+  --irodora-color-status-ok: #49AB79;
+  --irodora-color-status-warn: #D58D25;
+  --irodora-color-status-bad: #FEAAAC;
+  --irodora-color-chart-1: #F5F5F5;
+  --irodora-color-chart-2: #B7B7B7;
+  --irodora-color-chart-3: #808080;
+  --irodora-color-chart-4: #525252;
+  --irodora-color-chart-5: #303030;
+  --irodora-color-swatch-hairline-inverse: #131110;
+}
+
+[data-theme="yama.light"] {
+  --irodora-color-background: #FFFBF9;
+  --irodora-color-surface-1: #FFFFFF;
+  --irodora-color-surface-2: #FBF4F2;
+  --irodora-color-surface-3: #F4EDEA;
+  --irodora-color-swatch-well: #ECEAE7;
+  --irodora-color-swatch-hairline: #131110;
+  --irodora-color-foreground: #191312;
+  --irodora-color-foreground-2: #605957;
+  --irodora-color-foreground-3: #908986;
+  --irodora-color-link: #191312;
+  --irodora-color-border: rgba(0, 0, 0, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
+  --irodora-color-border-strong: #847E7C;
+  --irodora-color-inverse: #191312;
+  --irodora-color-inverse-foreground: #FFFBF9;
+  --irodora-color-ring: #426D95;
+  --irodora-color-status-ok: #387B58;
+  --irodora-color-status-warn: #976213;
+  --irodora-color-status-bad: #861116;
+  --irodora-color-chart-1: #161616;
+  --irodora-color-chart-2: #484848;
+  --irodora-color-chart-3: #7A7A7A;
+  --irodora-color-chart-4: #ABABAB;
+  --irodora-color-chart-5: #D4D4D4;
+  --irodora-color-swatch-hairline-inverse: #F6F5F3;
+}
+
+[data-theme="aota.dark"] {
+  --irodora-color-background: #070906;
+  --irodora-color-surface-1: #0F110E;
+  --irodora-color-surface-2: #171A16;
+  --irodora-color-surface-3: #20221E;
+  --irodora-color-swatch-well: #2B2A28;
+  --irodora-color-swatch-hairline: #F6F5F3;
+  --irodora-color-foreground: #F2F6EF;
+  --irodora-color-foreground-2: #A1A49E;
+  --irodora-color-foreground-3: #7E817B;
+  --irodora-color-link: #F2F6EF;
+  --irodora-color-border: rgba(255, 255, 255, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
+  --irodora-color-border-strong: #787B76;
+  --irodora-color-inverse: #F2F6EF;
+  --irodora-color-inverse-foreground: #0A0C08;
+  --irodora-color-ring: #719DC4;
+  --irodora-color-status-ok: #49AB79;
+  --irodora-color-status-warn: #D58D25;
+  --irodora-color-status-bad: #FEAAAC;
+  --irodora-color-chart-1: #F5F5F5;
+  --irodora-color-chart-2: #B7B7B7;
+  --irodora-color-chart-3: #808080;
+  --irodora-color-chart-4: #525252;
+  --irodora-color-chart-5: #303030;
+  --irodora-color-swatch-hairline-inverse: #131110;
+}
+
+[data-theme="aota.light"] {
+  --irodora-color-background: #FAFDF8;
+  --irodora-color-surface-1: #FFFFFF;
+  --irodora-color-surface-2: #F4F7F1;
+  --irodora-color-surface-3: #EDF0EA;
+  --irodora-color-swatch-well: #ECEAE7;
+  --irodora-color-swatch-hairline: #131110;
+  --irodora-color-foreground: #131611;
+  --irodora-color-foreground-2: #595C56;
+  --irodora-color-foreground-3: #898C86;
+  --irodora-color-link: #131611;
+  --irodora-color-border: rgba(0, 0, 0, 0.08);
+  --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
+  --irodora-color-border-strong: #7E817C;
+  --irodora-color-inverse: #131611;
+  --irodora-color-inverse-foreground: #FAFDF8;
+  --irodora-color-ring: #426D95;
+  --irodora-color-status-ok: #387B58;
+  --irodora-color-status-warn: #976213;
+  --irodora-color-status-bad: #861116;
+  --irodora-color-chart-1: #161616;
+  --irodora-color-chart-2: #484848;
+  --irodora-color-chart-3: #7A7A7A;
+  --irodora-color-chart-4: #ABABAB;
+  --irodora-color-chart-5: #D4D4D4;
+  --irodora-color-swatch-hairline-inverse: #F6F5F3;
+}
+
 @supports (color: oklch(0 0 0)) {
   :root, [data-theme="dark"] {
     --irodora-color-background: oklch(0.135 0.004 70);
@@ -108,6 +276,168 @@
     --irodora-color-border-strong: oklch(0.598 0.004 85);
     --irodora-color-inverse: oklch(0.195 0.008 70);
     --irodora-color-inverse-foreground: oklch(0.99 0.003 85);
+    --irodora-color-ring: oklch(0.52 0.08 248);
+    --irodora-color-status-ok: oklch(0.53 0.09 158);
+    --irodora-color-status-warn: oklch(0.54 0.11 70);
+    --irodora-color-status-bad: oklch(0.4 0.15 26);
+    --irodora-color-chart-1: oklch(0.2 0 0);
+    --irodora-color-chart-2: oklch(0.4 0 0);
+    --irodora-color-chart-3: oklch(0.58 0 0);
+    --irodora-color-chart-4: oklch(0.74 0 0);
+    --irodora-color-chart-5: oklch(0.87 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.97 0.003 85);
+  }
+  [data-theme="fuka.dark"] {
+    --irodora-color-background: oklch(0.135 0.008 240);
+    --irodora-color-surface-1: oklch(0.175 0.008 240);
+    --irodora-color-surface-2: oklch(0.212 0.008 240);
+    --irodora-color-surface-3: oklch(0.248 0.008 240);
+    --irodora-color-swatch-well: oklch(0.285 0.004 70);
+    --irodora-color-swatch-hairline: oklch(0.97 0.003 85);
+    --irodora-color-foreground: oklch(0.968 0.01 240);
+    --irodora-color-foreground-2: oklch(0.715 0.01 240);
+    --irodora-color-foreground-3: oklch(0.6 0.01 240);
+    --irodora-color-link: oklch(0.968 0.01 240);
+    --irodora-color-border: oklch(1 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.6);
+    --irodora-color-border-strong: oklch(0.578 0.008 240);
+    --irodora-color-inverse: oklch(0.968 0.01 240);
+    --irodora-color-inverse-foreground: oklch(0.15 0.008 240);
+    --irodora-color-ring: oklch(0.68 0.075 246);
+    --irodora-color-status-ok: oklch(0.67 0.12 158);
+    --irodora-color-status-warn: oklch(0.7 0.14 70);
+    --irodora-color-status-bad: oklch(0.82 0.1 18);
+    --irodora-color-chart-1: oklch(0.97 0 0);
+    --irodora-color-chart-2: oklch(0.78 0 0);
+    --irodora-color-chart-3: oklch(0.6 0 0);
+    --irodora-color-chart-4: oklch(0.44 0 0);
+    --irodora-color-chart-5: oklch(0.31 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.18 0.004 70);
+  }
+  [data-theme="fuka.light"] {
+    --irodora-color-background: oklch(0.99 0.005 240);
+    --irodora-color-surface-1: oklch(1 0 0);
+    --irodora-color-surface-2: oklch(0.972 0.008 240);
+    --irodora-color-surface-3: oklch(0.95 0.008 240);
+    --irodora-color-swatch-well: oklch(0.938 0.005 85);
+    --irodora-color-swatch-hairline: oklch(0.18 0.004 70);
+    --irodora-color-foreground: oklch(0.195 0.01 240);
+    --irodora-color-foreground-2: oklch(0.47 0.01 240);
+    --irodora-color-foreground-3: oklch(0.635 0.01 240);
+    --irodora-color-link: oklch(0.195 0.01 240);
+    --irodora-color-border: oklch(0 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.4);
+    --irodora-color-border-strong: oklch(0.598 0.008 240);
+    --irodora-color-inverse: oklch(0.195 0.01 240);
+    --irodora-color-inverse-foreground: oklch(0.99 0.005 240);
+    --irodora-color-ring: oklch(0.52 0.08 248);
+    --irodora-color-status-ok: oklch(0.53 0.09 158);
+    --irodora-color-status-warn: oklch(0.54 0.11 70);
+    --irodora-color-status-bad: oklch(0.4 0.15 26);
+    --irodora-color-chart-1: oklch(0.2 0 0);
+    --irodora-color-chart-2: oklch(0.4 0 0);
+    --irodora-color-chart-3: oklch(0.58 0 0);
+    --irodora-color-chart-4: oklch(0.74 0 0);
+    --irodora-color-chart-5: oklch(0.87 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.97 0.003 85);
+  }
+  [data-theme="yama.dark"] {
+    --irodora-color-background: oklch(0.135 0.008 40);
+    --irodora-color-surface-1: oklch(0.175 0.008 40);
+    --irodora-color-surface-2: oklch(0.212 0.008 40);
+    --irodora-color-surface-3: oklch(0.248 0.008 40);
+    --irodora-color-swatch-well: oklch(0.285 0.004 70);
+    --irodora-color-swatch-hairline: oklch(0.97 0.003 85);
+    --irodora-color-foreground: oklch(0.968 0.01 40);
+    --irodora-color-foreground-2: oklch(0.715 0.01 40);
+    --irodora-color-foreground-3: oklch(0.6 0.01 40);
+    --irodora-color-link: oklch(0.968 0.01 40);
+    --irodora-color-border: oklch(1 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.6);
+    --irodora-color-border-strong: oklch(0.578 0.008 40);
+    --irodora-color-inverse: oklch(0.968 0.01 40);
+    --irodora-color-inverse-foreground: oklch(0.15 0.008 40);
+    --irodora-color-ring: oklch(0.68 0.075 246);
+    --irodora-color-status-ok: oklch(0.67 0.12 158);
+    --irodora-color-status-warn: oklch(0.7 0.14 70);
+    --irodora-color-status-bad: oklch(0.82 0.1 18);
+    --irodora-color-chart-1: oklch(0.97 0 0);
+    --irodora-color-chart-2: oklch(0.78 0 0);
+    --irodora-color-chart-3: oklch(0.6 0 0);
+    --irodora-color-chart-4: oklch(0.44 0 0);
+    --irodora-color-chart-5: oklch(0.31 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.18 0.004 70);
+  }
+  [data-theme="yama.light"] {
+    --irodora-color-background: oklch(0.99 0.005 40);
+    --irodora-color-surface-1: oklch(1 0 0);
+    --irodora-color-surface-2: oklch(0.972 0.008 40);
+    --irodora-color-surface-3: oklch(0.95 0.008 40);
+    --irodora-color-swatch-well: oklch(0.938 0.005 85);
+    --irodora-color-swatch-hairline: oklch(0.18 0.004 70);
+    --irodora-color-foreground: oklch(0.195 0.01 40);
+    --irodora-color-foreground-2: oklch(0.47 0.01 40);
+    --irodora-color-foreground-3: oklch(0.635 0.01 40);
+    --irodora-color-link: oklch(0.195 0.01 40);
+    --irodora-color-border: oklch(0 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.4);
+    --irodora-color-border-strong: oklch(0.598 0.008 40);
+    --irodora-color-inverse: oklch(0.195 0.01 40);
+    --irodora-color-inverse-foreground: oklch(0.99 0.005 40);
+    --irodora-color-ring: oklch(0.52 0.08 248);
+    --irodora-color-status-ok: oklch(0.53 0.09 158);
+    --irodora-color-status-warn: oklch(0.54 0.11 70);
+    --irodora-color-status-bad: oklch(0.4 0.15 26);
+    --irodora-color-chart-1: oklch(0.2 0 0);
+    --irodora-color-chart-2: oklch(0.4 0 0);
+    --irodora-color-chart-3: oklch(0.58 0 0);
+    --irodora-color-chart-4: oklch(0.74 0 0);
+    --irodora-color-chart-5: oklch(0.87 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.97 0.003 85);
+  }
+  [data-theme="aota.dark"] {
+    --irodora-color-background: oklch(0.135 0.008 130);
+    --irodora-color-surface-1: oklch(0.175 0.008 130);
+    --irodora-color-surface-2: oklch(0.212 0.008 130);
+    --irodora-color-surface-3: oklch(0.248 0.008 130);
+    --irodora-color-swatch-well: oklch(0.285 0.004 70);
+    --irodora-color-swatch-hairline: oklch(0.97 0.003 85);
+    --irodora-color-foreground: oklch(0.968 0.01 130);
+    --irodora-color-foreground-2: oklch(0.715 0.01 130);
+    --irodora-color-foreground-3: oklch(0.6 0.01 130);
+    --irodora-color-link: oklch(0.968 0.01 130);
+    --irodora-color-border: oklch(1 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.6);
+    --irodora-color-border-strong: oklch(0.578 0.008 130);
+    --irodora-color-inverse: oklch(0.968 0.01 130);
+    --irodora-color-inverse-foreground: oklch(0.15 0.008 130);
+    --irodora-color-ring: oklch(0.68 0.075 246);
+    --irodora-color-status-ok: oklch(0.67 0.12 158);
+    --irodora-color-status-warn: oklch(0.7 0.14 70);
+    --irodora-color-status-bad: oklch(0.82 0.1 18);
+    --irodora-color-chart-1: oklch(0.97 0 0);
+    --irodora-color-chart-2: oklch(0.78 0 0);
+    --irodora-color-chart-3: oklch(0.6 0 0);
+    --irodora-color-chart-4: oklch(0.44 0 0);
+    --irodora-color-chart-5: oklch(0.31 0 0);
+    --irodora-color-swatch-hairline-inverse: oklch(0.18 0.004 70);
+  }
+  [data-theme="aota.light"] {
+    --irodora-color-background: oklch(0.99 0.006 130);
+    --irodora-color-surface-1: oklch(1 0 0);
+    --irodora-color-surface-2: oklch(0.972 0.008 130);
+    --irodora-color-surface-3: oklch(0.95 0.008 130);
+    --irodora-color-swatch-well: oklch(0.938 0.005 85);
+    --irodora-color-swatch-hairline: oklch(0.18 0.004 70);
+    --irodora-color-foreground: oklch(0.195 0.01 130);
+    --irodora-color-foreground-2: oklch(0.47 0.01 130);
+    --irodora-color-foreground-3: oklch(0.635 0.01 130);
+    --irodora-color-link: oklch(0.195 0.01 130);
+    --irodora-color-border: oklch(0 0 0 / 0.08);
+    --irodora-color-backdrop: oklch(0 0 0 / 0.4);
+    --irodora-color-border-strong: oklch(0.598 0.008 130);
+    --irodora-color-inverse: oklch(0.195 0.01 130);
+    --irodora-color-inverse-foreground: oklch(0.99 0.006 130);
     --irodora-color-ring: oklch(0.52 0.08 248);
     --irodora-color-status-ok: oklch(0.53 0.09 158);
     --irodora-color-status-warn: oklch(0.54 0.11 70);

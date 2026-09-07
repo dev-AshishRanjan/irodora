@@ -35,7 +35,7 @@ export function emitTypescript(manifest: Manifest): string {
 
   out.push('export const COLOR = {');
   for (const theme of THEMES) {
-    out.push(`  ${theme}: {`);
+    out.push(`  ${key(theme)}: {`);
     for (const [name, token] of Object.entries(manifest.color[theme])) {
       const { l, c, h, alpha } = token.oklch;
       const oklch =

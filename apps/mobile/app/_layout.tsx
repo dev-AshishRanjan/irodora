@@ -5,6 +5,8 @@ import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
 import { durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
+import { AppearanceProvider, useAppearance } from '../src/appearance';
+import { deviceRepository } from '../src/store/repository';
 
 /*
  * THE CSPRNG, INSTALLED BEFORE ANY SCREEN RENDERS (F-104).
@@ -39,10 +41,15 @@ installRandomSource();
  * what makes the contrast gate's guarantee reach the pixels rather than stopping at a JSON file.
  */
 function Chrome(): React.JSX.Element {
-  const { name, colors } = useTheme();
+  const { mode, colors } = useTheme();
   return (
     <>
-      <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
+      {/*
+        THE MODE, NOT THE NAME (F-153). This read `name === 'dark'`, which was the same
+        question while there were two palettes called `light` and `dark`. There are eight now,
+        and `fuka.dark` is a dark reading whose name is neither.
+      */}
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           /*
@@ -80,6 +87,16 @@ function Chrome(): React.JSX.Element {
   );
 }
 
+/** Reads the choice and hands it to the theme. One line, and it has to be a component. */
+function Themed(): React.JSX.Element {
+  const { appearance } = useAppearance();
+  return (
+    <ThemeProvider appearance={appearance}>
+      <Chrome />
+    </ThemeProvider>
+  );
+}
+
 export default function RootLayout(): React.JSX.Element {
   /*
    * The bundled Japanese subset (ADR-0057, F-076). Its coverage over the corpus and the
@@ -106,11 +123,22 @@ export default function RootLayout(): React.JSX.Element {
    * Rendered here so the dependency is visible where the tree is assembled. A nested provider
    * is supported and inherits, so this is safe whether or not the router supplies one.
    */
+  /*
+   * THE CHOSEN APPEARANCE, READ BEFORE THE FIRST FRAME (F-153).
+   *
+   * `AppearanceProvider` sits OUTSIDE `ThemeProvider` because the theme is derived from the
+   * choice; `Themed` is the one-line component that reads the first and feeds the second,
+   * which a provider cannot do for itself.
+   *
+   * The repository is reached here rather than inside the provider, for the reason every
+   * store seam in this app gives: `expo-sqlite` needs a device, and a module that imported it
+   * could not be rendered by the suite where the accessibility guarantees are checked.
+   */
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <Chrome />
-      </ThemeProvider>
+      <AppearanceProvider store={deviceRepository()}>
+        <Themed />
+      </AppearanceProvider>
     </SafeAreaProvider>
   );
 }

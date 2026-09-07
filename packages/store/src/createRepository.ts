@@ -1113,6 +1113,27 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
       });
     },
 
+    getSetting(key: string): string | undefined {
+      const rows = driver.query<{ value: string }>('SELECT value FROM setting WHERE key = ?', [
+        key,
+      ]);
+      return rows[0]?.value;
+    },
+
+    putSetting(key: string, value: string, now: Millis): void {
+      /*
+       * NOT LOGGED TO `change_log`, and that is the decision rather than an omission. The log
+       * exists so a future sync can reconcile what a person MADE; a setting is how this device
+       * looks, it is not in `SYNC_TABLES`, and a log row for it would be a change nothing will
+       * ever reconcile.
+       */
+      driver.run(
+        'INSERT INTO setting (key, value, updated_at) VALUES (?, ?, ?) ' +
+          'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
+        [key, value, now],
+      );
+    },
+
     changeLog(): ChangeLogRow[] {
       return driver.query<ChangeLogRow>(
         'SELECT seq, table_name, row_id, op, at FROM change_log ORDER BY seq',

@@ -500,6 +500,18 @@ export const en = {
   'outfit.woreNothing': 'Choose something, and you can record wearing it.',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': 'What the app has learned',
+  'appearance.title': 'Appearance',
+  'appearance.hint':
+    'A theme changes the hue of the interface. It never tints the ground a colour is judged against.',
+  'appearance.theme': 'Theme',
+  'appearance.mode': 'Light or dark',
+  'appearance.family.base': 'Warm neutral',
+  'appearance.family.fuka': 'Deep Water',
+  'appearance.family.yama': 'Burning Hill',
+  'appearance.family.aota': 'Green Paddy',
+  'appearance.mode.system': 'Follow the phone',
+  'appearance.mode.light': 'Light',
+  'appearance.mode.dark': 'Dark',
   'preferences.origin':
     'Learned on this device, from outfits you kept and outfits you passed on. It never leaves the device.',
   'preferences.learned': 'Colour pairings',

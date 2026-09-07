@@ -6,6 +6,7 @@
     ".nvmrc",
     "content/schemas/**",
     "content/rules/**",
+    "content/colors/**",
     "content/versions/**",
     "docs/design/design-system.manifest.json"
   ],

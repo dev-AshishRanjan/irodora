@@ -3391,6 +3391,57 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-093",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/manifest.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/emit/react-native.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/theme.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/schema.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "packages/store",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE DERIVATION HAPPENS AT PARSE TIME, so every gate reads the values a device will paint rather than a recipe — gate 9 measures all eight palettes and gate 10 every CVD severity in each. `themes.test.ts` asserts what a theme is ALLOWED to change, which no gate can: L preserved exactly against the base, the swatch furniture and the signals byte-identical, a decoy proving the chrome IS tinted, every derived value in gamut, and no theme above the chroma ceiling. The hue is pinned to a corpus entry by slug and checked against the published file, with `content/colors/**` in turbo’s globalDependencies so a republish cannot leave that result cached. `parseAppearance` is total, so a stored value from a build that no longer exists falls back rather than throwing. The conformance suite renders the base pair plus one tinted palette, and the reason it is one rather than six is stated: a hue changes neither structure nor token resolution, and contrast in every theme is gate 9’s exhaustive job.",
+      "memory": "memory/effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md",
+      "rationale": "A CONSTRAINT WRITTEN FOR ONE REASON WAS THE ANSWER TO A QUESTION ASKED LATER, and the question did not know that. \"How strong may a theme be\" had no answer that was not taste, until the chroma ceiling failed the build — a rule the manifest had carried since long before this feature, stating its own product reason: the interface is near-achromatic so that the garment colour is the only chroma competing for the eye. That is a better answer than I would have chosen, and it makes the themes subtler than a Material You palette in a product whose whole job is that the garment colour wins. NO THEME ADDS AN EXCEPTION, so the near-achromatic guarantee now holds in all eight palettes rather than in the two somebody authored. THE GATE IS WHAT PUT IT IN FRONT OF ME: a design system whose rules live in a manifest a gate reads can answer a question its author never asked, which is worth more than the rule being written somewhere a person might remember to look. EIGHT PALETTES COST ALMOST NO CALL SITES because the gates, the four emitters and the suite all iterate `THEMES` — measured before proposing. But TWO THINGS HAD ASSUMED THE NAMES WERE IDENTIFIERS: two emitters wrote theme keys bare, producing `fuka.dark: {` in a generated file that then could not be regenerated, because the generator imports the package it had just broken. And the root layout asked `name === \"dark\"` to choose a status-bar style, which was the same question as \"is this a dark reading\" only while there were two palettes. THREE GATES WERE RIGHT ABOUT THINGS I WOULD HAVE GOT WRONG: the ceiling; the cache-scope gate, on a corpus read that would otherwise have let the hue pin be green about a file it never re-read; and font coverage, on one codepoint — 観, from the new Japanese word for appearance.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

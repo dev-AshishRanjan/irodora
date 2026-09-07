@@ -8,6 +8,137 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-153 DONE · a rule that already existed answered the question
+
+Requested, referencing an app that ships Material You with preloaded themes. The opportunity is
+specific to this product: it already contains a complete OKLCh, contrast, CVD and gamut-mapping
+engine with zero runtime dependencies, so it can derive a theme and **prove** the result
+accessible. The risk is equally specific: this is a colour-measurement app, and a theme that tints
+the surface a sample is read against changes what the sample looks like.
+
+### Measured before anything was proposed
+
+| | chrome | `swatch.*` | `chart.*` | `status.*` · `ring` |
+| --- | --- | --- | --- | --- |
+| light | C 0.003–0.008, H 70–85 | C 0.004–0.005 | C 0 | C 0.08–0.15 |
+| dark | C 0.004–0.006, H 70–85 | C 0.003–0.004 | C 0 | C 0.075–0.15 |
+
+The whole interface is a warm near-neutral. **A theme does not repaint the product; it moves that
+trace of hue.**
+
+### L is preserved exactly, and that is the load-bearing part
+
+Contrast is dominated by lightness. Preserving it means a derived palette starts from one that
+already passes, and the only open question is whether the added chroma cost anything — which
+gate 9 measures **over the derived values**, because the derivation happens inside `parseManifest`
+before any check runs. That is criterion 3, met by where the code sits rather than by a new gate.
+
+It also makes a theme reviewable in one sentence: *the hue moved, and nothing else did.*
+
+### What a theme may not tint — criterion 4, by construction
+
+**The sample's furniture** — `swatch.well` and the two-tone keyline. A hue behind every sample
+would change what every sample looks like.
+
+**The signals** — the chart ramp, the three statuses, the focus ring. These are not chrome. A
+status says something is wrong; a ring says where the cursor is; the chart ramp is greyscale
+precisely so hue is not the channel. *A signal that changes colour with the decoration has to be
+relearned*, and somebody who picked a green theme did not ask for "wrong" to look different.
+
+### The question I could not answer, and the rule that had
+
+*How strong may a theme be?* Every answer I could think of was taste. Then the gate failed:
+
+```
+✗ chromaCeiling  aota.light.foreground has chroma 0.028, above the 0.01 ceiling
+```
+
+The manifest has carried that ceiling since long before this feature, with its own reason: *"the
+interface is near-achromatic by rule so that the garment colour is the only chroma competing for
+the eye."*
+
+**That is a better answer than I would have chosen.** A tint may lift chroma toward the ceiling
+and never past it — so **no theme adds an exception**, and the near-achromatic guarantee now holds
+in all eight palettes rather than in the two somebody authored. It makes these themes subtler than
+a Material You palette, which is correct for a product whose whole job is that the garment colour
+wins.
+
+The gate is what put it in front of me. *A constraint written for one reason is often the answer
+to a question asked later, and the question does not know that* (E-093).
+
+### The hues come from the corpus
+
+| family | entry | | hue |
+| --- | --- | --- | ---: |
+| `fuka` | `fuka-mizu` | 深水 Deep Water | 240 |
+| `yama` | `yama-moe` | 山燃 Burning Hill | 40 |
+| `aota` | `ao-ta` | 青田 Green Paddy | 130 |
+
+Pinned by slug and checked against the published entry — the same pin the icon's five petals
+carry, so a republished corpus that moves a colour is a decision rather than a silent redraw.
+
+### Appearance is two choices
+
+`family` × `mode`, because somebody can want the blue theme **and** want it to follow the phone.
+Collapsing them would give eight entries where half differ only in a way the system can answer.
+
+### What widening `THEMES` actually cost
+
+Almost nothing, and that was measured before it was proposed: the gates, the four emitters and the
+conformance suite all iterate `THEMES`. One exhaustive `Record<Theme, …>` in the repository, and
+one screen typing a shareable card as the old pair.
+
+**Two things had assumed the names were identifiers.** The React Native and TypeScript emitters
+wrote theme keys bare — fine while every theme was called `light` or `dark`, and `fuka.dark: {` in
+a generated file after that. Which then could not be regenerated, because the generator imports
+the package it had just broken.
+
+**And the root layout asked the wrong question.** `name === 'dark'` chose the status-bar style,
+which was the same question as *is this a dark reading* for exactly as long as there were two
+palettes.
+
+### Three gates were right about things I would have got wrong
+
+- **The chroma ceiling**, above.
+- **The cache-scope gate**, on a test that reads a corpus entry to check a hue pin. Without
+  `content/colors/**` in turbo's global dependencies, a corpus republish would leave that result
+  cached and the pin would be *green about a file it never re-read*. Its own matcher also missed
+  the directory its glob is rooted at — a small defect in the gate, fixed with its proof re-run.
+- **Font coverage**, on one codepoint: 観, from the new Japanese word for *appearance*.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 788 app, 167 ui, 11 new theme-derivation, 10 new appearance, 7 new store | **PASS** |
+| **9 contrast** and **10 cvd**, over all eight palettes | **PASS** |
+| gate 9 chroma ceiling, on the first derivation attempt | **caught** |
+| gate 2 cache scope, on the corpus pin | **caught** |
+| gate 11 font coverage, on 観 | **caught** |
+| `pnpm verify:ci` — all 33 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 1 is outstanding and blocks release**, for one specific reason rather than a general
+one: `emitHeroui` writes the base pair only, so anything HeroUI paints for itself keeps the base
+ground under a tinted theme. Our components pass their own colours, so what a person sees is ours
+— but that is a claim about today's components, not a guarantee, and nobody has looked at a tinted
+theme on a device.
+
+**Nobody has tapped the picker.** It uses `Chip` because `Select` is F-156 and does not exist yet.
+
+**And the plant leaks are now seven.** Two more this session, both a Windows `UNKNOWN` on
+`writeFileSync`: one left the CI workflow with Gate 5 disabled by an `if: false`, one left the
+benchmark's `percentile` returning constants. **The guard fired on neither**, because it compares
+against git and this feature had legitimately edited files in the same session. That is the whole
+argument for F-173's snapshot: what a run needs to know is whether *it* changed something, and git
+can only say whether anybody did.
+
+---
+
 ## 2026-09-07 — F-152 DONE · the suite had only ever read one language
 
 The sweep that stops the redesign being partial, and the four criteria came apart very

@@ -674,6 +674,25 @@ export interface Repository {
    * nothing a future sync would need to reconcile.
    */
   resetPreferences(now: Millis): void;
+
+  /**
+   * Read a device setting, or `undefined` if it has never been set.
+   *
+   * `undefined` rather than a default, because THIS LAYER DOES NOT KNOW WHAT THE DEFAULT IS.
+   * A store that returned `'light'` for a missing appearance would be making a design decision
+   * from inside the persistence layer, and the manifest is what makes that one — the same
+   * reasoning `ThemeProvider` gives for taking `defaultTheme` from the manifest rather than
+   * from a `??` in a layout.
+   */
+  getSetting(key: string): string | undefined;
+
+  /**
+   * Write a device setting. Last write wins; there is no history and none is wanted.
+   *
+   * Not in `SYNC_TABLES`: an export is what somebody MADE, and their choice of theme is not
+   * part of it. Restoring a backup on a second device should not repaint it.
+   */
+  putSetting(key: string, value: string, now: Millis): void;
   /** Every change-log entry, oldest first. Read by tests and by nothing in the product. */
   changeLog(): ChangeLogRow[];
   close(): void;

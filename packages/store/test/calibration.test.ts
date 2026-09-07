@@ -95,7 +95,13 @@ const row = (overrides: Partial<Record<string, unknown>> = {}) => {
 
 describe('migration 7', () => {
   it('brings the schema to 7 and creates the table', () => {
-    expect(SCHEMA_VERSION).toBe(7);
+    /*
+     * AT LEAST 7, not exactly 7. This pinned the head of the ladder, so every later migration
+     * failed a test about calibration — which says nothing about calibration and everything
+     * about the pin. What this file cares about is that migration 7 ran; where the ladder ends
+     * is `migrate.test.ts`'s question.
+     */
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(7);
     const driver = open();
 
     const tables = driver.query<{ name: string }>(

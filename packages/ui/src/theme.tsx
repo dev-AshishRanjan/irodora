@@ -15,22 +15,85 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useColorScheme, type ColorSchemeName } from 'react-native';
-import { nativeColors, nativeDefaultTheme, type Theme } from '@irodora/design-tokens';
+import {
+  nativeColors,
+  nativeDefaultTheme,
+  THEME_FAMILIES,
+  themeMode,
+  themeName,
+  type Mode,
+  type Theme,
+  type ThemeFamily,
+} from '@irodora/design-tokens';
 
 /** Colour tokens for one theme, exactly as the manifest declares them. */
 export type ThemeColors = (typeof nativeColors)[Theme];
 
 export interface ThemeValue {
   readonly name: Theme;
+  /**
+   * Whether this palette is a light or a dark reading.
+   *
+   * Separate from `name` since F-153, because those became two different questions. A component
+   * asking "am I on dark" wants this; a component asking "which palette am I" wants the name.
+   */
+  readonly mode: Mode;
   readonly colors: ThemeColors;
+}
+
+/**
+ * What a person chose, which is TWO choices rather than one (FR-70).
+ *
+ * Choosing a theme and choosing light or dark are independent: somebody can want the blue theme
+ * *and* want it to follow the phone. Collapsing them into one list would mean eight entries
+ * where four of them differ only in a way the system can already answer.
+ */
+export interface Appearance {
+  readonly family: ThemeFamily;
+  /** `system` follows the platform. The other two state a preference. */
+  readonly mode: 'system' | Mode;
+}
+
+/** The appearance a device has until somebody chooses otherwise. */
+export const DEFAULT_APPEARANCE: Appearance = { family: 'base', mode: 'system' };
+
+/**
+ * The stored form: `family:mode`.
+ *
+ * A string rather than two columns, because the store keeps settings as text and this is one
+ * choice made in one place. Round-tripped by `parseAppearance`, which is total.
+ */
+export function formatAppearance(appearance: Appearance): string {
+  return `${appearance.family}:${appearance.mode}`;
+}
+
+/**
+ * Read a stored appearance back. **Anything unrecognised falls back to the default.**
+ *
+ * Total on purpose. This value comes off a device that may have been written by an older
+ * build, or a newer one, or by a theme family that has since been removed — and a person whose
+ * app refuses to start because their saved theme no longer exists has lost more than a colour.
+ */
+export function parseAppearance(stored: string | undefined): Appearance {
+  if (stored === undefined) return DEFAULT_APPEARANCE;
+  const [family, mode] = stored.split(':');
+  const families: readonly string[] = THEME_FAMILIES;
+  if (family === undefined || !families.includes(family)) return DEFAULT_APPEARANCE;
+  if (mode !== 'system' && mode !== 'light' && mode !== 'dark') return DEFAULT_APPEARANCE;
+  return { family: family as ThemeFamily, mode };
 }
 
 const ThemeContext = createContext<ThemeValue | undefined>(undefined);
 
 export interface ThemeProviderProps {
   readonly children: ReactNode;
-  /** Force a theme. For tests and for the conformance suite, which runs every component in both. */
+  /** Force a palette. For tests and for the conformance suite, which runs every component in both. */
   readonly theme?: Theme;
+  /**
+   * What the person chose. Absent means the default, which is the base pair following the
+   * platform — exactly what this provider did before there was anything to choose.
+   */
+  readonly appearance?: Appearance;
 }
 
 /**
@@ -47,15 +110,19 @@ export interface ThemeProviderProps {
 export function resolveThemeName(
   scheme: ColorSchemeName | null | undefined,
   override?: Theme,
+  appearance: Appearance = DEFAULT_APPEARANCE,
 ): Theme {
   if (override !== undefined) return override;
+  // A stated mode is a stated mode. Only `system` asks the platform, which is the whole
+  // difference between the three choices a person is offered.
+  if (appearance.mode !== 'system') return themeName(appearance.family, appearance.mode);
   // Allow-list rather than "not dark, therefore light". React Native's `ColorSchemeName` is
   // `'light' | 'dark' | 'unspecified' | null | undefined`, and `'unspecified'` is EXACTLY the
   // no-preference case this fallback exists for — a check written as `=== 'dark' ? dark :
   // light` silently treats it as a stated preference for light. tsc caught that here; the
   // first version of this signature omitted `'unspecified'` entirely.
-  if (scheme === 'light' || scheme === 'dark') return scheme;
-  return nativeDefaultTheme;
+  if (scheme === 'light' || scheme === 'dark') return themeName(appearance.family, scheme);
+  return themeName(appearance.family, themeMode(nativeDefaultTheme));
 }
 
 /**
@@ -76,7 +143,11 @@ export function resolveThemeName(
  */
 const HEROUI_CONFIG = { devInfo: { stylingPrinciples: false } } as const;
 
-export function ThemeProvider({ children, theme }: ThemeProviderProps): React.JSX.Element {
+export function ThemeProvider({
+  children,
+  theme,
+  appearance,
+}: ThemeProviderProps): React.JSX.Element {
   /*
    * react-native types useColorScheme as `null | undefined | ColorSchemeName`, and the
    * platform genuinely returns null before the first appearance event. `tsc` agrees the guard
@@ -85,9 +156,9 @@ export function ThemeProvider({ children, theme }: ThemeProviderProps): React.JS
    * the wrong way round.
    */
   const scheme = useColorScheme();
-  const name = resolveThemeName(scheme, theme);
+  const name = resolveThemeName(scheme, theme, appearance);
   return (
-    <ThemeContext.Provider value={{ name, colors: nativeColors[name] }}>
+    <ThemeContext.Provider value={{ name, mode: themeMode(name), colors: nativeColors[name] }}>
       {/*
         HeroUI's provider supplies the animation-settings and portal contexts its components
         read on first render — without it a Button throws rather than rendering. It sits INSIDE

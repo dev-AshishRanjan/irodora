@@ -20,9 +20,103 @@
  * lets each failure name the token it came from.
  */
 
-/** The two themes. Both are checked independently; neither is derived from the other here. */
-export const THEMES = ['dark', 'light'] as const;
+import { derivedSrgb, isInGamut, oklchToRgb } from './derive.js';
+
+/**
+ * The two AUTHORED themes. Both are written by hand, checked independently, and neither is
+ * derived from the other.
+ */
+export const BASE_THEMES = ['dark', 'light'] as const;
+export type Mode = (typeof BASE_THEMES)[number];
+
+/**
+ * The theme families a person can choose between.
+ *
+ * `base` is the authored warm neutral. The rest are RECIPES — see `themeRecipes` in the
+ * manifest and the derivation below — and each exists in both modes, because choosing a theme
+ * and choosing light or dark are two different choices (FR-70).
+ */
+export const THEME_FAMILIES = ['base', 'fuka', 'yama', 'aota'] as const;
+export type ThemeFamily = (typeof THEME_FAMILIES)[number];
+
+/**
+ * Every palette, by name. `base` keeps the names `light` and `dark` so nothing downstream
+ * changed meaning when the families arrived.
+ *
+ * EVERYTHING ITERATES THIS. The gates, the four emitters and the conformance suite all read
+ * `THEMES` rather than naming a theme, which is why eight palettes cost no call sites — that
+ * was measured before it was proposed, and there is exactly one exhaustive `Record<Theme, …>`
+ * in the repository.
+ */
+export const THEMES = [
+  'dark',
+  'light',
+  'fuka.dark',
+  'fuka.light',
+  'yama.dark',
+  'yama.light',
+  'aota.dark',
+  'aota.light',
+] as const;
 export type Theme = (typeof THEMES)[number];
+
+/** The palette name for a family in a mode. `base` is the pair that has always been there. */
+export function themeName(family: ThemeFamily, mode: Mode): Theme {
+  return family === 'base' ? mode : `${family}.${mode}`;
+}
+
+/** Which mode a palette is, which is what decides whether it is a light or a dark reading. */
+export function themeMode(theme: Theme): Mode {
+  return theme.endsWith('light') ? 'light' : 'dark';
+}
+
+/**
+ * A theme recipe: a hue, and how far to lift the chroma the base already carries.
+ *
+ * THE HUE COMES FROM THE CORPUS, pinned by slug. Not invented — `themes.test.ts` reads the
+ * published entry and fails if the declared hue has drifted from it, the same pin
+ * `generate-brand-assets.mjs` puts on the icon's five petals so a republish is a decision
+ * rather than a silent redraw.
+ */
+export interface ThemeRecipe {
+  /** The corpus entry this hue belongs to, by slug. */
+  readonly entry: string;
+  /** Its hue in OKLCh degrees. */
+  readonly hue: number;
+  /** What the base chroma is multiplied by, before the gamut ceiling. */
+  readonly chromaScale: number;
+}
+
+/**
+ * Tokens that stay EXACTLY as the base authored them, in every theme.
+ *
+ * Two different reasons, and both are worth keeping apart.
+ *
+ * **The sample's furniture** — `swatch.well` and the two-tone keyline — is what a colour is
+ * read against. Tinting it would put a hue behind every sample in the product and change what
+ * the sample looks like, which is the one thing a colour-measurement app may not do. That is
+ * F-153's fourth acceptance criterion, and it is met here by construction rather than checked
+ * afterwards.
+ *
+ * **The signals** — the chart ramp, the three status colours and the focus ring — are not
+ * chrome. `chart.*` is a greyscale ramp precisely so hue is not the channel; a status says
+ * something is wrong; a ring says where the cursor is. A signal that changes colour with the
+ * decoration is a signal that has to be relearned every time somebody picks a new theme.
+ */
+export const NEUTRAL_IN_EVERY_THEME = [
+  'swatch.well',
+  'swatch.hairline',
+  'swatch.hairline.inverse',
+  'chart.1',
+  'chart.2',
+  'chart.3',
+  'chart.4',
+  'chart.5',
+  'status.ok',
+  'status.warn',
+  'status.bad',
+  'ring',
+] as const;
 
 /**
  * What a token is *for*, which is what decides the contrast threshold it must meet.
@@ -321,17 +415,158 @@ function parseToken(v: unknown, path: string): ColorToken {
  * this package is bundled by `apps/mobile`. The one caller that touches the filesystem is
  * `generate.mjs`, which is not shipped.
  */
+/**
+ * The largest chroma that fits in sRGB at this lightness and hue.
+ *
+ * Bisection on chroma alone, holding L and H exactly — which is the same move ADR-0045 makes
+ * for gamut mapping, and it is done here rather than through `gamutMap` because the point of
+ * this feature is that **a theme never moves lightness**. A mapper free to trade L for C would
+ * make that sentence untrue in the one place it has to hold.
+ */
+function fittedChroma(l: number, c: number, h: number): number {
+  if (isInGamut(oklchToRgb({ l, c, h }))) return c;
+  let lo = 0;
+  let hi = c;
+  // 24 halvings of a chroma below 0.4 lands well inside the third decimal the manifest keeps.
+  for (let i = 0; i < 24; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (isInGamut(oklchToRgb({ l, c: mid, h }))) lo = mid;
+    else hi = mid;
+  }
+  /*
+   * FLOORED, AND THEN CHECKED AGAIN.
+   *
+   * Rounding to the third decimal the manifest keeps can round a bisected chroma back UP past
+   * the boundary it just found — `fuka.dark.foreground` came out 0.000154 over the top of the
+   * blue channel that way, which `tokenRgb` refuses rather than clipping. Flooring cannot go
+   * up; the loop after it is for the case where even the floor is a hair outside.
+   */
+  let fitted = Math.floor(lo * 1000) / 1000;
+  while (fitted > 0 && !isInGamut(oklchToRgb({ l, c: fitted, h }))) fitted -= 0.001;
+  return Math.max(0, Math.round(fitted * 1000) / 1000);
+}
+
+/**
+ * One theme, derived from a base by moving hue and lifting chroma. **L is never touched.**
+ *
+ * Contrast is dominated by lightness, so preserving it means a derived theme starts from a
+ * palette that already passes and the only open question is whether the added chroma cost
+ * anything — which gate 9 then measures over the derived values rather than over a promise
+ * (criterion 3). It also makes the result reviewable in one sentence: the hue moved, and
+ * nothing else did.
+ */
+function deriveTheme(
+  base: Readonly<Record<string, ColorToken>>,
+  recipe: ThemeRecipe,
+  ceiling: number,
+  where: string,
+): Record<string, ColorToken> {
+  const neutral = new Set<string>(NEUTRAL_IN_EVERY_THEME);
+  const out: Record<string, ColorToken> = {};
+
+  for (const [name, token] of Object.entries(base)) {
+    // A token with no chroma has no hue to move, and at L 0 or 1 there is no room for any.
+    if (neutral.has(name) || token.oklch.c === 0) {
+      out[name] = token;
+      continue;
+    }
+
+    /*
+     * THE CEILING IS THE ANSWER TO "HOW STRONG MAY A THEME BE", and it was already in the
+     * manifest before this feature existed:
+     *
+     *   > "The interface is near-achromatic by rule so that the garment colour is the only
+     *   > chroma competing for the eye."
+     *
+     * That is a product rule with a stated reason, and a theme does not get to argue with it.
+     * So a tint may lift chroma toward the ceiling and never past it — which means NO THEME
+     * ADDS A CHROMA EXCEPTION, and the near-achromatic guarantee holds in all eight palettes
+     * rather than in the two somebody happened to author.
+     *
+     * The hue is what carries the theme. A cool grey and a warm grey are immediately
+     * distinguishable across a whole screen at chroma this low; that is the same effect that
+     * makes people particular about white balance.
+     */
+    const wanted = Math.min(Math.round(token.oklch.c * recipe.chromaScale * 1000) / 1000, ceiling);
+    const c = fittedChroma(token.oklch.l, wanted, recipe.hue);
+    const tinted: ColorToken = { ...token, oklch: { ...token.oklch, c, h: recipe.hue }, srgb: '' };
+    out[name] = { ...tinted, srgb: derivedSrgb(`${where}.${name}`, tinted) };
+  }
+
+  return out;
+}
+
 export function parseManifest(input: unknown): Manifest {
   const root = requireRecord(input, '<root>');
 
   const color = requireRecord(root['color'], 'color');
   const themes: Record<string, Record<string, ColorToken>> = {};
-  for (const theme of THEMES) {
-    const entry = requireRecord(color[theme], `color.${theme}`);
+  for (const mode of BASE_THEMES) {
+    const entry = requireRecord(color[mode], `color.${mode}`);
     const tokens: Record<string, ColorToken> = {};
     for (const [name, value] of Object.entries(entry))
-      tokens[name] = parseToken(value, `color.${theme}.${name}`);
-    themes[theme] = tokens;
+      tokens[name] = parseToken(value, `color.${mode}.${name}`);
+    themes[mode] = tokens;
+  }
+
+  /*
+   * THE DERIVED THEMES, BEFORE ANY CHECK RUNS.
+   *
+   * This is the whole of criterion 3. Every gate in this repository reads the parsed manifest,
+   * so deriving here means the contrast and CVD checks run over the ACTUAL VALUES a device will
+   * paint — never over a recipe, a promise, or a claim that the derivation is safe.
+   *
+   * A recipe the theme list does not name, or a name the recipes do not cover, is a parse
+   * error: the const and the manifest have to agree or the types stop describing the data.
+   */
+  /*
+   * Read here rather than after the gate block, because the derivation needs it and the
+   * derivation has to happen before anything checks the result. One reader, one value: the
+   * ceiling a theme respects is the SAME number `checkChromaCeiling` enforces, not a copy.
+   */
+  const chromaCeiling = requireNumber(
+    requireRecord(
+      requireRecord(requireRecord(root['gate'], 'gate')['contrast'], 'gate.contrast')[
+        'chromaCeiling'
+      ],
+      'gate.contrast.chromaCeiling',
+    )['maxChroma'],
+    'gate.contrast.chromaCeiling.maxChroma',
+  );
+
+  const recipesRaw = requireRecord(root['themeRecipes'], 'themeRecipes');
+  const recipes: Record<string, ThemeRecipe> = {};
+  for (const [name, value] of Object.entries(recipesRaw)) {
+    if (name.startsWith('_')) continue;
+    const o = requireRecord(value, `themeRecipes.${name}`);
+    recipes[name] = {
+      entry: requireString(o['entry'], `themeRecipes.${name}.entry`),
+      hue: requireNumber(o['hue'], `themeRecipes.${name}.hue`),
+      chromaScale: requireNumber(o['chromaScale'], `themeRecipes.${name}.chromaScale`),
+    };
+  }
+
+  const tinted = THEME_FAMILIES.filter((f) => f !== 'base');
+  const declared = Object.keys(recipes).sort().join(' ');
+  if (declared !== [...tinted].sort().join(' '))
+    throw new ManifestError(
+      'themeRecipes',
+      `declares [${declared}] and THEME_FAMILIES expects [${[...tinted].sort().join(' ')}]. ` +
+        'The list is a const so every theme name is a literal type; a recipe the list does not ' +
+        'name would be derived into a palette nothing can refer to.',
+    );
+
+  for (const family of tinted) {
+    const recipe = recipes[family];
+    if (recipe === undefined) continue;
+    if (recipe.chromaScale <= 0)
+      throw new ManifestError(`themeRecipes.${family}.chromaScale`, 'must be positive');
+    if (recipe.hue < 0 || recipe.hue >= 360)
+      throw new ManifestError(`themeRecipes.${family}.hue`, 'must be a degree in [0, 360)');
+    for (const mode of BASE_THEMES) {
+      const name = `${family}.${mode}`;
+      themes[name] = deriveTheme(themes[mode] ?? {}, recipe, chromaCeiling, `color.${name}`);
+    }
   }
 
   // Every theme declares the same token names, or a component written against one theme

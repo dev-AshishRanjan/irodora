@@ -463,6 +463,17 @@ export const ja: Record<MessageKey, string> = {
   'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': '学習した好み',
+  'appearance.title': '外観',
+  'appearance.hint': 'テーマは画面の色みを変えます。色を見比べる下地には色をつけません。',
+  'appearance.theme': 'テーマ',
+  'appearance.mode': '明るさ',
+  'appearance.family.base': '暖かい中間色',
+  'appearance.family.fuka': '深水',
+  'appearance.family.yama': '山燃',
+  'appearance.family.aota': '青田',
+  'appearance.mode.system': '端末に合わせる',
+  'appearance.mode.light': 'ライト',
+  'appearance.mode.dark': 'ダーク',
   'preferences.origin':
     'この端末で、あなたが残した組み合わせと見送った組み合わせから学習します。端末の外には出ません。',
   'preferences.learned': '色の組み合わせ',

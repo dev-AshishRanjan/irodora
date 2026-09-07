@@ -39,6 +39,7 @@
  * The sample is the entry's `derived.hex` exactly as published. Nothing here converts anything.
  */
 
+import type { Theme } from '@irodora/design-tokens';
 import { nativeColors } from '@irodora/design-tokens';
 import type { PublishedEntry } from './corpus';
 
@@ -105,7 +106,14 @@ export interface CardLabels {
 }
 
 export interface CardOptions {
-  readonly theme: 'light' | 'dark';
+  /**
+   * The palette the card is drawn in — any of them, not only the authored pair (F-153).
+   *
+   * It was two names because there were two themes. The card is drawn in the ACTIVE one so
+   * what a person shares matches what they were looking at, and a person on a tinted theme is
+   * looking at a tinted card.
+   */
+  readonly theme: Theme;
   /** The corpus version, which FR-50 requires the card to carry. */
   readonly corpusVersion: string;
   readonly labels: CardLabels;

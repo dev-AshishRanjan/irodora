@@ -111,6 +111,7 @@ Two rules that matter more than the format:
 | [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Accepted |
 | [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Accepted |
 | [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted |
+| [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

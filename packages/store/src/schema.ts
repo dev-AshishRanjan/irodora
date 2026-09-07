@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -520,6 +520,41 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
 
       CREATE INDEX saved_color_calibration
         ON saved_color (calibration_id) WHERE calibration_id IS NOT NULL;
+    `,
+  },
+  {
+    version: 8,
+    /**
+     * Device settings — the first thing in this database that is not the person's data (F-153).
+     *
+     * ## Why a key/value table, when every other table is a real schema
+     *
+     * The rest of this database holds things a person MADE: a colour they saved, a garment they
+     * own, a palette they built. Each of those has a shape worth declaring, because a column is
+     * a question somebody will want to ask later.
+     *
+     * A setting is not that. It is a choice about how the app looks, it has no history worth
+     * querying, and there is exactly one row per key. Giving each setting its own column would
+     * mean a migration every time somebody adds a toggle — which is the shape that produces
+     * fifty-column tables nobody can read.
+     *
+     * ## What it must never hold
+     *
+     * **Nothing about a person, and nothing about a colour.** The value is a TEXT enum written
+     * by the app, and NFR-22's prohibited-column scan runs over this schema like any other. A
+     * setting that wanted to store a measurement would be a column on a real table instead.
+     *
+     * ## Not in SYNC_TABLES, deliberately
+     *
+     * An export is what somebody made; their choice of theme is not part of it, and restoring a
+     * backup on a second device should not repaint it.
+     */
+    up: `
+      CREATE TABLE setting (
+        key        TEXT PRIMARY KEY NOT NULL,
+        value      TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      ) STRICT;
     `,
   },
 ];

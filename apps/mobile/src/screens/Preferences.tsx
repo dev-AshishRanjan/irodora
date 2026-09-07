@@ -33,10 +33,23 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Button, EmptyState, Row, Screen, Stack, Surface, Text } from '@irodora/ui';
+import {
+  Button,
+  Chip,
+  DEFAULT_APPEARANCE,
+  EmptyState,
+  Row,
+  Screen,
+  Stack,
+  Surface,
+  Text,
+  type Appearance,
+} from '@irodora/ui';
+import { THEME_FAMILIES, type ThemeFamily } from '@irodora/design-tokens';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
+import type { MessageKey } from '../i18n/index';
 
 /** What this screen needs from the repository — nothing more, so a test can supply it. */
 export interface PreferenceStore {
@@ -61,6 +74,16 @@ export interface PreferencesProps {
    * button that navigates nowhere is worse than a sentence that explains.
    */
   readonly onBuildOutfit?: () => void;
+  /**
+   * The chosen appearance and how to change it (F-153).
+   *
+   * PROPS RATHER THAN THE HOOK, deliberately. `useAppearance()` throws outside its provider,
+   * and the conformance suite renders this screen without one — a screen that reached for the
+   * context itself could not be checked by the suite where the accessibility guarantees are
+   * actually verified. The route reads the hook and passes the two values down.
+   */
+  readonly appearance?: Appearance;
+  readonly onChooseAppearance?: (next: Appearance) => void;
 }
 
 /** Two decimal places: the weight is a multiplier a person is meant to be able to check. */
@@ -86,6 +109,23 @@ const familyWordOr = (family: string, locale: 'en' | 'ja'): string => {
   }
 };
 
+/** Family → its label. Total, so a fifth theme is a compile error rather than a blank chip. */
+const FAMILY_KEYS = {
+  base: 'appearance.family.base',
+  fuka: 'appearance.family.fuka',
+  yama: 'appearance.family.yama',
+  aota: 'appearance.family.aota',
+} as const satisfies Record<ThemeFamily, MessageKey>;
+
+/** The three answers to "light or dark", in the order they are offered. */
+const MODES = ['system', 'light', 'dark'] as const;
+
+const MODE_KEYS = {
+  system: 'appearance.mode.system',
+  light: 'appearance.mode.light',
+  dark: 'appearance.mode.dark',
+} as const satisfies Record<(typeof MODES)[number], MessageKey>;
+
 const signed = (net: number): string => (net > 0 ? `+${String(net)}` : String(net));
 
 export function Preferences({
@@ -93,6 +133,8 @@ export function Preferences({
   initialConfirming = false,
   now = () => Date.now(),
   onBuildOutfit,
+  appearance = DEFAULT_APPEARANCE,
+  onChooseAppearance,
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
@@ -111,6 +153,66 @@ export function Preferences({
 
   return (
     <Screen title={t('preferences.title')} script={script}>
+      {/*
+        APPEARANCE, FIRST (F-153). It is the only thing on this screen a person came here to
+        change; everything below it is something the app learned and is reporting back.
+
+        CHIPS RATHER THAN A SELECT, and that is an interim worth naming: `Select` is F-156 and
+        does not exist yet. Chips are already registered in the conformance suite, already
+        announce their selected state, and are honest about there being four of something —
+        which is more than a control that does not exist can claim.
+      */}
+      <Surface level="1" padding="lg">
+        <Stack gap="md">
+          <Text size="body" color="foreground" script={script} heading>
+            {t('appearance.title')}
+          </Text>
+
+          <Text size="label" color="foreground.2" script={script}>
+            {t('appearance.theme')}
+          </Text>
+          <Row gap="sm" wrap>
+            {THEME_FAMILIES.map((family) => (
+              <Chip
+                key={family}
+                label={t(FAMILY_KEYS[family])}
+                selected={family === appearance.family}
+                script={script}
+                onPress={() => {
+                  onChooseAppearance?.({ ...appearance, family });
+                }}
+              />
+            ))}
+          </Row>
+
+          <Text size="label" color="foreground.2" script={script}>
+            {t('appearance.mode')}
+          </Text>
+          <Row gap="sm" wrap>
+            {MODES.map((mode) => (
+              <Chip
+                key={mode}
+                label={t(MODE_KEYS[mode])}
+                selected={mode === appearance.mode}
+                script={script}
+                onPress={() => {
+                  onChooseAppearance?.({ ...appearance, mode });
+                }}
+              />
+            ))}
+          </Row>
+
+          {/*
+            WHAT A THEME DOES NOT DO, said on the screen rather than only in the manifest. The
+            ground a colour is judged against is never tinted, and a person choosing a theme in
+            a colour-measurement app deserves to know that before they wonder.
+          */}
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('appearance.hint')}
+          </Text>
+        </Stack>
+      </Surface>
+
       <Text size="small" color="foreground.2" script={script}>
         {t('preferences.origin')}
       </Text>

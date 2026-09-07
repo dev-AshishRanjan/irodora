@@ -25,7 +25,7 @@
  */
 
 import { mixOklab, toHex, toHex8, tokenRgb, type MixOperand } from '../derive.js';
-import { THEMES, type ColorToken, type Manifest, type Theme } from '../manifest.js';
+import { BASE_THEMES, type ColorToken, type Manifest, type Theme } from '../manifest.js';
 import { wcagContrast } from '@irodora/color-difference';
 
 /**
@@ -376,10 +376,24 @@ export function nonHexDeclarations(css: string): readonly string[] {
  * separately is a generator whose output someone will ship
  * [[a-gate-that-errors-is-failing-open]].
  */
+/*
+ * THE BASE PAIR ONLY, AND THAT IS A STATEMENT ABOUT WHAT THIS SHEET IS FOR (F-153).
+ *
+ * Every other target emits all eight palettes. This one emits two, because HeroUI's own
+ * theming is a light/dark class pair and every colour this product controls reaches its
+ * components through `style` rather than through a class — Uniwind resolves className in
+ * Metro and jest never runs Metro, which is why that decision was made and why it holds here
+ * [[a-style-engine-that-resolves-in-metro-is-invisible-to-jest]].
+ *
+ * WHAT THAT COSTS, stated rather than hidden: anything HeroUI paints for itself and we do not
+ * override keeps the base ground under a tinted theme. Our components pass their own
+ * background and foreground, so the surface a person actually sees is ours — but "we override
+ * everything that matters" is a claim about today's components, not a guarantee.
+ */
 export function emitHeroui(manifest: Manifest): string {
   const themes = new Map<Theme, ReturnType<typeof herouiTheme>>();
   const findings: string[] = [];
-  for (const theme of THEMES) {
+  for (const theme of BASE_THEMES) {
     const r = herouiTheme(manifest, theme);
     themes.set(theme, r);
     findings.push(...r.findings);
@@ -407,7 +421,7 @@ export function emitHeroui(manifest: Manifest): string {
     '  :root {',
   ];
 
-  for (const theme of THEMES) {
+  for (const theme of BASE_THEMES) {
     const resolved = themes.get(theme);
     // Every lookup below is asserted rather than assumed. `herouiTheme` populated this map a
     // few lines ago, so a miss is a bug in THIS file — which is exactly the kind that a `!`

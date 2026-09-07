@@ -310,7 +310,18 @@ function covered(segments, globs) {
     if (g === path) return true;
     const star = g.indexOf('**');
     if (star === -1) return false;
-    return path.startsWith(g.slice(0, star));
+    const prefix = g.slice(0, star);
+    if (path.startsWith(prefix)) return true;
+    /*
+     * THE DIRECTORY THE GLOB IS ROOTED AT (F-153).
+     *
+     * `content/colors/**` covers everything under `content/colors`, and a read OF
+     * `content/colors` is a read of that subtree — but the prefix comparison above needs the
+     * trailing slash, so the directory itself fell one character short and was reported as
+     * uncovered. A test whose path has a segment assembled at run time resolves to exactly
+     * that: the literal part of the join, and no further.
+     */
+    return prefix.endsWith('/') && path === prefix.slice(0, -1);
   });
 }
 

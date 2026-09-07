@@ -22,7 +22,13 @@
   "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
   "themes": [
     "dark",
-    "light"
+    "light",
+    "fuka.dark",
+    "fuka.light",
+    "yama.dark",
+    "yama.light",
+    "aota.dark",
+    "aota.light"
   ],
   "defaultTheme": "dark",
   "notes": {
@@ -962,6 +968,24 @@
         "maxChroma": 0.01,
         "_note": "Above this, ANY token needs an entry in `exceptions` — the scope is every token, so a chromatic accent cannot escape the rule by being classified nonText. The interface is near-achromatic by rule so that the garment colour is the only chroma competing for the eye."
       }
+    }
+  },
+  "themeRecipes": {
+    "_note": "A THEME IS A TINT ON THE NEUTRAL CHROME, AND IT NEVER MOVES LIGHTNESS (ADR-0096). The base palette is a warm near-neutral — every chrome token sits at C 0.003–0.008 around H 70–85 — so a theme does not repaint the product, it moves that trace. L is preserved exactly for every token, because contrast is dominated by lightness: a derived theme therefore starts from a palette that already passes, and the only open question is whether the added chroma cost anything, which gate 9 measures over the DERIVED values rather than over a promise. THE HUE COMES FROM THE CORPUS, pinned by slug — themes.test.ts reads the published entry and fails if the declared hue has drifted, the same pin generate-brand-assets.mjs puts on the icon petals. WHAT IS NEVER TINTED is in NEUTRAL_IN_EVERY_THEME: the sample’s furniture (swatch.well and the two-tone keyline), because tinting it would put a hue behind every sample in a colour-measurement app; and the signals (chart.*, status.*, ring), because a signal that changes colour with the decoration has to be relearned. chromaScale is applied before a gamut ceiling found by bisecting chroma alone, holding L and H exactly.",
+    "fuka": {
+      "entry": "fuka-mizu",
+      "hue": 240,
+      "chromaScale": 2
+    },
+    "yama": {
+      "entry": "yama-moe",
+      "hue": 40,
+      "chromaScale": 2
+    },
+    "aota": {
+      "entry": "ao-ta",
+      "hue": 130,
+      "chromaScale": 2
     }
   }
 }

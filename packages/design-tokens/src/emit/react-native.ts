@@ -77,7 +77,7 @@ export function emitReactNative(manifest: Manifest): string {
 
   for (const theme of THEMES) {
     const tokens = manifest.color[theme];
-    out.push(`  ${theme}: {`);
+    out.push(`  ${key(theme)}: {`);
     for (const [name, token] of Object.entries(tokens)) {
       const value = quote(derivedSrgb(name, token));
       const alpha = token.oklch.alpha;

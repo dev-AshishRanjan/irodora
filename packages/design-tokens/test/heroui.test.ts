@@ -27,7 +27,10 @@ import {
   HerouiEmitError,
   nonHexDeclarations,
   parseManifest,
-  THEMES,
+  // BASE_THEMES, not THEMES: the HeroUI sheet covers the authored pair, and the emitter says
+  // why — HeroUI's own theming is a light/dark class pair, and every colour this product
+  // controls reaches its components through `style` rather than through a class.
+  BASE_THEMES,
   type Manifest,
 } from '../src/index.js';
 
@@ -58,7 +61,7 @@ describe('shape', () => {
 
   it('declares every HeroUI base variable in both themes', () => {
     const BASE_COUNT = 35;
-    for (const theme of THEMES) {
+    for (const theme of BASE_THEMES) {
       const block = css.split(`@variant ${theme} {`)[1]?.split('    }')[0] ?? '';
       const names = declarations(block).map((l) => l.split(':')[0] ?? '');
       const base = names.filter((n) => !n.startsWith('--irodora-'));
@@ -76,7 +79,7 @@ describe('shape', () => {
     for (const line of mapped) {
       const ref = /var\((--irodora-[a-z0-9-]+)\)/u.exec(line)?.[1];
       expect(ref, line).toBeDefined();
-      for (const t of THEMES) {
+      for (const t of BASE_THEMES) {
         const block = css.split(`@variant ${t} {`)[1]?.split('    }')[0] ?? '';
         expect(block, `${t} is missing ${ref ?? '?'}`).toContain(`${ref ?? ''}:`);
       }
@@ -118,7 +121,7 @@ describe('the text-carrying derived colours are measured', () => {
     ['--color-success-soft-foreground', '--color-success-soft'],
   ] as const;
 
-  for (const theme of THEMES)
+  for (const theme of BASE_THEMES)
     for (const [text, fill] of SOFT)
       it(`${theme}: ${text} on ${fill}`, () => {
         const { values } = herouiTheme(manifest, theme);

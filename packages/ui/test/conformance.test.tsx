@@ -11,6 +11,7 @@ import { Pressable } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
+import type { Theme } from '@irodora/design-tokens';
 import {
   Appear,
   Bands,
@@ -82,7 +83,7 @@ import {
  * the harness rather than of the component — and it only became visible when the first portalled
  * component was registered.
  */
-function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
+function draw(node: React.JSX.Element, theme: Theme): TestNode {
   const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
   const json = rendered.toJSON();
   rendered.unmount();
@@ -597,6 +598,24 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       ),
   },
 ];
+
+/**
+ * A TINTED THEME, THROUGH THE SAME SUITE (F-153).
+ *
+ * Eight palettes exist and gate 9 measures every declared pairing in all of them. What gate 9
+ * cannot do is RENDER anything — so the question left over is whether a component still
+ * resolves every colour it paints to a token when the palette is one nobody authored by hand.
+ *
+ * ONE TINTED THEME RATHER THAN SIX, and the reason is worth stating rather than assumed: the
+ * suite checks structure and token resolution, and a hue cannot change either. Running all
+ * eight would make this file four times slower to learn nothing the first one does not say.
+ * Contrast across every theme is gate 9's job, and gate 9 is exhaustive.
+ */
+describe('a derived theme conforms too (F-153)', () => {
+  it('produces no findings on a palette nobody authored', () => {
+    expect(formatFindings(checkAll(SUBJECTS, ['aota.light', 'aota.dark']))).toBe('');
+  });
+});
 
 describe('the registry itself', () => {
   it('is not empty, and every kind it claims has a required state set', () => {

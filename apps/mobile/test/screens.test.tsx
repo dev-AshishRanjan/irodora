@@ -83,6 +83,7 @@ import { readingOklch } from '../src/profile/photo';
 import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
+import type { Theme } from '@irodora/design-tokens';
 import { find } from '../src/finder';
 import { deriveWeights, toStoreWrite } from '../src/palette';
 import { PALETTE_ROLES } from '@irodora/corpus';
@@ -127,7 +128,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-function draw(node: React.JSX.Element, theme: 'light' | 'dark'): TestNode {
+function draw(node: React.JSX.Element, theme: Theme): TestNode {
   const rendered = render(<ThemeProvider theme={theme}>{node}</ThemeProvider>);
   const json = rendered.toJSON();
   /*
@@ -1597,6 +1598,24 @@ describe('every screen conforms', () => {
  * THE SAME SUBJECTS, NOT A COPY OF THEM. A second registry would be a second thing to drift,
  * and the one that drifted would be the one nobody was reading.
  */
+/**
+ * A TINTED THEME, THROUGH THE SAME SUITE (F-153).
+ *
+ * Eight palettes exist and gate 9 measures every declared pairing in all of them. What gate 9
+ * cannot do is RENDER anything — so the question left over is whether a component still
+ * resolves every colour it paints to a token when the palette is one nobody authored by hand.
+ *
+ * ONE TINTED THEME RATHER THAN SIX, and the reason is worth stating rather than assumed: the
+ * suite checks structure and token resolution, and a hue cannot change either. Running all
+ * eight would make this file four times slower to learn nothing the first one does not say.
+ * Contrast across every theme is gate 9's job, and gate 9 is exhaustive.
+ */
+describe('a derived theme conforms too (F-153)', () => {
+  it('produces no findings on a palette nobody authored', () => {
+    expect(formatFindings(checkAll(SCREENS, ['aota.light', 'aota.dark']))).toBe('');
+  });
+});
+
 describe('every screen conforms in Japanese too (F-152)', () => {
   beforeAll(() => {
     mockLanguageTag = 'ja-JP';
@@ -3104,7 +3123,15 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
      * the sighted assertion above cannot see it.
      */
     const labels = labelsOf(draw(<Preferences store={preferenceStore()} />, 'dark'));
-    const row = labels.find((l) => l.includes(familyLabel('green', 'en')));
+    /*
+     * Matched on the pairing row's OWN vocabulary, not on the family name alone. F-153 put a
+     * theme picker at the top of this screen whose themes are named after corpus colours, so
+     * "Green Paddy" is now also a label containing "green" — and `find` returned the chip.
+     * The counts are what make a row a pairing row.
+     */
+    const row = labels.find(
+      (l) => l.includes(familyLabel('green', 'en')) && l.includes(en['preferences.accepted']),
+    );
     expect(row).toBeDefined();
     expect(row).toContain('12');
     expect(row).toContain('9');
