@@ -43,6 +43,7 @@ import {
   Stack,
   Surface,
   Text,
+  DEVICE_FAMILY,
   type Appearance,
 } from '@irodora/ui';
 import { THEME_FAMILIES, type ThemeFamily } from '@irodora/design-tokens';
@@ -50,6 +51,7 @@ import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
+import type { DeviceTheme } from '../appearance';
 
 /** What this screen needs from the repository — nothing more, so a test can supply it. */
 export interface PreferenceStore {
@@ -84,6 +86,14 @@ export interface PreferencesProps {
    */
   readonly appearance?: Appearance;
   readonly onChooseAppearance?: (next: Appearance) => void;
+  /**
+   * What came of asking the platform for its colour (F-154).
+   *
+   * A prop like the two above, for the same reason: `useAppearance()` throws outside its
+   * provider and the conformance suite renders this screen without one. Absent means the
+   * screen shows the unsupported state, which is the state every platform is in today.
+   */
+  readonly device?: DeviceTheme;
 }
 
 /** Two decimal places: the weight is a multiplier a person is meant to be able to check. */
@@ -120,6 +130,13 @@ const FAMILY_KEYS = {
 /** The three answers to "light or dark", in the order they are offered. */
 const MODES = ['system', 'light', 'dark'] as const;
 
+/** What to say about the device colour, per outcome. Total, so a fourth kind is a compile error. */
+const DEVICE_KEYS = {
+  none: 'appearance.device.unsupported',
+  refused: 'appearance.device.refused',
+  applied: 'appearance.device.checked',
+} as const satisfies Record<DeviceTheme['kind'], MessageKey>;
+
 const MODE_KEYS = {
   system: 'appearance.mode.system',
   light: 'appearance.mode.light',
@@ -135,6 +152,7 @@ export function Preferences({
   onBuildOutfit,
   appearance = DEFAULT_APPEARANCE,
   onChooseAppearance,
+  device = { kind: 'none', why: 'unsupported' },
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
@@ -183,7 +201,49 @@ export function Preferences({
                 }}
               />
             ))}
+            {/*
+              THE PHONE'S OWN COLOUR (F-154), and it is DISABLED rather than hidden when the
+              platform has none.
+
+              A control that is not there cannot explain itself. Android 12 and later offer a
+              colour; iOS offers none and never will, so somebody looking for the feature they
+              read about deserves a sentence rather than an absence — which is criterion 4's
+              "a designed state, not a silent fallback".
+            */}
+            <Chip
+              label={t('appearance.family.device')}
+              selected={appearance.family === DEVICE_FAMILY}
+              disabled={device.kind !== 'applied'}
+              script={script}
+              onPress={() => {
+                onChooseAppearance?.({ ...appearance, family: DEVICE_FAMILY });
+              }}
+            />
           </Row>
+
+          {/*
+            WHAT CAME OF ASKING, in every case. A theme derived from a seed nobody chose is the
+            one place in this product where a person cannot see the input, so the screen says
+            what happened to it: unavailable, refused with the reason, or applied and CHECKED.
+          */}
+          <Text size="xs" color="foreground.2" script={script}>
+            {t(DEVICE_KEYS[device.kind])}
+          </Text>
+          {device.kind === 'refused' ? (
+            <Text size="xs" color="foreground.2" script={script}>
+              {device.reason}
+            </Text>
+          ) : null}
+          {device.kind === 'applied' && device.corrected > 0 ? (
+            <Row gap="sm">
+              <Text size="xs" color="foreground.2" script={script}>
+                {t('appearance.device.corrected')}
+              </Text>
+              <Text size="xs" color="foreground.2" numeric>
+                {String(device.corrected)}
+              </Text>
+            </Row>
+          ) : null}
 
           <Text size="label" color="foreground.2" script={script}>
             {t('appearance.mode')}

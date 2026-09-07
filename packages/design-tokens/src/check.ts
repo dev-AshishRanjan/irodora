@@ -28,7 +28,7 @@ import {
 import { deltaE00 } from '@irodora/color-difference';
 import { srgbToXyz, xyzToLab, type Rgb } from '@irodora/color-spaces';
 import { resolveAll } from './derive.js';
-import { THEMES, type ColorToken, type Manifest, type Theme, type Usage } from './manifest.js';
+import { THEMES, type ColorToken, type Manifest, type Usage } from './manifest.js';
 
 /** The deficiencies every semantic pair is checked against. */
 export const DEFICIENCIES: readonly Deficiency[] = ['protan', 'deutan', 'tritan'];
@@ -56,7 +56,14 @@ export const CVD_SEVERITIES: readonly number[] = Array.from(
 export const CVD_SEVERITY = 1;
 
 export interface PairingResult {
-  readonly theme: Theme;
+  /**
+   * The palette this reading came from.
+   *
+   * A NAME rather than the `Theme` union since F-154: a theme derived from a platform accent
+   * has no name in a list written at build time, and typing this field as if it did would mean
+   * the runtime path could not report what it checked.
+   */
+  readonly theme: string;
   readonly foreground: string;
   readonly background: string;
   /** Which side's `usage` selected the requirement. */
@@ -70,7 +77,8 @@ export interface PairingResult {
 }
 
 export interface SeparationResult {
-  readonly theme: Theme;
+  /** The palette this reading came from — a name, for the reason `PairingResult` gives. */
+  readonly theme: string;
   readonly a: string;
   readonly b: string;
   readonly deficiency: Deficiency;
@@ -119,7 +127,7 @@ export interface Finding {
  * and cannot be gamed by declaring the pairing from the other end.
  */
 export function requirementFor(
-  manifest: Manifest,
+  manifest: CheckableManifest,
   a: { name: string; token: ColorToken },
   b: { name: string; token: ColorToken },
 ): { required: number; governedBy: string; usage: Usage } | null {
@@ -146,15 +154,60 @@ export function requirementFor(
 }
 
 /** Every declared pairing, in both themes, with its WCAG ratio and its APCA Lc. */
-export function checkContrast(manifest: Manifest): {
+/**
+ * `themes` exists so a RUNTIME theme can be checked by this function rather than by a second
+ * one that resembles it (F-154).
+ *
+ * A theme derived from a platform accent cannot be verified at build time — the seed does not
+ * exist until the app is running. What makes checking it on device possible at all is that this
+ * package has no runtime dependencies and no platform APIs, so the same code the gate runs is
+ * code a phone can run. **The default is what every existing caller already gets**, and the
+ * gates are the proof that it did not change.
+ */
+/**
+ * A theme name to its tokens.
+ *
+ * Wider than `Manifest['color']`, which is keyed by the literal union of the themes that exist
+ * at BUILD time. A runtime theme has no name in that union by construction — it is derived from
+ * a seed nobody knew about when the manifest was written — so the two checkers below take the
+ * palettes as an argument rather than a cast.
+ */
+export type Palettes = Readonly<Record<string, Readonly<Record<string, ColorToken>>>>;
+
+/**
+ * The part of the manifest a CONTRAST or CVD check actually reads.
+ *
+ * Named because a device has to carry it (F-154). A theme derived from a platform accent is
+ * checked on the phone, and the phone therefore needs the POLICY — the pairings, the floors,
+ * the CVD pairs, the salience rank — not the type scale, the motion durations or the prose.
+ * Trimmed to this, it is 11 KB instead of 36.
+ *
+ * A full `Manifest` satisfies it, which is what keeps the two from drifting: the gate passes
+ * the real one and the device passes the emitted subset, to the same functions.
+ */
+export interface CheckableManifest {
+  readonly color: Palettes;
+  readonly gate: Manifest['gate'];
+  readonly cvdPairs: Manifest['cvdPairs'];
+  readonly salience: Manifest['salience'];
+  readonly statusPairing: Manifest['statusPairing'];
+  readonly exceptions: Manifest['exceptions'];
+}
+
+export function checkContrast(
+  manifest: CheckableManifest,
+  themes: readonly string[] = THEMES,
+  palettes: Palettes = manifest.color,
+): {
   results: readonly PairingResult[];
   findings: readonly Finding[];
 } {
   const results: PairingResult[] = [];
   const findings: Finding[] = [];
 
-  for (const theme of THEMES) {
-    const tokens = manifest.color[theme];
+  for (const theme of themes) {
+    const tokens = palettes[theme];
+    if (tokens === undefined) throw new Error(`${theme} is not a palette in this manifest`);
     const lookup = (name: string): ColorToken => {
       const t = tokens[name];
       if (t === undefined) throw new Error(`${theme}.${name} is not a token`);
@@ -217,12 +270,18 @@ export function checkContrast(manifest: Manifest): {
 }
 
 /** Every `cvdPairs` entry × every deficiency, in both themes, at severity 1.0. */
-export function checkSeparation(manifest: Manifest): readonly SeparationResult[] {
+/** `themes` for the same reason `checkContrast` has it — see there (F-154). */
+export function checkSeparation(
+  manifest: CheckableManifest,
+  themes: readonly string[] = THEMES,
+  palettes: Palettes = manifest.color,
+): readonly SeparationResult[] {
   const required = manifest.cvdPairs.minSeparation;
   const results: SeparationResult[] = [];
 
-  for (const theme of THEMES) {
-    const tokens = manifest.color[theme];
+  for (const theme of themes) {
+    const tokens = palettes[theme];
+    if (tokens === undefined) throw new Error(`${theme} is not a palette in this manifest`);
     const lookup = (name: string): ColorToken => {
       const t = tokens[name];
       if (t === undefined) throw new Error(`${theme}.${name} is not a token`);

@@ -512,6 +512,13 @@ export const en = {
   'appearance.mode.system': 'Follow the phone',
   'appearance.mode.light': 'Light',
   'appearance.mode.dark': 'Dark',
+  'appearance.family.device': 'The phone’s colour',
+  'appearance.device.unsupported':
+    'This phone does not offer a colour to take. Android 12 and later do; iOS offers none, so the themes above are the choice here.',
+  'appearance.device.refused': 'That colour cannot be used, and this is why:',
+  'appearance.device.checked':
+    'Derived on this device and checked against the same contrast and colour-vision floors as every built-in theme, before it was applied.',
+  'appearance.device.corrected': 'Adjusted to fit, in this many places:',
   'preferences.origin':
     'Learned on this device, from outfits you kept and outfits you passed on. It never leaves the device.',
   'preferences.learned': 'Colour pairings',

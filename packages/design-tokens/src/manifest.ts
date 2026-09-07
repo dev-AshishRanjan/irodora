@@ -423,7 +423,7 @@ function parseToken(v: unknown, path: string): ColorToken {
  * this feature is that **a theme never moves lightness**. A mapper free to trade L for C would
  * make that sentence untrue in the one place it has to hold.
  */
-function fittedChroma(l: number, c: number, h: number): number {
+export function fittedChroma(l: number, c: number, h: number): number {
   if (isInGamut(oklchToRgb({ l, c, h }))) return c;
   let lo = 0;
   let hi = c;
@@ -455,7 +455,7 @@ function fittedChroma(l: number, c: number, h: number): number {
  * (criterion 3). It also makes the result reviewable in one sentence: the hue moved, and
  * nothing else did.
  */
-function deriveTheme(
+export function deriveTheme(
   base: Readonly<Record<string, ColorToken>>,
   recipe: ThemeRecipe,
   ceiling: number,

@@ -35,7 +35,7 @@ export interface ColourCardProps {
 }
 
 export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
-  const { colors, name } = useTheme();
+  const { colors } = useTheme();
   const { t, script } = useMessages();
   const entry = entryBySlug(slug);
 
@@ -54,7 +54,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
    * deciding its own theme, which made it uncheckable in the other one).
    */
   const svg = cardSvg(entry, {
-    theme: name,
+    colors,
     corpusVersion: CORPUS_LABEL,
     labels: {
       // The entry's OWN classification, never a word chosen here. FR-23 travels with the card

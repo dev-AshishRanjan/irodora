@@ -2578,7 +2578,7 @@ describe('the colour card screen shows the document it generated (FR-50)', () =>
     // the same data would be a second implementation, and the two could differ without either
     // being wrong on its own.
     const expected = cardSvg(CARD_ENTRY, {
-      theme: 'light',
+      colors: nativeColors.light,
       corpusVersion: CORPUS_LABEL,
       labels: {
         classification: 'Irodora original, Japanese-inspired',

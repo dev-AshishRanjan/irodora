@@ -4596,7 +4596,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-153"
       ],
@@ -4615,7 +4615,19 @@
         "a11y",
         "contrast"
       ],
-      "notes": "The Material You half of the request. Android exposes the dynamic palette from API 31; iOS exposes no user accent, so the honest answer there is the preloaded set from F-153 rather than a fabricated one — and saying so is better than inventing a seed and calling it the device colour. THE INTERESTING PART, and the reason this is separable from F-153: a runtime-derived theme cannot be verified at build time, so the contrast and CVD checks have to run on device against the derived values. That is only possible because the engine has no runtime dependencies and no platform APIs and returns bit-identical observable values everywhere (NFR-3) — the same property that exists for colour correctness turns out to be what makes a provably accessible dynamic theme possible."
+      "notes": "The Material You half of the request. Android exposes the dynamic palette from API 31; iOS exposes no user accent, so the honest answer there is the preloaded set from F-153 rather than a fabricated one — and saying so is better than inventing a seed and calling it the device colour. THE INTERESTING PART, and the reason this is separable from F-153: a runtime-derived theme cannot be verified at build time, so the contrast and CVD checks have to run on device against the derived values. That is only possible because the engine has no runtime dependencies and no platform APIs and returns bit-identical observable values everywhere (NFR-3) — the same property that exists for colour correctness turns out to be what makes a provably accessible dynamic theme possible. ---- DONE 2026-09-07 (E-095, ADR-0097). THE DEVICE RUNS THE GATE’S OWN CHECKS. `checkContrast` and `checkSeparation` now take the palettes as an argument, so CI passes the real manifest and a phone passes a palette it derived a millisecond ago — one set of functions with two callers rather than a second implementation that agrees until it does not. `CheckableManifest` is that argument type and a full `Manifest` satisfies it, so the two cannot diverge without a compile error. THE PROPERTY THAT PAID FOR IT WAS WRITTEN FOR SOMETHING ELSE: NFR-3 says the colour packages have no runtime dependencies, no `node:*`, no DOM and no `process`, and return byte-identical results everywhere — argued on CORRECTNESS grounds, and it turns out to be what makes a provably accessible dynamic theme possible at all. That is the second time in three features a constraint written for one reason answered a question asked later, and it is a reason not to relax NFR-3 for convenience. THE DEVICE CARRIES THE POLICY AND NOT THE PROSE — 11 KB rather than 36, emitted as a generated target so a manifest change that is not regenerated fails the build. THREE OUTCOMES: applied with its corrections named (chroma is the only lever that preserves L and hue, bounded by the ceiling and by the gamut at each token’s own lightness — at L 0.99 the gamut is a sliver, so nearly every seed is corrected somewhere); refused because the seed is not a colour to take (a greyscale wallpaper has no hue, and reading one off the rounding of a grey would give somebody a theme decided by the last bit of their photograph); and refused BY THE CHECKS, which cannot fire today and is said out loud rather than pretended about — a 720-case sweep over every hue in both modes confirms it, and the check still runs because \"it cannot fail today\" is a statement about today’s derivation rule. IT FORCED A WIDENING: `PairingResult.theme`, `SeparationResult.theme` and `ThemeValue.name` all assumed a palette has a name from a build-time list, and the shareable card had the same assumption one level out — it took a theme name and used it only to index a colour table, so it takes the colours now. All 35 CI steps green.",
+      "plan": "plans/F-154-the-device-colour-becomes-a-theme.md",
+      "effects": [
+        "E-095"
+      ],
+      "attested": [
+        {
+          "criterion": "Where the platform exposes a system accent or wallpaper colour, it can seed a theme",
+          "verifiedBy": "NOTHING IN THIS REPOSITORY CAN READ A PLATFORM ACCENT, and that is a fact about the dependencies rather than a judgement. Android exposes the dynamic palette from API 31; no package in `apps/mobile` surfaces it, and React Native’s `PlatformColor` returns an opaque token that resolves natively, so JS never sees its channels. Reading it needs a native module, an EAS build and a device — none of which this session can produce or verify. iOS exposes no user accent at all and never has, so the honest answer there is F-153’s preloaded set, which the screen now says in words. WHAT IS BUILT AND SWEPT IS EVERYTHING DOWNSTREAM OF THE SEED: the derivation, the gate’s own contrast and CVD checks running against the derived values, the corrections with their bounds, the refusals with their reasons, and the absent state as a disabled control that explains itself rather than a chip that does nothing. `seed.test.ts` runs 720 cases through it. THE PORT IS THE ONE FUNCTION THAT CHANGES when a native module arrives — `noSeed.read()` returns null and everything above it already handles a real accent. Inventing a seed and calling it the device colour would have made this criterion look discharged and been worse than saying this.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-155",

@@ -24,7 +24,10 @@ import { allEntries, CORPUS_LABEL, type PublishedEntry } from '../src/corpus';
 const ENTRY = allEntries()[0]!;
 
 const OPTIONS: CardOptions = {
-  theme: 'light',
+  // The colours themselves rather than a name (F-154): a card drawn in a theme derived from a
+  // device accent has no name to pass, and the card was only ever using the name to look these
+  // up.
+  colors: nativeColors.light,
   corpusVersion: CORPUS_LABEL,
   labels: { classification: 'Irodora original, Japanese-inspired', attribution: 'Irodora' },
 };
@@ -54,7 +57,9 @@ describe('the card is deterministic (FR-50)', () => {
   });
 
   it('DECOY — a different theme or version produces a different document', () => {
-    expect(cardSvg(ENTRY, { ...OPTIONS, theme: 'dark' })).not.toBe(cardSvg(ENTRY, OPTIONS));
+    expect(cardSvg(ENTRY, { ...OPTIONS, colors: nativeColors.dark })).not.toBe(
+      cardSvg(ENTRY, OPTIONS),
+    );
     expect(cardSvg(ENTRY, { ...OPTIONS, corpusVersion: '2099.01.1' })).not.toBe(
       cardSvg(ENTRY, OPTIONS),
     );
@@ -101,7 +106,7 @@ describe('every colour in the document is accounted for', () => {
   it.each(['light', 'dark'] as const)('%s: is a token value or the entry’s own hex', (theme) => {
     const tokens = new Set(Object.values(nativeColors[theme]).map((v) => v.toUpperCase()));
     for (const entry of allEntries()) {
-      const found = colours(cardSvg(entry, { ...OPTIONS, theme }));
+      const found = colours(cardSvg(entry, { ...OPTIONS, colors: nativeColors[theme] }));
       expect(found.length).toBeGreaterThan(0);
       const unaccounted = found.filter(
         (c) => !tokens.has(c) && c !== entry.derived.hex.toUpperCase(),

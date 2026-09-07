@@ -8,6 +8,117 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-154 DONE · the guarantee written for correctness paid for the dynamic theme
+
+The Material You half of the request, and the half F-153 deliberately left. It breaks this
+product's arrangement at the root: **every accessibility guarantee here rests on gate 9 and gate
+10 having measured a palette before it ships**, and a seed does not exist until the app is running
+on somebody's phone.
+
+### The device runs the gate's own checks
+
+`checkContrast` and `checkSeparation` now take the palettes as an argument. CI passes the real
+manifest; a phone passes a palette it derived a millisecond ago. **One set of functions, two
+callers** — rather than a device implementation that agrees with CI until it does not.
+`CheckableManifest` is that argument type and a full `Manifest` satisfies it, so the two cannot
+diverge without a compile error.
+
+### NFR-3 paid for this, and nobody wrote it for that
+
+The colour packages have no runtime dependencies, no `node:*`, no DOM, no `process`, and produce
+byte-identical results in Node, the browser and React Native. That rule exists so a colour is the
+*same* colour everywhere — a correctness property, argued on correctness grounds.
+
+It turns out to be what makes a **provably accessible** dynamic theme possible. Most products
+cannot do this: their checking code is a build-time tool with a filesystem and a config loader, so
+a device theme gets a heuristic, a warning after the fact, or nothing.
+
+**Second time in three features** that a constraint written for one reason answered a question
+asked later — the chroma ceiling did it in
+[E-093](../memory/effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md).
+Both times it gave a better answer than the one being invented. It is also a reason not to relax
+NFR-3 for convenience, recorded where somebody weighing that would find it.
+
+### What the device carries
+
+| carried | not carried |
+| --- | --- |
+| the two authored palettes | the six derived families — the device rebuilds them |
+| declared pairings, `usage`, contrast floors | the type scale, motion, elevation |
+| CVD pairs and the separation floor | every `role` paragraph |
+| the salience rank, the chroma ceiling, the exceptions | — |
+
+**11 KB instead of 36**, emitted as a generated target so a manifest change that is not
+regenerated fails the build. `role` is a paragraph explaining a decision to a reader, and there is
+no reader on a phone.
+
+### Three outcomes, and the honest shape of each
+
+**Applied, with corrections named.** Chroma is the only lever that preserves lightness and hue, so
+a correction is always a chroma reduction — bounded by the manifest's ceiling and by the sRGB
+gamut at each token's own lightness. At L 0.99 the gamut is a sliver, so nearly every seed is
+corrected somewhere. *A theme that quietly did less than it was asked is a theme nobody can reason
+about.*
+
+**Refused, because the seed is not a colour to take.** A greyscale wallpaper has no hue, and
+reading one off the rounding of a grey would give somebody a theme decided by the last bit of
+their photograph.
+
+**Refused by the checks — which cannot fire today**, and saying so is better than pretending it
+might. A derived theme preserves lightness exactly and caps chroma at 0.01, so it differs from a
+palette the gate already passed by less than the check can resolve; a 720-case sweep over every
+hue in both modes confirms it. The check still runs, because *"it cannot fail today"* is a
+statement about **today's derivation rule** rather than a licence to stop asking. If ADR-0096's
+rule is ever loosened, this is what catches it — on the device, before the theme is applied.
+
+### The widening it forced
+
+`PairingResult.theme`, `SeparationResult.theme` and `ThemeValue.name` all assumed a palette has a
+name from a list written at build time. All three are `string` now.
+
+The shareable card had the same assumption one level out: it took a `Theme` and used it only to
+index a colour table. **It takes the colours now**, which is what it always wanted.
+
+*A name is a fine handle for a thing somebody declared, and the wrong handle for a thing derived a
+moment ago.*
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 11 new in `seed.test.ts` (720 sweep cases), 5 new app-side | **PASS** |
+| 9 contrast · 10 cvd, over the eight declared palettes | **PASS** |
+| gate 11 font coverage, on five new codepoints | **caught** |
+| `pnpm verify:ci` — all 35 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### And the plant journal caught a real one
+
+Mid-feature, `verify-spacing-scale --prove` hit a Windows `UNKNOWN` writing `AddGarment.tsx` —
+the ninth incident, and the first since F-173. **The journal named both files and recovery put
+them back byte for byte**, which is the mechanism working on an actual failure rather than a
+simulated one.
+
+It also found a bug in its own CLI: `recover()` had been changed to return `{ restored, notes }`
+in one edit and read as an array in another, so the recovery path threw the first time it was
+asked to do real work. Fixed, and `plant-proof.mjs` still passes against a genuine `SIGKILL`.
+
+### Still owed
+
+**Criterion 1 is outstanding, and for a fact rather than a judgement.** Nothing in this repository
+can read a platform accent: no dependency in `apps/mobile` surfaces Android's dynamic palette, and
+`PlatformColor` returns an opaque token JS never sees the channels of. That needs a native module,
+an EAS build and a device.
+
+The port is the one function that changes when that arrives — `noSeed.read()` returns `null`, and
+everything above it already handles a real accent and is swept over every hue. **Inventing a seed
+and calling it the device colour would have made this criterion look discharged and been worse
+than saying this.**
+
+---
+
 ## 2026-09-07 — F-173 DONE · a `finally` is a hope about how a process ends
 
 Eight incidents. Every mutation proof here plants a defect into a tracked file, watches the check

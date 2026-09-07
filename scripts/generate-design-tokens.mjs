@@ -34,6 +34,7 @@ const {
   emitTailwind,
   emitTypescript,
   emitReactNative,
+  emitRuntime,
   emitHeroui,
 } = await import(pathToFileURL(join(PACKAGE, 'dist', 'index.js')).href);
 
@@ -63,6 +64,8 @@ const outputs = [
   [join(PACKAGE, 'generated', 'tokens.tailwind.css'), emitTailwind(manifest)],
   [join(PACKAGE, 'src', 'generated', 'tokens.ts'), emitTypescript(manifest)],
   [join(PACKAGE, 'src', 'generated', 'native.ts'), emitReactNative(manifest)],
+  // The policy a device needs to check a theme it derived at runtime (F-154).
+  [join(PACKAGE, 'src', 'generated', 'runtime.ts'), emitRuntime(manifest)],
   // The app's own stylesheet. `emitHeroui` THROWS rather than returning a failing sheet —
   // a generator that writes bad output and reports the problem separately is a generator
   // whose output someone ships.

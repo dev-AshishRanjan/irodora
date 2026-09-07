@@ -30,7 +30,17 @@ import {
 export type ThemeColors = (typeof nativeColors)[Theme];
 
 export interface ThemeValue {
-  readonly name: Theme;
+  /**
+   * Which palette is in force.
+   *
+   * A `Theme` when it is one of the eight the manifest declares, and any name when it is a
+   * palette derived at runtime from a device accent (F-154) — which by construction has no name
+   * in a list written at build time.
+   *
+   * Typed `string` rather than `Theme | string`, which lint correctly calls redundant: the
+   * union collapses, and writing it out would suggest a narrowing the type does not give.
+   */
+  readonly name: string;
   /**
    * Whether this palette is a light or a dark reading.
    *
@@ -48,8 +58,18 @@ export interface ThemeValue {
  * *and* want it to follow the phone. Collapsing them into one list would mean eight entries
  * where four of them differ only in a way the system can already answer.
  */
+/** The device's own colour, which is a choice a person makes and not a family we declare. */
+export const DEVICE_FAMILY = 'device';
+
 export interface Appearance {
-  readonly family: ThemeFamily;
+  /**
+   * A declared family, or `device` for a palette derived from the platform accent (F-154).
+   *
+   * `device` is deliberately NOT a `ThemeFamily`: the families are the manifest's recipes and
+   * the parser refuses a list that disagrees with them, while a seeded palette has no recipe by
+   * construction. Keeping them different types is what stops one being mistaken for the other.
+   */
+  readonly family: ThemeFamily | typeof DEVICE_FAMILY;
   /** `system` follows the platform. The other two state a preference. */
   readonly mode: 'system' | Mode;
 }
@@ -77,10 +97,10 @@ export function formatAppearance(appearance: Appearance): string {
 export function parseAppearance(stored: string | undefined): Appearance {
   if (stored === undefined) return DEFAULT_APPEARANCE;
   const [family, mode] = stored.split(':');
-  const families: readonly string[] = THEME_FAMILIES;
+  const families: readonly string[] = [...THEME_FAMILIES, DEVICE_FAMILY];
   if (family === undefined || !families.includes(family)) return DEFAULT_APPEARANCE;
   if (mode !== 'system' && mode !== 'light' && mode !== 'dark') return DEFAULT_APPEARANCE;
-  return { family: family as ThemeFamily, mode };
+  return { family: family as ThemeFamily | typeof DEVICE_FAMILY, mode };
 }
 
 const ThemeContext = createContext<ThemeValue | undefined>(undefined);
@@ -94,6 +114,15 @@ export interface ThemeProviderProps {
    * platform — exactly what this provider did before there was anything to choose.
    */
   readonly appearance?: Appearance;
+  /**
+   * A palette derived at RUNTIME, which no build-time name can refer to (F-154).
+   *
+   * Supplied only when the person chose the device colour and the seed produced a theme that
+   * passed the checks. When it is absent the provider resolves a declared theme exactly as
+   * before — so the absent case is the ordinary case, which is what makes it a designed state
+   * rather than a fallback.
+   */
+  readonly palette?: { readonly name: string; readonly mode: Mode; readonly colors: ThemeColors };
 }
 
 /**
@@ -115,14 +144,21 @@ export function resolveThemeName(
   if (override !== undefined) return override;
   // A stated mode is a stated mode. Only `system` asks the platform, which is the whole
   // difference between the three choices a person is offered.
-  if (appearance.mode !== 'system') return themeName(appearance.family, appearance.mode);
+  /*
+   * The DEVICE family has no declared palette, so what it resolves to here is the BASE one —
+   * the seeded colours reach the provider as a `palette` instead. That is not a fallback
+   * hidden in a resolver: when the seed produced a theme the provider uses it, and when it did
+   * not, the base is what the person sees and the screen says why.
+   */
+  const family = appearance.family === DEVICE_FAMILY ? 'base' : appearance.family;
+  if (appearance.mode !== 'system') return themeName(family, appearance.mode);
   // Allow-list rather than "not dark, therefore light". React Native's `ColorSchemeName` is
   // `'light' | 'dark' | 'unspecified' | null | undefined`, and `'unspecified'` is EXACTLY the
   // no-preference case this fallback exists for — a check written as `=== 'dark' ? dark :
   // light` silently treats it as a stated preference for light. tsc caught that here; the
   // first version of this signature omitted `'unspecified'` entirely.
-  if (scheme === 'light' || scheme === 'dark') return themeName(appearance.family, scheme);
-  return themeName(appearance.family, themeMode(nativeDefaultTheme));
+  if (scheme === 'light' || scheme === 'dark') return themeName(family, scheme);
+  return themeName(family, themeMode(nativeDefaultTheme));
 }
 
 /**
@@ -147,6 +183,7 @@ export function ThemeProvider({
   children,
   theme,
   appearance,
+  palette,
 }: ThemeProviderProps): React.JSX.Element {
   /*
    * react-native types useColorScheme as `null | undefined | ColorSchemeName`, and the
@@ -157,8 +194,17 @@ export function ThemeProvider({
    */
   const scheme = useColorScheme();
   const name = resolveThemeName(scheme, theme, appearance);
+  /*
+   * A RUNTIME PALETTE WINS OVER A DECLARED ONE, and an explicit `theme` wins over both — the
+   * suite forces a palette by name, and a test that could be overruled by a device accent would
+   * be checking the accent.
+   */
+  const value =
+    palette !== undefined && theme === undefined
+      ? { name: palette.name, mode: palette.mode, colors: palette.colors }
+      : { name, mode: themeMode(name), colors: nativeColors[name] };
   return (
-    <ThemeContext.Provider value={{ name, mode: themeMode(name), colors: nativeColors[name] }}>
+    <ThemeContext.Provider value={value}>
       {/*
         HeroUI's provider supplies the animation-settings and portal contexts its components
         read on first render — without it a Button throws rather than rendering. It sits INSIDE

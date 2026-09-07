@@ -3,7 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
-import { durations, ThemeProvider, useTheme } from '@irodora/ui';
+import { DEVICE_FAMILY, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { deviceRepository } from '../src/store/repository';
@@ -89,9 +89,22 @@ function Chrome(): React.JSX.Element {
 
 /** Reads the choice and hands it to the theme. One line, and it has to be a component. */
 function Themed(): React.JSX.Element {
-  const { appearance } = useAppearance();
+  const { appearance, device } = useAppearance();
+  /*
+   * THE DERIVED PALETTE, ONLY WHEN IT WAS BOTH CHOSEN AND CHECKED (F-154).
+   *
+   * Both conditions matter. A person who has not chosen the device colour should not get it,
+   * and a seed that did not pass the contrast and CVD checks is not applied at all — the base
+   * theme stays and Preferences says why. There is no third branch where something unchecked
+   * reaches the screen.
+   */
+  const palette =
+    appearance.family === DEVICE_FAMILY && device.kind === 'applied'
+      ? { name: device.name, mode: device.mode, colors: device.colors }
+      : undefined;
+
   return (
-    <ThemeProvider appearance={appearance}>
+    <ThemeProvider appearance={appearance} {...(palette === undefined ? {} : { palette })}>
       <Chrome />
     </ThemeProvider>
   );

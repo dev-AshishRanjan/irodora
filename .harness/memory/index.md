@@ -192,6 +192,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md](effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md) — **E-092** · the first status this product ever painted was flagged for doing exactly what its own prop promises.
 - [effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md](effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md) — **E-093** · the chroma ceiling answered "how strong may a theme be" better than taste would have.
 - [effects/a-finally-is-a-hope-about-how-a-process-ends.md](effects/a-finally-is-a-hope-about-how-a-process-ends.md) — **E-094** · eight leaked plants, and a guard that could not tell a leak from ordinary work.
+- [effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md](effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md) — **E-095** · NFR-3 was argued on correctness grounds and turned out to be what makes a provably accessible dynamic theme possible.
 
 ## Glossary
 

@@ -26,6 +26,8 @@ import { Text } from 'react-native';
 import {
   APPEARANCE_KEY,
   AppearanceProvider,
+  deviceTheme,
+  noSeed,
   useAppearance,
   type AppearanceStore,
 } from '../src/appearance';
@@ -145,5 +147,70 @@ describe('AppearanceProvider', () => {
     const quiet = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(() => render(<Probe />)).toThrow(/AppearanceProvider/u);
     quiet.mockRestore();
+  });
+});
+
+/**
+ * The device colour (F-154).
+ *
+ * ## What only this layer can answer
+ *
+ * `packages/design-tokens/test/seed.test.ts` sweeps every hue through the derivation and the
+ * checks. What it cannot say is whether the app **applies only what passed** — and whether the
+ * absence of a platform accent is a designed state rather than a crash or a silent base.
+ */
+describe('the device colour', () => {
+  const accent = { l: 0.55, c: 0.09, h: 258 };
+
+  it('is unavailable, with a reason, on a platform that offers none', () => {
+    /*
+     * WHICH IS EVERY PLATFORM THIS REPOSITORY CAN BUILD FOR TODAY. Android exposes the dynamic
+     * palette from API 31 and nothing here can read it; iOS exposes no user accent at all. The
+     * honest shape is a state that says so — not a chip that does nothing, and not a theme that
+     * silently fails to change.
+     */
+    const outcome = deviceTheme(noSeed, 'light');
+    expect(outcome.kind).toBe('none');
+  });
+
+  it('derives and applies a real accent, and says what it corrected', () => {
+    const outcome = deviceTheme({ read: () => accent }, 'light');
+    expect(outcome.kind).toBe('applied');
+    if (outcome.kind !== 'applied') return;
+
+    // Corrections are normal: at L 0.99 the sRGB gamut is a sliver, so a light background
+    // cannot hold the chroma the ceiling would allow.
+    expect(outcome.corrected).toBeGreaterThan(0);
+    expect(Object.keys(outcome.colors).length).toBeGreaterThan(20);
+    expect(outcome.mode).toBe('light');
+  });
+
+  it('refuses a greyscale accent rather than inventing a hue', () => {
+    // A greyscale wallpaper is a real thing, and a colour taken from the rounding on a grey is
+    // not the device colour.
+    const outcome = deviceTheme({ read: () => ({ l: 0.5, c: 0, h: 0 }) }, 'dark');
+    expect(outcome.kind).toBe('refused');
+    if (outcome.kind === 'refused') expect(outcome.reason).toMatch(/achromatic/u);
+  });
+
+  it('reaches the theme only when it was BOTH chosen and checked', () => {
+    /*
+     * The assertion that keeps criterion 3 true at the top of the tree. Two conditions, and the
+     * root layout requires both: a person who has not chosen the device colour does not get it,
+     * and a seed that did not pass is not applied at all.
+     */
+    const chosenAndChecked =
+      parseAppearance('device:light').family === 'device' &&
+      deviceTheme({ read: () => accent }, 'light').kind === 'applied';
+    expect(chosenAndChecked).toBe(true);
+
+    const chosenButRefused = deviceTheme({ read: () => ({ l: 0.5, c: 0, h: 0 }) }, 'light');
+    expect(chosenButRefused.kind).not.toBe('applied');
+  });
+
+  it('round-trips `device` as a stored choice', () => {
+    // `device` is not a theme FAMILY — the families are the manifest's recipes — but it is a
+    // choice somebody makes, so the stored form has to carry it.
+    expect(parseAppearance('device:system')).toEqual({ family: 'device', mode: 'system' });
   });
 });

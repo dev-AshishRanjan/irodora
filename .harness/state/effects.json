@@ -3487,6 +3487,56 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-095",
+      "from": {
+        "kind": "file",
+        "ref": "packages/design-tokens/src/seed.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/check.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/emit/runtime.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/theme.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/appearance.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/card.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE DEVICE RUNS THE GATE’S OWN FUNCTIONS. `checkContrast` and `checkSeparation` take the palettes as an argument, so CI passes the real manifest and a phone passes a palette it derived a millisecond ago — one set of functions, two callers, rather than a second implementation that agrees until it does not. `CheckableManifest` is the argument type, and a full `Manifest` satisfies it, so the two cannot diverge without a compile error. `seed.test.ts` sweeps every hue in both modes — 720 cases — asserting each is applied or refused with a reason and never applied unchecked, that lightness is preserved exactly, that every derived value is in gamut, and that the refusals are reachable while an ordinary accent is not refused. The app-side tests assert the theme reaches the provider ONLY when it was both chosen and checked. The runtime policy is a generated target, so a manifest change that is not regenerated fails the build.",
+      "memory": "memory/effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md",
+      "rationale": "NFR-3 PAID FOR THIS, AND NOBODY WROTE IT FOR THAT. A theme seeded by a platform accent cannot be verified when the manifest is compiled, and every accessibility guarantee here rests on gate 9 and gate 10 having measured a palette before it ships — so the checks have to run on the device, against the values that will be painted. That is possible only because the colour packages have no runtime dependencies, no `node:*`, no DOM and no `process`, and return byte-identical results everywhere. That rule exists so a colour is the SAME colour everywhere, argued on correctness grounds; it turns out to be the property that makes a PROVABLY ACCESSIBLE dynamic theme possible, which most products cannot do because their checking code is a build-time tool with a filesystem. SECOND TIME IN THREE FEATURES that a constraint written for one reason answered a question asked later — the chroma ceiling did it in E-093 — and both times the constraint gave a better answer than the one being invented. It is also a reason not to relax NFR-3 for convenience, recorded where somebody weighing that would find it. THE DEVICE CARRIES THE POLICY AND NOT THE PROSE: 11 KB rather than 36, because `role` is a paragraph for a reader and there is no reader on a phone. THE PATH THAT CANNOT FAIL IS SAID OUT LOUD: a derived theme preserves lightness exactly and caps chroma at 0.01, so it differs from a palette the gate already passed by less than the check can resolve, and a 720-case sweep confirms no valid seed is ever refused by the checks. The check still runs, because \"it cannot fail today\" is a statement about today’s derivation rule rather than a licence to stop asking. AND IT FORCED A WIDENING: three types assumed a palette always has a name from a build-time list, and the shareable card had the same assumption one level out — it took a theme name and used it only to index a colour table. A name is a fine handle for a thing somebody declared and the wrong handle for a thing derived a moment ago.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

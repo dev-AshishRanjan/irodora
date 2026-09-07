@@ -12,6 +12,7 @@
 
 export {
   DEFAULT_APPEARANCE,
+  DEVICE_FAMILY,
   formatAppearance,
   parseAppearance,
   resolveThemeName,

@@ -39,8 +39,7 @@
  * The sample is the entry's `derived.hex` exactly as published. Nothing here converts anything.
  */
 
-import type { Theme } from '@irodora/design-tokens';
-import { nativeColors } from '@irodora/design-tokens';
+import type { ThemeColors } from '@irodora/ui';
 import type { PublishedEntry } from './corpus';
 
 /**
@@ -107,13 +106,16 @@ export interface CardLabels {
 
 export interface CardOptions {
   /**
-   * The palette the card is drawn in — any of them, not only the authored pair (F-153).
+   * The palette the card is drawn in, as COLOURS rather than as a name (F-154).
    *
-   * It was two names because there were two themes. The card is drawn in the ACTIVE one so
-   * what a person shares matches what they were looking at, and a person on a tinted theme is
-   * looking at a tinted card.
+   * It was two names, then any of the eight, and now the values themselves — because a theme
+   * derived from a device accent has no name in a list written at build time, and the card is
+   * drawn in the ACTIVE palette so what a person shares matches what they were looking at.
+   *
+   * Passing the colours also removes the lookup: this file no longer needs to know that a
+   * theme name indexes a table.
    */
-  readonly theme: Theme;
+  readonly colors: ThemeColors;
   /** The corpus version, which FR-50 requires the card to carry. */
   readonly corpusVersion: string;
   readonly labels: CardLabels;
@@ -155,7 +157,7 @@ function text(
  * in this file. Nothing consults a clock, a locale, a random source or a platform API.
  */
 export function cardSvg(entry: PublishedEntry, options: CardOptions): string {
-  const t = nativeColors[options.theme];
+  const t = options.colors;
   const sample = entry.derived.hex;
 
   /*

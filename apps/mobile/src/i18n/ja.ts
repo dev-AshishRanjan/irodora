@@ -474,6 +474,13 @@ export const ja: Record<MessageKey, string> = {
   'appearance.mode.system': '端末に合わせる',
   'appearance.mode.light': 'ライト',
   'appearance.mode.dark': 'ダーク',
+  'appearance.family.device': '端末の色',
+  'appearance.device.unsupported':
+    'この端末は色を提供していません。Android 12 以降は提供します。iOS は提供しないため、ここでは上のテーマからお選びください。',
+  'appearance.device.refused': 'その色は使えません。理由は次のとおりです。',
+  'appearance.device.checked':
+    'この端末で作り、組み込みのテーマと同じコントラストと色覚の基準で確かめてから適用しています。',
+  'appearance.device.corrected': '収まるように調整した箇所の数：',
   'preferences.origin':
     'この端末で、あなたが残した組み合わせと見送った組み合わせから学習します。端末の外には出ません。',
   'preferences.learned': '色の組み合わせ',

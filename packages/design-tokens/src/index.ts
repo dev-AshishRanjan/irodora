@@ -69,6 +69,8 @@ export {
   DEFICIENCIES,
   requirementFor,
   type Finding,
+  type CheckableManifest,
+  type Palettes,
   type PairingResult,
   type SeparationResult,
 } from './check.js';
@@ -82,6 +84,7 @@ export { emitTailwind } from './emit/tailwind.js';
 export { emitHeroui, herouiTheme, HerouiEmitError, nonHexDeclarations } from './emit/heroui.js';
 export { emitTypescript } from './emit/typescript.js';
 export { emitReactNative } from './emit/react-native.js';
+export { emitRuntime } from './emit/runtime.js';
 
 export {
   COLOR,
@@ -122,3 +125,13 @@ export {
 
 /** Semver of the token set. Recorded alongside the engine in a reproducibility envelope. */
 export const TOKENS_VERSION = '0.1.0' as const;
+
+export {
+  MINIMUM_SEED_CHROMA,
+  RUNTIME_THEME,
+  themeFromSeed,
+  type SeedCorrection,
+  type SeedOutcome,
+} from './seed.js';
+
+export { runtimeManifest } from './generated/runtime.js';

@@ -23,11 +23,16 @@ export default function PreferencesRoute(): React.JSX.Element {
    * accessibility guarantees are actually verified. The same seam as the repository, one
    * level up.
    */
-  const { appearance, choose } = useAppearance();
+  const { appearance, choose, device } = useAppearance();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <Preferences store={deviceRepository()} appearance={appearance} onChooseAppearance={choose} />
+      <Preferences
+        store={deviceRepository()}
+        appearance={appearance}
+        onChooseAppearance={choose}
+        device={device}
+      />
     </>
   );
 }

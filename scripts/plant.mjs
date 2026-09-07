@@ -163,6 +163,8 @@ export function describeLeftovers(run) {
 export function recover() {
   const state = read();
   const restored = [];
+  /** Recovery notes, for files whose bytes are not the whole of putting them back. */
+  const notes = [];
   for (const [path, entry] of Object.entries(state.entries)) {
     const absolute = join(ROOT, path);
     if (entry.backup !== undefined) {
@@ -183,9 +185,20 @@ export function recover() {
       writeFileSync(absolute, entry.original, 'utf8');
     }
     restored.push(path);
+    /*
+     * SOME FILES NEED MORE THAN THEIR BYTES BACK.
+     *
+     * The content proof perturbs an OKLab matrix in a tracked SOURCE file and rebuilds the
+     * packages that compile it. Restoring the source leaves the BUILT artefacts still holding
+     * the perturbation — and gate 11 then fails on a taxonomy boundary, which looks nothing
+     * like a leftover plant and cost a cycle to trace.
+     *
+     * A note is not a fix. It is the sentence a person needs, at the moment they need it.
+     */
+    if (typeof entry.note === 'string') notes.push(`${path}: ${entry.note}`);
   }
   write({ entries: {} });
-  return restored;
+  return { restored, notes };
 }
 
 /**
