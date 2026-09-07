@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -5109,7 +5109,7 @@
       "service": "root",
       "release": "R6",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "acceptance": [
         "The banned list covers the Japanese catalogue, and every pattern in it is reviewed by somebody who reads Japanese",
@@ -5120,7 +5120,19 @@
         "lint",
         "test"
       ],
-      "notes": "FOUND BY ACCIDENT IN F-164 (E-089). `verify-claims.mjs` walks every file in the repository, `apps/mobile/src/i18n/ja.ts` included — and all eleven banned patterns are ASCII, so half the product's user-facing copy has never been checked against the rule the product cares about most. It was not theoretical: the Japanese Home screen read 最後の測定, calling a camera estimate a MEASUREMENT, which ADR-0031 reserves for `reference` and `calibrated`. Fixed by hand; the gate is this. THE HARD PART IS THAT IT MUST NOT BAN THE VOCABULARY. Six of the eight uses of 測定 are on the `measure` screen and they are CORRECT — お手持ちの測定器の値, \"the values from your own measuring device\", which is exactly the provenance the word is reserved for. The English list already works this way: it bans the app CLAIMING to do the measuring, not the word itself. NEEDS SOMEBODY WHO READS JAPANESE. Writing the patterns from a dictionary produces a lint that either passes everything or blocks correct copy, and neither failure would be visible to the person who wrote it. F-017 already owes a competent-speaker read of the catalogue; this is the same person and it is now a claims matter rather than a style one."
+      "notes": "FOUND BY ACCIDENT IN F-164 (E-089). `verify-claims.mjs` walks every file in the repository, `apps/mobile/src/i18n/ja.ts` included — and all eleven banned patterns are ASCII, so half the product's user-facing copy has never been checked against the rule the product cares about most. It was not theoretical: the Japanese Home screen read 最後の測定, calling a camera estimate a MEASUREMENT, which ADR-0031 reserves for `reference` and `calibrated`. Fixed by hand; the gate is this. THE HARD PART IS THAT IT MUST NOT BAN THE VOCABULARY. Six of the eight uses of 測定 are on the `measure` screen and they are CORRECT — お手持ちの測定器の値, \"the values from your own measuring device\", which is exactly the provenance the word is reserved for. The English list already works this way: it bans the app CLAIMING to do the measuring, not the word itself. NEEDS SOMEBODY WHO READS JAPANESE. Writing the patterns from a dictionary produces a lint that either passes everything or blocks correct copy, and neither failure would be visible to the person who wrote it. F-017 already owes a competent-speaker read of the catalogue; this is the same person and it is now a claims matter rather than a style one. ---- DONE 2026-09-07 (E-090). SEVEN PATTERNS, AND A COVERAGE CHECK THAT OUTLIVES THEM. The patterns each mirror a reviewed English entry and each is a fixed marketing collocation — exactness, a colour being the authoritative or the actual one, a complete match, a numeric accuracy figure, a guarantee, professional grading, and the machine-learning phrase, which the English pattern cannot reach because it is written in Latin letters inside Japanese text. THE HALF THAT MATTERS NEEDS NO JAPANESE: the gate counts files carrying CJK and patterns able to match it, and FAILS when the first is non-zero and the second is zero. A locale added without a policy now turns the build red instead of passing silently, and a third language will fail this gate until somebody writes its rules — the correct order. On every green run it prints how many patterns can match Japanese over how many files, labelled as the SCOPE of the check rather than as evidence about the copy, because a false negative and clean copy produce identical output. 測定 IS DELIBERATELY NOT PATTERNED: six of its eight uses are the `measure` screen, where a person enters values from their own instrument, which is exactly the provenance the word is reserved for. Splitting them is grammar; a rule from a dictionary either passes everything or blocks correct copy, with neither failure visible to its author. THE REGRESSION FIXTURE IS THE PRODUCT’S OWN COPY — the two historical defects and the six correct strings — so the outstanding review rules on real text rather than on a regex, and its GREEN case is the one that matters: a pattern set banning the vocabulary would pass every red case in the proof and break the `measure` screen. PROVING THE COVERAGE CHECK NEEDED A MUTATION THAT TOUCHES NO TRACKED FILE, because planting into one has broken this tree four times by three mechanisms; the switch is safe by construction rather than by convention, since it only removes patterns and the check then fails the build. 23 proof cases discriminate; all 33 CI steps green. CRITERION 1 REMAINS OUTSTANDING.",
+      "plan": "plans/F-172-the-claims-gate-reads-japanese.md",
+      "effects": [
+        "E-090"
+      ],
+      "attested": [
+        {
+          "criterion": "The banned list covers the Japanese catalogue, and every pattern in it is reviewed by somebody who reads Japanese",
+          "verifiedBy": "THE PATTERNS ARE MINE AND UNREVIEWED, AND THAT IS THE WHOLE OF THIS ATTESTATION. Each of the seven mirrors an English entry that was reviewed, and each is a fixed marketing collocation rather than a grammatical judgement — the ceiling I set myself so that nothing shipped here depends on a reading I cannot audit. Every one has a real sentence in the mutation proof, on the rule that a pattern I cannot write a sentence for is a pattern I do not understand well enough to ship. But MIRRORS A REVIEWED ONE and IS CORRECT are different claims, and a false negative is invisible from here: a pattern that never fires looks exactly like clean copy. WHAT IS DISCHARGED IS COVERAGE, NOT CORRECTNESS — the gate fails when a CJK-bearing file has no CJK-capable pattern, which needs no Japanese and is now permanent. Whether these are the RIGHT seven, and whether 測定 can be split by grammar rather than banned outright, needs somebody who reads the language. F-017 already owes a competent-speaker read of the catalogue; this is the same person.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-161",

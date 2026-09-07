@@ -8,6 +8,102 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-172 DONE · a gate that scans everything is not a gate that checks everything
+
+Found by accident in F-164 (E-089): the claims lint walks every file in the repository,
+`apps/mobile/src/i18n/ja.ts` included — and all eleven of its banned patterns are ASCII. Half the
+product's user-facing copy had never been checked against the rule the product cares about most,
+and it was not theoretical: the Japanese Home screen called a camera estimate a *measurement*,
+which ADR-0031 binds to `reference` and `calibrated`. Golden rule 11, at the front door, green
+the whole time.
+
+### What this feature could discharge, and what it could not
+
+Stated in the plan before any of it was written, because the split is the interesting part:
+
+| | |
+|---|---|
+| **Dischargeable now** | the gate saying what it cannot check · the patterns whose English counterpart is a fixed collocation · a proof case per pattern · a regression fixture built from the product's own real copy |
+| **Attested, not done** | the review itself, and one specific word |
+
+The first acceptance criterion says *every pattern reviewed by somebody who reads Japanese*, and I
+do not. Overriding that because it is inconvenient is the failure this harness exists to prevent.
+
+### The half that needs no Japanese, and outlives the patterns
+
+**A false negative and a clean subject produce identical output.** Zero findings means either
+nothing is wrong or the checker cannot recognise what is wrong, and a gate printing only its
+verdict has discarded that distinction before anyone reads it.
+
+So the gate now measures *itself* as well as its subject: it counts files carrying CJK and
+patterns able to match it, and **fails when the first is non-zero and the second is zero**.
+Watched failing on the pre-existing config first — `Claims lint COVERS NOTHING in 1 file(s)` —
+then passing once the patterns landed. A third locale will turn the build red until somebody
+writes its policy, which is the correct order rather than an inconvenience to route around.
+
+On every green run it now also prints how many patterns can match Japanese and over how many
+files, labelled as the **scope** of the check rather than as evidence about the copy.
+
+### 測定 is deliberately not patterned, and that is the interesting decision
+
+It is the word the actual defect used — and **six of its eight uses in the catalogue are
+correct**. They are the `measure` screen, where a person enters values from their own instrument,
+which is exactly the provenance the word is reserved for.
+
+Telling the two groups apart is grammar rather than vocabulary: the defect was a bare noun
+describing an estimate; the legitimate uses attach to 器 (device) and 値 (value). A rule written
+from a dictionary either passes everything or blocks correct copy, **and neither failure would be
+visible to whoever wrote it**. Recorded as the worked example the review has to settle.
+
+### The fixture is the product's own text
+
+`packages/testing/fixtures/claims/japanese.md` holds the two historical defects and the six
+correct `measure.*` strings, verbatim, with the verdicts E-089 already established. It is not my
+judgement of Japanese; it is the shipping catalogue, so the outstanding review rules on real copy
+rather than on a regex.
+
+**Its green case is the one that matters.** A pattern set that banned the vocabulary would pass
+every red case in the proof and break the product's only honest use of the word.
+
+### Proving a coverage check without breaking the tree
+
+A coverage check is worth nothing until something has watched it fail, and the only way to make it
+fail is to take the patterns away — which live in a **tracked file**. Planting into one of those
+has left this working tree broken four times this month, by three mechanisms: a timeout, a Windows
+`EPERM` on `rmSync`, a Windows `UNKNOWN` on `writeFileSync`. A `finally` is a hope about how a
+process ends, not a guarantee.
+
+So the mutation is an environment variable, and the reason it is not a bypass is worth stating
+precisely: **it only ever removes patterns, which makes the gate find less, at which point the
+coverage check fires and the build goes red.** No setting of it lets anything through. That is the
+test for a switch inside a gate — not who would use it, but what is the worst thing it can cause.
+
+### Gates
+
+| ran | result |
+|---|---|
+| the coverage check, watched failing before the patterns existed | **caught** |
+| 0 state · 1 typecheck · **2 lint** · 3 format | **PASS** |
+| **2 claims mutation proof** — 23 cases, 7 of them new | **PASS** |
+| 4 test · 5 color-golden · 6 build · 8 a11y · 9 contrast · 10 cvd · 11 content · 12 perf · 15 security | **PASS** |
+| `pnpm verify:ci` — all 33 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 1 is outstanding and blocks release.** Each pattern mirrors an English entry that was
+reviewed, and each is a fixed marketing collocation rather than a grammatical judgement — but
+*mirrors a reviewed one* and *is correct* are different claims. F-017 already owes a
+competent-speaker read of the catalogue; this is the same person, and the queue now also holds
+`browse.add` and `export.buildPalette` from F-152.
+
+**And the honest limit:** the coverage check narrows the guarantee from *nothing is wrong* to
+*some pattern can match*. It cannot tell you the right patterns exist. That difference is exactly
+what the review is for.
+
+---
+
 ## 2026-09-06 — F-164 DONE · the front door had never said what the product is for
 
 *"The Home page is still unprofessional, not organised… it's our first impression for users."* —

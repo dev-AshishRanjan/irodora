@@ -33,6 +33,17 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LINT = join(ROOT, 'scripts/verify-claims.mjs');
 const FIXTURE = join(ROOT, 'packages/testing/fixtures/claims/clean.md');
 
+/**
+ * The Japanese negative control (F-172).
+ *
+ * Two green baselines rather than one, because the patterns are now written in two languages and
+ * **a green baseline in a language the patterns cannot read proves nothing about the ones that
+ * can**. Its content is the product's own copy — the six legitimate uses of a measurement word on
+ * the `measure` screen — so a pattern set that flags it is wrong about the shipping app rather
+ * than about a fixture somebody invented.
+ */
+const JA_FIXTURE = join(ROOT, 'packages/testing/fixtures/claims/japanese.md');
+
 // A real, scanned path. Removed in `finally`; its directory is created only if absent.
 const TARGET = join(ROOT, 'docs/__claims_proof__.md');
 
@@ -55,14 +66,55 @@ if (existsSync(TARGET)) {
 
 const clean = readFileSync(FIXTURE, 'utf8');
 
+if (!existsSync(JA_FIXTURE)) {
+  console.error(
+    `${RED}claims-proof: Japanese fixture missing at ${JA_FIXTURE}. Refusing to prove nothing.${OFF}`,
+  );
+  process.exit(1);
+}
+const japanese = readFileSync(JA_FIXTURE, 'utf8');
+
 /** Runs the lint. Returns {code, out}. Never throws on a non-zero exit — that is the signal. */
-function runLint() {
+function runLint(env = {}) {
   try {
-    const out = execFileSync(process.execPath, [LINT], { encoding: 'utf8', stdio: 'pipe' });
+    const out = execFileSync(process.execPath, [LINT], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      env: { ...process.env, ...env },
+    });
     return { code: 0, out };
   } catch (error) {
     return { code: error.status ?? 1, out: `${error.stdout ?? ''}${error.stderr ?? ''}` };
   }
+}
+
+/**
+ * THE COVERAGE CHECK, WATCHED FAILING (F-172).
+ *
+ * Every other case here proves a banned phrase is caught. This one proves the thing that was
+ * actually wrong, which no phrase case can reach: a gate can walk a file it cannot read, report
+ * `0 violation(s)`, and be believed. That is how the Japanese Home screen came to call a camera
+ * estimate a measurement across four green runs (E-089).
+ *
+ * The mutation is an environment variable rather than a plant into `claims.json`, because
+ * planting into a tracked file has broken this tree four times. It only ever removes patterns,
+ * so the sole thing it can cause is the failure asserted below.
+ */
+function proveCoverage() {
+  const withPatterns = runLint();
+  const without = runLint({ CLAIMS_PROOF_DROP_NON_ASCII: '1' });
+  const ok =
+    withPatterns.code === 0 && without.code !== 0 && without.out.includes('COVERS NOTHING');
+
+  console.log(
+    `${ok ? `${GREEN}OK ` : `${RED}BAD`}${OFF} a gate with no pattern for a script it scans is REFUSED: ` +
+      `${DIM}${
+        ok
+          ? 'green with the Japanese patterns, red without them'
+          : `with ${String(withPatterns.code)} · without ${String(without.code)}`
+      }${OFF}`,
+  );
+  return ok;
 }
 
 const config = JSON.parse(readFileSync(join(ROOT, '.harness/verification/claims.json'), 'utf8'));
@@ -91,6 +143,19 @@ const CASES = [
     body: clean,
     expect: 'green',
   },
+  {
+    /*
+     * THE CASE THAT MATTERS MOST IN THE JAPANESE HALF, and it is a green one.
+     *
+     * A pattern set that banned the measurement VOCABULARY would pass every red case above and
+     * break the product's only honest use of it — the `measure` screen, where a person enters
+     * values from their own instrument, which is exactly the provenance the word is reserved
+     * for. Six such strings are in this fixture, verbatim from the shipping catalogue.
+     */
+    name: "the product's real Japanese copy, unmutated — must stay GREEN",
+    body: japanese,
+    expect: 'green',
+  },
 ];
 
 /** A phrase that trips each pattern. Written out rather than generated from the regex, so a
@@ -98,6 +163,19 @@ const CASES = [
 function sampleFor(id) {
   return {
     'exact-colour': 'we show the exact colour of your shirt',
+
+    /*
+     * THE JAPANESE HALF (F-172). Written as sentences a product might actually ship rather
+     * than as strings assembled from the regex — a pattern that has stopped matching real
+     * prose is then caught here, instead of silently still matching itself.
+     */
+    'ja-exact-colour': 'この機能はあなたの服の正確な色をお見せします',
+    'ja-true-colour': 'カメラがその本当の色をとらえます',
+    'ja-perfect-match': '収録された色と完全に一致します',
+    'ja-percent-accurate': '99 % の正確さでお答えします',
+    'ja-guaranteed-accuracy': 'この端末は色を保証します',
+    'ja-professional-grade': 'プロ仕様の色管理をあなたの手に',
+    'ja-ai-powered': 'AI搭載のエンジンが色を選びます',
     'true-colour': 'this is the true colour of the fabric',
     'actual-colour': 'the actual colour is shown below',
     'percent-accurate': 'our detection is 99% accurate',
@@ -122,7 +200,7 @@ if (missing.length > 0) {
 
 console.log(`\n${BOLD}Irodora — claims lint mutation proof${OFF}`);
 console.log(
-  `${DIM}  ${String(CASES.length)} case(s) · target ${'docs/__claims_proof__.md'}${OFF}\n`,
+  `${DIM}  ${String(CASES.length + 1)} case(s) · target ${'docs/__claims_proof__.md'}${OFF}\n`,
 );
 
 let failures = 0;
@@ -174,6 +252,8 @@ try {
   if (existsSync(TARGET)) console.error(`${RED}claims-proof: FAILED TO REMOVE ${TARGET}.${OFF}`);
 }
 
+if (!proveCoverage()) failures++;
+
 if (failures > 0) {
   console.error(`\n${RED}${BOLD}AT LEAST ONE PROOF FAILED.${OFF} ${String(failures)} case(s).\n`);
   ciError(
@@ -185,6 +265,6 @@ if (failures > 0) {
 }
 
 console.log(
-  `\n${GREEN}${BOLD}All ${String(CASES.length)} cases discriminate.${OFF} ` +
+  `\n${GREEN}${BOLD}All ${String(CASES.length + 1)} cases discriminate.${OFF} ` +
     `${DIM}Baseline green before and after each one.${OFF}\n`,
 );

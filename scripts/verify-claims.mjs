@@ -178,6 +178,72 @@ console.log(
     OFF,
 );
 
+/*
+ * ============================================================================================
+ * DOES THIS GATE COVER THE COPY IT IS SCANNING? (F-172, E-089)
+ * ============================================================================================
+ *
+ * It walked every file in the repository, `apps/mobile/src/i18n/ja.ts` included, and reported
+ * `0 violation(s)` — while every one of its patterns was ASCII and could not match a single
+ * character of that file. **Half the product's user-facing copy had never been checked against
+ * the rule the product cares about most**, and the Japanese Home screen had been calling a camera
+ * estimate a measurement the whole time.
+ *
+ * That is a different failure from every blind spot recorded before it. The others were checkers
+ * that could not SEE their subject. This one read every byte and had nothing to say, because what
+ * it knows how to recognise is written in one language — and *"it scans everything"* and *"it
+ * checks everything"* are different claims, of which only the first was ever stated.
+ *
+ * So the gate now counts two things and fails when they disagree: text it cannot read, and
+ * patterns that could read it. **This half needs no Japanese at all**, which is why it is here
+ * rather than waiting on the review the patterns themselves owe — and it holds for the third
+ * language too, which will fail this check on the day it arrives rather than passing silently
+ * until somebody notices.
+ */
+
+/** CJK ideographs, hiragana and katakana. The scripts this product's second locale is written in. */
+const CJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/u;
+
+/** A pattern that can match non-ASCII text at all. A pure-ASCII regex never will. */
+const readsCjk = (pattern) => CJK.test(pattern);
+
+/*
+ * A WEAKENING THE PROOF CAN APPLY WITHOUT PLANTING INTO A TRACKED FILE.
+ *
+ * The coverage check below is worth nothing until something has watched it fail, and the only way
+ * to make it fail is to take the Japanese patterns away — which live in `claims.json`, a tracked
+ * file. Planting into one of those has left this working tree broken four times: a `finally` does
+ * not survive a timeout, a Windows file lock, or a kill.
+ *
+ * So the mutation is an environment variable, and it is safe by construction rather than by
+ * convention: dropping patterns makes the gate find LESS, at which point the check fires and the
+ * build goes red. **No setting of this variable lets anything through** — that is the property
+ * that makes a switch inside a gate acceptable, and without it this would just be a bypass.
+ */
+const dropped = process.env['CLAIMS_PROOF_DROP_NON_ASCII'] === '1';
+
+const cjkPatterns = dropped ? [] : banned.filter((b) => readsCjk(b.pattern));
+const cjkFiles = files.filter((f) => {
+  const rel = posix(relative(ROOT, f));
+  if (policyPaths.has(rel)) return false;
+  // Only source and copy: a memory note discussing the ban is not user-facing text.
+  if (!/^apps\/mobile\/src\/i18n\//u.test(rel)) return false;
+  return CJK.test(readFileSync(f, 'utf8'));
+});
+
+if (cjkFiles.length > 0 && cjkPatterns.length === 0) {
+  console.error(
+    `\n${RED}${BOLD}Claims lint COVERS NOTHING in ${String(cjkFiles.length)} file(s).${OFF}\n` +
+      `${DIM}  These carry copy in a script no banned pattern can match, so a green run over them\n` +
+      `  says nothing at all — which is how the Japanese Home screen came to call an estimate a\n` +
+      `  measurement while this gate reported zero violations (E-089).\n\n` +
+      cjkFiles.map((f) => `  ${posix(relative(ROOT, f))}\n`).join('') +
+      `\n  Add patterns to .harness/verification/claims.json, and have somebody who reads the\n` +
+      `  language check them.${OFF}\n`,
+  );
+  process.exit(1);
+}
+
 if (violations.length > 0) {
   console.error('');
   for (const v of violations) {
@@ -201,6 +267,13 @@ console.log(
     `${config.provenanceLanguage?.activatesWith ?? 'F-017'}; the table is\n    already in claims.json. ` +
     `allowlist.measured holds ${String(measured.length)} entr(ies), which is correct while the\n` +
     `    device colour lab (F-063) has produced no rows — no number without a row.${OFF}`,
+);
+
+console.log(
+  `${YELLOW}  !${OFF} ${DIM}${String(cjkPatterns.length)} of ${String(banned.length)} pattern(s) can match Japanese, over ` +
+    `${String(cjkFiles.length)} file(s) of it. A pattern that never\n    fires looks exactly like clean copy, so this ` +
+    `number is the SCOPE of the check rather than\n    evidence about the copy — F-172 owes the review that closes ` +
+    `the difference.${OFF}`,
 );
 
 console.log(`\n${GREEN}${BOLD}Claims lint passed.${OFF} ${DIM}0 violation(s).${OFF}\n`);

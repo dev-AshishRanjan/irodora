@@ -1,7 +1,7 @@
 {
   "$comment": "The claims copy lint (NFR-21, F-025, ADR-0031). Patterns live here rather than in scripts/verify-claims.mjs for the same reason recommendation weights are content: this list will grow, and growing it should not be a code change. Read by scripts/verify-claims.mjs and exercised by scripts/verify-claims-proof.mjs.",
   "version": 1,
-  "updated": "2026-08-19",
+  "updated": "2026-09-06",
   "banned": [
     {
       "id": "exact-colour",
@@ -57,6 +57,41 @@
       "id": "is-exact-match-identifier",
       "pattern": "isExactMatch|exactMatch|EXACT_MATCH",
       "why": "An identifier is as much a violation as a button label. A name propagates into a field, then into a stored record, then into copy — and by then nobody remembers it was a shorthand."
+    },
+    {
+      "id": "ja-exact-colour",
+      "pattern": "正確な色",
+      "why": "Mirrors `exact-colour`. A camera estimate is not exact, and this is the same promise about a precision the hardware cannot deliver."
+    },
+    {
+      "id": "ja-true-colour",
+      "pattern": "(本当|本来|真)の色",
+      "why": "Mirrors `true-colour`. It implies one authoritative answer exists and we found it; a rendered hex is a modern approximation of a colour a dye once produced."
+    },
+    {
+      "id": "ja-perfect-match",
+      "pattern": "(完全|完璧)(に|な)一致",
+      "why": "Mirrors `perfect-match`. Naming returns a closest reference ranked by dE00 — there is no such thing to promise (FR-7)."
+    },
+    {
+      "id": "ja-percent-accurate",
+      "pattern": "(100|99|9[0-8])\\s*(%|％)\\s*の?正確",
+      "why": "Mirrors `percent-accurate`. A figure like this needs a device-lab row behind it (NFR-2) and there are none."
+    },
+    {
+      "id": "ja-guaranteed-accuracy",
+      "pattern": "(色|色味|正確さ|精度)を保証",
+      "why": "Mirrors `guaranteed-accuracy`. Nothing about a camera reading can be guaranteed, and the word is the category standard for saying so anyway."
+    },
+    {
+      "id": "ja-professional-grade",
+      "pattern": "(プロ仕様|業務用品質|プロ品質)",
+      "why": "Mirrors `professional-grade`. It claims a standard nobody set and nobody measured."
+    },
+    {
+      "id": "ja-ai-powered",
+      "pattern": "AI(搭載|を活用|により)",
+      "why": "Mirrors `ai-powered`. The core is colour science and explicit rules (ADR-0002); the English pattern cannot match this because the phrase is written in Latin letters inside Japanese text."
     }
   ],
   "provenanceLanguage": {

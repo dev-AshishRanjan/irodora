@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3263,6 +3263,44 @@
       "memory": "memory/effects/the-claims-lint-only-speaks-english.md",
       "rationale": "THE JAPANESE HOME SCREEN CALLED AN ESTIMATE A MEASUREMENT. `home.lastReading` read 最後の測定 and `home.noReadings` read まだ測定がありません — 測定 is MEASUREMENT, and ADR-0031 binds that word to `reference` and `calibrated`, the two sources with an instrument behind them. A camera reading is `estimated`. Golden rule 11, broken at the front door, and found only because F-164 happened to be rewriting that copy. THE GATE WAS GREEN AND CORRECT BY ITS OWN LIGHTS: `verify-claims.mjs` walks EVERY file in the repository, `ja.ts` included, and all eleven banned patterns are ASCII — the ones about exactness, about a colour being the true or actual one, about a numeric accuracy percentage, about laboratory or professional grading, about guarantees, and about the app doing the measuring itself. So half the product's user-facing copy has never been checked for the rule the product cares about most. THE SHAPE IS NEW: every blind spot recorded before this was a checker that could not SEE its subject — a style engine resolving in Metro, colour arriving as an SVG prop, a signature reading the wrong axis. This one read every byte and had nothing to say, because what it knows how to recognise is written in one language. A CHECKER'S SCOPE CAN BE DEFINED BY ITS PATTERNS RATHER THAN BY ITS FILE LIST, and from outside those look identical: \"it scans everything\" and \"it checks everything\" are different claims, and the first is the one that gets stated. SIX OF THE EIGHT USES WERE FINE, which is the half that decides the fix: the `measure` screen says お手持ちの測定器の値を入力すると — enter the values from your own measuring device — and that is exactly the provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific overstatements, as the English list already does, and doing that in Japanese needs somebody who reads it. Recorded as F-172 rather than half-done.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-090",
+      "from": {
+        "kind": "file",
+        "ref": ".harness/verification/claims.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-claims.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-claims-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "scripts",
+        "apps/mobile",
+        "content"
+      ],
+      "severity": "medium",
+      "guard": "THE COVERAGE CHECK IS THE GUARD, and it is the deliverable rather than a side effect. `verify-claims.mjs` now counts files carrying CJK and patterns able to match it, and FAILS when the first is non-zero and the second is zero — so a locale added without a policy turns the build red instead of passing silently. On every green run it also prints how many patterns can match Japanese and over how many files, stated as the SCOPE of the check rather than as evidence about the copy. The seven new patterns each have a real sentence in the mutation proof, and the proof carries a second green baseline built from the product’s own correct Japanese strings. The env-var weakening that makes the coverage check provable can only REMOVE patterns, which can only turn the build red — asserted by the proof case itself.",
+      "memory": "memory/effects/a-check-must-report-its-scope-not-only-its-verdict.md",
+      "rationale": "THE FIX FOR E-089 IS SEVEN PATTERNS; THE FIX FOR ITS SHAPE IS THE GATE ADMITTING WHAT IT CANNOT SEE. A false negative and a clean subject produce identical output — zero findings means either nothing is wrong or the checker cannot recognise what is wrong, and a gate that prints only its verdict has discarded that distinction before anyone reads it. E-089 was that at its most extreme: every byte of a Japanese file scanned, every pattern ASCII, `0 violation(s)` reported over a screen that called a camera estimate a measurement. So the gate now measures ITSELF as well as its subject, and that half needs no Japanese — which is why it is the half that outlives this feature. A third locale will fail this gate until somebody writes its policy, and that is the correct order rather than an inconvenience. 測定 IS DELIBERATELY NOT PATTERNED: six of its eight uses are on the `measure` screen where a person entered instrument values, which is exactly the provenance the word is reserved for. Distinguishing them is grammar, and a rule written from a dictionary would either pass everything or block the product’s only honest use of it, with neither failure visible to its author. The regression fixture is built from the product’s real strings so the outstanding review rules on concrete copy rather than on a regex, and its GREEN case is the one that matters — a pattern set banning the vocabulary would pass every red case in the proof and break the `measure` screen. PROVING A COVERAGE CHECK NEEDED A MUTATION THAT DOES NOT TOUCH A TRACKED FILE, because planting into one has broken this tree four times by three different mechanisms and a `finally` is a hope about how a process ends rather than a guarantee. The switch is acceptable because of what it can CAUSE rather than who would use it: it only removes patterns, the coverage check then fires, and the build goes red. WHAT IS NOT DISCHARGED is the first acceptance criterion — each pattern mirrors a reviewed English one, but mirrors and is correct are different claims, and only somebody who reads Japanese closes that gap.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

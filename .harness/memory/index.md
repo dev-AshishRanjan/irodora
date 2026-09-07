@@ -187,6 +187,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-bound-can-be-rigorous-about-the-wrong-quantity.md](effects/a-bound-can-be-rigorous-about-the-wrong-quantity.md) — **E-087** · the swatch corner was capped by the area it removes, which is not what makes a sample hard to judge.
 - [effects/a-tap-and-a-frame-are-two-different-rectangles.md](effects/a-tap-and-a-frame-are-two-different-rectangles.md) — **E-088** · the preview crops the frame, so a tap fraction is not a frame fraction — and the worklet guard fired twice, the second time on its own proof.
 - [effects/the-claims-lint-only-speaks-english.md](effects/the-claims-lint-only-speaks-english.md) — **E-089** · the gate reads every file and all eleven of its patterns are ASCII, so the Japanese screen called an estimate a measurement.
+- [effects/a-check-must-report-its-scope-not-only-its-verdict.md](effects/a-check-must-report-its-scope-not-only-its-verdict.md) — **E-090** · a false negative and a clean subject print the same thing, so the gate now fails when it scans a script no pattern can read.
 
 ## Glossary
 
