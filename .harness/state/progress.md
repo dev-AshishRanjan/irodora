@@ -8,6 +8,134 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-156 DONE · three checks that each knew one of two spellings
+
+Four controls the product had been working around: a theme picked from five chips because
+`Select` did not exist, a CVD block that apologised for a fixed severity in a sentence, and a
+colour page that scrolls past three reference sections to reach its tabs.
+
+### The wrappers earned their place, and one of them has nobody to use it
+
+`Select` is the theme picker on **Preferences**, which named this feature in its own comment and
+called five chips *"an interim worth naming"*. `Slider` is the CVD severity on **Compare**, and
+that one closes something the engine wrote down twice — `packages/cvd-engine`'s docblock says
+*"anomalous trichromacy at any severity. The common case, and the one a severity slider is
+for"*, and `machado.ts` says it again. There was no slider, so the whole interpolated range
+existed and one point of it was reachable. `Accordion` folds the three reference sections on
+**ColourDetail**.
+
+**`Switch` has no screen, and that is a fact about the product.** The message catalogue holds no
+on/off copy at all. The wardrobe schema has no boolean column. And twice a feature reached the
+place a toggle would go and chose labelled alternatives with the reason written down — the Lens
+(*"two chips rather than a button that toggles: a toggle says what it will do next"*) and the
+profile bands (*"discrete rather than a slider"*).
+
+A colour product's settings are **which one**, not **whether**. So it ships wrapped, exported and
+registered — which ADR-0054 and gate 8 accept — with the absence in its own docblock rather than
+closed by inventing a preference to justify a control. Criterion 1 is attested rather than
+asserted for exactly that gap.
+
+### Two tokens the ledger had been waiting on
+
+`border` — **the decorative hairline** — has been declared unreached since F-017, and the reason
+was precise: every component that draws a line reaches for `border.strong`, the boundary of an
+outlined control where WCAG 1.4.11 applies and 3:1 is not optional. A rule that *separates
+without bounding* is a different thing, and this product had no row list to put one between.
+Three sections give two rules, and the token is painted.
+
+`radius.xs` is on the Select's rows: a small corner nested inside a panel that already has
+`radius.lg`, where the same corner would read as a bubble.
+
+### Three checks were wrong about all four
+
+Each was thorough about a vocabulary that was complete on the day it was written.
+
+**One of two role props.** `pressableNodes` read `accessibilityRole`; every HeroUI primitive sets
+`role`. React Native accepts both. Four correct components would have been reported as `no-role`
+— and the obvious correction is worse than the failure: `AccessibilityRole` ends in `| string`,
+its member for a draggable value is `adjustable`, and `Role`'s is `slider`, so
+`accessibilityRole="slider"` compiles, satisfies the rule, and announces nothing. Both props are
+carried separately now, because in 0.86 the mapping lives in the native layer and there is no
+JavaScript table to cite. A pressable declaring `none` or `presentation` became its own finding:
+a declared non-role satisfied *"has a role"* while removing the control from the tree.
+
+**One of two ways to respond.** The same function defined interactive as pressed or typed into —
+F-018 had already widened it once, *"a text field is not pressable"*. A slider thumb is
+**dragged**, through a `GestureDetector`, so it carries none of them; the suite reported *"nothing
+in the tree responds"*, which was it saying accurately that it had checked no accessibility rule
+on the control.
+
+**One of two ways to animate a colour.** `verify-motion.mjs` named `highlightAnimation` and
+`rippleAnimation`. HeroUI's Switch takes neither — it takes `animation`, whose default
+interpolates the track `backgroundColor` over 175 ms. For this product the intermediate frames
+are plausible colours the engine never produced.
+
+Every widening shipped with its refusal: a pressable with neither role is still reported, a View
+with a number on it is still not a control, and `animation` is still allowed — it is how our
+durations reach HeroUI — while a colour named inside one is not.
+
+### And a fourth, found by probing rather than by reading
+
+**An anchored overlay's portal never mounts under jest.** HeroUI's Popover and Select return
+`null` from their portal until `triggerPosition` is set, and that comes from a `measure()`
+callback react-test-renderer never fires.
+
+So the `Popover` subject — registered **open**, with a comment saying it exists so the gates can
+see *"the scrim painting `backdrop` … and the panel's own ground against the text on it"* —
+renders **four nodes and no panel**. Dialog and Sheet mount; their portals need no trigger
+geometry.
+
+That is why this `Select` is a **dialog presentation** rather than a dropdown. A list whose
+accessibility no check in this repository can see is a list nobody has looked at — and the
+bottom-sheet form was worse still, offering only `contentContainerClassName` for its panel, which
+is how F-158 found HeroUI painting `rgba(0, 0, 0, 0.75)` from its own theme.
+
+Rendered as a dialog, the suite immediately found four real things: an undeclared `foreground.2`
+on `surface.3` pair on the chosen row, a full-screen scrim declaring no tap target, a *disabled*
+select rendering a live list and an unnamed scrim behind it, and — on the Accordion — HeroUI's
+indicator painting a hard-coded `#000000` chevron, which in the dark theme is a black glyph on a
+near-black surface.
+
+**The Popover gap is recorded, not closed.** Closing it means a harness that fakes `measure()` or
+a subject that fakes a trigger position, and both are decisions about what the suite is allowed
+to invent.
+
+### Two things the controls do that are product rules rather than library defaults
+
+The **switch track is 44 tall**, not HeroUI's 32, because the conformance rule reads
+`minWidth`/`minHeight` off the rendered node — a JS render tree has no Yoga pass — so a hit area
+declared any other way is invisible to it and to a reviewer. The **slider thumb is a 44 target
+around a 24 disc**, for the same reason and the opposite problem: a 44 disc on a 10px track is a
+ball on a wire.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 23 new in `controls.test.tsx`, 5 in `compare.test.ts`, 6 new subjects | **PASS** |
+| 8 a11y + scope — 30/30 in `@irodora/ui`, 17/17 screens | **PASS** |
+| 8 token reach — `border` and `radius.xs` retired from the ledger | **PASS** |
+| 9 contrast · 10 cvd | **PASS** |
+| motion, and its proof — 23 cases, 3 of them new | **PASS** |
+| gate 11 font coverage, on 補 | **caught** |
+| `pnpm verify:ci` — all 35 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 1 is attested, not asserted.** All four are wrapped and exported; one is used by
+nobody holding a phone. Reopen it the first time a boolean setting is proposed, or delete the
+wrapper if none ever is.
+
+**`Popover` still checks a trigger.** E-097 records it; no feature owns it yet.
+
+**The Japanese copy** for `separation.severity` and `appearance.close` is unreviewed, like the
+rest of the catalogue (F-172 criterion 1).
+
+---
+
 ## 2026-09-07 — F-155 DONE · a field name that does not describe what it holds
 
 *"What could I actually buy in this colour?"* — FR-72, reported as missing, and it was.

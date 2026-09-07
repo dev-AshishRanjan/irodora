@@ -28,7 +28,18 @@ import { useWindowDimensions, View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
-import { Button, Row, Screen, Stack, Surface, Swatch, Tabs, Text, useTheme } from '@irodora/ui';
+import {
+  Accordion,
+  Button,
+  Row,
+  Screen,
+  Stack,
+  Surface,
+  Swatch,
+  Tabs,
+  Text,
+  useTheme,
+} from '@irodora/ui';
 import {
   colorFor,
   familyLabel,
@@ -145,7 +156,18 @@ export interface ColourDetailProps {
    * behind a tab would be unreachable to the check rather than merely un-mounted.
    */
   readonly initialPanel?: DerivedPanel;
+  /**
+   * Which reference sections start open. Every one, unless a subject says otherwise.
+   *
+   * Injected for the reason `initialPanel` is, and for one more: a conformance subject has to
+   * be able to render a COLLAPSED section, or the accordion's second state is defined in name
+   * only and the suite would report the two states as identical trees.
+   */
+  readonly initialSections?: readonly string[];
 }
+
+/** The reference sections, in the order they appear. Provenance is deliberately not one. */
+export const DETAIL_SECTIONS = ['description', 'coordinates', 'taxonomy'] as const;
 
 /** The three derived panels. A union so a typo is a compile error rather than a blank tab. */
 export type DerivedPanel = 'harmony' | 'vision' | 'related';
@@ -154,6 +176,7 @@ export function ColourDetail({
   slug,
   onOpenCard,
   initialPanel = 'harmony',
+  initialSections = DETAIL_SECTIONS,
 }: ColourDetailProps): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script, locale } = useMessages();
@@ -182,6 +205,14 @@ export function ColourDetail({
   const heroSize = width - HERO_INSET;
 
   const [panel, setPanel] = useState<DerivedPanel>(initialPanel);
+
+  /**
+   * Which reference sections are open.
+   *
+   * Controlled, because `Accordion` is — for the reason the tab set is. A section whose
+   * expanded state lives inside the component is a section no subject can render collapsed.
+   */
+  const [sections, setSections] = useState<readonly string[]>(initialSections);
 
   /** A labelled row. `value === null` renders the recorded reason where the value would be. */
   function DetailRow({
@@ -358,82 +389,128 @@ export function ColourDetail({
           </Text>
         </Stack>
 
-        <DetailSection title={t('detail.description')}>
-          {/*
+        {/*
+          THE REFERENCE SECTIONS FOLD (F-156), AND PROVENANCE IS NOT AMONG THEM.
+
+          Three long blocks a returning reader has already read, on a page that is already
+          taller than a screen. Every one starts EXPANDED: this is a way to fold away what you
+          are done with, not a way to hide the page behind three taps.
+
+          PROVENANCE STAYS BELOW, OUTSIDE THE ACCORDION, and that is F-018's decision rather
+          than a layout preference: *"criterion 4 says provenance is 'never a disclosure a
+          person has to find'"*, and FR-24 put it on the colour surface rather than on a legal
+          page. A control that can collapse it is a disclosure whatever it does by default.
+
+          The rules between the three items are the first DECORATIVE hairline in this product
+          — `border`, translucent, carrying nothing. The expanded state is on each trigger,
+          announced, and drawn as a different chevron; a person who cannot see an 8 %-alpha
+          line has lost nothing, which is the test a decorative element has to pass.
+        */}
+        <Accordion
+          expanded={sections}
+          onExpandedChange={setSections}
+          script={script}
+          items={[
+            {
+              value: 'description',
+              title: t('detail.description'),
+              children: (
+                <>
+                  {/*
           PROSE, NOT ROWS. These two paragraphs are what 120 entries of sourced editorial work
           produced, and they were set at `small` — 13px, the size this page used for label/value
           pairs — which presented them as another field. `body` is 15px with 1.65 leading in
           Latin and 1.85 in Japanese, which is the step the scale defines for reading rather than
           for scanning.
         */}
-          <Text size="body" color="foreground" script={script}>
-            {entry.editorial.description_en}
-          </Text>
-          <Text size="body" color="foreground" script="japanese">
-            {entry.editorial.description_ja}
-          </Text>
-          <DetailRow
-            label={t('detail.contemporary')}
-            value={entry.editorial.contemporaryNote_en}
-            reasonFor="editorial.contemporaryNote_en"
-          />
-          <DetailRow
-            label={t('detail.fashionUse')}
-            value={
-              entry.editorial.fashionUse === null ? null : entry.editorial.fashionUse.join(', ')
-            }
-            reasonFor="editorial.fashionUse"
-          />
-        </DetailSection>
-
-        <DetailSection title={t('detail.coordinates')}>
-          <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
-          <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
-          <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
-          <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
-          <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
-          <DetailRow label={t('colour.hex')} value={derived.hex} />
-          {/*
+                  <Text size="body" color="foreground" script={script}>
+                    {entry.editorial.description_en}
+                  </Text>
+                  <Text size="body" color="foreground" script="japanese">
+                    {entry.editorial.description_ja}
+                  </Text>
+                  <DetailRow
+                    label={t('detail.contemporary')}
+                    value={entry.editorial.contemporaryNote_en}
+                    reasonFor="editorial.contemporaryNote_en"
+                  />
+                  <DetailRow
+                    label={t('detail.fashionUse')}
+                    value={
+                      entry.editorial.fashionUse === null
+                        ? null
+                        : entry.editorial.fashionUse.join(', ')
+                    }
+                    reasonFor="editorial.fashionUse"
+                  />
+                </>
+              ),
+            },
+            {
+              value: 'coordinates',
+              title: t('detail.coordinates'),
+              children: (
+                <>
+                  <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
+                  <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
+                  <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
+                  <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
+                  <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
+                  <DetailRow label={t('colour.hex')} value={derived.hex} />
+                  {/*
           ADR-0031: "closest digital reference" is only an honest phrase when a number stands
           behind it, so the number is here rather than the phrase alone.
         */}
-          <DetailRow
-            label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
-            value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
-          />
-        </DetailSection>
-
-        <DetailSection title={t('detail.taxonomy')}>
-          <DetailRow
-            label={t('filter.family')}
-            value={familyLabel(entry.taxonomy.family, locale)}
-          />
-          <DetailRow
-            label={t('filter.temperature')}
-            value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
-          />
-          <DetailRow
-            label={t('filter.lightness')}
-            value={
-              entry.taxonomy.lightnessBand === null
-                ? null
-                : t(LIGHTNESS_KEYS[entry.taxonomy.lightnessBand])
-            }
-            reasonFor="taxonomy.lightnessBand"
-          />
-          <DetailRow
-            label={t('filter.chroma')}
-            value={
-              entry.taxonomy.chromaBand === null ? null : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
-            }
-            reasonFor="taxonomy.chromaBand"
-          />
-          <DetailRow
-            label={t('filter.season')}
-            value={seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')}
-            reasonFor="taxonomy.season"
-          />
-        </DetailSection>
+                  <DetailRow
+                    label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
+                    value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
+                  />
+                </>
+              ),
+            },
+            {
+              value: 'taxonomy',
+              title: t('detail.taxonomy'),
+              children: (
+                <>
+                  <DetailRow
+                    label={t('filter.family')}
+                    value={familyLabel(entry.taxonomy.family, locale)}
+                  />
+                  <DetailRow
+                    label={t('filter.temperature')}
+                    value={t(TEMPERATURE_KEYS[entry.taxonomy.temperature])}
+                  />
+                  <DetailRow
+                    label={t('filter.lightness')}
+                    value={
+                      entry.taxonomy.lightnessBand === null
+                        ? null
+                        : t(LIGHTNESS_KEYS[entry.taxonomy.lightnessBand])
+                    }
+                    reasonFor="taxonomy.lightnessBand"
+                  />
+                  <DetailRow
+                    label={t('filter.chroma')}
+                    value={
+                      entry.taxonomy.chromaBand === null
+                        ? null
+                        : t(CHROMA_KEYS[entry.taxonomy.chromaBand])
+                    }
+                    reasonFor="taxonomy.chromaBand"
+                  />
+                  <DetailRow
+                    label={t('filter.season')}
+                    value={
+                      seasons === null ? null : seasons.map((s) => t(SEASON_KEYS[s])).join(', ')
+                    }
+                    reasonFor="taxonomy.season"
+                  />
+                </>
+              ),
+            },
+          ]}
+        />
 
         <DetailSection title={t('detail.provenance')}>
           <DetailRow label={t('prov.source')} value={entry.provenance.source} />

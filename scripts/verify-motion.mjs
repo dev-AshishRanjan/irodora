@@ -131,6 +131,61 @@ function animatedStyleKeys(source) {
  */
 const COLOUR_ANIMATION_PROPS = ['highlightAnimation', 'rippleAnimation'];
 
+/**
+ * A colour named inside an `animation={{ … }}` config — the third way in, and F-156 found it.
+ *
+ * The list above is a TABLE, and a table is only as complete as the day it was written
+ * [[a-table-driven-check-is-only-as-complete-as-its-table]]. `heroui-native`'s `Switch` does
+ * not take `highlightAnimation`; it takes `animation`, and its default interpolates the track
+ * `backgroundColor` over 175 ms between two theme colours. Neither the style scan nor the
+ * reanimated scan can see that — it is a plain object handed to somebody else's component —
+ * and neither prop above names it.
+ *
+ * **`animation` is not banned**, and that matters as much as the check: `overlay.tsx` passes
+ * `animation={overlayKeyframes}` on every overlay, which is how our durations reach HeroUI at
+ * all, and `Switch` passes `animation={{ state: 'disabled' }}` to turn the interpolation OFF.
+ * What is reported is a colour PROPERTY named inside the config — `backgroundColor`,
+ * `borderColor`, `color` — because that is the thing whose intermediate frames are colours the
+ * engine never produced.
+ *
+ * Brace-matched rather than regex-scanned, because these configs nest three deep.
+ */
+const COLOUR_KEYS = ['backgroundColor', 'borderColor', 'color'];
+
+function colourAnimationConfigs(source) {
+  const findings = [];
+  const ATTR = /(?:^|[\s{(,<])animation\s*=\s*\{/gu;
+
+  for (const m of source.matchAll(ATTR)) {
+    // Walk from the opening brace of the attribute value to its match.
+    let depth = 0;
+    let end = -1;
+    const from = m.index + m[0].length - 1;
+    for (let i = from; i < source.length; i += 1) {
+      const ch = source[i];
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    // An unbalanced attribute is not a pass: report it rather than skipping, because a scan
+    // that silently gives up on what it cannot parse is a scan with a hole in it.
+    if (end === -1) {
+      findings.push({ key: 'animation', detail: '(unbalanced — could not be read)' });
+      continue;
+    }
+    const block = source.slice(from, end + 1);
+    for (const key of COLOUR_KEYS)
+      if (new RegExp(`(?:^|[\\s{(,])${key}\\s*:`, 'u').test(block))
+        findings.push({ key, detail: `${key} inside an animation config` });
+  }
+  return findings;
+}
+
 function colourAnimationOptIns(source) {
   const findings = [];
   // The three ways to write "off". Anything else — an object, a variable, a bare prop — is
@@ -303,6 +358,15 @@ function run(allowed) {
           property: `backgroundColor (via ${prop}=${value})`,
         });
 
+      // The colour named inside someone else's animation config (F-156). A third way in, and
+      // the two props above did not name it.
+      for (const { key, detail } of colourAnimationConfigs(source))
+        violations.push({
+          file: relative(ROOT, file),
+          component: 'HeroUI animation',
+          property: `${key} (${detail})`,
+        });
+
       // THE THREE F-144 ADDED, each seeing something none of the others can.
       const reanimated = reanimatedStyleKeys(source);
       if (reanimated.length > 0) animatedElements += 1;
@@ -436,6 +500,29 @@ if (process.argv.includes('--prove')) {
       shouldFail: false,
     },
     {
+      name: "a Switch animating HeroUI's track colour",
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        'export const V = () => (\n' +
+        '  <Switch animation={{ backgroundColor: { value: [a, b], timingConfig: { duration: 175 } } }} />\n' +
+        ');\n',
+      shouldFail: true,
+    },
+    {
+      name: "a Switch turning HeroUI's colour animation off",
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        "export const V = () => <Switch animation={{ state: 'disabled' }} />;\n",
+      shouldFail: false,
+    },
+    {
+      name: 'an animation config moving the thumb, which is a position and not a colour',
+      body:
+        "import { Switch } from 'heroui-native';\n" +
+        'export const V = () => <Switch.Thumb animation={{ left: { value: 5 } }} />;\n',
+      shouldFail: false,
+    },
+    {
       name: 'a shared-element transition on a swatch',
       body:
         "import { Swatch } from './Swatch.js';\n" +
@@ -538,7 +625,7 @@ console.log(
     `not a copy).${OFF}`,
 );
 console.log(
-  `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062); reanimated's useAnimatedStyle and Keyframe bodies, which are worklets rather than JSX and which the literal scan above is structurally blind to; duration literals, which is how a scale stops being a scale; and layout or shared-element transitions on a Swatch, which is 'cross-fade between samples' stated mechanically. NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
+  `${DIM}  ALSO CHECKED: HeroUI's highlightAnimation and rippleAnimation, which animate a background colour inside a dependency this scan cannot read (ADR-0062); a colour named inside an animation={{…}} config, which is the third way in and is how the Switch interpolates its track by default (F-156); reanimated's useAnimatedStyle and Keyframe bodies, which are worklets rather than JSX and which the literal scan above is structurally blind to; duration literals, which is how a scale stops being a scale; and layout or shared-element transitions on a Swatch, which is 'cross-fade between samples' stated mechanically. NOT CHECKED HERE: a style assembled at runtime, spread from a variable, or built ` +
     `by a helper. This is source analysis, and the rendered tree CANNOT see an animated ` +
     `colour — it resolves to a concrete value indistinguishable from a static one.${OFF}`,
 );

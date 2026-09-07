@@ -39,6 +39,7 @@ import {
   DEFAULT_APPEARANCE,
   EmptyState,
   Row,
+  Select,
   Screen,
   Stack,
   Surface,
@@ -68,6 +69,15 @@ export interface PreferencesProps {
   readonly store: PreferenceStore;
   /** Injected so a conformance subject can render the confirmation without tapping. */
   readonly initialConfirming?: boolean;
+  /**
+   * Whether the theme list starts open.
+   *
+   * The same shape and the same reason as `initialConfirming` and ColourDetail's
+   * `initialPanel`: a list that only opens on a tap is a list no suite can render, and the
+   * options — including the phone's own colour, which is offered and refused on iOS — live
+   * inside it.
+   */
+  readonly initialThemeListOpen?: boolean;
   readonly now?: () => number;
   /**
    * Where an outfit gets built. Supplied by the route; absent in the conformance suite.
@@ -127,6 +137,20 @@ const FAMILY_KEYS = {
   aota: 'appearance.family.aota',
 } as const satisfies Record<ThemeFamily, MessageKey>;
 
+/**
+ * The catalogue's own union, narrowed from the string a `Select` hands back.
+ *
+ * Not a cast. `Select` speaks in strings because it does not know what it is choosing between,
+ * and a `as ThemeFamily` here would compile for a value that is not one — which is how a theme
+ * nobody defined reaches the store and the app falls back to the base palette with no
+ * explanation. The list this narrows is built from `THEME_FAMILIES`, so the only way to reach
+ * the fallback is a bug in that list, and the fallback is the declared default rather than
+ * whatever arrived.
+ */
+function asFamily(value: string): ThemeFamily {
+  return THEME_FAMILIES.find((family) => family === value) ?? 'base';
+}
+
 /** The three answers to "light or dark", in the order they are offered. */
 const MODES = ['system', 'light', 'dark'] as const;
 
@@ -148,6 +172,7 @@ const signed = (net: number): string => (net > 0 ? `+${String(net)}` : String(ne
 export function Preferences({
   store,
   initialConfirming = false,
+  initialThemeListOpen = false,
   now = () => Date.now(),
   onBuildOutfit,
   appearance = DEFAULT_APPEARANCE,
@@ -156,6 +181,7 @@ export function Preferences({
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
+  const [themeListOpen, setThemeListOpen] = useState(initialThemeListOpen);
   const [version, setVersion] = useState(0);
 
   const rows = useMemo(() => {
@@ -186,40 +212,56 @@ export function Preferences({
             {t('appearance.title')}
           </Text>
 
-          <Text size="label" color="foreground.2" script={script}>
-            {t('appearance.theme')}
-          </Text>
-          <Row gap="sm" wrap>
-            {THEME_FAMILIES.map((family) => (
-              <Chip
-                key={family}
-                label={t(FAMILY_KEYS[family])}
-                selected={family === appearance.family}
-                script={script}
-                onPress={() => {
-                  onChooseAppearance?.({ ...appearance, family });
-                }}
-              />
-            ))}
-            {/*
-              THE PHONE'S OWN COLOUR (F-154), and it is DISABLED rather than hidden when the
-              platform has none.
+          {/*
+            A SELECT, AND F-156 IS WHY THIS COMMENT CHANGED RATHER THAN THE ROW BELOW IT.
 
-              A control that is not there cannot explain itself. Android 12 and later offer a
-              colour; iOS offers none and never will, so somebody looking for the feature they
-              read about deserves a sentence rather than an absence — which is criterion 4's
-              "a designed state, not a silent fallback".
-            */}
-            <Chip
-              label={t('appearance.family.device')}
-              selected={appearance.family === DEVICE_FAMILY}
-              disabled={device.kind !== 'applied'}
-              script={script}
-              onPress={() => {
-                onChooseAppearance?.({ ...appearance, family: DEVICE_FAMILY });
-              }}
-            />
-          </Row>
+            The previous version said, of five chips: *"`Select` is F-156 and does not exist
+            yet. Chips are already registered in the conformance suite, already announce their
+            selected state, and are honest about there being four of something."* All true, and
+            it was an interim.
+
+            The list is five long, four of the entries are palettes and the fifth is a SOURCE —
+            the phone's own colour — so a wrapping row of chips flattened a distinction that
+            matters. A trigger showing what is chosen, and a list showing what else there is,
+            says both.
+
+            THE PHONE'S OWN COLOUR IS A DISABLED OPTION rather than an absent one, which is the
+            same call F-154 made and for the same reason: a control that is not there cannot
+            explain itself. Android 12 and later offer a colour; iOS offers none and never
+            will, so somebody looking for the feature they read about gets a row they can see
+            and a sentence beneath it, not a gap.
+
+            THE MODE BELOW STAYS CHIPS. Three mutually exclusive options, all visible at once,
+            all one word — that is a segmented control, and putting it behind a trigger would
+            hide two thirds of it to save one line.
+          */}
+          <Select
+            open={themeListOpen}
+            onOpenChange={setThemeListOpen}
+            label={t('appearance.theme')}
+            closeLabel={t('appearance.close')}
+            script={script}
+            value={appearance.family}
+            options={[
+              ...THEME_FAMILIES.map((family) => ({
+                value: family,
+                label: t(FAMILY_KEYS[family]),
+              })),
+              {
+                value: DEVICE_FAMILY,
+                label: t('appearance.family.device'),
+                disabled: device.kind !== 'applied',
+              },
+            ]}
+            onValueChange={(family) => {
+              onChooseAppearance?.({
+                ...appearance,
+                // The catalogue's own union, narrowed rather than cast: a value that is not a
+                // family is a bug in the option list above, and it should not reach the store.
+                family: family === DEVICE_FAMILY ? DEVICE_FAMILY : asFamily(family),
+              });
+            }}
+          />
 
           {/*
             WHAT CAME OF ASKING, in every case. A theme derived from a seed nobody chose is the

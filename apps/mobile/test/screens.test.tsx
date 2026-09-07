@@ -733,6 +733,21 @@ const SCREENS: readonly ConformanceSubject[] = [
       draw(<Preferences store={preferenceStore()} initialConfirming />, theme),
   },
   {
+    /*
+     * WITH THE THEME LIST OPEN (F-156).
+     *
+     * The options — five of them, one refused — are inside a portal that renders nothing while
+     * the list is shut, so the closed subject above checks a trigger. This is the tree a person
+     * choosing a theme actually sees, including the scrim, and it is where the contrast gate
+     * meets the panel's own ground.
+     */
+    name: 'screens/Preferences (theme list open)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Preferences store={preferenceStore()} initialThemeListOpen />, theme),
+  },
+  {
     name: 'screens/Home',
     /*
      * `static`, and F-146 tried `data` first — which was wrong for a reason worth recording.
@@ -781,6 +796,25 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} />, theme),
+  },
+  {
+    /*
+     * WITH THE REFERENCE SECTIONS FOLDED AWAY (F-156).
+     *
+     * The accordion's second state, and it is a genuinely different tree: three chevrons point
+     * the other way and three blocks of content are hidden. A subject that only ever rendered
+     * the expanded form would check the state a person arrives in and never the one they leave
+     * it in.
+     *
+     * PROVENANCE IS STILL HERE, because it is outside the accordion — which is F-018's
+     * criterion 4 ("never a disclosure a person has to find"), and the content assertions
+     * elsewhere in this file are what hold it there.
+     */
+    name: 'screens/ColourDetail (sections folded)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} initialSections={[]} />, theme),
   },
   {
     name: 'screens/Compare',
@@ -3209,6 +3243,57 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
     expect(row).toContain('12');
     expect(row).toContain('9');
   });
+  /*
+   * THE THEME PICKER IS A SELECT NOW (F-156), and this is the wiring assertion.
+   *
+   * The control is checked exhaustively in `packages/ui` — every state, both themes, the
+   * chosen option's tick and the disabled one's state. What that suite cannot see is whether
+   * THIS screen handed it the right `value`, the right options, or the device row's
+   * availability. A screen that passed a constant would look correct in every screenshot.
+   */
+  it('names the chosen theme on the trigger, not just the field', () => {
+    const labels = labelsOf(
+      draw(
+        <Preferences store={preferenceStore()} appearance={{ family: 'yama', mode: 'system' }} />,
+        'dark',
+      ),
+    );
+    // The field AND the value. "Theme" does not say what is chosen; "Yamabuki" does not say
+    // what it is.
+    const trigger = labels.find((l) => l.startsWith(`${en['appearance.theme']}: `));
+    expect(trigger).toBe(`${en['appearance.theme']}: ${en['appearance.family.yama']}`);
+  });
+
+  it("offers the phone's own colour as a DISABLED row rather than hiding it", () => {
+    /*
+     * F-154's call, kept: a control that is not there cannot explain itself. iOS offers no
+     * device colour and never will, so somebody looking for the feature they read about gets a
+     * row they can see and a sentence beneath it.
+     *
+     * Asserted on the rendered node's state rather than on the prop, because "the option
+     * exists" and "the option is refused" are different facts and only the second is useful.
+     */
+    const tree = draw(
+      <Preferences
+        store={preferenceStore()}
+        appearance={{ family: 'base', mode: 'system' }}
+        initialThemeListOpen
+      />,
+      'dark',
+    );
+    const nodes: TestNode[] = [];
+    const walk = (n: TestNode): void => {
+      nodes.push(n);
+      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
+    };
+    walk(tree);
+    const device = nodes.find(
+      (n) => n.props['accessibilityLabel'] === en['appearance.family.device'],
+    );
+    expect(device).toBeDefined();
+    expect((device?.props['accessibilityState'] as { disabled?: unknown }).disabled).toBe(true);
+  });
+
   it('explains itself when nothing has been learned', () => {
     const text = visibleText(draw(<Preferences store={preferenceStore([])} />, 'dark')).join(
       '\u0000',

@@ -3583,6 +3583,51 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-097",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/testing/tree.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/conformance.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/controls.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/overlay.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-motion.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE ROLE READER NOW TAKES BOTH PROPS, and `controls.test.tsx` holds the widening to what makes it safe: a pressable with NEITHER `role` nor `accessibilityRole` is still reported, and `role`/`accessibilityRole` are carried as separate fields so \"declared as a slider\" stays distinguishable from \"declared as an adjustable\". A pressable declaring `none` or `presentation` is now a finding in its own right, because a declared non-role satisfied the old check while removing the control from the accessibility tree. THE RESPONDS DETECTOR takes `accessibilityValue`, with a decoy that a plain View carrying a number is still not a control. THE MOTION TABLE takes a third entry — a colour named inside an `animation={{…}}` config — with three proof cases: the interpolation left on must fail, turning it off must pass, and a config moving the thumb must pass. WHAT IS NOT GUARDED: that `Popover` renders its panel. Its portal still waits on a measured trigger, so its subject still checks a trigger; F-156 chose the `dialog` presentation for `Select` rather than fixing `Popover`, and the gap is recorded here rather than closed.",
+      "memory": "memory/effects/a-check-that-reads-one-of-two-spellings.md",
+      "rationale": "THREE CHECKS, EACH THOROUGH ABOUT A VOCABULARY THAT WAS COMPLETE WHEN IT WAS WRITTEN. (1) `pressableNodes` read `accessibilityRole` and every HeroUI primitive sets `role` — React Native accepts both and routes them to the same platform attribute — so four correct components would have been reported as `no-role`, and the obvious correction compiles and announces nothing: `AccessibilityRole` ends in `| string`, its member for a draggable value is `adjustable`, and `Role`’s is `slider`. (2) The same function defined \"responds\" as `onPress`/`onClick`/`onResponderRelease`/`onChangeText`/`accessible` — F-018 had already widened it once for the text field, with the note \"a text field is not pressable\" — and a slider thumb is dragged through a `GestureDetector`, so every accessibility rule skipped it while the suite reported a pass over the rest. (3) `verify-motion.mjs` named `highlightAnimation` and `rippleAnimation`, and HeroUI’s Switch interpolates its track colour through a third prop the table did not know. AND A FOURTH, FOUND WHILE PROBING: an anchored overlay’s portal returns null until `triggerPosition` is set from a `measure()` callback that react-test-renderer never fires, so the `Popover` subject — registered OPEN precisely so its panel and scrim would be checked — renders four nodes, none of them the panel. Dialog and Sheet mount; Popover and an anchored Select do not. That is why this Select is a `dialog` presentation: a list whose accessibility no check in this repository can see is a list nobody has looked at.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

@@ -36,15 +36,15 @@
     {
       "group": "colour token",
       "tokens": [
-        "border",
         "border.on.background",
         "border.on.surface.1",
         "border.on.surface.2",
         "border.on.surface.3"
       ],
-      "cites": "F-017, F-087",
-      "why": "THE TRANSLUCENT DECORATIVE HAIRLINE, still painted by nothing. Every component that draws a line reaches for `border.strong` instead — the boundary of an OUTLINED control, where WCAG 1.4.11 applies directly and 3:1 is not optional. F-143 was the previous owner and did not close it, which is worth stating plainly rather than quietly re-assigning: the popover panel it added is an outlined surface and took `border.strong` like everything before it. A DECORATIVE hairline is a different thing — a rule between rows that separates without bounding, and this product has had no row list to put one between. The form controls (F-156) bring the first: a list group whose items need dividing but not enclosing. The four `.on.*` forms are permanent whatever happens to `border` itself — they are the pre-composited values the contrast gate measured, never something a component reads.",
-      "closedBy": "F-156"
+      "cites": "F-017, F-087, F-156",
+      "why": "THE FOUR PRE-COMPOSITED FORMS, and what is left of an entry that also held `border` itself. F-156 painted the hairline: the accordion on the colour page draws a rule between its reference sections, which is the first line in this product that SEPARATES without BOUNDING. That distinction is why the entry stood for so long — every component that drew a line reached for `border.strong`, the boundary of an outlined control where WCAG 1.4.11 applies directly and 3:1 is not optional, and this product had no row list to put a decorative rule between. F-143 was the previous owner and did not close it, which was worth stating plainly rather than quietly re-assigning: its popover panel is an outlined surface and took `border.strong` like everything before it. THESE FOUR ARE DIFFERENT IN KIND RATHER THAN IN SCHEDULE, which is why they take `closedBy: null`. They are the values the CONTRAST GATE composited so it could measure a translucent token against each ground it may sit on — an rgba() has no contrast ratio until something is behind it. A component never reads one: it reads the translucent token and lets the platform composite. No surface will ever paint them, so no feature can close this.",
+      "closedBy": null,
+      "permanentBecause": "ADR-0044 — the .on.* forms are what the contrast gate measured, not what a component reads: a component reads the translucent token and lets the platform composite it. No surface will ever paint them. `border` itself was the schedulable half of this entry and F-156 closed it."
     },
     {
       "group": "colour token",
@@ -58,15 +58,6 @@
       "why": "THE FOUR PRE-COMPOSITED FORMS, and what is left of an entry that also held `backdrop` itself. F-143 painted the scrim: `Popover.Overlay` takes `backdrop`, which is the first time anything in this product dimmed the page behind something — the old reason read \"there is no dialog, bottom sheet or modal anywhere in the app yet\", and now there is. THESE FOUR ARE DIFFERENT IN KIND RATHER THAN IN SCHEDULE, which is why they take `closedBy: null`. `backdrop.on.background` and its siblings are the values the CONTRAST GATE composited so it could measure a translucent token against each ground it may sit on — an rgba() has no contrast ratio until something is behind it. A component never reads one: it reads the translucent token and lets the platform composite. No surface will ever paint them, so no feature can close this.",
       "closedBy": null,
       "permanentBecause": "ADR-0044 — the .on.* forms are what the contrast gate measured, not what a component reads: a component reads the translucent token and lets the platform composite it. No surface will ever paint them."
-    },
-    {
-      "group": "radius step",
-      "tokens": [
-        "xs"
-      ],
-      "cites": "F-017, F-169",
-      "why": "ONE STEP OF A SCALE THAT IS USED, down from two. `sm`, `md`, `pill` and `swatch` are read, F-143 added `lg` for the popover panel, and F-169 gave `xl` its first reader — it is the CAP on a swatch corner, the largest corner this design system draws, which is what stops a pure ratio giving the hero an 85px curve (ADR-0094). `xs` has still found no home. That is the ordinary state of a scale: some steps have not met their surface yet, and it is a different thing from a scale that reaches NOTHING while hand-written values contradict it, which is what `nativeSpacing` was until F-095. The form controls (F-156) are where a smaller radius arrives.",
-      "closedBy": "F-156"
     },
     {
       "group": "status kind",

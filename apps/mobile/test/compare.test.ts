@@ -175,3 +175,53 @@ describe('a pinned pair, so an engine change shows up on a surface', () => {
     expect(compare(A, B).deltaE00).toBeCloseTo(89.73, 2);
   });
 });
+
+/**
+ * The severity is an argument now, not a constant (F-156).
+ *
+ * `machadoMatrix` interpolates continuously between the eleven tabulated steps, and the
+ * engine's own docblock says twice that this is *"the one a severity slider is for"*. There was
+ * no slider, so the whole range existed and one point of it was reachable. These assert that
+ * the argument reaches the engine — which is the plumbing question this file is for.
+ */
+describe('the severity the simulation runs at', () => {
+  it('defaults to the strongest tabulated step, which is what the screen opens on', () => {
+    expect(COMPARED_SEVERITY).toBe(1);
+    expect(compare(A, B).separation).toEqual(compare(A, B, COMPARED_SEVERITY).separation);
+  });
+
+  it('is carried into every deficiency’s detail, not only into the first', () => {
+    // The detail records the severity it was computed at. A wrapper that passed the argument
+    // to one call and the default to the others would look right in a spot check.
+    for (const s of compare(A, B, 0.4).separation) expect(s.severity).toBeCloseTo(0.4, 10);
+  });
+
+  it('changes the answer, so the control is not decorative', () => {
+    /*
+     * DECOY-SHAPED, deliberately. A screen wired to a `compare()` that ignored its third
+     * argument would render a moving slider and unmoving numbers, which looks like a working
+     * feature until somebody checks a value.
+     *
+     * Asserted on a PAIR that a simulation actually affects: `usu-gami` and `soko-zumi`
+     * separate on lightness, which no deficiency touches, so their score is stable by design.
+     */
+    const near = entries.find(
+      (e) => compare(A, e, 1).separation[0]!.score !== compare(A, e, 0).separation[0]!.score,
+    );
+    expect(near).toBeDefined();
+  });
+
+  it('at zero is no simulation at all', () => {
+    // Machado at severity 0 is the identity matrix, so every deficiency must agree with every
+    // other — and with the unsimulated difference. If they do not, the interpolation is wrong
+    // at its own endpoint.
+    const zero = compare(A, B, 0).separation;
+    const scores = new Set(zero.map((s) => s.score.toFixed(6)));
+    expect(scores.size).toBe(1);
+    for (const s of zero) expect(s.deltaE00).toBeCloseTo(compare(A, B).deltaE00, 6);
+  });
+
+  it('runs one simulation per deficiency, whatever the severity', () => {
+    expect(compare(A, B, 0.35).separation).toHaveLength(COMPARED_DEFICIENCIES.length);
+  });
+});

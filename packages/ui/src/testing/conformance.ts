@@ -41,6 +41,7 @@ import {
   pressableNodes,
   renderedPairs,
   resolveTextNodes,
+  type ResolvedPressableNode,
   type TestNode,
 } from './tree.js';
 import { isStatusToken } from './tokens.js';
@@ -144,6 +145,34 @@ const GENERIC_NAMES = ['swatch', 'button', 'colour', 'color', 'image', 'icon', '
  * here, in the open, rather than a condition someone widens in passing.
  */
 const SELF_ANNOUNCING_HOSTS = new Set(['TextInput']);
+
+/**
+ * Roles that mean *"this is not an element"* — declared, and therefore worse than absent.
+ *
+ * `none` and `presentation` remove a node from the accessibility tree. On a decorative view
+ * that is correct and common; on something a person can press it hides the control from
+ * everybody not using a pointer, and it would otherwise satisfy `no-role` by being present.
+ *
+ * Both spellings, because `role` and `accessibilityRole` disagree about which one to use and
+ * the rule has no business caring.
+ */
+const NON_ROLES = new Set(['none', 'presentation']);
+
+/**
+ * What a pressable declares itself to be, from either of React Native's two role props.
+ *
+ * **Both, and F-156 is why.** `pressableNodes` read `accessibilityRole` alone, and every
+ * HeroUI primitive sets `role` — `role="switch"` on the Switch, `role="slider"` on the Slider
+ * thumb, `role="button"` on the Accordion trigger. Those components are correct on a device
+ * and this suite would have reported all four as `no-role`.
+ *
+ * The trap in the obvious fix is that the two vocabularies differ and `AccessibilityRole` ends
+ * in `| string`: a wrapper "corrected" to `accessibilityRole="slider"` compiles, satisfies the
+ * rule, and announces nothing at all. See the table on `ResolvedPressableNode.role`.
+ */
+function declaredRole(p: ResolvedPressableNode): string | undefined {
+  return p.accessibilityRole ?? p.role;
+}
 
 /**
  * Check one subject across every required state and both themes.
@@ -287,8 +316,15 @@ export function checkSubject(
       for (const p of pressables) {
         // A host type the platform already announces correctly needs no declared role; see
         // `SELF_ANNOUNCING_HOSTS`. Everything else that responds must say what it is.
-        if (p.accessibilityRole === undefined && !SELF_ANNOUNCING_HOSTS.has(p.hostType))
-          at('no-role', `${p.path.join('>')} is pressable with no accessibilityRole`);
+        const role = declaredRole(p);
+        if (role === undefined && !SELF_ANNOUNCING_HOSTS.has(p.hostType))
+          at('no-role', `${p.path.join('>')} is pressable with no accessibilityRole or role`);
+        else if (role !== undefined && NON_ROLES.has(role))
+          at(
+            'no-role',
+            `${p.path.join('>')} is pressable and declares role "${role}", which removes it ` +
+              'from the accessibility tree',
+          );
         const label = p.accessibilityLabel?.trim() ?? '';
         if (label === '') at('no-name', `${p.path.join('>')} is pressable with no accessible name`);
         else if (forbidden.has(label.toLowerCase()))

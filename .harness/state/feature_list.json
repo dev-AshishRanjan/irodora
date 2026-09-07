@@ -4686,7 +4686,7 @@
       "service": "packages",
       "release": "R6",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-143"
       ],
@@ -4703,7 +4703,19 @@
         "a11y",
         "contrast"
       ],
-      "notes": "SPLIT OUT OF F-143 when its scope was corrected against .harness/rules/frontend/heroui-wrappers.md. These four are legitimately WRAPS — each has behaviour that is tedious to get right and invisible to a sighted developer with a mouse: gesture handling and a checked state a screen reader must hear (Switch), list keyboard handling and focus return (Select), drag with an announced value (Slider), an expanded state and managed focus (Accordion). They are separated from the overlay family because they share no portal, no scrim and no dismissal — F-143 is one problem four times over, and this is a different one. THE CONSUMERS ARE ALREADY WAITING: Preferences has toggles, AddGarment has fields, Palette Studio and the profile trials have ranges, and the colour page (F-148) wants sections. Their `radius` steps xs, lg and xl are declared unreached against F-143 and one of these two features closes that."
+      "notes": "SPLIT OUT OF F-143 when its scope was corrected against .harness/rules/frontend/heroui-wrappers.md. These four are legitimately WRAPS — each has behaviour that is tedious to get right and invisible to a sighted developer with a mouse: gesture handling and a checked state a screen reader must hear (Switch), list keyboard handling and focus return (Select), drag with an announced value (Slider), an expanded state and managed focus (Accordion). They are separated from the overlay family because they share no portal, no scrim and no dismissal — F-143 is one problem four times over, and this is a different one. THE CONSUMERS ARE ALREADY WAITING: Preferences has toggles, AddGarment has fields, Palette Studio and the profile trials have ranges, and the colour page (F-148) wants sections. Their `radius` steps xs, lg and xl are declared unreached against F-143 and one of these two features closes that. DONE 2026-09-07. ALL FOUR WRAPPED AND REGISTERED; THREE HAVE A SCREEN AND ONE DOES NOT. Select is the theme picker on Preferences, which named this feature in its own comment and called five chips an interim; Slider is the CVD severity on Compare, which the engine’s own docblock says twice it exists for (\"anomalous trichromacy at any severity — the one a severity slider is for\") while the screen apologised for a fixed 1.0 in a sentence; Accordion folds the three reference sections on ColourDetail, which paints `border` for the first time — the DECORATIVE hairline, a rule that separates without bounding, declared unreached since F-017 because this product had no row list to put one between. `radius.xs` is reached too, on the Select rows. SWITCH HAS NO SCREEN CONSUMER, AND THAT IS A FACT ABOUT THE PRODUCT RATHER THAN AN OMISSION: the message catalogue holds no on/off copy at all, the wardrobe schema has no boolean column, and twice a feature reached the place a toggle would go and chose labelled alternatives with the reason written down — the Lens (\"two chips rather than a button that toggles: a toggle says what it will do next\") and the profile bands (\"discrete rather than a slider\"). A colour product’s settings are WHICH ONE, not WHETHER. It ships registered, which ADR-0054 and gate 8 accept, with the absence in its own docblock rather than closed by inventing a preference to justify a control. THREE CHECKS WERE WRONG ABOUT ALL FOUR, EACH THOROUGH ABOUT A VOCABULARY COMPLETE ON THE DAY IT WAS WRITTEN (E-097): `pressableNodes` read `accessibilityRole` and every HeroUI primitive sets `role`, so four correct components would have been reported as `no-role` — and the obvious correction compiles and announces nothing, because `AccessibilityRole` ends in `| string` and its member for a draggable value is `adjustable` while `Role`’s is `slider`. The same function defined \"responds\" as pressed or typed into, and a slider thumb is DRAGGED through a GestureDetector, so every accessibility rule skipped it while the suite reported a pass over the rest. And `verify-motion.mjs` named two colour-animation props; HeroUI’s Switch interpolates its track through a third. A FOURTH WAS FOUND BY PROBING: an anchored overlay’s portal returns null until `triggerPosition` is set from a `measure()` callback react-test-renderer never fires, so the Popover subject — registered OPEN so its panel and scrim would be checked — renders four nodes and no panel. This Select is therefore a `dialog` presentation, and the suite immediately found four real things inside it. THE POPOVER GAP IS RECORDED, NOT CLOSED.",
+      "plan": "plans/F-156-the-form-controls.md",
+      "effects": [
+        "E-097"
+      ],
+      "attested": [
+        {
+          "criterion": "Switch, Select, Slider and Accordion are wrapped, tokenised and exported",
+          "verifiedBy": "ALL FOUR ARE WRAPPED, TOKENISED AND EXPORTED, AND ONE OF THEM IS NOT USED. Switch has no screen consumer because this product has no user-facing boolean — the evidence is in the notes and in its docblock, and it is a finding rather than unfinished work. ADR-0054 and gate 8 accept the conformance registry as a consumer, and gate 8 scope reports 30/30 reached. But \"no wrapper without a consumer\" was written about SCREENS, and a control whose only reader is the suite that checks it has not been used by anyone holding a phone. Reopen this the first time a boolean setting is proposed, or delete the wrapper if none ever is.",
+          "blocks": "nothing",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-157",

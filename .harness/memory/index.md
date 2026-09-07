@@ -194,6 +194,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-finally-is-a-hope-about-how-a-process-ends.md](effects/a-finally-is-a-hope-about-how-a-process-ends.md) — **E-094** · eight leaked plants, and a guard that could not tell a leak from ordinary work.
 - [effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md](effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md) — **E-095** · NFR-3 was argued on correctness grounds and turned out to be what makes a provably accessible dynamic theme possible.
 - [effects/a-field-name-that-does-not-describe-what-it-holds.md](effects/a-field-name-that-does-not-describe-what-it-holds.md) — **E-096** · every guarantee in the corpus is enforced except the one that a field holds what its name says.
+- [effects/a-check-that-reads-one-of-two-spellings.md](effects/a-check-that-reads-one-of-two-spellings.md) — **E-097** · three checks, each thorough about a vocabulary that was complete the day it was written — and a subject registered open that renders no panel.
 
 ## Glossary
 

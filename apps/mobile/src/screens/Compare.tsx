@@ -43,13 +43,20 @@ import {
   Row,
   Screen,
   SearchField,
+  Slider,
   Stack,
   Surface,
   Swatch,
   Text,
   useTheme,
 } from '@irodora/ui';
-import { compare, type AxisDelta, type CompareMetrics } from '../compare';
+import {
+  compare,
+  COMPARED_SEVERITY,
+  SEVERITY_STEP,
+  type AxisDelta,
+  type CompareMetrics,
+} from '../compare';
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -88,9 +95,21 @@ export interface CompareProps {
   /** Optional starting pair, so a route or a test can open on a known comparison. */
   readonly initialA?: string;
   readonly initialB?: string;
+  /**
+   * Where the severity control starts, 0–1.
+   *
+   * Injected for the same reason the pair is: a conformance subject must be able to render a
+   * severity that is not the default, and a value living only inside the component is a value
+   * no suite can drive.
+   */
+  readonly initialSeverity?: number;
 }
 
-export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.Element {
+export function Compare({
+  initialA,
+  initialB,
+  initialSeverity,
+}: CompareProps = {}): React.JSX.Element {
   const { colors } = useTheme();
   const { t, script } = useMessages();
   const entries = useMemo(() => allEntries(), []);
@@ -104,6 +123,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
   const [bSlug, setB] = useState(initialB ?? entries[entries.length - 1]?.entry.slug ?? '');
   const [aQuery, setAQuery] = useState('');
   const [bQuery, setBQuery] = useState('');
+  const [severity, setSeverity] = useState(initialSeverity ?? COMPARED_SEVERITY);
 
   const a = entryBySlug(aSlug);
   const b = entryBySlug(bSlug);
@@ -117,7 +137,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
       </View>
     );
 
-  const metrics: CompareMetrics = compare(a, b);
+  const metrics: CompareMetrics = compare(a, b, severity);
   const same = a.entry.slug === b.entry.slug;
 
   /** A metric row: label, value, unit, and the space it was computed in. */
@@ -339,6 +359,29 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.separation')}
           </Text>
+          {/*
+            THE SEVERITY IS NOW A CONTROL, and it closes something the engine wrote down twice.
+
+            `packages/cvd-engine`'s own docblock: *"anomalous trichromacy at any severity. The
+            common case, and the one a severity slider is for."* `machado.ts` says it again.
+            The engine interpolates continuously between the eleven tabulated matrices, and
+            this screen reached one point of that range and apologised for it in a sentence —
+            *"simulated at the strongest tabulated severity"*.
+
+            IT STEPS IN TENTHS, which is the resolution Machado publishes. A finer step would
+            offer a precision the source does not have.
+
+            THE THREE READOUTS MOVE WITH IT, because they are computed from the same argument
+            — nothing here caches a score against a severity it was not computed at.
+          */}
+          <Slider
+            label={t('separation.severityLabel')}
+            script={script}
+            value={severity}
+            valueLabel={severity.toFixed(1)}
+            step={SEVERITY_STEP}
+            onValueChange={setSeverity}
+          />
           {metrics.separation.map((s) => (
             <View
               key={s.deficiency}

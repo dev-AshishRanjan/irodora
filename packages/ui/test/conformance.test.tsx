@@ -13,6 +13,7 @@ import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
 import type { Theme } from '@irodora/design-tokens';
 import {
+  Accordion,
   Appear,
   Bands,
   Button,
@@ -23,6 +24,9 @@ import {
   NavIcon,
   NAV_ICON_NAMES,
   Popover,
+  Select,
+  Slider,
+  Switch,
   Row,
   Screen,
   SearchField,
@@ -432,6 +436,165 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             /* the suite renders; it does not drive */
           }}
           focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE FORM CONTROLS (F-156). Four subjects, and each one is here for its own reason.
+     *
+     * `Switch` is the one with no screen consumer — this product has no user-facing boolean, and
+     * the reason is in `controls.tsx`. So this registry entry is not a formality: it is the only
+     * place the control is rendered at all, and a switch that shipped with an unnamed track or
+     * an unannounced checked state would be found here or nowhere.
+     */
+    name: 'Switch',
+    kind: 'interactive',
+    // `switch` and `toggle` are what the role already announces. A control whose whole name is
+    // its own type says nothing about WHAT it turns on.
+    forbiddenNames: ['switch', 'toggle'],
+    render: (state, theme) =>
+      draw(
+        <Switch
+          label="Announce readings aloud"
+          description="Each measurement is spoken as it is taken."
+          // ACTIVE MEANS ON, not "being pressed", and `selectable` is deliberately absent: a
+          // switch reports `checked`, and demanding `selected` as well would be asking it to
+          // announce itself as two different kinds of control.
+          checked={state === 'active'}
+          onCheckedChange={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * RENDERED OPEN, for the reason `Popover` is: a closed select renders a trigger and an
+     * empty portal, so every rule about the list would pass over nothing.
+     *
+     * One option is DISABLED, because that is the state Preferences actually needs — the
+     * device colour is offered on Android and absent on iOS, and an option that explains itself
+     * is worth more than one that vanishes.
+     */
+    name: 'Select',
+    kind: 'interactive',
+    forbiddenNames: ['select', 'option', 'list'],
+    render: (state, theme) =>
+      draw(
+        <Select
+          open
+          label="Theme"
+          closeLabel="Close"
+          options={[
+            { value: 'base', label: 'Base' },
+            { value: 'fuka', label: 'Fuka', description: 'A deep indigo cast.' },
+            { value: 'device', label: "This phone's colour", disabled: true },
+          ]}
+          value={state === 'active' ? 'fuka' : 'base'}
+          onValueChange={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE SEVERITY SLIDER, at the value Compare shows it at.
+     *
+     * `valueLabel` is a real formatted string rather than a placeholder, because the whole
+     * point of the prop is that the default announcement is a percentage of a quantity whose
+     * units are not percent.
+     */
+    name: 'Slider',
+    kind: 'interactive',
+    forbiddenNames: ['slider', 'range', 'value'],
+    render: (state, theme) =>
+      draw(
+        <Slider
+          label="Simulated severity"
+          value={state === 'active' ? 0.6 : 1}
+          valueLabel={state === 'active' ? '0.60' : '1.00'}
+          onValueChange={() => {
+            /* the suite renders; it does not drive */
+          }}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * FOUR ITEMS, because three separators are what put `border` on a screen for the first
+     * time — a single item would draw none and the token would still be unreached.
+     *
+     * The states differ by WHICH sections are open, which is the accordion's whole state space.
+     */
+    name: 'Accordion',
+    kind: 'interactive',
+    forbiddenNames: ['accordion', 'section', 'panel'],
+    render: (state, theme) =>
+      draw(
+        <Accordion
+          items={[
+            {
+              value: 'about',
+              title: 'Description',
+              children: (
+                <Text size="small" color="foreground.2">
+                  A deep indigo.
+                </Text>
+              ),
+            },
+            {
+              value: 'coords',
+              title: 'Coordinates',
+              children: (
+                <Text size="small" color="foreground.2">
+                  L 42.1
+                </Text>
+              ),
+            },
+            {
+              value: 'taxonomy',
+              title: 'Taxonomy',
+              children: (
+                <Text size="small" color="foreground.2">
+                  Cool, mid.
+                </Text>
+              ),
+            },
+            {
+              value: 'source',
+              title: 'Provenance',
+              children: (
+                <Text size="small" color="foreground.2">
+                  Declared.
+                </Text>
+              ),
+            },
+          ]}
+          expanded={state === 'active' ? ['about', 'source'] : ['about']}
+          onExpandedChange={() => {
+            /* the suite renders; it does not drive */
+          }}
           disabled={state === 'disabled'}
           loading={state === 'loading'}
           testID={state}

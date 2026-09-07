@@ -93,6 +93,19 @@ export {
   type TabsProps,
 } from './overlay.js';
 export {
+  Accordion,
+  Select,
+  Slider,
+  Switch,
+  percentOf,
+  type AccordionItem,
+  type AccordionProps,
+  type SelectOption,
+  type SelectProps,
+  type SliderProps,
+  type SwitchProps,
+} from './controls.js';
+export {
   Appear,
   durations,
   overlayKeyframes,

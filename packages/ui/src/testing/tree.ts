@@ -85,6 +85,32 @@ export interface ResolvedTextNode {
 /** A rendered node that responds to touch. */
 export interface ResolvedPressableNode {
   readonly accessibilityRole: string | undefined;
+  /**
+   * React Native's *other* role prop, and the one every HeroUI primitive uses (F-156).
+   *
+   * `role` and `accessibilityRole` are both React Native props and both reach the same platform
+   * attribute. They are **not the same vocabulary**, which is why this is carried beside
+   * `accessibilityRole` rather than folded into it:
+   *
+   * | | `AccessibilityRole` | `Role` |
+   * |---|---|---|
+   * | a draggable value | `adjustable` | `slider` |
+   * | a section heading | `header` | `heading` |
+   * | a search field | `search` | `searchbox` |
+   * | a landmark region | — | `region`, `group`, `tabpanel` |
+   *
+   * Verified against `react-native/Libraries/Components/View/ViewAccessibility.js` at 0.86.2:
+   * `AccessibilityRole` has `adjustable` and no `slider`; `Role` has `slider` and no
+   * `adjustable`.
+   *
+   * **And `AccessibilityRole` ends in `| string`.** So `accessibilityRole="slider"` compiles,
+   * announces nothing, and looks exactly like a fix — which is what would have happened if the
+   * `no-role` rule had kept reading one prop and four HeroUI wrappers had been "corrected" to
+   * satisfy it. Reading both is the accurate answer; translating between them is not something
+   * this file can do honestly, because in 0.86 the mapping lives in the native layer rather
+   * than in any JavaScript table we could cite.
+   */
+  readonly role: string | undefined;
   /** The host component this rendered to — `TextInput`, `View`, … See `pressableNodes`. */
   readonly hostType: string;
   readonly accessibilityLabel: string | undefined;
@@ -222,11 +248,26 @@ export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[]
       typeof p['onResponderRelease'] === 'function' ||
       // A text field responds to typing, not to a press. See the note above.
       typeof p['onChangeText'] === 'function' ||
+      /*
+       * AN ADJUSTABLE CONTROL RESPONDS TO A DRAG, and F-156 is the second time this definition
+       * was too narrow. F-018 widened it for the text field — *"a text field is not
+       * pressable"* — and a slider is not pressable either: the thumb is moved through a
+       * `GestureDetector`, so it carries no `onPress`, no `onResponderRelease` and nothing else
+       * this list knew to look for. The first registered `Slider` was reported as *"declares
+       * kind interactive but nothing in the tree responds"*, which was the suite saying,
+       * accurately, that it had checked none of the accessibility rules on it.
+       *
+       * `accessibilityValue` is the declaration itself: a node that reports a value in a range
+       * is a thing a person sets. It is also narrow — a static readout has a label, not a
+       * value — so this admits controls rather than everything with a number on it.
+       */
+      (typeof p['accessibilityValue'] === 'object' && p['accessibilityValue'] !== null) ||
       p['accessible'] === true;
     if (interactive) {
       const state = p['accessibilityState'];
       out.push({
         accessibilityRole: stringOrUndefined(p['accessibilityRole']),
+        role: stringOrUndefined(p['role']),
         /*
          * The HOST type (F-020).
          *

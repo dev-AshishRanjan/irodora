@@ -81,7 +81,9 @@ export const en = {
   'separation.score': 'Separation',
   'separation.deltaE00': 'Difference when simulated',
   'separation.lightness': 'Lightness difference',
-  'separation.severity': 'Simulated at the strongest tabulated severity.',
+  'separation.severityLabel': 'Simulated severity',
+  'separation.severity':
+    'Machado tabulates eleven steps; anything between two of them is interpolated.',
   'atlas.corpus': 'Corpus',
   'atlas.colours': 'colours',
   'atlas.palettes': 'palettes',
@@ -517,6 +519,7 @@ export const en = {
   'appearance.title': 'Appearance',
   'appearance.hint':
     'A theme changes the hue of the interface. It never tints the ground a colour is judged against.',
+  'appearance.close': 'Close the theme list',
   'appearance.theme': 'Theme',
   'appearance.mode': 'Light or dark',
   'appearance.family.base': 'Warm neutral',

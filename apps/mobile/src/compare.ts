@@ -46,13 +46,28 @@ import type { PublishedEntry } from './corpus';
 export const COMPARED_DEFICIENCIES: readonly Deficiency[] = ['protan', 'deutan', 'tritan'];
 
 /**
- * The severity every simulation runs at.
+ * The severity a simulation runs at when nobody has moved it.
  *
- * The strongest Machado tabulates. Compare is a professional read-out, so the useful question
- * is the worst case rather than an average one — and stating the severity is what keeps the
- * answer from being read as "what a person with this deficiency sees".
+ * The strongest Machado tabulates. Compare is a professional read-out, so the useful *opening*
+ * question is the worst case rather than an average one — and stating the severity is what
+ * keeps the answer from being read as "what a person with this deficiency sees".
+ *
+ * **It is a default rather than a constant since F-156.** `machadoMatrix` interpolates between
+ * the tabulated steps for any severity in 0–1, and the engine's own docblock says so twice —
+ * *"anomalous trichromacy at any severity. The common case, and the one a severity slider is
+ * for"*. There was no slider, so the whole range existed and one point of it was reachable.
  */
 export const COMPARED_SEVERITY = 1;
+
+/**
+ * The step the severity control moves in.
+ *
+ * **0.1, which is the tabulated resolution.** Machado publishes eleven matrices per deficiency
+ * at 0.0 to 1.0 in tenths; anything between them is our interpolation. A finer step would offer
+ * a precision the source does not have, and this screen is the one place in the product where
+ * somebody is reading numbers to decide something.
+ */
+export const SEVERITY_STEP = 0.1;
 
 /** One axis, both values and their signed difference. */
 export interface AxisDelta {
@@ -77,7 +92,7 @@ export interface CompareMetrics {
     readonly c: AxisDelta;
     readonly h: AxisDelta;
   };
-  /** One per deficiency, at `COMPARED_SEVERITY`, each carrying its own decomposition. */
+  /** One per deficiency, at the severity `compare()` was given, each carrying its own decomposition. */
   readonly separation: readonly SeparationDetail[];
   readonly contrast: {
     /** WCAG 2.x ratio, encoded sRGB. Symmetric. */
@@ -97,7 +112,18 @@ const axis = (a: number, b: number): AxisDelta => ({ a, b, delta: b - a });
  * Takes `PublishedEntry` rather than two hexes, so a caller cannot hand it a colour whose
  * origin nobody recorded — the same reason `Swatch` takes a `Color` (ADR-0005).
  */
-export function compare(a: PublishedEntry, b: PublishedEntry): CompareMetrics {
+export function compare(
+  a: PublishedEntry,
+  b: PublishedEntry,
+  /**
+   * The severity the three simulations run at, 0–1.
+   *
+   * A parameter with a default rather than a second function: every caller that does not care
+   * keeps the worst case, and the one that does passes a number. Two functions would be two
+   * places for the default to live.
+   */
+  severity: number = COMPARED_SEVERITY,
+): CompareMetrics {
   const [la, aa, ba] = a.derived.lab;
   const [lb, ab, bb] = b.derived.lab;
   const [ola, oca, oha] = a.derived.oklch;
@@ -114,7 +140,7 @@ export function compare(a: PublishedEntry, b: PublishedEntry): CompareMetrics {
       h: { a: oha, b: ohb, delta: hueDelta(oha, ohb) },
     },
     separation: COMPARED_DEFICIENCIES.map((d) =>
-      separationDetail(a.derived.rgb, b.derived.rgb, d, COMPARED_SEVERITY),
+      separationDetail(a.derived.rgb, b.derived.rgb, d, severity),
     ),
     contrast: {
       wcagRatio: wcagContrast(a.derived.rgb, b.derived.rgb),
