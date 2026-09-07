@@ -50,6 +50,7 @@ import {
   Screen,
   SearchField,
   Stack,
+  Strip,
   Surface,
   Swatch,
   Text,
@@ -63,6 +64,7 @@ import {
   draftProblem,
   EMPTY_DRAFT,
   moveMember,
+  deriveWeights,
   removeMember,
   rename,
   setRole,
@@ -169,6 +171,29 @@ export function PaletteStudio({
             : [{ id: m.slug, label: entry.entry.name.en, color: colorFor(entry.entry) }];
         }),
       ),
+    [draft.members],
+  );
+
+  /*
+   * The draft's members as samples, in rank order, with the ones whose slug no longer resolves
+   * dropped rather than drawn as a hole. Memoised on the members for the same reason the CVD
+   * scan is: `entryBySlug` is a lookup over all 120 entries and this runs on every keystroke
+   * in the search field otherwise.
+   */
+  const strip = useMemo(
+    () =>
+      draft.members.flatMap((m) => {
+        const entry = entryBySlug(m.slug);
+        return entry === null
+          ? []
+          : [
+              {
+                name: entry.entry.name.en,
+                hex: entry.derived.hex,
+                color: colorFor(entry.entry),
+              },
+            ];
+      }),
     [draft.members],
   );
 
@@ -287,6 +312,23 @@ export function PaletteStudio({
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.members')}
           </Text>
+          {/*
+            THE PALETTE, AS ONE THING (F-151).
+
+            The rows below are a list of members; this is the palette. Relationships between
+            colours are judged at the boundaries between them, and until now there were none —
+            every member sat in its own row with a screen's worth of controls between it and
+            the next, which is the arrangement in which no two of them are ever adjacent.
+
+            THE WIDTHS ARE THE WEIGHT LADDER, not a layout choice. `studio.order` has said
+            "order is proportion" since F-049 and nothing has ever shown it; the strip is that
+            sentence drawn. `deriveWeights` is the same function that writes the saved record,
+            so the strip cannot disagree with what gets stored — it is the record, seen.
+          */}
+          {strip.length === 0 ? null : (
+            <Strip members={strip} weights={deriveWeights(strip.length)} testID="studio-strip" />
+          )}
+
           <Text size="xs" color="foreground.2" script={script}>
             {t('studio.order')}
           </Text>

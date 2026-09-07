@@ -4462,7 +4462,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-147"
       ],
@@ -4480,7 +4480,19 @@
         "a11y",
         "contrast"
       ],
-      "notes": "Three instrument surfaces sharing one problem: the colours are too small to judge, and the numbers carry the same visual weight as the thing they describe. Compare is the sharpest case — two colours that must be assessed against each other are currently separated by their own metadata."
+      "notes": "Three instrument surfaces sharing one problem: the colours are too small to judge, and the numbers carry the same visual weight as the thing they describe. Compare is the sharpest case — two colours that must be assessed against each other are currently separated by their own metadata. ---- DONE 2026-09-07 (E-091). THE LINE IS: A LIST RANKS, A PAIR JUDGES (ADR-0095). All three surfaces drew every colour at a size for IDENTIFYING it, on screens whose job is judging it — and the product had never distinguished the two. THE FLOOR IS DERIVED, NOT CHOSEN: this product’s colorimetry is the CIE 2° standard observer throughout, ΔE00 is parameterised for it, and a sample drawn smaller is judged under conditions its own number was not fit for — below about 1° that is measurable, because the central fovea is sparse in S-cones. 2° at 350 mm is 12.2185 mm is 77 dp; the manifest carries the three inputs and REFUSES a value written down, and the test re-derives it rather than asserting 77. NOT EVERY SAMPLE GROWS, and that is the half that keeps it usable: a Finder row ranks by ΔE00 and stays 40 dp, because raising it would turn a scannable list into four results a screen. The decoy for that assertion had to MOVE to the Finder after passing vacuously on Compare, where the pickers render no rows until something is typed. `Pair` AND `Strip` PUT NO LINE AND NO CORNER WHERE TWO SAMPLES MEET — a line there is an induced edge sitting exactly where the judgement happens, and when the boundary is invisible that IS the answer. The ring is chosen against the WELL because a pair has two samples and one ring, and the well is a known colour; each sample still gets its own tone on its three outer edges. COMPARE LEADS WITH THE PAIR and the pickers moved to the end; the STUDIO gained a strip whose widths are `deriveWeights` — the same function that writes the saved record, so the strip is the record seen rather than a second opinion about proportion, and `studio.order` finally shows what it has claimed since F-049. THE FINDER’S JUMP WAS TWO THINGS: an answer line that changed size between states, and the region panel above the list, which moved forty rows when one more word stopped resolving. The line is now one line in every state and the region is provenance below the results. CRITERION 4 WAS THE MISSING DIRECTION of a check that had been green for two releases. All 33 CI steps green.",
+      "plan": "plans/F-151-a-list-ranks-a-pair-judges.md",
+      "effects": [
+        "E-091"
+      ],
+      "attested": [
+        {
+          "criterion": "Palettes are composed at a size where the relationships between colours can actually be judged",
+          "verifiedBy": "THE SIZE IS PROVEN AND THE JUDGEMENT IS NOT. The floor is derived from the CIE 2° standard observer at the declared viewing distance rather than chosen — the same observer this product’s colorimetry uses everywhere and the one ΔE00 is parameterised for — the manifest refuses it written literally, the test re-derives it from the published definitions, and both the pair and the strip are asserted to draw at it on the narrowest supported phone. WHAT NOBODY HAS DONE IS LOOK AT TWO COLOURS ON A DEVICE AND SAY WHETHER THEY CAN NOW BE TOLD APART, which is the criterion’s actual verb. The arrangement argument is sound and the arithmetic is checkable; neither is an observation. THE VIEWING DISTANCE IS ALSO AN ASSUMPTION and the ADR says so — 350 mm is a central figure for a phone in the hand, and a person reading at arm’s length sees 1.4° whatever this floor says.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-152",
@@ -5133,6 +5145,29 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-173",
+      "title": "A mutation proof cannot leave a plant behind",
+      "requirements": [
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R6",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A proof killed at any point leaves the working tree byte-identical to how it found it, or the next run refuses to start",
+        "The stray-plant guard detects a leak in a file the author has also edited",
+        "Each direction is proven by a run that is actually interrupted, not by a run that completes"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FIVE INCIDENTS THIS MONTH, THREE MECHANISMS, AND THE FIFTH GOT PAST THE GUARD BUILT AFTER THE FOURTH. A `finally` is a hope about how a process ends rather than a guarantee: a timeout does not run it, a Windows EPERM on `rmSync` fails inside it, and a Windows UNKNOWN on `writeFileSync` fails before it. F-151 hit the last of those — the contrast proof left `status: \"placeholder\"` and a changed `status.warn` lightness in the design manifest, and nine design-token tests went red on a file the author had legitimately edited in the same session. THE GUARD IS WHY THIS IS A FEATURE RATHER THAN A NOTE. `verify-ci.mjs` gained a stray-plant check after the fourth incident: it runs `git clean -nd` and lists plant-target files that are modified. It FIRED, correctly, on the manifest — and it was dismissed, correctly by the information available, because the author HAD edited that file. A guard whose signal is indistinguishable from ordinary work is a guard that trains people to ignore it, which is worse than none. THE FIX IS A DIFFERENT COMPARISON: snapshot the plant targets at the start of a run and compare against the snapshot rather than against git, so a leak is detectable no matter what the tree looked like beforehand. That also makes the restore itself checkable — a proof can verify it put the file back rather than assuming it. AND THE PROOF OF THE PROOF HAS TO INTERRUPT SOMETHING. Every mutation proof here is verified by running it to completion, which is the one path where `finally` works. A proof that its own cleanup survives a kill needs a child process and a signal; asserting it from a run that finished is asserting the case that was never in doubt."
     },
     {
       "id": "F-161",

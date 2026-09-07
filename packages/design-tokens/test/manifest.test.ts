@@ -290,4 +290,52 @@ describe('coverage — an unchecked token must not look like a checked one', () 
       true,
     );
   });
+  /*
+   * --- THE SAMPLE FLOOR (F-151, ADR-0095) ------------------------------------------------
+   *
+   * These assert the ARITHMETIC, never the number. A test that expected 77 would agree with
+   * whatever the parser produced the day it was written, which is the failure mode recorded in
+   * E-085: the Android safe-zone check carried the previous mark's constants and would have
+   * passed while the new mark was clipped.
+   */
+  it('derives the judgeable sample from the observer rather than reading it', () => {
+    const m = parseManifest(clone());
+    const size = (clone()['size'] ?? {}) as Json;
+
+    const degrees = size['observerDegrees'] as number;
+    const distance = size['viewingDistanceMm'] as number;
+    const perInch = size['dpPerInch'] as number;
+
+    // Re-derived here from the published definitions: the chord a field of θ subtends at
+    // distance d, converted by the density-independent pixel's own definition.
+    const mm = 2 * distance * Math.tan((degrees / 2) * (Math.PI / 180));
+    expect(m.size.judgeable).toBe(Math.round(mm / (25.4 / perInch)));
+
+    // And it is the 2° standard observer this product's colorimetry uses everywhere else,
+    // which is the whole argument for the floor existing.
+    expect(degrees).toBe(2);
+  });
+
+  it('moves when the viewing distance moves', () => {
+    // The decoy in the direction that matters: an input change the value must follow. A
+    // hard-coded constant would pass every other assertion here and fail this one.
+    const near = parseManifest(withValue(['size', 'viewingDistanceMm'], 250));
+    const far = parseManifest(withValue(['size', 'viewingDistanceMm'], 500));
+    expect(near.size.judgeable).toBeLessThan(parseManifest(clone()).size.judgeable);
+    expect(far.size.judgeable).toBeGreaterThan(parseManifest(clone()).size.judgeable);
+  });
+
+  it('REFUSES a judgeable written down instead of derived', () => {
+    // Writing the value copies it out of its reasoning, and a copy cannot be checked against
+    // the thing it came from. `withValue` refuses a key that is absent, so this adds it.
+    const m = clone();
+    m['size'] = { ...(m['size'] as Json), judgeable: 77 };
+    expect(() => parseManifest(m)).toThrow(ManifestError);
+    expect(() => parseManifest(m)).toThrow(/derived/u);
+  });
+
+  it('refuses a physical quantity that is not positive', () => {
+    for (const key of ['observerDegrees', 'viewingDistanceMm', 'dpPerInch'])
+      expect(() => parseManifest(withValue(['size', key], 0))).toThrow(ManifestError);
+  });
 });

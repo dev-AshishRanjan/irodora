@@ -14,7 +14,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
-import { ThemeProvider, swatchAccessibleName } from '@irodora/ui';
+import { Text, ThemeProvider, swatchAccessibleName } from '@irodora/ui';
 import {
   checkAll,
   checkStatusAdjacency,
@@ -64,7 +64,7 @@ import { displayFromOklch } from '../src/engine';
 import { cardSvg } from '../src/card';
 import { nativeColors } from '@irodora/design-tokens';
 import { find } from '../src/finder';
-import { toStoreWrite } from '../src/palette';
+import { deriveWeights, toStoreWrite } from '../src/palette';
 import { PALETTE_ROLES } from '@irodora/corpus';
 import type { PaletteDraft, PaletteStore } from '../src/palette';
 import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@irodora/store';
@@ -74,8 +74,8 @@ import { en } from '../src/i18n/en';
 import { isMessageKey } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
-import { nativeNumericFeature } from '@irodora/design-tokens';
-import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL } from '../src/corpus';
+import { nativeJudgeableSample, nativeNumericFeature } from '@irodora/design-tokens';
+import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL, entryBySlug } from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
 
@@ -1890,6 +1890,94 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
      */
     expect(numericNodes(draw(<Home store={fakeHome(false)} />, 'light'))).toHaveLength(0);
   });
+
+  /*
+   * --- THE OTHER DIRECTION (F-151, criterion 4) -------------------------------------------
+   *
+   * Everything above asks *is what we marked as a figure treated like one*. Nothing asked *is
+   * every figure marked*, and those are different questions: a `<Text>` rendering `4.23` with
+   * no `numeric` passes every assertion in this file and renders with proportional digits, so
+   * the column it sits in is ragged in exactly the way tabular figures exist to prevent.
+   *
+   * That is the shape recorded five times this month — a check thorough about its own subject
+   * and silent one step outside it (E-086, E-087, E-089, E-090). It is worth stating that the
+   * gap was found by re-reading a green test rather than by anything failing.
+   */
+  /** A string that is nothing but a quantity: a sign, digits, and the punctuation of figures. */
+  const BARE_FIGURE = /^[+−-]?\d[\d\s.,:/%°–-]*$/u;
+
+  function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
+    // The node that OWNS the text, not the string itself — the `numeric` prop and the font
+    // variant both live on the element, and a string has no props to check.
+    if ((node.children ?? []).some((c) => typeof c === 'string' && BARE_FIGURE.test(c)))
+      out.push(node);
+    for (const child of node.children ?? []) if (typeof child !== 'string') figureNodes(child, out);
+    return out;
+  }
+
+  /** Every bare figure on a screen that is NOT drawn with tabular digits. */
+  const ragged = (screen: TestNode): readonly string[] => {
+    const tabular = new Set(numericNodes(screen));
+    return figureNodes(screen)
+      .filter((n) => !tabular.has(n))
+      .flatMap((n) => (n.children ?? []).filter((c): c is string => typeof c === 'string'));
+  };
+
+  it('marks every bare figure as tabular, on every surface that carries readings', () => {
+    /*
+     * The three instrument surfaces, because they are where a ragged column would actually
+     * cost something — a professional scanning a list of deltas one row at a time is the exact
+     * failure C9 exists for.
+     */
+    const finder = draw(<Finder initialQuery="dark muted green" />, 'light');
+    const studio = draw(<PaletteStudio store={fakeStore()} initialDraft={DRAFT} />, 'light');
+
+    /*
+     * FOUND SOMETHING FIRST. "No ragged figures" and "no figures" print the same result, and
+     * the second is what this whole block of assertions exists to prevent — a green run that
+     * means less than it says. Asserted per screen rather than in total, because one screen
+     * carrying thirty would hide another carrying none.
+     *
+     * THE STUDIO IS DELIBERATELY NOT IN THIS LIST, and finding that out is why the assertion
+     * is here. A palette draft with no CVD finding carries no readings at all: the strip is
+     * colour, the rows are names and hexes, and there is no number on the screen. Demanding one
+     * would be demanding the fixture render something the product does not — so the Studio is
+     * checked for RAGGED figures below and not for having any.
+     */
+    expect(figureNodes(tree()).length).toBeGreaterThan(20);
+    expect(figureNodes(finder).length).toBeGreaterThan(0);
+
+    expect(ragged(tree())).toHaveLength(0);
+    expect(ragged(finder)).toHaveLength(0);
+    expect(ragged(studio)).toHaveLength(0);
+  });
+
+  it('DECOY — the check finds a figure that forgot the prop', () => {
+    /*
+     * Without this, `ragged` could be returning nothing because `figureNodes` matches nothing,
+     * and all three assertions above would be vacuous — which is the same failure they were
+     * written to close, one level up [[a-decoy-that-is-not-broken-proves-nothing]].
+     *
+     * Home's first-run state renders no figures at all, so the plant is the smallest real
+     * thing that does: one `Text` with a number in it and no `numeric`.
+     */
+    const planted = draw(
+      <Text size="small" color="foreground">
+        4.23
+      </Text>,
+      'light',
+    );
+    expect(ragged(planted)).toEqual(['4.23']);
+
+    // And the same node, marked, is not reported — or the check would flag correct code.
+    const marked = draw(
+      <Text size="small" color="foreground" numeric>
+        4.23
+      </Text>,
+      'light',
+    );
+    expect(ragged(marked)).toHaveLength(0);
+  });
 });
 
 /** A11 — Compare announces structure a screen reader can navigate. */
@@ -3174,5 +3262,215 @@ describe('the outfit builder renders sentences, not identifiers', () => {
 
     // The em-dash separator, with a number after it — the shape the builder writes.
     expect(text).toMatch(/ — \d+/u);
+  });
+});
+
+/**
+ * F-151 — **a list ranks, a pair judges** (ADR-0095).
+ *
+ * The three instrument surfaces failed the same way: a colour drawn at a size for identifying
+ * it, on a screen whose job is judging it. Everything asserted here is STRUCTURAL, because what
+ * changed is arrangement — and arrangement is the one thing gate 9, gate 10 and the conformance
+ * suite all read straight past.
+ */
+describe('the pair leads Compare, and nothing sits between the two colours (F-151)', () => {
+  const HEXES = [entryBySlug(PAIR_A)!.derived.hex, entryBySlug(PAIR_B)!.derived.hex];
+
+  function styleOf(node: TestNode): Record<string, unknown> {
+    const raw: unknown = node.props['style'];
+    if (Array.isArray(raw))
+      return (raw as unknown[]).reduce<Record<string, unknown>>(
+        (acc, layer) =>
+          typeof layer === 'object' && layer !== null
+            ? { ...acc, ...(layer as Record<string, unknown>) }
+            : acc,
+        {},
+      );
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  }
+
+  /** Every node in render order, so a position can be compared against a position. */
+  function inOrder(node: TestNode, out: TestNode[] = []): TestNode[] {
+    out.push(node);
+    for (const child of node.children ?? []) if (typeof child !== 'string') inOrder(child, out);
+    return out;
+  }
+
+  const tree = (): TestNode => draw(<Compare initialA={PAIR_A} initialB={PAIR_B} />, 'light');
+
+  const sampleNodes = (): TestNode[] =>
+    inOrder(tree()).filter((n) => HEXES.includes(String(styleOf(n)['backgroundColor'])));
+
+  it('draws the two samples touching — no line and no corner where they meet', () => {
+    /*
+     * THE ASSERTION THE FEATURE TURNS ON. "How different are these two" is answered at the
+     * boundary, and anything drawn there is an induced edge sitting exactly where the judgement
+     * happens. `Pair` owns the rule and `packages/ui` proves it in isolation; this proves the
+     * SCREEN is using it rather than two swatches in a row.
+     */
+    const samples = sampleNodes();
+    expect(samples).toHaveLength(2);
+    expect(styleOf(samples[0]!)['borderRightWidth']).toBe(0);
+    expect(styleOf(samples[1]!)['borderLeftWidth']).toBe(0);
+  });
+
+  it('puts both samples before every figure, so the numbers are beneath and not beside', () => {
+    // The criterion as tree order. Each colour used to sit in its own card with its own
+    // metadata, which is the arrangement in which the two are never adjacent to each other.
+    const nodes = inOrder(tree());
+    const lastSample = nodes.findLastIndex((n) =>
+      HEXES.includes(String(styleOf(n)['backgroundColor'])),
+    );
+    // A rendered `Text` carries its content as a string CHILD, not as a `children` prop —
+    // which is why every other reader in this file walks `node.children`.
+    const firstFigure = nodes.findIndex((n) =>
+      (n.children ?? []).some((c) => typeof c === 'string' && /^[+−-]?\d+\.\d\d$/u.test(c)),
+    );
+
+    expect(lastSample).toBeGreaterThan(-1);
+    expect(firstFigure).toBeGreaterThan(lastSample);
+  });
+
+  it('draws each sample at the judgeable size (ADR-0095)', () => {
+    // Not a style preference. ΔE00 is parameterised for the CIE 2° standard observer — the
+    // observer this product's colorimetry uses everywhere — and a sample smaller than that is
+    // being judged under conditions its own number was not fit for.
+    for (const n of sampleNodes()) expect(styleOf(n)['height']).toBe(nativeJudgeableSample);
+  });
+
+  it('DECOY — a Finder result is still a thumbnail, because ranking is not judging', () => {
+    /*
+     * Without this the feature could have raised every sample on every surface, which turns a
+     * scannable list into four results a screen and is worse at the job a list has.
+     *
+     * THE DECOY IS ON THE FINDER RATHER THAN ON COMPARE, and the first draft of it was on
+     * Compare and passed vacuously: the pickers render no rows until something is typed, so
+     * there were no small samples to find and "some sample is small" was false for the wrong
+     * reason. The Finder ranks by ΔE00 in a list you scan, which is the case the line is about.
+     */
+    const heights = inOrder(draw(<Finder initialQuery="ai" />, 'light'))
+      .map((n) => styleOf(n)['height'])
+      .filter((h): h is number => typeof h === 'number');
+
+    expect(heights.length).toBeGreaterThan(0);
+    expect(heights.every((h) => h < nativeJudgeableSample)).toBe(true);
+  });
+});
+
+describe('the Studio shows the palette as one thing (F-151)', () => {
+  function styleOf(node: TestNode): Record<string, unknown> {
+    const raw: unknown = node.props['style'];
+    if (Array.isArray(raw))
+      return (raw as unknown[]).reduce<Record<string, unknown>>(
+        (acc, layer) =>
+          typeof layer === 'object' && layer !== null
+            ? { ...acc, ...(layer as Record<string, unknown>) }
+            : acc,
+        {},
+      );
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>) : {};
+  }
+
+  /** The strip's segments, found by the testID rather than by guessing at the tree shape. */
+  function segments(draft: PaletteDraft): readonly Record<string, unknown>[] {
+    const found: Record<string, unknown>[] = [];
+    const collect = (n: TestNode): void => {
+      const s = styleOf(n);
+      if (typeof s['flex'] === 'number' && typeof s['height'] === 'number') found.push(s);
+      for (const c of n.children ?? []) if (typeof c !== 'string') collect(c);
+    };
+    const walk = (n: TestNode): void => {
+      if (n.props['testID'] === 'studio-strip') collect(n);
+      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
+    };
+    walk(draw(<PaletteStudio store={fakeStore()} initialDraft={draft} />, 'light'));
+    return found;
+  }
+
+  it('draws one segment per member, at the weights the SAVED RECORD will carry', () => {
+    /*
+     * `studio.order` has said "order is proportion" since F-049 and nothing has ever shown it.
+     * The widths are `deriveWeights` — the same function that writes the stored record — so the
+     * strip cannot become a second opinion about proportion. It is the record, seen.
+     */
+    const found = segments(DRAFT);
+    expect(found).toHaveLength(DRAFT.members.length);
+    expect(found.map((s) => s['flex'])).toEqual([...deriveWeights(DRAFT.members.length)]);
+  });
+
+  it('changes when the palette does, which is the only reason a reorder control is worth having', () => {
+    // The decoy for the case above: equal widths would satisfy "one segment per member" and say
+    // nothing at all about proportion.
+    const shorter: PaletteDraft = { ...DRAFT, members: DRAFT.members.slice(1) };
+    expect(segments(shorter).map((s) => s['flex'])).not.toEqual(
+      segments(DRAFT).map((s) => s['flex']),
+    );
+  });
+
+  it('draws the strip at the judgeable height', () => {
+    for (const s of segments(DRAFT)) expect(s['height']).toBe(nativeJudgeableSample);
+  });
+});
+
+describe('the Finder results do not move (F-151)', () => {
+  /**
+   * Where the answer line sits, as the number of nodes rendered before it.
+   *
+   * A layout jump is a position changing between two states, and this is the only position a
+   * rendered tree can be asked about without a layout engine. It is a real proxy rather than a
+   * convenient one: the region panel used to sit above the list, so a phrase answer put a whole
+   * Surface in front of the results and one more typed word took it away again.
+   */
+  function answerAt(query?: string): number {
+    const nodes: TestNode[] = [];
+    const walk = (n: TestNode): void => {
+      nodes.push(n);
+      for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
+    };
+    walk(draw(<Finder {...(query === undefined ? {} : { initialQuery: query })} />, 'light'));
+
+    const index = nodes.findIndex((n) =>
+      (n.children ?? []).some(
+        (c) =>
+          typeof c === 'string' &&
+          /^(Nearest colours|Colours in the region|Colours whose name|Type something)/u.test(c),
+      ),
+    );
+    if (index < 0) throw new Error('no answer line rendered');
+    return index;
+  }
+
+  it('holds the answer line in one place across every kind of answer', () => {
+    // Four states, one position — the empty one included, because the answer used to be a small
+    // grey sentence where the heading later went, so the list moved on the FIRST keystroke,
+    // under the thumb that had just typed it.
+    const positions = [
+      answerAt(),
+      answerAt('#526A6B'),
+      answerAt('dark muted green'),
+      answerAt('ai'),
+    ];
+    expect(new Set(positions).size).toBe(1);
+  });
+
+  it('puts the region beneath the results, where it is provenance rather than a gate', () => {
+    /*
+     * The region panel appears for a phrase answer and for nothing else. Above the list it was
+     * the jump: one more word, the words stop resolving, and forty rows slide up the screen.
+     * Below it costs nothing — and it reads better, because it says what produced the answer.
+     */
+    const texts: string[] = [];
+    const walk = (n: TestNode): void => {
+      for (const c of n.children ?? []) {
+        if (typeof c === 'string') texts.push(c);
+        else walk(c);
+      }
+    };
+    walk(draw(<Finder initialQuery="dark muted green" />, 'light'));
+
+    const showing = texts.findIndex((x) => x.startsWith('Showing'));
+    const region = texts.indexOf('That phrase means');
+    expect(showing).toBeGreaterThan(-1);
+    expect(region).toBeGreaterThan(showing);
   });
 });

@@ -30,6 +30,15 @@ export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState
 export { SearchField, type SearchFieldProps } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
 export {
+  Pair,
+  Strip,
+  halfWidth,
+  pairRingTone,
+  type PairHalf,
+  type PairProps,
+  type StripProps,
+} from './Pair.js';
+export {
   Swatch,
   swatchAccessibleName,
   swatchCorner,

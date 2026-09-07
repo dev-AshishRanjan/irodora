@@ -17,6 +17,18 @@
  * deltas; proportional digits make the column ragged enough that the comparison the table
  * exists for has to be done one row at a time.
  *
+ * ## The pair leads, and nothing sits between the two colours (F-151)
+ *
+ * Two colours that exist to be assessed against each other were in separate cards, each with its
+ * own well, its own keyline and its own metadata — so the reader was comparing each sample
+ * against that furniture rather than against the other sample. The question *how different are
+ * these* is answered at the boundary, and every millimetre between them makes it harder, fastest
+ * for the small differences that are the ones anybody squints at.
+ *
+ * So `Pair` is the first thing on the screen, the headline number is directly beneath it, and
+ * the two pickers moved to the END. Choosing which colours to compare is ranking; judging the
+ * result is not, and the screen is now ordered by which of the two it is doing.
+ *
  * ## Nothing here is computed
  *
  * `compare()` assembles the metric set, so a number this screen shows is reachable by a test
@@ -26,7 +38,17 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Row, Screen, SearchField, Stack, Surface, Swatch, Text, useTheme } from '@irodora/ui';
+import {
+  Pair,
+  Row,
+  Screen,
+  SearchField,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+  useTheme,
+} from '@irodora/ui';
 import { compare, type AxisDelta, type CompareMetrics } from '../compare';
 import { allEntries, colorFor, entryBySlug, type PublishedEntry } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -210,22 +232,17 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
           <Text size="label" color="foreground.2" script={script} heading>
             {label}
           </Text>
-          <Row gap="md">
-            <Swatch
-              name={entry.entry.name.en}
-              hex={entry.derived.hex}
-              color={colorFor(entry.entry)}
-              size={56}
-            />
-            <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
-              <Text size="body" color="foreground" script={script}>
-                {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
-              </Text>
-              <Text size="small" color="foreground.2" numeric selectable>
-                {entry.derived.hex}
-              </Text>
-            </View>
-          </Row>
+          {/*
+            THE CURRENT CHOICE IN WORDS, NOT AS A SECOND SAMPLE.
+
+            This used to draw a 56px swatch of the same colour the pair above now shows at the
+            judgeable size. Two samples of one colour on one screen is not redundancy — it is a
+            THIRD thing in the field of view competing with the pair, and simultaneous contrast
+            does not care which of them the designer considered primary.
+          */}
+          <Text size="body" color="foreground" script={script}>
+            {`${entry.entry.name.kanji} ${entry.entry.name.en}`}
+          </Text>
 
           <SearchField label={t('compare.choose')} value={query} onChangeText={onQuery} />
 
@@ -260,8 +277,17 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
 
   return (
     <Screen title={t('compare.title')} script={script}>
-      <Slot label={t('compare.slotA')} entry={a} query={aQuery} onQuery={setAQuery} onPick={setA} />
-      <Slot label={t('compare.slotB')} entry={b} query={bQuery} onQuery={setBQuery} onPick={setB} />
+      {/*
+        THE TWO COLOURS, TOUCHING, AT THE TOP (F-151).
+
+        Not in a Surface: a Pair carries its own well, and wrapping it would put a second ground
+        around the one that was chosen for the samples.
+      */}
+      <Pair
+        a={{ name: a.entry.name.en, hex: a.derived.hex, color: colorFor(a.entry) }}
+        b={{ name: b.entry.name.en, hex: b.derived.hex, color: colorFor(b.entry) }}
+        script={script}
+      />
 
       {same ? (
         <Text size="small" color="foreground.2" script={script}>
@@ -269,6 +295,7 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
         </Text>
       ) : null}
 
+      {/* The headline number, DIRECTLY beneath the boundary it describes. */}
       <Surface level="1" padding="lg">
         <Stack gap="xs">
           <Text size="body" color="foreground" script={script} heading>
@@ -382,6 +409,15 @@ export function Compare({ initialA, initialB }: CompareProps = {}): React.JSX.El
           </Text>
         </Stack>
       </Surface>
+
+      {/*
+        THE PICKERS, LAST. Choosing which two colours to compare is ranking a list; judging the
+        result is not, and the screen is ordered by which of the two the reader is doing. They
+        are also the only thing here that is not about the pair, so anything between them and
+        the pair would be reading matter interrupted by a control.
+      */}
+      <Slot label={t('compare.slotA')} entry={a} query={aQuery} onQuery={setAQuery} onPick={setA} />
+      <Slot label={t('compare.slotB')} entry={b} query={bQuery} onQuery={setBQuery} onPick={setB} />
     </Screen>
   );
 }

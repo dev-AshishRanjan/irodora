@@ -3303,6 +3303,48 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-091",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Pair.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "packages/design-tokens"
+      ],
+      "severity": "medium",
+      "guard": "BOTH COMPONENTS ARE REGISTERED SUBJECTS, and `Strip` in its own right rather than through `Pair` — three members at unequal weights, which is the only arrangement in which a middle segment exists. `pair.test.tsx` asserts the shared edge in BOTH directions: no line and no corner where two samples meet, and a line on the three outer edges of each half, so a component that drew nothing at all would fail. The size floor is asserted from the manifest inputs rather than from 77, refuses to go under and does grow above, and the narrowest-phone case is computed from the well’s padding and the ring instead of a measured width. On the screens, `screens.test.tsx` asserts the pair precedes every figure in tree order, the strip’s widths equal `deriveWeights` and change when the palette does, and the Finder’s answer line holds one position across all four kinds of answer. Gate 8’s scope check is what forced the direct registration; gate 9 and the F-171 pairing rule cover the colours.",
+      "memory": "memory/effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md",
+      "rationale": "A COMPONENT REACHED ONLY THROUGH ANOTHER IS EXERCISED ONLY IN THE SHAPE ITS PARENT USES, and from outside that is indistinguishable from coverage. `Pair` became `Strip` with two members so the edge rule — no line and no corner where two samples meet — would have ONE home; `a11y-scope.mjs` then refused the build saying `Strip` was unreachable, which looked wrong because `Pair` is registered and renders it on every run. THE GATE WAS RIGHT FOR A BETTER REASON THAN IT GAVE: `Pair` renders two EQUAL members, which is the shape that cannot go wrong. Everything the component exists for lives in the others — unequal weights, a middle segment with a rounded corner on neither side, a member list that is not two — and none of it had a subject. \"It is rendered\" and \"its behaviour is rendered\" are different claims and only the first is one a registry can answer. THIS IS THE MIRROR OF EVERY BLIND SPOT RECORDED BEFORE IT: those were checkers that could not see their subject; here the checker is fine and the SUBJECT arrived in one shape out of many. THREE SMALLER THINGS CAME WITH IT. F-171’s pairing rule fired on the new component within minutes, on two good tokens in a combination gate 9 has never measured — a rule one feature old catching something that did not exist when it was written, and the fix (labels out of the well) is better design anyway. The FR-48 tabular check had only one direction, asserting that what is marked is selectable and never that a figure is marked, so a bare `4.23` with no prop rendered in proportional digits and passed everything. And the new check was VACUOUS on two screens of three, caught by its own non-vacuity assertion an hour after E-090 was written about that exact failure — one of the two legitimately so, because a palette draft with no CVD finding carries no numbers at all.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

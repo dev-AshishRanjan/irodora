@@ -8,6 +8,161 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-151 DONE · a list ranks, a pair judges
+
+*"The colours are too small to judge, and the numbers carry the same visual weight as the thing
+they describe."* — the feature's own note, and Compare was the case it singled out: two colours
+that exist to be assessed against each other, separated by their own metadata.
+
+### Measured before anything was proposed
+
+| surface | sample | what the screen asks of you |
+| --- | ---: | --- |
+| Compare, each slot | 56 dp | judge how different these two are |
+| Palette Studio, a member | 48 dp | judge how these colours sit together |
+| Finder, a result row | 40 dp | choose which one to open |
+| both pickers | 32 dp | choose one from a list |
+
+Every sample in the product was drawn at a size for **identifying** a colour. Two of those rows
+are screens that ask you to **judge** one, and nothing had ever distinguished the two jobs.
+
+### The floor is derived, not chosen (ADR-0095)
+
+This product's colorimetry is the **CIE 2° standard observer** throughout — `whitepoints.ts`
+carries D65/2°, the calibration reader refuses a patch value whose observer is unstated, and
+ΔE00 is parameterised for it. A sample presented as the subject of a colour difference and drawn
+smaller is being judged under conditions its own number was not fit for; below roughly 1° that is
+measurable rather than pedantic, because the central fovea is sparse in S-cones.
+
+```
+2 · 350 mm · tan(1°) = 12.2185 mm ·  1 dp = 25.4/160 mm  →  76.97  →  77
+```
+
+The manifest carries `observerDegrees`, `viewingDistanceMm` and `dpPerInch`, and **refuses a
+`judgeable` key written literally**. The test re-derives it from the published definitions rather
+than asserting 77, and a second case moves the viewing distance and requires the value to follow
+— a hard-coded constant passes the first and fails the second.
+
+**The viewing distance is the one soft input and the ADR says so.** 350 mm is a central figure
+for a phone in the hand, not a claim about anybody's posture.
+
+### Not every sample grows, and that is what keeps the rule usable
+
+A Finder row carries a ΔE00 and stays 40 dp. You are choosing which colour to open, not judging a
+difference — the number orders the list, and raising every row would turn a scannable list into
+four results a screen. A rule that did that would be switched off within a week, which is worse
+than no rule.
+
+The decoy for this had to **move**: written against Compare it passed vacuously, because the
+pickers render no rows until something is typed, so "some sample is small" was false for the
+wrong reason.
+
+### `Pair` and `Strip`: no line and no corner where two samples meet
+
+*How different are these two* is answered at the boundary. Simultaneous contrast acts at an edge
+and so does the visual system's own difference machinery — a discontinuity you can see is a
+difference, and one you cannot see is not. Anything drawn between the samples is an induced edge
+sitting exactly where the judgement happens, and it costs most for the small differences, which
+are the ones anybody is squinting at.
+
+**When the boundary is invisible, that is the answer.** A seam drawn there would answer a
+question nobody asked and hide the one they did.
+
+The two-tone keyline still rings the pair. The **ring is chosen against the well** rather than
+against a sample, because a pair has two samples and one ring — and the well is a known colour,
+which is the easy half of the problem F-068 built the two tones for. Each sample still gets the
+tone chosen against itself, on its three outer edges.
+
+### The three screens
+
+**Compare** leads with the pair, the headline ΔE00 sits directly beneath the boundary it
+describes, and the two pickers moved to the end — the screen is now ordered by whether the reader
+is choosing or judging. The slot's own 56 dp swatch went: a second sample of the same colour is
+not redundancy, it is a third thing in the field of view competing with the pair.
+
+**Palette Studio** gained a strip: every member edge to edge, widths from `deriveWeights` — the
+same function that writes the saved record, so the strip is the record *seen* rather than a
+second opinion about proportion. `studio.order` has said *order is proportion* since F-049 and
+nothing had ever shown it.
+
+**The Finder's jump was two things.** The answer line was a small grey sentence before a query and
+a heading after it — two heights in the slot everything below depends on, so the list moved on the
+first keystroke, under the thumb that had just typed it. And the region panel sat above the
+results, so one more word could stop the phrase resolving and slide forty rows up the screen. The
+line is now the same line in every state; the region moved below, where it reads better anyway
+because it is provenance.
+
+### Criterion 4 was the missing direction of a green check
+
+`screens.test.tsx` asserted that everything marked `numeric` is selectable. It never asserted that
+a figure is **marked** — so a `<Text>` rendering `4.23` with no prop passed every assertion and
+rendered with proportional digits, in exactly the ragged column tabular figures exist to prevent.
+Found by re-reading a green test, not by anything failing.
+
+The new check was then **vacuous on two screens out of three**, caught by its own non-vacuity
+assertion an hour after [E-090](../memory/effects/a-check-must-report-its-scope-not-only-its-verdict.md)
+was written about that failure. One exemption was legitimate — a palette draft with no CVD finding
+carries no numbers at all — and the other was a pattern that did not know an en dash, so
+`0.200 – 0.450` was skipped on the screen whose numbers are hardest to read ragged.
+
+### The gate that was right for a better reason than it gave
+
+`a11y-scope.mjs` refused `Strip` as unreachable. `Pair` is registered and renders it every run, so
+this looked wrong — until the reason: **`Pair` renders two EQUAL members, which is the shape that
+cannot go wrong.** Unequal weights, a middle segment with a rounded corner on neither side, a
+member list that is not two — everything the component exists for had no subject.
+
+That is the mirror of every blind spot in this directory. The checker was fine; the **subject**
+reached it in one shape out of many (E-091).
+
+And **F-171's pairing rule fired on the new component within minutes**, on two good tokens in a
+combination gate 9 has never measured. A rule one feature old, catching something that did not
+exist when it was written.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 12 new in `pair.test.tsx`, 11 new in `screens.test.tsx` | **PASS** |
+| 5 color-golden · 6 build · **8 a11y** · **9 contrast** · 10 cvd · 11 content · 12 perf · 15 security | **PASS** |
+| gate 8 scope, on the new component | **caught** |
+| gate 8 token-reach, on the new web binding | **caught** |
+| the F-171 pairing rule, on the new component | **caught** |
+| `pnpm verify:ci` — all 33 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### And a plant got past the guard built to catch plants
+
+The final CI run died with a Windows `UNKNOWN` opening the design manifest, and the contrast
+proof's restore never ran. It left `status: "placeholder"` and a changed `status.warn`
+lightness behind; nine design-token tests went red. **Fifth incident this month, third mechanism**
+— a timeout does not run a `finally`, an `EPERM` fails inside one, and this one failed before it.
+
+The stray-plant guard added after the fourth incident **did fire**, and naming the manifest. It was
+dismissed — correctly, on the information available — because this feature had legitimately edited
+that file in the same session. *A guard whose signal is indistinguishable from ordinary work
+trains people to ignore it*, which is worse than not having one.
+
+Restored by putting the two planted values back individually rather than reverting the file, so
+F-151's own change survived. Recorded as **F-173**: snapshot the plant targets at the start of a
+run and compare against the snapshot rather than against git — and prove it by interrupting a run,
+because every mutation proof here is currently verified by letting it finish, which is the one
+path where `finally` works.
+
+### Still owed
+
+**Criterion 1 is outstanding and blocks release.** The floor is derived, checkable and asserted
+at the narrowest supported width — and *"at a size where the relationships can actually be
+judged"* has a verb nobody has performed. Nobody has held a device and said whether two colours
+can now be told apart. The arrangement argument is sound; it is not an observation.
+
+**And what this feature did not touch:** the Atlas, the colour page and the Lens all still draw
+samples at identifying sizes. F-152 is the sweep, and it is next.
+
+---
+
 ## 2026-09-07 — F-172 DONE · a gate that scans everything is not a gate that checks everything
 
 Found by accident in F-164 (E-089): the claims lint walks every file in the repository,

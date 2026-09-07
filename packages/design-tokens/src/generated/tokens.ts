@@ -86,6 +86,8 @@ export const SPACING = {
   xl5: 96,
 } as const;
 export const TAP_TARGET = 44 as const;
+/** The smallest a sample may be where a screen asks you to judge it, in dp (ADR-0095). */
+export const JUDGEABLE_SAMPLE = 77 as const;
 
 /** Token names usable for normal-size text: AA 4.5:1 against their surfaces. */
 export const TEXT_TOKENS = ['foreground', 'foreground.2', 'link', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad'] as const;

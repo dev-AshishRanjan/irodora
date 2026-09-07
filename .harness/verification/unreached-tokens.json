@@ -1,7 +1,7 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "$groupComment": "`group` is required because `xs` is a radius step AND a type step, and they are not the same decision. One of them is read by 22 `size=\"xs\"` literals; the other is read by nothing.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
@@ -11,10 +11,11 @@
         "COLOR",
         "RADIUS",
         "SPACING",
-        "TAP_TARGET"
+        "TAP_TARGET",
+        "JUDGEABLE_SAMPLE"
       ],
-      "cites": "ADR-0020, ADR-0051",
-      "why": "The web target. apps/mobile is the only surface (ADR-0051), so nothing in the reader zone imports these — their only reader is emit.test.ts, which is precisely the case this check reports. They are emitted anyway because four targets from one manifest is what stops web and mobile drifting the day a web surface exists (ADR-0020). Deleting them would remove the guarantee, not the dead code.",
+      "cites": "ADR-0020, ADR-0051, ADR-0095",
+      "why": "The web target. apps/mobile is the only surface (ADR-0051), so nothing in the reader zone imports these — their only reader is emit.test.ts, which is precisely the case this check reports. They are emitted anyway because four targets from one manifest is what stops web and mobile drifting the day a web surface exists (ADR-0020). Deleting them would remove the guarantee, not the dead code. JUDGEABLE_SAMPLE joins them for F-151 and is the same case exactly: its mobile twin `nativeJudgeableSample` is read by `Pair` and `Strip`, and the CSS variable beside it is emitted for the same reason the other three web bindings are. It is worth saying what it IS, because it is the one value here that is derived rather than declared: the smallest a sample may be drawn where a screen asks you to JUDGE a colour, computed from the CIE 2° standard observer at the declared viewing distance — the same observer this product’s colorimetry uses everywhere and the one ΔE00 is parameterised for (ADR-0095). A web surface that drew a sample smaller than this would be making the mistake the mobile one no longer can.",
       "closedBy": null,
       "permanentBecause": "ADR-0051 — the web target exists so four targets cannot drift"
     },

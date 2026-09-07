@@ -30,6 +30,8 @@ import {
   Stack,
   Status,
   Surface,
+  Pair,
+  Strip,
   Swatch,
   swatchCorner,
   Tabs,
@@ -130,6 +132,16 @@ afterEach(() => {
 });
 
 const SAMPLE = fromSpace('oklch', [0.42, 0.09, 264], { source: 'declared', confidence: 1 });
+
+/**
+ * The other half of a pair, and it is a NEAR neighbour on purpose.
+ *
+ * A pair of obviously different colours would exercise the layout and prove nothing about the
+ * thing the component is for: what a reader can judge at a boundary is decided by the small
+ * differences, and a fixture that only ever shows large ones would let the shared edge grow a
+ * line without anybody noticing.
+ */
+const SAMPLE_B = fromSpace('oklch', [0.44, 0.08, 258], { source: 'declared', confidence: 1 });
 
 /**
  * THE REGISTRY.
@@ -505,6 +517,55 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             <NavIcon key={name} name={name} color="#131110" />
           ))}
         </Row>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE STRIP, REGISTERED IN ITS OWN RIGHT rather than left to `Pair` to exercise.
+     *
+     * `Pair` renders one, so it is reached — but only ever with two EQUAL members, which is the
+     * shape that cannot go wrong. Unequal weights are the reason this component exists at all,
+     * and they are where a border, a radius or a rounding error would put a seam somewhere it
+     * must not be. Nothing else in the suite renders one.
+     */
+    name: 'Strip',
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: ['#526a6b', '#5a6f78', '#7a5c3e'],
+    render: (_state, theme) =>
+      draw(
+        <Strip
+          members={[
+            { name: 'Ai-nezumi', hex: '#526a6b', color: SAMPLE },
+            { name: 'Fukiasagi', hex: '#5a6f78', color: SAMPLE_B },
+            { name: 'Kuchiba', hex: '#7a5c3e', color: SAMPLE },
+          ]}
+          weights={[1, 0.9, 0.6]}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE PAIR (F-151). Static, because a pair is a reading rather than a control — it has no
+     * pressed, chosen, disabled or busy state, and declaring one it does not have would make
+     * the suite assert a state that exists only in the registry.
+     *
+     * Both halves are sample data, so both are declared. Forgetting one would surface as a
+     * colour-literal finding rather than as a silent pass, which is the direction that costs
+     * nothing to get wrong.
+     */
+    name: 'Pair',
+    kind: 'static',
+    forbiddenNames: ['swatch', 'sample'],
+    sampleValues: ['#526a6b', '#5a6f78'],
+    render: (_state, theme) =>
+      draw(
+        <Pair
+          a={{ name: 'Ai-nezumi', hex: '#526a6b', color: SAMPLE }}
+          b={{ name: 'Fukiasagi', hex: '#5a6f78', color: SAMPLE_B }}
+        />,
         theme,
       ),
   },

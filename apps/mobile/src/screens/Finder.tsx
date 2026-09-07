@@ -12,6 +12,17 @@
  * That last one is FR-10's habit applied to search: an answer that cannot say what produced it
  * cannot be reproduced after the vocabulary moves.
  *
+ * ## The results do not move (F-151)
+ *
+ * Two things used to shift them. The answer line was a small grey sentence before a query and a
+ * heading after it — two heights in the slot everything below depends on — so the list jumped on
+ * the first keystroke, under the thumb that had just typed it. And the region panel appears for a
+ * phrase answer and nothing else, so one more word could make forty rows slide up the screen.
+ *
+ * The line is now the same line in every state, and the region moved BELOW the results, where it
+ * reads better anyway: it is provenance, and provenance goes with the answer rather than in
+ * front of it.
+ *
  * ## Nothing here searches
  *
  * `find()` in [`../finder.ts`](../finder.ts) does all of it, and is tested without rendering
@@ -129,21 +140,64 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         {t('finder.hint')}
       </Text>
 
-      {result.kind === 'empty' ? (
-        <Text size="small" color="foreground.2" script={script}>
-          {t('finder.empty')}
-        </Text>
-      ) : (
-        <>
-          {/*
-            WHICH QUESTION WAS ANSWERED. A single field that routes three ways will sometimes
-            route differently from what the person meant, and this is the difference between
-            "these results are wrong" and "ah, it read that as a hex".
-          */}
-          <Text size="body" color="foreground" script={script} heading>
-            {t(ANSWERED[result.kind])}
-          </Text>
+      {/*
+        WHICH QUESTION WAS ANSWERED — ONE LINE, ALWAYS (F-151).
 
+        A single field that routes three ways will sometimes route differently from what the
+        person meant, and this is the difference between "these results are wrong" and "ah, it
+        read that as a hex".
+
+        It is now the SAME line in every state, including the empty one. It used to be a small
+        grey sentence before a query and a heading after it, which is two different heights in
+        the one slot everything below depends on — so the results moved on the first keystroke,
+        under the thumb that had just typed it.
+      */}
+      <Text size="body" color="foreground" script={script} heading>
+        {result.kind === 'empty' ? t('finder.empty') : t(ANSWERED[result.kind])}
+      </Text>
+
+      {result.kind === 'empty' ? null : (
+        <>
+          {shown.length === 0 ? (
+            <Stack gap="xs">
+              <Text size="small" color="foreground" script={script}>
+                {t('finder.none')}
+              </Text>
+              <Text size="xs" color="foreground.2" script={script}>
+                {t(NOTHING[result.kind])}
+              </Text>
+            </Stack>
+          ) : (
+            <Surface level="1" padding="md">
+              <View>
+                <Text size="xs" color="foreground.2" script={script}>
+                  {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
+                </Text>
+                {shown.map((entry, i) => (
+                  <ResultRow
+                    key={entry.entry.slug}
+                    entry={entry}
+                    {...(result.distances === undefined
+                      ? {}
+                      : { distance: result.distances[i] ?? 0 })}
+                  />
+                ))}
+              </View>
+            </Surface>
+          )}
+
+          {/*
+            THE REGION, AFTER THE RESULTS AND NOT BEFORE THEM.
+
+            This panel appears for a phrase answer and for nothing else, so above the list it was
+            the layout jump: type one more word, the words stop resolving, the panel vanishes and
+            forty rows slide up the screen.
+
+            Below, it costs nothing and reads better — it is PROVENANCE, and provenance in this
+            product goes with the answer rather than in front of it. The vocabulary version is
+            here for FR-10's reason: an answer that cannot say what produced it cannot be
+            reproduced once the lexicon moves.
+          */}
           {result.region === undefined ? null : (
             <Surface level="1" padding="md">
               <Stack gap="xs">
@@ -175,42 +229,10 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                     </View>
                   );
                 })}
-                {/*
-                  The vocabulary that produced this answer. Without it the region is a number
-                  nobody can reproduce once the lexicon moves.
-                */}
                 <Text size="xs" color="foreground.2" script={script}>
                   {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
                 </Text>
               </Stack>
-            </Surface>
-          )}
-
-          {shown.length === 0 ? (
-            <Stack gap="xs">
-              <Text size="small" color="foreground" script={script}>
-                {t('finder.none')}
-              </Text>
-              <Text size="xs" color="foreground.2" script={script}>
-                {t(NOTHING[result.kind])}
-              </Text>
-            </Stack>
-          ) : (
-            <Surface level="1" padding="md">
-              <View>
-                <Text size="xs" color="foreground.2" script={script}>
-                  {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
-                </Text>
-                {shown.map((entry, i) => (
-                  <ResultRow
-                    key={entry.entry.slug}
-                    entry={entry}
-                    {...(result.distances === undefined
-                      ? {}
-                      : { distance: result.distances[i] ?? 0 })}
-                  />
-                ))}
-              </View>
             </Surface>
           )}
         </>

@@ -134,6 +134,16 @@ export function emitReactNative(manifest: Manifest): string {
     out.push(`  ${key(name)}: ${String(value)},`);
   out.push('} as const;');
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
+  out.push(
+    `/**
+ * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
+ *
+ * Derived from the CIE 2° standard observer at the declared viewing distance — the same
+ * observer this product's colorimetry uses throughout. A list that RANKS may keep its
+ * thumbnails; a pair that has to be assessed reaches this (ADR-0095).
+ */
+export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const;`,
+  );
   out.push('');
 
   // --- typography -----------------------------------------------------------------------

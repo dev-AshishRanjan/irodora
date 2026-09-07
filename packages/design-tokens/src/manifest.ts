@@ -183,7 +183,17 @@ export interface Manifest {
   readonly salience: Salience;
   readonly radius: Readonly<Record<string, number>>;
   readonly spacing: { readonly base: number; readonly scale: Readonly<Record<string, number>> };
-  readonly size: { readonly tapTarget: number };
+  readonly size: {
+    readonly tapTarget: number;
+    /**
+     * The smallest a sample may be drawn when the screen asks you to JUDGE it, in dp.
+     *
+     * Derived, never declared — see the parser. Scoped by what the surface asks of the reader:
+     * a list that ranks keeps its thumbnails, a pair that must be assessed reaches this
+     * (ADR-0095).
+     */
+    readonly judgeable: number;
+  };
   readonly typography: Typography;
   readonly elevation: Elevation;
   readonly motion: Motion;
@@ -216,6 +226,12 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const isUsage = (v: string): v is Usage => (USAGES as readonly string[]).includes(v);
+
+/**
+ * Millimetres in an inch. Exact by definition since 1959, so it is a unit conversion rather
+ * than a measurement — which is why it lives here and not in the manifest.
+ */
+const MM_PER_INCH = 25.4;
 
 function requireRecord(v: unknown, path: string): Record<string, unknown> {
   if (!isRecord(v)) throw new ManifestError(path, 'expected an object');
@@ -510,6 +526,54 @@ export function parseManifest(input: unknown): Manifest {
         'corners meet and the sample stops being a field of colour — which is what it is for.',
     );
 
+  // --- size -----------------------------------------------------------------------------
+  //
+  /*
+   * A SAMPLE THAT CARRIES A NUMBER MUST SUBTEND THE OBSERVER THAT NUMBER WAS FIT FOR (ADR-0095).
+   *
+   * This product's colorimetry is the CIE 2° standard observer throughout — `whitepoints.ts`
+   * carries D65/2° and D50/2°, the calibration reader refuses a patch value whose observer is
+   * unstated, and ΔE00 is parameterised for it. A sample presented as the SUBJECT of a colour
+   * difference and drawn smaller than that is being judged under conditions the number was not
+   * fit for. Below roughly 1° it stops being a technicality: the central fovea is sparse in
+   * S-cones, and small fields measurably lose blue–yellow discrimination.
+   *
+   * THE VALUE IS DERIVED HERE AND NOWHERE ELSE, and a manifest that writes it literally is a
+   * parse error. A constant that has been copied out of its reasoning cannot be checked against
+   * it later — which is exactly how the Android safe-zone assertion came to carry the previous
+   * mark's numbers and would have passed while the new one was clipped (E-085).
+   *
+   *   2 · d · tan(θ/2)  is the chord a field of θ subtends at distance d
+   *   1 dp = 25.4 / dpPerInch mm  is the density-independent pixel's definition
+   *
+   * At the declared 2° and 350 mm that is 12.2185 mm, which is 76.97 dp, which rounds to 77.
+   */
+  const sizeRaw = requireRecord(root['size'], 'size');
+  if (sizeRaw['judgeable'] !== undefined)
+    throw new ManifestError(
+      'size.judgeable',
+      'is derived from observerDegrees, viewingDistanceMm and dpPerInch, and may not be ' +
+        'written down. A value copied out of its reasoning cannot be checked against it — ' +
+        'remove the key and change an input instead.',
+    );
+
+  const observerDegrees = requireNumber(sizeRaw['observerDegrees'], 'size.observerDegrees');
+  const viewingDistanceMm = requireNumber(sizeRaw['viewingDistanceMm'], 'size.viewingDistanceMm');
+  const dpPerInch = requireNumber(sizeRaw['dpPerInch'], 'size.dpPerInch');
+
+  if (observerDegrees <= 0 || viewingDistanceMm <= 0 || dpPerInch <= 0)
+    throw new ManifestError(
+      'size',
+      'observerDegrees, viewingDistanceMm and dpPerInch are all physical quantities and all ' +
+        'have to be positive.',
+    );
+
+  const fieldMm = 2 * viewingDistanceMm * Math.tan((observerDegrees / 2) * (Math.PI / 180));
+  const size = {
+    tapTarget: requireNumber(sizeRaw['tapTarget'], 'size.tapTarget'),
+    judgeable: Math.round(fieldMm / (MM_PER_INCH / dpPerInch)),
+  };
+
   // --- typography ---------------------------------------------------------------------
   //
   // Parsed rather than ignored as of F-017. Until then the manifest declared a type scale
@@ -637,9 +701,7 @@ export function parseManifest(input: unknown): Manifest {
     salience,
     radius,
     spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale },
-    size: {
-      tapTarget: requireNumber(requireRecord(root['size'], 'size')['tapTarget'], 'size.tapTarget'),
-    },
+    size,
     typography: {
       families,
       scale: typeScale,

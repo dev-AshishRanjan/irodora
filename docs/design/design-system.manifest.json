@@ -813,7 +813,10 @@
   },
   "size": {
     "tapTarget": 44,
-    "_note": "Apple's floor, applied on web too. Comfortable is also accessible."
+    "observerDegrees": 2,
+    "viewingDistanceMm": 350,
+    "dpPerInch": 160,
+    "_note": "tapTarget is Apple's floor, applied on web too — comfortable is also accessible. A SAMPLE THAT CARRIES A NUMBER MUST SUBTEND THE OBSERVER THAT NUMBER WAS FIT FOR (ADR-0095). This product’s colorimetry is the CIE 2° standard observer — whitepoints.ts carries D65/2° and D50/2°, the calibration reader refuses a patch value whose observer is unstated, and ΔE00 is parameterised for it. So a sample presented as the SUBJECT of a colour difference and drawn smaller than 2° is being judged under conditions the number was not fit for; below roughly 1° that is measurable rather than theoretical, because the central fovea is sparse in S-cones and small fields lose blue–yellow discrimination. THE VALUE IS NOT WRITTEN HERE: manifest.ts computes it from these three inputs, and refuses a `judgeable` key written literally — a constant nobody can re-derive is how the Android safe zone came to carry the previous mark’s numbers (E-085). viewingDistanceMm is the one SOFT input and the ADR says so: it is a central figure for a phone in the hand, not a guarantee about anybody’s posture. dpPerInch is the density-independent pixel’s definition, not a device. THE FLOOR IS SCOPED BY WHAT THE SCREEN ASKS: a list that ranks may keep thumbnails, a surface that asks you to judge a difference may not — see ADR-0095 for the line."
   },
   "typography": {
     "families": {

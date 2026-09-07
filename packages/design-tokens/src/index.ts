@@ -98,6 +98,7 @@ export {
   nativeColors,
   nativeRadius,
   nativeSpacing,
+  nativeJudgeableSample,
   nativeTapTarget,
   nativeType,
   nativeNumericFeature,

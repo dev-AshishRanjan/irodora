@@ -101,6 +101,14 @@ export const nativeSpacing = {
   xl5: 96,
 } as const;
 export const nativeTapTarget = 44 as const;
+/**
+ * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
+ *
+ * Derived from the CIE 2° standard observer at the declared viewing distance — the same
+ * observer this product's colorimetry uses throughout. A list that RANKS may keep its
+ * thumbnails; a pair that has to be assessed reaches this (ADR-0095).
+ */
+export const nativeJudgeableSample = 77 as const;
 
 /** Absolute points, NOT the manifest ratios — RN lineHeight is a length. */
 export const nativeType = {

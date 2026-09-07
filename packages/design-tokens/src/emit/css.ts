@@ -76,6 +76,7 @@ export function emitCss(manifest: Manifest): string {
   for (const [name, value] of Object.entries(manifest.spacing.scale))
     out.push(`  ${cssVarName('space', name)}: ${String(value)}px;`);
   out.push(`  ${cssVarName('size', 'tap-target')}: ${String(manifest.size.tapTarget)}px;`);
+  out.push(`  ${cssVarName('size', 'judgeable')}: ${String(manifest.size.judgeable)}px;`);
   out.push('}');
   out.push('');
 
