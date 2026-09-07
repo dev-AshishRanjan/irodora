@@ -594,6 +594,7 @@ export function ColourDetail({
           onPress={() => {
             onOpenCard?.(slug);
           }}
+          script={script}
         />
       </Stack>
     </Screen>

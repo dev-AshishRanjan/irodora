@@ -14,6 +14,26 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
+
+/*
+ * THE LOCALE THE SUITE RENDERS IN (F-152).
+ *
+ * `deviceLocale` reads `getLocales()` on every call, so a mutable tag is enough to render the
+ * whole registry in either language — no override prop on every screen, and no second copy of
+ * the registry in a second file.
+ *
+ * The name has to begin with `mock`: jest hoists `jest.mock` above everything, and its babel
+ * plugin refuses a factory that closes over any other out-of-scope binding. There is no
+ * temporal-dead-zone problem, because `getLocales` reads the tag when it is CALLED — at render
+ * time — rather than when the factory is built.
+ */
+const DEFAULT_LANGUAGE_TAG = 'en-GB';
+let mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageTag: mockLanguageTag }],
+}));
+
 import { Text, ThemeProvider, swatchAccessibleName } from '@irodora/ui';
 import {
   checkAll,
@@ -71,10 +91,14 @@ import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@
 import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { PROFILE_DIMENSIONS } from '@irodora/store';
 import { en } from '../src/i18n/en';
-import { isMessageKey } from '../src/i18n/index';
+import { isMessageKey, t } from '../src/i18n/index';
 import type { ProfileStore } from '../src/profile/store';
 import { compare } from '../src/compare';
-import { nativeJudgeableSample, nativeNumericFeature } from '@irodora/design-tokens';
+import {
+  nativeFamilies,
+  nativeJudgeableSample,
+  nativeNumericFeature,
+} from '@irodora/design-tokens';
 import { allEntries, colorFor, CORPUS_ENTRY_COUNT, CORPUS_LABEL, entryBySlug } from '../src/corpus';
 import { simulateAnomalous, type Deficiency } from '@irodora/cvd-engine';
 import { srgbToHex } from '@irodora/color-spaces';
@@ -669,6 +693,19 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * EMPTY, WITH SOMEWHERE TO GO. The hint says "keep or pass on an outfit and the pairing
+     * appears here" — which happens on another screen, so the empty state offers the route when
+     * the route exists. Both branches are registered, as the Wardrobe's two are, because
+     * `EmptyState`'s union makes them genuinely different trees.
+     */
+    name: 'screens/Preferences (nothing learned, with somewhere to go)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Preferences store={preferenceStore([])} onBuildOutfit={() => undefined} />, theme),
+  },
+  {
+    /*
      * MID-CONFIRMATION. The destructive path meets the same contrast and naming bar as the
      * rest — it is the state a person is least likely to be in and most likely to be harmed by.
      */
@@ -986,6 +1023,42 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * THE WRITE FAILED, and until F-152 it read exactly like the write that succeeded — one
+     * grey sentence for saved, cancelled and failed alike.
+     */
+    name: 'screens/Export (the write failed)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Export
+          subject={EXPORT_SUBJECT}
+          sink={noSink}
+          initialOutcome={{ kind: 'failed', detail: 'the file could not be written' }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * AND THE ONE THAT WORKED. The decoy for the case above: two states that must now look
+     * different, asserted by rendering both rather than by trusting the branch.
+     */
+    name: 'screens/Export (saved)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Export
+          subject={EXPORT_SUBJECT}
+          sink={noSink}
+          initialOutcome={{ kind: 'saved', filename: 'irodora-palette.json' }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * THE SAME SCREEN WITH NOTHING TO EXPORT.
      *
      * One sentence where the other draws a palette, six format rows and a button — almost
@@ -1049,6 +1122,21 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<AddGarment store={fakeWardrobe()} imageSource={fakeImageSource()} />, theme),
+  },
+  {
+    /*
+     * THE FILE WAS REFUSED. The ingest rejects for real reasons — too large, a format we do not
+     * decode — and this drew in the same grey body text as "photograph attached" directly above
+     * it, so the only thing separating the two was reading the sentence.
+     */
+    name: 'screens/AddGarment (the photograph was refused)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <AddGarment store={fakeWardrobe()} imageSource={fakeImageSource()} initialImageProblem />,
+        theme,
+      ),
   },
   {
     /*
@@ -1491,6 +1579,93 @@ describe('every screen conforms', () => {
   it('produces no findings, in either theme', () => {
     const findings = checkAll(SCREENS);
     expect(formatFindings(findings)).toBe('');
+  });
+});
+
+/**
+ * THE SAME REGISTRY, IN THE OTHER LANGUAGE (F-152, criterion 4).
+ *
+ * Every subject above has been rendered in both themes and **one language** since the registry
+ * existed. Half of this product's user-facing copy had never been through the checks that read
+ * contrast, structure and accessible names — which is
+ * [[the-claims-lint-only-speaks-english]]'s shape in a different gate, one week later.
+ *
+ * **Japanese is not a translation of the layout.** The type scale differs by script because
+ * leading does, the strings are longer or shorter in ways nothing predicts, and a screen that
+ * fits in English is not thereby a screen that fits.
+ *
+ * THE SAME SUBJECTS, NOT A COPY OF THEM. A second registry would be a second thing to drift,
+ * and the one that drifted would be the one nobody was reading.
+ */
+describe('every screen conforms in Japanese too (F-152)', () => {
+  beforeAll(() => {
+    mockLanguageTag = 'ja-JP';
+  });
+  afterAll(() => {
+    mockLanguageTag = DEFAULT_LANGUAGE_TAG;
+  });
+
+  it('renders the Japanese CATALOGUE, which is what makes the run below mean anything', () => {
+    /*
+     * ASSERTED FIRST, AND ASSERTED ON THE RIGHT THING. A mock that failed to take would produce
+     * an English render, no findings, and a green run claiming coverage of a language it never
+     * drew — the exact failure this block exists to close, reproduced by the block itself.
+     *
+     * THE FIRST VERSION OF THIS ASSERTION WAS VACUOUS: it looked for CJK anywhere in the tree,
+     * and every corpus entry carries `name.kanji`, which is rendered in **both** locales. It
+     * would have passed on an English screen. So the check is now on a string that exists only
+     * in the catalogue, and on both directions — the Japanese one present, the English one
+     * absent — because a screen showing both would mean the locale changed halfway.
+     */
+    const subject = SCREENS.find((s) => s.name === 'screens/Wardrobe (nothing in it)');
+    if (subject === undefined) throw new Error('the wardrobe empty subject is gone');
+
+    const drawn = JSON.stringify(subject.render('default', 'light'));
+    expect(drawn).toContain(t('ja', 'browse.empty'));
+    expect(drawn).not.toContain(t('en', 'browse.empty'));
+  });
+
+  it('produces no findings, in either theme', () => {
+    expect(formatFindings(checkAll(SCREENS))).toBe('');
+  });
+
+  /*
+   * THE TYPE SCALE, WHICH THE RUN ABOVE CANNOT SEE (F-152 criterion 1).
+   *
+   * The conformance suite reads contrast, structure and accessible names. **None of those
+   * changes when a screen draws Japanese at the Latin leading**, so the pass above was green
+   * over four screens — AddGarment, Measure, OutfitBuilder and Shopping — that never
+   * destructured `script` from `useMessages` at all. Sixty-six text nodes, drawing Japanese
+   * copy with the platform font and the Latin line-height.
+   *
+   * `useMessages` returns `script` for exactly this reason, and a screen that ignores it is
+   * indistinguishable from one that does not, to every gate in this repository.
+   *
+   * The check is the bundled face rather than the leading, because that is the property with a
+   * failure mode: ADR-0057 §6 ships a Japanese subset precisely so a missing glyph cannot come
+   * out as tofu, and Latin gets the platform font because Latin cannot fail that way.
+   */
+  it('draws Japanese copy with the bundled Japanese face, not the platform font', () => {
+    const cjk = /[぀-ヿ㐀-䶿一-鿿]/u;
+
+    const bare: string[] = [];
+    const walk = (node: TestNode, subject: string): void => {
+      const text = (node.children ?? []).filter((c): c is string => typeof c === 'string').join('');
+      if (cjk.test(text)) {
+        const style: unknown = node.props['style'];
+        const flat =
+          typeof style === 'object' && style !== null ? (style as Record<string, unknown>) : {};
+        if (flat['fontFamily'] !== nativeFamilies.jp) bare.push(`${subject}: ${text.slice(0, 24)}`);
+      }
+      for (const child of node.children ?? []) if (typeof child !== 'string') walk(child, subject);
+    };
+
+    for (const s of SCREENS) {
+      const tree = s.render('default', 'light');
+      if (tree !== null) walk(tree, s.name);
+    }
+
+    expect(bare).toHaveLength(0);
   });
 });
 

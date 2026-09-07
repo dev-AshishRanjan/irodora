@@ -243,6 +243,7 @@ export function Home({
               onPress={() => {
                 onAddGarment?.();
               }}
+              script={script}
             />
           </Stack>
         ) : (
@@ -288,6 +289,7 @@ export function Home({
               onPress={() => {
                 onOpenLens?.();
               }}
+              script={script}
             />
           </Stack>
         </Section>

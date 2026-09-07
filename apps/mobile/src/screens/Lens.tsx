@@ -574,7 +574,7 @@ export function Lens({
               {t(permission === 'denied' ? 'lens.deniedBody' : 'lens.askBody')}
             </Text>
             {permission === 'undetermined' && onRequestPermission !== undefined ? (
-              <Button label={t('lens.ask')} onPress={onRequestPermission} />
+              <Button label={t('lens.ask')} onPress={onRequestPermission} script={script} />
             ) : null}
           </Stack>
         </Surface>
@@ -598,6 +598,7 @@ export function Lens({
             loading={awaiting}
             disabled={opening}
             {...(onCapture === undefined ? {} : { onPress: onCapture })}
+            script={script}
           />
 
           {/*
@@ -621,6 +622,7 @@ export function Lens({
               : onOpenPhoto === undefined
                 ? {}
                 : { onPress: onOpenPhoto })}
+            script={script}
           />
 
           {/*
@@ -650,6 +652,7 @@ export function Lens({
                             onModeChange(option);
                           },
                         })}
+                    script={script}
                   />
                 ))}
           </Row>
@@ -713,6 +716,7 @@ export function Lens({
             <Row gap="md">
               <Swatch
                 name={t('lens.reading')}
+                script={script}
                 hex={liveDisplay.hex}
                 color={liveDisplay.color}
                 size={40}
@@ -863,6 +867,7 @@ export function Lens({
                 <Row gap="md">
                   <Swatch
                     name={t('lens.reading')}
+                    script={script}
                     hex={display.hex}
                     color={display.color}
                     size={56}
@@ -940,6 +945,7 @@ export function Lens({
                   onPress={() => {
                     onUseForProfile(capture);
                   }}
+                  script={script}
                 />
                 <Text size="xs" color="foreground.2" script={script}>
                   {t('lens.useForProfileNote')}
@@ -961,6 +967,7 @@ export function Lens({
                   onPress={() => {
                     onUseForWardrobe(capture);
                   }}
+                  script={script}
                 />
                 <Text size="xs" color="foreground.2" script={script}>
                   {t('lens.useForWardrobeNote')}

@@ -191,6 +191,7 @@ function FilterRow<K extends string>({
           onPress={() => {
             onChange(null);
           }}
+          script={script}
         />
         {options.map((o) => (
           <Chip
@@ -200,6 +201,7 @@ function FilterRow<K extends string>({
             onPress={() => {
               onChange(selected === o.value ? null : o.value);
             }}
+            script={script}
           />
         ))}
       </ScrollView>
@@ -636,7 +638,7 @@ export function Wardrobe({
           </Text>
         )}
 
-        <Button label={t('browse.save')} onPress={save} />
+        <Button label={t('browse.save')} onPress={save} script={script} />
         {!saved ? null : (
           <Text size="small" color="foreground.2" script={script}>
             {t('browse.saved')}
@@ -649,6 +651,7 @@ export function Wardrobe({
             setSelectedId(null);
             setSaved(false);
           }}
+          script={script}
         />
       </Screen>
     );
@@ -668,7 +671,12 @@ export function Wardrobe({
       */}
       {garments.length === 0 || onAddGarment === undefined ? null : (
         <View style={{ alignItems: 'flex-start' }}>
-          <Button label={t('browse.add')} variant="secondary" onPress={onAddGarment} />
+          <Button
+            label={t('browse.add')}
+            variant="secondary"
+            onPress={onAddGarment}
+            script={script}
+          />
         </View>
       )}
 
@@ -737,6 +745,7 @@ export function Wardrobe({
                   onPress={() => {
                     setFilter(NO_FILTER);
                   }}
+                  script={script}
                 />
               </>
             )}

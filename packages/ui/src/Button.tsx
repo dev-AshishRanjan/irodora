@@ -40,8 +40,14 @@
 
 import { Button as HeroButton } from 'heroui-native';
 import type { PressableProps } from 'react-native';
-import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import {
+  nativeFamilies,
+  nativeRadius,
+  nativeSpacing,
+  nativeTapTarget,
+} from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
+import type { Script } from './layout.js';
 
 export type ButtonVariant = 'primary' | 'secondary';
 
@@ -51,6 +57,14 @@ export type ButtonProps = Omit<PressableProps, 'style' | 'children' | 'disabled'
   readonly variant?: ButtonVariant;
   readonly disabled?: boolean;
   readonly loading?: boolean;
+  /**
+   * The script the label is written in.
+   *
+   * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
+   * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
+   * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+   */
+  readonly script?: Script;
 };
 
 export function Button({
@@ -58,6 +72,7 @@ export function Button({
   variant = 'primary',
   disabled = false,
   loading = false,
+  script = 'latin',
   ...rest
 }: ButtonProps): React.JSX.Element {
   const { colors } = useTheme();
@@ -104,7 +119,21 @@ export function Button({
         opacity: inert ? 0.5 : 1,
       }}
     >
-      <HeroButton.Label style={{ color: foreground }}>
+      {/*
+        THE BUNDLED FACE, AND ONLY THE FACE (F-152).
+
+        This label is HeroUI's, not our `Text`, so it never went through the type scale — and
+        a Japanese button therefore drew with the platform font, which is the one thing
+        ADR-0057 §6 bundles a subset to prevent. The SIZE stays HeroUI's: a button's metrics
+        are its own, the tap target is asserted against them, and changing the step here would
+        move a measurement two gates depend on to fix a glyph problem.
+      */}
+      <HeroButton.Label
+        style={{
+          color: foreground,
+          ...(script === 'japanese' ? { fontFamily: nativeFamilies.jp } : {}),
+        }}
+      >
         {loading ? `${label}…` : label}
       </HeroButton.Label>
     </HeroButton>

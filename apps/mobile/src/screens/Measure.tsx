@@ -37,6 +37,7 @@ import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  EmptyState,
   Row,
   Screen,
   Surface,
@@ -107,7 +108,7 @@ export function Measure({
   initialReferenceId,
   initialSamples = [],
 }: MeasureProps): React.JSX.Element {
-  const { t } = useMessages();
+  const { t, script } = useMessages();
   const [space, setSpace] = useState<EntrySpace>('lab');
   const [fields, setFields] = useState<readonly [string, string, string]>(EMPTY_FIELDS);
   const [samples, setSamples] = useState<readonly BatchSample[]>(initialSamples);
@@ -146,22 +147,22 @@ export function Measure({
   }, [parsed, space]);
 
   return (
-    <Screen title={t('measure.title')}>
-      <Text size="body" color="foreground.2">
+    <Screen title={t('measure.title')} script={script}>
+      <Text size="body" color="foreground.2" script={script}>
         {t('measure.origin')}
       </Text>
 
       {/* ------------------------------------------------- the reference library */}
-      <Text size="body" color="foreground" heading>
+      <Text size="body" color="foreground" heading script={script}>
         {t('measure.library')}
       </Text>
       {libraries.map((library) => (
         <Surface key={library.id} level="1">
           <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
-            <Text size="body" color="foreground.2">
+            <Text size="body" color="foreground.2" script={script}>
               {library.name}
             </Text>
-            <Text size="small" color="foreground.2">
+            <Text size="small" color="foreground.2" script={script}>
               {t('measure.pickReference')}
             </Text>
             <Row gap="sm" wrap>
@@ -194,11 +195,11 @@ export function Measure({
       ))}
 
       {reference === null ? (
-        <Text size="body" color="foreground.2">
+        <Text size="body" color="foreground.2" script={script}>
           {t('measure.noReference')}
         </Text>
       ) : (
-        <Text size="body" color="foreground">
+        <Text size="body" color="foreground" script={script}>
           {`${t('measure.reference')}: ${reference.name}`}
         </Text>
       )}
@@ -206,7 +207,7 @@ export function Measure({
       {/* ------------------------------------------------------ the entry form */}
       <Surface level="1">
         <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
-          <Text size="body" color="foreground" heading>
+          <Text size="body" color="foreground" heading script={script}>
             {t('measure.space')}
           </Text>
           <Row gap="sm">
@@ -219,6 +220,7 @@ export function Measure({
                   setSpace(candidate);
                   setFields(EMPTY_FIELDS);
                 }}
+                script={script}
               />
             ))}
           </Row>
@@ -233,36 +235,47 @@ export function Measure({
                 }}
                 keyboardType="numbers-and-punctuation"
                 autoCorrect={false}
+                script={script}
               />
               {/*
                * BENEATH THE FIELD IT NAMES, and nowhere else. `parseMeasurement` returns the
                * index precisely so this sentence can sit under the one that is wrong.
                */}
               {problem !== null && problem.field === index ? (
-                <Text size="small" color="foreground.2">
+                <Text size="small" color="foreground.2" script={script}>
                   {t(PROBLEM_KEYS[problem.problem])}
                 </Text>
               ) : null}
             </View>
           ))}
 
-          <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} />
+          <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} script={script} />
         </View>
       </Surface>
 
       {/* ------------------------------------------------------------ the table */}
-      <Text size="body" color="foreground" heading>
+      <Text size="body" color="foreground" heading script={script}>
         {t('measure.samples')}
       </Text>
       {rows.length === 0 ? (
-        <Text size="body" color="foreground.2">
-          {t('measure.empty')}
-        </Text>
+        /*
+          THE DESIGNED EMPTY STATE, NOT A GREY SENTENCE (F-152 criterion 2).
+
+          `resolvedHere`, and the union made that a decision rather than a default: what fills
+          this table is the form directly above it, so a button pointing somewhere else would
+          be a second route to something already on the screen.
+        */
+        <EmptyState
+          message={t('measure.empty')}
+          hint={t('measure.emptyHint')}
+          script={script}
+          resolvedHere
+        />
       ) : (
         rows.map((row) => (
           <Surface key={row.id} level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.xs }}>
-              <Text size="body" color="foreground" numeric>
+              <Text size="body" color="foreground" numeric script={script}>
                 {`${row.name} — ${t('compare.difference')}: ${row.deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
               </Text>
               {/*
@@ -270,13 +283,13 @@ export function Measure({
                * it. That is criterion 1, and FR-61's own sentence: the same quantity in a
                * different space is a different claim.
                */}
-              <Text size="small" color="foreground.2" numeric>
+              <Text size="small" color="foreground.2" numeric script={script}>
                 {`${t('space.cielab')}: ${row.lab.map((v) => v.toFixed(2)).join('  ')}`}
               </Text>
-              <Text size="small" color="foreground.2" numeric>
+              <Text size="small" color="foreground.2" numeric script={script}>
                 {`${t('coord.lch')}: ${row.lch.map((v) => v.toFixed(2)).join('  ')}`}
               </Text>
-              <Text size="small" color="foreground.2">
+              <Text size="small" color="foreground.2" script={script}>
                 {`${t('measure.arrivedIn')}: ${row.originSpace}`}
               </Text>
             </View>

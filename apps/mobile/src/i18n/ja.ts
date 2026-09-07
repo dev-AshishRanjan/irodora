@@ -394,6 +394,7 @@ export const ja: Record<MessageKey, string> = {
   'measure.add': 'この測定値を追加',
   'measure.samples': '入力した測定値',
   'measure.empty': 'まだ入力がありません。',
+  'measure.emptyHint': '上で値を入力すると、いちばん近い収録色との差とともに表に加わります。',
   'measure.arrivedIn': '入力形式',
   'measure.axisLchC': '彩度 C*',
   'measure.problem.blank': 'この欄には数値が必要です。',

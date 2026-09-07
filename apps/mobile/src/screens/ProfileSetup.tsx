@@ -271,6 +271,7 @@ export function ProfileSetup({
             onPress={() => {
               answer(trial, option);
             }}
+            script={script}
           />
         </Stack>
       </Surface>
@@ -311,6 +312,7 @@ export function ProfileSetup({
                 onPress={() => {
                   correct(setDimension(profile, { kind: 'lightness', range: band.range }));
                 }}
+                script={script}
               />
             ))}
           </Chips>
@@ -326,6 +328,7 @@ export function ProfileSetup({
                 onPress={() => {
                   correct(setDimension(profile, { kind: 'chroma', range: band.range }));
                 }}
+                script={script}
               />
             ))}
           </Chips>
@@ -350,6 +353,7 @@ export function ProfileSetup({
                 onPress={() => {
                   correct(setDimension(profile, { kind: 'temperature', bias: step.bias }));
                 }}
+                script={script}
               />
             ))}
           </Chips>
@@ -366,6 +370,7 @@ export function ProfileSetup({
                 onPress={() => {
                   correct(setDimension(profile, { kind: 'contrast', preference: step.value }));
                 }}
+                script={script}
               />
             ))}
           </Chips>
@@ -430,6 +435,7 @@ export function ProfileSetup({
                     }),
                   );
                 }}
+                script={script}
               />
             </View>
           );
@@ -518,6 +524,7 @@ export function ProfileSetup({
                   setConfirmed(true);
                   setSaved(false);
                 }}
+                script={script}
               />
               <Button
                 label={t('profile.compareInstead')}
@@ -527,6 +534,7 @@ export function ProfileSetup({
                   setAnswers([]);
                   setSaved(false);
                 }}
+                script={script}
               />
             </>
           )}
@@ -539,6 +547,7 @@ export function ProfileSetup({
               setAnswers([]);
               setSaved(false);
             }}
+            script={script}
           />
           <Text size="xs" color="foreground.2" script={script}>
             {t('profile.restartHint')}
@@ -552,6 +561,7 @@ export function ProfileSetup({
         onPress={() => {
           save();
         }}
+        script={script}
       />
       {/*
         A disabled control with no stated reason is the accessibility failure that looks like

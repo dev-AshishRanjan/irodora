@@ -3345,6 +3345,52 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-092",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Status.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/conformance.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/design/design-system.manifest.json"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/AddGarment.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Export.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "packages/design-tokens"
+      ],
+      "severity": "high",
+      "guard": "THE ADJACENCY CHECK NOW RECOGNISES BOTH SHAPES, with a fixture for the one it could not see — a status carrying its own well — and the original shared-parent case kept beside it, so the widening is not the rule being switched off. `status.bad` declares `pairsWith: swatch.well`, so gate 9 measures the combination `adjacentToSample` creates; `ok` and `warn` are DELIBERATELY not declared, because they do not clear the floor there, and F-171’s pairing rule fails the build the moment a screen draws one on a well. The conformance registry now runs over every screen in BOTH locales — the same subjects, not a copy — with a non-vacuity case asserting a catalogue string is present in Japanese and the English one absent. A separate assertion requires the bundled Japanese face on every node drawing Japanese, which is the property no existing gate could see. The two new error states are reachable from `initialImageProblem` and `initialOutcome` and registered as subjects, so neither is code nobody has drawn.",
+      "memory": "memory/effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md",
+      "rationale": "A MECHANISM NOBODY USED IS A MECHANISM NOBODY MEASURED, and three separate things came apart the first time this product painted a status token. THE RULE AND THE COMPONENT HAD ALWAYS DISAGREED: `Status` has taken `adjacentToSample` since F-069 and paints the well on its OWN container, while `checkStatusAdjacency` asked only whether the SHARED PARENT is a well — so the first status that shipped was flagged for doing exactly what its own prop’s docstring promises. Neither piece was wrong in isolation; they were never run against each other, because there was nothing to run. DECLARING THE PAIRING MADE GATE 9 MEASURE IT AND IT FAILED: light status.ok is 4.21:1 and status.warn 4.32:1 on `swatch.well` against a floor of 4.5, so the component promises a ground two of its three kinds cannot legibly sit on, and has since F-069. It has no small fix — darkening ok inverts the salience rank ADR-0053 protects, and warn leaves sRGB before it is dark enough to restore it — so it is two shipped colours under a gamut ceiling, recorded as F-174 rather than bisected. AND HALF THE PRODUCT’S COPY HAD NEVER BEEN RENDERED BY THE SUITE. Pointing the registry at the second locale found four screens that never destructured `script` at all — fifty-eight text nodes drawing Japanese at the Latin leading in the platform font — AND NO GATE COULD SEE IT: contrast does not change when text is set at the wrong leading, and neither does structure or an accessible name. Four components had no way to be told, `Button`’s label never having gone through the type scale at all. THE FIRST NON-VACUITY CHECK I WROTE FOR THAT PASS WAS ITSELF VACUOUS, looking for CJK anywhere when every corpus entry carries `name.kanji` in both locales — the third time in two features that a check written to close a blind spot had one of its own, always the same shape: right about its subject, wrong about whether its subject is there.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

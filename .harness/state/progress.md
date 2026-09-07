@@ -8,6 +8,137 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-152 DONE · the suite had only ever read one language
+
+The sweep that stops the redesign being partial, and the four criteria came apart very
+differently from how they read.
+
+### What the audit found before anything was proposed
+
+| screen | raw spacing | bare `<View>` | primitives | `EmptyState` |
+| --- | ---: | ---: | ---: | ---: |
+| ProfileSetup | 0 | 2 | 7 | 0 |
+| **Preferences** | 0 | **6** | **0** | 0 |
+| Shopping | 0 | 4 | 1 | 3 |
+| OutfitBuilder | 0 | 2 | 4 | 3 |
+| Export | 0 | 0 | 2 | 3 |
+| Measure | 0 | 4 | 2 | 0 |
+| AddGarment | 0 | 1 | 2 | 0 |
+
+**Criterion 3's first half was already kept, and the gate is why.** Not one raw padding, margin
+or gap survives anywhere — `verify-spacing-scale.mjs` has refused them since F-095.
+
+What it found instead: **Preferences using zero layout primitives**, six hand-built views, every
+one of them reading its gap from the scale. *A screen can be perfectly tokenised and still be
+re-implementing the layout system*, and the gate that refuses numbers cannot see that.
+
+### Criterion 4 was the one nothing covered
+
+The conformance registry has rendered every screen in both themes since it existed, and in **one
+language**. Half the product's user-facing copy had never been through the checks that read
+contrast, structure and accessible names — [E-089](../memory/effects/the-claims-lint-only-speaks-english.md)'s
+shape in a different gate, one week later.
+
+The same subjects now run in `ja`. Not a copy of the registry: a second one would be a second
+thing to drift, and the one that drifted would be the one nobody was reading. The locale comes
+from a mutable tag the `expo-localization` mock closes over, which is four lines instead of
+extracting a 3,400-line file.
+
+**It found four screens that never destructured `script` from `useMessages` at all** —
+AddGarment, Measure, OutfitBuilder, Shopping — fifty-eight text nodes drawing Japanese at the
+Latin leading in the platform font. `useMessages` returns `script` for exactly that reason.
+
+**And no gate could see it.** Contrast does not change when text is set at the wrong leading.
+Neither does structure, nor an accessible name. So the new assertion is on the **bundled face**,
+because that is the property with a failure mode: ADR-0057 §6 ships a Japanese subset so a
+missing glyph cannot come out as tofu.
+
+Four `@irodora/ui` components had no way to be told — `Button`, `Chip`, `Status` and `Swatch` all
+take caller-supplied copy and drew it at the default. `Button`'s label is HeroUI's and had never
+gone through the type scale at all.
+
+### The first status token this product has ever painted broke three things
+
+Criterion 2's error states are the first `Status` anywhere in the app — the refused photograph on
+AddGarment, the failed write on Export, where three outcomes had shared one grey sentence.
+
+**The rule and the component had always disagreed.** `Status` has taken `adjacentToSample` since
+F-069 and paints the well on its *own* container; `checkStatusAdjacency` asked only whether the
+*shared parent* is a well. So the first status that shipped was flagged for doing exactly what its
+own prop's docstring promises — *"declared rather than assumed, so the rendered scan can see the
+claim."* Neither piece was wrong in isolation; they had simply never been run against each other.
+
+**Declaring the pairing made gate 9 measure it, and it failed.** Light `status.ok` is 4.21:1 and
+`status.warn` 4.32:1 on `swatch.well`, against a floor of 4.5. The component promises a ground two
+of its three kinds cannot legibly sit on, and has since F-069.
+
+It has no small fix: darkening `ok` inverts the salience rank ADR-0053 protects, and `warn` leaves
+sRGB before it is dark enough to restore it. Two shipped colours under a gamut ceiling, and the
+manifest keeps `valuesChangedSinceApproval` precisely so values postdating a signature cannot
+pretend otherwise. **Recorded as F-174 rather than bisected into place.** `bad` clears at 8.29:1
+and is the only kind declared, so the trap is guarded — F-171's pairing rule fails the build on
+the next `adjacentToSample` ok or warn.
+
+### And my own new check was vacuous first
+
+The non-vacuity assertion for the Japanese pass looked for CJK anywhere in the tree. **Every
+corpus entry carries `name.kanji`, and that renders in both locales**, so it would have passed on
+an English screen. It now asserts a catalogue string in both directions: the Japanese one present,
+the English one absent.
+
+Third time in two features. The shape is always the same — right about its subject, wrong about
+whether its subject is there.
+
+### Criterion 2, and the half that does not exist
+
+Empty and error are delivered and registered. **Loading is attested, not invented.**
+
+There is no `Promise<` anywhere in `apps/mobile/src/store/`. Every device read is synchronous,
+which is what ADR-0051 buys by having no server tier — so on a store-backed screen nothing is ever
+being awaited. Registering a loading state would declare one no fixture can reach, and the suite
+reports that as `state-not-rendered`. *A state that exists only in the registry is worse than an
+absent one, because it reports as coverage.*
+
+Both new error states are reachable from an `initial*` prop and registered as subjects, because an
+error state only a runtime failure can produce is an error state no gate has looked at.
+
+### Criterion 3's remainder
+
+The Studio drew *Move up*, *Move down* and *Remove* as three identical secondary buttons in one
+row — the only thing separating "reorder this" from "delete this" was reading the label, and a tap
+lands before anybody reads anything. The destructive one now stands alone, and **the channel is
+structure rather than colour** because F-069 forbids a status colour beside a colour sample
+without a well between them, and that row sits directly under one.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 777 app tests, the registry now in both locales | **PASS** |
+| **8 a11y** · **9 contrast** · 10 cvd · 5 · 6 · 11 · 12 · 15 | **PASS** |
+| gate 9, on the status/well pairing | **caught** (F-174) |
+| the F-069 adjacency check, on the first status ever painted | **caught** |
+| gate 8 dead-exemption, on two status kinds that now have readers | **caught** |
+| `pnpm verify:ci` — all 33 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 2's loading half is outstanding and blocks release** — not as work, but as a claim
+somebody should agree with: that a local-first app with synchronous reads has no loading state to
+design, and that saying so is better than registering one nothing can render.
+
+**F-174** is the real debt this feature created and could not pay: two status colours that cannot
+sit on the ground their own mechanism provides.
+
+**And the Japanese copy is still unreviewed.** F-172 left that outstanding; this feature added
+`measure.emptyHint` to the queue, and every Japanese string is now at least drawn in the right
+face at the right leading, which is a different thing from being right.
+
+---
+
 ## 2026-09-07 — F-151 DONE · a list ranks, a pair judges
 
 *"The colours are too small to judge, and the numbers carry the same visual weight as the thing

@@ -24,6 +24,7 @@
 import { Pressable, View, type PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Text } from './Text.js';
+import type { Script } from './layout.js';
 import { useTheme } from './theme.js';
 
 export type ChipProps = Omit<PressableProps, 'style' | 'children' | 'disabled'> & {
@@ -39,7 +40,16 @@ export type ChipProps = Omit<PressableProps, 'style' | 'children' | 'disabled'> 
   readonly focused?: boolean;
   readonly disabled?: boolean;
   /** The result behind this chip is still being computed. Announced as busy, not only dimmed. */
+  /** The result behind this chip is still being computed. Announced as busy, not only dimmed. */
   readonly loading?: boolean;
+  /**
+   * The script the label is written in.
+   *
+   * Latin by default, matching `Text`. It matters because ADR-0057 §6 bundles a Japanese
+   * subset — Latin keeps the platform font because Latin has no tofu failure mode, and the
+   * script that CAN fail silently is the one that gets the bundled face. Leading differs too.
+   */
+  readonly script?: Script;
 };
 
 /**
@@ -57,6 +67,7 @@ export function Chip({
   focused = false,
   disabled = false,
   loading = false,
+  script = 'latin',
   ...rest
 }: ChipProps): React.JSX.Element {
   const { colors } = useTheme();
@@ -98,7 +109,7 @@ export function Chip({
       }}
     >
       <View>
-        <Text size="small" color={foreground}>
+        <Text size="small" color={foreground} script={script}>
           {loading
             ? `${chipAccessibleName(label, selected)}…`
             : chipAccessibleName(label, selected)}

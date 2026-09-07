@@ -481,11 +481,33 @@ export function checkStatusAdjacency(
       const hasSample = marks.some((m) => m.sample);
       // Both present among siblings, and NOT separated: the shared parent is not the well.
       if (hasStatus && hasSample) {
-        const parentIsWell = paintedColors(
-          { type: node.type, props: node.props, children: null },
-          theme,
-        ).some((p) => p.resolution.kind === 'token' && p.resolution.tokens.includes('swatch.well'));
-        if (!parentIsWell)
+        /*
+         * WHERE THE WELL MAY BE — TWO PLACES, NOT ONE (F-152).
+         *
+         * This asked only whether the SHARED PARENT is a well, which is one of the two shapes
+         * that separates them. `Status` has carried an `adjacentToSample` prop since F-069,
+         * and what that prop does is paint the well on the status's OWN container — so the
+         * sample abuts a neutral field rather than a status colour, which is the whole physics
+         * of the rule.
+         *
+         * The two disagreed for as long as nothing painted a status. The first one that did
+         * (the refused photograph, F-152) declared `adjacentToSample`, did exactly what the
+         * prop's own docstring promises — *"declared rather than assumed, so the rendered scan
+         * can see the claim"* — and the scan could not see it.
+         *
+         * A well around the status is not a weaker separation than a well around both. It is
+         * the same band of neutral between the same two colours.
+         */
+        const isWell = (n: TestNode): boolean =>
+          paintedColors({ type: n.type, props: n.props, children: null }, theme).some(
+            (p) => p.resolution.kind === 'token' && p.resolution.tokens.includes('swatch.well'),
+          );
+
+        const parentIsWell = isWell(node);
+        // The status-bearing sibling brought its own ground with it.
+        const statusInOwnWell = children.some((c, i) => marks[i]?.status === true && isWell(c));
+
+        if (!parentIsWell && !statusInOwnWell)
           findings.push(
             `${here.join('>')} places a status colour beside a colour sample with no ` +
               'swatch.well between them — simultaneous contrast changes how the sample reads, ' +

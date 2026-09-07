@@ -252,6 +252,34 @@ export function StatusBesideSampleInWell({
 }
 
 /**
+ * THE SECOND SHAPE THAT SEPARATES THEM (F-152) — the status carries its own well.
+ *
+ * `Status` has taken an `adjacentToSample` prop since F-069, and what it does is paint the
+ * well on the status's OWN container rather than on a shared parent. The check only ever
+ * looked at the shared parent, so for as long as nothing in the product painted a status the
+ * component and the checker could disagree without anybody finding out. The first status that
+ * shipped declared the prop, did exactly what its docstring promises, and was flagged.
+ *
+ * A band of neutral between the two colours is a band of neutral between the two colours,
+ * whichever side of the boundary owns it.
+ */
+export function StatusInItsOwnWell({
+  theme = 'light',
+}: {
+  readonly theme?: 'light' | 'dark';
+}): React.JSX.Element {
+  const c = nativeColors[theme];
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: c.background }}>
+      <View style={{ width: 72, height: 72, backgroundColor: '#526A6B' }} />
+      <View style={{ padding: 8, backgroundColor: c['swatch.well'] }}>
+        <View style={{ width: 12, height: 12, backgroundColor: c['status.bad'] }} />
+      </View>
+    </View>
+  );
+}
+
+/**
  * A component styled the way HeroUI styles itself: everything through `className`, nothing
  * the rendered tree can show.
  *

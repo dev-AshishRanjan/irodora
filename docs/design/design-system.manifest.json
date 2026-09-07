@@ -2,7 +2,7 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-08-24",
+  "updated": "2026-09-07",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
     "date": "2026-08-19",
@@ -100,7 +100,7 @@
         },
         "srgb": "#2B2A28",
         "usage": "surface",
-        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
+        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it. STATUS.BAD NOW PAIRS WITH IT (F-152): `Status` takes `adjacentToSample`, and what that does is put the status on this ground so a sample beside it is not read against a coloured field. That mechanism dates from F-069 and had never been measured, because nothing in the product had painted a status until the export failure and the refused photograph. ONLY `bad`, AND THAT IS A FINDING RATHER THAN A CHOICE: at 4.21:1 and 4.32:1, status.ok and status.warn do not clear the 4.5 text floor on this ground, so `adjacentToSample` promises a well that two of the three kinds cannot legibly sit on. Moving them is a decision about two shipped colours under a gamut ceiling — warn leaves sRGB before it is dark enough to keep the salience rank — and it is recorded as F-174 rather than bisected into place here.",
         "pairsWith": [
           "foreground"
         ]
@@ -307,7 +307,8 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "chart.1": {
@@ -450,7 +451,7 @@
         },
         "srgb": "#ECEAE7",
         "usage": "surface",
-        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it.",
+        "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it. STATUS.BAD NOW PAIRS WITH IT (F-152): `Status` takes `adjacentToSample`, and what that does is put the status on this ground so a sample beside it is not read against a coloured field. That mechanism dates from F-069 and had never been measured, because nothing in the product had painted a status until the export failure and the refused photograph. ONLY `bad`, AND THAT IS A FINDING RATHER THAN A CHOICE: at 4.21:1 and 4.32:1, status.ok and status.warn do not clear the 4.5 text floor on this ground, so `adjacentToSample` promises a well that two of the three kinds cannot legibly sit on. Moving them is a decision about two shipped colours under a gamut ceiling — warn leaves sRGB before it is dark enough to keep the salience rank — and it is recorded as F-174 rather than bisected into place here.",
         "pairsWith": [
           "foreground"
         ]
@@ -621,14 +622,14 @@
           "c": 0.09,
           "h": 158
         },
-        "srgb": "#387B58",
         "usage": "text",
         "role": "Success.",
         "pairsWith": [
           "background",
           "surface.1",
           "surface.2"
-        ]
+        ],
+        "srgb": "#387B58"
       },
       "status.warn": {
         "oklch": {
@@ -636,14 +637,14 @@
           "c": 0.11,
           "h": 70
         },
-        "srgb": "#976213",
         "usage": "text",
         "role": "Caution.",
         "pairsWith": [
           "background",
           "surface.1",
           "surface.2"
-        ]
+        ],
+        "srgb": "#976213"
       },
       "status.bad": {
         "oklch": {
@@ -657,7 +658,8 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "chart.1": {

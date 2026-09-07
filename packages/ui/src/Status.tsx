@@ -33,6 +33,7 @@ import {
 import { Icon, type IconToken } from './Icon.js';
 import { Text } from './Text.js';
 import { useTheme, type ThemeColors } from './theme.js';
+import type { Script } from './layout.js';
 
 export interface StatusProps {
   readonly kind: StatusKind;
@@ -43,9 +44,16 @@ export interface StatusProps {
    * (F-069). Declared rather than assumed, so the rendered scan can see the claim.
    */
   readonly adjacentToSample?: boolean;
+  /** The script the label is written in. Latin by default, matching `Text`. */
+  readonly script?: Script;
 }
 
-export function Status({ kind, text, adjacentToSample = false }: StatusProps): React.JSX.Element {
+export function Status({
+  kind,
+  text,
+  adjacentToSample = false,
+  script = 'latin',
+}: StatusProps): React.JSX.Element {
   const { colors } = useTheme();
   const presentation = statusPresentation(kind, STATUS_PAIRING[kind], text);
 
@@ -68,6 +76,7 @@ export function Status({ kind, text, adjacentToSample = false }: StatusProps): R
       <Text
         size="small"
         color={presentation.colorToken as 'status.ok' | 'status.warn' | 'status.bad'}
+        script={script}
       >
         {presentation.text}
       </Text>

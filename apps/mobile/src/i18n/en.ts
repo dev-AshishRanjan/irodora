@@ -453,6 +453,8 @@ export const en = {
   'measure.add': 'Add this measurement',
   'measure.samples': 'Your measurements',
   'measure.empty': 'Nothing entered yet.',
+  'measure.emptyHint':
+    'Enter a value above and it joins the table, with its difference from the nearest entry.',
   'measure.arrivedIn': 'Entered as',
   'measure.axisLchC': 'Chroma C*',
   'measure.problem.blank': 'This field needs a number.',

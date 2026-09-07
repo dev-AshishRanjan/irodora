@@ -33,9 +33,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
-import { Button, Screen, Surface, Text } from '@irodora/ui';
+import { Button, EmptyState, Row, Screen, Stack, Surface, Text } from '@irodora/ui';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -56,6 +54,13 @@ export interface PreferencesProps {
   /** Injected so a conformance subject can render the confirmation without tapping. */
   readonly initialConfirming?: boolean;
   readonly now?: () => number;
+  /**
+   * Where an outfit gets built. Supplied by the route; absent in the conformance suite.
+   *
+   * Optional rather than required, and the empty state renders differently without it — a
+   * button that navigates nowhere is worse than a sentence that explains.
+   */
+  readonly onBuildOutfit?: () => void;
 }
 
 /** Two decimal places: the weight is a multiplier a person is meant to be able to check. */
@@ -87,6 +92,7 @@ export function Preferences({
   store,
   initialConfirming = false,
   now = () => Date.now(),
+  onBuildOutfit,
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
@@ -115,18 +121,32 @@ export function Preferences({
          * would appear here and what puts it there.
          */
         <Surface level="1" padding="lg">
-          <View style={{ gap: nativeSpacing.xs }}>
-            <Text size="body" color="foreground" script={script}>
-              {t('preferences.empty')}
-            </Text>
-            <Text size="small" color="foreground.2" script={script}>
-              {t('preferences.emptyHint')}
-            </Text>
-          </View>
+          {/*
+            THE DESIGNED EMPTY STATE (F-152 criterion 2), and the union forced the interesting
+            question. The hint says "keep or pass on an outfit and the pairing appears here",
+            and that happens on ANOTHER screen — so this offers the route where the route
+            exists, in the same two branches the Wardrobe uses and for the same reason. Both
+            branches are registered subjects rather than one of them being assumed.
+          */}
+          {onBuildOutfit === undefined ? (
+            <EmptyState
+              message={t('preferences.empty')}
+              hint={t('preferences.emptyHint')}
+              script={script}
+              resolvedHere
+            />
+          ) : (
+            <EmptyState
+              message={t('preferences.empty')}
+              hint={t('preferences.emptyHint')}
+              script={script}
+              action={{ label: t('outfit.title'), onPress: onBuildOutfit }}
+            />
+          )}
         </Surface>
       ) : (
         <Surface level="1" padding="lg">
-          <View style={{ gap: nativeSpacing.md }}>
+          <Stack gap="md">
             <Text size="body" color="foreground" script={script} heading>
               {t('preferences.learned')}
             </Text>
@@ -135,9 +155,9 @@ export function Preferences({
             </Text>
 
             {rows.map((row) => (
-              <View
+              <Stack
                 key={`${row.familyA}|${row.familyB}`}
-                style={{ gap: nativeSpacing.xs }}
+                gap="xs"
                 /*
                  * GROUPED ON PURPOSE. The counts are meaningless without the pairing they
                  * belong to, so a screen reader that announced "Kept 5, Passed 2" as its own
@@ -170,20 +190,20 @@ export function Preferences({
                     `${t('preferences.weight')} ${asMultiplier(row.weight)}`,
                   ].join(' · ')}
                 </Text>
-              </View>
+              </Stack>
             ))}
-          </View>
+          </Stack>
         </Surface>
       )}
 
       <Surface level="1" padding="lg">
-        <View style={{ gap: nativeSpacing.sm }}>
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t('preferences.resetTitle')}
           </Text>
 
           {confirming ? (
-            <View style={{ gap: nativeSpacing.sm }}>
+            <Stack gap="sm">
               {/*
                 THE QUESTION NAMES THE COUNT. This is the only thing between a tap and an
                 irreversible delete, so it says what goes rather than asking "are you sure".
@@ -194,13 +214,14 @@ export function Preferences({
               <Text size="small" color="foreground" script={script}>
                 {t('preferences.resetIrreversible')}
               </Text>
-              <View style={{ flexDirection: 'row', gap: nativeSpacing.sm }}>
+              <Row gap="sm">
                 <Button
                   label={t('preferences.resetCancel')}
                   variant="secondary"
                   onPress={() => {
                     setConfirming(false);
                   }}
+                  script={script}
                 />
                 <Button
                   label={t('preferences.resetDo')}
@@ -209,11 +230,12 @@ export function Preferences({
                     setConfirming(false);
                     setVersion((v) => v + 1);
                   }}
+                  script={script}
                 />
-              </View>
-            </View>
+              </Row>
+            </Stack>
           ) : (
-            <View style={{ gap: nativeSpacing.xs }}>
+            <Stack gap="xs">
               <Text size="small" color="foreground.2" script={script}>
                 {t('preferences.resetHint')}
               </Text>
@@ -224,10 +246,11 @@ export function Preferences({
                 onPress={() => {
                   setConfirming(true);
                 }}
+                script={script}
               />
-            </View>
+            </Stack>
           )}
-        </View>
+        </Stack>
       </Surface>
     </Screen>
   );

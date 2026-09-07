@@ -58,6 +58,7 @@ import {
   LiteralColour,
   StatusBesideSample,
   StatusBesideSampleInWell,
+  StatusInItsOwnWell,
   UnlabelledPressable,
   UnlabelledTextInput,
 } from './fixtures/subjects.js';
@@ -1057,6 +1058,28 @@ describe('a status colour may not sit beside a colour sample (F-069)', () => {
     const findings = check('light');
     expect(findings).toHaveLength(1);
     expect(findings[0]).toMatch(/swatch\.well/u);
+  });
+
+  it('ALLOWS the same pair when the STATUS carries its own well (F-152)', () => {
+    /*
+     * The shape `Status adjacentToSample` actually renders, and the one this check could not
+     * see. It looked only at the shared parent — so a component that did exactly what its own
+     * prop promises was flagged the first time anything in the product painted a status.
+     */
+    expect(
+      checkStatusAdjacency(
+        draw(<StatusInItsOwnWell theme="light" />, 'light'),
+        'light',
+        SAMPLE_VALUES,
+      ),
+    ).toHaveLength(0);
+    expect(
+      checkStatusAdjacency(
+        draw(<StatusInItsOwnWell theme="dark" />, 'dark'),
+        'dark',
+        SAMPLE_VALUES,
+      ),
+    ).toHaveLength(0);
   });
 
   it('ALLOWS the same pair when swatch.well is their shared ground', () => {

@@ -31,7 +31,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, EmptyState, Screen, Stack, Surface, Text } from '@irodora/ui';
+import { Button, EmptyState, Screen, Stack, Status, Surface, Text } from '@irodora/ui';
 import { ExportError, WRITERS, type ExportFile, type ExportSubject } from '@irodora/export';
 import type { FileSink, SaveResult } from '../export/sink';
 import { useMessages } from '../i18n/useMessages';
@@ -62,6 +62,14 @@ export interface ExportProps {
   /** The format selected on arrival. The registry uses it to render a chosen state. */
   readonly initialFormat?: Format;
   /**
+   * Open with the failure already showing, so the conformance suite can render it.
+   *
+   * An error state that only a runtime failure can produce is an error state no gate has ever
+   * looked at — which is the same shape as a registered state that renders nothing, arrived at
+   * from the other side.
+   */
+  readonly initialOutcome?: SaveResult;
+  /**
    * Go to the screen that builds a palette (F-139).
    *
    * Its own destination rather than the wardrobe's: this screen said "Build a palette first"
@@ -75,11 +83,12 @@ export function Export({
   sink,
   initialFormat = 'json',
   onBuildPalette,
+  initialOutcome,
 }: ExportProps): React.JSX.Element {
   const { t, script } = useMessages();
 
   const [format, setFormat] = useState<Format>(initialFormat);
-  const [outcome, setOutcome] = useState<SaveResult | null>(null);
+  const [outcome, setOutcome] = useState<SaveResult | null>(initialOutcome ?? null);
   /** Set when the chosen writer refuses the subject — its own message, which names the character. */
   const [refusal, setRefusal] = useState<string | null>(null);
 
@@ -189,7 +198,7 @@ export function Export({
             </Pressable>
           ))}
 
-          <Button label={t('export.save')} onPress={save} />
+          <Button label={t('export.save')} onPress={save} script={script} />
 
           {refusal === null ? null : (
             <Surface level="1" padding="md">
@@ -210,11 +219,24 @@ export function Export({
             </Surface>
           )}
 
-          {outcome === null ? null : (
+          {/*
+            THREE OUTCOMES, THREE PRESENTATIONS (F-152 criterion 2).
+
+            Saved, cancelled and failed were one grey sentence, so the only difference between
+            "your file is on the device" and "the write did not happen" was the words. A
+            failure that reads like a confirmation is the error state this criterion is about.
+
+            CANCELLED IS DELIBERATELY NEITHER. Nothing went wrong and nothing was produced —
+            dressing a person's own decision as a fault would be the opposite mistake, and the
+            three status kinds exist for conditions rather than for events.
+          */}
+          {outcome === null ? null : outcome.kind === 'saved' ? (
+            <Status kind="ok" text={`${t('export.saved')}: ${outcome.filename}`} script={script} />
+          ) : outcome.kind === 'failed' ? (
+            <Status kind="bad" text={t(RESULT_KEYS.failed)} script={script} />
+          ) : (
             <Text size="body" color="foreground.2" script={script}>
-              {outcome.kind === 'saved'
-                ? `${t('export.saved')}: ${outcome.filename}`
-                : t(RESULT_KEYS[outcome.kind])}
+              {t(RESULT_KEYS[outcome.kind])}
             </Text>
           )}
         </>

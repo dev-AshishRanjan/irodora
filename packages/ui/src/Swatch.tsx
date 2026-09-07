@@ -30,6 +30,7 @@ import type { Color } from '@irodora/color-core';
 import { wcagContrast } from '@irodora/color-difference';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import { Text } from './Text.js';
+import type { Script } from './layout.js';
 import { useTheme } from './theme.js';
 
 export interface SwatchProps {
@@ -54,6 +55,14 @@ export interface SwatchProps {
   /** The colour is still being derived. Announced as busy so a screen reader says so. */
   readonly loading?: boolean;
   readonly onPress?: () => void;
+  /**
+   * The script the NAME is written in.
+   *
+   * Most swatch names are corpus entries in Latin, which is why this went unnoticed until the
+   * suite rendered a screen in Japanese: the Lens labels its sample from the catalogue, and
+   * that string is Japanese on a Japanese device. Latin by default, matching `Text`.
+   */
+  readonly script?: Script;
 }
 
 /**
@@ -170,6 +179,7 @@ export function Swatch({
   disabled = false,
   loading = false,
   onPress,
+  script = 'latin',
 }: SwatchProps): React.JSX.Element {
   const { colors } = useTheme();
   const corner = swatchCorner(size);
@@ -253,7 +263,7 @@ export function Swatch({
           }}
         />
       </View>
-      <Text size="small" color="foreground">
+      <Text size="small" color="foreground" script={script}>
         {loading ? `${name}…` : selected ? `✓ ${name}` : name}
       </Text>
     </Pressable>

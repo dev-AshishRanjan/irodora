@@ -123,7 +123,7 @@ export function OutfitBuilder({
   store,
   onAddGarment,
 }: OutfitBuilderProps): React.JSX.Element {
-  const { t } = useMessages();
+  const { t, script } = useMessages();
   const [draft, setDraft] = useState<OutfitDraft>(initialDraft ?? []);
   /*
    * The wardrobe is state seeded from the prop, because recording a wear changes it and the
@@ -188,18 +188,19 @@ export function OutfitBuilder({
   }, [draft, store, wardrobe]);
 
   return (
-    <Screen title={t('outfit.title')}>
+    <Screen title={t('outfit.title')} script={script}>
       {/*
         NOTHING FITS A SLOT, AND NOW THERE IS A WAY TO CHANGE THAT (F-139). This named the
         action — "add a top, trousers or shoes" — and offered nothing to press.
       */}
       {wearable.length === 0 ? (
         onAddGarment === undefined ? (
-          <EmptyState message={t('outfit.empty')} resolvedHere />
+          <EmptyState message={t('outfit.empty')} resolvedHere script={script} />
         ) : (
           <EmptyState
             message={t('outfit.empty')}
             action={{ label: t('browse.add'), onPress: onAddGarment }}
+            script={script}
           />
         )
       ) : null}
@@ -212,12 +213,12 @@ export function OutfitBuilder({
         return (
           <Surface key={slot} level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
-              <Text size="body" color="foreground" heading>
+              <Text size="body" color="foreground" heading script={script}>
                 {t(SLOT_KEYS[slot])}
               </Text>
 
               {placed === undefined ? (
-                <Text size="body" color="foreground.2">
+                <Text size="body" color="foreground.2" script={script}>
                   {t('outfit.slotEmpty')}
                 </Text>
               ) : (
@@ -228,7 +229,7 @@ export function OutfitBuilder({
                     color={colorOf(placed.garment.color)}
                     size={48}
                   />
-                  <Text size="body" color="foreground">
+                  <Text size="body" color="foreground" script={script}>
                     {placed.garment.name ?? placed.garment.type}
                   </Text>
                   <Button
@@ -236,6 +237,7 @@ export function OutfitBuilder({
                     onPress={() => {
                       toggleLock(slot, !placed.locked);
                     }}
+                    script={script}
                   />
                 </Row>
               )}
@@ -254,16 +256,16 @@ export function OutfitBuilder({
                     const answer = costPerWear(stored(placed.garment));
                     if (!answer.known)
                       return (
-                        <Text size="small" color="foreground.2">
+                        <Text size="small" color="foreground.2" script={script}>
                           {t(COST_UNKNOWN_KEYS[answer.reason])}
                         </Text>
                       );
                     return (
                       <Stack gap="xs">
-                        <Text size="body" color="foreground" numeric>
+                        <Text size="body" color="foreground" numeric script={script}>
                           {`${t('outfit.perWear')}: ${formatMinor(answer.minorPerWear, answer.currency)} ${answer.currency}`}
                         </Text>
-                        <Text size="small" color="foreground.2" numeric>
+                        <Text size="small" color="foreground.2" numeric script={script}>
                           {`${t('outfit.perWearBasis')}: ${formatMinor(answer.costMinor, answer.currency)} ${answer.currency} / ${String(answer.wearCount)}`}
                         </Text>
                       </Stack>
@@ -276,14 +278,14 @@ export function OutfitBuilder({
                * that simply vanishes reads as a bug.
                */}
               {placed?.locked === true ? (
-                <Text size="body" color="foreground.2">
+                <Text size="body" color="foreground.2" script={script}>
                   {t('outfit.lockedNote')}
                 </Text>
               ) : null}
 
               {best === undefined ? null : (
                 <Stack gap="sm">
-                  <Text size="body" color="foreground.2">
+                  <Text size="body" color="foreground.2" script={script}>
                     {t('outfit.suggested')}
                   </Text>
                   <Row gap="sm" wrap>
@@ -317,7 +319,7 @@ export function OutfitBuilder({
                    * component scores and could not show them — nothing rendered a score, and
                    * its note said so. This is where they first reach a person.
                    */}
-                  <Text size="body" color="foreground" numeric>
+                  <Text size="body" color="foreground" numeric script={script}>
                     {`${t('outfit.overall')}: ${String(Math.round(best.score.overall))}`}
                   </Text>
                   {/*
@@ -333,7 +335,13 @@ export function OutfitBuilder({
                    * the line. That is how the gap was found in the first place (E-053).
                    */}
                   {best.score.components.map((c) => (
-                    <Text key={c.component} size="small" color="foreground.2" numeric>
+                    <Text
+                      key={c.component}
+                      size="small"
+                      color="foreground.2"
+                      numeric
+                      script={script}
+                    >
                       {`${isMessageKey(c.messageKey) ? t(c.messageKey) : c.messageKey} — ${String(Math.round(c.score))}`}
                     </Text>
                   ))}
@@ -358,14 +366,19 @@ export function OutfitBuilder({
        */}
       <Surface level="1">
         <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
-          <Button label={t('outfit.wore')} disabled={draft.length === 0} onPress={wore} />
+          <Button
+            label={t('outfit.wore')}
+            disabled={draft.length === 0}
+            onPress={wore}
+            script={script}
+          />
           {draft.length === 0 ? (
-            <Text size="body" color="foreground.2">
+            <Text size="body" color="foreground.2" script={script}>
               {t('outfit.woreNothing')}
             </Text>
           ) : null}
           {worn ? (
-            <Text size="body" color="foreground.2">
+            <Text size="body" color="foreground.2" script={script}>
               {t('outfit.woreDone')}
             </Text>
           ) : null}

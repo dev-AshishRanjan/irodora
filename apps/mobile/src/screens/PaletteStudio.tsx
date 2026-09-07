@@ -247,6 +247,7 @@ export function PaletteStudio({
               onPress={() => {
                 edit(setRole(draft, slug, r));
               }}
+              script={script}
             />
           ))}
         </Row>
@@ -264,6 +265,7 @@ export function PaletteStudio({
             onPress={() => {
               edit(moveMember(draft, slug, -1));
             }}
+            script={script}
           />
           <Button
             label={`${t('studio.moveDown')} — ${entry.entry.name.en}`}
@@ -272,13 +274,29 @@ export function PaletteStudio({
             onPress={() => {
               edit(moveMember(draft, slug, 1));
             }}
+            script={script}
           />
+        </Row>
+
+        {/*
+          THE IRREVERSIBLE ONE, ON ITS OWN LINE (F-152 criterion 3).
+
+          It was the third of three identical secondary buttons in one row, so the only thing
+          separating "reorder this" from "delete this" was reading the label — and a tap lands
+          before anybody reads anything.
+
+          THE CHANNEL IS STRUCTURE RATHER THAN COLOUR, and that is a constraint rather than a
+          preference: a status colour may not sit beside a colour sample without a
+          `swatch.well` between them (F-069), and this row is directly under one.
+        */}
+        <Row gap="sm" wrap>
           <Button
             label={`${t('studio.remove')} — ${entry.entry.name.en}`}
             variant="secondary"
             onPress={() => {
               edit(removeMember(draft, slug));
             }}
+            script={script}
           />
         </Row>
       </View>
@@ -391,6 +409,7 @@ export function PaletteStudio({
             onPress={() => {
               save();
             }}
+            script={script}
           />
           {/*
             The reason, beside the control it disables. A disabled button with no explanation
@@ -480,7 +499,8 @@ export function PaletteStudio({
                     <Text size="xs" color="foreground.2" script={script}>
                       {`${t('cvd.swapTo')} ${finding.alternative.label}`}
                     </Text>
-                    <Text size="xs" color="foreground.2" numeric>
+                    {/* Tabular AND Japanese: the string is a figure and a sentence at once. */}
+                    <Text size="xs" color="foreground.2" numeric script={script}>
                       {`${finding.alternative.separation.toFixed(0)} (${t('cvd.improvement')} +${finding.alternative.improvement.toFixed(0)})`}
                     </Text>
                   </View>
@@ -518,11 +538,16 @@ export function PaletteStudio({
                       setDraft(draftFrom(p.members, p.nameEn));
                       setSaved(false);
                     }}
+                    script={script}
                   />
-                  {/*
-                    Deletable, because the alternative is a record the person cannot get rid
-                    of on a device they own — and with no server there is no other way to.
-                  */}
+                </Row>
+                {/*
+                  Deletable, because the alternative is a record the person cannot get rid of
+                  on a device they own — and with no server there is no other way to. On its
+                  own line for the reason the member's Remove is: a delete beside an open, both
+                  secondary and both the same size, is a difference only the label carries.
+                */}
+                <Row gap="sm" wrap>
                   <Button
                     label={`${t('studio.delete')} — ${p.nameEn}`}
                     variant="secondary"
@@ -535,6 +560,7 @@ export function PaletteStudio({
                       }
                       setSaved(false);
                     }}
+                    script={script}
                   />
                 </Row>
               </View>
@@ -548,6 +574,7 @@ export function PaletteStudio({
               setDraft(EMPTY_DRAFT);
               setSaved(false);
             }}
+            script={script}
           />
         </Stack>
       </Surface>

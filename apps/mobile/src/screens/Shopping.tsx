@@ -108,7 +108,7 @@ export function Shopping({
   initialCurrency = '',
   onAddGarment,
 }: ShoppingProps): React.JSX.Element {
-  const { t } = useMessages();
+  const { t, script } = useMessages();
   const [type, setType] = useState(initialType);
   const [slug, setSlug] = useState<string | null>(initialSlug ?? null);
   /*
@@ -178,8 +178,8 @@ export function Shopping({
   };
 
   return (
-    <Screen title={t('shopping.title')}>
-      <Text size="body" color="foreground.2">
+    <Screen title={t('shopping.title')} script={script}>
+      <Text size="body" color="foreground.2" script={script}>
         {t('shopping.origin')}
       </Text>
 
@@ -189,11 +189,12 @@ export function Shopping({
       */}
       {wardrobe.length === 0 ? (
         onAddGarment === undefined ? (
-          <EmptyState message={t('shopping.empty')} resolvedHere />
+          <EmptyState message={t('shopping.empty')} resolvedHere script={script} />
         ) : (
           <EmptyState
             message={t('shopping.empty')}
             action={{ label: t('browse.add'), onPress: onAddGarment }}
+            script={script}
           />
         )
       ) : null}
@@ -203,6 +204,7 @@ export function Shopping({
         hint={t('wardrobe.typeHint')}
         value={type}
         onChangeText={setType}
+        script={script}
       />
 
       <TextField
@@ -210,20 +212,22 @@ export function Shopping({
         hint={t('shopping.priceHint')}
         value={amountText}
         onChangeText={setAmountText}
+        script={script}
       />
       <TextField
         label={t('wardrobe.currency')}
         hint={t('wardrobe.currencyHint')}
         value={currencyText}
         onChangeText={setCurrencyText}
+        script={script}
       />
       {moneyProblem === null ? null : (
-        <Text size="small" color="foreground.2">
+        <Text size="small" color="foreground.2" script={script}>
           {t(COST_PROBLEM_KEYS[moneyProblem])}
         </Text>
       )}
 
-      <Text size="body" color="foreground.2">
+      <Text size="body" color="foreground.2" script={script}>
         {t('wardrobe.pickColour')}
       </Text>
       <Row gap="sm" wrap>
@@ -260,12 +264,12 @@ export function Shopping({
           <Surface level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.outfits === null ? (
-                <Text size="body" color="foreground.2">
+                <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noSlot')}
                 </Text>
               ) : (
                 <>
-                  <Text size="body" color="foreground" numeric>
+                  <Text size="body" color="foreground" numeric script={script}>
                     {`${t('shopping.unlocked')}: ${String(check.outfits.unlocked)}`}
                   </Text>
                   {/*
@@ -273,10 +277,10 @@ export function Shopping({
                    * measurement with no units until it says out of how many, and counted at
                    * what — which is why F-048 exports COVERAGE_THRESHOLD at all.
                    */}
-                  <Text size="small" color="foreground.2" numeric>
+                  <Text size="small" color="foreground.2" numeric script={script}>
                     {`${t('shopping.now')}: ${String(check.outfits.now)}`}
                   </Text>
-                  <Text size="small" color="foreground.2" numeric>
+                  <Text size="small" color="foreground.2" numeric script={script}>
                     {`${t('shopping.countedAt')}: ${String(check.outfits.threshold)}`}
                   </Text>
                 </>
@@ -288,12 +292,12 @@ export function Shopping({
           <Surface level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.compatibility === null ? (
-                <Text size="body" color="foreground.2">
+                <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noProfile')}
                 </Text>
               ) : (
                 <>
-                  <Text size="body" color="foreground" numeric>
+                  <Text size="body" color="foreground" numeric script={script}>
                     {`${t('shopping.compatibility')}: ${String(check.compatibility.score)}`}
                   </Text>
                   {/*
@@ -302,11 +306,11 @@ export function Shopping({
                    * is not an absent opinion, so none is filtered out for being neutral.
                    */}
                   {check.compatibility.factors.map((f) => (
-                    <Text key={f.factor} size="small" color="foreground.2">
+                    <Text key={f.factor} size="small" color="foreground.2" script={script}>
                       {isMessageKey(f.messageKey) ? t(f.messageKey) : f.messageKey}
                     </Text>
                   ))}
-                  <Text size="small" color="foreground.2" numeric>
+                  <Text size="small" color="foreground.2" numeric script={script}>
                     {`${t('shopping.evidence')}: ${check.compatibility.confidence.toFixed(2)}`}
                   </Text>
                 </>
@@ -318,12 +322,12 @@ export function Shopping({
           <Surface level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.duplicates.length === 0 ? (
-                <Text size="body" color="foreground.2">
+                <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noDuplicate')}
                 </Text>
               ) : (
                 <>
-                  <Text size="body" color="foreground">
+                  <Text size="body" color="foreground" script={script}>
                     {t('shopping.duplicate')}
                   </Text>
                   {/*
@@ -341,6 +345,7 @@ export function Shopping({
                         size="small"
                         color="foreground.2"
                         numeric
+                        script={script}
                       >
                         {`${named(other.id)} — ${t('compare.difference')}: ${pair.difference.toFixed(1)}`}
                       </Text>
@@ -354,12 +359,12 @@ export function Shopping({
           {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
           <Surface level="1">
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
-              <Text size="body" color="foreground" heading>
+              <Text size="body" color="foreground" heading script={script}>
                 {t('shopping.investment')}
               </Text>
               {!check.investment.known ? (
                 <>
-                  <Text size="body" color="foreground.2">
+                  <Text size="body" color="foreground.2" script={script}>
                     {t(REFUSAL_KEYS[check.investment.reason])}
                   </Text>
                   {/*
@@ -368,10 +373,10 @@ export function Shopping({
                   */}
                   {check.investment.reason !== 'tooFew' ? null : (
                     <>
-                      <Text size="small" color="foreground.2" numeric>
+                      <Text size="small" color="foreground.2" numeric script={script}>
                         {`${t('shopping.investmentHave')}: ${String(check.investment.have)}`}
                       </Text>
-                      <Text size="small" color="foreground.2" numeric>
+                      <Text size="small" color="foreground.2" numeric script={script}>
                         {`${t('shopping.investmentNeed')}: ${String(check.investment.need)}`}
                       </Text>
                     </>
@@ -383,10 +388,10 @@ export function Shopping({
                     ROUNDED UP, AND ONLY HERE. 65.4 wears is not reached at 65, and the value
                     itself stays exact — a rounding is a rendering, not a stored claim.
                   */}
-                  <Text size="body" color="foreground" numeric>
+                  <Text size="body" color="foreground" numeric script={script}>
                     {`${t('shopping.breakEven')}: ${String(Math.ceil(check.investment.breakEvenWears))}`}
                   </Text>
-                  <Text size="body" color="foreground" numeric>
+                  <Text size="body" color="foreground" numeric script={script}>
                     {`${t('shopping.typical')}: ${String(Math.round(check.investment.typicalWears))}`}
                   </Text>
                   {/*
@@ -394,7 +399,7 @@ export function Shopping({
                     garments and at what rate is asking to be believed rather than checked —
                     the same rule the outfit count follows with its threshold.
                   */}
-                  <Text size="small" color="foreground.2" numeric>
+                  <Text size="small" color="foreground.2" numeric script={script}>
                     {`${t('shopping.investmentBasis')}: ${String(check.investment.comparableCount)} ${t('shopping.investmentGarments')} ${formatMinor(check.investment.medianMinorPerWear, check.investment.currency)} ${check.investment.currency} ${t('shopping.investmentPerWear')}`}
                   </Text>
                   {/*
@@ -402,7 +407,7 @@ export function Shopping({
                     product is in a position to write, and saying so is better than leaving two
                     numbers to imply one.
                   */}
-                  <Text size="small" color="foreground.2">
+                  <Text size="small" color="foreground.2" script={script}>
                     {t('shopping.investmentYours')}
                   </Text>
                 </>

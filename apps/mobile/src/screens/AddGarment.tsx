@@ -38,6 +38,7 @@ import {
   Button,
   Row,
   Screen,
+  Status,
   Surface,
   Swatch,
   swatchAccessibleName,
@@ -94,10 +95,23 @@ export interface AddGarmentProps {
    * vanish while somebody was typing a brand into the field below it.
    */
   readonly offered?: LensReading | null;
+  /**
+   * Open with the failure already showing, so the conformance suite can render it.
+   *
+   * An error state that only a runtime failure can produce is an error state no gate has ever
+   * looked at — which is the same shape as a registered state that renders nothing, arrived at
+   * from the other side.
+   */
+  readonly initialImageProblem?: boolean;
 }
 
-export function AddGarment({ store, imageSource, offered }: AddGarmentProps): React.JSX.Element {
-  const { t } = useMessages();
+export function AddGarment({
+  store,
+  imageSource,
+  offered,
+  initialImageProblem = false,
+}: AddGarmentProps): React.JSX.Element {
+  const { t, script } = useMessages();
 
   const [draft, setDraft] = useState<GarmentDraft>(() =>
     offered == null
@@ -105,7 +119,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
       : { ...EMPTY_DRAFT, colour: { kind: 'reading', reading: offered } },
   );
   const [saved, setSaved] = useState(false);
-  const [imageProblem, setImageProblem] = useState(false);
+  const [imageProblem, setImageProblem] = useState(initialImageProblem);
   const [count, setCount] = useState(() => store.listGarments().length);
   /*
    * The price is held as TYPED TEXT, not as the enrichment it becomes.
@@ -172,7 +186,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
   const swatch = draft.colour;
 
   return (
-    <Screen title={t('wardrobe.title')}>
+    <Screen title={t('wardrobe.title')} script={script}>
       <TextField
         label={t('wardrobe.type')}
         placeholder={t('wardrobe.typeHint')}
@@ -181,9 +195,10 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
           setDraft((d) => ({ ...d, type }));
           setSaved(false);
         }}
+        script={script}
       />
 
-      <Text size="body" color="foreground" heading>
+      <Text size="body" color="foreground" heading script={script}>
         {t('wardrobe.colour')}
       </Text>
 
@@ -193,10 +208,11 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
           onPress={() => {
             setDraft((d) => ({ ...d, colour: { kind: 'reading', reading: offered } }));
           }}
+          script={script}
         />
       )}
 
-      <Text size="body" color="foreground.2">
+      <Text size="body" color="foreground.2" script={script}>
         {t('wardrobe.pickColour')}
       </Text>
       <Row gap="sm" wrap>
@@ -232,7 +248,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
           ))}
       </Row>
 
-      <Text size="body" color="foreground" heading>
+      <Text size="body" color="foreground" heading script={script}>
         {t('wardrobe.photo')}
       </Text>
       <Row gap="sm">
@@ -241,28 +257,40 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
           onPress={() => {
             void attach(() => imageSource.pickFromLibrary());
           }}
+          script={script}
         />
         <Button
           label={t('wardrobe.photoCamera')}
           onPress={() => {
             void attach(() => imageSource.captureWithCamera());
           }}
+          script={script}
         />
       </Row>
       {draft.image === null ? null : (
-        <Text size="body" color="foreground.2">
+        <Text size="body" color="foreground.2" script={script}>
           {t('wardrobe.photoAttached')}
         </Text>
       )}
+      {/*
+        A REFUSED FILE IS NOT A NOTE (F-152 criterion 2).
+
+        This drew in the same grey body text as "photograph attached" directly above it, so the
+        only thing separating the success from the failure was reading the sentence. The
+        ingest refuses for real reasons — a file too large, a format we do not decode — and the
+        person needs to know nothing was added.
+
+        `adjacentToSample` is FALSE and that is checked rather than assumed: the colour picker
+        is a separate Surface, and `checkStatusAdjacency` runs over every registered subject of
+        this screen, so a future layout that moves the two together fails rather than shipping.
+      */}
       {imageProblem ? (
-        <Text size="body" color="foreground.2">
-          {t('wardrobe.photoRejected')}
-        </Text>
+        <Status kind="bad" text={t('wardrobe.photoRejected')} script={script} adjacentToSample />
       ) : null}
 
       <Surface level="1">
         <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
-          <Text size="body" color="foreground.2">
+          <Text size="body" color="foreground.2" script={script}>
             {t('wardrobe.optional')}
           </Text>
           <TextField
@@ -271,6 +299,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
             onChangeText={(brand) => {
               setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, brand } }));
             }}
+            script={script}
           />
           <TextField
             label={t('wardrobe.size')}
@@ -278,6 +307,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
             onChangeText={(size) => {
               setDraft((d) => ({ ...d, enrichment: { ...d.enrichment, size } }));
             }}
+            script={script}
           />
           {/*
            * TWO FIELDS FOR ONE FACT, and they are deliberately adjacent. A price and its
@@ -290,6 +320,7 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
             value={amountText}
             onChangeText={setAmountText}
             keyboardType="decimal-pad"
+            script={script}
           />
           <TextField
             label={t('wardrobe.currency')}
@@ -299,16 +330,22 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={3}
+            script={script}
           />
           {moneyProblem === null ? null : (
-            <Text size="body" color="foreground.2">
+            <Text size="body" color="foreground.2" script={script}>
               {`${t('wardrobe.costNotRecorded')} ${t(COST_PROBLEM_KEYS[moneyProblem])}`}
             </Text>
           )}
         </View>
       </Surface>
 
-      <Button label={t('wardrobe.save')} disabled={problem !== null} onPress={save} />
+      <Button
+        label={t('wardrobe.save')}
+        disabled={problem !== null}
+        onPress={save}
+        script={script}
+      />
       {/*
        * A disabled control with no stated reason is the accessibility failure that looks like
        * polish. The sentence is prose rather than a `Status`: F-069 forbids a status colour
@@ -317,17 +354,17 @@ export function AddGarment({ store, imageSource, offered }: AddGarmentProps): Re
        * 13 by having nothing to satisfy.
        */}
       {problem === null ? null : (
-        <Text size="body" color="foreground.2">
+        <Text size="body" color="foreground.2" script={script}>
           {t(PROBLEM_KEYS[problem])}
         </Text>
       )}
       {saved ? (
-        <Text size="body" color="foreground.2">
+        <Text size="body" color="foreground.2" script={script}>
           {t('wardrobe.saved')}
         </Text>
       ) : null}
 
-      <Text size="body" color="foreground.2" numeric>
+      <Text size="body" color="foreground.2" numeric script={script}>
         {`${t('wardrobe.count')}: ${String(count)}`}
       </Text>
     </Screen>

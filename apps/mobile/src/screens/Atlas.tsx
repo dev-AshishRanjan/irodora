@@ -268,6 +268,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
             onPress={() => {
               onChange(null);
             }}
+            script={script}
           />
           {options.map((o) => (
             <Chip
@@ -277,6 +278,7 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
               onPress={() => {
                 onChange(selected === o.value ? null : o.value);
               }}
+              script={script}
             />
           ))}
         </ScrollView>

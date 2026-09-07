@@ -71,13 +71,11 @@
     {
       "group": "status kind",
       "tokens": [
-        "ok",
-        "warn",
-        "bad"
+        "warn"
       ],
-      "cites": "ADR-0054, F-097, F-149, F-152",
-      "why": "THREE OF THREE, AND THIS ENTRY EXPECTED THE OPPOSITE. It read \"two of three\" and named F-149 as the feature that would close it, on the strength of F-097 having made the Lens render its capture instruction as a `warn`. F-149 removed that reader: its criterion 2 asks for illumination, quality and confidence to read as ONE CALM READOUT \"rather than three warnings\", and an amber banner was the loudest thing on a screen whose only bright element is meant to be the reticle. The instruction did not disappear — it sits inside the readout under \"To improve it\", beside the quality word that produced it, which is nearer to what FR-18 asks for than a banner detached from its cause. So `warn` lost its only reader and this exemption GREW rather than closing. THE PREVIOUS OWNER WAS WRONG AND THE GATE CAUGHT IT: this said the first surface to show a status would be outfit scoring (F-031), and F-031 is DONE without having shown one — which is the exact shape ADR-0088 describes, an exemption pointing at a feature that shipped without doing what the entry claimed. F-152 is the owner now, and specifically its criterion 2: \"every screen has a designed empty, loading and error state\". An error state IS a `bad` status — that is what ADR-0044 built the three channels for — so the sweep that gives every remaining surface its error state is the work that reaches these. THE DISTINCTION THE WHOLE ENTRY TURNS ON: a status says something is GOOD or BAD, and a capture readout says what the conditions WERE. The Lens describes; it does not judge, which is why it stopped reaching for a status at all.",
-      "closedBy": "F-152"
+      "cites": "ADR-0054, F-097, F-149, F-152, F-174",
+      "why": "ONE OF THREE, DOWN FROM THREE, AND F-152 IS WHY. This entry named F-152 as the feature that would reach these, on the strength of criterion 2 — every screen has a designed empty, loading and error state — and that is exactly what happened. `bad` is the refused photograph on AddGarment and the failed write on Export; `ok` is the write that succeeded. Before that, three outcomes on the export screen were one grey sentence, so the only difference between \"your file is on the device\" and \"the write did not happen\" was reading the words. THE PREVIOUS OWNER OF THIS ENTRY WAS WRONG TWICE AND IS WORTH KEEPING VISIBLE: it first said outfit scoring (F-031) would show the first status, and F-031 shipped without one; it then said F-149 would, and F-149 REMOVED the only reader `warn` had, because its own criterion asks for one calm readout rather than three warnings. `warn` IS THE ONE LEFT, and the reason is now a measurement rather than a schedule. The Lens describes conditions rather than judging them, so it stopped reaching for a status at all — and the obvious next home, a status beside a colour sample, is blocked: `Status` takes `adjacentToSample`, which puts it on `swatch.well`, and light `warn` measures 4.32:1 there against a floor of 4.5. So `warn` cannot be drawn in the one place it is most likely to be needed until F-174 moves it, and moving it is a design decision under a gamut ceiling rather than a lightness anybody bisects.",
+      "closedBy": "F-174"
     }
   ]
 }

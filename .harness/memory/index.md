@@ -189,6 +189,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/the-claims-lint-only-speaks-english.md](effects/the-claims-lint-only-speaks-english.md) — **E-089** · the gate reads every file and all eleven of its patterns are ASCII, so the Japanese screen called an estimate a measurement.
 - [effects/a-check-must-report-its-scope-not-only-its-verdict.md](effects/a-check-must-report-its-scope-not-only-its-verdict.md) — **E-090** · a false negative and a clean subject print the same thing, so the gate now fails when it scans a script no pattern can read.
 - [effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md](effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md) — **E-091** · the suite really did render Strip, in both themes, every run — only ever with two equal members.
+- [effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md](effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md) — **E-092** · the first status this product ever painted was flagged for doing exactly what its own prop promises.
 
 ## Glossary
 

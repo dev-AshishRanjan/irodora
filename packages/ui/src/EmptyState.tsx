@@ -110,7 +110,13 @@ export function EmptyState(props: EmptyStateProps): React.JSX.Element {
       */}
       {'action' in props ? (
         <View style={{ alignItems: 'flex-start' }}>
-          <Button label={props.action.label} onPress={props.action.onPress} />
+          {/*
+            THE SCRIPT REACHES THE BUTTON TOO (F-152). It was forwarded to the message and the
+            hint and stopped there, so a Japanese empty state drew its sentence in the bundled
+            face and its only control in the platform font — the one place on the screen where
+            a missing glyph would be sitting on the thing you are meant to press.
+          */}
+          <Button label={props.action.label} onPress={props.action.onPress} script={script} />
         </View>
       ) : null}
     </View>
