@@ -1,7 +1,7 @@
 {
   "$comment": "The claims copy lint (NFR-21, F-025, ADR-0031). Patterns live here rather than in scripts/verify-claims.mjs for the same reason recommendation weights are content: this list will grow, and growing it should not be a code change. Read by scripts/verify-claims.mjs and exercised by scripts/verify-claims-proof.mjs.",
   "version": 1,
-  "updated": "2026-09-06",
+  "updated": "2026-09-07",
   "banned": [
     {
       "id": "exact-colour",
@@ -92,6 +92,16 @@
       "id": "ja-ai-powered",
       "pattern": "AI(搭載|を活用|により)",
       "why": "Mirrors `ai-powered`. The core is colour science and explicit rules (ADR-0002); the English pattern cannot match this because the phrase is written in Latin letters inside Japanese text."
+    },
+    {
+      "id": "equivalent-is-a-match",
+      "pattern": "(exact|perfect|closest)?s*match (for|to) (this|that|the) colou?r",
+      "why": "FR-72's own words: an equivalent is never described as a match. The nearest member of a curated palette by dE00 is a distance, not an identity — the same distinction FR-7 draws for naming, and the reason this feature keeps computed and editorial apart in the first place."
+    },
+    {
+      "id": "ja-equivalent-is-a-match",
+      "pattern": "(この|その)色(と|に)(完全|ぴったり)?(一致|マッチ)",
+      "why": "Mirrors `equivalent-is-a-match`. A contemporary equivalent is the nearest reference by dE00 or a recorded editorial judgement; neither asserts that one colour IS another."
     }
   ],
   "provenanceLanguage": {

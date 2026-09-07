@@ -186,6 +186,16 @@ function sampleFor(id) {
     'ja-guaranteed-accuracy': 'この端末は色を保証します',
     'ja-professional-grade': 'プロ仕様の色管理をあなたの手に',
     'ja-ai-powered': 'AI搭載のエンジンが色を選びます',
+
+    /*
+     * F-155. An equivalent is a distance or a recorded judgement, and describing either as a
+     * match is the claim FR-72 forbids by name.
+     */
+    'equivalent-is-a-match': 'this fabric is an exact match for this colour',
+    // Deliberately NOT 完全に一致: that sentence also trips `ja-perfect-match` from F-172, so
+    // the case went red for the wrong reason — which the proof's own "names the right thing"
+    // assertion caught, and which is exactly what that assertion is for.
+    'ja-equivalent-is-a-match': 'この生地はこの色にマッチします',
     'true-colour': 'this is the true colour of the fabric',
     'actual-colour': 'the actual colour is shown below',
     'percent-accurate': 'our detection is 99% accurate',

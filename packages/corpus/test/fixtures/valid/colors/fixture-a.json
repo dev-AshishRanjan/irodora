@@ -31,7 +31,15 @@
     "description_ja": "ゲートを検証するための試験用の色。",
     "historicalNote_en": null,
     "contemporaryNote_en": null,
-    "fashionUse": null
+    "fashionUse": null,
+    "contemporaryEquivalents": [
+      {
+        "slug": "fixture-b",
+        "note": "A fixture equivalent, present so the editorial path has something to render. A published entry carries none of these yet: writing one is editorial work with a source and a reviewer behind it.",
+        "source": "Irodora editorial fixture — F-155",
+        "verifiedBy": "ed-002"
+      }
+    ]
   },
   "provenance": {
     "source": "Irodora editorial curation, fixture set",

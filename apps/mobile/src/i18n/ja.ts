@@ -463,6 +463,20 @@ export const ja: Record<MessageKey, string> = {
   'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': '学習した好み',
+  'contemporary.title': 'いま手に入る近い色',
+  'contemporary.what':
+    'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',
+  'contemporary.source.note':
+    '比べる相手は、この製品が自分で選んだ現代の配色です。それぞれに編集の来歴があります。業界標準ではありません。',
+  'contemporary.computed': '計算した結果 — この色との差',
+  'contemporary.editorial': '編集者が書き留めたもの',
+  'contemporary.inPalette': '収録：',
+  'contemporary.itself': 'この色はすでに次に入っています',
+  'contemporary.none': '現代の配色の中に、この色と近いものはありません。',
+  'contemporary.noneHint': '次の差の中に入るものがありませんでした：',
+  'contemporary.source': '出典：',
+  'contemporary.reviewedBy': '確認した人：',
+  'contemporary.open': 'いま手に入る近い色',
   'appearance.title': '外観',
   'appearance.hint': 'テーマは画面の色みを変えます。色を見比べる下地には色をつけません。',
   'appearance.theme': 'テーマ',

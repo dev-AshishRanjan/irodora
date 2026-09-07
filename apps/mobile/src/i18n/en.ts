@@ -500,6 +500,20 @@ export const en = {
   'outfit.woreNothing': 'Choose something, and you can record wearing it.',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   'preferences.title': 'What the app has learned',
+  'contemporary.title': 'What you could buy in this',
+  'contemporary.what':
+    'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',
+  'contemporary.source.note':
+    'The reference set is this product’s own curated contemporary palettes, each with editorial provenance. It is not an industry standard.',
+  'contemporary.computed': 'Computed — the difference from this colour',
+  'contemporary.editorial': 'Recorded by an editor',
+  'contemporary.inPalette': 'In',
+  'contemporary.itself': 'This colour is already in',
+  'contemporary.none': 'Nothing in the contemporary set is close to this.',
+  'contemporary.noneHint': 'Nothing came within a difference of',
+  'contemporary.source': 'Source:',
+  'contemporary.reviewedBy': 'Reviewed by:',
+  'contemporary.open': 'What you could buy in this',
   'appearance.title': 'Appearance',
   'appearance.hint':
     'A theme changes the hue of the interface. It never tints the ground a colour is judged against.',

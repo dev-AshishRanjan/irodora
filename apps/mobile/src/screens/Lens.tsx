@@ -379,6 +379,14 @@ export interface LensProps {
   readonly onUseForWardrobe?: (reading: LensReading) => void;
   /** Open a corpus entry. Supplied by the route. */
   readonly onOpenColour?: (slug: string) => void;
+  /**
+   * Open the contemporary colours for the reading's nearest entry (F-155, criterion 5).
+   *
+   * ON ITS OWN SCREEN, which is the criterion and also the reporter's instruction: the Lens
+   * stays decluttered, so this is a way OUT of it rather than more content on it. Somebody
+   * reads a colour, learns what it is, and then wants to know what they could actually buy.
+   */
+  readonly onOpenContemporary?: (slug: string) => void;
 }
 
 export function Lens({
@@ -403,6 +411,7 @@ export function Lens({
   onUseForProfile,
   onUseForWardrobe,
   onOpenColour,
+  onOpenContemporary,
 }: LensProps = {}): React.JSX.Element {
   const { t, script } = useMessages();
   const { colors } = useTheme();
@@ -929,6 +938,29 @@ export function Lens({
                     </View>
                   </View>
                 ))}
+
+                {/*
+                  THE WAY OUT (F-155). One control, on the NEAREST entry, because that is the
+                  reading's best answer to "what is this" and therefore the only sensible subject
+                  for "what could I buy in it". Offering one per row would put four buttons under
+                  a list whose job is to be scanned.
+                */}
+                {((): React.JSX.Element | null => {
+                  // Bound to a local: `noUncheckedIndexedAccess` is right that the narrowing
+                  // above does not survive into the handler, which runs later.
+                  const closest = nearest[0];
+                  if (onOpenContemporary === undefined || closest === undefined) return null;
+                  return (
+                    <Button
+                      label={t('contemporary.open')}
+                      variant="secondary"
+                      script={script}
+                      onPress={() => {
+                        onOpenContemporary(closest.entry.entry.slug);
+                      }}
+                    />
+                  );
+                })()}
               </Stack>
             )}
 

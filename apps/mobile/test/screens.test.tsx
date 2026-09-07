@@ -46,6 +46,7 @@ import { Home, type HomeStore } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
+import { Contemporary } from '../src/screens/Contemporary';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
 import { AddGarment } from '../src/screens/AddGarment';
@@ -86,6 +87,7 @@ import { nativeColors } from '@irodora/design-tokens';
 import type { Theme } from '@irodora/design-tokens';
 import { find } from '../src/finder';
 import { deriveWeights, toStoreWrite } from '../src/palette';
+import { equivalentsFor } from '../src/contemporary';
 import { PALETTE_ROLES } from '@irodora/corpus';
 import type { PaletteDraft, PaletteStore } from '../src/palette';
 import type { NewPersonalProfile, StoredPalette, StoredPersonalProfile } from '@irodora/store';
@@ -186,6 +188,20 @@ const WITHOUT_COMPLEMENT = allEntries().find((e) => e.entry.relations.complement
  * A near-white and the darkest entry in the corpus: far apart on every axis, so a row that
  * failed to render would not be hidden behind a delta that rounds to zero.
  */
+/**
+ * Two subjects for the contemporary screen, picked by what they ARE rather than by name.
+ *
+ * One that is itself in a contemporary palette and one that is not, resolved from the corpus so
+ * a republished palette moves them rather than leaving a subject that no longer renders the
+ * branch it was registered for.
+ */
+const CONTEMPORARY_MEMBER =
+  allEntries().find((e) => equivalentsFor(e).membership.length > 0)?.entry.slug ?? '';
+const CONTEMPORARY_NEAR =
+  allEntries().find(
+    (e) => equivalentsFor(e).membership.length === 0 && equivalentsFor(e).computed.length > 0,
+  )?.entry.slug ?? '';
+
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
 
@@ -782,6 +798,63 @@ const SCREENS: readonly ConformanceSubject[] = [
     // over every entry and both themes, against the token set and the entry's own hex.
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<ColourCard slug={allEntries()[0]!.entry.slug} />, theme),
+  },
+  {
+    /*
+     * WHAT YOU COULD BUY IN THIS (F-155). Rendered on a colour that is NOT itself in a
+     * contemporary palette, so the computed branch draws — the membership branch is a different
+     * tree and gets its own subject below.
+     */
+    name: 'screens/Contemporary',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Contemporary slug={CONTEMPORARY_NEAR} />, theme),
+  },
+  {
+    /*
+     * THE COLOUR THAT IS ALREADY IN ONE. It leads with "this colour is already in Quiet
+     * Neutrals" rather than with a distance, and that is a different sentence and a different
+     * tree — a registry that only had the first would be checking half a screen.
+     */
+    name: 'screens/Contemporary (already in a palette)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Contemporary slug={CONTEMPORARY_MEMBER} />, theme),
+  },
+  {
+    /*
+     * THE EDITORIAL BRANCH, which no published entry can reach.
+     *
+     * An editorial equivalent needs a note, a source and a reviewer that the content gate
+     * enforces, and the shipped corpus carries none — so without a subject that supplies one,
+     * this branch would be a tree nobody has ever rendered
+     * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]. The provenance is what the
+     * suite is checking: a judgement without a name on it is the corpus's authority lent to an
+     * opinion.
+     */
+    name: 'screens/Contemporary (an editorial equivalent)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Contemporary
+          slug={CONTEMPORARY_NEAR}
+          initialEquivalents={{
+            membership: [],
+            computed: [],
+            nothingNear: false,
+            editorial: [
+              {
+                kind: 'editorial',
+                entry: null,
+                note: 'A recorded judgement about what this colour corresponds to today.',
+                provenance: { source: 'Irodora editorial — fixture', verifiedBy: 'ed-002' },
+              },
+            ],
+          }}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/Finder',

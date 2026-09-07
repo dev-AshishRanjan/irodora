@@ -193,6 +193,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md](effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md) — **E-093** · the chroma ceiling answered "how strong may a theme be" better than taste would have.
 - [effects/a-finally-is-a-hope-about-how-a-process-ends.md](effects/a-finally-is-a-hope-about-how-a-process-ends.md) — **E-094** · eight leaked plants, and a guard that could not tell a leak from ordinary work.
 - [effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md](effects/the-guarantee-written-for-correctness-paid-for-the-dynamic-theme.md) — **E-095** · NFR-3 was argued on correctness grounds and turned out to be what makes a provably accessible dynamic theme possible.
+- [effects/a-field-name-that-does-not-describe-what-it-holds.md](effects/a-field-name-that-does-not-describe-what-it-holds.md) — **E-096** · every guarantee in the corpus is enforced except the one that a field holds what its name says.
 
 ## Glossary
 

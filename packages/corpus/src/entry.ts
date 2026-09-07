@@ -115,13 +115,57 @@ export interface EntryTaxonomy {
   readonly season: readonly Season[] | null;
 }
 
+/**
+ * One recorded judgement about what a colour corresponds to today (FR-72).
+ *
+ * **Editorial, and therefore provenanced.** A computed equivalent is arithmetic — the nearest
+ * member of a contemporary palette by ΔE00 — and needs no author. This is a person saying *this
+ * is what you would buy*, which is a claim, and every claim in this corpus carries who made it
+ * and where it came from.
+ *
+ * `slug` is optional because an editorial equivalent may point at something OUTSIDE the corpus:
+ * a fabric, a paint, a range. When it names a corpus entry the surface can show the colour; when
+ * it does not, the note is the whole of it, which is honest about a reference we cannot render.
+ */
+export interface ContemporaryEquivalent {
+  /** A corpus entry this refers to, or `null` when the reference is outside the corpus. */
+  readonly slug: string | null;
+  /** What was recorded. Never generated, never machine-translated. */
+  readonly note: string;
+  /** Where it came from, in the source's own words. */
+  readonly source: string;
+  /** The reviewer's roster id. The content gate requires an id it knows, distinct from the author. */
+  readonly verifiedBy: string;
+}
+
 export interface EntryEditorial {
   readonly description_en: string;
   /** Written, never machine-translated (ADR-0028, content rules). */
   readonly description_ja: string;
   readonly historicalNote_en: string | null;
+  /**
+   * A curatorial note about the entry's place in this corpus.
+   *
+   * **THE NAME DOES NOT DESCRIBE WHAT IT HOLDS, and F-155 found that rather than fixing it.**
+   * Eight entries carry one, and they are mixed: some are about contemporary use — *"offered as
+   * the alternative to black in the Indigo palette"* — and some are purely about why the entry
+   * exists at all — *"the corpus ceiling for chroma… so that the Atlas has one colour a screen
+   * renders convincingly"*.
+   *
+   * Renaming a published field is a corpus version change, so the values stay as they are and
+   * `contemporaryEquivalents` below is the precisely named one. Recorded here so the next
+   * reader is not misled by the name the way this feature's own notes were.
+   */
   readonly contemporaryNote_en: string | null;
   readonly fashionUse: readonly string[] | null;
+  /**
+   * What a person recorded that this colour corresponds to today (FR-72).
+   *
+   * Absent on every published entry, and that is editorial work rather than a gap: each one needs
+   * a note, a source and a reviewer who is not the author. The path is exercised by the fixture
+   * corpus, which has fixture editors.
+   */
+  readonly contemporaryEquivalents: readonly ContemporaryEquivalent[] | null;
 }
 
 export interface EntryRelations {
@@ -295,7 +339,14 @@ function parseEditorial(
   const o = requireRecord(v, 'editorial', src);
   rejectUnknownKeys(
     o,
-    ['description_en', 'description_ja', 'historicalNote_en', 'contemporaryNote_en', 'fashionUse'],
+    [
+      'description_en',
+      'description_ja',
+      'historicalNote_en',
+      'contemporaryNote_en',
+      'fashionUse',
+      'contemporaryEquivalents',
+    ],
     'editorial',
     src,
   );
@@ -326,7 +377,49 @@ function parseEditorial(
       seenNulls,
       (value) => requireStringArray(value, 'editorial.fashionUse', src),
     ),
+    /*
+     * ABSENT AND NULL ARE THE SAME HERE, unlike every other nullable field on this entry.
+     *
+     * The others use `nullable`, which requires a stated reason in `unknowns` for every null —
+     * because a missing description or a missing era is a GAP somebody should have to explain.
+     * An entry with no editorial equivalent is not a gap: nobody has written one, which is the
+     * ordinary state of 120 entries, and demanding 120 reasons for it would make the reasons
+     * worthless.
+     *
+     * Adding the key later is therefore a pure addition and no published entry changes.
+     */
+    contemporaryEquivalents:
+      o['contemporaryEquivalents'] === undefined || o['contemporaryEquivalents'] === null
+        ? null
+        : parseEquivalents(o['contemporaryEquivalents'], src),
   };
+}
+
+/**
+ * The editorial equivalents, each with its provenance.
+ *
+ * Every field is required. A note with no source is an assertion nobody can check, and a note
+ * with no reviewer is one person's opinion wearing the corpus's authority — which is the exact
+ * shape the content rules exist to refuse.
+ */
+function parseEquivalents(v: unknown, src: string): readonly ContemporaryEquivalent[] {
+  if (!Array.isArray(v))
+    throw new CorpusError(src, 'editorial.contemporaryEquivalents', 'expected an array');
+
+  return v.map((raw, index) => {
+    const where = `editorial.contemporaryEquivalents[${String(index)}]`;
+    const o = requireRecord(raw, where, src);
+    rejectUnknownKeys(o, ['slug', 'note', 'source', 'verifiedBy'], where, src);
+    return {
+      slug:
+        o['slug'] === null || o['slug'] === undefined
+          ? null
+          : requireString(o['slug'], `${where}.slug`, src),
+      note: requireString(o['note'], `${where}.note`, src),
+      source: requireString(o['source'], `${where}.source`, src),
+      verifiedBy: requireString(o['verifiedBy'], `${where}.verifiedBy`, src),
+    };
+  });
 }
 
 function parseRelations(v: unknown, src: string): EntryRelations {
@@ -464,9 +557,32 @@ export function parseEntry(value: unknown, source: string): CorpusEntry {
  * make every stored digest a digest of something other than the entry.
  */
 export function serialiseEntry(entry: CorpusEntry): Record<string, unknown> {
-  const { color, ...rest } = entry;
+  const { color, editorial, ...rest } = entry;
+
+  /*
+   * AN ABSENT FIELD IS OMITTED, NOT SERIALISED AS NULL (F-155).
+   *
+   * This function's output is what `entryDigest` hashes, and a published entry's digest is
+   * immutable — a mismatch is a SEV1, not a diff. So adding `contemporaryEquivalents` to the
+   * type would have changed the digest of all 120 published entries the moment the parser
+   * started filling it with `null`, and the load refused every one of them.
+   *
+   * Omitting it when absent makes the addition byte-neutral: an entry nobody has written an
+   * equivalent for hashes exactly as it did before this field existed, and an entry that
+   * carries one hashes differently — which is correct, because its content genuinely differs.
+   *
+   * The same treatment does NOT apply to the other nullable editorial fields: those are nulls a
+   * person had to justify in `unknowns`, so the null IS the content and dropping it would hide
+   * a stated gap.
+   */
+  const { contemporaryEquivalents, ...editorialRest } = editorial;
+
   return {
     ...rest,
+    editorial:
+      contemporaryEquivalents === null
+        ? editorialRest
+        : { ...editorialRest, contemporaryEquivalents },
     color: {
       ...color,
       xyz: { x: color.xyz[0], y: color.xyz[1], z: color.xyz[2] },

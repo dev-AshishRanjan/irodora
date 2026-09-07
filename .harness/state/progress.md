@@ -8,6 +8,126 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-155 DONE · a field name that does not describe what it holds
+
+*"What could I actually buy in this colour?"* — FR-72, reported as missing, and it was.
+
+### The feature's own notes were wrong about its premise, twice
+
+**`contemporaryNote_en` is not empty.** The note said it was *"defined and never filled — null in
+every content file"*. **Eight** entries carry one, and what they hold is curatorial prose about
+each colour's place in this corpus:
+
+> *"The corpus ceiling for chroma. It is here so that the Atlas has one colour that a screen
+> renders convincingly and a camera estimate does not."*
+
+Some lean the other way — *"offered as the alternative to black in the Indigo palette"* — so the
+field is **mixed**, which is worse than either.
+
+*A name is a claim about content, and nothing checks it.* Every other guarantee in this corpus is
+enforced: a null needs a stated reason, a derived value cannot be authored, a reviewer must be a
+different person from the author. The one thing no gate can check is whether a field holds what
+its name says — and that is exactly what a feature written months later assumes.
+
+Renaming a published field is a corpus version change, so the values stay and a precisely named
+field sits beside them, with the finding in the type's own docstring.
+
+**And there are no traditional entries.** All 120 are `japanese-inspired`; none is `historical`,
+none carries an era — deliberately, because F-011's rule is that our own curation cannot be
+classified historical. FR-72's subject does not exist yet.
+
+### The reading this was built under, stated rather than assumed
+
+**The contemporary reference set is FR-22's own curated palettes.** Four carry
+`category: "contemporary"`, they hold 28 entries, and each palette has editorial provenance and a
+named reviewer. That is the only thing here that is both *contemporary* and signed off.
+
+An external set — Pantone, RAL, a retailer's range — is licensed, absent, and inventing one would
+be exactly the unsourced claim ADR-0005 and the content rules exist to prevent. **The screen says
+so in words**, because a person deciding what to buy deserves to know they are being shown this
+product's own curation rather than an industry standard.
+
+The seasonal palette is excluded: it is curated and signed off too, and it groups by time of year.
+Answering *"what could I buy in this"* with a summer palette answers something nobody asked.
+
+### Adding a field changed 120 digests
+
+The moment the parser filled `contemporaryEquivalents` with `null`, every published entry's
+checksum stopped matching — `serialiseEntry` spreads the parsed entry, and that is what
+`entryDigest` hashes. The load refused all 120 with the right message:
+
+> *"A published entry is immutable… there is no benign explanation for immutable content differing
+> from its recorded checksum: treat this as a SEV1."*
+
+**The immutability guarantee working**, and worth understanding rather than routing around. An
+absent field is now *omitted* rather than serialised as null, which makes the addition
+byte-neutral: an entry nobody has written an equivalent for hashes exactly as before, and one that
+carries an equivalent hashes differently, because its content genuinely differs.
+
+That treatment would be **wrong** for the other nullable editorial fields — those are nulls a
+person had to justify in `unknowns`, so the null *is* the content.
+
+### Keeping the two kinds apart is the feature
+
+A **computed** equivalent is the nearest palette member by ΔE00, with the delta shown. An
+**editorial** one is a person's recorded judgement, with a source and a reviewer.
+
+They are a **discriminated union**, so criterion 3 is discharged by `tsc` rather than by an
+assertion: an editorial equivalent has no delta to read and a computed one has no note or
+provenance. Asserted in both directions, because a union carrying neither field would satisfy the
+refusals and be worse than none.
+
+*Presenting a computed neighbour as editorial judgement is a claim nobody made* — the same move
+ADR-0005 makes for provenance.
+
+### Two states that are easy to get wrong
+
+**An entry that is itself in a contemporary palette** leads with *this colour is already in Quiet
+Neutrals*, not with a distance of 0.00 to itself. A different sentence, and a different tree — so
+it has its own conformance subject.
+
+**A colour with nothing inside the ΔE00 5 ceiling** is told there is nothing. The reference set is
+28 colours wide, so that is a real outcome — and offering the least distant thing with a number
+beside it is how a product ends up asserting a correspondence it cannot stand behind.
+
+### Criterion 4, in both languages
+
+A pattern for describing an equivalent as a match, in English and Japanese. The proof's own *"went
+red, but did not name the right thing"* assertion caught my first Japanese sample: 完全に一致 also
+trips F-172's `ja-perfect-match`, so the case was red for the wrong reason.
+
+### The editorial branch has a subject
+
+No published entry can reach it — an editorial equivalent needs a note, a source and a reviewer
+the content gate enforces, and writing one is editorial work. Without a subject that supplies one,
+the branch would be a tree nobody has ever rendered. The fixture corpus carries a real one, and
+the screen takes an `initialEquivalents` prop so the registry can draw it.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 12 new in `contemporary.test.ts`, 3 new screen subjects | **PASS** |
+| **11 content**, on the new schema field and the fixture entry | **PASS** |
+| the corpus immutability check, on the digest change | **caught** |
+| the claims proof, on a sample that was red for the wrong reason | **caught** |
+| gate 11 font coverage, on three new codepoints | **caught** |
+| `pnpm verify:ci` — all 35 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 1 is outstanding, and for two readings rather than a gap.** *"A traditional entry"* has
+no referent in this corpus, and *"contemporary reference"* had to be given one. Both are recorded
+in the plan and in the screen's own copy, where somebody can disagree with them.
+
+**No published entry has an editorial equivalent**, and that is editorial work with a source and a
+reviewer behind it — not something a generator supplies.
+
+---
+
 ## 2026-09-07 — F-154 DONE · the guarantee written for correctness paid for the dynamic theme
 
 The Material You half of the request, and the half F-153 deliberately left. It breaks this

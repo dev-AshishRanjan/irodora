@@ -288,6 +288,11 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
       onDismiss={onDismiss}
       onUseForProfile={useForProfile}
       onUseForWardrobe={useForWardrobe}
+      // F-155 criterion 5: a reading leads to the contemporary colours of its nearest entry, on
+      // their own screen. The Lens stays decluttered; this is a way OUT of it.
+      onOpenContemporary={(slug) => {
+        router.push(`/atlas/nearby/${slug}`);
+      }}
       onOpenColour={(slug) => {
         router.push(`/atlas/${slug}`);
       }}

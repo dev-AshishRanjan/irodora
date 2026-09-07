@@ -3537,6 +3537,52 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-096",
+      "from": {
+        "kind": "file",
+        "ref": "packages/corpus/src/entry.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/contemporary.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Contemporary.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/claims.json"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/corpus/test/fixtures/valid/colors/fixture-a.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/corpus",
+        "apps/mobile",
+        "content"
+      ],
+      "severity": "medium",
+      "guard": "AN ABSENT FIELD IS OMITTED FROM THE SERIALISATION, so adding it is byte-neutral and all 120 published digests still match — the immutability check is what caught the alternative, refusing every entry with a SEV1 message. The two kinds are a DISCRIMINATED UNION, so criterion 3 is discharged by `tsc`: `contemporary.test.ts` asserts at the type level that an editorial equivalent has no delta and a computed one has no note or provenance, in BOTH directions so a union carrying neither would fail too. The claims gate gained a pattern in each language for describing an equivalent as a match, each with a real sentence in the mutation proof — and the proof’s own \"named the right thing\" assertion caught the first Japanese sample being red for the wrong reason. The editorial branch has a conformance subject, because no published entry can reach it and a tree nobody renders is the shape that costs an increment. The screen is registered in both its computed and its membership states.",
+      "memory": "memory/effects/a-field-name-that-does-not-describe-what-it-holds.md",
+      "rationale": "A NAME IS A CLAIM ABOUT CONTENT, AND NOTHING CHECKS IT. F-155’s notes said `contemporaryNote_en` was defined and never filled; eight entries carry one, and they hold curatorial prose about each colour’s place in the corpus rather than anything about contemporary equivalents — with some leaning the other way, so the field is MIXED, which is worse than either. Every other guarantee in this corpus is enforced: a null needs a stated reason, a derived value cannot be authored, a reviewer must differ from the author. The one thing no gate can check is whether a field holds what its name says, and that is exactly what a feature written months later assumes. It cost this feature its premise. Renaming a published field is a corpus version change, so the values stay and a precisely named field sits beside them, with the finding in the type’s own docstring. ADDING A FIELD CHANGED 120 DIGESTS: the parser filling it with `null` changed `serialiseEntry`’s output, which is what `entryDigest` hashes, and the load refused every published entry with the right SEV1 message. The fix is to OMIT an absent field rather than serialise it as null — byte-neutral for an entry nobody has written an equivalent for, and different for one that carries an equivalent, because its content genuinely differs. That treatment would be WRONG for the other nullable editorial fields, where the null is a justified gap and dropping it would hide a stated one. AND THE SUBJECT DOES NOT EXIST YET: all 120 entries are `japanese-inspired`, none is historical, none carries an era — so the reading is stated rather than assumed, and the contemporary reference set is FR-22’s own curated palettes, the only thing here that is both contemporary and editorially signed off.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
