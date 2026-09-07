@@ -21,6 +21,7 @@
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { plantJournal } from './plant.mjs';
 import { ROOT } from './corpus-io.mjs';
 import { ciError } from './annotate.mjs';
 
@@ -346,6 +347,41 @@ console.log(`\n${BOLD}Irodora — gate 11 discrimination proof${OFF}\n`);
 rmSync(BACKUP, { recursive: true, force: true });
 cpSync(VALID, BACKUP, { recursive: true });
 
+/*
+ * THE PLANT JOURNAL (F-173), recorded AFTER the copy exists and before anything is swapped.
+ *
+ * This proof already kept a gitignored backup — F-100 is why — so it has always had a way to
+ * recover. What it did not have was a way for the NEXT run to know the swap never finished,
+ * and that is the half that matters here: the one time this script was interrupted, Windows
+ * failed an `rmSync` inside the restore and four corpus fixtures stayed deleted.
+ *
+ * The entry points at the backup rather than holding bytes: a fixture corpus is not something
+ * to inline into a JSON document.
+ */
+const journal = plantJournal('verify-content-proof');
+journal.recordTree(VALID, BACKUP);
+
+/*
+ * AND THE ENGINE, WHICH THE FIRST DRAFT OF THIS MIGRATION MISSED — and which leaked within the
+ * hour as a result, for the second time.
+ *
+ * One case here perturbs an OKLab matrix element in a TRACKED SOURCE FILE and rebuilds, so the
+ * corpus fixtures no longer match what the engine derives. A one-digit diff, 374 gate failures,
+ * and nothing about it looks like a plant.
+ *
+ * The lesson is not "remember the second file". It is that a journal covering SOME of what a
+ * proof breaks reports "no plant is outstanding" over the half it does not cover — which is
+ * exactly the shape of every blind spot in this repository's memory, arrived at from inside the
+ * fix for one.
+ */
+journal.record(
+  MATRICES,
+  undefined,
+  'the packages that compile this were REBUILT with the perturbed matrix — restoring the source ' +
+    'is not enough. Run: pnpm --filter @irodora/color-spaces build && pnpm --filter ' +
+    '@irodora/corpus build',
+);
+
 const restore = () => {
   rmSync(VALID, { recursive: true, force: true });
   cpSync(BACKUP, VALID, { recursive: true });
@@ -452,6 +488,10 @@ try {
   }
 } finally {
   restore();
+  // Cleared BEFORE the backup is removed, and in that order deliberately: the journal points at
+  // the backup, so a journal outliving the copy it names would promise a recovery that cannot
+  // happen.
+  journal.close();
   rmSync(BACKUP, { recursive: true, force: true });
 }
 

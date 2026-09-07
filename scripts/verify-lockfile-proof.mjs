@@ -29,6 +29,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -42,6 +43,13 @@ const SCRATCH = [join(ROOT, 'tests/__proof-with-deps__'), join(ROOT, 'tests/__pr
 const originals = new Map(
   [STORE, ROOT_PKG, WORKSPACE].map((path) => [path, readFileSync(path, 'utf8')]),
 );
+
+/*
+ * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+ * — which is how seven plants reached the working tree — leaves a record of what it
+ * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+ */
+const journal = guardPlants('verify-lockfile-proof', [...originals.keys()]);
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -189,6 +197,9 @@ try {
 } finally {
   for (const [path, text] of originals) writeFileSync(path, text, 'utf8');
   for (const dir of SCRATCH) rmSync(dir, { recursive: true, force: true });
+  // Cleared only after the restore has returned. A journal cleared over a broken
+  // file says a proof finished cleanly when it did not.
+  journal.close();
 }
 
 for (const [path, text] of originals)

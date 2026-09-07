@@ -716,6 +716,32 @@ export default tseslint.config(
     },
   },
 
+  /*
+   * THE BENCH PROOF REACHES THE PLANT JOURNAL (F-173).
+   *
+   * `no-restricted-imports` and `import-x/no-relative-packages` exist so one PACKAGE cannot
+   * reach into another's source — and `scripts/` is not a package. It is repository tooling,
+   * and so is `tests/bench/src/bench-proof.mjs`: the block above already says as much, calling
+   * them *"the same kind of file for the same reason — a gate script and its proof"*. The bench
+   * proof lives under a package directory because the benchmark it proves does.
+   *
+   * SCOPED TO THE ONE FILE rather than widened to the zone, and later than the block above
+   * rather than beside it: flat config merges by specificity in order, so a narrower pattern
+   * afterwards adds to that block instead of shadowing it
+   * [[a-later-flat-config-object-replaces-a-rule-it-does-not-merge]].
+   *
+   * What it buys: the proof records what it is about to break before it breaks it, so the run
+   * that left `percentile` returning constants would have been caught by the next command
+   * rather than by a CI step failing eight minutes later.
+   */
+  {
+    files: ['tests/bench/src/bench-proof.mjs'],
+    rules: {
+      'no-restricted-imports': 'off',
+      'import-x/no-relative-packages': 'off',
+    },
+  },
+
   // --- Plain-JavaScript config files ---------------------------------------
   //
   // A `.mjs` config is not in any tsconfig project, so the type-aware rules cannot parse it

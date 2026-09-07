@@ -42,6 +42,7 @@ import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from '
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SELF = fileURLToPath(import.meta.url);
@@ -327,6 +328,17 @@ export const x = FileSystem;
   },
 ];
 
+/*
+ * THE PLANT JOURNAL (F-173). These fixtures are files this script CREATES, and an untracked
+ * leftover is not harmless: `git add -A` adds it, and a source file whose whole purpose is to
+ * violate a lint rule is a confusing thing to find committed. The journal records that each
+ * path did not exist, so recovery removes it.
+ */
+const journal = guardPlants(
+  'verify-guards',
+  GUARDS.map((g) => resolve(ROOT, g.path)),
+);
+
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
   DIM = '\x1b[2m',
@@ -475,6 +487,9 @@ try {
     const abs = resolve(ROOT, guard.path);
     if (existsSync(abs)) unlinkSync(abs);
   }
+  // Cleared only once every fixture is gone. An untracked leftover is not harmless — `git
+  // add -A` adds it, and a fixture that lints itself is a confusing thing to find committed.
+  journal.close();
 }
 
 /**

@@ -13,6 +13,7 @@ import { execFileSync, execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 import { ciError } from './annotate.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..').replaceAll('\\', '/');
@@ -207,6 +208,16 @@ let allGood = true;
 const failures = [];
 for (const c of cases) {
   const original = readFileSync(c.file, 'utf8');
+
+  /*
+   * THE PLANT JOURNAL (F-173). This is the proof that left a status colour moved in the design
+   * manifest — eight design-token tests red in a package that session had not touched, and a
+   * one-digit diff `git add -A` would have committed.
+   *
+   * Recorded per case rather than up front, because each case names its own file and the loop
+   * restores at the end of each iteration.
+   */
+  const journal = guardPlants('verify-contrast-proof', [c.file]);
   const mutated = c.mutate(original);
   if (mutated === original) {
     console.log(`?? ${c.name}: MUTATION DID NOT APPLY — the anchor text has moved.`);
@@ -243,6 +254,8 @@ for (const c of cases) {
     );
   } finally {
     writeFileSync(c.file, original, 'utf8');
+    // Cleared only after the restore has returned.
+    journal.close();
     if (c.rebuild) rebuild();
     const restored = readFileSync(c.file, 'utf8');
     if (restored !== original) {

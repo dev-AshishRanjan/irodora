@@ -3442,6 +3442,51 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-094",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/plant.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-ci.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-content-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-gate-mirror.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "tests/bench/src/bench-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".github/workflows/ci.yml"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "scripts",
+        "tests/bench"
+      ],
+      "severity": "high",
+      "guard": "THE JOURNAL IS WRITTEN BEFORE THE MUTATION, which is the safety property rather than a convention: a failure to journal means no mutation happens, so there is no window in which a file is broken and unrecorded. Opening a journal REFUSES if a previous run left one — on every proof, not only under `verify:ci`, so running one directly is covered. `verify-ci.mjs` refuses too, as a failure rather than the warning it used to print. A run identity in the environment distinguishes a previous run’s leftovers from the current process tree, so a proof that spawns another proof does not refuse over its own parent. `plant-proof.mjs` proves all of it against an actual SIGKILL, with a decoy in the other direction, and CHECKS ITS OWN COVERAGE: every script that writes into the tree either uses the journal or is on a list with a reason, and the list is checked for staleness in the other direction.",
+      "memory": "memory/effects/a-finally-is-a-hope-about-how-a-process-ends.md",
+      "rationale": "A `finally` IS A HOPE ABOUT HOW A PROCESS ENDS, and eight incidents proved it three different ways: a kill never runs it, a Windows EPERM throws inside it, a Windows UNKNOWN fails the write that would have restored. The damage was a CI workflow with a gate disabled, a performance budget of 0.0001, four deleted corpus fixtures, a benchmark returning constants, a design manifest with a colour moved, and an OKLab matrix off by a digit that failed 374 checks — every one a `git add -A` away from being committed. THE GUARD ADDED AFTER THE FOURTH FAILED ON THE NEXT THREE, for one reason: it compared `git status` and CANNOT TELL A LEAK FROM ORDINARY WORK. Each of those runs had legitimately edited a file, so the warning was correct, expected, and dismissed — by me, twice, in writing. A guard whose signal is indistinguishable from ordinary work trains people to ignore it, and no amount of cleverness fixes it: git says whether ANYBODY changed a file, and the question is whether THIS RUN did. SO THE MECHANISM RECORDS INTENT RATHER THAN READING STATE. No false positive is possible, because the journal only holds what a proof deliberately put there. It refuses rather than repairing, because somebody who has already fixed the damage by hand should not have it reverted by a tool being helpful. PROVING IT NEEDED A RUN THAT ACTUALLY DIES — every other mutation proof here is verified by letting it finish, which is the one path where `finally` works, and precisely why eight incidents got past them. TWO THINGS THE FEATURE FOUND INSIDE ITSELF: a journal covering SOME of what a proof breaks reports clean over the rest, which happened within the hour when my first migration of the content proof missed the OKLab matrix beside the fixtures; and restoring a source file is not restoring the tree when the proof rebuilt the package that compiles it. AND ONE IN PASSING: `verify-a11y-proof.mjs` had no CI step, so one of its six cases had been reporting \"cannot plant: source moved\" to nobody for as long as the Button wrapper has used HeroUI’s own prop name.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

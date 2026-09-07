@@ -40,6 +40,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { guardPlants } from './plant.mjs';
 
 const FEATURES = '.harness/state/feature_list.json';
 const GATES = '.harness/verification/gates.json';
@@ -48,6 +49,13 @@ const ADVISORIES = '.harness/verification/advisories.json';
 
 const TOUCHED = [FEATURES, GATES, CLAIMS, ADVISORIES];
 const originals = new Map(TOUCHED.map((p) => [p, readFileSync(p, 'utf8')]));
+
+/*
+ * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+ * — which is how seven plants reached the working tree — leaves a record of what it
+ * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+ */
+const journal = guardPlants('verify-state-id-proof', TOUCHED);
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -190,6 +198,8 @@ try {
   }
 } finally {
   for (const p of TOUCHED) writeFileSync(p, originals.get(p), 'utf8');
+  // Cleared only after every restore has returned.
+  journal.close();
 }
 
 /*

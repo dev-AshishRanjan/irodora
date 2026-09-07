@@ -48,6 +48,7 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './corpus-io.mjs';
+import { guardPlants } from './plant.mjs';
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -478,6 +479,13 @@ const __spacingProofProbe = { ${declaration} };
 
   const original = readFileSync(TARGET, 'utf8');
   const originalExemptions = readFileSync(EXEMPTIONS, 'utf8');
+
+  /*
+   * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+   * — which is how seven plants reached the working tree — leaves a record of what it
+   * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+   */
+  const journal = guardPlants('verify-spacing-scale --prove', [TARGET, EXEMPTIONS]);
   const problems = [];
 
   try {
@@ -604,6 +612,9 @@ const __spacingProofProbe = { ${declaration} };
   } finally {
     writeFileSync(TARGET, original, 'utf8');
     writeFileSync(EXEMPTIONS, originalExemptions, 'utf8');
+    // Cleared only after the restore has returned. A journal cleared over a broken file says
+    // a proof finished cleanly when it did not.
+    journal.close();
     if (readFileSync(TARGET, 'utf8') !== original) {
       console.log(
         `\n${RED}${BOLD}Home.tsx was NOT restored. Run: git checkout ${posix(TARGET)}${OFF}\n`,

@@ -8,6 +8,112 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-173 DONE · a `finally` is a hope about how a process ends
+
+Eight incidents. Every mutation proof here plants a defect into a tracked file, watches the check
+reject it, and restores in a `finally`. Three mechanisms defeated that:
+
+| how the run ended | what the `finally` did |
+| --- | --- |
+| a timeout, a Ctrl+C, a closed terminal | never ran |
+| Windows `EPERM` on `rmSync` | ran, and threw inside itself |
+| Windows `UNKNOWN` on `writeFileSync` | ran, and the restoring write failed |
+
+A CI workflow with a gate step disabled by `if: false`. A performance budget of `0.0001`. Four
+deleted corpus fixtures. A benchmark whose `percentile` returned constants. A design manifest with
+a colour value moved. An OKLab matrix element off by one digit, which failed 374 checks in a gate
+nobody had touched. **Every one is something `git add -A` would have committed.**
+
+### Why the guard added after the fourth never helped
+
+It compared `git status` before and after and warned when a plant-target file was modified. It
+failed on the next three, for one reason: **it cannot tell a leak from ordinary work.** Each of
+those runs was a feature that had legitimately edited a file in the same session, so the warning
+was correct, expected, and dismissed — by me, twice, in writing.
+
+*A guard whose signal is indistinguishable from ordinary work trains people to ignore it, which is
+worse than not having one.* And no amount of cleverness fixes it: git says whether **anybody**
+changed a file, and the question is whether **this run** did.
+
+### The mechanism records intent rather than reading state
+
+A proof writes the original bytes to `.harness/state/.plant-journal.json` before it mutates, and
+removes the entry after it restores. An entry that outlives a run means a proof did not finish —
+whatever git thinks. **No false positive is possible**, because the journal only ever holds what a
+proof deliberately put there.
+
+**The ordering is the safety property.** Journal first, mutate second: a failure to journal means
+no mutation happens, so there is no window in which a file is broken and unrecorded. It also means
+this feature makes some runs fail that used to pass, which is the correct direction.
+
+**It refuses rather than repairing.** Automatic restore would overwrite whatever is in the file
+now, and somebody who has already fixed the damage by hand should not have it reverted by a tool
+being helpful.
+
+A **run identity** in the environment tells a previous run's leftovers from the current process
+tree — which is what lets a proof that spawns another proof work at all, and gate 0 caught the new
+`IRODORA_*` variable before it was declared in `.env.example`.
+
+### Proving it needed a run that actually dies
+
+Every mutation proof in this repository is verified by **letting it finish**, which is the one
+path where `finally` works — and precisely why eight incidents got past them. So `plant-proof.mjs`
+spawns a child that plants and then blocks, `SIGKILL`s it, and asks:
+
+1. is the file still broken, so the kill genuinely skipped the cleanup?
+2. does the journal name it?
+3. does recovery restore it byte for byte?
+
+Plus the decoy: a child allowed to finish leaves no journal. Without it, *"no leftovers"* and *"a
+journal that was never written"* are the same observation.
+
+### The feature found two things inside itself
+
+**A partial journal reports clean over the half it does not cover.** My first migration of the
+content proof journalled the fixture corpus and missed the OKLab matrix beside it — so
+`node scripts/plant.mjs` said *no plant is outstanding* over a perturbed colour engine, within the
+hour, inside the fix. That is every blind spot in this directory, arrived at from inside the
+remedy for one.
+
+The answer is a coverage check in the proof itself: **every script that writes into the tree
+either uses the journal or is on a list, with a reason** — and the list is checked for staleness in
+the other direction. It found two more proofs I had missed the moment it existed, one of them the
+proof that leaked the design manifest.
+
+**Restoring a source file is not restoring the tree.** The content proof rebuilds the packages it
+perturbs, so putting the file back leaves the *built* artefacts holding the defect — which
+surfaced as a taxonomy-boundary failure looking nothing like a leftover plant. A journal entry can
+now carry a note, and recovery prints it.
+
+### And one it found in passing
+
+`verify-a11y-proof.mjs` had **no CI step at all**. One of its six cases had been reporting *"cannot
+plant: source moved"* to nobody for as long as the Button wrapper has used HeroUI's own
+`isDisabled` prop. A proof nothing runs is a proof that decays. It has a step now, and so does the
+journal proof.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| **the journal, against an actual SIGKILL** — 9 cases including 2 decoys and the coverage check | **PASS** |
+| every migrated proof, run individually | **PASS** |
+| gate 0, on the undeclared `IRODORA_PLANT_RUN` | **caught** |
+| the coverage check, on two unmigrated proofs and two stale exemptions | **caught** |
+| `pnpm verify:ci` — all 35 locally-runnable steps, two of them new | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Criterion 1 is outstanding, and for two named residues rather than a general doubt.**
+"Byte-identical" holds of source and not always of the tree, where a proof rebuilt what it
+perturbed — a printed note is not the same as a guarantee. And the refusal covers a proof that
+*opens* a journal; a script that writes into the tree without one is caught by a source-level
+scan, and a scan is not an execution.
+
+---
+
 ## 2026-09-07 — F-153 DONE · a rule that already existed answered the question
 
 Requested, referencing an app that ships Material You with preloaded themes. The opportunity is

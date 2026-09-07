@@ -19,6 +19,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -61,7 +62,13 @@ const CASES = [
     // gets no derivation at all.
     name: 'a disabled control that does not announce it',
     file: join(UI, 'Button.tsx'),
-    find: 'accessibilityState={{ disabled: inert, busy: loading }}\n      disabled={inert}',
+    /*
+     * `isDisabled`, which is HeroUI's prop name. This read `disabled={inert}` and had therefore
+     * been UNRUNNABLE for as long as the wrapper has used the real one — the case reported
+     * itself honestly ("cannot plant: source moved") and nothing was watching, because this
+     * proof had no CI step. F-173 gave it one.
+     */
+    find: 'accessibilityState={{ disabled: inert, busy: loading }}\n      isDisabled={inert}',
     replace: 'accessibilityState={{ busy: loading }}',
     expect: 'state-not-announced',
   },
@@ -123,6 +130,13 @@ const failures = [];
 
 for (const c of CASES) {
   const original = readFileSync(c.file, 'utf8');
+
+  /*
+   * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+   * — which is how seven plants reached the working tree — leaves a record of what it
+   * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+   */
+  const journal = guardPlants('verify-a11y-proof', [c.file]);
   if (!original.includes(c.find)) {
     failures.push(`${c.name}: the source to mutate is not there any more — case UNRUNNABLE`);
     console.log(`  ${RED}✗${OFF} ${c.name} ${DIM}(cannot plant: source moved)${OFF}`);
@@ -145,6 +159,8 @@ for (const c of CASES) {
     // Always restore, even if the run threw for an unrelated reason. A proof script that can
     // leave the tree mutated is worse than no proof script.
     writeFileSync(c.file, original);
+    // Cleared only after the restore has returned; this loop guards one file at a time.
+    journal.close();
   }
 }
 

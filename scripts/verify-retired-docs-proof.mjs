@@ -19,6 +19,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\u001b[32m';
@@ -86,6 +87,13 @@ for (const [term, sentence] of cases) {
 const bomb = '\nThe API process never touches an image, and cloud sync is on.\n';
 const original = readFileSync(SUPERSEDED, 'utf8');
 
+/*
+ * THE PLANT JOURNAL (F-173). Recorded before anything is mutated, so a run that is KILLED —
+ * which is how seven plants reached the working tree — leaves a record of what it broke and
+ * the bytes to undo it. `finally` is a hope about how a process ends; this is not.
+ */
+const journal = guardPlants('verify-retired-docs-proof', [SUPERSEDED]);
+
 writeFileSync(SUPERSEDED, original + bomb);
 const supOut = run();
 const supFired = flagged(supOut, '0012-backend-fastify-zod-openapi.md');
@@ -104,6 +112,9 @@ console.log(
 if (!accFired) failures += 1;
 
 writeFileSync(SUPERSEDED, original);
+// Cleared only after the restore has returned. A journal cleared over a broken file says a
+// proof finished cleanly when it did not.
+journal.close();
 
 // --- The rules zone (F-112). Every term, in a file under .harness/rules.
 for (const [term, sentence] of cases) {

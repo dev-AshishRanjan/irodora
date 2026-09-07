@@ -43,6 +43,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT = join(ROOT, 'scripts', 'verify-gate-mirror.mjs');
@@ -65,6 +66,13 @@ const fail = (name, detail) => {
 };
 
 const original = readFileSync(WORKFLOW, 'utf8');
+
+/*
+ * THE PLANT JOURNAL (F-173). Recorded before anything is mutated, so a run that is KILLED —
+ * which is how seven plants reached the working tree — leaves a record of what it broke and
+ * the bytes to undo it. `finally` is a hope about how a process ends; this is not.
+ */
+const journal = guardPlants('verify-gate-mirror-proof', [WORKFLOW]);
 
 /** The tree must be clean before anything below means anything. */
 if (original.includes(MARKER)) {
@@ -193,6 +201,9 @@ try {
 const changedWhileRefusing =
   readFileSync(WORKFLOW, 'utf8') !== original.replace(/\n/u, `\n# ${MARKER}\n`);
 writeFileSync(WORKFLOW, original, 'utf8');
+// Cleared only after the restore has returned. A journal cleared over a broken file says a
+// proof finished cleanly when it did not.
+journal.close();
 
 if (refused)
   pass('a leftover plant is refused before another is written — the SIGKILL case, covered');

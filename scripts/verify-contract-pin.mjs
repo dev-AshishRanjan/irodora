@@ -20,6 +20,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..').replaceAll('\\', '/');
 const FILE = `${ROOT}/packages/contracts/src/color.ts`;
@@ -50,6 +51,13 @@ const probes = [
 ];
 
 const original = readFileSync(FILE, 'utf8');
+
+/*
+ * THE PLANT JOURNAL (F-173). Recorded before anything is mutated, so a run that is KILLED —
+ * which is how seven plants reached the working tree — leaves a record of what it broke and
+ * the bytes to undo it. `finally` is a hope about how a process ends; this is not.
+ */
+const journal = guardPlants('verify-contract-pin', [FILE]);
 const baseline = typecheck();
 console.log(`baseline typecheck exit ${baseline}${baseline === 0 ? '' : '  <-- must be 0'}\n`);
 
@@ -72,6 +80,9 @@ for (const [label, anchor] of probes) {
     console.log(`${caught ? 'OK ' : 'HOLE'} ${label}: typecheck exit ${code}`);
   } finally {
     writeFileSync(FILE, original, 'utf8');
+    // Cleared only after the restore has returned. A journal cleared over a broken file says a
+    // proof finished cleanly when it did not.
+    journal.close();
   }
 }
 

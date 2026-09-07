@@ -27,6 +27,7 @@ import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 import { ciError } from './annotate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -46,6 +47,15 @@ const JA_FIXTURE = join(ROOT, 'packages/testing/fixtures/claims/japanese.md');
 
 // A real, scanned path. Removed in `finally`; its directory is created only if absent.
 const TARGET = join(ROOT, 'docs/__claims_proof__.md');
+
+/*
+ * THE PLANT JOURNAL (F-173), even though this target is UNTRACKED.
+ *
+ * An untracked leftover is not harmless: `git add -A` adds it, and a file called
+ * `__claims_proof__.md` in `docs/` is exactly the kind of thing that gets committed and then
+ * lives there. The journal records that this path did not exist, so recovery removes it.
+ */
+const journal = guardPlants('verify-claims-proof', [TARGET]);
 
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
@@ -250,6 +260,7 @@ try {
 } finally {
   rmSync(TARGET, { force: true });
   if (existsSync(TARGET)) console.error(`${RED}claims-proof: FAILED TO REMOVE ${TARGET}.${OFF}`);
+  else journal.close();
 }
 
 if (!proveCoverage()) failures++;

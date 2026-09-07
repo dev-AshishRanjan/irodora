@@ -137,3 +137,8 @@ apps/mobile/src/uniwind.d.ts
 # corpus. The script removes it on every exit path; this is the second line of defence,
 # because the one time it did not, `git add -A` committed a copy of the fixtures (F-100).
 packages/corpus/test/fixtures/.valid-backup/
+
+# The plant journal (F-173). Written by a mutation proof BEFORE it breaks a tracked file, and
+# removed when it puts it back — so a journal that still exists means a proof did not finish.
+# Never committed: a journal in the repository would be a lie about a run that ended.
+.harness/state/.plant-journal.json

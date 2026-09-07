@@ -44,6 +44,7 @@ import {
 } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { guardPlants } from './plant.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -155,6 +156,14 @@ export function findProblems() {
 if (process.argv.includes('--prove')) {
   console.log(`\n${BOLD}Viewport — proving the check${OFF}\n`);
   const planted = join(ROOT, 'apps', 'mobile', 'src', '__viewport_probe__.tsx');
+
+  /*
+   * THE PLANT JOURNAL (F-173). The probe is a file this creates, and an untracked leftover is
+   * not harmless: `git add -A` adds it, and a `__viewport_probe__.tsx` sitting in the app's
+   * source is a component the bundler would try to compile. The journal records that the path
+   * did not exist, so recovery removes it.
+   */
+  const journal = guardPlants('verify-viewport --prove', [planted]);
   let bad = 0;
 
   const baseline = findProblems().problems.length;
@@ -219,6 +228,7 @@ if (process.argv.includes('--prove')) {
   }
 
   if (existsSync(planted)) unlinkSync(planted);
+  else journal.close();
   if (bad > 0) {
     console.log(`\n${RED}${BOLD}The check does not discriminate.${OFF} ${String(bad)} case(s).\n`);
     process.exit(1);

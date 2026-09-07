@@ -37,9 +37,17 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { guardPlants } from './plant.mjs';
 
 const EFFECTS = '.harness/state/effects.json';
 const original = readFileSync(EFFECTS, 'utf8');
+
+/*
+ * THE PLANT JOURNAL (F-173). Recorded before anything is mutated, so a run that is KILLED —
+ * which is how seven plants reached the working tree — leaves a record of what it broke and
+ * the bytes to undo it. `finally` is a hope about how a process ends; this is not.
+ */
+const journal = guardPlants('verify-effect-id-proof', [EFFECTS]);
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -166,6 +174,9 @@ try {
   }
 } finally {
   writeFileSync(EFFECTS, original, 'utf8');
+  // Cleared only after the restore has returned. A journal cleared over a broken file says a
+  // proof finished cleanly when it did not.
+  journal.close();
 }
 
 /*

@@ -191,6 +191,7 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 - [effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md](effects/a-component-reached-through-another-is-only-tested-in-its-parents-shape.md) — **E-091** · the suite really did render Strip, in both themes, every run — only ever with two equal members.
 - [effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md](effects/a-mechanism-nobody-used-is-a-mechanism-nobody-measured.md) — **E-092** · the first status this product ever painted was flagged for doing exactly what its own prop promises.
 - [effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md](effects/a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it.md) — **E-093** · the chroma ceiling answered "how strong may a theme be" better than taste would have.
+- [effects/a-finally-is-a-hope-about-how-a-process-ends.md](effects/a-finally-is-a-hope-about-how-a-process-ends.md) — **E-094** · eight leaked plants, and a guard that could not tell a leak from ordinary work.
 
 ## Glossary
 

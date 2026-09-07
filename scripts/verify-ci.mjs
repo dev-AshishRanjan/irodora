@@ -50,6 +50,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { describeLeftovers } from './plant.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WORKFLOW = join(ROOT, '.github', 'workflows', 'ci.yml');
@@ -253,6 +254,45 @@ function dirtyFiles() {
       .filter((line) => !line.startsWith('??'))
       .map((line) => line.slice(3).trim()),
   );
+}
+
+/*
+ * THE JOURNAL COMES FIRST, AND IT IS A FAILURE RATHER THAN A WARNING (F-173).
+ *
+ * Everything above is a heuristic over `git status`, and it has now failed on three
+ * consecutive incidents for one reason: **it cannot tell a leak from ordinary work.** Each of
+ * those runs was a feature that had legitimately edited a file in the same session, so the
+ * warning was correct, expected, and dismissed — twice by me, in writing.
+ *
+ * The journal answers the other question. A proof records what it is about to break BEFORE it
+ * breaks it, so an entry that outlives the run means a proof did not finish, whatever git
+ * thinks and whatever else anybody edited. There are no false positives to weigh, which is why
+ * this one stops the run instead of printing beside it.
+ *
+ * The heuristic stays. It covers a proof nobody has migrated yet, and being wrong in that
+ * direction costs a sentence.
+ */
+const leftovers = describeLeftovers();
+if (leftovers !== null) {
+  console.log(
+    `
+${RED}${BOLD}A mutation proof did not finish.${OFF}
+` +
+      `${DIM}  ${String(leftovers.paths.length)} file(s) still hold a planted defect, recorded by ` +
+      `the proof itself
+  before it broke them: ${leftovers.owners.join(', ')}.${OFF}
+`,
+  );
+  for (const path of leftovers.paths) console.log(`  ${YELLOW}!${OFF} ${path}`);
+  console.log(
+    `
+${DIM}  Put them back:${OFF}  node scripts/plant.mjs --recover
+` +
+      `${DIM}  Refusing to run: a gate that passes over a planted defect is worse than one that ` +
+      `does not run.${OFF}
+`,
+  );
+  process.exit(1);
 }
 
 const steps = stepsFrom(readFileSync(WORKFLOW, 'utf8'));

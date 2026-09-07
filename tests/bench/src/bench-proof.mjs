@@ -34,6 +34,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { guardPlants } from '../../../scripts/plant.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BENCH = join(HERE, 'bench.mjs');
@@ -193,6 +194,13 @@ console.log(`\n${BOLD}Irodora — gate 12 discrimination proof${OFF}\n`);
 
 const originalBudgets = readFileSync(BUDGETS, 'utf8');
 const originalBench = readFileSync(BENCH, 'utf8');
+
+/*
+ * THE PLANT JOURNAL (F-173). Written before anything is mutated, so a run that is KILLED
+ * — which is how seven plants reached the working tree — leaves a record of what it
+ * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
+ */
+const journal = guardPlants('bench-proof', [BUDGETS, BENCH]);
 const problems = [];
 
 try {
@@ -253,6 +261,9 @@ try {
   // checks in a gate nobody had touched.
   writeFileSync(BUDGETS, originalBudgets, 'utf8');
   writeFileSync(BENCH, originalBench, 'utf8');
+  // Cleared only after the restore has returned. A journal cleared over a broken
+  // file says a proof finished cleanly when it did not.
+  journal.close();
   for (const [path, original] of [
     [BUDGETS, originalBudgets],
     [BENCH, originalBench],

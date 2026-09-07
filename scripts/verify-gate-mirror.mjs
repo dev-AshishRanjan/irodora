@@ -24,6 +24,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { plantJournal } from './plant.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CI_WORKFLOW = '.github/workflows/ci.yml';
@@ -141,10 +142,23 @@ const active = gates.gates.filter((g) => g.status === 'active' && g.ciStep !== f
  * Read up front, so the `finally` can restore all of them whatever happens in between — a
  * proof that leaves a workflow half-mutated has broken the thing it was checking.
  */
+/*
+ * THE JOURNAL IS OPENED BEFORE ANYTHING IS READ (F-173).
+ *
+ * It refuses to start if a previous run left a plant behind — including a plant this script
+ * did not make — and it records each workflow's original bytes BEFORE the first mutation. The
+ * signal handlers below and the leftover check that follows are still here and still worth
+ * having; what they could not survive is a `writeFileSync` that FAILS, which is how this
+ * exact file ended up committed-able with a gate step disabled.
+ */
+const journal = plantJournal('verify-gate-mirror --prove');
+
 const workflows = new Map(
   [...new Set(active.map(workflowOf))].map((w) => {
     const path = resolve(ROOT, w);
-    return [w, { path, original: readFileSync(path, 'utf8') }];
+    const original = readFileSync(path, 'utf8');
+    journal.record(path);
+    return [w, { path, original }];
   }),
 );
 
@@ -187,6 +201,9 @@ for (const [workflow, { original }] of workflows)
  */
 const restoreAll = () => {
   for (const { path, original } of workflows.values()) writeFileSync(path, original, 'utf8');
+  // The journal is cleared only after every write has returned. Clearing it while a file is
+  // still broken would record that the intent was carried out when it was not.
+  journal.close();
 };
 for (const [signal, number] of [
   ['SIGINT', 2],
@@ -211,6 +228,10 @@ try {
     console.log(
       `    ${DIM}Fix gate 0 first — nothing below can mean anything until it is green.${OFF}\n`,
     );
+    // Nothing was mutated on this path. Leaving the journal open would make the next run refuse
+    // to start over a plant that never existed — and a false alarm is how a real one gets
+    // ignored, which is the failure this whole feature is about.
+    journal.close();
     process.exit(1);
   }
   console.log(`  ${DIM}baseline: gate 0 green with the workflow intact${OFF}\n`);
@@ -282,15 +303,20 @@ try {
     console.log(`  ${GREEN}✓${OFF} conditioning out the "${gate.id}" step fails gate 0`);
   }
 } finally {
+  let allRestored = true;
   for (const [workflow, { path, original }] of workflows) {
     writeFileSync(path, original, 'utf8');
     if (readFileSync(path, 'utf8') !== original) {
+      allRestored = false;
       console.log(
         `\n${RED}${BOLD}${workflow} was NOT restored cleanly. Run: git checkout ${workflow}${OFF}\n`,
       );
       process.exit(1);
     }
   }
+  // Only once every file is verified back. A journal cleared over a broken file is worse than
+  // no journal: it says a proof finished cleanly when it did not.
+  if (allRestored) journal.close();
 }
 
 if (couldNotRun.length) {

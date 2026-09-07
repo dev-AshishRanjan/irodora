@@ -210,6 +210,21 @@ jobs:
       - name: 'Gate 8 — spacing-scale proof'
         run: pnpm verify:spacing:prove
 
+      # Six real defects planted in real components, each caught, each restored. It had no step
+      # here at all — which is how one of its cases came to be UNRUNNABLE for as long as the
+      # Button wrapper has used HeroUI's own `isDisabled` prop, reporting "cannot plant: source
+      # moved" to nobody. A proof nothing runs is a proof that decays.
+      - name: 'Gate 8 — a11y mutation proof'
+        run: pnpm verify:a11y:prove
+
+      # THE PROOF THAT ENDS THE WAY THE INCIDENTS DID (F-173). Every other mutation proof here
+      # is verified by letting it finish, which is the one path where a `finally` works — and
+      # seven plants reached the working tree precisely because the process ended some other
+      # way. This one spawns a child, SIGKILLs it, and checks that the plant survives, the
+      # journal records it, and recovery undoes it byte for byte.
+      - name: 'Gate 0 — plant journal proof'
+        run: pnpm verify:plants:prove
+
       # Belongs to gate 2, run here with the other proofs. Seven cases, and the interesting
       # ones are the LOWERED values rather than the missing one: 24 and 25 both have to be
       # rejected, because widening device support is a plausible, well-meant edit and it is
