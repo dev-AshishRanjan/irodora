@@ -19,6 +19,7 @@
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@irodora/ui';
 import { Home, type HomeStore } from '../src/screens/Home';
+import { en } from '../src/i18n/en';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 
 /** A date the corpus rotation is fixed at, so today's colour cannot change under the test. */
@@ -68,6 +69,21 @@ const store = (populated: boolean): HomeStore => ({
   listGarments: () => (populated ? [garment('g1')] : []),
 });
 
+/**
+ * Every string in a rendered tree, in document order.
+ *
+ * Order rather than presence: both Home states render both colour blocks, and what F-164 changed
+ * is which one comes FIRST. A test that only checked presence would have passed before it.
+ */
+function textOf(node: unknown, out: string[] = []): string[] {
+  const n = node as { children?: unknown[] } | null;
+  for (const child of n?.children ?? []) {
+    if (typeof child === 'string') out.push(child);
+    else textOf(child, out);
+  }
+  return out;
+}
+
 const draw = (populated: boolean) =>
   render(
     <ThemeProvider theme="light">
@@ -106,8 +122,13 @@ describe('the populated state', () => {
   });
 
   it('shows a wardrobe count rather than the invitation', () => {
+    /*
+     * The count moved from a bare `display.2` integer to a label beside its swatches (F-164):
+     * the second-largest thing on the page was the NUMBER of garments while the colours it was
+     * about sat at 44px, and `visual-taste` allows the page one bold move.
+     */
     const tree = draw(true);
-    expect(tree.getByText('1')).toBeTruthy();
+    expect(tree.getByText('1 pieces')).toBeTruthy();
     expect(tree.queryByText('Nothing added yet')).toBeNull();
   });
 });
@@ -137,5 +158,57 @@ describe('the navigation is the tab bar now', () => {
     expect(tree.getByText('#6E7480')).toBeTruthy();
     for (const gone of ['Open the Atlas', 'Compare', 'Palette Studio', 'Colour Finder'])
       expect(tree.queryByLabelText(gone)).toBeNull();
+  });
+});
+
+/**
+ * F-164 — the first screen says what the product is for.
+ *
+ * The wordmark reads *Irodora*, which is a name nobody knows. The only sentence about the product
+ * used to sit at the FOOT of the page in `xs` grey — *"The engine is running on this device"* —
+ * which is developer copy in a footnote slot, and it is why the screen could be reported as
+ * unprofessional while every gate was green.
+ *
+ * Three fragments is not a paragraph, and it is the one criterion on this feature a test can
+ * actually hold.
+ */
+describe('the front door states what the product is for (F-164)', () => {
+  it('leads with the three questions the product answers, in both states', () => {
+    for (const populated of [false, true]) {
+      const tree = draw(populated);
+      for (const key of ['home.what1', 'home.what2', 'home.what3'] as const)
+        expect(
+          `${String(populated)}: ${tree.queryByText(en[key]) === null ? 'missing' : 'shown'}`,
+        ).toBe(`${String(populated)}: shown`);
+    }
+  });
+
+  it('says the work happens on the phone, near the proposition rather than in a footnote', () => {
+    // The one thing in this category nobody else can say. It was two lines of `xs` grey at the
+    // foot; it is one line under the proposition now.
+    expect(draw(false).queryByText(en['home.onDevice'])).not.toBeNull();
+  });
+
+  it('leads with a COLOUR rather than an absence on a new install', () => {
+    /*
+     * THE ONE THAT MATTERS. Home led with the last reading unconditionally, so a new install
+     * opened on an empty state with a second one under it — two apologies and a footnote. The
+     * corpus is never empty, so today's colour leads instead, and the invitation to open the Lens
+     * drops below the wardrobe.
+     *
+     * Asserted by ORDER, because both states render both blocks: what changed is which one comes
+     * first, and a test that only checked presence would have passed before the change.
+     */
+    const tree = draw(false);
+    const text = textOf(tree.toJSON()).join(' ');
+    expect(text.indexOf(en['home.today'])).toBeGreaterThan(-1);
+    expect(text.indexOf(en['home.today'])).toBeLessThan(text.indexOf(en['home.lastReading']));
+  });
+
+  it('DECOY — with a reading, the reading leads and today drops below it', () => {
+    // Without this the case above would pass for a screen that always put today first, which is
+    // the same mistake in the other direction.
+    const text = textOf(draw(true).toJSON()).join(' ');
+    expect(text.indexOf(en['home.lastReading'])).toBeLessThan(text.indexOf(en['home.today']));
   });
 });

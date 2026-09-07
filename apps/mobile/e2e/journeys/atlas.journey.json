@@ -9,7 +9,7 @@
     },
     {
       "do": "assertVisible",
-      "key": "home.title",
+      "key": "home.what1",
       "route": "(tabs)/index.tsx"
     },
     {

@@ -8,6 +8,103 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-164 DONE · the front door had never said what the product is for
+
+*"The Home page is still unprofessional, not organised… it's our first impression for users."* —
+reported after F-146 had already rewritten it, which is worth taking at face value rather than
+defending.
+
+### The audit, before anything was proposed
+
+| | |
+|---|---|
+| **It never said what the product is for** | The wordmark reads *Irodora*, a name nobody knows, and the only sentence about the product sat at the **foot** in `xs` grey: *"The engine is running on this device."* Developer copy, in a footnote slot |
+| **Three sections, identical in shape** | `Section` title, content; three times. The sameness moved from ten buttons to three blocks rather than leaving |
+| **The hierarchy contradicted the content** | *Last reading* led unconditionally, so a new install opened on an empty state with a second one under it — **two apologies and a footnote** |
+| **Boldness spent twice** | The 140 px samples, and a bare integer at `display.2`: the second-largest thing on the page was the number of garments |
+
+### What replaced it
+
+**The wordmark, then three fragments at `title`** — the brief's own questions: *what colour is
+this · what goes with it · whether it suits you.* Three short lines is not a paragraph, and it is
+the register the reference set uses. The on-device line moved **up out of the footer**, because it
+is the one thing in this category nobody else can say.
+
+**Then a colour, at 180 px, whichever one there is to show.** `homeLead` decides, in `home.ts`
+where somebody can disagree with it: the corpus is never empty, so a person with no readings leads
+with a real Japanese colour rather than a sentence about not having one. **Leading with an absence
+was a choice, and it was the wrong one.**
+
+Asserted **by order**, not by presence — both states render both blocks, and what changed is which
+comes first. A presence test would have passed before the change.
+
+Then two quiet blocks: the wardrobe as a strip with its count as a label beside the swatches, and
+whichever colour did not lead. Three shapes, largest first.
+
+### The finding on the way: the claims lint only speaks English (E-089)
+
+Going to edit the Japanese copy, I found:
+
+```ts
+'home.lastReading': '最後の測定',          // "the last MEASUREMENT"
+'home.noReadings': 'まだ測定がありません',   // "no MEASUREMENTS yet"
+```
+
+測定 is *measurement*. A camera reading is `estimated`, and ADR-0031 binds that word to
+`reference` and `calibrated` — the two sources with an instrument behind them. **The Japanese
+front door had been calling an estimate a measurement.**
+
+The gate was green and correct by its own lights. `verify-claims.mjs` walks **every file in the
+repository**, `ja.ts` included — and all eleven banned patterns are ASCII.
+
+**This is a new shape.** Every blind spot recorded here before was a checker that could not *see*
+its subject. This one **read every byte of the file** and had nothing to say, because what it
+knows how to recognise is written in one language.
+
+> *"It scans everything"* and *"it checks everything"* are different claims, and the first is the
+> one that gets stated.
+
+**Six of the eight uses were fine**, which decides the fix: the `measure` screen says
+お手持ちの測定器の値 — *the values from your own measuring device* — and that is exactly the
+provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific
+overstatements, as the English list already does. Doing that in Japanese needs somebody who reads
+it: two defects fixed by hand, the gate recorded as **F-172** rather than half-done from a
+dictionary.
+
+### And the good case, worth noting
+
+Deleting `home.title` made the e2e flow generator refuse:
+
+> `atlas.journey.json — REFUSED step 2: message key "home.title" is not in the catalogue`
+
+A deleted string had one consumer outside the app and the gate named it by file and step number,
+rather than letting a journey fail on a device months later.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| 759 mobile tests | **PASS** |
+| the lead rule, both ways, with a decoy | **PASS** |
+| the proposition renders in both states | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**This is the second attempt and the fourth surface in a row owing the same thing.** F-146 passed
+every gate and was reported as unprofessional; so does this. *Unattractive* and *reads as
+finished* are judgements made on a phone, and no gate here can discharge either — which is worth
+saying plainly: **the harness is strong on correctness and silent on whether anything looks
+right.**
+
+**And the copy is mine.** Three fragments about what the product does is the highest-stakes
+English in the app, unreviewed; the Japanese is a second risk on top, and E-089 has just shown
+that the catalogue's outstanding competent-speaker read (F-017) is not a formality.
+
+---
+
 ## 2026-09-06 — F-170 DONE · a tap and a frame are two different rectangles
 
 *"In lens, add feature to change the position of crosshair, like we change in normal camera."*

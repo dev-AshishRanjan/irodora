@@ -136,3 +136,35 @@ export function entrySwatch(entry: PublishedEntry): {
   // colour page makes. The wrapper carries the derived values; the entry carries the measurement.
   return { hex: entry.derived.hex, color: colorFor(entry.entry) };
 }
+
+/**
+ * Which block leads the page (F-164).
+ *
+ * ## Why this is a decision and not a layout detail
+ *
+ * Home led with the last reading, unconditionally. On a new install that block is an **empty
+ * state** — and the wardrobe below it is a second one — so the first thing anybody saw was two
+ * absences and a footnote. Reported as *"unprofessional, not organised… unattractive"*, which is
+ * what a page made of apologies looks like.
+ *
+ * **There is always a colour to lead with.** The corpus is never empty, so `today` exists on
+ * every install from the first second; a person with readings gets theirs, and a person with none
+ * gets a real Japanese colour at photographic scale rather than a sentence about not having one.
+ *
+ * It lives here rather than in the render for the reason the rest of this file does: the rule is
+ * something somebody can disagree with, and a rule buried in JSX is one nobody can find to
+ * disagree with.
+ */
+export type HomeLead = 'reading' | 'today' | 'none';
+
+/**
+ * What leads, given what there is.
+ *
+ * `'none'` is reachable only if the corpus failed to load — `colourOfTheDay` returns `null` for an
+ * empty corpus, which is a broken bundle rather than a new install. The screen still has to draw
+ * something, so the case is named rather than left to a non-null assertion.
+ */
+export function homeLead(content: HomeContent): HomeLead {
+  if (content.lastReading !== null) return 'reading';
+  return content.today !== null ? 'today' : 'none';
+}

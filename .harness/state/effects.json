@@ -3232,6 +3232,39 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-089",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/i18n/ja.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-claims.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/claims.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "guard": "NONE YET, and that is the finding. The claims gate walks every file including `ja.ts` and every one of its eleven banned patterns is ASCII, so the Japanese catalogue has never been checked. Two defects are fixed by hand; the gate is F-172, because widening it correctly needs somebody who reads Japanese and guessing at the policy is how a lint ends up either useless or blocking correct copy.",
+      "memory": "memory/effects/the-claims-lint-only-speaks-english.md",
+      "rationale": "THE JAPANESE HOME SCREEN CALLED AN ESTIMATE A MEASUREMENT. `home.lastReading` read 最後の測定 and `home.noReadings` read まだ測定がありません — 測定 is MEASUREMENT, and ADR-0031 binds that word to `reference` and `calibrated`, the two sources with an instrument behind them. A camera reading is `estimated`. Golden rule 11, broken at the front door, and found only because F-164 happened to be rewriting that copy. THE GATE WAS GREEN AND CORRECT BY ITS OWN LIGHTS: `verify-claims.mjs` walks EVERY file in the repository, `ja.ts` included, and all eleven banned patterns are ASCII — the ones about exactness, about a colour being the true or actual one, about a numeric accuracy percentage, about laboratory or professional grading, about guarantees, and about the app doing the measuring itself. So half the product's user-facing copy has never been checked for the rule the product cares about most. THE SHAPE IS NEW: every blind spot recorded before this was a checker that could not SEE its subject — a style engine resolving in Metro, colour arriving as an SVG prop, a signature reading the wrong axis. This one read every byte and had nothing to say, because what it knows how to recognise is written in one language. A CHECKER'S SCOPE CAN BE DEFINED BY ITS PATTERNS RATHER THAN BY ITS FILE LIST, and from outside those look identical: \"it scans everything\" and \"it checks everything\" are different claims, and the first is the one that gets stated. SIX OF THE EIGHT USES WERE FINE, which is the half that decides the fix: the `measure` screen says お手持ちの測定器の値を入力すると — enter the values from your own measuring device — and that is exactly the provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific overstatements, as the English list already does, and doing that in Japanese needs somebody who reads it. Recorded as F-172 rather than half-done.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

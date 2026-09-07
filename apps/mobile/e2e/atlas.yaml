@@ -14,7 +14,7 @@ appId: com.irodora.app
 ---
 - launchApp:
     clearState: true
-- assertVisible: 'The engine is running on this device'
+- assertVisible: 'What colour is this\.'
 - tapOn:
     id: 'tab-atlas'
 - assertVisible: 'Colour Atlas'

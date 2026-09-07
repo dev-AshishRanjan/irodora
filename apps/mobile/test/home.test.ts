@@ -5,7 +5,14 @@
  * checked — without rendering anything, and without a store.
  */
 
-import { colourOfTheDay, homeContent, isFirstRun, lastReading, wardrobeSummary } from '../src/home';
+import {
+  colourOfTheDay,
+  homeContent,
+  homeLead,
+  isFirstRun,
+  lastReading,
+  wardrobeSummary,
+} from '../src/home';
 import type { SavedColorRow, StoredGarment } from '@irodora/store';
 
 /** A reading, with only the fields the selection reads. */
@@ -134,5 +141,37 @@ describe('first run', () => {
     const content = homeContent([], [], Date.now());
     expect(content.today).not.toBeNull();
     expect(isFirstRun(content)).toBe(true);
+  });
+});
+
+/**
+ * F-164 — which block leads.
+ *
+ * Home led with the last reading unconditionally, so a new install opened on an empty state with
+ * a second empty state under it. The corpus is never empty, so there is always a colour to lead
+ * with; leading with an absence was a choice, and this is the rule that replaces it.
+ */
+describe('the lead is whichever block has something to show (F-164)', () => {
+  const FIXED = Date.UTC(2026, 8, 6);
+  const empty = homeContent([], [], FIXED);
+
+  it('leads with the reading when there is one', () => {
+    expect(homeLead(homeContent([reading('a', 100)], [], FIXED))).toBe('reading');
+  });
+
+  it("leads with today's colour when there is not", () => {
+    // The case the old screen answered with two lines of grey and a button.
+    expect(homeLead(empty)).toBe('today');
+  });
+
+  it("DECOY — today's colour is always there, which is what makes the rule total", () => {
+    /*
+     * Without this the case above could be passing because `homeLead` returns `'today'` for
+     * anything, and the screen would then have no lead on an install where the corpus failed to
+     * load. `'none'` exists for that, and it is a broken bundle rather than a new install.
+     */
+    expect(empty.today).not.toBeNull();
+    expect(empty.lastReading).toBeNull();
+    expect(homeLead({ ...empty, today: null })).toBe('none');
   });
 });

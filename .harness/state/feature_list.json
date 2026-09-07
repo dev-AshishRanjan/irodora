@@ -5101,6 +5101,28 @@
       ]
     },
     {
+      "id": "F-172",
+      "title": "The claims gate reads Japanese too",
+      "requirements": [
+        "NFR-21"
+      ],
+      "service": "root",
+      "release": "R6",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "The banned list covers the Japanese catalogue, and every pattern in it is reviewed by somebody who reads Japanese",
+        "A legitimate use of a measurement word — the measure screen, where a person entered instrument values — is not flagged",
+        "The proof plants a Japanese violation and watches it fail"
+      ],
+      "verification": [
+        "lint",
+        "test"
+      ],
+      "notes": "FOUND BY ACCIDENT IN F-164 (E-089). `verify-claims.mjs` walks every file in the repository, `apps/mobile/src/i18n/ja.ts` included — and all eleven banned patterns are ASCII, so half the product's user-facing copy has never been checked against the rule the product cares about most. It was not theoretical: the Japanese Home screen read 最後の測定, calling a camera estimate a MEASUREMENT, which ADR-0031 reserves for `reference` and `calibrated`. Fixed by hand; the gate is this. THE HARD PART IS THAT IT MUST NOT BAN THE VOCABULARY. Six of the eight uses of 測定 are on the `measure` screen and they are CORRECT — お手持ちの測定器の値, \"the values from your own measuring device\", which is exactly the provenance the word is reserved for. The English list already works this way: it bans the app CLAIMING to do the measuring, not the word itself. NEEDS SOMEBODY WHO READS JAPANESE. Writing the patterns from a dictionary produces a lint that either passes everything or blocks correct copy, and neither failure would be visible to the person who wrote it. F-017 already owes a competent-speaker read of the catalogue; this is the same person and it is now a claims matter rather than a style one."
+    },
+    {
       "id": "F-161",
       "title": "The register becomes soft minimal, and roundness reaches the sample",
       "requirements": [
@@ -5249,7 +5271,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-161",
         "F-162",
@@ -5268,7 +5290,25 @@
         "a11y",
         "contrast"
       ],
-      "notes": "F-146 REWROTE HOME AND THE REPORTER STILL CALLS IT UNPROFESSIONAL AND UNORGANISED. That is worth taking at face value rather than defending: F-146 replaced ten identical buttons with three editorial sections, which was the right direction and evidently not far enough. LAST, ON PURPOSE — Home inherits everything: the register (F-161), the icon set (F-162) and the selected states (F-163). Doing it before those is doing it twice, which is what F-152 already says about the sweep."
+      "notes": "F-146 REWROTE HOME AND THE REPORTER STILL CALLS IT UNPROFESSIONAL AND UNORGANISED. That is worth taking at face value rather than defending: F-146 replaced ten identical buttons with three editorial sections, which was the right direction and evidently not far enough. LAST, ON PURPOSE — Home inherits everything: the register (F-161), the icon set (F-162) and the selected states (F-163). Doing it before those is doing it twice, which is what F-152 already says about the sweep. DONE 2026-09-06. THE AUDIT IS IN THE SOURCE, four specific things: it never said what the product is FOR — the only sentence about it sat at the foot in `xs` grey and was developer copy; three sections identical in shape, so the sameness moved from ten buttons to three blocks rather than leaving; the hierarchy contradicted the content, because `lastReading` led unconditionally and on a new install that is an EMPTY STATE with a second one under it — two apologies and a footnote; and boldness spent twice, the second-largest thing on the page being a bare integer at `display.2` for the number of garments. WHAT REPLACED IT: the wordmark, then three fragments at `title` which are the brief own questions — what colour is this, what goes with it, does it suit me — and the on-device line moved up out of the footer, because it is the one thing in this category nobody else can say. THE LEAD IS WHICHEVER BLOCK HAS SOMETHING TO SHOW, decided by `homeLead` in `home.ts` where somebody can disagree with it: the corpus is never empty, so a person with no readings leads with a real Japanese colour at 180px rather than a sentence about not having one. Asserted BY ORDER, because both states render both blocks and a presence test would have passed before the change. THE FINDING ON THE WAY (E-089): the Japanese catalogue called a camera reading 測定 — a MEASUREMENT — which ADR-0031 reserves for instrument sources, and the claims gate could not see it because all eleven of its banned patterns are ASCII.",
+      "plan": "plans/F-164-home-is-worth-the-first-impression.md",
+      "effects": [
+        "E-089"
+      ],
+      "attested": [
+        {
+          "criterion": "The first screen states what the product is for without a paragraph",
+          "verifiedBy": "ASSERTED, AND IT IS THE ONE CRITERION HERE A TEST CAN HOLD: the three fragments render in both states, and the on-device line renders under them rather than in a footer. WHAT IS NOT VERIFIED IS THE COPY ITSELF. Three fragments about what the product does is the highest-stakes English in the app and nobody has reviewed it; the Japanese is a second risk on top, and the catalogue already owes a competent-speaker read (F-017) — which E-089 has just shown is not a formality.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "It reads as finished on a phone, not as a list of what exists",
+          "verifiedBy": "NOT VERIFIED, AND THIS IS THE SECOND ATTEMPT. F-146 passed every gate and was reported as unprofessional; so does this. The audit above is specific and the changes follow from it, but *unattractive* and *reads as finished* are judgements made on a phone by a person, and no gate in this repository can discharge either. That is now the fourth surface in a row owing exactly this, which is itself worth saying: the harness is strong on correctness and silent on whether anything looks right.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-165",
