@@ -231,7 +231,7 @@ export const ja: Record<MessageKey, string> = {
     'カメラは一度だけ見て、写真はすぐに捨てました。すべてこのデバイスの中だけです。',
   'lens.title': 'レンズ',
   'lens.privacy': '映像はこのデバイスの中だけで見て、すぐに捨てます。保存も送信もしません。',
-  'lens.viewfinder': 'カメラの映像です。画面の中心にある色を読み取ります。',
+  'lens.viewfinderTarget': 'カメラの映像です。読み取りたい部分をタップしてください。',
   'lens.askTitle': 'レンズにはカメラが必要です',
   'lens.askBody': '目の前の色を読むためだけに使います。写真は残しません。',
   'lens.ask': 'カメラを許可する',

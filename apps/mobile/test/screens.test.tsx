@@ -1374,6 +1374,28 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * THE CROSSHAIR MOVED (F-170). The reticle is drawn from `reticleBox` at whatever point the
+     * person aimed at, so a subject with it away from the centre is the one that would catch a
+     * marks-do-not-move regression — and it is the same component the photograph uses, which is
+     * the whole reason the camera reticle came up here from `viewfinder.tsx`.
+     */
+    name: 'screens/Lens (aimed off centre)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          aim={{ x: 0.18, y: 0.76 }}
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+          onPoint={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * A PHOTOGRAPH OPEN (F-166). A different tree from every subject above: no viewfinder, no
      * mode chips, a picture with a reticle over it, and a control that has become the way back
      * to the camera. The reticle's two tones are checked here for the reason they exist — the

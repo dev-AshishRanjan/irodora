@@ -377,7 +377,19 @@ if (process.argv.includes('--prove')) {
           'Refusing rather than planting nothing: a plant that changes nothing proves nothing.',
       );
 
-    const open = text.indexOf('{', header.index);
+    /*
+     * PAST THE PARAMETER LIST FIRST. `indexOf('{')` finds the body brace only while no parameter
+     * carries an inline object TYPE — and F-170 gave `sampleFrame` one, at which point the plant
+     * landed on `{ readonly x: number ... }` and this refused as stale. It refused loudly, which
+     * is the property that matters; it refused about the wrong thing, which is this fix.
+     */
+    let depth = 0;
+    let cursor = text.indexOf('(', header.index);
+    for (; cursor < text.length; cursor++) {
+      if (text[cursor] === '(') depth++;
+      else if (text[cursor] === ')' && --depth === 0) break;
+    }
+    const open = text.indexOf('{', cursor);
     const directive = open < 0 ? null : /^\s*'worklet';\s*/u.exec(text.slice(open + 1));
     if (directive === null)
       throw new Error(

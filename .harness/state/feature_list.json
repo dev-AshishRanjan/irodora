@@ -5021,7 +5021,7 @@
       "service": "mobile",
       "release": "R6",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-166"
       ],
@@ -5036,7 +5036,25 @@
         "test",
         "a11y"
       ],
-      "notes": "THE HALF F-166 ALREADY BUILT. `lens/photo.ts` has `pointFrom`, `reticleBox` and a clamp that keeps the region inside the image, all pure and all tested against a four-quadrant fixture — and the live viewfinder still hard-centres its region in the worklet: `left = (frame.width - size) / 2`. So this is mostly consolidation: one geometry module, two surfaces, and the camera stops being the one that cannot move. WHAT IS NEW is getting the point to the frame thread. It goes the way the demand goes (F-160) — a `Synchronizable` written from an effect and read inside the worklet before the walk — because capturing it in the closure would rebuild the frame output on every tap, and rebuilding the frame output is a session reconfiguration."
+      "notes": "THE HALF F-166 ALREADY BUILT. `lens/photo.ts` has `pointFrom`, `reticleBox` and a clamp that keeps the region inside the image, all pure and all tested against a four-quadrant fixture — and the live viewfinder still hard-centres its region in the worklet: `left = (frame.width - size) / 2`. So this is mostly consolidation: one geometry module, two surfaces, and the camera stops being the one that cannot move. WHAT IS NEW is getting the point to the frame thread. It goes the way the demand goes (F-160) — a `Synchronizable` written from an effect and read inside the worklet before the walk — because capturing it in the closure would rebuild the frame output on every tap, and rebuilding the frame output is a session reconfiguration. DONE 2026-09-06. MOST OF IT WAS CONSOLIDATION, as the note predicted — `pointFrom`, `reticleBox` and the clamp came straight from F-166 — and the part that was NOT is the geometry nobody had needed until the marks could move: a tap lands on the PREVIEW and the region is read from the FRAME, and `resizeMode: cover` crops one into the other, so a preview fraction is not a frame fraction. `framePoint` does the conversion ON THE FRAME THREAD, which is the only place the frame dimensions exist, and `resizeMode` is now stated on the Camera rather than inherited because the arithmetic assumes it. THE RETICLE CAME UP OUT OF THE DEVICE FILE: it was drawn twice and only the photograph copy was ever checked, since jest cannot render the other — one component in the screen means the marks reach the conformance registry for the first time. The preview box moved with it, and had to: its aspect ratio is what the conversion reads. THE GUARD FIRED TWICE ON MY OWN CODE (E-088) — both inner `clamp` helpers were reached from a worklet without a directive, which is F-116 crash one function deeper, and then the proof for that check went stale on an inline object parameter type and refused loudly. Both fixed. `lens.viewfinder` was deleted: the preview is a control with its own label now, and the i18n gate reported the old key as rendered by nothing.",
+      "plan": "plans/F-170-the-crosshair-moves.md",
+      "effects": [
+        "E-088"
+      ],
+      "attested": [
+        {
+          "criterion": "A tap on the live viewfinder moves the sampled region there, and the marks move with it",
+          "verifiedBy": "THE ARITHMETIC IS PROVEN AND THE PAIRING IS NOT. `framePoint` is asserted at all three frame shapes — wider than the box, taller, and exactly its aspect — with a decoy that fails if it is the identity, and the reducer proves a tap moves the aim and that the aim reaches the viewfinder. WHAT NO GATE HERE CAN SEE is the two halves agreeing on a device: jest has no frame thread and no preview, so \"the region is sampled where the marks are drawn\" is arithmetic in this repository and an observation only on a phone. The specific risk is `resizeMode`: the conversion assumes `cover`, it is now set explicitly rather than inherited, and if the library ever composites differently the marks and the reading part company with nothing here to say so.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "The region is read where the marks are drawn, at every position including the edges",
+          "verifiedBy": "THE CLAMP IS ASSERTED IN BOTH PLACES and they are the same rule: `reticleBox` keeps the drawn box inside the image and `sampleFrame` keeps the sampled region inside the frame, so a tap in a corner reads a FULL region from the nearest valid position rather than a smaller one hanging off the side. The photograph half is checked end to end against a four-quadrant fixture (F-166). WHAT IS UNVERIFIED is the camera half of exactly that: there is no fixture for a live frame, so the edge behaviour is asserted as arithmetic on the frame thread and observed nowhere.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-171",

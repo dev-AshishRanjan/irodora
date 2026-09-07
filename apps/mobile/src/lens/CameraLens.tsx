@@ -115,6 +115,7 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
   const onCapture = useCallback(() => {
     const photo = photoPixels.current;
     if (photo === null) {
+      // The camera is asked. Where it reads is `capture.aim`, already on the frame thread.
       dispatch({ kind: 'shutter' });
       return;
     }
@@ -254,9 +255,14 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
   const viewfinder = useMemo(
     () =>
       permission === 'granted' ? (
-        <Viewfinder demand={demand} onReading={takeReading} onDiagnostic={setDiagnostic} />
+        <Viewfinder
+          demand={demand}
+          at={capture.aim}
+          onReading={takeReading}
+          onDiagnostic={setDiagnostic}
+        />
       ) : null,
-    [permission, demand, takeReading],
+    [permission, demand, capture.aim, takeReading],
   );
 
   return (

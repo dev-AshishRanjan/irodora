@@ -8,6 +8,94 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-06 — F-170 DONE · a tap and a frame are two different rectangles
+
+*"In lens, add feature to change the position of crosshair, like we change in normal camera."*
+
+### Most of it was consolidation, and the note said so in advance
+
+F-166 had already built `pointFrom`, `reticleBox` and the clamp that keeps a region inside its
+image — pure, and tested against a four-quadrant fixture where a tap in each corner must return
+that corner's colour. The live viewfinder still hard-centred:
+
+```ts
+const left = Math.floor((frame.width - size) / 2);
+```
+
+### The part that was not
+
+- A tap lands on the **preview** — a fixed 3:4 box.
+- The region is read from the **frame** — whatever aspect the device negotiated.
+- `resizeMode` is `cover`, so the frame is scaled to fill the box and **cropped equally on the
+  long axis**.
+
+**A preview fraction is not a frame fraction.** Reading at the raw tap fraction would have put the
+marks somewhere the engine is not looking — the failure `viewfinder.tsx` already names: *a reticle
+that lies about where the colour is read is worse than none.*
+
+`framePoint` does the conversion **on the frame thread**, because that is the only place
+`frame.width` and `frame.height` exist. Two alternatives, both rejected for stated reasons:
+`resizeMode="contain"` letterboxes and then the bars are in the mapping; reporting the aspect back
+to JS to reshape the box would be wrong at exactly the moment somebody aims, since in still mode
+the first frame arrives *after* the shutter.
+
+And `resizeMode` is now **set explicitly rather than inherited**. It is the library's default and
+the arithmetic assumes it; left implicit, a change there would move every tap silently.
+
+### The guard fired twice on my own code, and the second time on itself
+
+**First:** `verify-worklet-reach.mjs` reported both new inner `clamp` helpers as reached from a
+worklet with no directive — F-116's crash one function deeper. A worklet may only call other
+worklets, and *the caller is marked* is not enough.
+
+**Then its own proof went stale.** The plant strips the directive from `sampleFrame` by finding
+the first `{` after the function header, and a parameter with an inline object **type** puts a
+brace there first. It refused loudly —
+
+> the plant is stale: `sampleFrame` no longer opens with a worklet directive, so there is nothing
+> here to remove and this case can no longer test what it claims to
+
+— which is the property that matters, and it refused about the wrong thing, which is the defect.
+Both halves fixed: a named `FramePoint` type (better code regardless), and a plant that walks past
+the parameter list so the next signature cannot fool it.
+
+**A proof that refuses rather than planting nothing is worth more than a proof that is never
+wrong.** This one was wrong and said so.
+
+### The reticle came up out of the file jest cannot render
+
+It was drawn twice — once in `viewfinder.tsx` for the camera, once in `Lens.tsx` for a photograph
+— saying the same thing, and **only the photograph's was ever checked**, because the camera's
+lives in a module that imports a native binding.
+
+One component in the screen means the marks reach the conformance registry for the first time, and
+a person tapping a photograph and tapping the camera sees the same thing **because it is the same
+thing**. The preview box moved with it and had to: its aspect ratio is what the conversion reads.
+
+`lens.viewfinder` was deleted along the way — the preview is a control with its own label now,
+and the i18n gate reported the old key as rendered by nothing.
+
+### Verification
+
+| ran | result |
+|---|---|
+| the full `pnpm verify:ci` — **33 steps** | **PASS** |
+| `framePoint` at all three frame shapes, with a decoy against the identity | **PASS** |
+| the aim through the reducer — survives a mode change, a photograph, a return | **PASS** |
+| 751 mobile tests | **PASS** |
+
+**Not run:** `e2e` — gate 7 is still pending.
+
+### Still owed
+
+**The two halves agreeing is a device fact.** jest has no frame thread and no preview, so *the
+region is sampled where the marks are drawn* is arithmetic here and an observation only on a
+phone. The specific risk is `resizeMode`: the conversion assumes `cover`, it is now stated
+explicitly, and if the library ever composites differently the marks and the reading part company
+with nothing here to say so.
+
+---
+
 ## 2026-09-06 — F-169 DONE · the bound was rigorous about the wrong quantity
 
 *"When I said I need roundness in color card, I said for every containers, the main color

@@ -231,8 +231,16 @@ describe('a photograph is a third source, and it silences the camera', () => {
     expect(nextCapture(after(opening, opened), shutter).awaiting).toBe(false);
   });
 
-  it('ignores a tap when there is no photograph', () => {
-    expect(nextCapture(CAPTURE_IDLE, { kind: 'point', at: { x: 0.1, y: 0.1 } })).toBe(CAPTURE_IDLE);
+  it('moves the CAMERA aim when there is no photograph (F-170)', () => {
+    /*
+     * This used to assert the tap was IGNORED, which was right while only a photograph could be
+     * aimed at. One event, two targets: the tap moves whichever source is on screen, because a
+     * second event kind would be a second way to say "the person pointed at something" and the
+     * two would eventually disagree about which one the reticle is drawn from.
+     */
+    const aimed = nextCapture(CAPTURE_IDLE, { kind: 'point', at: { x: 0.1, y: 0.9 } });
+    expect(aimed.aim).toEqual({ x: 0.1, y: 0.9 });
+    expect(aimed.photo).toBeNull();
   });
 });
 
@@ -253,5 +261,58 @@ describe('what a reading is read under', () => {
      */
     expect(MODE_CEILING[modeFor('live')]).toBeLessThan(MODE_CEILING[modeFor('capture')]);
     expect(MODE_CEILING[modeFor('live')]).toBe(0.7);
+  });
+});
+
+describe('the crosshair moves, and stays moved (F-170)', () => {
+  const aimAt = (x: number, y: number) => ({ kind: 'point', at: { x, y } }) as const;
+
+  it('starts in the middle', () => {
+    // The decoy for everything below: a machine that ignored the tap would satisfy the assertions
+    // about survival, because the aim would never have moved in the first place.
+    expect(CAPTURE_IDLE.aim).toEqual({ x: 0.5, y: 0.5 });
+  });
+
+  it('survives a mode change, because the phone is still pointing at the same thing', () => {
+    /*
+     * The one thing carried across a mode change. Everything else starts clean — a held capture
+     * belongs to an interaction the person has left — but moving the crosshair back to the middle
+     * because somebody switched to live would undo an aim they had just taken.
+     */
+    const state = after(aimAt(0.2, 0.8), goLive);
+    expect(state.aim).toEqual({ x: 0.2, y: 0.8 });
+    expect(state.held).toBeNull();
+  });
+
+  it('survives a photograph being opened and put away', () => {
+    // The camera has not moved while a picture was on screen, and the aim was never the
+    // picture's — `PhotoState.at` is a separate field for exactly that reason.
+    const state = after(
+      aimAt(0.3, 0.7),
+      { kind: 'opening' },
+      { kind: 'photo', photo: { uri: 'data:,', width: 4, height: 3, at: { x: 0.9, y: 0.9 } } },
+      { kind: 'camera' },
+    );
+    expect(state.aim).toEqual({ x: 0.3, y: 0.7 });
+  });
+
+  it('keeps the photograph point and the camera aim apart', () => {
+    // Two scenes, two points. One field for both would move the crosshair on the camera every
+    // time somebody tapped a picture.
+    const state = after(
+      aimAt(0.2, 0.2),
+      { kind: 'opening' },
+      { kind: 'photo', photo: { uri: 'data:,', width: 4, height: 3, at: { x: 0.5, y: 0.5 } } },
+      aimAt(0.8, 0.8),
+    );
+    expect(state.photo?.at).toEqual({ x: 0.8, y: 0.8 });
+    expect(state.aim).toEqual({ x: 0.2, y: 0.2 });
+  });
+
+  it('drops a held reading when the crosshair moves', () => {
+    // It was taken somewhere else. Leaving it up would put a colour on screen beside marks
+    // saying it came from a different part of the frame.
+    const held = after(shutter, captured());
+    expect(nextCapture(held, aimAt(0.1, 0.1)).held).toBeNull();
   });
 });

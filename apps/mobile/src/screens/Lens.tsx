@@ -72,13 +72,15 @@ import {
   Swatch,
   Text,
   useTheme,
+  type ThemeColors,
 } from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
 import { colorFor } from '../corpus';
 import { readingOklch, worthOffering } from '../profile/photo';
 import { LENS_MODES, type CaptureFailure, type LensMode, type PhotoState } from '../lens/capture';
-import { pointFrom, reticleBox, type PhotoPoint } from '../lens/photo';
+import { PREVIEW_ASPECT } from '../lens/camera';
+import { PHOTO_CENTRE, pointFrom, reticleBox, type PhotoPoint } from '../lens/photo';
 import type { CaptureSpace, LensReading } from '../lens/reading';
 import type { LensPermission } from '../lens/permission';
 import { useMessages } from '../i18n/useMessages';
@@ -173,6 +175,86 @@ const BRACKET = 12;
  */
 const percent = (value: number): DimensionValue => `${String(value)}%` as DimensionValue;
 
+/**
+ * The reticle: four corner marks over the region that will be read.
+ *
+ * ## Why it is a function here rather than two copies
+ *
+ * It was drawn twice — once in `viewfinder.tsx` for the camera and once in this file for a
+ * photograph. Both said the same thing and only one of them was ever checked, because the camera
+ * one lives in a file jest cannot render. F-170 makes it one: **a person tapping a photograph and
+ * a person tapping the camera see the same marks, because they are the same marks.**
+ *
+ * ## What the marks are, and both decisions are colour science rather than taste
+ *
+ * **IT DOES NOT ENCLOSE THE REGION.** It was a closed rule on all four sides, and a hard border
+ * around a colour changes how that colour reads — simultaneous contrast is the entire reason
+ * `swatch.well` exists, and this is that hazard applied to the live subject somebody is judging.
+ * Corner marks say where the sample is taken without framing it, so what surrounds the colour is
+ * the scene rather than our rule.
+ *
+ * **IT IS TWO-TONE**, for the reason `Swatch`'s keyline is (F-068): the other side of this line
+ * is an arbitrary image. A single grey is nearly invisible over a pale garment, on the one
+ * surface where the marker must always be findable. The same gamut-verified pair is reused
+ * rather than a new one invented — the better of the two reaches 4.23 against the worst possible
+ * sample, and they differ from each other by about 18:1 whatever sits behind them.
+ *
+ * `pointerEvents="none"` so the overlay never swallows a gesture meant for what is underneath.
+ */
+function Reticle({
+  box,
+  colors,
+}: {
+  readonly box: {
+    readonly left: number;
+    readonly top: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly colors: ThemeColors;
+}): React.JSX.Element {
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <View
+        style={{
+          position: 'absolute',
+          left: percent(box.left),
+          top: percent(box.top),
+          width: percent(box.width),
+          height: percent(box.height),
+        }}
+      >
+        {PHOTO_CORNERS.map((corner) => (
+          <View
+            key={corner.key}
+            style={{
+              position: 'absolute',
+              ...corner.at,
+              width: BRACKET,
+              height: BRACKET,
+              ...corner.edge,
+              borderColor: colors['swatch.hairline.inverse'],
+            }}
+          >
+            {/*
+              The inner tone, inset by the outer's own border so the two read as parallel
+              hairlines rather than as one thick edge — the same nesting `Swatch` uses.
+            */}
+            <View
+              style={{
+                width: BRACKET,
+                height: BRACKET,
+                ...corner.edge,
+                borderColor: colors['swatch.hairline'],
+              }}
+            />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 /** The four corners of the reticle, each with the two borders that make its L. */
 const PHOTO_CORNERS = [
   { key: 'top-left', at: { left: 0, top: 0 }, edge: { borderTopWidth: 1, borderLeftWidth: 1 } },
@@ -194,6 +276,17 @@ const FAILURE_KEYS: Readonly<Record<CaptureFailure, MessageKey>> = {
   capture: 'lens.captureFailed',
   photo: 'lens.photoFailed',
 };
+
+/**
+ * The preview, as `reticleBox` wants it.
+ *
+ * `reticleBox` takes a width and a height so it can work in fractions of either axis. The camera
+ * preview has no pixel size until it is laid out, and it does not need one: the region is a
+ * fraction of the SHORTER side, so any pair in the preview aspect gives the same answer. 3 and 4
+ * are the smallest such pair, and using the aspect rather than a measured size means the marks
+ * are correct before the first layout rather than one frame after it.
+ */
+const PREVIEW_BOX = { width: 3, height: 4 } as const;
 
 /** Mode → the chip that chooses it, and the sentence that says what it does. */
 const MODE_KEYS: Readonly<
@@ -261,7 +354,14 @@ export interface LensProps {
   readonly onOpenPhoto?: () => void;
   /** Put the photograph away and go back to the camera. */
   readonly onUseCamera?: () => void;
-  /** The person tapped the photograph. Fractions of its width and height. */
+  /**
+   * Where in the camera's preview to read, in fractions (F-170).
+   *
+   * The photograph carries its own point on {@link PhotoState.at}; this is the camera's, and the
+   * two are separate because they are two different scenes.
+   */
+  readonly aim?: PhotoPoint;
+  /** The person tapped the photograph, or the preview. Fractions of the box they tapped. */
   readonly onPoint?: (at: PhotoPoint) => void;
   /** Close the result and go back to the frame. */
   readonly onDismiss?: () => void;
@@ -287,6 +387,7 @@ export function Lens({
   live = null,
   mode = 'still',
   photo = null,
+  aim = PHOTO_CENTRE,
   opening = false,
   awaiting = false,
   failed = null,
@@ -317,6 +418,15 @@ export function Lens({
    * screen holding a fact about the reading, and this is a fact about the box.
    */
   const photoBox = useRef({ width: 0, height: 0 });
+
+  /**
+   * The measured size of the camera preview, for the same reason and by the same mechanism.
+   *
+   * Two boxes rather than one, because only one of them is on screen at a time and sharing a ref
+   * between them would leave a stale size behind whenever the person switched source — which is
+   * a tap landing in the wrong place, silently, on the first press after switching.
+   */
+  const previewBox = useRef({ width: 0, height: 0 });
 
   /*
    * Everything derived from the capture, in one place, so a `null` capture has one branch
@@ -397,51 +507,11 @@ export function Lens({
               accessible={false}
             />
             {/*
-              THE RETICLE, over the region that will actually be read — `reticleBox` is the same
-              clamp `sampleAt` applies, in fractions, so the marks cannot point somewhere the
-              engine is not looking. Two tones for the reason the viewfinder's are (F-068): the
-              other side of this line is an arbitrary photograph, and a single grey disappears
-              over a pale one.
+              Over the region that will actually be read — `reticleBox` applies the same clamp
+              `sampleAt` does, in fractions, so the marks cannot point somewhere the engine is
+              not looking.
             */}
-            <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-              {(() => {
-                const box = reticleBox(photo, photo.at);
-                return (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      left: percent(box.left),
-                      top: percent(box.top),
-                      width: percent(box.width),
-                      height: percent(box.height),
-                    }}
-                  >
-                    {PHOTO_CORNERS.map((corner) => (
-                      <View
-                        key={corner.key}
-                        style={{
-                          position: 'absolute',
-                          ...corner.at,
-                          width: BRACKET,
-                          height: BRACKET,
-                          ...corner.edge,
-                          borderColor: colors['swatch.hairline.inverse'],
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: BRACKET,
-                            height: BRACKET,
-                            ...corner.edge,
-                            borderColor: colors['swatch.hairline'],
-                          }}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                );
-              })()}
-            </View>
+            <Reticle box={reticleBox(photo, photo.at)} colors={colors} />
           </Pressable>
         </Surface>
       ) : granted ? (
@@ -450,19 +520,49 @@ export function Lens({
         // the app reaches its background — and gate 8's own proof depends on that being true:
         // its decoy removes the elevation map and asserts `surface.1` goes unreached, which a
         // literal here would have silently defeated.
-        <Surface
-          level="1"
-          accessible
-          // `image`, and it is the honest role rather than the one that silences the checker.
-          // `accessible` groups the region into one node, and gate 8 reads any grouped node as
-          // something a person can land on — so it must say what it is. A viewfinder is visual
-          // content a screen reader cannot use, which is exactly what `image` announces;
-          // calling it a `button` would be a lie, and leaving it silent tells a screen-reader
-          // user nothing about the thing producing every number below it.
-          accessibilityRole="image"
-          accessibilityLabel={t('lens.viewfinder')}
-        >
-          <View style={{ minHeight: nativeTapTarget, overflow: 'hidden' }}>{viewfinder}</View>
+        // `Surface level="1"` rather than `colors['surface.1']`. The token is RESOLVED through
+        // `nativeElevation` rather than named by a literal, which is how every other surface in
+        // the app reaches its background — and gate 8's own proof depends on that being true.
+        <Surface level="1">
+          {/*
+            THE PREVIEW BOX BELONGS TO THE SCREEN (F-170), not to the viewfinder.
+
+            Its aspect ratio is what converts a tap into a point in the frame — `framePoint` in
+            `lens/camera.ts` reads `PREVIEW_ASPECT` and assumes the camera fills this exact shape
+            under `resizeMode="cover"`. Two files owning one rectangle would be two places for
+            the marks and the reading to disagree.
+
+            `adjustable` rather than `image`: it was an image while nothing could be done to it,
+            and it is now a control whose value is WHERE the colour is read from. `accessible`
+            groups it into one node, and gate 8 reads any grouped node as something a person can
+            land on — so it must say what it is.
+          */}
+          <Pressable
+            accessible
+            accessibilityRole="adjustable"
+            accessibilityLabel={t('lens.viewfinderTarget')}
+            style={{
+              aspectRatio: PREVIEW_ASPECT,
+              width: '100%',
+              minHeight: nativeTapTarget,
+              overflow: 'hidden',
+            }}
+            onLayout={(event: LayoutChangeEvent) => {
+              previewBox.current = event.nativeEvent.layout;
+            }}
+            onPress={(event) => {
+              onPoint?.(
+                pointFrom(
+                  event.nativeEvent.locationX,
+                  event.nativeEvent.locationY,
+                  previewBox.current,
+                ),
+              );
+            }}
+          >
+            {viewfinder}
+            <Reticle box={reticleBox(PREVIEW_BOX, aim)} colors={colors} />
+          </Pressable>
         </Surface>
       ) : (
         <Surface level="1" padding="lg">

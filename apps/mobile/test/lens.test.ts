@@ -17,7 +17,12 @@ import {
   type CaptureSpace,
   type LensReading,
 } from '../src/lens/reading';
-import { MAX_SAMPLES_PER_FRAME, readCaptureSpace, sampleStride } from '../src/lens/camera';
+import {
+  framePoint,
+  MAX_SAMPLES_PER_FRAME,
+  readCaptureSpace,
+  sampleStride,
+} from '../src/lens/camera';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -476,5 +481,91 @@ describe('every reading destination has a producer in shipped source', () => {
     // for both, and the per-destination assertions would pass while one address was dead.
     expect(producersOf('profile')).not.toHaveLength(0);
     expect(producersOf('wardrobe')).not.toHaveLength(0);
+  });
+});
+
+/**
+ * F-170 — a tap on the preview is not a point in the frame.
+ *
+ * The preview is a fixed 3:4 box and `resizeMode` is `cover`, so a frame of any other aspect is
+ * cropped to fill it. Reading the region at the raw preview fraction would draw the marks in one
+ * place and take the colour from another, which `viewfinder.tsx` calls worse than no marks.
+ *
+ * None of this can be observed here — jest has no frame thread and no preview — so what is
+ * asserted is the arithmetic, at the three shapes a frame can have relative to the box.
+ */
+describe('a tap on the preview lands where the frame actually is (F-170)', () => {
+  const centre = { x: 0.5, y: 0.5 };
+
+  it('leaves the middle in the middle, whatever the frame shape', () => {
+    // The one point cropping cannot move. If this failed, everything below would be measuring a
+    // formula that had lost its centre.
+    for (const [w, h] of [
+      [1920, 1080],
+      [1080, 1920],
+      [1200, 1600],
+      [4032, 3024],
+    ] as const) {
+      const at = framePoint(centre, w, h);
+      expect(`${String(w)}x${String(h)}`).toBe(`${String(w)}x${String(h)}`);
+      expect(at.x).toBeCloseTo(0.5, 10);
+      expect(at.y).toBeCloseTo(0.5, 10);
+    }
+  });
+
+  it('maps one to one when the frame is the preview shape', () => {
+    // 1200x1600 is 3:4 — the box's own aspect, so nothing is cropped and nothing moves.
+    expect(framePoint({ x: 0.2, y: 0.8 }, 1200, 1600)).toEqual({ x: 0.2, y: 0.8 });
+  });
+
+  it('pulls a horizontal tap inward when the frame is wider than the box', () => {
+    /*
+     * A 16:9 frame in a 3:4 box shows `(3/4)/(16/9)` of its width — about 42% — centred. So the
+     * left edge of the preview is already 29% into the frame, and a tap at the far left must
+     * report that rather than 0.
+     */
+    const visible = 3 / 4 / (16 / 9);
+    const left = framePoint({ x: 0, y: 0.5 }, 1920, 1080);
+    expect(left.x).toBeCloseTo((1 - visible) / 2, 10);
+    // The vertical axis is untouched: the full height is shown.
+    expect(left.y).toBeCloseTo(0.5, 10);
+
+    const right = framePoint({ x: 1, y: 0.5 }, 1920, 1080);
+    expect(right.x).toBeCloseTo(1 - (1 - visible) / 2, 10);
+  });
+
+  it('pulls a vertical tap inward when the frame is taller than the box', () => {
+    // The mirror image, and the case a formula written for one axis would fail.
+    const visible = 1080 / 1920 / (3 / 4);
+    const top = framePoint({ x: 0.5, y: 0 }, 1080, 1920);
+    expect(top.y).toBeCloseTo((1 - visible) / 2, 10);
+    expect(top.x).toBeCloseTo(0.5, 10);
+  });
+
+  it('DECOY — it is not the identity, or the first two cases would prove nothing', () => {
+    // A `framePoint` that returned its argument passes "the middle stays in the middle" and
+    // "3:4 maps one to one". These are the cases that require it to do something.
+    // A 16:9 frame shows 42% of its width, so the left edge of the preview is 29% in; a 9:16
+    // frame shows 75% of its height, so the top edge is 12.5% down. Both are far from zero.
+    expect(framePoint({ x: 0, y: 0.5 }, 1920, 1080).x).toBeGreaterThan(0.2);
+    expect(framePoint({ x: 0.5, y: 0 }, 1080, 1920).y).toBeGreaterThan(0.1);
+  });
+
+  it('never leaves the frame, whatever it is handed', () => {
+    // A press can report a coordinate past the edge of its own view, and a frame with no size is
+    // something the camera has produced before (F-119's "frame WxH is too small").
+    for (const at of [
+      { x: -3, y: 0.5 },
+      { x: 0.5, y: 9 },
+      { x: Number.NaN, y: 0.5 },
+    ])
+      for (const [w, h] of [
+        [1920, 1080],
+        [0, 0],
+      ] as const) {
+        const p = framePoint(at, w, h);
+        expect(p.x >= 0 && p.x <= 1).toBe(true);
+        expect(p.y >= 0 && p.y <= 1).toBe(true);
+      }
   });
 });

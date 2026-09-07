@@ -26,7 +26,7 @@
  */
 
 import type { CaptureMode } from './modes';
-import type { PhotoPoint } from './photo';
+import { PHOTO_CENTRE, type PhotoPoint } from './photo';
 import type { LensReading } from './reading';
 
 /**
@@ -93,6 +93,19 @@ export interface CaptureState {
   /** A photograph is being fetched and decoded. Seconds, on a large file. */
   readonly opening: boolean;
   /**
+   * Where in the CAMERA's preview to read, in fractions (F-170).
+   *
+   * Separate from {@link PhotoState.at} because they are two different scenes. A photograph's
+   * point belongs to that photograph and goes when it is closed; the camera's aim belongs to
+   * where the phone is pointing, and survives everything except leaving the Lens.
+   *
+   * A fraction of the PREVIEW, not of the frame. The two are different rectangles — the preview
+   * is a fixed box and the frame is cropped to fill it — and `framePoint` in
+   * [`camera.ts`](./camera.ts) is where that conversion happens, on the frame thread, because
+   * that is the only place the frame's dimensions exist.
+   */
+  readonly aim: PhotoPoint;
+  /**
    * The capture being shown, frozen.
    *
    * **The result panel is open if and only if this is not null.** There is no separate `open`
@@ -154,6 +167,7 @@ export const CAPTURE_IDLE: CaptureState = {
   mode: 'still',
   photo: null,
   opening: false,
+  aim: PHOTO_CENTRE,
   held: null,
   live: null,
   awaiting: false,
@@ -216,12 +230,18 @@ export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureSta
       return prev.held === null ? prev : { ...prev, held: null };
 
     case 'mode':
-      // A mode change starts clean. Carrying a held capture across it would leave a result on
-      // screen belonging to an interaction the person has just left. It also puts the camera
-      // back, because the chips are about how the CAMERA reads.
+      /*
+       * A mode change starts clean. Carrying a held capture across it would leave a result on
+       * screen belonging to an interaction the person has just left. It also puts the camera
+       * back, because the chips are about how the CAMERA reads.
+       *
+       * THE AIM SURVIVES IT, and that is the one thing carried across: the phone is still
+       * pointing at the same thing, and moving the crosshair back to the middle because somebody
+       * switched to live would undo an aim they had just taken.
+       */
       return prev.mode === event.mode && prev.photo === null
         ? prev
-        : { ...CAPTURE_IDLE, mode: event.mode };
+        : { ...CAPTURE_IDLE, mode: event.mode, aim: prev.aim };
 
     case 'timeout':
       return prev.awaiting ? { ...prev, awaiting: false, failed: 'capture' } : prev;
@@ -233,7 +253,10 @@ export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureSta
       return { ...prev, opening: true, held: null, awaiting: false, failed: null };
 
     case 'photo':
-      return { ...CAPTURE_IDLE, mode: prev.mode, photo: event.photo };
+      // The aim is the CAMERA's and the camera has not moved. It is carried across every event
+      // that resets the rest, because the only thing that should move a crosshair is a tap on
+      // the thing it is drawn over.
+      return { ...CAPTURE_IDLE, mode: prev.mode, aim: prev.aim, photo: event.photo };
 
     case 'cancelled':
       // Backing out of the picker is a decision, not a failure. Nothing is said about it.
@@ -247,13 +270,21 @@ export function nextCapture(prev: CaptureState, event: CaptureEvent): CaptureSta
        * THE HELD READING GOES WITH THE TAP. It was taken at the old point, so leaving it up
        * while the reticle sits somewhere else would put a colour on screen beside a mark saying
        * it came from a different part of the picture.
+       *
+       * TWO TARGETS, ONE EVENT (F-170): the tap moves the photograph's point when one is open
+       * and the camera's aim otherwise. A second event kind would be a second way to say "the
+       * person pointed at something", and the two would eventually disagree about which one the
+       * reticle is drawn from.
        */
       return prev.photo === null
-        ? prev
+        ? { ...prev, aim: event.at, held: null }
         : { ...prev, photo: { ...prev.photo, at: event.at }, held: null };
 
     case 'camera':
-      return prev.photo === null && !prev.opening ? prev : { ...CAPTURE_IDLE, mode: prev.mode };
+      // The aim survives here too: it was never the photograph's, and the camera has not moved.
+      return prev.photo === null && !prev.opening
+        ? prev
+        : { ...CAPTURE_IDLE, mode: prev.mode, aim: prev.aim };
   }
 }
 

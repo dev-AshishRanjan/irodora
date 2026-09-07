@@ -253,7 +253,7 @@ export const en = {
   'lens.title': 'Lens',
   'lens.privacy':
     'Frames are looked at on this device and discarded. Nothing is saved and nothing is sent.',
-  'lens.viewfinder': 'Camera view. The Lens reads the colour under the centre of the frame.',
+  'lens.viewfinderTarget': 'Camera view. Tap the part of it you want read.',
   'lens.askTitle': 'The Lens needs the camera',
   'lens.askBody': 'Only to read the colour in front of it. No picture is kept.',
   'lens.ask': 'Allow the camera',

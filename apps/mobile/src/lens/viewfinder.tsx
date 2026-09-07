@@ -46,7 +46,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, type DimensionValue } from 'react-native';
+import { StyleSheet } from 'react-native';
 import {
   Camera,
   useCameraDevice,
@@ -56,8 +56,13 @@ import {
   type Frame,
 } from 'react-native-vision-camera';
 import { createSynchronizable, scheduleOnRN } from 'react-native-worklets';
-import { useTheme } from '@irodora/ui';
-import { readCaptureSpace, sampleStride, type FrameSample } from './camera';
+import {
+  framePoint,
+  readCaptureSpace,
+  sampleStride,
+  type FramePoint,
+  type FrameSample,
+} from './camera';
 import { modeFor, type CaptureKind, type SampleDemand } from './capture';
 import { read } from './modes';
 import type { CaptureSpace, LensReading } from './reading';
@@ -73,63 +78,6 @@ import { permissionState, type LensPermission } from './permission';
  * clear FR-15's floor of 1000 usable samples on any camera this would run on.
  */
 export const REGION_FRACTION = 0.1;
-
-/**
- * Where the reticle's corner marks sit, derived from {@link REGION_FRACTION}.
- *
- * DERIVED, NEVER TYPED TWICE. The old overlay hard-coded `left: '45%'` and `width: '10%'`
- * beside a `REGION_FRACTION` of `0.1` — two statements of one fact, and the marks would have
- * gone on pointing at the old area the moment the sampled region changed. A reticle that lies
- * about where the colour is read is worse than none: it is an instruction to aim somewhere the
- * engine is not looking.
- */
-const REGION_PERCENT = REGION_FRACTION * 100;
-
-/**
- * How far the region sits from each edge.
- *
- * ONE VALUE, NOT TWO: the region is a centred square, so the inset from left equals the inset
- * from right. It was briefly written as two constants holding the same expression, which is a
- * place for them to drift apart.
- *
- * Typed as `DimensionValue` so the percentage is a percentage to TypeScript as well: a bare
- * template produces `string`, and `ViewStyle.left` takes the template-literal type
- * \`\${number}%\` rather than any string.
- */
-//
-// `String()` around the number, then asserted: `restrict-template-expressions` refuses a
-// bare number in a template, and `String()` produces a plain `string` which is not the
-// template-literal type `ViewStyle.left` wants. The assertion is the seam between those two
-// rules, and it is safe by construction — the expression is a number and the suffix is a
-// literal `%`.
-const REGION_EDGE = `${String((100 - REGION_PERCENT) / 2)}%` as DimensionValue;
-
-/** How long each arm of a corner mark is. Short enough to mark a corner, not to draw a box. */
-const BRACKET = 12;
-
-/** The four corners, each with the two borders that make its L. */
-const CORNERS = [
-  {
-    key: 'top-left',
-    at: { left: REGION_EDGE, top: REGION_EDGE },
-    outer: { borderTopWidth: 1, borderLeftWidth: 1 },
-  },
-  {
-    key: 'top-right',
-    at: { right: REGION_EDGE, top: REGION_EDGE },
-    outer: { borderTopWidth: 1, borderRightWidth: 1 },
-  },
-  {
-    key: 'bottom-left',
-    at: { left: REGION_EDGE, bottom: REGION_EDGE },
-    outer: { borderBottomWidth: 1, borderLeftWidth: 1 },
-  },
-  {
-    key: 'bottom-right',
-    at: { right: REGION_EDGE, bottom: REGION_EDGE },
-    outer: { borderBottomWidth: 1, borderRightWidth: 1 },
-  },
-] as const;
 
 /**
  * How long a demand for frames waits before it says nothing arrived.
@@ -149,6 +97,14 @@ export interface ViewfinderProps {
    * a render several times a second.
    */
   readonly demand: SampleDemand;
+  /**
+   * Where in the preview to read, in fractions (F-170).
+   *
+   * Mirrored to the frame thread the way the demand is, and for the same reason: capturing it in
+   * the worklet's closure would rebuild `onFrame` on every tap, and rebuilding the frame output
+   * is a session reconfiguration — a visible stutter for something that should be one write.
+   */
+  readonly at: FramePoint;
   /**
    * Called with each reading the frame output produces, and **what it was sampled for**.
    *
@@ -193,10 +149,10 @@ export function useLensPermission(): { permission: LensPermission; request: () =
  */
 function ViewfinderView({
   demand,
+  at,
   onReading,
   onDiagnostic,
 }: ViewfinderProps): React.JSX.Element | null {
-  const { colors } = useTheme();
   const device = useCameraDevice('back');
   const seenFrame = useRef(false);
 
@@ -238,6 +194,12 @@ function ViewfinderView({
   useEffect(() => {
     demanded.setBlocking(demand);
   }, [demanded, demand]);
+
+  /** The aim, on the frame thread. Same mechanism, same reason — see {@link ViewfinderProps.at}. */
+  const aimed = useMemo(() => createSynchronizable({ x: 0.5, y: 0.5 }), []);
+  useEffect(() => {
+    aimed.setBlocking({ x: at.x, y: at.y });
+  }, [aimed, at.x, at.y]);
 
   const latest = useMemo(() => createSynchronizable<FrameSample | null>(null), []);
   const refusal = useMemo(() => createSynchronizable<string | null>(null), []);
@@ -428,7 +390,7 @@ function ViewfinderView({
         const want = demanded.getBlocking();
         if (want === 'off') return;
 
-        const outcome = sampleFrame(frame, space);
+        const outcome = sampleFrame(frame, space, aimed.getBlocking());
 
         /*
          * PUT IT WHERE THE JS THREAD CAN FETCH IT **BEFORE** TRYING TO PUSH IT.
@@ -471,76 +433,50 @@ function ViewfinderView({
 
   if (device === undefined) return null;
 
+  /*
+   * THE CAMERA, AND NOTHING ELSE (F-170).
+   *
+   * This drew the box and the reticle. Both moved to `screens/Lens.tsx`, and the move is not
+   * tidying:
+   *
+   * - **The box.** The preview's aspect ratio is what converts a tap into a point in the frame,
+   *   and the screen is what receives the tap. Two files owning one rectangle is two places for
+   *   the marks and the reading to disagree.
+   * - **The reticle.** It was drawn here, in a file jest cannot render, and drawn AGAIN in the
+   *   screen for a photograph. One implementation, in the file the conformance suite reaches,
+   *   means the marks are checked for the first time — and a person tapping a photograph and
+   *   tapping the camera now sees the same thing, because it IS the same thing.
+   *
+   * `StyleSheet.absoluteFill` so the camera fills whatever box the screen gives it. No
+   * background: naming a colour token by literal here would also defeat gate 8's decoy for
+   * `nativeElevation`, which asserts `surface.1` is reached only THROUGH the map.
+   */
   return (
-    // No background: the camera fills this box, and the screen already wraps it in a
-    // `Surface`. Naming a colour token by literal here would also defeat gate 8's decoy for
-    // `nativeElevation`, which asserts that `surface.1` is reached only THROUGH the map.
-    <View style={{ aspectRatio: 3 / 4 }}>
-      <Camera
-        style={StyleSheet.absoluteFill}
-        device={device}
-        isActive
-        outputs={[frameOutput]}
-        onSessionConfigSelected={onSessionConfigSelected}
-        /*
-         * THE CAMERA'S OWN ERROR CHANNEL, which this screen ignored entirely until now.
-         *
-         * VisionCamera offers `onError` and defaults it to a handler that logs. A session that
-         * starts a preview and then fails to configure an output reports it HERE and nowhere a
-         * person can see — so a working preview with no readings was the symptom, and the
-         * explanation was going to a log on a phone.
-         */
-        onError={(error) => {
-          onDiagnostic?.(`camera error: ${error.message}`);
-        }}
-      />
-      {/*
-        THE RETICLE (F-149), and both changes to it are colour science rather than taste.
-
-        IT DOES NOT ENCLOSE THE REGION. It was a closed 2px rule on all four sides, and a hard
-        border around a colour changes how that colour reads — simultaneous contrast is the
-        entire reason `swatch.well` exists, and this is that hazard applied to the live subject
-        somebody is judging. Corner marks say where the sample is taken without framing it, so
-        what surrounds the colour is the scene rather than our rule.
-
-        IT IS TWO-TONE, for the reason `Swatch`'s keyline is (F-068): the other side of this
-        line is an arbitrary camera image. A single grey — `border.strong` — is nearly
-        invisible over a pale garment, on the one surface where the marker must always be
-        findable. The same gamut-verified pair is reused rather than a new one invented: the
-        better of the two tones reaches 4.23 against the worst possible sample and they differ
-        from each other by ~18:1 whatever sits behind them.
-
-        `pointerEvents="none"` so the overlay never swallows a gesture meant for the camera.
-      */}
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-        {CORNERS.map((corner) => (
-          <View
-            key={corner.key}
-            style={{
-              position: 'absolute',
-              ...corner.at,
-              width: BRACKET,
-              height: BRACKET,
-              ...corner.outer,
-              borderColor: colors['swatch.hairline.inverse'],
-            }}
-          >
-            {/*
-              The inner tone, inset by the outer's own border so the two read as parallel
-              hairlines rather than as one thick edge — the same nesting `Swatch` uses.
-            */}
-            <View
-              style={{
-                width: BRACKET,
-                height: BRACKET,
-                ...corner.outer,
-                borderColor: colors['swatch.hairline'],
-              }}
-            />
-          </View>
-        ))}
-      </View>
-    </View>
+    <Camera
+      style={StyleSheet.absoluteFill}
+      device={device}
+      isActive
+      /*
+       * `cover`, STATED RATHER THAN INHERITED. It is VisionCamera's default, and `framePoint`
+       * is arithmetic that assumes it: the frame is scaled to fill the preview and cropped
+       * equally on the long axis. Left to the default, a change in the library would silently
+       * make every tap land somewhere else, and no test in this repository could see it.
+       */
+      resizeMode="cover"
+      outputs={[frameOutput]}
+      onSessionConfigSelected={onSessionConfigSelected}
+      /*
+       * THE CAMERA'S OWN ERROR CHANNEL, which this screen ignored entirely until F-119.
+       *
+       * VisionCamera offers `onError` and defaults it to a handler that logs. A session that
+       * starts a preview and then fails to configure an output reports it HERE and nowhere a
+       * person can see — so a working preview with no readings was the symptom, and the
+       * explanation was going to a log on a phone.
+       */
+      onError={(error) => {
+        onDiagnostic?.(`camera error: ${error.message}`);
+      }}
+    />
   );
 }
 
@@ -549,9 +485,12 @@ function ViewfinderView({
  *
  * `memo` is not decoration here. In live mode the screen above re-renders at frame rate — that
  * is what a live readout IS — and every one of those renders would otherwise rebuild the
- * `Camera` element and its frame output. All three props are stable across those renders
- * (`demand` is a string, the two callbacks are `useCallback`s over a dispatch), so React bails
- * out and the camera session is left alone.
+ * `Camera` element and its frame output. All four props are stable across those renders
+ * (`demand` is a string, `at` is a frozen point, the two callbacks are `useCallback`s over a
+ * dispatch), so React bails out and the camera session is left alone.
+ *
+ * `at` IS THE ONE THAT MOVES, and it moves on a tap rather than on a frame — which is why it
+ * reaches the worklet through a `Synchronizable` and not through the closure.
  */
 export const Viewfinder = memo(ViewfinderView);
 
@@ -576,7 +515,7 @@ type FrameOutcome =
   | { readonly ok: true; readonly sample: FrameSample }
   | { readonly ok: false; readonly why: string };
 
-function sampleFrame(frame: Frame, space: CaptureSpace): FrameOutcome {
+function sampleFrame(frame: Frame, space: CaptureSpace, at: FramePoint): FrameOutcome {
   'worklet';
   const size = Math.floor(Math.min(frame.width, frame.height) * REGION_FRACTION);
   if (size <= 0)
@@ -616,8 +555,23 @@ function sampleFrame(frame: Frame, space: CaptureSpace): FrameOutcome {
       why: `${String(bytesPerPixel)} byte(s) per pixel — the frame is planar, not RGB`,
     };
 
-  const left = Math.floor((frame.width - size) / 2);
-  const top = Math.floor((frame.height - size) / 2);
+  /*
+   * WHERE THE PERSON POINTED (F-170), converted and then clamped.
+   *
+   * `framePoint` turns a fraction of the PREVIEW into a fraction of the FRAME — they are
+   * different rectangles, because the preview is a fixed box and the frame is cropped to fill it.
+   * The clamp then keeps the whole region inside the frame, so a tap near an edge reads a FULL
+   * region from the nearest valid position rather than a smaller one hanging off the side: a
+   * region that shrank at the edges would quietly change what the reading is over.
+   */
+  const point = framePoint(at, frame.width, frame.height);
+  // Marked, for the reason `framePoint`'s is: a worklet may only call other worklets.
+  const clamp = (v: number, high: number): number => {
+    'worklet';
+    return v < 0 ? 0 : v > high ? high : v;
+  };
+  const left = clamp(Math.round(point.x * frame.width) - Math.floor(size / 2), frame.width - size);
+  const top = clamp(Math.round(point.y * frame.height) - Math.floor(size / 2), frame.height - size);
   const stride = sampleStride(size * size);
 
   const samples = [];

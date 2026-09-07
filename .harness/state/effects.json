@@ -3195,6 +3195,43 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-088",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/camera.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/viewfinder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-worklet-reach.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "guard": "gate:lint — `verify-worklet-reach.mjs` caught both new helpers reaching a worklet without a directive, which is F-116's crash one function deeper; `framePoint` is asserted at all three frame shapes with a decoy that fails if it is the identity; the reducer tests assert the aim survives a mode change, a photograph, and a return to the camera.",
+      "memory": "memory/effects/a-tap-and-a-frame-are-two-different-rectangles.md",
+      "rationale": "A TAP AND A FRAME ARE TWO DIFFERENT RECTANGLES, and the crosshair could not move until that was true in code. The preview is a fixed 3:4 box; the frame is whatever the device negotiated; `resizeMode` is `cover`, so the frame is scaled to fill the box and CROPPED equally on the long axis. A preview fraction is therefore not a frame fraction — and a reticle drawn at one while the engine reads the other is the failure `viewfinder.tsx` already names in its own words: a reticle that lies about where the colour is read is worse than none. THE CONVERSION BELONGS ON THE FRAME THREAD, because that is the only place `frame.width` and `frame.height` exist. Two alternatives were rejected for stated reasons: `resizeMode=\"contain\"` letterboxes and then the bars are in the mapping; reporting the frame's aspect back to JS to reshape the box would be wrong at exactly the moment somebody aims, because in still mode the first frame arrives AFTER the shutter. `resizeMode` is now set explicitly rather than inherited — it is VisionCamera's default and the arithmetic assumes it, so a change in the library would otherwise move every tap silently. THE GUARD FIRED TWICE, ON MY OWN CODE. `verify-worklet-reach.mjs` reported both inner `clamp` helpers as reached from a worklet with no directive — F-116's crash one function deeper, and the check exists because that took the app down as soon as the Lens opened. Then its own PROOF went stale: the plant finds the first `{` after the function header to strip the directive, and a parameter with an inline object TYPE puts a brace there first. It refused loudly rather than planting nothing, which is the property that matters — and it refused about the wrong thing, so the plant now walks past the parameter list. Both halves fixed: a named `FramePoint` type (better code regardless) and a proof that cannot be fooled by the next signature. THE RETICLE CAME UP OUT OF THE DEVICE FILE. It was drawn twice — once in `viewfinder.tsx` for the camera and once in `Lens.tsx` for a photograph — and only the photograph's was ever checked, because jest cannot render the other. One component in the screen means the marks reach the conformance registry for the first time, and a person tapping a photograph and tapping the camera sees the same thing because it IS the same thing. THE PREVIEW BOX MOVED WITH IT, and had to: its aspect ratio is what the conversion reads, and two files owning one rectangle is two places for the marks and the reading to disagree.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
