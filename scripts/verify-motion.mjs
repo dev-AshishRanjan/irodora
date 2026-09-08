@@ -297,6 +297,34 @@ function topLevelKeys(body) {
  * `.duration(nativeMotion.durations.micro)` and any variable all pass — a check that rejected
  * every mention of `duration` would ban the typed API it exists to enforce.
  */
+/**
+ * The source with its comments removed.
+ *
+ * ## Why this exists, found by the rule catching its own documentation (F-177)
+ *
+ * Every scan below reads raw source, and a comment is source. So a file that EXPLAINS a rule
+ * trips it: `overlay.tsx` records why a hand-written zero duration is refused, quoting the
+ * shape it is refusing, and `durationLiterals` reported the sentence as the defect.
+ *
+ * **That is not a cosmetic annoyance. It means the rule cannot be documented where it applies**,
+ * which in this repository is where documentation is supposed to live — and the workaround is to
+ * write a vaguer comment, which is the rule making the codebase worse.
+ *
+ * Stripping first also removes a smaller hazard nobody had hit: commented-out code is not code,
+ * and a colour animation inside a disabled block was being reported as if it ran.
+ *
+ * NOT A PARSER. Block comments, line comments, and the two string forms that can contain
+ * comment markers. It is deliberately conservative — a template literal containing `//` is
+ * left alone, because turning a scanner into a tokeniser is how a check starts having bugs of
+ * its own [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+ */
+const BLOCK_COMMENT = new RegExp('/\\*[\\s\\S]*?\\*/', 'gu');
+const LINE_COMMENT = new RegExp('(^|[^:\'"`\\\\])//[^\\n]*', 'gu');
+
+function stripComments(source) {
+  return source.replace(BLOCK_COMMENT, ' ').replace(LINE_COMMENT, '$1');
+}
+
 function durationLiterals(source) {
   const findings = [];
   for (const m of source.matchAll(/(?:^|[^\w.])duration\s*:\s*(-?\d+(?:\.\d+)?)\b/gu))
@@ -342,7 +370,10 @@ function run(allowed) {
   for (const scope of SCOPES)
     for (const file of sourceFiles(scope)) {
       scanned += 1;
-      const source = readFileSync(file, 'utf8');
+      // COMMENTS STRIPPED FIRST. A comment is source to a regex, so a file documenting a rule
+      // trips it — see `stripComments`. This is the one line that stops the check punishing
+      // the thing this repository asks for most.
+      const source = stripComments(readFileSync(file, 'utf8'));
       const keys = animatedStyleKeys(source);
       if (keys.length > 0) animatedElements += 1;
       for (const { component, property } of keys)

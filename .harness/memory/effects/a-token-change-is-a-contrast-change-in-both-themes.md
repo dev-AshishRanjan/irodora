@@ -125,3 +125,27 @@ Two things the split fixed that were not what was reported:
 per-component gate can see that they disagree. The check has to be about the *set*, and the
 cheapest way to get one is to make the meaning a single artefact and then check that everything
 draws it. See also [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
+
+## A check that scans raw source punishes its own documentation (F-177)
+
+`verify-motion` refused `overlay.tsx` — not for a duration literal, but for the **comment
+explaining why a hand-written zero duration is banned**. The rule scans raw source, and a
+comment is source.
+
+That is not cosmetic. It means **the rule cannot be documented where it applies**, which in
+this repository is where documentation is supposed to live, and the only workaround is to write
+a vaguer comment — the check making the codebase worse. Stripping comments first also stopped
+commented-out code being reported as if it ran.
+
+Two other harness lessons from the same feature, both about checks rather than product:
+
+- **`jest.config.mjs` had already written down the answer to a problem I then re-derived by
+  hand.** A `BottomSheetScrollView` adds a reanimated mapper, whose walk over React Native's
+  module namespace throws on the first native module the harness lacks — on a timer, after the
+  render, so it lands on whichever test is running. Mocking them one at a time is *"a game with
+  no end"*, said the config, and it lasted exactly one iteration: `DevMenu`, then
+  `SettingsManager`. **Read the harness's own notes before inventing a fix.**
+- **A test-node finder that assumes what `type` is fails for reasons unrelated to its subject.**
+  gorhom's sheet is wrapped in `memo`, so `typeof type === 'function'` found nothing and seven
+  assertions failed at once — the shape that gets "fixed" by softening the finder until it
+  matches something. The decoy now proves the finder *refuses* rather than returns nothing.

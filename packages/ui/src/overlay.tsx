@@ -32,8 +32,9 @@
  * root exports it again, and these two arrived with that ([ADR-0089](../../../docs/adr/0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md)).
  */
 
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { useWindowDimensions, View } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import {
   BottomSheet as HeroBottomSheet,
   Dialog as HeroDialog,
@@ -41,7 +42,7 @@ import {
   Tabs as HeroTabs,
 } from 'heroui-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
-import { overlayKeyframes } from './motion.js';
+import { overlayKeyframes, useMotion } from './motion.js';
 import { currentTone, selectionStyle } from './selection.js';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
@@ -369,6 +370,28 @@ export function Dialog({
   );
 }
 
+/**
+ * The largest a sheet may ever be, as a fraction of the window.
+ *
+ * **This is the "space at the top", and it is a ceiling rather than an inset.** An inset would
+ * mean reading a safe area, which `verify-viewport` reserves for `layout.tsx` and the tab
+ * layout — and a fraction holds on every device without asking.
+ */
+const SHEET_LARGE_DETENT = 0.9;
+
+/**
+ * The tallest the CONTENT may make the sheet on its own.
+ *
+ * Below {@link SHEET_LARGE_DETENT} on purpose, and the gap is the point: gorhom pushes the
+ * content-derived detent into the same sorted list as the declared one, so a ceiling equal to
+ * the snap point produces two detents a rounding error apart — which drags like a stutter
+ * rather than like a sheet.
+ */
+const SHEET_CONTENT_CEILING = 0.8;
+
+/** How long the sheet takes to settle, and how tightly. Position only, which is a transform. */
+const SHEET_SPRING = { damping: 28, stiffness: 260, mass: 1 } as const;
+
 export interface SheetProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
@@ -413,10 +436,33 @@ export interface SheetProps {
  * So the background is a component of ours — a plain `View` painted from `surface.2` with the
  * top corners and an edge, all through `style`, where the contrast gate measures it.
  *
- * ## Height comes from the content
+ * ## Height comes from the content, and stops before the top of the screen (F-177)
  *
- * No snap points. A result sheet fixed at a fraction of the screen is either cropping the result
- * or padding it, and the content is the only thing that knows which.
+ * F-158 wrote: *"No snap points. A result sheet fixed at a fraction of the screen is either
+ * cropping the result or padding it, and the content is the only thing that knows which."*
+ *
+ * **The argument is right and the conclusion did not follow.** It rules out a FIXED fraction; it
+ * does not rule out a second detent. What shipped was a sheet with exactly ONE detent — gorhom's
+ * `enableDynamicSizing` defaults to `true`, and with no `snapPoints` the content height is
+ * the only stop there is. So there was nothing to drag TO, and content taller than the screen
+ * made the sheet the screen. Reported as *"we can't drag the bottom sheet up or down, and the
+ * bottom sheet opens full screen"*, and both halves are that one cause.
+ *
+ * `useAnimatedDetents` computes the dynamic detent from the measured content, clamps it by
+ * {@link SHEET_CONTENT_CEILING}, pushes it into the provided list if it is not already there,
+ * and sorts. So one snap point plus dynamic sizing gives:
+ *
+ * | content | detents | behaviour |
+ * |---|---|---|
+ * | short | `[content, 90%]` | rests small, drags up |
+ * | tall | `[80%, 90%]` | rests at 80%, drags up, scrolls inside |
+ *
+ * **Neither case reaches the top.** That is the "little bit of space" as a property of the
+ * ceiling rather than of an inset — which matters, because `verify-viewport` reserves
+ * safe-area reads for two files and this is not one of them.
+ *
+ * The two numbers are deliberately apart: a ceiling equal to the snap point lets rounding
+ * produce two detents a pixel apart, which drags like a stutter.
  */
 export function Sheet({
   open,
@@ -429,6 +475,39 @@ export function Sheet({
   testID,
 }: SheetProps): React.JSX.Element {
   const { colors } = useTheme();
+  /*
+   * THE WINDOW, NOT AN INSET. `verify-viewport` names `useWindowDimensions()` as the right
+   * way to derive a size, and reserves `useSafeAreaInsets` for two files. The detents are
+   * fractions of the window; the safe area is somebody else's job.
+   */
+  const { height } = useWindowDimensions();
+  const { reduced, timing } = useMotion();
+
+  /*
+   * ONE DECLARED DETENT. The second one is the content's own, computed by gorhom and merged
+   * into this list — see the header. Memoised because a new array identity on every render
+   * re-derives every detent, and this sheet re-renders at camera frame rate behind the Lens.
+   */
+  const snapPoints = useMemo(() => [`${String(Math.round(SHEET_LARGE_DETENT * 100))}%`], []);
+
+  /*
+   * REDUCED MOTION GETS NO ANIMATION, NOT A FASTER ONE (F-144). A spring with a shorter
+   * duration is still motion, and the setting is a request not to move things.
+   *
+   * THE ZERO COMES FROM `useMotion`, NOT FROM A LITERAL. The first draft wrote
+   * `{ duration: 0 }` and `verify-motion` refused it — *"a duration literal, which is how a
+   * scale stops being a scale"*. It is right even when the literal is zero: what reduced motion
+   * means is the motion system's to say, and `timing()` already collapses every step to 0 when
+   * the platform asks. A hand-written zero would be a second implementation of that rule,
+   * agreeing with it on the day it was written and never again.
+   */
+  // KEYED ON `reduced`, NOT ON `timing`. `useMotion` rebuilds `timing` every render, so
+  // listing it would rebuild this object every render to get the same answer — the same
+  // argument `Appear` makes in motion.tsx, where it reads the duration out first for exactly
+  // this reason. There is no exhaustive-deps rule configured here to disable; the list is
+  // honest rather than silenced.
+  const animationConfigs = useMemo(() => (reduced ? timing('micro') : SHEET_SPRING), [reduced]);
+
   return (
     <HeroBottomSheet isOpen={open} onOpenChange={onOpenChange}>
       <HeroBottomSheet.Portal>
@@ -442,6 +521,16 @@ export function Sheet({
           // ref rather than view props. It goes on the content container below, which is the
           // node a test would want anyway, because it is the one holding the children.
           enablePanDownToClose
+          /*
+           * THE DETENTS (F-177). One declared, one derived from the content, merged and sorted
+           * by gorhom — see the header for the table. Passed through HeroUI, which spreads
+           * `Partial<BottomSheetProps>` onto the gorhom sheet, so no wrapper shape changes.
+           */
+          snapPoints={snapPoints}
+          maxDynamicContentSize={height * SHEET_CONTENT_CEILING}
+          // The sheet SETTLES. A spring rather than a curve, because a panel a thumb is
+          // dragging should arrive where the thumb left it going.
+          animationConfigs={animationConfigs}
           /*
             OUR GROUND, NOT THE LIBRARY'S. `backgroundStyle` is accepted and then ignored — the
             docblock above records what a rendered tree actually contains without this. The
@@ -465,20 +554,34 @@ export function Sheet({
           // The drag handle is the only affordance saying this panel moves, so it is drawn from
           // a border token rather than left to the library's grey.
           handleIndicatorStyle={{ backgroundColor: colors['border.strong'] }}
-          contentContainerProps={{
-            ...(testID === undefined ? {} : { testID }),
-            style: { padding: nativeSpacing.xl, gap: nativeSpacing.md },
-          }}
         >
-          <Text size="title" color="foreground" script={script} heading>
-            {title}
-          </Text>
-          {description === undefined ? null : (
-            <Text size="body" color="foreground.2" script={script}>
-              {description}
+          {/*
+            THE CONTENT SCROLLS, AND THAT IS WHAT MAKES THE CEILING SAFE.
+
+            `BottomSheetScrollView` rather than HeroUI's plain container. It reports its own
+            content height into gorhom's dynamic sizing through `useBottomSheetContentSizeSetter`,
+            so the rest position is still MEASURED — the sheet has not stopped sizing to its
+            content, it has stopped being allowed to eat the screen doing it. Without this a
+            ceiling would crop rather than scroll, which is the failure F-158's docblock was
+            right to be afraid of.
+
+            The padding moved here with it: `contentContainerProps` styled HeroUI's container,
+            and that container is no longer the thing holding the children.
+          */}
+          <BottomSheetScrollView
+            {...(testID === undefined ? {} : { testID })}
+            contentContainerStyle={{ padding: nativeSpacing.xl, gap: nativeSpacing.md }}
+          >
+            <Text size="title" color="foreground" script={script} heading>
+              {title}
             </Text>
-          )}
-          {children}
+            {description === undefined ? null : (
+              <Text size="body" color="foreground.2" script={script}>
+                {description}
+              </Text>
+            )}
+            {children}
+          </BottomSheetScrollView>
         </HeroBottomSheet.Content>
       </HeroBottomSheet.Portal>
     </HeroBottomSheet>

@@ -5626,7 +5626,7 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-175"
       ],
@@ -5646,7 +5646,16 @@
         "contrast",
         "build"
       ],
-      "notes": "F-158 shipped `Sheet` with no snapPoints and no topInset, recorded as a decision — \"height comes from the content\". With one detent there is nothing to drag to, and gorhom then grows to the full screen. The decision is wrong and this reverses it."
+      "notes": "DONE. THE DECISION F-158 RECORDED WAS THE WRONG ONE, AND ITS ARGUMENT WAS RIGHT. It said 'No snap points. A result sheet fixed at a fraction of the screen is either cropping the result or padding it' — which rules out a FIXED fraction and does not rule out a second detent. With no snapPoints and gorhom's enableDynamicSizing defaulting to true, the sheet had exactly ONE detent: nothing to drag to, and content taller than the screen made the sheet the screen. DELIVERED: one declared detent at 90%, a content ceiling at 80% (deliberately apart — gorhom merges the content-derived detent into the same SORTED list, so an equal ceiling produces two detents a rounding error apart, which drags like a stutter), and a BottomSheetScrollView so the ceiling scrolls rather than crops. Read out of gorhom's useAnimatedDetents rather than assumed. @gorhom/bottom-sheet is now a DECLARED peer of @irodora/ui mirroring heroui-native's own range — reaching BottomSheetScrollView while it resolved by luck is what verify-peer-deps exists to stop. THREE THINGS THE HARNESS CAUGHT, ALL OF THEM ABOUT THE CHECKS RATHER THAN THE PRODUCT. (1) The scrollable adds an animated ScrollView, which adds a reanimated mapper, whose extractInputs walks any plain object with Object.values — including React Native's module namespace, whose every export is a lazy getter calling TurboModuleRegistry.getEnforcing. It throws on a TIMER after the render. Mocking the modules one at a time was tried and jest.config.mjs had ALREADY WRITTEN DOWN why that fails ('a game with no end'); it lasted one iteration, DevMenu then SettingsManager. The repository's real answer is fake timers, and conformance.test.tsx has carried it since F-158. (2) verify-motion refused the docblock EXPLAINING why a hand-written zero duration is banned — it scans raw source and a comment is source, so the rule could not be documented where it applies. The gate now strips comments first, which also stops commented-out code being reported as if it ran; all eleven of its decoys still fire. (3) The test's node finder required `typeof type === 'function'` and gorhom's sheet is wrapped in memo, so all seven assertions failed for a reason unrelated to the sheet — a shape that gets 'fixed' by softening the finder, so the decoy now proves it throws on a tree with no sheet. NOT RUN: cvd, color-golden, content — no colour value, no colour maths, no corpus record changed.",
+      "plan": "plans/F-177-the-sheet-is-a-sheet.md",
+      "attested": [
+        {
+          "criterion": "A sheet rests at a detent below the top of the screen and can be dragged to a larger one and back",
+          "verifiedBy": "Dragging the Lens result sheet on a physical phone. WHAT IS PROVEN IS THAT THE DETENTS REACH THE SHEET — eight assertions read snapPoints, maxDynamicContentSize, enablePanDownToClose and the scroll container off the rendered gorhom node, with a decoy proving the finder REFUSES a tree with no sheet rather than reading nothing. WHAT CANNOT BE PROVEN HERE is the drag itself: jest runs no Yoga pass, no gesture handler and no reanimated UI thread (ADR-0055). Whether 80% and 90% are the right two numbers, and whether the spring settles rather than snapping, are device judgements — and the numbers were chosen as the first pair satisfying 'never full screen' and 'never colliding', not derived from anything.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-178",

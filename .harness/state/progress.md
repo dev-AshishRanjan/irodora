@@ -18682,3 +18682,72 @@ than invent moved to the two features that will build the others.
 is a judgement no gate here can make. One attested criterion, outstanding, joining F-175's two.
 
 ---
+
+## F-177 — The sheet is a sheet: detents, an inset, and content that scrolls
+
+**2026-09-08.** Reported as *"we can't drag the bottom sheet up or down, and the bottom sheet
+opens full screen."* Both halves are one cause: `Sheet` passed gorhom no `snapPoints`, and
+`enableDynamicSizing` defaults to `true` — so the sheet had exactly **one** detent, sized to its
+content and capped only by the container.
+
+### F-158 recorded this as a decision, and its argument was right
+
+> *"No snap points. A result sheet fixed at a fraction of the screen is either cropping the
+> result or padding it, and the content is the only thing that knows which."*
+
+That rules out a **fixed** fraction. It does not rule out a **second detent**. One declared
+snap point at 90%, a content ceiling at 80%, and a `BottomSheetScrollView` keep everything the
+argument was protecting — the sheet still sizes to its content — and add the things the argument
+was not about.
+
+The two numbers are deliberately apart: `useAnimatedDetents` merges the content-derived detent
+into the same **sorted** list as the declared one, so an equal ceiling produces two detents a
+rounding error apart, which drags like a stutter rather than like a sheet. Read out of gorhom's
+source, not assumed.
+
+`@gorhom/bottom-sheet` is now a declared peer of `@irodora/ui`, mirroring heroui-native's own
+range. Reaching `BottomSheetScrollView` while it resolved by luck is exactly what
+`verify-peer-deps` exists to stop.
+
+### Three things the harness caught, and all three were about the checks
+
+**1. The repository had already written down the answer to a problem I then re-derived by hand.**
+The scrollable adds an animated ScrollView, which adds a reanimated mapper, whose `extractInputs`
+walks any plain object with `Object.values` — including React Native's module namespace, whose
+every export is a lazy getter calling `TurboModuleRegistry.getEnforcing`. It throws on a
+**timer**, after the render, so it lands on whichever test is running. I mocked `DevMenu`;
+`SettingsManager` threw next. `jest.config.mjs` had said so in advance — *"stubbing each module
+as it appears is a game with no end"* — and the real answer, fake timers, has been in
+`conformance.test.tsx` since F-158. **Read the harness's own notes before inventing a fix.**
+
+**2. `verify-motion` refused the comment explaining its own rule.** Not a duration literal — the
+docblock saying why a hand-written zero duration is banned. The gate scans raw source and a
+comment is source, so **the rule could not be documented where it applies**, and the only
+workaround was a vaguer comment. It strips comments now, which also stops commented-out code
+being reported as if it ran. All eleven of its decoys still fire.
+
+**3. A test-node finder that assumed what `type` is.** gorhom's sheet is wrapped in `memo`, so
+`typeof type === 'function'` matched nothing and all seven assertions failed for a reason
+unrelated to the sheet — the shape that gets "fixed" by softening the finder until it matches
+something. The decoy now proves the finder *refuses* a tree with no sheet rather than reading
+nothing.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 6 build | **PASS** |
+| 8 a11y · 9 contrast · motion · peer-deps · token-reach | **PASS** |
+| verify-motion --prove, 11 cases | **held** |
+
+**Not run:** `cvd`, `color-golden`, `content` — no colour value, no colour maths, no corpus
+record changed.
+
+### Still owed
+
+**The drag.** jest runs no Yoga pass, no gesture handler and no reanimated UI thread. What is
+proven is that the detents *reach* the sheet; whether 80% and 90% are the right two numbers, and
+whether the spring settles rather than snapping, needs a phone. One attested criterion,
+outstanding — the third in R7.
+
+---
