@@ -159,6 +159,16 @@ export interface ProfileSetupProps {
    * rather than dead when nobody supplies it.
    */
   readonly onOpenSettings?: (() => void) | undefined;
+  /**
+   * The other two things the Profile tab owns (F-182).
+   *
+   * FR-49's measurement readouts and FR-58's export, both finished screens on routes nothing
+   * navigated to. **Export being unreachable is worse than the rest**: the on-device privacy
+   * claim (NFR-12) is only meaningful if a person can act on it, and a right somebody cannot
+   * find is a right they do not have.
+   */
+  readonly onOpenMeasure?: (() => void) | undefined;
+  readonly onOpenExport?: (() => void) | undefined;
 }
 
 export function ProfileSetup({
@@ -166,6 +176,8 @@ export function ProfileSetup({
   initialAnswers,
   reading,
   onOpenSettings,
+  onOpenMeasure,
+  onOpenExport,
 }: ProfileSetupProps): React.JSX.Element {
   const { t, script } = useMessages();
 
@@ -484,6 +496,28 @@ export function ProfileSetup({
             {t('settings.openHint')}
           </Text>
         </Stack>
+      )}
+
+      {/*
+        THE OTHER TWO THINGS THIS TAB OWNS (F-182). Beside settings rather than at the foot,
+        because a person looking for their data is looking at the top of the screen they were
+        told holds it.
+      */}
+      {onOpenMeasure === undefined ? null : (
+        <Button
+          label={t('profile.openMeasure')}
+          variant="secondary"
+          onPress={onOpenMeasure}
+          script={script}
+        />
+      )}
+      {onOpenExport === undefined ? null : (
+        <Button
+          label={t('profile.openExport')}
+          variant="secondary"
+          onPress={onOpenExport}
+          script={script}
+        />
       )}
       {/*
         THE PRIVACY CLAIM, AND IT DEPENDS ON THE PATH. 'profile.privacy' says "No camera",

@@ -597,6 +597,19 @@ export const en = {
    * Three labels for one destination would drift, and somebody who learned the word on one
    * screen would meet a different one on the next.
    */
+  /*
+   * F-182 — THE LAST FOUR ORPHANS.
+   *
+   * The Wardrobe offered adding a garment and nothing to do with the garments once added; the
+   * Profile opened straight into setup and offered nothing else. Four finished screens —
+   * the outfit builder, the shopping check, the measurement readouts and export — on routes
+   * nothing navigated to. Export is the one that matters most: a person cannot exercise a
+   * right they cannot find.
+   */
+  'browse.openOutfit': 'Build an outfit',
+  'browse.openShopping': 'Before you buy',
+  'profile.openMeasure': 'Measurements and differences',
+  'profile.openExport': 'Export or delete your data',
   'browse.add': 'Add a garment',
   // Says what the grouping IS. "Grouped by colour" would let a reader assume the app had decided
   // each garment's colour has a name; it has decided which published colours it sits nearest to.

@@ -46,6 +46,14 @@ export default function ProfileRoute(): React.JSX.Element {
         onOpenSettings={() => {
           router.push('/profile/preferences');
         }}
+        onOpenMeasure={() => {
+          router.push('/profile/measure');
+        }}
+        // FR-58. Being unreachable was worse here than anywhere else: the on-device privacy
+        // claim is only meaningful if a person can act on it.
+        onOpenExport={() => {
+          router.push('/profile/export');
+        }}
       />
     </>
   );

@@ -534,6 +534,11 @@ export const ja: Record<MessageKey, string> = {
   'browse.title': 'あなたのワードローブ',
   'browse.empty': 'まだ何もありません',
   'browse.emptyHint': '服を追加すると、色の近いものごとにまとめてここに表示されます。',
+  // F-182 — see en.ts.
+  'browse.openOutfit': 'コーディネートを組む',
+  'browse.openShopping': '買う前に',
+  'profile.openMeasure': '測定と差',
+  'profile.openExport': 'データの書き出し・削除',
   'browse.add': '服を追加',
   'browse.grouping': '収録色にどれだけ近いかでまとめています。',
   'browse.ungrouped': 'まとめていません',

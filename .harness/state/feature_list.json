@@ -5798,7 +5798,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-179"
       ],
@@ -5815,7 +5815,9 @@
         "test",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-182-the-wardrobe-and-the-profile-own-their-own.md",
+      "notes": "DONE. The last four orphans. Nothing built, again: four routes, four finished screens, props already in the shape every destination here uses. THE DECLARATION LIST IS NOW EMPTY — it was eight entries long this morning, and 17 of 17 routes are reachable from the five tabs. EXPORT IS THE ONE THAT MATTERED MOST, and not as polish: the on-device privacy claim (NFR-12) is only meaningful if a person can act on it, and a right somebody cannot find is a right they do not have. FR-58's screen had existed for a release with no way in. BOTH WARDROBE CONTROLS ARE DRAWN ONLY WHEN THERE IS A WARDROBE, which is the rule the persistent add control already follows for the reason F-139 wrote down — offering to build an outfit from nothing leads to an empty screen, and /wardrobe/outfit already renders nothing without a profile. Two dead ends where the honest answer is not to offer yet. THE CONFORMANCE SUBJECT WITH A NON-EMPTY WARDROBE IS THE ONLY PLACE THE TWO CONTROLS ARE CHECKED, because the empty subject correctly renders neither — worth stating, because a reviewer looking at the empty one would find them absent and be right. THE SAME CASCADE AS F-181, and it is a good one: the gate-mirror proof refuses to run while gate 0 is red, gate 0 was red because this feature was in_progress with no plan file yet, and the proof's message named the cause rather than reporting two failures of its own. NOT RUN: cvd, color-golden, content."
     },
     {
       "id": "F-183",

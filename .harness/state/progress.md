@@ -18940,3 +18940,57 @@ state · typecheck · lint · format · test · a11y · contrast · reachability
 build — **PASS**.
 
 ---
+
+## F-182 — The Wardrobe owns Outfit and Shopping; the Profile owns Measure and Export
+
+**2026-09-08.** The last four orphans, and nothing was built. Four routes, four finished
+screens, props already in the shape every destination here uses.
+
+**The declaration list is now empty.** It was eight entries long this morning. **17 of 17
+routes are reachable from the five tabs.**
+
+### Export is the one that mattered most
+
+Not as polish. The on-device privacy claim (NFR-12) is only meaningful if a person can act on
+it, and **a right somebody cannot find is a right they do not have.** FR-58's screen had existed
+for a release with no way in.
+
+### Both Wardrobe controls are drawn only when there is a wardrobe
+
+The rule the persistent add control already follows, for the reason F-139 wrote down: offering
+to build an outfit from nothing leads to an empty screen, and `/wardrobe/outfit` already renders
+nothing without a profile. Two dead ends where the honest answer is not to offer yet.
+
+Which makes the **non-empty** conformance subject the only place those two controls are
+checked — worth saying, because a reviewer looking at the empty subject would find them absent
+and be right.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · reachability · route-targets ·
+build — **PASS**.
+
+---
+
+# Wave 1 of R7 is complete except F-183
+
+**F-179 · F-180 · F-181 · F-182.** The gate landed first, then the wiring it checks.
+
+| | before | after |
+|---|---|---|
+| routes reachable from the tabs | **9 of 17** | **17 of 17** |
+| declared-unreachable | 8 | **0** |
+| navigation targets | 15 | 22 |
+
+**Almost none of this was building.** Of the four features, three added no screen and no
+behaviour — they added *offers*. Eight finished screens, each with a conformance subject,
+accessibility coverage and tests, that a person holding the phone could not open. Two of them
+had been predicted by their own authors: `Compare` took `initialA` from the start for *"a future
+'compare with this one' entry point"*, and `AddGarment`'s Lens control had a consumer with no
+producer for two releases.
+
+**The gate reported every expiry the moment its wiring landed.** Not one declaration had to be
+noticed by a person, and three of the four features found dead exemptions immediately on
+finishing. That is the direction that keeps a list honest, and it is why F-179 went first.
+
+---

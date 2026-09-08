@@ -1302,8 +1302,18 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
+      /*
+        THE TWO NEW DESTINATIONS ARE RENDERED (F-182). This subject has a NON-EMPTY wardrobe,
+        which matters: both controls are drawn only when there is one to act on, so the empty
+        subject below correctly shows neither and this is the only place they are checked.
+      */
       draw(
-        <Wardrobe store={fakeBrowseStore(OUTFIT_WARDROBE)} onAddGarment={() => undefined} />,
+        <Wardrobe
+          store={fakeBrowseStore(OUTFIT_WARDROBE)}
+          onAddGarment={() => undefined}
+          onOpenOutfit={() => undefined}
+          onOpenShopping={() => undefined}
+        />,
         theme,
       ),
   },
@@ -1439,7 +1449,15 @@ const SCREENS: readonly ConformanceSubject[] = [
       to prevent, one prop along.
     */
     render: (_state, theme) =>
-      draw(<ProfileSetup store={fakeProfileStore()} onOpenSettings={() => undefined} />, theme),
+      draw(
+        <ProfileSetup
+          store={fakeProfileStore()}
+          onOpenSettings={() => undefined}
+          onOpenMeasure={() => undefined}
+          onOpenExport={() => undefined}
+        />,
+        theme,
+      ),
   },
   {
     /*

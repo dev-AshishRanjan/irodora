@@ -253,6 +253,17 @@ export interface WardrobeProps {
    * conformance suite, which is where the accessibility guarantees are actually checked.
    */
   readonly onAddGarment?: (() => void) | undefined;
+  /**
+   * What to DO with a wardrobe, once there is one (F-182).
+   *
+   * Both were finished screens on routes nothing navigated to: FR-33's outfit builder and
+   * FR-52's shopping check. The Wardrobe offered adding a garment and nothing to do with the
+   * garments after that.
+   *
+   * Optional and supplied by the route, like every destination here.
+   */
+  readonly onOpenOutfit?: (() => void) | undefined;
+  readonly onOpenShopping?: (() => void) | undefined;
 }
 
 /**
@@ -447,6 +458,8 @@ export function Wardrobe({
   initialSelected = null,
   initialFilter = NO_FILTER,
   onAddGarment,
+  onOpenOutfit,
+  onOpenShopping,
 }: WardrobeProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
 
@@ -678,6 +691,33 @@ export function Wardrobe({
             script={script}
           />
         </View>
+      )}
+
+      {/*
+        WHAT TO DO WITH A WARDROBE (F-182), and it follows the same rule as the add control above:
+        drawn only when there IS one. Offering to build an outfit from nothing is a control that
+        leads to an empty screen, and the outfit route already renders nothing without a profile —
+        two dead ends where the honest answer is not to offer yet.
+      */}
+      {garments.length === 0 ? null : (
+        <Row gap="sm" wrap>
+          {onOpenOutfit === undefined ? null : (
+            <Button
+              label={t('browse.openOutfit')}
+              variant="secondary"
+              onPress={onOpenOutfit}
+              script={script}
+            />
+          )}
+          {onOpenShopping === undefined ? null : (
+            <Button
+              label={t('browse.openShopping')}
+              variant="secondary"
+              onPress={onOpenShopping}
+              script={script}
+            />
+          )}
+        </Row>
       )}
 
       {/*

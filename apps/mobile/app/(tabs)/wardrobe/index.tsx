@@ -91,6 +91,14 @@ export default function WardrobeRoute(): React.JSX.Element {
         onAddGarment={() => {
           router.push('/wardrobe/add');
         }}
+        // What to DO with a wardrobe (F-182). Both were finished screens on routes nothing
+        // navigated to, so the tab could fill up and never be used.
+        onOpenOutfit={() => {
+          router.push('/wardrobe/outfit');
+        }}
+        onOpenShopping={() => {
+          router.push('/wardrobe/shopping');
+        }}
       />
     </>
   );

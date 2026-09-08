@@ -2,27 +2,6 @@
   "$comment": "Routes the app serves that no interaction reaches, each naming the feature that will reach it. `scripts/verify-reachability.mjs` fails on an orphan that is NOT listed here, AND on a listing that IS reachable or whose feature is already done — both directions, because a dead exemption is how a live one gets waved through later. Same shape and same reason as unreached-tokens.json (ADR-0088). THE WHOLE LIST PRINTS ON EVERY RUN: an exemption nobody reads is an exemption nobody weighs.",
   "version": 1,
   "updated": "2026-09-08",
-  "$readingComment": "This file is the answer to \"are you sure you have added all pages, and links\". Eight finished screens — each with a conformance subject, accessibility coverage and tests — that a person holding the phone could not open. If it grows without shrinking, that is the thing to notice.",
-  "unreachable": [
-    {
-      "url": "/profile/measure",
-      "closedBy": "F-182",
-      "why": "The calibrated measurement path. The Profile tab opens straight into setup and offers nothing else."
-    },
-    {
-      "url": "/profile/export",
-      "closedBy": "F-182",
-      "why": "FR-58's export and deletion — the screen that makes the on-device privacy claim actionable rather than merely true. Being unreachable is worse here than elsewhere: a person cannot exercise a right they cannot find."
-    },
-    {
-      "url": "/wardrobe/outfit",
-      "closedBy": "F-182",
-      "why": "FR-33's outfit builder. The Wardrobe offers adding a garment and nothing to do with the garments once added."
-    },
-    {
-      "url": "/wardrobe/shopping",
-      "closedBy": "F-182",
-      "why": "FR-52's shopping check — three measurements about a garment somebody has not bought. F-199 later gives a colour combination a way into it, which only works if the screen can be opened at all."
-    }
-  ]
+  "$readingComment": "THE LIST IS EMPTY, AND IT WAS EIGHT ENTRIES LONG ON 2026-09-08. Eight finished screens — each with a conformance subject, accessibility coverage and tests — that a person holding the phone could not open: the finder, the comparison, the palette studio, settings, the measurement readouts, export, the outfit builder and the shopping check. F-180, F-181 and F-182 closed them over three features, and the gate reported each expiry the moment the wiring landed rather than waiting for somebody to notice. An empty list is the state to keep it in; an entry here is a promise with a date on it.",
+  "unreachable": []
 }
