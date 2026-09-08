@@ -557,6 +557,28 @@ export const en = {
   'combo.near-neutral': 'Almost grey',
   'combo.value-contrast': 'Much lighter, much darker',
   'combo.chroma-contrast': 'Muted against vivid',
+  /*
+   * F-195 — WEAR IT.
+   *
+   * The slot names are NOT here: `outfit.top`, `outfit.trouser` and `outfit.shoe` already
+   * exist and are the same three words. A second set would be a second thing to translate and
+   * the one that drifted would be the one nobody was reading.
+   *
+   * `wear.overall` and `wear.pairing` are two different figures and are labelled as such —
+   * without a profile only the second is available, and a screen that showed the blend under
+   * either name would be reporting a number that means less than it looks like it means.
+   */
+  'wear.title': 'Wear it',
+  'wear.what':
+    'Colours ranked for the other slots, with the basis for each. A ranking, not advice about what to wear.',
+  'wear.slot': 'This colour is a',
+  'wear.open': 'Wear it',
+  'wear.overall': 'Overall',
+  'wear.pairing': 'With this colour',
+  'wear.noProfile':
+    'No profile yet, so half of each ranking is missing: how a colour sits with this one is figured, how it suits you is not.',
+  'wear.buildProfile': 'Build a profile',
+  'wear.none': 'No colour in the corpus fits this slot.',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

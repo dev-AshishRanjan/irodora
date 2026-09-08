@@ -33,7 +33,7 @@
  * checked".
  */
 
-import { Card, Row, Screen, Stack, Swatch, Text } from '@irodora/ui';
+import { Button, Card, Row, Screen, Stack, Swatch, Text } from '@irodora/ui';
 import type { HarmonyColor } from '@irodora/color-harmony';
 import { displayFromOklch } from '../engine';
 import { COMBINATIONS_SHOWN, combinationsFor, type Combination } from '../combinations';
@@ -46,6 +46,13 @@ export interface CombinationsProps {
   readonly slug: string;
   /** Open a colour. Supplied by the route; absent in the conformance suite. */
   readonly onOpenColour?: (slug: string) => void;
+  /**
+   * Put this colour on a body (F-195).
+   *
+   * The relationships on this screen are geometry — what sits well beside what. This is the way
+   * to the other question, which needs a slot and a ranking rather than a wheel.
+   */
+  readonly onWearIt?: ((slug: string) => void) | undefined;
 }
 
 /** The size a proposed colour is drawn at. Large enough to judge, small enough to fit a row. */
@@ -70,7 +77,11 @@ function companion(c: HarmonyColor): ReturnType<typeof displayFromOklch> {
   return displayFromOklch([c.oklch[0], c.oklch[1], c.oklch[2]]);
 }
 
-export function Combinations({ slug, onOpenColour }: CombinationsProps): React.JSX.Element {
+export function Combinations({
+  slug,
+  onOpenColour,
+  onWearIt,
+}: CombinationsProps): React.JSX.Element {
   const { t, script } = useMessages();
   const subject = entryBySlug(slug);
 
@@ -206,6 +217,23 @@ export function Combinations({ slug, onOpenColour }: CombinationsProps): React.J
               })}
         />
       </Card>
+
+      {/*
+        FROM RELATIONSHIPS TO GARMENTS (F-195). Placed above the list rather than under it: a
+        person who came here holding a shirt is asking the garment question, and making them
+        scroll past twelve relationships to find it would answer a question they did not ask
+        first.
+      */}
+      {onWearIt === undefined ? null : (
+        <Button
+          label={t('wear.open')}
+          variant="secondary"
+          onPress={() => {
+            onWearIt(slug);
+          }}
+          script={script}
+        />
+      )}
 
       {leading.map((c) => (
         <One key={c.kind} combination={c} />

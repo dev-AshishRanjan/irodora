@@ -24,6 +24,10 @@ export default function CombinationsRoute(): React.JSX.Element {
         onOpenColour={(s) => {
           router.push(`/atlas/${s}`);
         }}
+        // The other question: a slot, and a ranking for the rest (F-195).
+        onWearIt={(s) => {
+          router.push(`/atlas/wear/${s}`);
+        }}
       />
     </>
   );

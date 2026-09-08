@@ -3791,6 +3791,50 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-101",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/wear.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/wear.test.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE APP NOW HANDS THE ENGINE A PROFILE FOR SOMEBODY WHO HAS NONE, AND `personalKnown` IS THE ONLY THING STOPPING THAT BECOMING A FALSE CLAIM. `NO_EVIDENCE_PROFILE` carries full-range intervals so nothing is constrained, and confidence 0 on every axis so nothing reaches a score — but `intervalFit` still returns 1 on all four, so the explanation object reports a PERFECT FIT on four dimensions nobody has measured. `shownFactors` returns empty without a profile and `shownScore` shows the pairing figure instead of the blend; both are asserted, and the conformance registry renders both branches in both themes so the two trees are measured rather than assumed. WHAT IS NOT GUARDED: a future caller that reads `recommendations` directly and formats it itself. Nothing stops that, and it would look entirely reasonable — the fields are public and populated. The defence is that `wear.ts` is the only module that builds the no-evidence profile, and it exports the two readers beside it.",
+      "memory": "memory/effects/a-zero-confidence-profile-still-reports-a-perfect-fit.md",
+      "rationale": "CRITERION 3 ASKED THAT SOMEBODY WITH NO PROFILE STILL GET THE ANSWERS THAT DO NOT NEED ONE. `recommendOutfit` requires a `PersonalProfile` and half its blend is *does this suit me*, which is unanswerable without one. The engine already had the answer: `scoreColor` returns `NO_EVIDENCE_SCORE` when no dimension carries confidence, and its docblock names this exact case — *\"a profile nobody has filled in is zero across the board\"*. So the app supplies that profile rather than the engine growing a nullable parameter, and no score is implemented twice. THE TRAP IS ONE LAYER DOWN. Confidence 0 removes the personal half from every SCORE and leaves it fully populated in every EXPLANATION, because `fits` is computed before the weights are applied. A screen that drew the factors it was given would say \"your lightness range suits this\" to somebody who has never told the product anything — which is NFR-21 broken in the most confident-sounding way available. That is why `personalKnown` is a returned VALUE and not a confidence field a caller is trusted to check.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

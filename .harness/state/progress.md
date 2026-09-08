@@ -19550,3 +19550,88 @@ Route reachability: **18 of 18**. Dead packages: `@irodora/color-harmony`'s decl
 **retired**; `@irodora/contracts` remains, closed by F-196.
 
 ---
+
+## F-195 — Wear it: a colour becomes a top, and the engine ranks the rest
+
+F-194 answered *what colour goes with this colour*. This answers the question actually asked:
+**"if shirt is a color, then what color could pants should be"**.
+
+`recommendForSlot` and `recommendOutfit` have been exported from `@irodora/recommendation`
+since **F-030** and called by nothing — the same defect F-194 found one package along, found
+again by the gate F-183 built.
+
+### What shipped
+
+`src/wear.ts` builds the pool and resolves the slot; `recommendOutfit` produces every number.
+The route is `/atlas/wear/<slug>`, reached from the combinations screen.
+
+**`recommendOutfit`, not `recommendForSlot` twice.** The engine already refuses to recommend a
+second top — *"a second top is not what 'what goes with this' means"*, in its own words — so
+calling it once fills every other slot and keeps that rule where it is defined. Both uncalled
+exports close rather than one.
+
+**The slot is chosen, not assumed.** A `ChoiceGroup` (F-186), because *"a colour resolves into a
+slot"* would otherwise mean *we picked one for you*. Putting the colour in the trouser slot asks
+for tops and shoes instead, and a registered subject renders that.
+
+### The interesting half was criterion 3
+
+`recommendOutfit` requires a profile and half its blend is *does this suit me*. The engine
+already had the answer: `scoreColor` returns `NO_EVIDENCE_SCORE` when no dimension carries
+confidence, and its docblock names this exact case — *"a profile nobody has filled in is zero
+across the board"*. So the app supplies that profile and **no score is implemented twice**.
+
+**The trap is one layer down, and it is the kind that ships.** Confidence 0 removes the personal
+half from every *score* and leaves it fully populated in every *explanation*, because the fits
+are computed before the weights are applied. Full-range intervals make `intervalFit` return 1 on
+all four axes — so a screen that simply drew the factors it was given would tell somebody who
+has never entered anything that **their lightness range suits this colour**. That is NFR-21
+broken in the most confident-sounding way available.
+
+Hence two things, both asserted:
+
+| | |
+|---|---|
+| `shownScore` | the pairing figure without a profile, the blend with one — the blend is pulled toward the midpoint for every candidate, so its magnitude is an artefact |
+| `shownFactors` | **empty** without a profile, and `personalKnown` is a returned **value** rather than a confidence field a caller is trusted to read |
+
+### The decoy this feature needed
+
+*"The ranking is driven entirely by pairing"* is satisfied by an implementation that **ignores
+the source colour altogether** — the counts, the slots, the exclusions and the zero confidences
+all still hold, and every person gets the same list whatever they are holding. So two different
+source colours must produce two different orders with no profile at all, and a second decoy
+asserts the two sources are genuinely different colours.
+
+### A defect found and filed rather than absorbed — F-208
+
+`alternativesFor` runs inside every `recommendForSlot` call, so this feature computes
+warmer/cooler/lighter/higher-contrast alternatives for every slot and **discards them** — the
+exact defect this release exists for, one field along. It is filed rather than added, because
+FR-38 is a different requirement from the two F-195 carries and widening a claimed feature to
+cover work its criteria never asked for is how scope stops meaning anything.
+
+### The lint caught a real one
+
+`wearWith(...)!` asserted that the result could not be null because `entryBySlug` had already
+been checked above — a relationship between two calls the compiler cannot see, and a crash the
+day `wearWith` gained a second reason to refuse. One lookup now, and the null comes from it.
+
+### Effects
+
+**E-101** — the app hands the engine a profile for somebody who has none. Guard: `personalKnown`,
+`shownFactors`, and both branches registered in the conformance suite. Not guarded: a future
+caller that reads `recommendations` and formats it itself.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build — **PASS**. 868 mobile tests,
+37 suites. Route reachability **19 of 19**.
+
+### Attested, not asserted
+
+Nobody has looked at a slot recommendation. Whether a ranked list of trouser colours reads as
+useful is the judgement no gate here discharges — and the pool is historical Japanese colours,
+not garments anybody sells.
+
+---

@@ -496,6 +496,18 @@ export const ja: Record<MessageKey, string> = {
   'combo.near-neutral': 'ほぼ灰色',
   'combo.value-contrast': '明暗の対比',
   'combo.chroma-contrast': '鮮やかさの対比',
+  // F-195 — see en.ts for why the slot names are not repeated here.
+  'wear.title': '合わせて着る',
+  'wear.what':
+    'ほかの部位の色を順位づけし、その根拠を示します。順位であって、何を着るべきかという助言ではありません。',
+  'wear.slot': 'この色の部位',
+  'wear.open': '合わせて着る',
+  'wear.overall': '総合',
+  'wear.pairing': 'この色との相性',
+  'wear.noProfile':
+    'プロフィールが未作成のため、順位の半分が欠けています。この色との相性は算出できますが、あなたに似合うかは算出できません。',
+  'wear.buildProfile': 'プロフィールを作成',
+  'wear.none': 'この部位に合う色は、収録の色にはありません。',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

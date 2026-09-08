@@ -47,6 +47,8 @@ import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { Combinations } from '../src/screens/Combinations';
+import { Wear } from '../src/screens/Wear';
+import type { PersonalProfile } from '@irodora/recommendation';
 import { combinationsFor } from '../src/combinations';
 import { Contemporary } from '../src/screens/Contemporary';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
@@ -242,6 +244,22 @@ const GENERATED_HEXES: readonly string[] = combinationsFor([
 ]).flatMap((c) =>
   c.companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).hex),
 );
+
+/**
+ * Somebody the engine has something to go on about (F-195).
+ *
+ * Confidence on all four axes, so `Wear` draws the blended figure and the four explanation
+ * lines. The subject WITHOUT this renders a different tree entirely — a different number under
+ * a different label, no factors at all, and a card saying which half is missing — which is why
+ * both are registered rather than one standing in for the other.
+ */
+const WEARER: PersonalProfile = {
+  lightness: { min: 0.4, max: 0.75 },
+  temperatureBias: 0.3,
+  chroma: { min: 0.02, max: 0.14 },
+  contrast: 'high',
+  confidence: { temperature: 0.8, lightness: 0.8, chroma: 0.7, contrast: 0.6 },
+};
 
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
@@ -904,6 +922,55 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) => draw(<Combinations slug="no-such-colour" />, theme),
+  },
+  {
+    /*
+     * WEAR IT, WITH A PROFILE (F-195). The blended figure, and the four explanation lines the
+     * engine returns for every candidate.
+     *
+     * `static` like the rest: its interactive parts are Card, ChoiceGroup, Button and Swatch,
+     * each registered in packages/ui where the suite makes them render their states.
+     */
+    name: 'screens/Wear',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(<Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} />, theme),
+  },
+  {
+    /*
+     * WEAR IT, WITH NO PROFILE — the branch criterion 3 is entirely about, and a genuinely
+     * different tree: the pairing figure under a different label, NO explanation lines, and a
+     * card naming the half that is missing with the way to fix it. A subject that rendered
+     * only the profiled branch would leave all of that measured by nothing.
+     */
+    name: 'screens/Wear (no profile)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wear
+          slug={BOTH_COST_BRANCHES.entry.slug}
+          profile={null}
+          onBuildProfile={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * A SLOT THAT IS NOT THE DEFAULT. `trouser` asks the engine for tops and shoes instead, so
+     * this renders two slot headings the subjects above never draw — and proves the control
+     * changes the answer rather than only the label.
+     */
+    name: 'screens/Wear (trouser)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} initialSlot="trouser" />,
+        theme,
+      ),
   },
   {
     name: 'screens/Compare',

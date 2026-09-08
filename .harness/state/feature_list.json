@@ -6265,7 +6265,7 @@
         "contrast",
         "build"
       ],
-      "plan": ".harness/plans/F-194-the-harmony-engine-reaches-the-product.md"
+      "plan": "plans/F-194-the-harmony-engine-reaches-the-product.md"
     },
     {
       "id": "F-195",
@@ -6277,7 +6277,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-194"
       ],
@@ -6296,7 +6296,8 @@
         "contrast",
         "build"
       ],
-      "notes": "recommendForSlot and recommendOutfit have been exported and called by nothing since F-030. This is the surface they never had."
+      "notes": "recommendForSlot and recommendOutfit have been exported and called by nothing since F-030. This is the surface they never had.",
+      "plan": "plans/F-195-wear-it-a-colour-becomes-a-top.md"
     },
     {
       "id": "F-196",
@@ -6662,6 +6663,35 @@
         "content"
       ],
       "notes": "FOUND IN F-194, RECORDED RATHER THAN CLOSED IN PASSING. A harmony companion is not a capture, not a published reference and not a hex somebody typed — it is a coordinate the engine computed. F-194 files it as `declared`, which is what this app already does for a computed colour, so there is ONE answer rather than two. But `declared` means a human asserted it, and an engine asserting something is a different claim. Changing the union is ADR-0005's territory and touches every package that carries provenance, which is precisely why it is not a side effect of building a screen."
+    },
+    {
+      "id": "F-208",
+      "title": "The alternatives are computed on every ranking and shown nowhere",
+      "requirements": [
+        "FR-38"
+      ],
+      "service": "mobile",
+      "release": "R8",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-195"
+      ],
+      "acceptance": [
+        "Each ranking offers its alternatives, every one labelled with the axis it moves along",
+        "An axis with no candidate stays omitted — the engine already refuses to fill it, and the screen must not invent one",
+        "The four axis names exist in both catalogues, pinned in both directions like the other engine-emitted keys"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "FOUND IN F-195, FILED RATHER THAN ABSORBED. `alternativesFor` runs inside every `recommendForSlot` call, so F-195 computes warmer/cooler/lighter/higher-contrast alternatives for every slot and discards them — which is the exact defect this release exists to fix, one field along. It was NOT added to F-195 because FR-38 is a different requirement from the two F-195 carries, and widening a claimed feature to cover work its criteria never asked for is how scope stops meaning anything. The cost of waiting is a few discarded objects per render; the cost of absorbing it is a feature nobody can tell was finished."
     }
   ]
 }
