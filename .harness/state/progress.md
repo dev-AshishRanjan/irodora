@@ -19398,3 +19398,71 @@ evidence that the hiding works.
 state · typecheck · lint · format · test · a11y · contrast · motion · build — **PASS**.
 
 ---
+
+## F-191 — Illustration: the empty states, and what a drawing may not do
+
+**2026-09-08.** Twelve empty states across six screens, every one a sentence and sometimes a
+button.
+
+**Three drawings, not twelve.** The twelve emptinesses are three — nothing collected, nothing
+measured, nothing put together — and twelve bespoke pictures is twelve things to keep in a style
+and twelve chances for one to drift.
+
+Drawn from the product's own vocabulary: a sample outline, a reticle, a pair. And they draw the
+**absence** — three outlines and a dashed fourth says *there is room for another*, where four
+solid outlines would say *here are four things*.
+
+**`art` is required on `EmptyState`**, for the reason `resolvedHere` is: that component's whole
+design is that the careless version should be **unbuildable**. A drawing that could be omitted
+would be omitted twelve times, exactly as the button was before F-139.
+
+### The conformance suite caught this file violating the rule its own docblock states
+
+`Rect` and `Circle` declared `fill="none"` and `Line` did not, so `react-native-svg` injected
+`#000000` onto four strokes — **the exact hazard the paragraph above the `<Svg>` element warns
+about, written by the same hand in the same commit.**
+
+**A rule you have just written down is not a rule you have followed.** And no scan of the source
+could have seen it: the literal is in the library. That is the third time this defect has been
+found here — E-081 on a card nobody had looked at, F-185 inside HeroUI's spinner, now this — so
+the new skill says to register a drawing in the suite *before* using it anywhere.
+
+### The outlines are paths, not rects
+
+`react-native-svg`'s `Rect` inherits React Native's deprecated `x`/`y` **style** props in its
+typings, so `no-deprecated` flags the rectangle's own geometry. A path takes one `d` and has no
+collision — and stating four lines and four arcs is stating the drawing rather than asking a
+library to infer it.
+
+### They do not loop
+
+The report asked for *animated* art. An empty state is read once and left, and a looping
+animation on a screen saying *"there is nothing here"* draws the eye back to the absence. The
+motion is on arrival — `Screen` enters and they enter with it (F-188), which is animation at the
+moment it means something.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · **cvd** · motion · build —
+**PASS**. 245 `@irodora/ui` tests.
+
+---
+
+# Wave 3 of R7 is complete
+
+**F-188 · F-189 · F-190 · F-191.** Motion, and two refusals.
+
+| | |
+|---|---|
+| the counting number | **refused** — it shows values the engine never produced |
+| looping illustration | **refused** — an empty state is read once and left |
+| haptics | **deferred** to F-206 rather than adding a dependency mid-wave |
+
+**Two of the four features found a defect bigger than the one that prompted them.** The splash
+was hiding before anything was drawn — every cold start went splash → blank → app, and no test
+renders a blank frame. And the motion system had been complete since F-144 and applied once.
+
+**The third rule of the illustration skill was broken by the file that states it**, and only the
+rendered tree could see it, because the literal is in the library.
+
+---

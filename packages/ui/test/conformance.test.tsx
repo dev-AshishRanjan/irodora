@@ -22,6 +22,7 @@ import {
   ChoiceGroup,
   Dialog,
   EmptyState,
+  Illustration,
   Mark,
   NavIcon,
   NAV_ICON_NAMES,
@@ -176,12 +177,14 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <>
+          {/* Two DIFFERENT drawings, so the subject does not check one name twice (F-191). */}
           <EmptyState
+            art="swatches"
             message="Nothing here yet"
             hint="Add a garment and it appears here."
             action={{ label: 'Add a garment', onPress: () => undefined }}
           />
-          <EmptyState message="No colour matches these filters." resolvedHere />
+          <EmptyState art="pairing" message="No colour matches these filters." resolvedHere />
         </>,
         theme,
       ),
@@ -400,6 +403,28 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         />,
         theme,
       ),
+  },
+  {
+    /*
+     * ALL THREE DRAWINGS, IN BOTH THEMES (F-191).
+     *
+     * One subject per name rather than one for the component: the three are separate SVGs and a
+     * subject that rendered only `swatches` would leave two of them outside every contrast run.
+     * They are `static` because an illustration has one state — it is a picture.
+     */
+    name: 'Illustration (nothing collected)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Illustration name="swatches" />, theme),
+  },
+  {
+    name: 'Illustration (nothing measured)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Illustration name="reading" />, theme),
+  },
+  {
+    name: 'Illustration (nothing paired)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Illustration name="pairing" />, theme),
   },
   {
     /*

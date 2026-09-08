@@ -320,12 +320,24 @@ describe('an empty state has to say where its action lives (F-139)', () => {
     const both = (
       // @ts-expect-error — both members at once, which claims the action is here AND elsewhere.
       <EmptyState
+        art="swatches"
         message="Nothing here yet"
         resolvedHere
         action={{ label: 'Add a garment', onPress: () => undefined }}
       />
     );
     expect(both).toBeTruthy();
+  });
+
+  it('refuses one with no drawing (F-191)', () => {
+    /*
+     * The same argument as the resolution union, one prop along: a drawing that COULD be omitted
+     * would be omitted, twelve times, exactly as the button was before F-139. Three names cover
+     * all twelve empty states, so choosing is a second's work and forgetting is impossible.
+     */
+    // @ts-expect-error — no `art`.
+    const undrawn = <EmptyState message="Nothing here yet" resolvedHere />;
+    expect(undrawn).toBeTruthy();
   });
 
   it('accepts each form on its own — the decoy for the two refusals above', () => {
@@ -335,12 +347,15 @@ describe('an empty state has to say where its action lives (F-139)', () => {
      */
     const elsewhere = (
       <EmptyState
+        art="swatches"
         message="Nothing here yet"
         hint="Add a garment and it appears here."
         action={{ label: 'Add a garment', onPress: () => undefined }}
       />
     );
-    const here = <EmptyState message="No colour matches these filters." resolvedHere />;
+    const here = (
+      <EmptyState art="swatches" message="No colour matches these filters." resolvedHere />
+    );
 
     expect(elsewhere).toBeTruthy();
     expect(here).toBeTruthy();

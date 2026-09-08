@@ -354,6 +354,7 @@ export function Preferences({
           */}
           {onBuildOutfit === undefined ? (
             <EmptyState
+              art="pairing"
               message={t('preferences.empty')}
               hint={t('preferences.emptyHint')}
               script={script}
@@ -361,6 +362,7 @@ export function Preferences({
             />
           ) : (
             <EmptyState
+              art="pairing"
               message={t('preferences.empty')}
               hint={t('preferences.emptyHint')}
               script={script}

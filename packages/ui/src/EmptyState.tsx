@@ -49,6 +49,7 @@
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { Button } from './Button.js';
+import { Illustration, type IllustrationName } from './Illustration.js';
 // `TextProps` is generic over its size, and this only forwards `script` — so the prop's type is
 // taken from a concrete instantiation rather than by making this component generic too.
 import { Text, type TextProps } from './Text.js';
@@ -75,6 +76,19 @@ type Resolution =
 export type EmptyStateProps = {
   /** What is empty. One sentence, in the person's language. */
   readonly message: string;
+  /**
+   * The drawing, keyed by what is missing (F-191).
+   *
+   * **Required, and for the reason `resolvedHere` is.** This component's whole design is that
+   * the careless version should be *unbuildable* rather than merely discouraged — that is what
+   * the resolution union does, and a drawing that could be omitted would be omitted, twelve
+   * times, exactly as the button was before F-139.
+   *
+   * There are three names for twelve empty states, because the twelve emptinesses are three:
+   * nothing collected, nothing measured, nothing put together. Choosing among three is a
+   * decision somebody can make correctly in a second; inventing a twelfth picture is not.
+   */
+  readonly art: IllustrationName;
   /** Why it is empty, or what would fill it. Optional — some emptiness explains itself. */
   readonly hint?: string;
   /** Passed through to `Text`, so Japanese gets the bundled face rather than tofu. */
@@ -88,10 +102,20 @@ export function EmptyState(props: EmptyStateProps): React.JSX.Element {
    * present-and-undefined — so passing it straight through would not compile. `latin` matches
    * `Text`'s own default, so a caller that omits it gets what it would have got anyway.
    */
-  const { message, hint, script = 'latin' } = props;
+  const { message, hint, art, script = 'latin' } = props;
 
   return (
     <View style={{ gap: nativeSpacing.sm }}>
+      {/*
+        THE DRAWING LEADS, AND CARRIES NOTHING (F-191).
+
+        Above the sentence because an empty state is read top to bottom and the picture is the
+        thing that says "this is a state, not a failure" before any words are read. It is
+        `accessibilityElementsHidden` and says nothing a screen reader needs — the message below
+        is the entire content, which is the third illustration rule and golden rule 13 read
+        strictly.
+      */}
+      <Illustration name={art} />
       <Text size="body" color="foreground" script={script}>
         {message}
       </Text>

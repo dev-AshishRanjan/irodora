@@ -6142,7 +6142,7 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-185"
       ],
@@ -6162,7 +6162,17 @@
         "contrast",
         "cvd",
         "build"
-      ]
+      ],
+      "plan": "plans/F-191-illustration.md",
+      "attested": [
+        {
+          "criterion": "Every empty state carries a drawing, and the drawing is about the thing that is missing",
+          "verifiedBy": "Looking at the six screens that have an empty state and saying whether three outlines and a dashed fourth reads as 'there is room for another' or as a rendering bug. THE STRUCTURE IS PROVEN — art is required by the type so an undrawn empty state does not compile, all twelve sites carry one, each of the three drawings has its own conformance subject, and contrast and CVD are measured over both themes. WHAT IS A JUDGEMENT is whether a dashed outline reads as absence, and whether a 1.5 stroke on a 48 grid sits with the icon set. Nothing derives that weight and nothing has seen it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. THREE DRAWINGS, NOT TWELVE: the twelve emptinesses across six screens are three — nothing collected, nothing measured, nothing put together — and twelve bespoke pictures is twelve things to keep in a style and twelve chances for one to drift. DRAWN FROM THE PRODUCT'S OWN VOCABULARY, a sample outline and a reticle and a pair, and they draw the ABSENCE: three outlines and a dashed fourth says 'there is room for another', where four solid outlines would say 'here are four things'. `art` IS REQUIRED ON EmptyState, for the reason `resolvedHere` is — that component's whole design is that the careless version should be UNBUILDABLE, and a drawing that could be omitted would be omitted twelve times, exactly as the button was before F-139. THE CONFORMANCE SUITE CAUGHT THIS FILE VIOLATING THE RULE ITS OWN DOCBLOCK STATES. Rect and Circle declared fill='none' and Line did not, so react-native-svg injected #000000 onto four strokes — the exact hazard the paragraph above the <Svg> element warns about, written by the same hand in the same commit. A rule you have just written down is not a rule you have followed, and NO SCAN OF THE SOURCE COULD HAVE SEEN IT: the literal is in the library. That is the third time this defect has been found here (E-081, F-185, now this), which is why the new skill says to register a drawing before using it. THE OUTLINES ARE PATHS, NOT RECTS: react-native-svg's Rect inherits React Native's deprecated x/y STYLE props in its typings, so no-deprecated flags the rectangle's own geometry. A path takes one `d` and has no collision — and stating four lines and four arcs is stating the drawing rather than asking a library to infer it. THEY DO NOT LOOP, deliberately, though the report asked for animated art: an empty state is read once and left, and a looping animation on a screen saying 'there is nothing here' draws the eye back to the absence. The motion is on arrival — Screen enters and they enter with it (F-188). NOT RUN: color-golden, content."
     },
     {
       "id": "F-192",

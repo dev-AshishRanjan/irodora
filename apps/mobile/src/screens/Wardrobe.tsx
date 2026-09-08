@@ -802,6 +802,7 @@ export function Wardrobe({
         */
         onAddGarment === undefined ? (
           <EmptyState
+            art="swatches"
             message={t('browse.empty')}
             hint={t('browse.emptyHint')}
             script={script}
@@ -809,6 +810,7 @@ export function Wardrobe({
           />
         ) : (
           <EmptyState
+            art="swatches"
             message={t('browse.empty')}
             hint={t('browse.emptyHint')}
             script={script}
@@ -828,6 +830,7 @@ export function Wardrobe({
           somebody to buy a coat they already own.
         */
         <EmptyState
+          art="swatches"
           message={t('browse.filterNone')}
           hint={t('browse.filterNoneHint')}
           script={script}
