@@ -44,6 +44,7 @@ import {
   swatchAccessibleName,
   Text,
   TextField,
+  useConfirm,
 } from '@irodora/ui';
 import { uuidv7, ingestImage, ImageRejected } from '@irodora/store';
 import {
@@ -118,7 +119,15 @@ export function AddGarment({
       ? EMPTY_DRAFT
       : { ...EMPTY_DRAFT, colour: { kind: 'reading', reading: offered } },
   );
-  const [saved, setSaved] = useState(false);
+  /*
+   * THE saved FLAG IS GONE (F-185), and removing it was not a lint fix.
+   *
+   * It gated a <Text> under the form, and the two setSaved(false) calls existed to clear that
+   * Text when somebody started editing again. A toast times out on its own, so the flag lost
+   * its only reader and the resets had nothing left to reset — a piece of state written three
+   * times and read never, which is the shape this release has been finding everywhere else.
+   */
+  const { confirm } = useConfirm();
   const [imageProblem, setImageProblem] = useState(initialImageProblem);
   const [count, setCount] = useState(() => store.listGarments().length);
   /*
@@ -179,9 +188,21 @@ export function AddGarment({
     setDraft(EMPTY_DRAFT);
     setAmountText('');
     setCurrencyText('');
-    setSaved(true);
+    /*
+     * THE CONFIRMATION IS A CONFIRMATION NOW (F-185).
+     *
+     * It was a `<Text>` that appeared under the form: it shifted everything below it, it stayed
+     * until something else cleared it, and — because the form resets on save — it appeared next
+     * to empty fields, where it reads as an instruction rather than as a result.
+     *
+     * A toast is over the page, times out, can be swiped away, and is announced as a live
+     * region. The copy is already past tense, which is the half `Confirmation` requires.
+     */
+    confirm({ message: t('wardrobe.saved') });
     setCount(store.listGarments().length);
-  }, [draft, money, store]);
+    // `confirm` and `t` are stable for the life of the screen; they are listed because the
+    // list is the honest description of what this callback reads.
+  }, [draft, money, store, confirm, t]);
 
   const swatch = draft.colour;
 
@@ -193,7 +214,6 @@ export function AddGarment({
         value={draft.type}
         onChangeText={(type) => {
           setDraft((d) => ({ ...d, type }));
-          setSaved(false);
         }}
         script={script}
       />
@@ -233,7 +253,6 @@ export function AddGarment({
               )}
               onPress={() => {
                 setDraft((d) => ({ ...d, colour: { kind: 'corpus', slug: entry.entry.slug } }));
-                setSaved(false);
               }}
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
             >
@@ -358,11 +377,6 @@ export function AddGarment({
           {t(PROBLEM_KEYS[problem])}
         </Text>
       )}
-      {saved ? (
-        <Text size="body" color="foreground.2" script={script}>
-          {t('wardrobe.saved')}
-        </Text>
-      ) : null}
 
       <Text size="body" color="foreground.2" numeric script={script}>
         {`${t('wardrobe.count')}: ${String(count)}`}

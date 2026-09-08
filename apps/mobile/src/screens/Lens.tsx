@@ -67,6 +67,7 @@ import {
   Row,
   Screen,
   Sheet,
+  Skeleton,
   Stack,
   Surface,
   Swatch,
@@ -295,6 +296,15 @@ const MODE_KEYS: Readonly<
   still: { label: 'lens.mode.still', hint: 'lens.mode.stillHint' },
   live: { label: 'lens.mode.live', hint: 'lens.mode.liveHint' },
 };
+
+/**
+ * The size the reading's own swatch is drawn at, and therefore the height of the placeholder
+ * that stands in for it while a capture is in flight (F-185).
+ *
+ * Named rather than written twice: a skeleton whose height drifts from its subject's is a grey
+ * box that reintroduces the very jump it was added to remove.
+ */
+const LENS_SAMPLE = 56;
 
 export interface LensProps {
   /**
@@ -611,6 +621,22 @@ export function Lens({
           />
 
           {/*
+            THE SHAPE OF WHAT IS COMING (F-185).
+
+            While a capture is in flight this screen rendered NOTHING where the reading will be —
+            the button said "Reading…" and everything below it was blank. A screen that renders
+            nothing while it works is indistinguishable from one that finished and found nothing,
+            which is the confusion an empty state exists to prevent.
+
+            The height is the swatch's, so the result does not jump into place: a placeholder
+            that is not the size of the thing it stands in for is a grey box that reintroduces
+            the flicker it was added to remove.
+          */}
+          {awaiting ? (
+            <Skeleton height={LENS_SAMPLE} label={t('lens.capturing')} testID="lens-awaiting" />
+          ) : null}
+
+          {/*
             FR-40'S FOURTH PATH, and it is a control rather than a mode.
 
             Beside the shutter rather than among the chips: the chips choose how the CAMERA
@@ -879,7 +905,7 @@ export function Lens({
                     script={script}
                     hex={display.hex}
                     color={display.color}
-                    size={56}
+                    size={LENS_SAMPLE}
                   />
                   <View style={{ gap: nativeSpacing.xs, flexShrink: 1 }}>
                     <Text size="body" color="foreground" numeric selectable>

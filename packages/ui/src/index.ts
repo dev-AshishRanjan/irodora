@@ -44,6 +44,13 @@ export {
   type SelectionTone,
 } from './selection.js';
 export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState.js';
+export {
+  Skeleton,
+  useConfirm,
+  type Confirmation,
+  type ConfirmKind,
+  type SkeletonProps,
+} from './feedback.js';
 export { SearchField, type SearchFieldProps } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';
 export {

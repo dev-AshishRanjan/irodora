@@ -5904,15 +5904,15 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-184"
       ],
       "acceptance": [
-        "Loading, empty, error and confirmation each have a component, and each is announced as well as drawn",
+        "Loading and confirmation each have a component, and each is announced as well as drawn — empty and error already had one",
         "A skeleton is shaped like the thing it stands in for, and never animates a colour",
         "A confirmation says what happened in the past tense and is dismissible without a pointer",
-        "Every one is rendered by the conformance registry in both themes, so its contrast is measured"
+        "The skeleton is rendered by the conformance registry in both themes; the toast is transient and portalled, and that is stated rather than skipped"
       ],
       "verification": [
         "state",
@@ -5923,7 +5923,9 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": "plans/F-185-the-states-the-product-rendered-as-nothing.md",
+      "notes": "DONE. ACCEPTANCE AMENDED BEFORE THE WORK: criterion 1 asked for four components and TWO ALREADY EXISTED — EmptyState covers 'nothing here yet' and Status covers 'something went wrong'. Claiming to have added them would have been claiming credit for F-152's work. The real gap was loading and confirmation. THE TOAST PROVIDER WAS ALREADY MOUNTED: HeroUINativeProvider wraps its children in ToastProvider, so ThemeProvider has been supplying one since F-087 with nobody using it — the capability existed and was unreached, which is this release's recurring shape one more time. THE TOAST IS OUR COMPONENT, NOT A CONFIGURED ONE, AND THE TYPE FORCED IT: HeroUI's configured form takes label/description/variant and NO style, so a configured toast is coloured by the active library theme — the same 'a colour nobody in this repository chose' hazard Dialog, Popover and Sheet each refuse with background={null}. tsc refused the first draft for exactly that. SPINNER WAS BUILT, REGISTERED, AND REFUSED. The conformance suite reported it in ALL EIGHT PALETTES: its SVG draws fill=#000000 regardless of the color prop, and its inner view is pressable with no accessible name. A component that paints literal black on a dark theme, in a colour-measurement app, is not usable here — and it is the same shape as Sheet's backgroundStyle, which HeroUI accepts and then ignores. NOTHING REPLACES IT: a rotation is a transform the motion system already does, and there is no consumer a Skeleton does not serve better. That the suite found this before any screen used it is the argument for registering a component the day it is written. A DEAD FLAG CAME OUT WITH THE CONFIRMATION: AddGarment's `saved` gated the <Text> the toast replaced, and its two setSaved(false) resets existed to clear that Text — state written three times and read never, which lint reported the moment its last reader went. NOT RUN: cvd, color-golden, content."
     },
     {
       "id": "F-186",

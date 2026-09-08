@@ -32,6 +32,7 @@ import {
   Screen,
   SearchField,
   Section,
+  Skeleton,
   SELECTION_EDGE,
   selectionStyle,
   selectionTone,
@@ -366,6 +367,18 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         </Surface>,
         theme,
       ),
+  },
+  {
+    /*
+     * THE LOADING STATE THIS PRODUCT RENDERED AS NOTHING (F-185).
+     *
+     * `static`: a skeleton has one state by definition — it IS the state. What the suite checks
+     * is that it announces itself, which is the half a shimmer cannot carry and the half that is
+     * usually missing.
+     */
+    name: 'Skeleton',
+    kind: 'static',
+    render: (_state, theme) => draw(<Skeleton height={72} label="Loading the colour" />, theme),
   },
   {
     /*

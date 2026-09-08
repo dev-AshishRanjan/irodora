@@ -19102,3 +19102,53 @@ to 35/30/25/25 to raise the floor, and this is the **first surface in the produc
 level-2 step**. If it does not read, the ramp is what to revisit — not the card.
 
 ---
+
+## F-185 — The states the product rendered as nothing
+
+**2026-09-08.** Between *nothing here yet* (`EmptyState`) and *something went wrong* (`Status`)
+the product filled a gap with prose: a button label that changed to `"Reading…"`, a `<Text>` that
+appeared saying `"Saved"`, and — while a screen computed — **nothing at all**.
+
+**Criterion 1 was amended before the work.** It asked for four components and two already
+existed. Claiming to have added them would have been claiming credit for F-152's work.
+
+### The toast provider was already mounted
+
+`HeroUINativeProvider` wraps its children in `ToastProvider`, so `ThemeProvider` has been
+supplying one since F-087 with nobody using it. **The capability existed and was unreached** —
+this release's recurring shape, one more time.
+
+### The type forced the right answer on the toast
+
+HeroUI's configured form takes `label`/`description`/`variant` and **no `style`**, so a
+configured toast is coloured by the active library theme — the same *"a colour nobody in this
+repository chose"* hazard `Dialog`, `Popover` and `Sheet` each refuse with `background={null}`.
+`tsc` refused the first draft for exactly that, and the custom form takes a render function, so
+the ground, the edge and the text all come from declared tokens.
+
+### Spinner was built, registered, and refused
+
+The conformance suite reported it **in all eight palettes**: its SVG draws `fill = #000000`
+regardless of the `color` prop, and its inner view is pressable with no accessible name. A
+component painting literal black on a dark theme, in a colour-measurement app, is not usable
+here — and it is the same shape as `Sheet`'s `backgroundStyle`, which HeroUI accepts and ignores.
+
+**Nothing replaces it, deliberately.** A rotation is a transform the motion system already does,
+and there is no consumer a `Skeleton` does not serve better. *No wrapper without a consumer* —
+and the same is true of something hand-rolled.
+
+**That the suite found this before any screen used it is the argument for registering a
+component the day it is written rather than the day it ships.**
+
+### A dead flag came out with the confirmation
+
+`AddGarment`'s `saved` gated the `<Text>` the toast replaced, and its two `setSaved(false)`
+resets existed to clear that Text. State written three times and read never — reported by lint
+the moment its last reader went.
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · motion · build — **PASS**. 230
+`@irodora/ui` tests.
+
+---
