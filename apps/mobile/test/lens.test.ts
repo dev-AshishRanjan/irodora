@@ -454,8 +454,15 @@ describe('every reading destination has a producer in shipped source', () => {
   it('wires each offer to the screen, so the producer can be reached', () => {
     const camera = readFileSync(join(process.cwd(), 'src', 'lens', 'CameraLens.tsx'), 'utf8');
 
-    expect(camera).toContain('onUseForProfile={useForProfile}');
-    expect(camera).toContain('onUseForWardrobe={useForWardrobe}');
+    /*
+     * THE HANDLERS MOVED IN F-178 and this assertion moved with them. They were four
+     * independent callbacks in `CameraLens`, none of which closed the result panel before
+     * navigating; they are now rows in `exits.ts`, where closing it is not something a row
+     * does. The seam this checks is unchanged — a producer nobody can trigger is still as dead
+     * as a destination nobody offers to.
+     */
+    expect(camera).toContain('onUseForProfile={exits.useForProfile}');
+    expect(camera).toContain('onUseForWardrobe={exits.useForWardrobe}');
   });
 
   it('and the screen declares the props it is handed', () => {

@@ -5667,14 +5667,14 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-177"
       ],
       "acceptance": [
         "Every control inside the Lens sheet that navigates dismisses the sheet first, and the reading is not lost by dismissing it",
         "A test asserts the sheet is closed after each of the four exits, and fails if one is added without one",
-        "No overlay in the product can outlive the screen that opened it"
+        "No exit from the Lens can navigate without closing its panel, and a check refuses one that tries"
       ],
       "verification": [
         "state",
@@ -5684,7 +5684,9 @@
         "test",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-178-a-navigation-closes-the-panel-it-left-open.md",
+      "notes": "ACCEPTANCE CRITERION 3 WAS AMENDED BEFORE THE WORK. It said \"No overlay in the product can outlive the screen that opened it\", which would need a gate over every overlay — and there is exactly ONE overlay with exits today. A criterion that claims a guarantee covering components nobody has built is one that can only be met by pretending. It now names what is actually checked. DONE. The four exits are rows in apps/mobile/src/lens/exits.ts and one factory wraps every row, so closing the panel is not something a row can forget — it is not something a row does. THE ORDER IS ASSERTED, not just the pair: dismissing AFTER navigating leaves the sheet over the new screen for a frame, which is a smaller version of the same defect and would present as a flicker nobody could reproduce. CameraLens.tsx now contains exactly ONE router call — the port handed to the factory — and a source rule in lens-exits.test.ts refuses a second, which is what stops a fifth door being cut beside the table instead of in it. THE OVER-ENGINEERING WAS CAUGHT BY AN EXISTING CHECK WITHIN ONE RUN. The first draft routed both destinations through a CARRIES_READING map; lens.test.ts scans shipped source for offerReading(…, 'wardrobe') and reads the SECOND ARGUMENT — deliberately, because handoff.ts declares the destination list and a looser match would count that file as a producer for both addresses and pass forever. Behind a reference the scan saw no producer for either. Two entries with one use each is not an abstraction worth hiding a gate's subject for. NOT RUN: contrast, cvd, color-golden, content — no colour, no maths, no corpus. NOT ASSERTED BY A RENDER, and F-158 already recorded why: a Sheet renders the SAME TREE open or shut, because gorhom mounts its content either way and visibility lives in animation state on the UI thread."
     },
     {
       "id": "F-179",

@@ -44,7 +44,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { router } from 'expo-router';
 import { Lens } from '../screens/Lens';
 import { Viewfinder, useLensPermission } from './viewfinder';
-import { offerReading } from './handoff';
+import { lensExits } from './exits';
 import {
   CAPTURE_IDLE,
   CAPTURE_TIMEOUT_MS,
@@ -215,33 +215,28 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
   }, [capture.awaiting]);
 
   /**
-   * Hand the reading over and go to profile setup.
+   * EVERY WAY OUT OF THE LENS, AND EACH OF THEM CLOSES THE PANEL FIRST (F-178).
    *
-   * `offerReading` leaves it in a one-shot slot rather than a route parameter — see
-   * `handoff.ts` for why a URL is the wrong place for it and why the offer is consumed rather
-   * than left standing.
+   * This file used to hold four independent handlers that navigated, and **not one of them
+   * cleared the capture** — so the sheet, which is open exactly while `held !== null` and is
+   * portalled, stayed mounted over whatever the router pushed. Reported as *"it redirects to
+   * another page, but the bottom sheet is still open as fullscreen"*.
+   *
+   * Correcting four call sites would have worked today and not survived the fifth. The rule now
+   * lives in `exits.ts`, where an exit is a ROW and closing the panel is not something a row
+   * does. `lens-exits.test.ts` refuses a `router.push` anywhere in this file, which is what
+   * stops a fifth door being cut beside the table instead of in it.
    */
-  const useForProfile = useCallback((taken: LensReading) => {
-    offerReading(taken, 'profile');
-    router.push('/profile');
-  }, []);
-
-  /**
-   * Hand the reading to the wardrobe and go to the add screen (F-125).
-   *
-   * **This is the call that did not exist.** `READING_DESTINATIONS` has had `'wardrobe'` since
-   * F-043 and `app/wardrobe/add.tsx` has been reading that address ever since, so
-   * `AddGarment`'s "use the Lens reading" control was unreachable on a device — a consumer with
-   * no producer, invisible because every test supplied the reading itself.
-   *
-   * Addressed to `'wardrobe'`, which is the whole of E-042: an unaddressed offer would be eaten
-   * by profile setup if the person passed through it on the way, and neither screen could tell
-   * that from nobody having scanned.
-   */
-  const useForWardrobe = useCallback((taken: LensReading) => {
-    offerReading(taken, 'wardrobe');
-    router.push('/wardrobe/add');
-  }, []);
+  const exits = useMemo(
+    () =>
+      lensExits({
+        dismiss: onDismiss,
+        navigate: (href) => {
+          router.push(href);
+        },
+      }),
+    [onDismiss],
+  );
 
   /*
    * MEMOISED ON THE DEMAND, and it pairs with `memo(ViewfinderView)`.
@@ -286,16 +281,12 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
       onUseCamera={onUseCamera}
       onPoint={onPoint}
       onDismiss={onDismiss}
-      onUseForProfile={useForProfile}
-      onUseForWardrobe={useForWardrobe}
+      onUseForProfile={exits.useForProfile}
+      onUseForWardrobe={exits.useForWardrobe}
       // F-155 criterion 5: a reading leads to the contemporary colours of its nearest entry, on
       // their own screen. The Lens stays decluttered; this is a way OUT of it.
-      onOpenContemporary={(slug) => {
-        router.push(`/atlas/nearby/${slug}`);
-      }}
-      onOpenColour={(slug) => {
-        router.push(`/atlas/${slug}`);
-      }}
+      onOpenContemporary={exits.openContemporary}
+      onOpenColour={exits.openColour}
     />
   );
 }

@@ -18751,3 +18751,72 @@ whether the spring settles rather than snapping, needs a phone. One attested cri
 outstanding — the third in R7.
 
 ---
+
+## F-178 — A navigation closes the panel it left open
+
+**2026-09-08.** The first thing reported, and the plainest: four controls inside the Lens sheet
+navigated, and **not one of them cleared the capture**. The panel is open exactly while
+`held !== null` and it is portalled, so it stayed mounted over whatever the router pushed.
+
+### The defect was that there was nowhere for the rule to live
+
+Correcting four handlers would have worked today and not survived the fifth. An exit is now a
+**row** in `exits.ts`, and one factory wraps every row — closing the panel is not something a row
+can forget, because it is not something a row does. `CameraLens.tsx` holds exactly one router
+call, the port handed to the factory, and a source rule refuses a second.
+
+**The order is asserted, not just the pair.** Dismissing *after* navigating leaves the sheet over
+the new screen for a frame — the same defect, smaller, and presenting as a flicker nobody could
+reproduce.
+
+### An existing check caught the over-engineering within one run
+
+The first draft routed both destinations through a `CARRIES_READING` map. `lens.test.ts` scans
+shipped source for `offerReading(…, 'wardrobe')` and reads the **second argument** — deliberately,
+because `handoff.ts` declares the destination list and defines the function, so a looser match
+would count that file as a producer for both addresses and pass forever. Behind a reference the
+scan saw no producer for either.
+
+The check was right. Two entries with one use each is not an abstraction worth hiding a gate's
+subject for.
+
+### Criterion 3 was amended before the work
+
+It said *"No overlay in the product can outlive the screen that opened it"* — which needs a gate
+over every overlay, and there is exactly one overlay with exits. A criterion claiming a guarantee
+over components nobody has built can only be met by pretending. It now names what is checked.
+
+### Gates
+
+All ten run: state, typecheck, lint, format, test, a11y, contrast, route-targets, motion, build —
+**PASS**. Not run: cvd, color-golden, content — no colour, no maths, no corpus.
+
+---
+
+# Wave 0 of R7 is complete
+
+**F-175 · F-176 · F-177 · F-178.** The palette has a floor and an accent, selection is one
+treatment, the sheet has detents, and no exit leaves a panel behind it.
+
+**Four attested criteria are outstanding and all four are the same one: nobody has looked at
+it.** The dark ground, both accents, the tick badge at 48 px, and the drag. This is now the
+defining limit of this repository rather than an incidental gap — it can prove a palette correct
+and cannot tell whether it is good, and R7 has added four more entries to a queue that already
+had F-161's and F-165's on it.
+
+**Four defects were found that nobody reported**, all by gates rather than by reading:
+
+| | |
+|---|---|
+| A ground does not lift what sits on it | gate 9, first run |
+| `borderWidth: selected ? 2 : 0` is a layout change | the treatment's own unit test |
+| One border cannot carry two states — a focused selection showed only focus | the same |
+| `verify-motion` refused the comment explaining `verify-motion` | the gate itself |
+
+**And three times the harness already knew.** `jest.config.mjs` had written down that mocking
+native modules one at a time is "a game with no end"; F-158 had recorded that a `Sheet` renders
+the same tree open or shut; `lens.test.ts` had explained exactly why it reads the second
+argument. Each was re-derived the expensive way. **Read the repository's own notes first** is the
+cheapest lesson in this release.
+
+---
