@@ -128,7 +128,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-23 Bias testing | F-027, F-037 | test, review | R3 |
 | NFR-24 Boundary enforcement | F-001, F-002, F-072, F-073, F-183 | lint | R0 |
 | NFR-25 The design system reaches the product | F-140, F-143, F-144, F-175, F-184, F-187, F-188, F-189, F-202, F-203, F-204 | lint, a11y, contrast | R6 |
-| NFR-26 Every built capability is reachable | F-179, F-183, F-194 | state, test, lint | R7 |
+| NFR-26 Every built capability is reachable | F-179, F-183, F-194 | lint (`verify-reachability`, `verify-dead-exports`) | R7 |
 
 ---
 

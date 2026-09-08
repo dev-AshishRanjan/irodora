@@ -18820,3 +18820,46 @@ argument. Each was re-derived the expensive way. **Read the repository's own not
 cheapest lesson in this release.
 
 ---
+
+## F-179 — Every route has a way in, and a gate says so
+
+**2026-09-08.** *"Are you sure you have added all pages, and links."* No, and the gate now says
+so by name: **eight finished screens with routes that nothing reaches.** Each has a conformance
+subject, accessibility coverage and tests. None can be opened on a phone.
+
+The gate reports exactly the eight the audit found by reading — independently, from the route
+tree rather than from my notes.
+
+### Transitivity is not optional, and the data proved it
+
+`/atlas/palettes` **is** navigated to. From `/profile/export`, which is itself an orphan. A
+check asking merely *"does anything link to this"* would have passed it and reported seven where
+there are eight. The one case in front of us is the case that separates the two rules.
+
+### It over-approximates, which is failing open, and that is a choice
+
+A screen imported by two routes contributes its targets to both, so a route can be called
+reachable when only one importer can really get there. The honest alternative is a per-component
+call graph nothing else here needs. **Printed on every run** rather than left to be discovered.
+
+### Three corrections that came from reading the repository rather than assuming it
+
+**The plan said "added to `gates.json` and CI".** The convention is different: these scanners
+ride inside the `lint` gate — `verify-route-targets`, `verify-motion`, `verify-peer-deps` and
+eleven others all do. No gate id, no CI mirror change.
+
+**`targets()` walked directories only**, so attributing navigation one module at a time threw
+`ENOTDIR`. `walk()` accepts a file now — a smaller change than a second copy of the scanner.
+
+**`verify-route-targets` ran on import.** Nothing had noticed while nothing imported it. The
+harmless half was a duplicate report above the reachability one; the harmful half is that a
+module which runs when imported cannot be reused at all, so the next check needing the route
+model would have copied it — and two checks disagreeing about what a route is would each be
+right about their own model and wrong about the product.
+
+### Gates
+
+lint (which now carries it) · state · typecheck · format · test · both proofs — **PASS**.
+Not run: every colour and content gate. This feature paints nothing.
+
+---

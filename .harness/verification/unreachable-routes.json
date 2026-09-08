@@ -1,0 +1,48 @@
+{
+  "$comment": "Routes the app serves that no interaction reaches, each naming the feature that will reach it. `scripts/verify-reachability.mjs` fails on an orphan that is NOT listed here, AND on a listing that IS reachable or whose feature is already done — both directions, because a dead exemption is how a live one gets waved through later. Same shape and same reason as unreached-tokens.json (ADR-0088). THE WHOLE LIST PRINTS ON EVERY RUN: an exemption nobody reads is an exemption nobody weighs.",
+  "version": 1,
+  "updated": "2026-09-08",
+  "$readingComment": "This file is the answer to \"are you sure you have added all pages, and links\". Eight finished screens — each with a conformance subject, accessibility coverage and tests — that a person holding the phone could not open. If it grows without shrinking, that is the thing to notice.",
+  "unreachable": [
+    {
+      "url": "/atlas/compare",
+      "closedBy": "F-181",
+      "why": "FR-48's comparison of two colours, with every metric carrying its unit and the space it was computed in. Reachable from the Atlas once F-181 gives the Atlas its own affordances — and it should open carrying the colour a person came from, which is why this waits for a feature rather than for a link."
+    },
+    {
+      "url": "/atlas/find",
+      "closedBy": "F-181",
+      "why": "The finder. Same feature: the Atlas is the tab that owns searching, and it currently offers exactly one thing — a list."
+    },
+    {
+      "url": "/atlas/palettes",
+      "closedBy": "F-181",
+      "why": "THE TRANSITIVE CASE, and the reason this gate walks a graph rather than asking 'does anything link to this'. Something DOES link to it — `/profile/export` — but that route is itself an orphan, so the link leads from nowhere. A shallower check would have passed this and reported seven orphans where there are eight."
+    },
+    {
+      "url": "/profile/preferences",
+      "closedBy": "F-180",
+      "why": "What the app has learned about a person, in the numbers it learned it from (FR-37). It is also where the appearance choice lives, which makes it half of the reported defect: eight themes exist and nothing in the product can choose one."
+    },
+    {
+      "url": "/profile/measure",
+      "closedBy": "F-182",
+      "why": "The calibrated measurement path. The Profile tab opens straight into setup and offers nothing else."
+    },
+    {
+      "url": "/profile/export",
+      "closedBy": "F-182",
+      "why": "FR-58's export and deletion — the screen that makes the on-device privacy claim actionable rather than merely true. Being unreachable is worse here than elsewhere: a person cannot exercise a right they cannot find."
+    },
+    {
+      "url": "/wardrobe/outfit",
+      "closedBy": "F-182",
+      "why": "FR-33's outfit builder. The Wardrobe offers adding a garment and nothing to do with the garments once added."
+    },
+    {
+      "url": "/wardrobe/shopping",
+      "closedBy": "F-182",
+      "why": "FR-52's shopping check — three measurements about a garment somebody has not bought. F-199 later gives a colour combination a way into it, which only works if the screen can be opened at all."
+    }
+  ]
+}

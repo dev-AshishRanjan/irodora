@@ -44,7 +44,19 @@ const GREEN = '\x1b[32m',
   BOLD = '\x1b[1m',
   OFF = '\x1b[0m';
 
+/**
+ * Every source file under a path.
+ *
+ * **A single FILE is accepted as well as a directory**, so `targets([file])` works. That is what
+ * `verify-reachability.mjs` needs to attribute navigation to the route that can reach it — it
+ * walks one module at a time — and the alternative was a second copy of the target scanner,
+ * which is the thing this repository refuses on principle.
+ */
 function walk(dir, out = []) {
+  if (!statSync(dir).isDirectory()) {
+    if (/\.tsx?$/u.test(dir)) out.push(dir);
+    return out;
+  }
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) walk(path, out);
@@ -150,8 +162,23 @@ export function run(appDir = APP, dirs = SCAN) {
   return { problems, routes: patterns.length, checked: checked.length };
 }
 
-if (process.argv.includes('--prove')) prove();
-else main();
+/*
+ * ONLY WHEN THIS FILE IS THE ENTRY POINT.
+ *
+ * It ran on IMPORT before, which nothing noticed while nothing imported it. F-179's
+ * reachability gate is the converse of this one and reuses `routePatterns` and `targets`
+ * rather than re-deriving them — and importing them printed a full route-target report above
+ * the reachability report, on every run.
+ *
+ * That is the harmless half. The harmful half is that a module which RUNS when imported cannot
+ * be reused at all without its side effect, so the next check that needs the route model would
+ * have copied it instead — and two checks disagreeing about what a route is would each be right
+ * about their own model and wrong about the product.
+ */
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  if (process.argv.includes('--prove')) prove();
+  else main();
+}
 
 function main() {
   console.log(`\n${BOLD}Irodora — route targets${OFF}\n`);

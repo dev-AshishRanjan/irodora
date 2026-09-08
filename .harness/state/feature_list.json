@@ -5698,7 +5698,7 @@
       "service": "root",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "acceptance": [
         "A gate walks the route graph from the tab bar and fails on any route no interaction reaches",
         "The eight unreachable routes are reported by name on a run against the tree as it stands today",
@@ -5713,7 +5713,8 @@
         "test",
         "build"
       ],
-      "notes": "The gate lands before the wiring so the wiring is checked rather than asserted. Orphans today: /atlas/compare, /atlas/find, /atlas/palettes, /profile/preferences, /profile/measure, /profile/export, /wardrobe/outfit, /wardrobe/shopping."
+      "notes": "DONE. The gate is the CONVERSE of verify-route-targets — that one asks whether every target has a route, this one asks whether every route has a target — and it IMPORTS routePatterns() and targets() rather than re-deriving them, because two checks disagreeing about what a route is would each be right about their own model and wrong about the product. IT REPORTS EXACTLY THE EIGHT the audit found by reading, independently. TRANSITIVITY IS NOT OPTIONAL AND THE DATA PROVED IT: /atlas/palettes IS navigated to — from /profile/export, which is itself an orphan — so a check asking merely 'does anything link to this' would have passed it and reported seven where there are eight. IT OVER-APPROXIMATES AND THAT IS FAILING OPEN: a screen imported by two routes contributes its targets to both, so a route can be called reachable when only one importer can really get there. The honest alternative is a per-component call graph nothing else here needs. Printed on every run rather than left to be discovered. THREE CORRECTIONS TO THE PLAN, ALL FROM READING THE REPOSITORY RATHER THAN ASSUMING IT. (1) The plan said 'added to gates.json and CI'. The convention is different: these scanners ride inside the `lint` gate — verify-route-targets, verify-motion, verify-peer-deps and eleven others all do — so no gate id and no CI mirror change. Following the repo rather than the plan. (2) targets() walked directories only, so attributing navigation to one module at a time threw ENOTDIR. walk() now accepts a file, which is a smaller change than a second copy of the target scanner. (3) VERIFY-ROUTE-TARGETS RAN ON IMPORT. Nothing had noticed while nothing imported it; the harmless half was a duplicate report, and the harmful half is that a module which runs when imported cannot be reused, so the next check needing the route model would have copied it. It has an entry-point guard now. NOT RUN: every colour and content gate — this feature paints nothing.",
+      "plan": "plans/F-179-every-route-has-a-way-in.md"
     },
     {
       "id": "F-180",
