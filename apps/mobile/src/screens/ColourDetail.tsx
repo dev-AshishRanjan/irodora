@@ -148,6 +148,17 @@ export interface ColourDetailProps {
    */
   readonly onOpenCard?: (slug: string) => void;
   /**
+   * Compare this colour with another (F-181).
+   *
+   * The comparison screen has existed since F-019 on a route nothing navigated to, and it took
+   * `initialA` from the start — for *"a future 'compare with this one' entry point from the
+   * colour detail screen"*, in its own words. This is that entry point, two releases later.
+   *
+   * It carries the SLUG, so the screen opens on the colour a person came from rather than on
+   * two empty slots they have to fill before the screen says anything.
+   */
+  readonly onCompareWith?: ((slug: string) => void) | undefined;
+  /**
    * Which derived panel opens first.
    *
    * Injected the way `PaletteStudio` takes `initialDraft` and `Preferences` takes
@@ -175,6 +186,7 @@ export type DerivedPanel = 'harmony' | 'vision' | 'related';
 export function ColourDetail({
   slug,
   onOpenCard,
+  onCompareWith,
   initialPanel = 'harmony',
   initialSections = DETAIL_SECTIONS,
 }: ColourDetailProps): React.JSX.Element {
@@ -673,6 +685,23 @@ export function ColourDetail({
           }}
           script={script}
         />
+
+        {/*
+          COMPARE, CARRYING THIS COLOUR (F-181). `Compare` has taken `initialA` since F-019 for
+          *"a future 'compare with this one' entry point from the colour detail screen"* — its own
+          words, and this is that entry point. Opening it empty would make a person choose two
+          colours before the screen said anything, when they arrived here already holding one.
+        */}
+        {onCompareWith === undefined ? null : (
+          <Button
+            label={t('detail.compareWith')}
+            variant="secondary"
+            onPress={() => {
+              onCompareWith(slug);
+            }}
+            script={script}
+          />
+        )}
       </Stack>
     </Screen>
   );

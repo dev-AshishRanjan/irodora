@@ -18903,3 +18903,40 @@ state · typecheck · lint · format · test · a11y · contrast · reachability
 and seven of them have never been seen by anyone. Attested, joining F-175's.
 
 ---
+
+## F-181 — The Atlas owns Compare, Find and Palettes
+
+**2026-09-08.** Three of the eight orphans, and **nothing was built**. Three routes existed,
+three screens existed, the props were already the shape every destination here uses. What was
+missing was the offer: the Atlas presented a list, so a person could browse a corpus and could
+not search it, compare within it, or build from it.
+
+`/atlas/palettes` is the transitive case in the flesh. Something *did* link to it —
+`/profile/export` — but that route is itself still an orphan, so the link led from nowhere.
+
+### F-019 predicted the comparison entry and waited two releases for it
+
+`Compare` has taken `initialA` since F-019, for — in its own docblock — *"a future 'compare with
+this one' entry point from the colour detail screen"*. This is that entry point. It carries the
+slug, so the comparison opens on the colour somebody came from rather than on two empty slots
+they must fill before the screen says anything. The route reads `?a=` and treats absent as a
+**state**: opened from the Atlas there is no colour to carry.
+
+### The gate found three dead declarations the moment the wiring landed
+
+Which is the direction that matters. Orphans **7 → 4**, reachable **10 → 13**, navigation
+targets **15 → 20**.
+
+### A cascade worth recording
+
+`verify-gate-mirror-proof` reported two failures that were not its own. It refuses to run while
+gate 0 is red, and gate 0 was red because this feature was `in_progress` with no plan file yet.
+**The proof was right and its message named the cause** — which is the difference between a
+cascade you can follow and one you debug.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · reachability · route-targets ·
+build — **PASS**.
+
+---

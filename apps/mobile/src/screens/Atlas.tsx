@@ -41,7 +41,18 @@
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Appear, Chip, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import {
+  Appear,
+  Button,
+  Chip,
+  Row,
+  Screen,
+  SearchField,
+  Stack,
+  Surface,
+  Swatch,
+  Text,
+} from '@irodora/ui';
 import {
   allEntries,
   familyLabel,
@@ -134,6 +145,19 @@ function matchesFilters(entry: PublishedEntry, f: Filters): boolean {
 export interface AtlasProps {
   /** The route supplies navigation. Absent, the screen still renders — which is how it is checked. */
   readonly onSelect?: (slug: string) => void;
+  /**
+   * The three other ways of using a corpus (F-181).
+   *
+   * Each is a finished screen that sat on a route **nothing navigated to** — the finder, the
+   * comparison and the palette studio. The Atlas offered a list and nothing else, so a person
+   * could browse a corpus and could not search it, compare within it, or build from it.
+   *
+   * Optional and supplied by the route, like every destination here: a screen that called
+   * `router.push` itself could not be rendered by the conformance suite.
+   */
+  readonly onOpenFinder?: (() => void) | undefined;
+  readonly onOpenCompare?: (() => void) | undefined;
+  readonly onOpenPalettes?: (() => void) | undefined;
 }
 
 /**
@@ -230,7 +254,12 @@ function AtlasEntry({
  */
 const ENTRY_HEIGHT = 180;
 
-export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
+export function Atlas({
+  onSelect,
+  onOpenFinder,
+  onOpenCompare,
+  onOpenPalettes,
+}: AtlasProps): React.JSX.Element {
   const { t, script, locale } = useMessages();
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -304,6 +333,51 @@ export function Atlas({ onSelect }: AtlasProps): React.JSX.Element {
       </Text>
 
       <SearchField label={t('atlas.search')} value={query} onChangeText={setQuery} />
+
+      {/*
+        THE OTHER THREE WAYS OF USING A CORPUS (F-181).
+
+        Under the search field rather than above the filters, because they are alternatives to
+        browsing rather than refinements of it — and a person who has started typing has already
+        told us which one they wanted.
+
+        Each renders only when the route supplies it, so the block is absent rather than dead in
+        the conformance suite. The subject supplies all three, which is what puts them inside
+        every accessibility and contrast run.
+      */}
+      {onOpenFinder === undefined &&
+      onOpenCompare === undefined &&
+      onOpenPalettes === undefined ? null : (
+        <Stack gap="sm">
+          <Text size="label" color="foreground.2" script={script} heading>
+            {t('atlas.more')}
+          </Text>
+          {onOpenFinder === undefined ? null : (
+            <Button
+              label={t('atlas.openFinder')}
+              variant="secondary"
+              onPress={onOpenFinder}
+              script={script}
+            />
+          )}
+          {onOpenCompare === undefined ? null : (
+            <Button
+              label={t('atlas.openCompare')}
+              variant="secondary"
+              onPress={onOpenCompare}
+              script={script}
+            />
+          )}
+          {onOpenPalettes === undefined ? null : (
+            <Button
+              label={t('atlas.openPalettes')}
+              variant="secondary"
+              onPress={onOpenPalettes}
+              script={script}
+            />
+          )}
+        </Stack>
+      )}
 
       <Text size="label" color="foreground.2" script={script} heading>
         {t('atlas.filters')}

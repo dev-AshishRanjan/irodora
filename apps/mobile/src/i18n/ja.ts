@@ -48,6 +48,12 @@ export const ja: Record<MessageKey, string> = {
 
   'atlas.title': '色の一覧',
 
+  // F-181 — see en.ts.
+  'atlas.more': 'ほかの使い方',
+  'atlas.openFinder': '名前・16進数・言葉で探す',
+  'atlas.openCompare': '2色を比べる',
+  'atlas.openPalettes': '配色をつくる',
+  'detail.compareWith': 'この色を別の色と比べる',
   'compare.title': '2色をくらべる',
   'compare.slotA': '1つめの色',
   'compare.slotB': '2つめの色',

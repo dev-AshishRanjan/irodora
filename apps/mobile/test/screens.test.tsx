@@ -789,13 +789,31 @@ const SCREENS: readonly ConformanceSubject[] = [
     // those states; its controls do.
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Atlas />, theme),
+    /*
+      ALL THREE AFFORDANCES RENDERED (F-181). A subject that omitted them would leave the three
+      controls this feature adds outside every accessibility and contrast run — which is the
+      shape ADR-0054 exists to prevent, one prop along.
+    */
+    render: (_state, theme) =>
+      draw(
+        <Atlas
+          onOpenFinder={() => undefined}
+          onOpenCompare={() => undefined}
+          onOpenPalettes={() => undefined}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/ColourDetail',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} />, theme),
+    // The comparison entry is rendered, so it is measured (F-181). See the Atlas subject above.
+    render: (_state, theme) =>
+      draw(
+        <ColourDetail slug={WITH_COMPLEMENT.entry.slug} onCompareWith={() => undefined} />,
+        theme,
+      ),
   },
   {
     /*

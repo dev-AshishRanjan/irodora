@@ -5768,7 +5768,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-179"
       ],
@@ -5784,7 +5784,9 @@
         "test",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-181-the-atlas-owns-compare-find-and-palettes.md",
+      "notes": "DONE, AND NOTHING WAS BUILT. Three routes existed, three screens existed, the props were already the shape every destination here uses. What was missing was the offer — the Atlas presented a list and nothing else, so a person could browse a corpus and could not search it, compare within it, or build from it. /atlas/palettes was the transitive case: something DID link to it, /profile/export, which is itself still an orphan, so the link led from nowhere. F-019 PREDICTED THE COMPARISON ENTRY AND WAITED TWO RELEASES FOR IT. Compare has taken `initialA` since F-019 for, in its own words, 'a future compare-with-this-one entry point from the colour detail screen'. This is that entry point, and it is what makes criterion 2 true: the comparison opens on the colour somebody came from rather than on two empty slots they must fill before the screen says anything. The route reads ?a= and treats absent as a STATE — opened from the Atlas there is no colour to carry. THE GATE FOUND THREE DEAD DECLARATIONS THE MOMENT THE WIRING LANDED, which is the direction that matters: a list nobody prunes is a list nobody reads. Orphans 7 -> 4, reachable 10 -> 13, targets 15 -> 20. A CASCADE WORTH RECORDING: the gate-mirror proof reported two failures that were not its own — it refuses to run while gate 0 is red, and gate 0 was red because this feature was in_progress with no plan file yet. The proof was right and its message named the cause. NOT RUN: cvd, color-golden, content."
     },
     {
       "id": "F-182",

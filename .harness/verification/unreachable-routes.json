@@ -5,21 +5,6 @@
   "$readingComment": "This file is the answer to \"are you sure you have added all pages, and links\". Eight finished screens — each with a conformance subject, accessibility coverage and tests — that a person holding the phone could not open. If it grows without shrinking, that is the thing to notice.",
   "unreachable": [
     {
-      "url": "/atlas/compare",
-      "closedBy": "F-181",
-      "why": "FR-48's comparison of two colours, with every metric carrying its unit and the space it was computed in. Reachable from the Atlas once F-181 gives the Atlas its own affordances — and it should open carrying the colour a person came from, which is why this waits for a feature rather than for a link."
-    },
-    {
-      "url": "/atlas/find",
-      "closedBy": "F-181",
-      "why": "The finder. Same feature: the Atlas is the tab that owns searching, and it currently offers exactly one thing — a list."
-    },
-    {
-      "url": "/atlas/palettes",
-      "closedBy": "F-181",
-      "why": "THE TRANSITIVE CASE, and the reason this gate walks a graph rather than asking 'does anything link to this'. Something DOES link to it — `/profile/export` — but that route is itself an orphan, so the link leads from nowhere. A shallower check would have passed this and reported seven orphans where there are eight."
-    },
-    {
       "url": "/profile/measure",
       "closedBy": "F-182",
       "why": "The calibrated measurement path. The Profile tab opens straight into setup and offers nothing else."

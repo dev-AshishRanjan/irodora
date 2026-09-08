@@ -53,6 +53,18 @@ export const en = {
 
   'atlas.title': 'Colour Atlas',
 
+  /*
+   * F-181 — THE ATLAS OWNS ITS OWN AFFORDANCES.
+   *
+   * Three finished screens sat on routes nothing navigated to: the finder, the comparison and
+   * the palette studio. The Atlas offered exactly one thing — a list — and the other three
+   * ways of using a corpus were unreachable.
+   */
+  'atlas.more': 'More ways in',
+  'atlas.openFinder': 'Search by name, hex or phrase',
+  'atlas.openCompare': 'Compare two colours',
+  'atlas.openPalettes': 'Build a palette',
+  'detail.compareWith': 'Compare this with another colour',
   'compare.title': 'Compare two colours',
   'compare.slotA': 'First colour',
   'compare.slotB': 'Second colour',

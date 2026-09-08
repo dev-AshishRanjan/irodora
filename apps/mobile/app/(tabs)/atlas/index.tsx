@@ -19,6 +19,20 @@ export default function AtlasRoute(): React.JSX.Element {
         onSelect={(slug) => {
           router.push(`/atlas/${slug}`);
         }}
+        /*
+          THE THREE OTHER WAYS OF USING A CORPUS (F-181). Each was a finished screen on a route
+          nothing navigated to; `/atlas/palettes` was reachable only from `/profile/export`,
+          which is itself still an orphan — the transitive case F-179's gate exists to see.
+        */
+        onOpenFinder={() => {
+          router.push('/atlas/find');
+        }}
+        onOpenCompare={() => {
+          router.push('/atlas/compare');
+        }}
+        onOpenPalettes={() => {
+          router.push('/atlas/palettes');
+        }}
       />
     </>
   );
