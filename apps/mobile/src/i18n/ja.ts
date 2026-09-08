@@ -463,6 +463,11 @@ export const ja: Record<MessageKey, string> = {
   'outfit.woreDone': '記録しました。それぞれの着用回数が1増えました。',
   'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
+  // F-180 — see en.ts for why this screen is named twice.
+  'settings.title': '設定',
+  'settings.open': '設定',
+  'settings.openHint': '外観と、アプリが学習した好み。',
+  'settings.platform': '言語と視差効果の軽減は端末の設定に従います。Irodora では別途たずねません。',
   'preferences.title': '学習した好み',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':

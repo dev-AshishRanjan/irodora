@@ -18863,3 +18863,43 @@ lint (which now carries it) · state · typecheck · format · test · both proo
 Not run: every colour and content gate. This feature paints nothing.
 
 ---
+
+## F-180 — Settings, and the appearance choice lives in it
+
+**2026-09-08.** *"I don't see settings, and options to choose themes in app."* Correct — and the
+feature was finished. **The appearance chooser has existed since F-153** and the device-colour
+explanation since F-154, both on `/profile/preferences`, a route nothing navigated to. Almost
+nothing was built here.
+
+### Two things were wrong and only one was reported
+
+**No way in.** A control at the top of the Profile tab, destination supplied by the route.
+
+**The screen was called the wrong thing.** Its title was *"What the app has learned"* — the name
+of **one section of it**. A person who did reach it would have found the theme picker under a
+heading about learned pairing weights. It is Settings now; the learned block keeps its own name
+one level down.
+
+### Criterion 4 amended before the work
+
+It asked for language and motion to be *"reachable from here rather than from nowhere"*. Language
+follows the device locale and reduced motion follows the accessibility setting; **neither should
+get an in-app switch** — the platform already asked, and asking twice is how two answers start
+disagreeing. So the screen *states* what the platform owns, which turns an absence somebody has
+to infer into a designed state.
+
+### The gate tracked it
+
+Orphans **8 → 7**, reachable **9 → 10**, and `/profile/preferences`'s declaration expired on
+schedule. F-179 landing first is what made that observable rather than asserted.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · reachability · build — **PASS**.
+
+### Still owed
+
+**Nobody has chosen a theme and looked at it.** Eight palettes exist, all eight pass every gate,
+and seven of them have never been seen by anyone. Attested, joining F-175's.
+
+---

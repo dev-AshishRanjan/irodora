@@ -1414,7 +1414,14 @@ const SCREENS: readonly ConformanceSubject[] = [
     // loading differently.
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<ProfileSetup store={fakeProfileStore()} />, theme),
+    /*
+      THE SETTINGS AFFORDANCE IS RENDERED, which means it is CHECKED (F-180). It is absent
+      without `onOpenSettings`, so a subject that omitted the prop would leave the one control
+      this feature adds outside every accessibility and contrast run — the shape ADR-0054 exists
+      to prevent, one prop along.
+    */
+    render: (_state, theme) =>
+      draw(<ProfileSetup store={fakeProfileStore()} onOpenSettings={() => undefined} />, theme),
   },
   {
     /*

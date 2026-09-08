@@ -150,12 +150,22 @@ export interface ProfileSetupProps {
    * guided path is unaffected by the photo path existing.
    */
   readonly reading?: LensReading;
+  /**
+   * Open settings. Supplied by the ROUTE, which is the convention every screen here follows —
+   * a screen that called `router.push` itself could not be rendered by the conformance suite,
+   * which is where the accessibility guarantees are actually checked.
+   *
+   * Optional so the suite can render this screen without one, and so the control is absent
+   * rather than dead when nobody supplies it.
+   */
+  readonly onOpenSettings?: (() => void) | undefined;
 }
 
 export function ProfileSetup({
   store,
   initialAnswers,
   reading,
+  onOpenSettings,
 }: ProfileSetupProps): React.JSX.Element {
   const { t, script } = useMessages();
 
@@ -452,6 +462,29 @@ export function ProfileSetup({
 
   return (
     <Screen title={t('profile.title')} script={script}>
+      {/*
+        THE WAY INTO SETTINGS (F-180), and it is the whole of the reported defect.
+
+        Eight themes have existed since F-153 and the chooser for them has existed since F-154,
+        on `/profile/preferences` — a route **nothing in the product navigated to**. Reported as
+        *"I don't see settings, and options to choose themes in app"*, which was exactly right.
+
+        It sits at the top because that is where a person looks for it, and it carries a hint
+        because "Settings" alone does not say that appearance is in there.
+      */}
+      {onOpenSettings === undefined ? null : (
+        <Stack gap="xs">
+          <Button
+            label={t('settings.open')}
+            variant="secondary"
+            onPress={onOpenSettings}
+            script={script}
+          />
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('settings.openHint')}
+          </Text>
+        </Stack>
+      )}
       {/*
         THE PRIVACY CLAIM, AND IT DEPENDS ON THE PATH. 'profile.privacy' says "No camera",
         which is true of the guided path and became FALSE the moment F-097 gave the photo path

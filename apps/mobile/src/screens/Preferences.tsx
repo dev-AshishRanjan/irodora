@@ -196,7 +196,7 @@ export function Preferences({
   }, [store, locale, version]);
 
   return (
-    <Screen title={t('preferences.title')} script={script}>
+    <Screen title={t('settings.title')} script={script}>
       {/*
         APPEARANCE, FIRST (F-153). It is the only thing on this screen a person came here to
         change; everything below it is something the app learned and is reporting back.
@@ -315,6 +315,26 @@ export function Preferences({
         </Stack>
       </Surface>
 
+      {/*
+        WHAT THE PLATFORM OWNS, said rather than left absent (F-180).
+
+        Language follows the device locale and reduced motion follows the accessibility setting;
+        neither has an in-app switch, and neither is going to get one — the platform already
+        asked, and asking again is how two answers start disagreeing. An absence somebody has to
+        infer is a worse state than one the screen names.
+      */}
+      <Text size="xs" color="foreground.2" script={script}>
+        {t('settings.platform')}
+      </Text>
+
+      {/*
+        THE LEARNED PREFERENCES KEEP THEIR OWN NAME, one level down. This screen was TITLED
+        "What the app has learned" while containing the appearance chooser — the name of one
+        section over the whole thing, which is half of why the themes were reported missing.
+      */}
+      <Text size="title" color="foreground" script={script} heading>
+        {t('preferences.title')}
+      </Text>
       <Text size="small" color="foreground.2" script={script}>
         {t('preferences.origin')}
       </Text>

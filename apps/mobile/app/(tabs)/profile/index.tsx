@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ProfileSetup } from '../../../src/screens/ProfileSetup';
 import { deviceRepository } from '../../../src/store/repository';
 import { takeReading } from '../../../src/lens/handoff';
@@ -13,6 +13,7 @@ import { takeReading } from '../../../src/lens/handoff';
  * `ProfileStore` structurally, so this is a pass-through and `typecheck` proves they agree.
  */
 export default function ProfileRoute(): React.JSX.Element {
+  const router = useRouter();
   /*
    * The offered reading, taken ONCE (F-097).
    *
@@ -33,7 +34,19 @@ export default function ProfileRoute(): React.JSX.Element {
         decides which privacy sentence it shows. Passing the key with `undefined` in it would
         make "no camera was used" depend on a distinction the type system exists to remove.
       */}
-      <ProfileSetup store={deviceRepository()} {...(reading === null ? {} : { reading })} />
+      <ProfileSetup
+        store={deviceRepository()}
+        {...(reading === null ? {} : { reading })}
+        /*
+          THE ROUTE OWNS THE DESTINATION (F-180). `/profile/preferences` has existed since
+          F-109 and NOTHING navigated to it — the appearance chooser inside it was unreachable
+          for two releases, which is why "I don't see settings" was a correct report about a
+          feature that was finished.
+        */
+        onOpenSettings={() => {
+          router.push('/profile/preferences');
+        }}
+      />
     </>
   );
 }

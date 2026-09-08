@@ -5726,7 +5726,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-176",
         "F-179"
@@ -5735,7 +5735,7 @@
         "A settings screen is reachable from the Profile tab in one interaction",
         "Every theme family the manifest declares can be chosen, with light, dark and system as an independent choice",
         "The device colour is offered where the platform has one and says plainly why it is unavailable where it has not",
-        "Language, motion and the data controls that already exist are reachable from here rather than from nowhere"
+        "What the platform owns — language and reduced motion — is stated on the screen rather than left as an absence somebody has to infer"
       ],
       "verification": [
         "state",
@@ -5746,7 +5746,17 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": "plans/F-180-settings-and-the-appearance-choice-lives-in-it.md",
+      "attested": [
+        {
+          "criterion": "Every theme family the manifest declares can be chosen, with light, dark and system as an independent choice",
+          "verifiedBy": "Opening Settings on a phone and choosing each of the four families in each of the three modes. THE CHOOSER IS RENDERED AND CHECKED — it is in the conformance registry, its contrast is measured in both themes, and appearance.test.tsx covers the store round-trip. WHAT NOBODY HAS DONE is choose a theme and look at the result, which is the same debt F-175 opened: eight palettes exist, all eight pass every gate, and nobody has seen seven of them.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE, AND THE FEATURE WAS MOSTLY A NAME. The appearance chooser has existed since F-153 and the device-colour explanation since F-154; both live on /profile/preferences, a route NOTHING in the product navigated to. So 'I don't see settings, and options to choose themes in app' was an exactly correct report about a finished feature. TWO THINGS WERE WRONG AND ONLY ONE WAS REPORTED. There was no way in — fixed by a control at the top of the Profile tab, supplied by the ROUTE the way every destination here is. And THE SCREEN WAS TITLED 'What the app has learned', which is the name of one SECTION of it: a person who did reach it would have found settings under a heading about learned pairing weights. The screen is titled Settings now and the learned block keeps its own name one level down. CRITERION 4 WAS AMENDED BEFORE THE WORK. It said 'Language, motion and the data controls that already exist are reachable from here rather than from nowhere'. Language follows the device locale and reduced motion follows the accessibility setting; neither has an in-app switch and neither should get one — the platform already asked, and asking again is how two answers start disagreeing. The data controls are /profile/export, which is F-182's. So the criterion now asks for what is deliverable: the screen SAYS what the platform owns, which turns an absence somebody has to infer into a designed state. THE GATE TRACKED THE CHANGE: orphans 8 -> 7, reachable 9 -> 10, and /profile/preferences's declaration expired on schedule. THE CONFORMANCE SUBJECT PASSES onOpenSettings, because a subject that omitted it would leave the one control this feature adds outside every accessibility and contrast run."
     },
     {
       "id": "F-181",

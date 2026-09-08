@@ -20,11 +20,6 @@
       "why": "THE TRANSITIVE CASE, and the reason this gate walks a graph rather than asking 'does anything link to this'. Something DOES link to it — `/profile/export` — but that route is itself an orphan, so the link leads from nowhere. A shallower check would have passed this and reported seven orphans where there are eight."
     },
     {
-      "url": "/profile/preferences",
-      "closedBy": "F-180",
-      "why": "What the app has learned about a person, in the numbers it learned it from (FR-37). It is also where the appearance choice lives, which makes it half of the reported defect: eight themes exist and nothing in the product can choose one."
-    },
-    {
       "url": "/profile/measure",
       "closedBy": "F-182",
       "why": "The calibrated measurement path. The Profile tab opens straight into setup and offers nothing else."

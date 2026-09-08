@@ -501,6 +501,19 @@ export const en = {
   'outfit.woreDone': 'Recorded. One more wear on each piece.',
   'outfit.woreNothing': 'Choose something, and you can record wearing it.',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
+  /*
+   * F-180 — THE WORD A PERSON LOOKS FOR.
+   *
+   * The appearance chooser has existed since F-153 and lived on a screen titled "What the app
+   * has learned", which is the name of ONE SECTION of it. Reported as *"I don't see settings,
+   * and options to choose themes in app"* — and the themes were there the whole time, on a
+   * screen with no way in and the wrong name over it.
+   */
+  'settings.title': 'Settings',
+  'settings.open': 'Settings',
+  'settings.openHint': 'Appearance, and what the app has learned about you.',
+  'settings.platform':
+    'Language and reduced motion follow your phone. Irodora does not ask for them separately.',
   'preferences.title': 'What the app has learned',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
