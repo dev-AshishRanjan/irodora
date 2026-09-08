@@ -19260,3 +19260,51 @@ conformance suite *before any screen used it*, which is the argument for registe
 the day it is written rather than the day it ships.
 
 ---
+
+## F-188 — Motion is the default, not the exception
+
+**2026-09-08.** *"There is no animation and transistions in the app. The app feels dead and
+uncreative."*
+
+The motion system has existed since F-144 — a duration scale, two easings, a live reduced-motion
+subscription, a gate that refuses an animated colour — and **`Appear` reached one of seventeen
+screens.** Built, proven, and applied once. Another correct report about a finished system.
+
+### One line, in one file
+
+`Screen` enters. Wrapping there rather than in seventeen files is the difference between a
+**property of the product** and a habit somebody has to remember — the eighteenth screen gets it
+without knowing the decision was made. It is the same argument `Screen` already makes for the
+title step and the safe-area inset.
+
+**One `Appear` per screen, not one per child.** A screen whose every block arrived separately
+takes as long to assemble as it takes to read, and `visual-taste` names scattered animation as a
+tell of generated design.
+
+`Section` gains an optional `index`, and **absent means "not part of a sequence"**: a section
+that is the only one on its screen has no order to arrive in, and a delay there is a pause with
+nothing on the other side.
+
+### Criterion 2 amended — the sixth this release
+
+It asked for *"a screen replacing another moves on one shared axis rather than sliding from an
+edge by default"*. The root stack **already** animates on one axis at the manifest's `view`
+duration, which is the X form of a shared axis. Making it a true Material shared axis — a slide
+*and* a cross-fade, the outgoing screen moving too — needs a custom animator on
+`react-native-screens`, and `animationDuration` is only honoured for some animation types and
+never on web. That is a feature, not a line, and claiming it here would be claiming a transition
+nobody built.
+
+### A workflow note, because it has now cost three runs
+
+`verify-gate-mirror-proof` refuses to run while gate 0 is red, and gate 0 has been red three
+times for the same reason: **a feature set `in_progress` with its `plan` field pointing at a file
+not yet written.** Golden rule 3 is *"a plan exists before any source is edited"*, and setting
+the field first is that rule half-followed. Write the file at claim time; the field is the
+pointer, not the plan.
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · **motion** · build · state — **PASS**.
+
+---

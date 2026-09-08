@@ -212,11 +212,11 @@ export function Home({
 
       {/* THE LEAD: one colour, at size. Whichever one there is. */}
       {lead === 'reading' ? (
-        <Section title={t('home.lastReading')} script={script}>
+        <Section index={0} title={t('home.lastReading')} script={script}>
           {readingBlock(LEAD_SAMPLE)}
         </Section>
       ) : lead === 'today' ? (
-        <Section title={t('home.today')} script={script}>
+        <Section index={0} title={t('home.today')} script={script}>
           {todayBlock(LEAD_SAMPLE)}
           <Text size="xs" color="foreground.2" script={script}>
             {t('home.todayNote')}
@@ -231,7 +231,18 @@ export function Home({
         on a number, while the colours it was about sat at 44px. It is a label beside its swatches
         now, which is what it always was.
       */}
-      <Section title={t('home.wardrobe')} script={script}>
+      {/*
+        THE SECTIONS ARRIVE IN THE ORDER THEY ARE READ (F-188).
+
+        Indices rather than nothing, because this screen HAS an order — the lead colour, then
+        the wardrobe, then whichever colour did not lead — and F-146’s whole argument was that
+        the rhythm of largest-first is what the single column lacked. A stagger states that
+        rhythm in time as well as in size.
+
+        The delay is capped inside `Appear` after six rows, which is more sections than this
+        screen will ever have.
+      */}
+      <Section index={1} title={t('home.wardrobe')} script={script}>
         {content.wardrobe.count === 0 ? (
           <Stack gap="md">
             <Text size="body" color="foreground.2" script={script}>
@@ -272,14 +283,14 @@ export function Home({
         has taken no readings does not need the mechanism explained twice.
       */}
       {lead === 'reading' ? (
-        <Section title={t('home.today')} script={script}>
+        <Section index={2} title={t('home.today')} script={script}>
           {todayBlock(QUIET_SAMPLE)}
           <Text size="xs" color="foreground.2" script={script}>
             {t('home.todayNote')}
           </Text>
         </Section>
       ) : (
-        <Section title={t('home.lastReading')} script={script}>
+        <Section index={2} title={t('home.lastReading')} script={script}>
           <Stack gap="md">
             <Text size="body" color="foreground.2" script={script}>
               {t('home.noReadings')}

@@ -50,6 +50,7 @@ import { useContext } from 'react';
 import { ScrollView, View, type ViewProps } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing, type nativeType } from '@irodora/design-tokens';
+import { Appear } from './motion.js';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
 
@@ -195,6 +196,18 @@ export type SectionProps = Omit<ViewProps, 'style'> & {
    * clothes of structure, and it is one of the listed AI-design clichés.
    */
   readonly eyebrow?: string;
+  /**
+   * Where this section sits in the screen's order, so it arrives in it (F-188).
+   *
+   * **Optional, and absent means "not part of a sequence."** A section that is the only one on
+   * its screen has no order to arrive in, and giving it a delay would be a pause with nothing on
+   * the other side of it.
+   *
+   * The delay is derived from this inside `Appear` and never passed as a duration — a caller
+   * that could pass milliseconds could pass a number off the scale, and then the scale is
+   * decorative.
+   */
+  readonly index?: number;
   readonly gap?: SpacingStep;
   /** Threaded to the heading text. See {@link Script}. */
   readonly script?: Script;
@@ -212,11 +225,22 @@ export function Section({
   title,
   eyebrow,
   gap = 'lg',
+  index,
   script = 'latin',
   children,
   ...rest
 }: SectionProps): React.JSX.Element {
-  return (
+  /*
+   * A SECTION ARRIVES IN ITS PLACE IN THE ORDER (F-188).
+   *
+   * `index` is optional and absent means "not part of a sequence" — a section that is the only
+   * one on its screen has no order to arrive in, and giving it a delay would be a pause with
+   * nothing on the other side of it.
+   *
+   * The DELAY is derived from the index inside `Appear`, never passed: a caller that could pass
+   * milliseconds could pass a number off the scale, and then the scale is decorative.
+   */
+  const body = (
     <View {...rest} style={{ flexDirection: 'column', gap: nativeSpacing[gap] }}>
       {eyebrow === undefined && title === undefined ? null : (
         <View style={{ flexDirection: 'column', gap: nativeSpacing.xs }}>
@@ -235,6 +259,8 @@ export function Section({
       {children}
     </View>
   );
+
+  return index === undefined ? body : <Appear index={index}>{body}</Appear>;
 }
 
 export type ScreenProps = Omit<ViewProps, 'style'> & {
@@ -314,11 +340,31 @@ export function Screen({
       </View>
     );
 
+  /*
+   * EVERY SCREEN ENTERS (F-188), and this is the one line that made it true.
+   *
+   * The motion system has existed since F-144 — a scale, an easing, a reduced-motion
+   * subscription and `Appear` — and `Appear` reached **one of seventeen screens**. The app was
+   * reported as *"no animation and transistions … feels dead and uncreative"*, and it was: the
+   * capability was built, gated, and applied once.
+   *
+   * Wrapping HERE rather than in seventeen files is not only cheaper. It is the difference
+   * between a property of the product and a habit somebody has to remember — the eighteenth
+   * screen gets it without knowing this decision was made, which is what a design system is
+   * for.
+   *
+   * ONE `Appear`, NOT ONE PER CHILD. A screen whose every block arrived separately would take
+   * as long to assemble as it takes to read, which is the shape that reads as slow rather than
+   * as considered. `Section` staggers what is INSIDE it; the screen arrives as a screen.
+   *
+   * Under reduced motion `Appear` renders its children at rest with no delay, so this costs
+   * nothing to somebody who asked for no motion.
+   */
   const content = (
-    <>
+    <Appear>
       {header}
       {children}
-    </>
+    </Appear>
   );
 
   /*

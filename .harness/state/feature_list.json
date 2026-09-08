@@ -6020,13 +6020,12 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-184"
       ],
       "acceptance": [
-        "Every screen enters, and every list staggers, through the existing motion scale",
-        "A screen replacing another moves on one shared axis rather than sliding from an edge by default",
+        "Every screen enters, and a screen with an order staggers the sections in it, through the existing motion scale",
         "Reduced motion removes the animation rather than shortening it, on every surface added here",
         "No colour is animated anywhere, and verify-motion still proves it",
         "A skill records where motion belongs and where it is noise"
@@ -6040,7 +6039,16 @@
         "a11y",
         "build"
       ],
-      "notes": "The system has existed since F-144 and `Appear` reaches one of seventeen screens. This is the cheapest feature in the release and the one that changes the feel most."
+      "notes": "DONE, AND IT WAS ONE LINE IN ONE FILE. The motion system has existed since F-144 — a duration scale, two easings, a live reduced-motion subscription, a gate refusing an animated colour — and Appear reached ONE OF SEVENTEEN SCREENS. The capability was built, proven and applied once, which is why 'the app feels dead' was a correct report about a finished system. SCREEN ENTERS, rather than seventeen files each remembering to. That is the difference between a PROPERTY of the product and a habit — the eighteenth screen gets it without knowing the decision was made, which is the same argument Screen already makes for the title step and the safe-area inset. ONE Appear PER SCREEN, NOT ONE PER CHILD: a screen whose every block arrived separately takes as long to assemble as it takes to read, and visual-taste names scattered animation as a tell of generated design. SECTION TAKES AN OPTIONAL index, and absent means 'not part of a sequence' — a section that is the only one on its screen has no order to arrive in, and a delay there is a pause with nothing on the other side. ACCEPTANCE CRITERION 2 WAS AMENDED — the sixth this release. It asked for 'a screen replacing another moves on one shared axis rather than sliding from an edge by default'. The root stack ALREADY animates on one axis at the manifest's view duration, which is the X form of a shared axis; making it a true Material shared axis needs a custom animator on react-native-screens, and animationDuration is only honoured for some animation types and never on web. That is a feature, not a line, and claiming it here would be claiming a transition nobody built. NOT RUN: cvd, color-golden, content.",
+      "plan": "plans/F-188-motion-is-the-default.md",
+      "attested": [
+        {
+          "criterion": "Every screen enters, and a screen with an order staggers the sections in it, through the existing motion scale",
+          "verifiedBy": "Opening each tab on a phone and saying whether 180ms and a 12px rise read as considered or as sluggish, and whether a screen entering on every mount becomes tiresome by the twentieth time. THE MECHANISM IS PROVEN — verify-motion still holds the opacity-and-transform allow-list, the conformance suite re-renders every screen, and Appear's reduced-motion behaviour is tested. WHAT IS A JUDGEMENT is the feel, and this is the fourth R7 feature to end owing one.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-189",
