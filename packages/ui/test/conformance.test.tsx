@@ -31,6 +31,9 @@ import {
   Screen,
   SearchField,
   Section,
+  SELECTION_EDGE,
+  selectionStyle,
+  selectionTone,
   Sheet,
   Stack,
   Status,
@@ -1137,6 +1140,90 @@ describe('a selectable component has to announce that it is selected (F-163)', (
     const pressable: ConformanceSubject = { ...highlightOnly, selectable: false };
     expect(checkSubject(pressable, ['light']).map((f) => f.rule)).not.toContain(
       'state-not-announced',
+    );
+  });
+});
+
+describe('and it has to be the SAME highlight as everything else (F-176)', () => {
+  /**
+   * The announcement rule above was satisfied by `Swatch`, `Chip` and `Tabs` while all three
+   * drew DIFFERENT pictures — a grey border, an inverse fill, a lighter ground. Each passed;
+   * the set was what got reported.
+   *
+   * This subject is the shape that still slips through: perfectly announced, and painting its
+   * own idea of selected.
+   */
+  const ownTreatment: ConformanceSubject = {
+    name: 'OwnTreatment',
+    kind: 'interactive',
+    selectable: true,
+    render: (state, theme) =>
+      draw(
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={state === 'active' ? 'A colour ✓' : 'A colour'}
+          accessibilityState={{
+            selected: state === 'active',
+            disabled: state === 'disabled',
+            busy: state === 'loading',
+          }}
+          style={{
+            minWidth: nativeTapTarget,
+            minHeight: nativeTapTarget,
+            // REAL TOKENS, drawn correctly, and not the treatment. This is what every one of
+            // the three components did before F-176 — which is why the decoy uses tokens
+            // rather than literals: a rule that only caught hex would have caught none of them.
+            backgroundColor:
+              state === 'active' ? nativeColors.light.inverse : nativeColors.light['surface.2'],
+            borderWidth: SELECTION_EDGE,
+            borderColor: nativeColors.light['border.strong'],
+          }}
+        />,
+        theme,
+      ),
+  };
+
+  it('is reported when a selectable component draws its own selected state', () => {
+    const findings = checkSubject(ownTreatment, ['light']);
+    expect(findings.map((f) => f.rule)).toContain('selection-treatment');
+    // And NOT for the reason F-163 catches — it announces itself perfectly.
+    expect(findings.map((f) => f.rule)).not.toContain('state-not-announced');
+  });
+
+  it('DECOY — the same component passes once it draws the shared treatment', () => {
+    const shared: ConformanceSubject = {
+      ...ownTreatment,
+      render: (state, theme) =>
+        draw(
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={state === 'active' ? 'A colour ✓' : 'A colour'}
+            accessibilityState={{
+              selected: state === 'active',
+              disabled: state === 'disabled',
+              busy: state === 'loading',
+            }}
+            style={{
+              minWidth: nativeTapTarget,
+              minHeight: nativeTapTarget,
+              backgroundColor: nativeColors.light['surface.2'],
+              ...selectionStyle(
+                selectionTone({ selected: state === 'active', focused: false }, nativeColors.light),
+              ),
+            }}
+          />,
+          theme,
+        ),
+    };
+    expect(checkSubject(shared, ['light']).map((f) => f.rule)).not.toContain('selection-treatment');
+  });
+
+  it('and a component that is NOT selectable may still draw what it likes', () => {
+    // Navigation is not selection (`currentTone`), and neither is a pressed button. The rule
+    // must not reach either, or it becomes a rule about every coloured control in the product.
+    const notSelectable: ConformanceSubject = { ...ownTreatment, selectable: false };
+    expect(checkSubject(notSelectable, ['light']).map((f) => f.rule)).not.toContain(
+      'selection-treatment',
     );
   });
 });

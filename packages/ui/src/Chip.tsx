@@ -23,6 +23,7 @@
 
 import { Pressable, View, type PressableProps } from 'react-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
 import { useTheme } from './theme.js';
@@ -61,6 +62,15 @@ export function chipAccessibleName(label: string, selected: boolean): string {
   return selected ? `${label} ✓` : label;
 }
 
+/**
+ * The badge on a chip, smaller than the default.
+ *
+ * A chip is only `nativeTapTarget` tall and its label runs the full width, so the 18px badge
+ * a swatch carries would sit on the text. 14 is the largest that clears a `small` label at
+ * the chip's padding, and it is still a drawn glyph rather than a character.
+ */
+const SELECTION_MARK_CHIP = 14;
+
 export function Chip({
   label,
   selected = false,
@@ -73,11 +83,19 @@ export function Chip({
   const { colors } = useTheme();
   const inert = disabled || loading;
 
-  // Both pairings are DECLARED in the manifest — inverse pairsWith inverse.foreground,
-  // surface.2 pairsWith foreground. Pairing tokens the manifest does not declare together is a
-  // contrast-gate failure, so this choice is not free.
-  const background = selected ? colors.inverse : colors['surface.2'];
-  const foreground = selected ? ('inverse.foreground' as const) : ('foreground.2' as const);
+  /*
+   * THE SHARED TREATMENT (F-176), where this drew its own.
+   *
+   * It filled with `inverse` — a near-white plate on dark and a near-black one on light. That
+   * read as selected and it was a THIRD answer to the question `Swatch` and `Tabs` each
+   * answered differently, which is what was reported.
+   *
+   * Both pairings are DECLARED in the manifest — `accent.muted` pairsWith `foreground` and
+   * `foreground.2`, `surface.2` pairsWith `foreground`. Pairing tokens the manifest does not
+   * declare together is a contrast-gate failure, so this choice is not free.
+   */
+  const tone = selectionTone({ selected, focused }, colors);
+  const foreground = selected ? ('foreground' as const) : ('foreground.2' as const);
 
   return (
     <Pressable
@@ -98,16 +116,21 @@ export function Chip({
         borderRadius: nativeRadius.sm,
         paddingHorizontal: nativeSpacing.md,
         justifyContent: 'center',
-        backgroundColor: background,
-        // Focus is a RING, not a fill: it has to be visible on a chip that is already
-        // selected, and a fill change would be indistinguishable from selection.
-        borderWidth: focused ? 2 : 0,
-        ...(focused ? { borderColor: colors['border.strong'] } : {}),
+        backgroundColor: colors['surface.2'],
+        /*
+         * Focus is still a RING rather than a fill, for the reason this file already gave: it
+         * has to be visible on a chip that is ALREADY selected, and a fill change would be
+         * indistinguishable from selection. What changed is that the ring is now reserved in
+         * every state, so focusing a chip no longer resizes it — and the ring is `ring`
+         * rather than `border.strong`, which is the token that exists for exactly this.
+         */
+        ...selectionStyle(tone),
         // Every declared state renders differently. A control returning the same tree for
         // default and disabled has defined the state in name only.
         opacity: inert ? 0.5 : 1,
       }}
     >
+      <SelectionMark visible={tone.mark} size={SELECTION_MARK_CHIP} />
       <View>
         <Text size="small" color={foreground} script={script}>
           {loading

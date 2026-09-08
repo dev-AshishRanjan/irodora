@@ -5581,12 +5581,12 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-175"
       ],
       "acceptance": [
-        "One selection treatment is declared once and drawn by every selectable component — swatch, chip, card, tab and list row",
+        "One selection treatment is declared once and drawn by every selectable component that exists — swatch, chip and tab — and F-184 and F-186 adopt it rather than inventing their own",
         "Selection carries three channels and none of them is a caption prefix: a ring, a mark, and the announced state",
         "Selecting does not move anything — the treatment reserves its own space whether or not it is drawn",
         "The conformance rule fails a selectable component that draws a different treatment, with a decoy proving it"
@@ -5601,7 +5601,19 @@
         "contrast",
         "build"
       ],
-      "notes": "F-163 shipped the rule and left the treatment weak: a 2px border.strong plus a ✓ in the caption, which shifts layout and is near-invisible at 48px on the well. Its first attested criterion is still outstanding."
+      "notes": "ACCEPTANCE CRITERION 1 WAS AMENDED BEFORE THE WORK STARTED. It named \"swatch, chip, card, tab and list row\"; card and list row do not exist and are F-184 and F-186. Writing a treatment for a component nobody has built is how a value with no consumer ships, so the criterion now names the three that exist and the obligation moves to the two features that will build the others. DONE. DELIVERED: packages/ui/src/selection.tsx holds the treatment as data plus one component; Swatch, Chip and Tabs all draw it; a conformance rule reads it out of the RENDERED TREE with three decoys; accent.muted's exemption expired on schedule. TWO DEFECTS FIXED THAT WERE NOT WHAT WAS REPORTED. (1) `borderWidth: selected ? 2 : 0` is not a colour change, it is a LAYOUT change — selecting a swatch moved it and moved every swatch after it in the row. (2) One border cannot carry two states: `borderColor: focused ? ring : border.strong` meant a selected swatch that was FOCUSED showed only focus, so selection disappeared for exactly the person navigating by keyboard or Switch Control. The tone splits the channels and both are now asserted directly. THE RULE CHECKS PIXELS, NOT IMPORTS: a component that calls selectionTone and discards the result fails it, and the decoy that proves this uses REAL TOKENS drawn correctly — because a rule that only caught hex literals would have caught none of the three components it exists to prevent. THE GATE PROVED ITS OWN EXEMPTION DEAD: running verify-token-reach BEFORE removing accent.muted's entry reported it as 'declared unreached, and is read by packages/ui/src/selection.tsx', so both directions were watched without writing a synthetic test. NOT RUN: color-golden, content — no colour maths and no corpus record changed. A tab draws `currentTone`, which is the same tokens with no mark: a tab is where you are, not what you chose, and a tick would claim the second.",
+      "plan": "plans/F-176-selection-is-one-treatment-everywhere.md",
+      "effects": [
+        "E-007"
+      ],
+      "attested": [
+        {
+          "criterion": "Selection carries three channels and none of them is a caption prefix: a ring, a mark, and the announced state",
+          "verifiedBy": "Looking at a selected swatch at 48px and a selected chip on a phone, and saying whether the 18px tick badge crowds the sample or reads cleanly. THE STRUCTURE IS PROVEN — 21 unit assertions over the tone in both themes, three conformance decoys watching the rule catch a component that draws its own treatment and leave a non-selectable one alone, and the rendered-tree check running over every screen subject. WHAT IS A JUDGEMENT is whether a badge on the corner of a small sample is right, or whether it should sit outside the well. Nobody has seen it. Joins F-175's attestation rather than pretending to be checked.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-177",

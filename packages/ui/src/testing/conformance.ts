@@ -374,6 +374,43 @@ export function checkSubject(
               'cannot read is not a second channel',
           );
       }
+
+      /*
+       * AND IT HAS TO BE THE SAME HIGHLIGHT AS EVERYTHING ELSE (F-176).
+       *
+       * F-163 gave this suite the ANNOUNCEMENT half — a selected thing must say so — and left
+       * the picture entirely free. Three components then drew three different pictures:
+       * `Swatch` a grey border, `Chip` an inverse fill, `Tabs` a lighter ground. Each was
+       * individually defensible and the set was what got reported: *"follow one single pattern
+       * everywhere"*.
+       *
+       * So the rule now reads the treatment out of the rendered tree. A selectable subject in
+       * its `active` state must paint `accent.muted` as a ground AND `accent` as an edge —
+       * which is what `selectionTone` returns, and is therefore satisfied by adopting it and
+       * essentially impossible to satisfy by accident.
+       *
+       * IT CHECKS THE PIXELS, NOT THE IMPORT. A component could call `selectionTone` and throw
+       * the result away; a component could hand-write the two tokens and pass. The second is
+       * fine — the treatment is the tokens, not the function — and the first is what this
+       * catches [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
+       */
+      if (subject.selectable === true && state === 'active') {
+        const paints = (property: string, token: string): boolean =>
+          paintedHere.some(
+            (c) =>
+              c.property === property &&
+              c.resolution.kind === 'token' &&
+              c.resolution.tokens.includes(token),
+          );
+        if (!paints('backgroundColor', 'accent.muted') || !paints('borderColor', 'accent'))
+          at(
+            'selection-treatment',
+            'is selected but does not draw the shared treatment — a selected thing paints ' +
+              '`accent.muted` as its ground and `accent` as its edge, from `selectionTone`. ' +
+              'Selection that looks different in every component is the defect F-176 exists to ' +
+              'close, and a component drawing its own is how it comes back.',
+          );
+      }
     }
 
     // --- the assertion that earns the suite -------------------------------------------

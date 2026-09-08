@@ -31,6 +31,17 @@ export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
+export {
+  currentTone,
+  SelectionMark,
+  selectionStyle,
+  selectionTone,
+  SELECTION_EDGE,
+  SELECTION_MARK,
+  type SelectionMarkProps,
+  type SelectionState,
+  type SelectionTone,
+} from './selection.js';
 export { EmptyState, type EmptyAction, type EmptyStateProps } from './EmptyState.js';
 export { SearchField, type SearchFieldProps } from './SearchField.js';
 export { TextField, type TextFieldProps } from './TextField.js';

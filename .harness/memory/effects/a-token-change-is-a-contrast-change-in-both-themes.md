@@ -99,3 +99,29 @@ that pair **with it**, not the ones it pairs with — and `pairsWith` is declare
 Ask which direction the token is being read in before assuming a lift is safe.
 
 See also [[a-gate-must-model-what-renders-not-what-is-physically-correct]].
+
+## Selection is one thing now, so a change to it is a change to every chooser (F-176)
+
+Until F-176 the treatment for *chosen* lived in three components and differed in all three —
+`Swatch` a grey border, `Chip` an inverse fill, `Tabs` a lighter ground. Each was individually
+correct and gate 9 measured all three, because each drew a **declared pairing**. The defect was
+invisible to every check in the repository, because no check compared components to each other.
+
+It now lives in `packages/ui/src/selection.tsx`. **That makes the blast radius of a change to
+it the whole product**: every swatch, chip and tab at once, on every screen. The guard is the
+conformance rule (`selection-treatment`), which reads the treatment out of the rendered tree
+rather than out of an import — a component that calls `selectionTone` and discards the result
+fails it.
+
+Two things the split fixed that were not what was reported:
+
+- **`borderWidth: selected ? 2 : 0` is not a colour change, it is a layout change.** Selecting
+  a swatch moved it, and moved every swatch after it in the row.
+- **One border cannot carry two states.** `borderColor: focused ? ring : border.strong` meant a
+  selected swatch that was focused showed *only* focus — selection disappeared for exactly the
+  person navigating by keyboard or Switch Control. The fill and the mark now survive the ring.
+
+**The general form:** when the same meaning is expressed independently in N components, no
+per-component gate can see that they disagree. The check has to be about the *set*, and the
+cheapest way to get one is to make the meaning a single artefact and then check that everything
+draws it. See also [[a-gate-must-model-what-renders-not-what-is-physically-correct]].

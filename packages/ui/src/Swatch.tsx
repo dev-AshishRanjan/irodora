@@ -29,6 +29,7 @@ import { Pressable, View } from 'react-native';
 import type { Color } from '@irodora/color-core';
 import { wcagContrast } from '@irodora/color-difference';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
 import { useTheme } from './theme.js';
@@ -182,6 +183,7 @@ export function Swatch({
   script = 'latin',
 }: SwatchProps): React.JSX.Element {
   const { colors } = useTheme();
+  const tone = selectionTone({ selected, focused }, colors);
   const corner = swatchCorner(size);
   const keyline = keylineTones(hex, colors['swatch.hairline'], colors['swatch.hairline.inverse']);
   const label = swatchAccessibleName(name, hex, color);
@@ -203,19 +205,34 @@ export function Swatch({
         minHeight: nativeTapTarget,
         justifyContent: 'center',
         // The mandatory neutral ground. Not decoration — it is what makes the sample
-        // readable next to anything else on the screen.
+        // readable next to anything else on the screen. `selectionStyle` paints over it only
+        // when the swatch is chosen, and omits the key entirely otherwise.
         backgroundColor: colors['swatch.well'],
         padding: nativeSpacing.sm,
         alignItems: 'center',
         gap: nativeSpacing.sm,
-        // Selection is never colour alone: the checkmark below carries it too. Focus is a
-        // DIFFERENT treatment from selection — the ring token exists for exactly this, and
-        // rendering them the same would make one of the two a state in name only.
-        borderWidth: selected || focused ? 2 : 0,
-        borderColor: focused ? colors.ring : colors['border.strong'],
+        /*
+         * THE SHARED TREATMENT (F-176), where this drew its own.
+         *
+         * What it had was `borderWidth: selected || focused ? 2 : 0` with
+         * `borderColor: focused ? ring : border.strong`, and both halves were defects.
+         *
+         * The WIDTH changed with the state, so **selecting a swatch moved it** — and moved
+         * every swatch after it in the row. The COLOUR was one slot for two states, so a
+         * selected swatch that was focused showed only focus: selection vanished for exactly
+         * the person navigating by keyboard or Switch Control. `selectionTone` reserves the
+         * edge in every state and lets the fill and the mark carry selection under a focus
+         * ring.
+         */
+        ...selectionStyle(tone),
         opacity: inert ? 0.5 : 1,
       }}
     >
+      {/*
+        THE MARK. Absolutely positioned, so adding it cost this component no layout — which is
+        the same rule the edge follows one line up.
+      */}
+      <SelectionMark visible={tone.mark} />
       {/*
         THE TWO-TONE KEYLINE (F-068). Two opaque 1px borders, nested.
 

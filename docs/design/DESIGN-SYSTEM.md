@@ -80,6 +80,21 @@ reason to encode.
 
 ## What the manifest carries that a normal design system does not
 
+**One selection treatment, and navigation is not selection** (F-176). Until R7 "chosen" was
+expressed independently in three components and differed in all three — a grey border on
+`Swatch`, an inverse fill on `Chip`, a lighter ground on `Tabs`. Every one drew a declared
+pairing, so gate 9 measured all three and no check could see that they disagreed.
+
+It is now `selectionTone` in [`selection.tsx`](../../packages/ui/src/selection.tsx):
+`accent.muted` ground, `accent` edge, a drawn `icon.check` badge, and the announced state.
+Two properties of it are load-bearing rather than stylistic — **the edge is reserved in every
+state**, so selecting something never moves it, and **focus takes the edge while the fill and
+the mark keep saying *chosen***, so the two states are visible at once.
+
+`currentTone` is the same thing without the mark, for tabs and navigation: a tab is *where you
+are*, and a tick would claim *what you chose*. The conformance rule `selection-treatment`
+reads the treatment out of the rendered tree, so a component that draws its own fails.
+
 **One accent, and it may not go near a sample** (F-175,
 [ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md)).
 The product had none until R7 — `link` is still defined as the same value as `foreground`,

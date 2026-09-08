@@ -42,6 +42,7 @@ import {
 } from 'heroui-native';
 import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import { overlayKeyframes } from './motion.js';
+import { currentTone, selectionStyle } from './selection.js';
 import { useTheme } from './theme.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
@@ -255,14 +256,27 @@ export function Tabs({
               paddingVertical: nativeSpacing.sm,
               paddingHorizontal: nativeSpacing.lg,
               borderRadius: nativeRadius.pill,
-              backgroundColor: item.value === value ? colors['surface.1'] : 'transparent',
+              /*
+               * `currentTone`, NOT `selectionTone` (F-176), and the difference is the whole
+               * decision: **a tab is where you are, not what you chose.** The tick that marks a
+               * chosen chip or sample would be claiming something a tab cannot claim, so this
+               * takes the same fill and the same reserved edge from the same tokens and draws
+               * no mark.
+               *
+               * It filled with `surface.1` before, which was a third answer to the question
+               * `Swatch` and `Chip` each answered differently. The colour language is one
+               * thing now; the mark is what separates picking from arriving.
+               */
+              ...selectionStyle(
+                currentTone({ selected: item.value === value, focused: false }, colors),
+              ),
             }}
           >
             {/*
               THE SELECTED TAB IS NOT MARKED BY COLOUR ALONE (NFR-9, golden rule 13). It carries
-              a different ground AND a heavier weight AND the selected state above — three
+              a different ground AND a reserved edge AND the selected state above — three
               channels, because somebody who cannot separate two near-neutrals still reads the
-              weight, and somebody using a screen reader hears the state.
+              edge, and somebody using a screen reader hears the state.
             */}
             <Text
               size="small"

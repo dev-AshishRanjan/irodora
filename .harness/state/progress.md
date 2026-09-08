@@ -18609,3 +18609,76 @@ separation from `status.bad` — the knot F-174 spent a whole feature untying fo
 `closedBy: F-176` — the selection treatment that fills with it, which is the next feature.
 
 ---
+
+## F-176 — Selection is one treatment, everywhere
+
+**2026-09-08.** Reported as *"when we select a color, it's not highlighted as active or marked …
+follow one single pattern everywhere"*. Two defects, and neither is the one the words describe.
+
+### There were three patterns, and no check could see it
+
+| | fill | edge | mark |
+|---|---|---|---|
+| `Swatch` | — | 2 px `border.strong` | `✓ ` in the caption |
+| `Chip` | `inverse` | — | ` ✓` in the caption |
+| `Tabs` | `surface.1` | — | — |
+
+Every one of those drew a **declared pairing**, so gate 9 measured all three and passed all
+three. The defect was that they disagreed with each other, and **no per-component gate can see
+a disagreement between components.** That is the reusable part.
+
+### Two real bugs found on the way, neither of them reported
+
+**`borderWidth: selected ? 2 : 0` is not a colour change — it is a layout change.** Selecting a
+swatch moved it, and moved every swatch after it in the row. The edge is now reserved in every
+state and transparent when it means nothing.
+
+**One border cannot carry two states.** `Swatch` wrote
+`borderColor: focused ? colors.ring : colors['border.strong']`, so a selected swatch that was
+focused showed **only focus** — selection vanished for exactly the person navigating by keyboard
+or Switch Control. Focus now takes the edge; the fill and the mark keep saying *chosen*.
+
+### The rule reads pixels, not imports
+
+`selection-treatment` walks the rendered tree and requires a selectable subject's `active` state
+to paint `accent.muted` as a ground and `accent` as an edge. A component that calls
+`selectionTone` and discards the result fails it. **The decoy uses real tokens drawn correctly**
+— `inverse` fill, `border.strong` edge, perfectly announced — because a rule that only caught
+hex literals would have caught none of the three components it exists to prevent.
+
+### Navigation is not selection
+
+A tab draws `currentTone`: same tokens, no mark. A tab is *where you are*; a tick would claim
+*what you chose*. Universality that put a tick on a tab would be a worse answer than three
+patterns.
+
+### The gate proved its own exemption dead
+
+`accent.muted` carried an exemption from F-175 with `closedBy: F-176`. Running
+`verify-token-reach` **before** removing it reported *"is declared unreached, and is read by
+packages/ui/src/selection.tsx"* — so both directions were watched without writing a synthetic
+test. Exemptions: 6 → 5.
+
+### Acceptance criterion 1 was amended before the work, not after
+
+It named *"swatch, chip, card, tab and list row"*. Card and list row do not exist — they are
+F-184 and F-186. Writing a treatment for a component nobody has built is how a value with no
+consumer ships, so the criterion names the three that exist and the obligation to adopt rather
+than invent moved to the two features that will build the others.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 6 build | **PASS** |
+| 8 a11y · 9 contrast · 10 cvd · token-reach · motion | **PASS** |
+| 219 `@irodora/ui` tests, incl. 21 new unit + 3 decoys | **PASS** |
+
+**Not run:** `color-golden`, `content` — no colour maths and no corpus record changed.
+
+### Still owed
+
+**Nobody has looked at it.** Whether an 18 px tick badge crowds a 48 px sample or reads cleanly
+is a judgement no gate here can make. One attested criterion, outstanding, joining F-175's two.
+
+---
