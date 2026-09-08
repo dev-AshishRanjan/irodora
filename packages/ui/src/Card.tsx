@@ -54,12 +54,14 @@
  */
 
 import { Pressable, View, type ViewStyle } from 'react-native';
+import Animated from 'react-native-reanimated';
 import {
   nativeElevation,
   nativeRadius,
   nativeSpacing,
   nativeTapTarget,
 } from '@irodora/design-tokens';
+import { usePress } from './motion.js';
 import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { useTheme, type ThemeColors } from './theme.js';
 import type { SpacingStep } from './layout.js';
@@ -116,6 +118,13 @@ export interface CardProps {
   readonly testID?: string;
 }
 
+/**
+ * A `Pressable` that can carry an animated style. Built once at module scope —
+ * `createAnimatedComponent` returns a new component type per call, so building it in a render
+ * would remount the card every frame.
+ */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 /** The hairline between a slot and the body. One device pixel, from the `border` token. */
 function Rule({ color }: { readonly color: string }): React.JSX.Element {
   return <View style={{ height: 1, backgroundColor: color }} />;
@@ -140,6 +149,8 @@ export function Card({
   const { colors } = useTheme();
   const token = nativeElevation[level] as keyof ThemeColors;
   const tone = selectionTone({ selected, focused }, colors);
+  // The press response (F-189). Only a pressable card has one; a static card is not a control.
+  const press = usePress();
   const inset = nativeSpacing[padding];
   const inert = disabled || loading;
 
@@ -195,7 +206,7 @@ export function Card({
     );
 
   return (
-    <Pressable
+    <AnimatedPressable
       testID={testID}
       accessibilityRole="button"
       {...(label === undefined ? {} : { accessibilityLabel: label })}
@@ -204,9 +215,11 @@ export function Card({
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
       onPress={onPress}
-      style={shell}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[press.style, shell]}
     >
       {body}
-    </Pressable>
+    </AnimatedPressable>
   );
 }

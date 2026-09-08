@@ -26,9 +26,11 @@
  */
 
 import { Pressable, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import type { Color } from '@irodora/color-core';
 import { wcagContrast } from '@irodora/color-difference';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { usePress } from './motion.js';
 import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { Text } from './Text.js';
 import type { Script } from './layout.js';
@@ -190,6 +192,14 @@ function rgbOf(hex: string): readonly [number, number, number] {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
 
+/**
+ * A `Pressable` that can carry an animated style.
+ *
+ * Created once at module scope: `createAnimatedComponent` builds a new component type each
+ * time it is called, so doing it in a render would remount the swatch on every frame.
+ */
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 /** The width of each of the two opaque hairlines. One device pixel, by design (F-068). */
 const KEYLINE_INSET = 1;
 
@@ -215,52 +225,63 @@ export function Swatch({
 }: SwatchProps): React.JSX.Element {
   const { colors } = useTheme();
   const tone = selectionTone({ selected, focused }, colors);
+  /*
+   * THE PRESS RESPONSE (F-189). A tap on a colour sample did NOTHING until the next screen
+   * arrived — this is the most-touched control in the product and the one with no feedback.
+   * Scale only, on the micro step, gone entirely under reduced motion.
+   */
+  const press = usePress();
   const corner = swatchCorner(size);
   const keyline = keylineTones(hex, colors['swatch.hairline'], colors['swatch.hairline.inverse']);
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
       // All four announced. A swatch that is merely dimmed is unavailable to a sighted user
       // and indistinguishable from an available one to everybody else.
       accessibilityState={{ selected, disabled: inert, busy: loading }}
       disabled={inert}
       onPress={onPress}
-      style={{
-        // A swatch is a touch target, so it declares the 44px minimum even when the sample
-        // itself is drawn smaller. The sample size and the target size are different things.
-        minWidth: nativeTapTarget,
-        minHeight: nativeTapTarget,
-        justifyContent: 'center',
-        // The mandatory neutral ground. Not decoration — it is what makes the sample
-        // readable next to anything else on the screen. `selectionStyle` paints over it only
-        // when the swatch is chosen, and omits the key entirely otherwise.
-        backgroundColor: colors['swatch.well'],
-        // Concentric with the keyline inside it — see `swatchCorner`. `WELL_INSET` is this
-        // padding, named once so the corner cannot drift from the gap it is derived from.
-        borderRadius: corner.well,
-        padding: WELL_INSET,
-        alignItems: 'center',
-        gap: nativeSpacing.sm,
-        /*
-         * THE SHARED TREATMENT (F-176), where this drew its own.
-         *
-         * What it had was `borderWidth: selected || focused ? 2 : 0` with
-         * `borderColor: focused ? ring : border.strong`, and both halves were defects.
-         *
-         * The WIDTH changed with the state, so **selecting a swatch moved it** — and moved
-         * every swatch after it in the row. The COLOUR was one slot for two states, so a
-         * selected swatch that was focused showed only focus: selection vanished for exactly
-         * the person navigating by keyboard or Switch Control. `selectionTone` reserves the
-         * edge in every state and lets the fill and the mark carry selection under a focus
-         * ring.
-         */
-        ...selectionStyle(tone),
-        opacity: inert ? 0.5 : 1,
-      }}
+      style={[
+        press.style,
+        {
+          // A swatch is a touch target, so it declares the 44px minimum even when the sample
+          // itself is drawn smaller. The sample size and the target size are different things.
+          minWidth: nativeTapTarget,
+          minHeight: nativeTapTarget,
+          justifyContent: 'center',
+          // The mandatory neutral ground. Not decoration — it is what makes the sample
+          // readable next to anything else on the screen. `selectionStyle` paints over it only
+          // when the swatch is chosen, and omits the key entirely otherwise.
+          backgroundColor: colors['swatch.well'],
+          // Concentric with the keyline inside it — see `swatchCorner`. `WELL_INSET` is this
+          // padding, named once so the corner cannot drift from the gap it is derived from.
+          borderRadius: corner.well,
+          padding: WELL_INSET,
+          alignItems: 'center',
+          gap: nativeSpacing.sm,
+          /*
+           * THE SHARED TREATMENT (F-176), where this drew its own.
+           *
+           * What it had was `borderWidth: selected || focused ? 2 : 0` with
+           * `borderColor: focused ? ring : border.strong`, and both halves were defects.
+           *
+           * The WIDTH changed with the state, so **selecting a swatch moved it** — and moved
+           * every swatch after it in the row. The COLOUR was one slot for two states, so a
+           * selected swatch that was focused showed only focus: selection vanished for exactly
+           * the person navigating by keyboard or Switch Control. `selectionTone` reserves the
+           * edge in every state and lets the fill and the mark carry selection under a focus
+           * ring.
+           */
+          ...selectionStyle(tone),
+          opacity: inert ? 0.5 : 1,
+        },
+      ]}
     >
       {/*
         THE MARK. Absolutely positioned, so adding it cost this component no layout — which is
@@ -317,6 +338,6 @@ export function Swatch({
       <Text size="small" color="foreground" script={script}>
         {loading ? `${name}…` : selected ? `✓ ${name}` : name}
       </Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

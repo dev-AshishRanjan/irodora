@@ -113,7 +113,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-3 Determinism | F-006, F-073, F-083 | golden, test | R1 |
 | NFR-4 Latency | F-038 | perf | R3 |
 | NFR-7 Scale | F-041 | perf, review | R2 |
-| NFR-8 WCAG 2.2 AA | F-003, F-017, F-067, F-068, F-069, F-070, F-175, F-176, F-177, F-178, F-184, F-185, F-186, F-187, F-188, F-189, F-190, F-191, F-204, F-205 | a11y | R0 |
+| NFR-8 WCAG 2.2 AA | F-003, F-017, F-067, F-068, F-069, F-070, F-175, F-176, F-177, F-178, F-184, F-185, F-186, F-187, F-188, F-189, F-190, F-191, F-204, F-205, F-206 | a11y | R0 |
 | NFR-9 Never colour alone | F-003, F-017, F-067, F-175, F-176, F-185, F-186, F-191, F-204, F-205 | contrast, a11y | R0 |
 | NFR-10 CVD usability | F-008, F-198 | cvd, e2e | R1 |
 | NFR-11 en/ja i18n | F-017 | test, e2e | R2 |

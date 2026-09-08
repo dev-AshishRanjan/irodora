@@ -22,6 +22,31 @@ what colour something appears to be.
 
 ---
 
+## The same rule applies to a NUMBER (F-189)
+
+> **A figure changes to its new value. It does not count to it.**
+
+The reasoning above is not about colour specifically — it is about *intermediate frames a person
+reads as real*. A ΔE00 counting from 0.00 to 2.14 shows **seventeen values the engine never
+computed**, every one of them a plausible reading of a real difference, and the person watching
+has no way to tell which frame is the measurement.
+
+This was asked for directly — *"a number that changes counts to its new value rather than
+replacing it"* — and refused. It is one of the most common micro-interactions in modern
+interfaces and it is wrong **here**, for the same reason a cross-fading swatch is: this product's
+entire claim is that a figure on the screen is a measurement.
+
+| Never | Instead |
+|---|---|
+| Count a ΔE00, an OKLCh coordinate, a confidence or a score to its new value | Replace it |
+| Animate a chart bar's LABEL while the bar grows | Grow the bar; the label arrives at its value |
+| Tween a percentage | Replace it |
+
+**What may move**: the row it sits in, the container that reveals it, a bar whose *length* is the
+quantity. The number itself is the reading, and a reading is either taken or it is not.
+
+---
+
 ## `prefers-reduced-motion` is honoured completely
 
 ```css

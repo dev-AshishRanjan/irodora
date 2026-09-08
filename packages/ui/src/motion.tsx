@@ -123,6 +123,61 @@ export function useMotion(): MotionValues {
   };
 }
 
+export interface PressResponse {
+  readonly onPressIn: () => void;
+  readonly onPressOut: () => void;
+  /** Spread onto an `Animated.View`, or handed to a Pressable's animated style. */
+  readonly style: ReturnType<typeof useAnimatedStyle>;
+}
+
+/**
+ * The response a control gives to being touched.
+ *
+ * ## What was there, measured
+ *
+ * **Exactly one component in this product responded to a press.** `Button` sets HeroUI's
+ * `feedbackVariant="scale"`. `Swatch`, `Chip`, `Card` and `ChoiceGroup`'s options are all
+ * React Native `Pressable`s with no press response at all — a tap on a colour sample did
+ * nothing until the next screen arrived, which is the specific silence reported as *"add micro
+ * interactions where possible"*.
+ *
+ * ## A hook, not a component
+ *
+ * Wrapping every pressable in something would nest a second one, and a screen reader announces
+ * both — the defect `Card` and `ChoiceGroup` were each written to avoid. This returns the two
+ * handlers and a style; the component spreads them onto the `Pressable` it already has.
+ *
+ * ## Scale only, and it collapses rather than shortening
+ *
+ * `transform` is inside `motion.animatable`; a background highlight is not, which is why
+ * `feedbackVariant="scale"` exists on the HeroUI side and why `verify-motion` rejects the
+ * default. Under reduced motion the shared value never leaves 1 — **no press response**, not a
+ * quicker one, which is what the setting asks for (F-144).
+ */
+export function usePress(): PressResponse {
+  const { reduced, timing } = useMotion();
+  const pressed = useSharedValue(0);
+
+  const style = useAnimatedStyle(() => ({
+    // 0.97 rather than something larger: a control that shrinks visibly under a thumb reads as
+    // flimsy, and the thumb is covering it anyway. What this has to do is tell the SURROUNDING
+    // pixels that the tap registered.
+    transform: [{ scale: 1 - pressed.value * 0.03 }],
+  }));
+
+  return {
+    onPressIn: () => {
+      if (reduced) return;
+      pressed.value = withTiming(1, timing('micro'));
+    },
+    onPressOut: () => {
+      if (reduced) return;
+      pressed.value = withTiming(0, timing('micro'));
+    },
+    style,
+  };
+}
+
 export interface AppearProps {
   readonly children: ReactNode;
   /**

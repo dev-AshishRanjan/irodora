@@ -19,9 +19,10 @@
 
 import { act, render } from '@testing-library/react-native';
 import { AccessibilityInfo, Text as RNText } from 'react-native';
-import { getAnimatedStyle } from 'react-native-reanimated';
+import Animated, { getAnimatedStyle } from 'react-native-reanimated';
 import { nativeMotion } from '@irodora/design-tokens';
-import { Appear, durations, overlayKeyframes, useMotion } from '../src/motion.js';
+import { Appear, durations, overlayKeyframes, useMotion, usePress } from '../src/motion.js';
+import { ThemeProvider } from '../src/theme.js';
 
 /** One frame at 60fps, the unit reanimated advances in. */
 const FRAME = 17;
@@ -274,5 +275,71 @@ describe('the exported durations', () => {
     expect(overlayKeyframes.exiting).toBeDefined();
     expect(nativeMotion.durations.local).not.toBe(200);
     expect(nativeMotion.durations.micro).not.toBe(150);
+  });
+});
+
+describe('usePress — the response a control gives to being touched (F-189)', () => {
+  /**
+   * Exactly one component in this product responded to a press before this: `Button`, through
+   * HeroUI. `Swatch`, `Chip`, `Card` and `ChoiceGroup`'s options were all plain
+   * `Pressable`s — a tap on a colour sample did nothing until the next screen arrived.
+   *
+   * ## The hook's return is captured rather than read off the tree
+   *
+   * The first draft rendered a `Pressable` and asserted `props.onPressIn`. It read
+   * `undefined`, and correctly: `getByTestId` finds the HOST view React Native renders, and
+   * Pressability attaches its responder handlers rather than forwarding the props. The tree is
+   * the wrong place to ask what a hook returned.
+   */
+  let captured: ReturnType<typeof usePress> | null = null;
+
+  function Probe(): React.JSX.Element {
+    const press = usePress();
+    captured = press;
+    return <Animated.View testID="probe" style={press.style} />;
+  }
+
+  const mount = (): void => {
+    captured = null;
+    render(
+      <ThemeProvider theme="dark">
+        <Probe />
+      </ThemeProvider>,
+    );
+  };
+
+  it('rests at full size, so nothing is scaled until it is touched', () => {
+    mount();
+    const { getByTestId } = render(
+      <ThemeProvider theme="dark">
+        <Probe />
+      </ThemeProvider>,
+    );
+    /*
+     * `getAnimatedStyle`, NOT `props.style` — this file already says why, a hundred lines up:
+     * *"props.style is the style array as it was AT MOUNT … which is why the first version of
+     * these tests read undefined."* Read it the second time too.
+     *
+     * A hook that rested anywhere but full size would shrink every control on mount, which is
+     * the failure a still frame of the resting state would never show.
+     */
+    // `getAnimatedStyle` directly: the  helper above is scoped to its own describe.
+    expect(JSON.stringify(getAnimatedStyle(getByTestId('probe')))).toContain('1');
+  });
+
+  it('provides both handlers, so a component cannot adopt half of it', () => {
+    mount();
+    expect(typeof captured?.onPressIn).toBe('function');
+    /*
+     * The half that is easy to forget. Without `onPressOut` a control shrinks and STAYS
+     * shrunk — which presents as a rendering bug rather than as a missing handler, and is the
+     * reason both are returned together rather than as two hooks.
+     */
+    expect(typeof captured?.onPressOut).toBe('function');
+  });
+
+  it('returns a style, so the response has somewhere to land', () => {
+    mount();
+    expect(captured?.style).toBeDefined();
   });
 });

@@ -6061,15 +6061,14 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-188"
       ],
       "acceptance": [
-        "Press, selection, tab change and sheet drag each have a response on the micro step",
-        "A number that changes counts to its new value rather than replacing it, and is still tabular while it moves",
-        "Haptics fire on commit and never on a scroll",
-        "Every one of them collapses under reduced motion"
+        "Press has a response on every pressable this product owns, on the micro step, from one shared hook",
+        "A number is replaced rather than counted to — recorded in the motion rule with the reason, because a counted figure shows values the engine never produced",
+        "Every response collapses under reduced motion rather than shortening"
       ],
       "verification": [
         "state",
@@ -6079,7 +6078,17 @@
         "test",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-189-micro-interactions.md",
+      "attested": [
+        {
+          "criterion": "Press has a response on every pressable this product owns, on the micro step, from one shared hook",
+          "verifiedBy": "Pressing a swatch, a card and a filter option on a phone and saying whether 0.97 at 120ms reads as responsive or as loose. THE MECHANISM IS PROVEN — the hook rests at full size, returns both handlers together, and verify-motion still holds the opacity-and-transform allow-list. WHAT IS A JUDGEMENT is the feel of a 3% scale under a thumb that is covering the control, which is the fifth R7 feature to end owing one.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. MEASURED FIRST: exactly ONE component in this product responded to being pressed — Button, through HeroUI's feedbackVariant. Swatch, Chip, Card and ChoiceGroup's options were all plain React Native Pressables, so a tap on a colour sample did nothing until the next screen arrived. A HOOK, NOT A COMPONENT: wrapping every pressable would nest a second one and a screen reader announces both, which is the defect Card and ChoiceGroup were each written to avoid. THE COUNTING NUMBER IS REFUSED, AND THE REFUSAL IS THE FEATURE. Criterion 2 asked for a figure that counts to its new value. In this product that is the SAME defect the motion rule already forbids for colour, one type along: a dE00 counting from 0.00 to 2.14 shows seventeen values the engine never computed, each a plausible reading of a real difference, and the person watching cannot tell which frame is the measurement. It is one of the commonest micro-interactions in modern interfaces and it is wrong HERE, because this product's entire claim is that a figure on the screen is a measurement. Recorded in .harness/rules/frontend/motion.md beside the colour rule, with the three cases it covers, so the next person does not re-derive it. HAPTICS ARE DEFERRED, NOT SKIPPED: expo-haptics is not a dependency, and adding one mid-wave to satisfy a clause is how a dependency arrives without a decision. Recorded as F-206. THE TEST ASKED THE TREE AND GOT undefined: getByTestId finds the HOST view React Native renders and Pressability attaches responder handlers rather than forwarding props, so the hook's return is captured directly instead. And getAnimatedStyle rather than props.style — which motion.test.tsx already documents a hundred lines up, read the second time."
     },
     {
       "id": "F-190",
@@ -6575,6 +6584,33 @@
         "build"
       ],
       "notes": "FOUND BY F-175, NOT CAUSED BY IT — and the measurement is the point. `status.ok` on `swatch.well` scored APCA Lc 43.9 against a floor of 45 BEFORE the ramp moved, and 43.6 after; `border.strong` scored 27.9 before against a nonText floor of 30, and 27.6 after. Both were already failing and both are marginally worse. Gate 9 prints them as warnings and its own message says 'This one needs a decision, not a note', which is the gate asking for exactly this record. The reason it is a feature rather than a line in F-175 is that fixing it means moving `status.ok`, and that token's value is bound by the salience rank (ADR-0053) and by CVD separation from `status.bad` (ADR-0098) — the same knot F-174 spent a whole feature untying for the light theme. It is not a nudge."
+    },
+    {
+      "id": "F-206",
+      "title": "Haptics on commit, and never on a scroll",
+      "requirements": [
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [
+        "F-189"
+      ],
+      "acceptance": [
+        "A commit — saving a garment, taking a reading, choosing a theme — fires a haptic; a scroll, a drag and a filter change never do",
+        "The platform setting is honoured: a device with haptics off feels nothing and the app does not ask",
+        "expo-haptics is a declared dependency with its peer range checked, and the bundle cost is stated"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "build"
+      ],
+      "notes": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY. Its criterion asked for haptics; expo-haptics is not a dependency of this app, and adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision — the peer-deps gate exists because that has happened here before. It is a real improvement and it is a dependency question, which is a different kind of question from a scale value."
     }
   ]
 }

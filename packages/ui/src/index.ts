@@ -130,10 +130,12 @@ export {
   durations,
   overlayKeyframes,
   useMotion,
+  usePress,
   type AppearProps,
   type DurationStep,
   type EasingName,
   type MotionValues,
+  type PressResponse,
 } from './motion.js';
 
 export const UI_VERSION = '0.0.0' as const;

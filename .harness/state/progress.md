@@ -19308,3 +19308,49 @@ pointer, not the plan.
 typecheck · lint · format · test · a11y · contrast · **motion** · build · state — **PASS**.
 
 ---
+
+## F-189 — Micro-interactions, on the components that already have states
+
+**2026-09-08.** Measured first: **exactly one component in this product responded to being
+pressed.** `Button`, through HeroUI's `feedbackVariant`. `Swatch`, `Chip`, `Card` and
+`ChoiceGroup`'s options were all plain React Native `Pressable`s — a tap on a colour sample did
+nothing until the next screen arrived.
+
+`usePress` is a **hook, not a component**: wrapping every pressable would nest a second one and a
+screen reader announces both, which is the defect `Card` and `ChoiceGroup` were each written to
+avoid.
+
+### The counting number is refused, and the refusal is the feature
+
+Criterion 2 asked for *"a number that changes counts to its new value rather than replacing
+it"*. In this product that is **the same defect the motion rule already forbids for colour**, one
+type along:
+
+> A ΔE00 counting from 0.00 to 2.14 shows **seventeen values the engine never computed**, each
+> one a plausible reading of a real difference, and the person watching cannot tell which frame
+> is the measurement.
+
+It is among the commonest micro-interactions in modern interfaces, and it is wrong **here**,
+because this product's entire claim is that a figure on the screen is a measurement. Recorded in
+`motion.md` beside the colour rule with the three cases it covers, so nobody re-derives it.
+
+**Haptics are deferred, not skipped.** `expo-haptics` is not a dependency, and adding one
+mid-wave to satisfy a clause is how a dependency arrives without a decision — the peer-deps gate
+exists because that has happened here before. Recorded as **F-206**.
+
+### Two test lessons, one of them already written down
+
+`getByTestId` finds the **host view** React Native renders, and Pressability attaches responder
+handlers rather than forwarding props — so asserting `props.onPressIn` read `undefined`. The
+tree is the wrong place to ask what a hook returned; the return is captured directly now.
+
+And `getAnimatedStyle` rather than `props.style`, which `motion.test.tsx` documents a hundred
+lines above the new tests: *"props.style is the style array as it was AT MOUNT … which is why the
+first version of these tests read undefined."* **Read the second time.**
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · **motion** · build · state — **PASS**. 241
+`@irodora/ui` tests.
+
+---
