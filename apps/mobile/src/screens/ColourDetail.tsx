@@ -159,6 +159,14 @@ export interface ColourDetailProps {
    */
   readonly onCompareWith?: ((slug: string) => void) | undefined;
   /**
+   * What goes with this colour (F-194).
+   *
+   * The harmony engine has generated twelve relationships since F-014 and nothing called it.
+   * This screen already draws ONE of them in its `harmony` panel — a preview of a single
+   * relationship — and this is the way from that preview to the whole answer.
+   */
+  readonly onOpenCombinations?: ((slug: string) => void) | undefined;
+  /**
    * Which derived panel opens first.
    *
    * Injected the way `PaletteStudio` takes `initialDraft` and `Preferences` takes
@@ -187,6 +195,7 @@ export function ColourDetail({
   slug,
   onOpenCard,
   onCompareWith,
+  onOpenCombinations,
   initialPanel = 'harmony',
   initialSections = DETAIL_SECTIONS,
 }: ColourDetailProps): React.JSX.Element {
@@ -692,6 +701,22 @@ export function ColourDetail({
           words, and this is that entry point. Opening it empty would make a person choose two
           colours before the screen said anything, when they arrived here already holding one.
         */}
+        {/*
+          WHAT GOES WITH THIS (F-194). The `harmony` panel above shows one relationship for this
+          colour; this opens the rest. Placed after compare because it is the same shape of
+          action — take this colour somewhere that does something with it.
+        */}
+        {onOpenCombinations === undefined ? null : (
+          <Button
+            label={t('combos.open')}
+            variant="secondary"
+            onPress={() => {
+              onOpenCombinations(slug);
+            }}
+            script={script}
+          />
+        )}
+
         {onCompareWith === undefined ? null : (
           <Button
             label={t('detail.compareWith')}

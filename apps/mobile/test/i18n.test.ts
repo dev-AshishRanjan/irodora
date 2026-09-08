@@ -32,6 +32,7 @@ import {
 // The engine's own key lists, imported so this test moves when the engine does rather than
 // restating a set that would then be two copies of one contract (E-013's shape).
 import { MESSAGE_KEYS as SCORE_MESSAGE_KEYS, OUTFIT_MESSAGE_KEYS } from '@irodora/recommendation';
+import { COMBINATION_MESSAGE_KEYS } from '../src/combinations';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.
@@ -125,6 +126,35 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
     );
 
     expect([...declared].sort()).toEqual([...OUTFIT_MESSAGE_KEYS].sort());
+  });
+
+  /*
+   * THE TWELVE RELATIONSHIP NAMES (F-194), pinned in both directions for the reason the two
+   * sets above are: `Combinations` builds each key from the kind, so no literal exists for the
+   * unused-key scan to find and the keys have to be excluded from it. An exclusion pinned in
+   * one direction only would let a relationship the engine generates go unnamed on screen, or
+   * a name linger for a relationship the engine no longer generates.
+   */
+  it('has every relationship name the harmony engine can produce', () => {
+    const missing = COMBINATION_MESSAGE_KEYS.filter((k) => !(k in en));
+
+    expect(missing).toHaveLength(0);
+  });
+
+  it('declares no relationship name the engine does not generate', () => {
+    // `combo.` and `combos.` are different prefixes: the first is the engine's twelve, the
+    // second is the screen's own copy. The dot is load-bearing, which is what the decoy below
+    // is for.
+    const declared = MESSAGE_KEYS.filter((k) => k.startsWith('combo.'));
+
+    expect([...declared].sort()).toEqual([...COMBINATION_MESSAGE_KEYS].sort());
+  });
+
+  it('DECOY — the engine prefix does not swallow the screen copy beside it', () => {
+    // `combos.title` would be demanded of the engine by a looser filter, and the engine does
+    // not emit it. Both sides are asserted, so the partition cannot pass by matching nothing.
+    expect(MESSAGE_KEYS.some((k) => k.startsWith('combos.'))).toBe(true);
+    expect(COMBINATION_MESSAGE_KEYS.some((k) => k.startsWith('combos.'))).toBe(false);
   });
 
   it('DECOY — the segment-count partition has both sides, so the filter is not matching nothing', () => {
@@ -268,7 +298,14 @@ describe('every declared key is used, and every used key is declared', () => {
     // does not emit. Nothing can hide in the gap.
     // F-124 added the outfit component keys to this set for the same reason and under the
     // same protection: `t(c.messageKey)` in OutfitBuilder, pinned in both directions above.
-    const dynamic = new Set<string>([...SCORE_MESSAGE_KEYS, ...OUTFIT_MESSAGE_KEYS]);
+    // F-194 added the twelve relationship names for the same reason and under the same
+    // protection: the key is built from the kind in Combinations, pinned in both directions
+    // above.
+    const dynamic = new Set<string>([
+      ...SCORE_MESSAGE_KEYS,
+      ...OUTFIT_MESSAGE_KEYS,
+      ...COMBINATION_MESSAGE_KEYS,
+    ]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toHaveLength(0);
   });

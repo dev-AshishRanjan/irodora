@@ -19466,3 +19466,87 @@ renders a blank frame. And the motion system had been complete since F-144 and a
 rendered tree could see it, because the literal is in the library.
 
 ---
+
+## F-194 — The harmony engine reaches the product
+
+**The feature the release is for.** `@irodora/color-harmony` shipped complete in **F-014** —
+twelve relationship generators, every returned colour gamut-mapped, every one carrying the ΔE00
+the mapping cost, covered by gate 5 and by property tests — and **nothing imported it for the
+eleven releases since**. Reported as *"if shirt is a color, then what color could pants should
+be … that was the whole point of this app."*
+
+Every gate was green that whole time, because every gate was asking whether the package was
+correct and none was asking whether anything used it.
+
+### What shipped
+
+`src/combinations.ts` is pure and computes nothing: it decides **which** relationships to offer
+and **in what order**, which is a product decision rather than a colour-science one, and the
+whole of it is reachable by a test that renders nothing. `screens/Combinations.tsx` formats and
+labels. Every colour comes from `generateHarmony`.
+
+The route is `/atlas/with/<slug>` and the way in is a button on the colour page, beside compare.
+
+### Three things this version does that the obvious one would not
+
+**The gamut cost is a measurement, not a disclaimer.** *"Less vivid"* is an apology; `ΔE00 1.8`
+is a number with a unit and a space. A colour the display cannot reach is still offered, with
+the distance stated.
+
+**Zero is a value.** A relationship that lost nothing says so. A screen that simply omitted the
+line would leave a person unable to tell *nothing moved* from *nobody checked* — and the test
+that guards it is a decoy: a `gamutCost` hard-wired to 0 satisfies every other assertion, so a
+source at chroma 0.37 must produce a **non-zero** cost somewhere.
+
+**`wasMapped` is read from the flag, never inferred from the cost.** A colour can be mapped and
+land close enough that ΔE00 rounds to zero; inferring it would report *nothing was lost* about a
+colour that was changed.
+
+### All twelve render, not five
+
+The module docblock said *"the rest are reachable, not hidden"* and the screen rendered the
+leading five — **the claim was false when I wrote it**, and the unused-key scan caught it by
+reporting `combos.more` as a key nobody renders. The ranking decides what a person sees first;
+it does not decide what they may see. Seven relationships generated and never shown is the exact
+defect this release is about, reproduced inside the feature that fixes it.
+
+### The second-order effect was the real work
+
+Reaching the engine turned twelve engine-defined kinds into **user-visible copy in two
+languages**, built as `combo.${kind}` — so no literal exists for the source-literal scan to
+find, and the keys must be excluded from it. That exclusion is safe only while both directions
+are pinned. This app had solved this twice already (`explain.*` F-052, `outfit.*` F-124), in the
+same file, each with a docblock saying why. **Finding that took longer than using it** —
+recorded, again, as [[read-the-repository-before-deriving-the-answer]].
+
+### The conformance suite refused the screen, correctly
+
+A generated colour resolves to no design token by construction. `sampleValues` is how a subject
+says *this colour is the subject matter, not the chrome* — and those hexes are **derived from the
+engine**, not pasted, because a literal list goes on being measured while the engine drifts
+underneath it.
+
+### A gap recorded rather than closed in passing — F-207
+
+A companion is not a capture, not a published reference, and not a hex somebody typed. The four
+`MeasurementSource` members do not have a word for *an engine computed this from another
+colour*. It is filed as `declared`, which is what this app already does for a computed colour, so
+there is **one** answer rather than two — and the gap is F-207, because widening the provenance
+union is ADR-0005's territory and touches every package that carries provenance. It is not a
+side effect of building a screen.
+
+### Effects
+
+**E-100** — the kind list is now a UI contract. Guard: the two-direction pin in
+`i18n.test.ts`. Not guarded: whether the names are good, whether the ranking is right, and
+whether five relationships read as an answer or as a lecture. All three attested.
+
+### Gates
+
+state · typecheck · lint · format · test · **color-golden** · a11y · contrast · build —
+**PASS**. 850 mobile tests, 36 suites. `color-golden` was run because this reaches the engine.
+
+Route reachability: **18 of 18**. Dead packages: `@irodora/color-harmony`'s declaration
+**retired**; `@irodora/contracts` remains, closed by F-196.
+
+---

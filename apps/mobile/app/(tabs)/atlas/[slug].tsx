@@ -24,6 +24,10 @@ export default function ColourDetailRoute(): React.JSX.Element {
         onOpenCard={(s) => {
           router.push(`/atlas/card/${s}`);
         }}
+        // The whole answer, from the one relationship the harmony panel previews (F-194).
+        onOpenCombinations={(s) => {
+          router.push(`/atlas/with/${s}`);
+        }}
         // Carries the colour, so the comparison opens on it rather than on two empty slots.
         onCompareWith={(s) => {
           router.push(`/atlas/compare?a=${s}`);

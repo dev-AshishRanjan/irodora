@@ -3742,6 +3742,55 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-100",
+      "from": {
+        "kind": "package",
+        "ref": "@irodora/color-harmony"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/combinations.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Combinations.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/en.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/i18n.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "color-golden"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/color-harmony"
+      ],
+      "severity": "high",
+      "guard": "THE KIND LIST IS NOW A UI CONTRACT, AND `i18n.test.ts` PINS IT IN BOTH DIRECTIONS. `COMBINATION_MESSAGE_KEYS` is derived from `COMBINATION_ORDER`, which is derived from `HARMONY_KINDS` — so adding a generator to the engine makes the catalogues fail for the missing name, and removing one makes them fail for the name nobody emits. That two-way pin is the ONLY thing standing between the engine and a screen that renders a raw key: the screen builds the key from the kind, so the unused-key scan is a source-literal scan that cannot see the consumer, and the keys had to be excluded from it. An exclusion pinned one way is a hole. WHAT IS NOT GUARDED: whether a name is a GOOD name. The catalogue can carry twelve keys, both directions green, and read as a colour-theory lecture in either language — and the Japanese half of it is unreviewed (OQ-5). That is judgement, and it is attested, not gated. ALSO NOT GUARDED: the ranking. Hue-first is a product decision with no measurement behind it, stated in the module so somebody can disagree with it.",
+      "memory": "memory/effects/an-engine-with-no-caller-is-not-a-finished-feature.md",
+      "rationale": "THE HARMONY ENGINE SHIPPED COMPLETE IN F-014 AND WAS IMPORTED BY ZERO APPLICATION FILES FOR THE ELEVEN RELEASES SINCE. Twelve generators, every returned colour gamut-mapped, every one carrying its ΔE00, covered by gate 5 and by property tests — and `packages/color-core` declared a dependency on it that no source backed, which is why a manifest-based check would have called that edge a use. F-183 built the gate that says so; this is the feature that answers it. THE SECOND-ORDER EFFECT IS THE ONE WORTH RECORDING: reaching the engine made twelve engine-defined names into user-visible copy in two languages, which is a class of coupling this app already had twice (F-052 `explain.*`, F-124 `outfit.*`) and solved the same way both times. Following the existing shape rather than inventing a third was the whole of the work; finding that the shape existed took longer than using it. THIRD ORDER: the conformance suite refused the screen, correctly — a generated colour resolves to no token by construction, and `sampleValues` is how a subject declares that the colour IS the subject matter. Those hexes are derived from the engine rather than pasted, because a literal list would go on being measured while the engine drifted underneath it.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

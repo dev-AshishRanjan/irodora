@@ -23,6 +23,7 @@
     "@irodora/color-calibration": "workspace:*",
     "@irodora/color-core": "workspace:*",
     "@irodora/color-difference": "workspace:*",
+    "@irodora/color-harmony": "workspace:*",
     "@irodora/color-naming": "workspace:*",
     "@irodora/color-sampling": "workspace:*",
     "@irodora/color-spaces": "workspace:*",

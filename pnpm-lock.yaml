@@ -69,6 +69,9 @@ importers:
       '@irodora/color-difference':
         specifier: workspace:*
         version: link:../../packages/color-difference
+      '@irodora/color-harmony':
+        specifier: workspace:*
+        version: link:../../packages/color-harmony
       '@irodora/color-naming':
         specifier: workspace:*
         version: link:../../packages/color-naming

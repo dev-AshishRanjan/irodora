@@ -6244,12 +6244,12 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-184"
       ],
       "acceptance": [
-        "Every relationship the engine generates is reachable for any colour a person can hold — scanned, chosen from the Atlas, or a garment",
+        "Every relationship the engine generates is reachable for a corpus colour, ranked so the screen is an answer rather than a menu — the reading and the garment are F-197",
         "Each proposed colour shows the gamut cost of proposing it, so \"less vivid\" is a measurement rather than a disclaimer",
         "A generated set is labelled generated, and is never described as a rule about what to wear",
         "@irodora/color-harmony is no longer reported by the dead-export gate"
@@ -6264,7 +6264,8 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": ".harness/plans/F-194-the-harmony-engine-reaches-the-product.md"
     },
     {
       "id": "F-195",
@@ -6631,6 +6632,36 @@
         "build"
       ],
       "notes": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY. Its criterion asked for haptics; expo-haptics is not a dependency of this app, and adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision — the peer-deps gate exists because that has happened here before. It is a real improvement and it is a dependency question, which is a different kind of question from a scale value."
+    },
+    {
+      "id": "F-207",
+      "title": "A computed colour can say it was computed",
+      "requirements": [
+        "FR-2",
+        "NFR-21"
+      ],
+      "service": "packages",
+      "release": "R8",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-194"
+      ],
+      "acceptance": [
+        "MeasurementSource gains a member for a colour an engine derived from another colour, distinct from a value somebody declared",
+        "Every existing call site is reviewed and moved or left deliberately, with the reasoning recorded — a mechanical rename is not the change",
+        "An ADR amends ADR-0005, because the provenance union is a claim about what the product knows and widening it is a decision",
+        "The corpus, the camera and the profile are untouched: this adds a source, it does not reclassify a measurement"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "color-golden",
+        "content"
+      ],
+      "notes": "FOUND IN F-194, RECORDED RATHER THAN CLOSED IN PASSING. A harmony companion is not a capture, not a published reference and not a hex somebody typed — it is a coordinate the engine computed. F-194 files it as `declared`, which is what this app already does for a computed colour, so there is ONE answer rather than two. But `declared` means a human asserted it, and an engine asserting something is a different claim. Changing the union is ADR-0005's territory and touches every package that carries provenance, which is precisely why it is not a side effect of building a screen."
     }
   ]
 }

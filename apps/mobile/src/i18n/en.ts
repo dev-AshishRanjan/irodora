@@ -527,6 +527,36 @@ export const en = {
   'settings.platform':
     'Language and reduced motion follow your phone. Irodora does not ask for them separately.',
   'preferences.title': 'What the app has learned',
+  /*
+   * F-194 — THE TWELVE RELATIONSHIPS, NAMED IN PLAIN WORDS.
+   *
+   * "Complementary" is the term of art; "straight across" is what it means. A person asking what
+   * goes with a colour has not necessarily studied colour theory, and the engine's own name for
+   * the relationship is still what the code says — this is the label, not the identifier.
+   *
+   * `combos.what` carries NFR-21's weight: these are relationships that exist between colours,
+   * not advice about what to wear. The claims lint holds the wording in both languages.
+   */
+  'combos.title': 'What goes with this',
+  'combos.what':
+    'Relationships generated from this colour. Each one is a way colours can sit together, not advice about what to wear.',
+  'combos.generated': 'Generated',
+  'combos.open': 'What goes with this',
+  'combos.cost': 'Shifted to fit the screen by',
+  'combos.exact': 'Every colour here is one this screen can show exactly.',
+  'combos.more': 'Other relationships',
+  'combo.warm-cool': 'Warm against cool',
+  'combo.analogous': 'Neighbours on the wheel',
+  'combo.complementary': 'Straight across',
+  'combo.split': 'Either side of across',
+  'combo.triadic': 'Three, evenly spaced',
+  'combo.tetradic': 'Four, evenly spaced',
+  'combo.monochromatic': 'Lighter and darker',
+  'combo.tonal': 'Diluted',
+  'combo.neutral': 'Toward grey',
+  'combo.near-neutral': 'Almost grey',
+  'combo.value-contrast': 'Much lighter, much darker',
+  'combo.chroma-contrast': 'Muted against vivid',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

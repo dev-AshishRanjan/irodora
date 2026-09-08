@@ -5,11 +5,6 @@
   "$readingComment": "A package listed here builds, tests and passes every gate — and the product never calls it. That is the failure mode this file exists to make visible, and it is invisible by construction otherwise: the tests check the package, and nothing checks that anything uses it.",
   "unused": [
     {
-      "package": "@irodora/color-harmony",
-      "closedBy": "F-194",
-      "why": "Twelve harmony generators — monochromatic, tonal, analogous, complementary, split, triadic, tetradic, neutral, near-neutral, warm-cool, value-contrast, chroma-contrast — every one gamut-mapped, carrying the cost of the mapping, and covered by gate 5. Shipped complete in F-014 and imported by ZERO application files ever since. It is the engine behind the colour combinations this whole release is for, and F-194 is the feature that finally calls it."
-    },
-    {
       "package": "@irodora/contracts",
       "closedBy": "F-196",
       "why": "The Zod schemas that are, in F-002's words, 'the single source of runtime validation and of the TypeScript types derived from them'. The app validates nothing at runtime today because nothing crosses a trust boundary — there is no server and no API (ADR-0051) — and the one thing that will is F-196's curated combination records, which are content the corpus loader parses. NOT A SLIP: the package is right and the consumer arrives with the first data the app reads rather than computes."

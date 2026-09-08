@@ -46,6 +46,8 @@ import { Home, type HomeStore } from '../src/screens/Home';
 import { Atlas } from '../src/screens/Atlas';
 import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
+import { Combinations } from '../src/screens/Combinations';
+import { combinationsFor } from '../src/combinations';
 import { Contemporary } from '../src/screens/Contemporary';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
@@ -201,6 +203,45 @@ const CONTEMPORARY_NEAR =
   allEntries().find(
     (e) => equivalentsFor(e).membership.length === 0 && equivalentsFor(e).computed.length > 0,
   )?.entry.slug ?? '';
+
+/**
+ * A colour whose combinations render BOTH cost branches (F-194).
+ *
+ * Resolved by what it does rather than by name: the screen prints a ΔE00 for a relationship the
+ * display had to shift and a different line for one it can show exactly, and a subject that
+ * happened to produce only one of the two would leave the other measured by nothing. The
+ * corpus is the input, so a republished corpus moves this subject rather than silently
+ * un-covering a branch.
+ *
+ * The fallback is the first entry, and it is deliberately NOT a throw: a corpus in which no
+ * colour maps is a legitimate corpus, and the assertion that both branches exist belongs in a
+ * test that says so — not in a fixture that would take the whole suite down with it.
+ */
+const BOTH_COST_BRANCHES =
+  allEntries().find((e) => {
+    const { oklch } = e.derived;
+    const shown = combinationsFor([oklch[0], oklch[1], oklch[2]]);
+    return shown.some((c) => c.wasMapped) && shown.some((c) => !c.wasMapped);
+  }) ?? allEntries()[0]!;
+
+/**
+ * The hexes the ENGINE produced for that subject.
+ *
+ * `sampleValues` is how a subject says *these colours are the subject matter, not the*
+ * *chrome* — the suite otherwise requires every painted colour to resolve to a token, and a
+ * generated companion resolves to none by construction. The corpus hexes are declared that
+ * way already; these are the first that no corpus published.
+ *
+ * **Derived, never pasted.** A literal list would pass while the engine drifted underneath
+ * it — the suite would go on measuring nine hexes that nothing renders, and report clean.
+ */
+const GENERATED_HEXES: readonly string[] = combinationsFor([
+  BOTH_COST_BRANCHES.derived.oklch[0],
+  BOTH_COST_BRANCHES.derived.oklch[1],
+  BOTH_COST_BRANCHES.derived.oklch[2],
+]).flatMap((c) =>
+  c.companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).hex),
+);
 
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
@@ -811,7 +852,11 @@ const SCREENS: readonly ConformanceSubject[] = [
     // The comparison entry is rendered, so it is measured (F-181). See the Atlas subject above.
     render: (_state, theme) =>
       draw(
-        <ColourDetail slug={WITH_COMPLEMENT.entry.slug} onCompareWith={() => undefined} />,
+        <ColourDetail
+          slug={WITH_COMPLEMENT.entry.slug}
+          onCompareWith={() => undefined}
+          onOpenCombinations={() => undefined}
+        />,
         theme,
       ),
   },
@@ -833,6 +878,32 @@ const SCREENS: readonly ConformanceSubject[] = [
     sampleValues: SAMPLE_HEXES,
     render: (_state, theme) =>
       draw(<ColourDetail slug={WITH_COMPLEMENT.entry.slug} initialSections={[]} />, theme),
+  },
+  {
+    /*
+     * WHAT GOES WITH THIS (F-194). The feature the release is for, and the first subject that
+     * renders a colour the ENGINE generated rather than one the corpus published — so the
+     * swatch announcement, the "generated" label and the gamut cost are all measured here or
+     * nowhere.
+     *
+     * `static` like the rest: its interactive part is Swatch, registered in packages/ui where
+     * the suite makes it render its states.
+     */
+    name: 'screens/Combinations',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, ...GENERATED_HEXES],
+    render: (_state, theme) => draw(<Combinations slug={BOTH_COST_BRANCHES.entry.slug} />, theme),
+  },
+  {
+    /*
+     * THE SLUG THAT RESOLVES TO NOTHING. A route parameter can be anything, and this screen
+     * answers a miss with a sentence rather than a crash — a branch with its own tree, its own
+     * announcement and its own contrast, none of which the subject above renders.
+     */
+    name: 'screens/Combinations (not in this corpus)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) => draw(<Combinations slug="no-such-colour" />, theme),
   },
   {
     name: 'screens/Compare',
