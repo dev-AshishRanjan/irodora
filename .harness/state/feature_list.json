@@ -5829,7 +5829,7 @@
       "service": "root",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-179"
       ],
@@ -5846,7 +5846,9 @@
         "format",
         "test",
         "build"
-      ]
+      ],
+      "plan": "plans/F-183-a-package-the-app-never-imports.md",
+      "notes": "DONE. Exactly two workspace packages are imported by nothing in this repository: @irodora/color-harmony — twelve gamut-mapped harmony generators, golden-tested, gate 5 — and @irodora/contracts, the Zod schemas F-002 called 'the single source of runtime validation'. Both build, both test, both pass every gate they have. THE SUBJECT IS THE IMPORT GRAPH AND THE FIRST DRAFT GOT THAT WRONG. It asked 'is this a dependency of apps/mobile that apps/mobile never imports' and reported color-harmony as NOT A DEPENDENCY OF THE APP AT ALL — true, and nonsense as a message. The real shape is worse than unused: packages/color-core DECLARES @irodora/color-harmony and never imports it, so the one dependency edge pointing at the harmony engine is a claim in a manifest that no source backs, and a manifest-based check would have counted that edge as a use. A manifest says what a package is ALLOWED to reach; only an import says what it does. AN APPLICATION IS AN IMPORTER, NEVER A SUBJECT. The first real run reported @irodora/mobile — true, since nothing imports an app, and useless, which is exactly the finding that gets a check switched off. Apps are still scanned as importers because that is how most of this workspace becomes reachable; whether an app's own screens are reachable is F-179's question, asked from the tab bar. SEVEN PROOF CASES, THREE OF THEM DECOYS: a comment is not a use; a package importing its OWN name is still dead, which is the shape that would make every package look alive; and an app is never a subject however unimported. NOT RUN: every colour and content gate — this feature paints nothing."
     },
     {
       "id": "F-184",

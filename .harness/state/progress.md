@@ -18994,3 +18994,58 @@ noticed by a person, and three of the four features found dead exemptions immedi
 finishing. That is the direction that keeps a list honest, and it is why F-179 went first.
 
 ---
+
+## F-183 — A workspace package nothing imports fails the build
+
+**2026-09-08.** F-179's question one layer down. That gate asked *is this screen reachable* and
+found eight nobody could open. This asks it about packages: **two**.
+
+`@irodora/color-harmony` — twelve gamut-mapped generators, golden-tested, gate 5 — and
+`@irodora/contracts`, the Zod schemas F-002 called *"the single source of runtime validation"*.
+Both build, both test, both pass every gate they have. Neither appears in a single `import`
+anywhere in this repository.
+
+### The subject is the import graph, and the first draft got that wrong
+
+It asked *"is this a dependency of `apps/mobile` that `apps/mobile` never imports"* and reported
+`color-harmony` as **not a dependency of the app at all** — true, and nonsense as a message.
+
+The real shape is worse than unused: **`packages/color-core` declares `@irodora/color-harmony`
+and never imports it.** The one dependency edge pointing at the harmony engine is a claim in a
+manifest that no source backs, and a manifest-based check would have counted that edge as a use.
+
+A manifest says what a package is *allowed* to reach. Only an import says what it *does*.
+
+### An application is an importer, never a subject
+
+The first real run reported `@irodora/mobile`. True — nothing imports an app — and useless,
+which is exactly the finding that gets a check switched off. Apps are still scanned as
+importers, because that is how most of this workspace becomes reachable at all.
+
+### Seven proof cases, three of them decoys
+
+A comment is not a use. **A package importing its own name is still dead** — the shape that
+would make every package look alive. An app is never a subject, however unimported.
+
+### Gates
+
+state · lint (which now carries it) · typecheck · format · test · build — **PASS**, plus the
+proof. Not run: every colour and content gate.
+
+---
+
+# Wave 1 of R7 is complete
+
+**F-179 · F-180 · F-181 · F-182 · F-183.** Two gates, and the wiring they check.
+
+| | before | after |
+|---|---|---|
+| routes reachable from the tabs | **9 of 17** | **17 of 17** |
+| declared-unreachable routes | 8 | **0** |
+| packages imported by nothing | 2, unnoticed | 2, **declared, with the features that close them** |
+
+**Nothing in this wave was built.** Three of the five features added no screen and no behaviour;
+the other two added checks. What was missing everywhere was the same thing: a way in, and
+something that would notice its absence.
+
+---
