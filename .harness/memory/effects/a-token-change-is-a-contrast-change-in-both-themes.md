@@ -75,3 +75,27 @@ that reason.
 
 (This note previously named `border.focus`. No such token has ever existed; it is `ring`.
 An effect note that names a token nobody can find is a note nobody acts on.)
+
+## A ground is not a foreground (F-175)
+
+Every token change before this one moved something that **sits on** a surface, where raising
+its lightness raises its contrast. F-175 moved the surfaces themselves, and the plan carried
+the assumption straight across: *"every ground moves by exactly +0.040 L, so every existing
+relationship is preserved."*
+
+It is not preserved. **A ground does not lift what sits on it — it eats the headroom of
+everything that does.** Lifting `swatch.well` with the rest of the ramp put `border.strong` at
+2.88:1 and `status.ok` at 4.39:1 against it, and gate 9 refused on the first run.
+
+The well has a hard ceiling at **L 0.310**, and it was found by measuring the well against
+every token declaring a pairing with it rather than by nudging until the gate went quiet. The
+ramp therefore **compresses** rather than translating: the floor rises 0.040 where the report
+was about, and the lift tapers to 0.005 at the top. The elevation steps drop from 40/37/36/37
+to 35/30/25/25, which is a real cost recorded in [ADR-0099](../../../docs/adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md)
+rather than absorbed.
+
+**The general form:** when a change moves a *background* token, the tokens at risk are the ones
+that pair **with it**, not the ones it pairs with — and `pairsWith` is declared from one side.
+Ask which direction the token is being read in before assuming a lift is safe.
+
+See also [[a-gate-must-model-what-renders-not-what-is-physically-correct]].

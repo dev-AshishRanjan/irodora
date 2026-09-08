@@ -21,21 +21,6 @@ export const runtimeManifest: CheckableManifest = {
     "dark": {
       "background": {
         "oklch": {
-          "l": 0.135,
-          "c": 0.004,
-          "h": 70
-        },
-        "srgb": "#090807",
-        "role": "",
-        "usage": "surface",
-        "pairsWith": [
-          "foreground",
-          "foreground.2",
-          "foreground.3"
-        ]
-      },
-      "surface.1": {
-        "oklch": {
           "l": 0.175,
           "c": 0.004,
           "h": 70
@@ -49,13 +34,28 @@ export const runtimeManifest: CheckableManifest = {
           "foreground.3"
         ]
       },
-      "surface.2": {
+      "surface.1": {
         "oklch": {
-          "l": 0.212,
+          "l": 0.21,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#1A1817",
+        "srgb": "#191816",
+        "role": "",
+        "usage": "surface",
+        "pairsWith": [
+          "foreground",
+          "foreground.2",
+          "foreground.3"
+        ]
+      },
+      "surface.2": {
+        "oklch": {
+          "l": 0.24,
+          "c": 0.004,
+          "h": 70
+        },
+        "srgb": "#201F1D",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -66,11 +66,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.3": {
         "oklch": {
-          "l": 0.248,
+          "l": 0.265,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#22211F",
+        "srgb": "#262523",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -79,11 +79,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "swatch.well": {
         "oklch": {
-          "l": 0.285,
+          "l": 0.29,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#2B2A28",
+        "srgb": "#2D2B29",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -221,11 +221,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "inverse.foreground": {
         "oklch": {
-          "l": 0.15,
+          "l": 0.19,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#0C0B09",
+        "srgb": "#151312",
         "role": "",
         "usage": "text",
         "pairsWith": [
@@ -369,6 +369,52 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "accent": {
+        "oklch": {
+          "l": 0.92,
+          "c": 0.11,
+          "h": 92
+        },
+        "srgb": "#FFE38D",
+        "role": "",
+        "usage": "text",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3",
+          "accent.foreground",
+          "accent.muted"
+        ]
+      },
+      "accent.foreground": {
+        "oklch": {
+          "l": 0.175,
+          "c": 0.004,
+          "h": 70
+        },
+        "srgb": "#12100F",
+        "role": "",
+        "usage": "text",
+        "pairsWith": [
+          "accent"
+        ]
+      },
+      "accent.muted": {
+        "oklch": {
+          "l": 0.27,
+          "c": 0.03,
+          "h": 92
+        },
+        "srgb": "#2C2615",
+        "role": "",
+        "usage": "surface",
+        "pairsWith": [
+          "foreground",
+          "foreground.2",
+          "accent"
+        ]
       }
     },
     "light": {
@@ -722,6 +768,52 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "accent": {
+        "oklch": {
+          "l": 0.385,
+          "c": 0.079,
+          "h": 98
+        },
+        "srgb": "#4F4301",
+        "role": "",
+        "usage": "text",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3",
+          "accent.foreground",
+          "accent.muted"
+        ]
+      },
+      "accent.foreground": {
+        "oklch": {
+          "l": 0.985,
+          "c": 0.004,
+          "h": 85
+        },
+        "srgb": "#FBFAF7",
+        "role": "",
+        "usage": "text",
+        "pairsWith": [
+          "accent"
+        ]
+      },
+      "accent.muted": {
+        "oklch": {
+          "l": 0.93,
+          "c": 0.025,
+          "h": 98
+        },
+        "srgb": "#ECE8D6",
+        "role": "",
+        "usage": "surface",
+        "pairsWith": [
+          "foreground",
+          "foreground.2",
+          "accent"
+        ]
       }
     }
   },
@@ -814,6 +906,20 @@ export const runtimeManifest: CheckableManifest = {
       "reason": "As status.ok. Error carries the highest chroma in the system (0.14 dark, 0.16 light) because it is the one state that must survive being glanced at.",
       "owner": "design",
       "recordedAt": "2026-08-15"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "accent",
+      "reason": "The product had no accent at all until R7 and every emphasis was carried by weight and grey. The ceiling exists so the interface does not compete with the garment sample, and that reasoning is preserved rather than waived: the accent is refused on swatch.well, on both keyline tones and on every signal, so it never appears beside a colour reading. It is also listed in NEUTRAL_IN_EVERY_THEME, so it does not multiply across the eight palettes. See ADR-0099.",
+      "owner": "design",
+      "recordedAt": "2026-09-08"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "accent.muted",
+      "reason": "As accent. A tint of it at a quarter the chroma, for the ground behind a selected thing. Still above 0.01, so still recorded rather than exempted by being a surface.",
+      "owner": "design",
+      "recordedAt": "2026-09-08"
     }
   ]
 };

@@ -88,18 +88,25 @@ function TabGlyph({
 
         It matters MORE now than it did with a label under it: two visual channels are what stop
         this bar from saying "which tab am I on" in colour alone.
+
+        THE TOKEN IS THE ACCENT SINCE F-175, where it was `foreground`. All three channels are
+        unchanged — the rule is still drawn, the active token still differs from the inactive
+        one, and `accessibilityState.selected` is still set — so NFR-9 is met exactly as
+        before. What changed is that "which tab am I on" is now answered by the product's one
+        accent rather than by white-versus-grey, which is the same distinction the primary
+        button now draws.
       */}
       <View
         style={{
           height: 2,
           width: nativeSpacing.lg,
-          backgroundColor: focused ? colors.foreground : 'transparent',
+          backgroundColor: focused ? colors.accent : 'transparent',
         }}
       />
       <NavIcon
         name={icon}
         size={TAB_GLYPH}
-        color={focused ? colors.foreground : colors['foreground.2']}
+        color={focused ? colors.accent : colors['foreground.2']}
       />
     </View>
   );

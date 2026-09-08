@@ -78,11 +78,21 @@ export function Button({
   const { colors } = useTheme();
   const inert = disabled || loading;
 
-  // Both pairings are DECLARED in the manifest: inverse pairsWith inverse.foreground,
-  // surface.2 pairsWith foreground. A component pairing tokens the manifest does not declare
-  // together is a contrast-gate failure, so the choice is not free.
-  const background = variant === 'primary' ? colors.inverse : colors['surface.2'];
-  const foreground = variant === 'primary' ? colors['inverse.foreground'] : colors.foreground;
+  /*
+   * Both pairings are DECLARED in the manifest: `accent` pairsWith `accent.foreground`,
+   * `surface.2` pairsWith `foreground`. A component pairing tokens the manifest does not
+   * declare together is a contrast-gate failure, so the choice is not free.
+   *
+   * THE PRIMARY FILL IS THE ACCENT (F-175), where it was `inverse` — a near-white plate on
+   * dark and a near-black one on light. That was the only thing the product had that could
+   * read as "the important one", because there was no accent to spend: `link` is defined as
+   * the same value as `foreground`, so every emphasis in the app was made of weight and grey.
+   *
+   * `accent.foreground` is equal to `background` by construction, so a filled control reads
+   * as a hole cut in the page rather than as a third colour.
+   */
+  const background = variant === 'primary' ? colors.accent : colors['surface.2'];
+  const foreground = variant === 'primary' ? colors['accent.foreground'] : colors.foreground;
 
   return (
     <HeroButton

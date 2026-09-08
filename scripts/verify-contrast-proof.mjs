@@ -119,6 +119,23 @@ const WARN_TOO_LIGHT = { l: 0.54, c: 0.11, h: 70 };
 const OK_DARK = ['color', 'dark', 'status.ok', 'oklch'];
 const OK_DARK_NOW = { l: 0.67, c: 0.12, h: 158 };
 const OK_DARK_ROTATED = { l: 0.7, c: 0.14, h: 74 };
+/**
+ * The accent (F-175), and the ground the decoy is aimed at.
+ *
+ * L 0.640 is chosen rather than "obviously too dark": it still clears AA on `background`
+ * (5.64), `surface.1` (5.27), `surface.2` (4.89) **and** `surface.3` (4.55), and fails on
+ * exactly one ground — `accent.muted`, at 4.47.
+ *
+ * That is the sharpest available test of gate SCOPE rather than of arithmetic. A gate that
+ * measures the accent against the four page grounds and stops would call this value fine, and
+ * the product would ship an accent that is illegible on the one surface built to hold it.
+ * Drop `accent.muted` from the accent's `pairsWith` and this case goes green with the
+ * mutation applied — which is the failure it exists to catch, and the same failure F-174 found
+ * four features late when `swatch.well` was in nobody's `pairsWith`.
+ */
+const ACCENT_DARK = ['color', 'dark', 'accent', 'oklch'];
+const ACCENT_DARK_NOW = { l: 0.92, c: 0.11, h: 92 };
+const ACCENT_DARK_DIM = { l: 0.64, c: 0.11, h: 92 };
 
 const cases = [
   {
@@ -139,7 +156,13 @@ const cases = [
   {
     name: 'gate 9 — a hand-edited srgb hex (ADR-0043)',
     file: MANIFEST,
-    mutate: (s) => s.replace('"srgb": "#090807"', '"srgb": "#141312"'),
+    /*
+     * THE ANCHOR IS THE DARK GROUND, AND IT MOVED IN F-175 — from #090807 to #12100F when the
+     * ramp lifted off near-black. This harness reported it as "MUTATION DID NOT APPLY" rather
+     * than passing, which is the whole reason the no-op guard exists: a mutation that silently
+     * stops applying is a proof that silently stops proving.
+     */
+    mutate: (s) => s.replace('"srgb": "#12100F"', '"srgb": "#141312"'),
     check: gate9,
   },
   {
@@ -150,6 +173,14 @@ const cases = [
         '      "token": "status.bad",\n      "reason": "As status.ok. Error carries',
         '      "token": "status.notatoken",\n      "reason": "As status.ok. Error carries',
       ),
+    check: gate9,
+  },
+  {
+    // F-175. The accent is the first chromatic token in the persistent chrome since `ring`,
+    // and the first one that pairs with a ground of its own.
+    name: 'gate 9 — the accent below AA on its OWN ground only (F-175)',
+    file: MANIFEST,
+    mutate: (s) => jsonEdit(s, ACCENT_DARK, ACCENT_DARK_NOW, ACCENT_DARK_DIM),
     check: gate9,
   },
   {

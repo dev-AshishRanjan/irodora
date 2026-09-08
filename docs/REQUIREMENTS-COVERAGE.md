@@ -43,7 +43,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-3 Contrast | F-007 | golden, contrast | R1 |
 | FR-4 CVD simulation | F-008 | golden, cvd | R1 |
 | FR-5 CVD separation score | F-008 | cvd, test | R1 |
-| FR-6 Harmony generation | F-014 | test, golden | R1 |
+| FR-6 Harmony generation | F-014, F-194 | test, golden | R1 |
 | FR-7 Colour naming | F-013 | test, golden | R1 |
 | FR-8 Gamut mapping | F-009 | golden, test | R1 |
 | FR-9 Provenance on every colour | F-010 | typecheck, test | R1 |
@@ -68,7 +68,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-28 Professional profile entry | F-055, F-129 | test | R5 |
 | FR-29 Compatibility scoring | F-028 | test, perf | R3 |
 | FR-30 Profile is multidimensional | F-026 | typecheck, test | R3 |
-| FR-31 What goes with this | F-030 | test, perf, e2e | R3 |
+| FR-31 What goes with this | F-030, F-195 | test, perf, e2e | R3 |
 | FR-32 Outfit scoring | F-031 | test, e2e | R3 |
 | FR-33 Outfit builder | F-045 | e2e, a11y | R4 |
 | FR-34 Occasion weighting | F-029, F-065, F-130 | test, content | R3 |
@@ -85,11 +85,11 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-45 Capsule optimisation | F-050 | test, perf | R4 |
 | FR-46 Cost-per-wear | F-051 | test | R5 |
 | FR-47 Colour finder | F-021 | test, e2e | R2 |
-| FR-48 Colour compare | F-019 | e2e, a11y | R2 |
+| FR-48 Colour compare | F-019, F-201 | e2e, a11y | R2 |
 | FR-49 Palette Studio | F-020 | e2e, a11y | R2 |
 | FR-50 Shareable cards | F-023 | e2e, contrast | R2 |
 | FR-51 Exports | F-056, F-129 | test, a11y | R5 |
-| FR-52 Shopping check | F-052, F-123 | test, e2e | R5 |
+| FR-52 Shopping check | F-052, F-123, F-199 | test, e2e | R5 |
 | FR-55 Local-only mode | F-039 | e2e | R2 |
 | FR-56 Offline storage | F-041 | test, e2e | R2 |
 | FR-58 Export and deletion | F-035 | test, e2e, review | R2 |
@@ -97,10 +97,12 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | FR-65 PDF reports | F-056, F-129 | test, review | R5 |
 | FR-67 Rules as content | F-029 | test | R3 |
 | FR-68 Editorial review workflow | F-011 | content, e2e | R1 |
-| FR-69 Applied identity | F-141, F-142 | cvd, a11y, artifact | R6 |
-| FR-70 Appearance is chosen | F-153, F-154 | cvd, a11y, contrast | R6 |
-| FR-71 Wayfinding | F-145, F-146 | e2e, a11y | R6 |
-| FR-72 Contemporary equivalents | F-155 | color-golden, content, lint | R6 |
+| FR-69 Applied identity | F-141, F-142, F-165, F-190, F-192, F-193 | cvd, a11y, artifact | R6 |
+| FR-70 Appearance is chosen | F-153, F-154, F-175, F-180 | cvd, a11y, contrast | R6 |
+| FR-71 Wayfinding | F-145, F-146, F-177, F-178, F-179, F-180, F-181, F-182, F-197, F-200, F-202, F-203 | e2e, a11y | R6 |
+| FR-72 Contemporary equivalents | F-155, F-197 | color-golden, content, lint | R6 |
+| FR-73 Colour combinations | F-194, F-195, F-196, F-197, F-198, F-199 | test, golden, content, cvd, a11y | R7 |
+| FR-74 Hold a colour against a target | F-200, F-201 | golden, test, a11y | R7 |
 
 ## Non-functional requirements
 
@@ -111,21 +113,22 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-3 Determinism | F-006, F-073, F-083 | golden, test | R1 |
 | NFR-4 Latency | F-038 | perf | R3 |
 | NFR-7 Scale | F-041 | perf, review | R2 |
-| NFR-8 WCAG 2.2 AA | F-003, F-017, F-067, F-068, F-069, F-070 | a11y | R0 |
-| NFR-9 Never colour alone | F-003, F-017, F-067 | contrast, a11y | R0 |
-| NFR-10 CVD usability | F-008 | cvd, e2e | R1 |
+| NFR-8 WCAG 2.2 AA | F-003, F-017, F-067, F-068, F-069, F-070, F-175, F-176, F-177, F-178, F-184, F-185, F-186, F-187, F-188, F-189, F-190, F-191, F-204, F-205 | a11y | R0 |
+| NFR-9 Never colour alone | F-003, F-017, F-067, F-175, F-176, F-185, F-186, F-191, F-204, F-205 | contrast, a11y | R0 |
+| NFR-10 CVD usability | F-008, F-198 | cvd, e2e | R1 |
 | NFR-11 en/ja i18n | F-017 | test, e2e | R2 |
 | NFR-12 On-device privacy | F-040, F-080 | e2e, artifact | R2 |
 | NFR-13 Data protection | F-042 | test, sec | R4 |
 | NFR-14 Security baseline | F-004, F-080 | sec, test, artifact | R0 |
 | NFR-17 Offline capability | F-039, F-041 | e2e | R2 |
 | NFR-19 Testability | F-004, F-006, F-071, F-080 | test, state | R0 |
-| NFR-20 Content provenance | F-011 | content | R1 |
-| NFR-21 Claims discipline | F-025 | lint | R1 |
+| NFR-20 Content provenance | F-011, F-196 | content | R1 |
+| NFR-21 Claims discipline | F-025, F-198, F-201 | lint | R1 |
 | NFR-22 Ethical guardrails | F-037 | test, typecheck | R3 |
 | NFR-23 Bias testing | F-027, F-037 | test, review | R3 |
-| NFR-24 Boundary enforcement | F-001, F-002, F-072, F-073 | lint | R0 |
-| NFR-25 The design system reaches the product | F-140, F-143, F-144 | lint, a11y, contrast | R6 |
+| NFR-24 Boundary enforcement | F-001, F-002, F-072, F-073, F-183 | lint | R0 |
+| NFR-25 The design system reaches the product | F-140, F-143, F-144, F-175, F-184, F-187, F-188, F-189, F-202, F-203, F-204 | lint, a11y, contrast | R6 |
+| NFR-26 Every built capability is reachable | F-179, F-183, F-194 | state, test, lint | R7 |
 
 ---
 

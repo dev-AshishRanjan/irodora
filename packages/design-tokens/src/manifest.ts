@@ -116,6 +116,14 @@ export const NEUTRAL_IN_EVERY_THEME = [
   'status.warn',
   'status.bad',
   'ring',
+  // The accent joins the neutral list for the reason `ring` is on it, and one that is forced:
+  // `deriveTheme` clamps every tinted token to the chroma ceiling, so an accent left tintable
+  // would be FLATTENED TO GREY in all four derived families — the gold would exist only in
+  // `base`. It is also the right reading: a theme tints the chrome; this is a signal, and a
+  // signal that changes colour with the decoration has to be relearned (ADR-0099).
+  'accent',
+  'accent.foreground',
+  'accent.muted',
 ] as const;
 
 /**

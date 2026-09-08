@@ -9,11 +9,11 @@
 
 export const COLOR = {
   dark: {
-    background: { srgb: '#090807', oklch: { l: 0.135, c: 0.004, h: 70 }, usage: 'surface' },
-    'surface.1': { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'surface' },
-    'surface.2': { srgb: '#1A1817', oklch: { l: 0.212, c: 0.004, h: 70 }, usage: 'surface' },
-    'surface.3': { srgb: '#22211F', oklch: { l: 0.248, c: 0.004, h: 70 }, usage: 'surface' },
-    'swatch.well': { srgb: '#2B2A28', oklch: { l: 0.285, c: 0.004, h: 70 }, usage: 'surface' },
+    background: { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'surface' },
+    'surface.1': { srgb: '#191816', oklch: { l: 0.21, c: 0.004, h: 70 }, usage: 'surface' },
+    'surface.2': { srgb: '#201F1D', oklch: { l: 0.24, c: 0.004, h: 70 }, usage: 'surface' },
+    'surface.3': { srgb: '#262523', oklch: { l: 0.265, c: 0.004, h: 70 }, usage: 'surface' },
+    'swatch.well': { srgb: '#2D2B29', oklch: { l: 0.29, c: 0.004, h: 70 }, usage: 'surface' },
     'swatch.hairline': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
     foreground: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'text' },
     'foreground.2': { srgb: '#A5A39F', oklch: { l: 0.715, c: 0.006, h: 80 }, usage: 'text' },
@@ -23,7 +23,7 @@ export const COLOR = {
     backdrop: { srgb: 'rgba(0, 0, 0, 0.6)', oklch: { l: 0, c: 0, h: 0, alpha: 0.6 }, usage: 'nonText' },
     'border.strong': { srgb: '#7B7977', oklch: { l: 0.578, c: 0.004, h: 70 }, usage: 'nonText' },
     inverse: { srgb: '#F6F4F1', oklch: { l: 0.968, c: 0.005, h: 85 }, usage: 'surface' },
-    'inverse.foreground': { srgb: '#0C0B09', oklch: { l: 0.15, c: 0.004, h: 70 }, usage: 'text' },
+    'inverse.foreground': { srgb: '#151312', oklch: { l: 0.19, c: 0.004, h: 70 }, usage: 'text' },
     ring: { srgb: '#719DC4', oklch: { l: 0.68, c: 0.075, h: 246 }, usage: 'nonText' },
     'status.ok': { srgb: '#49AB79', oklch: { l: 0.67, c: 0.12, h: 158 }, usage: 'text' },
     'status.warn': { srgb: '#D58D25', oklch: { l: 0.7, c: 0.14, h: 70 }, usage: 'text' },
@@ -34,6 +34,9 @@ export const COLOR = {
     'chart.4': { srgb: '#525252', oklch: { l: 0.44, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#303030', oklch: { l: 0.31, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
+    accent: { srgb: '#FFE38D', oklch: { l: 0.92, c: 0.11, h: 92 }, usage: 'text' },
+    'accent.foreground': { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'text' },
+    'accent.muted': { srgb: '#2C2615', oklch: { l: 0.27, c: 0.03, h: 92 }, usage: 'surface' },
   },
   light: {
     background: { srgb: '#FDFCF9', oklch: { l: 0.99, c: 0.003, h: 85 }, usage: 'surface' },
@@ -61,13 +64,16 @@ export const COLOR = {
     'chart.4': { srgb: '#ABABAB', oklch: { l: 0.74, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#D4D4D4', oklch: { l: 0.87, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
+    accent: { srgb: '#4F4301', oklch: { l: 0.385, c: 0.079, h: 98 }, usage: 'text' },
+    'accent.foreground': { srgb: '#FBFAF7', oklch: { l: 0.985, c: 0.004, h: 85 }, usage: 'text' },
+    'accent.muted': { srgb: '#ECE8D6', oklch: { l: 0.93, c: 0.025, h: 98 }, usage: 'surface' },
   },
   'fuka.dark': {
-    background: { srgb: '#06090B', oklch: { l: 0.135, c: 0.008, h: 240 }, usage: 'surface' },
-    'surface.1': { srgb: '#0D1114', oklch: { l: 0.175, c: 0.008, h: 240 }, usage: 'surface' },
-    'surface.2': { srgb: '#16191C', oklch: { l: 0.212, c: 0.008, h: 240 }, usage: 'surface' },
-    'surface.3': { srgb: '#1E2225', oklch: { l: 0.248, c: 0.008, h: 240 }, usage: 'surface' },
-    'swatch.well': { srgb: '#2B2A28', oklch: { l: 0.285, c: 0.004, h: 70 }, usage: 'surface' },
+    background: { srgb: '#0D1114', oklch: { l: 0.175, c: 0.008, h: 240 }, usage: 'surface' },
+    'surface.1': { srgb: '#15191C', oklch: { l: 0.21, c: 0.008, h: 240 }, usage: 'surface' },
+    'surface.2': { srgb: '#1C2023', oklch: { l: 0.24, c: 0.008, h: 240 }, usage: 'surface' },
+    'surface.3': { srgb: '#222629', oklch: { l: 0.265, c: 0.008, h: 240 }, usage: 'surface' },
+    'swatch.well': { srgb: '#2D2B29', oklch: { l: 0.29, c: 0.004, h: 70 }, usage: 'surface' },
     'swatch.hairline': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
     foreground: { srgb: '#EFF6FB', oklch: { l: 0.968, c: 0.01, h: 240 }, usage: 'text' },
     'foreground.2': { srgb: '#9EA4A9', oklch: { l: 0.715, c: 0.01, h: 240 }, usage: 'text' },
@@ -77,7 +83,7 @@ export const COLOR = {
     backdrop: { srgb: 'rgba(0, 0, 0, 0.6)', oklch: { l: 0, c: 0, h: 0, alpha: 0.6 }, usage: 'nonText' },
     'border.strong': { srgb: '#767A7E', oklch: { l: 0.578, c: 0.008, h: 240 }, usage: 'nonText' },
     inverse: { srgb: '#EFF6FB', oklch: { l: 0.968, c: 0.01, h: 240 }, usage: 'surface' },
-    'inverse.foreground': { srgb: '#080C0E', oklch: { l: 0.15, c: 0.008, h: 240 }, usage: 'text' },
+    'inverse.foreground': { srgb: '#111417', oklch: { l: 0.19, c: 0.008, h: 240 }, usage: 'text' },
     ring: { srgb: '#719DC4', oklch: { l: 0.68, c: 0.075, h: 246 }, usage: 'nonText' },
     'status.ok': { srgb: '#49AB79', oklch: { l: 0.67, c: 0.12, h: 158 }, usage: 'text' },
     'status.warn': { srgb: '#D58D25', oklch: { l: 0.7, c: 0.14, h: 70 }, usage: 'text' },
@@ -88,6 +94,9 @@ export const COLOR = {
     'chart.4': { srgb: '#525252', oklch: { l: 0.44, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#303030', oklch: { l: 0.31, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
+    accent: { srgb: '#FFE38D', oklch: { l: 0.92, c: 0.11, h: 92 }, usage: 'text' },
+    'accent.foreground': { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'text' },
+    'accent.muted': { srgb: '#2C2615', oklch: { l: 0.27, c: 0.03, h: 92 }, usage: 'surface' },
   },
   'fuka.light': {
     background: { srgb: '#F9FCFF', oklch: { l: 0.99, c: 0.005, h: 240 }, usage: 'surface' },
@@ -115,13 +124,16 @@ export const COLOR = {
     'chart.4': { srgb: '#ABABAB', oklch: { l: 0.74, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#D4D4D4', oklch: { l: 0.87, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
+    accent: { srgb: '#4F4301', oklch: { l: 0.385, c: 0.079, h: 98 }, usage: 'text' },
+    'accent.foreground': { srgb: '#FBFAF7', oklch: { l: 0.985, c: 0.004, h: 85 }, usage: 'text' },
+    'accent.muted': { srgb: '#ECE8D6', oklch: { l: 0.93, c: 0.025, h: 98 }, usage: 'surface' },
   },
   'yama.dark': {
-    background: { srgb: '#0B0706', oklch: { l: 0.135, c: 0.008, h: 40 }, usage: 'surface' },
-    'surface.1': { srgb: '#140F0E', oklch: { l: 0.175, c: 0.008, h: 40 }, usage: 'surface' },
-    'surface.2': { srgb: '#1C1816', oklch: { l: 0.212, c: 0.008, h: 40 }, usage: 'surface' },
-    'surface.3': { srgb: '#25201E', oklch: { l: 0.248, c: 0.008, h: 40 }, usage: 'surface' },
-    'swatch.well': { srgb: '#2B2A28', oklch: { l: 0.285, c: 0.004, h: 70 }, usage: 'surface' },
+    background: { srgb: '#140F0E', oklch: { l: 0.175, c: 0.008, h: 40 }, usage: 'surface' },
+    'surface.1': { srgb: '#1C1716', oklch: { l: 0.21, c: 0.008, h: 40 }, usage: 'surface' },
+    'surface.2': { srgb: '#231E1C', oklch: { l: 0.24, c: 0.008, h: 40 }, usage: 'surface' },
+    'surface.3': { srgb: '#292422', oklch: { l: 0.265, c: 0.008, h: 40 }, usage: 'surface' },
+    'swatch.well': { srgb: '#2D2B29', oklch: { l: 0.29, c: 0.004, h: 70 }, usage: 'surface' },
     'swatch.hairline': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
     foreground: { srgb: '#FBF2EF', oklch: { l: 0.968, c: 0.01, h: 40 }, usage: 'text' },
     'foreground.2': { srgb: '#A9A19E', oklch: { l: 0.715, c: 0.01, h: 40 }, usage: 'text' },
@@ -131,7 +143,7 @@ export const COLOR = {
     backdrop: { srgb: 'rgba(0, 0, 0, 0.6)', oklch: { l: 0, c: 0, h: 0, alpha: 0.6 }, usage: 'nonText' },
     'border.strong': { srgb: '#7E7876', oklch: { l: 0.578, c: 0.008, h: 40 }, usage: 'nonText' },
     inverse: { srgb: '#FBF2EF', oklch: { l: 0.968, c: 0.01, h: 40 }, usage: 'surface' },
-    'inverse.foreground': { srgb: '#0E0A09', oklch: { l: 0.15, c: 0.008, h: 40 }, usage: 'text' },
+    'inverse.foreground': { srgb: '#171311', oklch: { l: 0.19, c: 0.008, h: 40 }, usage: 'text' },
     ring: { srgb: '#719DC4', oklch: { l: 0.68, c: 0.075, h: 246 }, usage: 'nonText' },
     'status.ok': { srgb: '#49AB79', oklch: { l: 0.67, c: 0.12, h: 158 }, usage: 'text' },
     'status.warn': { srgb: '#D58D25', oklch: { l: 0.7, c: 0.14, h: 70 }, usage: 'text' },
@@ -142,6 +154,9 @@ export const COLOR = {
     'chart.4': { srgb: '#525252', oklch: { l: 0.44, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#303030', oklch: { l: 0.31, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
+    accent: { srgb: '#FFE38D', oklch: { l: 0.92, c: 0.11, h: 92 }, usage: 'text' },
+    'accent.foreground': { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'text' },
+    'accent.muted': { srgb: '#2C2615', oklch: { l: 0.27, c: 0.03, h: 92 }, usage: 'surface' },
   },
   'yama.light': {
     background: { srgb: '#FFFBF9', oklch: { l: 0.99, c: 0.005, h: 40 }, usage: 'surface' },
@@ -169,13 +184,16 @@ export const COLOR = {
     'chart.4': { srgb: '#ABABAB', oklch: { l: 0.74, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#D4D4D4', oklch: { l: 0.87, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
+    accent: { srgb: '#4F4301', oklch: { l: 0.385, c: 0.079, h: 98 }, usage: 'text' },
+    'accent.foreground': { srgb: '#FBFAF7', oklch: { l: 0.985, c: 0.004, h: 85 }, usage: 'text' },
+    'accent.muted': { srgb: '#ECE8D6', oklch: { l: 0.93, c: 0.025, h: 98 }, usage: 'surface' },
   },
   'aota.dark': {
-    background: { srgb: '#070906', oklch: { l: 0.135, c: 0.008, h: 130 }, usage: 'surface' },
-    'surface.1': { srgb: '#0F110E', oklch: { l: 0.175, c: 0.008, h: 130 }, usage: 'surface' },
-    'surface.2': { srgb: '#171A16', oklch: { l: 0.212, c: 0.008, h: 130 }, usage: 'surface' },
-    'surface.3': { srgb: '#20221E', oklch: { l: 0.248, c: 0.008, h: 130 }, usage: 'surface' },
-    'swatch.well': { srgb: '#2B2A28', oklch: { l: 0.285, c: 0.004, h: 70 }, usage: 'surface' },
+    background: { srgb: '#0F110E', oklch: { l: 0.175, c: 0.008, h: 130 }, usage: 'surface' },
+    'surface.1': { srgb: '#171915', oklch: { l: 0.21, c: 0.008, h: 130 }, usage: 'surface' },
+    'surface.2': { srgb: '#1E201C', oklch: { l: 0.24, c: 0.008, h: 130 }, usage: 'surface' },
+    'surface.3': { srgb: '#242622', oklch: { l: 0.265, c: 0.008, h: 130 }, usage: 'surface' },
+    'swatch.well': { srgb: '#2D2B29', oklch: { l: 0.29, c: 0.004, h: 70 }, usage: 'surface' },
     'swatch.hairline': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
     foreground: { srgb: '#F2F6EF', oklch: { l: 0.968, c: 0.01, h: 130 }, usage: 'text' },
     'foreground.2': { srgb: '#A1A49E', oklch: { l: 0.715, c: 0.01, h: 130 }, usage: 'text' },
@@ -185,7 +203,7 @@ export const COLOR = {
     backdrop: { srgb: 'rgba(0, 0, 0, 0.6)', oklch: { l: 0, c: 0, h: 0, alpha: 0.6 }, usage: 'nonText' },
     'border.strong': { srgb: '#787B76', oklch: { l: 0.578, c: 0.008, h: 130 }, usage: 'nonText' },
     inverse: { srgb: '#F2F6EF', oklch: { l: 0.968, c: 0.01, h: 130 }, usage: 'surface' },
-    'inverse.foreground': { srgb: '#0A0C08', oklch: { l: 0.15, c: 0.008, h: 130 }, usage: 'text' },
+    'inverse.foreground': { srgb: '#131511', oklch: { l: 0.19, c: 0.008, h: 130 }, usage: 'text' },
     ring: { srgb: '#719DC4', oklch: { l: 0.68, c: 0.075, h: 246 }, usage: 'nonText' },
     'status.ok': { srgb: '#49AB79', oklch: { l: 0.67, c: 0.12, h: 158 }, usage: 'text' },
     'status.warn': { srgb: '#D58D25', oklch: { l: 0.7, c: 0.14, h: 70 }, usage: 'text' },
@@ -196,6 +214,9 @@ export const COLOR = {
     'chart.4': { srgb: '#525252', oklch: { l: 0.44, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#303030', oklch: { l: 0.31, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#131110', oklch: { l: 0.18, c: 0.004, h: 70 }, usage: 'nonText' },
+    accent: { srgb: '#FFE38D', oklch: { l: 0.92, c: 0.11, h: 92 }, usage: 'text' },
+    'accent.foreground': { srgb: '#12100F', oklch: { l: 0.175, c: 0.004, h: 70 }, usage: 'text' },
+    'accent.muted': { srgb: '#2C2615', oklch: { l: 0.27, c: 0.03, h: 92 }, usage: 'surface' },
   },
   'aota.light': {
     background: { srgb: '#FAFDF8', oklch: { l: 0.99, c: 0.006, h: 130 }, usage: 'surface' },
@@ -223,6 +244,9 @@ export const COLOR = {
     'chart.4': { srgb: '#ABABAB', oklch: { l: 0.74, c: 0, h: 0 }, usage: 'nonText' },
     'chart.5': { srgb: '#D4D4D4', oklch: { l: 0.87, c: 0, h: 0 }, usage: 'nonText' },
     'swatch.hairline.inverse': { srgb: '#F6F5F3', oklch: { l: 0.97, c: 0.003, h: 85 }, usage: 'nonText' },
+    accent: { srgb: '#4F4301', oklch: { l: 0.385, c: 0.079, h: 98 }, usage: 'text' },
+    'accent.foreground': { srgb: '#FBFAF7', oklch: { l: 0.985, c: 0.004, h: 85 }, usage: 'text' },
+    'accent.muted': { srgb: '#ECE8D6', oklch: { l: 0.93, c: 0.025, h: 98 }, usage: 'surface' },
   },
 } as const;
 
@@ -252,7 +276,7 @@ export const TAP_TARGET = 44 as const;
 export const JUDGEABLE_SAMPLE = 77 as const;
 
 /** Token names usable for normal-size text: AA 4.5:1 against their surfaces. */
-export const TEXT_TOKENS = ['foreground', 'foreground.2', 'link', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad'] as const;
+export const TEXT_TOKENS = ['foreground', 'foreground.2', 'link', 'inverse.foreground', 'status.ok', 'status.warn', 'status.bad', 'accent', 'accent.foreground'] as const;
 
 /** Token names restricted to >= 18.66px, or >= 24px bold. */
 export const LARGE_TEXT_TOKENS = ['foreground.3'] as const;
@@ -264,7 +288,7 @@ export type TextToken = (typeof TEXT_TOKENS)[number];
 export type LargeTextToken = (typeof LARGE_TEXT_TOKENS)[number];
 
 /** Every declared pairing, as `a|b` both ways. DERIVED from the manifest. */
-export const DECLARED_PAIRINGS = ['background|border.strong', 'background|foreground', 'background|foreground.2', 'background|foreground.3', 'background|link', 'background|ring', 'background|status.bad', 'background|status.ok', 'background|status.warn', 'border.strong|background', 'border.strong|surface.1', 'border.strong|surface.2', 'border.strong|surface.3', 'border.strong|swatch.well', 'foreground.2|background', 'foreground.2|surface.1', 'foreground.2|surface.2', 'foreground.3|background', 'foreground.3|surface.1', 'foreground.3|surface.2', 'foreground|background', 'foreground|surface.1', 'foreground|surface.2', 'foreground|surface.3', 'foreground|swatch.well', 'inverse.foreground|inverse', 'inverse.foreground|status.bad', 'inverse.foreground|status.ok', 'inverse.foreground|status.warn', 'inverse|inverse.foreground', 'link|background', 'link|surface.1', 'link|surface.2', 'link|surface.3', 'ring|background', 'ring|surface.1', 'ring|surface.2', 'ring|surface.3', 'status.bad|background', 'status.bad|inverse.foreground', 'status.bad|surface.1', 'status.bad|surface.2', 'status.bad|swatch.well', 'status.ok|background', 'status.ok|inverse.foreground', 'status.ok|surface.1', 'status.ok|surface.2', 'status.ok|swatch.well', 'status.warn|background', 'status.warn|inverse.foreground', 'status.warn|surface.1', 'status.warn|surface.2', 'status.warn|swatch.well', 'surface.1|border.strong', 'surface.1|foreground', 'surface.1|foreground.2', 'surface.1|foreground.3', 'surface.1|link', 'surface.1|ring', 'surface.1|status.bad', 'surface.1|status.ok', 'surface.1|status.warn', 'surface.2|border.strong', 'surface.2|foreground', 'surface.2|foreground.2', 'surface.2|foreground.3', 'surface.2|link', 'surface.2|ring', 'surface.2|status.bad', 'surface.2|status.ok', 'surface.2|status.warn', 'surface.3|border.strong', 'surface.3|foreground', 'surface.3|link', 'surface.3|ring', 'swatch.well|border.strong', 'swatch.well|foreground', 'swatch.well|status.bad', 'swatch.well|status.ok', 'swatch.well|status.warn'] as const;
+export const DECLARED_PAIRINGS = ['accent.foreground|accent', 'accent.muted|accent', 'accent.muted|foreground', 'accent.muted|foreground.2', 'accent|accent.foreground', 'accent|accent.muted', 'accent|background', 'accent|surface.1', 'accent|surface.2', 'accent|surface.3', 'background|accent', 'background|border.strong', 'background|foreground', 'background|foreground.2', 'background|foreground.3', 'background|link', 'background|ring', 'background|status.bad', 'background|status.ok', 'background|status.warn', 'border.strong|background', 'border.strong|surface.1', 'border.strong|surface.2', 'border.strong|surface.3', 'border.strong|swatch.well', 'foreground.2|accent.muted', 'foreground.2|background', 'foreground.2|surface.1', 'foreground.2|surface.2', 'foreground.3|background', 'foreground.3|surface.1', 'foreground.3|surface.2', 'foreground|accent.muted', 'foreground|background', 'foreground|surface.1', 'foreground|surface.2', 'foreground|surface.3', 'foreground|swatch.well', 'inverse.foreground|inverse', 'inverse.foreground|status.bad', 'inverse.foreground|status.ok', 'inverse.foreground|status.warn', 'inverse|inverse.foreground', 'link|background', 'link|surface.1', 'link|surface.2', 'link|surface.3', 'ring|background', 'ring|surface.1', 'ring|surface.2', 'ring|surface.3', 'status.bad|background', 'status.bad|inverse.foreground', 'status.bad|surface.1', 'status.bad|surface.2', 'status.bad|swatch.well', 'status.ok|background', 'status.ok|inverse.foreground', 'status.ok|surface.1', 'status.ok|surface.2', 'status.ok|swatch.well', 'status.warn|background', 'status.warn|inverse.foreground', 'status.warn|surface.1', 'status.warn|surface.2', 'status.warn|swatch.well', 'surface.1|accent', 'surface.1|border.strong', 'surface.1|foreground', 'surface.1|foreground.2', 'surface.1|foreground.3', 'surface.1|link', 'surface.1|ring', 'surface.1|status.bad', 'surface.1|status.ok', 'surface.1|status.warn', 'surface.2|accent', 'surface.2|border.strong', 'surface.2|foreground', 'surface.2|foreground.2', 'surface.2|foreground.3', 'surface.2|link', 'surface.2|ring', 'surface.2|status.bad', 'surface.2|status.ok', 'surface.2|status.warn', 'surface.3|accent', 'surface.3|border.strong', 'surface.3|foreground', 'surface.3|link', 'surface.3|ring', 'swatch.well|border.strong', 'swatch.well|foreground', 'swatch.well|status.bad', 'swatch.well|status.ok', 'swatch.well|status.warn'] as const;
 
 export const STATUS_PAIRING = {
   ok: { colorToken: 'status.ok', iconToken: 'icon.check', textRequired: true },

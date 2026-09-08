@@ -17,33 +17,33 @@
 @layer theme {
   :root {
     @variant dark {
-      --background: #090807; /* background — oklch(0.135 0.004 70) */
+      --background: #12100F; /* background — oklch(0.175 0.004 70) */
       --foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
-      --surface: #12100F; /* surface.1 — oklch(0.175 0.004 70) */
+      --surface: #191816; /* surface.1 — oklch(0.21 0.004 70) */
       --surface-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
-      --surface-secondary: #1A1817; /* surface.2 — oklch(0.212 0.004 70) */
+      --surface-secondary: #201F1D; /* surface.2 — oklch(0.24 0.004 70) */
       --surface-secondary-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
-      --surface-tertiary: #22211F; /* surface.3 — oklch(0.248 0.004 70) */
+      --surface-tertiary: #262523; /* surface.3 — oklch(0.265 0.004 70) */
       --surface-tertiary-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
-      --overlay: #1A1817; /* surface.2 — oklch(0.212 0.004 70) */
+      --overlay: #201F1D; /* surface.2 — oklch(0.24 0.004 70) */
       --overlay-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
       --backdrop: #00000099; /* backdrop — oklch(0 0 0) */
       --muted: #A5A39F; /* foreground.2 — oklch(0.715 0.006 80) */
-      --default: #1A1817; /* surface.2 — oklch(0.212 0.004 70) */
+      --default: #201F1D; /* surface.2 — oklch(0.24 0.004 70) */
       --default-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
       --accent: #F6F4F1; /* inverse — oklch(0.968 0.005 85) */
-      --accent-foreground: #0C0B09; /* inverse.foreground — oklch(0.15 0.004 70) */
-      --field-background: #22211F; /* surface.3 — oklch(0.248 0.004 70) */
+      --accent-foreground: #151312; /* inverse.foreground — oklch(0.19 0.004 70) */
+      --field-background: #262523; /* surface.3 — oklch(0.265 0.004 70) */
       --field-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
       --field-placeholder: #A5A39F; /* foreground.2 — oklch(0.715 0.006 80) */
       --field-border: #FFFFFF14; /* border — oklch(1 0 0) */
       --success: #49AB79; /* status.ok — oklch(0.67 0.12 158) */
       --warning: #D58D25; /* status.warn — oklch(0.7 0.14 70) */
       --danger: #FEAAAC; /* status.bad — oklch(0.82 0.1 18) */
-      --success-foreground: #0C0B09; /* inverse.foreground — oklch(0.15 0.004 70) */
-      --warning-foreground: #0C0B09; /* inverse.foreground — oklch(0.15 0.004 70) */
-      --danger-foreground: #0C0B09; /* inverse.foreground — oklch(0.15 0.004 70) */
-      --segment: #1A1817; /* surface.2 — oklch(0.212 0.004 70) */
+      --success-foreground: #151312; /* inverse.foreground — oklch(0.19 0.004 70) */
+      --warning-foreground: #151312; /* inverse.foreground — oklch(0.19 0.004 70) */
+      --danger-foreground: #151312; /* inverse.foreground — oklch(0.19 0.004 70) */
+      --segment: #201F1D; /* surface.2 — oklch(0.24 0.004 70) */
       --segment-foreground: #F6F4F1; /* foreground — oklch(0.968 0.005 85) */
       --border: #FFFFFF14; /* border — oklch(1 0 0) */
       --separator: #FFFFFF14; /* border — oklch(1 0 0) */
@@ -53,19 +53,19 @@
       --overlay-shadow: 0 0 0 0 transparent;
       --field-shadow: 0 0 0 0 transparent;
 
-      --irodora-surface-hover: #201F1D; /* mix(--surface 92%, --surface-foreground 8%) */
-      --irodora-background-secondary: #100F0D; /* mix(--background 96%, --foreground 4%) */
-      --irodora-background-tertiary: #181614; /* mix(--background 92%, --foreground 8%) */
-      --irodora-default-hover: #211F1E; /* mix(--default 96%, --default-foreground 4%) */
-      --irodora-accent-hover: #DBD9D6; /* mix(--accent 90%, --accent-foreground 10%) */
-      --irodora-success-hover: #44996C; /* mix(--success 90%, --success-foreground 10%) */
-      --irodora-warning-hover: #BE7E25; /* mix(--warning 90%, --warning-foreground 10%) */
-      --irodora-danger-hover: #E29899; /* mix(--danger 90%, --danger-foreground 10%) */
-      --irodora-field-hover: #262523EB; /* mix(--field-background 90%, --field-foreground 2%) */
+      --irodora-surface-hover: #282624; /* mix(--surface 92%, --surface-foreground 8%) */
+      --irodora-background-secondary: #191716; /* mix(--background 96%, --foreground 4%) */
+      --irodora-background-tertiary: #201F1D; /* mix(--background 92%, --foreground 8%) */
+      --irodora-default-hover: #272624; /* mix(--default 96%, --default-foreground 4%) */
+      --irodora-accent-hover: #DCDAD7; /* mix(--accent 90%, --accent-foreground 10%) */
+      --irodora-success-hover: #459A6D; /* mix(--success 90%, --success-foreground 10%) */
+      --irodora-warning-hover: #BF7F27; /* mix(--warning 90%, --warning-foreground 10%) */
+      --irodora-danger-hover: #E4999A; /* mix(--danger 90%, --danger-foreground 10%) */
+      --irodora-field-hover: #2A2927EB; /* mix(--field-background 90%, --field-foreground 2%) */
       --irodora-field-border-hover: #FAF9F72B; /* mix(--field-border 88%, --field-foreground 10%) */
       --irodora-field-border-focus: #F8F6F447; /* mix(--field-border 74%, --field-foreground 22%) */
-      --irodora-default-soft: #1A181780; /* mix(--default 50%, transparent 50%) */
-      --irodora-default-soft-hover: #1A181799; /* mix(--default 60%, transparent 40%) */
+      --irodora-default-soft: #201F1D80; /* mix(--default 50%, transparent 50%) */
+      --irodora-default-soft-hover: #201F1D99; /* mix(--default 60%, transparent 40%) */
       --irodora-accent-soft: #F6F4F126; /* mix(--accent 15%, transparent 85%) */
       --irodora-accent-soft-hover: #F6F4F133; /* mix(--accent 20%, transparent 80%) */
       --irodora-danger-soft: #FEAAAC26; /* mix(--danger 15%, transparent 85%) */
@@ -74,10 +74,10 @@
       --irodora-warning-soft-hover: #D58D2533; /* mix(--warning 20%, transparent 80%) */
       --irodora-success-soft: #49AB7926; /* mix(--success 15%, transparent 85%) */
       --irodora-success-soft-hover: #49AB7933; /* mix(--success 20%, transparent 80%) */
-      --irodora-separator-secondary: #2E2C2A; /* mix(--surface 85%, --surface-foreground 15%) */
-      --irodora-separator-tertiary: #363432; /* mix(--surface 81%, --surface-foreground 19%) */
-      --irodora-border-secondary: #3C3A38; /* mix(--surface 78%, --surface-foreground 22%) */
-      --irodora-border-tertiary: #555351; /* mix(--surface 66%, --surface-foreground 34%) */
+      --irodora-separator-secondary: #353331; /* mix(--surface 85%, --surface-foreground 15%) */
+      --irodora-separator-tertiary: #3D3B39; /* mix(--surface 81%, --surface-foreground 19%) */
+      --irodora-border-secondary: #43413F; /* mix(--surface 78%, --surface-foreground 22%) */
+      --irodora-border-tertiary: #5C5A57; /* mix(--surface 66%, --surface-foreground 34%) */
       --irodora-accent-soft-foreground: #F6F4F1; /* mix(--accent 80%, --foreground 20%) — TEXT, checked on --color-accent-soft */
       --irodora-danger-soft-foreground: #FEB9B9; /* mix(--danger 80%, --foreground 20%) — TEXT, checked on --color-danger-soft */
       --irodora-warning-soft-foreground: #E2B279; /* mix(--warning 65%, --foreground 35%) — TEXT, checked on --color-warning-soft */

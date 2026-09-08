@@ -2,22 +2,38 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
-    "date": "2026-09-07",
-    "adr": "0098",
+    "date": "2026-09-08",
+    "adr": "0099",
     "tokens": [
-      "light.status.ok",
-      "light.status.warn",
-      "light.status.bad"
+      "dark.background",
+      "dark.surface.1",
+      "dark.surface.2",
+      "dark.surface.3",
+      "dark.swatch.well",
+      "dark.inverse.foreground",
+      "dark.accent",
+      "dark.accent.foreground",
+      "dark.accent.muted",
+      "light.accent",
+      "light.accent.foreground",
+      "light.accent.muted"
     ],
-    "reviewedBy": "Decision approved by the product owner on 2026-09-07, against the measurements in ADR-0098 and reproduced by gate 9 and gate 10 on this repository. The VALUES are the output of a search over the feasible box judged by the gate’s own checkers, not a preference.",
-    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate — every declared pairing including the four new `swatch.well` ones passes in all eight palettes, worst CVD separation is 63.1 against a floor of 60 (unchanged from before this change), and the salience rank holds in both themes. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. TWO RE-APPROVALS ARE NOW OWED, not one: this entry supersedes the 2026-08-19 / ADR-0053 entry for the three DARK status tokens, and that one is still outstanding — a supersede here records which entry is current, not that the older decision was ratified.",
-    "supersedes": {
-      "date": "2026-08-19",
-      "adr": "0053"
-    }
+    "reviewedBy": "NOT YET APPROVED BY A PERSON. The values are the output of a search over the feasible box judged by the gate's own checkers — every declared pairing passes in all eight palettes, gate 10 is unchanged and green, and the well's lightness ceiling was found by measurement rather than chosen. WHAT NOBODY HAS DONE IS LOOK AT THEM. This is the third consecutive change in this area to end that way (F-161, F-165), and F-175 carries it as an attested criterion rather than as a note.",
+    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. THREE RE-APPROVALS ARE NOW OWED: this entry, the 2026-09-07 / ADR-0098 entry for the three LIGHT status tokens, and the 2026-08-19 / ADR-0053 entry for the three DARK ones. A supersede records which entry is current, not that the older decision was ratified — and this one supersedes NEITHER of them, because it touches different tokens.",
+    "supersedes": null,
+    "alsoOutstanding": [
+      {
+        "date": "2026-09-07",
+        "adr": "0098"
+      },
+      {
+        "date": "2026-08-19",
+        "adr": "0053"
+      }
+    ]
   },
   "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
   "themes": [
@@ -42,11 +58,11 @@
     "dark": {
       "background": {
         "oklch": {
-          "l": 0.135,
+          "l": 0.175,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#090807",
+        "srgb": "#12100F",
         "usage": "surface",
         "role": "The page.",
         "pairsWith": [
@@ -57,11 +73,11 @@
       },
       "surface.1": {
         "oklch": {
-          "l": 0.175,
+          "l": 0.21,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#12100F",
+        "srgb": "#191816",
         "usage": "surface",
         "role": "Cards, panels.",
         "pairsWith": [
@@ -72,11 +88,11 @@
       },
       "surface.2": {
         "oklch": {
-          "l": 0.212,
+          "l": 0.24,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#1A1817",
+        "srgb": "#201F1D",
         "usage": "surface",
         "role": "Raised — the confidence card, popovers.",
         "pairsWith": [
@@ -87,11 +103,11 @@
       },
       "surface.3": {
         "oklch": {
-          "l": 0.248,
+          "l": 0.265,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#22211F",
+        "srgb": "#262523",
         "usage": "surface",
         "role": "Meter tracks, inset wells.",
         "pairsWith": [
@@ -100,11 +116,11 @@
       },
       "swatch.well": {
         "oklch": {
-          "l": 0.285,
+          "l": 0.29,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#2B2A28",
+        "srgb": "#2D2B29",
         "usage": "surface",
         "role": "MANDATORY neutral ground beneath every colour sample. Its hardest requirement — that a sample of ANY colour keeps a perceptible edge against it — cannot be expressed as a pairing, because the other side is an arbitrary garment colour; that is the two-tone keyline on swatch.hairline, gamut-checked in F-068. It IS a checked pairing in one direction, since border.strong must reach 3:1 on it. STATUS.BAD NOW PAIRS WITH IT (F-152): `Status` takes `adjacentToSample`, and what that does is put the status on this ground so a sample beside it is not read against a coloured field. That mechanism dates from F-069 and had never been measured, because nothing in the product had painted a status until the export failure and the refused photograph. ONLY `bad`, AND THAT IS A FINDING RATHER THAN A CHOICE: at 4.21:1 and 4.32:1, status.ok and status.warn do not clear the 4.5 text floor on this ground, so `adjacentToSample` promises a well that two of the three kinds cannot legibly sit on. Moving them is a decision about two shipped colours under a gamut ceiling — warn leaves sRGB before it is dark enough to keep the salience rank — and it is recorded as F-174 rather than bisected into place here.",
         "pairsWith": [
@@ -242,11 +258,11 @@
       },
       "inverse.foreground": {
         "oklch": {
-          "l": 0.15,
+          "l": 0.19,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#0C0B09",
+        "srgb": "#151312",
         "usage": "text",
         "role": "Text on inverse — and, since F-087, the text on a FILLED status surface, which is what HeroUI's --success/--warning/--danger-foreground resolve to. It clears 4.5:1 on all three fills in both themes, so no separate token was needed. But in DARK it lands at APCA Lc 49.6 and 51.0 on status.ok and status.warn — a WCAG pass below the Lc 60 body-text floor, reported by gate 9. Read that as the measurement agreeing with ADR-0044: status colour belongs on the words, not behind them, and a filled status surface is a pattern to avoid rather than one this pairing endorses.",
         "pairsWith": [
@@ -390,6 +406,52 @@
         "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
+      },
+      "accent": {
+        "oklch": {
+          "l": 0.92,
+          "c": 0.11,
+          "h": 92
+        },
+        "usage": "text",
+        "role": "The accent. The product had none until R7 — `link` was defined as `foreground` — so every emphasis was made of weight and grey. Gold on dark, and it is the SAME gold in all four dark palettes: it is listed in NEUTRAL_IN_EVERY_THEME, because a theme tints the chrome and this is a signal. It may never touch the sample furniture or a status; see ADR-0099.",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3",
+          "accent.foreground",
+          "accent.muted"
+        ],
+        "srgb": "#FFE38D"
+      },
+      "accent.foreground": {
+        "oklch": {
+          "l": 0.175,
+          "c": 0.004,
+          "h": 70
+        },
+        "usage": "text",
+        "role": "What sits ON a filled accent. Equal to `background` by construction, so a filled control reads as a hole in the page cut in gold rather than as a third colour.",
+        "pairsWith": [
+          "accent"
+        ],
+        "srgb": "#12100F"
+      },
+      "accent.muted": {
+        "oklch": {
+          "l": 0.27,
+          "c": 0.03,
+          "h": 92
+        },
+        "usage": "surface",
+        "role": "A quiet accent ground — the fill behind a selected thing, where the full accent would shout. Reached by F-176; exempt from token-reach until then.",
+        "pairsWith": [
+          "foreground",
+          "foreground.2",
+          "accent"
+        ],
+        "srgb": "#2C2615"
       }
     },
     "light": {
@@ -743,6 +805,52 @@
         "role": "The other half of the keyline described on swatch.hairline. One half of the two-tone keyline beneath a colour sample. OPAQUE, deliberately: a single translucent line is invisible at its worst case — rgba(0,0,0,0.14) against a black sample measured 1.00, which is no edge at all — and two translucent halves composite over the SAME sample, so their difference compresses to 1.15 against white. VERIFIED: scanning the sRGB gamut at 0.05 steps, the better of the two tones reaches at least 3:1 against every possible sample (measured worst case 4.23), and the two tones differ from each other by ~18:1 whatever sits behind them.",
         "uncheckedReason": "No declared pairing can express this: the other side of the line is an arbitrary garment colour, so there is no second token to name. It is NOT unchecked — packages/design-tokens/test/swatch-edge.test.ts scans the gamut and asserts the worst case, and it carries the shipped single-line design as a decoy that must fail. F-068.",
         "pairsWith": []
+      },
+      "accent": {
+        "oklch": {
+          "l": 0.385,
+          "c": 0.079,
+          "h": 98
+        },
+        "usage": "text",
+        "role": "The accent, on light. NOT the gold the dark theme carries, and the reason is measured rather than aesthetic: an accent that clears 4.5:1 on white must be dark, a dark gold IS a bronze, and `status.warn` light is a bronze at h 70 — the first candidate measured dE00 5.6 from it, which is one colour with two meanings. This is the warmest value that stays clear of every signal. ADR-0099.",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3",
+          "accent.foreground",
+          "accent.muted"
+        ],
+        "srgb": "#4F4301"
+      },
+      "accent.foreground": {
+        "oklch": {
+          "l": 0.985,
+          "c": 0.004,
+          "h": 85
+        },
+        "usage": "text",
+        "role": "What sits ON a filled accent. As dark.accent.foreground.",
+        "pairsWith": [
+          "accent"
+        ],
+        "srgb": "#FBFAF7"
+      },
+      "accent.muted": {
+        "oklch": {
+          "l": 0.93,
+          "c": 0.025,
+          "h": 98
+        },
+        "usage": "surface",
+        "role": "As dark.accent.muted.",
+        "pairsWith": [
+          "foreground",
+          "foreground.2",
+          "accent"
+        ],
+        "srgb": "#ECE8D6"
       }
     }
   },
@@ -955,6 +1063,22 @@
       "owner": "design",
       "recordedAt": "2026-08-15",
       "adr": "0044"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "accent",
+      "reason": "The product had no accent at all until R7 and every emphasis was carried by weight and grey. The ceiling exists so the interface does not compete with the garment sample, and that reasoning is preserved rather than waived: the accent is refused on swatch.well, on both keyline tones and on every signal, so it never appears beside a colour reading. It is also listed in NEUTRAL_IN_EVERY_THEME, so it does not multiply across the eight palettes. See ADR-0099.",
+      "owner": "design",
+      "recordedAt": "2026-09-08",
+      "adr": "0099"
+    },
+    {
+      "rule": "chromaCeiling",
+      "token": "accent.muted",
+      "reason": "As accent. A tint of it at a quarter the chroma, for the ground behind a selected thing. Still above 0.01, so still recorded rather than exempted by being a surface.",
+      "owner": "design",
+      "recordedAt": "2026-09-08",
+      "adr": "0099"
     }
   ],
   "gate": {

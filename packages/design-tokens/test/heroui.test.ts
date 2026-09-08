@@ -109,7 +109,22 @@ describe('hex only (ADR-0063)', () => {
   });
 
   it('KEEPS the OKLCh provenance in comments, which is what makes the hex readable', () => {
-    expect(css).toContain('oklch(0.135 0.004 70)');
+    /*
+     * READ FROM THE MANIFEST, NOT WRITTEN OUT.
+     *
+     * This asserted the literal `oklch(0.135 0.004 70)` — the dark ground's value on the day
+     * it was written — so it was pinning a COLOUR while claiming to check a FORMAT. F-175
+     * lifted that ground off near-black and the test went red for a reason that had nothing to
+     * do with what it exists to check.
+     *
+     * The property is: whatever the manifest says, the comment beside the hex says it back in
+     * OKLCh. Deriving the expectation from the manifest is what makes that true at every value
+     * rather than at one, and it is the same rule this repository applies to the emitted
+     * values themselves — a number two files agree about by copying is a number that will
+     * eventually disagree.
+     */
+    const { l, c, h } = manifest.color.dark['background']?.oklch ?? { l: 0, c: 0, h: 0 };
+    expect(css).toContain(`oklch(${String(l)} ${String(c)} ${String(h)})`);
   });
 });
 

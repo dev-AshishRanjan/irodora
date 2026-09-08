@@ -80,6 +80,36 @@ reason to encode.
 
 ## What the manifest carries that a normal design system does not
 
+**One accent, and it may not go near a sample** (F-175,
+[ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md)).
+The product had none until R7 — `link` is still defined as the same value as `foreground`,
+because there the underline is the channel — so every emphasis was carried by weight and grey.
+
+`accent` is gold on dark (`#FFE38D`) and an olive-gold on light (`#4F4301`), with
+`accent.foreground` for what sits on a filled one and `accent.muted` for a quiet ground.
+Two things about it are unusual and both are load-bearing:
+
+- **It is above the chroma ceiling and recorded as an exception, not waived.** The ceiling
+  exists so the interface does not compete with the garment sample, and that reasoning is
+  preserved by *where the accent may go*: never on `swatch.well`, never on either keyline
+  tone, never on `status.*` or `chart.*`. It is spent on navigation and the primary action,
+  which are never adjacent to a colour reading.
+- **The two themes are not the same hue, and that is a measurement.** An accent clearing 4.5:1
+  on white must be dark; a dark gold is a bronze; and `status.warn` on light *is* a bronze at
+  h 70. The first light candidate measured ΔE00 5.6 from it — one colour with two meanings, one
+  of which is *something is wrong*. The shipped value is the warmest one that stays ΔE00 ≥ 18
+  from every signal.
+
+It is listed in `NEUTRAL_IN_EVERY_THEME` alongside `ring`, so it is the same accent in all
+eight palettes. That is forced as well as right: `deriveTheme` clamps tinted tokens to the
+chroma ceiling, so a tintable accent would be flattened to grey in all four derived families.
+
+**The dark ramp is compressed, and there is no headroom left at the top.** The ground sits at
+L 0.175 and `swatch.well` at L 0.290, against a measured ceiling of L 0.310 — past which
+`border.strong` and `status.ok` fall below their floors *against the well*. A ground does
+not lift what sits on it; it eats the headroom of everything that does.
+
+
 **`swatch.well`** — a mandatory neutral ground beneath every colour sample, at every size.
 Functional, not decorative: simultaneous contrast means whatever touches a sample changes how
 it reads.

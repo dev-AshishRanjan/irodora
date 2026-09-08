@@ -1,7 +1,7 @@
 {
   "$comment": "Values emitted from docs/design/design-system.manifest.json that no component reads. `scripts/verify-token-reach.mjs` fails on any emitted name that is neither read nor listed here, AND on any name listed here that a component does read — both directions, because a dead exemption is how a live one gets waved through later. Every entry carries a `why` and a `cites`, and the whole list PRINTS ON EVERY RUN rather than only on a failure: an exemption nobody reads is an exemption nobody weighs. Same shape as retired-surface.json. See F-092 and .harness/plans/F-092-a-token-that-reaches-no-pixel.md.",
   "version": 1,
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "$groupComment": "`group` is required because `xs` is a radius step AND a type step, and they are not the same decision. One of them is read by 22 `size=\"xs\"` literals; the other is read by nothing.",
   "$readingComment": "This file is a readable inventory of what the design system has DRAWN and the product has not yet BUILT. If it grows without anyone reading it, the citations are what makes that visible — an entry nobody can justify shows up as an entry with a weak one.",
   "unreached": [
@@ -68,6 +68,15 @@
       "why": "ONE OF THREE, AND THE REASON CHANGED KIND IN F-174 — `warn` is no longer BLOCKED, it is UNUSED, and those are different facts. The previous reason said the obvious home for it, a status beside a colour sample, was closed: `Status` takes `adjacentToSample`, which puts it on `swatch.well`, and light `warn` measured 4.32:1 there against a floor of 4.5. ADR-0098 moved all three light status tokens and `warn` now measures 4.75:1 on that ground, declared and checked in all eight palettes. THE OBSTACLE IS GONE AND THE READER IS STILL MISSING. F-152 gave `bad` and `ok` theirs — the refused photograph on AddGarment and the failed and successful writes on Export — and nothing since has had a middle outcome to report. THE PREVIOUS OWNERS OF THIS ENTRY WERE WRONG TWICE AND IT IS WORTH KEEPING VISIBLE: it first said outfit scoring (F-031) would show the first status, and F-031 shipped without one; it then said F-149 would, and F-149 REMOVED the only reader `warn` had, because its own criterion asks for one calm readout rather than three warnings. So this entry names no feature this time. A caution is a judgement — \"this is probably fine, but\" — and this product is deliberately built to describe rather than judge (the Lens, ADR-0031, the measurement-claims policy). The token stays because the day a surface has a genuine middle outcome it must not have to invent a colour for it, and because a two-state status system would make every non-failure look identical.",
       "closedBy": null,
       "permanentBecause": "Not permanent in the sense the `.on.*` entries are — a surface COULD reach it. Permanent in the sense that no feature can be scheduled to close it: naming one is what went wrong twice already, and a caution needs a product moment rather than an owner. Re-read this the first time a screen has an outcome that is neither success nor failure."
+    },
+    {
+      "group": "colour token",
+      "tokens": [
+        "accent.muted"
+      ],
+      "cites": "ADR-0088, ADR-0099, F-175, F-176",
+      "why": "The quiet accent ground — the fill behind a selected thing, where the full accent would shout. It arrived with `accent` and `accent.foreground` in F-175, and those two ARE painted: the primary button fills with one and labels with the other, and the active tab carries the first. This one has no reader yet because the surface that wants it does not exist: F-176 is the feature that makes selection one treatment across swatch, chip, card, tab and list row, and the muted ground is what that treatment fills with. Emitting it in F-175 rather than in F-176 is deliberate — the three accent values were searched for together, measured together against every ground and every signal, and approved together in ADR-0099; splitting the search so that one value could arrive a feature later would have meant re-running the whole scan against a palette that had already moved. THE ENTRY IS THE PRICE OF THAT, and it expires next feature.",
+      "closedBy": "F-176"
     }
   ]
 }

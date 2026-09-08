@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -22,7 +22,8 @@
     "R3",
     "R4",
     "R5",
-    "R6"
+    "R6",
+    "R7"
   ],
   "features": [
     {
@@ -5517,6 +5518,983 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-175",
+      "title": "The dark ground is monochrome, and the system has an accent",
+      "requirements": [
+        "FR-70",
+        "NFR-8",
+        "NFR-9",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R7",
+      "priority": "must",
+      "status": "done",
+      "acceptance": [
+        "The dark ground moves off near-black to a warm monochrome, and every dark theme in the manifest moves with it",
+        "accent, accent.foreground and accent.muted exist per theme, clear the text contrast floor on every ground they declare, and hold CVD separation",
+        "The accent is refused on the sample furniture and on every signal — swatch.well, both keyline tones, status.* and chart.* are unchanged",
+        "The accent reaches a surface, so it is not an unreached token (NFR-25)",
+        "An ADR records the values, the two grounds they had to clear, and why one accent could not serve both"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "contrast",
+        "cvd",
+        "build"
+      ],
+      "notes": "DONE. DELIVERED: the dark ground lifts from #090807 to #12100F across all four dark palettes; three accent tokens per theme with two recorded chroma-ceiling exceptions; the accent painted on the primary button and the active tab; ADR-0099; an eleventh mutation-proof case. THE PLAN WAS WRONG AND THE GATE SAID SO ON THE FIRST RUN. It asserted 'every ground moves by exactly +0.040 L, so every existing relationship is preserved' — which is true of a foreground and FALSE OF A GROUND: lifting swatch.well to 0.325 put border.strong at 2.88:1 and status.ok at 4.39:1 against it, because a ground does not lift what sits on it, it eats the headroom of everything that does. Measuring the well against every token declaring a pairing with it gives a hard ceiling at L 0.310, so the ramp COMPRESSES rather than translating: the floor rises 0.040 and the lift tapers to 0.005 at the top. The elevation steps drop from 40/37/36/37 to 35/30/25/25 — a real cost, recorded in ADR-0099 rather than absorbed. THE GUARD CAUGHT A SECOND THING: verify-contrast-proof.mjs anchors its ADR-0043 case on a literal hex, that hex WAS the dark ground, and the ramp moved it — so the case reported 'MUTATION DID NOT APPLY' instead of passing. A mutation proof anchored on a value the feature under test can move stops proving silently, and the no-op guard is the only reason it was visible. THIRD: heroui.test.ts asserted the literal oklch(0.135 0.004 70), pinning a COLOUR while claiming to check a FORMAT; it now derives the expectation from the manifest. THE LIGHT ACCENT IS NOT THE GOLD THAT WAS ASKED FOR, and the reason is measured rather than aesthetic — see ADR-0099 and the attestation. FOUND AND RECORDED RATHER THAN FIXED: F-205 (status.ok on swatch.well was ALREADY below the APCA Lc 45 floor at 43.9 before this change, and border.strong at 27.9 against a nonText floor of 30; both are marginally worse at 43.6 and 27.6 — pre-existing, and fixing them means moving a token bound by the salience rank and by CVD separation, which is not a nudge). NOT RUN: color-golden and content — no colour maths and no corpus record changed. accent.muted has no reader and is declared in unreached-tokens.json with closedBy F-176, which is the feature that fills with it.",
+      "plan": "plans/F-175-the-dark-ground-is-monochrome-and-the-system-has-an-accent.md",
+      "effects": [
+        "E-007"
+      ],
+      "attested": [
+        {
+          "criterion": "The dark ground moves off near-black to a warm monochrome, and every dark theme in the manifest moves with it",
+          "verifiedBy": "Looking at the four dark palettes on a physical phone, in daylight and in a dark room, and saying whether the ground reads as charcoal rather than as a hole. THE ARITHMETIC IS PROVEN AND THE PERCEPTION IS NOT — every declared pairing is measured in all eight palettes, the well's lightness ceiling was found by measurement, and gate 9 and gate 10 are green. What no check here can decide is whether L 0.175 is the right floor, or whether the compressed elevation ramp (35/30/25/25, from 40/37/36/37) still separates the surfaces to the eye. That compression is the cost of the lift and nobody has seen it.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "accent, accent.foreground and accent.muted exist per theme, clear the text contrast floor on every ground they declare, and hold CVD separation",
+          "verifiedBy": "Looking at both accents on a physical phone. The MEASUREMENTS are complete and green — 14.99:1 to 12.10:1 on dark, 9.78:1 to 8.45:1 on light, ΔE00 >= 18 from every signal, CVD separation 97 (dark) and 54 (light) against status.warn, and an eleventh mutation case in verify-contrast-proof.mjs proving the accent's own ground is in the gate's scope. THE JUDGEMENT THAT IS OWED is whether the light accent is acceptable at all: it is an olive-gold rather than the gold that was asked for, because on a light theme a gold that clears 4.5:1 on white IS the warning colour (the first candidate measured ΔE00 5.6 from status.warn). If it is judged wrong, ADR-0099 names the alternative — move status.warn — and that needs its own ADR and its own approval. THIS IS THE THIRD CONSECUTIVE FEATURE IN THIS AREA TO END OWING AN EYE (F-161, F-165), which is itself the finding.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-176",
+      "title": "Selection is one treatment, everywhere",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-175"
+      ],
+      "acceptance": [
+        "One selection treatment is declared once and drawn by every selectable component — swatch, chip, card, tab and list row",
+        "Selection carries three channels and none of them is a caption prefix: a ring, a mark, and the announced state",
+        "Selecting does not move anything — the treatment reserves its own space whether or not it is drawn",
+        "The conformance rule fails a selectable component that draws a different treatment, with a decoy proving it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ],
+      "notes": "F-163 shipped the rule and left the treatment weak: a 2px border.strong plus a ✓ in the caption, which shifts layout and is near-invisible at 48px on the well. Its first attested criterion is still outstanding."
+    },
+    {
+      "id": "F-177",
+      "title": "The sheet is a sheet: detents, an inset, and content that scrolls",
+      "requirements": [
+        "NFR-8",
+        "FR-71"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-175"
+      ],
+      "acceptance": [
+        "A sheet rests at a detent below the top of the screen and can be dragged to a larger one and back",
+        "Content taller than the sheet scrolls inside it rather than growing the sheet to the full screen",
+        "The handle is a control: it responds to touch, and the sheet settles rather than snapping",
+        "A test asserts the detents and the inset reach the rendered sheet, so a default cannot silently replace them"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ],
+      "notes": "F-158 shipped `Sheet` with no snapPoints and no topInset, recorded as a decision — \"height comes from the content\". With one detent there is nothing to drag to, and gorhom then grows to the full screen. The decision is wrong and this reverses it."
+    },
+    {
+      "id": "F-178",
+      "title": "A navigation closes the panel it left open",
+      "requirements": [
+        "FR-71",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-177"
+      ],
+      "acceptance": [
+        "Every control inside the Lens sheet that navigates dismisses the sheet first, and the reading is not lost by dismissing it",
+        "A test asserts the sheet is closed after each of the four exits, and fails if one is added without one",
+        "No overlay in the product can outlive the screen that opened it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-179",
+      "title": "Every route has a way in, and a gate says so",
+      "requirements": [
+        "NFR-26",
+        "FR-71"
+      ],
+      "service": "root",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "acceptance": [
+        "A gate walks the route graph from the tab bar and fails on any route no interaction reaches",
+        "The eight unreachable routes are reported by name on a run against the tree as it stands today",
+        "An exception names the feature that will reach the route and expires with it; there is no permanent waiver",
+        "A decoy proves the gate catches a newly orphaned route and leaves a reachable one alone"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build"
+      ],
+      "notes": "The gate lands before the wiring so the wiring is checked rather than asserted. Orphans today: /atlas/compare, /atlas/find, /atlas/palettes, /profile/preferences, /profile/measure, /profile/export, /wardrobe/outfit, /wardrobe/shopping."
+    },
+    {
+      "id": "F-180",
+      "title": "Settings, and the appearance choice lives in it",
+      "requirements": [
+        "FR-70",
+        "FR-71"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-176",
+        "F-179"
+      ],
+      "acceptance": [
+        "A settings screen is reachable from the Profile tab in one interaction",
+        "Every theme family the manifest declares can be chosen, with light, dark and system as an independent choice",
+        "The device colour is offered where the platform has one and says plainly why it is unavailable where it has not",
+        "Language, motion and the data controls that already exist are reachable from here rather than from nowhere"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-181",
+      "title": "The Atlas owns Compare, Find and Palettes",
+      "requirements": [
+        "FR-71",
+        "NFR-26"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-179"
+      ],
+      "acceptance": [
+        "Compare, Find and Palettes are reachable from the Atlas, and Compare opens with the colour a person came from",
+        "The reachability gate passes for all three"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-182",
+      "title": "The Wardrobe owns Outfit and Shopping; the Profile owns Measure and Export",
+      "requirements": [
+        "FR-71",
+        "NFR-26"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-179"
+      ],
+      "acceptance": [
+        "The outfit builder and the shopping check are reachable from the Wardrobe",
+        "Measurement and export are reachable from the Profile",
+        "Each destination says what it is for where it is offered, rather than being a bare word in a row"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-183",
+      "title": "A workspace package the application never imports fails the build",
+      "requirements": [
+        "NFR-26",
+        "NFR-24"
+      ],
+      "service": "root",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-179"
+      ],
+      "acceptance": [
+        "A gate fails on a workspace package that the application depends on and never imports",
+        "@irodora/color-harmony and @irodora/contracts are reported on a run against the tree as it stands today",
+        "An exception is a recorded decision naming the feature that will consume the package, and expires with it",
+        "A decoy proves the gate catches a newly orphaned package"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build"
+      ]
+    },
+    {
+      "id": "F-184",
+      "title": "Card, and an elevation vocabulary the product can compose with",
+      "requirements": [
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-175",
+        "F-176"
+      ],
+      "acceptance": [
+        "A card composes a header, a body, a media slot and a footer, and has pressable and selected states drawn from F-176",
+        "Depth comes from tint, never from a shadow or a blur, and the manifest still refuses both at parse time",
+        "The three surfaces that are cards today are rebuilt on it and lose no information",
+        "A skill records which HeroUI component to reach for, when to wrap it and when to refuse it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-185",
+      "title": "The states the product currently renders as nothing",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-184"
+      ],
+      "acceptance": [
+        "Loading, empty, error and confirmation each have a component, and each is announced as well as drawn",
+        "A skeleton is shaped like the thing it stands in for, and never animates a colour",
+        "A confirmation says what happened in the past tense and is dismissible without a pointer",
+        "Every one is rendered by the conformance registry in both themes, so its contrast is measured"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-186",
+      "title": "The choosers: list, menu, checkbox, radio, tags and avatar",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-176",
+        "F-184"
+      ],
+      "acceptance": [
+        "Each wraps its HeroUI component behind the boundary, paints from tokens through style, and draws F-176 selection",
+        "Each is in the conformance registry with every state it can reach, including the ones a tap would be needed for",
+        "A component that adds no behaviour over a styled box is refused rather than wrapped"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-187",
+      "title": "The swatch well is a shape, and selection does not move it",
+      "requirements": [
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-176"
+      ],
+      "acceptance": [
+        "The well takes a corner from the radius scale, and the sample keeps the proportional corner ADR-0090 gave it",
+        "The keyline geometry is re-checked against the rounded well, so no ground shows through a corner",
+        "A selected swatch is the same size as an unselected one"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-188",
+      "title": "Motion is the default, not the exception",
+      "requirements": [
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-184"
+      ],
+      "acceptance": [
+        "Every screen enters, and every list staggers, through the existing motion scale",
+        "A screen replacing another moves on one shared axis rather than sliding from an edge by default",
+        "Reduced motion removes the animation rather than shortening it, on every surface added here",
+        "No colour is animated anywhere, and verify-motion still proves it",
+        "A skill records where motion belongs and where it is noise"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ],
+      "notes": "The system has existed since F-144 and `Appear` reaches one of seventeen screens. This is the cheapest feature in the release and the one that changes the feel most."
+    },
+    {
+      "id": "F-189",
+      "title": "Micro-interactions, on the components that already have states",
+      "requirements": [
+        "NFR-8",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-188"
+      ],
+      "acceptance": [
+        "Press, selection, tab change and sheet drag each have a response on the micro step",
+        "A number that changes counts to its new value rather than replacing it, and is still tabular while it moves",
+        "Haptics fire on commit and never on a scroll",
+        "Every one of them collapses under reduced motion"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-190",
+      "title": "The launch sequence resolves into the app",
+      "requirements": [
+        "FR-69",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-188"
+      ],
+      "acceptance": [
+        "The static splash hands over to an animated sequence built from the mark, with no visible cut between them",
+        "The sequence is bounded and never delays a cold start beyond the budget",
+        "Reduced motion gets the resting frame and no animation",
+        "It is drawn from the same geometry the icon is generated from, so it cannot drift from the mark"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "perf",
+        "build"
+      ]
+    },
+    {
+      "id": "F-191",
+      "title": "Illustration: the empty states, the reticle, and the combination diagram",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-185"
+      ],
+      "acceptance": [
+        "Every empty state carries a drawing, and the drawing is about the thing that is missing",
+        "Illustration colour comes from tokens and never from a literal, so both themes and CVD are measured",
+        "A drawing never carries meaning that is not also in the text beside it",
+        "A skill records how one is drawn here and what it may not do"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "cvd",
+        "build"
+      ]
+    },
+    {
+      "id": "F-192",
+      "title": "The mark is a mark",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "root",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedByAttestation": [
+        "F-165"
+      ],
+      "acceptance": [
+        "The mark says something about colour that a ring of discs does not, and still reads at 16px and under all three CVD simulations",
+        "It is generated from geometry in source, and the icon, the adaptive icon, the monochrome icon and both splashes come from it",
+        "Gate 16 reads it out of a built artefact",
+        "Somebody looks at it on a home screen before it is called done"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "cvd",
+        "artifact",
+        "build"
+      ],
+      "notes": "Two marks have already been rejected at exactly the step no gate here can discharge — looking at it. F-165 owes that attestation and this feature waits on it rather than drawing a third mark first."
+    },
+    {
+      "id": "F-193",
+      "title": "Icon, wordmark and launch sequence are one artefact",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "root",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-190",
+        "F-192"
+      ],
+      "acceptance": [
+        "All three are generated from one source of geometry, and a change to it moves all three",
+        "A test fails if any of them is regenerated without the others"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "artifact",
+        "build"
+      ]
+    },
+    {
+      "id": "F-194",
+      "title": "The harmony engine reaches the product",
+      "requirements": [
+        "FR-6",
+        "FR-73",
+        "NFR-26"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-184"
+      ],
+      "acceptance": [
+        "Every relationship the engine generates is reachable for any colour a person can hold — scanned, chosen from the Atlas, or a garment",
+        "Each proposed colour shows the gamut cost of proposing it, so \"less vivid\" is a measurement rather than a disclaimer",
+        "A generated set is labelled generated, and is never described as a rule about what to wear",
+        "@irodora/color-harmony is no longer reported by the dead-export gate"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "color-golden",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-195",
+      "title": "Wear it: a colour becomes a top, and the engine ranks the rest",
+      "requirements": [
+        "FR-31",
+        "FR-73"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-194"
+      ],
+      "acceptance": [
+        "A colour resolves into a slot, and the screen ranks trouser and shoe candidates for it with the reason for each",
+        "The ranking is the existing engine — nothing here re-implements a score",
+        "A person with no profile still gets the answers that do not need one, and is told which one is missing"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ],
+      "notes": "recommendForSlot and recommendOutfit have been exported and called by nothing since F-030. This is the surface they never had."
+    },
+    {
+      "id": "F-196",
+      "title": "Curated combinations, in the corpus, as ours",
+      "requirements": [
+        "FR-73",
+        "NFR-20"
+      ],
+      "service": "content",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-194"
+      ],
+      "acceptance": [
+        "Curated combinations are corpus records with complete provenance, a named reviewer and a real derivation",
+        "Every one is classified editorial and is never presented as historical",
+        "No third-party combination dataset is ingested, and the content gate is what enforces it",
+        "Author and reviewer are different identities, as they are for every other corpus record"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "content",
+        "build"
+      ],
+      "notes": "The reference is A Dictionary of Color Combinations. \"Wada is public domain\" is not \"this digitisation is free to ingest\" — every accessible one embeds a digitiser's choices about printing, paper ageing and illuminant, and those choices ARE the dataset. We do what the book does, from our own corpus, and can say where every value came from."
+    },
+    {
+      "id": "F-197",
+      "title": "Combinations have a home, and Contemporary is renamed to what it answers",
+      "requirements": [
+        "FR-73",
+        "FR-72",
+        "FR-71"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-194",
+        "F-195",
+        "F-196"
+      ],
+      "acceptance": [
+        "Combinations are reachable from a reading, from an Atlas entry and from a wardrobe garment",
+        "Contemporary equivalents keep their behaviour and are renamed to a phrase that says what they answer, in both languages",
+        "The two are distinguishable on the screen: one says what this colour is sold as, the other says what goes with it"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-198",
+      "title": "Every combination is CVD-checked and profile-weighted, and says so",
+      "requirements": [
+        "FR-73",
+        "NFR-10",
+        "NFR-21"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-197"
+      ],
+      "acceptance": [
+        "A combination whose colours stop separating under simulated CVD says so, naming the deficiency and the severity",
+        "The personal profile weights the ranking where one exists, and the screen says when it did not",
+        "Neither is stated as a verdict — the measurement is shown and the decision stays with the person"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "cvd",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-199",
+      "title": "A combination goes somewhere",
+      "requirements": [
+        "FR-73",
+        "FR-52"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-197",
+        "F-182"
+      ],
+      "acceptance": [
+        "A colour in a combination reaches the shopping check in one interaction, carrying its slot",
+        "A colour in a combination can be added to the wardrobe, and nothing is stored until the person says so"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "e2e",
+        "build"
+      ]
+    },
+    {
+      "id": "F-200",
+      "title": "A colour can be a target",
+      "requirements": [
+        "FR-74",
+        "FR-71"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-184"
+      ],
+      "acceptance": [
+        "Any colour the product can show can be made the target, and the target is visible wherever it is armed",
+        "A target is held for the session and is disarmed deliberately, never silently"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-201",
+      "title": "The Lens answers against a target",
+      "requirements": [
+        "FR-74",
+        "FR-48",
+        "NFR-21"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [
+        "F-200",
+        "F-178"
+      ],
+      "acceptance": [
+        "With a target armed, a reading reports its distance from the target with the unit and the space it was computed in",
+        "The difference is decomposed into lightness, chroma and hue, in words as well as numbers, so it says which way it is off",
+        "The capture conditions and the confidence are attached, and the reading is never called a match",
+        "A poor capture says so before it says a number"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "color-golden",
+        "a11y",
+        "build"
+      ]
+    },
+    {
+      "id": "F-202",
+      "title": "Home, rebuilt on the system",
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-184",
+        "F-188",
+        "F-194"
+      ],
+      "acceptance": [
+        "The front door is composed from cards, motion and the accent rather than from three stacked sections of one shape",
+        "It still says what the product is for without a paragraph, and still leads with a colour at size",
+        "It offers the combination of the colour it is leading with"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-203",
+      "title": "The Atlas, the Lens, the Wardrobe and the Profile join it",
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-202"
+      ],
+      "acceptance": [
+        "Every screen is composed from the same card, state, motion and selection vocabulary",
+        "No screen carries a layout primitive it invented for itself"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "build"
+      ]
+    },
+    {
+      "id": "F-204",
+      "title": "A design-system conformance sweep, with evidence",
+      "requirements": [
+        "NFR-8",
+        "NFR-9",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R7",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-203"
+      ],
+      "acceptance": [
+        "Every screen is rendered in both themes, both languages, under CVD and under reduced motion, and the result is recorded",
+        "Every token the manifest declares is reached by a surface, or carries an exemption that names the feature that will reach it",
+        "A skill records how this audit is run, so the next one is not improvised",
+        "The findings that are not fixed here are recorded as features, not as prose"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast",
+        "cvd",
+        "build"
+      ]
+    },
+    {
+      "id": "F-205",
+      "title": "Success on the sample well is below the APCA floor, and was before anybody looked",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R7",
+      "priority": "should",
+      "status": "backlog",
+      "acceptance": [
+        "status.ok on swatch.well clears the APCA Lc 45 large-text floor in every dark palette, or the pairing is withdrawn and the component says what it does instead",
+        "border.strong on swatch.well clears its own APCA floor, or carries a recorded reason",
+        "The fix does not move the salience rank or break the CVD separation ADR-0098 and ADR-0053 established"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "test",
+        "contrast",
+        "cvd",
+        "build"
+      ],
+      "notes": "FOUND BY F-175, NOT CAUSED BY IT — and the measurement is the point. `status.ok` on `swatch.well` scored APCA Lc 43.9 against a floor of 45 BEFORE the ramp moved, and 43.6 after; `border.strong` scored 27.9 before against a nonText floor of 30, and 27.6 after. Both were already failing and both are marginally worse. Gate 9 prints them as warnings and its own message says 'This one needs a decision, not a note', which is the gate asking for exactly this record. The reason it is a feature rather than a line in F-175 is that fixing it means moving `status.ok`, and that token's value is bound by the salience rank (ADR-0053) and by CVD separation from `status.bad` (ADR-0098) — the same knot F-174 spent a whole feature untying for the light theme. It is not a nudge."
     }
   ]
 }

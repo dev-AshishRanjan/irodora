@@ -18516,3 +18516,96 @@ the gap being closed.
 
 ---
 
+
+## F-175 — The dark ground is monochrome, and the system has an accent
+
+**2026-09-08.** Release R7 opens. Its backlog — 31 features in seven dependency-ordered waves —
+was recorded in `feature_list.json` before any of it was built, together with three new
+requirements the PRD did not carry: **FR-73** (colour combinations), **FR-74** (hold a colour
+against a target) and **NFR-26** (every built capability is reachable).
+
+R7 exists because an audit of the shipped app found the same shape eleven times: **this
+repository is strong at building engines and weak at reaching them.** Eight screens have routes
+and no way in. `@irodora/color-harmony` — twelve generators, golden-tested — is imported by zero
+application files, and so are `recommendForSlot` and `recommendOutfit`, which are the "what goes
+with this" engine. `Appear` reaches one of seventeen screens. Nine of HeroUI's forty-three
+components are wrapped. That is the release.
+
+### What this feature moved
+
+The dark ground lifts from `#090807` to `#12100F` in all four dark palettes, and the product
+gets an accent for the first time — it had none, because `link` is defined as the same value as
+`foreground`. Gold on dark, olive-gold on light, spent on the primary button and the active tab.
+
+### The plan was wrong, and gate 9 said so on the first run
+
+The plan asserted *"every ground moves by exactly +0.040 L, so every existing relationship is
+preserved."* That is true of a foreground and **false of a ground**. Lifting `swatch.well` with
+the rest of the ramp put `border.strong` at 2.88:1 and `status.ok` at 4.39:1 *against it* — a
+ground does not lift what sits on it, it eats the headroom of everything that does.
+
+Measuring the well against every token that declares a pairing with it gives a hard ceiling at
+**L 0.310**. So the ramp **compresses**: the floor rises 0.040 where the report was about, the
+lift tapers to 0.005 at the top, and the elevation steps go from 40/37/36/37 to **35/30/25/25**.
+Tonal elevation is this system's only depth mechanism — shadows and blur are refused at parse
+time — so it now has measurably less to work with. That is a cost, and it is in ADR-0099 rather
+than absorbed.
+
+### Two more things the guards caught, both of the same kind
+
+**`verify-contrast-proof.mjs` anchors its ADR-0043 case on a literal hex, and that hex was the
+dark ground.** The ramp moved it, so the case reported *"MUTATION DID NOT APPLY"* rather than
+passing. A mutation proof anchored on a value the feature under test can move stops proving
+silently; the no-op guard is the only reason it was visible.
+
+**`heroui.test.ts` asserted the literal `oklch(0.135 0.004 70)`** — pinning a *colour* while
+claiming to check a *format*. It now derives the expectation from the manifest.
+
+Both are the same defect: a check that agrees with a value instead of with a property.
+
+### The light accent is not the colour that was asked for
+
+**On a light theme, "golden yellow" and "warning amber" are the same region of colour space.**
+An accent clearing 4.5:1 on white must be dark; a dark gold is a bronze; and `status.warn` light
+*is* a bronze at h 70. The first candidate measured **ΔE00 5.6** from it — one colour with two
+meanings, one of which is *something is wrong*. Scanning for a light accent that clears contrast
+on all four grounds and stays ΔE00 ≥ 18 from every signal leaves 202 candidates, all at h 98–105
+and L 0.38–0.41. The shipped value is the warmest of them.
+
+The accent is **not** added to `cvdPairs`, and that is deliberate: `ring` and `status.ok` measure
+43.3 and 32.7 today, are in no pair, and are not considered a defect — because `statusPairing`
+means colour is never a status's only channel. Imposing a new bar on the new token alone would
+be incoherent.
+
+### Gates
+
+| ran | result |
+|---|---|
+| 0 state · 1 typecheck · 2 lint · 3 format · 4 test · 6 build | **PASS** |
+| 8 a11y · 9 contrast · 10 cvd · token-reach · motion | **PASS** |
+| the mutation proof, 11 cases including a new one for the accent | **held** |
+
+**Not run:** `color-golden`, `content` — no colour maths and no corpus record changed. `e2e`:
+gate 7 still pending.
+
+`pnpm lint` failed once on a planted defect left in `.github/workflows/` by an earlier
+`verify-gate-mirror --prove` run that never recovered. `node scripts/plant.mjs --recover` put
+both files back. Not caused here, and worth knowing the journal survives across sessions.
+
+### Still owed
+
+**Nobody has looked at any of it.** Both accents and the lifted ground are attested criteria
+against F-175, outstanding, blocking the release. **This is the third consecutive feature in
+this area to end that way** (F-161, F-165), which has stopped being a coincidence and is now the
+finding: this repository can prove a palette correct and cannot tell whether it is good.
+
+**F-205 is recorded rather than fixed.** `status.ok` on `swatch.well` was already below the APCA
+Lc 45 floor at **43.9** *before* this change, and `border.strong` at 27.9 against a nonText floor
+of 30. Both are marginally worse now (43.6, 27.6). Gate 9 prints them and says *"this one needs a
+decision, not a note"*. Fixing them means moving a token bound by the salience rank and by CVD
+separation from `status.bad` — the knot F-174 spent a whole feature untying for the light theme.
+
+**`accent.muted` reaches nothing** and is declared in `unreached-tokens.json` with
+`closedBy: F-176` — the selection treatment that fills with it, which is the next feature.
+
+---

@@ -33,6 +33,9 @@
   --color-chart-4: var(--irodora-color-chart-4);
   --color-chart-5: var(--irodora-color-chart-5);
   --color-swatch-hairline-inverse: var(--irodora-color-swatch-hairline-inverse);
+  --color-accent: var(--irodora-color-accent);
+  --color-accent-foreground: var(--irodora-color-accent-foreground);
+  --color-accent-muted: var(--irodora-color-accent-muted);
   --radius-xs: var(--irodora-radius-xs);
   --radius-sm: var(--irodora-radius-sm);
   --radius-md: var(--irodora-radius-md);
