@@ -104,9 +104,9 @@
       --field-foreground: #171411; /* foreground — oklch(0.195 0.008 70) */
       --field-placeholder: #5E5A56; /* foreground.2 — oklch(0.47 0.008 72) */
       --field-border: #00000014; /* border — oklch(0 0 0) */
-      --success: #387B58; /* status.ok — oklch(0.53 0.09 158) */
-      --warning: #976213; /* status.warn — oklch(0.54 0.11 70) */
-      --danger: #861116; /* status.bad — oklch(0.4 0.15 26) */
+      --success: #307450; /* status.ok — oklch(0.504 0.09 158) */
+      --warning: #905B06; /* status.warn — oklch(0.518 0.11 70) */
+      --danger: #7C000C; /* status.bad — oklch(0.37 0.15 26) */
       --success-foreground: #FDFCF9; /* inverse.foreground — oklch(0.99 0.003 85) */
       --warning-foreground: #FDFCF9; /* inverse.foreground — oklch(0.99 0.003 85) */
       --danger-foreground: #FDFCF9; /* inverse.foreground — oklch(0.99 0.003 85) */
@@ -125,9 +125,9 @@
       --irodora-background-tertiary: #E8E6E4; /* mix(--background 92%, --foreground 8%) */
       --irodora-default-hover: #EDEBE8; /* mix(--default 96%, --default-foreground 4%) */
       --irodora-accent-hover: #2A2724; /* mix(--accent 90%, --accent-foreground 10%) */
-      --irodora-success-hover: #4D8867; /* mix(--success 90%, --success-foreground 10%) */
-      --irodora-warning-hover: #A17133; /* mix(--warning 90%, --warning-foreground 10%) */
-      --irodora-danger-hover: #95312D; /* mix(--danger 90%, --danger-foreground 10%) */
+      --irodora-success-hover: #468160; /* mix(--success 90%, --success-foreground 10%) */
+      --irodora-warning-hover: #9B6B2C; /* mix(--warning 90%, --warning-foreground 10%) */
+      --irodora-danger-hover: #8C2825; /* mix(--danger 90%, --danger-foreground 10%) */
       --irodora-field-hover: #EAE9E6EB; /* mix(--field-background 90%, --field-foreground 2%) */
       --irodora-field-border-hover: #0605042B; /* mix(--field-border 88%, --field-foreground 10%) */
       --irodora-field-border-focus: #0E0B0947; /* mix(--field-border 74%, --field-foreground 22%) */
@@ -135,20 +135,20 @@
       --irodora-default-soft-hover: #F7F6F399; /* mix(--default 60%, transparent 40%) */
       --irodora-accent-soft: #17141126; /* mix(--accent 15%, transparent 85%) */
       --irodora-accent-soft-hover: #17141133; /* mix(--accent 20%, transparent 80%) */
-      --irodora-danger-soft: #86111626; /* mix(--danger 15%, transparent 85%) */
-      --irodora-danger-soft-hover: #86111633; /* mix(--danger 20%, transparent 80%) */
-      --irodora-warning-soft: #97621326; /* mix(--warning 15%, transparent 85%) */
-      --irodora-warning-soft-hover: #97621333; /* mix(--warning 20%, transparent 80%) */
-      --irodora-success-soft: #387B5826; /* mix(--success 15%, transparent 85%) */
-      --irodora-success-soft-hover: #387B5833; /* mix(--success 20%, transparent 80%) */
+      --irodora-danger-soft: #7C000C26; /* mix(--danger 15%, transparent 85%) */
+      --irodora-danger-soft-hover: #7C000C33; /* mix(--danger 20%, transparent 80%) */
+      --irodora-warning-soft: #905B0626; /* mix(--warning 15%, transparent 85%) */
+      --irodora-warning-soft-hover: #905B0633; /* mix(--warning 20%, transparent 80%) */
+      --irodora-success-soft: #30745026; /* mix(--success 15%, transparent 85%) */
+      --irodora-success-soft-hover: #30745033; /* mix(--success 20%, transparent 80%) */
       --irodora-separator-secondary: #D8D7D6; /* mix(--surface 85%, --surface-foreground 15%) */
       --irodora-separator-tertiary: #CDCCCC; /* mix(--surface 81%, --surface-foreground 19%) */
       --irodora-border-secondary: #C6C5C4; /* mix(--surface 78%, --surface-foreground 22%) */
       --irodora-border-tertiary: #A8A6A5; /* mix(--surface 66%, --surface-foreground 34%) */
       --irodora-accent-soft-foreground: #171411; /* mix(--accent 80%, --foreground 20%) — TEXT, checked on --color-accent-soft */
-      --irodora-danger-soft-foreground: #6F1817; /* mix(--danger 80%, --foreground 20%) — TEXT, checked on --color-danger-soft */
-      --irodora-warning-soft-foreground: #674519; /* mix(--warning 65%, --foreground 35%) — TEXT, checked on --color-warning-soft */
-      --irodora-success-soft-foreground: #315A41; /* mix(--success 70%, --foreground 30%) — TEXT, checked on --color-success-soft */
+      --irodora-danger-soft-foreground: #670F10; /* mix(--danger 80%, --foreground 20%) — TEXT, checked on --color-danger-soft */
+      --irodora-warning-soft-foreground: #624115; /* mix(--warning 65%, --foreground 35%) — TEXT, checked on --color-warning-soft */
+      --irodora-success-soft-foreground: #2C553C; /* mix(--success 70%, --foreground 30%) — TEXT, checked on --color-success-soft */
     }
   }
 }

@@ -1,0 +1,151 @@
+# Plan: F-174 — two status colours cannot sit on the ground the rule puts them on
+
+| | |
+|---|---|
+| **Feature** | F-174 — [`feature_list.json`](../state/feature_list.json) |
+| **Requirements** | NFR-8 (accessibility), FR-70 |
+| **Service / package** | `@irodora/design-tokens` · `docs/design/design-system.manifest.json` |
+| **Author** | Claude Opus 5 (generator) |
+| **Date** | 2026-09-07 |
+
+---
+
+## Intent
+
+`Status` has taken an `adjacentToSample` prop since F-069, and what it does is put the status on
+`swatch.well` so a colour sample beside it is not read against a coloured field. **Two of the
+three kinds cannot legibly sit there.** Light `status.ok` measures 4.21:1 on the well and
+`status.warn` 4.32:1, against a text floor of 4.5.
+
+Done, to a user: a caution or a confirmation shown beside a colour sample is readable, in every
+palette, and error stays the loudest of the three.
+
+## What the measurement found, and where it disagrees with the feature's own notes
+
+The note said darkening `ok` inverts the salience rank and that `warn` leaves sRGB before it can
+be darkened enough to restore it. **The rank is not the binding constraint. CVD separation is.**
+
+Darkening `warn` toward the well's requirement moves it toward `bad`'s lightness, and under
+simulation amber and red converge — lightness is the only channel left. Every candidate that
+clears 4.5:1 with `bad` where it is drops `warn`/`bad` to about 50 against a floor of 60:
+
+| candidate | contrast on well | worst CVD |
+|---|---|---|
+| `ok` 0.514, `warn` 0.510 (chroma unchanged) | passes | **49.4** tritan · and `warn` sits ΔL 0.002 from the sRGB edge |
+| `ok` 0.514, `warn` 0.500 c 0.08 | passes | **45.6** protan (Viénot) |
+| `ok` 0.512, `warn` 0.524, `bad` unmoved | passes | **56.0** tritan |
+
+**So all three move, and only in lightness.** `bad` has to drop below L 0.385 to give `warn` the
+room. Searched over the feasible box (63 840 combinations, judged by `checkContrast`,
+`checkSeparation`, `checkSalience` and `checkChromaCeiling` on a mutated manifest through
+`parseManifest`, so all eight palettes are seen exactly as gate 9 sees them), 35 pass every
+check. The one chosen is the point where **the status tokens stop being the tightest thing in
+the system**.
+
+## The values
+
+| token | was | becomes | hex |
+|---|---|---|---|
+| `light.status.ok` | L 0.530 c 0.09 h 158 | **L 0.504** | `#387B58` → `#307450` |
+| `light.status.warn` | L 0.540 c 0.11 h 70 | **L 0.518** | `#976213` → `#905B06` |
+| `light.status.bad` | L 0.400 c 0.15 h 26 | **L 0.370** | `#861116` → `#7C000C` |
+
+**Chroma and hue are untouched on all three, and the dark theme does not move.** That matters
+for the exceptions: `status.warn`'s chroma exception says *"chroma is where this token buys its
+CVD separation, because lightness is already carrying contrast, salience rank and gamut
+headroom"* — and this change spends lightness, which is what that sentence says lightness is for.
+
+Measured consequences:
+
+- **On the well:** ok 4.21 → **4.70**, warn 4.32 → **4.75**, bad 8.29 → **9.36**.
+- **On background:** ok 4.90 → 5.48, warn 5.04 → 5.53, bad 9.66 → 10.92.
+- **Worst CVD separation, over every deficiency, severity and model:** system-wide **63.1,
+  unchanged**. Per pair: ok/bad 63.1 → 63.1, warn/bad 63.9 → 63.2, ok/warn 63.2 → 63.4.
+- **Salience rank** bad > warn > ok holds in both themes.
+- No new chroma exception. No gamut pressure — every value keeps real headroom.
+
+## Approach
+
+**Reused:** `checkContrast`, `checkSeparation`, `checkSalience`, `checkChromaCeiling`,
+`derivedSrgb` and `parseManifest` from `@irodora/design-tokens`. The search was judged by the
+gate's own functions rather than by a second implementation of them — a checker that
+re-implements its subject agrees with it on day one, which is the failure F-143's peer gate
+already recorded.
+
+**New:** an ADR for the value change; a `valuesChangedSinceApproval` entry superseding the
+2026-08-19 one; `swatch.well` added to all three status tokens' `pairsWith` in both themes,
+which is what makes the gate check the ground the component actually uses.
+
+### Increments
+
+1. The manifest: three lightness values, three `pairsWith` additions per theme, the approval
+   record. Regenerate the emitted tokens (ADR-0043 — the hexes are generated output).
+2. The ADR, with the search and the rejected candidates in it.
+3. The token ledger: `warn` is no longer *blocked*, but it is still *unread*, and the entry has
+   to say the difference.
+4. Gates 9 and 10, then the full CI mirror.
+
+## Files to touch
+
+```
+docs/design/design-system.manifest.json   — three L values, pairsWith, the approval record
+docs/adr/0098-*.md                        — NEW. The change, the search, and what was refused.
+packages/design-tokens/generated/*        — regenerated (ADR-0043)
+packages/design-tokens/src/generated/*    — regenerated
+apps/mobile/global.css                    — regenerated by the same run (ADR-0062)
+.harness/verification/unreached-tokens.json — the `warn` entry's reason is now wrong
+```
+
+## Anticipated effects
+
+| change | dependents | guard |
+|---|---|---|
+| three light status values | every emitted target, every screen drawing a status | gate 9 recomputes the hex from the OKLCh (ADR-0043) and fails a hand-edited one |
+| `pairsWith` gains `swatch.well` | gate 9's scope | a pairing a component renders but the manifest does not declare is already a failure (F-171) |
+| the values move again | `valuesChangedSinceApproval` | the `state` gate reads it; ADR-0053's entry is superseded, not deleted |
+| `warn`'s ledger reason | gate 8 token reach | a stale reason fails the ledger, in both directions |
+
+## Test plan
+
+- **Gate 9 (contrast):** every declared pairing, all eight palettes, including the four new
+  `swatch.well` ones. The derived-hex check is what proves the emitted values were regenerated
+  rather than typed.
+- **Gate 10 (cvd):** the three status pairs, every deficiency, all eleven Machado severities and
+  Viénot for protan and deutan.
+- **Salience:** `checkSalience` asserts the recorded rank, which is the invariant ADR-0053 exists
+  to protect, and it is measured against each theme's own background rather than derived from the
+  values.
+- **Negative:** the contrast mutation proof already covers a token nudged below AA and a
+  hand-edited hex; both must still go red.
+- **Package tests:** `packages/design-tokens/test/*` pins emitted output byte-for-byte, so a
+  regeneration that did not happen shows up as a diff rather than as a silent pass.
+
+## Verification
+
+```
+pnpm --filter @irodora/design-tokens generate
+node scripts/verify-state.mjs
+node scripts/verify-contrast.mjs && pnpm test:cvd
+node scripts/verify-token-reach.mjs
+pnpm verify:ci
+```
+
+## Risks and open questions
+
+- **The three light status colours change visibly.** `bad` goes from `#861116` to `#7C000C` —
+  deeper and more saturated in appearance. This is approved rather than assumed; the approval is
+  recorded in `valuesChangedSinceApproval`, and it is the second entry, so ADR-0053's
+  re-approval is still owed alongside it.
+- **`warn` still has no reader.** Moving it does not give it one. The ledger entry has to stop
+  saying it is blocked and start saying it is unused, which are different facts.
+- **The margins are thin by design.** After the change the tightest pairing in the system is a
+  pre-existing one — `aota.light foreground.3` on `surface.2` at 3.16 against a 3.0 large-text
+  floor — which is a separate, older question and not this feature's.
+
+## Out of scope
+
+- **The dark theme.** It already clears the well (ok 5.07, warn 5.23, bad 7.90).
+- **Giving `warn` a reader.** That is a surface decision, not a token one.
+- **Chroma or hue.** The exception text says chroma is where these tokens buy CVD separation;
+  spending it here would trade the guarantee the change is trying to keep.
+- **ADR-0053's own re-approval.** Recorded as still owed; not claimed by this feature.

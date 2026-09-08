@@ -8,6 +8,134 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — F-174 DONE · the token that was passing was the one holding the other two out
+
+`Status` has taken an `adjacentToSample` prop since F-069. It puts the status on `swatch.well` —
+the neutral ground — so a colour sample beside it is not read against a coloured field. **Two of
+its three kinds could not legibly sit there:** light `status.ok` at 4.21:1 and `status.warn` at
+4.32:1, against a text floor of 4.5.
+
+### The feature's own notes were wrong about what binds this
+
+They said the obstacle was the **salience rank** — darkening `ok` makes it measure equal to
+`warn` against the light background, and ADR-0053 forbids a rank that differs between themes.
+True of darkening `ok` alone. Not the binding constraint.
+
+**CVD separation is.** Darkening `warn` toward the well's requirement moves it toward `bad`'s
+lightness, and under simulation amber and red converge — lightness is the only channel left
+between them. Every candidate that cleared 4.5:1 with `bad` where it was:
+
+| candidate | on the well | worst CVD (floor 60) |
+| --- | --- | --- |
+| `warn` L 0.510, chroma unchanged | passes | **49.4** tritan — and ΔL 0.002 from the sRGB edge, a blue channel of 1/255 |
+| `warn` L 0.500 c 0.08 | passes | **45.6** protan, Viénot — chroma is where `warn` buys its separation from `ok` |
+| `warn` L 0.524, `bad` unmoved | passes | **56.0** tritan |
+| `warn` L 0.524, `bad` L 0.390 | passes | **59.2** tritan — close, and still under |
+
+`bad` had to move below L 0.385 to give `warn` the room. **`bad` was the kind passing
+comfortably at 8.29:1.** A constraint set is not three independent budgets, and the one that
+was fine was the one keeping the other two out.
+
+### What shipped
+
+| token | was | becomes | hex |
+| --- | --- | --- | --- |
+| `light.status.ok` | L 0.530 | **L 0.504** | `#387B58` → `#307450` |
+| `light.status.warn` | L 0.540 | **L 0.518** | `#976213` → `#905B06` |
+| `light.status.bad` | L 0.400 | **L 0.370** | `#861116` → `#7C000C` |
+
+**Lightness only.** Chroma and hue unchanged on all three, dark theme untouched, no new chroma
+exception — and that lightness is the channel to spend is what `status.warn`'s existing
+exception already says: *"chroma is where this token buys its CVD separation, because lightness
+is already carrying contrast, salience rank and gamut headroom."*
+
+`swatch.well` joins all three `pairsWith` lists in both themes. **That is what puts the ground
+in gate scope** — twelve readings across eight palettes where there had been none. Gate scope is
+driven by what the manifest declares, so an undeclared ground is a ground nobody measures, which
+is why this went unseen for four features.
+
+Measured: on the well ok 4.21 → **4.70**, warn 4.32 → **4.75**, bad 8.29 → **9.36**. Worst CVD
+separation over every deficiency, all eleven Machado severities and Viénot dichromacy: **63.1
+both before and after** — the change costs nothing there, which is why this point was chosen
+over the other 34 feasible ones.
+
+### How the values were found
+
+A grid search over the feasible box — 63,840 combinations — **judged by the gate's own
+functions**: `checkContrast`, `checkSeparation`, `checkSalience` and `checkChromaCeiling`, run on
+a mutated manifest through `parseManifest` so all eight palettes were seen exactly as gate 9 sees
+them. A search that re-implemented the ratio would have agreed with itself on day one, which is
+the failure F-143's peer gate already recorded.
+
+35 pass every check. The one chosen is the point where **the status tokens stop being the
+tightest thing in the system** — after it the closest pairing anywhere is a pre-existing one,
+`aota.light foreground.3` on `surface.2` at 3.16 against a 3.0 large-text floor.
+
+### The mutation proof refused to run, and re-deriving it made it sharper
+
+> *"color.light.status.warn.oklch holds {l: 0.518}, expected {l: 0.54} — the manifest was retuned
+> and this mutation is no longer the change its name describes. Re-derive it rather than deleting
+> the case."*
+
+It was a nudge to L 0.64, which fails against every ground at once — a fine test of the
+arithmetic and a weak test of the gate's **scope**. It is now **the value `warn` held until this
+change**: 5.04 on background, 5.18 on surface.1, 4.78 on surface.2, and 4.32 on the well. It
+fails on one ground only, so the case proves the ratio and the fact that the well is being looked
+at, together. Remove `swatch.well` from the `pairsWith` lists and it goes green with the mutation
+applied.
+
+### A decoy expired
+
+F-171's `pair-undeclared` case used `status.warn` on `swatch.well` as its example of a pairing
+the manifest does not declare. **Declaring it made the decoy stop discriminating** — the rule
+correctly reported nothing and the assertion went red.
+
+*A decoy built from a gap in the manifest has a lifetime, because the gap is the thing a feature
+eventually closes.*
+
+Its first replacement did not discriminate either, for a subtler reason: `link` on the well looks
+undeclared, but light `link` and light `foreground` are **the same value**, `#171411`, and
+`swatch.well` declares `foreground`. A rule that reads rendered colours can only distinguish
+tokens that differ. It is now `foreground.2` on `surface.3`, with both failures recorded beside
+it.
+
+### `warn` is still unreached, and its reason changed kind
+
+It is no longer **blocked** — it measures 4.75:1 on the well now — it is **unused**. F-152 gave
+`bad` and `ok` their readers; nothing since has had a middle outcome to report. The ledger entry
+names no feature this time, because naming one is what went wrong twice: F-031 shipped without a
+status, and F-149 *removed* the only reader `warn` had. A caution is a judgement, and this
+product is deliberately built to describe rather than judge.
+
+### Gates
+
+| ran | result |
+| --- | --- |
+| 0 state · 1 typecheck · 2 lint · 3 format | **PASS** |
+| 4 test — 1012 across the workspace | **PASS** |
+| **9 contrast**, including twelve new `swatch.well` readings | **PASS** |
+| 9 contrast mutation proof — 10 cases, one re-derived | **PASS** |
+| **10 cvd** | **PASS** |
+| 8 token reach — the `warn` entry rewritten | **PASS** |
+| the pairing decoy, on a gap this feature closed | **caught** |
+| the mutation proof, on a value it pins | **caught** |
+| `pnpm verify:ci` — all 35 locally-runnable steps | **PASS** |
+
+**Not run:** gate 7 e2e (pending) · gate 16 artifact (no APK built).
+
+### Still owed
+
+**Two re-approvals now stand against the 2026-08-14 signature.** This one is recorded and
+approved; it supersedes the 2026-08-19 / ADR-0053 entry for the three dark status tokens, and
+**superseding records which entry is current, not that the older one was ratified**. That one was
+owed before this feature and is still owed after it.
+
+**The margins are a guard, not a cushion.** 4.70 and 4.75 against 4.5. A change to `swatch.well`
+itself would put them back under; the pairing is declared now, so gate 9 would catch it, but
+there is no headroom to absorb one silently.
+
+---
+
 ## 2026-09-07 — F-156 DONE · three checks that each knew one of two spellings
 
 Four controls the product had been working around: a theme picked from five chips because

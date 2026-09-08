@@ -262,7 +262,8 @@ export const runtimeManifest: CheckableManifest = {
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.warn": {
@@ -277,7 +278,8 @@ export const runtimeManifest: CheckableManifest = {
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.bad": {
@@ -603,41 +605,43 @@ export const runtimeManifest: CheckableManifest = {
       },
       "status.ok": {
         "oklch": {
-          "l": 0.53,
+          "l": 0.504,
           "c": 0.09,
           "h": 158
         },
-        "srgb": "#387B58",
+        "srgb": "#307450",
         "role": "",
         "usage": "text",
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.warn": {
         "oklch": {
-          "l": 0.54,
+          "l": 0.518,
           "c": 0.11,
           "h": 70
         },
-        "srgb": "#976213",
+        "srgb": "#905B06",
         "role": "",
         "usage": "text",
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.bad": {
         "oklch": {
-          "l": 0.4,
+          "l": 0.37,
           "c": 0.15,
           "h": 26
         },
-        "srgb": "#861116",
+        "srgb": "#7C000C",
         "role": "",
         "usage": "text",
         "pairsWith": [

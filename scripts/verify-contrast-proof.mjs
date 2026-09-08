@@ -99,8 +99,22 @@ const RANK = ['salience', 'rank'];
 const RANK_NOW = ['status.bad', 'status.warn', 'status.ok'];
 /** Light theme: the one whose warn sits closest to the AA floor against a pale ground. */
 const WARN = ['color', 'light', 'status.warn', 'oklch'];
-const WARN_NOW = { l: 0.54, c: 0.11, h: 70 };
-const WARN_TOO_LIGHT = { l: 0.64, c: 0.11, h: 70 };
+const WARN_NOW = { l: 0.518, c: 0.11, h: 70 };
+/**
+ * The value this token HELD until ADR-0098, and the reason the case is now that value.
+ *
+ * It was L 0.64 — a nudge that fails against every ground at once, which is a fine test of the
+ * arithmetic and a weak test of the gate's SCOPE. L 0.54 is sharper: it clears the floor on
+ * `background` (5.04), on `surface.1` (5.18) and on `surface.2` (4.78), and fails only on
+ * `swatch.well` (4.32). That is exactly the defect F-174 fixed, and it went unseen for four
+ * features because the well was not in `pairsWith` — gate scope is driven by what the manifest
+ * declares, so an undeclared ground is a ground nobody measures.
+ *
+ * So this case now proves the two things together: the ratio, and the fact that the well is
+ * being looked at. Remove `swatch.well` from the status `pairsWith` lists and this goes green
+ * with the mutation applied, which is the failure it exists to catch.
+ */
+const WARN_TOO_LIGHT = { l: 0.54, c: 0.11, h: 70 };
 /** Dark theme: where success and caution are furthest apart, so a rotation is a real move. */
 const OK_DARK = ['color', 'dark', 'status.ok', 'oklch'];
 const OK_DARK_NOW = { l: 0.67, c: 0.12, h: 158 };
@@ -117,7 +131,7 @@ const cases = [
     check: gate9,
   },
   {
-    name: 'gate 9 — a token nudged below AA',
+    name: 'gate 9 — a token below AA on ONE declared ground (the pre-ADR-0098 warn)',
     file: MANIFEST,
     mutate: (s) => jsonEdit(s, WARN, WARN_NOW, WARN_TOO_LIGHT),
     check: gate9,

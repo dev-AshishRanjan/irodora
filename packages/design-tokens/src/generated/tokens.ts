@@ -52,9 +52,9 @@ export const COLOR = {
     inverse: { srgb: '#171411', oklch: { l: 0.195, c: 0.008, h: 70 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#FDFCF9', oklch: { l: 0.99, c: 0.003, h: 85 }, usage: 'text' },
     ring: { srgb: '#426D95', oklch: { l: 0.52, c: 0.08, h: 248 }, usage: 'nonText' },
-    'status.ok': { srgb: '#387B58', oklch: { l: 0.53, c: 0.09, h: 158 }, usage: 'text' },
-    'status.warn': { srgb: '#976213', oklch: { l: 0.54, c: 0.11, h: 70 }, usage: 'text' },
-    'status.bad': { srgb: '#861116', oklch: { l: 0.4, c: 0.15, h: 26 }, usage: 'text' },
+    'status.ok': { srgb: '#307450', oklch: { l: 0.504, c: 0.09, h: 158 }, usage: 'text' },
+    'status.warn': { srgb: '#905B06', oklch: { l: 0.518, c: 0.11, h: 70 }, usage: 'text' },
+    'status.bad': { srgb: '#7C000C', oklch: { l: 0.37, c: 0.15, h: 26 }, usage: 'text' },
     'chart.1': { srgb: '#161616', oklch: { l: 0.2, c: 0, h: 0 }, usage: 'nonText' },
     'chart.2': { srgb: '#484848', oklch: { l: 0.4, c: 0, h: 0 }, usage: 'nonText' },
     'chart.3': { srgb: '#7A7A7A', oklch: { l: 0.58, c: 0, h: 0 }, usage: 'nonText' },
@@ -106,9 +106,9 @@ export const COLOR = {
     inverse: { srgb: '#111619', oklch: { l: 0.195, c: 0.01, h: 240 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#F9FCFF', oklch: { l: 0.99, c: 0.005, h: 240 }, usage: 'text' },
     ring: { srgb: '#426D95', oklch: { l: 0.52, c: 0.08, h: 248 }, usage: 'nonText' },
-    'status.ok': { srgb: '#387B58', oklch: { l: 0.53, c: 0.09, h: 158 }, usage: 'text' },
-    'status.warn': { srgb: '#976213', oklch: { l: 0.54, c: 0.11, h: 70 }, usage: 'text' },
-    'status.bad': { srgb: '#861116', oklch: { l: 0.4, c: 0.15, h: 26 }, usage: 'text' },
+    'status.ok': { srgb: '#307450', oklch: { l: 0.504, c: 0.09, h: 158 }, usage: 'text' },
+    'status.warn': { srgb: '#905B06', oklch: { l: 0.518, c: 0.11, h: 70 }, usage: 'text' },
+    'status.bad': { srgb: '#7C000C', oklch: { l: 0.37, c: 0.15, h: 26 }, usage: 'text' },
     'chart.1': { srgb: '#161616', oklch: { l: 0.2, c: 0, h: 0 }, usage: 'nonText' },
     'chart.2': { srgb: '#484848', oklch: { l: 0.4, c: 0, h: 0 }, usage: 'nonText' },
     'chart.3': { srgb: '#7A7A7A', oklch: { l: 0.58, c: 0, h: 0 }, usage: 'nonText' },
@@ -160,9 +160,9 @@ export const COLOR = {
     inverse: { srgb: '#191312', oklch: { l: 0.195, c: 0.01, h: 40 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#FFFBF9', oklch: { l: 0.99, c: 0.005, h: 40 }, usage: 'text' },
     ring: { srgb: '#426D95', oklch: { l: 0.52, c: 0.08, h: 248 }, usage: 'nonText' },
-    'status.ok': { srgb: '#387B58', oklch: { l: 0.53, c: 0.09, h: 158 }, usage: 'text' },
-    'status.warn': { srgb: '#976213', oklch: { l: 0.54, c: 0.11, h: 70 }, usage: 'text' },
-    'status.bad': { srgb: '#861116', oklch: { l: 0.4, c: 0.15, h: 26 }, usage: 'text' },
+    'status.ok': { srgb: '#307450', oklch: { l: 0.504, c: 0.09, h: 158 }, usage: 'text' },
+    'status.warn': { srgb: '#905B06', oklch: { l: 0.518, c: 0.11, h: 70 }, usage: 'text' },
+    'status.bad': { srgb: '#7C000C', oklch: { l: 0.37, c: 0.15, h: 26 }, usage: 'text' },
     'chart.1': { srgb: '#161616', oklch: { l: 0.2, c: 0, h: 0 }, usage: 'nonText' },
     'chart.2': { srgb: '#484848', oklch: { l: 0.4, c: 0, h: 0 }, usage: 'nonText' },
     'chart.3': { srgb: '#7A7A7A', oklch: { l: 0.58, c: 0, h: 0 }, usage: 'nonText' },
@@ -214,9 +214,9 @@ export const COLOR = {
     inverse: { srgb: '#131611', oklch: { l: 0.195, c: 0.01, h: 130 }, usage: 'surface' },
     'inverse.foreground': { srgb: '#FAFDF8', oklch: { l: 0.99, c: 0.006, h: 130 }, usage: 'text' },
     ring: { srgb: '#426D95', oklch: { l: 0.52, c: 0.08, h: 248 }, usage: 'nonText' },
-    'status.ok': { srgb: '#387B58', oklch: { l: 0.53, c: 0.09, h: 158 }, usage: 'text' },
-    'status.warn': { srgb: '#976213', oklch: { l: 0.54, c: 0.11, h: 70 }, usage: 'text' },
-    'status.bad': { srgb: '#861116', oklch: { l: 0.4, c: 0.15, h: 26 }, usage: 'text' },
+    'status.ok': { srgb: '#307450', oklch: { l: 0.504, c: 0.09, h: 158 }, usage: 'text' },
+    'status.warn': { srgb: '#905B06', oklch: { l: 0.518, c: 0.11, h: 70 }, usage: 'text' },
+    'status.bad': { srgb: '#7C000C', oklch: { l: 0.37, c: 0.15, h: 26 }, usage: 'text' },
     'chart.1': { srgb: '#161616', oklch: { l: 0.2, c: 0, h: 0 }, usage: 'nonText' },
     'chart.2': { srgb: '#484848', oklch: { l: 0.4, c: 0, h: 0 }, usage: 'nonText' },
     'chart.3': { srgb: '#7A7A7A', oklch: { l: 0.58, c: 0, h: 0 }, usage: 'nonText' },
@@ -264,7 +264,7 @@ export type TextToken = (typeof TEXT_TOKENS)[number];
 export type LargeTextToken = (typeof LARGE_TEXT_TOKENS)[number];
 
 /** Every declared pairing, as `a|b` both ways. DERIVED from the manifest. */
-export const DECLARED_PAIRINGS = ['background|border.strong', 'background|foreground', 'background|foreground.2', 'background|foreground.3', 'background|link', 'background|ring', 'background|status.bad', 'background|status.ok', 'background|status.warn', 'border.strong|background', 'border.strong|surface.1', 'border.strong|surface.2', 'border.strong|surface.3', 'border.strong|swatch.well', 'foreground.2|background', 'foreground.2|surface.1', 'foreground.2|surface.2', 'foreground.3|background', 'foreground.3|surface.1', 'foreground.3|surface.2', 'foreground|background', 'foreground|surface.1', 'foreground|surface.2', 'foreground|surface.3', 'foreground|swatch.well', 'inverse.foreground|inverse', 'inverse.foreground|status.bad', 'inverse.foreground|status.ok', 'inverse.foreground|status.warn', 'inverse|inverse.foreground', 'link|background', 'link|surface.1', 'link|surface.2', 'link|surface.3', 'ring|background', 'ring|surface.1', 'ring|surface.2', 'ring|surface.3', 'status.bad|background', 'status.bad|inverse.foreground', 'status.bad|surface.1', 'status.bad|surface.2', 'status.bad|swatch.well', 'status.ok|background', 'status.ok|inverse.foreground', 'status.ok|surface.1', 'status.ok|surface.2', 'status.warn|background', 'status.warn|inverse.foreground', 'status.warn|surface.1', 'status.warn|surface.2', 'surface.1|border.strong', 'surface.1|foreground', 'surface.1|foreground.2', 'surface.1|foreground.3', 'surface.1|link', 'surface.1|ring', 'surface.1|status.bad', 'surface.1|status.ok', 'surface.1|status.warn', 'surface.2|border.strong', 'surface.2|foreground', 'surface.2|foreground.2', 'surface.2|foreground.3', 'surface.2|link', 'surface.2|ring', 'surface.2|status.bad', 'surface.2|status.ok', 'surface.2|status.warn', 'surface.3|border.strong', 'surface.3|foreground', 'surface.3|link', 'surface.3|ring', 'swatch.well|border.strong', 'swatch.well|foreground', 'swatch.well|status.bad'] as const;
+export const DECLARED_PAIRINGS = ['background|border.strong', 'background|foreground', 'background|foreground.2', 'background|foreground.3', 'background|link', 'background|ring', 'background|status.bad', 'background|status.ok', 'background|status.warn', 'border.strong|background', 'border.strong|surface.1', 'border.strong|surface.2', 'border.strong|surface.3', 'border.strong|swatch.well', 'foreground.2|background', 'foreground.2|surface.1', 'foreground.2|surface.2', 'foreground.3|background', 'foreground.3|surface.1', 'foreground.3|surface.2', 'foreground|background', 'foreground|surface.1', 'foreground|surface.2', 'foreground|surface.3', 'foreground|swatch.well', 'inverse.foreground|inverse', 'inverse.foreground|status.bad', 'inverse.foreground|status.ok', 'inverse.foreground|status.warn', 'inverse|inverse.foreground', 'link|background', 'link|surface.1', 'link|surface.2', 'link|surface.3', 'ring|background', 'ring|surface.1', 'ring|surface.2', 'ring|surface.3', 'status.bad|background', 'status.bad|inverse.foreground', 'status.bad|surface.1', 'status.bad|surface.2', 'status.bad|swatch.well', 'status.ok|background', 'status.ok|inverse.foreground', 'status.ok|surface.1', 'status.ok|surface.2', 'status.ok|swatch.well', 'status.warn|background', 'status.warn|inverse.foreground', 'status.warn|surface.1', 'status.warn|surface.2', 'status.warn|swatch.well', 'surface.1|border.strong', 'surface.1|foreground', 'surface.1|foreground.2', 'surface.1|foreground.3', 'surface.1|link', 'surface.1|ring', 'surface.1|status.bad', 'surface.1|status.ok', 'surface.1|status.warn', 'surface.2|border.strong', 'surface.2|foreground', 'surface.2|foreground.2', 'surface.2|foreground.3', 'surface.2|link', 'surface.2|ring', 'surface.2|status.bad', 'surface.2|status.ok', 'surface.2|status.warn', 'surface.3|border.strong', 'surface.3|foreground', 'surface.3|link', 'surface.3|ring', 'swatch.well|border.strong', 'swatch.well|foreground', 'swatch.well|status.bad', 'swatch.well|status.ok', 'swatch.well|status.warn'] as const;
 
 export const STATUS_PAIRING = {
   ok: { colorToken: 'status.ok', iconToken: 'icon.check', textRequired: true },

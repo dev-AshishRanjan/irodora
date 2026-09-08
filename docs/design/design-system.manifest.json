@@ -5,18 +5,18 @@
   "updated": "2026-09-07",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
-    "date": "2026-08-19",
-    "adr": "0053",
+    "date": "2026-09-07",
+    "adr": "0098",
     "tokens": [
-      "dark.status.ok",
-      "dark.status.warn",
-      "dark.status.bad"
+      "light.status.ok",
+      "light.status.warn",
+      "light.status.bad"
     ],
-    "reviewedBy": "Decision approved by the product owner on 2026-08-19 after the measurements were reproduced independently against the shipped engine. The VALUES were computed during F-003 by the design and colour-science reviews, NOT by the person who approved the palette on 2026-08-14.",
-    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate — worst |APCA Lc| 46.5 against a floor of 45, worst CVD separation 63.1 against a floor of 60. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. Re-approval is owed. SUPERSEDES the 2026-08-15 / ADR-0044 entry: the light values it corrected still stand, and only the three dark status tokens moved.",
+    "reviewedBy": "Decision approved by the product owner on 2026-09-07, against the measurements in ADR-0098 and reproduced by gate 9 and gate 10 on this repository. The VALUES are the output of a search over the feasible box judged by the gate’s own checkers, not a preference.",
+    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate — every declared pairing including the four new `swatch.well` ones passes in all eight palettes, worst CVD separation is 63.1 against a floor of 60 (unchanged from before this change), and the salience rank holds in both themes. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. TWO RE-APPROVALS ARE NOW OWED, not one: this entry supersedes the 2026-08-19 / ADR-0053 entry for the three DARK status tokens, and that one is still outstanding — a supersede here records which entry is current, not that the older decision was ratified.",
     "supersedes": {
-      "date": "2026-08-15",
-      "adr": "0044"
+      "date": "2026-08-19",
+      "adr": "0053"
     }
   },
   "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
@@ -283,7 +283,8 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.warn": {
@@ -298,7 +299,8 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ]
       },
       "status.bad": {
@@ -624,7 +626,7 @@
       },
       "status.ok": {
         "oklch": {
-          "l": 0.53,
+          "l": 0.504,
           "c": 0.09,
           "h": 158
         },
@@ -633,13 +635,14 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ],
-        "srgb": "#387B58"
+        "srgb": "#307450"
       },
       "status.warn": {
         "oklch": {
-          "l": 0.54,
+          "l": 0.518,
           "c": 0.11,
           "h": 70
         },
@@ -648,17 +651,18 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2"
+          "surface.2",
+          "swatch.well"
         ],
-        "srgb": "#976213"
+        "srgb": "#905B06"
       },
       "status.bad": {
         "oklch": {
-          "l": 0.4,
+          "l": 0.37,
           "c": 0.15,
           "h": 26
         },
-        "srgb": "#861116",
+        "srgb": "#7C000C",
         "usage": "text",
         "role": "Error.",
         "pairsWith": [

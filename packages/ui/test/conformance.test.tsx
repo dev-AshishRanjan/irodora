@@ -1191,14 +1191,27 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
 
   it('reports a pair no `pairsWith` covers, even when both sides are tokens', () => {
     /*
-     * `status.warn` pairs with background, surface.1 and surface.2 — not with `swatch.well`.
+     * `surface.3` pairs with `foreground` and with nothing else — deliberately, because it is
+     * the deepest tonal surface and secondary text on it is a pairing nobody has measured.
      * Both colours resolve to tokens; not one check that existed before this said a word.
+     *
+     * THIS CASE NAMED `status.warn` ON `swatch.well` UNTIL F-174, and it stopped
+     * discriminating the moment that pairing was declared — the rule correctly reported
+     * nothing and the assertion went red. Worth recording rather than quietly re-pointing:
+     * **a decoy built from a gap in the manifest has a lifetime**, because the gap is the thing
+     * a feature eventually closes [[a-decoy-that-is-not-broken-proves-nothing]].
+     *
+     * The first replacement was `link` on the well, and it did not discriminate either — for a
+     * different and more interesting reason. Light `link` and light `foreground` are the SAME
+     * VALUE, `#171411`, so the resolver reports the pair under whichever name it finds first,
+     * and `swatch.well` does declare `foreground`. A rule that reads rendered colours can only
+     * distinguish tokens that differ; two tokens sharing a value are one token to it.
      */
     const reported = pairFindings(
-      probe(nativeColors.light['swatch.well'], nativeColors.light['status.warn']),
+      probe(nativeColors.light['surface.3'], nativeColors.light['foreground.2']),
     );
     expect(reported.length).toBeGreaterThan(0);
-    expect(reported[0]?.detail).toContain('swatch.well');
+    expect(reported[0]?.detail).toContain('surface.3');
   });
 
   it('DECOY — the same tree passes once the ground is one the pairing declares', () => {
@@ -1207,7 +1220,20 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
      * would still pass. Same text, same token, a ground the manifest actually declares for it.
      */
     expect(
-      pairFindings(probe(nativeColors.light['surface.1'], nativeColors.light['status.warn'])),
+      pairFindings(probe(nativeColors.light['surface.1'], nativeColors.light['foreground.2'])),
+    ).toHaveLength(0);
+  });
+
+  it('DECOY — status.warn on the well is now DECLARED, and reports nothing (F-174)', () => {
+    /*
+     * The other half of the case above, kept as its own assertion so the change is visible.
+     * ADR-0098 moved the three light status tokens and added `swatch.well` to all three
+     * `pairsWith` lists, because `Status` has taken an `adjacentToSample` prop since F-069
+     * and gate scope is driven by what the manifest declares. If somebody removes that
+     * declaration, this goes red and says why.
+     */
+    expect(
+      pairFindings(probe(nativeColors.light['swatch.well'], nativeColors.light['status.warn'])),
     ).toHaveLength(0);
   });
 

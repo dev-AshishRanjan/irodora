@@ -3628,6 +3628,56 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-098",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/generated/native.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/design-tokens/src/generated/runtime.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-contrast-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unreached-tokens.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE PAIRING IS DECLARED, WHICH IS WHAT PUTS THE GROUND IN GATE SCOPE. `swatch.well` joins all three status tokens’ `pairsWith` in both themes, so gate 9 now measures the ground `adjacentToSample` actually uses — twelve readings across eight palettes where there were none. THE MUTATION PROOF WAS RE-DERIVED RATHER THAN RE-POINTED, and it is now sharper than it was: the planted defect is the value light `status.warn` HELD until this change, which clears the floor on background, surface.1 and surface.2 and fails only on the well. That proves the ratio AND the scope together — remove `swatch.well` from the pairsWith lists and the case goes green with the mutation applied. The proof also REFUSED TO RUN when it found the manifest retuned: it pins the pre-mutation value and throws \"the manifest was retuned and this mutation is no longer the change its name describes. Re-derive it rather than deleting the case.\" WHAT IS NOT GUARDED: that the margins survive a change to `swatch.well` itself. 4.70 and 4.75 against 4.5 is a guard, not a cushion — gate 9 would catch it, and there is no headroom to absorb it silently.",
+      "memory": "memory/effects/a-token-that-passes-can-be-what-holds-the-others-out.md",
+      "rationale": "THE ONE THAT WAS COMFORTABLY PASSING WAS THE ONE BLOCKING THE OTHER TWO. Light `status.ok` (4.21:1) and `status.warn` (4.32:1) failed the text floor on `swatch.well`, the ground `Status.adjacentToSample` puts them on — so the component promised a ground two of its three kinds could not use. F-174’s own notes said the obstacle was the salience rank. It was not: CVD separation is what binds this triple. Darkening `warn` toward the well’s requirement moves it toward `bad`’s lightness, and under simulation amber and red converge because lightness is the only channel left between them — every candidate that cleared 4.5 with `bad` where it was dropped warn/bad to 49–56 against a floor of 60. `bad` had to move below L 0.385 to give `warn` the room, and `bad` was the kind that was passing at 8.29:1. THE SEARCH WAS JUDGED BY THE GATE’S OWN CHECKERS on a mutated manifest through `parseManifest`, so all eight palettes were seen exactly as gate 9 sees them — a search that re-implemented the ratio would have agreed with itself on day one, which is the failure F-143’s peer gate already recorded. 63,840 combinations, 35 feasible, and the one chosen is where the status tokens stop being the tightest thing in the system. AND A DECOY EXPIRED: F-171’s pair-undeclared case used status.warn on swatch.well as its example of an undeclared pairing, and declaring that pairing made the decoy stop discriminating. A decoy built from a gap in the manifest has a lifetime, because the gap is the thing a feature eventually closes. Its first replacement — `link` on the well — did not discriminate either, for a subtler reason: light `link` and light `foreground` are the same value, so a rule reading rendered colours cannot tell them apart.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
