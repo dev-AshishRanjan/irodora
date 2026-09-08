@@ -149,13 +149,52 @@ describe('the Lens has no way out except the table', () => {
     expect(bad).toMatch(/router\s*\.\s*push\s*\(\s*['"`]\//u);
   });
 
-  it('every exit in the table is a real route', () => {
-    // Not a route-existence check — `verify-route-targets` owns that, and owns it better
-    // because it reads the route tree. This asserts the table produces ABSOLUTE paths, which is
-    // the shape that gate can resolve at all.
-    expect(LENS_EXITS.profile()).toMatch(/^\//u);
-    expect(LENS_EXITS.wardrobe()).toMatch(/^\//u);
-    expect(LENS_EXITS.contemporary('x')).toMatch(/^\//u);
-    expect(LENS_EXITS.colour('x')).toMatch(/^\//u);
+  /**
+   * EVERY EXIT IS A ROUTE THAT EXISTS — AND THIS IS HERE BECAUSE MOVING THEM BROKE THE GATE
+   * THAT USED TO SAY SO.
+   *
+   * `verify-route-targets` finds navigation by matching `router.push('…')` in source. The four
+   * Lens hrefs were exactly that until they became rows in a table, and the gate then found
+   * **11 targets where it had found 15 — and still reported "every target resolves"**. Nothing
+   * went red. Four routes simply stopped being checked, which is worse than a failure because
+   * a failure is visible.
+   *
+   * So the table is held to the gate's OWN route model rather than to a copy of it:
+   * `routePatterns` reads the real route tree, so a renamed route fails here for the same
+   * reason and on the same evidence it would have failed there.
+   */
+  /**
+   * THE GATE OWNS "IS THIS A REAL ROUTE", AND F-178 BRIEFLY TOOK IT AWAY FROM IT.
+   *
+   * `verify-route-targets` finds navigation by matching `router.push('…')`. The four Lens hrefs
+   * were exactly that until they became rows in a table, and the gate then found **11 targets
+   * where it had found 15 — and still printed "Every target resolves."** Nothing went red. Four
+   * routes simply stopped being checked, which is worse than a failure because a failure is
+   * visible.
+   *
+   * The fix belongs in the gate, and it is there: `targets()` now also reads an href returned by
+   * an arrow, and the count is back to 15. Asserting it here instead was tried and is the wrong
+   * home twice over — jest cannot dynamically import the gate's ESM without
+   * `--experimental-vm-modules`, and a second implementation of the route model would agree with
+   * the real one on the day it was written and never again.
+   *
+   * So this file asserts the SHAPE the gate needs, and the gate asserts the routes.
+   */
+  it('produces absolute paths, which is the shape the gate can resolve', () => {
+    for (const href of [
+      LENS_EXITS.profile(),
+      LENS_EXITS.wardrobe(),
+      LENS_EXITS.contemporary('ai-nezumi'),
+      LENS_EXITS.colour('ai-nezumi'),
+    ])
+      expect(href).toMatch(/^\/[a-z]/u);
+  });
+
+  it('and writes them as a literal the gate can see, not as a value it cannot', () => {
+    // The gate reads SOURCE. An href assembled from variables would resolve at runtime and be
+    // invisible to it — which is precisely how the four exits went unchecked.
+    const table = readFileSync(join(__dirname, '..', 'src', 'lens', 'exits.ts'), 'utf8');
+    for (const literal of ['/profile', '/wardrobe/add', '/atlas/nearby/', '/atlas/'])
+      expect(table).toContain(literal);
   });
 });

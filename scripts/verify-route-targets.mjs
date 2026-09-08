@@ -95,6 +95,29 @@ export function targets(dirs = SCAN) {
     for (const file of walk(dir)) {
       const source = readFileSync(file, 'utf8');
       source.split('\n').forEach((line, index) => {
+        /*
+         * AN HREF RETURNED BY AN ARROW IS STILL A NAVIGATION TARGET (F-178).
+         *
+         * This scan matched `router.push('…')` and nothing else, which was true of every
+         * navigation in the product until F-178 moved the Lens's four exits into a table of
+         * `() => '/profile'` rows. **The gate then found 11 targets where it had found 15, and
+         * still printed "Every target resolves."**
+         *
+         * Nothing went red. Four routes simply stopped being checked — and a check that gets
+         * QUIETER is worse than one that fails, because a failure is visible and this was not
+         * [[a-truncated-report-reads-exactly-like-a-passing-one]].
+         *
+         * Deliberately narrow: the arrow, then a quote, then a slash. A string beginning with
+         * `/` inside `app/` or `src/` is a route or it is nothing, and widening this to every
+         * such literal would start reporting file paths and regular expressions.
+         */
+        for (const m of line.matchAll(/=>\s*[`'"](\/[^`'"]*)/gu)) {
+          found.push({
+            file: relative(ROOT, file).replaceAll('\\', '/'),
+            line: index + 1,
+            target: m[1].replace(/\$\{[^}]*\}/gu, 'PARAM'),
+          });
+        }
         for (const m of line.matchAll(/router\.(?:push|replace|navigate)\(\s*[`'"]([^`'"]+)/gu)) {
           // A template literal's `${…}` is a value known only at runtime. It becomes a wildcard,
           // which is the honest reading: the check can say the SHAPE exists, not that the id does.

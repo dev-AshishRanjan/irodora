@@ -149,3 +149,25 @@ Two other harness lessons from the same feature, both about checks rather than p
   gorhom's sheet is wrapped in `memo`, so `typeof type === 'function'` found nothing and seven
   assertions failed at once — the shape that gets "fixed" by softening the finder until it
   matches something. The decoy now proves the finder *refuses* rather than returns nothing.
+
+## A check that gets quieter is worse than one that fails (F-178 → F-179)
+
+F-178 moved the Lens's four exits out of `router.push('…')` call sites and into a table of
+`() => '/profile'` rows. `verify-route-targets` finds navigation by matching the former, so it
+went from **15 targets to 11 — and still printed "Every target resolves."**
+
+Nothing went red. Four routes stopped being checked, and the gate reported success. It was found
+only because the next feature happened to read the target count out loud.
+
+**The general form:** when a refactor changes the SHAPE of the thing a gate reads, the gate does
+not fail — it stops seeing. The failure is silent by construction, and "all green" is exactly
+what it looks like. Two habits fall out of it:
+
+- **Read a gate's counts, not only its verdict.** This one prints its target count on every run.
+  A verdict answers "did anything break"; a count answers "is it still looking at everything".
+  Same lesson as [[a-truncated-report-reads-exactly-like-a-passing-one]], one level up.
+- **Before moving something a gate reads, ask what shape it matches.** The fix was five lines in
+  the gate; the cost of not noticing would have been four dead routes discovered by a person.
+
+See also the sibling finding in the same feature: an abstraction that hides a gate's subject has
+to earn more than two entries with one use each.
