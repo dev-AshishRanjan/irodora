@@ -17,7 +17,7 @@
  */
 
 import { swatchCorner } from '../src/Swatch.js';
-import { nativeRadius } from '@irodora/design-tokens';
+import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 
 /**
  * The straight run left on each edge, as a fraction of the side.
@@ -42,6 +42,37 @@ describe('swatchCorner', () => {
       const { sample, keyline } = swatchCorner(size);
       expect(`${String(size)}: ${String(keyline - sample)}`).toBe(`${String(size)}: 1`);
     }
+  });
+
+  it('keeps the well exactly one inset outside the keyline, at every size (F-187)', () => {
+    /*
+     * THE SAME ASSERTION AS THE ONE ABOVE, ONE LEVEL OUT.
+     *
+     * The well was a RECTANGLE while the sample inside it was rounded — reported as *"The bg of
+     * color div, which is grey color, is still square/rectangle shaped"*. ADR-0090 rounded the
+     * sample and F-161 called the roundness done; the ground it sits on was never touched.
+     *
+     * Nesting a third rounded rectangle brings back the concentricity failure the keyline
+     * already had to solve: equal radii make the outer arc TIGHTER than the inner one, and a
+     * sliver of ground shows through each corner. The gap has to be the padding, exactly.
+     */
+    for (const size of [16, 24, 32, 44, 56, 80, 140, 160, 320, 380]) {
+      const { keyline, well } = swatchCorner(size);
+      expect(`${String(size)}: ${String(well - keyline)}`).toBe(
+        `${String(size)}: ${String(nativeSpacing.sm)}`,
+      );
+    }
+  });
+
+  it('lets the well keep growing past the cap the SAMPLE stops at', () => {
+    /*
+     * The cap exists so a sample does not become a curve at hero sizes. A container following
+     * its own content past it is the correct direction — and capping the well while the keyline
+     * kept growing is precisely the sliver the rule above forbids.
+     */
+    const { sample, well } = swatchCorner(1000);
+    expect(sample).toBe(nativeRadius.xl);
+    expect(well).toBeGreaterThan(nativeRadius.xl);
   });
 
   it('is proportional below the cap, so a chip and a card round alike', () => {

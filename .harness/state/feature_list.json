@@ -5980,7 +5980,7 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-176"
       ],
@@ -5998,7 +5998,17 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": "plans/F-187-the-swatch-well-is-a-shape.md",
+      "attested": [
+        {
+          "criterion": "The well takes a corner from the radius scale, and the sample keeps the proportional corner ADR-0090 gave it",
+          "verifiedBy": "Looking at a 32px swatch and a 320px one on a phone, and saying whether the well's corner reads as FOLLOWING the sample or as a second competing curve. THE GEOMETRY IS PROVEN — concentricity is asserted at ten sizes on both sides of the cap, and the well is asserted to keep growing past the cap the sample stops at. WHAT IS A JUDGEMENT is whether three nested corners at 32px read as one shape. This is the third R7 feature to end owing exactly that kind of look.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE, AND THE HISTORY EXPLAINS THE DEFECT. ADR-0090 replaced radius.swatch: 0 with a proportional corner ON THE SAMPLE, ADR-0094 capped it, and F-161 called the roundness done — the ground the sample sits on was never touched. A rounded sample inside a square well is a shape somebody drew half of, and that is exactly what was reported. THE FIX IS THE EXISTING RULE ONE LEVEL OUT: the keyline's corner is already the sample's plus its own 1px inset, because two nested rounded rectangles are only concentric when the outer radius exceeds the inner by the inset — equal radii make the outer arc TIGHTER and a sliver of ground shows through each corner. The well is one more nesting with a larger inset and the arithmetic is identical. THE WELL IS DELIBERATELY NOT CAPPED: SWATCH_MAX_CORNER exists so a SAMPLE does not become a curve at hero sizes, and a container following its own content past that is the correct direction — capping the well while the keyline kept growing is precisely the sliver the rule prevents. Asserted, because the opposite would look like a rounding difference. THE SECOND CRITERION WAS ALREADY TRUE AND NOT ASSERTED. 'A selected swatch is the same size as an unselected one' became true in F-176 when selectionTone started reserving the edge, but only the TONE was tested — which is necessary and not sufficient, because a component can take the tone and add its own conditional border, which is exactly what Swatch and Chip each did independently before F-176. The rendered component is now held to it in both themes. swatch-edge.test.ts is untouched and still passes: contrast is per-pixel and indifferent to geometry, the same reasoning ADR-0090 recorded. NOT RUN: cvd, color-golden, content."
     },
     {
       "id": "F-188",

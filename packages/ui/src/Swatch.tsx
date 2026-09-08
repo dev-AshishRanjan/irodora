@@ -118,9 +118,32 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
  */
 const SWATCH_MAX_CORNER = nativeRadius.xl;
 
-export function swatchCorner(size: number): { readonly sample: number; readonly keyline: number } {
+export function swatchCorner(size: number): {
+  readonly sample: number;
+  readonly keyline: number;
+  readonly well: number;
+} {
   const sample = Math.min(Math.round(size * nativeRadius.swatchRatio), SWATCH_MAX_CORNER);
-  return { sample, keyline: sample + KEYLINE_INSET };
+  const keyline = sample + KEYLINE_INSET;
+  /*
+   * THE WELL IS THE SAME RULE, ONE LEVEL OUT (F-187).
+   *
+   * Reported as *"The bg of color div, which is grey color, is still square/rectangle shaped, no
+   * roundness here"* — and it was: ADR-0090 gave the SAMPLE a proportional corner and F-161
+   * called the roundness done, while the ground it sits on stayed a rectangle. A rounded sample
+   * inside a square well is a shape somebody drew half of.
+   *
+   * The keyline's corner is the sample's plus its own 1px inset, so that two nested rounded
+   * rectangles stay concentric — give them the same radius and the outer arc is TIGHTER than
+   * the inner one, and a sliver of ground shows through each corner. The well is one more
+   * nesting with a larger inset, and the arithmetic is identical.
+   *
+   * NOT CAPPED at `SWATCH_MAX_CORNER`. That cap exists so a SAMPLE does not become a curve at
+   * the sizes this product draws heroes at; a container following its own content past it is
+   * the correct direction, and capping the well while the keyline kept growing is exactly the
+   * sliver this rule exists to prevent.
+   */
+  return { sample, keyline, well: keyline + WELL_INSET };
 }
 
 /**
@@ -170,6 +193,14 @@ function rgbOf(hex: string): readonly [number, number, number] {
 /** The width of each of the two opaque hairlines. One device pixel, by design (F-068). */
 const KEYLINE_INSET = 1;
 
+/**
+ * The gap between the keyline and the edge of the well.
+ *
+ * The same value the well pads with, and it has to be: the well's corner is derived from it, so
+ * a padding that drifted from this would put the ground back through the corners.
+ */
+const WELL_INSET = nativeSpacing.sm;
+
 export function Swatch({
   name,
   hex,
@@ -208,7 +239,10 @@ export function Swatch({
         // readable next to anything else on the screen. `selectionStyle` paints over it only
         // when the swatch is chosen, and omits the key entirely otherwise.
         backgroundColor: colors['swatch.well'],
-        padding: nativeSpacing.sm,
+        // Concentric with the keyline inside it — see `swatchCorner`. `WELL_INSET` is this
+        // padding, named once so the corner cannot drift from the gap it is derived from.
+        borderRadius: corner.well,
+        padding: WELL_INSET,
         alignItems: 'center',
         gap: nativeSpacing.sm,
         /*

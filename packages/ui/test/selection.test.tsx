@@ -16,7 +16,12 @@ import {
   selectionTone,
   SELECTION_EDGE,
 } from '../src/selection.js';
+import { Swatch } from '../src/Swatch.js';
 import { ThemeProvider } from '../src/theme.js';
+import { fromSpace } from '@irodora/color-core';
+
+/** A colour with provenance, because `Swatch` cannot be constructed without one (ADR-0005). */
+const SAMPLE = fromSpace('oklch', [0.42, 0.09, 264], { source: 'declared', confidence: 1 });
 
 const THEMES = ['dark', 'light'] as const;
 
@@ -38,6 +43,36 @@ describe('decision 1 — the edge is reserved, so selection never moves anything
     expect(tone.borderColor).toBe('transparent');
     // And no ground of its own — the caller keeps whatever it was painting.
     expect(tone.background).toBeUndefined();
+  });
+});
+
+describe('a selected swatch is the same size as an unselected one (F-187)', () => {
+  /**
+   * The property F-176 established as a rule, asserted here against the RENDERED component
+   * rather than against the tone that feeds it.
+   *
+   * `selectionTone` returning a constant width is necessary and not sufficient: a component
+   * could take the tone and then add its own conditional border, which is what `Swatch` and
+   * `Chip` each did independently before F-176. The tone test says the rule is right; this
+   * says the component follows it.
+   */
+  it.each(THEMES)('declares the same border width chosen or not (%s)', (theme) => {
+    const widthOf = (selected: boolean): unknown => {
+      const { getByRole } = render(
+        <ThemeProvider theme={theme}>
+          <Swatch
+            name="Ai-nezumi"
+            hex="#526A6B"
+            color={SAMPLE}
+            selected={selected}
+            onPress={() => undefined}
+          />
+        </ThemeProvider>,
+      );
+      const style = getByRole('button').props['style'] as { readonly borderWidth?: number };
+      return style.borderWidth;
+    };
+    expect(widthOf(true)).toBe(widthOf(false));
   });
 });
 

@@ -19200,3 +19200,63 @@ typecheck · lint · format · test · a11y · contrast · build · state — **
 `@irodora/ui` tests.
 
 ---
+
+## F-187 — The swatch well is a shape, and selection does not move it
+
+**2026-09-08.** *"The bg of color div, which is grey color, is still square/rectangle shaped."*
+Exactly right, and the history explains it: ADR-0090 gave the **sample** a proportional corner,
+ADR-0094 capped it, F-161 called the roundness done — and the ground the sample sits on was never
+touched. **A rounded sample inside a square well is a shape somebody drew half of.**
+
+### The fix is the existing rule, one level out
+
+The keyline's corner is already the sample's **plus its own 1 px inset**, because two nested
+rounded rectangles are only concentric when the outer radius exceeds the inner by the inset.
+Equal radii make the outer arc *tighter*, and a sliver of ground shows through each corner. The
+well is one more nesting with a larger inset, and the arithmetic is identical.
+
+**The well is deliberately not capped.** `SWATCH_MAX_CORNER` exists so a *sample* does not become
+a curve at hero sizes; a container following its own content past that is the correct direction —
+and capping the well while the keyline kept growing is precisely the sliver the rule prevents.
+Asserted, because the opposite would look like a rounding difference.
+
+### The second criterion was already true and not asserted
+
+*"A selected swatch is the same size as an unselected one"* became true in F-176, when
+`selectionTone` started reserving the edge. But only the **tone** was tested, which is necessary
+and not sufficient: a component can take the tone and then add its own conditional border —
+exactly what `Swatch` and `Chip` each did independently before F-176. The rendered component is
+now held to it in both themes.
+
+`swatch-edge.test.ts` is untouched and still passes: contrast is per-pixel and indifferent to
+geometry, the same reasoning ADR-0090 recorded when it rounded the sample.
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · build · state — **PASS**. 238
+`@irodora/ui` tests.
+
+---
+
+# Wave 2 of R7 is complete
+
+**F-184 · F-185 · F-186 · F-187.** The component layer, and three components refused.
+
+| | |
+|---|---|
+| `Card` | not a HeroUI wrapper — its `Card` is its `Surface`, which renders a blur |
+| `Spinner` | built, registered, and **refused**: paints `#000000` in all eight palettes |
+| `Menu`, `Avatar`, `TagGroup`, `Checkbox`, `ListGroup` | refused — no consumer, or no behaviour over a styled box |
+
+**Three components were accepted and three checks had to change to accept them.** The
+conformance suite's state rules were per-node and could not model a group; `verify-motion`
+refused the comment explaining its own rule; the tap-target rule found a missing `minWidth`
+nobody had written. Each was a check meeting a case it was not built for, and each is now
+broader with decoys holding both directions.
+
+**The refusals are the interesting output.** Four components did not ship, every one for a
+reason recorded where the next person will read it — and one of them was caught by the
+conformance suite *before any screen used it*, which is the argument for registering a component
+the day it is written rather than the day it ships.
+
+---
