@@ -6100,7 +6100,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-188"
       ],
@@ -6119,7 +6119,17 @@
         "a11y",
         "perf",
         "build"
-      ]
+      ],
+      "plan": "plans/F-190-the-launch-sequence-resolves-into-the-app.md",
+      "attested": [
+        {
+          "criterion": "The static splash hands over to an animated sequence built from the mark, with no visible cut between them",
+          "verifiedBy": "Cold-starting the app on a device and watching the seam. THE TWO PROPERTIES THAT REMOVE THE CUT ARE CHECKED — the overlay draws the mark at SPLASH_IMAGE_WIDTH, read from the same export app.config.ts passes to expo-splash-screen, and it reports itself shown BEFORE anything hides the native splash, with a decoy proving it does not finish early. WHAT NEEDS A DEVICE is whether the two frames actually coincide: the native splash is a rasterised PNG scaled by the OS and the overlay is live SVG, so they are the same geometry through two renderers, and only an eye can say whether the hand-over is invisible.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE, AND THE DEFECT WAS NOT THE MISSING ANIMATION. Reading the code first found that NOTHING CALLED SplashScreen.preventAutoHideAsync(). expo-splash-screen hides the native splash as soon as the React root renders its first frame, and RootLayout rendered <></> while the Japanese font subset loaded — so every cold start went splash -> BLANK SCREEN -> app. Not a cut with no animation: a GAP, for as long as the font takes, which is what gets reported as 'the app flashes white when I open it'. That is a bigger defect than the one that prompted the feature, and it was invisible because nothing renders a blank frame in a test. THREE THINGS IN ORDER, BECAUSE THE SECOND IS POINTLESS WITHOUT THE FIRST: hold the splash at module scope beside installRandomSource, for the same reason — this is the first module Expo Router loads; hand over by drawing the SAME MARK at the SAME WIDTH on the SAME GROUND, from the same exported number, and only then hide the native splash; then resolve, with the app already mounted underneath so a cold start never waits on decoration. THE ORDER IS ASSERTED, with a decoy: firing onShown before the overlay has rendered is the blank frame again one layer up, and 'hide the splash then show ours' reads as the natural order, which is why it is the easy mistake. REDUCED MOTION RESOLVES AT ONCE rather than faster — duration('view') returns 0 under the setting, so both the hold and the fade collapse without a second code path. A TEST DETAIL WORTH KEEPING: getByTestId could not find the overlay, and that was not a bug — RNTL 13 skips subtrees hidden from the accessibility tree, so the query needing includeHiddenElements is itself the evidence that the hiding works. NOT RUN: cvd, color-golden, content."
     },
     {
       "id": "F-191",

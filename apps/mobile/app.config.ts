@@ -75,6 +75,19 @@ if (!Number.isSafeInteger(versionCode) || versionCode < 1 || versionCode > 2_100
  */
 export const ANDROID_MIN_SDK = 26;
 
+/**
+ * How wide the mark is on the native splash, in points.
+ *
+ * **Exported so the launch sequence can continue it rather than guess at it** (F-190). The
+ * overlay that takes over from the native splash draws the same mark at the same size on the
+ * same ground; a second copy of this number is a hand-over that drifts by a few points and
+ * reads as a jump.
+ *
+ * 40 % of the narrow edge of a typical phone, which keeps the mark well inside the safe area on
+ * every aspect ratio.
+ */
+export const SPLASH_IMAGE_WIDTH = 160;
+
 const config: ExpoConfig = {
   name: 'Irodora',
   slug: 'irodora',
@@ -257,7 +270,7 @@ const config: ExpoConfig = {
       {
         image: './assets/brand/splash-icon-light.png',
         backgroundColor: nativeColors.light.background,
-        imageWidth: 160,
+        imageWidth: SPLASH_IMAGE_WIDTH,
         dark: {
           image: './assets/brand/splash-icon-dark.png',
           backgroundColor: nativeColors.dark.background,

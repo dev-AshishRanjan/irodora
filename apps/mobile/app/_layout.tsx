@@ -1,4 +1,6 @@
+import { useCallback, useState } from 'react';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -7,6 +9,7 @@ import { DEVICE_FAMILY, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { deviceRepository } from '../src/store/repository';
+import { Launch } from '../src/launch';
 
 /*
  * THE CSPRNG, INSTALLED BEFORE ANY SCREEN RENDERS (F-104).
@@ -21,6 +24,25 @@ import { deviceRepository } from '../src/store/repository';
  * (NFR-13), and a startup crash with a sentence is better than a key nobody can reproduce.
  */
 installRandomSource();
+
+/*
+ * THE NATIVE SPLASH STAYS UP UNTIL WE HAVE DRAWN SOMETHING (F-190).
+ *
+ * At module scope, beside `installRandomSource()` and for the same reason: this is the first
+ * module Expo Router loads, which makes it the earliest point that is also a place somebody
+ * would think to look.
+ *
+ * **Nothing called this before**, and `expo-splash-screen` hides the splash as soon as the
+ * React root renders its first frame — which was `<></>` while the Japanese font subset
+ * loaded. So every cold start went splash → BLANK SCREEN → app. That is what gets reported as
+ * "the app flashes white when I open it", and it is a bigger defect than the missing animation
+ * that prompted this feature.
+ *
+ * The promise is deliberately not awaited: it resolves once the native module has been told,
+ * and there is nothing to do with the answer. A rejection means the splash was already gone,
+ * which is the state this call exists to prevent and cannot then repair.
+ */
+void SplashScreen.preventAutoHideAsync();
 
 /**
  * The root layout.
@@ -88,7 +110,7 @@ function Chrome(): React.JSX.Element {
 }
 
 /** Reads the choice and hands it to the theme. One line, and it has to be a component. */
-function Themed(): React.JSX.Element {
+function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.Element {
   const { appearance, device } = useAppearance();
   /*
    * THE DERIVED PALETTE, ONLY WHEN IT WAS BOTH CHOSEN AND CHECKED (F-154).
@@ -106,6 +128,16 @@ function Themed(): React.JSX.Element {
   return (
     <ThemeProvider appearance={appearance} {...(palette === undefined ? {} : { palette })}>
       <Chrome />
+      {/*
+        THE LAUNCH OVERLAY LIVES INSIDE THE THEME (F-190), because it paints `background` and
+        draws the mark in `foreground` — the same two tokens the native splash was composited
+        from. Outside the provider it would have no theme to read and would have to invent one,
+        which is the "a colour nobody chose" hazard every overlay in this product refuses.
+
+        AFTER `Chrome`, so it is above it: the app mounts underneath immediately and a cold
+        start never waits on decoration.
+      */}
+      {launch}
     </ThemeProvider>
   );
 }
@@ -123,6 +155,31 @@ export default function RootLayout(): React.JSX.Element {
   const [loaded] = useFonts({
     NotoSansJP,
   });
+
+  /*
+   * THE LAUNCH OVERLAY, AND THE ORDER IS THE FEATURE.
+   *
+   * `launching` starts true and the overlay renders ON TOP of the app rather than instead of
+   * it — so the app mounts underneath immediately and a cold start never waits on decoration.
+   */
+  const [launching, setLaunching] = useState(true);
+
+  /*
+   * The native splash goes only once OUR first frame is on screen. Hiding it before that is the
+   * blank frame again, one layer up.
+   */
+  const onShown = useCallback(() => {
+    void SplashScreen.hideAsync();
+  }, []);
+  const onDone = useCallback(() => {
+    setLaunching(false);
+  }, []);
+
+  /*
+   * STILL NOTHING WHILE THE FONT LOADS — and now that is correct rather than a gap, because the
+   * native splash is still up. A frame drawn before the face is ready falls back to the
+   * platform font, which is the silent failure ADR-0057 bundles a subset to avoid.
+   */
   if (!loaded) return <></>;
 
   /*
@@ -150,7 +207,7 @@ export default function RootLayout(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <AppearanceProvider store={deviceRepository()}>
-        <Themed />
+        <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
       </AppearanceProvider>
     </SafeAreaProvider>
   );

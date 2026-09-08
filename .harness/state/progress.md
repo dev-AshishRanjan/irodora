@@ -19354,3 +19354,47 @@ typecheck · lint · format · test · a11y · contrast · **motion** · build �
 `@irodora/ui` tests.
 
 ---
+
+## F-190 — The launch sequence resolves into the app
+
+**2026-09-08.** *"Add some animation to splash screen."* Reading the code first found something
+worse than a missing animation.
+
+**Nothing called `SplashScreen.preventAutoHideAsync()`.** `expo-splash-screen` hides the native
+splash as soon as the React root renders its first frame, and `RootLayout` rendered `<></>` while
+the Japanese font subset loaded. So every cold start was:
+
+```
+native splash  →  BLANK SCREEN  →  the app
+```
+
+Not a cut with no animation — a **gap**, for as long as the font takes. That is what somebody
+reports as *"the app flashes white when I open it"*, it is a bigger defect than the one that
+prompted the feature, and **nothing could have caught it**: no test renders a blank frame.
+
+### Three things, in order, because the second is pointless without the first
+
+**Hold the splash**, at module scope beside `installRandomSource()` and for the same reason —
+this is the first module Expo Router loads.
+
+**Hand over rather than cut**: draw the same mark, at the same width, on the same ground, from
+the **same exported number** `app.config.ts` passes to the plugin — and hide the native splash
+only after that has rendered.
+
+**Resolve**, with the app already mounted underneath, so a cold start never waits on decoration.
+
+**The order is asserted, with a decoy.** Firing `onShown` before the overlay has rendered is the
+blank frame again, one layer up — and *"hide the splash then show ours"* reads as the natural
+order, which is exactly why it is the easy mistake.
+
+### A test detail worth keeping
+
+`getByTestId` could not find the overlay, and that was **not a bug**: RNTL 13 skips subtrees
+hidden from the accessibility tree. The query needing `includeHiddenElements` is itself the
+evidence that the hiding works.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · motion · build — **PASS**.
+
+---
