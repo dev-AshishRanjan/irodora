@@ -211,3 +211,4 @@ The narrative behind each link in [`../state/effects.json`](../state/effects.jso
 *Empty. Populated as subsystems are built and their real behaviour becomes worth recording —
 which is after they exist, not before.*
 - [effects/an-engine-with-no-caller-is-not-a-finished-feature.md](effects/an-engine-with-no-caller-is-not-a-finished-feature.md) — **E-100** · the harmony engine passed every gate for eleven releases while nothing imported it; a manifest says what a package may reach, only an import says what it does.
+- [lessons/a-pipe-hides-the-exit-code-that-decides-the-commit.md](lessons/a-pipe-hides-the-exit-code-that-decides-the-commit.md) — `cmd | tail && git commit` reports tail's status, so a red gate committed; trimming output is a reading convenience, `&&` is a control decision.
