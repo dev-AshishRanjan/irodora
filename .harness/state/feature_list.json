@@ -5861,7 +5861,7 @@
       "package": "@irodora/ui",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-175",
         "F-176"
@@ -5881,7 +5881,17 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": "plans/F-184-card-and-an-elevation-vocabulary.md",
+      "attested": [
+        {
+          "criterion": "A card composes a header, a body, a media slot and a footer, and has pressable and selected states drawn from F-176",
+          "verifiedBy": "Looking at the Contemporary screen on a phone and saying whether level 2 reads as ABOVE level 1. THE STRUCTURE IS CHECKED — both subjects are in the conformance registry with every slot filled, contrast measured in both themes, and the suite caught two real defects in the first draft. WHAT IS A JUDGEMENT is whether the elevation step is visible at all: ADR-0099 compressed the dark ramp from 40/37/36/37 to 35/30/25/25 to raise the floor, and this is the FIRST surface in the product to spend the level-2 step. If it does not read, the ramp is the thing to revisit rather than the card.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "notes": "DONE. MEASURED FIRST: <Surface> appears 48 times across the screens and EVERY ONE is level 1. That is the whole card vocabulary — one tint, one radius, one padding — so a card that is the SUBJECT of a page and one that is one of its several ANSWERS were drawn identically. There was no vocabulary to be unprofessional with. NOT A HEROUI WRAPPER, AND THE RULE DECIDED IT RATHER THAN TASTE: HeroUI's Card is Surface plus six styled Views — trivial layout, no behaviour — and Surface is the component heroui-wrappers.md names outright, because it renders an optional GlassView blur and a blur tints what it surrounds. MEDIA IS THE SLOT THAT EARNS THE COMPONENT: it is edge to edge, so it must escape the padding, and that is the one thing a padded box cannot express — it is why 48 surfaces never became cards. THE SHARPEST CONVERSION IS THE COMPUTED EQUIVALENT: F-151 established that Contemporary answers 'how close is this' AT THE BOUNDARY, then put the pair inside a padded Surface, so the two colours meeting each other sat 16px in, framed. The frame is the thing F-151 was removing, one level out. TWO BOXES DELIBERATELY STAY SURFACES — the membership list and the nothing-near state are notes, and converting every box would recreate the sameness this feature exists to end, one component along. THE SUITE CAUGHT TWO REAL DEFECTS IN THE FIRST DRAFT: minHeight without minWidth (WCAG asks for the target, not the content — reported ten times, once per state per theme), and an interactive component with no loading state, which would have been a state defined in name only. A SKILL RECORDS THE DECISION so the next component does not re-argue it, including the three cases where the component's NAME got it wrong."
     },
     {
       "id": "F-185",

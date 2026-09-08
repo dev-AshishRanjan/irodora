@@ -7,7 +7,7 @@
  * be capable of passing [[a-decoy-that-is-not-broken-proves-nothing]].
  */
 
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { fromSpace } from '@irodora/color-core';
 import { nativeColors, nativeNumericFeature, nativeTapTarget } from '@irodora/design-tokens';
@@ -17,6 +17,7 @@ import {
   Appear,
   Bands,
   Button,
+  Card,
   Chip,
   Dialog,
   EmptyState,
@@ -363,6 +364,67 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             Ai-nezumi
           </Text>
         </Surface>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE CARD, WITH EVERY SLOT FILLED. A subject that rendered only the body would leave the
+     * header rule, the footer rule and the edge-to-edge media outside every contrast run — and
+     * the media slot is the one that earns the component, so an unrendered one is the whole
+     * argument unchecked.
+     */
+    name: 'Card',
+    kind: 'static',
+    sampleValues: ['#526A6B'],
+    render: (_state, theme) =>
+      draw(
+        <Card
+          level="2"
+          header={
+            <Text size="title" color="foreground">
+              Ai-nezumi
+            </Text>
+          }
+          media={<View style={{ height: 48, backgroundColor: '#526A6B' }} />}
+          footer={
+            <Text size="xs" color="foreground.2">
+              Measured under D65
+            </Text>
+          }
+        >
+          <Text size="body" color="foreground.2">
+            A grey with indigo in it.
+          </Text>
+        </Card>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * PRESSABLE AND SELECTED, which is a different tree and a different set of rules: it has a
+     * role, a name, a 44px minimum and F-176's treatment. `interactive` so the suite asks it
+     * for every state, and `selectable` so `selection-treatment` holds it to the shared one.
+     */
+    name: 'Card (chosen)',
+    kind: 'interactive',
+    selectable: true,
+    forbiddenNames: ['card'],
+    render: (state, theme) =>
+      draw(
+        <Card
+          label="Quiet Neutrals"
+          onPress={() => undefined}
+          selected={state === 'active'}
+          focused={state === 'focus'}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        >
+          <Text size="body" color="foreground">
+            Quiet Neutrals
+          </Text>
+        </Card>,
         theme,
       ),
   },

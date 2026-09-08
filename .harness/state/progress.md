@@ -19049,3 +19049,56 @@ the other two added checks. What was missing everywhere was the same thing: a wa
 something that would notice its absence.
 
 ---
+
+## F-184 — Card, and an elevation vocabulary the product can compose with
+
+**2026-09-08.** *"All the card ui/ux and design system is also not good, very unprofessional."*
+
+Measured before designing: **`<Surface>` appears 48 times across the screens, and every single
+one is `level="1"`.** One tint, one radius, one padding. A card that is the *subject* of a page
+and one that is one of its several *answers* were drawn identically. There was no vocabulary to
+be unprofessional with.
+
+### The rule decided this, not taste
+
+HeroUI ships a `Card`. It is **`Surface` plus six styled `View`s** — trivial layout, no
+behaviour — and `Surface` is the component `heroui-wrappers.md` names outright, because it
+renders an optional `GlassView` blur and **a blur tints what it surrounds**. Ours already
+refuses it. Reading the component's source rather than trusting its name is now a step in the
+new `heroui-native` skill, with the three cases where the name got it wrong.
+
+### `media` is the slot that earns the component
+
+It is edge to edge, so it must escape the padding — the one thing a padded box cannot express.
+**That is why 48 surfaces never became cards:** a photograph inside `Surface` is inset by 16 px,
+which is a thumbnail with a frame.
+
+The sharpest conversion is Contemporary's computed equivalent. F-151 established that the screen
+answers *how close is this* **at the boundary**, then put the pair inside a padded surface — so
+the two colours meeting each other sat 16 px in, framed. **The frame is the thing F-151 was
+removing**, one level out.
+
+**Two boxes deliberately stay `Surface`.** The membership list and the nothing-near state are
+notes. Converting every box would recreate the sameness this feature exists to end, one
+component along.
+
+### The suite caught two real defects in the first draft
+
+`minHeight` without `minWidth` — WCAG asks for the *target*, not the content — reported ten
+times, once per state per theme. And an `interactive` component with no `loading` state, which
+would have been a state defined in name only.
+
+Both were found by rules written for **other** components. That is the argument for a shared
+conformance suite in one line.
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · build — **PASS**. 229 `@irodora/ui` tests.
+
+### Still owed
+
+**Whether level 2 reads as above level 1.** ADR-0099 compressed the dark ramp from 40/37/36/37
+to 35/30/25/25 to raise the floor, and this is the **first surface in the product to spend the
+level-2 step**. If it does not read, the ramp is what to revisit — not the card.
+
+---

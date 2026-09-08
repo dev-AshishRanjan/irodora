@@ -22,7 +22,7 @@
  * by a test that never renders anything. This file formats and labels.
  */
 
-import { Pair, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Card, Pair, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { View } from 'react-native';
 
@@ -93,13 +93,22 @@ export function Contemporary({
   function Computed({ item }: { readonly item: Equivalent }): React.JSX.Element | null {
     if (item.kind !== 'computed') return null;
     return (
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
-          {/*
-            THE PAIR, EDGE TO EDGE (F-151). This screen exists to answer "how close is this",
-            and that question is answered at the boundary — a number beside two separated
-            swatches is a number somebody has to take on trust.
-          */}
+      /*
+        THE PAIR IS MEDIA (F-184), and that is not a rename.
+
+        F-151 established that this screen answers "how close is this" AT THE BOUNDARY — a
+        number beside two separated swatches is a number somebody has to take on trust. It then
+        put the pair inside a padded `Surface`, so the two colours meeting each other sat
+        16px in from the card's own edge, framed. **The frame is the thing F-151 was removing**,
+        one level out.
+
+        `media` escapes the padding. The pair now meets the card's edge, and the numbers below
+        it are inset — which is the shape the argument asked for and the padded box could not
+        express.
+      */
+      <Card
+        level="1"
+        media={
           <Pair
             a={half}
             b={{
@@ -109,7 +118,9 @@ export function Contemporary({
             }}
             script={script}
           />
-
+        }
+      >
+        <Stack gap="sm">
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: nativeSpacing.sm }}>
             <Text size="small" color="foreground" script={script}>
               {t('contemporary.computed')}
@@ -133,7 +144,7 @@ export function Contemporary({
             </Text>
           ))}
         </Stack>
-      </Surface>
+      </Card>
     );
   }
 
@@ -141,26 +152,42 @@ export function Contemporary({
   function Editorial({ item }: { readonly item: Equivalent }): React.JSX.Element | null {
     if (item.kind !== 'editorial') return null;
     return (
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      /*
+        THE HEADER SAYS WHAT KIND OF CLAIM THIS IS; THE FOOTER SAYS WHOSE (F-184).
+
+        These were four Texts in a stack: the word "editorial", the note, the source, the
+        reviewer — all the same weight, all the same inset, so the KIND and the PROVENANCE read
+        as continuations of the note rather than as the frame around it. That is the flattening
+        48 identical surfaces produced, and it matters most here: this screen's whole job is
+        keeping a computed neighbour and a recorded judgement distinguishable, and it was
+        drawing them in the same box.
+      */
+      <Card
+        level="1"
+        header={
           <Text size="small" color="foreground" script={script}>
             {t('contemporary.editorial')}
           </Text>
-          <Text size="body" color="foreground" script={script}>
-            {item.note}
-          </Text>
-          {/*
-            THE PROVENANCE, ALWAYS. An editorial equivalent is somebody's recorded judgement, and
-            a judgement without a name on it is the corpus's authority lent to an opinion.
-          */}
-          <Text size="xs" color="foreground.2" script={script}>
-            {`${t('contemporary.source')} ${item.provenance.source}`}
-          </Text>
-          <Text size="xs" color="foreground.2" script={script}>
-            {`${t('contemporary.reviewedBy')} ${item.provenance.verifiedBy}`}
-          </Text>
-        </Stack>
-      </Surface>
+        }
+        footer={
+          <Stack gap="xs">
+            {/*
+              THE PROVENANCE, ALWAYS. An editorial equivalent is somebody's recorded judgement,
+              and a judgement without a name on it is the corpus's authority lent to an opinion.
+            */}
+            <Text size="xs" color="foreground.2" script={script}>
+              {`${t('contemporary.source')} ${item.provenance.source}`}
+            </Text>
+            <Text size="xs" color="foreground.2" script={script}>
+              {`${t('contemporary.reviewedBy')} ${item.provenance.verifiedBy}`}
+            </Text>
+          </Stack>
+        }
+      >
+        <Text size="body" color="foreground" script={script}>
+          {item.note}
+        </Text>
+      </Card>
     );
   }
 
@@ -179,30 +206,49 @@ export function Contemporary({
         {t('contemporary.source.note')}
       </Text>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      {/*
+        THE SUBJECT SITS HIGHER THAN THE ANSWERS (F-184).
+
+        `level="2"` rather than 1, and it is the first time this product has used the elevation
+        scale for anything: all 48 surfaces in the screens were level 1, so a card that was the
+        SUBJECT of a page and a card that was one of its several ANSWERS were drawn identically.
+        Depth by tint is what the scale is for, and nothing had spent it.
+
+        Its name is a header rather than a first child, so the rule separates the colour being
+        asked about from the colour itself.
+      */}
+      <Card
+        level="2"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {subjectName}
           </Text>
-          <Swatch
-            name={half.name}
-            hex={half.hex}
-            color={half.color}
-            script={script}
-            {...(onOpenColour === undefined
-              ? {}
-              : {
-                  onPress: () => {
-                    onOpenColour(subjectSlug);
-                  },
-                })}
-          />
-        </Stack>
-      </Surface>
+        }
+      >
+        <Swatch
+          name={half.name}
+          hex={half.hex}
+          color={half.color}
+          script={script}
+          {...(onOpenColour === undefined
+            ? {}
+            : {
+                onPress: () => {
+                  onOpenColour(subjectSlug);
+                },
+              })}
+        />
+      </Card>
 
       {/*
         BEING IN A PALETTE IS A DIFFERENT SENTENCE from being near one, and it comes first: a
         colour that is already in Quiet Neutrals does not need its nearest neighbour explained.
+      */}
+      {/*
+        A NOTE, NOT A CARD, and the distinction is the point of having both. This is a short list
+        of palettes the colour is already in — no media, no provenance to foot, nothing to
+        separate with a rule. `Surface` is the right shape for it, and converting every box to a
+        Card would recreate the sameness this feature exists to end, one component along.
       */}
       {membership.length === 0 ? null : (
         <Surface level="1" padding="lg">
