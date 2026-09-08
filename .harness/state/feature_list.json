@@ -1820,7 +1820,8 @@
           "blocks": "release",
           "status": "outstanding"
         }
-      ]
+      ],
+      "notes": "NO NOTES UNTIL 2026-09-07, WHICH IS WHY THIS IS WORTH WRITING DOWN RATHER THAN LEAVING TO THE TITLE. Every other feature in this list carries the reasoning behind it; this one carried four acceptance criteria and nothing else, and it is the feature the whole accuracy claim rests on. THE BLOCKER IS EQUIPMENT, NOT CODE, and that is why it stays at `backlog` rather than `blocked`: `blocked` wants a field naming an unfinished feature, an open question or an owed attestation, and none of those is what is missing. What is missing is a reference device matrix, controlled illuminants and the patience for 10+ repeats per combination — physical work nobody can do from a repository. IT IS ALSO THE FEATURE THAT DISCHARGES OTHERS: F-053 owes \"mean DeltaE00 improves by 50 percent or more against uncalibrated on the device matrix\" and F-040 owes \"live pick sustains at least 15 updates per second on the reference device set\" — both are rows in THIS table, so the dependency runs the other way and F-063 must not be marked as waiting on them. AND IT IS ALREADY LOAD-BEARING WHILE UNBUILT: the claims lint reports `allowlist.measured holds 0 entries, which is correct while the device colour lab (F-063) has produced no rows — no number without a row`. That is criterion 4 already being enforced by a gate against a table that does not exist yet, which is the right way round."
     },
     {
       "id": "F-064",
@@ -2475,7 +2476,7 @@
       "service": "mobile",
       "release": "R3",
       "priority": "should",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-085"
       ],
@@ -2489,7 +2490,10 @@
         "state",
         "artifact"
       ],
-      "notes": "DELIBERATELY NOT DONE IN F-085. R8 is standard for production and materially reduces size — the unminified debug artefact was 89.7 MB. It also breaks reflection-based native modules in ways only a device shows, and VisionCamera, expo-sqlite and Hermes are exactly the shapes that break. Turning it on in the same change as \"make the APK run at all\" would confound the next failure, and F-085 exists because an artefact was shipped without anyone installing it. Do this once the internal lane has produced an artefact somebody has actually launched."
+      "notes": "DELIBERATELY NOT DONE IN F-085. R8 is standard for production and materially reduces size — the unminified debug artefact was 89.7 MB. It also breaks reflection-based native modules in ways only a device shows, and VisionCamera, expo-sqlite and Hermes are exactly the shapes that break. Turning it on in the same change as \"make the APK run at all\" would confound the next failure, and F-085 exists because an artefact was shipped without anyone installing it. Do this once the internal lane has produced an artefact somebody has actually launched. STATUS CORRECTED 2026-09-07, FROM `todo` TO `blocked`. The note already ended \"do this once the internal lane has produced an artefact somebody has actually launched\" — which is F-085’s outstanding attestation, word for word (\"the internal lane builds a release variant, so the JS bundle is embedded and the app starts\"). `blockedBy: [\"F-085\"]` could not carry it because F-085 is DONE; the debt is an attested criterion, which is precisely the third cause F-137 added the field for. Two of this feature’s four criteria — a device smoke test over the Lens, the store and the font, and the size recorded before and after — need an artefact this workstation cannot build.",
+      "blockedByAttestation": [
+        "F-085"
+      ]
     },
     {
       "id": "F-087",
@@ -3817,7 +3821,7 @@
       "service": "mobile",
       "release": "R5",
       "priority": "must",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [
         "F-053"
       ],
@@ -3832,7 +3836,10 @@
         "test",
         "e2e"
       ],
-      "notes": "FILED BY F-053 RATHER THAN HALF-BUILT INSIDE IT, on the precedent of F-081 (\"deliberately NOT half-built\") and F-086 (\"deliberately not done in F-085\"). F-053 delivered the maths: patchRegions maps a card grid through a homography, verifyCard decides presence and orientation from the values, solveCorrection fits the 3x3 in linear light and reports the residual. NONE OF IT HAS A LIVE INPUT. `sampleFrame` in apps/mobile/src/lens/viewfinder.tsx reads ONE centred square region; reading 24 patch regions changes the frame-processor contract, and that is a worklet running on the frame thread where a JS render tree cannot follow it (E-050: a worklet may only call worklets, and jest has one runtime). WHY IT CANNOT BE DONE ON THIS WORKSTATION: there is no JDK (JAVA_HOME points at a jdk-18.0.2.1 directory that does not exist) and no AVD, so nothing can build an APK to run a frame processor in. Writing the worklet blind would mean shipping the one kind of code this repository has already been burnt by — F-116 exists because a missing worklet directive crashed the Lens on its first frame while every test passed identically either side of the bug. THE COST QUESTION IS REAL AND IS CRITERION 4: sampleStride bounds one region to MAX_SAMPLES_PER_FRAME; 24 regions is 24 times the walk, on the frame thread, and whether that holds a preview at usable frame rate is a measurement rather than a guess. OVERLAPS F-126, WHICH WAS FILED FIRST AND WHICH THIS FEATURE DID NOT NOTICE WHEN IT WAS WRITTEN. F-126 criterion 1: \"The frame processor can hand over a whole-frame sample set, not only the centre region.\" This feature’s criterion 1: \"sampleFrame reads a list of regions rather than one centred square.\" Same contract, same worklet, two features. A REGION LIST SUBSUMES BOTH — the whole frame is one region and a card is twenty-four — so whichever is built first should settle the signature for both rather than each widening it its own way. F-126 additionally waits on F-040’s attestation (a reading observed reaching the app on a device), and its note is emphatic that stacking a second unproven path on an unproven one is the ambiguity F-120 was filed to remove. That argument applies here word for word."
+      "notes": "FILED BY F-053 RATHER THAN HALF-BUILT INSIDE IT, on the precedent of F-081 (\"deliberately NOT half-built\") and F-086 (\"deliberately not done in F-085\"). F-053 delivered the maths: patchRegions maps a card grid through a homography, verifyCard decides presence and orientation from the values, solveCorrection fits the 3x3 in linear light and reports the residual. NONE OF IT HAS A LIVE INPUT. `sampleFrame` in apps/mobile/src/lens/viewfinder.tsx reads ONE centred square region; reading 24 patch regions changes the frame-processor contract, and that is a worklet running on the frame thread where a JS render tree cannot follow it (E-050: a worklet may only call worklets, and jest has one runtime). WHY IT CANNOT BE DONE ON THIS WORKSTATION: there is no JDK (JAVA_HOME points at a jdk-18.0.2.1 directory that does not exist) and no AVD, so nothing can build an APK to run a frame processor in. Writing the worklet blind would mean shipping the one kind of code this repository has already been burnt by — F-116 exists because a missing worklet directive crashed the Lens on its first frame while every test passed identically either side of the bug. THE COST QUESTION IS REAL AND IS CRITERION 4: sampleStride bounds one region to MAX_SAMPLES_PER_FRAME; 24 regions is 24 times the walk, on the frame thread, and whether that holds a preview at usable frame rate is a measurement rather than a guess. OVERLAPS F-126, WHICH WAS FILED FIRST AND WHICH THIS FEATURE DID NOT NOTICE WHEN IT WAS WRITTEN. F-126 criterion 1: \"The frame processor can hand over a whole-frame sample set, not only the centre region.\" This feature’s criterion 1: \"sampleFrame reads a list of regions rather than one centred square.\" Same contract, same worklet, two features. A REGION LIST SUBSUMES BOTH — the whole frame is one region and a card is twenty-four — so whichever is built first should settle the signature for both rather than each widening it its own way. F-126 additionally waits on F-040’s attestation (a reading observed reaching the app on a device), and its note is emphatic that stacking a second unproven path on an unproven one is the ambiguity F-120 was filed to remove. That argument applies here word for word. STATUS CORRECTED 2026-09-07, FROM `backlog` TO `blocked`, AND THE REASON MOVED OUT OF PROSE. This note already said why the feature cannot be built — no JDK on the workstation (JAVA_HOME still points at a jdk-18.0.2.1 directory that does not exist, and neither `java` nor `javac` is on PATH; an Android SDK is installed and useless without one), no AVD, and a worklet written blind is the exact shape F-116 was filed for. It also said F-126’s blocker \"applies here word for word\", and F-126 carries `blockedByAttestation: [\"F-040\"]`. The field now says what the prose said. This is the F-137 defect one status along: a feature at `backlog` with its blocker only in prose is selected as ELIGIBLE by the next-feature rule and only then found to be undoable [[prose-in-a-state-file-rots-and-no-schema-can-see-it]].",
+      "blockedByAttestation": [
+        "F-040"
+      ]
     },
     {
       "id": "F-136",

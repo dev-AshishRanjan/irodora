@@ -8,6 +8,70 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-07 — R6 is complete, and the backlog says why it stops here
+
+**No feature is eligible on this workstation.** R6 closed with F-174; every remaining open
+feature waits on hardware, an artefact or a purchase. That is the state, and three records were
+not saying it.
+
+### The F-137 defect, one status along
+
+`verify-state.mjs` already refuses a feature sitting at `blocked` with no field saying why —
+*"a reason that lives only in prose cannot be checked, and stops being true without anything
+noticing"*. The mirror image had no check: **a feature at `backlog` or `todo` whose blocker is
+recorded only in prose is selected as ELIGIBLE by the next-feature rule**, and only then found
+to be undoable.
+
+Two were in that state, and both already said so in their own notes:
+
+- **F-135** (`backlog` → **`blocked`**, `blockedByAttestation: ["F-040"]`). Its note said the
+  worklet cannot be written here — verified again today: `JAVA_HOME` still points at a
+  `jdk-18.0.2.1` directory that does not exist, neither `java` nor `javac` is on `PATH`, and the
+  installed Android SDK is useless without one. It also said F-126's blocker *"applies here word
+  for word"*, and F-126 carries exactly that field.
+- **F-086** (`todo` → **`blocked`**, `blockedByAttestation: ["F-085"]`). Its note ended *"do this
+  once the internal lane has produced an artefact somebody has actually launched"* — which is
+  F-085's outstanding attestation verbatim. `blockedBy` could not carry it because F-085 is
+  **done**; an owed attestation is the third cause F-137 added the field for.
+
+### F-063 had no notes at all
+
+Four acceptance criteria and nothing else, on the feature the whole accuracy claim rests on.
+**Its blocker is equipment, not code** — a reference device matrix, controlled illuminants,
+10+ repeats per combination — so it stays at `backlog`: `blocked` wants a field naming an
+unfinished feature, an open question or an owed attestation, and none of those is what is
+missing.
+
+And **the dependency runs the other way**, which is worth stating before somebody points it at
+F-053: F-053 owes *"mean ΔE00 improves by 50 percent or more against uncalibrated on the device
+matrix"* and F-040 owes *"live pick sustains at least 15 updates per second on the reference
+device set"*. Those are rows in F-063's table. It discharges them; it does not wait on them.
+
+It is already load-bearing while unbuilt — the claims lint reports *"allowlist.measured holds 0
+entries, which is correct while the device colour lab (F-063) has produced no rows — no number
+without a row"*. A gate enforcing criterion 4 against a table that does not exist yet is the
+right way round.
+
+### What is owed, in one place
+
+| | |
+| --- | --- |
+| **F-040** | four attestations, all device-observed — worklet thread, yuv disposal, 15 fps, no socket |
+| **F-053** | ΔE00 improves 50%+ on the device matrix |
+| **F-085** | the internal lane builds a release variant that starts |
+| **F-081** | OQ-6 — Apple Developer Program enrolment, a purchase |
+| **F-156** | `Switch` is wrapped and used by no screen |
+| **F-174 / ADR-0053** | two manifest re-approvals against the 2026-08-14 signature |
+
+Plus the standing ones: the 梅鉢 mark, one screenshot of a bad contrast spot, and the Japanese
+copy review (F-172 criterion 1).
+
+### Gates
+
+`node scripts/verify-state.mjs` — **PASS**, 18 checks. Nothing else changed.
+
+---
+
 ## 2026-09-07 — F-174 DONE · the token that was passing was the one holding the other two out
 
 `Status` has taken an `adjacentToSample` prop since F-069. It puts the status on `swatch.well` —
