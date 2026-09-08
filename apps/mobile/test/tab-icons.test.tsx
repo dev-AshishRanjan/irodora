@@ -13,7 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { NAV_ICON_NAMES } from '@irodora/ui';
-import { TABS, TAB_BAR_HEIGHT, TAB_MINIMUM } from '../app/(tabs)/_layout';
+import { TABS, TAB_BAR_HEIGHT, TAB_MINIMUM, TAB_TESTID_PREFIX } from '../src/tabs';
 import { en } from '../src/i18n/en';
 
 describe('the tab bar and the navigation glyphs agree', () => {
@@ -29,6 +29,24 @@ describe('the tab bar and the navigation glyphs agree', () => {
     const used = new Set(TABS.map((t) => t.icon));
     for (const name of NAV_ICON_NAMES)
       expect(`${name}: ${String(used.has(name))}`).toBe(`${name}: true`);
+  });
+
+  it('derives every e2e id from the tab it addresses', () => {
+    /*
+     * THE INVARIANT THE TEMPLATE USED TO HOLD.
+     *
+     * `_layout.tsx` wrote `tabBarButtonTestID` as a template on `tab.name`, so the id could
+     * not drift. It also could not be READ: `generate-e2e-flows.mjs` expands a template only
+     * when the prefix and the name list share a file, and moving the registry into `src/`
+     * split them — the generator refused `atlas.journey.json` step 3 saying `tab-atlas` is
+     * declared by no component, which is the safe direction and the right refusal.
+     *
+     * So the id became a literal the generator can see, and the guarantee moved here. Both
+     * directions: every id derives from its name, and no two tabs share one.
+     */
+    for (const tab of TABS)
+      expect(`${tab.name}: ${tab.testID}`).toBe(`${tab.name}: ${TAB_TESTID_PREFIX}${tab.name}`);
+    expect(new Set(TABS.map((t) => t.testID)).size).toBe(TABS.length);
   });
 
   it('no two tabs share a glyph', () => {

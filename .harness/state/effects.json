@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-07",
+  "updated": "2026-09-08",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3676,6 +3676,54 @@
       "memory": "memory/effects/a-token-that-passes-can-be-what-holds-the-others-out.md",
       "rationale": "THE ONE THAT WAS COMFORTABLY PASSING WAS THE ONE BLOCKING THE OTHER TWO. Light `status.ok` (4.21:1) and `status.warn` (4.32:1) failed the text floor on `swatch.well`, the ground `Status.adjacentToSample` puts them on — so the component promised a ground two of its three kinds could not use. F-174’s own notes said the obstacle was the salience rank. It was not: CVD separation is what binds this triple. Darkening `warn` toward the well’s requirement moves it toward `bad`’s lightness, and under simulation amber and red converge because lightness is the only channel left between them — every candidate that cleared 4.5 with `bad` where it was dropped warn/bad to 49–56 against a floor of 60. `bad` had to move below L 0.385 to give `warn` the room, and `bad` was the kind that was passing at 8.29:1. THE SEARCH WAS JUDGED BY THE GATE’S OWN CHECKERS on a mutated manifest through `parseManifest`, so all eight palettes were seen exactly as gate 9 sees them — a search that re-implemented the ratio would have agreed with itself on day one, which is the failure F-143’s peer gate already recorded. 63,840 combinations, 35 feasible, and the one chosen is where the status tokens stop being the tightest thing in the system. AND A DECOY EXPIRED: F-171’s pair-undeclared case used status.warn on swatch.well as its example of an undeclared pairing, and declaring that pairing made the decoy stop discriminating. A decoy built from a gap in the manifest has a lifetime, because the gap is the thing a feature eventually closes. Its first replacement — `link` on the well — did not discriminate either, for a subtler reason: light `link` and light `foreground` are the same value, so a rule reading rendered colours cannot tell them apart.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-099",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/app/(tabs)/_layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/tabs.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/tab-icons.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "eslint.config.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-guards.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-e2e-flows.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "AN ESLINT BOUNDARY REFUSES AN IMPORT FROM `app/` INSIDE `test/`, and guard #17 in `verify-guards.mjs` writes a violating fixture and watches it fire — a rule nobody has seen fail is a configuration file that happens to parse. READING A ROUTE AS TEXT IS STILL ALLOWED and still used: `tab-icons.test.tsx` asserts on the source of `_layout.tsx` with `readFileSync`, which executes nothing. WHAT IS NOT GUARDED: the resolver asymmetry itself. `expo-modules-core` still ships a throwing `NativeViewManagerAdapter.tsx` beside a working `.native.tsx`, and jest still picks differently on the two platforms. Nothing here fixes that; this removes the only path by which a test reached it. The day a test needs a navigator for a real reason, it comes back. AND THE FIX IS VERIFIED ONE-SIDED: the chain is provably gone (the suite no longer imports `app/`, and its runtime fell from 54s to 3.9s as the navigator graph stopped loading), but no Linux run happened here — there is no Docker and WSL has no distro.",
+      "memory": "memory/effects/a-test-of-five-constants-booted-a-navigator.md",
+      "rationale": "GATE 4 WAS RED ON CI FOR THREE CONSECUTIVE PUSHES WHILE `pnpm test` PASSED LOCALLY — uncached, under CI=true, under --runInBand, and under --maxWorkers=2. `test/tab-icons.test.tsx` imported three constants from `app/(tabs)/_layout.tsx`, and a route file’s first line is `import { Tabs } from 'expo-router'`. Getting five records therefore loaded expo-router, its native stack fork, `expo-glass-effect`, and `GlassView.ios.tsx` calling `requireNativeViewManager` at module scope. `expo-modules-core` ships TWO implementations of that: `NativeViewManagerAdapter.native.tsx`, which works, and `NativeViewManagerAdapter.tsx`, whose entire body is `throw new UnavailabilityError(...)`. jest resolved the working one on Windows and the throwing one on the Linux runner, from the SAME lockfile and the same pnpm layout — verified by probing the resolution locally rather than inferred. THE RESOLVER ASYMMETRY IS NOT OURS; THE IMPORT WAS. `scripts/a11y-scope.mjs` already states the rule one directory along — the content lives in `src/screens/` precisely so it can be checked — and the tab registry was content living in a route. SECOND ORDER, AND THE HARNESS CAUGHT IT: `generate-e2e-flows.mjs` expands a `testID` template only when the prefix and the name list share a FILE, which its own docblock states. Moving the registry split them and it refused `atlas.journey.json` step 3 — the safe direction. So the id became a literal the scanner reads, and the derivation it used to perform is now an invariant the test asserts.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

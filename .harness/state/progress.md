@@ -8,6 +8,86 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-08 — CI was red for three pushes, and a test of five constants is why
+
+**Gate 4 failed on the runner while `pnpm test` passed here** — uncached, under `CI=true`, under
+`--runInBand`, and under `--maxWorkers=2`. One suite would not start:
+
+```
+FAIL test/tab-icons.test.tsx
+  ● Test suite failed to run
+    The method or property expo-modules-core.requireNativeViewManager is not
+    available on ios, are you sure you've linked all the native dependencies properly?
+```
+
+### The chain
+
+`tab-icons.test.tsx` wanted three constants — five tab records, a bar height, a tap minimum — and
+imported them from `app/(tabs)/_layout.tsx`. **A route file's first line is
+`import { Tabs } from 'expo-router'.`**
+
+```
+expo-router → StackClient → createNativeStackNavigator
+  → expo-glass-effect → GlassView.ios.tsx
+  → expo-modules-core.requireNativeViewManager      ← throws
+```
+
+`expo-modules-core` ships **two** implementations: `NativeViewManagerAdapter.native.tsx`, which
+works, and `NativeViewManagerAdapter.tsx`, whose entire body is `throw new UnavailabilityError`.
+**jest resolved the working one on Windows and the throwing one on Linux** — same lockfile, same
+pnpm store hashes, same pinned versions. Verified by probing the resolution locally rather than
+inferred: `requireNativeViewManager` does not throw here.
+
+### The resolver asymmetry is not ours. The import was.
+
+`scripts/a11y-scope.mjs` already states the rule one directory along — *"the CONTENT lives in
+`src/screens/` precisely so it can be rendered and therefore checked"*. The tab registry was
+content living in a route, and while it stayed there a dependency two levels inside `expo-router`
+had a vote on whether the suite runs.
+
+`TABS`, `TAB_GLYPH`, `TAB_BAR_BASE`, `TAB_BAR_HEIGHT` and `TAB_MINIMUM` moved to
+[`src/tabs.ts`](../../apps/mobile/src/tabs.ts). An ESLint boundary refuses an import from `app/`
+inside `test/`, and guard #17 in `verify-guards.mjs` writes a violating fixture and watches it
+fire. **Reading a route as text is still allowed** and still used — the same file asserts on
+`_layout.tsx` with `readFileSync`, which executes nothing.
+
+The suite went from **54 s to 3.9 s**, which is the navigator graph no longer loading.
+
+### Diagnosis, since it was most of the work
+
+The job log needs authentication. What is public was enough to bound it: **last green run 44,
+first red run 45**, the same step every run since, while the Android build workflow succeeded on
+the same commits — so the break was in jest, not in install or build, and it lived in one
+nine-commit push.
+
+Everything cheap was eliminated before anything changed: turbo cache, `CI=true`, worker count,
+`--runInBand`, and a scan of all 488 source files comparing every relative import against the real
+on-disk casing — the classic Windows→Linux break, and **not this one**.
+
+**`verify-guards.mjs` already carried a note about the same class of failure** — *"It passed on
+Windows and failed on Linux CI on the first push."* This is the second. A repository whose suite
+only ever runs on one OS is running half a suite, and neither incident was caught by a check.
+
+### Second order, and the harness caught it
+
+`generate-e2e-flows.mjs` expands a `testID` template only when the prefix and the name list share
+a **file**. Moving the registry split them and it refused `atlas.journey.json` step 3: *"test id
+`tab-atlas` is declared by no component."* The right refusal. So the id is a literal the scanner
+reads, and the derivation the template performed is now an invariant `tab-icons.test.tsx` asserts
+— stronger than the template, which made drift impossible and the id unreadable at the same time.
+
+### Gates
+
+`pnpm verify:ci` — **35 of 36 steps, all green**, one not runnable locally. Not run: gate 7 e2e
+(pending) · gate 16 artifact (no APK).
+
+**What is NOT verified:** no Linux run happened here — no Docker, and WSL has no distro. What is
+proven is that the import chain is gone and cannot come back without lint going red. The resolver
+asymmetry itself is untouched and recorded as **E-099**; the day a test needs a navigator for a
+real reason, it returns.
+
+---
+
 ## 2026-09-07 — R6 is complete, and the backlog says why it stops here
 
 **No feature is eligible on this workstation.** R6 closed with F-174; every remaining open

@@ -1,10 +1,22 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from 'react-native';
-import { nativeColors, nativeSpacing, nativeTapTarget, nativeType } from '@irodora/design-tokens';
+import { nativeColors, nativeSpacing, nativeType } from '@irodora/design-tokens';
 import { NavIcon, useTheme, type NavIconName } from '@irodora/ui';
 import { useMessages } from '../../src/i18n/useMessages';
-import type { MessageKey } from '../../src/i18n/index';
+/*
+  THE REGISTRY IS CONTENT AND LIVES IN `src/`, not here.
+
+  A route file's first line is `import { Tabs } from 'expo-router'`, and everything a test
+  imports from it arrives with a navigator attached. `test/tab-icons.test.tsx` wanted five
+  records and got `expo-glass-effect` calling `requireNativeViewManager` at module scope —
+  which resolves to a working implementation on Windows and to a `throw` on Linux, so gate 4
+  was red on CI for three pushes while the suite passed here (E-099).
+
+  `scripts/a11y-scope.mjs` already states the rule for `src/screens`: the content lives
+  outside `app/` precisely so it can be checked. This is the same rule, one directory along.
+*/
+import { TABS, TAB_BAR_BASE, TAB_GLYPH } from '../../src/tabs';
 
 /**
  * The information architecture (F-145, FR-71).
@@ -51,29 +63,6 @@ import type { MessageKey } from '../../src/i18n/index';
  * against it: it is what every navigation bar on a phone does, and it makes the legibility of
  * five hand-drawn glyphs load-bearing rather than merely desirable.
  */
-
-/** The five, in bar order. The Lens is third because the centre is where a thumb rests. */
-export const TABS = [
-  { name: 'index', labelKey: 'tab.home', icon: 'home' },
-  { name: 'atlas', labelKey: 'tab.atlas', icon: 'atlas' },
-  { name: 'lens', labelKey: 'tab.lens', icon: 'lens' },
-  { name: 'wardrobe', labelKey: 'tab.wardrobe', icon: 'wardrobe' },
-  { name: 'profile', labelKey: 'tab.profile', icon: 'profile' },
-] as const satisfies readonly {
-  readonly name: string;
-  readonly labelKey: MessageKey;
-  readonly icon: NavIconName;
-}[];
-
-/**
- * How big a glyph is when it is the only thing identifying a tab.
- *
- * `NavIcon`'s own default is 20, chosen when a word sat under it and carried the identity. With
- * the word gone the shape is doing all the work, so it grows — and it is a constant here rather
- * than a literal at the call site because it is a decision about this bar rather than about the
- * component.
- */
-const TAB_GLYPH = 26;
 
 /**
  * One tab: its glyph and its indicator.
@@ -179,9 +168,13 @@ export default function TabLayout(): React.JSX.Element {
               choose. The alternatives were renaming product copy to suit a test, or letting
               the journey tap something ambiguous. Both are worse than an id.
 
-              Derived from the route name, so it cannot drift from the tab it addresses.
+              READ FROM THE REGISTRY RATHER THAN ASSEMBLED HERE. It was a template on
+              `tab.name`, and `generate-e2e-flows.mjs` can only expand one whose prefix and
+              name list share a file — so once the registry moved to `src/tabs.ts`, all five
+              ids became invisible to it and `atlas.journey.json` was refused. The id is data
+              now, and `tab-icons.test.tsx` asserts it still derives from the name.
             */
-            tabBarButtonTestID: `tab-${tab.name}`,
+            tabBarButtonTestID: tab.testID,
             tabBarIcon: ({ focused }) => <TabGlyph icon={tab.icon} focused={focused} />,
           }}
         />
@@ -198,22 +191,3 @@ export default function TabLayout(): React.JSX.Element {
  */
 export const TAB_BAR_COLORS = nativeColors;
 export const TAB_LABEL_STEP = nativeType.latin.label;
-
-/** Exported so the test can assert the bar clears a tap target rather than restating 56. */
-export const TAB_BAR_HEIGHT = () => TAB_BAR_BASE;
-
-/** The minimum a tab must be. Re-exported so the assertion reads against one source. */
-export const TAB_MINIMUM = nativeTapTarget;
-
-/**
- * The bar's own height, before the device's inset is added.
- *
- * A DESIGN VALUE AND IT STAYS ONE: it is what fits the selected indicator above a 26px glyph
- * without crowding either. Deriving the inset does not derive this, and pretending otherwise
- * would be dressing a chosen number as a measured one.
- *
- * It was 68 while a label sat under the glyph. Losing a line of type loses about twelve points
- * of it, and what is left still clears `nativeTapTarget` comfortably before any inset is added —
- * which the test asserts, because a bar that fits is not the same as a bar you can hit.
- */
-const TAB_BAR_BASE = 56;

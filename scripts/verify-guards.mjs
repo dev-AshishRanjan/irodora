@@ -210,6 +210,23 @@ export const x = FileSystem;
 `,
   },
   {
+    name: 'a test may not import a route',
+    path: 'apps/mobile/test/__guard__.ts',
+    rule: 'no-restricted-imports',
+    must:
+      'A file under apps/mobile/app/ is a ROUTE: its first line imports expo-router, so ' +
+      'importing a constant from it boots a navigator, a native stack, and expo-glass-effect ' +
+      'calling requireNativeViewManager at module scope. THAT RESOLVES DIFFERENTLY ON LINUX — ' +
+      'expo-modules-core ships NativeViewManagerAdapter.native.tsx beside a plain .tsx whose ' +
+      'whole body is a throw, and jest picked the working one on Windows and the throwing one ' +
+      'on the CI runner from the same lockfile. Gate 4 was red on three consecutive pushes ' +
+      'while pnpm test passed locally, uncached, under CI=true, under --runInBand and under ' +
+      '--maxWorkers=2 (E-099). The resolver asymmetry is not ours; the import was.',
+    source: `import { TABS } from '../app/(tabs)/_layout';
+export const x = TABS;
+`,
+  },
+  {
     name: 'the store may not reach a Node API from its shipped entry',
     path: 'packages/store/src/__guard__.ts',
     rule: 'no-restricted-imports',

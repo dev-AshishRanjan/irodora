@@ -463,6 +463,54 @@ export default tseslint.config(
     },
   },
 
+  // --- A test may not import a route ---------------------------------------
+  //
+  // A file under `apps/mobile/app/` is a ROUTE. Its first line imports `expo-router`, and
+  // importing anything from it — a constant, a type, a list of five records — boots a
+  // navigator, a native stack, and `expo-glass-effect` calling `requireNativeViewManager` at
+  // module scope.
+  //
+  // THAT RESOLVES DIFFERENTLY ON LINUX. `expo-modules-core` ships
+  // `NativeViewManagerAdapter.native.tsx`, which works, beside `NativeViewManagerAdapter.tsx`,
+  // whose entire body is `throw new UnavailabilityError(...)`. jest picked the working one on
+  // Windows and the throwing one on the CI runner, from the same lockfile. Gate 4 was red on
+  // three consecutive pushes while `pnpm test` passed locally — uncached, under `CI=true`,
+  // under `--runInBand`, and under `--maxWorkers=2` (E-099).
+  //
+  // The resolver asymmetry is not ours. The import was. `scripts/a11y-scope.mjs` already
+  // states the rule for the same reason one directory along — *"the CONTENT lives in
+  // `src/screens/` precisely so it can be rendered and therefore checked"* — and the tab
+  // registry now lives in `apps/mobile/src/tabs.ts` for exactly that reason.
+  //
+  // Reading a route as TEXT is still allowed and still used: `tab-icons.test.tsx` asserts on
+  // the source of `_layout.tsx` with `readFileSync`. It is EXECUTING one that drags a native
+  // module in, and that is what this forbids.
+  {
+    files: ['apps/mobile/test/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../app/*', '../app/**', '../../app/*', '../../app/**'],
+              message:
+                'A test may not import a route. Importing anything from apps/mobile/app/ boots ' +
+                'expo-router and a native view manager that resolves differently on Linux ' +
+                '(E-099). Move the value into apps/mobile/src/ — where content lives so that it ' +
+                'can be checked — or read the route as text with readFileSync.',
+            },
+            {
+              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
+              message:
+                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // --- The store ships to a phone, so its entry may not reach Node ---------
   //
   // `apps/mobile` bundles `@irodora/store`. A `node:*` import reachable from `src/index.ts`
