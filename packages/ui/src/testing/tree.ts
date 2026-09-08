@@ -236,6 +236,30 @@ export function resolveTextNodes(root: TestNode, theme: Theme): readonly Resolve
  * accessibility rules downstream — role, name, tap target, disabled and busy — apply to a text
  * field exactly as they apply to a button.
  */
+/**
+ * Every `accessibilityState` in the tree, pressable or not.
+ *
+ * ## Why this is separate from `pressableNodes` (F-186)
+ *
+ * A state is not always announced on the control. A **group** announces its own unavailability
+ * once, on the container — `role="radiogroup"` with `busy` — rather than four times, once per
+ * option, because saying one fact four times is three repetitions.
+ *
+ * `pressableNodes` cannot see that: a radio group's root is a `View`. So the conformance
+ * check asks THIS whether a state was announced anywhere, and asks `pressableNodes` whether
+ * there was anything to announce it about. Two questions, two walks.
+ */
+export function announcedStates(root: TestNode): readonly Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  const walk = (node: TestNode): void => {
+    const state: unknown = node.props['accessibilityState'];
+    if (state !== null && typeof state === 'object') out.push(state as Record<string, unknown>);
+    for (const child of node.children ?? []) if (typeof child !== 'string') walk(child);
+  };
+  walk(root);
+  return out;
+}
+
 export function pressableNodes(root: TestNode): readonly ResolvedPressableNode[] {
   const out: ResolvedPressableNode[] = [];
 

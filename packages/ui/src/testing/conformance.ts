@@ -37,6 +37,7 @@ import {
   nativeTapTarget,
 } from '@irodora/design-tokens';
 import {
+  announcedStates,
   paintedColors,
   pressableNodes,
   renderedPairs,
@@ -313,6 +314,23 @@ export function checkSubject(
       if (subject.kind === 'interactive' && pressables.length === 0)
         at('not-interactive', 'declares kind "interactive" but nothing in the tree responds');
 
+      /*
+       * WHAT THE SUBJECT ANNOUNCED, ANYWHERE IN ITS TREE.
+       *
+       * Not only on its pressables. A GROUP announces its own unavailability once, on the
+       * container — a radio group's root is a `View` with `role="radiogroup"` — rather than
+       * four times, once per option, because saying one fact four times is three repetitions.
+       *
+       * Two questions, two walks: `announcedStates` says whether it was announced, and
+       * `pressables` says whether there was anything to announce it about.
+       */
+      const states = announcedStates(tree);
+      const announced = {
+        disabled: states.some((a) => a['disabled'] === true),
+        busy: states.some((a) => a['busy'] === true),
+        selected: states.some((a) => a['selected'] === true),
+      };
+
       for (const p of pressables) {
         // A host type the platform already announces correctly needs no declared role; see
         // `SELF_ANNOUNCING_HOSTS`. Everything else that responds must say what it is.
@@ -345,10 +363,20 @@ export function checkSubject(
             'tap-target',
             `${p.path.join('>')} declares no ${String(nativeTapTarget)}px minimum (declared, not measured)`,
           );
-        if (state === 'disabled' && p.accessibilityState?.['disabled'] !== true)
-          at('state-not-announced', `${p.path.join('>')} is disabled but does not say so`);
-        if (state === 'loading' && p.accessibilityState?.['busy'] !== true)
-          at('state-not-announced', `${p.path.join('>')} is loading but is not marked busy`);
+        /*
+         * THE STATE RULES BELOW ASK ABOUT THE SUBJECT, NOT ABOUT EVERY NODE (F-186).
+         *
+         * They were per-node, which is the same question while a subject is ONE control — and
+         * every subject was, until `ChoiceGroup`. A radio group is four controls of which
+         * exactly one is chosen, so the per-node form reported the three that correctly are
+         * not: nine findings per theme, none of them a defect, on a component doing the thing
+         * a radio group is for.
+         *
+         * "Anything selectable shows whether it is selected" is a claim about the SUBJECT. For
+         * a single control the two readings are identical; for a group only one of them is
+         * right. The tally is collected here and judged once, after the loop.
+         */
+
         /*
          * ACTIVE MEANS SELECTED, AND IT HAS TO SAY SO.
          *
@@ -363,15 +391,25 @@ export function checkSubject(
          * already — a tick in the accessible name AND `accessibilityState.selected` — and the
          * rule is what stops the next selectable thing shipping with neither.
          */
-        if (
-          subject.selectable === true &&
-          state === 'active' &&
-          p.accessibilityState?.['selected'] !== true
-        )
+      }
+
+      /*
+       * JUDGED ONCE, ON THE SUBJECT. See the note in the loop above.
+       *
+       * `pressables.length > 0` guards the vacuous case: a subject with nothing pressable
+       * cannot announce a state, and reporting it here would flag every `static` subject the
+       * moment somebody widened the states.
+       */
+      if (pressables.length > 0) {
+        if (state === 'disabled' && !announced.disabled)
+          at('state-not-announced', 'is disabled and nothing in it says so');
+        if (state === 'loading' && !announced.busy)
+          at('state-not-announced', 'is loading and nothing in it is marked busy');
+        if (subject.selectable === true && state === 'active' && !announced.selected)
           at(
             'state-not-announced',
-            `${p.path.join('>')} is selected but does not say so — a highlight a screen reader ` +
-              'cannot read is not a second channel',
+            'is selected and nothing in it says so — a highlight a screen reader cannot read ' +
+              'is not a second channel',
           );
       }
 

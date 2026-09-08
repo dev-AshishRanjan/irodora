@@ -19152,3 +19152,51 @@ typecheck · lint · format · test · a11y · contrast · motion · build — *
 `@irodora/ui` tests.
 
 ---
+
+## F-186 — The choosers
+
+**2026-09-08.** The criterion named six components. **Reading the code first showed five of them
+have no consumer** — `Menu` opens nowhere, `Avatar` has no people, `TagGroup` has no
+multi-select, `Checkbox`'s one boolean is already a `Switch`, and `ListGroup` adds nothing over
+`Stack` + `Surface`, which is the wrapper rule's own example. Criterion 3 already said such a
+component is **refused** rather than wrapped, so refusing five is that criterion being met
+rather than dodged.
+
+### The sixth is a real defect in twelve places
+
+Twelve single-select rows are rows of `Chip`s, and a chip is a `button`. A screen reader hears
+three unrelated buttons, one of which happens to be on. **The group, the count and the position
+are all missing**, and none can be added to a chip — they are properties of the *set*.
+
+`ChoiceGroup` wraps `RadioGroup` for `role="radiogroup"` and `role="radio"`, read out of
+HeroUI's source rather than assumed, after F-185 found a component that accepted a colour and
+painted black anyway.
+
+### The conformance suite had to change, and that is the interesting half
+
+Its three state rules were **per node** — the same question while a subject is one control, and
+**every subject was one, until this**. A radio group is four controls of which exactly one is
+chosen, so the per-node form reported the three that correctly are not: **nine findings per
+theme, none of them a defect**, on a component doing the thing a radio group is *for*.
+
+The rules now ask about the **subject**, and read the announcement from **any** node — because a
+group announces its unavailability once on the container rather than four times. Three decoys
+hold both directions, including one where the announcement sits on a plain container that
+`pressableNodes` cannot see.
+
+### A pattern worth naming
+
+**This is the fifth acceptance criterion amended before the work in this release** (F-176,
+F-178, F-180, F-185, F-186). The R7 backlog was written from an audit rather than from the code,
+and it consistently over-specified — components that do not exist, guarantees needing gates over
+things nobody has built, and here six components where one was warranted.
+
+Every amendment is in the same direction and every one is recorded. The lesson for the remaining
+twenty features: **read the code before the criterion is believed**, and expect to correct it.
+
+### Gates
+
+typecheck · lint · format · test · a11y · contrast · build · state — **PASS**. 234
+`@irodora/ui` tests.
+
+---

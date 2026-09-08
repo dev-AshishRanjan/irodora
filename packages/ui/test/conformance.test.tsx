@@ -19,6 +19,7 @@ import {
   Button,
   Card,
   Chip,
+  ChoiceGroup,
   Dialog,
   EmptyState,
   Mark,
@@ -365,6 +366,38 @@ const SUBJECTS: readonly ConformanceSubject[] = [
             Ai-nezumi
           </Text>
         </Surface>,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE GROUP, NOT THE BUTTONS (F-186).
+     *
+     * `interactive` and `selectable`, so the suite asks for every state and holds it to F-176's
+     * treatment. The subject renders a group with a chosen option AND a clear option, because
+     * the clear option is a value rather than an absence and a subject without one would leave
+     * the sentinel path unrendered.
+     */
+    name: 'ChoiceGroup',
+    kind: 'interactive',
+    selectable: true,
+    forbiddenNames: ['option', 'choice', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <ChoiceGroup
+          label="Temperature"
+          clearLabel="All"
+          value={state === 'active' ? 'warm' : null}
+          options={[
+            { value: 'warm', label: 'Warm' },
+            { value: 'cool', label: 'Cool' },
+            { value: 'neutral', label: 'Neutral', disabled: state === 'disabled' },
+          ]}
+          onChange={() => undefined}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          testID={state}
+        />,
         theme,
       ),
   },
@@ -1216,6 +1249,71 @@ describe('a selectable component has to announce that it is selected (F-163)', (
     expect(checkSubject(pressable, ['light']).map((f) => f.rule)).not.toContain(
       'state-not-announced',
     );
+  });
+});
+
+describe('a state rule asks about the SUBJECT, not about every node (F-186)', () => {
+  /**
+   * The generalisation, watched catching something and watched leaving something alone.
+   *
+   * These rules were per-node, which is the same question while a subject is ONE control — and
+   * every subject was, until `ChoiceGroup`. A radio group is four controls of which exactly one
+   * is chosen, so the per-node form reported the three that correctly are not: **nine findings
+   * per theme, none of them a defect**, on a component doing the thing a radio group is for.
+   *
+   * The risk of the fix is the opposite failure — a rule satisfied by any one node in a large
+   * tree — so both directions are asserted here.
+   */
+  const group = (announces: boolean): ConformanceSubject => ({
+    name: 'GroupLike',
+    kind: 'interactive',
+    selectable: true,
+    render: (state, theme) =>
+      draw(
+        <View accessibilityState={state === 'loading' ? { busy: true } : {}}>
+          {['a', 'b', 'c'].map((k) => (
+            <Pressable
+              key={k}
+              accessibilityRole="button"
+              accessibilityLabel={`Option ${k}`}
+              accessibilityState={{
+                // Only ONE of the three is ever selected — which is what a group means, and
+                // what the per-node rule could not express.
+                selected: announces && state === 'active' && k === 'a',
+                disabled: announces && state === 'disabled' && k === 'a',
+              }}
+              style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
+            />
+          ))}
+        </View>,
+        theme,
+      ),
+  });
+
+  it('accepts a group where exactly one option announces the state', () => {
+    const findings = checkSubject(group(true), ['light']);
+    expect(findings.map((f) => f.rule)).not.toContain('state-not-announced');
+  });
+
+  it('and still reports one where NOTHING announces it', () => {
+    const findings = checkSubject(group(false), ['light']);
+    expect(findings.map((f) => f.rule)).toContain('state-not-announced');
+  });
+
+  /**
+   * A DECOY FOR THE OTHER WALK. The busy state above is announced on the CONTAINER, which is a
+   * plain `View` — `pressableNodes` cannot see it, which is why the check reads the whole
+   * tree for the announcement and the pressables for whether one was owed.
+   */
+  it('reads an announcement made on a container, not only on a control', () => {
+    const findings = checkSubject(group(true), ['light']);
+    // NARROWED TO THE RULE UNDER TEST. The first draft asserted no findings AT ALL in the
+    // loading state and failed on `colour-invisible` — a different rule, correctly reporting
+    // that this synthetic fixture paints nothing. A decoy that fails on somebody else's finding
+    // is a decoy that will be "fixed" by loosening the wrong check.
+    expect(
+      findings.filter((f) => f.state === 'loading' && f.rule === 'state-not-announced'),
+    ).toHaveLength(0);
   });
 });
 

@@ -39,12 +39,12 @@
  */
 
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Appear,
   Button,
-  Chip,
+  ChoiceGroup,
   Row,
   Screen,
   SearchField,
@@ -270,6 +270,23 @@ export function Atlas({
 
   const active = query.trim() !== '' || Object.values(filters).some((v) => v !== null);
 
+  /**
+   * One filter, as a GROUP rather than as a row of buttons (F-186).
+   *
+   * These were five rows of `Chip`s. Each chip is a `button` carrying `selected` and a tick
+   * in its name, so a screen reader heard *"Warm, button, selected. Cool, button. Neutral,
+   * button."* — three unrelated buttons, one of which happens to be on. The group, the count
+   * and the position were all missing, and none of them can be put on a chip: they are
+   * properties of the SET.
+   *
+   * `ChoiceGroup` is `role="radiogroup"` with `role="radio"` items, so the same five rows
+   * now announce *"Temperature, radio group. Warm, radio button, selected, 1 of 3."*
+   *
+   * **The horizontal scroll is gone with it**, and that is a gain rather than a loss: the group
+   * wraps, so an option is never off-screen with nothing to say it is there. A horizontally
+   * scrolling row of filters hides its own contents, which is the shape somebody reports as
+   * "the filter does not have X" when X is two swipes to the right.
+   */
   function FilterRow<K extends string>({
     label,
     options,
@@ -282,36 +299,14 @@ export function Atlas({
     readonly onChange: (value: K | null) => void;
   }): React.JSX.Element {
     return (
-      <Stack gap="sm">
-        <Text size="label" color="foreground.2" script={script}>
-          {label}
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: nativeSpacing.sm }}
-        >
-          <Chip
-            label={t('atlas.all')}
-            selected={selected === null}
-            onPress={() => {
-              onChange(null);
-            }}
-            script={script}
-          />
-          {options.map((o) => (
-            <Chip
-              key={o.value}
-              label={o.label}
-              selected={selected === o.value}
-              onPress={() => {
-                onChange(selected === o.value ? null : o.value);
-              }}
-              script={script}
-            />
-          ))}
-        </ScrollView>
-      </Stack>
+      <ChoiceGroup
+        label={label}
+        clearLabel={t('atlas.all')}
+        options={options}
+        value={selected}
+        onChange={onChange}
+        script={script}
+      />
     );
   }
 

@@ -10,6 +10,7 @@
 export {
   flattenStyle,
   paintedColors,
+  announcedStates,
   pressableNodes,
   renderedPairs,
   resolveTextNodes,
