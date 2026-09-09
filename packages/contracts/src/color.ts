@@ -36,8 +36,20 @@ export const colorSpaceSchema = z.enum([
   'oklch',
 ]);
 
-/** How a colour value came to exist. Determines what may be claimed about it (ADR-0031). */
-export const measurementSourceSchema = z.enum(['reference', 'calibrated', 'estimated', 'declared']);
+/**
+ * How a colour value came to exist. Determines what may be claimed about it (ADR-0031).
+ *
+ * `derived` — a colour this engine computed from another colour — is ADR-0100, and it is on
+ * the wire for the same reason the other four are: a payload that cannot say a value was
+ * computed has to call it declared, which asserts a person vouched for it.
+ */
+export const measurementSourceSchema = z.enum([
+  'reference',
+  'calibrated',
+  'estimated',
+  'declared',
+  'derived',
+]);
 
 /**
  * Required on every colour that crosses a boundary (FR-9, ADR-0005). Not optional, not
@@ -80,15 +92,19 @@ const provenanceCommon = {
 };
 
 /**
- * A published reference value, or a colour someone declared. No capture, no conditions.
+ * A published value, one a person declared, or one this engine computed. No conditions.
  *
  * Split from the captured case because ADR-0005 requires `conditions` when the source is
  * `estimated` or `calibrated`, and an OPTIONAL field would only ask nicely. A
  * discriminated union refuses the object instead — matching the engine's `Provenance`,
  * which is pinned to this at compile time (ADR-0036).
+ *
+ * `derived` belongs on THIS side and the placement is the assertion: a computed colour has
+ * no capture to describe, so a payload claiming both is refused rather than accepted and
+ * then argued with.
  */
 export const untrackedProvenanceSchema = z.object({
-  source: z.enum(['reference', 'declared']),
+  source: z.enum(['reference', 'declared', 'derived']),
   ...provenanceCommon,
 });
 

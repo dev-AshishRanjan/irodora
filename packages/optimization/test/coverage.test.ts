@@ -276,13 +276,20 @@ describe('gaps are named from the lexicon, not from this file', () => {
 });
 
 describe('what a gap reports', () => {
-  it('carries the representative it projected from', () => {
-    // The number is a PROJECTION from a synthetic colour. Carrying the colour is what makes it
-    // reproducible, and what makes reporting the number without its basis inconvenient.
+  it('carries the representative it projected from, and says a machine made it', () => {
+    /*
+     * The number is a PROJECTION from a synthetic colour. Carrying the colour is what makes it
+     * reproducible, and what makes reporting the number without its basis inconvenient.
+     *
+     * `derived` RATHER THAN `declared` (F-207, ADR-0100). Nobody asserted this colour — it is
+     * the midpoint of two lexicon constraints, with a hue the source calls arbitrary. The word
+     * changed because the union gained a member for exactly this, and the assertion is here
+     * rather than in the engine because a gap is the thing a person is asked to act on.
+     */
     const found = gaps(WARDROBE, LEXICON, context(0));
     expect(found.length).toBeGreaterThan(0);
     for (const gap of found) {
-      expect(gap.representative.provenance.source).toBe('declared');
+      expect(gap.representative.provenance.source).toBe('derived');
       expect(gap.representative.xyz.every(Number.isFinite)).toBe(true);
     }
   });

@@ -20732,3 +20732,79 @@ block would still be misread. Replacing the parse with a real import means makin
 loadable from Node — a larger change than this feature.
 
 ---
+## F-207 — A computed colour can say it was computed
+
+### A union missing a case does not error — it picks the nearest member, and that is a claim
+
+Three surfaces render colours the engine computed: a harmony companion, the centre of a lexicon
+region, and every swatch drawn from a bare OKLCh triple. All three were filed as `declared`.
+
+**`declared` means a human asserted this value.** That is the member's whole content, and the
+claims table binds "selected" and "entered" to it. A companion nobody has ever seen, filed as
+`declared`, is the product stating that somebody vouched for a number no person has looked at.
+
+It is not a colour with *no* provenance — ADR-0005 makes that unrepresentable. It is a colour
+with **somebody else's**, and nothing could fail: `isCaptured` is the only reader of `source` in
+the repository. F-194 wrote the compromise down honestly when it made it; that comment was the
+bug report, waiting to be read as one.
+
+### The line ADR-0100 had to draw
+
+> `derived` is a value **produced from another colour value by this engine**, where no
+> observation and no person stands behind it.
+
+Not "the result of arithmetic" — every value in a colour engine is derived from something, and
+written loosely a camera capture lands under it within a release. The Lens proves the line:
+`displayFromOklch` reports `derived` for the swatch, while `colourFromReading` writes `estimated`
+with its four conditions, because **the measurement is the stored row** and the swatch is a
+rendering of it.
+
+### Two of five call sites moved, and the other three are why it was not a rename
+
+| site | | |
+|---|---|---|
+| `representativeOf` | declared → **derived** | the midpoint of two lexicon constraints |
+| `displayFromOklch` | declared → **derived** | a coordinate with no provenance, rendered |
+| `UNSAFE_HEX_PROVENANCE` | **declared** | a hex string is what the word was always for |
+| store fixtures | **declared** | a fixture is a value the test author typed |
+| the camera, corpus, profile | **untouched** | criterion 4, carried by existing cases |
+
+### The union became data, because the reach has to be iterated
+
+A type is erased. The places a member has to reach — the copy table, the database `CHECK`, the
+wire enum — are checked by iterating, so:
+
+```ts
+export const MEASUREMENT_SOURCES = [...] as const;
+export type MeasurementSource = (typeof MEASUREMENT_SOURCES)[number];
+```
+
+That also removed two copies that were already there: the array inside `assertProvenance` and the
+pair inside `isCaptured`.
+
+### The database is deliberately not migrated
+
+`saved_color.source` has a SQL `CHECK` that does not list `derived`. Nothing can write one —
+`saveColor` has no callers — and SQLite cannot alter a `CHECK` without rebuilding a table holding
+user data. **A test pins the gap**, discovering the allowed set from the migration SQL and naming
+`derived` as the member the column lacks and `unknown` as the legacy value the union lacks. The
+day a screen saves a computed colour, that fails by name with the migration named as the work.
+
+### The lint gate caught two real defects, and the second was the better one
+
+1. The new test read `.harness/verification/claims.json` from `apps/mobile` without that file
+   being in turbo's `globalDependencies` — *"the suite can be green about a file it never
+   re-read."* Registered.
+2. The test reached for `measurementSourceSchema.options` as its runtime witness, and the
+   dead-package check refused it: the app declares `@irodora/contracts` unused pending F-209, and
+   a test import would have made a true statement about the product false. **That refusal is what
+   produced the const above** — the witness belonged in the engine all along.
+
+### Gates
+
+state · typecheck · lint · format · test · build · color-golden · content — **PASS**.
+
+The ADR-0036 pin fired during the change, five errors, before the wire schema was updated. That
+is the evidence it works rather than a claim that it would.
+
+---

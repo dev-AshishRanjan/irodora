@@ -42,7 +42,10 @@ export interface ExportColour {
   readonly lab: readonly [number, number, number];
   readonly lch: readonly [number, number, number];
   readonly oklch: readonly [number, number, number];
-  /** `reference` | `calibrated` | `estimated` | `declared` — ADR-0005's word, carried out. */
+  /**
+   * ADR-0005’s word, carried out: `reference` | `calibrated` | `estimated` | `declared` |
+   * `derived` (ADR-0100).
+   */
   readonly source: string;
 }
 

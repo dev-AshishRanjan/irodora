@@ -28,7 +28,7 @@ Two rules that matter more than the format:
 | [0002](0002-deterministic-core-tiered-capability-policy.md) | A tiered capability policy replaces the blanket "non-AI" rule | Accepted |
 | [0003](0003-canonical-colour-representation-xyz-d65.md) | CIE XYZ (D65) is the canonical internal colour representation | Accepted |
 | [0004](0004-own-the-colour-engine-culori-as-test-oracle.md) | We implement the colour maths; `culori` and `colorjs.io` are test oracles | Accepted |
-| [0005](0005-measurement-provenance-is-a-type.md) | Measurement provenance is part of the colour value | Accepted |
+| [0005](0005-measurement-provenance-is-a-type.md) | Measurement provenance is part of the colour value | Amended by ADR-0100 |
 | [0006](0006-camera-capture-vision-camera-and-getusermedia.md) | VisionCamera frame processors on mobile, `getUserMedia` on web | Accepted |
 | [0007](0007-colour-corpus-provenance-and-licensing.md) | The colour corpus is compiled in-house with per-entry provenance | Accepted |
 | [0008](0008-search-postgres-fts-with-engine-side-perceptual-ranking.md) | Postgres narrows the candidates; the engine ranks them perceptually | Superseded in part by ADR-0051 |
@@ -115,6 +115,7 @@ Two rules that matter more than the format:
 | [0097](0097-the-device-carries-the-policy-and-runs-the-gates-own-checks.md) | The device carries the policy and runs the gate’s own checks | Accepted |
 | [0098](0098-the-status-triple-moves-together-because-cvd-separation-not-contrast-is-what-binds-it.md) | The status triple moves together, because CVD separation and not contrast is what binds it | Accepted |
 | [0099](0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) | The ground lifts off near-black, and the product gets one accent | Accepted |
+| [0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md) | A computed colour is `derived`, and `declared` goes back to meaning a person | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

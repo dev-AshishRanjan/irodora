@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted, **amended by [ADR-0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md)**.
+Everything below stands. The union gains a fifth member, `derived`, for a colour this engine
+computed from another colour — the case `declared` was carrying, which made the product say a
+person had vouched for a value nobody had seen. The `source` list in the Decision block below
+is the four members as of 2026-08-13 and is left as written.
 
 ## Date
 

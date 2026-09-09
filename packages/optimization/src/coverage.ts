@@ -346,8 +346,14 @@ function representativeOf(light: LexiconTerm, chroma: LexiconTerm): Color {
   const cr = chroma.constrains.chroma;
   const l = lr === undefined ? 0.5 : (lr.min + lr.max) / 2;
   const c = cr === undefined ? 0 : (cr.min + cr.max) / 2;
+  /*
+   * `derived`, NOT `declared` (F-207, ADR-0100). Nobody asserted this colour: it is the
+   * midpoint of two lexicon constraints, and the hue above is arbitrary by admission. Filing
+   * it as declared would have the product say a person vouched for a number no person has
+   * seen — which is the whole distinction the fifth member exists to make.
+   */
   return fromXyz(oklchToXyz([l, c, 0]), {
-    source: 'declared',
+    source: 'derived',
     confidence: 1,
     originSpace: 'oklch',
   });

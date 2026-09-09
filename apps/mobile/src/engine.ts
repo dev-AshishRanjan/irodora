@@ -67,13 +67,29 @@ export function hexOf(color: Color): string {
   return srgbToHex(xyzToSrgb(color.xyz));
 }
 
+/**
+ * A bare OKLCh coordinate, rendered as everything a screen needs to draw it.
+ *
+ * **THE PROVENANCE IS `derived` (F-207, ADR-0100), and this is the site that argued for the
+ * member.** The input is a coordinate with no provenance at all; what comes back is this
+ * engine computing a colour value from it. It reported `declared` until F-207, and
+ * `declared` means A PERSON ASSERTED THIS — said of a harmony companion nobody has seen, of
+ * an Atlas swatch, and of the Lens rendering a capture, that was three false claims.
+ *
+ * IT DOES NOT RECLASSIFY THE CAMERA, and the reason is worth stating rather than assuming:
+ * the Lens's measurement is the row `colourFromReading` writes — `estimated`, carrying the
+ * four conditions ADR-0005 requires — and this value is a rendering of that reading, which
+ * is what `derived` says. Nothing branches on it: `isCaptured` is the only reader of
+ * `source` in the repository, and `differenceFrom` takes capture quality as its own
+ * argument precisely so it never infers one from a colour (F-201).
+ */
 export function displayFromOklch(oklch: Triple): DisplayColour {
   const xyz = oklchToXyz(oklch);
   return {
     hex: srgbToHex(xyzToSrgb(xyz)),
     oklch: xyzToOklch(xyz),
     color: fromSpace('oklch', oklch, {
-      source: 'declared',
+      source: 'derived',
       confidence: 1,
     }),
   };

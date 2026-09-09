@@ -23,6 +23,8 @@ export {
   type CaptureQuality,
   type DeviceProfile,
   type Illuminant,
+  MEASUREMENT_SOURCES,
+  CAPTURED_SOURCES,
   type MeasurementSource,
   type Provenance,
   type UntrackedProvenance,

@@ -4504,6 +4504,57 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-117",
+      "from": {
+        "kind": "file",
+        "ref": "packages/color-core/src/provenance.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/contracts/src/color.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/optimization/src/coverage.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/engine.ts"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/claims.json"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/schema.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/color-core",
+        "packages/contracts",
+        "packages/store",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "A UNION MEMBER REACHES FURTHER THAN THE TYPE, AND EACH REACH IS GUARDED SEPARATELY. The wire enum is pinned to the engine type at compile time by ADR-0036, per member and by discriminant — that pin FIRED during this change, five errors, before the schema was updated, which is the evidence it works rather than a claim that it would. The untracked/captured split is free because `UntrackedSource` is an `Exclude` and not a second list, so `derived` cannot be forgotten onto the side that owes conditions. THREE REACHES ARE NOT FREE and are covered by apps/mobile/test/provenance.test.ts, which is in the app because it is the only place importing the engine, the wire schemas and the store at once: the ADR-0031 copy table has a row for every member and no orphans (it is UNENFORCED, so a missing row would otherwise be silent); `displayFromOklch` reports derived while UNSAFE_HEX_PROVENANCE still reports declared at 0.5, which is the decoy that stops this being a global rename; and the SQL CHECK on saved_color is compared against the union with the allowed set DISCOVERED from the migration SQL. The union is iterated at runtime through measurementSourceSchema.options, which is not a second copy because the ADR-0036 pin is what makes it trustworthy. CRITERION 4 IS CARRIED BY EXISTING CASES rather than restated: wardrobe.test.ts already asserts the write is `estimated` and reads back with its four conditions. WHAT IS NOT GUARDED: the database does not accept `derived` and is deliberately not migrated — see the rationale.",
+      "memory": "memory/effects/declared-means-a-person-and-a-computed-colour-was-borrowing-it.md",
+      "rationale": "THE MISSING MEMBER DID NOT PRODUCE AN ERROR; IT PRODUCED A NEAREST MEMBER, AND THE NEAREST MEMBER IS A CLAIM. Three surfaces render colours the engine computed — a harmony companion, the centre of a lexicon region, every swatch drawn from a bare OKLCh triple — and all three were filed as `declared`, which means A HUMAN ASSERTED THIS. F-194 recorded the compromise honestly when it made it; the compromise was still the product saying somebody vouched for a number no person had seen. It is not a colour with no provenance, which ADR-0005 makes unrepresentable — it is a colour with somebody else’s, and nothing could fail: `isCaptured` is the only reader of `source` in the repository. THE LINE THE ADR HAD TO DRAW is \"derived from another colour\", NOT \"the result of arithmetic\" — written loosely, a camera capture lands under `derived` within a release. The Lens proves it: `displayFromOklch` reports derived for the swatch, while `colourFromReading` writes estimated with its conditions, because the measurement is the stored row and the swatch is a rendering of it. THE DATABASE IS NOT MIGRATED and that is the decision, not the oversight: `saveColor` has no callers, SQLite cannot alter a CHECK without rebuilding the table, and rebuilding one that holds user data for a value nothing produces is speculative work against the thing that must not break. A test pins the gap so the day a screen saves a computed colour it fails by name with the migration named as the work, rather than on a device as a constraint error.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

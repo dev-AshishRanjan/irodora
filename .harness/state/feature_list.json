@@ -6726,7 +6726,7 @@
       "service": "packages",
       "release": "R8",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-194"
       ],
@@ -6744,7 +6744,8 @@
         "color-golden",
         "content"
       ],
-      "notes": "FOUND IN F-194, RECORDED RATHER THAN CLOSED IN PASSING. A harmony companion is not a capture, not a published reference and not a hex somebody typed — it is a coordinate the engine computed. F-194 files it as `declared`, which is what this app already does for a computed colour, so there is ONE answer rather than two. But `declared` means a human asserted it, and an engine asserting something is a different claim. Changing the union is ADR-0005's territory and touches every package that carries provenance, which is precisely why it is not a side effect of building a screen."
+      "notes": "DONE. The union gained `derived` (ADR-0100, amending ADR-0005) for a colour this engine computed from another colour. TWO OF FIVE CALL SITES MOVED and the other three are the evidence it was not a rename: `representativeOf` and `displayFromOklch` became derived; UNSAFE_HEX_PROVENANCE and the store fixtures stayed declared, because a hex string and a typed fixture are what the word was always for; the camera, the corpus and the profile were untouched. THE DATABASE IS DELIBERATELY NOT MIGRATED — the SQL CHECK on saved_color does not list `derived`, nothing can write one, and a test pins the gap by discovering the allowed set from the migration SQL rather than restating it. GATE 8 NOTE: the lint caught a real defect in the new test — it read .harness/verification/claims.json from apps/mobile without that file being in turbo's globalDependencies, so a change to the copy table would not have invalidated the cached test result. Fixed by registering it. IT THEN CAUGHT A SECOND, BETTER ONE: the test reached for measurementSourceSchema.options as the runtime witness of the union, and the dead-package check refused it — the app declares @irodora/contracts unused pending F-209, and a test import would have made a true statement about the product false. The answer was to put the witness in the engine instead: MEASUREMENT_SOURCES is now the source of truth and MeasurementSource is (typeof MEASUREMENT_SOURCES)[number], which also removed two copies that were already there — the array inside assertProvenance and the pair inside isCaptured.",
+      "plan": "plans/F-207-a-computed-colour-can-say-so.md"
     },
     {
       "id": "F-208",

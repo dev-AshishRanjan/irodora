@@ -1,7 +1,7 @@
 {
   "$comment": "The claims copy lint (NFR-21, F-025, ADR-0031). Patterns live here rather than in scripts/verify-claims.mjs for the same reason recommendation weights are content: this list will grow, and growing it should not be a code change. Read by scripts/verify-claims.mjs and exercised by scripts/verify-claims-proof.mjs.",
   "version": 1,
-  "updated": "2026-09-07",
+  "updated": "2026-09-09",
   "banned": [
     {
       "id": "exact-colour",
@@ -146,6 +146,20 @@
         "never": [
           "measured",
           "detected"
+        ]
+      },
+      "derived": {
+        "$comment": "ADR-0100. A colour this engine computed from another colour. It was never observed, so the bans are stronger than `declared`’s: \"detected\" and \"sampled\" both assert an observation, and \"measured\" is reserved for calibrated and reference under ADR-0031 section 1 regardless. What it MAY say is what it is — that a machine worked it out.",
+        "may": [
+          "computed",
+          "generated",
+          "derived from"
+        ],
+        "never": [
+          "measured",
+          "detected",
+          "sampled",
+          "exact"
         ]
       }
     }

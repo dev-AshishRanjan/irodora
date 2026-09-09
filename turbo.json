@@ -8,7 +8,8 @@
     "content/rules/**",
     "content/colors/**",
     "content/versions/**",
-    "docs/design/design-system.manifest.json"
+    "docs/design/design-system.manifest.json",
+    ".harness/verification/claims.json"
   ],
   "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],
   "tasks": {

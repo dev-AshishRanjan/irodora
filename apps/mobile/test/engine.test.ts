@@ -31,7 +31,13 @@ describe('the app reaches the real engine', () => {
 
   it('a Color cannot exist without provenance (ADR-0005)', () => {
     const display = displayFromOklch([0.5, 0.1, 200]);
-    expect(display.color.provenance.source).toBe('declared');
+    /*
+     * `derived` since F-207. This case is about there BEING a provenance and it recording the
+     * space the value arrived in; WHY the source is `derived` — a bare OKLCh coordinate is a
+     * colour this engine computed, and `declared` would say a person asserted it — is argued
+     * where it belongs, in `provenance.test.ts` beside the rest of the union's reach.
+     */
+    expect(display.color.provenance.source).toBe('derived');
     expect(display.color.provenance.originSpace).toBe('oklch');
   });
 

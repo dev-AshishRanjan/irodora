@@ -31,13 +31,59 @@ import type { ColorSpace } from '@irodora/color-spaces';
  *
  * The claims copy lint (F-025, NFR-21) binds permissible language to this: only `reference`
  * and `calibrated` may appear near the word "measured".
+ *
+ * | member | the colour was |
+ * |---|---|
+ * | `reference` | published by somebody else, as a value |
+ * | `calibrated` | observed, against a known target |
+ * | `estimated` | observed, without one |
+ * | `declared` | asserted by a person |
+ * | `derived` | **computed by this engine from another colour** |
+ *
+ * `derived` IS A NARROWER WORD THAN IT LOOKS, and ADR-0100 draws the line: every colour in a
+ * colour engine is derived from something, so this is not "the result of arithmetic". It is
+ * the case where the VALUE ITSELF was produced from another colour value — a harmony
+ * companion, the centre of a lexicon region, a coordinate rendered as a swatch — as against
+ * observed, published, or asserted by a person.
+ *
+ * It exists because `declared` was carrying it, and `declared` means A HUMAN VOUCHED FOR
+ * THIS. A companion nobody has seen, filed as declared, is the product claiming somebody
+ * did (F-194).
+ *
+ * **DATA FIRST, TYPE DERIVED.** A union is erased, so nothing can iterate it — and the
+ * places a member has to reach are checked by iterating: the copy table in `claims.json`,
+ * the database's `CHECK`, the wire enum. Writing the members down once and deriving both
+ * the type and the runtime list from them also removes two copies that were already here,
+ * in `assertProvenance` and in `isCaptured`.
  */
-export type MeasurementSource = 'reference' | 'calibrated' | 'estimated' | 'declared';
+export const MEASUREMENT_SOURCES = [
+  'reference',
+  'calibrated',
+  'estimated',
+  'declared',
+  'derived',
+] as const;
 
-/** The sources that come from a capture, and therefore owe their conditions. */
-export type CapturedSource = Extract<MeasurementSource, 'calibrated' | 'estimated'>;
+export type MeasurementSource = (typeof MEASUREMENT_SOURCES)[number];
 
-/** The sources that do not: a published reference value, or a hex someone typed. */
+/**
+ * The sources that come from a capture, and therefore owe their conditions.
+ *
+ * `Extract` rather than the const alone, so a typo here collapses the type to `never` and
+ * fails loudly instead of quietly inventing a sixth source.
+ */
+export const CAPTURED_SOURCES = ['calibrated', 'estimated'] as const;
+
+export type CapturedSource = Extract<MeasurementSource, (typeof CAPTURED_SOURCES)[number]>;
+
+/**
+ * The sources that do not: a published reference value, a hex someone typed, or a colour
+ * this engine computed.
+ *
+ * DERIVED LANDS HERE WITHOUT AN EDIT, which is the right answer twice over: a computed
+ * colour owes no capture conditions, and writing it as `Exclude` rather than a second list
+ * means it cannot be forgotten into `CapturedSource` by a future member.
+ */
 export type UntrackedSource = Exclude<MeasurementSource, CapturedSource>;
 
 /** FR-17. Shown *before* the colour value, and it reduces reported confidence. */
@@ -86,7 +132,7 @@ interface ProvenanceCommon {
   readonly capturedAt?: string | undefined;
 }
 
-/** A published reference value, or a colour someone declared. No capture, no conditions. */
+/** A published value, one a person declared, or one this engine computed. No conditions. */
 export interface UntrackedProvenance extends ProvenanceCommon {
   readonly source: UntrackedSource;
 }
@@ -101,7 +147,9 @@ export type Provenance = UntrackedProvenance | CapturedProvenance;
 
 /** Narrowing helper, so callers do not re-derive which sources owe conditions. */
 export function isCaptured(provenance: Provenance): provenance is CapturedProvenance {
-  return provenance.source === 'estimated' || provenance.source === 'calibrated';
+  // Reads the same const the type is built from. Naming the two sources here again is how a
+  // sixth captured source would arrive narrowed everywhere except the narrowing helper.
+  return (CAPTURED_SOURCES as readonly string[]).includes(provenance.source);
 }
 
 /** Thrown when a provenance is structurally valid but says something impossible. */
@@ -134,10 +182,7 @@ export function assertProvenance(provenance: Provenance): void {
 
   const record = value as Record<string, unknown>;
   const source = record['source'];
-  if (
-    typeof source !== 'string' ||
-    !['reference', 'calibrated', 'estimated', 'declared'].includes(source)
-  )
+  if (typeof source !== 'string' || !(MEASUREMENT_SOURCES as readonly string[]).includes(source))
     throw new ProvenanceError(`source must be a MeasurementSource; got ${JSON.stringify(source)}`);
 
   const { confidence } = provenance;

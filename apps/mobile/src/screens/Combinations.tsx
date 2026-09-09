@@ -132,15 +132,13 @@ const COMPANION = 56;
  *
  * `displayFromOklch` is this app's existing answer for a computed colour and it is reused
  * rather than re-derived — it routes the OKLCh through XYZ, produces the hex the same way every
- * other surface does, and records `source: 'declared'` with confidence 1.
+ * other surface does, and records `source: 'derived'` with confidence 1.
  *
- * **A NOTE ON THAT PROVENANCE, because it is the honest place to put it.** The four sources are
- * `reference | calibrated | estimated | declared`, and a companion is none of them exactly: it
- * is not a capture, not a published value, and not a hex somebody typed — it is a coordinate an
- * engine computed from another colour. `declared` is the untracked bucket and is what this app
- * already uses for exactly this, so following it keeps one answer rather than inventing a
- * second. That the model has no `derived` source is a real gap and it is recorded as F-207
- * rather than closed in passing: changing the provenance union is ADR-0005's territory.
+ * **THE GAP THIS COMMENT USED TO RECORD IS CLOSED (F-207).** A companion is not a capture,
+ * not a published value and not a hex somebody typed; it is a coordinate an engine computed
+ * from another colour. It was filed as `declared` because that was the only untracked bucket
+ * available, and `declared` means a person asserted it. ADR-0100 added `derived`, and
+ * `displayFromOklch` reports it.
  */
 function companion(c: HarmonyColor): ReturnType<typeof displayFromOklch> {
   return displayFromOklch([c.oklch[0], c.oklch[1], c.oklch[2]]);
