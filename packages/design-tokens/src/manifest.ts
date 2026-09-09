@@ -13,10 +13,10 @@
  *
  * ## Why not Zod
  *
- * `@irodora/contracts` owns the wire schemas, and this is not a wire type — nothing here
- * crosses a network boundary or reaches an API consumer. Pulling Zod in would put a runtime
- * dependency into a package that `apps/mobile` bundles, to validate a file that only exists
- * at build time. The validation is small enough to be explicit, and being explicit is what
+ * Nothing here crosses a network boundary or reaches an API consumer. Pulling Zod in would
+ * put a runtime dependency into a package that `apps/mobile` bundles, to validate a file that
+ * only exists at build time. (This paragraph deferred to `@irodora/contracts` until F-209
+ * retired it — ADR-0101 — for serving no boundary at all.) The validation is small enough to be explicit, and being explicit is what
  * lets each failure name the token it came from.
  */
 

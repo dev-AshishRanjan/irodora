@@ -1,13 +1,7 @@
 {
   "$comment": "Workspace packages the application declares as dependencies and never imports, each naming the feature that will consume it. `scripts/verify-dead-exports.mjs` fails on an unused package that is NOT listed here, AND on a listing that IS imported or whose feature is already done. Same shape and same reason as unreached-tokens.json and unreachable-routes.json (ADR-0088). THE WHOLE LIST PRINTS ON EVERY RUN.",
   "version": 1,
-  "updated": "2026-09-08",
-  "$readingComment": "A package listed here builds, tests and passes every gate — and the product never calls it. That is the failure mode this file exists to make visible, and it is invisible by construction otherwise: the tests check the package, and nothing checks that anything uses it.",
-  "unused": [
-    {
-      "package": "@irodora/contracts",
-      "closedBy": "F-209",
-      "why": "The Zod schemas that are, in F-002's words, 'the single source of runtime validation and of the TypeScript types derived from them'. THE PREVIOUS DECLARATION NAMED F-196 AND WAS WRONG, which is recorded here rather than moved quietly to the next feature along. F-196 built the combination record and gave it a parser — `parseCombination` in @irodora/corpus, hand-written like every other corpus parser, producing the CorpusError paths the content gate reports. Adding a Zod schema for the same shape would be a SECOND parser for one record, free to drift from the first, which is the defect version.ts already documents for `serialiseBundle`. The same is true of the other boundary this package was supposed to serve: F-035 made `importArchive` take `unknown` and validate every field itself, and it distinguishes a missing table from a corrupt one in a way a schema would have to be told about anyway. So the package is unused because every boundary in this app already validates, not because nobody got to it. F-209 is the decision — adopt it somewhere real, or retire it — and it is a decision rather than a task, which is why it is not being made as a side effect of building a screen."
-    }
-  ]
+  "updated": "2026-09-09",
+  "$readingComment": "A package listed here builds, tests and passes every gate — and the product never calls it. That is the failure mode this file exists to make visible, and it is invisible by construction otherwise: the tests check the package, and nothing checks that anything uses it. THE LIST IS EMPTY, AND THAT IS A RESULT RATHER THAN A DEFAULT (F-209): its one entry named a closing feature twice and was wrong twice, and the package it named was retired rather than re-pointed at a third. NFR-26 says the exception expires with the feature it names — an empty list is what that rule looks like when it is followed. THE LIST IS EMPTY, AND THAT IS A RESULT RATHER THAN A DEFAULT (F-209): its one entry named a closing feature twice and was wrong twice, and the package it named was retired rather than re-pointed at a third. NFR-26 says the exception expires with the feature it names — an empty list is what that rule looks like when it is followed.",
+  "unused": []
 }

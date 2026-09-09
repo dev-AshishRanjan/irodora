@@ -252,44 +252,6 @@ export default tseslint.config(
   // `no-restricted-imports` above still applies here — a later flat-config object replaces
   // a rule per KEY, not the whole rules block. Guard #4 in scripts/verify-guards.mjs lints
   // this exact directory and would go red if that ever stopped being true.
-  {
-    files: ['packages/contracts/**/*.ts'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'TSInterfaceDeclaration',
-          message:
-            'Declare a Zod schema and export `z.infer<typeof schema>`. An interface here duplicates a schema and will diverge from it silently. See .harness/rules/typescript/typescript.md',
-        },
-        {
-          // Descendant, not child. `> TSTypeLiteral` only catches `type X = { … }` and is
-          // defeated by any wrapping — `Readonly<{ … }>`, `{ … }[]`, `{ … } & { … }`.
-          selector: 'TSTypeAliasDeclaration TSTypeLiteral',
-          message:
-            'An object-literal type alias here duplicates a schema, however it is wrapped. Declare the schema and export `z.infer<typeof schema>` instead. See .harness/rules/typescript/typescript.md',
-        },
-        {
-          // The form that matters most in this package: the two engine types it duplicates
-          // — ColorSpace and MeasurementSource — are string unions, and a union is not a
-          // type literal, so the selectors above never see one.
-          selector: 'TSTypeAliasDeclaration > TSUnionType',
-          message:
-            'A union type alias here duplicates an enum. Declare `z.enum([…])` and export `z.infer<typeof schema>` instead — the wire needs the runtime values, not only the type. See .harness/rules/typescript/typescript.md',
-        },
-        {
-          selector: 'TSTypeAliasDeclaration > TSIntersectionType',
-          message:
-            'An intersection type alias here composes a shape outside the schema layer. Compose the schemas instead, so validation and types stay one artefact.',
-        },
-        {
-          selector: 'TSEnumDeclaration',
-          message:
-            'A TypeScript enum here duplicates a `z.enum([…])` and validates nothing. Declare the schema and export `z.infer<typeof schema>` instead.',
-        },
-      ],
-    },
-  },
 
   // The published contract surface ships to every runtime we have — Fastify, the browser
   // via apps/web, and React Native via apps/mobile (E-004). It is not in the colour-engine
@@ -299,38 +261,6 @@ export default tseslint.config(
   // Tests are excluded: they run in Node by definition, and a test that needs a file or a
   // path to set up a fixture should not have to fight the rule that protects the shipped
   // bundle. Nothing in src is exempt.
-  {
-    files: ['packages/contracts/src/**/*.ts'],
-    ignores: ['packages/contracts/src/**/*.test.ts'],
-    rules: {
-      // NOTE: the workspace-wide patterns are repeated. A later flat-config object REPLACES
-      // `no-restricted-imports` rather than merging with it, so omitting them here would
-      // silently legalise deep imports in this package. Guard #4 lints this exact directory
-      // and is what proves the statement above is still true.
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['node:*', 'fs', 'path', 'crypto', 'os'],
-              message:
-                'The contract layer is imported by the browser and by React Native. No platform APIs in src — a node:* import here is a crash on a phone.',
-            },
-            {
-              group: ['@irodora/*/src/*', '@irodora/*/dist/*'],
-              message:
-                'Import the package entry point, not its internals. Internal paths are not a contract and will break silently.',
-            },
-            {
-              group: ['../../../*'],
-              message:
-                'Three levels up means you have crossed a boundary. Import through a package entry point instead.',
-            },
-          ],
-        },
-      ],
-    },
-  },
 
   // `@irodora/corpus` is NOT in the colour-engine zone — `packages/color-*` and
   // `packages/cvd-engine` are, and `corpus` matches neither. It carries the same obligation

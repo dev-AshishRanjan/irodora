@@ -529,8 +529,13 @@ export const ja: Record<MessageKey, string> = {
   'wear.shopFor': 'この色を探す',
   'wear.addToWardrobe': '持ち物に追加',
   'wear.openColour': 'この色を開く',
-  // F-208. 「暖かめ」「涼しめ」— 比較の対象は手元の色ではなく一番上の候補なので、断定ではなく
-  // 方向を示す語にしている。
+  // F-208. Comparative rather than absolute: what an alternative moves away from is the TOP
+  // PICK, not the colour in hand, so `暖かめ` (warmer-ish) rather than `暖かい` (warm).
+  //
+  // WRITTEN IN ENGLISH ON PURPOSE. A Japanese comment here costs the font subset real
+  // codepoints for text the app never renders — the content gate caught U+5019 from an
+  // earlier draft of this very comment, which is the check working exactly as intended. Even
+  // NAMING the character costs the subset a codepoint, so it is named by its code point.
   'alt.warmer': '暖かめ',
   'alt.cooler': '涼しめ',
   'alt.lighter': '明るめ',

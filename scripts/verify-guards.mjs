@@ -23,8 +23,8 @@
  * fixture written into a directory **after** that program was built is not in its file list.
  * Whether the cached program notices depends on TypeScript's directory watchers, which
  * differ by platform and are inherently racy against a file written and linted microseconds
- * later. Several guards also share a path (`packages/contracts/src/__guard__.ts` is used by
- * six), so each one writes, lints and deletes the same file in turn — the worst possible
+ * later. Several guards share a path (`apps/mobile/src/screens/__guard__.tsx` is used by
+ * five), so each one writes, lints and deletes the same file in turn — the worst possible
  * input to a watcher.
  *
  * Trying to out-cache that would mean reasoning about someone else's cache invalidation on
@@ -78,63 +78,6 @@ const GUARDS = [
       'Without the patterns repeated in the engine override, deep imports become legal in ' +
       'exactly the packages that need protecting most.',
     source: `import type { Xyz } from '@irodora/color-spaces/src/index.js';\nexport type A = Xyz;\n`,
-  },
-  {
-    name: 'packages may not be deep-imported',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-imports',
-    must: 'A package entry point is a contract; an internal path is not',
-    source: `import { CORE_VERSION } from '@irodora/color-core/src/index.js';\nexport const v = CORE_VERSION;\n`,
-  },
-  {
-    name: 'the contract layer may not hand-write a type',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-syntax',
-    must:
-      'A Zod schema in @irodora/contracts is the single source of validation, types and ' +
-      'OpenAPI (ADR-0012). An interface beside a schema compiles, looks correct, and ' +
-      'diverges the first time only one of the two is edited — invisibly, because nothing ' +
-      'compares them.',
-    source: `export interface WireColor {\n  space: string;\n  hex: string;\n}\n`,
-  },
-  {
-    name: 'the contract layer may not hand-write a union',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-syntax',
-    must:
-      'This is the form that actually threatens this package. The two engine types it ' +
-      'duplicates — ColorSpace and MeasurementSource — are string unions, and a union is ' +
-      'not a type literal, so a selector written only for `type X = { … }` never sees one.',
-    source: `export type Space = 'srgb' | 'display-p3' | 'oklch';\n`,
-  },
-  {
-    name: 'the contract layer may not hide a type literal inside a wrapper',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-syntax',
-    must:
-      'A `>` child selector is defeated by any wrapping — Readonly<{…}>, {…}[], {…} & {…}. ' +
-      'Readonly<{…}> is the natural thing to write in a repository whose engine types are ' +
-      'all readonly, so it is the one that would have slipped through.',
-    source: `export type Wire = Readonly<{ code: string }>;\n`,
-  },
-  {
-    name: 'the contract layer may not declare a TypeScript enum',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-syntax',
-    must:
-      'An enum is neither an interface nor a type alias, so every selector written for ' +
-      'those misses it — and it looks more like a contract than either, while validating ' +
-      'nothing at the boundary.',
-    source: `export enum Space {\n  Srgb = 'srgb',\n}\n`,
-  },
-  {
-    name: 'the contract layer may not import a Node API',
-    path: 'packages/contracts/src/__guard__.ts',
-    rule: 'no-restricted-imports',
-    must:
-      '@irodora/contracts is imported by apps/mobile (React Native) and by the engine packages. ' +
-      'A node:* import in its src is a crash on a phone, found by a user.',
-    source: `import { readFileSync } from 'node:fs';\nexport const x = readFileSync;\n`,
   },
   {
     name: 'the corpus schema may not import a Node API',

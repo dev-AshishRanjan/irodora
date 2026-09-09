@@ -27,7 +27,6 @@
     "@irodora/color-naming": "workspace:*",
     "@irodora/color-sampling": "workspace:*",
     "@irodora/color-spaces": "workspace:*",
-    "@irodora/contracts": "workspace:*",
     "@irodora/corpus": "workspace:*",
     "@irodora/cvd-engine": "workspace:*",
     "@irodora/design-tokens": "workspace:*",

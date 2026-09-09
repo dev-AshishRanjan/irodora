@@ -3,10 +3,13 @@
  *
  * ## Why a parser and not Zod
  *
- * `@irodora/contracts` owns the wire schemas, and this is not a wire type — a source entry is
- * read from disk at build time and never crosses a process boundary. Pulling Zod in would put
- * a runtime dependency into a package the colour engine imports (F-013), and NFR-3 is the one
- * guarantee that cannot bend.
+ * A source entry is read from disk at build time and never crosses a process boundary.
+ * Pulling Zod in would put a runtime dependency into a package the colour engine imports
+ * (F-013), and NFR-3 is the one guarantee that cannot bend.
+ *
+ * This paragraph used to defer to `@irodora/contracts` as the owner of wire schemas. F-209
+ * retired that package (ADR-0101) after measuring which boundaries it actually served: none.
+ * This parser was always the validator here, and the deference was the fiction.
  *
  * The second reason is the one that matters day to day: NFR-20 promises the build fails **on a
  * single incomplete entry**, and keeping that promise means naming the entry and the field.

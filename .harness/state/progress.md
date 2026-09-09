@@ -20873,3 +20873,89 @@ Whether the section reads as a second ranking. No gate in this repository sees l
 [[a-test-tree-has-no-height]], and copy is the weakest kind of mitigation.
 
 ---
+## F-209 — Decide what `@irodora/contracts` is for, or retire it
+
+### Criterion 1 was the work: nobody had measured the claim
+
+The package's docblock named four local trust boundaries, rewritten after ADR-0051 removed the
+server tier it was actually built for. Measured:
+
+| boundary | the docblock says | what actually validates it |
+|---|---|---|
+| SQLite row | *"parsed, never cast"* | **cast** — `Driver.query<T>` returns `T[]`, `T` from the caller |
+| imported backup | *"the strongest case"* | `parseArchive`, hand-written, takes `unknown` |
+| corpus bundle | *"digest-checked and parsed"* | `parseEntry` + digests, hand-written |
+| camera frame | *"not ours"* | `@irodora/color-sampling` |
+
+**Not one imported the package**, and the boundary it described most confidently is the one that
+is cast.
+
+### A pin around an empty room
+
+It was not unfinished. It was complete, tested, and had one live function: the ADR-0036
+compile-time pin. That pin worked — it fired during F-207, five errors, before the wire schema
+was updated.
+
+But it pinned schemas that validate nothing, describing a wire that no longer exists.
+
+> The schema existed to be pinned, and the pin existed to protect the schema.
+
+A closed loop passes every check it sets itself, which is why nothing here could see it.
+
+`errors.ts` settled it: 105 lines of HTTP status codes — `rate_limited`,
+`idempotency_key_conflict` — with seven members already recorded unreachable since ADR-0051,
+imported by nothing.
+
+### The tell had fired twice
+
+The dead-package declaration named a closing feature twice, F-196 then F-207, and was wrong both
+times — each time because the named boundary already had a parser, and adding a schema beside it
+would have been two parsers for one shape. NFR-26 says the exception *"expires with the feature
+it names — not a warning."*
+
+### What went, and what replaced the pin
+
+```
+packages/contracts/     the package, its tests, and zod — the last one in the repository
+eslint.config.mjs       two zones
+verify-guards.mjs       six boundary guards
+unused-packages.json    the declaration, DELETED not re-pointed
+```
+
+```ts
+export const COLOR_SPACES = [...] as const;
+export type ColorSpace = (typeof COLOR_SPACES)[number];
+```
+
+The shape F-207 gave `MEASUREMENT_SOURCES`, for an unrelated reason — a test needed to *iterate*
+a union. It is stronger than the pin, not a consolation for it: the pin kept two artefacts from
+disagreeing, one artefact cannot, and the const is iterable where the union was not.
+`provenance.test.ts` passed across the removal unchanged.
+
+### A subtraction is guarded by a number that has to move
+
+A guard suite that quietly checks less is the failure mode here. `verify-guards` prints its
+count on every run, and it moved: **26 → 20**. `verify-dead-exports` still reports 17 workspace
+projects, all imported by something, so the empty declaration list is a result rather than a
+check looking at nothing.
+
+### The gates caught two things review did not
+
+- **Gate 0 refused an effect link naming a file that had just been deleted** — E-117's wire leg.
+  Amended rather than erased: the pin worked, and the record says so.
+- **Gate 0 refused an *Accepted* ADR speaking retired vocabulary.** Rephrasing it surfaced that
+  the retired-surface record for the API description had been citing the deleted package as its
+  evidence.
+
+### A defect from F-208, found here
+
+`test:content` is not on F-208's verification list and was not run for it. It fails on U+5019,
+introduced by a **Japanese comment** I wrote in `ja.ts` — a codepoint the app never renders,
+charged to the font subset. Fixed: the comment is English, and it names the character by code
+point, because naming it costs a codepoint too.
+
+### Gates
+
+state · typecheck · lint · format · test · build · color-golden · content — **PASS**.
+
+---

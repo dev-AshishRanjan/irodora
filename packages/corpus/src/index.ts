@@ -11,8 +11,9 @@
  *
  * - **Not a wire schema.** A corpus source entry never crosses a process boundary; it is read
  *   from disk at build time and shipped inside the app as an immutable bundle (ADR-0051).
- *   `@irodora/contracts` owns validation at the trust boundaries the app still has. That is
- *   also why there is no Zod here — see `entry.ts`.
+ *   `parseEntry` and the digest ARE the validation at this boundary — and since F-209
+ *   (ADR-0101) that is the whole answer rather than half of one: the package this used to
+ *   defer to served no boundary and was retired. See `entry.ts` for why not Zod.
  * - **Not a place colour maths lives.** Every derived value is computed by
  *   `@irodora/color-spaces` through `derive.ts`. A conversion written here would be a second
  *   implementation, which `AGENTS.md` §7 calls a defect by definition.

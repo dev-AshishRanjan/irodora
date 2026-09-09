@@ -81,9 +81,6 @@ importers:
       '@irodora/color-spaces':
         specifier: workspace:*
         version: link:../../packages/color-spaces
-      '@irodora/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@irodora/corpus':
         specifier: workspace:*
         version: link:../../packages/corpus
@@ -394,19 +391,6 @@ importers:
       fast-check:
         specifier: ^4.9.0
         version: 4.9.0
-      vitest:
-        specifier: ^4.1.10
-        version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
-
-  packages/contracts:
-    dependencies:
-      '@irodora/color-core':
-        specifier: workspace:*
-        version: link:../color-core
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(jsdom@20.0.3(supports-color@8.1.1))(vite@8.2.1(@types/node@24.13.3)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
@@ -6067,9 +6051,6 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -12474,5 +12455,3 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.25.76: {}
-
-  zod@4.4.3: {}

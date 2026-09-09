@@ -91,7 +91,7 @@ Verifying at load catches both, and costs nothing.
 
 | | Threat | Control | Verified by |
 |---|---|---|---|
-| **T** | Malicious or corrupt backup import | Every record parsed through a `@irodora/contracts` schema; import is transactional and rolls back whole | test |
+| **T** | Malicious or corrupt backup import | Every record parsed by `parseArchive` in `@irodora/store`, which takes `unknown`; import is transactional and rolls back whole. (This row said `@irodora/contracts` until F-209 measured the boundary and found the hand-written parser had always been the one doing it — ADR-0101.) | test |
 | **E** | SQL injection via imported text | Prepared statements only; no string-built SQL, enforced by lint | lint |
 | **T** | Database written by a newer app version | Schema version checked before open; refuse rather than guess | test |
 | **D** | Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test |

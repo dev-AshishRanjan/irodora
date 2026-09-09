@@ -73,10 +73,23 @@ export type Matrix3 = readonly [
  * a value whose real origin was lost, and `Provenance.originSpace` exists to record what a
  * round trip is honest back to.
  *
- * Pinned to the wire enum in `@irodora/contracts` at compile time (ADR-0036) — adding a
- * member here without adding it there fails `pnpm typecheck`.
+ * **DATA FIRST, TYPE DERIVED (F-209, ADR-0101).** This used to be a hand-written union pinned
+ * against a Zod enum in `@irodora/contracts` at compile time (ADR-0036). That pin worked —
+ * and it was protecting two artefacts from disagreeing about a wire that retired with the
+ * server tier (ADR-0051). One artefact cannot disagree with itself, and the const is
+ * iterable, which a union is not.
  */
-export type ColorSpace = 'srgb' | 'display-p3' | 'linear-srgb' | 'lab' | 'lch' | 'oklab' | 'oklch';
+export const COLOR_SPACES = [
+  'srgb',
+  'display-p3',
+  'linear-srgb',
+  'lab',
+  'lch',
+  'oklab',
+  'oklch',
+] as const;
+
+export type ColorSpace = (typeof COLOR_SPACES)[number];
 
 /** The canonical illuminant. Stated as a value so a caller can assert what it was given. */
 export const CANONICAL_ILLUMINANT = 'D65' as const;

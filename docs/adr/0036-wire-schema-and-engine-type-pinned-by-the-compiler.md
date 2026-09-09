@@ -2,7 +2,15 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-0101](0101-contracts-is-retired-because-it-served-no-boundary.md).** The
+pin described here worked — it fired during F-207, five type errors, before the wire schema was
+updated. It is gone because the artefact it pinned is gone: F-209 measured which trust
+boundaries `@irodora/contracts` served, found none, and retired the package. What replaced the
+pin is having ONE artefact rather than two — `MEASUREMENT_SOURCES` and `COLOR_SPACES` are
+consts with the types derived from them, so there is nothing left to disagree.
+
+The reasoning below is still correct about the situation it was written for, and is worth
+reading before anybody adds a second artefact describing one shape again.
 
 ## Date
 

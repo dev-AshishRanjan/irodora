@@ -21,7 +21,10 @@
  * The cost is real and worth stating: `keyof Provenance` on a union is the **common** keys
  * only, so any check written against `keyof` silently checks less than it looks like it
  * does. The wire-schema pin in `@irodora/contracts` had to be rewritten rather than
- * adjusted for exactly that reason.
+ * adjusted for exactly that reason — and that pin is gone with the package (F-209,
+ * ADR-0101). What replaced it is one artefact instead of two:
+ * [[mutual-assignability-does-not-catch-an-optional-field]] is still the lesson, and the
+ * union below is now data with the type derived from it, so there is nothing left to pin.
  */
 
 import type { ColorSpace } from '@irodora/color-spaces';

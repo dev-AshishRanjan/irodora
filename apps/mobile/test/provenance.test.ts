@@ -17,8 +17,10 @@
  * itself rather than a copy of it.
  *
  * THE OTHER CANDIDATE WAS `measurementSourceSchema.options` FROM `@irodora/contracts`, and
- * the dead-package check refused it, correctly: the app declares that package unused pending
- * F-209, and a test import would have made a true statement about the product false.
+ * the dead-package check refused it, correctly: the app declared that package unused, and a
+ * test import would have made a true statement about the product false. F-209 then retired
+ * the package outright (ADR-0101) — so this const is not merely the better witness, it is
+ * the only one, and this file kept passing across that removal unchanged.
  */
 
 import { readFileSync } from 'node:fs';

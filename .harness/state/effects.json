@@ -4514,10 +4514,6 @@
       "to": [
         {
           "kind": "file",
-          "ref": "packages/contracts/src/color.ts"
-        },
-        {
-          "kind": "file",
           "ref": "packages/optimization/src/coverage.ts"
         },
         {
@@ -4544,12 +4540,11 @@
       "kind": "EFFECT_LINK",
       "scope": [
         "packages/color-core",
-        "packages/contracts",
         "packages/store",
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "A UNION MEMBER REACHES FURTHER THAN THE TYPE, AND EACH REACH IS GUARDED SEPARATELY. The wire enum is pinned to the engine type at compile time by ADR-0036, per member and by discriminant — that pin FIRED during this change, five errors, before the schema was updated, which is the evidence it works rather than a claim that it would. The untracked/captured split is free because `UntrackedSource` is an `Exclude` and not a second list, so `derived` cannot be forgotten onto the side that owes conditions. THREE REACHES ARE NOT FREE and are covered by apps/mobile/test/provenance.test.ts, which is in the app because it is the only place importing the engine, the wire schemas and the store at once: the ADR-0031 copy table has a row for every member and no orphans (it is UNENFORCED, so a missing row would otherwise be silent); `displayFromOklch` reports derived while UNSAFE_HEX_PROVENANCE still reports declared at 0.5, which is the decoy that stops this being a global rename; and the SQL CHECK on saved_color is compared against the union with the allowed set DISCOVERED from the migration SQL. The union is iterated at runtime through measurementSourceSchema.options, which is not a second copy because the ADR-0036 pin is what makes it trustworthy. CRITERION 4 IS CARRIED BY EXISTING CASES rather than restated: wardrobe.test.ts already asserts the write is `estimated` and reads back with its four conditions. WHAT IS NOT GUARDED: the database does not accept `derived` and is deliberately not migrated — see the rationale.",
+      "guard": "A UNION MEMBER REACHES FURTHER THAN THE TYPE, AND EACH REACH IS GUARDED SEPARATELY. The wire enum WAS pinned to the engine type at compile time by ADR-0036, per member and by discriminant, and that pin FIRED during this change — five errors, before the schema was updated. F-209 then retired @irodora/contracts outright (ADR-0101) after measuring that it served no trust boundary, so this leg of the reach no longer exists. It is recorded rather than erased: the pin worked, and what replaced it is stronger — MEASUREMENT_SOURCES is one artefact, so there is nothing left for a second one to drift from. The untracked/captured split is free because `UntrackedSource` is an `Exclude` and not a second list, so `derived` cannot be forgotten onto the side that owes conditions. THREE REACHES ARE NOT FREE and are covered by apps/mobile/test/provenance.test.ts, which is in the app because it is the only place importing the engine, the wire schemas and the store at once: the ADR-0031 copy table has a row for every member and no orphans (it is UNENFORCED, so a missing row would otherwise be silent); `displayFromOklch` reports derived while UNSAFE_HEX_PROVENANCE still reports declared at 0.5, which is the decoy that stops this being a global rename; and the SQL CHECK on saved_color is compared against the union with the allowed set DISCOVERED from the migration SQL. The union is iterated at runtime through measurementSourceSchema.options, which is not a second copy because the ADR-0036 pin is what makes it trustworthy. CRITERION 4 IS CARRIED BY EXISTING CASES rather than restated: wardrobe.test.ts already asserts the write is `estimated` and reads back with its four conditions. WHAT IS NOT GUARDED: the database does not accept `derived` and is deliberately not migrated — see the rationale.",
       "memory": "memory/effects/declared-means-a-person-and-a-computed-colour-was-borrowing-it.md",
       "rationale": "THE MISSING MEMBER DID NOT PRODUCE AN ERROR; IT PRODUCED A NEAREST MEMBER, AND THE NEAREST MEMBER IS A CLAIM. Three surfaces render colours the engine computed — a harmony companion, the centre of a lexicon region, every swatch drawn from a bare OKLCh triple — and all three were filed as `declared`, which means A HUMAN ASSERTED THIS. F-194 recorded the compromise honestly when it made it; the compromise was still the product saying somebody vouched for a number no person had seen. It is not a colour with no provenance, which ADR-0005 makes unrepresentable — it is a colour with somebody else’s, and nothing could fail: `isCaptured` is the only reader of `source` in the repository. THE LINE THE ADR HAD TO DRAW is \"derived from another colour\", NOT \"the result of arithmetic\" — written loosely, a camera capture lands under `derived` within a release. The Lens proves it: `displayFromOklch` reports derived for the swatch, while `colourFromReading` writes estimated with its conditions, because the measurement is the stored row and the swatch is a rendering of it. THE DATABASE IS NOT MIGRATED and that is the decision, not the oversight: `saveColor` has no callers, SQLite cannot alter a CHECK without rebuilding the table, and rebuilding one that holds user data for a value nothing produces is speculative work against the thing that must not break. A test pins the gap so the day a screen saves a computed colour it fails by name with the migration named as the work, rather than on a device as a constraint error.",
       "confidence": 0.9,
@@ -4597,6 +4592,60 @@
       "guard": "THE FOUR AXIS NAMES ARE PINNED IN BOTH DIRECTIONS, and the exclusion they buy is why that is not optional. `Wear` builds `alt.<axis>` from the alternative, so no literal exists for i18n.test.ts's unused-key scan to find, and the keys have to be excluded from it — an exclusion pinned one way would let the engine offer an axis with no words, or leave words for an axis it no longer offers. `ALTERNATIVE_MESSAGE_KEYS` is DERIVED from `ALTERNATIVE_AXES` rather than listed beside it, the same mechanism as COMBINATION_MESSAGE_KEYS and OUTFIT_MESSAGE_KEYS. A DECOY asserts the `alt.` prefix carries no screen copy, so the reverse pin needs no segment-count partition — true by construction rather than by luck, which is what the `outfit.` and `against.` partitions had to be built for. THE SCREEN SIDE IS A BIJECTION: the test counts drawn labels against `wearWith`'s own answer, so a corpus that starts starving an axis moves both sides together. CRITERION 2 IS CITED, NOT RESTATED: the omission is a property of the engine and is exercised in packages/recommendation/test/outfit.test.ts — \"OMITS an axis with no candidate rather than filling it\" — with a pool of two near-identical off-whites. WHAT IS NOT GUARDED: that citation is prose, and nothing links it to the test it names. And no gate here sees layout, so whether the section reads as a second ranking is unchecked.",
       "memory": "memory/effects/the-half-you-own-is-a-bijection-and-the-other-half-is-a-citation.md",
       "rationale": "THE ALTERNATIVES ARE A FIELD ON A REACHABLE OBJECT, WHICH IS WHY TWO GATES MISSED THEM. R7 added `verify-dead-exports` and `verify-reachability` for work built and never wired, and both look for a SYMBOL nobody imports. `OutfitRecommendation.alternatives` reached `Wear.tsx` on every render and `Wear.tsx` rendered `rec.ranked`. Nothing in this repository sees a property nobody reads. THE ENGINE HALF WAS ALREADY FINISHED and deliberately untouched — F-195 filed this rather than absorbing it, because widening a claimed feature to cover work its criteria never asked for is how scope stops meaning anything. THE AXIS IS RENDERED IN WORDS because a swatch cannot say \"warmer\": ADR-0076 had that argument at the engine level when a grey at 66 degrees was offered as the warm one, and the same reasoning is what ACCESSIBILITY.md means by never making colour the only channel. AN ALTERNATIVE ALREADY IN THE LIST ABOVE IS NOT A DUPLICATE: the label is the content, and it can equally be a colour the list never reached, since the engine searches all 64 shortlisted candidates while the screen shows six.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-119",
+      "from": {
+        "kind": "file",
+        "ref": "docs/adr/0101-contracts-is-retired-because-it-served-no-boundary.md"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "eslint.config.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-guards.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/color-spaces/src/types.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/package.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/unused-packages.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        },
+        {
+          "kind": "gate",
+          "ref": "build"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages/color-spaces",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "A SUBTRACTION IS GUARDED BY A NUMBER THAT HAS TO MOVE. Six boundary guards went with the package, and a guard suite that quietly checks less is the failure mode of a removal like this — so verify-guards prints its count on every run and the count DROPPED, 26 to 20. The dead-package declaration is empty and verify-dead-exports still reports 17 workspace projects all imported by something, so the empty list is a result rather than a check looking at nothing. WHAT REPLACED THE ADR-0036 PIN is having one artefact instead of two: `COLOR_SPACES` is a const with `ColorSpace` derived from it, the shape F-207 gave `MEASUREMENT_SOURCES`. The pin protected two artefacts from disagreeing; one artefact cannot, and the const is iterable, which the union never was — which is what provenance.test.ts needed. That test passed across the removal unchanged, and that is the evidence the witness never needed the wire. GATES CAUGHT TWO THINGS REVIEW DID NOT: gate 0 refused an effect link naming a file that had just been deleted (E-117 lost its wire leg, amended rather than erased), and it refused an ACCEPTED ADR speaking retired vocabulary — the retired-surface record for the API description had also been citing the deleted package as its evidence. WHAT IS NOT GUARDED: nothing now checks that a future second artefact describing one shape gets pinned. The guards that said so were written for this package; ADR-0036 stays readable as the record of why that mattered.",
+      "memory": "memory/effects/a-pin-around-an-empty-room.md",
+      "rationale": "THE PACKAGE WAS COMPLETE, TESTED, AND GUARDING NOTHING — which is why nothing could see it. Its docblock claimed four local trust boundaries after ADR-0051 removed the server tier it was built for, and F-209 was the first time anybody measured the claim: the backup is parsed by `parseArchive`, the corpus by `parseEntry` and the digests, the frame by color-sampling — all hand-written, all producing the error paths our gates report — and the SQLite row, described most confidently as \"parsed, never cast\", is CAST: `Driver.query<T>` returns `T[]` with T supplied by the caller. Not one boundary imported the package. ITS ONE LIVE FUNCTION WAS A COMPILE-TIME PIN, and it worked — it fired during F-207, five errors. But it pinned schemas that validate nothing, describing a wire that no longer exists: the schema existed to be pinned, and the pin existed to protect the schema. A closed loop passes every check it sets itself. THE TELL HAD FIRED TWICE: the dead-package declaration named a closing feature twice — F-196, then F-207 — and was wrong both times, each time because the named boundary already had a parser and adding a schema beside it would have been two parsers for one shape. NFR-26 says the exception expires with the feature it names; it expired twice. errors.ts settled it: 105 lines of HTTP status codes, seven members already recorded unreachable since ADR-0051, imported by nothing.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

@@ -1,7 +1,7 @@
 {
   "$comment": "Vocabulary that describes systems this product no longer has. Gate 0 fails on a criterion or a PRD verification column that uses one. GATE IDS ARE NOT LISTED HERE — they are derived from gates.json, so retiring a gate needs no edit to this file. This list exists only for words that are not symbols anywhere: 'tenant' cannot be derived from anything. Every entry cites the record that retired it, and the citation is printed on a failure, so an entry nobody can justify shows up as an entry with a weak one.",
   "version": 1,
-  "updated": "2026-09-01",
+  "updated": "2026-09-09",
   "terms": [
     {
       "pattern": "\\bPOST /|\\bGET /|\\bDELETE /|\\bPUT /|\\bPATCH /",
@@ -37,7 +37,7 @@
       "pattern": "\\bOpenAPI\\b",
       "name": "the generated OpenAPI document",
       "retiredBy": "ADR-0051",
-      "why": "packages/contracts records the OpenAPI leg as removed; there is no contract to generate."
+      "why": "The API description leg went with the server tier; there is no contract to generate. The package that used to record this, @irodora/contracts, was itself retired by ADR-0101 for serving no remaining trust boundary — so this entry now stands on ADR-0051 alone, which is where the decision always lived."
     },
     {
       "pattern": "\\bAccept-Language\\b",

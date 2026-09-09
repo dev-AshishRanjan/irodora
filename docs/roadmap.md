@@ -24,7 +24,7 @@ features already depend on it.
 | **Exit** | `pnpm typecheck lint format:check test build` all green on an empty workspace · CI runs every active gate · the stack boots on a real VPS through Coolify **and** through Dokploy · `verify-state` green |
 
 - **F-001** Monorepo toolchain scaffold — pnpm, Turborepo, TypeScript project references, package boundaries lint-enforced
-- **F-002** `@irodora/contracts` — shared schemas and types, the single source of truth for every wire format
+- **F-002** `@irodora/contracts` — shared schemas and types, the single source of truth for every wire format. **Retired by F-209** (ADR-0101): the wire retired with the server tier, and the package served no remaining trust boundary
 - **F-003** `@irodora/design-tokens` — OKLCH-native tokens with a machine-readable manifest the contrast gate reads
 - **F-004** CI/CD — GitHub Actions mirroring `gates.json` exactly, with the mirror itself checked
 - **F-005** Deployment profiles — Dockerfiles, production compose, Coolify and Dokploy runbooks, Terraform skeleton

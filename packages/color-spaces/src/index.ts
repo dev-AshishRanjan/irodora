@@ -12,6 +12,7 @@
 
 export {
   CANONICAL_ILLUMINANT,
+  COLOR_SPACES,
   type ColorSpace,
   type Lab,
   type LCh,

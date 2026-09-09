@@ -59,7 +59,7 @@ Two rules that matter more than the format:
 | [0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md) | We own the token layer; primitives stay headless; Astryx is not adopted | Accepted |
 | [0034](0034-base-ui-over-radix-for-headless-primitives.md) | Base UI, not Radix, for headless primitives | Superseded by ADR-0054 |
 | [0035](0035-typescript-6-not-7-until-type-aware-linting-catches-up.md) | TypeScript 6, not 7, until type-aware linting catches up | Accepted |
-| [0036](0036-wire-schema-and-engine-type-pinned-by-the-compiler.md) | The wire schema and the engine type are two artefacts, pinned by the compiler | Accepted |
+| [0036](0036-wire-schema-and-engine-type-pinned-by-the-compiler.md) | The wire schema and the engine type are two artefacts, pinned by the compiler | Superseded by ADR-0101 |
 | [0037](0037-design-tokens-wait-for-the-engine-r0-closes-incomplete.md) | The design token package waits for the colour engine; R0 closes incomplete | Accepted |
 | [0038](0038-every-acceptance-criterion-names-its-check.md) | Every acceptance criterion names its check; external verification is attested, not gated | Accepted |
 | [0039](0039-oklab-is-derived-through-xyz-not-from-srgb-directly.md) | OKLab is derived through XYZ, and that costs 0.047 ΔE00 against every other implementation | Superseded by 0040 |
@@ -116,6 +116,7 @@ Two rules that matter more than the format:
 | [0098](0098-the-status-triple-moves-together-because-cvd-separation-not-contrast-is-what-binds-it.md) | The status triple moves together, because CVD separation and not contrast is what binds it | Accepted |
 | [0099](0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) | The ground lifts off near-black, and the product gets one accent | Accepted |
 | [0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md) | A computed colour is `derived`, and `declared` goes back to meaning a person | Accepted |
+| [0101](0101-contracts-is-retired-because-it-served-no-boundary.md) | `@irodora/contracts` is retired, because it served no boundary | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |
