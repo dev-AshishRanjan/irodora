@@ -19980,3 +19980,82 @@ run nothing is the failing-open shape `e2e-scope.mjs` exists to refuse. Criterio
 **attested**: the mechanism is gated, the journey is not.
 
 ---
+
+## F-200 — A colour can be a target
+
+Reported as *"scan a colour and check its similarity/difference against a target colour."* This
+is the **target** half. F-201 is the Lens answering against it, and **nothing here computes a
+difference**.
+
+### The shape was the whole decision
+
+`lens/handoff.ts` is module state with **no subscribers**, deliberately — *"a mailbox: two
+functions, one slot, no subscribers, and nothing re-renders when it changes"*. It was sitting
+right there, and copying it would have been wrong on both axes:
+
+| | mailbox | target |
+|---|---|---|
+| read by | one screen | **every** screen — criterion 1 |
+| on read | **consumed** | held — criterion 2 |
+
+A mailbox-shaped target would have vanished the moment something looked at it.
+
+So it is a **context** — the second in this app — following `appearance.tsx`, which is the first
+and states its own reason. And the rule that makes a context safe here is kept: **screens take
+props, the route reads the hook.** A screen reaching for the hook would throw in the conformance
+suite, which is where the accessibility guarantees are actually checked. `Chrome` reads it
+directly and is allowed to, because it is the root chrome rather than a screen.
+
+**Deliberately not persisted**, unlike the appearance: a target is something somebody is doing
+*now*, and one that survived a restart would be a comparison nobody remembered arming.
+
+### Any colour, including one with no name
+
+A target carries the hex, the OKLCh and the `Color` with its provenance — plus `slug: string |
+null`, because a generated companion has neither a slug nor a name. **That is not a restriction
+here**: a target is something to compare *against* rather than something to store, so a colour
+whose only provenance is *this engine computed it* is a legitimate one. The same distinction
+F-199 drew for the wardrobe offer, pointed the other way.
+
+Armed from a colour page, or by tapping a generated companion — a swatch that was already the
+right-sized control and had no action.
+
+### Visible wherever it is armed
+
+A bar above the router, rendered by the root layout. A bar each screen had to remember to draw
+would be missing from the next one somebody writes. It carries its own way out, because a person
+who armed a colour four screens ago should not have to find that screen again to stop.
+
+**Registered as a conformance subject even though it is not a screen** — it renders above every
+screen, and a surface the suite never saw would be the one piece of persistent UI whose contrast
+and announcement nothing had checked.
+
+### The decoys
+
+- **Disarm returns `null`**, not the previous target — a disarm that merely stopped rendering
+  the bar would leave every arming assertion passing.
+- **A fresh provider starts empty** — otherwise "it survived a re-render" could pass on a
+  module-level value shared between tests, which is a target outliving the *session*.
+- **`useTarget` throws outside a provider**, rather than returning a null-ish default that would
+  make the provider optional in a way nobody notices is missing.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build · content — **PASS**. 924
+mobile tests over 42 suites.
+
+**A gate caught a real one:** `target.armed.short` was a key I added speculatively and never
+rendered. An unused key is a string nobody removed, and it is the shape a copy-paste placeholder
+hides in.
+
+### Effects
+
+**E-106** — the second context in this app. Not guarded: that a *real* navigation preserves the
+target. The test re-renders with a different subtree, which is as close as a unit test gets; the
+actual route change belongs to the e2e gate, and that gate is pending.
+
+### Attested, not asserted
+
+Nobody has looked at the bar, or judged what it costs in vertical space on a small screen.
+
+---

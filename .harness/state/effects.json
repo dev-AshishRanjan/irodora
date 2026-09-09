@@ -4041,6 +4041,54 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-106",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/target.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/TargetBar.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Combinations.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/target.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE SECOND CONTEXT IN THIS APP, AND THE RULE THAT MAKES CONTEXTS SAFE HERE IS KEPT: screens take props and the ROUTE reads the hook, so every screen with an arming affordance is still renderable by the conformance suite without a provider. `Chrome` reads the hook directly and is allowed to, because it is the root chrome rather than a screen. `useTarget` THROWS outside a provider rather than returning a null-ish default — a screen silently behaving as though nothing were armed is indistinguishable from a disarmed target, which is the failure this feature exists against. The disarm has its own decoy: the value must come back `null`, because a disarm that merely stopped rendering the bar would leave every arming assertion passing. THE BAR IS A REGISTERED CONFORMANCE SUBJECT even though it is not a screen — it renders above every screen while a target is armed, and a surface the suite never saw would be the one piece of persistent UI whose contrast and announcement nothing had checked. WHAT IS NOT GUARDED: that a real navigation preserves it. The test re-renders the provider with a different subtree, which is the closest a unit test gets; an actual route change is the e2e gate’s, and that gate is pending.",
+      "memory": "memory/effects/a-mailbox-and-a-target-are-opposite-shapes.md",
+      "rationale": "REPORTED AS *\"scan a colour and check its similarity/difference against a target colour\"*. This is the target half; F-201 is the Lens answering against it, and nothing here computes a difference. THE SHAPE WAS THE DECISION. `lens/handoff.ts` is module state with NO subscribers, deliberately — a one-shot mailbox that exactly one screen collects. A target is the opposite on both axes: it is read everywhere, so surfaces must re-render when it changes, and it must NOT be consumed by the first reader. Copying the mailbox would have produced a target that vanished the moment something looked at it. So it is a context — the second in this app — and it follows `appearance.tsx`, which is the first and states its own reason: written from a screen several routes down, read at the root, with expo-router owning everything between. IT IS DELIBERATELY NOT PERSISTED, unlike the appearance: a target is something somebody is doing now, and one that survived a restart would be a comparison nobody remembered arming.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

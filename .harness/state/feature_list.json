@@ -6448,7 +6448,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-184"
       ],
@@ -6464,7 +6464,8 @@
         "test",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-200-a-colour-can-be-a-target.md"
     },
     {
       "id": "F-201",

@@ -529,6 +529,10 @@ export const ja: Record<MessageKey, string> = {
   'wear.shopFor': 'この色を探す',
   'wear.addToWardrobe': '持ち物に追加',
   'wear.openColour': 'この色を開く',
+  // F-200 — see en.ts: the bar names the activity, not the noun.
+  'target.armed': '比較対象',
+  'target.disarm': '比較をやめる',
+  'target.arm': 'この色と比べる',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

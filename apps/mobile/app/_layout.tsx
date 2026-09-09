@@ -10,6 +10,8 @@ import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { deviceRepository } from '../src/store/repository';
 import { Launch } from '../src/launch';
+import { TargetProvider, useTarget } from '../src/target';
+import { TargetBar } from '../src/TargetBar';
 
 /*
  * THE CSPRNG, INSTALLED BEFORE ANY SCREEN RENDERS (F-104).
@@ -64,8 +66,21 @@ void SplashScreen.preventAutoHideAsync();
  */
 function Chrome(): React.JSX.Element {
   const { mode, colors } = useTheme();
+  /*
+   * THE TARGET BAR, ABOVE THE ROUTER (F-200).
+   *
+   * "Visible wherever it is armed" means every screen, and a bar each screen had to remember to
+   * draw would be missing from the next one somebody writes. Here it costs every screen nothing
+   * and cannot be forgotten.
+   *
+   * Read with the hook rather than passed as a prop because this component IS the root chrome —
+   * the rule that screens take props exists so the conformance suite can render them without a
+   * provider, and this is not a screen.
+   */
+  const { target, disarm } = useTarget();
   return (
     <>
+      {target === null ? null : <TargetBar target={target} onDisarm={disarm} />}
       {/*
         THE MODE, NOT THE NAME (F-153). This read `name === 'dark'`, which was the same
         question while there were two palettes called `light` and `dark`. There are eight now,
@@ -127,7 +142,14 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
 
   return (
     <ThemeProvider appearance={appearance} {...(palette === undefined ? {} : { palette })}>
-      <Chrome />
+      {/*
+        THE TARGET LIVES INSIDE THE THEME (F-200), because the bar paints tokens. Outside the
+        provider it would have no theme to read and would have to invent one — the "a colour
+        nobody chose" hazard every surface in this product refuses.
+      */}
+      <TargetProvider>
+        <Chrome />
+      </TargetProvider>
       {/*
         THE LAUNCH OVERLAY LIVES INSIDE THE THEME (F-190), because it paints `background` and
         draws the mark in `foreground` — the same two tokens the native splash was composited

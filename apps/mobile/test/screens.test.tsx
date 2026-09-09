@@ -48,6 +48,7 @@ import { ColourDetail, type DerivedPanel } from '../src/screens/ColourDetail';
 import { Compare } from '../src/screens/Compare';
 import { Combinations } from '../src/screens/Combinations';
 import { Wear } from '../src/screens/Wear';
+import { TargetBar } from '../src/TargetBar';
 import type { PersonalProfile } from '@irodora/recommendation';
 import { combinationsFor } from '../src/combinations';
 import { allCombinations } from '../src/corpus';
@@ -909,6 +910,7 @@ const SCREENS: readonly ConformanceSubject[] = [
           slug={WITH_COMPLEMENT.entry.slug}
           onCompareWith={() => undefined}
           onOpenCombinations={() => undefined}
+          onArmTarget={() => undefined}
         />,
         theme,
       ),
@@ -1064,6 +1066,35 @@ const SCREENS: readonly ConformanceSubject[] = [
     render: (_state, theme) =>
       draw(
         <Wear slug={BOTH_COST_BRANCHES.entry.slug} profile={WEARER} initialSlot="trouser" />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE TARGET BAR (F-200). Not a screen — it is the root chrome, and it is registered here
+     * because it renders above EVERY screen while a target is armed. A surface the conformance
+     * suite never saw would be the one piece of persistent UI whose contrast and announcement
+     * nothing had checked.
+     */
+    name: 'screens/TargetBar',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <TargetBar
+          target={{
+            hex: BOTH_COST_BRANCHES.derived.hex,
+            oklch: [
+              BOTH_COST_BRANCHES.derived.oklch[0],
+              BOTH_COST_BRANCHES.derived.oklch[1],
+              BOTH_COST_BRANCHES.derived.oklch[2],
+            ],
+            color: colorFor(BOTH_COST_BRANCHES.entry),
+            label: BOTH_COST_BRANCHES.entry.name.en,
+            slug: BOTH_COST_BRANCHES.entry.slug,
+          }}
+          onDisarm={() => undefined}
+        />,
         theme,
       ),
   },

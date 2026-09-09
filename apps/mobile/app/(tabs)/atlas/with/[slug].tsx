@@ -5,6 +5,8 @@ import { activeProfile, toWorking } from '../../../../src/profile/store';
 import { engineProfile } from '../../../../src/outfit/builder';
 import { deviceRepository } from '../../../../src/store/repository';
 import { ruleSet } from '../../../../src/rules';
+import { useTarget } from '../../../../src/target';
+import { displayFromOklch } from '../../../../src/engine';
 
 /**
  * What goes with a colour. Navigation options and the parameter, and nothing else.
@@ -20,6 +22,7 @@ import { ruleSet } from '../../../../src/rules';
 export default function CombinationsRoute(): React.JSX.Element {
   const router = useRouter();
   const repo = deviceRepository();
+  const { arm } = useTarget();
   const stored = activeProfile(repo);
   // Narrowed once per stored profile: `engineProfile` is a pure narrowing of an immutable row.
   const profile = useMemo(
@@ -40,6 +43,23 @@ export default function CombinationsRoute(): React.JSX.Element {
           router.push(`/atlas/${s}`);
         }}
         // The other question: a slot, and a ranking for the rest (F-195).
+        /*
+          A GENERATED COLOUR CAN BE A TARGET, and it carries no slug because it has none. The
+          Color comes from `displayFromOklch` — the same helper the swatch was drawn with — so
+          the target's provenance is the one the engine actually produced.
+        */
+        onArmCompanion={(colour) => {
+          const shown = displayFromOklch([colour.oklch[0], colour.oklch[1], colour.oklch[2]]);
+          arm({
+            hex: shown.hex,
+            oklch: colour.oklch,
+            color: shown.color,
+            // Named by its value, because it has no other name — the rule this screen already
+            // follows for every generated companion.
+            label: shown.hex,
+            slug: null,
+          });
+        }}
         onWearIt={(s) => {
           router.push(`/atlas/wear/${s}`);
         }}

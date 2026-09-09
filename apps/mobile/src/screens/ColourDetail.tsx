@@ -167,6 +167,14 @@ export interface ColourDetailProps {
    */
   readonly onOpenCombinations?: ((slug: string) => void) | undefined;
   /**
+   * Make this colour the one being compared against (F-200).
+   *
+   * The route supplies it and reads the context, for the reason every port here is a prop: a
+   * screen calling `useTarget` itself would throw in the conformance suite, which is where the
+   * accessibility guarantees are actually checked.
+   */
+  readonly onArmTarget?: ((slug: string) => void) | undefined;
+  /**
    * Which derived panel opens first.
    *
    * Injected the way `PaletteStudio` takes `initialDraft` and `Preferences` takes
@@ -196,6 +204,7 @@ export function ColourDetail({
   onOpenCard,
   onCompareWith,
   onOpenCombinations,
+  onArmTarget,
   initialPanel = 'harmony',
   initialSections = DETAIL_SECTIONS,
 }: ColourDetailProps): React.JSX.Element {
@@ -701,6 +710,22 @@ export function ColourDetail({
           words, and this is that entry point. Opening it empty would make a person choose two
           colours before the screen said anything, when they arrived here already holding one.
         */}
+        {/*
+          COMPARE A READING AGAINST THIS ONE (F-200). Placed with the other things you can do
+          WITH a colour rather than beside the coordinates, because arming a target is an
+          activity — the bar that appears is what says it started.
+        */}
+        {onArmTarget === undefined ? null : (
+          <Button
+            label={t('target.arm')}
+            variant="secondary"
+            onPress={() => {
+              onArmTarget(slug);
+            }}
+            script={script}
+          />
+        )}
+
         {/*
           WHAT GOES WITH THIS (F-194). The `harmony` panel above shows one relationship for this
           colour; this opens the rest. Placed after compare because it is the same shape of

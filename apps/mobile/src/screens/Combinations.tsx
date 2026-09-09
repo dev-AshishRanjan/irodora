@@ -108,6 +108,20 @@ export interface CombinationsProps {
    * division `Wear` and `Shopping` already keep.
    */
   readonly rules?: RuleSet;
+  /**
+   * Make a generated companion the colour being compared against (F-200).
+   *
+   * Takes the hex and the OKLCh rather than a slug, because a companion HAS no slug — it is a
+   * coordinate the engine produced. A target is something to compare against rather than
+   * something to store, so a colour whose only provenance is *this engine computed it* is a
+   * legitimate one.
+   */
+  readonly onArmCompanion?:
+    | ((colour: {
+        readonly hex: string;
+        readonly oklch: readonly [number, number, number];
+      }) => void)
+    | undefined;
 }
 
 /** The size a proposed colour is drawn at. Large enough to judge, small enough to fit a row. */
@@ -138,6 +152,7 @@ export function Combinations({
   onWearIt,
   profile = null,
   rules,
+  onArmCompanion,
 }: CombinationsProps): React.JSX.Element {
   const { t, script } = useMessages();
 
@@ -313,6 +328,21 @@ export function Combinations({
                 color={shown.color}
                 size={COMPANION}
                 script={script}
+                {...(onArmCompanion === undefined
+                  ? {}
+                  : {
+                      /*
+                        A TAP ARMS IT (F-200). The swatch is already the target-sized control on
+                        this screen and it had no action; giving it one costs no layout and no
+                        extra reading order. The bar that appears is what says it worked.
+                      */
+                      onPress: () => {
+                        onArmCompanion({
+                          hex: shown.hex,
+                          oklch: [c.oklch[0], c.oklch[1], c.oklch[2]],
+                        });
+                      },
+                    })}
               />
             );
           })}

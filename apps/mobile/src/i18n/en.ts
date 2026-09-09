@@ -630,6 +630,16 @@ export const en = {
   'wear.shopFor': 'Shop for this',
   'wear.addToWardrobe': 'Add to wardrobe',
   'wear.openColour': 'Open this colour',
+  /*
+   * F-200 — THE TARGET.
+   *
+   * "Comparing against" rather than "target colour": the bar says what the product is DOING,
+   * which is the thing a person needs to recognise from four screens away. The verb is also
+   * what makes the disarm control read as the end of an activity rather than as a delete.
+   */
+  'target.armed': 'Comparing against',
+  'target.disarm': 'Stop comparing',
+  'target.arm': 'Compare against this',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',
