@@ -4355,6 +4355,43 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-113",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/motion.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/layout.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Atlas.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/layout.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE ASSERTION IS THE STYLE, NOT THE ROWS, and that distinction is the whole lesson: a row count passed for the entire time the Atlas was blank. Three assertions — a non-scrolling Screen's wrapper carries `flex: 1`; a scrolling one does NOT (the decoy, because adding flex everywhere would fix the Atlas and stretch the other eighteen screens); and `fill` adds exactly one key and removes none, compared as a KEY SET because the animated half is a reanimated object carrying React fibers. WHAT IS STILL NOT GUARDED, and it is the thing that let this ship: **jest has no layout engine.** A `FlatList` with zero height renders all 120 rows into a test tree, the conformance suite is happy, the a11y gate is happy, and F-204’s sweep reports zero findings over 72 subjects in 8 conditions. Nothing in this repository can see a broken flex chain; only a device can.",
+      "memory": "memory/effects/a-test-tree-has-no-height.md",
+      "rationale": "REPORTED FROM A RUNNING APP: *\"the Colour atlas is empty.\"* CAUSED BY F-188, which wrapped `Screen`'s content in `<Appear>` so every screen would gain an entrance. `Appear` renders an `Animated.View` styled with `opacity` and `translateY` and nothing else — no flex. For `scroll={true}` that is harmless because a ScrollView sizes its content; for `scroll={false}` it breaks the chain, and the Atlas is the only screen using it. Its `FlatList` asks for `flex: 1` of a parent with no height, collapses to zero, and the screen renders nothing. THE ATLAS HAD ALREADY WRITTEN DOWN THIS EXACT HAZARD: *\"what would reproduce F-104 is turning scrolling off here and NOT giving the list the height to scroll in, which is why the list carries `flex: 1` rather than inheriting a size.\"* The list kept its half of that bargain; the ancestor stopped keeping its, three features later, in a different package. THE FIX IS A NAMED CAPABILITY RATHER THAN A STYLE PROP: `Appear` refuses `style` deliberately — *\"an allow-list cannot be enforced at a call site that can pass anything\"* — so `fill` is a boolean with one meaning, and a caller still cannot reach a colour through it.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

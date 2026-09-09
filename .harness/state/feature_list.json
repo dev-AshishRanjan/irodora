@@ -5509,7 +5509,8 @@
           "criterion": "The mark says something about colour, and reads at 16px as well as on a splash",
           "verifiedBy": "THE ARITHMETIC IS PROVEN AND THE READING IS NOT — for the third mark running. Both gaps are equal to ten decimal places by construction, the narrowest feature clears the 16px floor, the six discs sit inside the grid, and the anti-aliased edges are sampled rather than snapped. WHAT NOBODY HAS DONE IS LOOK AT IT ON A HOME SCREEN, and two marks have now been rejected at exactly that step — which is the strongest possible evidence that this criterion is the one that matters and the one no gate here can discharge. The icon was sent to the reporter directly rather than waiting for a build, which is the closest this repository can get.",
           "blocks": "release",
-          "status": "outstanding"
+          "status": "verified",
+          "evidence": "Reported by the user on 2026-09-09, having looked at the icon on a home screen: \"The icon on home screen looks good.\" This is the third mark and the first to survive that step — the two before it were rejected at exactly this point, which is why F-192 was BLOCKED on this attestation rather than drawing a fourth. The other criterion on this feature (gate 16 against a built APK) is separate and remains outstanding."
         },
         {
           "criterion": "Gate 16 still reads it out of the built artefact",
@@ -6814,6 +6815,93 @@
         "contrast"
       ],
       "notes": "SPLIT OUT OF F-203 RATHER THAN DONE BLIND. `Card` supplies its own padding defaults, so a Surface→Card conversion changes spacing unless each site is checked — nine surfaces, on a workstation with no device, in a feature whose other half was already a twelve-site layout refactor. Golden rule 6 is that the build stays green between increments, and stacking two unverifiable visual changes into one feature is how a regression arrives with nothing to bisect. The sites are known: Wardrobe's filter panel, ProfileSetup's dimension block, and the empty states in Atlas and Lens."
+    },
+    {
+      "id": "F-211",
+      "title": "The Atlas is empty, because a screen that does not scroll has no height to fill",
+      "requirements": [
+        "FR-20",
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/ui",
+      "release": "R8",
+      "priority": "must",
+      "status": "done",
+      "acceptance": [
+        "A Screen with scroll={false} gives its content a box with height, so a child asking for flex:1 gets one",
+        "The Atlas lists the corpus again, and a test asserts the flex chain rather than the rendered rows — a row count passes today",
+        "Every other screen is unaffected, asserted rather than assumed"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "build"
+      ],
+      "notes": "REPORTED FROM A RUNNING APP: \"the Colour atlas is empty\". CAUSED BY F-188, which wrapped `Screen`'s content in `<Appear>` to give every screen an entrance. `Appear` renders an `Animated.View` whose style is `{opacity, transform}` and nothing else — no `flex`. For `scroll={true}` that is harmless, because a ScrollView sizes its content. For `scroll={false}` it is fatal: the Atlas is the only screen using it, its `FlatList` carries `flex: 1`, and its parent now has no height for that to be 100% OF. The list collapses to zero and the screen renders nothing. INVISIBLE TO EVERY GATE because jest has no layout engine — the conformance suite renders all 120 rows happily. The Atlas's own docblock names this exact hazard for F-104: *\"what would reproduce F-104 is turning scrolling off here and NOT giving the list the height to scroll in\"*. The list did its half; the ancestor stopped doing its half.",
+      "plan": "plans/F-211-a-screen-that-does-not-scroll-has-no-height.md",
+      "attested": [
+        {
+          "criterion": "The Atlas lists the corpus again, and a test asserts the flex chain rather than the rendered rows — a row count passes today",
+          "verifiedBy": "The chain is asserted structurally and both directions are covered, including the decoy that a scrolling screen must NOT fill. What is NOT verified is that the Atlas lists the corpus ON A DEVICE: jest has no layout engine, a zero-height FlatList renders all 120 rows into a test tree, and that is precisely why this shipped. The reporter saw it empty; only the reporter can see it full.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
+    },
+    {
+      "id": "F-212",
+      "title": "The token-reach proof rotted the same way twice, and CI is red",
+      "requirements": [
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R8",
+      "priority": "must",
+      "status": "backlog",
+      "acceptance": [
+        "The proof plants against every file that resolves through the map, discovered at runtime rather than named",
+        "Both halves still discriminate: the token stays unnamed while the map survives anywhere, and is named when the last path goes",
+        "The case cannot rot again the next time a component starts reading the map — asserted by a case that would have caught F-184"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "test",
+        "a11y"
+      ],
+      "notes": "CI RED AT GATE 8, reported by the user. The failing case is \"removing the map a component resolves through names its values\". THE PROOF RECORDS ITSELF ROTTING ONCE ALREADY: F-143 and F-145 gave `surface.1` literal readers, *\"the case stopped discriminating, and CI was red for every push afterwards\"*. It was rebuilt as two halves to survive new LITERAL readers — and has now rotted on the other axis, which that rebuild did not consider: `MAP_FILE` names `Surface.tsx` alone, and F-184 gave `Card.tsx` its own direct import of `nativeElevation`. Removing the map from one file no longer removes every path, so the token stays reached and the discrimination half fails. The spacing case one screen down already learned the general fix — *\"picking the most-read step from the tree means the next conversion cannot rot it again\"* — and the colour case never got it."
+    },
+    {
+      "id": "F-213",
+      "title": "Nothing in this repository can see a broken flex chain",
+      "requirements": [
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R8",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-211"
+      ],
+      "acceptance": [
+        "A component asking for flex:1 inside an ancestor with no height is reported, for every registered conformance subject",
+        "The check states what it cannot see — it is a static reading of a tree, not a layout engine",
+        "It would have caught F-211, asserted by planting that exact shape and watching it fire"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "F-211 SHIPPED A BLANK SCREEN PAST EVERY GATE IN THIS REPOSITORY, including a conformance sweep over 72 subjects in 8 conditions that reported zero findings. jest has no layout engine: a FlatList with zero height renders all 120 rows into a test tree and every assertion about them passes. A STATIC READING MIGHT STILL CATCH THE COMMON SHAPE — a node with `flex: 1` whose ancestors up to the screen root include one with neither a flex nor a height — and that is worth trying, with its limits stated, because the alternative is that the next one is also found by a person opening the app. Filed rather than attempted inside F-211: a fix and a new gate in one feature is how a regression arrives with nothing to bisect."
     }
   ]
 }

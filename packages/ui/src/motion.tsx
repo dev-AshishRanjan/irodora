@@ -187,6 +187,22 @@ export interface AppearProps {
    * pass a number off the scale, and then the scale is decorative.
    */
   readonly index?: number;
+  /**
+   * Fill the parent rather than sizing to the content (F-211).
+   *
+   * **A named capability, not an escape hatch.** This component refuses a `style` prop on
+   * purpose — *"an allow-list cannot be enforced at a call site that can pass anything"* — so
+   * the one layout fact a caller may state is stated as a boolean with one meaning. It adds
+   * `flex: 1` and nothing else; a caller still cannot reach a colour.
+   *
+   * **Why it exists.** `Screen` wraps its content in this so every screen gains an entrance
+   * (F-188), and the wrapper's style was `{opacity, transform}` — no flex. For `scroll={true}`
+   * that is harmless, because a `ScrollView` sizes its content. For `scroll={false}` it broke
+   * the flex chain: the Atlas's `FlatList` asks for `flex: 1` of a parent with **no height**,
+   * collapses to zero, and the screen renders nothing. Reported as *"the Colour atlas is
+   * empty"*, and invisible to every gate because jest has no layout engine.
+   */
+  readonly fill?: boolean;
   readonly testID?: string;
 }
 
@@ -215,7 +231,12 @@ export interface AppearProps {
  * always `false`, so seeding from it would add a line no test could observe. An unverified
  * line that removes 16ms is a worse trade than a verified one that does not.
  */
-export function Appear({ children, index = 0, testID }: AppearProps): React.JSX.Element {
+export function Appear({
+  children,
+  index = 0,
+  fill = false,
+  testID,
+}: AppearProps): React.JSX.Element {
   const { reduced, timing } = useMotion();
   const progress = useSharedValue(reduced ? 1 : 0);
 
@@ -242,8 +263,16 @@ export function Appear({ children, index = 0, testID }: AppearProps): React.JSX.
     transform: [{ translateY: (1 - progress.value) * RISE }],
   }));
 
+  /*
+   * THE FLEX IS OUTSIDE THE ANIMATED STYLE, deliberately.
+   *
+   * `useAnimatedStyle` runs on the UI thread every frame; a constant belongs in the static
+   * style beside it rather than in a worklet that recomputes it. It is also why `fill` cannot
+   * be animated, which is the correct constraint — a layout property is not something this
+   * component animates (`verify-motion` refuses that shape anyway).
+   */
   return (
-    <Animated.View testID={testID} style={style}>
+    <Animated.View testID={testID} style={[fill ? { flex: 1 } : null, style]}>
       {children}
     </Animated.View>
   );

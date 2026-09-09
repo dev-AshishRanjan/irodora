@@ -17,6 +17,7 @@
  */
 
 import { render } from '@testing-library/react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { Row, Screen, Section, Stack, Surface, Text, ThemeProvider } from '../src/index.js';
@@ -331,5 +332,71 @@ describe('the values the workarounds proved were missing', () => {
       </Stack>,
     );
     expect(styleOf(tree, 's')['paddingVertical']).toBe(nativeSpacing.xs);
+  });
+});
+
+/**
+ * A SCREEN THAT DOES NOT SCROLL GIVES ITS CONTENT HEIGHT (F-211).
+ *
+ * Reported from a running app as *"the Colour atlas is empty"*. F-188 wrapped `Screen`'s
+ * content in `<Appear>` for the entrance, and that wrapper's style was `{opacity, transform}` —
+ * no flex. A `ScrollView` sizes its content, so `scroll={true}` was unharmed; a
+ * `scroll={false}` screen's children are the things asking for height, and the Atlas's
+ * `FlatList` was asking for `flex: 1` of a parent that had none.
+ *
+ * **These assertions are about the STYLE, not the rows.** A row count passed the whole time —
+ * jest has no layout engine, and a zero-height list still renders its data into a test tree.
+ * The style is the part of this that a test can actually see.
+ */
+describe('the flex chain of a screen that does not scroll', () => {
+  /** The animated wrapper `Screen` puts between itself and its children. */
+  const wrapperStyle = (scroll: boolean): Record<string, unknown> => {
+    const tree = draw(
+      <Screen scroll={scroll} testID="screen">
+        <Text size="body" color="foreground">
+          a
+        </Text>
+      </Screen>,
+    );
+    const node = tree.UNSAFE_getAllByType(Animated.View)[0];
+    expect(node).toBeDefined();
+    const raw: unknown = node!.props['style'];
+    const flat = (Array.isArray(raw) ? raw : [raw]).filter((s): s is object => s != null);
+    return Object.assign({}, ...flat) as Record<string, unknown>;
+  };
+
+  it('fills, so a child asking for flex:1 has something to fill', () => {
+    expect(wrapperStyle(false)['flex']).toBe(1);
+  });
+
+  /**
+   * THE DECOY.
+   *
+   * Adding `flex: 1` to every screen would fix the Atlas and change the layout of the other
+   * eighteen — content that sized to itself inside a scroller would start stretching. A
+   * one-sided assertion would not notice.
+   */
+  it('DECOY — a scrolling screen does NOT fill, because its ScrollView sizes the content', () => {
+    expect(wrapperStyle(true)['flex']).toBeUndefined();
+  });
+
+  it('and `fill` changes NOTHING but the flex', () => {
+    /*
+     * The direct statement of what the fix is allowed to do. Asserting the entrance survives by
+     * looking for `opacity` does not work here — reanimated applies the animated half on the UI
+     * thread and the test renderer does not surface it — so the honest assertion is the
+     * DIFFERENCE between the two screens, which is exactly the claim being made.
+     */
+    const filled = wrapperStyle(false);
+    const sized = wrapperStyle(true);
+    // KEYS, not values: the animated half is a reanimated object carrying React internals, so
+    // deep equality on it compares fibers. What is being claimed is that `fill` adds one
+    // property and removes none, and the key set says exactly that.
+    expect(filled['flex']).toBe(1);
+    expect(
+      Object.keys(filled)
+        .filter((k) => k !== 'flex')
+        .sort(),
+    ).toEqual(Object.keys(sized).sort());
   });
 });

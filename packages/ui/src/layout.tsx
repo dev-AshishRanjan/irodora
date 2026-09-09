@@ -387,8 +387,19 @@ export function Screen({
    * Under reduced motion `Appear` renders its children at rest with no delay, so this costs
    * nothing to somebody who asked for no motion.
    */
+  /*
+   * `fill` WHEN THE SCREEN DOES NOT SCROLL (F-211), and it is not a detail.
+   *
+   * A scrolling screen's content sizes to itself and the `ScrollView` handles the rest. A
+   * NON-scrolling one must fill, because its children are the things asking for height — the
+   * Atlas's `FlatList` asks for `flex: 1`, and without this it is 100% of nothing.
+   *
+   * Reported as *"the Colour atlas is empty"*. F-188 added the wrapper for the entrance and
+   * gave it no flex; every gate stayed green because jest has no layout engine and a
+   * zero-height list still renders its rows into a test tree.
+   */
   const content = (
-    <Appear>
+    <Appear fill={!scroll}>
       {header}
       {children}
     </Appear>

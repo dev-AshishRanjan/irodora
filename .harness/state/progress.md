@@ -20477,3 +20477,65 @@ library and the OS on hardware this workstation does not have — and a test ass
 platform was consulted"* would be asserting that a function was called.
 
 ---
+
+## F-211 — The Atlas is empty
+
+Reported from a running app: **"the Colour atlas is empty."**
+
+```
+<Screen scroll={false}>
+  <View flex:1>              the ground
+    <View flex:1 column>     the rhythm
+      <Appear>               Animated.View { opacity, transform }   ← NO FLEX
+        <FlatList flex:1 />  100% of a parent with no height = 0
+```
+
+**F-188 caused it.** It wrapped `Screen`'s content in `<Appear>` so every screen would gain an
+entrance, and that wrapper carries `opacity` and `translateY` and nothing else. A
+`ScrollView` sizes its content, so `scroll={true}` was unharmed. The Atlas is the **only**
+screen using `scroll={false}`, which is why it is the only one reported.
+
+### The Atlas had already written this hazard down
+
+> *What would reproduce F-104 is turning scrolling off here and NOT giving the list the height to
+> scroll in, which is why the list carries `flex: 1` rather than inheriting a size.*
+
+The list kept its half of that bargain. **The ancestor stopped keeping its** — three features
+later, in a different package, for a reason that had nothing to do with the Atlas.
+
+### Why every gate stayed green
+
+**jest has no layout engine.** A `FlatList` with zero height renders all 120 rows into a test
+tree. The conformance suite passed. The a11y gate passed. F-204's sweep reported **zero findings
+over 72 subjects in 8 conditions** — one feature ago, on a blank screen.
+
+That is now recorded as **F-213**: a static reading might catch the common shape, and it is worth
+trying with its limits stated, because the alternative is that the next one is also found by a
+person opening the app.
+
+### The fix is a named capability, not a style prop
+
+`Appear` refuses `style` deliberately — *"an allow-list cannot be enforced at a call site that
+can pass anything"*. So `fill` is a boolean with one meaning: it adds `flex: 1` and nothing
+else, and a caller still cannot reach a colour through it. `Screen` passes it exactly when
+`scroll={false}`.
+
+### The test asserts the chain, because a row count cannot
+
+Three assertions, and the second is the one that matters: **a scrolling screen must NOT fill.**
+Adding `flex: 1` everywhere would have fixed the Atlas and stretched the other eighteen screens,
+and a one-sided assertion would not have noticed.
+
+The third compares **key sets** rather than values — the animated half is a reanimated object
+carrying React fibers, and deep equality on it compares internals rather than styles.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build — **PASS**.
+
+### Attested
+
+That the Atlas lists the corpus **on a device**. The reporter saw it empty; only the reporter can
+see it full. That gap is the whole story of this defect.
+
+---
