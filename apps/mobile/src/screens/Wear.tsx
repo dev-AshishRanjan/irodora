@@ -61,6 +61,15 @@ export interface WearProps {
   readonly onOpenColour?: (slug: string) => void;
   /** Build a profile. Supplied by the route; the way out of the no-profile state. */
   readonly onBuildProfile?: () => void;
+  /**
+   * Take this colour to the shopping check, carrying the slot it was ranked for (F-199).
+   *
+   * The slot is the reason this belongs here and not on the combinations screen: a ranked
+   * candidate is the only colour in this product that HAS one.
+   */
+  readonly onShopFor?: ((slug: string, slot: OutfitSlot) => void) | undefined;
+  /** Offer this colour to the wardrobe. Nothing is stored until the person saves (F-199). */
+  readonly onAddToWardrobe?: ((slug: string) => void) | undefined;
 }
 
 /** How many candidates are drawn per slot. FR-31 asks for 5 trousers and 4 shoes; this shows 6. */
@@ -75,6 +84,8 @@ export function Wear({
   initialSlot,
   onOpenColour,
   onBuildProfile,
+  onShopFor,
+  onAddToWardrobe,
 }: WearProps): React.JSX.Element {
   const { t, script } = useMessages();
   const [slot, setSlot] = useState<OutfitSlot>(initialSlot ?? 'top');
@@ -110,15 +121,52 @@ export function Wear({
     const entry = entryBySlug(candidate.id);
     const factors = shownFactors(candidate, personalKnown);
     return (
+      /*
+        NOT PRESSABLE AS A WHOLE, DELIBERATELY (F-199).
+
+        `Card` makes the whole card one target (F-184), and this one now carries controls —
+        putting buttons inside a pressable card nests pressables, which `ChoiceGroup` refused
+        for the same reason one feature earlier. Three named controls also make "one
+        interaction" true rather than "one interaction once you find the right part of the card".
+      */
       <Card
         level="1"
-        {...(onOpenColour === undefined || entry === null
-          ? {}
-          : {
-              onPress: () => {
-                onOpenColour(candidate.id);
-              },
-            })}
+        footer={
+          entry === null ? undefined : (
+            <Row gap="sm" wrap>
+              {onOpenColour === undefined ? null : (
+                <Button
+                  label={t('wear.openColour')}
+                  variant="secondary"
+                  onPress={() => {
+                    onOpenColour(candidate.id);
+                  }}
+                  script={script}
+                />
+              )}
+              {onShopFor === undefined ? null : (
+                <Button
+                  label={t('wear.shopFor')}
+                  variant="secondary"
+                  onPress={() => {
+                    onShopFor(candidate.id, candidate.slot);
+                  }}
+                  script={script}
+                />
+              )}
+              {onAddToWardrobe === undefined ? null : (
+                <Button
+                  label={t('wear.addToWardrobe')}
+                  variant="secondary"
+                  onPress={() => {
+                    onAddToWardrobe(candidate.id);
+                  }}
+                  script={script}
+                />
+              )}
+            </Row>
+          )
+        }
         header={
           <Row gap="sm" align="center">
             {entry === null ? null : (

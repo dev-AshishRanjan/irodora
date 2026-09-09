@@ -3993,6 +3993,54 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-105",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/lens/handoff.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/AddGarment.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/add.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-route-targets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/handoff.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE MAILBOX NOW CARRIES TWO KINDS AND THE TYPE IS WHAT KEEPS THEM APART. `takeReading` returns only a measurement, so profile setup cannot be handed a colour somebody merely liked — and it LEAVES a corpus offer in place rather than consuming and discarding it, which is F-043's finding applied to the new member. Both kinds are asserted addressed and one-shot, with a decoy proving `takeReading` still returns an actual reading (otherwise the refusal passes on a function that returns null for everything). NOTHING IS STORED UNTIL SAVED is asserted of the NEW path, with its own decoy proving the recording fake actually records — two green zeroes from a fake that never pushes would mean nothing. THE SLOT ROUND-TRIPS: `slotFor(wordForSlot(s)) === s` for all three, because the shopping check takes a garment TYPE and a word it cannot map back would drop the slot silently while still navigating and still prefilling. WHAT IS NOT GUARDED: that a person actually reaches the shopping check with the right thing selected — gate 7 (e2e) is `pending` and refuses on this workstation, so the journey is unexercised end to end.",
+      "memory": "memory/effects/a-shared-channel-widens-by-type-or-it-widens-by-lie.md",
+      "rationale": "THE RELEASE BUILT THE ANSWER AND EVERY PART OF IT WAS A DEAD END. Twelve generated relationships, four curated combinations and a slot ranking, and a person could do nothing with any of them. THE OBVIOUS WIRING WAS A PROVENANCE LIE: `AddGarment` took a `LensReading`, and handing it a chosen colour would have meant inventing `usableSamples`, `variance`, `illumination` and a `confidence` nobody measured — ADR-0005 broken for the convenience of reusing a field. So the channel widened by TYPE instead: an offer is a reading or a corpus slug, which are exactly the two `ColourOrigin` members that already existed. A GENERATED colour is deliberately not offerable — it has no slug and no capture, and giving it an origin is ADR-0005’s open question (F-207) rather than a wiring decision. AND THE ROUTE GATE WAS WRONG, since F-181: it never stripped the query string, so `/atlas/compare?a=x` resolved against `/atlas/[slug]` — `[^/]+` swallows `compare?a=x` whole. The check reported a target as resolving against a route that would never serve it, and refused a legitimate query on a static route. A check that resolves against the WRONG route is worse than one that fails, because it reports success.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

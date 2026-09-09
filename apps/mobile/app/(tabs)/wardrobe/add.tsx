@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Stack } from 'expo-router';
 import { AddGarment } from '../../../src/screens/AddGarment';
-import { takeReading } from '../../../src/lens/handoff';
+import { takeOffer } from '../../../src/lens/handoff';
 import { devicePicker } from '../../../src/wardrobe/picker';
 import { deviceRepository } from '../../../src/store/repository';
 
@@ -16,7 +16,7 @@ import { deviceRepository } from '../../../src/store/repository';
  *
  * ## The reading is taken ONCE, in an initialiser
  *
- * `takeReading` consumes. Calling it during a re-render would hand back the reading the first
+ * `takeOffer` consumes. Calling it during a re-render would hand back the offer the first
  * time and `null` on every keystroke after, so the offered colour would appear and then vanish
  * while somebody was typing a brand into the field below it. The profile route takes its own
  * reading the same way and for the same reason (F-097).
@@ -26,7 +26,7 @@ import { deviceRepository } from '../../../src/store/repository';
  * neither screen could tell that from nobody having scanned at all.
  */
 export default function AddGarmentRoute(): React.JSX.Element {
-  const [offered] = useState(() => takeReading('wardrobe'));
+  const [offered] = useState(() => takeOffer('wardrobe'));
 
   return (
     <>

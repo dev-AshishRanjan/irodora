@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Wear } from '../../../../src/screens/Wear';
 import { activeProfile, toWorking } from '../../../../src/profile/store';
-import { engineProfile } from '../../../../src/outfit/builder';
+import { engineProfile, wordForSlot } from '../../../../src/outfit/builder';
+import { offerCorpusColour } from '../../../../src/lens/handoff';
 import { deviceRepository } from '../../../../src/store/repository';
 
 /**
@@ -50,6 +51,23 @@ export default function WearRoute(): React.JSX.Element {
         }}
         onBuildProfile={() => {
           router.push('/profile');
+        }}
+        /*
+          THE SLOT TRAVELS AS A TYPE WORD, because that is what the shopping check takes.
+          `wordForSlot` is the inverse of `slotFor`, and the round trip is asserted — a word the
+          check cannot map back would drop the slot silently.
+        */
+        onShopFor={(s, slot) => {
+          router.push(`/wardrobe/shopping?slug=${s}&type=${wordForSlot(slot)}`);
+        }}
+        /*
+          AN OFFER, NOT A WRITE. The colour is left in the mailbox and `AddGarment` proposes it;
+          nothing reaches the database until the person saves, which is criterion 2's second half
+          and is asserted rather than assumed.
+        */
+        onAddToWardrobe={(s) => {
+          offerCorpusColour(s, 'wardrobe');
+          router.push('/wardrobe/add');
         }}
       />
     </>

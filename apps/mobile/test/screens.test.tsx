@@ -1513,7 +1513,47 @@ const SCREENS: readonly ConformanceSubject[] = [
         <AddGarment
           store={fakeWardrobe()}
           imageSource={fakeImageSource()}
-          offered={OFFERED_READING}
+          offered={{ kind: 'reading', reading: OFFERED_READING }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * FROM A COLOUR SOMEBODY CHOSE (F-199). A different tree from the Lens branch above: the
+     * re-apply control is labelled "use the colour you chose" rather than "from the Lens",
+     * because where a colour came from is a claim and the wrong one would be false.
+     */
+    name: 'screens/AddGarment (from a chosen colour)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <AddGarment
+          store={fakeWardrobe()}
+          imageSource={fakeImageSource()}
+          offered={{ kind: 'corpus', slug: allEntries()[0]!.entry.slug }}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * A RANKED COLOUR WITH SOMEWHERE TO GO (F-199). The candidate cards carry three named
+     * controls and are no longer a single target, so this renders a tree none of the Wear
+     * subjects above does.
+     */
+    name: 'screens/Wear (with destinations)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Wear
+          slug={BOTH_COST_BRANCHES.entry.slug}
+          profile={WEARER}
+          onOpenColour={() => undefined}
+          onShopFor={() => undefined}
+          onAddToWardrobe={() => undefined}
         />,
         theme,
       ),

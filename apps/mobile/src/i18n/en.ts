@@ -619,6 +619,17 @@ export const en = {
   'combos.personal': 'Suits you',
   'combos.personalNone':
     'No profile yet, so these are ordered by the colour relationship alone rather than by how they suit you.',
+  'wardrobe.fromChoice': 'Use the colour you chose',
+  /*
+   * F-199 — WHERE A RANKED COLOUR CAN GO.
+   *
+   * Three named controls rather than one card that does something invisible. `Card` makes the
+   * whole card a single target (F-184), so a card carrying actions cannot also be pressable —
+   * nested pressables are what `ChoiceGroup` refused one feature earlier.
+   */
+  'wear.shopFor': 'Shop for this',
+  'wear.addToWardrobe': 'Add to wardrobe',
+  'wear.openColour': 'Open this colour',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

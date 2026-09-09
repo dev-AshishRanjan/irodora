@@ -32,6 +32,8 @@
  */
 
 import { useCallback, useState } from 'react';
+import type { Offer } from '../lens/handoff';
+import type { ColourOrigin } from '../wardrobe';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
@@ -58,7 +60,6 @@ import {
 import { costEntry, type CostEntryProblem } from '../wardrobe/cost';
 import type { ImageSource } from '../wardrobe/source';
 import { allEntries, colorFor } from '../corpus';
-import type { LensReading } from '../lens/reading';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
@@ -88,14 +89,19 @@ export interface AddGarmentProps {
   readonly store: WardrobeStore;
   readonly imageSource: ImageSource;
   /**
-   * A reading the Lens left for the wardrobe, taken once by the route.
+   * What was left for the wardrobe, taken once by the route.
    *
-   * A prop rather than a call to `takeReading` here, for the reason the profile route gives:
-   * `takeReading` consumes, so calling it during a re-render would hand back the reading the
-   * first time and `null` on every keystroke after — the offered colour would appear and then
-   * vanish while somebody was typing a brand into the field below it.
+   * A prop rather than a call to `takeOffer` here, for the reason the profile route gives:
+   * taking CONSUMES, so calling it during a re-render would hand back the offer the first time
+   * and `null` on every keystroke after — the offered colour would appear and then vanish while
+   * somebody was typing a brand into the field below it.
+   *
+   * **Two kinds (F-199).** A `reading` is a measurement the Lens took; a `corpus` offer is a
+   * published colour somebody chose from a combination or a slot ranking. They map onto the two
+   * `ColourOrigin` members that already exist, and the union is what stops a chosen colour
+   * being filed as a measurement of something.
    */
-  readonly offered?: LensReading | null;
+  readonly offered?: Offer | null;
   /**
    * Open with the failure already showing, so the conformance suite can render it.
    *
@@ -114,10 +120,18 @@ export function AddGarment({
 }: AddGarmentProps): React.JSX.Element {
   const { t, script } = useMessages();
 
+  /*
+   * THE OFFER MAPS STRAIGHT ONTO A COLOUR ORIGIN, because the two unions describe the same two
+   * facts: a measurement, or a published colour. Written out rather than spread, so a third
+   * offer kind cannot silently become an origin nobody chose.
+   */
+  const originOf = (offer: Offer): ColourOrigin =>
+    offer.kind === 'reading'
+      ? { kind: 'reading', reading: offer.reading }
+      : { kind: 'corpus', slug: offer.slug };
+
   const [draft, setDraft] = useState<GarmentDraft>(() =>
-    offered == null
-      ? EMPTY_DRAFT
-      : { ...EMPTY_DRAFT, colour: { kind: 'reading', reading: offered } },
+    offered == null ? EMPTY_DRAFT : { ...EMPTY_DRAFT, colour: originOf(offered) },
   );
   /*
    * THE saved FLAG IS GONE (F-185), and removing it was not a lint fix.
@@ -222,11 +236,16 @@ export function AddGarment({
         {t('wardrobe.colour')}
       </Text>
 
+      {/*
+        THE OFFER, RE-APPLIABLE, AND LABELLED FOR WHAT IT IS. "From the Lens" is a claim about
+        where a colour came from, and it is false for a colour somebody picked off a combination
+        — so the label follows the kind rather than the slot it arrived in.
+      */}
       {offered == null ? null : (
         <Button
-          label={t('wardrobe.fromLens')}
+          label={offered.kind === 'reading' ? t('wardrobe.fromLens') : t('wardrobe.fromChoice')}
           onPress={() => {
-            setDraft((d) => ({ ...d, colour: { kind: 'reading', reading: offered } }));
+            setDraft((d) => ({ ...d, colour: originOf(offered) }));
           }}
           script={script}
         />

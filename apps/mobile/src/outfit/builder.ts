@@ -133,6 +133,24 @@ const SLOT_WORDS: Readonly<Record<OutfitSlot, readonly string[]>> = {
   shoe: ['shoe', 'shoes', 'boot', 'boots', 'trainers', 'sneakers', 'sandals', 'loafers'],
 };
 
+/**
+ * The canonical word for a slot — the inverse of {@link slotFor} (F-199).
+ *
+ * **The FIRST entry, and the order of `SLOT_WORDS` is therefore load-bearing.** The shopping
+ * check takes a garment TYPE, not a slot, and prefilling it with a word `slotFor` cannot map
+ * back would silently drop the slot the caller meant to carry. A test asserts the round trip
+ * rather than trusting the two lists to stay in agreement.
+ */
+export function wordForSlot(slot: OutfitSlot): string {
+  const [first] = SLOT_WORDS[slot];
+  if (first === undefined)
+    throw new Error(
+      `outfit: no word for slot "${slot}". SLOT_WORDS must name every slot — an empty list here ` +
+        'would make the shopping hand-off lose the slot silently.',
+    );
+  return first;
+}
+
 export function slotFor(garment: Pick<StoredGarment, 'type'>): OutfitSlot | null {
   const type = garment.type.trim().toLowerCase();
   return OUTFIT_SLOTS.find((slot) => SLOT_WORDS[slot].includes(type)) ?? null;

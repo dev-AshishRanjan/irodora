@@ -524,6 +524,11 @@ export const ja: Record<MessageKey, string> = {
   'combos.severity': '重症度',
   'combos.personal': '似合い度',
   'combos.personalNone': 'プロフィールが未作成のため、似合うかではなく色の関係だけで並べています。',
+  'wardrobe.fromChoice': '選んだ色を使う',
+  // F-199 — see en.ts: three named controls rather than one invisible target.
+  'wear.shopFor': 'この色を探す',
+  'wear.addToWardrobe': '持ち物に追加',
+  'wear.openColour': 'この色を開く',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

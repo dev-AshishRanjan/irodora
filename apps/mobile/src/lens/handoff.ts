@@ -38,6 +38,31 @@
 import type { LensReading } from './reading';
 
 /**
+ * What is on offer (F-199).
+ *
+ * ## Two kinds, and the type is what keeps them apart
+ *
+ * A **reading** is a measurement taken of whatever somebody pointed a camera at. A **corpus**
+ * offer is a published colour they chose — from a curated combination, or from a slot ranking.
+ *
+ * They are not interchangeable and must never become so. Handing a chosen colour to
+ * `AddGarment` as a `LensReading` would mean inventing `usableSamples`, `variance`,
+ * `illumination` and a `confidence` that nobody measured — which is precisely the dishonesty
+ * ADR-0005 exists to prevent, committed for the convenience of reusing a field.
+ *
+ * ## Why a slug rather than a colour
+ *
+ * The receiving end already understands `ColourOrigin` — `{ kind: 'corpus', slug }` — so this
+ * carries the same thing rather than a second representation of it. A GENERATED colour has no
+ * slug and is deliberately not offerable: it is a coordinate the engine computed, with no
+ * capture and no publication behind it, and giving it an origin is ADR-0005's open question
+ * (F-207) rather than a wiring decision.
+ */
+export type Offer =
+  | { readonly kind: 'reading'; readonly reading: LensReading }
+  | { readonly kind: 'corpus'; readonly slug: string };
+
+/**
  * Who a reading is for.
  *
  * Added by F-043, and the reason is a bug that no type would have caught. Profile setup was
@@ -57,7 +82,7 @@ export type ReadingDestination = (typeof READING_DESTINATIONS)[number];
  * The slot. `null` means nothing is on offer — which is the state every screen except the
  * Lens starts in, and the state the profile screen returns to as soon as it has read one.
  */
-let offered: { reading: LensReading; to: ReadingDestination } | null = null;
+let offered: { offer: Offer; to: ReadingDestination } | null = null;
 
 /**
  * Leave a reading for profile setup.
@@ -66,7 +91,18 @@ let offered: { reading: LensReading; to: ReadingDestination } | null = null;
  * meant — a queue would offer them a colour they had already moved on from.
  */
 export function offerReading(reading: LensReading, to: ReadingDestination): void {
-  offered = { reading, to };
+  offered = { offer: { kind: 'reading', reading }, to };
+}
+
+/**
+ * Leave a published colour for the wardrobe (F-199).
+ *
+ * The same slot and the same one-shot rule as {@link offerReading} — an offer that survives
+ * being declined is not an offer — and the same addressing, so a colour meant for the wardrobe
+ * is not consumed by profile setup on the way.
+ */
+export function offerCorpusColour(slug: string, to: ReadingDestination): void {
+  offered = { offer: { kind: 'corpus', slug }, to };
 }
 
 /**
@@ -75,12 +111,29 @@ export function offerReading(reading: LensReading, to: ReadingDestination): void
  * Returns `null` rather than throwing: "nobody offered a reading" is the ordinary case, not an
  * error. The guided path reaches profile setup this way on every run.
  */
-export function takeReading(to: ReadingDestination): LensReading | null {
-  // ADDRESSED, and the mismatch case LEAVES THE OFFER ALONE. Consuming a reading meant for
+export function takeOffer(to: ReadingDestination): Offer | null {
+  // ADDRESSED, and the mismatch case LEAVES THE OFFER ALONE. Consuming an offer meant for
   // somewhere else would be the original bug wearing a parameter: the rightful reader would
   // still find an empty slot, and would still have no way to tell that from nobody scanning.
   if (offered?.to !== to) return null;
-  const { reading } = offered;
+  const { offer } = offered;
+  offered = null;
+  return offer;
+}
+
+/**
+ * Take the offered READING, if the offer is one.
+ *
+ * Kept as its own function rather than folded into {@link takeOffer}, because profile setup can
+ * only use a measurement: a published colour says nothing about the person holding it, and
+ * proposing a profile from one would be an estimate built from a preference.
+ *
+ * **A corpus offer is left alone** rather than consumed and discarded — the wardrobe may still
+ * be on its way to collect it, which is the whole of F-043's finding.
+ */
+export function takeReading(to: ReadingDestination): LensReading | null {
+  if (offered?.to !== to || offered.offer.kind !== 'reading') return null;
+  const { reading } = offered.offer;
   offered = null;
   return reading;
 }

@@ -19901,3 +19901,82 @@ say which colour and which relationship.
 Nobody has looked at a flagged combination.
 
 ---
+
+## F-199 — A combination goes somewhere
+
+The release built the answer — twelve generated relationships, four curated combinations, a slot
+ranking — and **every one of them was a dead end**. A person could be told what goes with their
+shirt and then do nothing with it.
+
+### The obvious wiring was a provenance lie
+
+`AddGarment` took a `LensReading`. Handing it a colour somebody *chose* would have meant
+inventing `usableSamples`, `variance`, `illumination` and a `confidence` that nobody measured
+— ADR-0005 broken for the convenience of reusing a field that was already there.
+
+So the channel widened **by type**:
+
+```ts
+type Offer =
+  | { kind: 'reading'; reading: LensReading }   // a measurement
+  | { kind: 'corpus';  slug: string }           // a published colour somebody chose
+```
+
+Which are exactly the two `ColourOrigin` members that already existed, so `AddGarment` needed no
+new colour concept — only a second way to arrive at one it understood.
+
+**A generated colour is deliberately not offerable.** It has no slug and no capture behind it,
+and giving it an origin is ADR-0005's open question (F-207), not a wiring decision.
+
+`takeReading` still returns only a measurement — profile setup cannot be handed a colour
+somebody merely liked — and it **leaves** a corpus offer in place rather than consuming and
+discarding it, which is F-043's finding applied to the new member.
+
+### The card stopped being one target
+
+`Card` makes the whole card a single target (F-184), and a card carrying controls would nest
+pressables — what `ChoiceGroup` refused one feature earlier. So a candidate card gains three
+**named** controls: open, shop, add. That is also what makes *"one interaction"* true rather than
+*"one interaction once you find the right part of the card"*.
+
+### A gate had been resolving against the wrong route since F-181
+
+`verify-route-targets` never stripped the query string. `/atlas/compare?a=x` matched
+`/atlas/[slug]` — `[^/]+` swallows `compare?a=x` whole — so the check reported that target as
+resolving **against a route that would never serve it**, and refused a legitimate query on a
+static route.
+
+Fixed, with one `pathOf` shared by both readers so they cannot disagree about what a path is.
+**A check that resolves against the wrong route is worse than one that fails, because it reports
+success.**
+
+### The decoys
+
+- `takeReading` still returns an actual reading — otherwise "it refuses a corpus offer" passes
+  on a function that returns `null` for everything.
+- The recording store actually records — two green zeroes from a fake that never pushes would
+  mean nothing.
+- `slotFor` maps nothing for a word that is not a slot word.
+
+### The typecheck gate caught what jest could not
+
+The decoy called `createGarment` with one argument where the real signature takes
+`(garment, now)`. Jest's transform does not typecheck, so the test passed while asserting
+against a call that could not compile.
+
+### Effects
+
+**E-105** — the mailbox carries two kinds. Guard: the type, the addressing, the one-shot rule,
+and the slot round trip.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build · content — **PASS**. 915
+mobile tests over 41 suites.
+
+**`e2e` was NOT run.** It is listed on this feature, it is `pending`, and `pnpm test:e2e`
+refuses on this workstation — no JDK, no emulator — by design, because a task that exits 0 having
+run nothing is the failing-open shape `e2e-scope.mjs` exists to refuse. Criterion 1 is therefore
+**attested**: the mechanism is gated, the journey is not.
+
+---

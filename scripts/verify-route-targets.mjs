@@ -145,13 +145,36 @@ export function targets(dirs = SCAN) {
   return found;
 }
 
+/**
+ * The PATH a target names — the query dropped.
+ *
+ * Exported so the orphan scan and the resolution check ask the same question. Two callers
+ * normalising separately is how they end up disagreeing about what a route is.
+ */
+export function pathOf(target) {
+  return target.replaceAll('PARAM', 'x').split('?')[0] ?? '';
+}
+
 export function run(appDir = APP, dirs = SCAN) {
   const patterns = routePatterns(appDir);
   const problems = [];
   const checked = targets(dirs);
 
   for (const t of checked) {
-    const resolved = t.target.replaceAll('PARAM', 'x');
+    /*
+     * THE QUERY IS STRIPPED BEFORE MATCHING, and it was not (found in F-199).
+     *
+     * A query string is not part of a path. Leaving it on had two effects, both bad and both
+     * silent: `/atlas/compare?a=x` matched `/atlas/[slug]` — because `[^/]+` swallows
+     * `compare?a=x` whole — so the gate reported a target as resolving against a route that
+     * would never serve it; and a legitimate query on a STATIC route failed, because no pattern
+     * ends in one.
+     *
+     * The first is the one that matters: a check that resolves against the wrong route is
+     * worse than one that fails, because it reports success
+     * [[a-check-that-gets-quieter-is-worse-than-one-that-fails]].
+     */
+    const resolved = pathOf(t.target);
     if (!patterns.some((p) => p.test.test(resolved)))
       problems.push(
         `${t.file}:${String(t.line)} navigates to "${t.target}", which no route serves. ` +
@@ -236,7 +259,7 @@ function prove() {
   // A target that no route serves must be reported. Planted in memory over the real tree.
   const planted = [{ file: 'planted.tsx', line: 1, target: '/atlas/nope/deeper' }];
   const unmatched = planted.filter(
-    (t) => !routePatterns().some((p) => p.test.test(t.target.replaceAll('PARAM', 'x'))),
+    (t) => !routePatterns().some((p) => p.test.test(pathOf(t.target))),
   );
   say(unmatched.length === 1, 'an unknown target is reported', '/atlas/nope/deeper');
 

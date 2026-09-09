@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { outfitWeights, parseWeightContent } from '@irodora/recommendation';
 import { Shopping } from '../../../src/screens/Shopping';
 import { referenceSet } from '../../../src/wardrobe/reference';
@@ -32,6 +32,16 @@ import { deviceRepository } from '../../../src/store/repository';
  */
 export default function ShoppingRoute(): React.JSX.Element {
   const router = useRouter();
+  const params = useLocalSearchParams<{ slug?: string | string[]; type?: string | string[] }>();
+  const one = (v: string | string[] | undefined): string => (Array.isArray(v) ? v[0] : v) ?? '';
+  /*
+   * BOUND ONCE, so the narrowing survives into the spreads below. Calling `one` inside each
+   * ternary leaves the value `string | undefined` at the point it is assigned, which
+   * `exactOptionalPropertyTypes` refuses — correctly: absent and present-and-undefined are
+   * different things to a component that switches on them.
+   */
+  const arrivedSlug = one(params.slug);
+  const arrivedType = one(params.type);
   const repo = deviceRepository();
   const stored = activeProfile(repo);
 
@@ -51,6 +61,13 @@ export default function ShoppingRoute(): React.JSX.Element {
       <Shopping
         wardrobe={repo.listGarments()}
         context={context}
+        /*
+          F-199: arrived from a ranked colour, carrying the slug and the slot's type word. Both
+          OPTIONAL — the shopping check is reachable from the Wardrobe with neither, and absent
+          is a state rather than an error, the shape `atlas/compare` already uses.
+        */
+        {...(arrivedSlug === '' ? {} : { initialSlug: arrivedSlug })}
+        {...(arrivedType === '' ? {} : { initialType: arrivedType })}
         onAddGarment={() => {
           router.push('/wardrobe/add');
         }}

@@ -6409,7 +6409,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-197",
         "F-182"
@@ -6427,6 +6427,15 @@
         "a11y",
         "e2e",
         "build"
+      ],
+      "plan": "plans/F-199-a-combination-goes-somewhere.md",
+      "attested": [
+        {
+          "criterion": "A colour in a combination reaches the shopping check in one interaction, carrying its slot",
+          "verifiedBy": "The mechanism is gated here — the slot round-trips through `wordForSlot`/`slotFor` for all three slots with a decoy, the route target resolves against the route tree, and the shopping route reads both parameters. What is NOT exercised is the journey end to end: gate 7 (e2e) is `pending` and `pnpm test:e2e` refuses on this workstation, which has no JDK and no emulator. F-091 criteria 2 to 4 carry the same attestation for the same reason.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
