@@ -4462,6 +4462,48 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-116",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/brand.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/generate-brand-assets.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/launch.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/brand/icon.png"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE PARSE IS NARROWED UNTIL IT CANNOT READ THE WRONG NUMBERS, rather than watched for reading them. `markGeometry()` matched four regexes against the WHOLE of brand.tsx and threw only when it could not FIND them — a `grid:` in any constant or comment above MARK would have given the generator one geometry and the app another, and `--check` could not have seen it because it compares the assets against exactly that reading. Two refusals now: exactly one `export const MARK` in the file, and the numbers read only from between its braces. THREE CASES IN --prove HAND IT A MUTATED SOURCE AND WATCH IT REFUSE, the third being the decoy — a source with NO MARK must be refused too, or a function that threw on everything would pass. The third artefact is coupled by rendering rather than by numbers, so launch.test.tsx asserts the launch draws an Svg at MARK.grid and NO bitmap; that case was watched failing against an <Image>. WHAT IS NOT GUARDED: a regex is still a regex. A value moved into a nested object INSIDE the block would still be misread. And gate 16, which reads the mark out of a built APK, has not run.",
+      "memory": "memory/effects/a-parse-that-can-find-the-wrong-numbers-is-worse-than-one-that-finds-none.md",
+      "rationale": "CRITERION 1 WAS ALREADY TRUE AND THE FINDING WAS SAYING SO PRECISELY. All three artefacts already derive from MARK — the assets by parsing it, the wordmark by being it, the launch by rendering it — so the work was not building a coupling but closing the one place it could break silently. TWO ATTEMPTS FAILED FOR THE SAME REASON, and the reason is the interesting part: comparing the parse against the component cannot be written in the generator (Node cannot load brand.tsx — it imports React Native, which is WHY the parse exists) and cannot be written in jest (which cannot parse the .mjs). Both were trying to DETECT a wrong reading across a boundary that exists to keep the two sides apart. The boundary was the guard: narrow the parse until the failure has nowhere to live.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

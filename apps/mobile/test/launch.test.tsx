@@ -17,7 +17,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, render } from '@testing-library/react-native';
-import { ThemeProvider } from '@irodora/ui';
+import { MARK, ThemeProvider } from '@irodora/ui';
 import { Launch } from '../src/launch';
 import { SPLASH_IMAGE_WIDTH } from '../app.config';
 
@@ -71,6 +71,33 @@ describe('the overlay continues the native splash rather than replacing it', () 
     expect(config).toContain('imageWidth: SPLASH_IMAGE_WIDTH');
   });
 
+  it('draws the COMPONENT, not an exported picture of it (F-193)', () => {
+    /*
+     * THE THIRD ARTEFACT IN THE COUPLING. The icon and the wordmark reach `MARK` through the
+     * generator, which parses it and refuses to guess. The launch reaches it by RENDERING
+     * `Mark` — a fact about source, not about numbers, and the one that is easiest to lose:
+     * swapping `<Mark />` for `<Image source={require(...)} />` is a normal-looking change that
+     * would keep this screen pixel-identical today and freeze it at that pixel forever, which
+     * is how an icon and an in-app mark drift apart in most products.
+     *
+     * The viewBox is read from `MARK.grid` rather than written as 24, so a grid change moves
+     * this assertion with it instead of turning it red.
+     */
+    const { UNSAFE_root } = draw();
+    const named = (n: { type: unknown }): string => {
+      const t = n.type as string | { displayName?: string; name?: string };
+      return typeof t === 'string' ? t : (t.displayName ?? t.name ?? '');
+    };
+
+    const svgs = UNSAFE_root.findAll((n) => named(n) === 'Svg' || named(n) === 'RNSVGSvgView');
+    expect(
+      svgs.some((s) => s.props['viewBox'] === `0 0 ${String(MARK.grid)} ${String(MARK.grid)}`),
+    ).toBe(true);
+
+    // The decoy the case exists for: an SVG being present would still be true of a screen that
+    // ALSO shipped a bitmap, and a bitmap is the thing that stops following the mark.
+    expect(UNSAFE_root.findAll((n) => /^(Image|RNSVGImage)$/u.test(named(n)))).toStrictEqual([]);
+  });
   it('is hidden from the accessibility tree — the app underneath is the real one', () => {
     /*
      * The overlay is decoration over a real tree. A screen reader stopping on it at launch is a

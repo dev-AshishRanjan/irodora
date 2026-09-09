@@ -20663,3 +20663,72 @@ unblocked this feature was of the coloured icon, and it is not evidence about th
 here.
 
 ---
+## F-193 — Icon, wordmark and launch sequence are one artefact
+
+### Criterion 1 was already true, and saying so precisely was half the work
+
+| artefact | how it reaches `MARK` | since |
+|---|---|---|
+| the five brand assets | `markGeometry()` parses `MARK` out of `brand.tsx` | F-165 |
+| the wordmark and `Mark` | it *is* `brand.tsx` | F-141 |
+| the launch sequence | renders `<Mark size={SPLASH_IMAGE_WIDTH} />` | F-190 |
+
+Nothing carried a copy. The generator's own error already said why: *"this generator must follow
+it rather than carry its own copy."*
+
+### What was not true: the parse could read the wrong numbers
+
+`markGeometry()` matched four regexes against **the whole file** and threw when it could not
+FIND them. It could not tell it had found the WRONG ones — a `grid:` in any constant or comment
+above `MARK` would give the generator one geometry and the app another. `--check` could not see
+it either, because `--check` compares the produced assets against *that same reading*.
+
+### Two attempts failed for the same reason, and the reason was the answer
+
+- **In the generator, importing the component's constants** — `brand.tsx` imports React Native,
+  so Node cannot load it, *which is precisely why the parse exists*.
+- **In jest, importing `markGeometry` from the `.mjs`** — the test can load the component and
+  cannot load the script.
+
+Both were trying to **detect** a wrong reading across a boundary that exists to keep the two
+sides apart. So the failure mode was **removed** instead:
+
+```
+exactly one `export const MARK` in the file, or throw naming the count
+the numbers read only from BETWEEN ITS BRACES, not from the file
+```
+
+Three cases hand `markGeometry` a mutated source and watch it refuse. The third is the decoy —
+a function that threw on *everything* would satisfy the second, so a source with **no** `MARK`
+must be refused too.
+
+### The third artefact is coupled by rendering, not by numbers
+
+`launch.test.tsx` asserts the launch draws an `Svg` at `MARK.grid` **and no bitmap**. Swapping
+`<Mark />` for `<Image source={require(…)} />` is a normal-looking change that keeps the screen
+pixel-identical today and freezes it at that pixel forever. The case was watched failing against
+exactly that mutation, then the file was restored byte for byte.
+
+### And the proof's own closing line was the same defect
+
+It read *"four assets, three decoys"* — typed once, true once, wrong the moment cases were
+added. It now counts what ran: **22 cases, 8 of them asserting a refusal**.
+
+### Gates
+
+state · typecheck · lint · format · test · build — **PASS**, plus the generator's `--check`
+(5 assets) and `--prove`.
+
+**`artifact` (gate 16) did not run** — it reads the mark out of a built APK and there is no APK
+here. It is recorded in the feature notes as not run, not counted — not as an
+attestation, because ADR-0038 reserves those for acceptance criteria quoted verbatim, and this
+is a gate rather than a criterion.
+
+### Carried forward as a limitation
+
+**A regex reading source is still a regex.** This makes a wrong reading fail loudly instead of
+shipping; it does not make the reading robust. A value moved into a nested object *inside* the
+block would still be misread. Replacing the parse with a real import means making the component
+loadable from Node — a larger change than this feature.
+
+---

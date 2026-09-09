@@ -63,9 +63,46 @@ const GREEN = '\x1b[32m',
  *
  * E-059: one geometry, and this is now its third reader. A copy here would agree with the
  * component on the day it was written and would then be the version on every home screen.
+ *
+ * **EXPORTED, and taking an optional `source`, so the two refusals below can be watched
+ * refusing (F-193).** A refusal nobody has seen refuse is a condition that parses. Production
+ * callers pass nothing and read the real file.
  */
-function markGeometry() {
-  const src = readFileSync(join(ROOT, 'packages/ui/src/brand.tsx'), 'utf8');
+export function markGeometry(source = null) {
+  const file = source ?? readFileSync(join(ROOT, 'packages/ui/src/brand.tsx'), 'utf8');
+
+  /*
+   * SCOPED TO THE `MARK` BLOCK, AND THAT IS THE POINT (F-193).
+   *
+   * This used to match against the WHOLE FILE. It throws when it cannot find the four numbers —
+   * and it could not tell that it had found the wrong ones. A second `grid:` anywhere above
+   * `MARK`, in a comment example or a neighbouring constant, would give this generator one
+   * geometry and the app another, and `--check` would agree with the wrong reading because it
+   * compares the assets against exactly this.
+   *
+   * The obvious guard — compare the parse against the component's own exports — cannot be
+   * written: `brand.tsx` imports React Native, so a Node script cannot load it, which is the
+   * same reason this parse exists at all. So the failure mode is REMOVED rather than detected.
+   *
+   * TWO CONDITIONS, both refusals rather than assumptions: exactly one `export const MARK` in
+   * the file, and the numbers read only from between its braces.
+   */
+  const declarations = file.match(/export const MARK\b/gu) ?? [];
+  if (declarations.length !== 1)
+    throw new Error(
+      `packages/ui/src/brand.tsx declares MARK ${String(declarations.length)} time(s); this ` +
+        'generator reads exactly one. Two declarations mean the icon and the app could follow ' +
+        'different geometry, and nothing downstream would notice.',
+    );
+
+  const block = /export const MARK = \{([\s\S]*?)\n\} as const;/u.exec(file);
+  if (block === null)
+    throw new Error(
+      'could not find the MARK block in packages/ui/src/brand.tsx. It moved or was reshaped — ' +
+        'this generator must follow it rather than carry its own copy.',
+    );
+  const src = block[1];
+
   const pick = (pattern, what) => {
     const m = new RegExp(pattern).exec(src);
     if (m === null)
@@ -367,7 +404,14 @@ if (invoked) {
 function prove() {
   console.log(`\n${BOLD}Irodora — brand assets, discrimination proof${OFF}\n`);
   const problems = [];
+  let ran = 0;
+  let negatives = 0;
   const say = (ok, name, detail) => {
+    ran += 1;
+    // A case is a NEGATIVE when it asserts something is REJECTED. The closing line counts
+    // them rather than restating a figure somebody typed once — which is the same defect
+    // F-193 is about: a number that agreed with its subject on the day it was written.
+    if (/DECOY|REFUSED|CANNOT|does not/u.test(name)) negatives += 1;
     if (!ok) problems.push(name);
     console.log(`  ${ok ? GREEN + '✓' : RED + '✗'}${OFF} ${name} ${DIM}${detail}${OFF}`);
   };
@@ -448,6 +492,61 @@ function prove() {
   );
 
   /*
+   * 4b-bis. THE PARSE CANNOT READ THE WRONG NUMBERS (F-193).
+   *
+   * `markGeometry` used to match against the whole file. It throws when it cannot FIND the four
+   * numbers, and could not tell that it had found the WRONG ones — so a `grid:` anywhere above
+   * `MARK` would give this generator one geometry and the app another, with `--check` agreeing
+   * with the wrong reading because it compares the assets against exactly this
+   * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+   *
+   * The obvious guard — compare the parse against the component's own exports — cannot be
+   * written: `brand.tsx` imports React Native, so a Node script cannot load it, which is the
+   * same reason this parse exists. So the failure mode was REMOVED rather than detected, and
+   * these three cases are what say it stayed removed.
+   */
+  const realSource = readFileSync(join(ROOT, 'packages/ui/src/brand.tsx'), 'utf8');
+
+  const decoyed = markGeometry(
+    realSource.replace(
+      'export const MARK = {',
+      'const NOT_THE_MARK = { grid: 999, petals: 9, orbit: 99, interval: 9 }; ' +
+        'export const MARK = {',
+    ),
+  );
+  say(
+    decoyed.grid === g.grid && decoyed.grid !== 999,
+    'a `grid:` OUTSIDE the MARK block does not reach the parse',
+    `read ${String(decoyed.grid)} with a constant declaring 999 above it`,
+  );
+
+  const refuses = (mutate) => {
+    try {
+      markGeometry(mutate(realSource));
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  say(
+    refuses(
+      (s) => `${s}export const MARK = { grid: 1, petals: 1, orbit: 1, interval: 1 } as const;`,
+    ),
+    'TWO declarations of MARK are REFUSED, rather than one of them being picked',
+    'the icon and the app could otherwise follow different geometry',
+  );
+
+  /*
+   * THE DECOY. A function that threw on everything would pass the case above. It must still
+   * refuse the opposite mistake, and it must still read the real file.
+   */
+  say(
+    refuses((s) => s.replace('export const MARK = {', 'const GONE = {')),
+    'DECOY — NO declaration of MARK is refused too, so the check is not merely counting to one',
+    'a parse falling back to defaults would ship an icon nobody drew',
+  );
+
+  /*
    * 4c. THE THEMED-ICON LAYER IS A SILHOUETTE, NOT A PICTURE (F-192).
    *
    * Android tints `monochromeImage` itself and reads only the alpha. A layer that kept the five
@@ -517,7 +616,7 @@ function prove() {
   }
   console.log(
     `\n${GREEN}${BOLD}The brand assets check discriminates.${OFF} ` +
-      `${DIM}Round-trip, four assets, three decoys, five pinned corpus colours, the safe zone.${OFF}\n`,
+      `${DIM}${String(ran)} cases, ${String(negatives)} of them asserting a refusal — counted from the cases that ran, not written down beside them.${OFF}\n`,
   );
 }
 

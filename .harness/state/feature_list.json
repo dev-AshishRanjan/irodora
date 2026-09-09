@@ -6231,7 +6231,7 @@
       "service": "root",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-190",
         "F-192"
@@ -6248,7 +6248,9 @@
         "test",
         "artifact",
         "build"
-      ]
+      ],
+      "plan": "plans/F-193-one-artefact.md",
+      "notes": "DONE, with ONE GATE ON ITS OWN LIST NOT RUN. `artifact` (gate 16) reads the mark out of a built APK; no APK can be produced here, so it is reported as not run rather than counted. Everything else on the list is green: state, typecheck, lint, format, test, build, plus the generator's --check (5 assets, byte for byte) and --prove (22 cases, 8 asserting a refusal). BOTH ACCEPTANCE CRITERIA ARE MET WITHOUT IT. Criterion 1 was already true when the feature was claimed — the assets parse MARK, the wordmark IS brand.tsx, the launch renders the component — and the work was criterion 2: nothing checked that the parse read the RIGHT numbers. It matched four regexes against the whole file and threw only when it could not FIND them. Two attempts to DETECT a wrong reading failed for the same reason (Node cannot load brand.tsx, jest cannot load the .mjs), so the failure mode was removed instead: exactly one `export const MARK`, and the numbers read only from between its braces. CARRIED FORWARD: a regex is still a regex — a value moved into a nested object INSIDE the block would still be misread."
     },
     {
       "id": "F-194",
