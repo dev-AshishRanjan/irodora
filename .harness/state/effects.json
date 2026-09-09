@@ -4846,6 +4846,38 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-125",
+      "from": {
+        "kind": "file",
+        "ref": "pnpm-workspace.yaml"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "pnpm-lock.yaml"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        },
+        {
+          "kind": "gate",
+          "ref": "build"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root"
+      ],
+      "severity": "high",
+      "guard": "THE RESOLUTION IS READ BACK FROM THE LOCKFILE, NOT INFERRED FROM THE OVERRIDE TEXT — which is the guard the first attempt needed and did not have. `pnpm.overrides` was written into package.json, and pnpm 11 ignores that field entirely: \"The pnpm field in package.json is no longer read by pnpm.\" A pin that is not read is worse than no pin, because it looks like a decision and resolves to whatever it would have anyway. The lockfile now reads xmldom 0.8.15 and 0.9.12, js-yaml 3.15.2 and 4.3.2. GATE 15 IS THE STANDING GUARD: 27 advisories reported before, 6 after, and the accepted count is still 2 — so the fix cannot have been a quietly widened acceptance list, which is the other way this failure goes green. THE PINS ARE RANGE-SCOPED, so @expo/plist stays on the ^0.8 line it declares, which has its own patch; a bare \"@xmldom/xmldom\": \"^0.9.12\" would move a consumer across a minor to fix something already fixed where it stands. WHAT IS NOT GUARDED, and the asymmetry is worth knowing: an override that is no longer needed still resolves cleanly, so nothing will report it as stale — unlike an advisories.json entry, which FAILS the build once its advisory stops being reported. Each entry therefore carries the GHSA ids it closes, which is what a future reader checks it against.",
+      "memory": "memory/effects/a-pin-that-is-not-read-is-worse-than-no-pin.md",
+      "rationale": "SEVENTEEN BLOCKING ADVISORIES, ALL WITH A PUBLISHED FIX, AND NOTHING PINNING THE TRANSITIVE VERSIONS. Both packages are reached indirectly — xmldom through @expo/plist and plist, js-yaml through tooling — and the repository held neither above its advisory range, so the lockfile sat on the last pre-advisory patch of each line. Four patch bumps inside their own minors was the entire fix. THE ACCEPTANCE PATH WAS THE WRONG TOOL AND ITS OWN ADR SAYS SO: ADR-0059 was written for image-size, where \"every published version is affected. There is no upgrade, and a pnpm.overrides entry has nothing to point at.\" Writing seventeen reachability arguments would have been using the escape hatch on the case it was explicitly not written for — and the gate says it first: \"Fix it by upgrading if a patched version exists.\" The two image-size acceptances were left untouched and still expire on 2026-11-21.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

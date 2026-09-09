@@ -21272,3 +21272,73 @@ Nothing asserts that a *sixth* proof will not appear the same way. This closes t
 no local voice; it does not check that every future proof has one.
 
 ---
+## F-217 — Seventeen blocking advisories, all with a published fix
+
+### What was failing
+
+Gate 15: **17 unaccepted HIGH advisories** — 15 in `@xmldom/xmldom`, 2 in `js-yaml`. Every one
+named a first-patched version, and every one of those was published:
+
+| package | installed | patched | reached through |
+|---|---|---|---|
+| `@xmldom/xmldom` | 0.8.14 | **0.8.15** | `@expo/plist` |
+| `@xmldom/xmldom` | 0.9.11 | **0.9.12** | `plist@3.1.1` |
+| `js-yaml` | 3.15.1 | **3.15.2** | tooling |
+| `js-yaml` | 4.3.1 | **4.3.2** | tooling |
+
+Checked against the registry rather than read off the advisory text. Four patch bumps, each
+inside its own minor.
+
+### Root cause
+
+Both packages are transitive, and the repository held neither above its advisory range — so the
+lockfile settled on the last pre-advisory patch of each line and stayed there.
+
+### The escape hatch was the wrong tool, and its own ADR says so
+
+ADR-0059 allows an acceptance with a reachability argument, an owner and an expiry. Its scope is
+defined by the sentence it was written around:
+
+> *"Every published version is affected. There is no upgrade, and a `pnpm.overrides` entry has
+> nothing to point at."*
+
+Here there was one. Seventeen reachability arguments would have been the hatch used on the case
+it was explicitly not written for — and the gate says so before the ADR does: *"Fix it by
+upgrading if a patched version exists."* **The two `image-size` acceptances are untouched** and
+still expire on 2026-11-21.
+
+### The mistake worth recording
+
+The first attempt wrote `pnpm.overrides` into `package.json`. The install answered:
+
+```
+[WARN] The "pnpm" field in package.json is no longer read by pnpm.
+       The following keys were ignored: "pnpm.overrides".
+```
+
+**A pin that is not read is worse than no pin** — it looks like a decision, survives review, and
+resolves to whatever it would have anyway. pnpm 10 moved these settings to
+`pnpm-workspace.yaml`, where this repository already keeps two. The lesson is not *read the
+release notes*; it is that confirmation comes from the **resolved state**, so the lockfile was
+read back for all four versions.
+
+### Range-scoped, because the short version would have been wrong
+
+`"@xmldom/xmldom": "^0.9.12"` is what an autofix writes. `@expo/plist` asks for `^0.8` and that
+line has its own patch, so the short form moves a consumer across a minor to fix something
+already fixed where it stands.
+
+### Gates
+
+state · typecheck · lint · format:check · test · build — **PASS**, and `pnpm security` end to
+end. Advisories reported fell **27 → 6**; accepted is still **2**, which is what says the fix was
+an upgrade rather than a widened acceptance list.
+
+### Not guarded
+
+**An override that is no longer needed still resolves cleanly**, so nothing will report these as
+stale — unlike an `advisories.json` entry, which *fails the build* once its advisory stops being
+reported. Each entry carries the GHSA ids it closes, which is what a future reader checks it
+against.
+
+---

@@ -7028,6 +7028,33 @@
         "test"
       ],
       "notes": "CI: \"BAD every proof that writes into the tree uses the journal: verify-dead-exports, verify-layout-primitives-proof, verify-reachability, verify-surface-not-card-proof\". ALL FOUR WRITE ONLY INTO mkdtempSync(tmpdir()) DIRECTORIES — none touches the repository — so the journal is genuinely unnecessary and three other scripts are already declared for exactly that reason. The declarations are the fix for the symptom. THE ROOT CAUSE IS THE FEEDBACK LOOP: plant-proof.mjs is the only proof in scripts/ that does NOT ride inside the lint chain — five others do — so it speaks only in CI. The list has been behind since F-179 on 2026-09-08, and F-183, F-203 and F-210 each added a temp-dir proof to a check that was already red without any local run saying so. Four authors in a row is not carelessness; it is a check that cannot be heard from where the work happens. FIXED in two parts, because the symptom and the cause are not the same defect. The four declarations name the reason each script does not need the journal — all write only into mkdtempSync(tmpdir()) — and plant-proof.mjs joins the lint chain beside the five proofs already there, so the next omission is caught in the run that creates it. The over-collecting regex is deliberately untouched: weakening a recorded decision to make a commit green is the wrong trade. Watched discriminating by removing one entry and confirming the proof goes red and names the file, then restoring byte for byte."
+    },
+    {
+      "id": "F-217",
+      "title": "Seventeen blocking advisories with published patches, and nothing pinning the transitive versions",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "root",
+      "release": "R8",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-217-advisories-with-a-fix.md",
+      "acceptance": [
+        "Every advisory that has a published fix is fixed by upgrading, not accepted — ADR-0059 exists for advisories with no fix and this is the other case",
+        "The upgrade is pinned so the resolution cannot drift back, and each pin says which advisories it closes",
+        "Gate 15 passes, and the two image-size acceptances are untouched because they are still the case ADR-0059 was written for"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build"
+      ],
+      "notes": "GATE 15: 17 unaccepted HIGH advisories — 15 in @xmldom/xmldom and 2 in js-yaml. ALL FOUR AFFECTED VERSION LINES HAVE A PUBLISHED PATCH, and every one is a patch bump inside the same minor: xmldom 0.8.14 -> 0.8.15 and 0.9.11 -> 0.9.12, js-yaml 3.15.1 -> 3.15.2 and 4.3.1 -> 4.3.2. Confirmed against the registry rather than inferred from the advisory text. THE ACCEPTANCE PATH DOES NOT APPLY: ADR-0059 was written for image-size, where \"every published version is affected. There is no upgrade, and a pnpm.overrides entry has nothing to point at.\" Here there is one, so accepting would be using the escape hatch on the case it was explicitly not written for. ROOT CAUSE: the repository has NO pnpm.overrides at all, and both packages are transitive — xmldom through @expo/plist and plist, js-yaml through tooling — so nothing holds them above the advisory ranges and the lockfile sat on the last pre-advisory patch of each line. FIXED by four range-scoped overrides in pnpm-workspace.yaml. THE FIRST ATTEMPT PUT THEM IN package.json under `pnpm.overrides`, which pnpm 11 ignores outright — the install said so, and a pin that is not read is worse than no pin. The resolution is confirmed from the lockfile rather than from the override text: xmldom 0.8.15 and 0.9.12, js-yaml 3.15.2 and 4.3.2. Gate 15 passes, advisories reported fell 27 to 6, and the accepted count is still 2 — the image-size pair, untouched. Verified with the full gate set including build and test, because a patch bump on the Expo config path is low risk and not no risk."
     }
   ]
 }

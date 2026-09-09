@@ -28,3 +28,25 @@ allowBuilds:
 overrides:
   react-native-worklets: 0.11.4
   react-native-reanimated: 4.5.3
+
+  # Advisory pins (F-217). Gate 15 reported 17 blocking advisories across these two
+  # packages, and every affected line HAS a published patch — which is the case ADR-0059
+  # deliberately does not cover: its acceptance path is for advisories with no upgrade to
+  # point at. Four patch bumps, each inside its own minor.
+  #
+  # RANGE-SCOPED ON PURPOSE. @expo/plist asks for ^0.8 and there is a 0.8 patch, so a bare
+  # "@xmldom/xmldom": "^0.9.12" would move it across a minor to fix something its own line
+  # already fixes.
+  #
+  # xmldom, 15 advisories: GHSA-6mj3-qw4j-hgrw, GHSA-c7q8-3ch8-vqpv, GHSA-jxjr-3g7g-3944,
+  # GHSA-27p8-2357-5qqv, GHSA-3px3-54cx-rmw9, GHSA-vr34-hp96-76pp, GHSA-8344-3jmq-59r6,
+  # GHSA-x4fp-j954-r2f4, GHSA-965w-775f-mr7g, GHSA-93r5-fhx6-vmg9.
+  # js-yaml, 1 advisory on both lines: GHSA-2883-xcg3-v3hh.
+  #
+  # THESE ARE MEANT TO BE DELETED once the ecosystem catches up. Gate 15 will not say so —
+  # a pin nobody needs still resolves cleanly — so the advisory ids above are what a future
+  # reader checks them against.
+  '@xmldom/xmldom@^0.8.0': ^0.8.15
+  '@xmldom/xmldom@^0.9.0': ^0.9.12
+  'js-yaml@^3.0.0': ^3.15.2
+  'js-yaml@^4.0.0': ^4.3.2
