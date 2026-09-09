@@ -15,6 +15,7 @@
 import { entryDigest, type DigestFn } from './digest.js';
 import { parseEntry, serialiseEntry } from './entry.js';
 import { CorpusError } from './errors.js';
+import { parseCombination } from './combination.js';
 import { parsePalette } from './palette.js';
 import { requireRecord, requireString, VERSION_ID_PATTERN } from './primitives.js';
 import {
@@ -22,6 +23,7 @@ import {
   type Ledger,
   type LedgerRow,
   type PublishedEntry,
+  type PublishedCombination,
   type PublishedPalette,
   type VersionBundle,
 } from './version.js';
@@ -70,6 +72,24 @@ function parseDerived(v: unknown, path: string, src: string): PublishedEntry['de
   };
 }
 
+/** The schema version at which `combinations` became part of a bundle (F-196). */
+export const COMBINATIONS_FROM = '1.1.0';
+
+/**
+ * Whether a bundle at this schema version is expected to carry `combinations`.
+ *
+ * A numeric comparison on the major and minor parts rather than a string one, because '1.10.0'
+ * sorts before '1.1.0' as text and that is the kind of bug this file exists to not have.
+ */
+function carriesCombinations(schema: string): boolean {
+  const [major = 0, minor = 0] = schema.split('.').map((p) => Number.parseInt(p, 10));
+  const [fromMajor = 0, fromMinor = 0] = COMBINATIONS_FROM.split('.').map((p) =>
+    Number.parseInt(p, 10),
+  );
+  if (Number.isNaN(major) || Number.isNaN(minor)) return false;
+  return major > fromMajor || (major === fromMajor && minor >= fromMinor);
+}
+
 function parseBundle(value: unknown, src: string): VersionBundle {
   const o = requireRecord(value, '', src);
 
@@ -81,6 +101,32 @@ function parseBundle(value: unknown, src: string): VersionBundle {
   if (!Array.isArray(rawEntries)) throw new CorpusError(src, 'entries', 'expected an array');
   const rawPalettes: unknown = o['palettes'];
   if (!Array.isArray(rawPalettes)) throw new CorpusError(src, 'palettes', 'expected an array');
+  /*
+   * REQUIRED FROM SCHEMA 1.1.0, AND ABSENT-MEANS-NONE BEFORE IT (F-196).
+   *
+   * Tolerating a missing collection everywhere would make "this version has no combinations"
+   * and "this file was written by a build that did not know about them" the same observation,
+   * and the second is a version whose root digest cannot be reproduced. So the key is required
+   * — but only of bundles minted by a build that had the concept.
+   *
+   * 2026.08.1 is PUBLISHED and therefore immutable: it cannot grow the key, and editing it to
+   * add one would be the exact thing FR-10 and ADR-0046 forbid. `corpusSchemaVersion` is the
+   * field that already exists to tell an old shape from a broken one, and this is what it is
+   * for. An empty collection contributes no rows to the root digest, so every bundle published
+   * before this feature still verifies against the checksum already in the ledger.
+   */
+  const schema = requireString(o['corpusSchemaVersion'], 'corpusSchemaVersion', src);
+  const rawCombinations: unknown = o['combinations'];
+  if (rawCombinations === undefined && !carriesCombinations(schema)) {
+    // Pre-1.1.0: the concept did not exist, so its absence is a fact about the schema rather
+    // than a missing field.
+  } else if (!Array.isArray(rawCombinations))
+    throw new CorpusError(
+      src,
+      'combinations',
+      `expected an array. Bundles at corpusSchemaVersion ${COMBINATIONS_FROM} and later carry ` +
+        `this collection; this one declares ${schema}.`,
+    );
 
   const entries: PublishedEntry[] = rawEntries.map((raw, i) => {
     const path = `entries[${String(i)}]`;
@@ -101,13 +147,25 @@ function parseBundle(value: unknown, src: string): VersionBundle {
     };
   });
 
+  const combinations: PublishedCombination[] = (
+    Array.isArray(rawCombinations) ? rawCombinations : []
+  ).map((raw, i) => {
+    const path = `combinations[${String(i)}]`;
+    const c = requireRecord(raw, path, src);
+    return {
+      combination: parseCombination(c['combination'], `${src} ${path}.combination`),
+      digest: requireString(c['digest'], `${path}.digest`, src),
+    };
+  });
+
   return {
     label,
-    corpusSchemaVersion: requireString(o['corpusSchemaVersion'], 'corpusSchemaVersion', src),
+    corpusSchemaVersion: schema,
     engine: requireString(o['engine'], 'engine', src),
     publishedAt: requireString(o['publishedAt'], 'publishedAt', src),
     entries,
     palettes,
+    combinations,
   };
 }
 
@@ -186,6 +244,16 @@ export function loadPublishedVersion(
       throw new CorpusError(
         src,
         `palettes.${palette.slug}`,
+        `checksum mismatch: recorded ${digest}, computed ${actual}. Treat this as a SEV1.`,
+      );
+  }
+
+  for (const { combination, digest } of bundle.combinations) {
+    const actual = entryDigest(combination, digestOf);
+    if (actual !== digest)
+      throw new CorpusError(
+        src,
+        `combinations.${combination.slug}`,
         `checksum mismatch: recorded ${digest}, computed ${actual}. Treat this as a SEV1.`,
       );
   }

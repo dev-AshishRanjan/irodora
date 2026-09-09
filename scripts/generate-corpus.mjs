@@ -2,7 +2,7 @@
  * Publish a corpus version — validate, derive, checksum, write.
  *
  * ```
- * content/colors/**   content/palettes/**
+ * content/colors/**   content/palettes/**   content/combinations/**
  *         ↓ validate → derive → checksum
  * content/versions/<label>.json     immutable bundle
  * content/versions/index.json       append-only ledger row
@@ -61,14 +61,12 @@ const {
 // nobody checked.
 assertSha256(sha256);
 
-const { roster, register, entries, palettes, ledger, failures, allowFixtureSlugs } = readCorpusRoot(
-  corpus,
-  {
+const { roster, register, entries, palettes, combinations, ledger, failures, allowFixtureSlugs } =
+  readCorpusRoot(corpus, {
     root,
     registerPath,
     allowFixtureSlugs: process.argv.includes('--allow-fixture-slugs'),
-  },
-);
+  });
 
 const publishable = entries.filter(({ record }) => record.status === 'published');
 const label =
@@ -77,12 +75,14 @@ const label =
 console.log(`${BOLD}Irodora — corpus publish${OFF}`);
 console.log(
   `${DIM}  ${root} · ${String(entries.length)} entr${entries.length === 1 ? 'y' : 'ies'}, ` +
-    `${String(palettes.length)} palette(s)${CHECK ? ' · --check' : ''}${OFF}\n`,
+    `${String(palettes.length)} palette(s), ${String(combinations.length)} combination(s)` +
+    `${CHECK ? ' · --check' : ''}${OFF}
+`,
 );
 
 const allFailures = [
   ...failures,
-  ...checkCorpus({ entries, palettes, roster, register }, { allowFixtureSlugs }),
+  ...checkCorpus({ entries, palettes, combinations, roster, register }, { allowFixtureSlugs }),
 ];
 
 if (allFailures.length > 0) {
@@ -108,6 +108,7 @@ const bundle = publishVersion(
   label,
   entries.map(({ record }) => record),
   palettes.map(({ record }) => record),
+  combinations.map(({ record }) => record),
   {
     engine: ENGINE_VERSION,
     corpusSchemaVersion: CORPUS_SCHEMA_VERSION,

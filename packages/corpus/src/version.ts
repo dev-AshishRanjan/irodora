@@ -39,6 +39,7 @@ import { deriveColor, type DerivedColor } from './derive.js';
 import { entryDigest, rootDigest, type DigestFn } from './digest.js';
 import { serialiseEntry, type CorpusEntry } from './entry.js';
 import { CorpusError } from './errors.js';
+import type { CorpusCombination } from './combination.js';
 import type { CorpusPalette } from './palette.js';
 import { VERSION_ID_PATTERN } from './primitives.js';
 import { isPublishable } from './workflow.js';
@@ -56,6 +57,11 @@ export interface PublishedPalette {
   readonly digest: string;
 }
 
+export interface PublishedCombination {
+  readonly combination: CorpusCombination;
+  readonly digest: string;
+}
+
 export interface VersionBundle {
   readonly label: string;
   readonly corpusSchemaVersion: string;
@@ -70,6 +76,14 @@ export interface VersionBundle {
   readonly publishedAt: string;
   readonly entries: readonly PublishedEntry[];
   readonly palettes: readonly PublishedPalette[];
+  /**
+   * Curated combinations (F-196).
+   *
+   * A separate collection rather than a flavour of palette, because they make a different claim:
+   * a palette says *these belong together*, a combination says *these go together*. Merging them
+   * would leave every consumer downstream inferring which one it was looking at.
+   */
+  readonly combinations: readonly PublishedCombination[];
 }
 
 /** One row of `content/versions/index.json`. Append-only. */
@@ -117,6 +131,7 @@ export function publishVersion(
   label: string,
   entries: readonly CorpusEntry[],
   palettes: readonly CorpusPalette[],
+  combinations: readonly CorpusCombination[],
   meta: {
     readonly engine: string;
     readonly corpusSchemaVersion: string;
@@ -141,6 +156,9 @@ export function publishVersion(
     palettes: palettes
       .filter((palette) => isPublishable(palette.status))
       .map((palette) => ({ palette, digest: entryDigest(palette, digestOf) })),
+    combinations: combinations
+      .filter((combination) => isPublishable(combination.status))
+      .map((combination) => ({ combination, digest: entryDigest(combination, digestOf) })),
   };
 }
 
@@ -151,14 +169,17 @@ export function publishVersion(
  * bundle's formatting or field order changes, and so a mismatch can be localised by comparing
  * entry digests one at a time.
  *
- * Entries and palettes are namespaced by prefix. Without it, a colour and a palette sharing a
- * slug — which is legal, they are different collections — would collide in the root.
+ * Each collection is namespaced by prefix. Without it, a colour, a palette and a combination
+ * sharing a slug — which is legal, they are different collections — would collide in the root.
  */
 export function bundleRootDigest(bundle: VersionBundle, digestOf: DigestFn): string {
   return rootDigest(
     [
       ...bundle.entries.map(({ entry, digest }) => [`color/${entry.slug}`, digest] as const),
       ...bundle.palettes.map(({ palette, digest }) => [`palette/${palette.slug}`, digest] as const),
+      ...bundle.combinations.map(
+        ({ combination, digest }) => [`combination/${combination.slug}`, digest] as const,
+      ),
     ],
     digestOf,
   );

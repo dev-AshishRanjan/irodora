@@ -14,6 +14,7 @@
 
 import { CorpusError } from './errors.js';
 import type { CorpusEntry } from './entry.js';
+import type { CorpusCombination } from './combination.js';
 import type { CorpusPalette } from './palette.js';
 import { checkSourceRegistered, type SourceRegister } from './register.js';
 import { checkEditorialIdentity, requiresReviewer, type Roster } from './workflow.js';
@@ -27,6 +28,7 @@ export interface Sourced<T> {
 export interface CorpusInput {
   readonly entries: readonly Sourced<CorpusEntry>[];
   readonly palettes: readonly Sourced<CorpusPalette>[];
+  readonly combinations: readonly Sourced<CorpusCombination>[];
   readonly roster: Roster;
   readonly register: SourceRegister;
 }
@@ -64,7 +66,7 @@ export function checkCorpus(
   { allowFixtureSlugs = false }: { readonly allowFixtureSlugs?: boolean } = {},
 ): readonly CorpusError[] {
   const failures: CorpusError[] = [];
-  const { entries, palettes, roster, register } = input;
+  const { entries, palettes, combinations, roster, register } = input;
 
   // --- slugs are unique across the corpus ------------------------------------------
   const seenEntry = new Map<string, string>();
@@ -90,9 +92,17 @@ export function checkCorpus(
     else seenPalette.set(record.slug, file);
   }
 
+  const seenCombination = new Map<string, string>();
+  for (const { file, record } of combinations) {
+    const first = seenCombination.get(record.slug);
+    if (first !== undefined)
+      failures.push(new CorpusError(file, 'slug', `"${record.slug}" is already used by ${first}`));
+    else seenCombination.set(record.slug, file);
+  }
+
   // --- fixture slugs may not become content ----------------------------------------
   if (!allowFixtureSlugs)
-    for (const { file, record } of [...entries, ...palettes])
+    for (const { file, record } of [...entries, ...palettes, ...combinations])
       if (record.slug.startsWith(FIXTURE_PREFIX))
         failures.push(
           new CorpusError(
@@ -131,8 +141,31 @@ export function checkCorpus(
           ),
         );
 
+  /*
+   * --- combination members resolve ---------------------------------------------------
+   *
+   * CRITERION 3 (F-196), and the strongest thing a gate can actually check here. Nobody can
+   * detect a transcription by reading our own files — somebody who copies a table by hand
+   * leaves no trace a scanner can see. What this DOES guarantee is that a combination can only
+   * name colours we published ourselves, with our own provenance behind each one. A combination
+   * lifted from a third-party dataset would have to be re-expressed entirely in our corpus to
+   * pass, at which point it is our editorial selection of our own colours.
+   */
+  for (const { file, record } of combinations)
+    for (const [i, member] of record.colors.entries())
+      if (!known.has(member.slug))
+        failures.push(
+          new CorpusError(
+            file,
+            `colors[${String(i)}].slug`,
+            `"${member.slug}" is not a colour in this corpus. A combination may only pair ` +
+              'colours we published ourselves — that is what makes it ours rather than a ' +
+              "transcription of somebody else's table (content/AGENTS.md §2).",
+          ),
+        );
+
   // --- editorial identity ------------------------------------------------------------
-  for (const { file, record } of [...entries, ...palettes]) {
+  for (const { file, record } of [...entries, ...palettes, ...combinations]) {
     if (!requiresReviewer(record.status)) continue;
     const { authoredBy, verifiedBy, reviewIndependence } = record.provenance;
     // `verifiedBy` is non-null at these statuses — `parseProvenance` enforced it — but the
@@ -145,7 +178,7 @@ export function checkCorpus(
   }
 
   // --- the source register ------------------------------------------------------------
-  for (const { file, record } of [...entries, ...palettes])
+  for (const { file, record } of [...entries, ...palettes, ...combinations])
     collect(() => {
       checkSourceRegistered(record.provenance, register, file);
     }, failures);

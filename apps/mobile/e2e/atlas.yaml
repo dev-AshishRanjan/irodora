@@ -9,7 +9,7 @@
 #
 # STEP 3 WALKS THE TAB BAR, not a button on Home. It used to tap `home.openAtlas`, one of the ten buttons Home carried until F-146 rewrote it as an editorial surface; F-145 had already made the Atlas a TAB. The journey kept tapping a control that no longer existed, and the generator caught it — the key was not in the catalogue. That is the point of a journey being generated from keys rather than from strings: a removed control fails the build instead of failing on a device.
 #
-# Selectors resolved against corpus 2026.08.1 and the English catalogue.
+# Selectors resolved against corpus 2026.09.1 and the English catalogue.
 appId: com.irodora.app
 ---
 - launchApp:

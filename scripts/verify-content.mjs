@@ -132,6 +132,44 @@ for (const failure of real.failures) fail(failure.message);
 for (const failure of checkCorpus(real)) fail(failure.message);
 rulesExercised += 1;
 
+// --- combinations are OURS (F-196, NFR-20) ------------------------------------------------
+
+/*
+ * CRITERION 3: *"No third-party combination dataset is ingested, and the content gate is what
+ * enforces it."*
+ *
+ * NO GATE CAN DETECT INGESTION. Somebody who transcribes a table by hand leaves nothing a
+ * scanner can see, and a check that implied otherwise would be worse than no check — it is the
+ * reason nobody goes looking for the real control, which is review.
+ *
+ * What these rules DO establish, and it is not nothing:
+ *
+ *   - a combination is our own editorial work, by `sourceType` and `rightsHolder`
+ *   - it names only colours we published ourselves (`checkCorpus`, above)
+ *   - its `source` resolves against the register, which refuses anything unregistered
+ *
+ * Together those mean a combination lifted from somebody's dataset would have to be
+ * re-expressed entirely in our corpus, under our provenance, citing a registered source — at
+ * which point it is our editorial selection of our own colours, which is the thing we are
+ * allowed to publish.
+ */
+for (const { file, record } of real.combinations) {
+  if (record.provenance.sourceType !== 'editorial')
+    fail(
+      `${file}: provenance.sourceType is "${record.provenance.sourceType}". A combination is an ` +
+        'editorial act — pairing two colours is not a measurement of the world and there is no ' +
+        'publication we are transcribing (content/AGENTS.md §2).',
+    );
+
+  if (record.provenance.rightsHolder !== 'Irodora')
+    fail(
+      `${file}: provenance.rightsHolder is "${record.provenance.rightsHolder}". A combination we ` +
+        'did not originate is one we cannot publish. "Wada is public domain" is not the same ' +
+        'statement as "this digitisation is free to ingest".',
+    );
+}
+rulesExercised += 1;
+
 // --- published bundles: checksum, and agreement with the current engine -------------------
 
 /**
@@ -766,7 +804,8 @@ fixtureRules += 1;
 
 console.log(
   `${DIM}  ${String(real.entries.length)} authored entr${real.entries.length === 1 ? 'y' : 'ies'}, ` +
-    `${String(real.palettes.length)} palette(s), ${String(realBundles.bundleCount)} published ` +
+    `${String(real.palettes.length)} palette(s), ${String(real.combinations.length)} combination(s), ` +
+    `${String(realBundles.bundleCount)} published ` +
     `version(s), ${String(real.register.size)} registered source(s)${OFF}`,
 );
 console.log(
@@ -808,7 +847,11 @@ console.log(
     `roster identities, not that either read it — F-012 owes that as an attested criterion); ` +
     `and an edit to a published entry made together with a matching ledger update, which is a ` +
     `two-file diff caught by review and by nothing else — there is no publish path beyond the ` +
-    `pull request (ADR-0051).${OFF}\n`,
+    `pull request (ADR-0051); and whether a combination was ARRIVED AT independently — no ` +
+    `scanner can see a transcription, so what is enforced is that every combination is our ` +
+    `own editorial work, over colours we published, citing a registered source, which is ` +
+    `what makes re-expressing somebody else\u2019s table into ours the only way through ` +
+    `(F-196).${OFF}\n`,
 );
 
 for (const note of notes) console.log(`  ${YELLOW}!${OFF} ${note}\n`);

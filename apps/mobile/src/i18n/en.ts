@@ -579,6 +579,22 @@ export const en = {
     'No profile yet, so half of each ranking is missing: how a colour sits with this one is figured, how it suits you is not.',
   'wear.buildProfile': 'Build a profile',
   'wear.none': 'No colour in the corpus fits this slot.',
+  /*
+   * F-196 — CURATED, AS OPPOSED TO GENERATED.
+   *
+   * `combos.generated` (F-194) and `combos.curated` are two different claims about where a
+   * combination came from, and the whole point of the corpus record is that they are told
+   * apart. One is geometry; the other is somebody's editorial judgement with a derivation
+   * behind it.
+   */
+  'combos.curated': 'Curated',
+  'combos.curatedWhat':
+    'Combinations chosen by an editor from our own corpus, with the reason recorded.',
+  'combos.lead': 'Lead',
+  'combos.intent.contrast': 'Contrast',
+  'combos.intent.harmony': 'Harmony',
+  'combos.intent.accent': 'Accent',
+  'combos.intent.tonal': 'Tonal',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

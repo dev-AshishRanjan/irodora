@@ -122,6 +122,20 @@ export {
 } from './entry.js';
 
 export {
+  COMBINATION_INTENTS,
+  COMBINATION_MAX,
+  COMBINATION_MIN,
+  COMBINATION_ROLES,
+  leadOf,
+  parseCombination,
+  type CombinationIntent,
+  type CombinationMember,
+  type CombinationName,
+  type CombinationRole,
+  type CorpusCombination,
+} from './combination.js';
+
+export {
   PALETTE_CATEGORIES,
   PALETTE_ROLES,
   parsePalette,
@@ -148,11 +162,12 @@ export {
   type Ledger,
   type LedgerRow,
   type PublishedEntry,
+  type PublishedCombination,
   type PublishedPalette,
   type VersionBundle,
 } from './version.js';
 
-export { ledgerRowFor, loadPublishedVersion, parseLedger } from './load.js';
+export { COMBINATIONS_FROM, ledgerRowFor, loadPublishedVersion, parseLedger } from './load.js';
 
 /**
  * The schema version an entry is authored against.
@@ -164,4 +179,4 @@ export { ledgerRowFor, loadPublishedVersion, parseLedger } from './load.js';
  * `1.0.0` is the first shape that can actually be published: F-011 is what made the schema
  * exist, so `0.0.0` described nothing.
  */
-export const CORPUS_SCHEMA_VERSION = '1.0.0' as const;
+export const CORPUS_SCHEMA_VERSION = '1.1.0' as const;

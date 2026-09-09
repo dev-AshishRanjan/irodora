@@ -37,7 +37,7 @@ import { Button, Card, Row, Screen, Stack, Swatch, Text } from '@irodora/ui';
 import type { HarmonyColor } from '@irodora/color-harmony';
 import { displayFromOklch } from '../engine';
 import { COMBINATIONS_SHOWN, combinationsFor, type Combination } from '../combinations';
-import { colorFor, entryBySlug } from '../corpus';
+import { colorFor, combinationsContaining, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
@@ -109,6 +109,16 @@ export function Combinations({
   const rest = all.slice(COMBINATIONS_SHOWN);
 
   const subjectName = `${subject.entry.name.kanji} ${subject.entry.name.en}`;
+
+  /*
+   * THE CURATED ONES, AND THEY COME FIRST (F-196).
+   *
+   * A combination an editor chose, with a derivation recorded against it, is a stronger claim
+   * than one this engine produced from geometry — so it is not buried under twelve generated
+   * relationships. Most colours are in none of them, and that is a legitimate answer: the
+   * section is absent rather than apologising for being empty.
+   */
+  const curated = combinationsContaining(slug);
 
   /** One relationship: what it is, what it proposes, and what showing it cost. */
   function One({ combination }: { readonly combination: Combination }): React.JSX.Element {
@@ -217,6 +227,74 @@ export function Combinations({
               })}
         />
       </Card>
+
+      {curated.length === 0 ? null : (
+        <Stack gap="sm">
+          <Text size="small" color="foreground.2" script={script}>
+            {t('combos.curatedWhat')}
+          </Text>
+          {curated.map(({ combination, role }) => (
+            <Card
+              key={combination.slug}
+              level="1"
+              header={
+                <Stack gap="xs">
+                  <Text size="body" color="foreground" script={script} heading>
+                    {`${combination.name.ja} ${combination.name.en}`}
+                  </Text>
+                  <Row gap="sm">
+                    {/*
+                      CURATED, NEVER MERELY UNLABELLED. The generated cards below say
+                      "Generated"; a curated one that said nothing would be told apart only by
+                      where it sits on the screen, which is not a distinction a person can rely
+                      on (F-194's note, one release on).
+                    */}
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t('combos.curated')}
+                    </Text>
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t(`combos.intent.${combination.intent}` as MessageKey)}
+                    </Text>
+                    {/*
+                      WHICH PART THIS COLOUR PLAYS. A person arrived here holding one colour,
+                      and "this is the lead" and "this is one of the companions" are different
+                      things to know before looking at the rest.
+                    */}
+                    {role === 'lead' ? (
+                      <Text size="xs" color="foreground.2" script={script}>
+                        {t('combos.lead')}
+                      </Text>
+                    ) : null}
+                  </Row>
+                </Stack>
+              }
+            >
+              <Row gap="sm" wrap>
+                {combination.colors.map((m) => {
+                  const member = entryBySlug(m.slug);
+                  return member === null ? null : (
+                    <Swatch
+                      key={m.slug}
+                      name={member.entry.name.en}
+                      hex={member.derived.hex}
+                      color={colorFor(member.entry)}
+                      size={COMPANION}
+                      script={script}
+                      {...(onOpenColour === undefined
+                        ? {}
+                        : {
+                            onPress: () => {
+                              onOpenColour(m.slug);
+                            },
+                          })}
+                    />
+                  );
+                })}
+              </Row>
+            </Card>
+          ))}
+        </Stack>
+      )}
 
       {/*
         FROM RELATIONSHIPS TO GARMENTS (F-195). Placed above the list rather than under it: a

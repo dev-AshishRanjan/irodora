@@ -5,5 +5,12 @@
     "engine": "0.1.0",
     "publishedAt": "2026-08-24",
     "entryCount": 120
+  },
+  {
+    "label": "2026.09.1",
+    "checksum": "7ee1db6c85235da285276662ea0626b7ff8a5f34154e444a8f1090c536c5031f",
+    "engine": "0.1.0",
+    "publishedAt": "2026-09-08",
+    "entryCount": 120
   }
 ]

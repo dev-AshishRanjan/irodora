@@ -16,6 +16,7 @@ import {
   parseEntry,
   parseLedger,
   parsePalette,
+  parseCombination,
   publishVersion,
   serialiseBundle,
   type CorpusEntry,
@@ -124,8 +125,53 @@ const palettes: readonly CorpusPalette[] = [
   ),
 ];
 
+/**
+ * A published combination, so the bundle's third collection is not empty in every assertion
+ * below (F-196). An empty collection satisfies "the key exists" and checks nothing about the
+ * digest, the namespacing or the round trip.
+ */
+const combinations = [
+  parseCombination(
+    {
+      slug: 'fixture-two-together',
+      name: { en: 'Two Together', ja: '二色' },
+      classification: 'editorial',
+      intent: 'contrast',
+      colors: [
+        { slug: 'fixture-sumi', role: 'lead', rank: 1 },
+        { slug: 'fixture-kinari', role: 'companion', rank: 2 },
+      ],
+      provenance: {
+        source: 'Irodora editorial curation, R7 seed combinations',
+        sourceId: 'IRO-ED-001',
+        sourceType: 'editorial',
+        publisher: null,
+        publishedYear: null,
+        rightsHolder: 'Irodora',
+        sourceLicence: 'Proprietary — Irodora original work',
+        sourceUrl: null,
+        derivation: 'Editorial: a dark lead against a warm undyed light.',
+        authoredBy: 'ed-001',
+        authoredAt: '2026-09-08',
+        verifiedBy: 'ed-002',
+        reviewIndependence: 'independent',
+        verifiedAt: '2026-09-08',
+        editorialNotes: 'Assembled from our own corpus.',
+      },
+      unknowns: {
+        'provenance.publisher': 'our own work, so there is no external publisher',
+        'provenance.publishedYear': 'our own work, so there is no publication date',
+        'provenance.sourceUrl': 'not published externally',
+      },
+      status: 'published',
+      versionId: '2026.08.1',
+    },
+    'fixture-two-together.json',
+  ),
+];
+
 function build(): ReturnType<typeof publishVersion> {
-  return publishVersion('2026.08.1', entries, palettes, META, sha256);
+  return publishVersion('2026.08.1', entries, palettes, combinations, META, sha256);
 }
 
 describe('publishing', () => {
@@ -158,12 +204,21 @@ describe('publishing', () => {
       }),
       'd.json',
     );
-    const bundle = publishVersion('2026.08.1', [...entries, draft], palettes, META, sha256);
+    const bundle = publishVersion(
+      '2026.08.1',
+      [...entries, draft],
+      palettes,
+      combinations,
+      META,
+      sha256,
+    );
     expect(bundle.entries.map((e) => e.entry.slug)).not.toContain('fixture-draft');
   });
 
   it('rejects a label that is not YYYY.MM.N', () => {
-    expect(() => publishVersion('v1', entries, palettes, META, sha256)).toThrow(CorpusError);
+    expect(() => publishVersion('v1', entries, palettes, combinations, META, sha256)).toThrow(
+      CorpusError,
+    );
   });
 
   it('serialises deterministically — two publishes give identical bytes', () => {
@@ -194,14 +249,17 @@ describe('the root digest', () => {
       'shared.json',
     );
     expect(() =>
-      bundleRootDigest(publishVersion('2026.08.1', entries, [shared], META, sha256), sha256),
+      bundleRootDigest(publishVersion('2026.08.1', entries, [shared], [], META, sha256), sha256),
     ).not.toThrow();
   });
 
   it('changes when an entry is added', () => {
-    const one = bundleRootDigest(publishVersion('2026.08.1', entries, [], META, sha256), sha256);
+    const one = bundleRootDigest(
+      publishVersion('2026.08.1', entries, [], [], META, sha256),
+      sha256,
+    );
     const two = bundleRootDigest(
-      publishVersion('2026.08.1', entries.slice(0, 1), [], META, sha256),
+      publishVersion('2026.08.1', entries.slice(0, 1), [], [], META, sha256),
       sha256,
     );
     expect(one).not.toBe(two);
@@ -250,10 +308,60 @@ describe('loading verifies, or refuses', () => {
     }
   });
 
+  /*
+   * F-196 — THE THIRD COLLECTION IS COVERED BY THE SAME MACHINERY, not by a promise that it is.
+   *
+   * A combination added to the bundle and never digest-verified would be the one collection the
+   * app renders on trust — and the "tampered hex" case above is the record of what that costs.
+   */
+  it('rejects a single edited character in a published COMBINATION, and names it', () => {
+    const tampered = text.replace('Two Together', 'Two T0gether');
+    expect(tampered).not.toBe(text);
+    try {
+      loadPublishedVersion(tampered, root, sha256);
+      expect.unreachable('a tampered combination must not load');
+    } catch (error) {
+      expect(error).toBeInstanceOf(CorpusError);
+      expect((error as CorpusError).path).toBe('combinations.fixture-two-together');
+      expect((error as CorpusError).message).toMatch(/SEV1/u);
+    }
+  });
+
+  it('round-trips the combinations rather than dropping them', () => {
+    // The decoy for the case above: a loader that returned NO combinations would never find a
+    // tampered one, and every assertion about refusal would pass while the collection vanished.
+    const loaded = loadPublishedVersion(text, root, sha256);
+    expect(loaded.combinations).toHaveLength(1);
+    expect(loaded.combinations[0]?.combination.slug).toBe('fixture-two-together');
+    expect(loaded.combinations[0]?.combination.colors).toHaveLength(2);
+  });
+
+  it('refuses a bundle with no combinations KEY, rather than reading it as empty', () => {
+    /*
+     * "This version has no combinations" and "this file was written by a build that did not know
+     * about them" must not be the same observation — the second is a version whose root digest
+     * cannot be reproduced.
+     */
+    // Removed structurally rather than by regex: a pattern over serialised JSON is a second
+    // parser, and this assertion is about the KEY being absent rather than about text.
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    delete parsed['combinations'];
+    const without = JSON.stringify(parsed);
+    expect(without).not.toBe(text);
+    expect(() => loadPublishedVersion(without, root, sha256)).toThrow(CorpusError);
+  });
+
   it('rejects a root digest that does not match, even when every entry does', () => {
     // The case per-entry digests cannot catch: an entry REMOVED. Each survivor still hashes
     // correctly; the set is what changed.
-    const fewer = publishVersion('2026.08.1', entries.slice(0, 1), palettes, META, sha256);
+    const fewer = publishVersion(
+      '2026.08.1',
+      entries.slice(0, 1),
+      palettes,
+      combinations,
+      META,
+      sha256,
+    );
     expect(() => loadPublishedVersion(serialiseBundle(fewer), root, sha256)).toThrow(
       /root checksum mismatch.*the SET that changed/su,
     );

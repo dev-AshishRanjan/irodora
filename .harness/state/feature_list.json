@@ -6309,7 +6309,7 @@
       "service": "content",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-194"
       ],
@@ -6317,7 +6317,7 @@
         "Curated combinations are corpus records with complete provenance, a named reviewer and a real derivation",
         "Every one is classified editorial and is never presented as historical",
         "No third-party combination dataset is ingested, and the content gate is what enforces it",
-        "Author and reviewer are different identities, as they are for every other corpus record"
+        "Review independence is declared and never defaulted — self while there is one editor (ADR-0060), and the enforcement runs in both directions"
       ],
       "verification": [
         "state",
@@ -6328,7 +6328,8 @@
         "content",
         "build"
       ],
-      "notes": "The reference is A Dictionary of Color Combinations. \"Wada is public domain\" is not \"this digitisation is free to ingest\" — every accessible one embeds a digitiser's choices about printing, paper ageing and illuminant, and those choices ARE the dataset. We do what the book does, from our own corpus, and can say where every value came from."
+      "notes": "The reference is A Dictionary of Color Combinations. \"Wada is public domain\" is not \"this digitisation is free to ingest\" — every accessible one embeds a digitiser's choices about printing, paper ageing and illuminant, and those choices ARE the dataset. We do what the book does, from our own corpus, and can say where every value came from. CRITERION 4 AMENDED BEFORE WORK: it read \"author and reviewer are different identities, as they are for every other corpus record\". All 125 existing records are reviewIndependence \"self\", ed-001 → ed-001. ADR-0060 decided that deliberately and content/AGENTS.md states the enforcement runs in BOTH directions — two ids naming one person still fails — so satisfying the original wording would require fabricating a second editor, which is the thing the rule exists to prevent. A genuine second reviewer is a real-world action outside this repository and is surfaced rather than simulated.",
+      "plan": "plans/F-196-curated-combinations-in-the-corpus-as-ours.md"
     },
     {
       "id": "F-197",
@@ -6692,6 +6693,35 @@
         "contrast"
       ],
       "notes": "FOUND IN F-195, FILED RATHER THAN ABSORBED. `alternativesFor` runs inside every `recommendForSlot` call, so F-195 computes warmer/cooler/lighter/higher-contrast alternatives for every slot and discards them — which is the exact defect this release exists to fix, one field along. It was NOT added to F-195 because FR-38 is a different requirement from the two F-195 carries, and widening a claimed feature to cover work its criteria never asked for is how scope stops meaning anything. The cost of waiting is a few discarded objects per render; the cost of absorbing it is a feature nobody can tell was finished."
+    },
+    {
+      "id": "F-209",
+      "title": "Decide what @irodora/contracts is for, or retire it",
+      "requirements": [
+        "NFR-26"
+      ],
+      "service": "packages",
+      "release": "R8",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-196"
+      ],
+      "acceptance": [
+        "Every trust boundary in the app is listed with what validates it today, so the decision is made against the real set rather than against the package docblock",
+        "Either the package gains a consumer at a boundary that has no validator, or it is removed and its lint zone and guards go with it",
+        "An ADR records the decision, because F-002 established the package as the single source of runtime validation and unwinding that is a reversal",
+        "If it is retired, the dead-package declaration is removed rather than re-pointed at another future feature"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build"
+      ],
+      "notes": "THE DECLARATION HAS NAMED A CLOSING FEATURE TWICE AND BEEN WRONG BOTH TIMES, which is the signal worth acting on. The package is not unfinished — it is complete, tested, and unused because every boundary that arrived after it was written validates with a hand-written parser that also produces the error paths our gates report: `parseCombination` and `parseEntry` in @irodora/corpus, `importArchive` in @irodora/store. Adding Zod beside any of them would be two parsers for one shape. That is a real architectural question — whether runtime validation belongs in a package of schemas or beside the code that owns the shape — and it is answered by an ADR, not by finding somewhere to import it from."
     }
   ]
 }

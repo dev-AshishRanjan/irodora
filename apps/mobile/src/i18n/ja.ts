@@ -508,6 +508,14 @@ export const ja: Record<MessageKey, string> = {
     'プロフィールが未作成のため、順位の半分が欠けています。この色との相性は算出できますが、あなたに似合うかは算出できません。',
   'wear.buildProfile': 'プロフィールを作成',
   'wear.none': 'この部位に合う色は、収録の色にはありません。',
+  // F-196 — see en.ts: curated and generated are two different claims.
+  'combos.curated': '選定',
+  'combos.curatedWhat': '編集者が自社の色から選び、理由を記録した組み合わせです。',
+  'combos.lead': '主色',
+  'combos.intent.contrast': '対比',
+  'combos.intent.harmony': '調和',
+  'combos.intent.accent': '差し色',
+  'combos.intent.tonal': '濃淡',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

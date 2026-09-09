@@ -42,8 +42,12 @@ import {
   assertSha256,
   loadPublishedVersion,
   type CorpusEntry,
+  COMBINATION_INTENTS,
+  type CombinationRole,
+  type CorpusCombination,
   type CorpusPalette,
   type PublishedEntry,
+  type PublishedCombination,
   type PublishedPalette,
   type VersionBundle,
   familyWord,
@@ -109,6 +113,49 @@ export function allEntries(): readonly PublishedEntry[] {
 /** Every published palette, in slug order. */
 export function allPalettes(): readonly PublishedPalette[] {
   return [...corpus().palettes].sort((a, b) => a.palette.slug.localeCompare(b.palette.slug));
+}
+
+/**
+ * The message key naming each combination intent (F-196).
+ *
+ * Derived from the schema's union rather than listed beside it, for the reason
+ * `COMBINATION_MESSAGE_KEYS` gives: the screen builds the key from the intent, so no literal
+ * exists for `i18n.test.ts`'s source-literal scan to find and the keys have to be excluded from
+ * it. That exclusion is safe only while both directions are pinned.
+ */
+export const CURATED_INTENT_MESSAGE_KEYS: readonly string[] = COMBINATION_INTENTS.map(
+  (intent) => `combos.intent.${intent}`,
+);
+
+/** Every published combination, in slug order (F-196). */
+export function allCombinations(): readonly PublishedCombination[] {
+  return [...corpus().combinations].sort((a, b) =>
+    a.combination.slug.localeCompare(b.combination.slug),
+  );
+}
+
+/**
+ * The curated combinations this colour appears in, and the role it plays in each.
+ *
+ * **Both roles, not only `lead`.** A combination in which this colour is a companion is still
+ * a combination it belongs to, and hiding those would make the answer depend on which colour a
+ * curator happened to write first.
+ */
+export function combinationsContaining(slug: string): readonly {
+  readonly combination: CorpusCombination;
+  readonly role: CombinationRole;
+  readonly rank: number;
+}[] {
+  const found: {
+    combination: CorpusCombination;
+    role: CombinationRole;
+    rank: number;
+  }[] = [];
+  for (const { combination } of allCombinations()) {
+    const member = combination.colors.find((c) => c.slug === slug);
+    if (member !== undefined) found.push({ combination, role: member.role, rank: member.rank });
+  }
+  return found;
 }
 
 /** One entry, or `null`. A route parameter is user input, so a miss is a state, not a crash. */
@@ -219,4 +266,12 @@ export function families(): readonly { readonly family: string; readonly count: 
 }
 
 export { CORPUS_LABEL, CORPUS_ENTRY_COUNT, CORPUS_PALETTE_COUNT };
-export type { CorpusEntry, CorpusPalette, PublishedEntry, PublishedPalette };
+export type {
+  CombinationRole,
+  CorpusCombination,
+  CorpusEntry,
+  CorpusPalette,
+  PublishedCombination,
+  PublishedEntry,
+  PublishedPalette,
+};

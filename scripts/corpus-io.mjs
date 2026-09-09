@@ -102,8 +102,8 @@ export function readJsonFile(path) {
 }
 
 /**
- * Read one corpus root — a directory holding `colors/`, `palettes/`, `editors.json` and
- * `versions/`.
+ * Read one corpus root — a directory holding `colors/`, `palettes/`, `combinations/`,
+ * `editors.json` and `versions/`.
  *
  * `registerPath` is separate because the real corpus reads it from a governed document in
  * `docs/`, while a fixture corpus carries its own copy. Both go through the same parser.
@@ -114,7 +114,15 @@ export function readJsonFile(path) {
  * [[a-gate-that-errors-is-failing-open]].
  */
 export function readCorpusRoot(corpus, { root, registerPath, allowFixtureSlugs = false }) {
-  const { parseEntry, parsePalette, parseRegister, parseRoster, parseLedger, CorpusError } = corpus;
+  const {
+    parseEntry,
+    parsePalette,
+    parseCombination,
+    parseRegister,
+    parseRoster,
+    parseLedger,
+    CorpusError,
+  } = corpus;
 
   const failures = [];
   const push = (error) => {
@@ -152,10 +160,37 @@ export function readCorpusRoot(corpus, { root, registerPath, allowFixtureSlugs =
     }
   }
 
+  /*
+   * ABSENT IS EMPTY HERE, and it is the one place in this function where that is right.
+   *
+   * `readJsonDir` yields nothing for a directory that does not exist, and a corpus root with no
+   * combinations is a legitimate corpus — the fixture roots under packages/corpus/test have
+   * none and must keep passing. That is different from the missing roster above, where "no
+   * editors" and "I could not find the editors" are opposite facts. Here they are the same
+   * fact: nothing to check.
+   */
+  const combinations = [];
+  for (const { file, value } of readJsonDir(join(root, 'combinations'))) {
+    try {
+      combinations.push({ file, record: parseCombination(value, file) });
+    } catch (error) {
+      push(error);
+    }
+  }
+
   const ledgerPath = join(root, 'versions', 'index.json');
   const ledger = existsSync(ledgerPath)
     ? parseLedger(readJsonFile(ledgerPath), 'versions/index.json')
     : [];
 
-  return { roster, register, entries, palettes, ledger, failures, allowFixtureSlugs };
+  return {
+    roster,
+    register,
+    entries,
+    palettes,
+    combinations,
+    ledger,
+    failures,
+    allowFixtureSlugs,
+  };
 }

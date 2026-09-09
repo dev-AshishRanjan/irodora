@@ -124,7 +124,8 @@ export const CORPUS_BUNDLE_TEXT = ${JSON.stringify(bundleText)};
 
 console.log(
   `${DIM}  ${row.label} · ${String(bundle.entries.length)} entries, ` +
-    `${String(bundle.palettes.length)} palettes · engine ${bundle.engine}${OFF}`,
+    `${String(bundle.palettes.length)} palettes, ${String(bundle.combinations.length)} combinations · ` +
+    `engine ${bundle.engine}${OFF}`,
 );
 console.log(`${DIM}  root digest ${row.checksum}${OFF}\n`);
 

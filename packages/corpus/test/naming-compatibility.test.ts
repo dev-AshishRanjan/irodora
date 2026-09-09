@@ -96,6 +96,7 @@ const bundle: VersionBundle = publishVersion(
   '2026.08.1',
   entries,
   [],
+  [],
   { engine: '0.1.0', corpusSchemaVersion: '1.0.0', publishedAt: '2026-08-18' },
   sha256,
 );

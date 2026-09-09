@@ -1,0 +1,50 @@
+{
+  "slug": "mizu-sandan",
+  "name": {
+    "en": "Water at Three Depths",
+    "ja": "三段の水"
+  },
+  "classification": "editorial",
+  "intent": "harmony",
+  "colors": [
+    {
+      "slug": "soko-umi",
+      "role": "lead",
+      "rank": 1
+    },
+    {
+      "slug": "fuka-mizu",
+      "role": "companion",
+      "rank": 2
+    },
+    {
+      "slug": "en-yo",
+      "role": "companion",
+      "rank": 3
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed combinations, 2026",
+    "sourceId": "IRO-ED-004",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial: three deep-blue entries held within 10 degrees of hue (250, 240, 250) and within 0.014 of chroma (0.096, 0.104, 0.110), separated on lightness alone at 0.348, 0.440 and 0.524 — steps of 0.092 and 0.084, close enough to even that no member reads as the odd one. Selected by sorting the family on lightness and taking the three whose spacing was most nearly equal.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-08",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-08",
+    "reviewIndependence": "self",
+    "editorialNotes": "The hard part of a one-family combination is that it collapses into a single colour at three brightnesses if the chroma drifts. Holding chroma inside 0.014 is what keeps the three legible as a relationship rather than as a printing error."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.09.1"
+}

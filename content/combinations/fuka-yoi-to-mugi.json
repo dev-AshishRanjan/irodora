@@ -1,0 +1,45 @@
+{
+  "slug": "fuka-yoi-to-mugi",
+  "name": {
+    "en": "Deep Night and Wheat",
+    "ja": "深宵と麦"
+  },
+  "classification": "editorial",
+  "intent": "contrast",
+  "colors": [
+    {
+      "slug": "fuka-yoi",
+      "role": "lead",
+      "rank": 1
+    },
+    {
+      "slug": "mugi-batake",
+      "role": "companion",
+      "rank": 2
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed combinations, 2026",
+    "sourceId": "IRO-ED-004",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial: two of our own 2026.08.1 entries chosen for a large gap on BOTH axes that carry contrast. Lightness 0.268 against 0.838 in OKLCh — a gap of 0.570, the widest in this set — and hues 278 and 84, which are 194 degrees apart and therefore close to opposed. Neither value was adjusted to make the pair work; the pair was found among the entries as published.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-08",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-08",
+    "reviewIndependence": "self",
+    "editorialNotes": "The lightness gap is doing most of the work and the hue opposition is doing the rest, which is why this is the pair a person can judge in bad light. Two members rather than three on purpose: a third would sit between them and soften exactly what the combination is for."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.09.1"
+}

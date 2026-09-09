@@ -33,6 +33,7 @@ import {
 // restating a set that would then be two copies of one contract (E-013's shape).
 import { MESSAGE_KEYS as SCORE_MESSAGE_KEYS, OUTFIT_MESSAGE_KEYS } from '@irodora/recommendation';
 import { COMBINATION_MESSAGE_KEYS } from '../src/combinations';
+import { CURATED_INTENT_MESSAGE_KEYS } from '../src/corpus';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.
@@ -148,6 +149,22 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
     const declared = MESSAGE_KEYS.filter((k) => k.startsWith('combo.'));
 
     expect([...declared].sort()).toEqual([...COMBINATION_MESSAGE_KEYS].sort());
+  });
+
+  /*
+   * THE FOUR COMBINATION INTENTS (F-196), pinned the same way and for the same reason: the
+   * screen builds `combos.intent.<intent>` from the record, so no literal exists to find.
+   */
+  it('has every intent name the combination schema allows', () => {
+    const missing = CURATED_INTENT_MESSAGE_KEYS.filter((k) => !(k in en));
+
+    expect(missing).toHaveLength(0);
+  });
+
+  it('declares no intent name the schema does not allow', () => {
+    const declared = MESSAGE_KEYS.filter((k) => k.startsWith('combos.intent.'));
+
+    expect([...declared].sort()).toEqual([...CURATED_INTENT_MESSAGE_KEYS].sort());
   });
 
   it('DECOY — the engine prefix does not swallow the screen copy beside it', () => {
@@ -305,6 +322,8 @@ describe('every declared key is used, and every used key is declared', () => {
       ...SCORE_MESSAGE_KEYS,
       ...OUTFIT_MESSAGE_KEYS,
       ...COMBINATION_MESSAGE_KEYS,
+      // F-196 added the four intents, pinned in both directions above.
+      ...CURATED_INTENT_MESSAGE_KEYS,
     ]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toHaveLength(0);

@@ -3835,6 +3835,68 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-102",
+      "from": {
+        "kind": "file",
+        "ref": "packages/corpus/src/combination.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/corpus/src/version.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/corpus/src/load.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/corpus/src/corpus.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/corpus-io.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-corpus.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-content.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "content/versions/2026.09.1.json"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/content/licensing-and-provenance.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "packages/corpus",
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "A THIRD COLLECTION IN THE BUNDLE MEANS A THIRD PLACE THE DIGEST CHAIN CAN HAVE A HOLE, and it is closed the same way the first two are: a per-record digest verified at load on the device, namespaced `combination/<slug>` in the root so a colour and a combination sharing a slug cannot collide, and a test that edits one character of a published combination and requires the load to refuse and NAME it. Its decoy matters as much — a loader returning no combinations would never find a tampered one, so the round trip is asserted beside the refusal. THE SCHEMA VERSION IS THE COMPATIBILITY GUARD: the key is required from corpusSchemaVersion 1.1.0 and absent-means-none before it, because 2026.08.1 is published and immutable and cannot grow the key — making it optional everywhere would have given up the distinction between \"no combinations\" and \"written by a build that did not know about them\" for every future bundle too. An empty collection contributes no rows to the root digest, so every previously published checksum still verifies. WHAT IS NOT GUARDED, AND THE GATE SAYS SO ON EVERY RUN: whether a combination was arrived at independently. No scanner sees a transcription. What is enforced is that every one is our own editorial work, over colours we published, citing a registered source — which makes re-expressing somebody else's table into ours the only way through, at which point it is our selection of our own colours.",
+      "memory": "memory/effects/a-record-type-is-a-claim-and-the-parser-is-where-it-is-kept.md",
+      "rationale": "FR-73 NEEDED A SECOND KIND OF COMBINATION. F-194 ships generated ones and labels every card `Generated` — in that file's own words, *\"a relationship computed from geometry and one recorded by a curator are different claims, and F-196 adds the second\"*. THE REFERENCE IS A DICTIONARY OF COLOR COMBINATIONS AND NOTHING FROM IT WAS READ: \"Wada is public domain\" is not \"this digitisation is free to ingest\", because the digitiser's choices about printing, paper ageing and illuminant ARE the dataset (content/AGENTS.md §2, ADR-0007). We do what the book does, from 120 colours we constructed ourselves. THE RECORD TYPE IS SEPARATE FROM PALETTE ON PURPOSE: a palette is a family of 5–8 with an anchor and weights; a combination is 2–4 with a lead. Two to four is enforced because one is a colour and five is a palette — without the bounds the two types drift into synonyms and the claim each makes stops being legible from the type. AND THE CLASSIFICATION RULE IS UNCONDITIONAL HERE, unlike for an entry: `checkClassification` constrains an entry to our own curation only when its sourceType is editorial, because an entry CAN be historical — somebody measured a dyed silk. There is no sourceType under which pairing two colours is a measurement of the world.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

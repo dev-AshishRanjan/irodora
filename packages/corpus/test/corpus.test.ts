@@ -12,10 +12,12 @@ import {
   checkSourceRegistered,
   CorpusError,
   parseEntry,
+  parseCombination,
   parsePalette,
   parseRegister,
   parseRoster,
   type CorpusEntry,
+  type CorpusCombination,
   type CorpusPalette,
   type Roster,
   type SourceRegister,
@@ -152,7 +154,33 @@ function palette(slug: string, members: readonly string[]): Sourced<CorpusPalett
   return { file: `${slug}.json`, record };
 }
 
-const base = { roster, register };
+function combination(slug: string, members: readonly string[]): Sourced<CorpusCombination> {
+  const record = parseCombination(
+    {
+      slug,
+      name: { en: 'Two Together', ja: '二色' },
+      classification: 'editorial',
+      intent: 'contrast',
+      colors: members.map((m, i) => ({
+        slug: m,
+        role: i === 0 ? 'lead' : 'companion',
+        rank: i + 1,
+      })),
+      provenance: (entryJson('x') as { provenance: unknown }).provenance,
+      unknowns: {
+        'provenance.publisher': 'our own work',
+        'provenance.publishedYear': 'our own work',
+        'provenance.sourceUrl': 'not published externally',
+      },
+      status: 'published',
+      versionId: '2026.08.1',
+    },
+    `${slug}.json`,
+  );
+  return { file: `${slug}.json`, record };
+}
+
+const base = { roster, register, palettes: [], combinations: [] };
 
 // --- the register -------------------------------------------------------------------
 
@@ -342,6 +370,36 @@ describe('relations must resolve', () => {
         entry('fixture-b'),
       ],
       palettes: [],
+    };
+    expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
+  });
+});
+
+describe('combination members must resolve — criterion 3 of F-196', () => {
+  /*
+   * The strongest thing a gate can honestly check here. Nobody detects a transcription by
+   * reading our own files; what this guarantees is that a combination can only pair colours we
+   * published ourselves, each with our provenance behind it. A combination lifted from a
+   * third-party table would have to be re-expressed entirely in our corpus to pass — at which
+   * point it is our editorial selection of our own colours.
+   */
+  it('reports a member that is not a colour in this corpus', () => {
+    const input = {
+      ...base,
+      entries: [entry('fixture-a')],
+      combinations: [combination('fixture-c', ['fixture-a', 'fixture-elsewhere'])],
+    };
+    const failures = checkCorpus(input, { allowFixtureSlugs: true });
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.path).toBe('colors[1].slug');
+    expect(failures[0]?.message).toMatch(/colours we published ourselves/u);
+  });
+
+  it('accepts one whose members all resolve, so the rule is not refusing everything', () => {
+    const input = {
+      ...base,
+      entries: [entry('fixture-a'), entry('fixture-b')],
+      combinations: [combination('fixture-c', ['fixture-a', 'fixture-b'])],
     };
     expect(checkCorpus(input, { allowFixtureSlugs: true })).toHaveLength(0);
   });

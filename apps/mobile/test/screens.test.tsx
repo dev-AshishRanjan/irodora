@@ -50,6 +50,7 @@ import { Combinations } from '../src/screens/Combinations';
 import { Wear } from '../src/screens/Wear';
 import type { PersonalProfile } from '@irodora/recommendation';
 import { combinationsFor } from '../src/combinations';
+import { allCombinations } from '../src/corpus';
 import { Contemporary } from '../src/screens/Contemporary';
 import { PaletteStudio } from '../src/screens/PaletteStudio';
 import { Preferences, type PreferenceStore } from '../src/screens/Preferences';
@@ -237,13 +238,21 @@ const BOTH_COST_BRANCHES =
  * **Derived, never pasted.** A literal list would pass while the engine drifted underneath
  * it — the suite would go on measuring nine hexes that nothing renders, and report clean.
  */
-const GENERATED_HEXES: readonly string[] = combinationsFor([
-  BOTH_COST_BRANCHES.derived.oklch[0],
-  BOTH_COST_BRANCHES.derived.oklch[1],
-  BOTH_COST_BRANCHES.derived.oklch[2],
-]).flatMap((c) =>
-  c.companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).hex),
-);
+function generatedHexes(slug: string): readonly string[] {
+  const found = entryBySlug(slug);
+  if (found === null) return [];
+  const { oklch } = found.derived;
+  return combinationsFor([oklch[0], oklch[1], oklch[2]]).flatMap((c) =>
+    c.companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).hex),
+  );
+}
+
+/*
+ * PER SUBJECT, because the subject decides them. A single list computed for one colour and
+ * reused for another declares hexes that subject never paints and omits every one it does —
+ * which the suite reports as unresolved literals, correctly.
+ */
+const GENERATED_HEXES: readonly string[] = generatedHexes(BOTH_COST_BRANCHES.entry.slug);
 
 /**
  * Somebody the engine has something to go on about (F-195).
@@ -260,6 +269,16 @@ const WEARER: PersonalProfile = {
   contrast: 'high',
   confidence: { temperature: 0.8, lightness: 0.8, chroma: 0.7, contrast: 0.6 },
 };
+
+/**
+ * A colour that IS in a curated combination (F-196).
+ *
+ * Resolved from the shipped corpus rather than named, so a republished corpus moves the subject
+ * instead of leaving one that no longer renders the branch it was registered for. The lead of
+ * the first combination, because a lead renders one line the companions do not.
+ */
+const CURATED_LEAD =
+  allCombinations()[0]?.combination.colors.find((c) => c.role === 'lead')?.slug ?? '';
 
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
@@ -911,6 +930,18 @@ const SCREENS: readonly ConformanceSubject[] = [
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...GENERATED_HEXES],
     render: (_state, theme) => draw(<Combinations slug={BOTH_COST_BRANCHES.entry.slug} />, theme),
+  },
+  {
+    /*
+     * A COLOUR IN A CURATED COMBINATION (F-196). A genuinely different tree from the subject
+     * above: the curated section, its "Curated" and intent labels, the lead marker, and swatches
+     * drawn from corpus entries rather than from engine output. Most colours are in no curated
+     * combination, so without this subject the whole section would be measured by nothing.
+     */
+    name: 'screens/Combinations (curated)',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, ...generatedHexes(CURATED_LEAD)],
+    render: (_state, theme) => draw(<Combinations slug={CURATED_LEAD} />, theme),
   },
   {
     /*

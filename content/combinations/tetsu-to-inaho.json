@@ -1,0 +1,50 @@
+{
+  "slug": "tetsu-to-inaho",
+  "name": {
+    "en": "Iron and Rice Ear",
+    "ja": "鉄と稲穂"
+  },
+  "classification": "editorial",
+  "intent": "accent",
+  "colors": [
+    {
+      "slug": "tetsu-suna",
+      "role": "lead",
+      "rank": 1
+    },
+    {
+      "slug": "kawaki-suna",
+      "role": "companion",
+      "rank": 2
+    },
+    {
+      "slug": "ina-ho",
+      "role": "companion",
+      "rank": 3
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed combinations, 2026",
+    "sourceId": "IRO-ED-004",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial: a near-neutral ground of two entries at chroma 0.013 and 0.024, and one member at chroma 0.108 — four times the higher of the two — carrying the whole of the combination's colour. The lead is the dark ground rather than the accent, because the accent is what is being placed and the ground is what it is placed against.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-08",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-08",
+    "reviewIndependence": "self",
+    "editorialNotes": "Two accents were tried and rejected: at this chroma the second competes rather than reads, which is the same finding the Earth and Clay palette records for a seven-member group. One carrier, and the other two stay out of its way."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.09.1"
+}

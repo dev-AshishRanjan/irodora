@@ -19635,3 +19635,111 @@ useful is the judgement no gate here discharges — and the pool is historical J
 not garments anybody sells.
 
 ---
+
+## F-196 — Curated combinations, in the corpus, as ours
+
+F-194 ships **generated** combinations and labels every card *Generated*, because — in that
+file's own words — *"a relationship computed from geometry and one recorded by a curator are
+different claims, and F-196 adds the second"*. This is that second claim.
+
+**The reference is *A Dictionary of Color Combinations*, and nothing from it was read.** *"Wada
+is public domain"* is not *"this digitisation is free to ingest"*: the digitiser's choices about
+printing, paper ageing and illuminant **are** the dataset. We do what the book does, from 120
+colours we constructed ourselves.
+
+### A new record type, because it is a different claim
+
+| | | | |
+|---|---|---|---|
+| **palette** | family | 5–8 | anchor + weights — *these belong together* |
+| **combination** | pairing | 2–4 | lead + companions — *these go together* |
+
+**Two and four are both load-bearing.** One colour is a colour; five is a palette. Without the
+bounds the two record types drift into synonyms and the claim each one makes stops being legible
+from the type.
+
+**The classification rule is unconditional here, unlike for an entry.** `checkClassification`
+constrains an *entry* to our own curation only when its `sourceType` is editorial — because an
+entry **can** be historical: somebody measured a dyed silk. There is no `sourceType` under which
+pairing two colours is a measurement of the world, so the parser refuses `historical` outright.
+
+### Four records, one per intent
+
+`contrast` · `harmony` · `accent` · `tonal` — deliberately one each, because a union member no
+record produces is a value nothing consumes, and a test asserts the set. Every derivation states
+the OKLCh reason: a lightness gap of 0.570 with hues 194° apart; three blues inside 10° of hue
+and 0.014 of chroma with even lightness steps; a near-neutral ground and one member at four times
+its chroma; three ochres with every axis but lightness held still.
+
+Registered as **IRO-ED-004** in the governed source register.
+
+### What criterion 3 can honestly mean
+
+*"No third-party combination dataset is ingested, and the content gate is what enforces it."*
+
+**No gate can detect ingestion.** Somebody transcribing a table by hand leaves nothing a scanner
+sees, and a check implying otherwise is worse than none — it is why nobody looks for the real
+control. What the gate does enforce: every combination is `editorial`/`Irodora`, names only
+colours we published, and cites a registered source. Together those make re-expressing somebody
+else's table into ours the only way through — at which point it is our selection of our own
+colours. **The gate prints what it cannot see, on every run.**
+
+### Criterion 4 was false, and ADR-0060 is why
+
+It read *"author and reviewer are different identities, as they are for every other corpus
+record"*. **All 125 existing records are `reviewIndependence: "self"`, `ed-001 → ed-001`.** One
+editor. ADR-0060 decided that deliberately, and the enforcement runs **in both directions** —
+*two ids naming one person still fails*. Satisfying the original wording would have required
+fabricating a second editor, which is the thing the rule exists to prevent.
+
+Amended before work to what the repository requires: independence **declared, never defaulted**.
+A genuine second reviewer is a real-world action outside this repository and is **surfaced, not
+simulated**.
+
+### A new corpus version, because a published one is immutable
+
+**2026.09.1** — the same 120 entries and 5 palettes, plus 4 combinations, at
+`corpusSchemaVersion` **1.1.0**. The collection is *required* from 1.1.0 and *absent-means-none*
+before it: 2026.08.1 cannot grow the key, and making it optional everywhere would have given up
+the difference between *no combinations* and *written by a build that did not know about them*
+for every future bundle. An empty collection adds no rows to the root digest, so every checksum
+already in the ledger still verifies.
+
+### The plan was wrong about @irodora/contracts, and that is recorded — F-209
+
+The plan said this feature would give the Zod package a consumer, because the dead-package
+declaration said so. **It does not.** `parseCombination` is hand-written like every other corpus
+parser and produces the `CorpusError` paths the gate reports; a Zod schema beside it would be a
+second parser for one shape, free to drift — the defect `version.ts` already documents. The same
+is true of the other boundary: F-035 made `importArchive` take `unknown` and validate every
+field itself.
+
+The declaration has now named a closing feature **twice** and been wrong both times, which is the
+signal. F-209 is the decision — adopt it at a boundary that has no validator, or retire it — and
+it is an ADR's question, not a task to be discharged by finding somewhere to import from.
+
+### Two gates caught real things
+
+**The font subset was missing every kanji added across F-194, F-195 and F-196.** Japanese copy
+would have rendered as tofu boxes. Regenerated — 942 codepoints.
+
+**The e2e flow drifted** as routes were added, and refused rather than passing quietly.
+
+### Effects
+
+**E-102** — a third collection in the bundle is a third place the digest chain can have a hole.
+Guard: per-record digests verified on the device, `combination/<slug>` namespacing, and a tamper
+test that requires the load to refuse *and name it* — with a round-trip decoy, since a loader
+returning nothing would never find a tampered record.
+
+### Gates
+
+state · typecheck · lint · format · test · **content** · build · a11y · contrast · color-golden ·
+cvd — **PASS**. 880 mobile tests over 38 suites, 284 corpus tests.
+
+### Attested, not asserted
+
+Nobody has looked at a curated combination. Whether these read as considered or arbitrary is the
+editorial judgement, and it is the entire value of the record type.
+
+---

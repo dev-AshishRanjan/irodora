@@ -1,0 +1,50 @@
+{
+  "slug": "ochre-sandan",
+  "name": {
+    "en": "Three Ochres",
+    "ja": "三つの黄土"
+  },
+  "classification": "editorial",
+  "intent": "tonal",
+  "colors": [
+    {
+      "slug": "asa-bukuro",
+      "role": "lead",
+      "rank": 1
+    },
+    {
+      "slug": "kare-no",
+      "role": "companion",
+      "rank": 2
+    },
+    {
+      "slug": "suna-kabe",
+      "role": "companion",
+      "rank": 3
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — seed combinations, 2026",
+    "sourceId": "IRO-ED-004",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Editorial: three ochre entries inside a 10-degree hue band (76, 80, 70) with chroma held between 0.040 and 0.054, rising in lightness 0.660, 0.746, 0.866. A dilution rather than a contrast: every axis but lightness is deliberately held still.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-08",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-08",
+    "reviewIndependence": "self",
+    "editorialNotes": "These three also appear in the Earth and Clay palette, and that is not a duplication — a palette says these belong to one family, a combination says these three go together, and the second is a narrower claim a person can act on. Stated here rather than left for a reader to notice and wonder about."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.09.1"
+}
