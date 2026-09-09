@@ -4089,6 +4089,50 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-107",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/against-target.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/CameraLens.tsx"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/i18n.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "CRITERION 4 IS AN ORDERING REQUIREMENT AND IS BUILT AS ONE: `poorCapture` is read off the capture QUALITY and never inferred from the distance, and the panel renders that line above the number. Its test is the case that matters — a reading landing exactly on the target with a poor capture must still be flagged, because a good number and a bad one can look alike. THE DEAD BANDS ARE CHECKED FROM BOTH SIDES: a band asserted only from the inside could be infinite. THE DIRECTIONS HAVE A DECOY: a reading identical to the target must report `same` on all three axes, or the words are being generated rather than measured. TWELVE DIRECTION STRINGS ARE PINNED IN BOTH DIRECTIONS in i18n.test.ts, because the panel builds `against.<direction>.<axis>` and the unused-key scan is a source-literal scan; the three AXIS LABELS are pinned forward only, and that is stated as safe rather than assumed — a leftover `against.something` is not in the exclusion list, so the scan still reports it. WHAT IS NOT GUARDED: that warm and cool are the right words for a hue direction. They are a convention with published poles, and the arc is reported beside them as a number so the word never replaces the measurement.",
+      "memory": "memory/effects/a-direction-nobody-can-act-on-is-not-an-answer.md",
+      "rationale": "F-200 ARMED A TARGET; THIS IS THE HALF THAT ANSWERS AGAINST IT, completing the report *\"scan a colour and check its similarity/difference against a target colour\"*. NOTHING HERE COMPUTES A DIFFERENCE OF ITS OWN: `deltaE00` is the one `compare.ts` ranks with, `temperatureOf` is the outfit engine’s with the PUBLISHED poles, and `hueDelta` is the shortest signed arc — subtracting two hue angles being the one place the obvious arithmetic is wrong. `compare()` itself is NOT reused, and the reason is its own docblock: it takes two `PublishedEntry` values *\"so a caller cannot hand it a colour whose origin nobody recorded\"*, and neither side here is one — a reading is a capture and a target may be a colour the engine generated. The rule is kept by taking `Color` on both sides, which carries provenance under ADR-0005 for exactly that purpose; what is refused is a signature taking two triples. AND THE WORD \"MATCH\" APPEARS NOWHERE: `similarityPercent` exists in @irodora/color-naming and is deliberately unused, because a percentage invites \"96% match\", which is a claim about identity that a distance does not make.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

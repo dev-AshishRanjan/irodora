@@ -45,6 +45,8 @@ import { router } from 'expo-router';
 import { Lens } from '../screens/Lens';
 import { Viewfinder, useLensPermission } from './viewfinder';
 import { lensExits } from './exits';
+import type { TargetColour } from '../target';
+import type { TemperaturePoles } from '../against-target';
 import {
   CAPTURE_IDLE,
   CAPTURE_TIMEOUT_MS,
@@ -69,9 +71,21 @@ import type { LensReading } from './reading';
 export interface CameraLensProps {
   /** The photo library, as a port. Supplied by the route; see the header. */
   readonly imageSource: ImageSource;
+  /**
+   * The colour being compared against, and the poles needed to say warmer or cooler (F-201).
+   *
+   * Both come from the ROUTE. This component owns the camera, not the content — a module that
+   * read the rule set here would put content loading behind a lazy native import.
+   */
+  readonly target?: TargetColour | null;
+  readonly poles?: TemperaturePoles;
 }
 
-export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.Element {
+export default function CameraLens({
+  imageSource,
+  target = null,
+  poles,
+}: CameraLensProps): React.JSX.Element {
   const { permission, request } = useLensPermission();
   const [capture, dispatch] = useReducer(nextCapture, CAPTURE_IDLE);
   /**
@@ -288,6 +302,9 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
       onOpenContemporary={exits.openContemporary}
       // F-197: the other question about the same nearest entry.
       onOpenCombinations={exits.openCombinations}
+      // F-201: the comparison, when one is armed.
+      target={target}
+      {...(poles === undefined ? {} : { poles })}
       onOpenColour={exits.openColour}
     />
   );

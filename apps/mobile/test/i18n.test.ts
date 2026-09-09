@@ -34,6 +34,7 @@ import {
 import { MESSAGE_KEYS as SCORE_MESSAGE_KEYS, OUTFIT_MESSAGE_KEYS } from '@irodora/recommendation';
 import { COMBINATION_MESSAGE_KEYS } from '../src/combinations';
 import { CURATED_INTENT_MESSAGE_KEYS } from '../src/corpus';
+import { AGAINST_AXIS_KEYS, AGAINST_MESSAGE_KEYS } from '../src/against-target';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.
@@ -165,6 +166,41 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
     const declared = MESSAGE_KEYS.filter((k) => k.startsWith('combos.intent.'));
 
     expect([...declared].sort()).toEqual([...CURATED_INTENT_MESSAGE_KEYS].sort());
+  });
+
+  /*
+   * THE TWELVE DIRECTION STRINGS (F-201), pinned both ways for the reason the sets above are:
+   * the panel builds `against.<direction>.<axis>` from the measurement, so there is no
+   * literal for the scan to find. One-way pinning would let an axis report a direction with
+   * no words, or leave words for a direction nothing produces.
+   */
+  it('has a label for every axis the comparison reports', () => {
+    expect(AGAINST_AXIS_KEYS.filter((k) => !(k in en))).toHaveLength(0);
+    expect(AGAINST_AXIS_KEYS.filter((k) => !(k in ja))).toHaveLength(0);
+  });
+
+  it('has every direction string the comparison can produce', () => {
+    const missing = AGAINST_MESSAGE_KEYS.filter((k) => !(k in en));
+
+    expect(missing).toHaveLength(0);
+  });
+
+  it('declares no direction string the comparison cannot produce', () => {
+    // THREE segments. `against.title`, `against.distance` and the axis labels are the
+    // screen's own copy with TWO, so the partition cannot collide with them.
+    const declared = MESSAGE_KEYS.filter(
+      (k) => k.startsWith('against.') && k.split('.').length === 3,
+    );
+
+    expect([...declared].sort()).toEqual([...AGAINST_MESSAGE_KEYS].sort());
+  });
+
+  it('DECOY — the segment count separates the two, so neither list is empty', () => {
+    // If every `against.*` key had three segments the filter would be matching everything,
+    // and if none did it would be matching nothing. Both sides must be populated.
+    const two = MESSAGE_KEYS.filter((k) => k.startsWith('against.') && k.split('.').length === 2);
+    expect(two.length).toBeGreaterThan(0);
+    expect(AGAINST_MESSAGE_KEYS.length).toBeGreaterThan(0);
   });
 
   it('DECOY — the engine prefix does not swallow the screen copy beside it', () => {
@@ -363,6 +399,10 @@ describe('every declared key is used, and every used key is declared', () => {
       ...COMBINATION_MESSAGE_KEYS,
       // F-196 added the four intents, pinned in both directions above.
       ...CURATED_INTENT_MESSAGE_KEYS,
+      // F-201 added the twelve direction strings, pinned in both directions above, and the
+      // three axis labels, pinned forward — see AGAINST_AXIS_KEYS for why one way is enough.
+      ...AGAINST_MESSAGE_KEYS,
+      ...AGAINST_AXIS_KEYS,
     ]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toHaveLength(0);

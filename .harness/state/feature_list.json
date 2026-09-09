@@ -6478,7 +6478,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-200",
         "F-178"
@@ -6498,6 +6498,15 @@
         "color-golden",
         "a11y",
         "build"
+      ],
+      "plan": "plans/F-201-the-lens-answers-against-a-target.md",
+      "attested": [
+        {
+          "criterion": "A poor capture says so before it says a number",
+          "verifiedBy": "The ORDERING is built and asserted in source — `poorCapture` is read off the capture quality rather than inferred from the distance, and the panel renders it above the figure, with a conformance subject that draws the whole tree. What is NOT verified is that a person reading it on a device takes the warning first; that is a judgement about a real screen, and gate 7 (e2e) is pending on a workstation with no JDK and no emulator.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

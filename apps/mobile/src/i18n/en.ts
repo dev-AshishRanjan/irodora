@@ -640,6 +640,38 @@ export const en = {
   'target.armed': 'Comparing against',
   'target.disarm': 'Stop comparing',
   'target.arm': 'Compare against this',
+  /*
+   * F-201 — AGAINST THE TARGET.
+   *
+   * THE WORD "MATCH" APPEARS NOWHERE, and that is criterion 3 rather than a stylistic
+   * preference. `similarityPercent` exists in @irodora/color-naming and is deliberately unused:
+   * a percentage invites "96% match", which is a claim about identity that a distance does not
+   * make.
+   *
+   * The `same.*` strings say WHY they say the same — "within the band this product treats as
+   * none" — because a bare "the same" would be a claim about perception, and nobody here has
+   * measured what a person notices. The band is a convention and says so.
+   */
+  'against.title': 'Against the target',
+  'against.distance': 'Distance',
+  'against.lightness': 'Lightness',
+  'against.chroma': 'Vividness',
+  'against.temperature': 'Temperature',
+  'against.hueArc': 'Hue, shortest arc',
+  'against.more.lightness': 'Lighter than the target',
+  'against.less.lightness': 'Darker than the target',
+  'against.same.lightness': 'The same lightness, within the band this product treats as none',
+  'against.more.chroma': 'More vivid than the target',
+  'against.less.chroma': 'Less vivid than the target',
+  'against.same.chroma': 'The same vividness, within the band this product treats as none',
+  'against.more.temperature': 'Warmer than the target',
+  'against.less.temperature': 'Cooler than the target',
+  'against.same.temperature':
+    'Neither warmer nor cooler, within the band this product treats as none',
+  'against.poor':
+    'This capture was poor. Read the numbers below with that in mind, or take the reading again.',
+  'against.what':
+    'How far this reading sits from the colour you are comparing against, and which way. A distance, not a judgement about whether they are the same colour.',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

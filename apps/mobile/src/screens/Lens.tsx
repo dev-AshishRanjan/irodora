@@ -77,6 +77,8 @@ import {
 } from '@irodora/ui';
 import { displayFromOklch } from '../engine';
 import { nearestByOklch, type NearestEntry } from '../finder';
+import { differenceFrom, type TemperaturePoles } from '../against-target';
+import type { TargetColour } from '../target';
 import { colorFor } from '../corpus';
 import { readingOklch, worthOffering } from '../profile/photo';
 import { LENS_MODES, type CaptureFailure, type LensMode, type PhotoState } from '../lens/capture';
@@ -405,6 +407,21 @@ export interface LensProps {
    * did both would have to be labelled with neither.
    */
   readonly onOpenCombinations?: (slug: string) => void;
+  /**
+   * The colour being compared against, or `null` (F-201).
+   *
+   * A prop rather than a `useTarget` call here, for the reason every port in this app is a
+   * prop: a screen reading the context could not be rendered by the conformance suite, which is
+   * where the accessibility guarantees are actually checked. The route reads the hook.
+   */
+  readonly target?: TargetColour | null;
+  /**
+   * The published warm and cool poles, needed to say warmer or cooler.
+   *
+   * Supplied by the route rather than read here, so this screen never reaches content itself —
+   * the same division `Wear` and `Combinations` keep.
+   */
+  readonly poles?: TemperaturePoles;
 }
 
 export function Lens({
@@ -431,6 +448,8 @@ export function Lens({
   onOpenColour,
   onOpenContemporary,
   onOpenCombinations,
+  target = null,
+  poles,
 }: LensProps = {}): React.JSX.Element {
   const { t, script } = useMessages();
   const { colors } = useTheme();
@@ -464,6 +483,29 @@ export function Lens({
   const display = oklch === null ? null : displayFromOklch(oklch);
   const nearest: readonly NearestEntry[] =
     oklch === null ? [] : nearestByOklch(oklch, LENS_NAME_LIMIT);
+
+  /*
+   * AGAINST THE TARGET (F-201). Computed only when there is both a target and a reading, and
+   * both halves matter: no target is the ordinary state, and no reading means there is nothing
+   * to compare yet rather than a comparison that came out empty.
+   *
+   * `poles` is required alongside a target because "warmer" is meaningless without the
+   * published definition of warm. A target with no poles produces no panel rather than a panel
+   * with a word this product cannot justify.
+   */
+  const against =
+    target === null || poles === undefined || capture === null || display === null
+      ? null
+      : differenceFrom(
+          target.color,
+          display.color,
+          {
+            quality: capture.quality,
+            illumination: capture.illumination,
+            confidence: capture.confidence,
+          },
+          poles,
+        );
 
   /*
    * The live readout, and it is computed only while it is on screen — `live` is `null` in still
@@ -936,6 +978,85 @@ export function Lens({
                 </Row>
               </Stack>
             </Surface>
+
+            {/*
+              AGAINST THE TARGET, ABOVE THE NEAREST NAMES (F-201).
+
+              CRITERION 4 IS AN ORDERING REQUIREMENT, not a content one: "a poor capture says so
+              before it says a number". So the capture line is the FIRST thing in this block, and
+              the distance comes after it. A warning under a figure is a warning most people read
+              second.
+            */}
+            {against === null ? null : (
+              <Stack gap="sm">
+                <Text size="label" color="foreground.2" script={script}>
+                  {t('against.title')}
+                </Text>
+
+                {against.poorCapture ? (
+                  <Text size="small" color="foreground" script={script}>
+                    {t('against.poor')}
+                  </Text>
+                ) : null}
+
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('against.what')}
+                </Text>
+
+                {/* THE DISTANCE, with its unit and the space it was computed in (criterion 1). */}
+                <Row gap="sm" wrap>
+                  <Text size="small" color="foreground.2" script={script}>
+                    {t('against.distance')}
+                  </Text>
+                  <Text size="small" color="foreground" numeric selectable>
+                    {against.deltaE00.toFixed(2)}
+                  </Text>
+                  <Text size="small" color="foreground.2" script={script}>
+                    {t('unit.deltaE00')}
+                  </Text>
+                  <Text size="small" color="foreground.2" script={script}>
+                    {t('space.cielab')}
+                  </Text>
+                </Row>
+
+                {/*
+                  THE DECOMPOSITION, IN WORDS AND NUMBERS (criterion 2). Every axis reports both:
+                  the word says which way, the number says how far, and neither replaces the
+                  other. `same` is rendered like any other direction because it is a value.
+                */}
+                {(
+                  [
+                    ['lightness', against.lightness],
+                    ['chroma', against.chroma],
+                    ['temperature', against.temperature],
+                  ] as const
+                ).map(([axis, value]) => (
+                  <Row key={axis} gap="sm" wrap>
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t(`against.${axis}` as MessageKey)}
+                    </Text>
+                    <Text size="xs" color="foreground.2" numeric selectable>
+                      {value.delta.toFixed(3)}
+                    </Text>
+                    <Text size="xs" color="foreground.2" script={script}>
+                      {t(`against.${value.direction}.${axis}` as MessageKey)}
+                    </Text>
+                  </Row>
+                ))}
+
+                <Row gap="sm" wrap>
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('against.hueArc')}
+                  </Text>
+                  <Text size="xs" color="foreground.2" numeric selectable>
+                    {against.hueArc.toFixed(1)}
+                  </Text>
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('space.oklch')}
+                  </Text>
+                </Row>
+              </Stack>
+            )}
 
             {nearest.length === 0 ? null : (
               <Stack gap="sm">

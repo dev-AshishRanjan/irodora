@@ -2,6 +2,8 @@ import { Component, Suspense, lazy, type ReactNode } from 'react';
 import { Stack } from 'expo-router';
 import { CameraUnavailable } from '../../src/lens/CameraUnavailable';
 import { devicePicker } from '../../src/wardrobe/picker';
+import { useTarget } from '../../src/target';
+import { ruleSet } from '../../src/rules';
 
 /**
  * The route. Navigation options, and the one thing this file exists to guarantee: **pressing
@@ -59,6 +61,7 @@ class CameraBoundary extends Component<{ readonly children: ReactNode }, Boundar
 }
 
 export default function LensRoute(): React.JSX.Element {
+  const { target } = useTarget();
   return (
     <>
       <Stack.Screen options={{ title: 'Lens' }} />
@@ -68,7 +71,9 @@ export default function LensRoute(): React.JSX.Element {
           on a working build and a spinner would flash. On a broken one the boundary takes over.
         */}
         <Suspense fallback={null}>
-          <CameraLens imageSource={devicePicker()} />
+          {/* F-201: the comparison, when one is armed. The ROUTE reads the context and the
+              rule set, so the camera screen never reaches either itself. */}
+          <CameraLens imageSource={devicePicker()} target={target} poles={ruleSet().poles} />
         </Suspense>
       </CameraBoundary>
     </>

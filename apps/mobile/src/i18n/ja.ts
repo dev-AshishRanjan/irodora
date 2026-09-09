@@ -533,6 +533,26 @@ export const ja: Record<MessageKey, string> = {
   'target.armed': '比較対象',
   'target.disarm': '比較をやめる',
   'target.arm': 'この色と比べる',
+  // F-201 — see en.ts: a distance, never a match, and the band is named as a convention.
+  'against.title': '比較対象との差',
+  'against.distance': '距離',
+  'against.lightness': '明るさ',
+  'against.chroma': '鮮やかさ',
+  'against.temperature': '色温度',
+  'against.hueArc': '色相の最短角',
+  'against.more.lightness': '比較対象より明るい',
+  'against.less.lightness': '比較対象より暗い',
+  'against.same.lightness': '差がないとみなす範囲内の明るさ',
+  'against.more.chroma': '比較対象より鮮やか',
+  'against.less.chroma': '比較対象より鈍い',
+  'against.same.chroma': '差がないとみなす範囲内の鮮やかさ',
+  'against.more.temperature': '比較対象より暖かい',
+  'against.less.temperature': '比較対象より冷たい',
+  'against.same.temperature': '差がないとみなす範囲内の色温度',
+  'against.poor':
+    'この読み取りは精度が低いものでした。以下の数値はその前提で読むか、再度読み取ってください。',
+  'against.what':
+    'この読み取りが比較対象からどれだけ離れ、どちら向きに違うかを示します。同じ色かどうかの判定ではなく、距離です。',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

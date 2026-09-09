@@ -1856,6 +1856,38 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * A READING AGAINST AN ARMED TARGET (F-201). A tree none of the other Lens subjects draws:
+     * the distance with its unit and space, three axes each with a word AND a number, and the
+     * hue arc. Without it the whole panel would be measured by nothing.
+     */
+    name: 'screens/Lens (against a target)',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, displayFromOklch(readingOklch(SAMPLE_READING)).hex],
+    render: (_state, theme) =>
+      draw(
+        <Lens
+          permission="granted"
+          capture={SAMPLE_READING}
+          target={{
+            hex: BOTH_COST_BRANCHES.derived.hex,
+            oklch: [
+              BOTH_COST_BRANCHES.derived.oklch[0],
+              BOTH_COST_BRANCHES.derived.oklch[1],
+              BOTH_COST_BRANCHES.derived.oklch[2],
+            ],
+            color: colorFor(BOTH_COST_BRANCHES.entry),
+            label: BOTH_COST_BRANCHES.entry.name.en,
+            slug: BOTH_COST_BRANCHES.entry.slug,
+          }}
+          poles={ruleSet().poles}
+          onCapture={() => undefined}
+          onModeChange={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * LIVE, WITH THE STRIP UP. FR-13's continuous pick draws a swatch, a hex, an OKLCh line and
      * a name — none of which the resting state has, and all of which have to meet the same
      * contrast and type rules as the sheet does.

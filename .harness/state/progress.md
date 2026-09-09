@@ -20059,3 +20059,79 @@ actual route change belongs to the e2e gate, and that gate is pending.
 Nobody has looked at the bar, or judged what it costs in vertical space on a small screen.
 
 ---
+
+## F-201 — The Lens answers against a target
+
+F-200 armed the target. This is the half that answers against it, and together they close the
+report: *"scan a colour and check its similarity/difference against a target colour."*
+
+### Nothing here computes a difference of its own
+
+| | from | why it is that one |
+|---|---|---|
+| ΔE00 | `@irodora/color-difference` | the one `compare.ts` ranks with |
+| warm / cool | `temperatureOf` | the outfit engine's, with the **published** poles (E-005) |
+| hue arc | `hueDelta` | the shortest signed one — the place the obvious arithmetic is wrong |
+
+**`compare()` is not reused, and its own docblock says why.** It takes two `PublishedEntry`
+values *"so a caller cannot hand it a colour whose origin nobody recorded"* — and **neither side
+here is one**: a reading is a capture, and a target may be a colour the engine generated. The
+rule is kept by taking `Color` on both sides, which carries provenance under ADR-0005 for
+exactly that reason. What is refused is a signature taking two triples.
+
+### The word "match" appears nowhere
+
+`similarityPercent` exists in `@irodora/color-naming` and is **deliberately unused**. A
+percentage invites *"96% match"*, which is a claim about identity that a distance does not make.
+
+The `same` strings say **why** they say the same — *"within the band this product treats as
+none"* — because a bare *"the same"* would be a claim about perception, and nobody here has
+measured what a person notices. The band is a convention and says so.
+
+### Hue direction is temperature, not rotation
+
+*"+40° of hue"* is a measurement a person cannot act on, and *"clockwise"* means nothing to
+anybody. Warm and cool is the one hue-direction vocabulary this product has a **published**
+definition for — and the arc is still reported as a number beside it, so the word never replaces
+the measurement.
+
+### Criterion 4 is an ordering requirement, and is built as one
+
+*"A poor capture says so before it says a number."* So `poorCapture` is read off the capture
+**quality**, never inferred from the distance, and the panel renders that line **above** the
+figure. A warning under a number is a warning most people read second.
+
+Its test is the case it exists for: **a reading landing exactly on the target with a poor capture
+is still flagged**. A good number and a bad one can look alike.
+
+### The decoys
+
+- A reading identical to the target reports `same` on all three axes — otherwise the words are
+  being generated rather than measured.
+- The dead bands are checked from **both** sides; one asserted only from the inside could be
+  infinite.
+- A poor-capture flag that were always true would satisfy the criterion-4 case, so a good capture
+  at a large distance must come back unflagged.
+
+### Two i18n findings
+
+The twelve direction strings are built as `against.<direction>.<axis>`, so they are pinned in
+**both** directions — the fifth set in this app to need it. The three axis labels are pinned
+**forward only**, and that is stated as safe rather than assumed: a leftover `against.something`
+is not in the exclusion list, so the unused-key scan still reports it.
+
+And `unit.degrees` was dropped rather than widening `NOTATION_SHAPE` for one symbol — the app
+already reports OKLCh figures with the space name, and following that beat relaxing a reviewed
+rule.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · **cvd** · build · content —
+**PASS**. 941 mobile tests over 43 suites.
+
+### Attested, not asserted
+
+That a person reading the panel on a device takes the warning first. The ordering is built and
+gated; whether it *works* is a judgement about a real screen, and gate 7 is pending.
+
+---
