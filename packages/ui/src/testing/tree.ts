@@ -553,3 +553,113 @@ export function renderedPairs(
   walk(root, EMPTY_TEXT_STYLE, fallback, []);
   return out;
 }
+
+/** A node asking for a share of a height its parent does not have. */
+export interface FlexChainFinding {
+  /** Node types from the subject root down to the offender, so a report can be located. */
+  readonly path: readonly string[];
+  /** What the offender asked for. */
+  readonly flex: number;
+  /** The parent that could not give it — its type, and why it is not definite. */
+  readonly parent: string;
+}
+
+/**
+ * Whether a style gives its box a height that does not depend on its children.
+ *
+ * `flex` counts because a flex child of a definite parent is itself definite; the recursion
+ * terminates at the subject root, which is treated as definite because on a device it is
+ * mounted in a full-height host.
+ */
+function hasDefiniteHeight(style: Readonly<Record<string, unknown>>): boolean {
+  const flex = style['flex'];
+  const grow = style['flexGrow'];
+  if (typeof flex === 'number' && flex > 0) return true;
+  if (typeof grow === 'number' && grow > 0) return true;
+  if (style['height'] !== undefined) return true;
+  if (style['minHeight'] !== undefined) return true;
+  if (style['aspectRatio'] !== undefined) return true;
+  if (style['flexBasis'] !== undefined && style['flexBasis'] !== 'auto') return true;
+  if (
+    style['position'] === 'absolute' &&
+    style['top'] !== undefined &&
+    style['bottom'] !== undefined
+  )
+    return true;
+  return false;
+}
+
+/** Whether this container distributes its main axis along the width. */
+function laysOutInARow(style: Readonly<Record<string, unknown>>): boolean {
+  const direction = style['flexDirection'];
+  return direction === 'row' || direction === 'row-reverse';
+}
+
+/**
+ * Nodes asking for a share of a height their parent does not have (F-213, NFR-25).
+ *
+ * ## The shape this exists for
+ *
+ * ```
+ * Screen   <View style={{ flex: 1 }}>            definite
+ *   Appear   <Animated.View>                     auto — its height comes from its content
+ *     Atlas    <FlatList style={{ flex: 1 }}>    a share of nothing
+ * ```
+ *
+ * F-211 shipped exactly that, and **every gate in the repository was green** — including a
+ * conformance sweep over 72 subjects in 8 conditions. jest has no layout engine, so a
+ * zero-height list still renders all 120 of its rows into the tree and every assertion about
+ * them passes [[a-test-tree-has-no-height]].
+ *
+ * ## The rule is about the PARENT, and about its direction
+ *
+ * `flex` distributes the parent's MAIN axis. In a column that is height, and a parent whose
+ * height is auto has nothing to distribute — the child resolves to zero. In a ROW it is width,
+ * and a row's width is definite by default, so `flex: 1` there is ordinary and correct.
+ *
+ * Without the direction test this fires on every `Row`, and **a check that fires on correct
+ * code is a check somebody switches off.**
+ *
+ * ## What it cannot see, and the list is the honest part
+ *
+ * - A height that arrives at runtime — `onLayout`, a measurement, a percentage.
+ * - **Overflow.** A perfectly anchored chain can still push its content off the screen.
+ * - The box of anything a native list draws. The rows are in the tree; their frame is not.
+ * - Any screen absent from the registry, because this reads a rendered tree and nothing else.
+ *
+ * It catches the common shape. That is worth having, and it is not the same claim as "layout
+ * is checked".
+ */
+export function brokenFlexChains(root: TestNode): readonly FlexChainFinding[] {
+  const out: FlexChainFinding[] = [];
+
+  const walk = (
+    node: TestNode,
+    parent: TestNode | null,
+    parentStyle: Readonly<Record<string, unknown>>,
+    path: readonly string[],
+  ): void => {
+    const style = flattenStyle(node.props['style']);
+    const here = [...path, node.type];
+    const flex = style['flex'] ?? style['flexGrow'];
+
+    /*
+     * `parent === null` is the subject root. It is not reported: on a device the root is
+     * mounted in a full-height host, and treating it as auto would make every screen a finding
+     * — which is the failure mode that turns a gate into noise.
+     */
+    if (
+      typeof flex === 'number' &&
+      flex > 0 &&
+      parent !== null &&
+      !laysOutInARow(parentStyle) &&
+      !hasDefiniteHeight(parentStyle)
+    )
+      out.push({ path: here, flex, parent: parent.type });
+
+    for (const child of node.children ?? []) if (isNode(child)) walk(child, node, style, here);
+  };
+
+  walk(root, null, {}, []);
+  return out;
+}

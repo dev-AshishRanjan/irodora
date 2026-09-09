@@ -38,7 +38,9 @@ jest.mock('expo-localization', () => ({
 
 import { Text, ThemeProvider, swatchAccessibleName } from '@irodora/ui';
 import {
+  brokenFlexChains,
   checkAll,
+  flattenStyle,
   checkStatusAdjacency,
   formatFindings,
   type ConformanceSubject,
@@ -4291,6 +4293,81 @@ describe('the Finder results do not move (F-151)', () => {
  * `Surface` drew one box with a `Stack` gap. The insets are equal and the screen is not the
  * same [[a-test-tree-has-no-height]]. That is an attestation, not a claim.
  */
+/**
+ * NO SUBJECT ASKS FOR A SHARE OF A HEIGHT ITS PARENT DOES NOT HAVE (F-213, NFR-25).
+ *
+ * F-211 shipped a blank Atlas past every gate here — sixteen of them, and a conformance sweep
+ * over 72 subjects in 8 conditions reporting zero findings. jest has no layout engine, so the
+ * zero-height list rendered all 120 of its rows into the tree and every assertion about them
+ * passed [[a-test-tree-has-no-height]].
+ *
+ * `brokenFlexChains` is a STATIC READING of a rendered tree, and its limits are in its own
+ * docblock: a height that arrives at runtime, overflow, the frame of anything a native list
+ * draws, and any screen absent from this registry. It catches the common shape, which is not
+ * the same claim as "layout is checked".
+ */
+describe('no subject asks for a share of a height its parent does not have (F-213)', () => {
+  it('has subjects, so a clean result cannot mean an empty registry', () => {
+    expect(SCREENS.length).toBeGreaterThan(0);
+  });
+
+  it('finds no broken flex chain in any registered subject', () => {
+    const findings: string[] = [];
+    for (const subject of SCREENS)
+      for (const theme of ['light', 'dark'] as const) {
+        const node = subject.render('default', theme);
+        if (node === null) continue;
+        for (const found of brokenFlexChains(node))
+          findings.push(
+            `${subject.name} [${theme}] ${found.path.join(' > ')} asks flex ${String(found.flex)} of <${found.parent}>, which has no height of its own`,
+          );
+      }
+
+    expect(findings.join(String.fromCharCode(10))).toBe('');
+  });
+
+  it('DECOY — the registry actually CONTAINS flex nodes, so zero findings means something', () => {
+    /*
+     * "No broken chain" and "no chain examined" produce the same verdict. This counts the
+     * nodes the rule reasons about — a `flex` or `flexGrow` above zero — so a green run is a
+     * statement about screens rather than about an empty walk.
+     */
+    let flexNodes = 0;
+    const count = (n: TestNode | string): void => {
+      if (typeof n === 'string') return;
+      const style = flattenStyle(n.props['style']);
+      const flex = style['flex'] ?? style['flexGrow'];
+      if (typeof flex === 'number' && flex > 0) flexNodes += 1;
+      for (const child of n.children ?? []) count(child);
+    };
+    for (const subject of SCREENS) {
+      const node = subject.render('default', 'light');
+      if (node !== null) count(node);
+    }
+
+    expect(flexNodes).toBeGreaterThan(SCREENS.length);
+  });
+  it('DECOY — the check fires on the shape F-211 shipped, rendered here rather than described', () => {
+    /*
+     * The registry passing proves nothing about the check unless the check can fail. This is
+     * the F-211 tree, built in this file so the assertion above cannot be green because
+     * `brokenFlexChains` returns nothing to anybody.
+     */
+    const planted = {
+      type: 'View',
+      props: { style: { flex: 1 } },
+      children: [
+        {
+          type: 'Animated.View',
+          props: {},
+          children: [{ type: 'FlatList', props: { style: { flex: 1 } }, children: null }],
+        },
+      ],
+    };
+
+    expect(brokenFlexChains(planted)).toHaveLength(1);
+  });
+});
 describe('every box keeps the inset it had (F-210)', () => {
   const FIXTURE = `${__dirname}/../../../.harness/verification/screen-insets.json`;
 

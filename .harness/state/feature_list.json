@@ -6918,7 +6918,7 @@
       "service": "root",
       "release": "R8",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-211"
       ],
@@ -6933,7 +6933,8 @@
         "format",
         "test"
       ],
-      "notes": "F-211 SHIPPED A BLANK SCREEN PAST EVERY GATE IN THIS REPOSITORY, including a conformance sweep over 72 subjects in 8 conditions that reported zero findings. jest has no layout engine: a FlatList with zero height renders all 120 rows into a test tree and every assertion about them passes. A STATIC READING MIGHT STILL CATCH THE COMMON SHAPE — a node with `flex: 1` whose ancestors up to the screen root include one with neither a flex nor a height — and that is worth trying, with its limits stated, because the alternative is that the next one is also found by a person opening the app. Filed rather than attempted inside F-211: a fix and a new gate in one feature is how a regression arrives with nothing to bisect."
+      "notes": "DONE. `brokenFlexChains` reads a rendered tree and reports a node asking flex of a COLUMN parent whose height is auto. THE RULE IS ABOUT THE IMMEDIATE PARENT, and that detail is the feature: F-211 had a flex:1 ancestor two levels up, so a rule that walked until it found any anchor would have passed the exact bug it exists for. The direction test is what makes it usable — flex is width in a row, and without it every Row is a finding. Zero findings across all 72 subjects in both themes, with three decoys separating that from an empty walk: the planted F-211 tree fires, the registry is shown to contain flex nodes, and a row parent does not fire while the same tree in a column does. LIMITS PRINTED RATHER THAN FOOTNOTED: a height that arrives at runtime, overflow, the frame of a native list, and any screen absent from the registry.",
+      "plan": "plans/F-213-the-flex-chain.md"
     },
     {
       "id": "F-214",

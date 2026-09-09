@@ -21032,3 +21032,49 @@ header box, a hairline and a body box. The insets are asserted equal; the rhythm
 gate in this repository renders a layout [[a-test-tree-has-no-height]].
 
 ---
+## F-213 — Nothing in this repository can see a broken flex chain
+
+### The shape that shipped past sixteen gates
+
+```
+Screen   <View style={{ flex: 1 }}>            definite
+  Appear   <Animated.View>                     auto — its height comes from its content
+    Atlas    <FlatList style={{ flex: 1 }}>    a share of nothing
+```
+
+jest has no layout engine. The zero-height list rendered all 120 of its rows into the test tree
+and every assertion about them passed — blank on a device, complete in the harness, and a
+conformance sweep over 72 subjects in 8 conditions reporting zero findings.
+
+### The rule is about the IMMEDIATE parent, and that is the feature
+
+`flex` distributes the parent's main axis, so a `flex: 1` child of an auto-height column resolves
+to zero. F-211 **had** a `flex: 1` ancestor — two levels up — so a rule that walked the chain
+until it found any anchor would have passed the exact bug it exists for.
+
+**The direction test is what makes it usable.** In a row, `flex` is width, and a row's width is
+definite by default. Without that condition every `Row` in the application is a finding, and a
+check that fires on correct code is a check somebody switches off.
+
+### Zero findings and zero examinations produce the same word
+
+So three decoys separate them:
+
+- the **planted F-211 tree fires**, and the fix makes it stop — a gate justified by a bug it
+  cannot be shown to catch is a gate justified by a story;
+- the **registry is shown to contain flex nodes**, counted across all 72 subjects;
+- a **row parent does not fire** while the identical tree in a column does.
+
+### What it cannot see, printed rather than footnoted
+
+A height that arrives at runtime. **Overflow** — the other half of layout, entirely invisible
+here. The frame of anything a native list draws. Any screen absent from the registry.
+
+It catches the common shape. That is worth having, and it is not the claim that layout is
+checked.
+
+### Gates
+
+state · lint · format:check · test — **PASS**.
+
+---

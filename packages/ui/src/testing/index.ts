@@ -8,7 +8,9 @@
  */
 
 export {
+  brokenFlexChains,
   flattenStyle,
+  type FlexChainFinding,
   paintedColors,
   announcedStates,
   pressableNodes,

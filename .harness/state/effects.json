@@ -4699,6 +4699,39 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-121",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/testing/tree.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/screens.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/flex-chain.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE CHECK IS WATCHED CATCHING THE BUG IT WAS WRITTEN FOR. `packages/ui/test/flex-chain.test.ts` builds the exact F-211 tree — a flex:1 FlatList inside an unstyled Animated.View inside a flex:1 root — and asserts it is reported, naming the parent; then it applies the actual F-211 fix (flex on the wrapper) and asserts it stops. A gate justified by a bug it cannot be shown to catch is a gate justified by a story. THREE MORE DECOYS, because zero findings and zero examinations produce the same word: the registry is shown to CONTAIN flex nodes, counted across all 72 subjects; a row parent does NOT fire while the identical tree with the direction removed does, so the narrowing is a real condition rather than a rule that never triggers; and a tree with no flex at all produces nothing. THE DIRECTION TEST IS WHAT MAKES IT USABLE — flex distributes the main axis, which is width in a row, and without that condition every Row in the app is a finding. WHAT IS NOT GUARDED, printed in the docblock rather than footnoted: a height that arrives at runtime, OVERFLOW (the other half of layout, entirely invisible here), the frame of anything a native list draws, and any screen absent from the registry.",
+      "memory": "memory/effects/a-static-reading-catches-the-shape-not-the-layout.md",
+      "rationale": "F-211 SHIPPED A BLANK SCREEN PAST SIXTEEN GATES AND A 72-SUBJECT SWEEP. jest has no layout engine, so a zero-height FlatList renders all 120 rows into the test tree and every assertion about them passes — the screen is blank on a device and complete in the harness. The honest response was not to simulate the missing engine but to ask whether the defect has a static shape, and it does: a node asking flex of a column parent whose height is auto. THE RULE IS ABOUT THE PARENT, not about the chain to the root — F-211 had a flex:1 ancestor two levels up, so a rule that walked until it found any anchor would have passed the exact bug it was written for. A flex child resolves against its IMMEDIATE parent, and that is where the check looks. FILED RATHER THAN BUILT INSIDE F-211 because a fix and a new gate in one feature is how a regression arrives with nothing to bisect.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
