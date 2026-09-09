@@ -286,6 +286,8 @@ export default function CameraLens({ imageSource }: CameraLensProps): React.JSX.
       // F-155 criterion 5: a reading leads to the contemporary colours of its nearest entry, on
       // their own screen. The Lens stays decluttered; this is a way OUT of it.
       onOpenContemporary={exits.openContemporary}
+      // F-197: the other question about the same nearest entry.
+      onOpenCombinations={exits.openCombinations}
       onOpenColour={exits.openColour}
     />
   );

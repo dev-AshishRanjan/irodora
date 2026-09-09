@@ -595,6 +595,16 @@ export const en = {
   'combos.intent.harmony': 'Harmony',
   'combos.intent.accent': 'Accent',
   'combos.intent.tonal': 'Tonal',
+  /*
+   * F-197 — A COLOUR THAT IS NOT IN THE CORPUS.
+   *
+   * Said out loud rather than left as a missing section: a person cannot otherwise tell
+   * "nobody has curated a combination for this" from "this product does not do that". For a
+   * colour outside the corpus the answer is structural — an editor chooses published colours.
+   */
+  'combos.notInCorpus':
+    'This colour is not one of ours, so there are no curated combinations for it — only the relationships generated from it.',
+  'combos.garment': 'What goes with this garment',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

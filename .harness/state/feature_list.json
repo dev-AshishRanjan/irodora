@@ -6342,7 +6342,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-194",
         "F-195",
@@ -6362,7 +6362,9 @@
         "a11y",
         "contrast",
         "build"
-      ]
+      ],
+      "plan": "plans/F-197-combinations-have-a-home.md",
+      "notes": "CRITERION 2 WAS ALREADY MET BEFORE THIS FEATURE STARTED, and is verified rather than redone: F-155 renamed the contemporary strings to \"What you could buy in this\" / \"いま手に入る近い色\" in both catalogues. The screen file and the route are still called Contemporary and nearby, which is not what the criterion asks about — a route path is not a phrase anybody is shown. What was missing is any CHECK that the two titles stay distinct, so a future edit could collapse them into synonyms unnoticed; that check is added here, which is criterion 3 anyway."
     },
     {
       "id": "F-198",

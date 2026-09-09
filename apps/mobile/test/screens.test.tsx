@@ -280,6 +280,22 @@ const WEARER: PersonalProfile = {
 const CURATED_LEAD =
   allCombinations()[0]?.combination.colors.find((c) => c.role === 'lead')?.slug ?? '';
 
+/**
+ * A garment-ish colour, not in the corpus (F-197).
+ *
+ * Mid-lightness and modest chroma, so every relationship generated from it stays inside the
+ * display gamut and the subject renders the ordinary branch rather than an edge case.
+ */
+const GARMENT_COLOUR: readonly [number, number, number] = [0.42, 0.09, 24];
+
+/** What that subject paints — the free colour itself, plus everything generated from it. */
+const GARMENT_HEXES: readonly string[] = [
+  displayFromOklch([...GARMENT_COLOUR]).hex,
+  ...combinationsFor(GARMENT_COLOUR).flatMap((c) =>
+    c.companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).hex),
+  ),
+];
+
 const PAIR_A = 'usu-gami';
 const PAIR_B = 'soko-zumi';
 
@@ -929,7 +945,11 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Combinations',
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...GENERATED_HEXES],
-    render: (_state, theme) => draw(<Combinations slug={BOTH_COST_BRANCHES.entry.slug} />, theme),
+    render: (_state, theme) =>
+      draw(
+        <Combinations subject={{ kind: 'entry', slug: BOTH_COST_BRANCHES.entry.slug }} />,
+        theme,
+      ),
   },
   {
     /*
@@ -941,7 +961,31 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Combinations (curated)',
     kind: 'static',
     sampleValues: [...SAMPLE_HEXES, ...generatedHexes(CURATED_LEAD)],
-    render: (_state, theme) => draw(<Combinations slug={CURATED_LEAD} />, theme),
+    render: (_state, theme) =>
+      draw(<Combinations subject={{ kind: 'entry', slug: CURATED_LEAD }} />, theme),
+  },
+  {
+    /*
+     * A COLOUR THAT IS NOT IN THE CORPUS (F-197) — a garment's own value, which is how the
+     * Wardrobe asks. A genuinely different tree: no curated section, no "open this colour"
+     * affordance on the subject swatch, no wear-it control, and a sentence saying WHY there are
+     * no curated ones rather than a section that is silently missing.
+     */
+    name: 'screens/Combinations (a colour, not an entry)',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, ...GARMENT_HEXES],
+    render: (_state, theme) =>
+      draw(
+        <Combinations
+          subject={{
+            kind: 'colour',
+            oklch: GARMENT_COLOUR,
+            hex: displayFromOklch([...GARMENT_COLOUR]).hex,
+            label: 'Wool coat',
+          }}
+        />,
+        theme,
+      ),
   },
   {
     /*
@@ -952,7 +996,8 @@ const SCREENS: readonly ConformanceSubject[] = [
     name: 'screens/Combinations (not in this corpus)',
     kind: 'static',
     sampleValues: SAMPLE_HEXES,
-    render: (_state, theme) => draw(<Combinations slug="no-such-colour" />, theme),
+    render: (_state, theme) =>
+      draw(<Combinations subject={{ kind: 'entry', slug: 'no-such-colour' }} />, theme),
   },
   {
     /*

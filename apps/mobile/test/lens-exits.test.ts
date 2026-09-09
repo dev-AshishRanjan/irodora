@@ -14,7 +14,12 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { LENS_EXITS, lensExits, type LensExitPorts } from '../src/lens/exits';
+import {
+  LENS_EXITS,
+  lensExits,
+  type LensExitHandlers,
+  type LensExitPorts,
+} from '../src/lens/exits';
 import { takeReading } from '../src/lens/handoff';
 import type { LensReading } from '../src/lens/reading';
 
@@ -74,20 +79,32 @@ describe('every exit closes the panel before it leaves (F-178)', () => {
    * reproduce. Asserting `expect.arrayContaining` would pass on both.
    */
   it('never navigates first', () => {
-    for (const run of [
-      (h: ReturnType<typeof lensExits>) => {
+    /*
+     * TOTAL, SO A NEW DOOR CANNOT GO UNCOVERED (F-197).
+     *
+     * Keyed by `LensExitHandlers`, so adding a handler without a case here is a COMPILE error
+     * rather than a test that quietly goes on checking the four it knew about. The list was
+     * written out by hand until a fifth door was cut and every assertion still passed over four.
+     */
+    const runs: Record<keyof LensExitHandlers, (h: LensExitHandlers) => void> = {
+      useForProfile: (h) => {
         h.useForProfile(reading());
       },
-      (h: ReturnType<typeof lensExits>) => {
+      useForWardrobe: (h) => {
         h.useForWardrobe(reading());
       },
-      (h: ReturnType<typeof lensExits>) => {
+      openContemporary: (h) => {
         h.openContemporary('x');
       },
-      (h: ReturnType<typeof lensExits>) => {
+      openCombinations: (h) => {
+        h.openCombinations('x');
+      },
+      openColour: (h) => {
         h.openColour('x');
       },
-    ]) {
+    };
+
+    for (const run of Object.values(runs)) {
       const { p, log } = ports();
       run(lensExits(p));
       expect(log[0]).toBe('dismiss');
@@ -181,13 +198,17 @@ describe('the Lens has no way out except the table', () => {
    * So this file asserts the SHAPE the gate needs, and the gate asserts the routes.
    */
   it('produces absolute paths, which is the shape the gate can resolve', () => {
-    for (const href of [
-      LENS_EXITS.profile(),
-      LENS_EXITS.wardrobe(),
-      LENS_EXITS.contemporary('ai-nezumi'),
-      LENS_EXITS.colour('ai-nezumi'),
-    ])
-      expect(href).toMatch(/^\/[a-z]/u);
+    /*
+     * READ OFF THE TABLE, not written out beside it. Every row is exercised whatever it is
+     * called and however many there are — the hand-written list checked four while the table
+     * grew to five.
+     *
+     * A row takes either no argument or a slug; passing one to a nullary function is harmless
+     * and keeps this exhaustive without a per-row case.
+     */
+    const rows = Object.values(LENS_EXITS) as readonly ((slug?: string) => string)[];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(row('ai-nezumi')).toMatch(/^\/[a-z]/u);
   });
 
   it('and writes them as a literal the gate can see, not as a value it cannot', () => {

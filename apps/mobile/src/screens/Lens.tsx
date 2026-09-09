@@ -397,6 +397,14 @@ export interface LensProps {
    * reads a colour, learns what it is, and then wants to know what they could actually buy.
    */
   readonly onOpenContemporary?: (slug: string) => void;
+  /**
+   * Open what goes with the reading's nearest entry (F-197).
+   *
+   * The sibling of {@link onOpenContemporary} and deliberately a separate door: *what could I
+   * buy in this* and *what goes with this* are different questions, and a single control that
+   * did both would have to be labelled with neither.
+   */
+  readonly onOpenCombinations?: (slug: string) => void;
 }
 
 export function Lens({
@@ -422,6 +430,7 @@ export function Lens({
   onUseForWardrobe,
   onOpenColour,
   onOpenContemporary,
+  onOpenCombinations,
 }: LensProps = {}): React.JSX.Element {
   const { t, script } = useMessages();
   const { colors } = useTheme();
@@ -983,6 +992,27 @@ export function Lens({
                       script={script}
                       onPress={() => {
                         onOpenContemporary(closest.entry.entry.slug);
+                      }}
+                    />
+                  );
+                })()}
+
+                {/*
+                  THE SECOND DOOR (F-197). Same subject — the nearest entry — and a different
+                  question. Both carry the slug, so the destination opens on the colour the
+                  reading resolved to rather than on an empty screen, and the ΔE00 the person
+                  has just read above is what tells them how close that is.
+                */}
+                {((): React.JSX.Element | null => {
+                  const closest = nearest[0];
+                  if (onOpenCombinations === undefined || closest === undefined) return null;
+                  return (
+                    <Button
+                      label={t('combos.open')}
+                      variant="secondary"
+                      script={script}
+                      onPress={() => {
+                        onOpenCombinations(closest.entry.entry.slug);
                       }}
                     />
                   );

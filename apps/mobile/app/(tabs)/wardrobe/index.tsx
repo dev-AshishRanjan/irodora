@@ -93,6 +93,10 @@ export default function WardrobeRoute(): React.JSX.Element {
         }}
         // What to DO with a wardrobe (F-182). Both were finished screens on routes nothing
         // navigated to, so the tab could fill up and never be used.
+        // F-197: the garment's own colour, asked about by id.
+        onOpenCombinations={(garmentId) => {
+          router.push(`/wardrobe/with/${garmentId}`);
+        }}
         onOpenOutfit={() => {
           router.push('/wardrobe/outfit');
         }}

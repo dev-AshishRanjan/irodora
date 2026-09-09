@@ -41,9 +41,49 @@ import { colorFor, combinationsContaining, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
 
+/**
+ * What the screen is about (F-197).
+ *
+ * ## Why this is a union and not a slug
+ *
+ * The harmony engine takes an OKLCh. It never needed a corpus entry — that was an accident of
+ * F-194 having exactly one caller, and it is what stopped a **garment** from asking the question
+ * at all. A garment's colour is a hex somebody captured or typed; it is not in the corpus.
+ *
+ * The alternative was to resolve a garment to its nearest published colour, and it was rejected:
+ * `Wardrobe` forbids the disclosure that would make it honest —
+ *
+ * > *Report a distance. A garment is IN a group; printing "ΔE00 4.2 from ai-iro" beside a jumper
+ * > would present a measurement as a property of the garment.*
+ *
+ * — so the honest version needs a number that screen may not print, and the dishonest version
+ * quietly answers about a different colour than the one asked about.
+ *
+ * ## The consequence, which is correct
+ *
+ * **Curated combinations only exist for a corpus colour.** They are keyed by slug because an
+ * editor chose specific published colours (F-196). A free colour gets the generated half, and
+ * the screen says that is what it got rather than leaving a section silently missing.
+ */
+export type CombinationSubject =
+  | { readonly kind: 'entry'; readonly slug: string }
+  | {
+      readonly kind: 'colour';
+      readonly oklch: readonly [number, number, number];
+      readonly hex: string;
+      /**
+       * What to call it.
+       *
+       * Supplied by the caller — a garment's name, or its type. Where there is neither, the
+       * caller passes the hex, which is the rule this screen already follows for a generated
+       * companion: a colour with no name is shown by its value rather than given one.
+       */
+      readonly label: string;
+    };
+
 export interface CombinationsProps {
-  /** The colour this is about. A route parameter, so a miss is a state rather than a crash. */
-  readonly slug: string;
+  /** What this is about. A route parameter, so a miss is a state rather than a crash. */
+  readonly subject: CombinationSubject;
   /** Open a colour. Supplied by the route; absent in the conformance suite. */
   readonly onOpenColour?: (slug: string) => void;
   /**
@@ -78,14 +118,23 @@ function companion(c: HarmonyColor): ReturnType<typeof displayFromOklch> {
 }
 
 export function Combinations({
-  slug,
+  subject,
   onOpenColour,
   onWearIt,
 }: CombinationsProps): React.JSX.Element {
   const { t, script } = useMessages();
-  const subject = entryBySlug(slug);
 
-  if (subject === null)
+  /*
+   * A CORPUS ENTRY IS RESOLVED; A FREE COLOUR IS ALREADY WHAT IT IS.
+   *
+   * `entry` is null for a colour subject, and that is the ONE test the rest of the screen makes:
+   * curated combinations, the "open this colour" affordance and the entry's name all hang off
+   * it. A miss on a slug lands in the same branch as a slug that resolves to nothing, because
+   * from here they are the same fact — there is no corpus colour to be about.
+   */
+  const entry = subject.kind === 'entry' ? entryBySlug(subject.slug) : null;
+
+  if (subject.kind === 'entry' && entry === null)
     return (
       <Screen title={t('combos.title')} script={script}>
         <Text size="body" color="foreground" script={script}>
@@ -94,7 +143,10 @@ export function Combinations({
       </Screen>
     );
 
-  const { oklch } = subject.derived;
+  const oklch: readonly [number, number, number] =
+    entry === null
+      ? (subject as { readonly oklch: readonly [number, number, number] }).oklch
+      : [entry.derived.oklch[0], entry.derived.oklch[1], entry.derived.oklch[2]];
 
   /*
    * ALL TWELVE, SPLIT — not five with seven discarded.
@@ -108,7 +160,10 @@ export function Combinations({
   const leading = all.slice(0, COMBINATIONS_SHOWN);
   const rest = all.slice(COMBINATIONS_SHOWN);
 
-  const subjectName = `${subject.entry.name.kanji} ${subject.entry.name.en}`;
+  const subjectName =
+    entry === null
+      ? (subject as { readonly label: string }).label
+      : `${entry.entry.name.kanji} ${entry.entry.name.en}`;
 
   /*
    * THE CURATED ONES, AND THEY COME FIRST (F-196).
@@ -118,7 +173,7 @@ export function Combinations({
    * relationships. Most colours are in none of them, and that is a legitimate answer: the
    * section is absent rather than apologising for being empty.
    */
-  const curated = combinationsContaining(slug);
+  const curated = entry === null ? [] : combinationsContaining(entry.entry.slug);
 
   /** One relationship: what it is, what it proposes, and what showing it cost. */
   function One({ combination }: { readonly combination: Combination }): React.JSX.Element {
@@ -213,20 +268,47 @@ export function Combinations({
           </Text>
         }
       >
-        <Swatch
-          name={subject.entry.name.en}
-          hex={subject.derived.hex}
-          color={colorFor(subject.entry)}
-          script={script}
-          {...(onOpenColour === undefined
-            ? {}
-            : {
-                onPress: () => {
-                  onOpenColour(slug);
-                },
-              })}
-        />
+        {entry === null ? (
+          /*
+            A FREE COLOUR, DRAWN AS ITSELF. `displayFromOklch` produces the Color with its
+            provenance, the same helper every generated companion goes through — so the swatch
+            announces what it is and where it came from rather than borrowing a corpus entry's
+            identity.
+          */
+          <Swatch
+            name={subjectName}
+            hex={displayFromOklch([oklch[0], oklch[1], oklch[2]]).hex}
+            color={displayFromOklch([oklch[0], oklch[1], oklch[2]]).color}
+            script={script}
+          />
+        ) : (
+          <Swatch
+            name={entry.entry.name.en}
+            hex={entry.derived.hex}
+            color={colorFor(entry.entry)}
+            script={script}
+            {...(onOpenColour === undefined
+              ? {}
+              : {
+                  onPress: () => {
+                    onOpenColour(entry.entry.slug);
+                  },
+                })}
+          />
+        )}
       </Card>
+
+      {/*
+        WHY THERE ARE NO CURATED ONES, SAID OUT LOUD (F-197). A section that was simply absent
+        would leave a person unable to tell "nobody has curated a combination for this" from
+        "this product does not do that" — and for a colour outside the corpus the answer is
+        structural: an editor chooses published colours, and this is not one.
+      */}
+      {entry === null ? (
+        <Text size="small" color="foreground.2" script={script}>
+          {t('combos.notInCorpus')}
+        </Text>
+      ) : null}
 
       {curated.length === 0 ? null : (
         <Stack gap="sm">
@@ -302,12 +384,14 @@ export function Combinations({
         scroll past twelve relationships to find it would answer a question they did not ask
         first.
       */}
-      {onWearIt === undefined ? null : (
+      {onWearIt === undefined || entry === null ? null : (
         <Button
           label={t('wear.open')}
           variant="secondary"
           onPress={() => {
-            onWearIt(slug);
+            // Non-null inside this branch — the guard above is what makes "wear it" a corpus
+            // question: `Wear` ranks the corpus for a SLUG, and a free colour has none.
+            onWearIt(entry.entry.slug);
           }}
           script={script}
         />

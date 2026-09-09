@@ -516,6 +516,10 @@ export const ja: Record<MessageKey, string> = {
   'combos.intent.harmony': '調和',
   'combos.intent.accent': '差し色',
   'combos.intent.tonal': '濃淡',
+  // F-197 — see en.ts: a missing section and a structural absence are different things.
+  'combos.notInCorpus':
+    'この色は収録の色ではないため、選定した組み合わせはありません。生成した関係のみを示します。',
+  'combos.garment': 'この服に合う色',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

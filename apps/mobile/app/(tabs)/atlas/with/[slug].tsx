@@ -20,7 +20,7 @@ export default function CombinationsRoute(): React.JSX.Element {
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
       <Combinations
-        slug={slug}
+        subject={{ kind: 'entry', slug }}
         onOpenColour={(s) => {
           router.push(`/atlas/${s}`);
         }}

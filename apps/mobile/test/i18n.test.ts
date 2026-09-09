@@ -280,6 +280,45 @@ describe('Japanese is written, not copied', () => {
   });
 });
 
+/**
+ * THE TWO QUESTIONS STAY TWO QUESTIONS (F-197, criterion 3).
+ *
+ * *What you could buy in this* and *what goes with this* are different answers reachable from
+ * the same colour, and F-155 already renamed the first to say what it answers. What nothing
+ * checked is that they stay distinct — so an edit could collapse them into near-synonyms and
+ * every gate would stay green while the screen stopped being legible.
+ */
+describe('the two combination-shaped answers are distinguishable', () => {
+  it('has different titles in English', () => {
+    expect(en['contemporary.title']).not.toBe(en['combos.title']);
+  });
+
+  it('and in Japanese', () => {
+    expect(ja['contemporary.title']).not.toBe(ja['combos.title']);
+  });
+
+  it('and different labels on the controls that open them', () => {
+    // The titles could differ while both buttons said the same thing, which is what a person
+    // actually chooses between.
+    expect(en['contemporary.open']).not.toBe(en['combos.open']);
+    expect(ja['contemporary.open']).not.toBe(ja['combos.open']);
+  });
+
+  it('DECOY — the comparison is against real, non-empty copy', () => {
+    // Two undefined lookups are also "not equal". Every key read above must exist and say
+    // something, or these assertions pass by comparing nothing with nothing.
+    for (const k of [
+      'contemporary.title',
+      'combos.title',
+      'contemporary.open',
+      'combos.open',
+    ] as const) {
+      expect(`${k}: ${en[k]}`).not.toMatch(/: (undefined)?$/u);
+      expect(`${k}: ${ja[k]}`).not.toMatch(/: (undefined)?$/u);
+    }
+  });
+});
+
 describe('review status is recorded, and its gap is visible', () => {
   it('reports how many entries are unreviewed rather than implying none are', () => {
     const reviewed = MESSAGE_KEYS.filter((k) => JA_REVIEWED[k] !== undefined);

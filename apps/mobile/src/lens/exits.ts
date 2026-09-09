@@ -67,6 +67,8 @@ export const LENS_EXITS = {
   wardrobe: () => '/wardrobe/add',
   /** F-155's: what a person could actually buy in the nearest published colour. */
   contemporary: (slug: string) => `/atlas/nearby/${slug}`,
+  /** F-197's: what goes with the nearest published colour. */
+  combinations: (slug: string) => `/atlas/with/${slug}`,
   /** The corpus entry itself. */
   colour: (slug: string) => `/atlas/${slug}`,
 } as const satisfies Record<string, (...args: never[]) => string>;
@@ -90,11 +92,12 @@ export interface LensExitHandlers {
   readonly useForProfile: (reading: LensReading) => void;
   readonly useForWardrobe: (reading: LensReading) => void;
   readonly openContemporary: (slug: string) => void;
+  readonly openCombinations: (slug: string) => void;
   readonly openColour: (slug: string) => void;
 }
 
 /**
- * The four handlers, each of which closes the panel before it leaves.
+ * The five handlers, each of which closes the panel before it leaves.
  *
  * Built from the table rather than written out, so the guarantee is structural: there is exactly
  * one place that calls `navigate`, and it is preceded by `dismiss` unconditionally.
@@ -123,6 +126,9 @@ export function lensExits(ports: LensExitPorts): LensExitHandlers {
     },
     openContemporary: (slug) => {
       leave(LENS_EXITS.contemporary(slug));
+    },
+    openCombinations: (slug) => {
+      leave(LENS_EXITS.combinations(slug));
     },
     openColour: (slug) => {
       leave(LENS_EXITS.colour(slug));

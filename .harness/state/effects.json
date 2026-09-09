@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-08",
+  "updated": "2026-09-09",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -3894,6 +3894,54 @@
       "guard": "A THIRD COLLECTION IN THE BUNDLE MEANS A THIRD PLACE THE DIGEST CHAIN CAN HAVE A HOLE, and it is closed the same way the first two are: a per-record digest verified at load on the device, namespaced `combination/<slug>` in the root so a colour and a combination sharing a slug cannot collide, and a test that edits one character of a published combination and requires the load to refuse and NAME it. Its decoy matters as much — a loader returning no combinations would never find a tampered one, so the round trip is asserted beside the refusal. THE SCHEMA VERSION IS THE COMPATIBILITY GUARD: the key is required from corpusSchemaVersion 1.1.0 and absent-means-none before it, because 2026.08.1 is published and immutable and cannot grow the key — making it optional everywhere would have given up the distinction between \"no combinations\" and \"written by a build that did not know about them\" for every future bundle too. An empty collection contributes no rows to the root digest, so every previously published checksum still verifies. WHAT IS NOT GUARDED, AND THE GATE SAYS SO ON EVERY RUN: whether a combination was arrived at independently. No scanner sees a transcription. What is enforced is that every one is our own editorial work, over colours we published, citing a registered source — which makes re-expressing somebody else's table into ours the only way through, at which point it is our selection of our own colours.",
       "memory": "memory/effects/a-record-type-is-a-claim-and-the-parser-is-where-it-is-kept.md",
       "rationale": "FR-73 NEEDED A SECOND KIND OF COMBINATION. F-194 ships generated ones and labels every card `Generated` — in that file's own words, *\"a relationship computed from geometry and one recorded by a curator are different claims, and F-196 adds the second\"*. THE REFERENCE IS A DICTIONARY OF COLOR COMBINATIONS AND NOTHING FROM IT WAS READ: \"Wada is public domain\" is not \"this digitisation is free to ingest\", because the digitiser's choices about printing, paper ageing and illuminant ARE the dataset (content/AGENTS.md §2, ADR-0007). We do what the book does, from 120 colours we constructed ourselves. THE RECORD TYPE IS SEPARATE FROM PALETTE ON PURPOSE: a palette is a family of 5–8 with an anchor and weights; a combination is 2–4 with a lead. Two to four is enforced because one is a colour and five is a palette — without the bounds the two types drift into synonyms and the claim each makes stops being legible from the type. AND THE CLASSIFICATION RULE IS UNCONDITIONAL HERE, unlike for an entry: `checkClassification` constrains an entry to our own curation only when its sourceType is editorial, because an entry CAN be historical — somebody measured a dyed silk. There is no sourceType under which pairing two colours is a measurement of the world.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-103",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Combinations.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/exits.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Lens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/with/[id].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/lens-exits.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE SUBJECT IS A DISCRIMINATED UNION, so a caller cannot pass a colour and then read a corpus name off it — the compiler is what stops the two subject kinds being confused, and both kinds are registered conformance subjects so both trees are measured in both themes. THE COLOUR SUBJECT HAS ITS OWN DECOY: two different garment colours must produce different relationships, because an implementation that ignored the colour — resolving to a nearest entry, or falling back to a default — would satisfy every other assertion and return the same answer for every garment. THE EXIT TABLE IS NOW ENUMERATED BY CONSTRUCTION: the handler run-list is a Record keyed by `LensExitHandlers`, so adding a door without covering it is a compile error, and the href-shape check reads `Object.values(LENS_EXITS)` rather than a hand-written list of four. WHAT IS NOT GUARDED: that the two questions stay legible as two questions. The i18n test asserts the titles and the button labels differ in both languages, which catches a collapse into synonyms; it cannot tell whether either phrase is a good one.",
+      "memory": "memory/effects/a-screen-shaped-around-its-first-caller-excludes-the-second.md",
+      "rationale": "F-194 BUILT THE COMBINATIONS SCREEN AROUND A CORPUS SLUG BECAUSE IT HAD EXACTLY ONE CALLER. The harmony engine takes an OKLCh and never needed an entry — the slug was an accident of the first caller having one, and it is what made a GARMENT unable to ask the question at all. A garment's colour is a hex somebody captured or typed. THE OBVIOUS BRIDGE WAS REJECTED FOR A REASON THE REPOSITORY ALREADY WROTE DOWN: resolving a garment to its nearest published colour needs a distance printed, and `Wardrobe`'s own docblock forbids exactly that — *\"printing ΔE00 4.2 from ai-iro beside a jumper would present a measurement as a property of the garment\"*. So the honest version needs a number that screen may not print, and the dishonest version quietly answers about a different colour than the one asked about. Widening the subject removed the dilemma instead of choosing a side of it. THE CONSEQUENCE IS CORRECT AND IS SAID OUT LOUD: curated combinations are keyed by slug because an editor chose published colours, so a free colour has none — and the screen says why, rather than leaving a section silently missing, which would leave a person unable to tell \"nobody curated one\" from \"this product does not do that\".",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

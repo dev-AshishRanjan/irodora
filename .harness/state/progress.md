@@ -19743,3 +19743,79 @@ Nobody has looked at a curated combination. Whether these read as considered or 
 editorial judgement, and it is the entire value of the record type.
 
 ---
+
+## F-197 — Combinations have a home
+
+F-194 gave the combinations screen one way in and said so in its own plan: *"F-197 adds the
+reading and the garment and settles the naming against Contemporary."*
+
+### Criterion 2 was already met, and is verified rather than redone
+
+**F-155 renamed the contemporary strings.** `contemporary.title` is *"What you could buy in
+this"* / *"いま手に入る近い色"*, in both catalogues. The file and the route are still called
+`Contemporary` and `nearby`, which is not what the criterion asks about — a route path is not a
+phrase anybody is shown.
+
+What was missing is **any check that the two stay distinct**, so an edit could collapse them into
+near-synonyms with every gate green. That check exists now, over the titles *and* the button
+labels, in both languages — with a decoy, because two undefined lookups are also "not equal".
+
+### The garment was the hard half, and the repository had already written down why
+
+A garment's colour is a hex somebody captured or typed. The obvious bridge — resolve it to the
+nearest published colour — was **rejected**, because `Wardrobe`'s own docblock forbids the
+disclosure that would make it honest:
+
+> *Report a distance. A garment is **in** a group; printing "ΔE00 4.2 from ai-iro" beside a
+> jumper would present a measurement as a property of the garment.*
+
+So the honest version needs a number that screen may not print, and the dishonest version quietly
+answers about a different colour than the one asked about.
+
+**The subject became a union instead.** The harmony engine always took an OKLCh; the slug was an
+accident of F-194 having exactly one caller.
+
+| subject | generated | curated |
+|---|---|---|
+| a corpus entry | yes | yes |
+| a colour | yes | **no, and the screen says why** |
+
+Curated combinations are keyed by slug because an editor chose *published* colours (F-196). A
+section that was simply absent would leave a person unable to tell *nobody has curated one* from
+*this product does not do that*.
+
+The garment reaches it through `/wardrobe/with/<id>` — **the id travels, not the colour** — and
+the route reads the row, which is the convention every device-reading route here follows.
+
+### The decoy this needed
+
+*"The garment's own colour goes in"* is satisfied by an implementation that ignores the colour
+entirely. Two different garment colours must produce different relationships.
+
+### A hand-written enumeration became a structural one
+
+The exit tests listed the four doors by hand in three places. Adding a fifth would have left all
+three passing over four. The run-list is now a `Record` keyed by `LensExitHandlers` — a missing
+case is a **compile error** — and the href check reads the table rather than a copy of it.
+
+### The lint caught a dead branch
+
+`onWearIt(entry === null ? '' : entry.entry.slug)` inside a guard where `entry` is non-null. The
+guard is what makes *wear it* a corpus question at all: `Wear` ranks the corpus for a slug, and a
+free colour has none.
+
+### Effects
+
+**E-103** — a screen shaped around its first caller excluded the second. Guard: a discriminated
+union, both kinds as conformance subjects, and the colour subject's decoy.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build · content — **PASS**. 890
+mobile tests over 39 suites. Route reachability **20 of 20**; 32 navigation targets resolve.
+
+### Attested, not asserted
+
+Nobody has looked at the garment route on a device.
+
+---

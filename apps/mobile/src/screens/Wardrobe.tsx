@@ -262,6 +262,19 @@ export interface WardrobeProps {
    *
    * Optional and supplied by the route, like every destination here.
    */
+  /**
+   * What goes with this garment (F-197).
+   *
+   * Carries the garment's **id**, not its colour: the destination route reads the row and uses
+   * the colour on it, so no colour data travels in a URL and the answer is about the garment's
+   * own value rather than about the nearest published colour to it.
+   *
+   * **That is the whole reason the combinations screen took a colour subject.** Resolving a
+   * garment to a corpus entry would need this screen to print the distance — see the rule at the
+   * top of this file — and without printing it the product would quietly answer about a
+   * different colour than the one somebody asked about.
+   */
+  readonly onOpenCombinations?: ((garmentId: string) => void) | undefined;
   readonly onOpenOutfit?: (() => void) | undefined;
   readonly onOpenShopping?: (() => void) | undefined;
 }
@@ -458,6 +471,7 @@ export function Wardrobe({
   initialSelected = null,
   initialFilter = NO_FILTER,
   onAddGarment,
+  onOpenCombinations,
   onOpenOutfit,
   onOpenShopping,
 }: WardrobeProps): React.JSX.Element {
@@ -657,6 +671,22 @@ export function Wardrobe({
             {t('browse.saved')}
           </Text>
         )}
+        {/*
+          WHAT GOES WITH IT (F-197). On the garment that is open, because that is the only place
+          a single garment is the subject — the gallery's job is to be scanned, and a control per
+          cell would put one under every thumbnail.
+        */}
+        {onOpenCombinations === undefined ? null : (
+          <Button
+            label={t('combos.garment')}
+            variant="secondary"
+            onPress={() => {
+              onOpenCombinations(selected.id);
+            }}
+            script={script}
+          />
+        )}
+
         <Button
           label={t('browse.back')}
           variant="secondary"
