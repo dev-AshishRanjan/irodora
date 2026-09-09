@@ -20207,3 +20207,74 @@ gate here discharges, and both previous rewrites were green on every gate at the
 reported as unprofessional. This one is too. That is exactly what the attestation is for.
 
 ---
+
+## F-203 — The other surfaces join it
+
+### Criterion 2 is countable, so it was counted first
+
+**12 `flexDirection` declarations across 7 screens**, every one a `Row` written by hand:
+
+```
+Finder 2 · PaletteStudio 2 · Compare 2 · Contemporary 2 · ProfileSetup 2 · Lens 1 · ColourDetail 1
+```
+
+And **zero** in `Home`, `Combinations` and `Wear` — the three built this release. That is the
+control group, and it says the vocabulary works when it fits.
+
+### The finding underneath, which is the useful half
+
+**Seven screens were not being careless. `Row` could not say what they needed.**
+
+| missing | uses | what they wrote instead |
+|---|---|---|
+| `align="baseline"` | 5 | `alignItems: 'baseline'` — a number beside its unit, on one line |
+| vertical-only padding | 3 | `paddingVertical` — breathing room in a list row |
+
+Both were added **before** the rule was written, because a gate that forbids a workaround
+without supplying the missing capability makes people worse at their job. **A workaround is what
+a missing value looks like from the outside.**
+
+### The trap in the conversion
+
+React Native defaults `alignItems` to **`stretch`**; `Row` defaults it to **`center`** —
+correct for the case it was written for, *a swatch beside its label*. So a `View` with no
+alignment is **not** equivalent to a bare `<Row>`.
+
+Every one of the twelve carries its original alignment, including the one that needed
+`align="stretch"` written out. And a test asserts `Row` **still defaults to `center`**: had
+`baseline` leaked into the default, every conversion would have silently moved a layout it was
+meant to preserve, and the test for `baseline` would still have passed.
+
+### The gate failed open on its first run
+
+Its entry-point guard compared `import.meta.url` against a template-built `file://` string,
+which never matches on win32 — so it exited **0 with no output**. Caught because a gate that
+prints nothing is the one thing this repository treats as more suspicious than a failure. It now
+uses the guard `verify-route-targets` uses, and its proof plants a violating screen in a temp
+directory and watches the rule refuse it.
+
+### Criterion 1, and what was deliberately not done
+
+**`Surface` IS the vocabulary.** `Card` is a composition on it — header, footer, media,
+levels, loading, selection. A screen needing none of those does not become more consistent by
+wrapping the same content in a component that supplies them; it becomes a screen whose **padding
+semantics changed**, on nine surfaces, with no way to verify the result here.
+
+The genuine violation of *one vocabulary* was the raw `View` doing a `Row`'s job, and that is
+gone everywhere and gated. The sites where a Surface really is a card — Wardrobe's filter panel,
+ProfileSetup's dimension block — are **F-210**, filed rather than done blind: stacking two
+unverifiable visual changes into one feature is how a regression arrives with nothing to bisect.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build · content — **PASS**. 945
+mobile tests, 249 `@irodora/ui` tests. Two screens lost their last `View` and `nativeSpacing`
+imports entirely, which the lint reported — evidence they no longer reach for raw primitives at
+all.
+
+### Attested, not asserted
+
+That the twelve rows still **look** the same. The suite catches structure and contrast, not a row
+sitting four pixels lower.
+
+---

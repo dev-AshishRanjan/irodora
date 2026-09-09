@@ -461,9 +461,7 @@ export function PaletteStudio({
                 <Text size="small" color="foreground" script={script}>
                   {`${t('cvd.hard')}: ${finding.a.label} · ${finding.b.label}`}
                 </Text>
-                <View
-                  style={{ flexDirection: 'row', gap: nativeSpacing.sm, alignItems: 'baseline' }}
-                >
+                <Row gap="sm" align="baseline">
                   <Text size="xs" color="foreground.2" script={script}>
                     {t('cvd.separation')}
                   </Text>
@@ -471,20 +469,13 @@ export function PaletteStudio({
                   <Text size="xs" color="foreground.2" numeric>
                     {finding.separation.toFixed(0)}
                   </Text>
-                </View>
+                </Row>
                 {finding.alternative === null ? (
                   <Text size="xs" color="foreground.2" script={script}>
                     {t('cvd.noAlternative')}
                   </Text>
                 ) : (
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      gap: nativeSpacing.md,
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                    }}
-                  >
+                  <Row gap="md" wrap>
                     {(() => {
                       const entry = entryBySlug(finding.alternative.slug);
                       return entry === null ? null : (
@@ -503,7 +494,7 @@ export function PaletteStudio({
                     <Text size="xs" color="foreground.2" numeric script={script}>
                       {`${finding.alternative.separation.toFixed(0)} (${t('cvd.improvement')} +${finding.alternative.improvement.toFixed(0)})`}
                     </Text>
-                  </View>
+                  </Row>
                 )}
               </View>
             ))

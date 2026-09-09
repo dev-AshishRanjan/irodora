@@ -74,8 +74,18 @@ export type SpacingStep = keyof typeof nativeSpacing;
  */
 export type Script = keyof typeof nativeType;
 
-/** Cross-axis alignment. The RN values, narrowed to the four that mean something here. */
-export type Align = 'start' | 'center' | 'end' | 'stretch';
+/**
+ * Cross-axis alignment. The RN values, narrowed to the five that mean something here.
+ *
+ * `baseline` was added in **F-203**, and it was added because seven screens had already written
+ * it by hand: a number beside its unit, or a value beside its label, sits on ONE line, and
+ * `center` puts a 24px figure and an 11px unit on two different optical lines that read as a
+ * mistake. Five uses across five files, every one an `alignItems: 'baseline'` on a raw `View`.
+ *
+ * **A workaround is what a missing value looks like from the outside.** The screens were not
+ * being careless; the primitive could not say the thing they needed to say.
+ */
+export type Align = 'start' | 'center' | 'end' | 'stretch' | 'baseline';
 /** Main-axis distribution for a {@link Row}. */
 export type Justify = 'start' | 'center' | 'end' | 'between';
 
@@ -84,6 +94,7 @@ const ALIGN = {
   center: 'center',
   end: 'flex-end',
   stretch: 'stretch',
+  baseline: 'baseline',
 } as const;
 
 const JUSTIFY = {
@@ -97,6 +108,18 @@ const JUSTIFY = {
 type FlowProps = Omit<ViewProps, 'style'> & {
   readonly gap?: SpacingStep;
   readonly align?: Align;
+  /**
+   * Vertical inset only, as a step of the scale.
+   *
+   * Added in **F-203** for the same reason `baseline` was: three screens had written
+   * `paddingVertical` by hand, because a row in a list needs breathing room above and below and
+   * NOT at the ends, where the page inset already applies. `padding` covers all four sides and
+   * a row using it sits inset from the page edge twice.
+   *
+   * Deliberately not a general `paddingX`/`paddingY` pair: the horizontal case has not come
+   * up, and a value nothing produces is a value nothing consumes.
+   */
+  readonly padY?: SpacingStep;
   /**
    * Inset, as a step of the scale.
    *
@@ -125,6 +148,7 @@ export function Stack({
   gap = 'md',
   align,
   padding,
+  padY,
   children,
   ...rest
 }: StackProps): React.JSX.Element {
@@ -136,6 +160,7 @@ export function Stack({
         gap: nativeSpacing[gap],
         ...(align === undefined ? {} : { alignItems: ALIGN[align] }),
         ...(padding === undefined ? {} : { padding: nativeSpacing[padding] }),
+        ...(padY === undefined ? {} : { paddingVertical: nativeSpacing[padY] }),
       }}
     >
       {children}
@@ -161,6 +186,7 @@ export function Row({
   justify,
   wrap = false,
   padding,
+  padY,
   children,
   ...rest
 }: RowProps): React.JSX.Element {
@@ -173,6 +199,7 @@ export function Row({
         alignItems: ALIGN[align],
         ...(justify === undefined ? {} : { justifyContent: JUSTIFY[justify] }),
         ...(wrap ? { flexWrap: 'wrap' } : {}),
+        ...(padY === undefined ? {} : { paddingVertical: nativeSpacing[padY] }),
         ...(padding === undefined ? {} : { padding: nativeSpacing[padding] }),
       }}
     >

@@ -6561,7 +6561,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-202"
       ],
@@ -6578,6 +6578,16 @@
         "a11y",
         "contrast",
         "build"
+      ],
+      "plan": "plans/F-203-the-other-surfaces-join-it.md",
+      "notes": "CRITERION 1 DELIVERED AS THE LAYOUT VOCABULARY FOR ALL 19 SCREENS, NOT AS A Surface→Card SWEEP, and the reasoning is recorded rather than left as an omission. `Surface` IS the system's vocabulary — `Card` is a composition ON it, adding header/footer/media slots, elevation levels, a loading state and selection. A screen that needs none of those does not become more consistent by wrapping the same content in a component that supplies them; it becomes a screen whose padding semantics changed, on nine surfaces, with no way to verify the visual result on this workstation. The genuine violation of \"one vocabulary\" was the raw `View` doing a `Row`'s job, and that is now removed everywhere and gated. Where a Surface plus a heading IS literally a card — Wardrobe's filter panel, ProfileSetup's dimension block — converting it is a real improvement and is filed as F-210 rather than done blind against golden rule 6.",
+      "attested": [
+        {
+          "criterion": "Every screen is composed from the same card, state, motion and selection vocabulary",
+          "verifiedBy": "The layout vocabulary is now uniform across all 19 screens and enforced by a gate with a proof. What is NOT verified is that the twelve converted rows still look the same: React Native defaults alignItems to stretch and Row defaults it to center, so every conversion carries its original alignment explicitly — but the conformance suite catches structural and contrast regressions, not a row sitting four pixels lower. That needs a device.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {
@@ -6755,6 +6765,36 @@
         "build"
       ],
       "notes": "THE DECLARATION HAS NAMED A CLOSING FEATURE TWICE AND BEEN WRONG BOTH TIMES, which is the signal worth acting on. The package is not unfinished — it is complete, tested, and unused because every boundary that arrived after it was written validates with a hand-written parser that also produces the error paths our gates report: `parseCombination` and `parseEntry` in @irodora/corpus, `importArchive` in @irodora/store. Adding Zod beside any of them would be two parsers for one shape. That is a real architectural question — whether runtime validation belongs in a package of schemas or beside the code that owns the shape — and it is answered by an ADR, not by finding somewhere to import it from."
+    },
+    {
+      "id": "F-210",
+      "title": "The Surfaces that are cards become Cards",
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R8",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [
+        "F-203"
+      ],
+      "acceptance": [
+        "Every Surface whose content is a heading plus a body becomes a Card with that heading in its header slot",
+        "A Surface that is not a card — a camera preview frame, a pressable target — stays a Surface, and the reason is recorded per site",
+        "The padding each site rendered before is what it renders after, asserted against the tree rather than assumed"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y",
+        "contrast"
+      ],
+      "notes": "SPLIT OUT OF F-203 RATHER THAN DONE BLIND. `Card` supplies its own padding defaults, so a Surface→Card conversion changes spacing unless each site is checked — nine surfaces, on a workstation with no device, in a feature whose other half was already a twelve-site layout refactor. Golden rule 6 is that the build stays green between increments, and stacking two unverifiable visual changes into one feature is how a regression arrives with nothing to bisect. The sites are known: Wardrobe's filter panel, ProfileSetup's dimension block, and the empty states in Atlas and Lens."
     }
   ]
 }

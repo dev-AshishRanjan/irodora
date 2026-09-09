@@ -1064,10 +1064,7 @@ export function Lens({
                   {t('lens.nearest')}
                 </Text>
                 {nearest.map(({ entry, deltaE00 }) => (
-                  <View
-                    key={entry.entry.slug}
-                    style={{ flexDirection: 'row', gap: nativeSpacing.md, alignItems: 'center' }}
-                  >
+                  <Row key={entry.entry.slug} gap="md">
                     <Swatch
                       name={entry.entry.name.en}
                       hex={entry.derived.hex}
@@ -1092,7 +1089,7 @@ export function Lens({
                         {`${deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
                       </Text>
                     </View>
-                  </View>
+                  </Row>
                 ))}
 
                 {/*

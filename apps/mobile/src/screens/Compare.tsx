@@ -153,14 +153,7 @@ export function Compare({
     readonly space: string;
   }): React.JSX.Element {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'baseline',
-          gap: nativeSpacing.sm,
-          paddingVertical: nativeSpacing.sm,
-        }}
-      >
+      <Row gap="sm" align="baseline" padY="sm">
         <View style={{ flex: 1 }}>
           <Text size="small" color="foreground" script={script}>
             {label}
@@ -190,7 +183,7 @@ export function Compare({
             {unit}
           </Text>
         )}
-      </View>
+      </Row>
     );
   }
 
@@ -206,14 +199,7 @@ export function Compare({
     readonly suffix?: string;
   }): React.JSX.Element {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'baseline',
-          gap: nativeSpacing.sm,
-          paddingVertical: nativeSpacing.xs,
-        }}
-      >
+      <Row gap="sm" align="baseline" padY="xs">
         <Text size="small" color="foreground.2" script={script}>
           {label}
         </Text>
@@ -228,7 +214,7 @@ export function Compare({
         <Text size="small" color="foreground" numeric selectable>
           {`${signed(axis.delta, places)}${suffix ?? ''}`}
         </Text>
-      </View>
+      </Row>
     );
   }
 

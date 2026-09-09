@@ -269,3 +269,67 @@ describe('the status bar inset moves the scroller, not the content inside it (F-
     expect(content['padding']).toBe(nativeSpacing.xl2);
   });
 });
+
+/**
+ * THE TWO VALUES SEVEN SCREENS PROVED WERE MISSING (F-203).
+ *
+ * `Row` had no `baseline` alignment and no vertical-only padding, so seven screens wrote
+ * `alignItems: 'baseline'` and `paddingVertical` on a raw `View` — twelve times between them.
+ * **A workaround is what a missing value looks like from the outside.**
+ */
+describe('the values the workarounds proved were missing', () => {
+  it('aligns a row on the baseline when asked', () => {
+    const tree = draw(
+      <Row align="baseline" testID="r">
+        <Text size="body" color="foreground">
+          a
+        </Text>
+      </Row>,
+    );
+    expect(styleOf(tree, 'r')['alignItems']).toBe('baseline');
+  });
+
+  /**
+   * THE DECOY, AND IT IS THE ONE THAT MATTERS.
+   *
+   * `Row` defaults to `center` — correct for the case it was written for, a swatch beside its
+   * label. Had `baseline` leaked into the default, every conversion in F-203 would have
+   * silently moved a layout it was supposed to preserve, and the assertion above would still
+   * pass.
+   */
+  it('DECOY — and still defaults to center, which the conversions relied on', () => {
+    const tree = draw(
+      <Row testID="r">
+        <Text size="body" color="foreground">
+          a
+        </Text>
+      </Row>,
+    );
+    expect(styleOf(tree, 'r')['alignItems']).toBe('center');
+  });
+
+  it('pads vertically only, leaving the ends to the page inset', () => {
+    const tree = draw(
+      <Row padY="sm" testID="r">
+        <Text size="body" color="foreground">
+          a
+        </Text>
+      </Row>,
+    );
+    const style = styleOf(tree, 'r');
+    expect(style['paddingVertical']).toBe(nativeSpacing.sm);
+    // NOT all four sides: a row using `padding` sits inset from the page edge twice.
+    expect(style['padding']).toBeUndefined();
+  });
+
+  it('and a Stack takes it too, so the pair stays symmetrical', () => {
+    const tree = draw(
+      <Stack padY="xs" testID="s">
+        <Text size="body" color="foreground">
+          a
+        </Text>
+      </Stack>,
+    );
+    expect(styleOf(tree, 's')['paddingVertical']).toBe(nativeSpacing.xs);
+  });
+});

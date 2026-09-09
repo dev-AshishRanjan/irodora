@@ -32,8 +32,6 @@
  */
 
 import { useState } from 'react';
-import { View } from 'react-native';
-import { nativeSpacing } from '@irodora/design-tokens';
 import { Button, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { PROFILE_DIMENSIONS, uuidv7, type ProfileDimension } from '@irodora/store';
 import { colorFor, entryBySlug } from '../corpus';
@@ -428,15 +426,7 @@ export function ProfileSetup({
           if (found === null) return null;
           const on = kept.includes(slug);
           return (
-            <View
-              key={slug}
-              style={{
-                flexDirection: 'row',
-                gap: nativeSpacing.md,
-                alignItems: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
+            <Row key={slug} gap="md" wrap>
               <Swatch
                 name={found.entry.name.en}
                 hex={found.derived.hex}
@@ -459,7 +449,7 @@ export function ProfileSetup({
                 }}
                 script={script}
               />
-            </View>
+            </Row>
           );
         })}
       </Stack>
@@ -535,7 +525,7 @@ export function ProfileSetup({
 
       {!showSummary && current !== undefined ? (
         <Stack gap="md">
-          <View style={{ flexDirection: 'row', gap: nativeSpacing.sm, alignItems: 'baseline' }}>
+          <Row gap="sm" align="baseline">
             <Text size="small" color="foreground.2" script={script}>
               {t('profile.progress')}
             </Text>
@@ -543,7 +533,7 @@ export function ProfileSetup({
             <Text size="small" color="foreground.2" numeric>
               {`${String(answered + 1)} / ${String(TRIALS.length)}`}
             </Text>
-          </View>
+          </Row>
           <Text size="body" color="foreground" script={script} heading>
             {t('profile.question')}
           </Text>

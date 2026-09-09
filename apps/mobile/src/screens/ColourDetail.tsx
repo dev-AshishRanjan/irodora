@@ -638,14 +638,7 @@ export function ColourDetail({
           ) : null}
           {panel === 'vision' ? (
             <DetailSection title={t('detail.colourVision')}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: nativeSpacing.md,
-                  paddingVertical: nativeSpacing.xs,
-                }}
-              >
+              <Row gap="md" wrap align="stretch" padY="xs">
                 <Stack gap="xs" align="center">
                   <Swatch
                     name={entry.name.en}
@@ -677,7 +670,7 @@ export function ColourDetail({
                     </Text>
                   </View>
                 ))}
-              </View>
+              </Row>
               <Text size="small" color="foreground.2" script={script}>
                 {t('cvd.note')}
               </Text>

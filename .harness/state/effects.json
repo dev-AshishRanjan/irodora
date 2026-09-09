@@ -4181,6 +4181,55 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-109",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/layout.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-layout-primitives.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-layout-primitives-proof.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Finder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ProfileSetup.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/layout.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile",
+        "packages/ui"
+      ],
+      "severity": "medium",
+      "guard": "THE GATE REFUSES `flexDirection` IN `src/screens/**`, AND ITS PROOF WATCHES IT REFUSE — a planted screen that invents a row is caught, and the same screen composed with `Row` passes, so the rule is not simply rejecting everything. The proof writes into a temp directory and never touches `apps/`, because a proof that plants into the real tree leaves the repository dirty when it is interrupted. THE CONVERSION HAS ITS OWN TRAP AND ITS OWN DECOY: React Native defaults `alignItems` to `stretch` and `Row` defaults it to `center`, so a `View` with no alignment is NOT equivalent to a bare `<Row>`. Every one of the twelve carries the alignment its original had, including the one that needed `align=\"stretch\"` written out — and a test asserts `Row` still defaults to `center`, because had `baseline` leaked into the default every conversion would have silently moved a layout it was meant to preserve. WHAT IS NOT GUARDED: that the twelve rows still LOOK the same. The conformance suite catches structural and contrast regressions; it cannot see that a row now sits four pixels lower. Attested.",
+      "memory": "memory/effects/a-workaround-is-a-missing-value-seen-from-outside.md",
+      "rationale": "CRITERION 2 IS COUNTABLE, SO IT WAS COUNTED FIRST: 12 `flexDirection` declarations across 7 screens, every one a `Row` written by hand — and ZERO in the three screens built this release, which is the control group saying the vocabulary works when it fits. THE FINDING UNDERNEATH IS THE USEFUL HALF. Seven screens did not do this out of carelessness: `Row` had no `baseline` alignment and no vertical-only padding, so the workaround was the only way to say what they needed. Both values were added before the rule was written, because A GATE THAT FORBIDS A WORKAROUND WITHOUT SUPPLYING THE MISSING CAPABILITY MAKES PEOPLE WORSE AT THEIR JOB. AND THE GATE ITSELF FAILED OPEN FIRST: its entry-point guard compared `import.meta.url` against a template-built `file://` string, which never matches on win32 — so the first run exited 0 with no output at all. A gate that prints nothing is the one thing this repository treats as more suspicious than a failure.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

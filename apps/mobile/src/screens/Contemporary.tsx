@@ -22,8 +22,7 @@
  * by a test that never renders anything. This file formats and labels.
  */
 
-import { Card, Pair, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
-import { nativeSpacing } from '@irodora/design-tokens';
+import { Card, Pair, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { View } from 'react-native';
 
 import {
@@ -121,7 +120,7 @@ export function Contemporary({
         }
       >
         <Stack gap="sm">
-          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: nativeSpacing.sm }}>
+          <Row gap="sm" align="baseline">
             <Text size="small" color="foreground" script={script}>
               {t('contemporary.computed')}
             </Text>
@@ -136,7 +135,7 @@ export function Contemporary({
             <Text size="xs" color="foreground.2" script={script}>
               {t('space.cielab')}
             </Text>
-          </View>
+          </Row>
 
           {item.inPalettes.map((p) => (
             <Text key={p.paletteSlug} size="xs" color="foreground.2" script={script}>
@@ -281,14 +280,14 @@ export function Contemporary({
             <Text size="body" color="foreground" script={script}>
               {t('contemporary.none')}
             </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: nativeSpacing.sm }}>
+            <Row gap="sm" align="baseline">
               <Text size="xs" color="foreground.2" script={script}>
                 {t('contemporary.noneHint')}
               </Text>
               <Text size="xs" color="foreground.2" numeric>
                 {EQUIVALENT_CEILING.toFixed(2)}
               </Text>
-            </View>
+            </Row>
           </Stack>
         </Surface>
       ) : (

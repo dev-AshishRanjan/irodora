@@ -33,7 +33,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { LEXICON_AXES, type LexiconAxis } from '@irodora/corpus';
 import { find, type FinderKind } from '../finder';
 import { colorFor, type PublishedEntry } from '../corpus';
@@ -90,14 +90,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         }}
         style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: nativeSpacing.md,
-            alignItems: 'center',
-            paddingVertical: nativeSpacing.sm,
-          }}
-        >
+        <Row gap="md" padY="sm">
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
@@ -128,7 +121,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
               </Text>
             </View>
           )}
-        </View>
+        </Row>
       </Pressable>
     );
   }
@@ -208,14 +201,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                   const range = result.region?.[axis];
                   if (range === undefined) return null;
                   return (
-                    <View
-                      key={axis}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'baseline',
-                        gap: nativeSpacing.sm,
-                      }}
-                    >
+                    <Row key={axis} gap="sm" align="baseline">
                       <Text size="small" color="foreground.2" script={script}>
                         {t(AXIS_KEYS[axis])}
                       </Text>
@@ -226,7 +212,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                       <Text size="xs" color="foreground.2" script={script}>
                         {t('space.oklch')}
                       </Text>
-                    </View>
+                    </Row>
                   );
                 })}
                 <Text size="xs" color="foreground.2" script={script}>
