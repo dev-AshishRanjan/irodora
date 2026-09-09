@@ -286,6 +286,25 @@ export function assets() {
      */
     { file: 'splash-icon-light.png', bytes: render(CANVAS, 768, monoLight, null, g) },
     { file: 'splash-icon-dark.png', bytes: render(CANVAS, 768, monoDark, null, g) },
+    /*
+     * THE THEMED-ICON LAYER (F-192). Android 13+ only, and it is the asset that was missing.
+     *
+     * With themed icons switched on and no `monochromeImage`, the launcher DERIVES its own
+     * silhouette from the coloured icon — so an icon this product designed deliberately becomes
+     * one the platform guessed at, on exactly the home screen this mark was approved on. It is
+     * the same class of defect as the icon that predated F-141: *"an app icon is the one asset
+     * you stop seeing after a week, so nobody notices."*
+     *
+     * ADAPTIVE_GRID, not 768: this layer is masked by the launcher like the foreground is, so it
+     * has to survive the same crop. Drawing it on the icon grid would put the outer petals under
+     * the mask on a round launcher.
+     *
+     * THE INK IS NOT THE POINT, and that is recorded rather than left looking deliberate:
+     * Android TINTS this drawable itself and consumes only the alpha silhouette. `lightInk` is
+     * used because the splashes already use it and one source beats a new decision — a reader
+     * wondering why should know there is nothing to find.
+     */
+    { file: 'monochrome-icon.png', bytes: render(CANVAS, ADAPTIVE_GRID, monoLight, null, g) },
   ];
 }
 
@@ -426,6 +445,57 @@ function prove() {
     reach <= safeRadius,
     'the adaptive icon fits the 66/108 safe circle',
     `ink reaches ${reach.toFixed(1)} from centre ≤ ${safeRadius.toFixed(1)}`,
+  );
+
+  /*
+   * 4c. THE THEMED-ICON LAYER IS A SILHOUETTE, NOT A PICTURE (F-192).
+   *
+   * Android tints `monochromeImage` itself and reads only the alpha. A layer that kept the five
+   * petal colours would look right in every preview here and be wrong the instant a launcher
+   * tinted it — five hues collapsing to one, with the gaps between them gone.
+   *
+   * So: every painted pixel is ONE ink. Counted from the decoded bytes rather than trusted from
+   * the ink scheme that was passed in, because the point is what came out.
+   */
+  const themed = decodePng(assets().find((a) => a.file === 'monochrome-icon.png').bytes);
+  const inks = new Set();
+  let transparent = 0;
+  for (let i = 0; i < themed.rgba.length; i += 4) {
+    const alpha = themed.rgba[i + 3];
+    if (alpha === 0) {
+      transparent += 1;
+      continue;
+    }
+    inks.add(
+      `${String(themed.rgba[i])},${String(themed.rgba[i + 1])},${String(themed.rgba[i + 2])}`,
+    );
+  }
+  say(
+    inks.size === 1,
+    'the themed icon paints ONE ink, so a launcher tinting it keeps the shape',
+    `${String(inks.size)} colour(s) among the painted pixels`,
+  );
+  say(
+    transparent > 0,
+    'and its ground is transparent, so the launcher supplies the other half',
+    `${String(transparent)} fully transparent pixel(s)`,
+  );
+
+  /*
+   * THE DECOY. A count of one would also be produced by an asset that is entirely transparent,
+   * or entirely one flat colour edge to edge — both of which are silhouettes of nothing.
+   */
+  const coloured = decodePng(assets().find((a) => a.file === 'icon.png').bytes);
+  const colouredInks = new Set();
+  for (let i = 0; i < coloured.rgba.length; i += 4)
+    if (coloured.rgba[i + 3] !== 0)
+      colouredInks.add(
+        `${String(coloured.rgba[i])},${String(coloured.rgba[i + 1])},${String(coloured.rgba[i + 2])}`,
+      );
+  say(
+    colouredInks.size > 1 && inks.size > 0,
+    'DECOY — the COLOURED icon has many inks, so "one" is a measurement not a constant',
+    `icon.png: ${String(colouredInks.size)} colour(s)`,
   );
 
   const tooBig = ((g.orbit + g.petal) * 768) / g.grid;

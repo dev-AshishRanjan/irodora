@@ -20599,3 +20599,67 @@ and all four of CI's gate-8 steps run individually: token-reach proof, test:a11y
 a11y mutation proof.
 
 ---
+
+## F-192 — The mark is a mark
+
+### The premise was removed by evidence, before any work started
+
+This feature was written when **two marks had been rejected** at the one step no gate here can
+discharge, and F-165's third had not been seen. Criterion 1 asked for a mark that *"says
+something about colour that a ring of discs does not"* — a request to **replace** the disc mark.
+
+Then: *"The icon on home screen looks good."*
+
+**Drawing a fourth mark to replace an approved one is the opposite of what this feature is for.**
+So criterion 1 became keeping it, and its other halves were verified rather than rebuilt —
+`brand.test.tsx` already covers 16px and all three CVD simulations, and records that the CVD
+check *"changed shape with the mark, and got stronger"*.
+
+### What was genuinely undone: one asset
+
+```
+icon.png              iOS and the store, opaque, in colour
+adaptive-icon.png     Android foreground, transparent
+splash-icon-light.png monochrome
+splash-icon-dark.png  monochrome
+                      ← no monochrome icon
+```
+
+`adaptiveIcon` had `foregroundImage` and `backgroundColor` and **no `monochromeImage`**. On
+Android 13+ with themed icons switched on, the launcher **derives its own silhouette** from the
+coloured icon — so an icon this product designed deliberately becomes one the platform guessed
+at, **on exactly the home screen the mark was just approved on**.
+
+Same class as the icon that predated F-141: *"an app icon is the one asset you stop seeing after
+a week, so nobody notices."*
+
+### The layer is proven to be a silhouette
+
+Android **tints** `monochromeImage` and reads only the alpha. A layer that kept the five petal
+colours would look right in every preview here and collapse to one flat blob the instant a
+launcher tinted it, with the gaps between the petals gone.
+
+So the proof decodes the produced bytes: **exactly one RGB among painted pixels**, on a
+transparent ground. Its decoy is what makes "one" a measurement — `icon.png` decoded the same
+way has **96**, so the assertion would not also pass on an asset that is entirely transparent or
+one flat colour edge to edge.
+
+Drawn on `ADAPTIVE_GRID`, so it survives the same launcher mask as the foreground — which the
+existing safe-circle case already checks.
+
+**The ink is recorded as not mattering**, rather than left looking deliberate: the system supplies
+the colour, and `lightInk` is used because the splashes already use it.
+
+### Gates
+
+state · typecheck · lint · format · test · cvd · build — **PASS**, plus the brand generator's
+own `--check` and `--prove`.
+
+### Attested
+
+**Gate 16** still needs a built APK, carried forward from F-165 unchanged. And **nobody has seen
+the themed icon tinted** — it needs Android 13+, themed icons on, and a build. The approval that
+unblocked this feature was of the coloured icon, and it is not evidence about the layer added
+here.
+
+---

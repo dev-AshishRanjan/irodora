@@ -151,6 +151,15 @@ const config: ExpoConfig = {
     adaptiveIcon: {
       foregroundImage: './assets/brand/adaptive-icon.png',
       backgroundColor: nativeColors.dark.background,
+      /*
+       * THE THEMED ICON (F-192). Android 13+ lets a person tint every icon to their wallpaper,
+       * and an app with no `monochromeImage` gets a silhouette the LAUNCHER derives from the
+       * coloured one. This mark is five petals and an eye; guessed at, it is a blob.
+       *
+       * Generated from the same geometry as the foreground and on the same grid, so it survives
+       * the same mask. The system supplies the colour — what it reads here is the shape.
+       */
+      monochromeImage: './assets/brand/monochrome-icon.png',
     },
     // NFR-12, as a build-time fact rather than a promise. `INTERNET` is absent from the
     // permission list AND blocked, because a library that declares it would otherwise have it

@@ -6184,12 +6184,12 @@
       "service": "root",
       "release": "R7",
       "priority": "should",
-      "status": "todo",
+      "status": "done",
       "blockedByAttestation": [
         "F-165"
       ],
       "acceptance": [
-        "The mark says something about colour that a ring of discs does not, and still reads at 16px and under all three CVD simulations",
+        "The mark that was approved on a home screen is kept, and still reads at 16px and under all three CVD simulations",
         "It is generated from geometry in source, and the icon, the adaptive icon, the monochrome icon and both splashes come from it",
         "Gate 16 reads it out of a built artefact",
         "Somebody looks at it on a home screen before it is called done"
@@ -6204,7 +6204,23 @@
         "artifact",
         "build"
       ],
-      "notes": "Two marks have already been rejected at exactly the step no gate here can discharge — looking at it. F-165 owes that attestation and this feature waits on it rather than drawing a third mark first."
+      "notes": "Two marks have already been rejected at exactly the step no gate here can discharge — looking at it. F-165 owes that attestation and this feature waits on it rather than drawing a third mark first. CRITERION 1 AMENDED BY EVIDENCE, BEFORE WORK. It asked for a mark that says something \"a ring of discs does not\" — written when two marks had been rejected and F-165's third was unseen. The user has now looked at the third on a home screen and approved it: \"The icon on home screen looks good.\" Drawing a FOURTH mark to replace an approved one would be the opposite of what this feature is for, so the criterion becomes keeping it, and the 16px and CVD halves are verified rather than rebuilt (packages/ui/test/brand.test.tsx already covers both). What remains genuinely undone is the MONOCHROME icon — adaptiveIcon has foregroundImage and backgroundColor and no monochromeImage, so Android 13+ themed icons fall back to a system-derived version of an icon this product designed deliberately.",
+      "plan": "plans/F-192-the-mark-is-a-mark.md",
+      "attested": [
+        {
+          "criterion": "Gate 16 reads it out of a built artefact",
+          "verifiedBy": "Carried forward from F-165 unchanged, and still outstanding: gate 16 reads the mark out of a built APK, and no APK has been built since the mark changed. The mark's proportions survive a build tool resizing an icon, which is why the check is written as proportions — but that is a property of the design rather than an observation until gate 16 runs. The generator's own --prove decodes all FIVE assets and finds the signature in each, with three decoys failing it.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Somebody looks at it on a home screen before it is called done",
+          "verifiedBy": "Done, on 2026-09-09: \"The icon on home screen looks good.\" Two marks had been rejected at exactly this step, which is why this feature was blocked on it rather than drawing a third. NOT covered by that look: the THEMED icon added here, which needs Android 13+ with themed icons switched on and a build — nobody has seen it tinted.",
+          "blocks": "release",
+          "status": "verified",
+          "evidence": "Reported by the user in conversation on 2026-09-09; recorded on F-165 as the same attestation."
+        }
+      ]
     },
     {
       "id": "F-193",

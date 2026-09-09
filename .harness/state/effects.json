@@ -4425,6 +4425,43 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-115",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/generate-brand-assets.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app.config.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/assets/brand/monochrome-icon.png"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE LAYER IS PROVEN TO BE A SILHOUETTE, NOT ASSUMED TO BE ONE. Android tints `monochromeImage` itself and reads only the alpha, so a layer that kept the five petal colours would look right in every preview here and collapse to one flat blob the instant a launcher tinted it — with the gaps between the petals gone. The proof decodes the produced bytes and counts distinct RGB among painted pixels: exactly one, with a transparent ground. ITS DECOY IS WHAT MAKES \"ONE\" A MEASUREMENT: `icon.png` decoded the same way has 96, so the assertion is not a constant that would also pass on an asset that is entirely transparent or one flat colour edge to edge. The grid is `ADAPTIVE_GRID` and the existing safe-circle case covers it, so the themed layer survives the same launcher mask as the foreground. WHAT IS NOT GUARDED: how it looks tinted, on a device, with themed icons switched on. Nothing here can see that.",
+      "memory": "memory/effects/a-feature-can-be-answered-before-it-is-built.md",
+      "rationale": "THE FEATURE'S PREMISE WAS REMOVED BY EVIDENCE BEFORE ANY WORK STARTED. F-192 was written when two marks had been rejected at the one step no gate can discharge, and asked for a mark saying something *\"a ring of discs does not\"* — a request to REPLACE the disc mark. The user then looked at F-165's third mark on a home screen and approved it. Drawing a fourth would have been the opposite of what the feature is for, so criterion 1 became keeping it, and its other halves were VERIFIED rather than rebuilt: `brand.test.tsx` already covers 16px and all three CVD simulations. WHAT WAS GENUINELY UNDONE was one asset. `adaptiveIcon` had `foregroundImage` and `backgroundColor` and no `monochromeImage`, so on Android 13+ with themed icons on, the launcher DERIVES its own silhouette from the coloured icon — an icon this product designed deliberately becomes one the platform guessed at, on exactly the home screen the mark was just approved on. Same class as the icon that predated F-141: *\"an app icon is the one asset you stop seeing after a week, so nobody notices.\"*",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
