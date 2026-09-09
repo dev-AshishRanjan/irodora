@@ -19819,3 +19819,85 @@ mobile tests over 39 suites. Route reachability **20 of 20**; 32 navigation targ
 Nobody has looked at the garment route on a device.
 
 ---
+
+## F-198 — Every combination is CVD-checked and profile-weighted
+
+### The measurement changed the design, which is what measuring is for
+
+Criterion 1 asked that a combination whose colours *stop separating* say so. Built that way
+first, then measured over the shipped corpus:
+
+| relationship | flagged | mean separation |
+|---|---|---|
+| `warm-cool` | **96%** | 6.1 |
+| `analogous` | **95%** | 6.4 |
+| `tetradic` | 78% | 10.3 |
+| … | | |
+| `complementary` | 9% | 13.1 |
+
+**53% of all generated relationships fall below the convention.** That is not noise and the
+threshold was **not** nudged: warm against cool at similar lightness is precisely the axis a
+red-green deficiency loses, so a 96% rate there is the check telling the truth about the
+relationship.
+
+But a mark that appears on half the cards reads as an alarm. **This screen had already settled
+that question one feature earlier**, for the gamut cost:
+
+> *Zero is a value, not an absence — a screen that simply omitted the line would leave a person
+> unable to tell "nothing moved" from "nobody checked".*
+
+So the figure is on **every** card — the number, the deficiency, the severity — and the ones
+below the convention carry `cvd.hard` as well. Criterion 1 amended to that, which is a superset
+of what it asked. **A number always present is data; one that appears half the time is a
+warning, and this product does not warn people about their own eyes.**
+
+### The copy rule was already written down
+
+> *"These two are hard to tell apart"* — an observation about the colours. Never *"you may not be
+> able to distinguish these"* — a claim about the reader's vision, which this product knows
+> nothing about and must not imply it does. — `outfit/cvd.ts`
+
+`cvd.protan`, `cvd.deutan`, `cvd.tritan` and `cvd.separation` were reused rather than written
+again; a second set would be a second thing to translate with only one ever read.
+
+### A defect found in F-194, and fixed
+
+**23 corpus colours produced a relationship with no companions** — every one `near-neutral` on a
+colour that is already near-neutral, so the generator returns the source and F-194's
+source-by-value filter removes it. The screen rendered those as a card with a heading, a
+"Generated" label, a gamut-cost line and **no swatches at all**: an empty answer that looks like
+an answer.
+
+Invisible because F-194's own check asked **one** source whether every relationship had
+companions, and that source had them. The new check asks all 120, and its decoy asserts the
+corpus still contains the case that produced it — otherwise the fix would pass on an
+implementation that filters nothing.
+
+### The profile half
+
+Where a profile exists each relationship carries the mean personal score of its companions and
+the list is ordered by it. **It reorders and never removes** — F-194's rule holds. Without one,
+`personalFit` is `null` rather than a midpoint, because those are different facts (F-195), and
+the screen names the missing half with the way to fix it.
+
+### Effects
+
+**E-104** — the separation is reported on every combination. Guard: `close` must come back both
+true and false across the corpus, and the source is asserted to be inside the pairs. Not
+guarded: whether 20 is the right line for generated colours, as opposed to the corpus pairs it
+was set for.
+
+### Gates
+
+state · typecheck · lint · format · test · **cvd** · a11y · contrast · build · content —
+**PASS**. 901 mobile tests over 39 suites.
+
+**A gate caught a real one:** `toEqual([])` accepts an array holding `undefined`, so it does not
+assert emptiness. Changed to `toStrictEqual([])` — the names are the point, and a failure should
+say which colour and which relationship.
+
+### Attested, not asserted
+
+Nobody has looked at a flagged combination.
+
+---

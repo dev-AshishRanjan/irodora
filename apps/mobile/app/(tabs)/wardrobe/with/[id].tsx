@@ -1,6 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Combinations } from '../../../../src/screens/Combinations';
 import { deviceRepository } from '../../../../src/store/repository';
+import { activeProfile, toWorking } from '../../../../src/profile/store';
+import { engineProfile } from '../../../../src/outfit/builder';
+import { ruleSet } from '../../../../src/rules';
 
 /**
  * What goes with a garment (F-197).
@@ -24,6 +27,8 @@ export default function GarmentCombinationsRoute(): React.JSX.Element {
   const id = Array.isArray(params.id) ? (params.id[0] ?? '') : (params.id ?? '');
 
   const garment = repo.listGarments().find((g) => g.id === id) ?? null;
+  const stored = activeProfile(repo);
+  const profile = stored === null ? null : engineProfile(toWorking(stored));
 
   return (
     <>
@@ -44,6 +49,9 @@ export default function GarmentCombinationsRoute(): React.JSX.Element {
                 label: garment.name ?? garment.type,
               }
         }
+        // F-198: the ranking is weighted where there is somebody to weight it by.
+        profile={profile}
+        rules={ruleSet()}
         onOpenColour={(s) => {
           router.push(`/atlas/${s}`);
         }}

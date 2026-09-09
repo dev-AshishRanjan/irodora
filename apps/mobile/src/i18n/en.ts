@@ -605,6 +605,20 @@ export const en = {
   'combos.notInCorpus':
     'This colour is not one of ours, so there are no curated combinations for it — only the relationships generated from it.',
   'combos.garment': 'What goes with this garment',
+  /*
+   * F-198 — THE SEPARATION LINE AND THE PERSONAL WEIGHT.
+   *
+   * The deficiency names and the word "Separation" are NOT here: `cvd.protan`, `cvd.deutan`,
+   * `cvd.tritan` and `cvd.separation` already exist for the outfit check, and a second set
+   * would be a second thing to translate with only one of them ever read.
+   *
+   * `combos.personalNone` is the missing half named, the shape F-195 uses on the Wear screen:
+   * the other answers stand, and the one that is absent says so.
+   */
+  'combos.severity': 'at severity',
+  'combos.personal': 'Suits you',
+  'combos.personalNone':
+    'No profile yet, so these are ordered by the colour relationship alone rather than by how they suit you.',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',

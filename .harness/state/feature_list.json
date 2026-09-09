@@ -6377,12 +6377,12 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-197"
       ],
       "acceptance": [
-        "A combination whose colours stop separating under simulated CVD says so, naming the deficiency and the severity",
+        "Every combination reports its worst separation under simulated CVD, naming the deficiency and the severity, and marks the ones below the convention",
         "The personal profile weights the ranking where one exists, and the screen says when it did not",
         "Neither is stated as a verdict — the measurement is shown and the decision stays with the person"
       ],
@@ -6395,7 +6395,9 @@
         "cvd",
         "a11y",
         "build"
-      ]
+      ],
+      "plan": "plans/F-198-every-combination-is-cvd-checked-and-profile-weighted.md",
+      "notes": "CRITERION 1 AMENDED DURING WORK, AFTER MEASURING. It asked that a combination whose colours STOP separating say so. Measured over the shipped corpus, 53% of generated relationships fall below HARD_TO_SEPARATE — warm-cool at 96%, analogous at 95% — and that is the check telling the truth rather than noise: warm against cool at similar lightness is precisely the axis a red-green deficiency loses. The threshold was NOT nudged. Instead the figure is reported on every combination and the ones below the convention are marked, which is a superset of what the criterion asked and is the treatment this same screen already gives the gamut cost one feature earlier: \"Zero is a value, not an absence — a screen that simply omitted the line would leave a person unable to tell nothing moved from nobody checked.\" A mark that appears on half the cards reads as an alarm; a number that is always there is data."
     },
     {
       "id": "F-199",

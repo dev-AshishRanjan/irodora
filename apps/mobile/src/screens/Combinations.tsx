@@ -37,6 +37,7 @@ import { Button, Card, Row, Screen, Stack, Swatch, Text } from '@irodora/ui';
 import type { HarmonyColor } from '@irodora/color-harmony';
 import { displayFromOklch } from '../engine';
 import { COMBINATIONS_SHOWN, combinationsFor, type Combination } from '../combinations';
+import type { PersonalProfile, RuleSet } from '@irodora/recommendation';
 import { colorFor, combinationsContaining, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
 import type { MessageKey } from '../i18n/index';
@@ -93,6 +94,20 @@ export interface CombinationsProps {
    * to the other question, which needs a slot and a ranking rather than a wheel.
    */
   readonly onWearIt?: ((slug: string) => void) | undefined;
+  /**
+   * The person to weight the ranking by, or `null` for somebody without a profile (F-198).
+   *
+   * Injected rather than read here, for the reason every screen in this app injects its ports:
+   * a branch that depends on device state is a branch no conformance subject can render.
+   */
+  readonly profile?: PersonalProfile | null;
+  /**
+   * The published rule set. Supplied by the route, and required whenever a profile is.
+   *
+   * Taken as a parameter rather than imported so this screen never reaches content itself — the
+   * division `Wear` and `Shopping` already keep.
+   */
+  readonly rules?: RuleSet;
 }
 
 /** The size a proposed colour is drawn at. Large enough to judge, small enough to fit a row. */
@@ -121,6 +136,8 @@ export function Combinations({
   subject,
   onOpenColour,
   onWearIt,
+  profile = null,
+  rules,
 }: CombinationsProps): React.JSX.Element {
   const { t, script } = useMessages();
 
@@ -156,7 +173,13 @@ export function Combinations({
    * an editorial choice look like a limit, and the seven it dropped would be work this
    * product does and never shows — which is the exact defect this whole release is about.
    */
-  const all = combinationsFor([oklch[0], oklch[1], oklch[2]]);
+  /*
+   * WEIGHTED ONLY WHEN BOTH HALVES ARE PRESENT. A profile without the rule set is not half a
+   * weighting — `scoreColor` reads the published weights and the falloff from it, so scoring
+   * against a default would be inventing content in code, which is what F-029 exists to prevent.
+   */
+  const weighting = profile === null || rules === undefined ? undefined : { profile, rules };
+  const all = combinationsFor([oklch[0], oklch[1], oklch[2]], weighting);
   const leading = all.slice(0, COMBINATIONS_SHOWN);
   const rest = all.slice(COMBINATIONS_SHOWN);
 
@@ -201,6 +224,55 @@ export function Combinations({
               THE GAMUT COST, AND ZERO IS A VALUE. A screen that omitted the line when nothing
               moved would leave a person unable to tell "nothing moved" from "nobody checked".
             */}
+            {/*
+              THE SEPARATION, ALWAYS, AND NEVER AS A VERDICT (F-198).
+
+              A figure on every card rather than a badge on the poor ones: measured over the
+              shipped corpus, 53% of relationships fall below the convention, and a mark that
+              appears half the time reads as an alarm. `cvd.hard` is added only when it does
+              fall below — and it says "these two are hard to tell apart", an observation about
+              the colours, never a claim about the reader's vision.
+            */}
+            {combination.separation === null ? null : (
+              <Row gap="sm" wrap>
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('cvd.separation')}
+                </Text>
+                <Text size="xs" color="foreground.2" numeric selectable>
+                  {combination.separation.separation.toFixed(1)}
+                </Text>
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t(`cvd.${combination.separation.deficiency}` as MessageKey)}
+                </Text>
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('combos.severity')}
+                </Text>
+                <Text size="xs" color="foreground.2" numeric selectable>
+                  {combination.separation.severity.toFixed(2)}
+                </Text>
+                {combination.separation.close ? (
+                  <Text size="xs" color="foreground.2" script={script}>
+                    {t('cvd.hard')}
+                  </Text>
+                ) : null}
+              </Row>
+            )}
+
+            {/*
+              HOW WELL IT SUITS THE PERSON, when there is a person. `null` and a real 50 are
+              different facts (F-195), so the line is absent rather than showing a midpoint.
+            */}
+            {combination.personalFit === null ? null : (
+              <Row gap="sm">
+                <Text size="xs" color="foreground.2" script={script}>
+                  {t('combos.personal')}
+                </Text>
+                <Text size="xs" color="foreground.2" numeric selectable>
+                  {String(combination.personalFit)}
+                </Text>
+              </Row>
+            )}
+
             {combination.wasMapped ? (
               <Row gap="sm">
                 <Text size="xs" color="foreground.2" script={script}>
@@ -259,6 +331,17 @@ export function Combinations({
       <Text size="small" color="foreground.2" script={script}>
         {t('combos.what')}
       </Text>
+
+      {/*
+        THE MISSING HALF, NAMED ONCE (F-198). The same shape `Wear` uses: the other answers
+        stand, and the ordering says what it is based on rather than implying it knows the
+        person. Placed at the top because it is about the whole list, not about one card.
+      */}
+      {weighting === undefined ? (
+        <Text size="small" color="foreground.2" script={script}>
+          {t('combos.personalNone')}
+        </Text>
+      ) : null}
 
       <Card
         level="2"

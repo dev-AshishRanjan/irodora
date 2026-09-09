@@ -966,6 +966,25 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * WEIGHTED BY A PROFILE (F-198). A different tree from every subject above: each card
+     * carries a personal figure, the missing-profile line at the top is ABSENT, and the order
+     * is the weighted one rather than the geometric default.
+     */
+    name: 'screens/Combinations (weighted by a profile)',
+    kind: 'static',
+    sampleValues: [...SAMPLE_HEXES, ...generatedHexes(BOTH_COST_BRANCHES.entry.slug)],
+    render: (_state, theme) =>
+      draw(
+        <Combinations
+          subject={{ kind: 'entry', slug: BOTH_COST_BRANCHES.entry.slug }}
+          profile={WEARER}
+          rules={ruleSet()}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * A COLOUR THAT IS NOT IN THE CORPUS (F-197) — a garment's own value, which is how the
      * Wardrobe asks. A genuinely different tree: no curated section, no "open this colour"
      * affordance on the subject swatch, no wear-it control, and a sentence saying WHY there are

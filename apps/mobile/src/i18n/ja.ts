@@ -520,6 +520,10 @@ export const ja: Record<MessageKey, string> = {
   'combos.notInCorpus':
     'この色は収録の色ではないため、選定した組み合わせはありません。生成した関係のみを示します。',
   'combos.garment': 'この服に合う色',
+  // F-198 — see en.ts: the deficiency names are reused from the outfit check.
+  'combos.severity': '重症度',
+  'combos.personal': '似合い度',
+  'combos.personalNone': 'プロフィールが未作成のため、似合うかではなく色の関係だけで並べています。',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

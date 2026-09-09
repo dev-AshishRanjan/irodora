@@ -32,6 +32,11 @@
  * can disagree with it, rather than buried in a render where they would have to infer it.
  */
 
+import type { Color } from '@irodora/color-core';
+import { scoreColor, type PersonalProfile, type RuleSet } from '@irodora/recommendation';
+import type { Deficiency } from '@irodora/cvd-engine';
+import { HARD_TO_SEPARATE, SEVERITY, worstSeparation } from './outfit/cvd';
+import { displayFromOklch } from './engine';
 import {
   generateHarmony,
   HARMONY_KINDS,
@@ -80,6 +85,83 @@ export const COMBINATION_MESSAGE_KEYS: readonly string[] = COMBINATION_ORDER.map
   (kind) => `combo.${kind}`,
 );
 
+/**
+ * Two colours in a set that are close together under one deficiency.
+ *
+ * **A measurement, never a verdict.** `outfit/cvd.ts` states the rule this obeys:
+ *
+ * > *"These two are hard to tell apart"* — an observation about the colours. Never *"you may
+ * > not be able to distinguish these"* — a claim about the reader's vision, which this product
+ * > knows nothing about and must not imply it does.
+ *
+ * So the note carries the deficiency, the severity and the number, and the combination is still
+ * shown. Somebody choosing a low-separation pair on purpose is making a decision.
+ *
+ * ## It is reported for EVERY combination, not only the poor ones
+ *
+ * Measured over the shipped corpus, **53% of generated relationships fall below the convention**
+ * — `warm-cool` at 96%, `analogous` at 95%. That is not noise and the threshold was not nudged:
+ * warm against cool at similar lightness is precisely the axis a red-green deficiency loses, so a
+ * high rate there is the check telling the truth about the relationship.
+ *
+ * But a badge that appears on half the cards reads as an alarm, and this screen already settled
+ * the same question one feature ago for the gamut cost:
+ *
+ * > *Zero is a value, not an absence — a screen that simply omitted the line would leave a
+ * > person unable to tell "nothing moved" from "nobody checked".*
+ *
+ * So the figure is always present and {@link SeparationNote.close} says whether it fell below
+ * the convention. A number that is always there is data; one that appears half the time is a
+ * warning, and this product does not warn people about their own eyes.
+ */
+export interface SeparationNote {
+  /** Which deficiency separates the pair least. */
+  readonly deficiency: Deficiency;
+  /** The severity the check ran at. Reported, because a score without one is not reproducible. */
+  readonly severity: number;
+  /** [0,100] — the worst pair's separation. */
+  readonly separation: number;
+  /** The two colours, by hex, so a screen can point at them rather than at the set. */
+  readonly pair: readonly [string, string];
+  /** Whether it fell below {@link HARD_TO_SEPARATE}. The convention, not a verdict. */
+  readonly close: boolean;
+}
+
+/**
+ * The worst pair in a set, always — `null` only when there is no pair to measure.
+ *
+ * **All pairs, including the source.** A combination is the colour in hand placed beside its
+ * companions, so a companion that vanishes against the shirt is the case that matters most —
+ * and it is exactly the pair a check over companions alone would miss.
+ *
+ * **The worst, not the mean.** A set that survives two pairs and collapses on the third is a set
+ * that collapses, and averaging would report otherwise.
+ *
+ * Nothing here computes a separation: `worstSeparation` is FR-5's, the same definition the
+ * design system's `cvdPairs` check and the recommendation engine read (E-005).
+ */
+export function separationOf(
+  colours: readonly { hex: string; color: Color }[],
+): SeparationNote | null {
+  let found: SeparationNote | null = null;
+  for (let i = 0; i < colours.length; i += 1)
+    for (let j = i + 1; j < colours.length; j += 1) {
+      const a = colours[i];
+      const b = colours[j];
+      if (a === undefined || b === undefined) continue;
+      const { score, deficiency } = worstSeparation(a.color, b.color);
+      if (found !== null && found.separation <= score) continue;
+      found = {
+        deficiency,
+        severity: SEVERITY,
+        separation: score,
+        pair: [a.hex, b.hex],
+        close: score < HARD_TO_SEPARATE,
+      };
+    }
+  return found;
+}
+
 /** A relationship, with the cost of every colour in it already summed. */
 export interface Combination {
   readonly kind: HarmonyKind;
@@ -102,6 +184,23 @@ export interface Combination {
   readonly gamutCost: number;
   /** Whether any colour in it moved at all. `gamutCost > 0` implies this; the reverse is not so. */
   readonly wasMapped: boolean;
+  /**
+   * The worst pair under simulated CVD (F-198). `null` only for a set with fewer than two
+   * colours, which the generators do not produce.
+   *
+   * Always populated, so a screen shows a figure rather than a badge that appears half the time
+   * — see {@link SeparationNote}.
+   */
+  readonly separation: SeparationNote | null;
+  /**
+   * [0,100] — how well this relationship's companions suit the person, or `null` without one.
+   *
+   * **`null` rather than a midpoint**, because those are different facts. F-195 found the shape
+   * of the trap next door: a no-evidence profile scores 50 with every factor neutral, and a
+   * caller that could not tell that from a real 50 would present the engine's midpoint as an
+   * opinion about somebody it knows nothing about.
+   */
+  readonly personalFit: number | null;
 }
 
 /** An OKLCh as the engine takes it. */
@@ -113,8 +212,11 @@ export type Oklch = readonly [number, number, number];
  * Pure, and it throws nothing a caller has to catch: `generateHarmony` validates its input and
  * the only invalid input here is one the type already refuses.
  */
-export function combinationsFor(source: Oklch): readonly Combination[] {
-  return COMBINATION_ORDER.map((kind) => {
+export function combinationsFor(
+  source: Oklch,
+  weighting?: { readonly profile: PersonalProfile; readonly rules: RuleSet },
+): readonly Combination[] {
+  const shown = COMBINATION_ORDER.map((kind) => {
     const harmony = generateHarmony(source, kind);
 
     /*
@@ -149,11 +251,81 @@ export function combinationsFor(source: Oklch): readonly Combination[] {
        * changed.
        */
       wasMapped: companions.some((c) => c.wasGamutMapped),
+
+      /*
+       * THE SOURCE IS IN THE CHECK. See `separationOf`: a companion that vanishes against the
+       * colour in hand is the pair that matters most, and it is the one a check over companions
+       * alone cannot see.
+       */
+      separation: separationOf([
+        displayFromOklch([source[0], source[1], source[2]]),
+        ...companions.map((x) => displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]])),
+      ]),
+
+      /*
+       * THE MEAN OF THE COMPANIONS, and the source is deliberately NOT in it: a person already
+       * has that colour, and scoring it would move every relationship by the same amount while
+       * adding nothing that distinguishes them.
+       */
+      personalFit:
+        weighting === undefined
+          ? null
+          : Math.round(
+              companions.reduce(
+                (sum, x) =>
+                  sum +
+                  scoreColor(
+                    weighting.profile,
+                    displayFromOklch([x.oklch[0], x.oklch[1], x.oklch[2]]).color,
+                    weighting.rules,
+                  ).score,
+                0,
+              ) / Math.max(companions.length, 1),
+            ),
     };
   });
+
+  /*
+   * THE WEIGHT REORDERS; IT NEVER REMOVES (F-198).
+   *
+   * Without a profile the order is the geometric one `COMBINATION_ORDER` states — hue first,
+   * and said out loud there to be disagreed with. With one, the relationships whose companions
+   * suit the person come first, ties broken on the geometric order so the result stays
+   * deterministic and a tie does not depend on iteration.
+   *
+   * Every relationship is still returned. F-194's rule holds: the ranking decides what somebody
+   * sees first, not what they are allowed to see.
+   */
+  /*
+   * A RELATIONSHIP THAT PROPOSES NOTHING IS NOT OFFERED (found in F-198).
+   *
+   * F-194 dropped the source from its own companions by value, and for 23 corpus colours that
+   * leaves a relationship with NO companions at all — every one is `near-neutral` on a colour
+   * that is already near-neutral, so the generator returns the source and the filter removes it.
+   *
+   * The screen rendered those as a card with a heading, a "Generated" label, a gamut-cost line
+   * and **no swatches**: an empty answer that looks like an answer. It was invisible because
+   * F-194's own check asked one source whether every relationship had companions, and that
+   * source had them.
+   *
+   * Dropping it here rather than in the screen, because it is not a rendering question: a
+   * relationship with nothing in it is not a relationship this module should be offering.
+   */
+  const offered = shown.filter((c) => c.companions.length > 0);
+
+  if (weighting === undefined) return offered;
+  const rank = new Map(offered.map((c, i) => [c.kind, i]));
+  return [...offered].sort(
+    (a, b) =>
+      (b.personalFit ?? 0) - (a.personalFit ?? 0) ||
+      (rank.get(a.kind) ?? 0) - (rank.get(b.kind) ?? 0),
+  );
 }
 
 /** The first {@link COMBINATIONS_SHOWN}, for a screen that opens on an answer. */
-export function leadingCombinations(source: Oklch): readonly Combination[] {
-  return combinationsFor(source).slice(0, COMBINATIONS_SHOWN);
+export function leadingCombinations(
+  source: Oklch,
+  weighting?: { readonly profile: PersonalProfile; readonly rules: RuleSet },
+): readonly Combination[] {
+  return combinationsFor(source, weighting).slice(0, COMBINATIONS_SHOWN);
 }

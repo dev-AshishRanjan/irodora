@@ -14,6 +14,9 @@ import {
   type Oklch,
 } from '../src/combinations';
 import { HARMONY_KINDS, VARIES } from '@irodora/color-harmony';
+import { allEntries } from '../src/corpus';
+import { displayFromOklch } from '../src/engine';
+import { ruleSet } from '../src/rules';
 
 /** A mid-lightness, moderate-chroma blue-grey. Comfortably inside the display gamut. */
 const CALM: Oklch = [0.55, 0.05, 240];
@@ -108,5 +111,130 @@ describe('the gamut cost is a measurement, not a disclaimer', () => {
     const mapped = combinationsFor(IMPOSSIBLE).filter((c) => c.wasMapped);
     expect(mapped.length).toBeGreaterThan(0);
     for (const c of mapped) expect(c.companions.some((x) => x.wasGamutMapped)).toBe(true);
+  });
+});
+
+/**
+ * Telling the colours apart, and who they are for (F-198).
+ *
+ * Nothing here computes a separation or a score. What is checked is that the product decision on
+ * top of them holds: **the figure is always there, the source is in the check, and the weighting
+ * reorders without removing.**
+ */
+describe('separation is reported for every combination, not only the poor ones', () => {
+  it('reports a figure on every relationship', () => {
+    for (const c of combinationsFor(CALM)) {
+      expect(c.separation).not.toBeNull();
+      expect(Number.isFinite(c.separation!.separation)).toBe(true);
+    }
+  });
+
+  it('names the deficiency and the severity, which is what makes the number reproducible', () => {
+    for (const c of combinationsFor(CALM)) {
+      expect(['protan', 'deutan', 'tritan']).toContain(c.separation!.deficiency);
+      expect(c.separation!.severity).toBeGreaterThan(0);
+    }
+  });
+
+  /**
+   * THE DECOY FOR THE FLAG.
+   *
+   * `close` is the convention applied to the number. A field hard-wired true — or false — would
+   * satisfy every assertion above, so both values must actually occur across the corpus.
+   */
+  it('marks some relationships close and others not, so the flag is a measurement', () => {
+    const marks = new Set<boolean>();
+    for (const e of allEntries().slice(0, 40)) {
+      const { oklch } = e.derived;
+      for (const c of combinationsFor([oklch[0], oklch[1], oklch[2]]))
+        marks.add(c.separation!.close);
+    }
+    expect([...marks].sort()).toEqual([false, true]);
+  });
+
+  it('includes the SOURCE in the pairs, not only the companions', () => {
+    /*
+     * The pair that matters most is a companion against the colour in hand, and it is exactly
+     * the one a check over companions alone cannot see. Asserted by finding a relationship whose
+     * reported pair contains the source's own hex.
+     */
+    const sourceHex = displayFromOklch([...CALM]).hex;
+    const touchesSource = combinationsFor(CALM).some((c) => c.separation!.pair.includes(sourceHex));
+    expect(touchesSource).toBe(true);
+  });
+});
+
+describe('a profile reorders the relationships and removes none', () => {
+  const SOMEBODY = {
+    lightness: { min: 0.4, max: 0.75 },
+    temperatureBias: 0.3,
+    chroma: { min: 0.02, max: 0.14 },
+    contrast: 'high' as const,
+    confidence: { temperature: 0.8, lightness: 0.8, chroma: 0.7, contrast: 0.6 },
+  };
+
+  it('returns the same SET either way', () => {
+    const plain = combinationsFor(CALM).map((c) => c.kind);
+    const weighted = combinationsFor(CALM, { profile: SOMEBODY, rules: ruleSet() }).map(
+      (c) => c.kind,
+    );
+    expect([...weighted].sort()).toEqual([...plain].sort());
+  });
+
+  it('carries a personal figure only when there is a person', () => {
+    // `null` and a real midpoint are different facts — F-195's finding, applied here.
+    for (const c of combinationsFor(CALM)) expect(c.personalFit).toBeNull();
+    for (const c of combinationsFor(CALM, { profile: SOMEBODY, rules: ruleSet() }))
+      expect(typeof c.personalFit).toBe('number');
+  });
+
+  it('leaves the geometric order untouched without a profile', () => {
+    expect(combinationsFor(CALM).map((c) => c.kind)).toEqual([...COMBINATION_ORDER]);
+  });
+});
+
+/**
+ * A RELATIONSHIP THAT PROPOSES NOTHING IS NOT OFFERED (found in F-198).
+ *
+ * F-194 shipped a card with a heading, a "Generated" label, a gamut-cost line and no swatches,
+ * for 23 corpus colours. It was invisible because the check asked ONE source whether every
+ * relationship had companions, and that source had them.
+ */
+describe('an empty relationship is not offered', () => {
+  it('never returns a relationship with no companions, for any corpus colour', () => {
+    const empties: string[] = [];
+    for (const e of allEntries()) {
+      const { oklch } = e.derived;
+      for (const c of combinationsFor([oklch[0], oklch[1], oklch[2]]))
+        if (c.companions.length === 0) empties.push(`${e.entry.slug} ${c.kind}`);
+    }
+    // `toStrictEqual`, not `toHaveLength(0)`: the NAMES are the point — a failure should say
+    // which colour and which relationship, not merely that the count was wrong.
+    expect(empties).toStrictEqual([]);
+  });
+
+  it('DECOY — and the corpus really does contain the case that produced them', () => {
+    /*
+     * If no colour could ever empty a relationship, the assertion above would pass on an
+     * implementation that never filtered anything — so the input that caused it must still be
+     * present. A near-neutral colour yields fewer relationships than the full order.
+     */
+    const shortest = allEntries()
+      .map((e) => {
+        const { oklch } = e.derived;
+        return combinationsFor([oklch[0], oklch[1], oklch[2]]).length;
+      })
+      .reduce((min, n) => Math.min(min, n), COMBINATION_ORDER.length);
+    expect(shortest).toBeLessThan(COMBINATION_ORDER.length);
+  });
+
+  it('and every offered relationship can therefore be measured', () => {
+    // The reason this matters for F-198: a set with one colour has no pair, so a relationship
+    // with no companions could not report a separation at all.
+    for (const e of allEntries().slice(0, 30)) {
+      const { oklch } = e.derived;
+      for (const c of combinationsFor([oklch[0], oklch[1], oklch[2]]))
+        expect(`${c.kind}: ${String(c.separation !== null)}`).toBe(`${c.kind}: true`);
+    }
   });
 });

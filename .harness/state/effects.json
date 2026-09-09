@@ -3945,6 +3945,54 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-104",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/combinations.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/outfit/cvd.ts"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/cvd-engine"
+        },
+        {
+          "kind": "package",
+          "ref": "@irodora/recommendation"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Combinations.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/combinations.test.ts"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "high",
+      "guard": "THE SEPARATION IS REPORTED ON EVERY COMBINATION, NOT ONLY THE POOR ONES, and the decoy is what makes the flag a measurement: `close` must come back BOTH true and false across the corpus, so a field hard-wired either way fails. The source is asserted to be inside the pairs, because a companion that vanishes against the colour in hand is the pair that matters most and the one a check over companions alone cannot see. Nothing here computes a separation: `worstSeparation` is FR-5’s, the same definition the design system and the recommendation engine read (E-005). WHAT IS NOT GUARDED: whether HARD_TO_SEPARATE is the right convention for GENERATED colours. It was set for outfit pairs drawn from the corpus, and it is reused here rather than re-tuned — 53% of generated relationships fall below it, which is the check telling the truth rather than a threshold to nudge, but nobody has measured whether 20 is where a person would draw the line on this screen.",
+      "memory": "memory/effects/a-measurement-that-fires-half-the-time-is-not-a-warning.md",
+      "rationale": "THE COMBINATIONS SCREEN PROPOSES COLOURS TO PUT BESIDE ONE ANOTHER AND SAID NOTHING ABOUT WHETHER THEY CAN BE TOLD APART. Measured over the shipped corpus, 53% of generated relationships fall below the existing convention — `warm-cool` at 96%, `analogous` at 95% — and that rate is CORRECT rather than noisy: warm against cool at similar lightness is precisely the axis a red-green deficiency loses, so a high rate there is the check being right about the relationship. THE THRESHOLD WAS NOT NUDGED. Instead the figure is shown on every card and the ones below the convention are marked, which is the treatment this same screen already gives the gamut cost one feature earlier — *\"Zero is a value, not an absence\"*. A mark that appears half the time reads as an alarm; a number that is always there is data, and this product does not warn people about their own eyes. THE PROFILE HALF REORDERS AND NEVER REMOVES, and `personalFit` is null rather than a midpoint without one — F-195 found the trap next door, where a no-evidence profile scores 50 on every axis and a caller that cannot tell that from a real 50 presents the engine’s midpoint as an opinion.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
