@@ -47,6 +47,7 @@ import { Viewfinder, useLensPermission } from './viewfinder';
 import { lensExits } from './exits';
 import type { TargetColour } from '../target';
 import type { TemperaturePoles } from '../against-target';
+import { noHaptics, type Haptics } from '../haptics';
 import {
   CAPTURE_IDLE,
   CAPTURE_TIMEOUT_MS,
@@ -79,12 +80,20 @@ export interface CameraLensProps {
    */
   readonly target?: TargetColour | null;
   readonly poles?: TemperaturePoles;
+  /**
+   * The haptic port (F-206). A reading TAKEN is a commit; aiming at one is not.
+   *
+   * Supplied by the route, like every device seam here — `expo-haptics` reaches native code and
+   * a screen importing it could not be rendered by jest.
+   */
+  readonly haptics?: Haptics;
 }
 
 export default function CameraLens({
   imageSource,
   target = null,
   poles,
+  haptics = noHaptics,
 }: CameraLensProps): React.JSX.Element {
   const { permission, request } = useLensPermission();
   const [capture, dispatch] = useReducer(nextCapture, CAPTURE_IDLE);
@@ -133,8 +142,16 @@ export default function CameraLens({
       dispatch({ kind: 'shutter' });
       return;
     }
+    /*
+     * A COMMIT (F-206), and it fires HERE rather than on the shutter branch above.
+     *
+     * The branch that dispatches `shutter` has not taken a reading — it has ASKED the camera
+     * for one, and the answer arrives later or not at all. A haptic there would confirm an
+     * intention, and the two differ exactly when the capture fails.
+     */
+    haptics.commit();
     dispatch({ kind: 'reading', reading: readPhoto(photo, pointRef.current), of: 'capture' });
-  }, []);
+  }, [haptics]);
 
   /**
    * Where in the photograph to read, mirrored out of the reducer.

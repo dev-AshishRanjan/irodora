@@ -1,4 +1,5 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
+import { deviceHaptics } from '../../src/haptics';
 import { Stack } from 'expo-router';
 import { CameraUnavailable } from '../../src/lens/CameraUnavailable';
 import { devicePicker } from '../../src/wardrobe/picker';
@@ -73,7 +74,12 @@ export default function LensRoute(): React.JSX.Element {
         <Suspense fallback={null}>
           {/* F-201: the comparison, when one is armed. The ROUTE reads the context and the
               rule set, so the camera screen never reaches either itself. */}
-          <CameraLens imageSource={devicePicker()} target={target} poles={ruleSet().poles} />
+          <CameraLens
+            imageSource={devicePicker()}
+            target={target}
+            poles={ruleSet().poles}
+            haptics={deviceHaptics()}
+          />
         </Suspense>
       </CameraBoundary>
     </>

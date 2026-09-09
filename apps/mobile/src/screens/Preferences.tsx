@@ -33,6 +33,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { noHaptics, type Haptics } from '../haptics';
 import {
   Button,
   Chip,
@@ -96,6 +97,8 @@ export interface PreferencesProps {
    */
   readonly appearance?: Appearance;
   readonly onChooseAppearance?: (next: Appearance) => void;
+  /** The haptic port (F-206). Choosing a theme is a commit; scrolling past one is not. */
+  readonly haptics?: Haptics;
   /**
    * What came of asking the platform for its colour (F-154).
    *
@@ -177,6 +180,7 @@ export function Preferences({
   onBuildOutfit,
   appearance = DEFAULT_APPEARANCE,
   onChooseAppearance,
+  haptics = noHaptics,
   device = { kind: 'none', why: 'unsupported' },
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
@@ -254,6 +258,7 @@ export function Preferences({
               },
             ]}
             onValueChange={(family) => {
+              haptics.commit();
               onChooseAppearance?.({
                 ...appearance,
                 // The catalogue's own union, narrowed rather than cast: a value that is not a
@@ -298,6 +303,7 @@ export function Preferences({
                 selected={mode === appearance.mode}
                 script={script}
                 onPress={() => {
+                  haptics.commit();
                   onChooseAppearance?.({ ...appearance, mode });
                 }}
               />

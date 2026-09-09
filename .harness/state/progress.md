@@ -20414,3 +20414,66 @@ state · typecheck · lint · format · test · **contrast** · **cvd** · a11y 
 **PASS**.
 
 ---
+
+## F-206 — Haptics on commit, and never on a scroll
+
+Split out of F-189 rather than done badly. Its criterion asked for haptics; `expo-haptics` was
+not a dependency, and *"adding one in the middle of a wave to satisfy a clause is how a
+dependency arrives without a decision"*. This is the decision.
+
+### The feature is restraint, and the type is how it is kept
+
+**A haptic on a scroll is why people turn haptics off.** So the port has **one verb**:
+
+```ts
+commit(): void   // and there is no second function
+```
+
+A module that cannot express *"buzz on scroll"* is one nobody can use to buzz on scroll — which
+is a stronger guarantee than a rule saying not to and a reviewer remembering it. `light()`,
+`selection()` and `impact(style)` are each an invitation to fire on something that is not a
+commit.
+
+A second test refuses any import of `expo-haptics` **outside the port**, so the one verb cannot
+be bypassed — the same shape as the Lens exit table (F-178).
+
+### It fires after the write, not on the press
+
+| | fires at |
+|---|---|
+| a garment saved | the line after `createGarment` — the row is in the database |
+| a reading taken | the branch that **has** a reading, not the one that asked the camera |
+| a theme chosen | the chip press, which is the commit |
+
+A haptic on the press confirms an **intention**. The two differ exactly when the thing fails,
+and that is the moment a false confirmation is worst.
+
+### No preference of our own
+
+`expo-haptics` delegates to the OS. **This app adds no switch**, deliberately: a second setting
+beside the platform's is one somebody has to keep in sync with a setting they already made, and
+the first time the two disagree the app is wrong.
+
+### The cost, stated
+
+`expo-haptics@57.0.2` — **34 KB of JavaScript**, plus 31 KB Android and 8 KB iOS native source
+that compile into the binary rather than the bundle. Peer range `expo: *`, checked by
+`verify-peer-deps`. `pnpm build` runs `expo prebuild` and was verified **before** anything was
+wired, so a native module that would not install could stop the feature rather than half-land it.
+
+### The decoy that matters
+
+*"Fires on a commit"* is satisfied by an implementation that fires on **everything**. Rendering
+and re-rendering must fire none.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · cvd · build · content — **PASS**.
+
+### Attested, not asserted
+
+That a device buzzes, and that the platform setting is honoured. Both are properties of the
+library and the OS on hardware this workstation does not have — and a test asserting *"the
+platform was consulted"* would be asserting that a function was called.
+
+---

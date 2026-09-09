@@ -4311,6 +4311,50 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-112",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/haptics.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/AddGarment.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Preferences.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/lens/CameraLens.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/package.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE PORT HAS ONE VERB, AND THAT IS THE GUARANTEE. A module that cannot express \"buzz on scroll\" is one nobody can use to buzz on scroll — stronger than a rule saying not to and a reviewer remembering it. `light()`, `selection()` and `impact(style)` are each an invitation to fire on something that is not a commit, and a test asserts the export set is exactly `[\"commit\"]`. A SECOND TEST REFUSES ANY IMPORT OF `expo-haptics` OUTSIDE THE PORT, so the one verb cannot be bypassed — the same shape as the Lens exit table (F-178) — with a decoy proving the scan reads files at all. THE DECOY THAT MATTERS: rendering and re-rendering must fire NONE, because \"fires on a commit\" is satisfied by an implementation that fires on everything. WHAT IS NOT GUARDED: that a device actually buzzes, and that the platform setting is honoured. Both are properties of the library and the OS on hardware this workstation does not have, and a test asserting \"the platform was consulted\" would be asserting that a function was called. Attested.",
+      "memory": "memory/effects/one-verb-is-a-stronger-rule-than-a-rule.md",
+      "rationale": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY: its criterion asked for haptics, `expo-haptics` was not a dependency, and *\"adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision\"*. THE FEATURE IS RESTRAINT, NOT FIRING. A haptic on a scroll is why people turn haptics off, so the whole value is in the small number of moments that are commits — and the enforceable shape of that is a port with ONE verb rather than a convention about when to call five. EACH CALL SITE IS AFTER THE WRITE, NOT ON THE PRESS: the garment is in the database at the line the haptic fires, and the Lens fires on the branch that HAS a reading rather than the one that asked the camera for one — a haptic on the press confirms an intention, and the two differ exactly when the thing fails. NO PREFERENCE OF OUR OWN, deliberately: `expo-haptics` delegates to the OS, and a second switch beside the platform’s is a setting somebody has to keep in sync with one they already set. COST: 34 KB of JavaScript, 31 KB Android and 8 KB iOS native source, peer range `expo: *`, stated because a dependency whose cost nobody wrote down is one nobody can weigh later.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

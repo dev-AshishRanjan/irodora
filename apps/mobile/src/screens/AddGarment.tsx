@@ -33,6 +33,7 @@
 
 import { useCallback, useState } from 'react';
 import type { Offer } from '../lens/handoff';
+import { noHaptics, type Haptics } from '../haptics';
 import type { ColourOrigin } from '../wardrobe';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
@@ -110,6 +111,13 @@ export interface AddGarmentProps {
    * from the other side.
    */
   readonly initialImageProblem?: boolean;
+  /**
+   * The haptic port (F-206). Defaults to one that does nothing.
+   *
+   * A DEFAULT rather than an optional call: a screen nobody wired a port to should not buzz,
+   * and no call site should need a null check around a commit.
+   */
+  readonly haptics?: Haptics;
 }
 
 export function AddGarment({
@@ -117,6 +125,7 @@ export function AddGarment({
   imageSource,
   offered,
   initialImageProblem = false,
+  haptics = noHaptics,
 }: AddGarmentProps): React.JSX.Element {
   const { t, script } = useMessages();
 
@@ -191,6 +200,12 @@ export function AddGarment({
     const write = toStoreWrite(draft, uuidv7);
     const now = Date.now();
     store.createGarment(write, now);
+    /*
+     * A COMMIT (F-206). The garment is in the database at this line and not before it — a
+     * haptic fired on the button press would be confirming an intention rather than an outcome,
+     * and the two differ exactly when the write fails.
+     */
+    haptics.commit();
     // A price that parsed joins the patch; one that did not is left out entirely rather than
     // written as a half — a cost with no currency is a number nobody can read back (F-051).
     const enrichment = money.ok ? { ...draft.enrichment, ...money.patch } : draft.enrichment;

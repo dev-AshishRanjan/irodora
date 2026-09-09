@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { deviceHaptics } from '../../../src/haptics';
 import { Stack } from 'expo-router';
 import { AddGarment } from '../../../src/screens/AddGarment';
 import { takeOffer } from '../../../src/lens/handoff';
@@ -31,7 +32,12 @@ export default function AddGarmentRoute(): React.JSX.Element {
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
-      <AddGarment store={deviceRepository()} imageSource={devicePicker()} offered={offered} />
+      <AddGarment
+        store={deviceRepository()}
+        imageSource={devicePicker()}
+        offered={offered}
+        haptics={deviceHaptics()}
+      />
     </>
   );
 }

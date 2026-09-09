@@ -6670,7 +6670,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "could",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-189"
       ],
@@ -6686,7 +6686,16 @@
         "test",
         "build"
       ],
-      "notes": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY. Its criterion asked for haptics; expo-haptics is not a dependency of this app, and adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision — the peer-deps gate exists because that has happened here before. It is a real improvement and it is a dependency question, which is a different kind of question from a scale value."
+      "notes": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY. Its criterion asked for haptics; expo-haptics is not a dependency of this app, and adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision — the peer-deps gate exists because that has happened here before. It is a real improvement and it is a dependency question, which is a different kind of question from a scale value.",
+      "plan": "plans/F-206-haptics-on-commit.md",
+      "attested": [
+        {
+          "criterion": "The platform setting is honoured: a device with haptics off feels nothing and the app does not ask",
+          "verifiedBy": "Structural: this app adds no preference of its own, so there is nothing to keep in sync and nothing to ask — `expo-haptics` delegates to the OS, which is where the person already set it. What is NOT verified is the delegation itself: it is a property of the library and the operating system on hardware this workstation does not have, and a test asserting \"the platform was consulted\" would be asserting that a function was called. A device confirms it.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-207",

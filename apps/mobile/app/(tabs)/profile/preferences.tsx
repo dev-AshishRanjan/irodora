@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { deviceHaptics } from '../../../src/haptics';
 import { Preferences } from '../../../src/screens/Preferences';
 import { deviceRepository } from '../../../src/store/repository';
 import { useAppearance } from '../../../src/appearance';
@@ -31,6 +32,7 @@ export default function PreferencesRoute(): React.JSX.Element {
         store={deviceRepository()}
         appearance={appearance}
         onChooseAppearance={choose}
+        haptics={deviceHaptics()}
         device={device}
       />
     </>
