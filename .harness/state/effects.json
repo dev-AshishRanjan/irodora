@@ -4133,6 +4133,54 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-108",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/src/screens/Home.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/index.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/atlas/with/reading/[id].tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/test/home-states.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-route-targets.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THIS IS THE THIRD REWRITE OF THIS SCREEN, AND WHAT THE SECOND ACHIEVED IS NOW ASSERTED RATHER THAN REMEMBERED: the three fragments render in both install states, the on-device line sits under the proposition rather than in a footnote, and today’s colour leads on a new install — that last one by ORDER, with a decoy proving a reading still leads when there is one, because a presence check would have passed before F-164 changed anything. THE LEAD’S ACTION IS ASSERTED FOR BOTH LEADS, because they are different KINDS of colour and a slug-only implementation satisfies the criterion on a new install and fails on every phone that has ever been used. Its decoy: with nothing wired the control is ABSENT, not present and inert. WHAT IS NOT GUARDED: whether it looks professional. That was the report, it is a judgement, and it is attested — three rewrites in, it is also the only thing that has ever actually been wrong with this screen.",
+      "memory": "memory/effects/a-scanner-that-reads-source-decides-how-you-write-the-call.md",
+      "rationale": "REPORTED AS \"the homepage is unprofessional\", for the third time. THE AUDIT CAME FIRST AND CHANGED THE SCOPE: criterion 2 — says what the product is for without a paragraph, leads with a colour at size — was ALREADY TRUE, delivered by F-164, so the work was to pin it rather than redo it. Criterion 1 was still literally true at the CONTAINER level: F-164 differentiated the content of the three blocks and its docblock says so, but all three were `Section`, because `Card` did not exist until F-184. And motion was already present via `Section index` → `Appear` (F-188); claiming it as new work would have been claiming F-188’s. THE ACCENT IS SPENT ONCE, on the lead card’s action — `visual-taste`’s rule is that a page with three bold moves has none, and the boldness is already on one colour at size. A READING HAS NO SLUG AND NEVER WILL, so criterion 3 needed the colour subject F-197 built plus a route that carries the ROW ID — the same shape and the same reasoning as `/wardrobe/with/[id]`.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

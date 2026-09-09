@@ -29,6 +29,30 @@ export default function Index(): React.JSX.Element {
       onAddGarment={() => {
         router.push('/wardrobe/add');
       }}
+      /*
+        F-202: the lead's combinations, and the lead has two shapes.
+
+        Today's colour is a corpus entry and carries a slug. A reading has none and never
+        will, so it carries the ROW ID and the route resolves it — the same division
+        `/wardrobe/with/[id]` uses, and the reason F-197 gave the combinations screen a colour
+        subject in the first place.
+      */
+      onOpenCombinations={(subject) => {
+        /*
+          TWO CALLS, NOT A TERNARY INSIDE ONE.
+
+          `verify-route-targets` reads SOURCE and requires a literal immediately after
+          `push(`. A ternary there extracts nothing, so the gate reported "every target
+          resolves" over a call it had not read — and the new route came back orphaned from a
+          different gate. Written this way both destinations are visible to the scanner, which
+          is the whole reason it can promise anything.
+        */
+        if (subject.kind === 'entry') {
+          router.push(`/atlas/with/${subject.slug}`);
+          return;
+        }
+        router.push(`/atlas/with/reading/${subject.id}`);
+      }}
       onOpenColour={(slug) => {
         router.push(`/atlas/${slug}`);
       }}

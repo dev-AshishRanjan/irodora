@@ -20135,3 +20135,75 @@ That a person reading the panel on a device takes the warning first. The orderin
 gated; whether it *works* is a judgement about a real screen, and gate 7 is pending.
 
 ---
+
+## F-202 — Home, rebuilt on the system
+
+Reported as *"the homepage is unprofessional"* — for the **third** time. So this started with an
+audit rather than a redesign, and the audit changed the scope.
+
+### What was already true
+
+**Criterion 2 was delivered by F-164.** The page already opens on the wordmark, three short
+fragments — *what colour is this, what goes with it, does it suit me* — and one colour at
+photographic scale. So the work was to **pin it**, not redo it: three rewrites in, the real risk
+is that the next one quietly undoes the last.
+
+**Motion was already there**, via `Section index` → `Appear` (F-188). Claiming it as new work
+would have been claiming F-188's.
+
+### What was genuinely left
+
+Criterion 1 was still literally true **at the container level**. F-164 differentiated the
+*content* of the three blocks and its docblock says so — a big sample, a strip, a quiet block —
+but all three were `Section`, because `Card` did not exist until F-184.
+
+| | before | after |
+|---|---|---|
+| containers | three `Section` | `Card` at levels 2, 1, 1 |
+| the big sample | inside the padding | the `media` slot, which escapes it |
+| the accent | **nowhere on this page** | one primary action, on the lead |
+
+**The accent is spent once.** `visual-taste`'s rule is that a page with three bold moves has
+none, and the boldness is already on one colour at size. So the invitation to open the Lens
+dropped to secondary — two primaries on one page is the same failure with a different count.
+
+### Criterion 3 needed a route, because a reading has no slug
+
+*"It offers the combination of the colour it is leading with."*
+
+Today's colour is a corpus entry. **A reading is not, and never will be** —
+`SavedColorRow.corpus_slug` is `null` for a Lens capture and the column's own comment says why.
+
+F-197 had already given `Combinations` a **colour** subject for exactly this shape of problem;
+what was missing was a way in. `/atlas/with/reading/[id]` reads the row and passes its colour —
+**the id travels, not the colour**, mirroring `/wardrobe/with/[id]`.
+
+A slug-only version would have satisfied the criterion on a new install and failed on every phone
+that had ever been used, which is why both leads are asserted.
+
+### The route gate could not see my first draft
+
+The destination started as a ternary **inside** `router.push(…)`. The scanner requires a literal
+immediately after `push(`, so it extracted **nothing** — and `verify-route-targets` then
+reported *"every target resolves"* over a call it had not read, while `verify-reachability`
+correctly found the new route orphaned.
+
+That is the F-178 finding again — *a check that gets quieter is worse than one that fails* — and
+the gate's own docblock names the hazard. **The code changed, not the gate:** two calls, each
+with a literal the scanner can see.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · build · content — **PASS**. 945
+mobile tests over 43 suites. Route reachability **21 of 21**.
+
+**The lint caught two:** an import left behind in the new route, and a null check inside a branch
+that had already narrowed.
+
+### Attested, not asserted
+
+**Whether it looks professional.** That was the report three times running, it is a judgement no
+gate here discharges, and both previous rewrites were green on every gate at the moment they were
+reported as unprofessional. This one is too. That is exactly what the attestation is for.
+
+---

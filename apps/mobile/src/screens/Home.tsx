@@ -44,7 +44,7 @@
 
 import { useMemo } from 'react';
 import { Pressable } from 'react-native';
-import { Button, Row, Screen, Section, Stack, Swatch, Text, Wordmark } from '@irodora/ui';
+import { Appear, Button, Card, Row, Screen, Stack, Swatch, Text, Wordmark } from '@irodora/ui';
 import { entrySwatch, homeContent, homeLead } from '../home';
 import { colorOf } from '../wardrobe';
 import { useMessages } from '../i18n/useMessages';
@@ -64,6 +64,24 @@ export interface HomeProps {
   readonly onOpenLens?: () => void;
   /** Open the Atlas — specifically, today's colour. */
   readonly onOpenColour?: (slug: string) => void;
+  /**
+   * Open what goes with the colour this page is leading with (F-202, criterion 3).
+   *
+   * **Two shapes, because the lead has two.** Today's colour is a corpus entry and carries a
+   * slug; a reading has none and never will — `SavedColorRow.corpus_slug` is `null` for a Lens
+   * capture, *"its origin is a camera, which is what `source` already says"*. So the reading
+   * case carries the ROW ID, and the route resolves it.
+   *
+   * A slug-only version would have satisfied the criterion on a new install and quietly failed
+   * on every phone that had ever been used.
+   */
+  readonly onOpenCombinations?:
+    | ((
+        subject:
+          | { readonly kind: 'entry'; readonly slug: string }
+          | { readonly kind: 'reading'; readonly id: string },
+      ) => void)
+    | undefined;
   /** Add a garment, from the first-run wardrobe block. */
   readonly onAddGarment?: () => void;
 }
@@ -91,6 +109,7 @@ export function Home({
   now = () => Date.now(),
   onOpenLens,
   onOpenColour,
+  onOpenCombinations,
   onAddGarment,
 }: HomeProps): React.JSX.Element {
   const { t, script } = useMessages();
@@ -102,6 +121,23 @@ export function Home({
     [store, now],
   );
   const lead = homeLead(content);
+
+  /*
+   * WHAT THE LEAD IS, AS THE COMBINATIONS SCREEN TAKES IT (F-202, criterion 3).
+   *
+   * Resolved here rather than in the handler so the button is ABSENT when there is nothing to
+   * open, rather than present and inert. A control that does nothing is worse than one that is
+   * not there — the first looks broken and the second looks like a state.
+   */
+  const leadSubject:
+    | { readonly kind: 'entry'; readonly slug: string }
+    | { readonly kind: 'reading'; readonly id: string }
+    | null =
+    lead === 'today' && content.today !== null
+      ? { kind: 'entry', slug: content.today.entry.slug }
+      : lead === 'reading' && content.lastReading !== null
+        ? { kind: 'reading', id: content.lastReading.id }
+        : null;
 
   /** The reading block, at whichever size its position calls for. */
   const readingBlock = (size: number): React.JSX.Element | null =>
@@ -210,19 +246,61 @@ export function Home({
         </Text>
       </Stack>
 
-      {/* THE LEAD: one colour, at size. Whichever one there is. */}
-      {lead === 'reading' ? (
-        <Section index={0} title={t('home.lastReading')} script={script}>
-          {readingBlock(LEAD_SAMPLE)}
-        </Section>
-      ) : lead === 'today' ? (
-        <Section index={0} title={t('home.today')} script={script}>
-          {todayBlock(LEAD_SAMPLE)}
-          <Text size="xs" color="foreground.2" script={script}>
-            {t('home.todayNote')}
-          </Text>
-        </Section>
-      ) : null}
+      {/*
+        THE LEAD: one colour, at size, in a card that says so (F-202).
+
+        `level="2"` — the only one on this page. The other two blocks are level 1, and the
+        difference is what the three identical `Section`s could not express: F-164 differentiated
+        the CONTENT of the three blocks and its own docblock says so, but at the container level
+        they were the same shape, because `Card` did not exist until F-184.
+
+        THE SAMPLE GOES IN `media`, which escapes the card's padding — a colour at photographic
+        scale inset by a gutter is a colour at slightly less than photographic scale, and the
+        whole argument of F-164 is that this page spends its boldness here.
+
+        `Appear index={0}` keeps F-188's stagger. The motion was already here; the container
+        changed under it.
+      */}
+      {lead === 'none' ? null : (
+        <Appear index={0}>
+          <Card
+            level="2"
+            header={
+              <Text size="label" color="foreground.2" script={script}>
+                {lead === 'reading' ? t('home.lastReading') : t('home.today')}
+              </Text>
+            }
+            media={lead === 'reading' ? readingBlock(LEAD_SAMPLE) : todayBlock(LEAD_SAMPLE)}
+            footer={
+              /*
+                ONE ACCENT ON THE PAGE, and it is here (criterion 1, F-175).
+
+                `visual-taste`'s rule is that a page with three bold moves has none. The boldness
+                is already spent on one colour at size; the accent is the second signal and it
+                goes on the one thing this page most wants somebody to do with that colour —
+                which is criterion 3.
+              */
+              leadSubject === null || onOpenCombinations === undefined ? null : (
+                <Button
+                  label={t('home.whatGoesWith')}
+                  onPress={() => {
+                    // Non-null inside this branch — the guard above is what makes the control
+                    // absent rather than inert when there is nothing to open.
+                    onOpenCombinations(leadSubject);
+                  }}
+                  script={script}
+                />
+              )
+            }
+          >
+            {lead === 'today' ? (
+              <Text size="xs" color="foreground.2" script={script}>
+                {t('home.todayNote')}
+              </Text>
+            ) : null}
+          </Card>
+        </Appear>
+      )}
 
       {/*
         THE WARDROBE, as a strip.
@@ -242,69 +320,99 @@ export function Home({
         The delay is capped inside `Appear` after six rows, which is more sections than this
         screen will ever have.
       */}
-      <Section index={1} title={t('home.wardrobe')} script={script}>
-        {content.wardrobe.count === 0 ? (
-          <Stack gap="md">
-            <Text size="body" color="foreground.2" script={script}>
-              {t('home.wardrobeEmpty')}
+      <Appear index={1}>
+        <Card
+          level="1"
+          header={
+            <Text size="label" color="foreground.2" script={script}>
+              {t('home.wardrobe')}
             </Text>
-            <Button
-              label={t('home.addGarment')}
-              variant="secondary"
-              onPress={() => {
-                onAddGarment?.();
-              }}
-              script={script}
-            />
-          </Stack>
-        ) : (
-          <Stack gap="sm">
-            <Row gap="sm" wrap>
-              {content.wardrobe.colors.map((c) => (
-                <Swatch
-                  key={c.id}
-                  name={c.name}
-                  hex={c.hex}
-                  color={colorOf(c)}
-                  size={STRIP_SAMPLE}
-                />
-              ))}
-            </Row>
-            <Text size="label" color="foreground.2" script={script} numeric>
-              {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
-            </Text>
-          </Stack>
-        )}
-      </Section>
+          }
+        >
+          {content.wardrobe.count === 0 ? (
+            <Stack gap="md">
+              <Text size="body" color="foreground.2" script={script}>
+                {t('home.wardrobeEmpty')}
+              </Text>
+              <Button
+                label={t('home.addGarment')}
+                variant="secondary"
+                onPress={() => {
+                  onAddGarment?.();
+                }}
+                script={script}
+              />
+            </Stack>
+          ) : (
+            <Stack gap="sm">
+              <Row gap="sm" wrap>
+                {content.wardrobe.colors.map((c) => (
+                  <Swatch
+                    key={c.id}
+                    name={c.name}
+                    hex={c.hex}
+                    color={colorOf(c)}
+                    size={STRIP_SAMPLE}
+                  />
+                ))}
+              </Row>
+              <Text size="label" color="foreground.2" script={script} numeric>
+                {`${String(content.wardrobe.count)} ${t('home.wardrobeCount')}`}
+              </Text>
+            </Stack>
+          )}
+        </Card>
+      </Appear>
 
       {/*
         WHICHEVER COLOUR DID NOT LEAD, quietly. On a new install this is where the Lens is
         offered — one line and one action, rather than the two lines of grey it had: a person who
         has taken no readings does not need the mechanism explained twice.
       */}
-      {lead === 'reading' ? (
-        <Section index={2} title={t('home.today')} script={script}>
-          {todayBlock(QUIET_SAMPLE)}
-          <Text size="xs" color="foreground.2" script={script}>
-            {t('home.todayNote')}
-          </Text>
-        </Section>
-      ) : (
-        <Section index={2} title={t('home.lastReading')} script={script}>
-          <Stack gap="md">
-            <Text size="body" color="foreground.2" script={script}>
-              {t('home.noReadings')}
+      <Appear index={2}>
+        {lead === 'reading' ? (
+          <Card
+            level="1"
+            header={
+              <Text size="label" color="foreground.2" script={script}>
+                {t('home.today')}
+              </Text>
+            }
+          >
+            {todayBlock(QUIET_SAMPLE)}
+            <Text size="xs" color="foreground.2" script={script}>
+              {t('home.todayNote')}
             </Text>
-            <Button
-              label={t('home.takeReading')}
-              onPress={() => {
-                onOpenLens?.();
-              }}
-              script={script}
-            />
-          </Stack>
-        </Section>
-      )}
+          </Card>
+        ) : (
+          <Card
+            level="1"
+            header={
+              <Text size="label" color="foreground.2" script={script}>
+                {t('home.lastReading')}
+              </Text>
+            }
+          >
+            <Stack gap="md">
+              <Text size="body" color="foreground.2" script={script}>
+                {t('home.noReadings')}
+              </Text>
+              {/*
+                SECONDARY, because the accent is spent on the lead. Two primaries on one page is
+                the "three bold moves" failure with a different count.
+              */}
+              <Button
+                label={t('home.takeReading')}
+                variant="secondary"
+                onPress={() => {
+                  onOpenLens?.();
+                }}
+                script={script}
+              />
+            </Stack>
+          </Card>
+        )}
+      </Appear>
     </Screen>
   );
 }

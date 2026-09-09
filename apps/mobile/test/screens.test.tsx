@@ -874,7 +874,37 @@ const SCREENS: readonly ConformanceSubject[] = [
      */
     sampleValues: ['#6E7480', '#C5CFD4'],
     render: (_state, theme) =>
-      draw(<Home store={fakeHome(true)} now={() => Date.UTC(2026, 8, 3, 12)} />, theme),
+      draw(
+        <Home
+          store={fakeHome(true)}
+          now={() => Date.UTC(2026, 8, 3, 12)}
+          // F-202: the accent action on the lead card. A subject omitting it would leave the
+          // page's ONE accent unmeasured, which is the token whose contrast matters most here.
+          onOpenCombinations={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * THE FIRST-RUN FRONT DOOR (F-202). A different tree: today's colour leads in the level-2
+     * card, the reading block is an invitation rather than a sample, and the wardrobe is empty.
+     * Registered because "unprofessional" was reported about THIS state — a new install — and it
+     * was measured by nothing.
+     */
+    name: 'screens/Home (first run)',
+    kind: 'static',
+    sampleValues: ['#6E7480', '#C5CFD4'],
+    render: (_state, theme) =>
+      draw(
+        <Home
+          store={fakeHome(false)}
+          now={() => Date.UTC(2026, 8, 3, 12)}
+          onOpenCombinations={() => undefined}
+          onOpenLens={() => undefined}
+        />,
+        theme,
+      ),
   },
   {
     name: 'screens/Atlas',

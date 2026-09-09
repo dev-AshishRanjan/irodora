@@ -553,6 +553,7 @@ export const ja: Record<MessageKey, string> = {
     'この読み取りは精度が低いものでした。以下の数値はその前提で読むか、再度読み取ってください。',
   'against.what':
     'この読み取りが比較対象からどれだけ離れ、どちら向きに違うかを示します。同じ色かどうかの判定ではなく、距離です。',
+  'home.whatGoesWith': 'この色に合う色',
   'contemporary.title': 'いま手に入る近い色',
   'contemporary.what':
     'この色に対応する現代の色です。測った差がいちばん小さいものと、編集者が書き留めたものを並べます。',

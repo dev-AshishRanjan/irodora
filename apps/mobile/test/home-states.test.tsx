@@ -16,7 +16,7 @@
  * leaves undesigned — so it gets the same weight here as the populated one.
  */
 
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { ThemeProvider } from '@irodora/ui';
 import { Home, type HomeStore } from '../src/screens/Home';
 import { en } from '../src/i18n/en';
@@ -210,5 +210,65 @@ describe('the front door states what the product is for (F-164)', () => {
     // the same mistake in the other direction.
     const text = textOf(draw(true).toJSON()).join(' ');
     expect(text.indexOf(en['home.lastReading'])).toBeLessThan(text.indexOf(en['home.today']));
+  });
+});
+
+/**
+ * THE LEAD HAS SOMEWHERE TO GO (F-202, criterion 3).
+ *
+ * *"It offers the combination of the colour it is leading with."* Both install states are
+ * asserted, because the lead is a different KIND of colour in each — today's colour carries a
+ * slug, a reading does not and never will — and a slug-only implementation would satisfy this
+ * on a new install and fail on every phone that had ever been used.
+ */
+describe('the lead offers what goes with it', () => {
+  it('carries the entry slug when today\u2019s colour leads', () => {
+    const seen: unknown[] = [];
+    const tree = render(
+      <ThemeProvider>
+        <Home
+          store={store(false)}
+          now={() => FIXED}
+          onOpenCombinations={(subject) => {
+            seen.push(subject);
+          }}
+        />
+      </ThemeProvider>,
+    );
+    fireEvent.press(tree.getByText(en['home.whatGoesWith']));
+    expect(seen).toHaveLength(1);
+    expect((seen[0] as { kind: string }).kind).toBe('entry');
+  });
+
+  it('carries the ROW ID when a reading leads, because a reading has no slug', () => {
+    const seen: unknown[] = [];
+    const tree = render(
+      <ThemeProvider>
+        <Home
+          store={store(true)}
+          now={() => FIXED}
+          onOpenCombinations={(subject) => {
+            seen.push(subject);
+          }}
+        />
+      </ThemeProvider>,
+    );
+    fireEvent.press(tree.getByText(en['home.whatGoesWith']));
+    expect(seen).toHaveLength(1);
+    expect((seen[0] as { kind: string }).kind).toBe('reading');
+  });
+
+  it('DECOY — the control is absent when nothing is wired, rather than present and inert', () => {
+    /*
+     * A button that does nothing looks broken; one that is not there looks like a state. And
+     * without this, both assertions above could pass on a screen that rendered the control
+     * unconditionally and simply never called anything in the third case.
+     */
+    const tree = render(
+      <ThemeProvider>
+        <Home store={store(true)} now={() => FIXED} />
+      </ThemeProvider>,
+    );
+    expect(tree.queryByText(en['home.whatGoesWith'])).toBeNull();
   });
 });

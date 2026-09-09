@@ -6519,7 +6519,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-184",
         "F-188",
@@ -6539,6 +6539,16 @@
         "a11y",
         "contrast",
         "build"
+      ],
+      "plan": "plans/F-202-home-rebuilt-on-the-system.md",
+      "notes": "THIRD REWRITE, AND THE AUDIT COMES FIRST. F-146 replaced ten buttons with three sections; F-164 fixed the hierarchy and the missing statement of purpose. Criterion 2 — says what the product is for without a paragraph, leads with a colour at size — was ALREADY TRUE before this feature started, and is now ASSERTED rather than remembered so a third rewrite cannot quietly undo the second. Criterion 1 is still literally true at the container level (all three blocks are Section, because Card did not exist until F-184) even though F-164 differentiated their CONTENT. Motion is already present via Section index → Appear (F-188) and is not touched — claiming it as new work would be claiming F-188s.",
+      "attested": [
+        {
+          "criterion": "The front door is composed from cards, motion and the accent rather than from three stacked sections of one shape",
+          "verifiedBy": "The composition is gated — three Card levels, the media slot, one accent action, both install states registered as conformance subjects in both themes, and the a11y and contrast gates green over them. What NOBODY has done is look at it. \"Unprofessional\" was the report three times running and it is a judgement no gate here discharges; this is the third rewrite and the first two were each green on every gate when they were reported.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

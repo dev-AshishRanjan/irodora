@@ -672,6 +672,7 @@ export const en = {
     'This capture was poor. Read the numbers below with that in mind, or take the reading again.',
   'against.what':
     'How far this reading sits from the colour you are comparing against, and which way. A distance, not a judgement about whether they are the same colour.',
+  'home.whatGoesWith': 'What goes with this',
   'contemporary.title': 'What you could buy in this',
   'contemporary.what':
     'The contemporary colours that correspond to this one — the nearest by measured difference, and anything an editor has recorded.',
