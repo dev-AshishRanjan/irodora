@@ -20539,3 +20539,63 @@ That the Atlas lists the corpus **on a device**. The reporter saw it empty; only
 see it full. That gap is the whole story of this defect.
 
 ---
+
+## F-212 — The token-reach proof rotted the same way twice
+
+CI red at gate 8, reported by a person reading the pipeline:
+
+```
+✗ removing the map a component resolves through names its values
+  nativeElevation → surface.1, with every literal reader already gone
+```
+
+### What the case proves, and why the half failed
+
+`surface.1` is reached two ways — as a literal, and through `nativeElevation[level]`. The case
+proves the checker counts the second:
+
+| | plant | must |
+|---|---|---|
+| A | every literal reader removed, map kept | **not** name it |
+| B | every literal reader removed **and the map** | name it |
+
+B failed because `MAP_FILE` named `Surface.tsx` **alone**, and F-184 gave `Card.tsx` its own
+direct import of `nativeElevation`. Removing the map from one file stopped removing every path.
+
+### It had already rotted once, and the repair only covered one axis
+
+The case's own docblock records F-143 and F-145 giving `surface.1` literal readers, after which
+*"CI was red for every push afterwards"*. It was rebuilt into two halves **to survive new literal
+readers** — and rotted on the axis that rebuild did not consider.
+
+**The fix was twenty lines below it the whole time.** The spacing case, repaired for the same
+class of rot, states the general form: *"picking the most-read step from the tree means the next
+conversion cannot rot it again."* So the map's readers are now **discovered at runtime**, and a
+third component reading `nativeElevation` cannot rot this either.
+
+### The regression has its own name
+
+Removing the map from **one** of its readers must LEAVE the token reached — exactly the state
+F-184 created. Asserted as its own case, so the defect has a name rather than being implied by
+its repair, and it goes red the day somebody re-narrows the plant.
+
+It is skipped **loudly** when the map has a single reader: with one file, "one" and "all" are the
+same plant, and an assertion that cannot fail is worse than an absent one.
+
+### And I left a plant in the tree while investigating
+
+`verify-spacing-scale --prove` plants into real files and restores in a `finally`. Piping it
+through `head`/`tail` can close the pipe and kill the process before that `finally` runs —
+F-173's exact scenario. Two files were left planted.
+
+**The journal caught it, refused to run again, and named the recovery**, which is what F-173
+built it for. `node scripts/plant.mjs --recover` restored both byte for byte. Recorded because
+the mistake was mine and the machinery that caught it deserves the credit.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · cvd · content · build — **PASS**,
+and all four of CI's gate-8 steps run individually: token-reach proof, test:a11y, spacing proof,
+a11y mutation proof.
+
+---

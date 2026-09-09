@@ -6862,7 +6862,7 @@
       "service": "root",
       "release": "R8",
       "priority": "must",
-      "status": "backlog",
+      "status": "done",
       "acceptance": [
         "The proof plants against every file that resolves through the map, discovered at runtime rather than named",
         "Both halves still discriminate: the token stays unnamed while the map survives anywhere, and is named when the last path goes",
@@ -6875,7 +6875,8 @@
         "test",
         "a11y"
       ],
-      "notes": "CI RED AT GATE 8, reported by the user. The failing case is \"removing the map a component resolves through names its values\". THE PROOF RECORDS ITSELF ROTTING ONCE ALREADY: F-143 and F-145 gave `surface.1` literal readers, *\"the case stopped discriminating, and CI was red for every push afterwards\"*. It was rebuilt as two halves to survive new LITERAL readers — and has now rotted on the other axis, which that rebuild did not consider: `MAP_FILE` names `Surface.tsx` alone, and F-184 gave `Card.tsx` its own direct import of `nativeElevation`. Removing the map from one file no longer removes every path, so the token stays reached and the discrimination half fails. The spacing case one screen down already learned the general fix — *\"picking the most-read step from the tree means the next conversion cannot rot it again\"* — and the colour case never got it."
+      "notes": "CI RED AT GATE 8, reported by the user. The failing case is \"removing the map a component resolves through names its values\". THE PROOF RECORDS ITSELF ROTTING ONCE ALREADY: F-143 and F-145 gave `surface.1` literal readers, *\"the case stopped discriminating, and CI was red for every push afterwards\"*. It was rebuilt as two halves to survive new LITERAL readers — and has now rotted on the other axis, which that rebuild did not consider: `MAP_FILE` names `Surface.tsx` alone, and F-184 gave `Card.tsx` its own direct import of `nativeElevation`. Removing the map from one file no longer removes every path, so the token stays reached and the discrimination half fails. The spacing case one screen down already learned the general fix — *\"picking the most-read step from the tree means the next conversion cannot rot it again\"* — and the colour case never got it.",
+      "plan": "plans/F-212-the-proof-rotted-the-same-way-twice.md"
     },
     {
       "id": "F-213",

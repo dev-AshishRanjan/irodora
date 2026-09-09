@@ -4392,6 +4392,39 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-114",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/verify-token-reach.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Card.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Surface.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "guard": "THE MAP READERS ARE DISCOVERED, NOT NAMED. The plant now finds every file resolving through `nativeElevation` and removes it from all of them, so a THIRD component reading the map cannot rot this the way `Card` did. Discovery is safe because `sources()` are comment-stripped: a file merely mentioning the map in prose is not planted into. AND THE REGRESSION HAS ITS OWN NAMED CASE: removing the map from ONE of its readers must LEAVE the token reached, which is exactly the state F-184 created — so the defect is asserted rather than implied by its repair, and the case goes red the day somebody re-narrows the plant to a single file. It is skipped LOUDLY when the map has one reader, because with one file \"one\" and \"all\" are the same plant and an assertion that cannot fail is worse than an absent one. WHAT IS STILL NOT GUARDED: the same rot on a third axis. This case has now been repaired twice — once for new literal readers, once for new map readers — and both repairs were reactive.",
+      "memory": "memory/effects/a-proof-that-names-a-file-rots-when-the-file-is-not-the-only-one.md",
+      "rationale": "CI RED AT GATE 8, reported by a person reading the pipeline. THE CASE PROVES THAT RESOLVING THROUGH A MAP COUNTS AS REACHING: remove every literal reader of `surface.1` and it must stay unnamed; remove the map too and it must be named. The second half stopped discriminating because `MAP_FILE` named `packages/ui/src/Surface.tsx` alone, and F-184 gave `Card.tsx` its own direct import of `nativeElevation`. THE CASE RECORDS ITSELF ROTTING ONCE BEFORE — F-143 and F-145 gave `surface.1` literal readers and *\"CI was red for every push afterwards\"* — and was rebuilt into two halves to survive new LITERAL readers. Nobody considered a second MAP reader. The spacing case immediately below it had already learned the general form: *\"picking the most-read step from the tree means the next conversion cannot rot it again.\"* The colour case never got it, and the two sat twenty lines apart.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

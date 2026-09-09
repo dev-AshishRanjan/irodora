@@ -692,9 +692,28 @@ async function prove() {
    * the map as the cause, which a single assertion against a token with one reader could only
    * imply.
    */
-  const MAP_FILE = 'packages/ui/src/Surface.tsx';
+  /*
+   * AND IT ROTTED AGAIN, ON THE OTHER AXIS (F-212).
+   *
+   * The repair above made the case survive new LITERAL readers. It did not consider a second
+   * MAP reader — `MAP_FILE` named `Surface.tsx` alone. **F-184 gave `Card.tsx` its own direct
+   * import of `nativeElevation`**, so removing the map from one file stopped removing every
+   * path to `surface.1`: the token stayed reached, half B stopped discriminating, and CI went
+   * red at gate 8 — reported by a person reading the pipeline, which is one level worse than
+   * the last time.
+   *
+   * THE FIX IS THE ONE THE SPACING CASE BELOW ALREADY KNOWS: *"picking the most-read step from
+   * the tree means the next conversion cannot rot it again."* So the map's readers are
+   * DISCOVERED rather than named, and a third component reading `nativeElevation` cannot rot
+   * this either — the plant will find it.
+   *
+   * `sources()` are comment-stripped, which is what makes discovery safe: a file merely
+   * MENTIONING the map in prose is not a reader and is not planted into.
+   */
+  const MAP_SYMBOL = 'nativeElevation';
   const VIA_MAP = 'surface.1';
-  const literalReaders = readersOfLiteral(`'${VIA_MAP}'`).filter((f) => f !== MAP_FILE);
+  const mapFiles = readersOfLiteral(MAP_SYMBOL);
+  const literalReaders = readersOfLiteral(`'${VIA_MAP}'`).filter((f) => !mapFiles.includes(f));
 
   let literalsGone = new Map();
   for (const file of literalReaders) literalsGone = without(literalsGone, file, `'${VIA_MAP}'`);
@@ -702,15 +721,43 @@ async function prove() {
   say(
     !named(throughMapOnly, 'colour token', VIA_MAP) && !named(base, 'colour token', VIA_MAP),
     'a token reached ONLY through a map is not named',
-    `${VIA_MAP} via nativeElevation, with ${String(literalReaders.length)} literal reader(s) removed`,
+    `${VIA_MAP} via ${MAP_SYMBOL}, with ${String(literalReaders.length)} literal reader(s) removed`,
   );
 
-  const viaMap = await run(without(new Map(literalsGone), MAP_FILE, 'nativeElevation'));
+  let mapsGone = new Map(literalsGone);
+  for (const file of mapFiles) mapsGone = without(mapsGone, file, MAP_SYMBOL);
+  const viaMap = await run(mapsGone);
   say(
     named(viaMap, 'colour token', VIA_MAP),
     'removing the map a component resolves through names its values',
-    `nativeElevation → ${VIA_MAP}, with every literal reader already gone`,
+    `${MAP_SYMBOL} → ${VIA_MAP}, from all ${String(mapFiles.length)} reader(s) of the map`,
   );
+
+  /*
+   * THE REGRESSION, WITH ITS OWN NAME (F-212).
+   *
+   * Removing the map from only the FIRST file that reads it — which is exactly what this case
+   * did until now — must LEAVE the token reached, because the others still resolve through it.
+   * Asserting it here means the defect has a name rather than being implied by the repair, and
+   * the case goes red again the day somebody re-narrows the plant to one file.
+   *
+   * It is skipped, loudly, if the map has only one reader: with one file the two plants are the
+   * same plant, and an assertion that cannot fail is worse than an absent one.
+   */
+  if (mapFiles.length > 1) {
+    const first = mapFiles[0];
+    const onlyFirst = await run(without(new Map(literalsGone), first, MAP_SYMBOL));
+    say(
+      !named(onlyFirst, 'colour token', VIA_MAP),
+      'removing the map from ONE of its readers is not enough — the F-184 regression',
+      `${first} alone, with ${String(mapFiles.length - 1)} other reader(s) still resolving`,
+    );
+  } else {
+    console.log(
+      `  ${DIM}- the one-reader regression case is not applicable: ${MAP_SYMBOL} has a single ` +
+        `reader, so removing it from "one" file and from "all" files are the same plant.${OFF}`,
+    );
+  }
 
   /*
    * THE SPACING GROUP, AND IT IS A DIFFERENT SHAPE FROM EVERY CASE ABOVE (F-111).
