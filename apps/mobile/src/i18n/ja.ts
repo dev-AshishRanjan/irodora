@@ -529,6 +529,13 @@ export const ja: Record<MessageKey, string> = {
   'wear.shopFor': 'この色を探す',
   'wear.addToWardrobe': '持ち物に追加',
   'wear.openColour': 'この色を開く',
+  // F-208. 「暖かめ」「涼しめ」— 比較の対象は手元の色ではなく一番上の候補なので、断定ではなく
+  // 方向を示す語にしている。
+  'alt.warmer': '暖かめ',
+  'alt.cooler': '涼しめ',
+  'alt.lighter': '明るめ',
+  'alt.higherContrast': 'コントラスト強め',
+  'wear.alternatives': '一歩ずらすなら',
   // F-200 — see en.ts: the bar names the activity, not the noun.
   'target.armed': '比較対象',
   'target.disarm': '比較をやめる',

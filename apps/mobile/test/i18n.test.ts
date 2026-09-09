@@ -35,6 +35,7 @@ import { MESSAGE_KEYS as SCORE_MESSAGE_KEYS, OUTFIT_MESSAGE_KEYS } from '@irodor
 import { COMBINATION_MESSAGE_KEYS } from '../src/combinations';
 import { CURATED_INTENT_MESSAGE_KEYS } from '../src/corpus';
 import { AGAINST_AXIS_KEYS, AGAINST_MESSAGE_KEYS } from '../src/against-target';
+import { ALTERNATIVE_MESSAGE_KEYS } from '../src/wear';
 
 // jest transpiles to CJS, where `import.meta.url` is null. The runner's cwd is the package
 // root, which is what this needs anyway.
@@ -203,6 +204,33 @@ describe('the engine cannot emit a key the app is unable to render (E-053)', () 
     expect(AGAINST_MESSAGE_KEYS.length).toBeGreaterThan(0);
   });
 
+  /*
+   * THE FOUR ALTERNATIVE AXES (F-208), pinned both ways for the reason every set above is:
+   * `Wear` builds `alt.<axis>` from the alternative, so there is no literal for the unused-key
+   * scan to find. One-way pinning would let the engine offer an axis with no words, or leave
+   * words for an axis it no longer offers.
+   */
+  it('has a name for every alternative axis the engine can offer', () => {
+    expect(ALTERNATIVE_MESSAGE_KEYS.filter((k) => !(k in en))).toHaveLength(0);
+    expect(ALTERNATIVE_MESSAGE_KEYS.filter((k) => !(k in ja))).toHaveLength(0);
+  });
+
+  it('declares no alternative axis the engine does not offer', () => {
+    // No segment-count partition here, and the decoy below is what makes that safe rather
+    // than lucky: `alt.` has no screen copy under it, unlike `outfit.` and `against.`.
+    const declared = MESSAGE_KEYS.filter((k) => k.startsWith('alt.'));
+
+    expect([...declared].sort()).toEqual([...ALTERNATIVE_MESSAGE_KEYS].sort());
+  });
+
+  it('DECOY — the `alt.` prefix carries no screen copy, so no partition is needed', () => {
+    // The heading over the section is `wear.alternatives`, deliberately NOT `alt.title` — if
+    // it were, the reverse pin above would demand the engine emit it. Both sides asserted, so
+    // this cannot pass by matching nothing.
+    expect(ALTERNATIVE_MESSAGE_KEYS.length).toBeGreaterThan(0);
+    expect(MESSAGE_KEYS.some((k) => k.startsWith('alt.') && k.split('.').length !== 2)).toBe(false);
+    expect('wear.alternatives' in en).toBe(true);
+  });
   it('DECOY — the engine prefix does not swallow the screen copy beside it', () => {
     // `combos.title` would be demanded of the engine by a looser filter, and the engine does
     // not emit it. Both sides are asserted, so the partition cannot pass by matching nothing.
@@ -403,6 +431,8 @@ describe('every declared key is used, and every used key is declared', () => {
       // three axis labels, pinned forward — see AGAINST_AXIS_KEYS for why one way is enough.
       ...AGAINST_MESSAGE_KEYS,
       ...AGAINST_AXIS_KEYS,
+      // F-208 added the four alternative axes, pinned in both directions above.
+      ...ALTERNATIVE_MESSAGE_KEYS,
     ]);
     const unused = MESSAGE_KEYS.filter((k) => !dynamic.has(k) && !ALL_SOURCE.includes(`'${k}'`));
     expect(unused).toHaveLength(0);

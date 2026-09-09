@@ -20808,3 +20808,68 @@ The ADR-0036 pin fired during the change, five errors, before the wire schema wa
 is the evidence it works rather than a claim that it would.
 
 ---
+## F-208 — The alternatives are computed on every ranking and shown nowhere
+
+### The class two R7 gates were built for, and neither could see this one
+
+`alternativesFor` has run inside every `recommendForSlot` call since **F-030**. It is careful
+work — relative to the top pick rather than to the garment, `temperatureOf` rather than `hueBias`
+(ADR-0076), one candidate to one axis after F-101 found three chips over a single swatch — and
+the only screen that asks for a ranking threw every object it produced away.
+
+R7 built `verify-dead-exports` and `verify-reachability` for exactly this. Both look for a
+**symbol nobody imports**. `OutfitRecommendation.alternatives` reached `Wear.tsx` on every render
+and `Wear.tsx` rendered `rec.ranked`.
+
+> Nothing in this repository sees a **property** nobody reads.
+
+### The engine half was finished, and stayed untouched
+
+F-195 filed this rather than absorbing it. That was right, and the whole change is a rendering
+one: four `alt.*` names, a section under each slot's ranking, and no new arithmetic anywhere.
+
+### The axis is in words, because a swatch cannot say "warmer"
+
+ADR-0076 had this argument at the engine level, when a grey whose hue angle sat at 66° was being
+offered as the warm alternative. The same reasoning is what `ACCESSIBILITY.md` means by never
+making colour the only channel — so the axis is the card's heading and the colour name sits
+under it.
+
+**An alternative already visible in the list above is not a duplicate.** The label is the
+content: *"like that, but cooler"* is a different statement from *"fourth"*. It can equally be a
+colour the list never reached — the engine searches all 64 shortlisted candidates while the
+screen shows six.
+
+### Criterion 2 is cited, not restated
+
+*An axis with no candidate stays omitted* is a property of the **engine**, and the screen cannot
+be made to produce it: the published corpus offers all four axes for every slug and slot
+measured. Forcing it would have meant a pool port on the screen existing only so a test could
+starve it.
+
+So the screen asserts the half it owns — it draws **exactly** what the engine returned — with the
+expected count read off `wearWith` rather than written down, so a corpus that starts starving an
+axis moves both sides together. The omission itself is exercised in
+`packages/recommendation/test/outfit.test.ts`, *"OMITS an axis with no candidate rather than
+filling it"*, with a pool of two near-identical off-whites.
+
+### The names are pinned in both directions
+
+`ALTERNATIVE_MESSAGE_KEYS` is derived from `ALTERNATIVE_AXES`, not listed beside it. The screen
+builds `alt.<axis>`, so no literal exists for the unused-key scan and the keys must be excluded
+from it — an exclusion that is only safe pinned both ways. A decoy asserts the `alt.` prefix
+carries no screen copy, so the reverse pin needs no segment-count partition: true by
+construction rather than by luck.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast — **PASS**, plus all four of gate 8's
+CI steps (`verify-token-reach --prove`, `test:a11y`, `verify:spacing:prove`,
+`verify:a11y:prove`).
+
+### Not checked here
+
+Whether the section reads as a second ranking. No gate in this repository sees layout
+[[a-test-tree-has-no-height]], and copy is the weakest kind of mitigation.
+
+---

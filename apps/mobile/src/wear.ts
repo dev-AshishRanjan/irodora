@@ -28,6 +28,7 @@
 
 import {
   recommendOutfit,
+  ALTERNATIVE_AXES,
   SCORE_FACTORS,
   OUTFIT_SLOTS,
   type Candidate,
@@ -43,6 +44,20 @@ export { OUTFIT_SLOTS, type OutfitSlot };
 
 /** Where a colour goes unless somebody says otherwise. A shirt is what people hold up. */
 export const DEFAULT_SLOT: OutfitSlot = 'top';
+
+/**
+ * The message key naming each alternative axis, in the order the engine offers them.
+ *
+ * **Derived from `ALTERNATIVE_AXES`, not listed beside it.** `Wear` builds the key from the
+ * axis, so the literal never appears in source and `i18n.test.ts`'s unused-key scan — which
+ * is a source-literal scan — cannot see the consumer. That exclusion is safe only while both
+ * directions are pinned: every key here exists in both catalogues, and the catalogue declares
+ * no `alt.*` the engine does not emit. Same mechanism, and same protection, as
+ * `COMBINATION_MESSAGE_KEYS` and `OUTFIT_MESSAGE_KEYS` (F-124, F-194).
+ */
+export const ALTERNATIVE_MESSAGE_KEYS: readonly string[] = ALTERNATIVE_AXES.map(
+  (axis) => `alt.${axis}`,
+);
 
 /**
  * The profile used when nobody has built one.

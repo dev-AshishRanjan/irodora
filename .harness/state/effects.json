@@ -4555,6 +4555,51 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-118",
+      "from": {
+        "kind": "file",
+        "ref": "packages/recommendation/src/outfit.ts"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/wear.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/en.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/i18n/ja.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wear.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/recommendation",
+        "apps/mobile"
+      ],
+      "severity": "low",
+      "guard": "THE FOUR AXIS NAMES ARE PINNED IN BOTH DIRECTIONS, and the exclusion they buy is why that is not optional. `Wear` builds `alt.<axis>` from the alternative, so no literal exists for i18n.test.ts's unused-key scan to find, and the keys have to be excluded from it — an exclusion pinned one way would let the engine offer an axis with no words, or leave words for an axis it no longer offers. `ALTERNATIVE_MESSAGE_KEYS` is DERIVED from `ALTERNATIVE_AXES` rather than listed beside it, the same mechanism as COMBINATION_MESSAGE_KEYS and OUTFIT_MESSAGE_KEYS. A DECOY asserts the `alt.` prefix carries no screen copy, so the reverse pin needs no segment-count partition — true by construction rather than by luck, which is what the `outfit.` and `against.` partitions had to be built for. THE SCREEN SIDE IS A BIJECTION: the test counts drawn labels against `wearWith`'s own answer, so a corpus that starts starving an axis moves both sides together. CRITERION 2 IS CITED, NOT RESTATED: the omission is a property of the engine and is exercised in packages/recommendation/test/outfit.test.ts — \"OMITS an axis with no candidate rather than filling it\" — with a pool of two near-identical off-whites. WHAT IS NOT GUARDED: that citation is prose, and nothing links it to the test it names. And no gate here sees layout, so whether the section reads as a second ranking is unchecked.",
+      "memory": "memory/effects/the-half-you-own-is-a-bijection-and-the-other-half-is-a-citation.md",
+      "rationale": "THE ALTERNATIVES ARE A FIELD ON A REACHABLE OBJECT, WHICH IS WHY TWO GATES MISSED THEM. R7 added `verify-dead-exports` and `verify-reachability` for work built and never wired, and both look for a SYMBOL nobody imports. `OutfitRecommendation.alternatives` reached `Wear.tsx` on every render and `Wear.tsx` rendered `rec.ranked`. Nothing in this repository sees a property nobody reads. THE ENGINE HALF WAS ALREADY FINISHED and deliberately untouched — F-195 filed this rather than absorbing it, because widening a claimed feature to cover work its criteria never asked for is how scope stops meaning anything. THE AXIS IS RENDERED IN WORDS because a swatch cannot say \"warmer\": ADR-0076 had that argument at the engine level when a grey at 66 degrees was offered as the warm one, and the same reasoning is what ACCESSIBILITY.md means by never making colour the only channel. AN ALTERNATIVE ALREADY IN THE LIST ABOVE IS NOT A DUPLICATE: the label is the content, and it can equally be a colour the list never reached, since the engine searches all 64 shortlisted candidates while the screen shows six.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

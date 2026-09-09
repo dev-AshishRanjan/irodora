@@ -6756,7 +6756,7 @@
       "service": "mobile",
       "release": "R8",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-195"
       ],
@@ -6774,7 +6774,8 @@
         "a11y",
         "contrast"
       ],
-      "notes": "FOUND IN F-195, FILED RATHER THAN ABSORBED. `alternativesFor` runs inside every `recommendForSlot` call, so F-195 computes warmer/cooler/lighter/higher-contrast alternatives for every slot and discards them — which is the exact defect this release exists to fix, one field along. It was NOT added to F-195 because FR-38 is a different requirement from the two F-195 carries, and widening a claimed feature to cover work its criteria never asked for is how scope stops meaning anything. The cost of waiting is a few discarded objects per render; the cost of absorbing it is a feature nobody can tell was finished."
+      "notes": "DONE. A rendering feature: the engine half has been finished since F-030 and was deliberately not touched. WHY TWO R7 GATES MISSED IT — `verify-dead-exports` and `verify-reachability` both look for a SYMBOL nobody imports, and this was a FIELD on an object the screen already had in hand. CRITERION 2 IS CITED RATHER THAN RESTATED: an axis with no candidate is a property of the engine, exercised in packages/recommendation/test/outfit.test.ts with a pool of two near-identical off-whites. The screen cannot reach that state — the published corpus offers all four axes for every slug and slot measured — and forcing it would have meant a pool port existing only so a test could starve it. What the screen owns is asserted instead: it draws EXACTLY what the engine returned, counted against `wearWith`'s own answer so a corpus that starts starving an axis moves both sides together.",
+      "plan": "plans/F-208-the-alternatives-are-shown.md"
     },
     {
       "id": "F-209",

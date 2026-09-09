@@ -36,7 +36,7 @@ import {
   Swatch,
   Text,
 } from '@irodora/ui';
-import type { OutfitRecommendation, RankedCandidate } from '@irodora/recommendation';
+import type { Alternative, OutfitRecommendation, RankedCandidate } from '@irodora/recommendation';
 import { OUTFIT_SLOTS, shownFactors, shownScore, wearWith, type OutfitSlot } from '../wear';
 import { colorFor, entryBySlug } from '../corpus';
 import { ruleSet } from '../rules';
@@ -77,6 +77,15 @@ const SHOWN_PER_SLOT = 6;
 
 /** The size a candidate colour is drawn at. Large enough to judge against the source. */
 const CANDIDATE = 56;
+
+/**
+ * The swatch on an alternative.
+ *
+ * Smaller than a ranked candidate on purpose: an alternative is a sideways step from the top
+ * pick, not a fifth thing competing with the four above it, and the size is the only channel
+ * that says so without a sentence.
+ */
+const ALTERNATIVE = 40;
 
 export function Wear({
   slug,
@@ -221,6 +230,90 @@ export function Wear({
     );
   }
 
+  /**
+   * One alternative: the direction, in words, and the colour that goes that way.
+   *
+   * **THE AXIS IS THE HEADING, AND IT IS WORDS.** A warmer colour does not look "warmer" beside
+   * a cooler one unless something says which is which — the swatch cannot carry this, and
+   * ADR-0076 had the same argument at the engine level when a grey at 66° was offered as warm.
+   *
+   * Same `Card` shape as a ranked candidate, at a smaller weight, rather than a new component:
+   * the screen already has an idiom for an optional handler, and reusing it keeps these inside
+   * a component the conformance suite covers.
+   */
+  function AlternativeCard({ alt }: { readonly alt: Alternative }): React.JSX.Element {
+    const entry = entryBySlug(alt.candidate.id);
+    return (
+      <Card
+        level="1"
+        footer={
+          entry === null || onOpenColour === undefined ? undefined : (
+            <Button
+              label={t('wear.openColour')}
+              variant="secondary"
+              onPress={() => {
+                onOpenColour(alt.candidate.id);
+              }}
+              script={script}
+            />
+          )
+        }
+        header={
+          <Row gap="sm" align="center">
+            {entry === null ? null : (
+              <Swatch
+                name={entry.entry.name.en}
+                hex={entry.derived.hex}
+                color={colorFor(entry.entry)}
+                size={ALTERNATIVE}
+                script={script}
+              />
+            )}
+            <Stack gap="xs">
+              <Text size="body" color="foreground" script={script} heading>
+                {t(`alt.${alt.axis}` as MessageKey)}
+              </Text>
+              <Text size="xs" color="foreground.2" script={script}>
+                {entry === null
+                  ? alt.candidate.id
+                  : `${entry.entry.name.kanji} ${entry.entry.name.en}`}
+              </Text>
+            </Stack>
+          </Row>
+        }
+      />
+    );
+  }
+
+  /**
+   * The alternatives for one slot, or nothing at all.
+   *
+   * **NO BRANCH FILLS A MISSING AXIS.** The engine omits an axis it has no candidate for —
+   * *"three real ones and a missing fourth is an honest answer, while four where one is
+   * mislabelled is not"* — and this maps what it returned. A screen that rendered four slots
+   * and filled the gap would be inventing the one thing the engine refused to.
+   *
+   * An empty set draws NOTHING, heading included. A heading over nothing is this screen’s
+   * version of "0 results".
+   *
+   * AN ALTERNATIVE ALREADY IN THE LIST ABOVE IS NOT A DUPLICATE: the label is the content, and
+   * "like that, but cooler" is a different statement from "fourth". It can equally be a colour
+   * the list never reached — `alternativesFor` searches every ranked candidate up to the
+   * engine’s shortlist bound of 64, and six are shown.
+   */
+  function Alternatives({ rec }: { readonly rec: OutfitRecommendation }): React.JSX.Element | null {
+    if (rec.alternatives.length === 0) return null;
+    return (
+      <Stack gap="xs">
+        <Text size="xs" color="foreground.2" script={script}>
+          {t('wear.alternatives')}
+        </Text>
+        {rec.alternatives.map((a) => (
+          <AlternativeCard key={a.axis} alt={a} />
+        ))}
+      </Stack>
+    );
+  }
   /** One slot's ranking. */
   function Slot({ rec }: { readonly rec: OutfitRecommendation }): React.JSX.Element {
     const shown = rec.ranked.slice(0, SHOWN_PER_SLOT);
@@ -234,6 +327,7 @@ export function Wear({
         ) : (
           shown.map((c) => <One key={c.id} candidate={c} />)
         )}
+        {shown.length === 0 ? null : <Alternatives rec={rec} />}
       </Stack>
     );
   }

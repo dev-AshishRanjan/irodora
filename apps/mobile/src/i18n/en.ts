@@ -631,6 +631,23 @@ export const en = {
   'wear.addToWardrobe': 'Add to wardrobe',
   'wear.openColour': 'Open this colour',
   /*
+   * F-208 — THE FOUR AXES, WHICH THE ENGINE HAS BEEN COMPUTING SINCE F-030.
+   *
+   * `alternativesFor` labels each alternative with the direction it moves in relative to the
+   * TOP PICK, not to the colour in hand — so these read as "like that one, but …" rather than
+   * as a claim about the garment. FR-38 names the four verbatim.
+   *
+   * WORDS, BECAUSE THE SWATCH CANNOT SAY THIS. A warmer colour does not look "warmer" beside
+   * a cooler one without being told which is which, and ADR-0076 already had this argument at
+   * the engine level: a grey whose hue angle sits at 66° is not warm.
+   */
+  'alt.warmer': 'Warmer',
+  'alt.cooler': 'Cooler',
+  'alt.lighter': 'Lighter',
+  'alt.higherContrast': 'More contrast',
+  /** The heading over them. Not "alternatives" — that word promises a replacement. */
+  'wear.alternatives': 'Or, one step along',
+  /*
    * F-200 — THE TARGET.
    *
    * "Comparing against" rather than "target colour": the bar says what the product is DOING,
