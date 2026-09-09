@@ -39,13 +39,13 @@ import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
+  Card,
   Pair,
   Row,
   Screen,
   SearchField,
   Slider,
   Stack,
-  Surface,
   Swatch,
   Text,
   useTheme,
@@ -233,11 +233,16 @@ export function Compare({
   }): React.JSX.Element {
     const found = matches(query);
     return (
-      <Surface level="1" padding="md">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="md"
+        header={
           <Text size="label" color="foreground.2" script={script} heading>
             {label}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           {/*
             THE CURRENT CHOICE IN WORDS, NOT AS A SECOND SAMPLE.
 
@@ -277,7 +282,7 @@ export function Compare({
             </Pressable>
           ))}
         </Stack>
-      </Surface>
+      </Card>
     );
   }
 
@@ -302,11 +307,16 @@ export function Compare({
       ) : null}
 
       {/* The headline number, DIRECTLY beneath the boundary it describes. */}
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.difference')}
           </Text>
+        }
+      >
+        <Stack gap="xs">
           <Metric
             label={t('compare.difference')}
             value={metrics.deltaE00.toFixed(2)}
@@ -314,13 +324,18 @@ export function Compare({
             space={t('space.cielab')}
           />
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.perAxis')}
           </Text>
+        }
+      >
+        <Stack gap="xs">
           <Text size="xs" color="foreground.2" script={script}>
             {t('space.cielab')}
           </Text>
@@ -338,13 +353,18 @@ export function Compare({
           */}
           <AxisRow label={t('axis.oklchH')} axis={metrics.oklch.h} places={1} suffix="°" />
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.separation')}
           </Text>
+        }
+      >
+        <Stack gap="xs">
           {/*
             THE SEVERITY IS NOW A CONTROL, and it closes something the engine wrote down twice.
 
@@ -405,13 +425,18 @@ export function Compare({
             {t('cvd.note')}
           </Text>
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.contrast')}
           </Text>
+        }
+      >
+        <Stack gap="xs">
           <Metric
             label={t('contrast.wcag')}
             value={`${metrics.contrast.wcagRatio.toFixed(2)}:1`}
@@ -437,7 +462,7 @@ export function Compare({
             {t('contrast.apcaNote')}
           </Text>
         </Stack>
-      </Surface>
+      </Card>
 
       {/*
         THE PICKERS, LAST. Choosing which two colours to compare is ranking a list; judging the

@@ -4649,6 +4649,56 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-120",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Card.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Compare.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/PaletteStudio.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Wardrobe.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-surface-not-card.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/screen-insets.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "root"
+      ],
+      "severity": "medium",
+      "guard": "THE INSET WAS CAPTURED FROM THE TREE BEFORE THE CONVERSION, and the ordering is the whole assertion — Surface defaults its padding to md and Card to lg, so a conversion that drops the prop moves a screen by 4pt in silence, and a fixture written afterwards would agree with whatever the edit did. It covers all 72 conformance subjects, not only the twelve files touched. THE FIRST VERSION OF THAT PIN WAS WRONG AND FIRED IMMEDIATELY: it compared the MULTISET, and a Card draws a header box AND a body box where a Surface drew one, so the count necessarily grows. It now asserts the distinct set is identical and no value occurs less often, with a decoy asserting at least one subject GAINED boxes — so it cannot pass on a branch where nothing was converted. CRITERION 2 IS A MARKER AT THE SITE, not a registry: a line-keyed record rots when anything above it moves and an ordinal-keyed one mis-assigns silently when two sites swap. verify-surface-not-card.mjs refuses an unmarked Surface, a marker that is a shrug, and a marker whose element has gone; its proof watches all three refuse plus two decoys, in a temp directory, writing nothing to the working tree. WHAT IS NOT GUARDED: rhythm. Twenty-four cards went from one padded box with a Stack gap to a header box, a hairline and a body box — the insets are equal and the screens are not the same, and no gate here renders a layout.",
+      "memory": "memory/effects/a-judgement-nobody-wrote-down-cannot-be-reviewed.md",
+      "rationale": "THE SITE COUNT IN THE FEATURE NOTES WAS WRONG BY A FACTOR OF TWO AND A HALF. It said \"nine surfaces ... the sites are known\" and named four; classifying by reading the tree found 47 sites, 24 of them cards. That is the argument for the classifier rather than against the note. THE 23 THAT STAY ARE THE INTERESTING HALF: a camera preview whose rectangle converts a tap into a point in the frame, a pressable photo target, empty states, a bar. Each is genuinely not a card and each judgement is invisible ten minutes after it is made — \"deliberately a Surface\" and \"nobody got to this one\" look identical six months later, and the second is what flattened the card vocabulary in the first place. THE MARKER HAD TO GO INSIDE THE OPENING TAG, and the reason was luck turning out right: a JSX comment child is what anybody would write, and eight of these sites sit directly inside a parenthesised ternary branch where a comment and an element are two expressions and do not parse. The position that works everywhere is also the position the grammar binds to the element rather than proximity binding it.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

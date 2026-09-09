@@ -33,7 +33,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
-import { Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Card, Row, Screen, SearchField, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { LEXICON_AXES, type LexiconAxis } from '@irodora/corpus';
 import { find, type FinderKind } from '../finder';
 import { colorFor, type PublishedEntry } from '../corpus';
@@ -161,7 +161,11 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
               </Text>
             </Stack>
           ) : (
-            <Surface level="1" padding="md">
+            <Surface
+              /* surface-not-card: a result list opened by a count. A count is a fact about the list, not a heading over it. */
+              level="1"
+              padding="md"
+            >
               <View>
                 <Text size="xs" color="foreground.2" script={script}>
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
@@ -192,11 +196,16 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
             reproduced once the lexicon moves.
           */}
           {result.region === undefined ? null : (
-            <Surface level="1" padding="md">
-              <Stack gap="xs">
+            <Card
+              level="1"
+              padding="md"
+              header={
                 <Text size="label" color="foreground.2" script={script} heading>
                   {t('finder.region')}
                 </Text>
+              }
+            >
+              <Stack gap="xs">
                 {LEXICON_AXES.map((axis) => {
                   const range = result.region?.[axis];
                   if (range === undefined) return null;
@@ -219,7 +228,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                   {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
                 </Text>
               </Stack>
-            </Surface>
+            </Card>
           )}
         </>
       )}

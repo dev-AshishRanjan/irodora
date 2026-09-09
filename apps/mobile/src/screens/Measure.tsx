@@ -37,6 +37,7 @@ import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  Card,
   EmptyState,
   Row,
   Screen,
@@ -157,7 +158,11 @@ export function Measure({
         {t('measure.library')}
       </Text>
       {libraries.map((library) => (
-        <Surface key={library.id} level="1">
+        <Surface
+          /* surface-not-card: a reference library: its name and an instruction, neither of them a heading. */
+          key={library.id}
+          level="1"
+        >
           <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
             <Text size="body" color="foreground.2" script={script}>
               {library.name}
@@ -205,11 +210,16 @@ export function Measure({
       )}
 
       {/* ------------------------------------------------------ the entry form */}
-      <Surface level="1">
-        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+      <Card
+        level="1"
+        padding="md"
+        header={
           <Text size="body" color="foreground" heading script={script}>
             {t('measure.space')}
           </Text>
+        }
+      >
+        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
           <Row gap="sm">
             {ENTRY_SPACES.map((candidate) => (
               <Button
@@ -251,7 +261,7 @@ export function Measure({
 
           <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} script={script} />
         </View>
-      </Surface>
+      </Card>
 
       {/* ------------------------------------------------------------ the table */}
       <Text size="body" color="foreground" heading script={script}>
@@ -274,7 +284,11 @@ export function Measure({
         />
       ) : (
         rows.map((row) => (
-          <Surface key={row.id} level="1">
+          <Surface
+            /* surface-not-card: a result row. Numbers with the space each was computed in, and no title. */
+            key={row.id}
+            level="1"
+          >
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.xs }}>
               <Text size="body" color="foreground" numeric script={script}>
                 {`${row.name} — ${t('compare.difference')}: ${row.deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}

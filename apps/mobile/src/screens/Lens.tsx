@@ -552,7 +552,10 @@ export function Lens({
           A letterboxed `contain` would put bars in the measurement and a `cover` would crop it,
           and either would mean the reticle sat somewhere the reading did not come from.
         */
-        <Surface level="1">
+        <Surface
+          /* surface-not-card: the photo target — a Pressable filling the box. A card would draw a hairline through a control. */
+          level="1"
+        >
           <Pressable
             accessibilityRole="adjustable"
             accessibilityLabel={t('lens.photoTarget')}
@@ -593,7 +596,10 @@ export function Lens({
         // `Surface level="1"` rather than `colors['surface.1']`. The token is RESOLVED through
         // `nativeElevation` rather than named by a literal, which is how every other surface in
         // the app reaches its background — and gate 8's own proof depends on that being true.
-        <Surface level="1">
+        <Surface
+          /* surface-not-card: the camera preview box, whose aspect ratio is what converts a tap into a point in the frame. Chrome inside it would change that rectangle. */
+          level="1"
+        >
           {/*
             THE PREVIEW BOX BELONGS TO THE SCREEN (F-170), not to the viewfinder.
 
@@ -635,7 +641,11 @@ export function Lens({
           </Pressable>
         </Surface>
       ) : (
-        <Surface level="1" padding="lg">
+        <Surface
+          /* surface-not-card: the permission ask: a sentence, a sentence and a button. */
+          level="1"
+          padding="lg"
+        >
           <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
               {t(permission === 'denied' ? 'lens.deniedTitle' : 'lens.askTitle')}
@@ -794,7 +804,11 @@ export function Lens({
         it to act on. Acting on a colour is what the shutter is for.
       */}
       {liveDisplay === null || live === null ? null : (
-        <Surface level="1" padding="md">
+        <Surface
+          /* surface-not-card: the live readout, updating at frame rate. Its label is a label, not a heading. */
+          level="1"
+          padding="md"
+        >
           <Stack gap="sm">
             <Text size="label" color="foreground.2" script={script}>
               {t('lens.liveReadout')}
@@ -866,7 +880,11 @@ export function Lens({
         */}
         {capture === null || display === null ? null : (
           <>
-            <Surface level="1" padding="lg">
+            <Surface
+              /* surface-not-card: the capture readout inside a sheet. The sheet is the container; a card in it is a box in a box. */
+              level="1"
+              padding="lg"
+            >
               <Stack gap="md">
                 {/*
                   ONE READOUT, WHERE THERE WERE THREE ELEMENTS.

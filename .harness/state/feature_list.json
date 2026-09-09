@@ -6817,7 +6817,7 @@
       "service": "mobile",
       "release": "R8",
       "priority": "could",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-203"
       ],
@@ -6835,7 +6835,17 @@
         "a11y",
         "contrast"
       ],
-      "notes": "SPLIT OUT OF F-203 RATHER THAN DONE BLIND. `Card` supplies its own padding defaults, so a Surface→Card conversion changes spacing unless each site is checked — nine surfaces, on a workstation with no device, in a feature whose other half was already a twelve-site layout refactor. Golden rule 6 is that the build stays green between increments, and stacking two unverifiable visual changes into one feature is how a regression arrives with nothing to bisect. The sites are known: Wardrobe's filter panel, ProfileSetup's dimension block, and the empty states in Atlas and Lens."
+      "notes": "DONE. THE SITE COUNT IN THESE NOTES WAS WRONG: they said nine and named four; the classifier found 47 Surface sites, 24 of them a heading plus a body. All 24 converted, each Card taking the padding its Surface had — Surface defaults to md and Card to lg, so every converted site says its step out loud. The 23 that stay each carry a surface-not-card marker inside their opening tag, enforced by a new scanner in lint whose proof watches three refusals and two decoys. Criterion 3 was captured from the tree BEFORE the edit into screen-insets.json, over all 72 conformance subjects.",
+      "plan": "plans/F-210-surfaces-that-are-cards.md",
+      "attested": [
+        {
+          "criterion": "Every Surface whose content is a heading plus a body becomes a Card with that heading in its header slot",
+          "verifiedBy": "Done for all 24 sites, and the classifier that found them is committed. WHAT NOBODY HAS SEEN is the result: a Card draws a header box, a hairline and a body box where a Surface drew one box with a Stack gap. The insets are asserted equal; the rhythm is not, and no gate in this repository renders a layout. Twenty-four screens changed shape on a workstation with no device.",
+          "blocks": "release",
+          "status": "outstanding",
+          "evidence": "screen-insets.json pins the inset values across all 72 conformance subjects; the a11y and contrast gates pass over the changed screens. Neither sees layout."
+        }
+      ]
     },
     {
       "id": "F-211",
@@ -6924,6 +6934,34 @@
         "test"
       ],
       "notes": "F-211 SHIPPED A BLANK SCREEN PAST EVERY GATE IN THIS REPOSITORY, including a conformance sweep over 72 subjects in 8 conditions that reported zero findings. jest has no layout engine: a FlatList with zero height renders all 120 rows into a test tree and every assertion about them passes. A STATIC READING MIGHT STILL CATCH THE COMMON SHAPE — a node with `flex: 1` whose ancestors up to the screen root include one with neither a flex nor a height — and that is worth trying, with its limits stated, because the alternative is that the next one is also found by a person opening the app. Filed rather than attempted inside F-211: a fix and a new gate in one feature is how a regression arrives with nothing to bisect."
+    },
+    {
+      "id": "F-214",
+      "title": "Ten surfaces render twice the inset they read as",
+      "requirements": [
+        "NFR-25"
+      ],
+      "service": "mobile",
+      "release": "R8",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-210"
+      ],
+      "acceptance": [
+        "Each of the ten sites renders one inset rather than two, and the value is the one a person looked at and chose",
+        "The spacing scanner refuses a Surface that wraps a padded View, so the shape cannot come back",
+        "Somebody looks at the ten screens before it is called done"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "a11y"
+      ],
+      "notes": "FOUND BY F-210 WHILE CLASSIFYING, NOT FIXED THERE. Surface ALWAYS applies its padding and defaults it to md; ten sites wrap their content in a View with padding nativeSpacing.md inside one — so they render a 24pt inset while reading, at every call site, as 12. The sites: AddGarment:344, Measure:161/283, OutfitBuilder:373, Shopping:266/294/324, and the three F-210 converted keep their inner View untouched so the body preserves what it rendered (Measure:208, OutfitBuilder:215, Shopping:361). NOT ABSORBED INTO F-210 because that feature was itself an unverifiable visual change across 24 screens, and stacking a second one is how a regression arrives with nothing to bisect — which is the reason F-210 was split out of F-203 in the first place. THE FIX IS A CHOICE, NOT A DELETION: 24pt may be the inset somebody wanted. Nobody has looked, which is why criterion 3 is an attestation."
     }
   ]
 }

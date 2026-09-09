@@ -32,7 +32,7 @@
  */
 
 import { useState } from 'react';
-import { Button, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Button, Card, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { PROFILE_DIMENSIONS, uuidv7, type ProfileDimension } from '@irodora/store';
 import { colorFor, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -265,7 +265,11 @@ export function ProfileSetup({
     if (entries.length === 0) return null;
     const names = entries.map((e) => e.entry.name.en).join(' + ');
     return (
-      <Surface level="1" padding="lg">
+      <Surface
+        /* surface-not-card: the trial itself — a row of swatches to choose between. A heading would describe the question twice. */
+        level="1"
+        padding="lg"
+      >
         <Stack gap="md">
           <Row gap="md">
             {entries.map((e) => (
@@ -300,11 +304,16 @@ export function ProfileSetup({
 
   function Dimension({ dimension }: { dimension: ProfileDimension }) {
     return (
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t(DIMENSION_KEYS[dimension])}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           <Text size="small" color="foreground.2" script={script}>
             {t(confidenceKey(profile.confidence[dimension]))}
           </Text>
@@ -315,7 +324,7 @@ export function ProfileSetup({
           ) : null}
           <DimensionEditor dimension={dimension} />
         </Stack>
-      </Surface>
+      </Card>
     );
   }
 

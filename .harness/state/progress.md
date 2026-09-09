@@ -20959,3 +20959,76 @@ point, because naming it costs a codepoint too.
 state · typecheck · lint · format · test · build · color-golden · content — **PASS**.
 
 ---
+## F-210 — The Surfaces that are cards become Cards
+
+### The site count in the feature's own notes was wrong
+
+They said *"nine surfaces … the sites are known"* and named four. Classifying by reading the tree
+found **47 `<Surface>` sites, 24 of them a heading plus a body**. That is the argument for the
+classifier rather than an argument against the note: a figure written from memory is a figure
+nobody re-derived.
+
+### One rule for the conversion
+
+> **`Card padding` = the `Surface` padding it replaces. The content is not touched.**
+
+`Surface` defaults to `md` (12) and `Card` to `lg` (16), so a conversion that drops the prop
+moves a screen by 4pt in silence. Every converted site now names its step out loud, including the
+ones that were relying on a default.
+
+### The 23 that stay are the interesting half
+
+A camera preview whose rectangle is what converts a tap into a point in the frame. A pressable
+photo target. Empty states. A bar. Each is genuinely not a card — and **each of those judgements
+is invisible ten minutes after it is made.** Six months from now, *"deliberately a Surface"* and
+*"nobody got to this one"* look identical, and the second is what flattened the card vocabulary
+in the first place.
+
+So the reason lives **at the site**, and `verify-surface-not-card.mjs` (in `lint`) refuses a
+`Surface` without one, a marker that is a shrug, and a marker whose element has gone. Its proof
+watches all three refuse, plus two decoys, writing nothing to the working tree.
+
+### Where the marker had to live, and why the accident was lucky
+
+A JSX comment child is what anybody would write. Eight of these sites sit directly inside a
+parenthesised ternary branch, where a comment and an element are **two expressions** and do not
+parse. The form that works everywhere is a comment *inside the opening tag* — which is also the
+form the **grammar** binds to the element, rather than proximity binding it.
+
+### Criterion 3, and the first version of it being wrong
+
+*"Asserted against the tree rather than assumed."* "Before" only exists in git, so it was captured
+first — every `padding` in every one of the 72 conformance subjects, committed, then the
+conversion.
+
+The first pin compared the **multiset**, and fired immediately. Correctly, and about the wrong
+thing: a `Card` draws a header box *and* a body box where a `Surface` drew one, so the count
+necessarily grows. It now asserts the distinct set is identical and no value occurs less often,
+with a decoy asserting at least one subject **gained** boxes — so it cannot pass on a branch where
+nothing was converted.
+
+### Found on the way, and filed rather than fixed: ten double-padded sites
+
+`<Surface level="1">` wrapping a `<View style={{ padding: nativeSpacing.md }}>` renders **24pt
+where it reads as 12**, at every call site. Ten of them. **F-214**, because folding an
+unverifiable spacing change into an unverifiable conversion is the stacking F-210 was split out of
+F-203 to avoid.
+
+### A correction about this session's reports
+
+The format gate is **`pnpm format:check`**. `pnpm format` is `prettier --write`. I have been
+running the writer and naming it as the gate; the tree was left formatted each time, so
+`format:check` passes and no conclusion changes — but the command in those reports was the wrong
+one, and it is `format:check` that is run and reported from here.
+
+### Gates
+
+state · typecheck · lint · **format:check** · test · a11y · contrast — **PASS**.
+
+### Attested
+
+**Nobody has seen this.** Twenty-four cards went from one padded box with a `Stack` gap to a
+header box, a hairline and a body box. The insets are asserted equal; the rhythm is not, and no
+gate in this repository renders a layout [[a-test-tree-has-no-height]].
+
+---

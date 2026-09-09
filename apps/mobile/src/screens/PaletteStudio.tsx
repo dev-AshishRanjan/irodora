@@ -45,6 +45,7 @@ import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  Card,
   Chip,
   Row,
   Screen,
@@ -313,7 +314,11 @@ export function PaletteStudio({
         {t('studio.origin')}
       </Text>
 
-      <Surface level="1" padding="lg">
+      <Surface
+        /* surface-not-card: one TextField. A header over a single labelled field is the label written twice. */
+        level="1"
+        padding="lg"
+      >
         <TextField
           label={t('studio.name')}
           hint={t('studio.nameHint')}
@@ -325,11 +330,16 @@ export function PaletteStudio({
         />
       </Surface>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.members')}
           </Text>
+        }
+      >
+        <Stack gap="xs">
           {/*
             THE PALETTE, AS ONE THING (F-151).
 
@@ -366,13 +376,18 @@ export function PaletteStudio({
             ))
           )}
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.add')}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           <SearchField label={t('atlas.search')} value={query} onChangeText={setQuery} />
           {found.map((m) => (
             <Pressable
@@ -399,9 +414,13 @@ export function PaletteStudio({
             </Pressable>
           ))}
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
+      <Surface
+        /* surface-not-card: a save button and the reason it is disabled, which belongs beside the control rather than under a title. */
+        level="1"
+        padding="lg"
+      >
         <Stack gap="sm">
           <Button
             label={t('studio.save')}
@@ -443,11 +462,16 @@ export function PaletteStudio({
         samples — so the flag carries no colour channel at all, which satisfies golden rule 13
         by having nothing to satisfy.
       */}
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('cvd.title')}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           {separationProblems.length === 0 ? (
             <Text size="small" color="foreground" script={script}>
               {t('cvd.none')}
@@ -503,13 +527,18 @@ export function PaletteStudio({
             {t('cvd.method')}
           </Text>
         </Stack>
-      </Surface>
+      </Card>
 
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.yours')}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           {stored.length === 0 ? (
             <Text size="small" color="foreground.2" script={script}>
               {t('studio.none')}
@@ -568,7 +597,7 @@ export function PaletteStudio({
             script={script}
           />
         </Stack>
-      </Surface>
+      </Card>
     </Screen>
   );
 }

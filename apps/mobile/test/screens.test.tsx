@@ -4274,6 +4274,112 @@ describe('the Finder results do not move (F-151)', () => {
  * Gate 9 runs every declared pairing through WCAG, APCA and **eleven CVD severities** in all
  * eight palettes. A second simulation here would be a second answer to one question (E-005).
  */
+/**
+ * THE INSET OF EVERY BOX ON EVERY SCREEN, PINNED (F-210).
+ *
+ * `Surface` defaults its padding to `md` and `Card` defaults to `lg`, so converting one to the
+ * other without an explicit prop moves a screen by 4pt in silence. Twenty-four sites converted
+ * at once, on a workstation with no device, is exactly the change that needs a number rather
+ * than a look.
+ *
+ * **THE FIXTURE WAS CAPTURED BEFORE THE CONVERSION.** That ordering is the assertion: one
+ * written afterwards would agree with whatever the edit did
+ * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]]. It covers every subject,
+ * not only the converted screens, so an inset moved anywhere else fails here too.
+ *
+ * WHAT IT DOES NOT SEE: rhythm. `Card` draws a header box, a hairline and a body box where a
+ * `Surface` drew one box with a `Stack` gap. The insets are equal and the screen is not the
+ * same [[a-test-tree-has-no-height]]. That is an attestation, not a claim.
+ */
+describe('every box keeps the inset it had (F-210)', () => {
+  const FIXTURE = `${__dirname}/../../../.harness/verification/screen-insets.json`;
+
+  /** Every `padding` value in a rendered tree, sorted, as a multiset. */
+  const insetsOf = (node: TestNode): number[] => {
+    const found: number[] = [];
+    const visit = (n: TestNode | string): void => {
+      // A tree carries TEXT children, which are strings with no props. Reaching for `.props`
+      // on one throws, and the throw is what proved the walker was reaching real nodes.
+      if (typeof n !== 'object') return;
+      const style: unknown = (n.props as { style?: unknown }).style;
+      for (const layer of Array.isArray(style) ? style : [style]) {
+        if (layer === null || typeof layer !== 'object') continue;
+        const pad: unknown = (layer as Record<string, unknown>)['padding'];
+        if (typeof pad === 'number') found.push(pad);
+      }
+      for (const child of n.children ?? []) visit(child);
+    };
+    visit(node);
+    return found.sort((a, b) => a - b);
+  };
+
+  const capture = (): Record<string, number[]> => {
+    const out: Record<string, number[]> = {};
+    for (const subject of SCREENS) {
+      const node = subject.render('default', 'light');
+      if (node !== null) out[subject.name] = insetsOf(node);
+    }
+    return out;
+  };
+
+  it('has subjects, so an empty capture cannot pass as agreement', () => {
+    expect(Object.keys(capture()).length).toBeGreaterThan(0);
+  });
+
+  const before = (): Record<string, number[]> =>
+    (JSON.parse(readFileSync(FIXTURE, 'utf8')) as { insets: Record<string, number[]> }).insets;
+
+  it('introduces no inset value, and loses none', () => {
+    /*
+     * NOT THE MULTISET, AND THE FIRST VERSION OF THIS GOT IT WRONG. A `Card` draws a header
+     * box AND a body box where a `Surface` drew one, so the NUMBER of padded boxes necessarily
+     * grows — pinning the count fired on a conversion that had changed no spacing at all.
+     *
+     * What criterion 3 asks is that the VALUE each site renders is unchanged. So: the set of
+     * distinct insets must be identical, and every value must still occur at least as often as
+     * it did. Together those refuse the two things that can go wrong — a new inset appearing
+     * (the `md` → `lg` default drift, which is the whole risk) and a box losing its padding.
+     */
+    const now = capture();
+    const expected = before();
+
+    for (const [name, was] of Object.entries(expected)) {
+      const is = now[name] ?? [];
+      // PER SUBJECT, so a failure names the screen rather than reporting "objects differ".
+      expect({ [name]: [...new Set(is)].sort((a, b) => a - b) }).toStrictEqual({
+        [name]: [...new Set(was)].sort((a, b) => a - b),
+      });
+      const count = (xs: readonly number[], v: number): number => xs.filter((x) => x === v).length;
+      for (const v of new Set(was))
+        expect({ [`${name} @${String(v)}`]: count(is, v) >= count(was, v) }).toStrictEqual({
+          [`${name} @${String(v)}`]: true,
+        });
+    }
+    expect(Object.keys(now).sort()).toStrictEqual(Object.keys(expected).sort());
+  });
+
+  it('DECOY — the conversion DID happen, so the relation above is not plain equality', () => {
+    /*
+     * Without this, the check would pass unchanged on a branch where nothing was converted —
+     * which is indistinguishable from passing because the conversion preserved every inset.
+     * At least one subject must now carry MORE padded boxes than it did.
+     */
+    const now = capture();
+    const expected = before();
+    const grew = Object.entries(expected).filter(
+      ([name, was]) => (now[name] ?? []).length > was.length,
+    );
+    expect(grew.length).toBeGreaterThan(0);
+  });
+
+  it('DECOY — the capture reads real numbers, not an empty tree everywhere', () => {
+    // Without this, a walker that found nothing would match a fixture of empty arrays and
+    // report perfect agreement about no padding at all.
+    const now = capture();
+    const total = Object.values(now).reduce((sum, v) => sum + v.length, 0);
+    expect(total).toBeGreaterThan(SCREENS.length);
+  });
+});
 describe('the conformance sweep, with evidence (F-204)', () => {
   const SWEEP_THEMES: readonly Theme[] = ['light', 'dark'];
   const SWEEP_LOCALES = ['en-GB', 'ja-JP'] as const;

@@ -250,18 +250,23 @@ export function Contemporary({
         Card would recreate the sameness this feature exists to end, one component along.
       */}
       {membership.length === 0 ? null : (
-        <Surface level="1" padding="lg">
-          <Stack gap="xs">
+        <Card
+          level="1"
+          padding="lg"
+          header={
             <Text size="body" color="foreground" script={script} heading>
               {t('contemporary.itself')}
             </Text>
+          }
+        >
+          <Stack gap="xs">
             {membership.map((p) => (
               <Text key={p.paletteSlug} size="small" color="foreground" script={script}>
                 {`${p.paletteName} · ${p.role}`}
               </Text>
             ))}
           </Stack>
-        </Surface>
+        </Card>
       )}
 
       {editorial.map((item, i) => (
@@ -275,7 +280,11 @@ export function Contemporary({
           thing with a number beside it is how a product ends up asserting a correspondence it
           cannot stand behind.
         */
-        <Surface level="1" padding="lg">
+        <Surface
+          /* surface-not-card: a refusal and the threshold it was measured against; a heading would name a section that is one sentence long. */
+          level="1"
+          padding="lg"
+        >
           <Stack gap="xs">
             <Text size="body" color="foreground" script={script}>
               {t('contemporary.none')}

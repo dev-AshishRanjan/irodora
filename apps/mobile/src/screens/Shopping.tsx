@@ -36,6 +36,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
+  Card,
   EmptyState,
   Row,
   Screen,
@@ -262,7 +263,10 @@ export function Shopping({
       {check === null ? null : (
         <>
           {/* ------------------------------------------------ outfits unlocked (FR-42) */}
-          <Surface level="1">
+          <Surface
+            /* surface-not-card: an answer to one of the check questions. The question is asked elsewhere; this is the sentence back. */
+            level="1"
+          >
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.outfits === null ? (
                 <Text size="body" color="foreground.2" script={script}>
@@ -290,7 +294,10 @@ export function Shopping({
           </Surface>
 
           {/* ------------------------------------ personal compatibility (FR-29) */}
-          <Surface level="1">
+          <Surface
+            /* surface-not-card: an answer to one of the check questions, as above. */
+            level="1"
+          >
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.compatibility === null ? (
                 <Text size="body" color="foreground.2" script={script}>
@@ -320,7 +327,10 @@ export function Shopping({
           </Surface>
 
           {/* ------------------------------------------- duplicate warning (FR-44) */}
-          <Surface level="1">
+          <Surface
+            /* surface-not-card: an answer to one of the check questions, as above. */
+            level="1"
+          >
             <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {check.duplicates.length === 0 ? (
                 <Text size="body" color="foreground.2" script={script}>
@@ -358,11 +368,16 @@ export function Shopping({
           </Surface>
 
           {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
-          <Surface level="1">
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+          <Card
+            level="1"
+            padding="md"
+            header={
               <Text size="body" color="foreground" heading script={script}>
                 {t('shopping.investment')}
               </Text>
+            }
+          >
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
               {!check.investment.known ? (
                 <>
                   <Text size="body" color="foreground.2" script={script}>
@@ -414,7 +429,7 @@ export function Shopping({
                 </>
               )}
             </View>
-          </Surface>
+          </Card>
         </>
       )}
     </Screen>

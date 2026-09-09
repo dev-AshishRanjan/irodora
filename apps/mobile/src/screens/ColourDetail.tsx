@@ -31,10 +31,10 @@ import { srgbToHex } from '@irodora/color-spaces';
 import {
   Accordion,
   Button,
+  Card,
   Row,
   Screen,
   Stack,
-  Surface,
   Swatch,
   Tabs,
   Text,
@@ -287,14 +287,17 @@ export function ColourDetail({
     readonly children: React.ReactNode;
   }): React.JSX.Element {
     return (
-      <Surface level="1" padding="lg">
-        <Stack gap="xs">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {title}
           </Text>
-          {children}
-        </Stack>
-      </Surface>
+        }
+      >
+        <Stack gap="xs">{children}</Stack>
+      </Card>
     );
   }
 

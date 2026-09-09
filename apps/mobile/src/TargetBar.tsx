@@ -37,7 +37,12 @@ export function TargetBar({ target, onDisarm }: TargetBarProps): React.JSX.Eleme
       {/* `xs`, the smallest the scale offers: a bar spanning the width should not read as a card,
           and the token set has no "none" — inventing one for this would be a design-system
           decision made to satisfy one component. */}
-      <Surface level="1" padding="sm" radius="xs">
+      <Surface
+        /* surface-not-card: a bar, not content — a swatch and a label pinned above the screen, with no heading and nothing a header slot could hold. */
+        level="1"
+        padding="sm"
+        radius="xs"
+      >
         <Row gap="sm" align="center">
           <Swatch
             name={swatchAccessibleName(target.label, target.hex, target.color)}

@@ -341,7 +341,10 @@ export function AddGarment({
         <Status kind="bad" text={t('wardrobe.photoRejected')} script={script} adjacentToSample />
       ) : null}
 
-      <Surface level="1">
+      <Surface
+        /* surface-not-card: a group of optional fields opened by a lead-in sentence rather than a heading. */
+        level="1"
+      >
         <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
           <Text size="body" color="foreground.2" script={script}>
             {t('wardrobe.optional')}

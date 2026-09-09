@@ -36,16 +36,17 @@ import { useMemo, useState } from 'react';
 import { noHaptics, type Haptics } from '../haptics';
 import {
   Button,
+  Card,
   Chip,
   DEFAULT_APPEARANCE,
+  DEVICE_FAMILY,
   EmptyState,
   Row,
-  Select,
   Screen,
+  Select,
   Stack,
   Surface,
   Text,
-  DEVICE_FAMILY,
   type Appearance,
 } from '@irodora/ui';
 import { THEME_FAMILIES, type ThemeFamily } from '@irodora/design-tokens';
@@ -210,12 +211,16 @@ export function Preferences({
         announce their selected state, and are honest about there being four of something —
         which is more than a control that does not exist can claim.
       */}
-      <Surface level="1" padding="lg">
-        <Stack gap="md">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('appearance.title')}
           </Text>
-
+        }
+      >
+        <Stack gap="md">
           {/*
             A SELECT, AND F-156 IS WHY THIS COMMENT CHANGED RATHER THAN THE ROW BELOW IT.
 
@@ -319,7 +324,7 @@ export function Preferences({
             {t('appearance.hint')}
           </Text>
         </Stack>
-      </Surface>
+      </Card>
 
       {/*
         WHAT THE PLATFORM OWNS, said rather than left absent (F-180).
@@ -350,7 +355,11 @@ export function Preferences({
          * THE STATE MOST PEOPLE SEE FIRST. A blank list reads as a broken screen; this says what
          * would appear here and what puts it there.
          */
-        <Surface level="1" padding="lg">
+        <Surface
+          /* surface-not-card: an EmptyState, or the route out of it. Both are the component, not a card around it. */
+          level="1"
+          padding="lg"
+        >
           {/*
             THE DESIGNED EMPTY STATE (F-152 criterion 2), and the union forced the interesting
             question. The hint says "keep or pass on an outfit and the pairing appears here",
@@ -377,11 +386,16 @@ export function Preferences({
           )}
         </Surface>
       ) : (
-        <Surface level="1" padding="lg">
-          <Stack gap="md">
+        <Card
+          level="1"
+          padding="lg"
+          header={
             <Text size="body" color="foreground" script={script} heading>
               {t('preferences.learned')}
             </Text>
+          }
+        >
+          <Stack gap="md">
             <Text size="xs" color="foreground.2" script={script}>
               {`${t('preferences.formula')} ${String(PREFERENCE_SATURATION)}`}
             </Text>
@@ -425,15 +439,19 @@ export function Preferences({
               </Stack>
             ))}
           </Stack>
-        </Surface>
+        </Card>
       )}
 
-      <Surface level="1" padding="lg">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="lg"
+        header={
           <Text size="body" color="foreground" script={script} heading>
             {t('preferences.resetTitle')}
           </Text>
-
+        }
+      >
+        <Stack gap="sm">
           {confirming ? (
             <Stack gap="sm">
               {/*
@@ -483,7 +501,7 @@ export function Preferences({
             </Stack>
           )}
         </Stack>
-      </Surface>
+      </Card>
     </Screen>
   );
 }

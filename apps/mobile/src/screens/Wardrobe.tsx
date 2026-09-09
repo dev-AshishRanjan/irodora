@@ -44,6 +44,7 @@ import { nativeRadius, nativeSpacing } from '@irodora/design-tokens';
 import {
   Bands,
   Button,
+  Card,
   Chip,
   EmptyState,
   Row,
@@ -598,7 +599,11 @@ export function Wardrobe({
   if (selected !== null)
     return (
       <Screen title={t('browse.editing')} script={script}>
-        <Surface level="1" padding="md">
+        <Surface
+          /* surface-not-card: the selected garment: a swatch and its type in a row, with no heading over it. */
+          level="1"
+          padding="md"
+        >
           <Row gap="lg">
             <Swatch
               name={swatchAccessibleName(
@@ -756,12 +761,16 @@ export function Wardrobe({
         own result would leave somebody unable to clear it.
       */}
       {garments.length === 0 ? null : (
-        <Surface level="1" padding="md">
-          <Stack gap="md">
+        <Card
+          level="1"
+          padding="md"
+          header={
             <Text size="body" color="foreground" script={script} heading>
               {t('browse.filters')}
             </Text>
-
+          }
+        >
+          <Stack gap="md">
             <FilterRow
               label={t('browse.filterType')}
               options={options.types.map((v) => ({ value: v, label: v }))}
@@ -820,7 +829,7 @@ export function Wardrobe({
               </>
             )}
           </Stack>
-        </Surface>
+        </Card>
       )}
 
       {garments.length === 0 ? (
@@ -896,11 +905,16 @@ export function Wardrobe({
             sentence.
           */}
           {coverage === undefined ? null : (
-            <Surface level="1" padding="md">
-              <Stack gap="md">
+            <Card
+              level="1"
+              padding="md"
+              header={
                 <Text size="body" color="foreground" script={script} heading>
                   {t('browse.coverage')}
                 </Text>
+              }
+            >
+              <Stack gap="md">
                 {garments.length < 2 ? (
                   <Text size="small" color="foreground.2" script={script}>
                     {t('browse.coverageOne')}
@@ -921,15 +935,20 @@ export function Wardrobe({
                   </>
                 )}
               </Stack>
-            </Surface>
+            </Card>
           )}
 
           {gaps === undefined || gaps.length === 0 ? null : (
-            <Surface level="1" padding="md">
-              <Stack gap="md">
+            <Card
+              level="1"
+              padding="md"
+              header={
                 <Text size="body" color="foreground" script={script} heading>
                   {t('browse.gaps')}
                 </Text>
+              }
+            >
+              <Stack gap="md">
                 <Bands
                   unit={t('browse.gapsUnit')}
                   script={script}
@@ -945,7 +964,7 @@ export function Wardrobe({
                   {t('browse.gapsNote')}
                 </Text>
               </Stack>
-            </Surface>
+            </Card>
           )}
 
           {/*

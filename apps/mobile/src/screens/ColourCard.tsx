@@ -19,7 +19,7 @@
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
 import { SvgXml } from 'react-native-svg';
-import { Screen, Stack, Surface, Text, useTheme } from '@irodora/ui';
+import { Card, Screen, Stack, Text, useTheme } from '@irodora/ui';
 import { cardSvg, CARD_HEIGHT, CARD_WIDTH, THUMBNAIL_WIDTH } from '../card';
 import { CORPUS_LABEL, entryBySlug } from '../corpus';
 // The SAME map the detail screen uses. Two copies of the FR-23 vocabulary would drift, and the
@@ -70,18 +70,23 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
     <Screen title={t('card.title')} script={script}>
       <SvgXml xml={svg} width={DISPLAY_WIDTH} height={DISPLAY_WIDTH * ratio} />
 
-      <Surface level="1" padding="md">
-        <Stack gap="sm">
+      <Card
+        level="1"
+        padding="md"
+        header={
           <Text size="label" color="foreground.2" script={script} heading>
             {t('card.thumbnail')}
           </Text>
+        }
+      >
+        <Stack gap="sm">
           {/*
             THE SAME DOCUMENT, at the size a chat preview gives it. Shown rather than described,
             so a person can disagree with the arithmetic in card.test.ts instead of taking it.
           */}
           <SvgXml xml={svg} width={THUMBNAIL_WIDTH} height={THUMBNAIL_WIDTH * ratio} />
         </Stack>
-      </Surface>
+      </Card>
 
       <Text size="small" color="foreground.2" script={script}>
         {t('card.note')}

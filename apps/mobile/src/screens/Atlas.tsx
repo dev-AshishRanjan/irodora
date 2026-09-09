@@ -456,7 +456,11 @@ export function Atlas({
       ) : null}
 
       {shown.length === 0 ? (
-        <Surface level="1" padding="lg">
+        <Surface
+          /* surface-not-card: an empty state — a message and a hint. The box is its ground, not a card about it. */
+          level="1"
+          padding="lg"
+        >
           <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
               {t('atlas.empty')}

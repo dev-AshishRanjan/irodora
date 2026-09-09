@@ -39,6 +39,7 @@ import { Pressable, View } from 'react-native';
 import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
+  Card,
   EmptyState,
   Row,
   Screen,
@@ -212,12 +213,16 @@ export function OutfitBuilder({
         const best = proposal?.ranked[0];
 
         return (
-          <Surface key={slot} level="1">
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+          <Card
+            level="1"
+            padding="md"
+            header={
               <Text size="body" color="foreground" heading script={script}>
                 {t(SLOT_KEYS[slot])}
               </Text>
-
+            }
+          >
+            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
               {placed === undefined ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('outfit.slotEmpty')}
@@ -349,7 +354,7 @@ export function OutfitBuilder({
                 </Stack>
               )}
             </View>
-          </Surface>
+          </Card>
         );
       })}
 
@@ -365,7 +370,10 @@ export function OutfitBuilder({
        * disabled control with no stated reason is the accessibility failure that looks
        * like polish.
        */}
-      <Surface level="1">
+      <Surface
+        /* surface-not-card: a control group led by its button. The action is the subject. */
+        level="1"
+      >
         <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
           <Button
             label={t('outfit.wore')}

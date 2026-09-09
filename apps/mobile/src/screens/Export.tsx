@@ -31,7 +31,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable } from 'react-native';
 import { nativeTapTarget } from '@irodora/design-tokens';
-import { Button, EmptyState, Screen, Stack, Status, Surface, Text } from '@irodora/ui';
+import { Button, Card, EmptyState, Screen, Stack, Status, Surface, Text } from '@irodora/ui';
 import { ExportError, WRITERS, type ExportFile, type ExportSubject } from '@irodora/export';
 import type { FileSink, SaveResult } from '../export/sink';
 import { useMessages } from '../i18n/useMessages';
@@ -133,11 +133,16 @@ export function Export({
         )
       ) : (
         <>
-          <Surface level="1" padding="md">
-            <Stack gap="sm">
+          <Card
+            level="1"
+            padding="md"
+            header={
               <Text size="body" color="foreground" script={script} heading>
                 {t('export.subject')}
               </Text>
+            }
+          >
+            <Stack gap="sm">
               <Text size="body" color="foreground" script={script}>
                 {subject.title}
               </Text>
@@ -167,7 +172,7 @@ export function Export({
                 {`${t('export.versions')}: ${subject.envelope.engine} · ${subject.envelope.corpus} · ${subject.envelope.rules}`}
               </Text>
             </Stack>
-          </Surface>
+          </Card>
 
           <Text size="body" color="foreground" script={script} heading>
             {t('export.format')}
@@ -202,7 +207,11 @@ export function Export({
           <Button label={t('export.save')} onPress={save} script={script} />
 
           {refusal === null ? null : (
-            <Surface level="1" padding="md">
+            <Surface
+              /* surface-not-card: the writer's own refusal message, quoted verbatim. Titling it would be this screen speaking over the engine. */
+              level="1"
+              padding="md"
+            >
               <Stack gap="xs">
                 <Text size="body" color="foreground" script={script}>
                   {t('export.refused')}
