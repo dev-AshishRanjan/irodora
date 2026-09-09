@@ -4786,6 +4786,34 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-123",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/verify-route-targets.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-reachability.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root"
+      ],
+      "severity": "high",
+      "guard": "RESOLUTION IS A TOTAL ORDER, so the answer cannot depend on the filesystem again. `resolveRoute` picks the fewest dynamic segments, then the longer path, then the URL — which is how expo-router resolves, and this check exists to model the router rather than to invent a plausible rule beside it. `walk()` is sorted as well, but that is hygiene: sorting alone puts [slug].tsx first on EVERY platform, which only makes the wrong answer consistent. THE PROOF NOW CARRIES A DYNAMIC ROUTE, which it never did — its fixture was a tab, a route, a chained route and an orphan, so no URL in it was ever ambiguous and the resolution was exercised zero times while the walk was exercised thoroughly. Three cases now: the literal route beside a [slug] sibling is reachable; the dynamic route is STILL reachable, so specificity did not trade one orphan for another; and the verdict is unchanged when the routes are discovered in REVERSE — the property that was actually violated, because asserting the outcome without the invariance leaves the next ordering difference to CI. A fourth asserts the fixture really is ambiguous, so the first three are not about nothing. ALL OF THEM WERE WATCHED FAILING against the shipped behaviour, by putting the old call site back in a temporary copy of the script — a case added beside a fix passes for two reasons that look identical. WHAT IS NOT GUARDED: the over-approximation this walk already prints on every run, which is unchanged.",
+      "memory": "memory/effects/a-gate-correct-on-one-operating-system-by-accident.md",
+      "rationale": "THE GATE WAS RIGHT ON ONE OPERATING SYSTEM, BY ACCIDENT, WHICH IS WORSE THAN BEING WRONG. `/atlas/find` matches its own pattern AND the sibling `^/atlas/[^/]+/?$`, because the atlas directory holds a find.tsx beside a [slug].tsx. `patterns.find` returns whichever the walk saw first, and that order is readdirSync order — sorted on NTFS, hash-ordered on ext4. On Linux the edge from atlas/index.tsx was attributed to /atlas/[slug] and three finished routes were reported as orphans; on Windows the same commit was green. The failure was invisible to anybody running the gate locally and arrived as a CI result nobody could reproduce. THE TELL IS GENERIC AND WORTH CARRYING: a `find`, a `[0]`, or any sort-free \"first match\" over a list whose order came from a directory walk is the same defect waiting for a different filesystem.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

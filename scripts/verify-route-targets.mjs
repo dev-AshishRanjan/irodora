@@ -51,13 +51,21 @@ const GREEN = '\x1b[32m',
  * `verify-reachability.mjs` needs to attribute navigation to the route that can reach it — it
  * walks one module at a time — and the alternative was a second copy of the target scanner,
  * which is the thing this repository refuses on principle.
+ *
+ * **SORTED SINCE F-215.** `readdirSync` is sorted on NTFS and hash-ordered on ext4, and a
+ * consumer that treated this list as ordered was therefore right on one operating system and
+ * wrong on the other — gate 2 went red on CI for a commit that was green locally.
+ *
+ * This is hygiene rather than the fix: `resolveRoute` in `verify-reachability.mjs` is what makes
+ * the answer independent of order. Sorting alone would put `[slug].tsx` first everywhere, which
+ * only makes the wrong answer consistent.
  */
 function walk(dir, out = []) {
   if (!statSync(dir).isDirectory()) {
     if (/\.tsx?$/u.test(dir)) out.push(dir);
     return out;
   }
-  for (const entry of readdirSync(dir)) {
+  for (const entry of [...readdirSync(dir)].sort()) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) walk(path, out);
     else if (/\.tsx?$/.test(path)) out.push(path);

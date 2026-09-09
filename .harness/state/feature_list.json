@@ -6978,6 +6978,31 @@
           "status": "outstanding"
         }
       ]
+    },
+    {
+      "id": "F-215",
+      "title": "Route reachability resolves a URL by filesystem order, so gate 2 is red on Linux only",
+      "requirements": [
+        "NFR-26"
+      ],
+      "service": "root",
+      "release": "R8",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-215-route-resolution-by-order.md",
+      "acceptance": [
+        "A URL that matches both a literal route and a sibling dynamic route resolves to the literal one, as the router itself does",
+        "The verdict does not depend on the order routes are discovered in, asserted by running the same tree in a different order",
+        "The proof carries the shape that shipped — a literal route beside a dynamic sibling — because the existing fixture had no dynamic route in it at all"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "FOUND BY CI, NOT BY THE GATE ITSELF. `/atlas/compare`, `/atlas/find` and `/atlas/palettes` were reported as orphans on ubuntu-latest while the same commit passed on Windows. Each of those URLs matches TWO patterns — its own literal route and the sibling `[slug]` dynamic route — and `routeGraph` resolved the ambiguity with `patterns.find`, which returns whichever the walk saw first. The walk is `readdirSync`, which is sorted on NTFS and hash-ordered on ext4. So the edge from atlas/index.tsx was attributed to `/atlas/[slug]` on Linux and the three literal routes had no inbound edge at all. The gate was correct on one operating system BY ACCIDENT. The existing proof could not see it: its fixture has no dynamic route. FIXED by resolving the way the router resolves: fewest dynamic segments, then the longer path, then the URL — a total order, so discovery order cannot decide again. The walk is sorted too, which is hygiene rather than the fix; sorting alone puts [slug].tsx first everywhere and only makes the wrong answer consistent. Verified under the order that failed: after sorting, /atlas/[slug] is now discovered FIRST locally — the Linux ordering — and the gate is green. The proof gained a dynamic route and three cases, all watched failing against the shipped behaviour."
     }
   ]
 }

@@ -21142,3 +21142,66 @@ state · typecheck · lint · format:check · test · a11y — **PASS**.
 and the evidence for that reading is one number written nowhere against two written twice.
 
 ---
+## F-215 — A gate correct on one operating system, by accident
+
+### The root cause
+
+CI reported three orphans on `ubuntu-latest` for a commit that was green on Windows:
+
+```
+✗ /atlas/compare · /atlas/find · /atlas/palettes
+```
+
+All three are pushed by `app/(tabs)/atlas/index.tsx`, and the scanner **found** those targets.
+What it got wrong was which route pattern the URL lands on:
+
+```js
+const hit = patterns.find((q) => q.test.test(url));   // verify-reachability.mjs
+```
+
+`/atlas/find` matches **two** patterns — `^/atlas/find/?$` and the sibling `^/atlas/[^/]+/?$`,
+because the atlas directory holds a `find.tsx` beside a `[slug].tsx`. `find` returns the first,
+and the order of `patterns` is `readdirSync` order: **sorted on NTFS, hash-ordered on ext4.**
+
+On Linux the dynamic route came first, the edge was attributed to `/atlas/[slug]`, and the three
+literal routes were left with no inbound edge at all. Reproduced by reversing the array:
+
+```
+/atlas/find -> as walked: /atlas/find | reversed: /atlas/[slug]
+```
+
+**Right on one operating system, by accident** — which is worse than wrong, because it is
+invisible to whoever runs the gate locally and arrives as a CI result nobody can reproduce.
+
+### The fix models the thing it checks
+
+A static segment beats a dynamic one. Not a tie-break invented here: it is how expo-router
+resolves, and this scanner exists to model the router. Fewest dynamic segments, then the longer
+path, then the URL — a **total order**, so discovery cannot decide again.
+
+`walk()` is sorted as well, and that is **hygiene rather than the fix**: sorting alone puts
+`[slug].tsx` first on every platform, which only makes the wrong answer consistent. It does mean
+the local walk now reproduces the Linux ordering — so the gate is green *under the order that
+failed*, which is the verification that matters.
+
+### Why the proof could not see it
+
+Its fixture was a tab, a route, a chained route and an orphan — **and no dynamic route at all**.
+No URL in it was ever ambiguous, so the walk was exercised thoroughly and the resolution not
+once.
+
+Four cases now, on a fixture that has a `[slug]` sibling: the literal route is reachable; the
+dynamic route is **still** reachable, so specificity did not trade one orphan for another; the
+verdict is unchanged when the routes are discovered in reverse; and the fixture really is
+ambiguous, so the first three are not about nothing.
+
+**Watched failing against the shipped behaviour** — the old call site put back in a temporary
+copy of the script — because a case added beside a fix passes for two reasons that look
+identical.
+
+### Gates
+
+state · lint · format:check · test — **PASS**. Gate 2 is green, including the two route scanners
+that produced the failure.
+
+---

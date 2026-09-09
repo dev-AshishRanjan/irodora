@@ -137,6 +137,40 @@ function closureOf(entry) {
 }
 
 /**
+ * Which route a URL lands on — **the most specific match, as the router itself resolves it.**
+ *
+ * ## The bug this replaced (F-215)
+ *
+ * This was `patterns.find((q) => q.test.test(url))`, and a URL routinely matches more than one
+ * pattern: `/atlas/find` satisfies `^/atlas/find/?$` **and** `^/atlas/[^/]+/?$`, because the
+ * atlas directory holds a `find.tsx` beside a `[slug].tsx`.
+ *
+ * `find` returns whichever came first in `patterns`, and that order is `readdirSync` order —
+ * **sorted on NTFS, hash-ordered on ext4.** So on Linux the edge from `atlas/index.tsx` was
+ * attributed to `/atlas/[slug]`, the three literal routes were left with no inbound edge, and
+ * gate 2 reported them as orphans. The same commit was green on Windows.
+ *
+ * A gate that is correct on one operating system by accident is worse than one that fails,
+ * because the failure is invisible to whoever runs it locally.
+ *
+ * ## The order
+ *
+ * A static segment beats a dynamic one. That is not a tie-break invented here — it is how
+ * expo-router matches, and this check exists to model the router. Fewest dynamic segments wins;
+ * then the longer path, so `/a/b` beats `/a` where both somehow match; then the URL itself, so
+ * the result is a **total order** and never depends on the filesystem again.
+ */
+export function resolveRoute(patterns, url) {
+  const dynamic = (p) => p.url.split('/').filter((s) => /^\[.+\]$/u.test(s)).length;
+  const depth = (p) => p.url.split('/').length;
+  return patterns
+    .filter((p) => p.test.test(url))
+    .sort(
+      (a, b) => dynamic(a) - dynamic(b) || depth(b) - depth(a) || a.url.localeCompare(b.url),
+    )[0];
+}
+
+/**
  * The route graph: which routes each route can reach.
  *
  * A target is resolved against the route patterns, so `/atlas/${slug}` and `/atlas/ai-nezumi`
@@ -158,7 +192,7 @@ export function routeGraph(appDir = APP) {
       for (const file of closureOf(entry))
         for (const t of targets([file])) {
           const url = t.target.replaceAll('PARAM', 'x');
-          const hit = patterns.find((q) => q.test.test(url));
+          const hit = resolveRoute(patterns, url);
           if (hit !== undefined && hit.url !== p.url) reached.add(hit.url);
         }
     edges.set(p.url, reached);
@@ -172,7 +206,9 @@ export function reachable(appDir = APP, roots = tabRoutes()) {
   const seen = new Set();
   const queue = [];
   for (const root of roots) {
-    const hit = patterns.find((p) => p.test.test(root));
+    // The same resolution as the edges use. A tab root is unambiguous today, and "today" is
+    // exactly the word that made the edge case ship.
+    const hit = resolveRoute(patterns, root);
     if (hit !== undefined && !seen.has(hit.url)) {
       seen.add(hit.url);
       queue.push(hit.url);
@@ -306,6 +342,57 @@ function prove() {
   cases.push(['and leaves the near end reachable', !cut.includes('/atlas')]);
 
   rmSync(dir, { recursive: true, force: true });
+
+  /*
+   * THE SHAPE THAT SHIPPED (F-215), and the reason the fixture above could not see it.
+   *
+   * That tree has no DYNAMIC route in it, so no URL in it is ever ambiguous — and ambiguity was
+   * the whole defect. `/atlas/compare` matches its own literal pattern AND the sibling
+   * `[slug]` one, `patterns.find` returned whichever the filesystem listed first, and gate 2
+   * went red on ubuntu-latest for a commit that was green on Windows.
+   */
+  const amb = mkdtempSync(join(tmpdir(), 'irodora-reach-amb-'));
+  const writeAmb = (rel, body) => {
+    const path = join(amb, rel);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, body, 'utf8');
+  };
+  writeAmb('(tabs)/index.tsx', "export default () => { router.push('/atlas'); };\n");
+  writeAmb(
+    '(tabs)/atlas/index.tsx',
+    "export default () => { router.push('/atlas/compare'); router.push('/atlas/ai-nezumi'); };\n",
+  );
+  writeAmb('(tabs)/atlas/compare.tsx', 'export default () => null;\n');
+  writeAmb('(tabs)/atlas/[slug].tsx', 'export default () => null;\n');
+
+  const ambiguous = run(amb).orphans;
+  cases.push([
+    'a literal route beside a [slug] sibling is reachable — the shape that went red on CI',
+    !ambiguous.includes('/atlas/compare'),
+  ]);
+  cases.push([
+    'and the dynamic route is still reachable, so specificity did not trade one orphan for another',
+    !ambiguous.includes('/atlas/[slug]'),
+  ]);
+
+  /*
+   * THE PROPERTY THAT WAS ACTUALLY VIOLATED. Asserting the outcome above without asserting the
+   * INVARIANCE would leave the next ordering difference to be found by CI again — the verdict
+   * has to be the same whichever order the routes are discovered in.
+   */
+  const patterns = routePatterns(amb);
+  const forwards = resolveRoute(patterns, '/atlas/compare')?.url;
+  const backwards = resolveRoute([...patterns].reverse(), '/atlas/compare')?.url;
+  cases.push([
+    'DECOY — and the answer does not change when the routes are discovered in reverse',
+    forwards === '/atlas/compare' && backwards === '/atlas/compare',
+  ]);
+  cases.push([
+    'DECOY — the fixture really is ambiguous, so the two cases above are not about nothing',
+    patterns.filter((p) => p.test.test('/atlas/compare')).length === 2,
+  ]);
+
+  rmSync(amb, { recursive: true, force: true });
 
   let ok = true;
   for (const [name, passed] of cases) {
