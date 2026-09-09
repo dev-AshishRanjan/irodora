@@ -35,12 +35,13 @@ import { useCallback, useState } from 'react';
 import type { Offer } from '../lens/handoff';
 import { noHaptics, type Haptics } from '../haptics';
 import type { ColourOrigin } from '../wardrobe';
-import { Pressable, View } from 'react-native';
-import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Pressable } from 'react-native';
+import { nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
   Row,
   Screen,
+  Stack,
   Status,
   Surface,
   Swatch,
@@ -345,7 +346,7 @@ export function AddGarment({
         /* surface-not-card: a group of optional fields opened by a lead-in sentence rather than a heading. */
         level="1"
       >
-        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+        <Stack gap="md">
           <Text size="body" color="foreground.2" script={script}>
             {t('wardrobe.optional')}
           </Text>
@@ -393,7 +394,7 @@ export function AddGarment({
               {`${t('wardrobe.costNotRecorded')} ${t(COST_PROBLEM_KEYS[moneyProblem])}`}
             </Text>
           )}
-        </View>
+        </Stack>
       </Surface>
 
       <Button

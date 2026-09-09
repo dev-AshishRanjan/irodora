@@ -143,6 +143,41 @@ function sourceFiles() {
   return found;
 }
 
+/**
+ * A `Surface` or `Card` whose first child pads itself (F-214).
+ *
+ * Both components ALWAYS apply their own padding — `Surface` defaults it to `md`, `Card` to
+ * `lg` — so a child that pads too renders twice the inset every call site reads. Ten sites
+ * did, at 24pt, and the number appears nowhere: each file says `md` and the total is a sum
+ * nobody wrote.
+ *
+ * A SHAPE RULE RATHER THAN A VALUE RULE, which is why it lives beside the scale check instead
+ * of inside it: every value involved is a legal step. The defect is the nesting.
+ *
+ * Deliberately narrow — the child must be the NEXT line. A padded box three levels down is
+ * usually a real inner card, and a rule that guessed at those would be a rule people exempt.
+ */
+export function nestedPadding(files) {
+  const found = [];
+  for (const file of files) {
+    const lines = readFileSync(file, 'utf8').split(String.fromCharCode(10));
+    lines.forEach((line, index) => {
+      if (!/<(Surface|Card)\b/u.test(line)) return;
+      /* Walk to the end of the opening tag, then look at the first child line. */
+      let end = index;
+      while (end < lines.length && !/>\s*$/u.test(lines[end])) end += 1;
+      const child = lines[end + 1] ?? '';
+      if (!/\bpadding:/u.test(child)) return;
+      found.push({
+        file: posix(file),
+        line: index + 1,
+        parent: /<(Surface|Card)\b/u.exec(line)[1],
+        child: child.trim().slice(0, 72),
+      });
+    });
+  }
+  return found;
+}
 const posix = (path) => relative(ROOT, path).replace(/\\/g, '/');
 
 /** Every spacing declaration in the scanned zones, with enough context to be actionable. */
@@ -239,9 +274,24 @@ function run() {
     process.exit(1);
   }
 
+  /*
+   * THE SHAPE RULE (F-214). Ten sites rendered 24pt where every call site read 12, because
+   * `Surface` always applies its own padding and they added one inside it. No value was off
+   * the scale, so the scale check could not see it — the defect is the nesting.
+   */
+  const nested = nestedPadding(files);
+
   const { exempt } = JSON.parse(readFileSync(EXEMPTIONS, 'utf8'));
   const matched = new Set();
   const problems = [];
+
+  for (const n of nested)
+    problems.push(
+      `${n.file}:${String(n.line)} a <${n.parent}> whose first child pads itself. Both ` +
+        'apply their own inset, so this renders twice what either line says. Drop the ' +
+        `child's padding and let the ${n.parent} own it — or use a Stack for the flow: ` +
+        `${n.child}`,
+    );
 
   for (const d of declarations) {
     if (scale.includes(d.value)) continue;
@@ -451,6 +501,47 @@ const __spacingProofProbe = { ${declaration} };
         'u',
       ),
       plant: (source) => plantValue('gap: nativeSpacing.xl9')(source),
+    },
+    {
+      /*
+       * THE SHAPE RULE (F-214). Ten sites wrapped their content in a padded box inside a
+       * `Surface` that already pads, rendering 24pt where every call site read 12. Every
+       * value involved was a legal step, so the scale check above could not see any of it —
+       * which is why the rule is about the nesting rather than about a number.
+       */
+      name: 'a Surface whose first child pads itself',
+      expect: 'red',
+      matching: /whose first child pads itself/u,
+      plant: (source) =>
+        `${source}
+export function __spacingProofNested(): null {
+  return (
+    <Surface level="1">
+      <View style={{ padding: nativeSpacing.md }} />
+    </Surface>
+  );
+}
+`,
+    },
+    {
+      /*
+       * MUST STAY GREEN, and this is the case that stops the rule above being "no box inside
+       * a Surface". The fix for those ten sites was a `Stack`, which carries the flow and
+       * leaves the inset to the Surface — if that were refused too, the rule would be against
+       * nesting rather than against double padding.
+       */
+      name: 'a Surface whose first child is a Stack — must stay GREEN',
+      expect: 'green',
+      plant: (source) =>
+        `${source}
+export function __spacingProofStack(): null {
+  return (
+    <Surface level="1">
+      <Stack gap="sm" />
+    </Surface>
+  );
+}
+`,
     },
     {
       // MUST STAY GREEN. The tokenised form is what the codebase is supposed to be written in.

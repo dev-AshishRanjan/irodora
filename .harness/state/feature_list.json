@@ -6945,7 +6945,7 @@
       "service": "mobile",
       "release": "R8",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "blockedBy": [
         "F-210"
       ],
@@ -6962,7 +6962,22 @@
         "test",
         "a11y"
       ],
-      "notes": "FOUND BY F-210 WHILE CLASSIFYING, NOT FIXED THERE. Surface ALWAYS applies its padding and defaults it to md; ten sites wrap their content in a View with padding nativeSpacing.md inside one — so they render a 24pt inset while reading, at every call site, as 12. The sites: AddGarment:344, Measure:161/283, OutfitBuilder:373, Shopping:266/294/324, and the three F-210 converted keep their inner View untouched so the body preserves what it rendered (Measure:208, OutfitBuilder:215, Shopping:361). NOT ABSORBED INTO F-210 because that feature was itself an unverifiable visual change across 24 screens, and stacking a second one is how a regression arrives with nothing to bisect — which is the reason F-210 was split out of F-203 in the first place. THE FIX IS A CHOICE, NOT A DELETION: 24pt may be the inset somebody wanted. Nobody has looked, which is why criterion 3 is an attestation."
+      "notes": "DONE. Ten sites wrapped their content in a padded View inside a Surface that already pads, rendering 24pt where every call site read 12 — a defect composed entirely of correct parts, which is why the scale check could not see it. Each inner View became a Stack: the inset comes from the Surface, the flow from the primitive. The value is md on evidence — two independent places already name it and 24 is not an inset any other surface uses. The spacing scanner now refuses the shape, watched refusing AND watched accepting a Stack, without which the rule would be against nesting rather than against double padding. The inset pin fired and the fixture was re-captured as part of this feature with its numbers recorded.",
+      "plan": "plans/F-214-twice-the-inset.md",
+      "attested": [
+        {
+          "criterion": "Each of the ten sites renders one inset rather than two, and the value is the one a person looked at and chose",
+          "verifiedBy": "The first half is done and asserted through the re-captured inset fixture. THE SECOND HALF IS NOT: the value was chosen on evidence — md is named independently by the Surface default and by the inner View, and 24 appears nowhere else in the application — but no person has looked at the result. Choosing 24 deliberately would need the same look.",
+          "blocks": "release",
+          "status": "outstanding"
+        },
+        {
+          "criterion": "Somebody looks at the ten screens before it is called done",
+          "verifiedBy": "Not done. Ten screens are 12pt tighter than they were, on a workstation with no device. The screens: AddGarment, Measure, OutfitBuilder, Shopping, and the three cards F-210 converted whose bodies kept the doubled inset until now.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     }
   ]
 }

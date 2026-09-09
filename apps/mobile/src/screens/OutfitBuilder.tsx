@@ -35,8 +35,8 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
-import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Pressable } from 'react-native';
+import { nativeTapTarget } from '@irodora/design-tokens';
 import {
   Button,
   Card,
@@ -222,7 +222,7 @@ export function OutfitBuilder({
               </Text>
             }
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+            <Stack gap="md">
               {placed === undefined ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('outfit.slotEmpty')}
@@ -353,7 +353,7 @@ export function OutfitBuilder({
                   ))}
                 </Stack>
               )}
-            </View>
+            </Stack>
           </Card>
         );
       })}
@@ -374,7 +374,7 @@ export function OutfitBuilder({
         /* surface-not-card: a control group led by its button. The action is the subject. */
         level="1"
       >
-        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+        <Stack gap="md">
           <Button
             label={t('outfit.wore')}
             disabled={draft.length === 0}
@@ -391,7 +391,7 @@ export function OutfitBuilder({
               {t('outfit.woreDone')}
             </Text>
           ) : null}
-        </View>
+        </Stack>
       </Surface>
     </Screen>
   );

@@ -1,11 +1,15 @@
 {
-  "$comment": "CAPTURED FROM THE TREE BEFORE F-210 CONVERTED 24 SURFACES INTO CARDS, and the ordering is the assertion: Surface defaults its padding to md and Card defaults to lg, so a conversion that drops the prop moves a screen by 4pt in silence, and a fixture written AFTER the edit would have agreed with whatever the edit did. Every value is a `padding` found on a style in a rendered subject, sorted, per subject — the whole registry rather than only the converted screens, so an inset moved anywhere else fails here too. Asserted by apps/mobile/test/screens.test.tsx. WHAT IT DOES NOT SEE: rhythm. A Card draws a header box, a hairline and a body box where a Surface drew one box with a Stack gap; the insets are equal and the screen is not the same.",
+  "$comment": "EVERY `padding` FOUND ON A STYLE IN A RENDERED CONFORMANCE SUBJECT, sorted, per subject. The pin asserts the distinct set is identical and no value occurs less often — not the multiset, because a Card draws a header box AND a body box where a Surface drew one, so the COUNT necessarily grows on a conversion that changed no spacing at all. RE-CAPTURED BY F-214, WHICH IS THE PIN WORKING RATHER THAN THE PIN BEING EDITED AROUND: ten sites wrapped their content in a padded View inside a Surface that already pads, rendering 24pt where every call site read 12. Removing those boxes makes values occur less often, which is exactly what this refuses, so the capture is part of that feature and its numbers are in progress.md. F-210 captured the first version BEFORE converting 24 Surfaces into Cards; that baseline has done its job and is in the F-210 commit. Asserted by apps/mobile/test/screens.test.tsx. WHAT IT DOES NOT SEE: rhythm, and overflow. Equal insets are not the same screen.",
   "capturedAt": "2026-09-09",
-  "capturedFor": "F-210",
+  "capturedFor": "F-214",
+  "supersedes": "the F-210 capture, taken before the Surface-to-Card conversion",
   "subjects": 72,
-  "values": 1426,
+  "values": 1460,
   "insets": {
     "screens/Preferences": [
+      16,
+      16,
+      16,
       16,
       16,
       16
@@ -13,9 +17,13 @@
     "screens/Preferences (nothing learned)": [
       16,
       16,
+      16,
+      16,
       16
     ],
     "screens/Preferences (nothing learned, with somewhere to go)": [
+      16,
+      16,
       16,
       16,
       16
@@ -23,10 +31,16 @@
     "screens/Preferences (confirming a reset)": [
       16,
       16,
+      16,
+      16,
+      16,
       16
     ],
     "screens/Preferences (theme list open)": [
       4,
+      16,
+      16,
+      16,
       16,
       16,
       16
@@ -80,12 +94,16 @@
       8,
       16,
       16,
+      16,
+      16,
       28
     ],
     "screens/ColourDetail (sections folded)": [
       1,
       4,
       8,
+      16,
+      16,
       16,
       16,
       28
@@ -792,12 +810,19 @@
       8,
       12,
       12,
+      12,
+      12,
+      16,
+      16,
+      16,
+      16,
       16,
       16,
       16,
       16
     ],
     "screens/ColourCard": [
+      12,
       12
     ],
     "screens/Contemporary": [
@@ -812,6 +837,7 @@
     "screens/Contemporary (already in a palette)": [
       1,
       8,
+      16,
       16,
       16,
       16,
@@ -835,6 +861,7 @@
       8,
       8,
       12,
+      12,
       12
     ],
     "screens/OutfitBuilder": [
@@ -850,11 +877,9 @@
       12,
       12,
       12,
-      12,
       12
     ],
     "screens/OutfitBuilder (nothing wearable)": [
-      12,
       12,
       12,
       12,
@@ -876,7 +901,6 @@
       12,
       12,
       12,
-      12,
       12
     ],
     "screens/OutfitBuilder (cost per wear)": [
@@ -888,7 +912,6 @@
       8,
       8,
       8,
-      12,
       12,
       12,
       12,
@@ -978,9 +1001,6 @@
       12,
       12,
       12,
-      12,
-      12,
-      12,
       12
     ],
     "screens/Shopping (no slot for this garment)": [
@@ -1008,9 +1028,6 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
       12,
       12,
       12,
@@ -1046,9 +1063,6 @@
       12,
       12,
       12,
-      12,
-      12,
-      12,
       12
     ],
     "screens/Shopping (not enough to compare against)": [
@@ -1080,18 +1094,18 @@
       12,
       12,
       12,
-      12,
-      12,
-      12,
       12
     ],
     "screens/Export": [
+      12,
       12
     ],
     "screens/Export (the write failed)": [
+      12,
       12
     ],
     "screens/Export (saved)": [
+      12,
       12
     ],
     "screens/Export (nothing to export)": [],
@@ -1111,7 +1125,6 @@
       8,
       12,
       12,
-      12,
       12
     ],
     "screens/Measure (a table with rows)": [
@@ -1127,9 +1140,6 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
       12,
       12,
       12,
@@ -1161,7 +1171,6 @@
       8,
       8,
       8,
-      12,
       12
     ],
     "screens/AddGarment (the photograph was refused)": [
@@ -1190,7 +1199,6 @@
       8,
       8,
       8,
-      12,
       12
     ],
     "screens/AddGarment (from the Lens)": [
@@ -1218,7 +1226,6 @@
       8,
       8,
       8,
-      12,
       12
     ],
     "screens/AddGarment (from a chosen colour)": [
@@ -1246,7 +1253,6 @@
       8,
       8,
       8,
-      12,
       12
     ],
     "screens/Wear (with destinations)": [
@@ -1352,6 +1358,7 @@
       8,
       8,
       8,
+      12,
       12
     ],
     "screens/Wardrobe (nothing in it)": [],
@@ -1360,9 +1367,11 @@
       1,
       8,
       8,
+      12,
       12
     ],
     "screens/Wardrobe (nothing matches)": [
+      12,
       12
     ],
     "screens/Wardrobe (a garment open)": [
@@ -1371,6 +1380,10 @@
       12
     ],
     "screens/PaletteStudio": [
+      16,
+      16,
+      16,
+      16,
       16,
       16,
       16,
@@ -1392,6 +1405,10 @@
       16,
       16,
       16,
+      16,
+      16,
+      16,
+      16,
       16
     ],
     "screens/PaletteStudio (CVD flag)": [
@@ -1403,6 +1420,10 @@
       8,
       8,
       8,
+      16,
+      16,
+      16,
+      16,
       16,
       16,
       16,
@@ -1439,6 +1460,13 @@
       8,
       8,
       8,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
       16,
       16,
       16,
@@ -1492,6 +1520,13 @@
       8,
       8,
       8,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
+      16,
       16,
       16,
       16,

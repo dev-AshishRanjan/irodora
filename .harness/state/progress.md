@@ -21078,3 +21078,67 @@ checked.
 state · lint · format:check · test — **PASS**.
 
 ---
+## F-214 — Ten surfaces render twice the inset they read as
+
+### A defect composed entirely of correct parts
+
+```jsx
+<Surface level="1">                              ← md = 12, from the default
+  <View style={{ padding: nativeSpacing.md,      ← md = 12, again
+                 gap: nativeSpacing.sm }}>
+```
+
+`Surface` **always** applies its own padding. Ten sites added one inside it, so each rendered a
+**24pt inset while reading, at every call site, as 12**.
+
+**24 is written nowhere.** Every value is a legal step of the scale, every component is used as
+documented, and the sum is wrong — which is precisely why the spacing gate could not see it. The
+question that finds this is not *is the value on the scale* but *what does the tree render*.
+
+### The value is `md`, on evidence
+
+Two independent places already name it — the `Surface` default and the inner `View` — and 24 is
+not an inset any other surface in the application uses. The reading with the most evidence is
+that one of them was meant to be the whole inset and neither author knew about the other.
+
+Choosing 24 deliberately would need somebody to look at ten screens. So does choosing 12, and
+**nobody has**: both halves of criterion 1, and criterion 3, are attestations.
+
+### The fix is a primitive, not a smaller number
+
+`<View style={{ padding: …, gap: … }}>` → `<Stack gap="…">`. The inset comes from the `Surface`,
+the flow from the primitive, and a raw `View` with hand-written spacing disappears with it.
+
+### The rule that stops it coming back, and the case that keeps it usable
+
+A `Surface` or `Card` whose first child declares its own padding is refused, in the spacing
+scanner. **Watched refusing — and watched accepting** a `Surface` whose first child is a `Stack`.
+Without that second case the rule would be *"no box inside a Surface"*: a rule against nesting
+rather than against double padding, which is a check that fires on its own fix.
+
+### The inset pin fired, and that is the pin working
+
+`screen-insets.json` refuses any value occurring less often than it did, and removing ten padded
+boxes does exactly that. The fixture was **re-captured as part of this feature**, with its
+numbers recorded, rather than regenerated to make a red test green. F-210's decoy — which proved
+the card conversion had happened by finding subjects that *grew* — cannot be true after a
+re-capture, so it was replaced by one asking the question that is still live: **can this
+comparison fail at all?**
+
+### Four rounds lost to an invisible character
+
+The scanner rule reported nothing over a file full of the shape. `grep`, prettier, eslint and a
+backslash dump all called it correct. The heredoc that generated it had turned `\b` into an
+actual **backspace, U+0008** — a valid regex that matches nothing. Recorded as a lesson: dump the
+bytes before re-reading the logic.
+
+### Gates
+
+state · typecheck · lint · format:check · test · a11y — **PASS**.
+
+### Attested
+
+**Nobody has looked.** Ten screens are 12pt tighter. If 24 was deliberate this is a regression,
+and the evidence for that reading is one number written nowhere against two written twice.
+
+---

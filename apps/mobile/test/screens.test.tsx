@@ -4435,18 +4435,33 @@ describe('every box keeps the inset it had (F-210)', () => {
     expect(Object.keys(now).sort()).toStrictEqual(Object.keys(expected).sort());
   });
 
-  it('DECOY — the conversion DID happen, so the relation above is not plain equality', () => {
+  it('DECOY — the comparison can FAIL, asserted against a mutated expectation', () => {
     /*
-     * Without this, the check would pass unchanged on a branch where nothing was converted —
-     * which is indistinguishable from passing because the conversion preserved every inset.
-     * At least one subject must now carry MORE padded boxes than it did.
+     * THIS REPLACED A DECOY THAT HAD DONE ITS JOB, and the replacement is recorded rather than
+     * done quietly. F-210's version asserted that at least one subject now carried MORE padded
+     * boxes than the fixture — which proved the Surface-to-Card conversion had actually
+     * happened, and stopped the pin passing on a branch where nothing was converted.
+     *
+     * F-214 re-captured the fixture, so the tree and the expectation now agree exactly and
+     * nothing can have grown. Keeping that assertion would have meant keeping a check that can
+     * only fail, and deleting it would have left the pin with no evidence it can fail at all.
+     *
+     * So the question changes to the one that is still live: **can this comparison go red?** A
+     * fixture regenerated to make a red test green is the failure mode now, and a comparison
+     * that agrees with everything is what that looks like from the inside.
      */
     const now = capture();
     const expected = before();
-    const grew = Object.entries(expected).filter(
-      ([name, was]) => (now[name] ?? []).length > was.length,
-    );
-    expect(grew.length).toBeGreaterThan(0);
+    const [name, was] = Object.entries(expected).find(([, v]) => v.length > 0) ?? [];
+    expect(name).toBeDefined();
+    expect(was).toBeDefined();
+
+    // The same subject with one inset removed must not satisfy the relation the pin asserts.
+    const mutated = (was ?? []).slice(1);
+    const is = now[name ?? ''] ?? [];
+    const countOf = (xs: readonly number[], v: number): number => xs.filter((x) => x === v).length;
+    const removed = (was ?? [])[0] ?? 0;
+    expect(countOf(is, removed)).toBeGreaterThan(countOf(mutated, removed));
   });
 
   it('DECOY — the capture reads real numbers, not an empty tree everywhere', () => {

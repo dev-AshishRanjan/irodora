@@ -41,6 +41,7 @@ import {
   EmptyState,
   Row,
   Screen,
+  Stack,
   Surface,
   Swatch,
   swatchAccessibleName,
@@ -163,7 +164,7 @@ export function Measure({
           key={library.id}
           level="1"
         >
-          <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+          <Stack gap="sm">
             <Text size="body" color="foreground.2" script={script}>
               {library.name}
             </Text>
@@ -195,7 +196,7 @@ export function Measure({
                 </Pressable>
               ))}
             </Row>
-          </View>
+          </Stack>
         </Surface>
       ))}
 
@@ -219,7 +220,7 @@ export function Measure({
           </Text>
         }
       >
-        <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}>
+        <Stack gap="md">
           <Row gap="sm">
             {ENTRY_SPACES.map((candidate) => (
               <Button
@@ -260,7 +261,7 @@ export function Measure({
           ))}
 
           <Button label={t('measure.add')} disabled={!parsed.ok} onPress={add} script={script} />
-        </View>
+        </Stack>
       </Card>
 
       {/* ------------------------------------------------------------ the table */}
@@ -289,7 +290,7 @@ export function Measure({
             key={row.id}
             level="1"
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.xs }}>
+            <Stack gap="xs">
               <Text size="body" color="foreground" numeric script={script}>
                 {`${row.name} — ${t('compare.difference')}: ${row.deltaE00.toFixed(2)} ${t('unit.deltaE00')}`}
               </Text>
@@ -307,7 +308,7 @@ export function Measure({
               <Text size="small" color="foreground.2" script={script}>
                 {`${t('measure.arrivedIn')}: ${row.originSpace}`}
               </Text>
-            </View>
+            </Stack>
           </Surface>
         ))
       )}

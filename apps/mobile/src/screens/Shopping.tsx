@@ -33,13 +33,14 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
-import { nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import { Pressable } from 'react-native';
+import { nativeTapTarget } from '@irodora/design-tokens';
 import {
   Card,
   EmptyState,
   Row,
   Screen,
+  Stack,
   Surface,
   Swatch,
   swatchAccessibleName,
@@ -267,7 +268,7 @@ export function Shopping({
             /* surface-not-card: an answer to one of the check questions. The question is asked elsewhere; this is the sentence back. */
             level="1"
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+            <Stack gap="sm">
               {check.outfits === null ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noSlot')}
@@ -290,7 +291,7 @@ export function Shopping({
                   </Text>
                 </>
               )}
-            </View>
+            </Stack>
           </Surface>
 
           {/* ------------------------------------ personal compatibility (FR-29) */}
@@ -298,7 +299,7 @@ export function Shopping({
             /* surface-not-card: an answer to one of the check questions, as above. */
             level="1"
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+            <Stack gap="sm">
               {check.compatibility === null ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noProfile')}
@@ -323,7 +324,7 @@ export function Shopping({
                   </Text>
                 </>
               )}
-            </View>
+            </Stack>
           </Surface>
 
           {/* ------------------------------------------- duplicate warning (FR-44) */}
@@ -331,7 +332,7 @@ export function Shopping({
             /* surface-not-card: an answer to one of the check questions, as above. */
             level="1"
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+            <Stack gap="sm">
               {check.duplicates.length === 0 ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('shopping.noDuplicate')}
@@ -364,7 +365,7 @@ export function Shopping({
                   })}
                 </>
               )}
-            </View>
+            </Stack>
           </Surface>
 
           {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
@@ -377,7 +378,7 @@ export function Shopping({
               </Text>
             }
           >
-            <View style={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}>
+            <Stack gap="sm">
               {!check.investment.known ? (
                 <>
                   <Text size="body" color="foreground.2" script={script}>
@@ -428,7 +429,7 @@ export function Shopping({
                   </Text>
                 </>
               )}
-            </View>
+            </Stack>
           </Card>
         </>
       )}

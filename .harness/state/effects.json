@@ -4732,6 +4732,60 @@
       "confidence": 0.85,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-122",
+      "from": {
+        "kind": "file",
+        "ref": "packages/ui/src/Surface.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Shopping.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Measure.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/OutfitBuilder.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/AddGarment.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-spacing-scale.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/verification/screen-insets.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/ui",
+        "apps/mobile",
+        "root"
+      ],
+      "severity": "medium",
+      "guard": "A SHAPE RULE, BECAUSE EVERY VALUE INVOLVED WAS LEGAL. `Surface` or `Card` whose first child declares its own padding is refused, in verify-spacing-scale.mjs because it is a spacing rule — the scale check could not see any of this, since md is a step of the scale and 24 is written nowhere. WATCHED REFUSING, AND WATCHED ACCEPTING: the proof plants a Surface wrapping a padded View and asserts the check goes red naming the file and line, AND plants one whose first child is a Stack and asserts it stays green. Without the second case the rule would be \"no box inside a Surface\" — a rule against nesting rather than against double padding, and a check that fires on its own fix is a check somebody exempts. THE INSET PIN FIRED, WHICH IS THE PIN WORKING: screen-insets.json refuses any value occurring less often than it did, and removing ten padded boxes does exactly that. The fixture was re-captured AS PART OF THIS FEATURE with the numbers recorded, rather than regenerated to make a red test green — and F-210’s decoy, which proved a conversion had happened by finding subjects that GREW, could not be true after a re-capture, so it was replaced by one asking whether the comparison can fail at all. WHAT IS NOT GUARDED: whether 12 is right. Ten screens are 12pt tighter and nobody has looked.",
+      "memory": "memory/effects/twelve-was-written-twice-and-nobody-added-them-up.md",
+      "rationale": "A DEFECT COMPOSED ENTIRELY OF CORRECT PARTS. Every value was on the scale, every component was used as documented, and the sum was wrong: `Surface` ALWAYS applies its padding and defaults it to md, and ten sites added their own inside it — 24pt rendered, 12 read at every call site, and 24 written nowhere. Checks that validate values cannot see that; the question that finds it is what does this actually RENDER, which is why F-210 captured the inset from the tree rather than reasoning about it. THE VALUE IS md ON EVIDENCE: two independent places already name it, and 24 is not an inset any other surface uses. THE FIX IS A PRIMITIVE rather than a smaller number — the inner View became a Stack, so the inset comes from the Surface and the flow from the primitive, and a raw View with hand-written spacing disappears with it.",
+      "confidence": 0.85,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
