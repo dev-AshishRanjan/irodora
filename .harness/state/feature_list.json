@@ -7003,6 +7003,31 @@
         "test"
       ],
       "notes": "FOUND BY CI, NOT BY THE GATE ITSELF. `/atlas/compare`, `/atlas/find` and `/atlas/palettes` were reported as orphans on ubuntu-latest while the same commit passed on Windows. Each of those URLs matches TWO patterns — its own literal route and the sibling `[slug]` dynamic route — and `routeGraph` resolved the ambiguity with `patterns.find`, which returns whichever the walk saw first. The walk is `readdirSync`, which is sorted on NTFS and hash-ordered on ext4. So the edge from atlas/index.tsx was attributed to `/atlas/[slug]` on Linux and the three literal routes had no inbound edge at all. The gate was correct on one operating system BY ACCIDENT. The existing proof could not see it: its fixture has no dynamic route. FIXED by resolving the way the router resolves: fewest dynamic segments, then the longer path, then the URL — a total order, so discovery order cannot decide again. The walk is sorted too, which is hygiene rather than the fix; sorting alone puts [slug].tsx first everywhere and only makes the wrong answer consistent. Verified under the order that failed: after sorting, /atlas/[slug] is now discovered FIRST locally — the Linux ordering — and the gate is green. The proof gained a dynamic route and three cases, all watched failing against the shipped behaviour."
+    },
+    {
+      "id": "F-216",
+      "title": "The plant-journal proof is the one proof no local run executes, so four features shipped past it",
+      "requirements": [
+        "NFR-26"
+      ],
+      "service": "root",
+      "release": "R8",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-216-the-proof-nothing-runs.md",
+      "acceptance": [
+        "Every script that trips the journal rule either uses the journal or is declared with the reason it does not need one",
+        "The proof runs where the author is, not only in CI — so the next omission is found in the run that caused it",
+        "The over-collecting regex is left alone, because being wrong in that direction is a recorded decision and costs an entry rather than the guarantee"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "CI: \"BAD every proof that writes into the tree uses the journal: verify-dead-exports, verify-layout-primitives-proof, verify-reachability, verify-surface-not-card-proof\". ALL FOUR WRITE ONLY INTO mkdtempSync(tmpdir()) DIRECTORIES — none touches the repository — so the journal is genuinely unnecessary and three other scripts are already declared for exactly that reason. The declarations are the fix for the symptom. THE ROOT CAUSE IS THE FEEDBACK LOOP: plant-proof.mjs is the only proof in scripts/ that does NOT ride inside the lint chain — five others do — so it speaks only in CI. The list has been behind since F-179 on 2026-09-08, and F-183, F-203 and F-210 each added a temp-dir proof to a check that was already red without any local run saying so. Four authors in a row is not carelessness; it is a check that cannot be heard from where the work happens. FIXED in two parts, because the symptom and the cause are not the same defect. The four declarations name the reason each script does not need the journal — all write only into mkdtempSync(tmpdir()) — and plant-proof.mjs joins the lint chain beside the five proofs already there, so the next omission is caught in the run that creates it. The over-collecting regex is deliberately untouched: weakening a recorded decision to make a commit green is the wrong trade. Watched discriminating by removing one entry and confirming the proof goes red and names the file, then restoring byte for byte."
     }
   ]
 }

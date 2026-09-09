@@ -21205,3 +21205,70 @@ state · lint · format:check · test — **PASS**. Gate 2 is green, including t
 that produced the failure.
 
 ---
+## F-216 — The proof that had no local voice
+
+### The failure, and it had been red for two days
+
+```
+BAD every proof that writes into the tree uses the journal:
+    verify-dead-exports · verify-layout-primitives-proof
+    verify-reachability · verify-surface-not-card-proof
+```
+
+Four scripts, from four features — F-179, F-183, F-203, F-210 — and **every one of those features
+reported a green local run truthfully**.
+
+### The root cause is where the check speaks
+
+`scripts/` holds six proofs. Five ride inside the `lint` chain:
+
+```
+in the lint chain   gate-mirror · e2e-flows · blocked-reason · layout-primitives · surface-not-card
+CI only             plant-proof                                        ← the anomaly
+```
+
+`plant-proof.mjs` had a CI step of its own and no local command anywhere, so it has said "BAD"
+since 2026-09-08 and nothing an author ran ever repeated it.
+
+**Four authors in a row is not four careless authors.** It is a check that cannot be heard from
+where the work happens — and the fourth was me twice over: F-210 added a violator, and F-215
+edited one without noticing.
+
+### Two defects, two fixes
+
+**The symptom** — four missing declarations. All four write *only* into
+`mkdtempSync(join(tmpdir(), …))` and remove it, so the journal has nothing to protect. That is
+the same reason `verify-motion`, `verify-app-imports` and `verify-engine-purity` were already
+declared; the four new entries each name the feature they came from.
+
+**The cause** — the proof joins the lint chain. Without that, the next temp-dir proof does this
+again, and the list is hand-maintained *precisely because* the rule over-collects on purpose.
+
+### What was deliberately not done
+
+Make the regex cleverer. Its docblock records the trade in its own words: *"Being wrong in that
+direction costs an entry in the list below, with a reason; being wrong in the other costs the
+guarantee."* An auto-detector inferring *"this one only touches `tmpdir`"* is the guess that
+costs the guarantee — and weakening a recorded decision to turn my own commit green is the wrong
+trade twice over.
+
+### Watched discriminating
+
+One of the four entries was removed: the proof went red **and named the file**, then the source
+was restored byte for byte and the restoration verified. Four entries added beside a fix pass for
+two reasons that look identical.
+
+The gate-mirror proof still reports **14 active gates mirrored**, so running the script in both
+places is not a conflict.
+
+### Gates
+
+state · lint · format:check · test — **PASS**. `lint` now carries the plant-journal proof, and
+the run above is the first local one that includes it.
+
+### Not guarded
+
+Nothing asserts that a *sixth* proof will not appear the same way. This closes the one that had
+no local voice; it does not check that every future proof has one.
+
+---

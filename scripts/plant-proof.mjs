@@ -254,6 +254,17 @@ const NO_JOURNAL_NEEDED = {
   'verify-cache-scope.mjs':
     'plants one file under tests/ and removes it; it is the check that would REPORT such a ' +
     'leftover, so journalling it would be circular',
+  /*
+   * FOUR ADDED BY F-216, ALL FOR THE SAME REASON AS THE THREE ABOVE — and the fact that they
+   * arrived one per feature over four features is the thing worth reading here. Until F-216 this
+   * proof was the only one in `scripts/` that no local command ran, so it said "BAD" in CI and
+   * nowhere else. Every author since F-179 got a green local run and was right about it.
+   */
+  'verify-reachability.mjs': 'plants a whole route tree under the OS temp directory (F-179)',
+  'verify-dead-exports.mjs': 'plants a workspace under the OS temp directory (F-183)',
+  'verify-layout-primitives-proof.mjs':
+    'plants a fixture component under the OS temp directory (F-203)',
+  'verify-surface-not-card-proof.mjs': 'plants fixture screens under the OS temp directory (F-210)',
 };
 
 {

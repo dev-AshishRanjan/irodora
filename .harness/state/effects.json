@@ -4814,6 +4814,38 @@
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-124",
+      "from": {
+        "kind": "file",
+        "ref": "scripts/plant-proof.mjs"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "package.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root"
+      ],
+      "severity": "high",
+      "guard": "THE PROOF NOW RUNS WHERE THE AUTHOR IS. It joins the five other proofs already inside the lint chain, so the next temp-dir proof that forgets its declaration is caught in the run that created it rather than in CI. CI keeps its own Gate 0 step; the duplication costs seconds and the gate-mirror proof compares gate commands to CI steps rather than forbidding a script from appearing twice — verified, 14 active gates still proven mirrored. THE CHECK WAS WATCHED DISCRIMINATING: one of the four new entries was removed, the proof went red AND NAMED THE FILE, and the source was restored byte for byte and verified — four entries added beside a fix pass for two reasons that look identical. THE REGEX IS DELIBERATELY UNTOUCHED: its docblock records the trade, that over-collecting costs an entry with a reason while under-collecting costs the guarantee, and an auto-detector inferring \"this one only uses tmpdir\" is the guess that costs it. WHAT IS NOT GUARDED: that every OTHER proof in the repository runs somewhere local. This closes the one that was not; nothing asserts a sixth will not appear the same way.",
+      "memory": "memory/effects/the-proof-that-had-no-local-voice.md",
+      "rationale": "FOUR SCRIPTS FROM FOUR FEATURES OVER TWO DAYS, AND EVERY ONE OF THOSE FEATURES REPORTED A GREEN LOCAL RUN HONESTLY. `scripts/` holds six proofs; five ride inside the lint chain and plant-proof.mjs was the one that did not — a CI step of its own and no local command anywhere. So it has been red since F-179 on 2026-09-08 and nothing an author ran ever said so. Four authors in a row is not four careless authors; it is a check that cannot be heard from where the work happens, and the fourth was me twice over — F-210 added a violator and F-215 edited one without noticing. THE DECLARATIONS FIX THE SYMPTOM: all four write only into mkdtempSync(tmpdir()) and remove it, so the journal has nothing to protect, which is the same reason three scripts were already declared. RUNNING IT LOCALLY FIXES THE CAUSE — without that, the next temp-dir proof does this again, and the list is hand-maintained precisely because the rule over-collects on purpose.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
