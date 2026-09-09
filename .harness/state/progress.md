@@ -20278,3 +20278,71 @@ That the twelve rows still **look** the same. The suite catches structure and co
 sitting four pixels lower.
 
 ---
+
+## F-204 — A design-system conformance sweep, with evidence
+
+The release built a design system and adopted it across twenty-one routes, and the proof was a
+series of green gates nobody had collected. This is the artefact.
+
+### The result
+
+```
+72 subjects × {light, dark} × {en, ja} × {motion, reduced}  =  8 conditions
+0 findings
+```
+
+Recorded in [`conformance-sweep.json`](../verification/conformance-sweep.json), **committed** —
+an artefact regenerated and discarded on every run is a build step, not a record.
+
+### A verdict without a count is not evidence
+
+*"No findings"* and *"nothing ran"* produce the same word. So the artefact carries the subject
+and condition counts, and **both are asserted against the registry rather than typed** — a
+number written by hand goes stale the first time a subject is added, and the file then describes
+a smaller sweep than the one that ran.
+
+### What is cited rather than repeated
+
+| | owned by | why not here |
+|---|---|---|
+| **CVD** | gate 9 | every declared pairing, WCAG + APCA + **eleven severities**, eight palettes |
+| **token reach** | `verify-token-reach.mjs` | both directions; 86 names — 67 read, 19 exempted with reasons |
+
+Re-simulating either would be a **second answer to one question**, which is what E-005 exists to
+prevent. The skill says so in capitals, because it is the mistake the next sweep will be tempted
+into.
+
+### It lives in the registry file, and that was not the first design
+
+A separate file has to import `SCREENS` — and **importing a test file executes it**. The first
+draft ran 209 tests as a side effect of asking how many subjects there were. Extracting a
+1400-line registry and its fixtures to fix a *filename* is a large mechanical change to the file
+every screen guarantee runs through, against golden rule 6, for no gain a reader would notice.
+
+### A decision made two releases ago is what made this possible
+
+Reduced motion is drivable only because `useMotion` reads `AccessibilityInfo` rather than
+reanimated's `useReducedMotion` — F-144 chose that deliberately, because *"reduced motion is
+asserted rather than described, so the mechanism has to be one a test can turn on and off."*
+
+Both switches are the ones the **app** reads, and each has a decoy proving it actually moves: a
+loop over `[false, true]` that changed nothing would make the sweep look twice as thorough as it
+is.
+
+### The artefact states its own blind spot
+
+> *It cannot see a layout that is cramped or unbalanced — and every "unprofessional" report in
+> this project has been about something that was green here at the time.*
+
+That sentence is in the file, not only in the skill. It is the most useful thing the record says.
+
+### Gates
+
+state · typecheck · lint · format · test · a11y · contrast · **cvd** · build · content —
+**PASS**.
+
+### Attested, not asserted
+
+Nobody has looked at any of it on a device.
+
+---

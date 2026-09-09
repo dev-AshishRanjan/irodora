@@ -6601,7 +6601,7 @@
       "service": "mobile",
       "release": "R7",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [
         "F-203"
       ],
@@ -6621,6 +6621,15 @@
         "contrast",
         "cvd",
         "build"
+      ],
+      "plan": "plans/F-204-a-conformance-sweep-with-evidence.md",
+      "attested": [
+        {
+          "criterion": "Every screen is rendered in both themes, both languages, under CVD and under reduced motion, and the result is recorded",
+          "verifiedBy": "Seven of the eight conditions are gated and recorded: 72 subjects × {light,dark} × {en,ja} × {motion,reduced}, zero findings, written to .harness/verification/conformance-sweep.json with its counts. CVD is CITED rather than swept per-subject — gate 9 runs every declared pairing at eleven severities in all eight palettes, and a second simulation would be a second definition (E-005). What NOBODY has done is look at any of it on a device: the sweep measures structure, naming, tap targets, token resolution and selection treatment, and cannot see a layout that is cramped or unbalanced.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
       ]
     },
     {

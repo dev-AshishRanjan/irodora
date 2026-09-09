@@ -4230,6 +4230,46 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-110",
+      "from": {
+        "kind": "file",
+        "ref": "apps/mobile/test/screens.test.tsx"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".harness/verification/conformance-sweep.json"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/skills/conformance-sweep/SKILL.md"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/motion.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "apps/mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE ARTEFACT CARRIES COUNTS, NOT ONLY A VERDICT: \"no findings\" and \"nothing ran\" produce the same word, so 72 subjects and 8 conditions are part of the record — and both numbers are asserted against the registry rather than typed, or the file becomes evidence about a smaller sweep than the one that ran. BOTH SWITCHES ARE THE ONES THE APP READS: the locale mock `useMessages` resolves through, and the platform API `useMotion` subscribes to. Each has a decoy proving it actually moves, because a loop over `[false, true]` that changed nothing would make the sweep look twice as thorough as it is. WHAT IS DELIBERATELY NOT HERE: CVD simulation and token reach. Gate 9 owns the first over every declared pairing at eleven severities; `verify-token-reach` owns the second in both directions. Repeating either would be a second answer to one question (E-005), and the skill says so in capitals because that is the mistake the next sweep will be tempted into. AND THE ARTEFACT STATES ITS OWN BLIND SPOT: it cannot see a layout that is cramped or unbalanced, and every \"unprofessional\" report in this project has been about something green here at the time.",
+      "memory": "memory/effects/evidence-needs-a-count-or-it-is-just-a-word.md",
+      "rationale": "THE RELEASE BUILT A DESIGN SYSTEM AND ADOPTED IT ACROSS TWENTY-ONE ROUTES, and the proof was a series of green gates nobody had collected. THE SWEEP LIVES IN THE REGISTRY FILE, and that was not the first design: a separate file has to import `SCREENS`, and importing a test file EXECUTES it — the first draft ran 209 tests as a side effect of asking how many subjects there were. Extracting a 1400-line registry and its fixtures to fix a filename is a large mechanical change to the file every screen guarantee runs through, against golden rule 6, for no gain a reader would notice. REDUCED MOTION IS CHECKABLE ONLY BECAUSE F-144 MADE IT SO: `useMotion` reads `AccessibilityInfo` rather than reanimated's `useReducedMotion`, deliberately, because *\"reduced motion is asserted rather than described, so the mechanism has to be one a test can turn on and off\"*. A decision made two releases ago is what made this criterion possible at all, which is the argument for making that kind of decision.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }
