@@ -4270,6 +4270,47 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-111",
+      "from": {
+        "kind": "file",
+        "ref": "docs/design/design-system.manifest.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Status.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/testing/conformance.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/test/conformance.test.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        },
+        {
+          "kind": "gate",
+          "ref": "cvd"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "packages/design-tokens",
+        "packages/ui"
+      ],
+      "severity": "high",
+      "guard": "TWO GUARDS FIRED, AND THE SECOND ONE REVERSED THE FIX. The first was a test that said in its own body *\"if somebody removes that declaration, this goes red and says why\"* — it did, and this is the why. The second was `checkStatusAdjacency`, which caught the first attempt: moving the status separator from `swatch.well` to `surface.1` cleared the contrast floor and BROKE F-069, because the well is not merely a separator — it is the sample's own ground, and *\"if the sample is already in its well, the status colour is not touching it\"*. A status on a different ground becomes a sibling of the sample on a parent that is not the well, which is the simultaneous-contrast case the rule exists for. WHAT HOLDS NOW: `status.bad` keeps its well pairing because AddGarment renders it there at Lc 64.8; `status.ok` and `status.warn` lose theirs because NOTHING renders them there, and the conformance pair rule will report any component that starts to. NO STATUS TOKEN VALUE MOVED, so the salience rank and all four CVD pairs are untouched by construction — which is criterion 3.",
+      "memory": "memory/effects/the-well-is-the-samples-ground-not-a-separator.md",
+      "rationale": "REPORTED BY GATE 9 AS A WARNING WHOSE OWN MESSAGE SAID *\"this one needs a decision, not a note\"*. `status.ok` on `swatch.well` measured APCA Lc 43.6 against a floor of 45 while passing WCAG at 4.98:1 — which is how it stayed invisible for four releases. MEASURING FIRST SHOWED THE COLOUR COULD NOT MOVE: `status.ok` needs L 0.68 to clear the floor there; at 0.68 its salience against `background` reaches 48.8 and overtakes `status.warn` at 48.6, breaking the rank ADR-0053 fixed. Raising `warn` to make room drops its CVD separation from `status.bad` from 63.9 to 54, under the declared minimum of 60. No value satisfies all three, which is precisely why criterion 1 offered a second branch. THE SECOND BRANCH, CORRECTLY APPLIED, TURNED OUT TO COST NOTHING: `adjacentToSample` has exactly one caller in the product and it passes `kind=\"bad\"`. The failing pairing was a declaration nothing rendered. AND `border.strong` WAS WORSE THAN REPORTED — below the nonText floor on THREE grounds, not one — but nothing binds it the way the status ramp is bound, so it simply moved: L 0.578 → 0.610, clearing every ground in all eight palettes.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

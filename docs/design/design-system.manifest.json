@@ -228,11 +228,10 @@
       },
       "border.strong": {
         "oklch": {
-          "l": 0.578,
+          "l": 0.61,
           "c": 0.004,
           "h": 70
         },
-        "srgb": "#7B7977",
         "usage": "nonText",
         "role": "The boundary of an OUTLINED control, where the border IS the boundary — so WCAG 1.4.11 applies to it directly and 3:1 is not optional. Opaque and mid-neutral, deliberately: the translucent version it replaces reached 1.17 against every surface in light theme and 1.56 at best in dark, which is a line you can see only because you know it is there. It does NOT sit on `inverse`: a filled control's boundary is its fill against the page, not a border, so listing inverse would demand one colour clear 3:1 against both a near-white and a near-black ground, which nothing can.",
         "pairsWith": [
@@ -241,7 +240,8 @@
           "surface.2",
           "surface.3",
           "swatch.well"
-        ]
+        ],
+        "srgb": "#858381"
       },
       "inverse": {
         "oklch": {
@@ -299,8 +299,7 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2",
-          "swatch.well"
+          "surface.2"
         ]
       },
       "status.warn": {
@@ -315,8 +314,7 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2",
-          "swatch.well"
+          "surface.2"
         ]
       },
       "status.bad": {
@@ -697,8 +695,7 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2",
-          "swatch.well"
+          "surface.2"
         ],
         "srgb": "#307450"
       },
@@ -713,8 +710,7 @@
         "pairsWith": [
           "background",
           "surface.1",
-          "surface.2",
-          "swatch.well"
+          "surface.2"
         ],
         "srgb": "#905B06"
       },

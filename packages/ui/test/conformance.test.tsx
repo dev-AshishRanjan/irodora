@@ -1509,17 +1509,31 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
     ).toHaveLength(0);
   });
 
-  it('DECOY — status.warn on the well is now DECLARED, and reports nothing (F-174)', () => {
+  it('SUCCESS on the well is no longer a declared pairing, and is reported (F-205)', () => {
     /*
-     * The other half of the case above, kept as its own assertion so the change is visible.
-     * ADR-0098 moved the three light status tokens and added `swatch.well` to all three
-     * `pairsWith` lists, because `Status` has taken an `adjacentToSample` prop since F-069
-     * and gate scope is driven by what the manifest declares. If somebody removes that
-     * declaration, this goes red and says why.
+     * THIS TEST FIRED, AND IT WAS RIGHT TO. It used to assert the opposite — F-174/ADR-0098
+     * added `swatch.well` to all three status `pairsWith` lists, because `Status` had taken
+     * `adjacentToSample` since F-069 and gate scope follows what the manifest declares — and it
+     * ended: *"if somebody removes that declaration, this goes red and says why."* F-205 removed
+     * it. This is the why.
+     *
+     * `status.ok` on `swatch.well` measured APCA **Lc 43.6** against a floor of 45, while
+     * passing WCAG at 4.98:1 — which is how it stayed invisible. It could not be fixed by moving
+     * the colour: `status.ok` needs L 0.68 to clear the floor there, and at 0.68 its salience
+     * against `background` overtakes `status.warn` and breaks the rank ADR-0053 fixed; raising
+     * `warn` to make room drops its CVD separation from `status.bad` to 54, under the declared
+     * minimum of 60. **No value satisfies all three.**
+     *
+     * So the SEPARATOR changed rather than the colour. `Status` paints `surface.1` now — darker
+     * than the well, so every status gains contrast, and `status.ok` measures Lc 46.5. The token
+     * VALUES ADR-0098 chose are untouched; what is withdrawn is a pairing nothing renders any
+     * more, and a declared pairing no component produces is a claim about a combination that
+     * does not exist.
      */
     expect(
-      pairFindings(probe(nativeColors.light['swatch.well'], nativeColors.light['status.warn'])),
-    ).toHaveLength(0);
+      pairFindings(probe(nativeColors.light['swatch.well'], nativeColors.light['status.ok']))
+        .length,
+    ).toBeGreaterThan(0);
   });
 
   it('says nothing about a pair it cannot resolve, rather than guessing', () => {

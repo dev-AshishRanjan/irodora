@@ -20346,3 +20346,71 @@ state · typecheck · lint · format · test · a11y · contrast · **cvd** · b
 Nobody has looked at any of it on a device.
 
 ---
+
+## F-205 — Success on the sample well is below the APCA floor
+
+Gate 9 had been printing this as a warning whose own message said *"this one needs a decision,
+not a note"*. `status.ok` on `swatch.well` measured **APCA Lc 43.6** against a floor of 45 —
+while passing WCAG at 4.98:1, which is how it stayed invisible for four releases.
+
+### The colour could not move, and the numbers say so
+
+```
+status.ok needs L 0.68 to clear Lc 45 on the well.
+At 0.68 its |Lc| against background is 48.8 — status.warn's is 48.6.
+The salience rank bad > warn > ok BREAKS (ADR-0053).
+
+Raise warn to make room?
+warn at L 0.72 → separation(warn, bad) under CVD falls 63.9 → 54.
+The declared minimum is 60 (ADR-0098).
+```
+
+**No value satisfies all three constraints.** That is exactly why criterion 1 offered a second
+branch — *"or the pairing is withdrawn and the component says what it does instead"*.
+
+### The first attempt was wrong, and a guard caught it
+
+Moving the separator from `swatch.well` to `surface.1` cleared the contrast floor and **broke
+F-069**. `checkStatusAdjacency` reported it immediately, and reading the rule showed why:
+
+> *`swatch.well` on the shared parent is the escape, because it is precisely the mandated
+> neutral ground: **if the sample is already in its well, the status colour is not touching
+> it**.*
+
+The well is not *a* separator — it is **the sample's own ground**. A status on a different
+ground becomes a sibling of the sample on a parent that is not the well, which is the
+simultaneous-contrast case the rule exists to prevent. Trading how a **colour sample** reads for
+a contrast point on a status label is the wrong way round in a colour product.
+
+### The second branch, correctly applied, cost nothing
+
+`adjacentToSample` has **exactly one caller** — AddGarment's refused photograph — and it passes
+`kind="bad"`, which measures **Lc 64.8** on the well.
+
+So `status.ok` and `status.warn` on `swatch.well` were **declared pairings nothing rendered**.
+Withdrawing them is free, and the conformance pair rule reports any component that starts to
+render one.
+
+**No status token value moved**, so the salience rank and all four CVD pairs are untouched by
+construction — criterion 3, satisfied by not doing anything.
+
+### `border.strong` was worse than reported
+
+Below the nonText floor on **three** grounds, not one — `swatch.well` 27.6, `surface.3` 28.8,
+`surface.2` 29.7. The feature's notes named only the first; the others came from measuring.
+
+Nothing binds it the way the status ramp is bound, so it simply moved: **L 0.578 → 0.610**,
+clearing every ground in all eight palettes with margin. 0.600 would also have cleared it at
+30.7 on the well — 0.7 above a floor is not a margin.
+
+### Two guards, and one of them reversed the fix
+
+The first was a test that ended *"if somebody removes that declaration, this goes red and says
+why."* It did. This is the why, and it is written into the test.
+
+### Gates
+
+state · typecheck · lint · format · test · **contrast** · **cvd** · a11y · build · content —
+**PASS**.
+
+---

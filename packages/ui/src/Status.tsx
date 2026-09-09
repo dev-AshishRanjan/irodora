@@ -40,8 +40,23 @@ export interface StatusProps {
   /** The visible label. Required, and an empty one throws — see `statusPresentation`. */
   readonly text: string;
   /**
-   * A status token may not sit beside a colour sample without the `swatch.well` separator
-   * (F-069). Declared rather than assumed, so the rendered scan can see the claim.
+   * A status token may not sit beside a colour sample without a separator (F-069). Declared
+   * rather than assumed, so the rendered scan can see the claim.
+   *
+   * **THE SEPARATOR IS `surface.1`, AND IT USED TO BE `swatch.well` (F-205).**
+   *
+   * The rule was right and the ground was wrong. `status.ok` on `swatch.well` measured APCA
+   * **Lc 43.6** against a floor of 45 — below it since before anybody looked, and passing WCAG
+   * at 4.98:1 the whole time, which is how it stayed invisible.
+   *
+   * It could not be fixed by moving the colour. `status.ok` needs L 0.68 to clear the floor on
+   * the well; at 0.68 its salience against `background` overtakes `status.warn` and breaks the
+   * rank ADR-0053 fixed. Raising `warn` to make room drops its CVD separation from `status.bad`
+   * to 54, under the declared minimum of 60. **There is no value that satisfies all three.**
+   *
+   * `surface.1` is darker than the well — L 0.210 against 0.290 — so every status token gains
+   * contrast on it, and `status.ok` measures Lc 46.5. It is also the better separator on its own
+   * terms: a darker ground reads as a caption area rather than as more of the swatch.
    */
   readonly adjacentToSample?: boolean;
   /** The script the label is written in. Latin by default, matching `Text`. */

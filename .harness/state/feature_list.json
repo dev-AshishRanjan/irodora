@@ -6643,7 +6643,7 @@
       "package": "@irodora/design-tokens",
       "release": "R7",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
       "acceptance": [
         "status.ok on swatch.well clears the APCA Lc 45 large-text floor in every dark palette, or the pairing is withdrawn and the component says what it does instead",
         "border.strong on swatch.well clears its own APCA floor, or carries a recorded reason",
@@ -6658,7 +6658,8 @@
         "cvd",
         "build"
       ],
-      "notes": "FOUND BY F-175, NOT CAUSED BY IT — and the measurement is the point. `status.ok` on `swatch.well` scored APCA Lc 43.9 against a floor of 45 BEFORE the ramp moved, and 43.6 after; `border.strong` scored 27.9 before against a nonText floor of 30, and 27.6 after. Both were already failing and both are marginally worse. Gate 9 prints them as warnings and its own message says 'This one needs a decision, not a note', which is the gate asking for exactly this record. The reason it is a feature rather than a line in F-175 is that fixing it means moving `status.ok`, and that token's value is bound by the salience rank (ADR-0053) and by CVD separation from `status.bad` (ADR-0098) — the same knot F-174 spent a whole feature untying for the light theme. It is not a nudge."
+      "notes": "FOUND BY F-175, NOT CAUSED BY IT — and the measurement is the point. `status.ok` on `swatch.well` scored APCA Lc 43.9 against a floor of 45 BEFORE the ramp moved, and 43.6 after; `border.strong` scored 27.9 before against a nonText floor of 30, and 27.6 after. Both were already failing and both are marginally worse. Gate 9 prints them as warnings and its own message says 'This one needs a decision, not a note', which is the gate asking for exactly this record. The reason it is a feature rather than a line in F-175 is that fixing it means moving `status.ok`, and that token's value is bound by the salience rank (ADR-0053) and by CVD separation from `status.bad` (ADR-0098) — the same knot F-174 spent a whole feature untying for the light theme. It is not a nudge.",
+      "plan": "plans/F-205-the-status-well-and-the-apca-floor.md"
     },
     {
       "id": "F-206",
