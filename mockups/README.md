@@ -1,4 +1,4 @@
-# Irodora — Complete 19-Screen UI/UX Design System & Mockup Blueprint
+# Irodora — Complete 28-Screen UI/UX Design System & Mockup Blueprint
 
 > **Production-Grade Visual Blueprint & Comprehensive Frontend Specification**  
 > Built for **Irodora** with **HeroUI React Native**, Japanese Contemporary Minimalism (*Kotatsu-Redo* & Muji aesthetic), **Blinkit** instant-decision clarity, and **Warm Off-Black Monochrome Theme (`#15171B`)**.
@@ -11,15 +11,15 @@
    - Eliminates harsh pitch black in favor of a warm, refined graphite charcoal (`#15171B` ground, `#20232A` elevated cards, `#282C35` raised interactive surfaces, `#2E333D` hairline dividers, and `#F7F8FA` crisp off-white typography).
    - Preserves optical fidelity so adjacent chrome never creates simultaneous contrast against fabric samples.
 2. **Lively Japanese Fashion Vector Line-Art:**
-   - Incorporates delicate line-art illustrations (kimono drape contours, botanical plum blossom motifs, woven textile wave curves, and empty-state drawings) to give an artistic, cute, calm, and positive vibe.
+   - Incorporates delicate line-art illustrations (kimono drape contours, botanical plum blossom motifs, woven textile wave curves, and empty-state drawings) to give an artistic, calm, modern, and positive vibe.
 3. **Hero Swatch Dominance (180px / 120px):**
    - Garment and corpus colors are celebrated at large scale with APCA-verified neutral keylines (`swatch.well`).
 4. **Deterministic Color Intelligence (No AI Hype / 100% Checkable):**
    - Precise numbers: **ΔE00 (CIEDE2000)**, **OKLCh**, **CIELAB**, **WCAG 2.2 AA / APCA Lc**, and **CVD Distinction Percentages** (Protanopia, Deuteranopia, Tritanopia).
 5. **Instant Decision Clarity (Blinkit-Style Signals):**
    - Fast 1-second signals: *"+14 New Outfits Unlocked"*, *"0 Duplicates Owned"*, *"Missing Warm Light Neutral"*, and *ΔE00 1.28*.
-6. **Full Lifecycle Screen & Form Coverage:**
-   - All 19 screens covering onboarding, live measurement, catalog search, wardrobe tracking, outfit lab, custom palette builder, personal profile test, settings, and professional reports.
+6. **Full Lifecycle Screen & Route Coverage:**
+   - All 28 screens covering onboarding, live measurement, catalog search, wardrobe tracking, outfit lab, custom palette builder, personal profile test, settings, light mode, Japanese localization, and core UI error/empty states.
 7. **HeroUI React Native Component Primitives:**
    - Tonal card elevation (`level="1"`, `level="2"`, `level="3"`), gesture-driven bottom sheets with detents, segmented choice pills, rounded badges, and fluid layout transitions.
 8. **100% Offline & Local-First Platform:**
@@ -27,7 +27,7 @@
 
 ---
 
-## 2. Directory of All 19 Mockups in [`mockups/`](.)
+## 2. Directory of All 28 Mockups in [`mockups/`](.)
 
 | # | Screen / Surface | Route | File Name | Key Highlights & Components |
 |---|---|---|---|---|
@@ -38,7 +38,7 @@
 | **04** | **Lens Against Target Mode** | `/(tabs)/lens` (Target) | [`04_lens_against_target.jpg`](04_lens_against_target.jpg) | In-store comparison HUD, active target header (*Ai-nezumi*), live ΔE00 proximity gauge (1.42 close match), split-swatch view, ΔL*/ΔC*/ΔH delta bars. |
 | **05** | **Colour Atlas Library** | `/(tabs)/atlas/index` | [`05_atlas_library_catalog.jpg`](05_atlas_library_catalog.jpg) | 120 Japanese traditional colors catalog, faceted seasonal filter chips (Spring, Summer, Autumn, Winter), family chips (Ao, Aka, Midori, Ki, Murasaki, Cha, Kuro), 2-column cards. |
 | **06** | **Colour Detail Centerpiece** | `/(tabs)/atlas/[slug]` | [`06_color_detail_centerpiece.jpg`](06_color_detail_centerpiece.jpg) | Full-width photographic swatch well, Display Kanji header with ruby kana, scientific colorimetry table (Hex, OKLCh, CIELAB, sRGB, P3), Edo dyeworks provenance card with botanical vector art. |
-| **07** | **Wear It / Combinations** | `/(tabs)/atlas/with/[slug]` | [`07_wear_outfit_combinations.jpg`](07_wear_outfit_combinations.jpg) | 4-slot wearable combination matrix (Top, Trousers, Shoes, Trench), occasion selector, 94% Personal Fit, 98% CVD distinction score, substitution pills. |
+| **07** | **Wear It / Combinations** | `/(tabs)/atlas/wear/[slug]` | [`07_wear_outfit_combinations.jpg`](07_wear_outfit_combinations.jpg) | 4-slot wearable combination matrix (Top, Trousers, Shoes, Trench), occasion selector, 94% Personal Fit, 98% CVD distinction score, substitution pills. |
 | **08** | **Colour Compare Instrument** | `/(tabs)/atlas/compare` | [`08_color_compare_instrument.jpg`](08_color_compare_instrument.jpg) | Dual side-by-side swatch comparison, ΔE00 / ΔEok / ΔL* / ΔC* / ΔH delta metrics table, WCAG 2.2 AA / APCA readout, Protan/Deutan/Tritan CVD simulation matrix. |
 | **09** | **Semantic Colour Finder** | `/(tabs)/atlas/find` | [`09_semantic_finder_search.jpg`](09_semantic_finder_search.jpg) | Natural language query search (*"dark muted moss green"*), interactive Lightness/Chroma/Hue HeroUI sliders, instantaneous ΔE00 ranking. |
 | **10** | **Palette Studio Catalog** | `/(tabs)/atlas/palettes` | [`10_palette_studio.jpg`](10_palette_studio.jpg) | Curated palettes (*Quiet Neutrals*, *Kasane no Irome Seasonal*), semantic role tags (Anchor, Light Ground, Mid Tone, Accent), WCAG AA matrix, ASE/CSS/PDF export. |
@@ -47,13 +47,22 @@
 | **13** | **Outfit Lab & Capsule Solver** | `/(tabs)/wardrobe/outfit` | [`13_outfit_lab_capsule_solver.jpg`](13_outfit_lab_capsule_solver.jpg) | Interactive 4-slot outfit canvas with slot locking (Top, Trousers, Shoes, Outerwear), 5-factor diagnostic radar, Capsule Solver panel (5 garments → 12 outfits). |
 | **14** | **App Icon & Launch Splash** | `App Icon & Splash` | [`14_app_icon_and_splash.jpg`](14_app_icon_and_splash.jpg) | Squircle mobile app icon with Plum Blossom Kamon mark (梅鉢) and botanical vector line-art + Animated launch splash screen with wave line-art loader. |
 | **15** | **Settings & System Preferences** | `/(tabs)/profile/preferences` | [`15_settings_preferences.jpg`](15_settings_preferences.jpg) | Appearance theme selector (Sumi Charcoal, Slate Graphite, Obsidian Noir, Washi Minimal), CVD simulation mode selector, tabular figures switch, haptic switch, preference weights reset, on-device security badge. |
-| **16** | **Create Custom Palette Studio** | `/(tabs)/atlas/palettes/create` | [`16_palette_builder_custom.jpg`](16_palette_builder_custom.jpg) | Interactive custom palette builder with 4 semantic role slots (Anchor, Light Ground, Mid Tone, Accent), live contrast engine matrix (11.4:1 AAA), and corpus drawer. |
+| **16** | **Create Custom Palette Studio** | `/(tabs)/atlas/palettes` (Draft) | [`16_palette_builder_custom.jpg`](16_palette_builder_custom.jpg) | Interactive custom palette builder with 4 semantic role slots (Anchor, Light Ground, Mid Tone, Accent), live contrast engine matrix (11.4:1 AAA), and corpus drawer. |
 | **17** | **Personal Profile & Swatch Test** | `/(tabs)/profile/setup` | [`17_profile_setup_swatch_test.jpg`](17_profile_setup_swatch_test.jpg) | Guided 90s swatch comparison draping test (Warm vs Cool), live 4-dimensional radar chart (Temperature, Depth, Chroma Tolerance, Contrast Preference), recommended palette preview. |
 | **18** | **Export & PDF Audit Center** | `/(tabs)/profile/export` | [`18_export_center_reports.jpg`](18_export_center_reports.jpg) | CJK PDF Wardrobe Color Audit report preview with version envelopes, Adobe ASE Swatch export, OKLCh Design Tokens export, encrypted offline SQLite backup & restore. |
+| **19** | **What Goes With This** | `/(tabs)/atlas/with/[slug]` | [`19_what_goes_with_this.jpg`](19_what_goes_with_this.jpg) | Anchor corpus colour with ranked harmony rows (Complementary, Analogous, Split-Complementary, Triadic). Each row includes swatch sample, Kanji/Kana/Romaji, and exact ΔE00 score. |
+| **20** | **Shareable Colour Card** | `/(tabs)/atlas/card/[slug]` | [`20_colour_card_shareable.jpg`](20_colour_card_shareable.jpg) | High-resolution shareable export card: large central swatch, Kanji/Kana/Romaji, OKLCh values, corpus version (v1.2), "Save as PDF" and "Share" CTAs. |
+| **21** | **Nearest in Corpus** | `/(tabs)/atlas/nearby/[slug]` | [`21_nearest_in_corpus.jpg`](21_nearest_in_corpus.jpg) | Anchor colour accompanied by ranked list of closest corpus colours sorted strictly by CIEDE2000 ΔE00 distance with colorimetric delta readouts. |
+| **22** | **Shopping Check (In-Store)** | `/(tabs)/wardrobe/shopping` | [`22_shopping_check.jpg`](22_shopping_check.jpg) | Evaluation of a prospective garment against own wardrobe with 4 plain numbers (+14 Outfits Unlocked, 8 Pairings, 0 Duplicates, 1 Gap Addressed). Strictly no "Buy" verdict or arbitrary scores. |
+| **23** | **Finished Personal Profile** | `/(tabs)/profile/index` | [`23_profile_finished.jpg`](23_profile_finished.jpg) | Finished personal colour profile with 4 dimension sliders (Temperature, Depth, Chroma Tolerance, Contrast Preference), confidence notes per dimension, Kasane recommendations, and PDF export. |
+| **24** | **Combinations from a Garment** | `/(tabs)/wardrobe/with/[id]` | [`24_garment_combinations.jpg`](24_garment_combinations.jpg) | Harmonic combinations originating from an owned wardrobe item, with an explicit "Estimated from a capture · D65 Daylight" provenance badge on source colour. |
+| **25** | **Home Screen (Light Mode)** | `/(tabs)/index` (Light) | [`25_home_light_mode.jpg`](25_home_light_mode.jpg) | Full Light Mode translation on warm off-white Washi background (`#F6F5F2`), `#FFFFFF` elevated cards, `#1A1B1E` sumi ink typography, and neutral APCA keyline. |
+| **26** | **Colour Detail (Japanese Locale)** | `/(tabs)/atlas/[slug]` (`ja`) | [`26_color_detail_japanese.jpg`](26_color_detail_japanese.jpg) | Native Japanese localization of Colour Detail centerpiece screen (`伝統色の詳細`, `測色値と表色系`, `着こなしの配色調和`, `襲の色目`, `コーパス典拠と査読`). |
+| **27** | **Core UI States Board** | `App States` (Landscape 16:9) | [`27_states_board.jpg`](27_states_board.jpg) | 4-panel landscape board illustrating key edge states in HeroUI warm off-black: Empty State, Loading & Calibrating State, Refused Measurement (Glare/Shadow), and Permission Denied. |
 
 ---
 
-## 3. Design Tokens (Warm Off-Black Monochrome `#15171B`)
+## 3. Design Tokens (Warm Off-Black Monochrome `#15171B` & Washi Light `#F6F5F2`)
 
 ```typescript
 export const darkMonochromeTokens = {
@@ -90,6 +99,25 @@ export const darkMonochromeTokens = {
     lg: 24,
     xl: 32,
     xxl: 48,
+  }
+};
+
+export const lightWashiTokens = {
+  background: {
+    ground: '#F6F5F2',    // Warm off-white Washi paper base
+    level1: '#FFFFFF',    // Elevated card surface with subtle shadow
+    level2: '#EEEDE8',    // Interactive container surface
+    level3: '#E5E3DE',    // Sheet & modal overlay surface
+  },
+  border: {
+    subtle: '#E5E3DE',    // Hairline border
+    strong: '#1A1B1E',    // Active border
+    neutralKeyline: '#1A1B1E18', // Swatch border APCA safe
+  },
+  typography: {
+    primary: '#1A1B1E',   // Sumi ink black
+    secondary: '#5C6470', // Muted slate gray
+    tertiary: '#8C96A5',  // Quiet captions
   }
 };
 ```
