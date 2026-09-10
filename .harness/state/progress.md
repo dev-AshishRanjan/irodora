@@ -8,6 +8,118 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-10 — The mockup set became the reference, so it was audited against the repository
+
+**No feature was claimed and no source was touched.** Nineteen mockups were committed on
+2026-09-09 and 2026-09-10 outside the loop — no plan, no feature id, no entry here — and then
+named as the authority the UI would be rebuilt against. This session read them against the
+repository and scoped **R9** from the result.
+
+### What the set is, and what it is not
+
+**As art direction it is good and R9 adopts it**: the hero-sample scale, the instrument framing
+on Compare and Against-Target, the plain-language reading beside every delta, the botanical
+line-art, the density.
+
+**As a specification it does not survive checking.** Measured, not impressioned:
+
+| the render says | the repository says |
+|---|---|
+| `#5B6B78` = CIELAB `45.2 / -3.4 / -8.1` | `44.37 / -2.85 / -9.23` |
+| `#5B6B78` = OKLCh `0.490 / 0.035 / 240.2°` | `0.519 / 0.028 / 242.7°` |
+| `Display-P3 0.357, 0.420, 0.471` | the sRGB triplet ÷ 255, not a P3 conversion |
+| 甚三紅 `#EB6EA5` | a light pink, rendered as deep crimson |
+
+### The finding that is not a design finding
+
+**Every one of the thirteen colour names in the set is absent from `content/colors/`** —
+Ai-nezumi, Tetsu-kon, Kachi-iro, Moegi, Toki-iro, Jinza-momi, Koke-iro, Uguisu-cha, Nureba-iro,
+Shiro-neri, Gin-nezumi, Kuchiba, Sabi-asagi. The corpus holds 120 entries, **all** classified
+`japanese-inspired`, **none** claiming an era. Mockup 06 prints *"Sourced from Edo period
+dyeworks manuscript (1842). Verified natural indigo recipe."* — a citation to a manuscript that
+does not exist, which is the sentence [ADR-0065](../../docs/adr/0065-the-seed-corpus-is-coined-not-canonical-and-constructed-not-measured.md)
+was written to prevent. Mockup 10 badges a palette *"Heian Verified"*.
+
+This is a content-integrity finding that happened to arrive as a picture. `F-221` owns it.
+
+### The ramp is a colour-science decision, not a taste one
+
+The set proposes a ground of `#15171B` rising to `#464D5B`: **OKLCh C 0.0086 → 0.0251, every
+step at h ≈ 264°**. The shipped ramp is **C ≈ 0.004 at every step** — achromatic to within
+measurement noise. `level3` is the surface a sample sits on, and a chromatic surround shifts the
+perceived hue of what sits in it. [ADR-0096](../../docs/adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md)
+is titled for exactly this and caps chroma at `0.01`.
+
+**The cool register is already available and already proven**: `themeRecipes.fuka`, hue 240,
+pinned to `fuka-mizu`. `F-220` chooses between pointing at it and adding a recipe near 264°.
+Repainting the base ramp is not on the table, and the ADR is why.
+
+### The honest half of the claims finding
+
+*"97% Match"*, *"95% Confidence"*, *"100% CVD-Safe"*, *"Museum-grade"*, *"Master Harmony"*,
+*"Outfit Score 93/100"* — **none of these trips the current patterns in `claims.json`.** Each
+string was run against the real pattern list rather than judged by eye. So the gate is not
+failing; its pattern list is narrower than the policy ADR-0031 states, and the set is the
+evidence of the gap. `F-219` closes it. Reporting this as "the mockups fail the claims gate"
+would have been the same overstatement the gate exists to prevent.
+
+### Also found
+
+- **The tab bar is four different shapes** across 01, 02, 11 and 15 — and 01's labelled variant
+  would reinstate what `F-168` removed.
+- **Six routes are undrawn**: `atlas/with/[slug]`, `atlas/card/[slug]`, `atlas/nearby/[slug]`,
+  `wardrobe/shopping`, `profile/index`, `wardrobe/with/[id]`.
+- **07 is mis-routed** — filed at `atlas/with/[slug]`, draws `atlas/wear/[slug]`.
+- **16 names `/atlas/palettes/create`, which is not a route** — the draft state lives inside
+  `atlas/palettes.tsx`.
+- **Nothing shows light and nothing shows `ja`**, though both ship and neither is a fallback.
+- The v1 set (277f7dc) is superseded, but it carried a **Shopping Check** wireframe that v2
+  dropped — and that wireframe contradicted [ADR-0082](../../docs/adr/0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md)
+  by drawing four verdict-bearing signals where the ADR decided on numbers and no verdict.
+
+### Rejected work, recorded because it was done
+
+Nine replacement mockups were generated as token-driven HTML rasterised through headless Edge,
+and **rejected on sight for not matching the medium of the existing set.** Removed rather than
+left in place. The remaining mockups are being generated externally and are expected before R9
+starts.
+
+### R9
+
+**31 features, `F-218` … `F-248`**, all `backlog`. The reference (4) · the chrome (3) · the
+seventeen surfaces · what the set never showed (4) · proof (3). `F-218` is the entry point and
+nothing blocks it.
+
+### Harness
+
+- **`mockups/AGENTS.md`** — new scoped harness, because the directory is load-bearing now and
+  had no rules. **The scope gate cannot see it**: `verify-state.mjs` walks `apps/`, `packages/`
+  and `content/` only, and still reports 3 scoped harnesses. Recorded as `F-218` acceptance
+  rather than left as an assumption [[a-gate-that-errors-is-failing-open]].
+- **`AGENTS.md` said "We are pre-code"** — wrong by 193 features, and the first thing every
+  agent reads. Corrected, with a pointer saying `feature_list.json` wins over the roadmap.
+- **`releases[]` was missing `R8`.** Added, with `R9`.
+- **`docs/roadmap.md` is four releases stale** — documents R0–R5 and cites ranges ending at
+  F-066 while the state file holds 231 features through R9. Filed as `F-248`, not fixed
+  out-of-band.
+
+### Gates
+
+**Ran:** `state` (green, 18 checks) · `format:check` (green) · `contrast` (green, exit 0, on the
+untouched tree before any edit) · `typecheck` · `lint` · `test`.
+
+**NOT run:** `build` · `e2e` · `a11y` · `cvd` · `content` · `color-golden` · `perf` ·
+`security` · `artifact`. Nothing in this session touched source, a token value, a corpus entry
+or a dependency — the changes are one state file and three markdown documents — so these were
+judged not to apply. That judgement is the thing to check if something is later found broken.
+
+### Next
+
+**`F-218` — the route↔mockup index.** Not claimed: the outstanding mockups arrive first, and
+coding starts next week. Nothing is in flight and nothing is half-finished.
+
+---
+
 ## 2026-09-08 — CI was red for three pushes, and a test of five constants is why
 
 **Gate 4 failed on the runner while `pnpm test` passed here** — uncached, under `CI=true`, under

@@ -18,8 +18,15 @@ offline.
 See [`docs/PRD.md`](docs/PRD.md) and
 [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 
-**We are pre-code.** Product definition and this harness exist. Application code starts at
-release R0, one feature at a time, through this manual.
+**R0 through R8 have shipped** — 193 features, an Expo application, the colour engine, the
+corpus and the design system. **R9 is the current release**: the product UI is rebuilt against
+the reference set in [`mockups/`](mockups/), which is governed by its own scoped harness
+([`mockups/AGENTS.md`](mockups/AGENTS.md)) because it is now load-bearing. Work continues one
+feature at a time, through this manual.
+
+> Scope is [`feature_list.json`](.harness/state/feature_list.json) and nothing else.
+> [`docs/roadmap.md`](docs/roadmap.md) is four releases behind it and is corrected by `F-248`;
+> where the two disagree, the state file wins.
 
 ---
 
