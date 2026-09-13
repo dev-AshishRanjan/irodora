@@ -3,114 +3,81 @@
 > **Scoped harness. Extends [`../AGENTS.md`](../AGENTS.md), which still applies in full.**
 > This scope is **stricter**, never looser.
 
-This directory became load-bearing on 2026-09-10, when it was made the reference the product
-UI is rebuilt against. Everything here is therefore governed, and R9 (`F-218` … `F-248`) is
-the release that acts on it.
+The set is **complete at 28** (`00`–`27`) and **load-bearing**: R9 (`F-218` … `F-270`)
+rebuilds the product to match it with **no discretionary deviation**. The contract — what
+"strict" means, how two contradicting mockups are resolved, and the closed list of forced
+departures — is [`docs/design/R9-MOCKUP-FIDELITY.md`](../docs/design/R9-MOCKUP-FIDELITY.md).
+Read it before building anything from an image in this directory.
 
 > **The gate cannot see this file yet.** `scripts/verify-state.mjs` walks `apps/`, `packages/`
-> and `content/` for scoped harnesses. `F-218` adds `mockups/`. Until it does, these rules are
-> binding on a reader and invisible to the build — which is exactly the asymmetry
-> [[a-gate-that-errors-is-failing-open]] is about, and why it is recorded rather than assumed.
+> and `content/` for scoped harnesses. `F-218` adds `mockups/`. Until it does, these rules bind a
+> reader and are invisible to the build [[a-gate-that-errors-is-failing-open]].
 
 ---
 
-## What a mockup is, and what it is not
+## What an image here is
 
-**A mockup is art direction: composition, hierarchy, density, scale, register.** In those
-respects the set is good, and R9 adopts it.
+**The specification for everything a person can see** — layout, composition, hierarchy,
+density, scale, typeface, colour, radius, icon, illustration, copy structure. R9 follows all of
+it.
 
-**A mockup is not a specification, and nothing in it is data.** Mockups `01`–`18` are
-image-generation renders. Measured against the repository on 2026-09-10:
-
-| what the render says | what the repository says |
-|---|---|
-| `#5B6B78` is `CIELAB 45.2 / -3.4 / -8.1` | `44.37 / -2.85 / -9.23` |
-| `#5B6B78` is `OKLCh 0.490 / 0.035 / 240.2°` | `0.519 / 0.028 / 242.7°` |
-| `Display-P3 0.357, 0.420, 0.471` | that is the sRGB triplet ÷ 255, not a P3 conversion |
-| 甚三紅 `#EB6EA5` (a light pink) | rendered as a deep crimson |
-
-**Take the layout. Re-derive every number.**
+**Not the specification for anything a person reads as a fact.** The images are
+image-generation renders. Their names, numbers, dates and provenance lines are placeholders, and
+they do not survive checking — [`R9-MOCKUP-FIDELITY.md` §4](../docs/design/R9-MOCKUP-FIDELITY.md#e1--mockup-content-is-sample-content).
 
 ---
 
 ## Three absolute rules
 
-### 1. No colour name that is not in the corpus
+### 1. Mockup content never reaches the product
 
-All 120 entries in [`../content/colors/`](../content/colors) are classified
-`japanese-inspired`. Every one is an Irodora construction. **None claims an era.**
+No colour name, hex, value, count, date or provenance line is copied from an image. The slot is
+built exactly; what fills it comes from the engine, the corpus or the store.
 
-The current set prints thirteen names that do not exist here — *Ai-nezumi, Tetsu-kon,
-Kachi-iro, Moegi, Toki-iro, Jinza-momi, Koke-iro, Uguisu-cha, Nureba-iro, Shiro-neri,
-Gin-nezumi, Kuchiba, Sabi-asagi* — and attributes them to periods the corpus does not record.
+The images print over twenty colour names that are **not in [`../content/colors/`](../content/colors)**
+— all 120 entries there are `japanese-inspired` and none claims an era — and cite an 1842 Edo
+dyeworks manuscript that does not exist. Copying either into the product is the dishonesty
+[`../content/AGENTS.md`](../content/AGENTS.md) rule 3 describes.
 
-### 2. No provenance a source does not stand behind
+### 2. No drawn claim ships unless the product can demonstrate it
 
-Mockup `06` prints:
+*"97% Match"*, *"100% CVD-Safe"*, *"Museum-grade"*, *"Master Harmony"*, *"Extracting reflectance
+spectra"* — the element is built; its words come from a defined computation. **None of these
+trips [`claims.json`](../.harness/verification/claims.json) today**; `F-219` closes that. Until
+then this rule is enforced by reading.
 
-> *"Historical Provenance: Sourced from Edo period dyeworks manuscript (1842). Verified natural
-> indigo recipe."*
+### 3. A changed image is a changed specification
 
-**That manuscript does not exist.** [ADR-0065](../docs/adr/0065-the-seed-corpus-is-coined-not-canonical-and-constructed-not-measured.md)
-exists to prevent that sentence, and `10`'s *"Heian Verified"* badge is the same claim in a
-smaller font. Inventing a citation in a reference image is the failure
-[`content/AGENTS.md`](../content/AGENTS.md) rule 3 describes, committed a directory away from
-where the gate is looking.
-
-### 3. No number without the thing that produced it
-
-ΔE00 is honest. A percentage bolted onto it is not, and the honest half is what makes the
-invented half credible.
-
-Banned in this directory for the same reason [ADR-0031](../docs/adr/0031-measurement-claims-policy.md)
-bans them in the product: *"97% Match"*, *"95% Confidence"*, *"100% CVD-Safe"*, *"100%
-Distinguishable"*, *"Museum-grade"*, *"Master Harmony"*, and any composite score standing in
-for the measurements underneath it.
-
-> **These do not currently trip [`claims.json`](../.harness/verification/claims.json).** Checked,
-> string by string, before this file was written. The pattern list is narrower than the policy,
-> and `F-219` closes that gap. Until it does, this rule is enforced by reading.
+An image is replaced or edited only together with its row in the route index (`F-218`) and its
+element inventory (`F-220`). A mockup that changes silently leaves every feature built from it
+checking against a picture nobody specified.
 
 ---
 
-## The colour ramp is not the mockups' to set
+## The palette is the mockups'
 
-The set proposes a ground of `#15171B` rising to `#464D5B` — **OKLCh C 0.0086 → 0.0251, all at
-h ≈ 264°**. The shipped ramp sits at **C ≈ 0.004** at every step, which is achromatic to within
-measurement noise.
+Until 2026-09-10 this file said the colour ramp was not the mockups' to set. **The user decided
+otherwise, after the trade-off was put to them**, and the decision is recorded here rather than
+softened: `F-225` adopts the README token table, including a surround behind samples that carries
+chroma (C up to 0.0206), and its ADR states that consequence plainly.
 
-That difference is not taste. `level3` is the surface a sample sits on, and a chromatic
-surround shifts the perceived hue of what sits in it — the reason viewing standards specify a
-*neutral* surround for appraisal. [ADR-0096](../docs/adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md)
-is titled for precisely this, and its chroma ceiling is `0.01`.
-
-**The cool register is available and already proven: `themeRecipes.fuka`, hue 240, pinned to
-the corpus entry `fuka-mizu`.** `F-220` decides between pointing at it and adding a recipe near
-264°. Repainting the base ramp is not on the table.
+**Three tokens still move**, because a blocking accessibility gate may not be lowered — the
+smallest passing step, listed with its ΔE00 in
+[§4 E3](../docs/design/R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates).
 
 ---
 
-## Every mockup names its route
+## The set disagrees with itself
 
-A mockup that depicts no route, and a route that no mockup depicts, are both defects. As of
-2026-09-10 the set has both:
-
-- **Six routes are undrawn** — `atlas/with/[slug]`, `atlas/card/[slug]`, `atlas/nearby/[slug]`,
-  `wardrobe/shopping`, `profile/index`, `wardrobe/with/[id]`.
-- **`07` is mis-routed** — filed at `atlas/with/[slug]`, draws `atlas/wear/[slug]`.
-- **`16` names a route that does not exist** — `/atlas/palettes/create`; the draft state lives
-  inside `atlas/palettes.tsx`.
-- **Nothing shows light, and nothing shows `ja`** — both ship, and neither is a fallback.
-
-`F-218` builds the index that makes each of these a build failure rather than a reading.
+The tab bar is drawn nine ways. Home `01` and Home-light `25` are different designs; so are
+colour detail `06` and its Japanese `26`. **A feature never resolves that on its own** — the
+precedence in [§3](../docs/design/R9-MOCKUP-FIDELITY.md#3--precedence--how-a-contradiction-between-mockups-is-resolved)
+does, and the decisions are in the conflict register (§6).
 
 ---
 
 ## The register
 
-Adopt the delicate botanical and garment line-art. It is the warmth channel, and it is why the
-set feels like a product rather than a spreadsheet.
-
-**Do not drift to kawaii.** [`../docs/design/BRAND.md`](../docs/design/BRAND.md) excludes it by
-name as *a different, unrelated cultural register*. The set does not currently drift there; the
-distance is small, and it is held on purpose.
+The botanical and garment line-art is the warmth channel and R9 keeps it. **Do not drift to
+kawaii**: [`../docs/design/BRAND.md`](../docs/design/BRAND.md) excludes it by name as *a
+different, unrelated cultural register*. The set does not drift there; hold that on purpose.

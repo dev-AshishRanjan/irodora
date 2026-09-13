@@ -406,6 +406,10 @@ honestly and cheap to build dishonestly — and the difference is visible.
 | ID | Question | Needed by |
 |---|---|---|
 | OQ-6 | Apple Developer Program enrolment — individual or organisation, and who holds the certificates | R3 |
+| OQ-7 | `profile/measure` (FR-61) is the one route no mockup draws. Generate a mockup for it, or compose it from mockup 08's readout table and 12's form? See [R9-MOCKUP-FIDELITY §11](design/R9-MOCKUP-FIDELITY.md#11-open-questions) | R9 |
+| OQ-8 | The Lens states behind *Garment Scan* (FR-14) and *Calibrated Card* are drawn as mode pills in mockup 02 and nowhere else. Generate mockups, or compose them from 02–04? | R9 |
+| OQ-9 | Four figures the mockups print have no definition in the product — *% Match* (03), *Master Harmony* (13), *Garment Calibration History · concordance* (23), *Wardrobe Pairings* (22). Define each in the engine, or put a figure the product already defines in that slot? | R9 |
+| OQ-10 | Mockup 22 omits two of FR-52's four answers — the personal-compatibility score and the investment signal. Extend the drawn grid to carry them, or amend FR-52? | R9 |
 
 **OQ-3 is closed by [ADR-0085](adr/0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md).** The reference card is a partner card and its
 values are cited rather than measured — a card we manufactured would make us the authority on a

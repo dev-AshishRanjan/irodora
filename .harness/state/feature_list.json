@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-10",
+  "updated": "2026-09-14",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7068,13 +7068,14 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [],
       "acceptance": [
-        "Every file in mockups/ names the route it depicts, and every route in apps/mobile/app names the mockup that covers it — both directions, in one machine-readable index",
-        "A route with no mockup and a mockup with no route are both build failures, so the set cannot silently drift from the app again",
-        "07 is corrected: it is filed at atlas/with/[slug] and depicts atlas/wear/[slug], and 16 is filed at a route that does not exist",
-        "mockups/AGENTS.md is inside the scope gate’s walk — it is written by this release and scripts/verify-state.mjs currently walks only apps/, packages/ and content/, so until this lands the scoped harness governing the reference set is one the gate cannot see"
+        "Every file in mockups/ names the route or surface it governs, and every route in apps/mobile/app names the mockup that governs it — both directions, in one machine-readable index that matches R9-MOCKUP-FIDELITY §7",
+        "A route with no governing mockup and a mockup with no route are both build failures, except where an open question is named against the route (OQ-7 for profile/measure)",
+        "A mockup file whose bytes change without its index row and its F-220 inventory changing in the same commit fails the build — a changed image is a changed specification",
+        "mockups/AGENTS.md is inside the scope gate’s walk; scripts/verify-state.mjs currently walks only apps/, packages/ and content/, so the harness governing the reference set is one the gate cannot see",
+        "Every feature in R9 or a later release whose service is mobile, or which touches packages/ui, names its governing mockup, and the state gate refuses one that does not — so golden rule 14 is checked rather than remembered"
       ],
       "verification": [
         "state",
@@ -7083,7 +7084,7 @@
         "format",
         "test"
       ],
-      "notes": "THE SET AND THE APP DISAGREE TODAY AND NOTHING SAYS SO. 21 screen routes exist; 19 mockups cover 15 of them. Six routes have no mockup at all (atlas/with/[slug], atlas/card/[slug], atlas/nearby/[slug], wardrobe/shopping, profile/index, wardrobe/with/[id]); mockup 16 is filed at /atlas/palettes/create, which is not a route — palette creation lives inside atlas/palettes.tsx. This feature is first because every feature after it cites a mockup, and a citation to a picture that does not match the route is worse than no citation."
+      "notes": "The route map is in docs/design/R9-MOCKUP-FIDELITY.md §7. Two README routes are wrong and the index must carry the corrected ones: 17 is filed at /profile/setup, which is not a route (it is the in-progress state of profile/index, C15), and 24 governs atlas/with/reading/[id] as well as wardrobe/with/[id] (C16). profile/measure has no mockup at all (OQ-7)."
     },
     {
       "id": "F-219",
@@ -7095,12 +7096,12 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [],
       "acceptance": [
-        "The constructions the mockup set introduced are patterns in claims.json with a reason each: a percentage match or confidence attached to a ΔE00, an absolute CVD safety claim, a composite score presented as a verdict, and grade language borrowed from instruments we do not own",
-        "verify-claims-proof exercises each new pattern against a string that must fail and a string that must pass, so a pattern that matches nothing cannot ship",
-        "Japanese equivalents land with the English ones, because the gate reads both (F-172)"
+        "claims.json carries patterns, each with its reason, for: a percentage match or percentage confidence beside a colour difference; an absolute CVD safety claim; a composite score presented as a verdict; grade language borrowed from instruments or institutions; a named physical quantity the pipeline does not measure (\"reflectance spectra\")",
+        "verify-claims-proof exercises every new pattern against a string that must fail and one that must pass, so a pattern that matches nothing cannot ship",
+        "The Japanese equivalents land with the English ones, because the gate reads both (F-172)"
       ],
       "verification": [
         "state",
@@ -7109,24 +7110,58 @@
         "format",
         "test"
       ],
-      "notes": "CHECKED HONESTLY BEFORE FILING: none of \"97% Match\", \"95% Confidence\", \"100% CVD-Safe\", \"Museum-grade\", \"Master Harmony\", \"Outfit Score 93/100\" trips the CURRENT patterns in .harness/verification/claims.json. So this is not a gate that is failing — it is a gate whose pattern list is narrower than the policy ADR-0031 states, and the mockups are the evidence of the gap. The riskiest of them is the percentage bolted onto a real number: ΔE00 1.18 is honest and \"97% Match\" beside it is not, and the honest half is what makes the invented half credible."
+      "notes": "CHECKED BEFORE FILING: \"97% Match\", \"95% Confidence\", \"100% CVD-Safe\", \"Museum-grade\", \"Master Harmony\" and \"Extracting reflectance spectra…\" all pass the CURRENT pattern list. The list is narrower than ADR-0031. Every construction in docs/design/R9-MOCKUP-FIDELITY.md §4 E2 is a test string."
     },
     {
       "id": "F-220",
-      "title": "The cool register the mockups want is a theme, and the ground a colour is judged against stays neutral",
+      "title": "Every mockup is redlined into an element inventory, and every contradiction in the set is resolved by rule",
       "requirements": [
-        "FR-70"
+        "FR-71",
+        "NFR-25",
+        "NFR-9"
       ],
-      "service": "packages",
-      "package": "@irodora/design-tokens",
+      "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
-      "blockedBy": [],
+      "status": "todo",
+      "blockedBy": [
+        "F-218"
+      ],
       "acceptance": [
-        "The cool register ships as a theme recipe through the ADR-0096 pipeline — a hue on the chrome, L preserved exactly — and not as a new base ramp",
-        "swatch.well, the two-tone keyline, chart.*, status.* and ring are unchanged in it, proven by the same test that pins NEUTRAL_IN_EVERY_THEME",
-        "gate 9 and gate 10 pass over the derived values, and the chromaCeiling of 0.01 holds without a new exception"
+        "For each of mockups 00–27 an inventory lists every element top to bottom: component, token, measured size and spacing in dp (2 px = 1 dp on a 384 dp reference, R9-MOCKUP-FIDELITY §2), typeface and weight, icon, illustration, data binding, and action",
+        "Every value in an inventory is bound per §8 — no name, number, date or provenance line from an image is recorded as content",
+        "Each conflict in §6 names the governing mockup for every affected element; each ⇄ default stands as the precedence rule decided unless the user flips it — a flip is recorded, and an unflipped default is not waited on",
+        "The values the images leave open are measured and recorded: Slate Graphite and Obsidian Noir from mockup 15, the swatch corner on each mockup, the icon stroke weight, the serif face that matches 00, 01, 14 and 25",
+        "Presentation artefacts — bezels, status bars, callouts, leaked prompt labels, garbled text — are listed per mockup as not design, so no feature builds one"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "THE FEATURE EVERY SURFACE IS BUILT FROM. It completes docs/design/R9-MOCKUP-FIDELITY.md, which already holds the rules (§2–§4), the tokens (§5), the conflict register (§6), the route map (§7) and the bindings (§8). What it adds is the per-element redline that makes \"strict\" checkable. The inventories become the conformance-sweep assertions each surface feature adds."
+    },
+    {
+      "id": "F-221",
+      "title": "Every route renders beside its mockup, so fidelity is a picture a person can check rather than a claim",
+      "requirements": [
+        "NFR-25",
+        "NFR-19"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-218"
+      ],
+      "acceptance": [
+        "One command renders every route in the F-218 index at the 384 dp reference viewport and composes each capture beside its governing mockup, in both themes and both locales, into .harness/verification/evidence/",
+        "The captures come from the running app on an Android emulator through the existing Maestro flows (ADR-0086), not from a re-implementation of the screen — a picture of something else is not evidence",
+        "The run records which routes it captured and which it could not, so \"no difference found\" and \"nothing captured\" cannot read alike",
+        "The conformance sweep gains the structural half: every element in a surface’s F-220 inventory is asserted present on the rendered tree"
       ],
       "verification": [
         "state",
@@ -7140,55 +7175,123 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MEASURED BEFORE PROPOSED. The mockup README asks for a ground of #15171B and a chrome ramp rising to #464D5B — OKLCh C 0.0086 to 0.0251, all at h≈264. The shipped dark ramp sits at C≈0.004 across every step, which is achromatic to within measurement noise. The difference is not taste: level3 (#323742, C 0.0206) is the surface a sample would sit on, and a chromatic surround shifts the perceived hue of what sits in it — simultaneous chromatic contrast, the reason ISO 3664 specifies a NEUTRAL surround for appraisal. ADR-0096 is titled for exactly this and its ceiling is 0.01. THE GOOD NEWS IS THAT MOST OF THE ASK ALREADY SHIPS: themeRecipes.fuka is hue 240 at chromaScale 2, pinned to the corpus entry fuka-mizu. Deciding between pointing defaultTheme at fuka.dark and adding a recipe at h 264 is this feature; repainting the base ramp is not on the table, and an ADR records which was chosen and why."
+      "notes": "The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator."
     },
     {
-      "id": "F-221",
-      "title": "The reference set stops printing a corpus that does not exist",
+      "id": "F-222",
+      "title": "Every figure the mockups print is a defined computation",
       "requirements": [
-        "FR-23",
-        "FR-24",
-        "NFR-20"
+        "FR-11",
+        "NFR-21",
+        "FR-48"
       ],
-      "service": "content",
+      "service": "packages",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [
-        "F-218"
+        "F-220"
+      ],
+      "openQuestions": [
+        "OQ-9"
       ],
       "acceptance": [
-        "No mockup in the set prints a colour name absent from content/colors, an era, or a source citation the corpus does not hold",
-        "Where a mockup shows a colour it shows a published entry, and the rendered swatch matches the hex printed beside it",
-        "The set states, once and where a reader will find it, that all 120 entries are Irodora constructions and the corpus claims no history"
+        "Each figure in R9-MOCKUP-FIDELITY §8 marked OQ-9 or F-222 is either defined — a pure function, a stated formula, an ADR — or replaced in its slot by a figure the product already defines, as OQ-9 decides",
+        "The ΔE00 descriptor bands behind \"Very Close\", \"Perceptible Shift\" and \"Slightly Darker\" (04, 08) are one table used everywhere, and none of them contains the word match (FR-74)",
+        "provenance.confidence has one display format, stated with what the number means, used in 03 and 27",
+        "\"Gaps addressed\" (22) is gaps() before and after the candidate, and asserted on a constructed wardrobe"
       ],
       "verification": [
         "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "color-golden"
+      ],
+      "notes": "OQ-9 must close before this starts: % Match (03), Master Harmony (13), Garment Calibration History and concordance (23), Wardrobe Pairings (22). Most of what the mockups print already exists — FR-5 separation, FR-29 fit, FR-32 components, coverage() and gaps(), findDuplicates, solveCapsule — the table in §8 is the audit."
+    },
+    {
+      "id": "F-223",
+      "title": "The profile carries the seasonal summary the finished-profile mockup draws",
+      "requirements": [
+        "FR-26",
+        "NFR-22"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "A seasonal summary label is derived from the four profile ranges by a stated, deterministic rule, and the rule is content rather than code",
+        "An ADR amends ADR-0010 and ADR-0072, which produce no seasonal label today, and states what the label summarises and what it discards",
+        "The label is shown as a summary of the ranges beside it, never instead of them, and it carries no skin-tone, ethnic or body judgement (NFR-22)"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
         "lint",
         "format",
         "test",
         "content"
       ],
-      "notes": "EVERY COLOUR NAME IN THE CURRENT SET IS FABRICATED. Ai-nezumi, Tetsu-kon, Kachi-iro, Moegi, Toki-iro, Jinza-momi, Koke-iro, Uguisu-cha, Nureba-iro, Shiro-neri, Gin-nezumi, Kuchiba, Sabi-asagi — thirteen names, none in content/colors, which holds 120 entries all classified japanese-inspired with ZERO claiming an era. Mockup 06 prints \"Sourced from Edo period dyeworks manuscript (1842). Verified natural indigo recipe.\" That manuscript does not exist and ADR-0065 exists to prevent the sentence. 10 prints \"Heian Verified\". SEPARATELY, the numbers do not survive checking: 06 gives #5B6B78 as CIELAB 45.2/-3.4/-8.1 and OKLCh 0.490/0.035/240.2 where the values are 44.37/-2.85/-9.23 and 0.519/0.028/242.7, and its \"Display-P3 0.357, 0.420, 0.471\" is the sRGB triplet divided by 255 rather than a P3 conversion. 05 renders 甚三紅 #EB6EA5 — a light pink — as deep crimson. This is a content-integrity feature, not a design one."
+      "notes": "Mockup 23: the brown pill \"Autumn Muted / Kasane Harmony\" at the top of the dimensions card. Conflict C12. The label is derived FROM the ranges, which is a lossy summary; it is not a quiz that produces a label first, which is the model ADR-0010 rejected."
     },
     {
-      "id": "F-222",
-      "title": "One tab bar, one shape, on every surface",
+      "id": "F-224",
+      "title": "The corpus holds what the mockups draw: kasane palettes and the Japanese family groups",
       "requirements": [
-        "FR-71",
-        "NFR-8"
+        "FR-22",
+        "FR-23",
+        "NFR-20"
       ],
-      "service": "mobile",
+      "service": "content",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-218"
+        "F-220"
       ],
       "acceptance": [
-        "One tab bar component, five destinations, icons alone, rendered identically on every tab root",
-        "The order and the icon set are stated once and read from there, so a screen cannot draw its own",
-        "The structure is announced correctly to a screen reader, and the a11y gate proves it on every route"
+        "Kasane palettes exist in content/palettes with complete provenance, classified japanese-inspired, never historical — enough to fill 10, 23 and 26 as drawn",
+        "The 25 taxonomy families are grouped under the seven chips mockup 05 draws — Ao 青, Aka 赤, Midori 緑, Ki 黄, Murasaki 紫, Cha 茶, Kuro 黒 — as content with a stated rule, and every entry lands in exactly one group",
+        "The content gate passes, and font coverage passes for every new string"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "content"
+      ],
+      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23)."
+    },
+    {
+      "id": "F-225",
+      "title": "The mockup palette becomes the token set, dark and light, with the four themes mockup 15 draws",
+      "requirements": [
+        "FR-70",
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "docs/design/design-system.manifest.json takes the README token table exactly — ground, three levels, both borders, keyline, three text roles, primary action — in dark and light, except the three E3 moves in R9-MOCKUP-FIDELITY §4, each at the value §4 states",
+        "The themes are the four mockup 15 draws — Sumi Charcoal, Slate Graphite, Obsidian Noir, Washi Minimal — plus system appearance and device accent (FR-70, E4); fuka, yama and aota are withdrawn from the picker",
+        "Every chroma the mockups use in chrome (C10) is a declared exception with its reason, and the chroma ceiling is re-stated",
+        "An ADR supersedes ADR-0096 and ADR-0099 and states the measured consequence plainly: samples are now judged against a surround of C up to 0.0206, which a neutral well at the same lightness could not hide (ΔE00 2.94–6.50)",
+        "Gate 9 and gate 10 pass over every declared pairing in every theme, without a lowered threshold"
       ],
       "verification": [
         "state",
@@ -7199,29 +7302,65 @@
         "build",
         "a11y",
         "contrast",
+        "cvd",
         "e2e"
       ],
-      "notes": "THE SET SHOWS FOUR DIFFERENT TAB BARS. 01 has five labelled tabs; 02 has three icons; 11 has home / wardrobe / grid+ / gear; 15 has home / compass / bell / Profile. F-168 already shipped \"the tab bar is icons alone\", so the labelled variant in 01 is a regression the mockups would reintroduce. Pick the five, pin them, and let every later feature cite the pin rather than the picture."
+      "notes": "MOCKUPS: README token table (dark and light), 25 for light, 15 for the theme set. Measured: the renders agree with the table within JPEG noise (§2). THE USER’S DECISION, reaffirmed 2026-09-10 after the surround trade-off was raised (C11). The three forced moves: dark text.tertiary on cards #768290→#94A1AF, light text.tertiary #8C96A5→#5D6674, dark border.strong #464D5B→#5C6472 where it is the only state indicator."
     },
     {
-      "id": "F-223",
-      "title": "The screen frame: app bar, scroll inset, and the sticky action bar",
+      "id": "F-226",
+      "title": "The type is the mockups’ type: a serif for display, the sans for reading, tabular figures for every number",
       "requirements": [
-        "FR-71",
-        "NFR-25"
+        "FR-69",
+        "NFR-11",
+        "NFR-8"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-218",
-        "F-222"
+        "F-220"
       ],
       "acceptance": [
-        "One frame component supplies the safe-area boundary, the app bar, the scrolling body inset and the sticky action bar the mockups draw at the foot of six screens",
-        "No screen re-implements the inset, and the token-reach proof shows the spacing steps the manifest defines being used rather than re-typed",
-        "Content is never clipped by the tab bar the way it is in mockup 01"
+        "A serif face matching the wordmark and display type of 00, 01, 14, 20 and 25 ships under the SIL OFL or an equally permissive licence, recorded in NOTICE.md",
+        "A Japanese serif ships for the surfaces that draw one (the card 20, C6), subset from the corpus the way ADR-0057 subsets Noto Sans JP, and the font-coverage gate covers it",
+        "The scale is board 00’s — Display 1 72, Title 22 in the serif; Body 16, Label 14 in the sans — and every number renders in tabular figures",
+        "The fonts are loaded before the first frame, so the launch hand-over keeps its no-gap guarantee"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "content"
+      ],
+      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it."
+    },
+    {
+      "id": "F-227",
+      "title": "Radius, spacing and elevation are the mockups’ scales",
+      "requirements": [
+        "NFR-25"
+      ],
+      "service": "packages",
+      "package": "@irodora/design-tokens",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "Radius is sm 6, md 10, lg 16 and pill; spacing is 4, 8, 16, 24, 32, 48 — the README scales, still a 4-point grid",
+        "Swatch corners are the values F-220 measured, inside ADR-0094’s ceiling",
+        "Elevation is the tonal level system of 00 and the screens — no shadow the mockups do not draw",
+        "The spacing scanner and the token-reach proof read the new scales, and every literal in the app lands on them"
       ],
       "verification": [
         "state",
@@ -7233,27 +7372,26 @@
         "a11y",
         "contrast"
       ],
-      "notes": "Mockup 01 cuts \"Today's Traditional Color Card\" in half behind the tab bar with no scroll affordance, which is the layout defect F-167 and F-214 were both about. The frame is where that stops being possible."
+      "notes": "Supersedes the manifest values ADR-0074 settled; the 4-point rule it established still holds."
     },
     {
-      "id": "F-224",
-      "title": "The card, the well and the sample at the scale the mockups draw them",
+      "id": "F-228",
+      "title": "One icon set, drawn at the mockups’ weight",
       "requirements": [
-        "FR-9",
-        "NFR-25"
+        "NFR-9",
+        "NFR-8"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-218",
-        "F-223"
+        "F-220"
       ],
       "acceptance": [
-        "The hero sample reaches the scale the set draws — the largest sample on a screen is the subject of that screen, not an icon beside a heading",
-        "The corner stays a ratio capped at radius.xl (ADR-0094), so the hero gets a corner rather than a curve",
-        "A sample cannot be rendered without its provenance, and the provenance chip is a visible part of the component rather than a caption a screen may forget"
+        "Every icon any mockup draws exists once, at the stroke weight F-220 measured: home, atlas, lens, wardrobe, profile, back, share, export, bookmark, filter, search, clear, camera, photo, edit, external, contrast, palette, settings, lock, swap, regenerate, bag, t-shirt, hanger, history, help, download, calendar, check, light, glare",
+        "Each icon has an accessible name wherever it is the only content of a control",
+        "No screen draws an icon of its own"
       ],
       "verification": [
         "state",
@@ -7266,11 +7404,435 @@
         "contrast",
         "cvd"
       ],
-      "notes": "This is the single strongest thing the mockups do and the clearest gap against the app: 01 gives the sample 180px and 06 gives it the full width. It is also the place ADR-0005 is easiest to lose, which is why the chip belongs to the component."
+      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01."
     },
     {
-      "id": "F-225",
-      "title": "Home is the front door the set draws",
+      "id": "F-229",
+      "title": "The illustration set the mockups are drawn with",
+      "requirements": [
+        "FR-69",
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "Every illustration the screens draw exists as one versioned, vector set: plum-blossom branch (01 05 06 08 15 25), garment and kimono line-art (06 07 11 13 16 23), hanger and blossom (22 27), seigaiha waves (24 26), asanoha lattice (16), leaf sprays (09 10 15), fabric-fold lines (17), hanko seal (26, C3), the splash wave lines (14)",
+        "Each is placed where its mockup places it, at its mockup’s opacity, and never over a sample",
+        "Illustration carries nothing the text does not, and is hidden from screen readers"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "The 27 state art is chromatic (tan hanger, amber tile, purple mark) — followed, per C10."
+    },
+    {
+      "id": "F-230",
+      "title": "The mark, the wordmark and the lockup are redrawn to the mockups",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-226",
+        "F-225"
+      ],
+      "acceptance": [
+        "The mark is mockup 14’s 梅鉢 — five petals, a centre ring, radiating stamen lines — drawn from code as today (MARK in packages/ui/src/brand.tsx), recognisable at 16 px and under protan, deutan and tritan simulation",
+        "The in-app lockup is 01’s — filled mark and “Irodora” in the display serif, title case; the splash lockup is 14’s",
+        "The mark is monochrome everywhere, the icon included, and an ADR supersedes ADR-0093 (C4); the tinted mark in 27’s loading state is the one declared exception"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "Four lockups are drawn (C4): 00 coral outline, 01 filled white, 14 silver, 25 \"IRODORA 彩度\". 00’s and 25’s are not used. The current mark is six discs — five coloured, one dark — which mockup 14 replaces entirely."
+    },
+    {
+      "id": "F-231",
+      "title": "The app icon, the adaptive and themed icons, and the splash are mockup 14",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-230",
+        "F-229"
+      ],
+      "acceptance": [
+        "The icon is 14’s dark squircle tile with the silver mark, generated by scripts/generate-brand-assets.mjs, and --check byte-compares it in CI",
+        "The Android adaptive icon keeps the mark inside the 66 dp safe zone on every launcher mask; the Android 13 themed icon is the mark alone",
+        "The native splash is the mark on 14’s ground; the launch overlay continues it without a gap into 14’s full composition — mark with its glow, “Irodora”, 彩り・色の知性, the tagline, the wave line-art and the progress line — and hands over to the app",
+        "Light appearance takes 14’s composition in 25’s palette (C17, ⇄)",
+        "The built APK and the iOS build are asserted to carry the new icon and splash (FR-69), so a placeholder cannot ship"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "artifact"
+      ],
+      "notes": "MOCKUP 14. Tagline \"Deterministic Colour Engine • 100% On-Device & Offline\" is true (ADR-0051: no server) and stays. The motion — waves, glow, progress — never animates a colour (motion rules), and is built in F-266."
+    },
+    {
+      "id": "F-232",
+      "title": "The controls are board 00’s controls",
+      "requirements": [
+        "NFR-8",
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-225",
+        "F-226",
+        "F-227",
+        "F-228"
+      ],
+      "acceptance": [
+        "Primary pill (white on dark, ink on light), secondary outlined pill, square and circular icon buttons, switch, segmented ChoiceGroup, slider — as 00 draws them, in every state the screens draw (selected, disabled, pressed, focused)",
+        "Chips: filter chip with a colour dot and a two-script label (05), choice pill with a leading dot (12 15 17), provenance chip with an icon (03 12 24), count pill (01 05 11), tinted ΔE00 badge (21 24), status pill with icon and text (04 12)",
+        "The profile slider with a gradient track and end labels (23)",
+        "Each control reaches 44/48 dp by its hit area without changing its drawn size, and has an accessible name and state"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that)."
+    },
+    {
+      "id": "F-233",
+      "title": "Cards and the sample family are the mockups’",
+      "requirements": [
+        "FR-9",
+        "NFR-9",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-225",
+        "F-227"
+      ],
+      "acceptance": [
+        "Cards at levels 1, 2 and 3 with the mockups’ radius, border and fill",
+        "Every sample the mockups draw: full-width hero (01 06 20), detail 120 (03), anchor 100 and 72 (19 21), list 64 and 48, strip 40, joined bands (10 23), split target bar (04), pinked-edge fabric (12), garment-photo card (11 22) — each with its keyline and its corner",
+        "Text drawn on a sample (01 07 09 13, C8) takes, per sample, whichever text colour passes 4.5:1, and the contrast gate checks it against every corpus colour",
+        "A sample still cannot render without its provenance (ADR-0005), and the provenance chip belongs to the component"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ]
+    },
+    {
+      "id": "F-234",
+      "title": "The navigation chrome is one tab bar, one app bar, one action bar and one sheet",
+      "requirements": [
+        "FR-71",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-225",
+        "F-226",
+        "F-228"
+      ],
+      "acceptance": [
+        "The tab bar is mockup 01’s: Home · Atlas · Lens · Wardrobe · Profile, icon and label, active indicator as drawn — the only tab bar in the app (C1); an ADR records the reversal of F-168",
+        "The app bar in the variants the mockups draw: back label and title; \"English • 日本語\" single-line title (02 05 08 09 11 12 13); two-line title with Japanese beneath (22 23 24); trailing icon actions; trailing pill action (12 16)",
+        "The sticky action bar (03 06 07 08 10 12 13 16 17 19 20 22 23 24): one or two pills, primary first, above the tab bar and never over content",
+        "The bottom sheet with a handle and detents over a live frame (03) and over the target view (04)"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ],
+      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1)."
+    },
+    {
+      "id": "F-235",
+      "title": "The data displays the mockups draw",
+      "requirements": [
+        "FR-61",
+        "FR-11",
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-225",
+        "F-226",
+        "F-227"
+      ],
+      "acceptance": [
+        "Readout table (06 08) and its two-column grid form (26); delta rows with signed bars and a plain-language reading (04 08); proximity headline with split sample (04)",
+        "Coverage dial (11); radar of four axes (17); metric tile — large figure, label, basis line (22); ranked row with rank, sample, two-script name, figure and action (19 21 24); factor row with icon, figure and reason (13)",
+        "Step pill (17); horizontal carousel with peeking neighbours (20 22 23); pagination dots (25 where drawn)",
+        "Every figure is tabular, carries its unit and space, and every chart has a text equivalent a screen reader announces"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ]
+    },
+    {
+      "id": "F-236",
+      "title": "Empty, working, refused and denied are mockup 27",
+      "requirements": [
+        "NFR-9",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-232",
+        "F-229"
+      ],
+      "acceptance": [
+        "Four state components as 27 draws them: empty (hanger and blossom art, heading, body, primary action), working (ring progress with the mark, two monospace step chips, heading, body), refused (amber glare tile, heading, reason with its threshold, retry), denied (camera and lock, heading, body, open settings)",
+        "Every screen declares which of the four it shows in each data condition, so none can render a blank panel or report an absence as a zero",
+        "The step chips and the refusal reason are bound to what the pipeline actually did and why it refused (E2) — not 27’s \"reflectance spectra\" or \"D65 (5500K)\""
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ]
+    },
+    {
+      "id": "F-237",
+      "title": "A colour can be bookmarked",
+      "requirements": [
+        "FR-56",
+        "NFR-13"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "Bookmarking a corpus colour from the colour page (06) persists in the encrypted store and survives a cold restart and a force-quit mid-write",
+        "The saved set is reachable from where F-220’s inventory places it, and is covered by backup and restore"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "security"
+      ],
+      "notes": "Mockup 06, app bar, first trailing icon. No implementation exists today (checked 2026-09-10)."
+    },
+    {
+      "id": "F-238",
+      "title": "An outfit can be saved to a lookbook",
+      "requirements": [
+        "FR-33",
+        "FR-56"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "An outfit from Outfit Lab (13) is saved with its slots, its locks, its scores and the rule and corpus versions that produced them, so it re-renders identically later",
+        "Saved outfits are listed where F-220’s inventory places them, can be removed, and are covered by backup and restore"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "security"
+      ],
+      "notes": "Mockup 13, sticky bar, \"Save Outfit to Lookbook\". No implementation exists today."
+    },
+    {
+      "id": "F-239",
+      "title": "The display preferences mockup 15 draws are real settings",
+      "requirements": [
+        "FR-61",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "“Tabular Numeric Figures”, “Haptic Feedback on Swatch Selection” and “Show Provenance Badges on Swatches” each change the app everywhere they apply, and persist",
+        "Turning off provenance badges hides the badge, never the provenance: the accessible name still carries it (ADR-0005)"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "Haptics exist (apps/mobile/src/haptics.ts); their switch does not. The other two do not exist."
+    },
+    {
+      "id": "F-240",
+      "title": "The whole app can be previewed as a CVD user sees it",
+      "requirements": [
+        "NFR-10",
+        "FR-5"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-225"
+      ],
+      "acceptance": [
+        "Standard, Protanopia, Deuteranopia and Tritanopia (15) re-render every token and every sample through @irodora/cvd-engine — one simulation, the engine’s, never a second implementation",
+        "The mode is labelled on screen while it is on, and it never changes a stored value or an exported file"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "color-golden"
+      ],
+      "notes": "Mockup 15 section 2. ADR-0009 makes CVD an engine concern for scoring; a preview through the same engine does not contradict it. React Native has no whole-screen colour filter, so the path is the token and Swatch layer every colour already flows through."
+    },
+    {
+      "id": "F-241",
+      "title": "The profile can carry an avatar, and it never leaves the device",
+      "requirements": [
+        "FR-26",
+        "NFR-13",
+        "NFR-12"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-220"
+      ],
+      "acceptance": [
+        "An optional avatar is chosen from the device, stored encrypted like wardrobe images (ADR-0078), and replaced by the mark when absent",
+        "No face or colour is read from it — it is decoration, and ADR-0010’s camera-free profile path is unchanged",
+        "The security reviewer signs off the storage, the picker permission and the backup path"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "security"
+      ],
+      "notes": "Mockup 23, top-left of the header. C12."
+    },
+    {
+      "id": "F-242",
+      "title": "Home is mockup 01, element for element",
       "requirements": [
         "FR-71",
         "FR-73"
@@ -7278,16 +7840,22 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-230"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 01 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 01 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 01 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7300,29 +7868,38 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Adopt: the three proposition lines at editorial scale, the hero sample with kanji, kana, romaji and OKLCh, the single white CTA, the wardrobe strip with a non-colour texture channel. That strip is the one place the set improves on itself — v1 used split two-tone tiles that mean nothing; v2 adds a weave indicator, which is a second channel and satisfies NFR-9. Mockup: 01."
+      "notes": "MOCKUP 01; light palette from 25 (C2 ⇄). ELEMENTS: lockup (filled mark + \"Irodora\" serif); three serif proposition lines; the \"100% On-Device Engine • Offline\" pill after the third line; hero card with a full-width sample carrying kanji, kana, name and OKLCh ON the sample (C8), keyline; full-width primary pill \"What Goes With This →\"; \"Wardrobe Preview\" card with a count pill and five garment samples each with a weave badge; the daily colour card with a thumbnail at right; plum-blossom line-art top right and bottom left. DEPARTURES: \"Today’s Traditional Color Card\" → classification-true words (E1, FR-23); content never clipped by the tab bar the way the render clips it. NOT ADOPTED FROM 25: the caps lockup, the circular textured sample, photo cards, pagination dots."
     },
     {
-      "id": "F-226",
-      "title": "The Lens viewfinder becomes the instrument in the mockup",
+      "id": "F-243",
+      "title": "The Lens viewfinder is mockup 02",
       "requirements": [
         "FR-14",
         "FR-15",
+        "FR-17",
         "NFR-4"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "blocked",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "openQuestions": [
+        "OQ-8"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 02 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 02 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 02 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7333,32 +7910,40 @@
         "build",
         "a11y",
         "contrast",
-        "cvd"
+        "cvd",
+        "e2e"
       ],
-      "notes": "Adopt: the reticle with corner accents, the mode pills, the live readout card carrying the three nearest corpus entries with their ΔE00. Reject: the gold \"Excellent Exposure\" pill — it is a verdict on a capture and a chromatic accent on the one screen that must not have one. Mockup: 02."
+      "notes": "MOCKUP 02. ELEMENTS: centred title \"Colour Lens • 色の測定\"; four mode pills (Live Pick · Garment Scan · Against Target · Calibrated Card); the rounded viewfinder; the conditions HUD pill at top (gold tint, C10); the reticle — ring, crosshair, four corner brackets with lattice accents; the readout card with sample, \"Live OKLCh\", the triplet large, sRGB hex, three nearest corpus chips each tinted with its colour and carrying kanji, romaji and ΔE00; the control row — \"Import Photo\" pill, the shutter ring with the mark, \"Hold Target\" pill. DEPARTURES: \"Excellent Exposure\" → the engine’s own conditions wording (E2); the leaked \"Live badges for nearest…\" label is not design. OQ-8: the Garment Scan and Calibrated Card states are undrawn."
     },
     {
-      "id": "F-227",
-      "title": "The Lens reading sheet",
+      "id": "F-244",
+      "title": "The Lens reading sheet is mockup 03",
       "requirements": [
         "FR-15",
         "FR-9",
-        "FR-17"
+        "FR-17",
+        "FR-7"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224",
-        "F-226"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-243",
+        "F-222"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 03 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 03 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 03 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7369,13 +7954,14 @@
         "build",
         "a11y",
         "contrast",
-        "cvd"
+        "cvd",
+        "e2e"
       ],
-      "notes": "Adopt: the sheet over the live frame, the provenance chips along the top, the ranked matches. Reject: \"95% Confidence\" and \"97% Match\" — the ΔE00 beside them is the honest number and the percentage is what F-219 is for. Strip the \"(HeroUI Card level=2)\" and \"HeroUI Action Grid\" labels that leaked into the render. Mockup: 03."
+      "notes": "MOCKUP 03. ELEMENTS: the captured frame behind; the sheet with handle; three provenance chips (conditions with confidence · colour space · \"Estimated Lens Reading\"); the sampled card — 120 sample with keyline, Hex/OKLCh/CIELAB table, kimono line-art at lower right; \"Ranked Japanese Corpus Matches (ranked by ΔE00)\" with three rows — rank, sample, kanji, romaji, English, ΔE00, \"Open in Atlas →\"; primary pill \"Wear It (Build Outfit) →\", outlined \"+ Add to Wardrobe\", full-width \"Hold as Target for Comparison\". DEPARTURES: \"97% Match\" → OQ-9 via F-222; \"95% Confidence\" → F-222’s confidence format; \"ranked Japanese corpus\" copy stays because it is true of this corpus."
     },
     {
-      "id": "F-228",
-      "title": "Against a target",
+      "id": "F-245",
+      "title": "Holding a colour against a target is mockup 04",
       "requirements": [
         "FR-74",
         "FR-48"
@@ -7383,17 +7969,23 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224",
-        "F-226"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-243",
+        "F-222"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 04 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 04 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 04 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7404,13 +7996,14 @@
         "build",
         "a11y",
         "contrast",
-        "cvd"
+        "cvd",
+        "e2e"
       ],
-      "notes": "The strongest screen in the set. Adopt wholesale: the armed-target header, the split swatch, three signed delta bars each with a plain-language reading beside the number, and a verdict badge that carries an icon and a word rather than a colour. Mockup: 04."
+      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10)."
     },
     {
-      "id": "F-229",
-      "title": "The Atlas",
+      "id": "F-246",
+      "title": "The Atlas is mockup 05",
       "requirements": [
         "FR-47",
         "FR-23"
@@ -7418,16 +8011,22 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
         "F-224"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 05 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 05 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 05 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7440,11 +8039,11 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Adopt: the faceted chips carrying a dot AND a kanji AND a romaji, which is three channels where one would do, and the two-column card with the sample above the text. Reject the pattern in 09, where result text sits ON the sample — the same content, two card shapes, and the second one puts text on the thing being judged. Mockup: 05."
+      "notes": "MOCKUP 05. ELEMENTS: title \"Colour Atlas • <Japanese>\" with an overflow action; count pill with a document icon; outlined pills Compare · Finder · Palettes; search field \"Search kanji, romaji, family or #hex…\"; season chips All · Spring 春 · Summer 夏 · Autumn 秋 · Winter 冬 with All selected white; the \"Color Family\" label; family chips with a colour dot, romaji and kanji, horizontally scrolling (F-224 groups the families); the \"Atlas\" heading; two-column cards — sample above, kanji large with hex at right, romaji, OKLCh, and the era/season line. DEPARTURES: \"日本の伝統色\" and \"Sourced\" wording → classification-true (E1, FR-23); era shows the entry’s real value, which is empty for all 120; \"Search & Faceted Filter Section\" is a leaked label."
     },
     {
-      "id": "F-230",
-      "title": "The colour page is the centrepiece",
+      "id": "F-247",
+      "title": "The colour page is mockup 06, and its Japanese is mockup 26",
       "requirements": [
         "FR-24",
         "FR-23",
@@ -7453,16 +8052,22 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-237"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 06 (and 26 for ja) is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 06 (and 26 for ja) are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 06 (and 26 for ja) in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7475,11 +8080,173 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Adopt: the full-width sample, the display kanji with ruby kana, the colorimetry table, the provenance card with botanical line-art, the sticky action bar. The provenance card keeps its shape and loses its content — see F-221. Mockup: 06."
+      "notes": "MOCKUP 06; Japanese headings and type from 26 (C3 ⇄). ELEMENTS: app bar \"← Atlas\" with bookmark (F-237), share-card and export icons; the full-width sample with keyline and its offset second layer; display kanji with kana and \"romaji • English\"; the family · era · season pill; the \"Scientific Color Space Readout Table\" card — Hex, OKLCh, CIELAB, sRGB with Display-P3 on the same row; the provenance card with its text, the review line and botanical line-art at right; \"Wearable Combinations\" with three numbered circular garment thumbnails and their names and hex; the sticky bar — \"Wear It (Build Outfit) →\" and outlined \"Hold as Target in Lens\". DEPARTURES: every provenance line is the entry’s real one — no Edo manuscript (E1); P3 is a real conversion (E1); the right-hand garbled card is not design (C19). 26’s headings map onto 06’s sections: 測色値と表色系 → the readout table; 着こなしの配色調和 → wearable combinations; コーパス典拠と査読 → provenance; \"伝統色\" → classification-true (FR-23)."
     },
     {
-      "id": "F-231",
-      "title": "Combinations and Wear, and the route that was mislabelled",
+      "id": "F-248",
+      "title": "Wear is mockup 07",
+      "requirements": [
+        "FR-73",
+        "FR-31",
+        "FR-38",
+        "FR-29"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-222"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 07 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 07 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 07 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2)."
+    },
+    {
+      "id": "F-249",
+      "title": "Compare is mockup 08",
+      "requirements": [
+        "FR-48",
+        "FR-3",
+        "FR-5"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 08 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 08 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 08 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 08. ELEMENTS: app bar \"← Atlas | Colour Compare • 比較\" with a download action; the dual block — two samples, names, hex and OKLCh, \"Change A\" / \"Change B\", the neutral seam between; two cards side by side — delta metrics (ΔE00 with its reading, ΔEok, ΔL* with \"B is lighter\", ΔC* with \"B is more chromatic\", ΔH with its direction) and contrast and CVD (WCAG ratio with APCA Lc beneath, three separation rows); the sticky bar — \"Export Precision Delta PDF\" (F-263 builds the document) and outlined \"Add Pair to Palette Studio\"; plum-blossom art. DEPARTURES: \"(Safe)\" verdicts are bound to the defined separation floor or dropped (E2); the \"Divid seam\" caption and level=\"2\" label are not design."
+    },
+    {
+      "id": "F-250",
+      "title": "Finder is mockup 09",
+      "requirements": [
+        "FR-47"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 09 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 09 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 09 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 09. ELEMENTS: app bar \"← Atlas | Colour Finder • 検索 | ✕ Clear\"; the query card with the phrase and a clear control, and three mode chips (Natural Phrase · Japanese Kanji · # Hex Code); the slider card — Lightness, Chroma, Hue, each with its value and a plain reading; \"Instantaneous nearest results ranked by ΔE00\"; two-column result cards filled with the colour, text ON the colour (C8) — kanji, romaji, English, hex, ΔE00, OKLCh on the first. DEPARTURES: the leaked \"HeroUI Card level=\"2\"\" and \"HeroUI smooth sliders\" labels are not design."
+    },
+    {
+      "id": "F-251",
+      "title": "Palette Studio is mockup 10, and building a palette is mockup 16",
+      "requirements": [
+        "FR-49",
+        "FR-22",
+        "FR-3",
+        "FR-5"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-224"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 10 and 16 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 10 and 16 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 10 and 16 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); \"CVD 100%\", \"100% Distinguishable\", \"APCA Passed - AAA\" → computed figures (E2)."
+    },
+    {
+      "id": "F-252",
+      "title": "What goes with this is mockup 19",
       "requirements": [
         "FR-73",
         "FR-6"
@@ -7487,16 +8254,21 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224"
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
       ],
       "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
+        "Every element in F-220’s inventory for mockup 19 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 19 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 19 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7509,385 +8281,154 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Mockup 07 is filed at atlas/with/[slug] and draws a four-slot outfit canvas, which is atlas/wear/[slug]. Combinations — the harmony relationships, the screen FR-73 is actually about — has no mockup at all. Both surfaces are in scope here because the fix is one decision about which is which. Reject from 07: \"6.2:1 (APCA Passed)\" conflates a WCAG ratio with APCA, which reports Lc and has no ratio. Mockup: 07."
+      "notes": "MOCKUP 19 (spec-framed). ELEMENTS: app bar \"← Atlas | What Goes With This • 調和色\" with a filter action; the anchor card — 100 sample, kanji and name, OKLCh, the anchor slot; ranked relationship cards — 64 sample, English and kanji name, relationship and ΔE00 from the anchor (C18), outlined \"Action: Wear\"; sticky \"Build Complete 4-Piece Outfit →\". DEPARTURES: the leaked \"Anchor Color Hero Card (HeroUI Card level=\"2\")\", \"100px\" and \"Ranked Harmonic Relationship Rows\" labels are not design."
     },
     {
-      "id": "F-232",
-      "title": "Compare and Finder",
-      "requirements": [
-        "FR-48",
-        "FR-47"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt from 08: two metric cards side by side, and a plain-language interpretation beside every number — \"B is lighter\", \"shift towards teal\". That is the best writing in the set. Reject: the invented \"92% Separation (Safe)\" triple. Mockup: 08 and 09."
-    },
-    {
-      "id": "F-233",
-      "title": "Palette Studio, and where the builder lives",
-      "requirements": [
-        "FR-49",
-        "FR-22"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt: semantic role labels above each swatch, the provenance line, the corpus drawer with horizontal scroll. DECIDE: 16 is filed at /atlas/palettes/create, which is not a route — the draft state lives inside atlas/palettes.tsx today. Either the builder gets its own route or the mockup is a sheet within Studio, and an ADR records which. Mockup: 10 and 16."
-    },
-    {
-      "id": "F-234",
-      "title": "The wardrobe gallery",
-      "requirements": [
-        "FR-39",
-        "FR-45"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt: the coverage dial, the actionable gap card, the two-column gallery with wear tracking and cost-per-wear. Mockup: 11."
-    },
-    {
-      "id": "F-235",
-      "title": "Add garment",
-      "requirements": [
-        "FR-40",
-        "FR-9"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224",
-        "F-234"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "The best form in the set. Adopt: the pinked-edge fabric sample, the source pills, the \"Estimated via Lens\" provenance chip, the duplicate pre-check carrying its ΔE00. Fix: two Save affordances, and the \"Formall\" typo. Mockup: 12."
-    },
-    {
-      "id": "F-236",
-      "title": "Outfit Lab",
-      "requirements": [
-        "FR-33",
-        "FR-32",
-        "FR-11"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224",
-        "F-234"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt: the four-slot canvas with per-slot lock and swap, the garment line-art, and the factor list with a reason in parentheses beside every figure. Reject: the composite \"Outfit Score 93/100 - Master Harmony\", and \"Japanese Balance 94% (Natural Dyes)\" — ADR-0073 already decided that the Japanese aesthetic score is corpus affinity and says so, which is not what that row claims. Mockup: 13."
-    },
-    {
-      "id": "F-237",
-      "title": "Shopping check",
-      "requirements": [
-        "FR-52"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224",
-        "F-234"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "NO MOCKUP EXISTS. The v1 README carried a wireframe and v2 dropped it, and the wireframe contradicted ADR-0082 anyway — it drew four verdict-bearing signals with icons where the ADR decided on numbers from your own wardrobe and no verdict at all. The implemented screen is already right; the mockup has to catch up to it, not the other way round. Mockup: 22 (to be generated)."
-    },
-    {
-      "id": "F-238",
-      "title": "Profile, and the guided test",
-      "requirements": [
-        "FR-26",
-        "FR-29"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt from 17: the step counter, the A/B draping pair, the live radar with the four sliders. profile/index — the finished profile, as against the test that builds it — has no mockup. Reject: the \"Recommended Palette\" row, whose five swatches match none of their five labels. Mockup: 17, and 23 (to be generated)."
-    },
-    {
-      "id": "F-239",
-      "title": "Preferences",
-      "requirements": [
-        "FR-70",
-        "NFR-8"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt: the theme selector as tinted previews, the CVD mode selector, the grouped switches, the on-device security statement. Reject: \"All corpus palettes 100% CVD-Safe\" — an absolute claim, and the theme names in the picker must be the eight that ship rather than the four the mockup invents. Mockup: 15."
-    },
-    {
-      "id": "F-240",
-      "title": "Export",
+      "id": "F-253",
+      "title": "The shareable colour card is mockup 20, and so is the document it saves",
       "requirements": [
         "FR-51",
-        "FR-58"
+        "FR-24"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-220",
         "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Adopt: the report preview card, the three export tiles, the encrypted backup and restore pair. Reject: \"Museum-grade\". ADR-0080 already decided the PDF is Latin-1 and refuses what it cannot draw, so the mockup's CJK report preview needs reconciling with that decision before this screen promises it. Mockup: 18."
-    },
-    {
-      "id": "F-241",
-      "title": "The colour card and the nearest-in-corpus page",
-      "requirements": [
-        "FR-72",
-        "FR-70"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-220",
-        "F-221",
-        "F-224"
-      ],
-      "acceptance": [
-        "The surface matches the mockup in composition, hierarchy and density — the layout is adopted",
-        "Every value, name and number on it comes from the engine and the corpus — the content is not",
-        "Both themes and both locales render it correctly, and the a11y and contrast gates pass on it"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "cvd"
-      ],
-      "notes": "Two routes that exist, work, and have never been drawn: atlas/card/[slug] (ADR-0070 — the card is a deterministic document, not a bitmap) and atlas/nearby/[slug] (FR-72 — and its copy may never call an equivalent a match, which the claims lint already enforces). Mockup: 20 and 21 (to be generated)."
-    },
-    {
-      "id": "F-242",
-      "title": "Light is a peer, and what the revamp broke in it is fixed",
-      "requirements": [
-        "FR-70",
-        "NFR-8"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-225",
-        "F-226",
-        "F-227",
-        "F-228",
-        "F-229",
-        "F-230",
-        "F-231",
         "F-232",
         "F-233",
         "F-234",
         "F-235",
         "F-236",
-        "F-237",
-        "F-238",
-        "F-239",
-        "F-240",
-        "F-241"
+        "F-226"
       ],
       "acceptance": [
-        "Every revamped surface is reviewed in light as well as dark, by a person, and the review is recorded",
-        "The contrast and CVD gates pass in all eight palettes, not only the default",
-        "The mockup set gains a light reference so the next revamp does not start dark-only again"
+        "Every element in F-220’s inventory for mockup 20 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 20 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 20 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "The saved PDF and the shared image are the card as drawn — same composition, same faces — produced deterministically from the colour and the corpus version (ADR-0070), with the Japanese face embedded (ADR-0083)",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 20. ELEMENTS: app bar \"← Back | Shareable Colour Card • 色票カード\" with share; the horizontal carousel with neighbouring cards peeking; the card — full-width sample, kanji in a Japanese serif (C6), kana, romaji, English, the mark at right, three value columns (OKLCh, Hex, CIELAB), the footer line and a second mark; \"Save as PDF\" and \"Share Card →\". DEPARTURES: the footer states the real corpus version and provenance — no \"Edo Period Dye Formula (1842)\" (E1)."
+    },
+    {
+      "id": "F-254",
+      "title": "Nearest in the corpus is mockup 21",
+      "requirements": [
+        "FR-72",
+        "FR-7"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 21 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 21 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 21 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 21 (annotated frame). ELEMENTS: app bar \"← Atlas | Nearest in Corpus • 近似色\" with a filter action; the anchor card — 72 sample, kanji and name, OKLCh, the baseline line; the list heading with its ordering note; rows — sample, kanji, romaji, English, hex, a ΔE00 badge and \"View →\". DEPARTURES: the tab bar is 01’s (C1); \"Top Navigation\" and \"Tab Bar\" callouts are not design; FR-72’s rule that an equivalent is never called a match holds."
+    },
+    {
+      "id": "F-255",
+      "title": "The wardrobe is mockup 11, and empty it is mockup 27",
+      "requirements": [
+        "FR-39",
+        "FR-45",
+        "FR-46"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 11 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 11 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 11 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 11; empty state from 27. ELEMENTS: title \"Wardrobe Intelligence • 衣服\"; three outlined actions — \"+ Add Garment\", \"Outfit Lab\", \"Shopping Check\"; the coverage card — dial with percentage and label, the headline, the garments-to-outfits line; the gap card — icon, the named gap, the sentence, \"Explore in Atlas →\"; two-column garment cards — fabric photo or sample, the caption with hex, the garment name, type, wears and cost per wear; kimono line-art top right. DEPARTURES: absent cost data shows unknown, never an invented figure (FR-46)."
+    },
+    {
+      "id": "F-256",
+      "title": "Adding a garment is mockup 12",
+      "requirements": [
+        "FR-40",
+        "FR-39",
+        "FR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 12 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 12 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 12 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -7901,136 +8442,36 @@
         "cvd",
         "e2e"
       ],
-      "notes": "ALL NINETEEN MOCKUPS ARE DARK. light ships, it is one of eight themes, and the app offers Washi Minimal in its own settings screen. A revamp driven entirely by dark references is a revamp that discovers light at the end."
+      "notes": "MOCKUP 12. ELEMENTS: app bar \"← Cancel | Add Garment • 衣服の追加 | Save\" (white pill); the source card — pinked-edge fabric sample, hex and name, the provenance chip, the source segmented control (Lens Camera · Photo · Atlas Pick · # Hex); the form card — title field, category segmented control, material chips, formality and season pills; the duplicate pre-check banner with its closest item and ΔE00; the collapsible tracking section (price, brand); sticky \"Save Garment to Wardrobe\". DEPARTURES: \"Safe\" in the banner is bound to the defined duplicate threshold (E2). Both Save affordances are drawn and both are kept."
     },
     {
-      "id": "F-243",
-      "title": "The Japanese locale is a first language, and the revamp is reviewed in it",
+      "id": "F-257",
+      "title": "Outfit Lab and the capsule solver are mockup 13",
       "requirements": [
-        "NFR-11"
+        "FR-33",
+        "FR-32",
+        "FR-11"
       ],
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-225",
-        "F-226",
-        "F-227",
-        "F-228",
-        "F-229",
-        "F-230",
-        "F-231",
+        "F-221",
         "F-232",
         "F-233",
         "F-234",
         "F-235",
         "F-236",
-        "F-237",
         "F-238",
-        "F-239",
-        "F-240",
-        "F-241"
+        "F-222"
       ],
       "acceptance": [
-        "Every revamped surface renders correctly in ja, with the japanese script scale rather than the latin one",
-        "No layout in the revamp assumes English measure — the places the new density breaks under ja copy are found and fixed",
-        "The mockup set gains a ja reference"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast",
-        "e2e"
-      ],
-      "notes": "ja and en both ship from the first release and neither is a fallback for the other (src/i18n/index.ts). NO MOCKUP SHOWS ja. Decorative kanji in the current set — 衣服 in a header, 検索 in a title — is not the same thing as a screen whose every string is Japanese, and it is the density change in this revamp that makes the difference matter."
-    },
-    {
-      "id": "F-244",
-      "title": "Empty, working, refused and denied are components, not afterthoughts",
-      "requirements": [
-        "NFR-9",
-        "NFR-8"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-225",
-        "F-226",
-        "F-227",
-        "F-228",
-        "F-229",
-        "F-230",
-        "F-231",
-        "F-232",
-        "F-233",
-        "F-234",
-        "F-235",
-        "F-236",
-        "F-237",
-        "F-238",
-        "F-239",
-        "F-240",
-        "F-241"
-      ],
-      "acceptance": [
-        "Each of the four states is a component with a heading, an icon and a sentence that says what happened and what to do next",
-        "None of them distinguishes itself by colour alone, and none reports an absent result as a zero",
-        "Every surface in the revamp declares which of the four it shows, so a screen cannot ship with a blank panel"
-      ],
-      "verification": [
-        "state",
-        "typecheck",
-        "lint",
-        "format",
-        "test",
-        "build",
-        "a11y",
-        "contrast"
-      ],
-      "notes": "The set draws one empty-state thumbnail on board 00 and nothing else. EmptyState.tsx already exists; what is missing is the reference for what goes in it, and the refusal states this product needs more than most — a profile that does not exist, a price that was not recorded, a camera that was denied."
-    },
-    {
-      "id": "F-245",
-      "title": "The line-art vocabulary, drawn once",
-      "requirements": [
-        "FR-69",
-        "NFR-9"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "must",
-      "status": "backlog",
-      "blockedBy": [
-        "F-225",
-        "F-226",
-        "F-227",
-        "F-228",
-        "F-229",
-        "F-230",
-        "F-231",
-        "F-232",
-        "F-233",
-        "F-234",
-        "F-235",
-        "F-236",
-        "F-237",
-        "F-238",
-        "F-239",
-        "F-240",
-        "F-241"
-      ],
-      "acceptance": [
-        "The botanical and garment line-art the set uses is a drawn, versioned set rather than a per-screen decoration",
-        "Every illustration is monochrome, sits behind or beside a sample without competing with it, and carries nothing the text does not",
-        "One mark: the set shows three variants — coral outline on board 00, filled white on 01, grey on 14 — and ADR-0093 already decided the mark is monochrome in the app and carries colour only on the icon"
+        "Every element in F-220’s inventory for mockup 13 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 13 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 13 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
       ],
       "verification": [
         "state",
@@ -8043,11 +8484,403 @@
         "contrast",
         "cvd"
       ],
-      "notes": "This is the charm channel, and it is what the user asked for when they said cute. BRAND.md excludes kawaii as a different cultural register; the set does not drift there, and this feature is where that line is held on purpose rather than by luck."
+      "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: \"Master Harmony\" → OQ-9; \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity)."
     },
     {
-      "id": "F-246",
-      "title": "The conformance sweep: every screen, both themes, both locales",
+      "id": "F-258",
+      "title": "Shopping check is mockup 22",
+      "requirements": [
+        "FR-52"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "blocked",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-222"
+      ],
+      "openQuestions": [
+        "OQ-10"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 22 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 22 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 22 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ],
+      "notes": "MOCKUP 22 (device frame and status bar are not design). ELEMENTS: app bar back, two-line title \"Shopping Check / 買い物チェック\", the mark at right; the capture hero card — the in-session frame, the \"Live Capture Tag\" chip, the garment name, hex and OKLCh; the 2×2 metric tiles — outfits unlocked, wardrobe pairings, duplicates owned with the threshold, gaps addressed; \"Wardrobe Compatibility Preview\" — owned garment photo cards with ΔE00 badges; \"Save to Wardrobe\" and outlined \"Scan Another Item\"; hanger and blossom art. STILL TRUE: no verdict (ADR-0082) and nothing stored until the person adds it. OQ-10: FR-52’s compatibility score and investment signal are not drawn."
+    },
+    {
+      "id": "F-259",
+      "title": "Combinations from a garment or a reading are mockup 24",
+      "requirements": [
+        "FR-73",
+        "FR-9",
+        "FR-17"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 24 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 24 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 24 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "MOCKUP 24 — governs wardrobe/with/[id] AND atlas/with/reading/[id] (C16). ELEMENTS: app bar \"‹ Back | Garment Harmonies / 着こなしの配色\" with share; the source card — the provenance chip (\"Estimated from a capture · <conditions>\"), sample, garment name, wardrobe id, hex, colour name, OKLCh; segmented \"In My Wardrobe · n matches\" / \"All Japanese Corpus · 120 colors\"; numbered relationship rows with a tinted ΔE00 badge, sample and Japanese · Romaji · Hex columns; sticky \"Create Outfit with this Harmony\"; seigaiha and blossom art. DEPARTURES: the conditions in the chip are the capture’s real ones."
+    },
+    {
+      "id": "F-260",
+      "title": "The profile is mockup 17 while it is being built and mockup 23 when it is finished",
+      "requirements": [
+        "FR-26",
+        "FR-29",
+        "FR-30"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-223",
+        "F-224",
+        "F-241"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 17 and 23 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 17 and 23 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 17 and 23 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ],
+      "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1)."
+    },
+    {
+      "id": "F-261",
+      "title": "Measure is rebuilt in the mockups’ language",
+      "requirements": [
+        "FR-61",
+        "FR-28"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "blocked",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236"
+      ],
+      "openQuestions": [
+        "OQ-7"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup the one OQ-7 resolves to is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup the one OQ-7 resolves to are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup the one OQ-7 resolves to in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ],
+      "notes": "profile/measure — colorimeter entry and the ΔE00 table — is the only route no mockup draws. OQ-7 decides whether a mockup is generated or the screen is composed from 08’s readout table and 12’s form. It is rebuilt either way: \"revamp everything\" leaves no route on the old UI."
+    },
+    {
+      "id": "F-262",
+      "title": "Preferences is mockup 15",
+      "requirements": [
+        "FR-70",
+        "NFR-10",
+        "NFR-13"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-225",
+        "F-239",
+        "F-240"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 15 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 15 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 15 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ],
+      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not \"100% CVD-Safe\"); system appearance and device accent are added in 15’s own row components (E4, FR-70)."
+    },
+    {
+      "id": "F-263",
+      "title": "Export is mockup 18, and so are the documents it writes",
+      "requirements": [
+        "FR-51",
+        "FR-58"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-221",
+        "F-232",
+        "F-233",
+        "F-234",
+        "F-235",
+        "F-236",
+        "F-226"
+      ],
+      "acceptance": [
+        "Every element in F-220’s inventory for mockup 18 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
+        "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
+        "The only departures from mockup 18 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
+        "The fidelity harness captures the route beside mockup 18 in both themes and both locales, and a person has compared each pair and recorded the result",
+        "The wardrobe audit PDF has the composition 18’s preview draws — title with its Japanese subtitle, the ΔE00 matrix with sample-headed rows and columns, the OKLCh values, the signed reproducibility envelope — with the Japanese face embedded (ADR-0083); the profile PDF (23) and the compare PDF (08) are built in the same system from the existing ExportSubject shape",
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ],
+      "notes": "MOCKUP 18. ELEMENTS: app bar \"← Profile | Export & Reports • エクスポート | Help\"; the report card — the live preview, its description, \"Generate PDF Report →\", \"Share / Print\"; three export tiles — ASE, OKLCh design tokens, colorimetry CSV — each with icon, name, format, description and action; the backup card — \"Export Encrypted Backup\" and \"Restore from File\". DEPARTURES: \"Museum-grade\" → a factual descriptor (E2)."
+    },
+    {
+      "id": "F-264",
+      "title": "Every surface is right in light, as 25 draws light",
+      "requirements": [
+        "FR-70",
+        "NFR-8"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-242",
+        "F-243",
+        "F-244",
+        "F-245",
+        "F-246",
+        "F-247",
+        "F-248",
+        "F-249",
+        "F-250",
+        "F-251",
+        "F-252",
+        "F-253",
+        "F-254",
+        "F-255",
+        "F-256",
+        "F-257",
+        "F-258",
+        "F-259",
+        "F-260",
+        "F-261",
+        "F-262",
+        "F-263"
+      ],
+      "acceptance": [
+        "Every rebuilt surface renders in Washi Minimal with 25’s palette, captured beside its governing mockup, and a person has compared every pair",
+        "The contrast and CVD gates pass in all four themes over every declared pairing"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd",
+        "e2e"
+      ]
+    },
+    {
+      "id": "F-265",
+      "title": "Every surface is right in Japanese, as 26 draws Japanese",
+      "requirements": [
+        "NFR-11",
+        "FR-23"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-242",
+        "F-243",
+        "F-244",
+        "F-245",
+        "F-246",
+        "F-247",
+        "F-248",
+        "F-249",
+        "F-250",
+        "F-251",
+        "F-252",
+        "F-253",
+        "F-254",
+        "F-255",
+        "F-256",
+        "F-257",
+        "F-258",
+        "F-259",
+        "F-260",
+        "F-261",
+        "F-262",
+        "F-263"
+      ],
+      "acceptance": [
+        "Every string on every rebuilt surface exists in the ja catalogue, written in 26’s register rather than translated, and the catalogue completeness check passes",
+        "Every surface renders in ja with the Japanese type, and no layout the mockups draw at English measure breaks under Japanese copy",
+        "No heading says 伝統色 or otherwise presents the corpus as historical (FR-23, E1)"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "e2e",
+        "content"
+      ]
+    },
+    {
+      "id": "F-266",
+      "title": "The motion the mockups imply, and never on a colour",
+      "requirements": [
+        "NFR-8",
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-231",
+        "F-234",
+        "F-235"
+      ],
+      "acceptance": [
+        "The splash wave, glow and progress (14), the sheet detents (03 04), the coverage dial and the working ring (11 27), and staggered arrival on list surfaces animate with the motion system’s durations and easings",
+        "Nothing animates a colour value, and every motion stops under reduced-motion"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ]
+    },
+    {
+      "id": "F-267",
+      "title": "Every route, in both themes and both languages, is compared with its mockup by a person",
       "requirements": [
         "NFR-25",
         "NFR-8",
@@ -8056,17 +8889,16 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-242",
-        "F-243",
-        "F-244",
-        "F-245"
+        "F-264",
+        "F-265",
+        "F-266"
       ],
       "acceptance": [
-        "Every route is swept in both themes and both locales with evidence recorded, not asserted",
-        "Token reach is green — no step, scale or token the manifest defines is left unreached by the revamp",
-        "A person looks at the result, and the review is recorded with a name against it"
+        "The fidelity harness captures every route in the index, in both themes and both locales, beside its governing mockup, and the run records every route it could not capture",
+        "A person has compared every pair and recorded, per route, either \"matches\" or the departures — and every departure is one R9-MOCKUP-FIDELITY §4 or §6 names",
+        "The conformance sweep is green with every surface’s inventory asserted, and token reach is green"
       ],
       "verification": [
         "state",
@@ -8081,11 +8913,11 @@
         "e2e",
         "perf"
       ],
-      "notes": "The manifest already carries THREE outstanding re-approvals whose reviewedBy field says in capitals that nobody has looked at the values. A revamp that adds a fourth is the same failure a fourth time."
+      "notes": "The manifest already carries outstanding re-approvals whose reviewedBy field says nobody has looked at the values. R9 is the release where looking is the acceptance criterion rather than a note."
     },
     {
-      "id": "F-247",
-      "title": "The revamp is measured against the budget rather than judged by eye",
+      "id": "F-268",
+      "title": "The rebuilt app is measured against its budget",
       "requirements": [
         "NFR-4",
         "NFR-7"
@@ -8093,13 +8925,13 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-246"
+        "F-267"
       ],
       "acceptance": [
-        "Every budget in NFR-4 is measured after the revamp on the slowest supported device, and a miss is filed as a work item rather than edited into the budget",
-        "The larger samples and the illustration set are measured for their cost, because they are the two things this revamp adds most of"
+        "Every NFR-4 budget is measured after the rebuild on the slowest supported device, and a miss is filed as a feature rather than edited into the budget",
+        "The added faces, illustrations, photo cards and larger samples are measured for their cost to cold start and scroll"
       ],
       "verification": [
         "state",
@@ -8112,8 +8944,38 @@
       ]
     },
     {
-      "id": "F-248",
-      "title": "R9 closes: the set, the app and the state agree",
+      "id": "F-269",
+      "title": "Nothing of the old UI is left behind",
+      "requirements": [
+        "NFR-25",
+        "NFR-26"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [
+        "F-267"
+      ],
+      "acceptance": [
+        "No token, theme recipe (fuka, yama, aota), component, icon, illustration, brand asset, font or string from the pre-R9 UI remains unless a rebuilt surface reads it",
+        "Token reach, unused exports, retired-surface and route reachability are green with nothing newly exempted"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test",
+        "build",
+        "a11y",
+        "contrast",
+        "cvd"
+      ]
+    },
+    {
+      "id": "F-270",
+      "title": "R9 closes: the mockups, the app and the state agree",
       "requirements": [
         "NFR-26",
         "NFR-25"
@@ -8121,14 +8983,15 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "backlog",
+      "status": "todo",
       "blockedBy": [
-        "F-247"
+        "F-268",
+        "F-269"
       ],
       "acceptance": [
-        "Every route has a mockup and every mockup has a route, proven by the index F-218 built",
-        "progress.md, effects.json and the effect notes carry what this release changed, and every critical link names its guard",
-        "docs/roadmap.md describes the releases that exist — it currently stops at R5 and names feature ranges that ended at F-066"
+        "Every route has a governing mockup and every mockup has a route, proven by the F-218 index, and every open question R9 raised is closed by an ADR",
+        "progress.md, effects.json and the effect notes carry what R9 changed, and every critical link names its guard",
+        "docs/roadmap.md describes the releases that exist — it stops at R5 and cites feature ranges that ended at F-066"
       ],
       "verification": [
         "state",
@@ -8137,8 +9000,7 @@
         "format",
         "test",
         "build"
-      ],
-      "notes": "THE ROADMAP IS FOUR RELEASES STALE. It documents R0 to R5 with ranges up to F-066, while feature_list.json holds 200 features through R8. AGENTS.md §1 says the repository is the system of record and names feature_list.json as scope — so the roadmap is currently a document that contradicts the authority it points at. R8 was also absent from the releases array until this release added it."
+      ]
     }
   ]
 }
