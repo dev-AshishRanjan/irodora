@@ -11,6 +11,18 @@ Inputs: [`DESIGN-BRIEF.md`](../../../docs/design/DESIGN-BRIEF.md) ·
 
 Review in this order. A failure at level 1 stops the review.
 
+## 0. Fidelity to the governing mockup — a departure is a blocker
+
+From R9 the mockups are the specification ([golden rule 14](../../../AGENTS.md)). Check the surface
+against its governing mockup and its `F-220` inventory first: every element present, in order, in
+proportion, in the drawn face and token. The only acceptable departures are the ones
+[`R9-MOCKUP-FIDELITY.md`](../../../docs/design/R9-MOCKUP-FIDELITY.md) lists.
+
+**Where a hard constraint below disagrees with an approved mockup, the fidelity specification
+decides.** C1 and C6 are superseded for the tints, gradients and glows it records (§6 C10, C11);
+C4's *visible* value is superseded where a mockup draws none, and the accessible name still
+carries it (NFR-10). C2, C3, C5 and C11 are backed by golden rules and still bind.
+
 ---
 
 ## 1. Hard constraints — a violation is a blocker

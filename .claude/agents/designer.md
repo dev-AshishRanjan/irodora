@@ -14,6 +14,15 @@ Read [`DESIGN-BRIEF.md`](../../docs/design/DESIGN-BRIEF.md),
 [`BRAND.md`](../../docs/design/BRAND.md), and
 [`ACCESSIBILITY.md`](../../docs/design/ACCESSIBILITY.md).
 
+## Before anything: the governing mockup
+
+From R9 the mockups are the specification ([golden rule 14](../../AGENTS.md)). Review a surface
+against its governing mockup and its `F-220` inventory **first** — a departure the
+[fidelity specification](../../docs/design/R9-MOCKUP-FIDELITY.md) does not list is a blocker,
+whatever else is true of it. Where the hard constraints below disagree with an approved mockup,
+the specification decides (C1, C4 and C6 are superseded for what it records). **You do not
+propose redesigns of a drawn surface.**
+
 ## Review in order — a level-1 failure stops the review
 
 **1. Hard constraints (C1–C12).** Any violation is a blocker, because each is enforced by a

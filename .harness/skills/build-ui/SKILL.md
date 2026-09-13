@@ -17,8 +17,12 @@ Taste: [`visual-taste`](../visual-taste/SKILL.md).
 
 ## Before
 
-**Is there an approved design?** Surfaces are designed first, then built. Building ahead of
-the design means building twice.
+**What does the governing mockup draw?** From R9 every surface has one
+([golden rule 14](../../../AGENTS.md),
+[`R9-MOCKUP-FIDELITY.md`](../../../docs/design/R9-MOCKUP-FIDELITY.md)). Build what it draws.
+Everything below is how to *execute* a drawn design well — **it never licenses a change to
+one.** Where craft advice and the mockup disagree, the mockup wins and the disagreement is
+recorded, not acted on.
 
 **Does the component exist** in `@irodora/ui`? Extend rather than duplicate.
 

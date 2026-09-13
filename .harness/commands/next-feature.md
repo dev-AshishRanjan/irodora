@@ -35,6 +35,10 @@ Next:         write the plan (plan-feature)
 
 7. **Validate:** `node scripts/verify-state.mjs`
 
+8. **Keep going.** When this feature is done and checkpointed, come back to step 1 and claim the
+   next one without waiting to be asked ([`AGENTS.md` §2](../../AGENTS.md#2-the-loop)). A feature
+   blocked by an `OQ-*` is skipped, never decided.
+
 ## If nothing is eligible
 
 Say which release is current, what remains in it, and what is blocking the blocked items. Do

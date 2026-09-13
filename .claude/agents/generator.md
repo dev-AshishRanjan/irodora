@@ -46,6 +46,7 @@ built.
 | Golden values | Changing one requires an ADR. If a golden test fails, you probably broke the engine |
 | Colour values | Always carry provenance. Do not work around the type |
 | UI | No colour literals, no hard-coded strings, no colour-only meaning |
+| Mockups | Build exactly what the governing mockup draws — never improve, simplify or restyle it. A departure the fidelity specification does not list is an open question: stop and record it |
 | Copy, comments, names | No claim the product cannot support |
 | Content | No entry without complete provenance |
 | Tenancy | `tenant_id` from the session, never a request field |

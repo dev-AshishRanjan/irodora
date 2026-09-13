@@ -76,6 +76,10 @@ A feature is `done` only when **every** item below is true. If any fails, it sta
 
 ## Additional, for user-facing changes
 
+- [ ] **The governing mockup is matched** ([golden rule 14](../../AGENTS.md)). Every element of its
+      inventory is present and asserted by the conformance sweep; the route has been captured
+      beside its mockup in both themes and both locales and compared by a person; and the only
+      departures are the ones [`R9-MOCKUP-FIDELITY.md`](../../docs/design/R9-MOCKUP-FIDELITY.md) lists.
 - [ ] `a11y` and `contrast` gates green.
 - [ ] Both locales render correctly, at both text lengths.
 - [ ] Keyboard completes the journey.
@@ -94,6 +98,7 @@ A feature is `done` only when **every** item below is true. If any fails, it sta
 | "The gate is flaky so I skipped it" | Flakiness is a defect. Fix or quarantine with a tracked feature |
 | "I'll add the tests in a follow-up" | The follow-up is this feature |
 | "It's done, I just need to clean up" | Clean-state is part of done |
+| "It is close to the mockup, and mine is cleaner" | The mockup is the specification. An improvement nobody asked for is a deviation |
 | "Coverage is high" | Coverage measures execution, not assertion |
 
 ---

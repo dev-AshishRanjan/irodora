@@ -1,5 +1,7 @@
 # Irodora — Design Brief
 
+> **From R9 the mockups decide where this document and an approved mockup disagree** ([golden rule 14](../../AGENTS.md)). C1 (near-neutral chrome) and C6 (no gradient or glow near a swatch) are superseded for the tints, gradient tracks and glows the mockups draw. The departures and their reasons are in [`R9-MOCKUP-FIDELITY.md`](R9-MOCKUP-FIDELITY.md) §6 (C10, C11); golden rules 11–13 are not affected and still bind.
+
 | | |
 |---|---|
 | **Status** | Ready for design |

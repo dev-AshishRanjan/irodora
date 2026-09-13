@@ -46,6 +46,10 @@ Especially:
 - **A claim in copy, a comment, or a variable name** that the product cannot support.
 - **A colour rendered without provenance.**
 - **A meaning carried only by colour.**
+- **A surface that departs from its governing mockup** beyond what
+  [`R9-MOCKUP-FIDELITY.md`](../../docs/design/R9-MOCKUP-FIDELITY.md) lists — an element missing,
+  reordered, restyled, simplified or added. Open the mockup beside the capture; do not take the
+  implementer's word for it.
 
 ### 4. Report
 

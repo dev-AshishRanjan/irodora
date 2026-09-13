@@ -11,6 +11,12 @@ description: Avoid generic AI-looking design — infer the register from the sub
 > *this* product's constraints, so the escape from generic is not "add more visual interest" —
 > it is "let the subject decide", and here the subject forbids decoration.
 
+> **Subordinate to the mockups from R9 on.** Where a governing mockup exists — and from R9 every
+> surface has one ([golden rule 14](../../../AGENTS.md)) — this skill is not a source of design
+> decisions. Its list of generic looks includes things the approved mockups use deliberately (a
+> serif display face, tinted chrome); matching the mockup is never a finding. Use this skill
+> only to audit how faithfully a mockup was *executed*. It designs nothing.
+
 ## The failure this exists to prevent
 
 AI-generated UI converges on a small set of looks. Warm cream with a serif display and a

@@ -1,5 +1,7 @@
 # Irodora — Design System
 
+> **From R9 the mockups decide where this document and an approved mockup disagree** ([golden rule 14](../../AGENTS.md)). "Near-achromatic by rule" and the token values below are superseded by the mockup palette `F-225` adopts. The departures and their reasons are in [`R9-MOCKUP-FIDELITY.md`](R9-MOCKUP-FIDELITY.md) §6 (C10, C11); golden rules 11–13 are not affected and still bind.
+
 | | |
 |---|---|
 | **Status** | **Approved** · 2026-08-14 · **values corrected 2026-08-15** ([ADR-0044](../adr/0044-status-tokens-corrected-and-status-colour-is-text.md)) |

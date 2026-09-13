@@ -21,11 +21,13 @@ See [`docs/PRD.md`](docs/PRD.md) and
 **R0 through R8 have shipped** — 193 features, an Expo application, the colour engine, the
 corpus and the design system. **R9 is the current release**: the product UI is rebuilt against
 the reference set in [`mockups/`](mockups/), which is governed by its own scoped harness
-([`mockups/AGENTS.md`](mockups/AGENTS.md)) because it is now load-bearing. Work continues one
+([`mockups/AGENTS.md`](mockups/AGENTS.md)) because it is now load-bearing, with no
+discretionary deviation — the contract is
+[`docs/design/R9-MOCKUP-FIDELITY.md`](docs/design/R9-MOCKUP-FIDELITY.md). Work continues one
 feature at a time, through this manual.
 
 > Scope is [`feature_list.json`](.harness/state/feature_list.json) and nothing else.
-> [`docs/roadmap.md`](docs/roadmap.md) is four releases behind it and is corrected by `F-248`;
+> [`docs/roadmap.md`](docs/roadmap.md) is four releases behind it and is corrected by `F-270`;
 > where the two disagree, the state file wins.
 
 ---
@@ -60,7 +62,7 @@ Non-negotiable. Nothing in a scoped harness may relax any of them.
 10. **Commit verified increments only. Never push without being asked.**
     See [commit-policy](.harness/governance/commit-policy.md).
 
-### Three that are specific to this product
+### Four that are specific to this product
 
 11. **Never overstate accuracy.** A camera estimate is an estimate. Banned language is
     lint-enforced ([ADR-0031](docs/adr/0031-measurement-claims-policy.md)). This applies to
@@ -69,6 +71,14 @@ Non-negotiable. Nothing in a scoped harness may relax any of them.
     ([ADR-0005](docs/adr/0005-measurement-provenance-is-a-type.md)); do not work around it.
 13. **Never make colour the only channel.** Anywhere. Ever.
     ([`docs/design/ACCESSIBILITY.md`](docs/design/ACCESSIBILITY.md))
+14. **The mockups are the specification for everything a person can see.** Build exactly what
+    the governing mockup in [`mockups/`](mockups/) draws — never improve, simplify, restyle,
+    reorder or leave out. A departure exists only if
+    [`R9-MOCKUP-FIDELITY.md`](docs/design/R9-MOCKUP-FIDELITY.md) lists it, and it can only be
+    listed because rule 11, 12 or 13, a blocking gate, two contradicting mockups resolved by its
+    precedence, or a capability no mockup draws forces it. **Anything else is an open question
+    for a person — never an agent's decision.** A surface no mockup draws is not designed by an
+    agent; it waits for one.
 
 ---
 
@@ -96,6 +106,12 @@ initialize → select feature → plan → implement → verify → trace effect
 7. **Record** — update `progress.md` and `feature_list.json`; capture lessons via
    [`continuous-learning`](.harness/skills/continuous-learning/SKILL.md).
 8. **Clean** — [`/checkpoint`](.harness/commands/checkpoint.md).
+
+**The loop does not stop between features.** After *Clean*, return to *Select* and claim the
+next eligible feature without waiting to be asked. A feature blocked by an open question or an
+owed attestation is skipped — never decided. The loop stops only when nothing in the current
+release is eligible; then report what remains and exactly what each blocked feature is waiting
+for.
 
 ---
 
@@ -126,6 +142,7 @@ initialize → select feature → plan → implement → verify → trace effect
 apps/mobile/AGENTS.md              ← the app; the only surface
 packages/color-core/AGENTS.md      ← strictest zone in the repository
 content/AGENTS.md                  ← provenance and licensing rules
+mockups/AGENTS.md                  ← the reference every surface is built to (rule 14)
 ```
 
 **More specific wins on conflict. No scope may relax a golden rule** — the `state` gate

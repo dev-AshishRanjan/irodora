@@ -36,6 +36,9 @@ Next:       <the single next concrete action>
 
 6. **Confirm the start path** still works from a clean clone.
 
+7. **Pick the next feature** — run [`next-feature`](next-feature.md). The loop continues until
+   nothing in the current release is eligible ([`AGENTS.md` §2](../../AGENTS.md#2-the-loop)).
+
 Full detail: [`clean-finish`](../skills/clean-finish/SKILL.md).
 
 ## If you cannot get clean

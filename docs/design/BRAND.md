@@ -1,5 +1,7 @@
 # Irodora — Brand
 
+> **From R9 the mockups decide where this document and an approved mockup disagree** ([golden rule 14](../../AGENTS.md)). The near-neutral chrome, the single accent and the ban on glow and gradient are superseded where the mockups draw otherwise. The departures and their reasons are in [`R9-MOCKUP-FIDELITY.md`](R9-MOCKUP-FIDELITY.md) §6 (C10, C11); golden rules 11–13 are not affected and still bind.
+
 | | |
 |---|---|
 | **Status** | Baseline · visual system completed after design approval |

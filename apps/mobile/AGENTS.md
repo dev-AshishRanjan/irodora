@@ -8,6 +8,20 @@ native module.
 
 ---
 
+## Every surface is its mockup
+
+From R9 the UI is built to [`mockups/`](../../mockups/) and to nothing else
+([golden rule 14](../../AGENTS.md)). Before touching a screen or a component, find its governing
+mockup in [`R9-MOCKUP-FIDELITY.md` §7](../../docs/design/R9-MOCKUP-FIDELITY.md#7-route--mockup)
+and its element inventory (`F-220`), and build what is drawn — the elements, their order,
+their proportions, their faces and their tokens.
+
+Craft and taste guidance applies to **executing** a mockup, never to overriding one. A screen,
+control or section that no mockup draws is not a design decision made here: it is an open
+question, recorded and left for a person.
+
+---
+
 ## Native projects are generated
 
 `ios/` and `android/` come from `expo prebuild` and are **gitignored**.

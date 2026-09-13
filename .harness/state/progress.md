@@ -8,6 +8,83 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-14 — R9 is re-cut to the complete mockup set, and fidelity becomes golden rule 14
+
+**No source was touched.** The remaining nine mockups landed (`4ec8a17`), and the user set the
+terms: *"no deviation from the mockups — materialise the mockup in code"*, and *"after a task is
+done, pick the next automatically."* This entry records the scope and the harness that now enforce
+both.
+
+### What was measured before anything was decided
+
+- **The renders agree with the README token table** within JPEG noise — dark ground ≈ `#181B20`
+  against `#15171B`, cards ≈ `#20242A` against `#20232A`, light `#F6F6F2` / `#FEFEFE` against
+  `#F6F5F2` / `#FFFFFF`. So the table is the declared value and the pixels confirm it.
+- **Adopting the table exactly fails gate 9 in three places.** Dark `text.tertiary` on cards is
+  4.02 · 3.57 · 3.05 :1; light `text.tertiary` is 2.33–2.99 :1 everywhere; dark `border.strong`
+  is 2.11:1 where it is the only state indicator. The smallest passing moves are ΔE00 10.43, 18.55
+  and 8.12 — visible, and forced, because a threshold may not be lowered.
+- **A neutral swatch well cannot hide inside the tinted cards**: ΔE00 2.94 (ground) to 6.50
+  (level 3). The chroma behind samples is therefore the user's decision, reaffirmed after it was
+  raised, and `F-225`'s ADR records the consequence rather than softening it.
+- **The set contradicts itself**: the tab bar nine ways; Home `01` against `25`; colour detail
+  `06` against `26`; the lockup four ways. Resolved by a fixed precedence, never per task.
+- **Seven drawn capabilities do not exist** — bookmark, lookbook, two display switches, the CVD
+  preview, the avatar, the seasonal label — and four printed figures have no definition.
+
+### The scope
+
+**R9 is 53 features, `F-218` … `F-270`** — the specification and its proof (4), what the engine
+and corpus must supply (3), the foundation including **the app icon and splash as `F-231`** (7),
+components (5), missing capabilities (5), one feature per governing mockup (22), light, Japanese,
+motion and proof (7). **49 `todo`, 4 `blocked`** on open questions.
+
+Re-numbered from the 2026-09-10 cut, all of which was still backlog: **old `F-220`** (the ramp as a
+theme, ground kept neutral) is **`F-225`, with the decision reversed**; **old `F-221`** (the
+fabricated corpus) is now §4 E1 of the specification and `F-220`'s inventories; **old `F-248`**
+(R9 closes) is **`F-270`**. `F-218` and `F-219` keep their meaning.
+
+### The contract
+
+[`docs/design/R9-MOCKUP-FIDELITY.md`](../../docs/design/R9-MOCKUP-FIDELITY.md): what "strict" means
+at 2 px = 1 dp; the precedence P1–P5; **four closed categories of forced departure** (sample
+content, claims, accessibility floors, undrawn capabilities); the tokens; the conflict register
+C1–C19; the route map; every printed figure and its binding.
+
+### Open questions — each blocks one feature and closes as an ADR
+
+**OQ-7** `profile/measure` has no mockup (`F-261`) · **OQ-8** the Lens *Garment Scan* and
+*Calibrated Card* states have none (`F-243`) · **OQ-9** four printed figures have no definition
+(`F-222`) · **OQ-10** mockup 22 omits two of FR-52's four answers (`F-258`).
+
+### The harness
+
+- **Golden rule 14**: the mockups are the specification for everything visible; a departure exists
+  only if the specification lists it; anything else is an open question, never an agent's decision.
+- **`AGENTS.md` §2**: the loop does not stop between features, and an OQ-blocked feature is
+  skipped rather than decided. `next-feature` and `checkpoint` carry the same step.
+- **Precedence lines** in every document that judges design — `DESIGN-BRIEF`, `BRAND`,
+  `DESIGN-SYSTEM`, `build-ui`, `visual-taste`, `design-review`, the designer, evaluator and
+  generator agents, the plan template and the definition of done. The lesson is
+  [[a-new-design-authority-must-be-wired-into-every-document-that-judges-design]].
+- `F-218` now also makes the state gate refuse a mobile or UI feature that names no mockup, so
+  rule 14 is checked rather than remembered.
+
+### Gates
+
+**Ran:** `state` · `format:check` — after every edit. `typecheck` · `lint` · `test` ran green
+(exit 0) earlier this session on the same source; **no source file has changed since**, only
+state and documents.
+
+**NOT run:** `build` · `e2e` · `a11y` · `contrast` · `cvd` · `content` · `color-golden` ·
+`perf` · `security` · `artifact` — nothing they read has changed.
+
+### Next
+
+**`F-218`** — the route↔mockup index, the first eligible feature. The loop starts there.
+
+---
+
 ## 2026-09-10 — The mockup set became the reference, so it was audited against the repository
 
 **No feature was claimed and no source was touched.** Nineteen mockups were committed on

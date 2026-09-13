@@ -28,6 +28,18 @@ The design in brief.
 **Increments:** the sequence of small, independently verifiable steps. Each one leaves the
 build green.
 
+## Mockup fidelity
+
+*Required for any change a person can see* ([golden rule 14](../../AGENTS.md)).
+
+- **Governing mockup:** `NN` — plus the variants that apply (`25` light, `26` Japanese,
+  `27` states), per [the precedence](../../docs/design/R9-MOCKUP-FIDELITY.md#3--precedence--how-a-contradiction-between-mockups-is-resolved).
+- **Inventory:** the elements from `F-220`'s inventory that this feature builds, top to bottom.
+- **Bindings:** what each value binds to ([§8](../../docs/design/R9-MOCKUP-FIDELITY.md#8-every-printed-figure-and-what-it-binds-to))
+  — no mockup content reaches the build.
+- **Departures:** each one by its id in §4 or §6. **If one is needed that the specification does
+  not list, stop: it is an open question, not a plan item.**
+
 ## Files to touch
 
 ```
