@@ -222,6 +222,14 @@
           },
           "description": "An unresolved open question BLOCKS this feature. It closes as an ADR, not as a conversation."
         },
+        "mockups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9]{2}|all)$"
+          },
+          "description": "Golden rule 14. The mockups in mockups/index.json this feature materialises, or \"all\" for one that works across every mockup. Required from R9 for a feature whose service is mobile or whose package is @irodora/ui; empty only while an open question asks for the missing mockup. Checked by gate 0 (F-218)."
+        },
         "plan": {
           "type": "string",
           "description": "Path to the plan file, relative to .harness/."

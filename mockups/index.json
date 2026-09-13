@@ -1,0 +1,233 @@
+{
+  "$comment": "Golden rule 14, machine-readable (F-218). Which image governs which route. primaryFor: the routes whose layout it decides (precedence P1). variantFor: the routes it varies — light, Japanese, states, a draft (P2). surfaces: what it governs that is not a route. sha256 pins the bytes: a changed image is a changed specification, so the build fails until this row — and, once F-220 writes it, the inventory, whose mockupSha256 must match — moves with it. undrawn: a route no mockup draws, allowed only while an open question in PRD §10 asks for one. Checked by scripts/verify-mockups.mjs; the human view is docs/design/R9-MOCKUP-FIDELITY.md §7, and the two are compared.",
+  "version": 1,
+  "mockups": {
+    "10": {
+      "file": "10_palette_studio.jpg",
+      "sha256": "b3f37e3efc7753fb438bc0f5ff2fc9a25ad95d3af35d352a5d0bef085896c40b",
+      "primaryFor": ["/atlas/palettes"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "11": {
+      "file": "11_wardrobe_gallery.jpg",
+      "sha256": "7941452d8b3392992842c7267b2eb18e9d6a4ba5f4121a1b3e819773266640b5",
+      "primaryFor": ["/wardrobe"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "12": {
+      "file": "12_add_garment_flow.jpg",
+      "sha256": "e6aa51e61564bfc01be79daec96aa1aa37fad4668a6b700ce9a3af2474c1c810",
+      "primaryFor": ["/wardrobe/add"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "13": {
+      "file": "13_outfit_lab_capsule_solver.jpg",
+      "sha256": "1c584d898b4a8bb255d6af85a67c5c8a5064cb554c508b6894c9e23a300517f7",
+      "primaryFor": ["/wardrobe/outfit"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "14": {
+      "file": "14_app_icon_and_splash.jpg",
+      "sha256": "ddbaa7ead2f0f433143a0eb93b5ddd18b1269f3413f37d934606962ca016a837",
+      "primaryFor": [],
+      "variantFor": [],
+      "surfaces": ["brand"],
+      "inventory": null
+    },
+    "15": {
+      "file": "15_settings_preferences.jpg",
+      "sha256": "7118ab3a2505652ba237fe0c41bfec22e67c91898827f84adc7b1340da5182d3",
+      "primaryFor": ["/profile/preferences"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "16": {
+      "file": "16_palette_builder_custom.jpg",
+      "sha256": "474de9e172bc77f40008c3b668384c8106e198b229be305ead17ca9aa359f29c",
+      "primaryFor": [],
+      "variantFor": ["/atlas/palettes"],
+      "surfaces": [],
+      "inventory": null
+    },
+    "17": {
+      "file": "17_profile_setup_swatch_test.jpg",
+      "sha256": "68f2543baddda261ee15c9ed9527c7f0ae5d18759fcab4cec22c54e6c0c3d3fd",
+      "primaryFor": [],
+      "variantFor": ["/profile"],
+      "surfaces": [],
+      "inventory": null
+    },
+    "18": {
+      "file": "18_export_center_reports.jpg",
+      "sha256": "5434f022c52338bc8486c3849540b398b6bc563abeab1d35c49688da4b896c89",
+      "primaryFor": ["/profile/export"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "19": {
+      "file": "19_what_goes_with_this.jpg",
+      "sha256": "cdf79269c2d42023e392b58081da778b8a369c7c0d73778c551c62c74f6fad8a",
+      "primaryFor": ["/atlas/with/[slug]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "20": {
+      "file": "20_colour_card_shareable.jpg",
+      "sha256": "0cf2649f513c45548436cbaff0a5a4018ffd0cfa1f7c10751c78744125e80f70",
+      "primaryFor": ["/atlas/card/[slug]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "21": {
+      "file": "21_nearest_in_corpus.jpg",
+      "sha256": "7e346aeb82842e381a8e7eeaf6c0a35732e9d92f1edc67e756863d8975dfc20c",
+      "primaryFor": ["/atlas/nearby/[slug]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "22": {
+      "file": "22_shopping_check.jpg",
+      "sha256": "a8bf9b6fc5da257fe387a9e8ed696aa083663c09b30c794bf02cab2de0d4e8d6",
+      "primaryFor": ["/wardrobe/shopping"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "23": {
+      "file": "23_profile_finished.jpg",
+      "sha256": "60a39cf1d1add7e88b4bde04aad93d7c70e00b7434f2c18808f7e29016402080",
+      "primaryFor": ["/profile"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "24": {
+      "file": "24_garment_combinations.jpg",
+      "sha256": "60a752d8680debfee0a2eacc1a1196f73f7b2b60c68f835059e4292a55e535c4",
+      "primaryFor": ["/wardrobe/with/[id]", "/atlas/with/reading/[id]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "25": {
+      "file": "25_home_light_mode.jpg",
+      "sha256": "d81a68c004bfd241961466c5ce2aa181c59f6fd6afc1129a78e3a0de5306e17c",
+      "primaryFor": [],
+      "variantFor": ["/"],
+      "surfaces": ["light"],
+      "inventory": null
+    },
+    "26": {
+      "file": "26_color_detail_japanese.jpg",
+      "sha256": "194a6b8d352a45fe6a3b1c5b0647e8b5f17409cd8fd2e72d647b8e259ca57d0a",
+      "primaryFor": [],
+      "variantFor": ["/atlas/[slug]"],
+      "surfaces": ["japanese"],
+      "inventory": null
+    },
+    "27": {
+      "file": "27_states_board.jpg",
+      "sha256": "0e861a9f8678948ffe860708f5b5bc59c703d2914ef1b27e028eaa5d7ab30f9b",
+      "primaryFor": [],
+      "variantFor": ["/", "/lens", "/wardrobe"],
+      "surfaces": ["states"],
+      "inventory": null
+    },
+    "00": {
+      "file": "00_component_design_system.jpg",
+      "sha256": "5850eb5a7ec480f7946818ed88f8be6eecfea1922e60eae95427d2b81f685867",
+      "primaryFor": [],
+      "variantFor": [],
+      "surfaces": ["components"],
+      "inventory": null
+    },
+    "01": {
+      "file": "01_home_screen.jpg",
+      "sha256": "223e0fd96e0ae3c4b4d264c257ef61e54da0b1ea1b77259bb26162937e8d20db",
+      "primaryFor": ["/"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "02": {
+      "file": "02_lens_live_viewfinder.jpg",
+      "sha256": "afc3ca45d8a7c67c4e46c9c2ce711f54f9635e669568af513d618d0bfba59ad0",
+      "primaryFor": ["/lens"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "03": {
+      "file": "03_lens_analysis_bottom_sheet.jpg",
+      "sha256": "1a98d2eb07dd6bde37d90d4b247c8d9fe3fcdb312418eaf241e929d575459243",
+      "primaryFor": [],
+      "variantFor": ["/lens"],
+      "surfaces": [],
+      "inventory": null
+    },
+    "04": {
+      "file": "04_lens_against_target.jpg",
+      "sha256": "84e102769196ffd4b41fbdf571fd90e08c5ef01d369f2bf304dd046c6152e40d",
+      "primaryFor": [],
+      "variantFor": ["/lens"],
+      "surfaces": [],
+      "inventory": null
+    },
+    "05": {
+      "file": "05_atlas_library_catalog.jpg",
+      "sha256": "06142c4b395d4b5ee63bba5322d3aaab6fb01be90583396ca8155e7e3dea2b2a",
+      "primaryFor": ["/atlas"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "06": {
+      "file": "06_color_detail_centerpiece.jpg",
+      "sha256": "90ce9ea1043e3263ddd1993a50334f33c19a5e80a4cb469832822d60513b8bf0",
+      "primaryFor": ["/atlas/[slug]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "07": {
+      "file": "07_wear_outfit_combinations.jpg",
+      "sha256": "44b29fb0bbefe79ccb11443544b3f815a883f004398b49ab45a960acd45e1afa",
+      "primaryFor": ["/atlas/wear/[slug]"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "08": {
+      "file": "08_color_compare_instrument.jpg",
+      "sha256": "d4ac4d39cb7b3c28903ed11fd102953a33d0b179b549f65ca30ba70365ba3972",
+      "primaryFor": ["/atlas/compare"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    },
+    "09": {
+      "file": "09_semantic_finder_search.jpg",
+      "sha256": "55a8ad94116ebaf66e0db3804d1ca2ce52d51a46b846ce54b215af7c5102b909",
+      "primaryFor": ["/atlas/find"],
+      "variantFor": [],
+      "surfaces": [],
+      "inventory": null
+    }
+  },
+  "undrawn": {
+    "/profile/measure": "OQ-7"
+  }
+}

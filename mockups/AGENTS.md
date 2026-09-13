@@ -9,9 +9,11 @@ rebuilds the product to match it with **no discretionary deviation**. The contra
 departures — is [`docs/design/R9-MOCKUP-FIDELITY.md`](../docs/design/R9-MOCKUP-FIDELITY.md).
 Read it before building anything from an image in this directory.
 
-> **The gate cannot see this file yet.** `scripts/verify-state.mjs` walks `apps/`, `packages/`
-> and `content/` for scoped harnesses. `F-218` adds `mockups/`. Until it does, these rules bind a
-> reader and are invisible to the build [[a-gate-that-errors-is-failing-open]].
+> **The build reads this directory.** Gate 0 scans this file for language that would weaken a
+> golden rule, and refuses a UI feature from R9 on that names no mockup. Gate 2
+> (`scripts/verify-mockups.mjs`) holds [`index.json`](index.json) against the images, the route
+> tree, PRD §10 and the fidelity specification's §7 — every image indexed and pinned by hash,
+> every route drawn or waiting on an open question (F-218, E-126).
 
 ---
 

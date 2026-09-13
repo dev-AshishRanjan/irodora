@@ -8,6 +8,79 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-14 — F-218 The mockup set says which route it is a mockup of, and the gate can tell
+
+**Done.** Golden rule 14 is now something the build checks rather than something a reader remembers.
+
+- **`mockups/index.json`** — one row per image: file, **sha256**, `primaryFor` (P1), `variantFor`
+  (P2), `surfaces`, `inventory`. 28 images, 21 routes; `/profile/measure` is `undrawn` on OQ-7.
+- **`scripts/verify-mockups.mjs`** in gate 2 (lint), with `verify:mockups` and `verify:mockups:prove`,
+  and the proof as a CI step beside the viewport proof. Route enumeration is `routePatterns()` from
+  `verify-route-targets.mjs` — imported, not copied.
+- **Gate 0**: the scope walk reads `mockups/AGENTS.md` (3 → 4 scoped harnesses), and section 9b refuses
+  a feature from R9 whose service is `mobile` or whose package is `@irodora/ui` and which names no
+  `mockups`. Schema field added; all 53 R9 features carry it (44 are UI features).
+- **E-126** and its note. The inventory half has an owner: F-220's acceptance, and a code end
+  condition — once F-220 is `done`, a null inventory fails.
+
+### The first evaluation failed, and it was right
+
+- **§7 and the index disagreed** — mockup 27 was a state of Home in §7 and not in the index — and the
+  gate could not see it, because the comparison only checked that each primary appeared on the row.
+  Now both columns are compared as exact sets, and every mockup id must appear in §7 in both
+  directions, which covers the icon and components rows.
+- **The spec itself was wrong too**: §7's `profile/index` row put `17` (the in-progress state) in the
+  governing column. Moved to variants — precedence P2.
+- **`mockups/AGENTS.md` still said the gate could not see it** — a dependent my effect trace missed.
+- **The inventory gap was recorded as "not guarded yet" and owned by nobody** — golden rule 5.
+- **Four branches could be deleted with the proof still green.** The proof went from 15 cases to 27.
+
+The second evaluation **passed**, and still found three deletable-while-green branches — the scope
+walk, the §10-only open-question lookup, §7's non-route rows. Each has a case now: **30 — 26 that must
+fail, 4 that must pass.** The evaluator verified its sampled deletions by running mutated copies.
+
+### A bug in my own proof
+
+It opened its plant journal **before** checking the baseline. Gate 0 was red for an unrelated reason,
+`process.exit(1)` skipped `finally`, and the journal claimed five plants that never happened; the next
+run refused to start. **Every entry was compared with the file on disk before `plant.mjs --recover`
+ran** — a first comparison guessed the entry format wrong, flagged everything, and stopped, which was
+the right failure. Fixed by asserting the baseline first. Lesson:
+[[a-journal-opened-before-an-early-exit-claims-plants-that-never-happened]]. Five other proofs *may*
+share the ordering; the scan that says so is crude, so it is an **unconfirmed** row in
+`observations.md`, not a fix.
+
+### Gates
+
+**Evaluator, second run** (sequential, on the tree before the post-PASS fixes): `state` · `verify-mockups`
+· `--prove` · `typecheck` 35/35 · `lint` 35/35 · `format:check` · `test` 35/35 (mobile 46 suites, 979
+tests) · `build` 19/19 — **all exit 0**. Turbo replayed package tasks from cache; no package source
+changed.
+
+**Mine, after the post-PASS fixes:** `state` · `verify-mockups` · `--prove` (30/30) · `lint` (full chain,
+35/35) · `format:check` — **all exit 0**. No journal and no probe file left.
+
+**NOT re-run after the post-PASS fixes:** `typecheck` · `test` · `build` — that change set is
+`scripts/verify-mockups.mjs` (imported by no package or test), a CI comment, the plan, memory notes,
+the observations log and E-126's text; none is read by those gates. **NOT run at all:** `color-golden` ·
+`cvd` · `content` · `e2e` · `a11y` · `contrast` — no engine, corpus or screen change.
+
+### Limits, stated
+
+- **"Touches packages/ui" is read as `package: "@irodora/ui"`.** Files touched are not recorded in the
+  feature list, so a `service: packages` feature editing `packages/ui` without that field is not seen.
+  No R9 feature is shaped that way.
+- `mockups/README.md` line 51 still routes `17` to `/profile/setup`. The README is the user's document;
+  the conflict register records it as C15.
+
+### Next
+
+**F-219** — the claims lint grows. Plan drafted and patterns calibrated before this closed: ten
+English and Japanese patterns, each firing only on its own sentence; `N% confidence` dropped because
+BRAND.md sanctions *"Estimated, 81% confidence, mixed lighting"*; 26 lines of work sorted by remedy.
+
+---
+
 ## 2026-09-14 — R9 is re-cut to the complete mockup set, and fidelity becomes golden rule 14
 
 **No source was touched.** The remaining nine mockups landed (`4ec8a17`), and the user set the

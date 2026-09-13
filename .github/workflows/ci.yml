@@ -184,6 +184,11 @@ jobs:
       - name: 'Gate 2 — viewport proof'
         run: pnpm verify:viewport:prove
 
+      # F-218: golden rule 14 made checkable — every route drawn or waiting on an open question,
+      # every image indexed and pinned by hash. The proof plants each failure, and the cases that must pass.
+      - name: 'Gate 2 — mockup index proof'
+        run: pnpm verify:mockups:prove
+
       - name: 'Gate 2 — worklet reachability proof'
         run: pnpm verify:worklets:prove
 

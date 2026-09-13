@@ -1706,6 +1706,7 @@ if (agentsMd) {
     ...walk(join(ROOT, 'apps'), (p) => p.endsWith('AGENTS.md')),
     ...walk(join(ROOT, 'packages'), (p) => p.endsWith('AGENTS.md')),
     ...walk(join(ROOT, 'content'), (p) => p.endsWith('AGENTS.md')),
+    ...walk(join(ROOT, 'mockups'), (p) => p.endsWith('AGENTS.md')),
   ];
   for (const file of scoped) {
     const text = readFileSync(file, 'utf8');
@@ -1720,6 +1721,65 @@ if (agentsMd) {
   }
   if (!failures.some((f) => f.check === 'scope'))
     pass('scope', `${scoped.length} scoped harnesses, none weakening a golden rule`);
+}
+
+/* ============================ 9b. golden rule 14: a UI feature names its mockups */
+
+/*
+ * F-218. From R9 a feature a person will see is built to a mockup (golden rule 14), so it has to
+ * say which. Read from mockups/index.json rather than from a list here, so adding a mockup is one
+ * edit. Scoped to service "mobile" and package "@irodora/ui": an engine feature has no layout.
+ */
+{
+  const listText = readText(join(HARNESS, 'state/feature_list.json'));
+  const indexText = readText(join(ROOT, 'mockups/index.json'));
+  if (!indexText) {
+    fail(
+      'mockups',
+      'mockups/index.json is missing',
+      'Golden rule 14 cannot be checked without the map from routes to mockups.',
+      'Restore it; scripts/verify-mockups.mjs describes its shape.',
+    );
+  } else if (listText) {
+    const known = new Set(Object.keys(JSON.parse(indexText).mockups ?? {}));
+    let named = 0;
+    for (const f of JSON.parse(listText).features) {
+      const release = Number(String(f.release).slice(1));
+      const ui = f.service === 'mobile' || f.package === '@irodora/ui';
+      if (release >= 9 && ui) {
+        if (!Array.isArray(f.mockups)) {
+          fail(
+            'mockups',
+            `${f.id} is a UI feature in ${f.release} and names no mockup`,
+            'Golden rule 14: what a person sees is built to a mockup, and a feature that does not say which has nothing to be checked against.',
+            'Add "mockups" — the ids from mockups/index.json it materialises, or ["all"].',
+          );
+          continue;
+        }
+        if (f.mockups.length === 0 && !(f.openQuestions ?? []).length)
+          fail(
+            'mockups',
+            `${f.id} names no mockup and no open question asking for one`,
+            'A surface no mockup draws is not designed by an agent; it waits for one (golden rule 14).',
+            'Name its mockup, or the OQ-* in PRD §10 that asks for it.',
+          );
+        named += 1;
+      }
+      for (const id of f.mockups ?? [])
+        if (id !== 'all' && !known.has(id))
+          fail(
+            'mockups',
+            `${f.id} names mockup ${id}, which is not in mockups/index.json`,
+            'A feature pointing at a picture that is not indexed is checked against nothing.',
+            'Use an id from mockups/index.json.',
+          );
+    }
+    if (!failures.some((x) => x.check === 'mockups'))
+      pass(
+        'mockups',
+        `${named} UI feature(s) from R9 on name the mockups they materialise (golden rule 14)`,
+      );
+  }
 }
 
 /* ================================================ 10. governed-doc link check */

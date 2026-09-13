@@ -7068,8 +7068,11 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Every file in mockups/ names the route or surface it governs, and every route in apps/mobile/app names the mockup that governs it — both directions, in one machine-readable index that matches R9-MOCKUP-FIDELITY §7",
         "A route with no governing mockup and a mockup with no route are both build failures, except where an open question is named against the route (OQ-7 for profile/measure)",
@@ -7084,7 +7087,8 @@
         "format",
         "test"
       ],
-      "notes": "The route map is in docs/design/R9-MOCKUP-FIDELITY.md §7. Two README routes are wrong and the index must carry the corrected ones: 17 is filed at /profile/setup, which is not a route (it is the in-progress state of profile/index, C15), and 24 governs atlas/with/reading/[id] as well as wardrobe/with/[id] (C16). profile/measure has no mockup at all (OQ-7)."
+      "notes": "The route map is in docs/design/R9-MOCKUP-FIDELITY.md §7. Two README routes are wrong and the index must carry the corrected ones: 17 is filed at /profile/setup, which is not a route (it is the in-progress state of profile/index, C15), and 24 governs atlas/with/reading/[id] as well as wardrobe/with/[id] (C16). profile/measure has no mockup at all (OQ-7).",
+      "plan": "plans/F-218-the-mockup-index.md"
     },
     {
       "id": "F-219",
@@ -7098,6 +7102,9 @@
       "priority": "must",
       "status": "todo",
       "blockedBy": [],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "claims.json carries patterns, each with its reason, for: a percentage match or percentage confidence beside a colour difference; an absolute CVD safety claim; a composite score presented as a verdict; grade language borrowed from instruments or institutions; a named physical quantity the pipeline does not measure (\"reflectance spectra\")",
         "verify-claims-proof exercises every new pattern against a string that must fail and one that must pass, so a pattern that matches nothing cannot ship",
@@ -7127,12 +7134,16 @@
       "blockedBy": [
         "F-218"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "For each of mockups 00–27 an inventory lists every element top to bottom: component, token, measured size and spacing in dp (2 px = 1 dp on a 384 dp reference, R9-MOCKUP-FIDELITY §2), typeface and weight, icon, illustration, data binding, and action",
         "Every value in an inventory is bound per §8 — no name, number, date or provenance line from an image is recorded as content",
         "Each conflict in §6 names the governing mockup for every affected element; each ⇄ default stands as the precedence rule decided unless the user flips it — a flip is recorded, and an unflipped default is not waited on",
         "The values the images leave open are measured and recorded: Slate Graphite and Obsidian Noir from mockup 15, the swatch corner on each mockup, the icon stroke weight, the serif face that matches 00, 01, 14 and 25",
-        "Presentation artefacts — bezels, status bars, callouts, leaked prompt labels, garbled text — are listed per mockup as not design, so no feature builds one"
+        "Presentation artefacts — bezels, status bars, callouts, leaked prompt labels, garbled text — are listed per mockup as not design, so no feature builds one",
+        "Every row of mockups/index.json points at its inventory, and each inventory records the sha256 of the image it was written against; once F-220 is done, scripts/verify-mockups.mjs refuses a null inventory, so an image can no longer change without the structure it describes"
       ],
       "verification": [
         "state",
@@ -7156,6 +7167,9 @@
       "status": "todo",
       "blockedBy": [
         "F-218"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "One command renders every route in the F-218 index at the 384 dp reference viewport and composes each capture beside its governing mockup, in both themes and both locales, into .harness/verification/evidence/",
@@ -7195,6 +7209,15 @@
       "openQuestions": [
         "OQ-9"
       ],
+      "mockups": [
+        "03",
+        "04",
+        "08",
+        "13",
+        "22",
+        "23",
+        "27"
+      ],
       "acceptance": [
         "Each figure in R9-MOCKUP-FIDELITY §8 marked OQ-9 or F-222 is either defined — a pure function, a stated formula, an ADR — or replaced in its slot by a figure the product already defines, as OQ-9 decides",
         "The ΔE00 descriptor bands behind \"Very Close\", \"Perceptible Shift\" and \"Slightly Darker\" (04, 08) are one table used everywhere, and none of them contains the word match (FR-74)",
@@ -7224,6 +7247,9 @@
       "status": "todo",
       "blockedBy": [
         "F-220"
+      ],
+      "mockups": [
+        "23"
       ],
       "acceptance": [
         "A seasonal summary label is derived from the four profile ranges by a stated, deterministic rule, and the rule is content rather than code",
@@ -7255,6 +7281,12 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "05",
+        "10",
+        "23",
+        "26"
+      ],
       "acceptance": [
         "Kasane palettes exist in content/palettes with complete provenance, classified japanese-inspired, never historical — enough to fill 10, 23 and 26 as drawn",
         "The 25 taxonomy families are grouped under the seven chips mockup 05 draws — Ao 青, Aka 赤, Midori 緑, Ki 黄, Murasaki 紫, Cha 茶, Kuro 黒 — as content with a stated rule, and every entry lands in exactly one group",
@@ -7285,6 +7317,9 @@
       "status": "todo",
       "blockedBy": [
         "F-220"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "docs/design/design-system.manifest.json takes the README token table exactly — ground, three levels, both borders, keyline, three text roles, primary action — in dark and light, except the three E3 moves in R9-MOCKUP-FIDELITY §4, each at the value §4 states",
@@ -7322,6 +7357,13 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "00",
+        "01",
+        "14",
+        "20",
+        "25"
+      ],
       "acceptance": [
         "A serif face matching the wordmark and display type of 00, 01, 14, 20 and 25 ships under the SIL OFL or an equally permissive licence, recorded in NOTICE.md",
         "A Japanese serif ships for the surfaces that draw one (the card 20, C6), subset from the corpus the way ADR-0057 subsets Noto Sans JP, and the font-coverage gate covers it",
@@ -7356,6 +7398,9 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Radius is sm 6, md 10, lg 16 and pill; spacing is 4, 8, 16, 24, 32, 48 — the README scales, still a 4-point grid",
         "Swatch corners are the values F-220 measured, inside ADR-0094’s ceiling",
@@ -7387,6 +7432,9 @@
       "status": "todo",
       "blockedBy": [
         "F-220"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "Every icon any mockup draws exists once, at the stroke weight F-220 measured: home, atlas, lens, wardrobe, profile, back, share, export, bookmark, filter, search, clear, camera, photo, edit, external, contrast, palette, settings, lock, swap, regenerate, bag, t-shirt, hanger, history, help, download, calendar, check, light, glare",
@@ -7420,6 +7468,9 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Every illustration the screens draw exists as one versioned, vector set: plum-blossom branch (01 05 06 08 15 25), garment and kimono line-art (06 07 11 13 16 23), hanger and blossom (22 27), seigaiha waves (24 26), asanoha lattice (16), leaf sprays (09 10 15), fabric-fold lines (17), hanko seal (26, C3), the splash wave lines (14)",
         "Each is placed where its mockup places it, at its mockup’s opacity, and never over a sample",
@@ -7452,6 +7503,12 @@
         "F-226",
         "F-225"
       ],
+      "mockups": [
+        "00",
+        "01",
+        "14",
+        "25"
+      ],
       "acceptance": [
         "The mark is mockup 14’s 梅鉢 — five petals, a centre ring, radiating stamen lines — drawn from code as today (MARK in packages/ui/src/brand.tsx), recognisable at 16 px and under protan, deutan and tritan simulation",
         "The in-app lockup is 01’s — filled mark and “Irodora” in the display serif, title case; the splash lockup is 14’s",
@@ -7483,6 +7540,9 @@
       "blockedBy": [
         "F-230",
         "F-229"
+      ],
+      "mockups": [
+        "14"
       ],
       "acceptance": [
         "The icon is 14’s dark squircle tile with the silver mark, generated by scripts/generate-brand-assets.mjs, and --check byte-compares it in CI",
@@ -7522,6 +7582,9 @@
         "F-227",
         "F-228"
       ],
+      "mockups": [
+        "00"
+      ],
       "acceptance": [
         "Primary pill (white on dark, ink on light), secondary outlined pill, square and circular icon buttons, switch, segmented ChoiceGroup, slider — as 00 draws them, in every state the screens draw (selected, disabled, pressed, focused)",
         "Chips: filter chip with a colour dot and a two-script label (05), choice pill with a leading dot (12 15 17), provenance chip with an icon (03 12 24), count pill (01 05 11), tinted ΔE00 badge (21 24), status pill with icon and text (04 12)",
@@ -7557,6 +7620,9 @@
         "F-225",
         "F-227"
       ],
+      "mockups": [
+        "00"
+      ],
       "acceptance": [
         "Cards at levels 1, 2 and 3 with the mockups’ radius, border and fill",
         "Every sample the mockups draw: full-width hero (01 06 20), detail 120 (03), anchor 100 and 72 (19 21), list 64 and 48, strip 40, joined bands (10 23), split target bar (04), pinked-edge fabric (12), garment-photo card (11 22) — each with its keyline and its corner",
@@ -7590,6 +7656,9 @@
         "F-225",
         "F-226",
         "F-228"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "The tab bar is mockup 01’s: Home · Atlas · Lens · Wardrobe · Profile, icon and label, active indicator as drawn — the only tab bar in the app (C1); an ADR records the reversal of F-168",
@@ -7628,6 +7697,21 @@
         "F-226",
         "F-227"
       ],
+      "mockups": [
+        "04",
+        "06",
+        "08",
+        "11",
+        "17",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26"
+      ],
       "acceptance": [
         "Readout table (06 08) and its two-column grid form (26); delta rows with signed bars and a plain-language reading (04 08); proximity headline with split sample (04)",
         "Coverage dial (11); radar of four axes (17); metric tile — large figure, label, basis line (22); ranked row with rank, sample, two-script name, figure and action (19 21 24); factor row with icon, figure and reason (13)",
@@ -7661,6 +7745,9 @@
         "F-232",
         "F-229"
       ],
+      "mockups": [
+        "27"
+      ],
       "acceptance": [
         "Four state components as 27 draws them: empty (hanger and blossom art, heading, body, primary action), working (ring progress with the mark, two monospace step chips, heading, body), refused (amber glare tile, heading, reason with its threshold, retry), denied (camera and lock, heading, body, open settings)",
         "Every screen declares which of the four it shows in each data condition, so none can render a blank panel or report an absence as a zero",
@@ -7692,6 +7779,9 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "06"
+      ],
       "acceptance": [
         "Bookmarking a corpus colour from the colour page (06) persists in the encrypted store and survives a cold restart and a force-quit mid-write",
         "The saved set is reachable from where F-220’s inventory places it, and is covered by backup and restore"
@@ -7721,6 +7811,9 @@
       "blockedBy": [
         "F-220"
       ],
+      "mockups": [
+        "13"
+      ],
       "acceptance": [
         "An outfit from Outfit Lab (13) is saved with its slots, its locks, its scores and the rule and corpus versions that produced them, so it re-renders identically later",
         "Saved outfits are listed where F-220’s inventory places them, can be removed, and are covered by backup and restore"
@@ -7749,6 +7842,9 @@
       "status": "todo",
       "blockedBy": [
         "F-220"
+      ],
+      "mockups": [
+        "15"
       ],
       "acceptance": [
         "“Tabular Numeric Figures”, “Haptic Feedback on Swatch Selection” and “Show Provenance Badges on Swatches” each change the app everywhere they apply, and persist",
@@ -7780,6 +7876,9 @@
       "status": "todo",
       "blockedBy": [
         "F-225"
+      ],
+      "mockups": [
+        "15"
       ],
       "acceptance": [
         "Standard, Protanopia, Deuteranopia and Tritanopia (15) re-render every token and every sample through @irodora/cvd-engine — one simulation, the engine’s, never a second implementation",
@@ -7813,6 +7912,9 @@
       "status": "todo",
       "blockedBy": [
         "F-220"
+      ],
+      "mockups": [
+        "23"
       ],
       "acceptance": [
         "An optional avatar is chosen from the device, stored encrypted like wardrobe images (ADR-0078), and replaced by the mark when absent",
@@ -7849,6 +7951,10 @@
         "F-235",
         "F-236",
         "F-230"
+      ],
+      "mockups": [
+        "01",
+        "25"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 01 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -7894,6 +8000,9 @@
       "openQuestions": [
         "OQ-8"
       ],
+      "mockups": [
+        "02"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 02 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -7938,6 +8047,9 @@
         "F-243",
         "F-222"
       ],
+      "mockups": [
+        "03"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 03 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -7980,6 +8092,9 @@
         "F-243",
         "F-222"
       ],
+      "mockups": [
+        "04"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 04 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8021,6 +8136,9 @@
         "F-236",
         "F-224"
       ],
+      "mockups": [
+        "05"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 05 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8061,6 +8179,10 @@
         "F-235",
         "F-236",
         "F-237"
+      ],
+      "mockups": [
+        "06",
+        "26"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 06 (and 26 for ja) is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8104,6 +8226,9 @@
         "F-236",
         "F-222"
       ],
+      "mockups": [
+        "07"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 07 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8144,6 +8269,9 @@
         "F-235",
         "F-236"
       ],
+      "mockups": [
+        "08"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 08 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8181,6 +8309,9 @@
         "F-234",
         "F-235",
         "F-236"
+      ],
+      "mockups": [
+        "09"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 09 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8224,6 +8355,10 @@
         "F-236",
         "F-224"
       ],
+      "mockups": [
+        "10",
+        "16"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 10 and 16 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8262,6 +8397,9 @@
         "F-234",
         "F-235",
         "F-236"
+      ],
+      "mockups": [
+        "19"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 19 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8303,6 +8441,9 @@
         "F-236",
         "F-226"
       ],
+      "mockups": [
+        "20"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 20 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8342,6 +8483,9 @@
         "F-234",
         "F-235",
         "F-236"
+      ],
+      "mockups": [
+        "21"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 21 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8383,6 +8527,10 @@
         "F-235",
         "F-236"
       ],
+      "mockups": [
+        "11",
+        "27"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 11 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8422,6 +8570,9 @@
         "F-234",
         "F-235",
         "F-236"
+      ],
+      "mockups": [
+        "12"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 12 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8466,6 +8617,9 @@
         "F-238",
         "F-222"
       ],
+      "mockups": [
+        "13"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 13 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8508,6 +8662,9 @@
       "openQuestions": [
         "OQ-10"
       ],
+      "mockups": [
+        "22"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 22 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8548,6 +8705,9 @@
         "F-234",
         "F-235",
         "F-236"
+      ],
+      "mockups": [
+        "24"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 24 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8592,6 +8752,10 @@
         "F-224",
         "F-241"
       ],
+      "mockups": [
+        "17",
+        "23"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 17 and 23 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8635,6 +8799,7 @@
       "openQuestions": [
         "OQ-7"
       ],
+      "mockups": [],
       "acceptance": [
         "Every element in F-220’s inventory for mockup the one OQ-7 resolves to is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8678,6 +8843,9 @@
         "F-239",
         "F-240"
       ],
+      "mockups": [
+        "15"
+      ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 15 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
@@ -8718,6 +8886,9 @@
         "F-235",
         "F-236",
         "F-226"
+      ],
+      "mockups": [
+        "18"
       ],
       "acceptance": [
         "Every element in F-220’s inventory for mockup 18 is present in its drawn order, grouping and proportion, and the conformance sweep asserts that inventory on the rendered tree",
@@ -8776,6 +8947,9 @@
         "F-262",
         "F-263"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Every rebuilt surface renders in Washi Minimal with 25’s palette, captured beside its governing mockup, and a person has compared every pair",
         "The contrast and CVD gates pass in all four themes over every declared pairing"
@@ -8828,6 +9002,9 @@
         "F-262",
         "F-263"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Every string on every rebuilt surface exists in the ja catalogue, written in 26’s register rather than translated, and the catalogue completeness check passes",
         "Every surface renders in ja with the Japanese type, and no layout the mockups draw at English measure breaks under Japanese copy",
@@ -8862,6 +9039,9 @@
         "F-234",
         "F-235"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "The splash wave, glow and progress (14), the sheet detents (03 04), the coverage dial and the working ring (11 27), and staggered arrival on list surfaces animate with the motion system’s durations and easings",
         "Nothing animates a colour value, and every motion stops under reduced-motion"
@@ -8894,6 +9074,9 @@
         "F-264",
         "F-265",
         "F-266"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "The fidelity harness captures every route in the index, in both themes and both locales, beside its governing mockup, and the run records every route it could not capture",
@@ -8929,6 +9112,9 @@
       "blockedBy": [
         "F-267"
       ],
+      "mockups": [
+        "all"
+      ],
       "acceptance": [
         "Every NFR-4 budget is measured after the rebuild on the slowest supported device, and a miss is filed as a feature rather than edited into the budget",
         "The added faces, illustrations, photo cards and larger samples are measured for their cost to cold start and scroll"
@@ -8956,6 +9142,9 @@
       "status": "todo",
       "blockedBy": [
         "F-267"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "No token, theme recipe (fuka, yama, aota), component, icon, illustration, brand asset, font or string from the pre-R9 UI remains unless a rebuilt surface reads it",
@@ -8987,6 +9176,9 @@
       "blockedBy": [
         "F-268",
         "F-269"
+      ],
+      "mockups": [
+        "all"
       ],
       "acceptance": [
         "Every route has a governing mockup and every mockup has a route, proven by the F-218 index, and every open question R9 raised is closed by an ADR",

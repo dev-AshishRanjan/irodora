@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-09",
+  "updated": "2026-09-14",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -4876,6 +4876,43 @@
       "memory": "memory/effects/a-pin-that-is-not-read-is-worse-than-no-pin.md",
       "rationale": "SEVENTEEN BLOCKING ADVISORIES, ALL WITH A PUBLISHED FIX, AND NOTHING PINNING THE TRANSITIVE VERSIONS. Both packages are reached indirectly — xmldom through @expo/plist and plist, js-yaml through tooling — and the repository held neither above its advisory range, so the lockfile sat on the last pre-advisory patch of each line. Four patch bumps inside their own minors was the entire fix. THE ACCEPTANCE PATH WAS THE WRONG TOOL AND ITS OWN ADR SAYS SO: ADR-0059 was written for image-size, where \"every published version is affected. There is no upgrade, and a pnpm.overrides entry has nothing to point at.\" Writing seventeen reachability arguments would have been using the escape hatch on the case it was explicitly not written for — and the gate says it first: \"Fix it by upgrading if a patched version exists.\" The two image-size acceptances were left untouched and still expire on 2026-11-21.",
       "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-126",
+      "from": {
+        "kind": "file",
+        "ref": "mockups/index.json"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint): every image on disk is a row and every row an image, the id being the file's two-digit prefix; each row pins its image by sha256; every route in apps/mobile/app — enumerated by the shared routePatterns(), never a second enumerator — has exactly one primary mockup, or an open question that PRD §10's table actually lists; and §7 of the fidelity specification names EXACTLY the index's primaries in its governing column and EXACTLY its variants in its variants column — an id missing or extra on either side fails — while every mockup id appears somewhere in §7 and every id §7 names is indexed, which covers the rows that are not routes. The open-question lookup reads PRD §10's table and nothing else. Gate 0 reads mockups/AGENTS.md in its scope walk, so a sentence there relaxing a golden rule fails the build. Gate 0 section 9b: a feature from R9 whose service is mobile or whose package is @irodora/ui names its mockups (empty only with an open question), and every id it names is indexed. THE INVENTORY HALF HAS AN OWNER AND AN END CONDITION: an inventory whose mockupSha256 differs from its image fails now, and once F-220 is done a null inventory fails too — read from F-220's status, and written into F-220's acceptance. All of it is proven by verify-mockups --prove, which plants 26 failures and 4 cases that must pass, each asserted by the name of the problem it produces, and runs in CI beside the viewport proof.",
+      "memory": "memory/effects/a-changed-image-is-a-changed-specification.md",
+      "rationale": "Golden rule 14 made the mockups the specification for everything visible, and nothing a machine could read said which image governs which route. So a route could go undrawn and be designed by taste, an image could govern nothing, and an image could change under every feature built from it — each silently. The index is the map; the hash is what turns \"the picture changed\" from something nobody notices into a red build. The first version compared §7 only for primaries and left the inventory gap unowned; the evaluator found both, and both are closed.",
+      "confidence": 0.9,
       "origin": "manual",
       "status": "active"
     }

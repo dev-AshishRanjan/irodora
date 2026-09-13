@@ -234,7 +234,7 @@ themes and **both** locales — a screen never has two layouts.
 | `(tabs)/wardrobe/outfit` | `13` | | `F-257` |
 | `(tabs)/wardrobe/shopping` | `22` | OQ-10 | `F-258` |
 | `(tabs)/wardrobe/with/[id]` · `(tabs)/atlas/with/reading/[id]` | `24` | | `F-259` |
-| `(tabs)/profile/index` | `23` finished · `17` in progress | | `F-260` |
+| `(tabs)/profile/index` | `23` | `17` in progress | `F-260` |
 | `(tabs)/profile/measure` | **none — OQ-7** | | `F-261` |
 | `(tabs)/profile/preferences` | `15` | | `F-262` |
 | `(tabs)/profile/export` | `18` | | `F-263` |
