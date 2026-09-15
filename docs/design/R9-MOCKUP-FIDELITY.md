@@ -35,8 +35,9 @@ in which script).
 **Measurement.** A full-bleed mockup is measured at **2 px = 1 dp** — its 768 px width is a
 **384 dp** reference screen. A framed mockup (device bezel or spec card: `04 06 07 19 21 22 23 24
 25 26`) is measured against the frame's inner screen width, scaled to 384 dp. A measured value
-snaps to the nearest step of the R9 scale (§5); where two steps are equally near, `F-220`
-records which was chosen and why.
+snaps to the nearest step of the R9 scale (§5); where two steps are equally near, the smaller is taken (`F-220`): measured type already runs
+below the scale (OQ-13), and rounding a tie up would widen that gap instead of recording it.
+`raw.emDp` keeps the estimate either way.
 
 **Not design — never materialised:**
 
@@ -110,6 +111,7 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 | mockup | drawn | resolution |
 |---|---|---|
 | `03` | *"97% Match"*, *"92%"*, *"88%"* beside ΔE00 | no such figure exists and FR-7 says naming returns a closest reference, never a match — **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `03` | *"Ranked Japanese Corpus Matches (ranked by ΔE00)"* | FR-7 returns the nearest references ranked by ΔE00, never a match; the heading names them as nearest references (claims-ok: quotes the drawn construction this row resolves) |
 | `07` `13` | *"94% Match (Cool-Muted profile)"*, *"92% (Cool-Muted Match)"* beside the personal-fit score | the FR-29 score stays; "Match" to a seasonal type does not (C12, `F-223`) (claims-ok: quotes the drawn construction this row resolves) |
 | `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — bands defined in `F-222` |
 | `02` | *"Excellent Exposure"* | the capture-conditions assessment the engine produces (FR-17), in its own words |
@@ -191,15 +193,27 @@ mockup ramp (C 0.0086 – 0.0251, h ≈ 264°) and is re-stated by `F-225` with 
 | text.tertiary | `#768290` on ground, `#94A1AF` on cards (§E3) | `#5D6674` (§E3) |
 | primary action | `#FFFFFF` pill, dark text | `#1A1B1E` pill, light text (`25`) |
 
-**Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (value measured
-from `15` by `F-220`), *Obsidian Noir* (`#101114`), *Washi Minimal*. The current `fuka`, `yama`
+**Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (`#2C323A` — no mockup
+prints it; `F-220` read it at the centre of `15`'s tile, and a colour read from a render carries
+ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
 and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
 
 **Radius**: `sm 6 · md 10 · lg 16 · pill`. **Spacing**: `4 · 8 · 16 · 24 · 32 · 48` — still a
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and
-*Label* 14 in the sans; tabular figures for every number. Swatch corners are measured per mockup
-by `F-220` and stay inside [ADR-0094](../adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md)'s
-ceiling, which the mockups' tighter corners satisfy.
+*Label* 14 in the sans; tabular figures for every number. The serif is named by no mockup, and the
+repository bundles none to identify it against — **OQ-29**. The icon stroke is 1.75 dp, `NavIcon`'s
+`STROKE` already.
+
+**Swatch corners**, measured by `F-220` (`corner.ps1`; the left-hand fit where the right is
+disturbed by what sits beside it), at each mockup's own scale: `00` 6.5–7.5 px (a board, no scale) ·
+`01` 6.75 dp hero, 7 tiles, 5.75 card sample · `02` 8.1 · `03` 9.75 sample, 5.6 matches · `04` 5.1 ·
+`05` 4.5 · `06` 7.7 · `07` 5.4 · `08` 5.0 · `09` 8.75 (the result card is the swatch) · `10` 8 ·
+`15` 3.75 (theme tiles) · `16` 4.0 · `17` 5.1 · `19` 11.5 · `20` 4.75 · `21` 8.4 · `23` 8.9 (kasane
+strips) · `24` 10.6 reading, 9.7 rows · `26` 9.1 (the hero card). `12`'s fabric swatch is pinked and
+has none; `11 13 22` draw photographs; `25`'s circle yields to `01` (C7). The largest corner-to-side
+ratio is `19`'s, 0.19 — inside [ADR-0094](../adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md)'s
+0.25. The readings span `sm` and `md`, so no one radius is what the set draws; each component's
+token is `F-227`'s to set from them.
 
 ---
 
@@ -227,7 +241,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C15** | The README routes `17` to `/profile/setup`, which does not exist | `17` is the in-progress state of `profile/index`; `23` is its finished state |
 | **C16** | `24` is routed to `wardrobe/with/[id]` only | it also governs `atlas/with/reading/[id]` — its *"Estimated from a capture"* chip is that route's case |
 | **C17** ⇄ | `14` draws the splash dark only | light appearance: `14`'s composition in `25`'s palette — so a light-mode launch does not flash dark then light |
-| **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor. Whether FR-73 also requires the mapping cost is settled by `F-220` against FR-73's own acceptance text |
+| **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn. Settled by `F-220` against FR-73's acceptance text: it also requires each proposed colour's gamut cost and each combination's family and generated-or-curated mark, none of which `19` draws — **OQ-27** |
 | **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row |
 
 ---
@@ -331,6 +345,25 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
 | **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
+| **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
+| **OQ-12** | Type below 14 dp (`01`'s tab labels ≈ 10 dp, its card note ≈ 12 dp). A caption step, or 14 as the floor? | `F-226` |
+| **OQ-13** | Measured type runs off the scale (≈ 13 dp section titles, `22`'s ≈ 46 dp figures). The screens' sizes (P3), or §5's steps? | `F-226` |
+| **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
+| **OQ-15** | Multicoloured icons C10 does not register (`00 03 13 16 24`). Followed, or monochrome? | `F-225` |
+| **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
+| **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
+| **OQ-18** | `05`'s fourth card has no OKLCh line. Does every card carry it? | `F-246` |
+| **OQ-19** | `06` draws two screen widths (479 px above, 667 px below). Which is the screen? | `F-247` |
+| **OQ-20** | `06`'s green check after the review line. Followed, or monochrome? | `F-247` |
+| **OQ-21** | `11`'s yellow bulb on the gap card. Followed, or monochrome? | `F-255` |
+| **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
+| **OQ-23** | `16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-260` `F-263` |
+| **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? | `F-260` |
+| **OQ-25** | `17`'s radar axes and its ranges name different dimensions. Which four, and what does *Muted Tolerance* plot? | `F-260` |
+| **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
+| **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |
+| **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
+| **OQ-29** | The serif no mockup names, with none bundled to identify it against. Which face, under which licence? | `F-226` |
 
 ---
 

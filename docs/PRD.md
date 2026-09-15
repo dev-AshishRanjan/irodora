@@ -410,6 +410,25 @@ honestly and cheap to build dishonestly — and the difference is visible.
 | OQ-8 | The Lens states behind *Garment Scan* (FR-14) and *Calibrated Card* are drawn as mode pills in mockup 02 and nowhere else. Generate mockups, or compose them from 02–04? | R9 |
 | OQ-9 | Four figures the mockups print have no definition in the product — *% Match* (03), *Master Harmony* (13), *Garment Calibration History · concordance* (23), *Wardrobe Pairings* (22). Define each in the engine, or put a figure the product already defines in that slot? | R9 |
 | OQ-10 | Mockup 22 omits two of FR-52's four answers — the personal-compatibility score and the investment signal. Extend the drawn grid to carry them, or amend FR-52? | R9 |
+| OQ-11 | The checkered badge in the corner of every garment tile (mockups 01 and 25) has no defined meaning — fabric texture, a material, a sample photograph, a capture-quality mark? Define it, or leave it out? | R9 |
+| OQ-12 | Type below 14 dp: 01's tab labels measure ≈ 10 dp and its colour-card note ≈ 12 dp, and the R9 scale names no step below 14. Add a caption step, or make 14 the floor? | R9 |
+| OQ-13 | Measured type runs off the R9 scale — section titles ≈ 13 dp on 01, 22's figures ≈ 46 dp — and the scale's steps were read off board 00's printed labels. Which governs: each screen's measured sizes (P3) or the declared steps? | R9 |
+| OQ-14 | Page inset: most screens measure 18–20 dp from the screen edge to a card, 01 ≈ 37 dp, and the spacing steps are 16 and 24. One inset everywhere, or is 01's wider inset deliberate? | R9 |
+| OQ-15 | Multicoloured icons no conflict row registers — 00's and 03's full-spectrum ring, 13's three-colour harmony icon and sparkle, 16's gold padlock, 24's gold camera glyph. Followed as drawn, or monochrome like every other icon? | R9 |
+| OQ-16 | Mockup 04 draws its proximity gauge and its action sheet wider than its own screen (by ≈ 42 dp and ≈ 16 dp). Fit them to the screen, or keep the drawn width? | R9 |
+| OQ-17 | Each Atlas card in mockup 05 ends in an era or a season, and no corpus entry holds an era. Show the season where there is no era, leave the line out, or author eras with provenance? | R9 |
+| OQ-18 | Mockup 05's fourth card has no OKLCh line where the other three do. Does every Atlas card carry it? | R9 |
+| OQ-19 | Mockup 06 draws two screen widths — its upper panel at 479 px, the cards below at 667 px. Which is the screen? | R9 |
+| OQ-20 | Mockup 06 draws a green check after the review line, which no conflict row registers. Followed (with a chroma exception), or monochrome? | R9 |
+| OQ-21 | Mockup 11 draws a yellow bulb on the wardrobe-gap card, which no conflict row registers. Followed, or monochrome? | R9 |
+| OQ-22 | Mockup 12's three form groups are labelled only by leaked prompt text. Visible labels somebody designs, or accessible names only? | R9 |
+| OQ-23 | Mockups 16, 17 and 18 print headings, roles and buttons inside square brackets, one of them unbalanced. Are the brackets copy, or notation to drop? | R9 |
+| OQ-24 | Mockup 17's profile radar is drawn blue, which no conflict row registers. Followed, or monochrome like 23? | R9 |
+| OQ-25 | Mockup 17's radar axes (Temperature · Depth · Chroma · Muted Tolerance) and its four ranges (Temperature · Depth / Lightness · Chroma Tolerance · Contrast Preference) name different dimensions. Which four are ADR-0072's, and what does the Muted Tolerance axis plot? | R9 |
+| OQ-26 | Mockups 19 and 21 head their sections with component names (*Anchor Color Hero Card*, *Ranked Harmonic Relationship Rows*, *Ranked Nearest Corpus Results List*) and 19's rows read *Action: Wear*. Design, or leaked prompt text? | R9 |
+| OQ-27 | FR-73 asks every proposed colour to carry its gamut cost, and every combination its family and whether it was generated or curated; mockup 19 draws the relationship and ΔE00 only. Where do the three appear? | R9 |
+| OQ-28 | Mockup 22 tints its capture chip and its ΔE00 badges green, which no conflict row registers, and each badge prints the notation without a figure. Followed, and does a badge print its ΔE00? | R9 |
+| OQ-29 | The serif: the R9 scale sets display and title in a serif no mockup names, and the repository bundles no serif to identify it against. Which face, under which licence? | R9 |
 
 **OQ-3 is closed by [ADR-0085](adr/0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md).** The reference card is a partner card and its
 values are cited rather than measured — a card we manufactured would make us the authority on a
