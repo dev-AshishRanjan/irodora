@@ -40,7 +40,7 @@
       "primaryFor": [],
       "variantFor": [],
       "surfaces": ["brand"],
-      "inventory": null
+      "inventory": "mockups/inventory/14.json"
     },
     "15": {
       "file": "15_settings_preferences.jpg",
@@ -152,7 +152,7 @@
       "primaryFor": [],
       "variantFor": [],
       "surfaces": ["components"],
-      "inventory": null
+      "inventory": "mockups/inventory/00.json"
     },
     "01": {
       "file": "01_home_screen.jpg",
@@ -160,7 +160,7 @@
       "primaryFor": ["/"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/01.json"
     },
     "02": {
       "file": "02_lens_live_viewfinder.jpg",
@@ -168,7 +168,7 @@
       "primaryFor": ["/lens"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/02.json"
     },
     "03": {
       "file": "03_lens_analysis_bottom_sheet.jpg",
@@ -176,7 +176,7 @@
       "primaryFor": [],
       "variantFor": ["/lens"],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/03.json"
     },
     "04": {
       "file": "04_lens_against_target.jpg",
@@ -184,7 +184,7 @@
       "primaryFor": [],
       "variantFor": ["/lens"],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/04.json"
     },
     "05": {
       "file": "05_atlas_library_catalog.jpg",
@@ -192,7 +192,7 @@
       "primaryFor": ["/atlas"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/05.json"
     },
     "06": {
       "file": "06_color_detail_centerpiece.jpg",
@@ -200,7 +200,7 @@
       "primaryFor": ["/atlas/[slug]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/06.json"
     },
     "07": {
       "file": "07_wear_outfit_combinations.jpg",
@@ -224,7 +224,7 @@
       "primaryFor": ["/atlas/find"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/09.json"
     }
   },
   "undrawn": {

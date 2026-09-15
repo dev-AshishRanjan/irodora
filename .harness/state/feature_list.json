@@ -7131,7 +7131,7 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-218"
       ],
@@ -7153,7 +7153,8 @@
         "format",
         "test"
       ],
-      "notes": "THE FEATURE EVERY SURFACE IS BUILT FROM. It completes docs/design/R9-MOCKUP-FIDELITY.md, which already holds the rules (§2–§4), the tokens (§5), the conflict register (§6), the route map (§7) and the bindings (§8). What it adds is the per-element redline that makes \"strict\" checkable. The inventories become the conformance-sweep assertions each surface feature adds."
+      "notes": "THE FEATURE EVERY SURFACE IS BUILT FROM. It completes docs/design/R9-MOCKUP-FIDELITY.md, which already holds the rules (§2–§4), the tokens (§5), the conflict register (§6), the route map (§7) and the bindings (§8). What it adds is the per-element redline that makes \"strict\" checkable. The inventories become the conformance-sweep assertions each surface feature adds.",
+      "plan": "plans/F-220-the-mockups-are-redlined.md"
     },
     {
       "id": "F-221",

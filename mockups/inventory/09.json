@@ -1,0 +1,1594 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "09",
+  "mockupSha256": "55a8ad94116ebaf66e0db3804d1ca2ce52d51a46b846ce54b215af7c5102b909",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "09.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "09.back",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 31,
+        "y": 45,
+        "w": 117,
+        "h": 27
+      },
+      "dp": {
+        "x": 15.5,
+        "y": 22.5,
+        "w": 58.5,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:atlas.back",
+      "action": "navigate:/atlas",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 235,
+        "y": 41,
+        "w": 298,
+        "h": 33
+      },
+      "dp": {
+        "x": 117.5,
+        "y": 20.5,
+        "w": 149,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.clear",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 622,
+        "y": 44,
+        "w": 119,
+        "h": 28
+      },
+      "dp": {
+        "x": 311,
+        "y": 22,
+        "w": 59.5,
+        "h": 14
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "close",
+      "illustration": null,
+      "binding": "static:finder.clear",
+      "action": "submit:finder.clear",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.art",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 560,
+        "y": 97,
+        "w": 208,
+        "h": 323
+      },
+      "dp": {
+        "x": 280,
+        "y": 48.5,
+        "w": 104,
+        "h": 161.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "leaves",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "09.search",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 29,
+        "y": 166,
+        "w": 710,
+        "h": 185
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 83,
+        "w": 355,
+        "h": 92.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2228"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.search.query",
+      "order": 6,
+      "parent": "09.search",
+      "component": "ui:TextField",
+      "box": {
+        "x": 64,
+        "y": 198,
+        "w": 557,
+        "h": 41
+      },
+      "dp": {
+        "x": 32,
+        "y": 99,
+        "w": 278.5,
+        "h": 20.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:finder.query",
+      "action": "adjust:finder.query",
+      "copy": {
+        "shape": "placeholder",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.search.clear",
+      "order": 7,
+      "parent": "09.search",
+      "component": "ui:Button",
+      "box": {
+        "x": 669,
+        "y": 201,
+        "w": 35,
+        "h": 35
+      },
+      "dp": {
+        "x": 334.5,
+        "y": 100.5,
+        "w": 17.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "close",
+      "illustration": null,
+      "binding": null,
+      "action": "submit:finder.query.clear",
+      "copy": null
+    },
+    {
+      "id": "09.search.mode-phrase",
+      "order": 8,
+      "parent": "09.search",
+      "component": "ui:Chip",
+      "box": {
+        "x": 64,
+        "y": 261,
+        "w": 213,
+        "h": 49
+      },
+      "dp": {
+        "x": 32,
+        "y": 130.5,
+        "w": 106.5,
+        "h": 24.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.mode.phrase",
+      "action": "select:finder.mode.phrase",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.search.mode-kanji",
+      "order": 9,
+      "parent": "09.search",
+      "component": "ui:Chip",
+      "box": {
+        "x": 290,
+        "y": 261,
+        "w": 217,
+        "h": 48
+      },
+      "dp": {
+        "x": 145,
+        "y": 130.5,
+        "w": 108.5,
+        "h": 24
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.mode.kanji",
+      "action": "select:finder.mode.kanji",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.search.mode-hex",
+      "order": 10,
+      "parent": "09.search",
+      "component": "ui:Chip",
+      "box": {
+        "x": 520,
+        "y": 261,
+        "w": 170,
+        "h": 49
+      },
+      "dp": {
+        "x": 260,
+        "y": 130.5,
+        "w": 85,
+        "h": 24.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.mode.hex",
+      "action": "select:finder.mode.hex",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.sliders.title",
+      "order": 11,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 33,
+        "y": 396,
+        "w": 454,
+        "h": 30
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 198,
+        "w": 227,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.dimensions",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.sliders",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 29,
+        "y": 436,
+        "w": 710,
+        "h": 265
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 218,
+        "w": 355,
+        "h": 132.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2227"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.sliders.lightness.label",
+      "order": 13,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 53,
+        "y": 499,
+        "w": 154,
+        "h": 30
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 249.5,
+        "w": 77,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.lightness",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.sliders.lightness.track",
+      "order": 14,
+      "parent": "09.sliders",
+      "component": "ui:Slider",
+      "box": {
+        "x": 222,
+        "y": 497,
+        "w": 250,
+        "h": 31
+      },
+      "dp": {
+        "x": 111,
+        "y": 248.5,
+        "w": 125,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:finder.lightness",
+      "action": "adjust:finder.lightness",
+      "copy": null
+    },
+    {
+      "id": "09.sliders.lightness.value",
+      "order": 15,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 488,
+        "y": 499,
+        "w": 230,
+        "h": 29
+      },
+      "dp": {
+        "x": 244,
+        "y": 249.5,
+        "w": 115,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.sliders.chroma.label",
+      "order": 16,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 53,
+        "y": 569,
+        "w": 137,
+        "h": 28
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 284.5,
+        "w": 68.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.chroma",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.sliders.chroma.track",
+      "order": 17,
+      "parent": "09.sliders",
+      "component": "ui:Slider",
+      "box": {
+        "x": 204,
+        "y": 567,
+        "w": 268,
+        "h": 31
+      },
+      "dp": {
+        "x": 102,
+        "y": 283.5,
+        "w": 134,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:finder.chroma",
+      "action": "adjust:finder.chroma",
+      "copy": null
+    },
+    {
+      "id": "09.sliders.chroma.value",
+      "order": 18,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 488,
+        "y": 570,
+        "w": 230,
+        "h": 26
+      },
+      "dp": {
+        "x": 244,
+        "y": 285,
+        "w": 115,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.sliders.hue.label",
+      "order": 19,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 53,
+        "y": 639,
+        "w": 91,
+        "h": 28
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 319.5,
+        "w": 45.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.hue",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.sliders.hue.track",
+      "order": 20,
+      "parent": "09.sliders",
+      "component": "ui:Slider",
+      "box": {
+        "x": 159,
+        "y": 637,
+        "w": 332,
+        "h": 30
+      },
+      "dp": {
+        "x": 79.5,
+        "y": 318.5,
+        "w": 166,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:finder.hue",
+      "action": "adjust:finder.hue",
+      "copy": null
+    },
+    {
+      "id": "09.sliders.hue.value",
+      "order": 21,
+      "parent": "09.sliders",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 639,
+        "w": 212,
+        "h": 28
+      },
+      "dp": {
+        "x": 253,
+        "y": 319.5,
+        "w": 106,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.results.heading",
+      "order": 22,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 30,
+        "y": 748,
+        "w": 606,
+        "h": 32
+      },
+      "dp": {
+        "x": 15,
+        "y": 374,
+        "w": 303,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:finder.nearest",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-1",
+      "order": 23,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 28,
+        "y": 796,
+        "w": 344,
+        "h": 216
+      },
+      "dp": {
+        "x": 14,
+        "y": 398,
+        "w": 172,
+        "h": 108
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.0.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#66791D"
+      },
+      "raw": {
+        "cornerPx": 19.75
+      },
+      "copy": null
+    },
+    {
+      "id": "09.results.result-2",
+      "order": 24,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 396,
+        "y": 796,
+        "w": 344,
+        "h": 216
+      },
+      "dp": {
+        "x": 198,
+        "y": 398,
+        "w": 172,
+        "h": 108
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.1.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#6D591F"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.results.result-1.name",
+      "order": 25,
+      "parent": "09.results.result-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 58,
+        "y": 826,
+        "w": 202,
+        "h": 35
+      },
+      "dp": {
+        "x": 29,
+        "y": 413,
+        "w": 101,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.0.name",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.results.result-2.name",
+      "order": 26,
+      "parent": "09.results.result-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 423,
+        "y": 826,
+        "w": 247,
+        "h": 39
+      },
+      "dp": {
+        "x": 211.5,
+        "y": 413,
+        "w": 123.5,
+        "h": 19.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.1.name",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "09.results.result-1.english",
+      "order": 27,
+      "parent": "09.results.result-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 59,
+        "y": 873,
+        "w": 170,
+        "h": 28
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 436.5,
+        "w": 85,
+        "h": 14
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.0.english",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-2.english",
+      "order": 28,
+      "parent": "09.results.result-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 422,
+        "y": 873,
+        "w": 261,
+        "h": 29
+      },
+      "dp": {
+        "x": 211,
+        "y": 436.5,
+        "w": 130.5,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.1.english",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-1.distance",
+      "order": 29,
+      "parent": "09.results.result-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 56,
+        "y": 924,
+        "w": 270,
+        "h": 23
+      },
+      "dp": {
+        "x": 28,
+        "y": 462,
+        "w": 135,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:finder.nearest.0.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.results.result-2.hex",
+      "order": 30,
+      "parent": "09.results.result-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 421,
+        "y": 924,
+        "w": 127,
+        "h": 23
+      },
+      "dp": {
+        "x": 210.5,
+        "y": 462,
+        "w": 63.5,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.1.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.results.result-1.oklch",
+      "order": 31,
+      "parent": "09.results.result-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 57,
+        "y": 963,
+        "w": 294,
+        "h": 20
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 481.5,
+        "w": 147,
+        "h": 10
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:finder.nearest.0.oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.results.result-2.distance",
+      "order": 32,
+      "parent": "09.results.result-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 422,
+        "y": 961,
+        "w": 124,
+        "h": 23
+      },
+      "dp": {
+        "x": 211,
+        "y": 480.5,
+        "w": 62,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:finder.nearest.1.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.results.result-3",
+      "order": 33,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 28,
+        "y": 1035,
+        "w": 344,
+        "h": 221
+      },
+      "dp": {
+        "x": 14,
+        "y": 517.5,
+        "w": 172,
+        "h": 110.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.2.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#575E2B"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.results.result-4",
+      "order": 34,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 396,
+        "y": 1035,
+        "w": 344,
+        "h": 221
+      },
+      "dp": {
+        "x": 198,
+        "y": 517.5,
+        "w": 172,
+        "h": 110.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.3.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#575840"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.results.result-3.kanji",
+      "order": 35,
+      "parent": "09.results.result-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 57,
+        "y": 1065,
+        "w": 105,
+        "h": 36
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 532.5,
+        "w": 52.5,
+        "h": 18
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.2.name.ja",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "09.results.result-4.kanji",
+      "order": 36,
+      "parent": "09.results.result-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 422,
+        "y": 1066,
+        "w": 107,
+        "h": 35
+      },
+      "dp": {
+        "x": 211,
+        "y": 533,
+        "w": 53.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.3.name.ja",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "09.results.result-3.name",
+      "order": 37,
+      "parent": "09.results.result-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 58,
+        "y": 1114,
+        "w": 116,
+        "h": 27
+      },
+      "dp": {
+        "x": 29,
+        "y": 557,
+        "w": 58,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.2.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-4.name",
+      "order": 38,
+      "parent": "09.results.result-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 421,
+        "y": 1113,
+        "w": 249,
+        "h": 35
+      },
+      "dp": {
+        "x": 210.5,
+        "y": 556.5,
+        "w": 124.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.3.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-3.english",
+      "order": 39,
+      "parent": "09.results.result-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 59,
+        "y": 1154,
+        "w": 225,
+        "h": 28
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 577,
+        "w": 112.5,
+        "h": 14
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.2.english",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-4.english",
+      "order": 40,
+      "parent": "09.results.result-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 423,
+        "y": 1153,
+        "w": 212,
+        "h": 28
+      },
+      "dp": {
+        "x": 211.5,
+        "y": 576.5,
+        "w": 106,
+        "h": 14
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": false
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:finder.nearest.3.english",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "09.results.result-3.distance",
+      "order": 41,
+      "parent": "09.results.result-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 56,
+        "y": 1204,
+        "w": 267,
+        "h": 24
+      },
+      "dp": {
+        "x": 28,
+        "y": 602,
+        "w": 133.5,
+        "h": 12
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:finder.nearest.2.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.results.result-4.distance",
+      "order": 42,
+      "parent": "09.results.result-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 422,
+        "y": 1204,
+        "w": 276,
+        "h": 24
+      },
+      "dp": {
+        "x": 211,
+        "y": 602,
+        "w": 138,
+        "h": 12
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:finder.nearest.3.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "09.tabs",
+      "order": 43,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1266,
+        "w": 768,
+        "h": 110
+      },
+      "dp": {
+        "x": 0,
+        "y": 633,
+        "w": 384,
+        "h": 55
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1C2127"
+      },
+      "copy": null
+    },
+    {
+      "id": "09.tabs.indicator",
+      "order": 44,
+      "parent": "09.tabs",
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 1270,
+        "w": 191,
+        "h": 1
+      },
+      "dp": {
+        "x": 0,
+        "y": 635,
+        "w": 95.5,
+        "h": 0.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "09.tabs.atlas.icon",
+      "order": 45,
+      "parent": "09.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 74,
+        "y": 1288,
+        "w": 40,
+        "h": 40
+      },
+      "dp": {
+        "x": 37,
+        "y": 644,
+        "w": 20,
+        "h": 20
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "compass",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "09.tabs.map.icon",
+      "order": 46,
+      "parent": "09.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 269,
+        "y": 1305,
+        "w": 37,
+        "h": 34
+      },
+      "dp": {
+        "x": 134.5,
+        "y": 652.5,
+        "w": 18.5,
+        "h": 17
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "map",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "09.tabs.profile.icon",
+      "order": 47,
+      "parent": "09.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 464,
+        "y": 1305,
+        "w": 33,
+        "h": 35
+      },
+      "dp": {
+        "x": 232,
+        "y": 652.5,
+        "w": 16.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile",
+      "copy": null
+    },
+    {
+      "id": "09.tabs.settings.icon",
+      "order": 48,
+      "parent": "09.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 656,
+        "y": 1303,
+        "w": 37,
+        "h": 38
+      },
+      "dp": {
+        "x": 328,
+        "y": 651.5,
+        "w": 18.5,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "settings",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile/settings",
+      "copy": null
+    },
+    {
+      "id": "09.tabs.atlas.label",
+      "order": 49,
+      "parent": "09.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 67,
+        "y": 1335,
+        "w": 55,
+        "h": 21
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 667.5,
+        "w": 27.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.atlas",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "leaked-label",
+      "note": "a component name and level printed as a section title",
+      "box": {
+        "x": 32,
+        "y": 126,
+        "w": 266,
+        "h": 25
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component note printed after the section title",
+      "box": {
+        "x": 498,
+        "y": 390,
+        "w": 247,
+        "h": 42
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": [
+        "09.tabs",
+        "09.tabs.indicator",
+        "09.tabs.atlas.icon",
+        "09.tabs.map.icon",
+        "09.tabs.profile.icon",
+        "09.tabs.settings.icon",
+        "09.tabs.atlas.label"
+      ],
+      "resolution": "P5 → 01: 09's four-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "09.results.result-1.name",
+        "09.results.result-2.name",
+        "09.results.result-3.kanji",
+        "09.results.result-4.kanji"
+      ],
+      "resolution": "text sits on the sample as 09 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)",
+      "flippedByUser": false
+    }
+  ]
+}

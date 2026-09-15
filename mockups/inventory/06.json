@@ -1,0 +1,1660 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "06",
+  "mockupSha256": "90ce9ea1043e3263ddd1993a50334f33c19a5e80a4cb469832822d60513b8bf0",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "spec-card",
+    "screens": [
+      {
+        "id": "06.screen",
+        "box": {
+          "x": 53,
+          "y": 99,
+          "w": 474,
+          "h": 1201
+        },
+        "dpPerPx": 0.8101
+      }
+    ]
+  },
+  "overhangs": ["06.provenance", "06.combinations", "06.actions"],
+  "elements": [
+    {
+      "id": "06.back.icon",
+      "order": 1,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 72,
+        "y": 134,
+        "w": 18,
+        "h": 16
+      },
+      "dp": {
+        "x": 15.5,
+        "y": 28.5,
+        "w": 14.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "06.back.label",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 134,
+        "w": 47,
+        "h": 17
+      },
+      "dp": {
+        "x": 39,
+        "y": 28.5,
+        "w": 38,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.back",
+      "action": "navigate:/atlas",
+      "raw": {
+        "emDp": 18.9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.bookmark",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 405,
+        "y": 131,
+        "w": 18,
+        "h": 22
+      },
+      "dp": {
+        "x": 285,
+        "y": 26,
+        "w": 14.5,
+        "h": 18
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "bookmark",
+      "illustration": null,
+      "binding": null,
+      "action": "toggle:bookmark",
+      "copy": null
+    },
+    {
+      "id": "06.share",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 446,
+        "y": 131,
+        "w": 19,
+        "h": 23
+      },
+      "dp": {
+        "x": 318.5,
+        "y": 26,
+        "w": 15.5,
+        "h": 18.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "share",
+      "illustration": null,
+      "binding": null,
+      "action": "share:colourCard",
+      "copy": null
+    },
+    {
+      "id": "06.export",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 487,
+        "y": 132,
+        "w": 22,
+        "h": 21
+      },
+      "dp": {
+        "x": 351.5,
+        "y": 26.5,
+        "w": 18,
+        "h": 17
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "export",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile/export",
+      "copy": null
+    },
+    {
+      "id": "06.header-rule",
+      "order": 6,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 54,
+        "y": 168,
+        "w": 472,
+        "h": 2
+      },
+      "dp": {
+        "x": 1,
+        "y": 56,
+        "w": 382.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.swatch",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 73,
+        "y": 181,
+        "w": 416,
+        "h": 369
+      },
+      "dp": {
+        "x": 16,
+        "y": 66.5,
+        "w": 337,
+        "h": 299
+      },
+      "tokens": {
+        "keyline": "keyline"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "measured": {
+        "fill": "#576777"
+      },
+      "copy": null
+    },
+    {
+      "id": "06.swatch.stack",
+      "order": 8,
+      "parent": "06.swatch",
+      "component": null,
+      "box": {
+        "x": 489,
+        "y": 182,
+        "w": 17,
+        "h": 368
+      },
+      "dp": {
+        "x": 353,
+        "y": 67,
+        "w": 14,
+        "h": 298
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.kanji",
+      "order": 9,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 84,
+        "y": 574,
+        "w": 120,
+        "h": 59
+      },
+      "dp": {
+        "x": 25,
+        "y": 385,
+        "w": 97,
+        "h": 48
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "display1",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 53
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "06.kana",
+      "order": 10,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 216,
+        "y": 583,
+        "w": 94,
+        "h": 19
+      },
+      "dp": {
+        "x": 132,
+        "y": 392,
+        "w": 76,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.kana",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "06.name",
+      "order": 11,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 215,
+        "y": 611,
+        "w": 210,
+        "h": 21
+      },
+      "dp": {
+        "x": 131,
+        "y": 415,
+        "w": 170,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.en",
+      "action": null,
+      "raw": {
+        "emDp": 18.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.taxonomy",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 82,
+        "y": 645,
+        "w": 368,
+        "h": 27
+      },
+      "dp": {
+        "x": 23.5,
+        "y": 442.5,
+        "w": 298,
+        "h": 22
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.taxonomy",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout",
+      "order": 13,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 54,
+        "y": 692,
+        "w": 472,
+        "h": 180
+      },
+      "dp": {
+        "x": 1,
+        "y": 480.5,
+        "w": 382.5,
+        "h": 146
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F232A"
+      },
+      "copy": null
+    },
+    {
+      "id": "06.readout.title",
+      "order": 14,
+      "parent": "06.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 73,
+        "y": 711,
+        "w": 360,
+        "h": 22
+      },
+      "dp": {
+        "x": 16,
+        "y": 496,
+        "w": 291.5,
+        "h": 18
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:detail.readout",
+      "action": null,
+      "raw": {
+        "emDp": 19.2
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table",
+      "order": 15,
+      "parent": "06.readout",
+      "component": "new:DataTable",
+      "box": {
+        "x": 73,
+        "y": 746,
+        "w": 432,
+        "h": 111
+      },
+      "dp": {
+        "x": 16,
+        "y": 524,
+        "w": 350,
+        "h": 90
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.hex",
+      "order": 16,
+      "parent": "06.readout.table",
+      "component": "app:ReadoutRow",
+      "box": {
+        "x": 74,
+        "y": 747,
+        "w": 430,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 525,
+        "w": 348.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.hex.label",
+      "order": 17,
+      "parent": "06.readout.table.hex",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 747,
+        "w": 86,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 525,
+        "w": 69.5,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table.hex.value",
+      "order": 18,
+      "parent": "06.readout.table.hex",
+      "component": "ui:Text",
+      "box": {
+        "x": 161,
+        "y": 747,
+        "w": 343,
+        "h": 26
+      },
+      "dp": {
+        "x": 87.5,
+        "y": 525,
+        "w": 278,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.readout.table.oklch",
+      "order": 19,
+      "parent": "06.readout.table",
+      "component": "app:ReadoutRow",
+      "box": {
+        "x": 74,
+        "y": 775,
+        "w": 430,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 547.5,
+        "w": 348.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.oklch.label",
+      "order": 20,
+      "parent": "06.readout.table.oklch",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 775,
+        "w": 86,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 547.5,
+        "w": 69.5,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.oklch",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table.oklch.value",
+      "order": 21,
+      "parent": "06.readout.table.oklch",
+      "component": "ui:Text",
+      "box": {
+        "x": 161,
+        "y": 775,
+        "w": 343,
+        "h": 26
+      },
+      "dp": {
+        "x": 87.5,
+        "y": 547.5,
+        "w": 278,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.readout.table.cielab",
+      "order": 22,
+      "parent": "06.readout.table",
+      "component": "app:ReadoutRow",
+      "box": {
+        "x": 74,
+        "y": 802,
+        "w": 430,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 569.5,
+        "w": 348.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.cielab.label",
+      "order": 23,
+      "parent": "06.readout.table.cielab",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 802,
+        "w": 86,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 569.5,
+        "w": 69.5,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.cielab",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table.cielab.value",
+      "order": 24,
+      "parent": "06.readout.table.cielab",
+      "component": "ui:Text",
+      "box": {
+        "x": 161,
+        "y": 802,
+        "w": 343,
+        "h": 26
+      },
+      "dp": {
+        "x": 87.5,
+        "y": 569.5,
+        "w": 278,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:cielab",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.readout.table.srgb",
+      "order": 25,
+      "parent": "06.readout.table",
+      "component": "app:ReadoutRow",
+      "box": {
+        "x": 74,
+        "y": 830,
+        "w": 430,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 592,
+        "w": 348.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.readout.table.srgb.label",
+      "order": 26,
+      "parent": "06.readout.table.srgb",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 830,
+        "w": 86,
+        "h": 26
+      },
+      "dp": {
+        "x": 17,
+        "y": 592,
+        "w": 69.5,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.srgb",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.readout.table.srgb.value",
+      "order": 27,
+      "parent": "06.readout.table.srgb",
+      "component": "ui:Text",
+      "box": {
+        "x": 161,
+        "y": 830,
+        "w": 343,
+        "h": 26
+      },
+      "dp": {
+        "x": 87.5,
+        "y": 592,
+        "w": 278,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:srgb",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.provenance",
+      "order": 28,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 51,
+        "y": 889,
+        "w": 667,
+        "h": 146
+      },
+      "dp": {
+        "x": -1.5,
+        "y": 640,
+        "w": 540.5,
+        "h": 118.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#20232A"
+      },
+      "copy": null
+    },
+    {
+      "id": "06.provenance.art",
+      "order": 29,
+      "parent": "06.provenance",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 475,
+        "y": 895,
+        "w": 231,
+        "h": 134
+      },
+      "dp": {
+        "x": 342,
+        "y": 645,
+        "w": 187,
+        "h": 108.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "plum-branch",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "06.provenance.title",
+      "order": 30,
+      "parent": "06.provenance",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 909,
+        "w": 305,
+        "h": 22
+      },
+      "dp": {
+        "x": 17,
+        "y": 656,
+        "w": 247,
+        "h": 18
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:detail.provenance",
+      "action": null,
+      "raw": {
+        "emDp": 19.2
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.provenance.body",
+      "order": 31,
+      "parent": "06.provenance",
+      "component": "ui:Text",
+      "box": {
+        "x": 73,
+        "y": 940,
+        "w": 400,
+        "h": 50
+      },
+      "dp": {
+        "x": 16,
+        "y": 681.5,
+        "w": 324,
+        "h": 40.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.provenance.note",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "06.provenance.review",
+      "order": 32,
+      "parent": "06.provenance",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 998,
+        "w": 197,
+        "h": 17
+      },
+      "dp": {
+        "x": 17,
+        "y": 728.5,
+        "w": 159.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": "check",
+      "illustration": null,
+      "binding": "corpus:entry.review",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.combinations",
+      "order": 33,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 51,
+        "y": 1049,
+        "w": 329,
+        "h": 173
+      },
+      "dp": {
+        "x": -1.5,
+        "y": 769.5,
+        "w": 266.5,
+        "h": 140
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F2229"
+      },
+      "copy": null
+    },
+    {
+      "id": "06.combinations.title",
+      "order": 34,
+      "parent": "06.combinations",
+      "component": "ui:Text",
+      "box": {
+        "x": 73,
+        "y": 1068,
+        "w": 233,
+        "h": 19
+      },
+      "dp": {
+        "x": 16,
+        "y": 785,
+        "w": 189,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:detail.combinations",
+      "action": null,
+      "raw": {
+        "emDp": 21.1
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.combinations.item-1.photo",
+      "order": 35,
+      "parent": "06.combinations",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 73,
+        "y": 1102,
+        "w": 83,
+        "h": 83
+      },
+      "dp": {
+        "x": 16,
+        "y": 812.5,
+        "w": 67,
+        "h": 67
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.0",
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "06.combinations.item-1.rank",
+      "order": 36,
+      "parent": "06.combinations",
+      "component": "ui:Chip",
+      "box": {
+        "x": 73,
+        "y": 1102,
+        "w": 27,
+        "h": 28
+      },
+      "dp": {
+        "x": 16,
+        "y": 812.5,
+        "w": 22,
+        "h": 22.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.0.rank",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.combinations.item-2.photo",
+      "order": 37,
+      "parent": "06.combinations",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 175,
+        "y": 1102,
+        "w": 83,
+        "h": 83
+      },
+      "dp": {
+        "x": 99,
+        "y": 812.5,
+        "w": 67,
+        "h": 67
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.1",
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "06.combinations.item-2.rank",
+      "order": 38,
+      "parent": "06.combinations",
+      "component": "ui:Chip",
+      "box": {
+        "x": 175,
+        "y": 1102,
+        "w": 27,
+        "h": 28
+      },
+      "dp": {
+        "x": 99,
+        "y": 812.5,
+        "w": 22,
+        "h": 22.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.1.rank",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.combinations.item-3.photo",
+      "order": 39,
+      "parent": "06.combinations",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 275,
+        "y": 1102,
+        "w": 84,
+        "h": 83
+      },
+      "dp": {
+        "x": 180,
+        "y": 812.5,
+        "w": 68,
+        "h": 67
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.2",
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "06.combinations.item-3.rank",
+      "order": 40,
+      "parent": "06.combinations",
+      "component": "ui:Chip",
+      "box": {
+        "x": 276,
+        "y": 1102,
+        "w": 26,
+        "h": 28
+      },
+      "dp": {
+        "x": 180.5,
+        "y": 812.5,
+        "w": 21,
+        "h": 22.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:combinations.2.rank",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "06.combinations.item-1.caption",
+      "order": 41,
+      "parent": "06.combinations",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 1194,
+        "w": 82,
+        "h": 27
+      },
+      "dp": {
+        "x": 17,
+        "y": 887,
+        "w": 66.5,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.0.name",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "06.combinations.item-2.caption",
+      "order": 42,
+      "parent": "06.combinations",
+      "component": "ui:Text",
+      "box": {
+        "x": 170,
+        "y": 1194,
+        "w": 93,
+        "h": 27
+      },
+      "dp": {
+        "x": 95,
+        "y": 887,
+        "w": 75.5,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.1.name",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "06.combinations.item-3.caption",
+      "order": 43,
+      "parent": "06.combinations",
+      "component": "ui:Text",
+      "box": {
+        "x": 281,
+        "y": 1194,
+        "w": 72,
+        "h": 27
+      },
+      "dp": {
+        "x": 184.5,
+        "y": 887,
+        "w": 58.5,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.2.name",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "06.actions",
+      "order": 44,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 51,
+        "y": 1222,
+        "w": 667,
+        "h": 78
+      },
+      "dp": {
+        "x": -1.5,
+        "y": 909.5,
+        "w": 540.5,
+        "h": 63
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#20232A"
+      },
+      "copy": null
+    },
+    {
+      "id": "06.actions.wear",
+      "order": 45,
+      "parent": "06.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 68,
+        "y": 1245,
+        "w": 312,
+        "h": 44
+      },
+      "dp": {
+        "x": 12,
+        "y": 928.5,
+        "w": 253,
+        "h": 35.5
+      },
+      "tokens": {
+        "bg": "action.primary"
+      },
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:detail.wearIt",
+      "action": "navigate:/atlas/with/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.actions.hold",
+      "order": 46,
+      "parent": "06.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 390,
+        "y": 1246,
+        "w": 310,
+        "h": 42
+      },
+      "dp": {
+        "x": 273,
+        "y": 929,
+        "w": 251,
+        "h": 34
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:detail.holdAsTarget",
+      "action": "navigate:/lens/against",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "06.actions.hold.icon",
+      "order": 47,
+      "parent": "06.actions.hold",
+      "component": null,
+      "box": {
+        "x": 419,
+        "y": 1256,
+        "w": 21,
+        "h": 21
+      },
+      "dp": {
+        "x": 296.5,
+        "y": 937.5,
+        "w": 17,
+        "h": 17
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "reticle",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "the spec card’s frame around the upper panel",
+      "box": {
+        "x": 50,
+        "y": 97,
+        "w": 479,
+        "h": 776
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the three bracketed action names above the frame",
+      "box": {
+        "x": 293,
+        "y": 57,
+        "w": 250,
+        "h": 16
+      }
+    },
+    {
+      "what": "callout",
+      "note": "their leader lines",
+      "box": {
+        "x": 290,
+        "y": 74,
+        "w": 239,
+        "h": 58
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the swatch note and its leader",
+      "box": {
+        "x": 505,
+        "y": 340,
+        "w": 224,
+        "h": 60
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the kanji note and its leader",
+      "box": {
+        "x": 458,
+        "y": 600,
+        "w": 223,
+        "h": 15
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name, level and hex printed as a note, with its leader",
+      "box": {
+        "x": 485,
+        "y": 709,
+        "w": 230,
+        "h": 31
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the elevated-cards note and its leader",
+      "box": {
+        "x": 505,
+        "y": 783,
+        "w": 154,
+        "h": 13
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the hairline-borders note (misspelt) and its leader",
+      "box": {
+        "x": 528,
+        "y": 860,
+        "w": 190,
+        "h": 32
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the line-art note and its leader, below the provenance card",
+      "box": {
+        "x": 530,
+        "y": 1033,
+        "w": 187,
+        "h": 42
+      }
+    },
+    {
+      "what": "callout",
+      "note": "the action-bar note below the frame",
+      "box": {
+        "x": 303,
+        "y": 1300,
+        "w": 162,
+        "h": 31
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "C19: the right-hand card holds only garbled text",
+      "box": {
+        "x": 392,
+        "y": 1049,
+        "w": 326,
+        "h": 173
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "06.provenance drawn wider than the upper frame",
+      "box": {
+        "x": 527,
+        "y": 889,
+        "w": 191,
+        "h": 146
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "06.combinations drawn 2 px past the upper frame’s left edge",
+      "box": {
+        "x": 51,
+        "y": 1049,
+        "w": 2,
+        "h": 173
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "06.actions drawn wider than the upper frame",
+      "box": {
+        "x": 527,
+        "y": 1222,
+        "w": 191,
+        "h": 78
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "06.readout.table.cielab.value",
+      "why": "06 prints CIELAB values that do not survive checking for its own hex (§4 E1); the cell shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "06.readout.table.srgb.value",
+      "why": "06’s \"Display-P3\" triplet is its sRGB values ÷ 255, not a P3 conversion (§4 E1); the cell shows the engine’s real conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "06.provenance.body",
+      "why": "the provenance line is the corpus entry’s own note; 06’s dated manuscript is sample content no entry holds — none of the 120 claims an era"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C3",
+      "elements": ["06.readout.title", "06.provenance.title", "06.combinations.title"],
+      "resolution": "P1 + P2: 06's layout governs colour detail; 26 governs its Japanese headings and typography",
+      "flippedByUser": false
+    },
+    {
+      "id": "C19",
+      "elements": ["06.combinations"],
+      "resolution": "the right-hand card is not design (§2); Wearable Combinations spans the row",
+      "flippedByUser": false
+    }
+  ]
+}

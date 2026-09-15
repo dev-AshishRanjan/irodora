@@ -1,0 +1,1884 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "05",
+  "mockupSha256": "06142c4b395d4b5ee63bba5322d3aaab6fb01be90583396ca8155e7e3dea2b2a",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "05.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "05.title",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 35,
+        "y": 27,
+        "w": 392,
+        "h": 48
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 13.5,
+        "w": 196,
+        "h": 24
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.title",
+      "action": null,
+      "raw": {
+        "emDp": 26
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.more",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 704,
+        "y": 45,
+        "w": 24,
+        "h": 6
+      },
+      "dp": {
+        "x": 352,
+        "y": 22.5,
+        "w": 12,
+        "h": 3
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "more",
+      "illustration": null,
+      "binding": null,
+      "action": "open:atlas.menu",
+      "copy": null
+    },
+    {
+      "id": "05.count",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 35,
+        "y": 77,
+        "w": 211,
+        "h": 42
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 38.5,
+        "w": 105.5,
+        "h": 21
+      },
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "list",
+      "illustration": null,
+      "binding": "corpus:entries.count",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.compare",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 412,
+        "y": 79,
+        "w": 112,
+        "h": 40
+      },
+      "dp": {
+        "x": 206,
+        "y": 39.5,
+        "w": 56,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.compare",
+      "action": "navigate:/atlas/compare",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.finder",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 534,
+        "y": 82,
+        "w": 88,
+        "h": 37
+      },
+      "dp": {
+        "x": 267,
+        "y": 41,
+        "w": 44,
+        "h": 18.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.finder",
+      "action": "navigate:/atlas/finder",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.palettes",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 628,
+        "y": 82,
+        "w": 105,
+        "h": 37
+      },
+      "dp": {
+        "x": 314,
+        "y": 41,
+        "w": 52.5,
+        "h": 18.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.palettes",
+      "action": "navigate:/atlas/palettes",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.header-rule",
+      "order": 7,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 139,
+        "w": 768,
+        "h": 1
+      },
+      "dp": {
+        "x": 0,
+        "y": 69.5,
+        "w": 384,
+        "h": 0.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.search",
+      "order": 8,
+      "parent": null,
+      "component": "ui:SearchField",
+      "box": {
+        "x": 35,
+        "y": 203,
+        "w": 698,
+        "h": 53
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 101.5,
+        "w": 349,
+        "h": 26.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": "search",
+      "illustration": null,
+      "binding": "static:atlas.searchPlaceholder",
+      "action": "adjust:filter.query",
+      "raw": {
+        "cornerPx": 21
+      },
+      "copy": {
+        "shape": "placeholder",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.filters.season.all",
+      "order": 9,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 34,
+        "y": 275,
+        "w": 68,
+        "h": 44
+      },
+      "dp": {
+        "x": 17,
+        "y": 137.5,
+        "w": 34,
+        "h": 22
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.season.all",
+      "action": "select:filter.season.all",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.filters.season.spring",
+      "order": 10,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 111,
+        "y": 276,
+        "w": 124,
+        "h": 42
+      },
+      "dp": {
+        "x": 55.5,
+        "y": 138,
+        "w": 62,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.season.spring",
+      "action": "select:filter.season.spring",
+      "raw": {
+        "cornerPx": 20.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.season.summer",
+      "order": 11,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 245,
+        "y": 276,
+        "w": 140,
+        "h": 42
+      },
+      "dp": {
+        "x": 122.5,
+        "y": 138,
+        "w": 70,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.season.summer",
+      "action": "select:filter.season.summer",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.season.autumn",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 395,
+        "y": 276,
+        "w": 136,
+        "h": 42
+      },
+      "dp": {
+        "x": 197.5,
+        "y": 138,
+        "w": 68,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.season.autumn",
+      "action": "select:filter.season.autumn",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.season.winter",
+      "order": 13,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 541,
+        "y": 276,
+        "w": 125,
+        "h": 42
+      },
+      "dp": {
+        "x": 270.5,
+        "y": 138,
+        "w": 62.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.season.winter",
+      "action": "select:filter.season.winter",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family-label",
+      "order": 14,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 36,
+        "y": 342,
+        "w": 130,
+        "h": 22
+      },
+      "dp": {
+        "x": 18,
+        "y": 171,
+        "w": 65,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.family",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.filters.family.ao",
+      "order": 15,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 35,
+        "y": 375,
+        "w": 96,
+        "h": 40
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 187.5,
+        "w": 48,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.ao",
+      "action": "select:filter.family.ao",
+      "raw": {
+        "cornerPx": 18
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family.aka",
+      "order": 16,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 141,
+        "y": 375,
+        "w": 105,
+        "h": 40
+      },
+      "dp": {
+        "x": 70.5,
+        "y": 187.5,
+        "w": 52.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.aka",
+      "action": "select:filter.family.aka",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family.midori",
+      "order": 17,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 256,
+        "y": 375,
+        "w": 127,
+        "h": 40
+      },
+      "dp": {
+        "x": 128,
+        "y": 187.5,
+        "w": 63.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.midori",
+      "action": "select:filter.family.midori",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family.murasaki",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 393,
+        "y": 375,
+        "w": 152,
+        "h": 40
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 187.5,
+        "w": 76,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.murasaki",
+      "action": "select:filter.family.murasaki",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family.cha",
+      "order": 19,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 554,
+        "y": 375,
+        "w": 107,
+        "h": 40
+      },
+      "dp": {
+        "x": 277,
+        "y": 187.5,
+        "w": 53.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.cha",
+      "action": "select:filter.family.cha",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters.family.kuro",
+      "order": 20,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 671,
+        "y": 375,
+        "w": 97,
+        "h": 40
+      },
+      "dp": {
+        "x": 335.5,
+        "y": 187.5,
+        "w": 48.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.kuro",
+      "action": "select:filter.family.kuro",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "05.filters-rule",
+      "order": 21,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 35,
+        "y": 435,
+        "w": 698,
+        "h": 2
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 217.5,
+        "w": 349,
+        "h": 1
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.heading",
+      "order": 22,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 35,
+        "y": 462,
+        "w": 65,
+        "h": 23
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 231,
+        "w": 32.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.heading",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-1",
+      "order": 23,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 35,
+        "y": 503,
+        "w": 339,
+        "h": 391
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 251.5,
+        "w": 169.5,
+        "h": 195.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#1C1F26"
+      },
+      "raw": {
+        "cornerPx": 13.25
+      },
+      "copy": null
+    },
+    {
+      "id": "05.card-2",
+      "order": 24,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 394,
+        "y": 503,
+        "w": 339,
+        "h": 391
+      },
+      "dp": {
+        "x": 197,
+        "y": 251.5,
+        "w": 169.5,
+        "h": 195.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/[slug]",
+      "copy": null
+    },
+    {
+      "id": "05.card-1.swatch",
+      "order": 25,
+      "parent": "05.card-1",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 45,
+        "y": 514,
+        "w": 319,
+        "h": 206
+      },
+      "dp": {
+        "x": 22.5,
+        "y": 257,
+        "w": 159.5,
+        "h": 103
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 9
+      },
+      "copy": null
+    },
+    {
+      "id": "05.card-2.swatch",
+      "order": 26,
+      "parent": "05.card-2",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 404,
+        "y": 514,
+        "w": 319,
+        "h": 206
+      },
+      "dp": {
+        "x": 202,
+        "y": 257,
+        "w": 159.5,
+        "h": 103
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.card-1.kanji",
+      "order": 27,
+      "parent": "05.card-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 56,
+        "y": 740,
+        "w": 68,
+        "h": 34
+      },
+      "dp": {
+        "x": 28,
+        "y": 370,
+        "w": 34,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 18.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "05.card-1.hex",
+      "order": 28,
+      "parent": "05.card-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 742,
+        "w": 79,
+        "h": 16
+      },
+      "dp": {
+        "x": 137,
+        "y": 371,
+        "w": 39.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-2.kanji",
+      "order": 29,
+      "parent": "05.card-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 416,
+        "y": 740,
+        "w": 67,
+        "h": 34
+      },
+      "dp": {
+        "x": 208,
+        "y": 370,
+        "w": 33.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 18.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "05.card-2.hex",
+      "order": 30,
+      "parent": "05.card-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 633,
+        "y": 743,
+        "w": 79,
+        "h": 14
+      },
+      "dp": {
+        "x": 316.5,
+        "y": 371.5,
+        "w": 39.5,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-1.romaji",
+      "order": 31,
+      "parent": "05.card-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 788,
+        "w": 122,
+        "h": 21
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 394,
+        "w": 61,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-2.romaji",
+      "order": 32,
+      "parent": "05.card-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 415,
+        "y": 787,
+        "w": 73,
+        "h": 27
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 393.5,
+        "w": 36.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-1.oklch",
+      "order": 33,
+      "parent": "05.card-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 825,
+        "w": 240,
+        "h": 15
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 412.5,
+        "w": 120,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-2.oklch",
+      "order": 34,
+      "parent": "05.card-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 415,
+        "y": 825,
+        "w": 221,
+        "h": 15
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 412.5,
+        "w": 110.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-1.era",
+      "order": 35,
+      "parent": "05.card-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 854,
+        "w": 82,
+        "h": 15
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 427,
+        "w": 41,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.era",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-2.era",
+      "order": 36,
+      "parent": "05.card-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 415,
+        "y": 854,
+        "w": 55,
+        "h": 19
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 427,
+        "w": 27.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.era",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-3",
+      "order": 37,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 35,
+        "y": 914,
+        "w": 339,
+        "h": 368
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 457,
+        "w": 169.5,
+        "h": 184
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/[slug]",
+      "copy": null
+    },
+    {
+      "id": "05.card-4",
+      "order": 38,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 394,
+        "y": 914,
+        "w": 339,
+        "h": 368
+      },
+      "dp": {
+        "x": 197,
+        "y": 457,
+        "w": 169.5,
+        "h": 184
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/[slug]",
+      "copy": null
+    },
+    {
+      "id": "05.card-3.swatch",
+      "order": 39,
+      "parent": "05.card-3",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 45,
+        "y": 925,
+        "w": 319,
+        "h": 212
+      },
+      "dp": {
+        "x": 22.5,
+        "y": 462.5,
+        "w": 159.5,
+        "h": 106
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.card-4.swatch",
+      "order": 40,
+      "parent": "05.card-4",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 404,
+        "y": 924,
+        "w": 319,
+        "h": 213
+      },
+      "dp": {
+        "x": 202,
+        "y": 462,
+        "w": 159.5,
+        "h": 106.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.card-3.kanji",
+      "order": 41,
+      "parent": "05.card-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 1158,
+        "w": 68,
+        "h": 34
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 579,
+        "w": 34,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 18.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "05.card-3.hex",
+      "order": 42,
+      "parent": "05.card-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 273,
+        "y": 1160,
+        "w": 80,
+        "h": 16
+      },
+      "dp": {
+        "x": 136.5,
+        "y": 580,
+        "w": 40,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-4.kanji",
+      "order": 43,
+      "parent": "05.card-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 415,
+        "y": 1158,
+        "w": 102,
+        "h": 34
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 579,
+        "w": 51,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 18.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "05.card-4.hex",
+      "order": 44,
+      "parent": "05.card-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 632,
+        "y": 1160,
+        "w": 80,
+        "h": 16
+      },
+      "dp": {
+        "x": 316,
+        "y": 580,
+        "w": 40,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-3.romaji",
+      "order": 45,
+      "parent": "05.card-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 1205,
+        "w": 91,
+        "h": 21
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 602.5,
+        "w": 45.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-4.romaji",
+      "order": 46,
+      "parent": "05.card-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 415,
+        "y": 1205,
+        "w": 139,
+        "h": 21
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 602.5,
+        "w": 69.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.card-3.oklch",
+      "order": 47,
+      "parent": "05.card-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 1242,
+        "w": 212,
+        "h": 16
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 621,
+        "w": 106,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "05.card-4.era",
+      "order": 48,
+      "parent": "05.card-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 416,
+        "y": 1242,
+        "w": 65,
+        "h": 16
+      },
+      "dp": {
+        "x": 208,
+        "y": 621,
+        "w": 32.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.era",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.tabs",
+      "order": 49,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1276,
+        "w": 768,
+        "h": 100
+      },
+      "dp": {
+        "x": 0,
+        "y": 638,
+        "w": 384,
+        "h": 50
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "05.card-3.era",
+      "order": 50,
+      "parent": "05.card-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 1272,
+        "w": 49,
+        "h": 8
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 636,
+        "w": 24.5,
+        "h": 4
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.era",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "05.tabs.indicator",
+      "order": 51,
+      "parent": "05.tabs",
+      "component": null,
+      "box": {
+        "x": 2,
+        "y": 1285,
+        "w": 190,
+        "h": 3
+      },
+      "dp": {
+        "x": 1,
+        "y": 642.5,
+        "w": 95,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.tabs.atlas.icon",
+      "order": 52,
+      "parent": "05.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 82,
+        "y": 1304,
+        "w": 31,
+        "h": 28
+      },
+      "dp": {
+        "x": 41,
+        "y": 652,
+        "w": 15.5,
+        "h": 14
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "atlas",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "05.tabs.compass.icon",
+      "order": 53,
+      "parent": "05.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 273,
+        "y": 1303,
+        "w": 30,
+        "h": 30
+      },
+      "dp": {
+        "x": 136.5,
+        "y": 651.5,
+        "w": 15,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "compass",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.tabs.search.icon",
+      "order": 54,
+      "parent": "05.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 466,
+        "y": 1305,
+        "w": 27,
+        "h": 27
+      },
+      "dp": {
+        "x": 233,
+        "y": 652.5,
+        "w": 13.5,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "search",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.tabs.profile.icon",
+      "order": 55,
+      "parent": "05.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 658,
+        "y": 1305,
+        "w": 25,
+        "h": 27
+      },
+      "dp": {
+        "x": 329,
+        "y": 652.5,
+        "w": 12.5,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile",
+      "copy": null
+    },
+    {
+      "id": "05.tabs.atlas.label",
+      "order": 56,
+      "parent": "05.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 76,
+        "y": 1341,
+        "w": 42,
+        "h": 14
+      },
+      "dp": {
+        "x": 38,
+        "y": 670.5,
+        "w": 21,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.atlas",
+      "action": null,
+      "raw": {
+        "emDp": 9.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "leaked-label",
+      "note": "a prompt label printed as a section title",
+      "box": {
+        "x": 36,
+        "y": 165,
+        "w": 360,
+        "h": 20
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": [
+        "05.tabs",
+        "05.tabs.indicator",
+        "05.tabs.atlas.icon",
+        "05.tabs.compass.icon",
+        "05.tabs.search.icon",
+        "05.tabs.profile.icon",
+        "05.tabs.atlas.label"
+      ],
+      "resolution": "P5 → 01: 05's four-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    },
+    {
+      "id": "C13",
+      "elements": [
+        "05.filters.family.ao",
+        "05.filters.family.aka",
+        "05.filters.family.midori",
+        "05.filters.family.murasaki",
+        "05.filters.family.cha",
+        "05.filters.family.kuro"
+      ],
+      "resolution": "F-224 groups the corpus's 25 families under these seven, as content with provenance",
+      "flippedByUser": false
+    }
+  ]
+}

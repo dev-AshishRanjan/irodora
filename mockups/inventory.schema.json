@@ -1,0 +1,407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://irodora.com/schemas/mockup-inventory.schema.json",
+  "title": "Irodora mockup element inventory",
+  "description": "Golden rule 14, per element (F-220). One file per image in mockups/: every element the image draws, top to bottom, with its measured geometry, token, face, icon, binding and action. The TEXT an image prints is never recorded as content (R9-MOCKUP-FIDELITY §4 E1) — only its shape and script. Checked by scripts/verify-mockups.mjs; the rules it applies are R9-MOCKUP-FIDELITY §2–§8.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "mockup",
+    "mockupSha256",
+    "kind",
+    "governs",
+    "frame",
+    "elements",
+    "notDesign",
+    "departures",
+    "conflicts"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "mockup": {
+      "type": "string",
+      "pattern": "^[0-9]{2}$",
+      "description": "The image's number; its file is the mockups/index.json row of the same id."
+    },
+    "mockupSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "The sha256 of the image this inventory was written against. It must equal the index row's sha256, or the elements may no longer be the ones drawn (E-126)."
+    },
+    "kind": {
+      "enum": ["screen", "board"],
+      "description": "screen: one route (or one state of one), measured at §2's scale. board: a sheet of components, a brand board or a states board — it fixes the vocabulary screens reference, and a screen wins where the two disagree (P3)."
+    },
+    "governs": {
+      "enum": ["layout", "palette", "locale", "state", "vocabulary"],
+      "description": "What this image decides (§3). layout: a primary mockup (P1). palette / locale / state: a variant, which governs only that dimension of the route it varies (P2). vocabulary: a board (P3)."
+    },
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "screens"],
+      "properties": {
+        "kind": {
+          "enum": ["full-bleed", "device", "spec-card", "board"]
+        },
+        "screens": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The drawn screen(s) in image pixels, and the scale that maps each to the 384 dp reference (§2). A board may draw several devices; a full-bleed image has one screen, the whole width.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "box", "dpPerPx"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[0-9]{2}\\.[a-z0-9-]+$"
+              },
+              "box": {
+                "$ref": "#/$defs/box"
+              },
+              "dpPerPx": {
+                "oneOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "384 / the screen's inner width in px. null on a board sheet, which draws components at no screen's scale — its elements carry dp: null, and a screen decides their size (P3)."
+              }
+            }
+          }
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/element"
+      }
+    },
+    "notDesign": {
+      "type": "array",
+      "description": "Presentation artefacts (§2) — bezels, status bars, callouts, leaked prompt labels, garbled text, line-art outside a frame. Listed so that no feature builds one.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["what", "box"],
+        "properties": {
+          "what": {
+            "enum": [
+              "bezel",
+              "status-bar",
+              "callout",
+              "leaked-label",
+              "garbled-text",
+              "outside-art",
+              "board-annotation",
+              "presentation"
+            ],
+            "description": "presentation: the setting an artefact is shown in that no surface of the app draws — the OS home screen an icon sits on."
+          },
+          "note": {
+            "type": "string"
+          },
+          "box": {
+            "$ref": "#/$defs/box"
+          }
+        }
+      }
+    },
+    "departures": {
+      "type": "array",
+      "description": "Every place the build will not draw what the image draws. A departure exists only if R9-MOCKUP-FIDELITY §4 lists its rule (golden rule 14).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule", "element", "why"],
+        "properties": {
+          "rule": {
+            "enum": ["E1", "E2", "E3", "E4"]
+          },
+          "element": {
+            "$ref": "#/$defs/elementId"
+          },
+          "why": {
+            "type": "string",
+            "minLength": 12
+          }
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "description": "Each §6 conflict that touches this image, the elements it decides, and whether the user flipped its default.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "elements", "resolution", "flippedByUser"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^C[0-9]{1,2}$"
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/elementId"
+            }
+          },
+          "resolution": {
+            "type": "string",
+            "minLength": 12
+          },
+          "flippedByUser": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "box": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "w": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "h": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "dp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number",
+          "minimum": 0
+        },
+        "h": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "elementId": {
+      "type": "string",
+      "pattern": "^[0-9]{2}(\\.[a-z0-9-]+)+$"
+    },
+    "element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "order",
+        "parent",
+        "component",
+        "box",
+        "dp",
+        "tokens",
+        "type",
+        "icon",
+        "illustration",
+        "binding",
+        "action",
+        "copy"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/elementId"
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "A strict sequence within the file. A screen reads top to bottom, then left to right: elements sorted by top edge, where consecutive tops within 8 px (4 dp) chain into one row, and each row is read left to right. A board reads panel by panel — column by column, each column top to bottom — because its columns are unrelated groups, not one page."
+        },
+        "parent": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/elementId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "screen": {
+          "type": "string",
+          "pattern": "^[0-9]{2}\\.[a-z0-9-]+$",
+          "description": "Which of frame.screens the element sits in — required where the image draws more than one. dp is measured from that screen's origin at its dpPerPx."
+        },
+        "component": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^(ui|new|app):[A-Z][A-Za-z0-9.]*$"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ui:<export of @irodora/ui>, new:<a component a feature must add to it>, or app:<a screen-local composition>. null for a pure container."
+        },
+        "box": {
+          "$ref": "#/$defs/box"
+        },
+        "dp": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/dp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The box at §2's scale, each value snapped to the R9 scale (§5). null on a board, where the render's scale is not a screen's."
+        },
+        "tokens": {
+          "type": "object",
+          "description": "Role → §5 token, e.g. { \"bg\": \"level1\", \"fg\": \"text.primary\", \"radius\": \"lg\", \"border\": \"border.subtle\" }.",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-z][A-Za-z0-9.]*$"
+          }
+        },
+        "type": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["face", "size", "weight"],
+              "properties": {
+                "face": {
+                  "enum": ["serif", "sans", "mincho", "gothic"]
+                },
+                "size": {
+                  "enum": ["display1", "title", "body", "label", "caption"]
+                },
+                "weight": {
+                  "enum": [300, 400, 500, 600, 700]
+                },
+                "tabular": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "icon": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "illustration": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "binding": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^(static|engine|corpus|store|derived|route|oq):[^\\s]+$"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "§8. static:<i18n key> · engine:<function> · corpus:<field> · store:<field> · derived:<feature> · route:<param> · oq:<OQ id>. null only for pure decoration, and on a board, whose samples show a component and bind nothing."
+        },
+        "action": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^(navigate|open|toggle|select|adjust|submit|dismiss|share|capture):[^\\s]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "measured": {
+          "type": "object",
+          "description": "Optional. Role → the hex actually read from the render (§2's method, ΔE00 ≈ 2 tolerance), kept for the appearance sweep (F-221). The token above is what the build uses (P4); this records how far the render sat from it.",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9A-F]{6}$"
+          }
+        },
+        "raw": {
+          "type": "object",
+          "description": "Optional. The dp values before snapping, where a snap moved one by more than 2 dp — so a reviewer can see what the scale changed.",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "copy": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["shape", "script"],
+              "properties": {
+                "shape": {
+                  "enum": ["heading", "label", "value", "body", "caption", "placeholder", "badge"]
+                },
+                "script": {
+                  "enum": ["latin", "japanese", "mixed", "figures"]
+                },
+                "lines": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The shape of the text, never the text (E1)."
+        }
+      }
+    }
+  }
+}

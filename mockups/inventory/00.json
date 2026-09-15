@@ -1,0 +1,1955 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "00",
+  "mockupSha256": "5850eb5a7ec480f7946818ed88f8be6eecfea1922e60eae95427d2b81f685867",
+  "kind": "board",
+  "governs": "vocabulary",
+  "frame": {
+    "kind": "board",
+    "screens": [
+      {
+        "id": "00.board",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 1376,
+          "h": 768
+        },
+        "dpPerPx": null
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "00.mark",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Mark",
+      "box": {
+        "x": 82,
+        "y": 94,
+        "w": 88,
+        "h": 86
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wordmark",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Wordmark",
+      "box": {
+        "x": 189,
+        "y": 109,
+        "w": 222,
+        "h": 56
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "display1",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.type.display1",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 280,
+        "w": 199,
+        "h": 52
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "display1",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.type.title",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 349,
+        "w": 60,
+        "h": 25
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.type.body",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 396,
+        "w": 38,
+        "h": 18
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.type.tabular",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 291,
+        "y": 396,
+        "w": 148,
+        "h": 61
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.type.label",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 55,
+        "y": 431,
+        "w": 30,
+        "h": 13
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.wells.hero",
+      "order": 8,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 53,
+        "y": 549,
+        "w": 116,
+        "h": 115
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 7
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells.hero.caption",
+      "order": 9,
+      "parent": "00.wells.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 54,
+        "y": 673,
+        "w": 68,
+        "h": 39
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells.detail",
+      "order": 10,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 182,
+        "y": 553,
+        "w": 103,
+        "h": 111
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells.detail.caption",
+      "order": 11,
+      "parent": "00.wells.detail",
+      "component": "ui:Text",
+      "box": {
+        "x": 182,
+        "y": 674,
+        "w": 74,
+        "h": 39
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells.list-a",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 300,
+        "y": 553,
+        "w": 52,
+        "h": 53
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells.list-b",
+      "order": 13,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 300,
+        "y": 611,
+        "w": 52,
+        "h": 53
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells.strip-a",
+      "order": 14,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 377,
+        "y": 597,
+        "w": 45,
+        "h": 31
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells.strip-b",
+      "order": 15,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 377,
+        "y": 633,
+        "w": 45,
+        "h": 31
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells2.hero",
+      "order": 16,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 488,
+        "y": 88,
+        "w": 144,
+        "h": 161
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 7.5
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells2.hero.name",
+      "order": 17,
+      "parent": "00.wells2.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 500,
+        "y": 200,
+        "w": 71,
+        "h": 35
+      },
+      "dp": null,
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells2.detail",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 645,
+        "y": 88,
+        "w": 123,
+        "h": 161
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 6.5
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells2.detail.name",
+      "order": 19,
+      "parent": "00.wells2.detail",
+      "component": "ui:Text",
+      "box": {
+        "x": 656,
+        "y": 200,
+        "w": 79,
+        "h": 35
+      },
+      "dp": null,
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells2.list48",
+      "order": 20,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 781,
+        "y": 88,
+        "w": 107,
+        "h": 85
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 7.5
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells2.list",
+      "order": 21,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 488,
+        "y": 285,
+        "w": 61,
+        "h": 44
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 6.5
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells2.akabeni",
+      "order": 22,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 560,
+        "y": 298,
+        "w": 74,
+        "h": 31
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells2.akabeni.caption",
+      "order": 23,
+      "parent": "00.wells2.akabeni",
+      "component": "ui:Text",
+      "box": {
+        "x": 561,
+        "y": 330,
+        "w": 71,
+        "h": 43
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells2.tetsukon",
+      "order": 24,
+      "parent": null,
+      "component": "ui:Swatch",
+      "box": {
+        "x": 643,
+        "y": 298,
+        "w": 76,
+        "h": 31
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.wells2.tetsukon.caption",
+      "order": 25,
+      "parent": "00.wells2.tetsukon",
+      "component": "ui:Text",
+      "box": {
+        "x": 645,
+        "y": 330,
+        "w": 71,
+        "h": 43
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "00.wells2.delta",
+      "order": 26,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 727,
+        "y": 297,
+        "w": 77,
+        "h": 32
+      },
+      "dp": null,
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 8.25
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "00.wells2.delta.caption",
+      "order": 27,
+      "parent": "00.wells2.delta",
+      "component": "ui:Text",
+      "box": {
+        "x": 730,
+        "y": 330,
+        "w": 71,
+        "h": 19
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 1
+      }
+    },
+    {
+      "id": "00.wells2.daylight",
+      "order": 28,
+      "parent": null,
+      "component": "ui:Pair",
+      "box": {
+        "x": 812,
+        "y": 297,
+        "w": 76,
+        "h": 32
+      },
+      "dp": null,
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 6.75
+      },
+      "copy": null
+    },
+    {
+      "id": "00.wells2.daylight.caption",
+      "order": 29,
+      "parent": "00.wells2.daylight",
+      "component": "ui:Text",
+      "box": {
+        "x": 814,
+        "y": 330,
+        "w": 72,
+        "h": 20
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 1
+      }
+    },
+    {
+      "id": "00.buttons.primary",
+      "order": 30,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 487,
+        "y": 476,
+        "w": 194,
+        "h": 42
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 23.25
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.buttons.icon-camera",
+      "order": 31,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 710,
+        "y": 478,
+        "w": 36,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "camera",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 5.5
+      },
+      "copy": null
+    },
+    {
+      "id": "00.buttons.icon-image",
+      "order": 32,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 757,
+        "y": 478,
+        "w": 36,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "image",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.buttons.icon-palette",
+      "order": 33,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 804,
+        "y": 478,
+        "w": 37,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "palette",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.buttons.icon-settings",
+      "order": 34,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 851,
+        "y": 478,
+        "w": 36,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "settings",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.buttons.secondary",
+      "order": 35,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 488,
+        "y": 535,
+        "w": 192,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "border": "border.strong",
+        "radius": "pill"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.buttons.switch",
+      "order": 36,
+      "parent": null,
+      "component": "ui:Switch",
+      "box": {
+        "x": 595,
+        "y": 592,
+        "w": 47,
+        "h": 25
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.buttons.choice",
+      "order": 37,
+      "parent": null,
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 594,
+        "y": 635,
+        "w": 177,
+        "h": 30
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.buttons.slider",
+      "order": 38,
+      "parent": null,
+      "component": "ui:Slider",
+      "box": {
+        "x": 594,
+        "y": 684,
+        "w": 294,
+        "h": 28
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.primary",
+      "order": 39,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 937,
+        "y": 91,
+        "w": 186,
+        "h": 35
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.controls.icon-camera",
+      "order": 40,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1153,
+        "y": 91,
+        "w": 33,
+        "h": 33
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "camera",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-edit",
+      "order": 41,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1198,
+        "y": 91,
+        "w": 33,
+        "h": 33
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "edit",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-share",
+      "order": 42,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1243,
+        "y": 91,
+        "w": 32,
+        "h": 33
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "share",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-contrast",
+      "order": 43,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1288,
+        "y": 91,
+        "w": 32,
+        "h": 33
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "contrast",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.secondary",
+      "order": 44,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 938,
+        "y": 138,
+        "w": 185,
+        "h": 34
+      },
+      "dp": null,
+      "tokens": {
+        "border": "border.strong",
+        "radius": "pill"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "00.controls.icon-camera-2",
+      "order": 45,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1153,
+        "y": 138,
+        "w": 33,
+        "h": 34
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "camera",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-palette",
+      "order": 46,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1198,
+        "y": 138,
+        "w": 33,
+        "h": 34
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "palette",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-edit-2",
+      "order": 47,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1242,
+        "y": 138,
+        "w": 34,
+        "h": 34
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "edit",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.icon-wheel",
+      "order": 48,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 1287,
+        "y": 138,
+        "w": 34,
+        "h": 34
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": "colour-wheel",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.switch-on",
+      "order": 49,
+      "parent": null,
+      "component": "ui:Switch",
+      "box": {
+        "x": 936,
+        "y": 226,
+        "w": 50,
+        "h": 27
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.switch-off",
+      "order": 50,
+      "parent": null,
+      "component": "ui:Switch",
+      "box": {
+        "x": 998,
+        "y": 227,
+        "w": 46,
+        "h": 25
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.controls.choice",
+      "order": 51,
+      "parent": null,
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 1075,
+        "y": 225,
+        "w": 123,
+        "h": 29
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "00.controls.slider",
+      "order": 52,
+      "parent": null,
+      "component": "ui:Slider",
+      "box": {
+        "x": 1229,
+        "y": 228,
+        "w": 91,
+        "h": 22
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.cards.level1",
+      "order": 53,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 935,
+        "y": 376,
+        "w": 122,
+        "h": 120
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level1"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": null
+    },
+    {
+      "id": "00.cards.level2",
+      "order": 54,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 1067,
+        "y": 379,
+        "w": 125,
+        "h": 117
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.cards.level3",
+      "order": 55,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 1201,
+        "y": 379,
+        "w": 121,
+        "h": 115
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level3"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.art.kimono",
+      "order": 56,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 939,
+        "y": 598,
+        "w": 125,
+        "h": 107
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "kimono",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.art.viewfinder",
+      "order": 57,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 1083,
+        "y": 600,
+        "w": 106,
+        "h": 99
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "viewfinder",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.empty",
+      "order": 58,
+      "parent": null,
+      "component": "ui:EmptyState",
+      "box": {
+        "x": 1220,
+        "y": 610,
+        "w": 81,
+        "h": 83
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.empty.art",
+      "order": 59,
+      "parent": "00.empty",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 1233,
+        "y": 610,
+        "w": 55,
+        "h": 42
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "no-results",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "00.empty.message",
+      "order": 60,
+      "parent": "00.empty",
+      "component": "ui:Text",
+      "box": {
+        "x": 1220,
+        "y": 665,
+        "w": 81,
+        "h": 28
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "board-annotation",
+      "note": "section title, brand",
+      "box": {
+        "x": 54,
+        "y": 45,
+        "w": 173,
+        "h": 12
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, typography",
+      "box": {
+        "x": 54,
+        "y": 236,
+        "w": 189,
+        "h": 14
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, swatch wells",
+      "box": {
+        "x": 54,
+        "y": 506,
+        "w": 213,
+        "h": 15
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, swatch wells",
+      "box": {
+        "x": 487,
+        "y": 44,
+        "w": 214,
+        "h": 15
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, buttons and controls",
+      "box": {
+        "x": 488,
+        "y": 425,
+        "w": 224,
+        "h": 14
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, buttons and controls",
+      "box": {
+        "x": 937,
+        "y": 45,
+        "w": 226,
+        "h": 13
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, cards and sheets",
+      "box": {
+        "x": 937,
+        "y": 337,
+        "w": 200,
+        "h": 13
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "section title, vector art and empty states",
+      "box": {
+        "x": 936,
+        "y": 546,
+        "w": 218,
+        "h": 13
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 39,
+        "y": 67,
+        "w": 415,
+        "h": 139
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 39,
+        "y": 259,
+        "w": 415,
+        "h": 219
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 39,
+        "y": 529,
+        "w": 415,
+        "h": 205
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 472,
+        "y": 67,
+        "w": 431,
+        "h": 329
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 472,
+        "y": 447,
+        "w": 431,
+        "h": 287
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 922,
+        "y": 67,
+        "w": 414,
+        "h": 239
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 922,
+        "y": 358,
+        "w": 414,
+        "h": 158
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "panel frame",
+      "box": {
+        "x": 922,
+        "y": 567,
+        "w": 414,
+        "h": 167
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "component names under the icon buttons",
+      "box": {
+        "x": 938,
+        "y": 180,
+        "w": 61,
+        "h": 11
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "component names under the icon buttons",
+      "box": {
+        "x": 1153,
+        "y": 180,
+        "w": 62,
+        "h": 10
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "control name",
+      "box": {
+        "x": 938,
+        "y": 261,
+        "w": 75,
+        "h": 14
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "control name",
+      "box": {
+        "x": 1076,
+        "y": 262,
+        "w": 71,
+        "h": 12
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "control name",
+      "box": {
+        "x": 1230,
+        "y": 261,
+        "w": 31,
+        "h": 12
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "control name",
+      "box": {
+        "x": 488,
+        "y": 644,
+        "w": 79,
+        "h": 15
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "control name",
+      "box": {
+        "x": 488,
+        "y": 691,
+        "w": 35,
+        "h": 13
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "swatch name under a sample",
+      "box": {
+        "x": 488,
+        "y": 330,
+        "w": 61,
+        "h": 46
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a type size in px",
+      "box": {
+        "x": 292,
+        "y": 306,
+        "w": 35,
+        "h": 18
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a type size in px",
+      "box": {
+        "x": 292,
+        "y": 359,
+        "w": 36,
+        "h": 18
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a type size in px",
+      "box": {
+        "x": 199,
+        "y": 396,
+        "w": 34,
+        "h": 17
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a type size in px",
+      "box": {
+        "x": 198,
+        "y": 431,
+        "w": 28,
+        "h": 15
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "swatch name and size in px",
+      "box": {
+        "x": 300,
+        "y": 673,
+        "w": 68,
+        "h": 39
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "swatch name and size in px",
+      "box": {
+        "x": 378,
+        "y": 673,
+        "w": 62,
+        "h": 27
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "swatch name and size in px",
+      "box": {
+        "x": 489,
+        "y": 255,
+        "w": 94,
+        "h": 12
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "swatch name and size in px",
+      "box": {
+        "x": 645,
+        "y": 255,
+        "w": 99,
+        "h": 12
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "swatch name and size in px",
+      "box": {
+        "x": 781,
+        "y": 179,
+        "w": 84,
+        "h": 13
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the toggle is labelled with a misspelling",
+      "box": {
+        "x": 488,
+        "y": 598,
+        "w": 93,
+        "h": 16
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the third choice reads as a misspelling",
+      "box": {
+        "x": 594,
+        "y": 635,
+        "w": 177,
+        "h": 30
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the empty-state message ends in a misspelling",
+      "box": {
+        "x": 1220,
+        "y": 665,
+        "w": 81,
+        "h": 28
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "sakura, top right",
+      "box": {
+        "x": 1265,
+        "y": 13,
+        "w": 66,
+        "h": 53
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "sakura beside a section title",
+      "box": {
+        "x": 1289,
+        "y": 328,
+        "w": 47,
+        "h": 28
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "sakura beside a section title",
+      "box": {
+        "x": 1305,
+        "y": 538,
+        "w": 26,
+        "h": 28
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "geometric line-art at the right edge",
+      "box": {
+        "x": 1337,
+        "y": 155,
+        "w": 39,
+        "h": 206
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "geometric line-art at the right edge",
+      "box": {
+        "x": 1337,
+        "y": 663,
+        "w": 39,
+        "h": 105
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "00.wells2.delta.caption",
+      "why": "the caption under the ΔE00 badge draws an absolute colour-vision safety claim; it shows the computed separation (FR-5) for the colours shown, and the model it was computed under"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C4",
+      "elements": ["00.mark", "00.wordmark"],
+      "resolution": "00's coral outline mark and its lockup are not used: mark geometry comes from 14 and the in-app lockup from 01, monochrome",
+      "flippedByUser": false
+    },
+    {
+      "id": "C5",
+      "elements": ["00.cards.level1"],
+      "resolution": "P3: the screens draw level 1 as #20232A; the white card on the board is not the level 1 surface",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": ["00.wells2.hero.name", "00.wells2.detail.name"],
+      "resolution": "text on a sample takes, per sample, whichever of the two text colours passes 4.5:1 (E3), so no token is fixed here",
+      "flippedByUser": false
+    }
+  ]
+}

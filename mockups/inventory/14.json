@@ -1,0 +1,391 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "14",
+  "mockupSha256": "ddbaa7ead2f0f433143a0eb93b5ddd18b1269f3413f37d934606962ca016a837",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "14.icon",
+        "box": {
+          "x": 70,
+          "y": 345,
+          "w": 284,
+          "h": 595
+        },
+        "dpPerPx": 1.3521
+      },
+      {
+        "id": "14.splash",
+        "box": {
+          "x": 414,
+          "y": 345,
+          "w": 284,
+          "h": 595
+        },
+        "dpPerPx": 1.3521
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "14.icon.tile",
+      "order": 1,
+      "parent": null,
+      "screen": "14.icon",
+      "component": "app:AppIcon",
+      "box": {
+        "x": 119,
+        "y": 578,
+        "w": 186,
+        "h": 161
+      },
+      "dp": {
+        "x": 66.5,
+        "y": 315,
+        "w": 251.5,
+        "h": 217.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bgTop": "#2B2F34",
+        "bgBottom": "#1B2024"
+      },
+      "raw": {
+        "visibleHeightPx": 161,
+        "cornerPx": 34
+      },
+      "copy": null
+    },
+    {
+      "id": "14.icon.tile.mark",
+      "order": 2,
+      "parent": "14.icon.tile",
+      "screen": "14.icon",
+      "component": "ui:Mark",
+      "box": {
+        "x": 157,
+        "y": 617,
+        "w": 109,
+        "h": 109
+      },
+      "dp": {
+        "x": 117.5,
+        "y": 368,
+        "w": 147.5,
+        "h": 147.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "14.splash.mark",
+      "order": 3,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "ui:Mark",
+      "box": {
+        "x": 503,
+        "y": 534,
+        "w": 111,
+        "h": 108
+      },
+      "dp": {
+        "x": 120.5,
+        "y": 255.5,
+        "w": 150,
+        "h": 146
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "14.splash.wordmark",
+      "order": 4,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "ui:Wordmark",
+      "box": {
+        "x": 485,
+        "y": 665,
+        "w": 147,
+        "h": 35
+      },
+      "dp": {
+        "x": 96,
+        "y": 432.5,
+        "w": 199,
+        "h": 47.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "display1",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "14.splash.tagline",
+      "order": 5,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "ui:Text",
+      "box": {
+        "x": 501,
+        "y": 711,
+        "w": 115,
+        "h": 17
+      },
+      "dp": {
+        "x": 117.5,
+        "y": 495,
+        "w": 155.5,
+        "h": 23
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:brand.taglineJa",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "14.splash.subline",
+      "order": 6,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "ui:Text",
+      "box": {
+        "x": 431,
+        "y": 743,
+        "w": 251,
+        "h": 12
+      },
+      "dp": {
+        "x": 23,
+        "y": 538,
+        "w": 339.5,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:brand.splashSubline",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "14.splash.wave",
+      "order": 7,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 414,
+        "y": 835,
+        "w": 284,
+        "h": 71
+      },
+      "dp": {
+        "x": 0,
+        "y": 662.5,
+        "w": 384,
+        "h": 96
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": "silk-wave",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "14.splash.progress",
+      "order": 8,
+      "parent": null,
+      "screen": "14.splash",
+      "component": "new:ProgressBar",
+      "box": {
+        "x": 434,
+        "y": 901,
+        "w": 244,
+        "h": 5
+      },
+      "dp": {
+        "x": 27,
+        "y": 752,
+        "w": 330,
+        "h": 7
+      },
+      "tokens": {
+        "track": "border.subtle",
+        "fill": "text.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:launch.progress",
+      "action": null,
+      "copy": null
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "left device",
+      "box": {
+        "x": 52,
+        "y": 330,
+        "w": 318,
+        "h": 625
+      }
+    },
+    {
+      "what": "bezel",
+      "note": "right device",
+      "box": {
+        "x": 396,
+        "y": 330,
+        "w": 318,
+        "h": 625
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home screen the icon is shown on, and the plum branch behind it",
+      "box": {
+        "x": 98,
+        "y": 478,
+        "w": 240,
+        "h": 357
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "board title",
+      "box": {
+        "x": 301,
+        "y": 118,
+        "w": 167,
+        "h": 42
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "board subtitle",
+      "box": {
+        "x": 114,
+        "y": 196,
+        "w": 546,
+        "h": 52
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "left caption",
+      "box": {
+        "x": 128,
+        "y": 981,
+        "w": 167,
+        "h": 39
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "right caption",
+      "box": {
+        "x": 437,
+        "y": 982,
+        "w": 244,
+        "h": 38
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the three description paragraphs",
+      "box": {
+        "x": 55,
+        "y": 1080,
+        "w": 642,
+        "h": 237
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C4",
+      "elements": ["14.icon.tile.mark", "14.splash.mark", "14.splash.wordmark"],
+      "resolution": "mark geometry and the splash lockup come from 14; monochrome everywhere, the icon included (supersedes ADR-0093)",
+      "flippedByUser": false
+    },
+    {
+      "id": "C17",
+      "elements": [
+        "14.splash.mark",
+        "14.splash.wordmark",
+        "14.splash.tagline",
+        "14.splash.subline",
+        "14.splash.wave",
+        "14.splash.progress"
+      ],
+      "resolution": "light appearance is 14's composition in 25's palette, so a light launch does not flash dark then light",
+      "flippedByUser": false
+    }
+  ]
+}

@@ -1,0 +1,1352 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "01",
+  "mockupSha256": "223e0fd96e0ae3c4b4d264c257ef61e54da0b1ea1b77259bb26162937e8d20db",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "01.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "01.header.line-art",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 471,
+        "y": 15,
+        "w": 297,
+        "h": 261
+      },
+      "dp": {
+        "x": 235.5,
+        "y": 7.5,
+        "w": 148.5,
+        "h": 130.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "plum-branch",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.header.mark",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Mark",
+      "box": {
+        "x": 73,
+        "y": 80,
+        "w": 78,
+        "h": 77
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 40,
+        "w": 39,
+        "h": 38.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.header.wordmark",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Wordmark",
+      "box": {
+        "x": 170,
+        "y": 93,
+        "w": 212,
+        "h": 51
+      },
+      "dp": {
+        "x": 85,
+        "y": 46.5,
+        "w": 106,
+        "h": 25.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "emDp": 34
+      },
+      "copy": null
+    },
+    {
+      "id": "01.header.tagline",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 73,
+        "y": 200,
+        "w": 269,
+        "h": 112
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 100,
+        "w": 134.5,
+        "h": 56
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.tagline",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "01.header.chip",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 378,
+        "y": 280,
+        "w": 320,
+        "h": 40
+      },
+      "dp": {
+        "x": 189,
+        "y": 140,
+        "w": 160,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.onDevice",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.hero",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 73,
+        "y": 353,
+        "w": 621,
+        "h": 497
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 176.5,
+        "w": 310.5,
+        "h": 248.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1C1C22"
+      },
+      "raw": {
+        "cornerPx": 17
+      },
+      "copy": null
+    },
+    {
+      "id": "01.hero.sample",
+      "order": 7,
+      "parent": "01.hero",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 99,
+        "y": 378,
+        "w": 570,
+        "h": 344
+      },
+      "dp": {
+        "x": 49.5,
+        "y": 189,
+        "w": 285,
+        "h": 172
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 13.5
+      },
+      "copy": null
+    },
+    {
+      "id": "01.hero.sample.kanji",
+      "order": 8,
+      "parent": "01.hero.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 127,
+        "y": 536,
+        "w": 90,
+        "h": 44
+      },
+      "dp": {
+        "x": 63.5,
+        "y": 268,
+        "w": 45,
+        "h": 22
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.ja",
+      "action": null,
+      "raw": {
+        "emDp": 24.4
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "01.hero.sample.kana",
+      "order": 9,
+      "parent": "01.hero.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 128,
+        "y": 592,
+        "w": 139,
+        "h": 26
+      },
+      "dp": {
+        "x": 64,
+        "y": 296,
+        "w": 69.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.kana",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "01.hero.sample.name",
+      "order": 10,
+      "parent": "01.hero.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 127,
+        "y": 634,
+        "w": 331,
+        "h": 31
+      },
+      "dp": {
+        "x": 63.5,
+        "y": 317,
+        "w": 165.5,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.en",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.hero.sample.oklch",
+      "order": 11,
+      "parent": "01.hero.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 127,
+        "y": 674,
+        "w": 305,
+        "h": 19
+      },
+      "dp": {
+        "x": 63.5,
+        "y": 337,
+        "w": 152.5,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "01.hero.cta",
+      "order": 12,
+      "parent": "01.hero",
+      "component": "ui:Button",
+      "box": {
+        "x": 98,
+        "y": 745,
+        "w": 572,
+        "h": 71
+      },
+      "dp": {
+        "x": 49,
+        "y": 372.5,
+        "w": 286,
+        "h": 35.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:home.whatGoesWithThis",
+      "action": "navigate:/atlas/with/[slug]",
+      "raw": {
+        "cornerPx": 33.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.side-art",
+      "order": 13,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 0,
+        "y": 842,
+        "w": 72,
+        "h": 378
+      },
+      "dp": {
+        "x": 0,
+        "y": 421,
+        "w": 36,
+        "h": 189
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "plum-branch",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe",
+      "order": 14,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 73,
+        "y": 865,
+        "w": 621,
+        "h": 229
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 432.5,
+        "w": 310.5,
+        "h": 114.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.title",
+      "order": 15,
+      "parent": "01.wardrobe",
+      "component": "ui:Text",
+      "box": {
+        "x": 99,
+        "y": 901,
+        "w": 251,
+        "h": 24
+      },
+      "dp": {
+        "x": 49.5,
+        "y": 450.5,
+        "w": 125.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.wardrobePreview",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.wardrobe.count",
+      "order": 16,
+      "parent": "01.wardrobe",
+      "component": "ui:Chip",
+      "box": {
+        "x": 382,
+        "y": 894,
+        "w": 287,
+        "h": 36
+      },
+      "dp": {
+        "x": 191,
+        "y": 447,
+        "w": 143.5,
+        "h": 18
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:coverage",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "01.wardrobe.tile-1",
+      "order": 17,
+      "parent": "01.wardrobe",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 99,
+        "y": 956,
+        "w": 104,
+        "h": 105
+      },
+      "dp": {
+        "x": 49.5,
+        "y": 478,
+        "w": 52,
+        "h": 52.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.0.colour",
+      "action": "navigate:/wardrobe/[id]",
+      "raw": {
+        "cornerPx": 14
+      },
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-2",
+      "order": 18,
+      "parent": "01.wardrobe",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 215,
+        "y": 956,
+        "w": 105,
+        "h": 105
+      },
+      "dp": {
+        "x": 107.5,
+        "y": 478,
+        "w": 52.5,
+        "h": 52.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.1.colour",
+      "action": "navigate:/wardrobe/[id]",
+      "raw": {
+        "cornerPx": 14
+      },
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-3",
+      "order": 19,
+      "parent": "01.wardrobe",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 332,
+        "y": 956,
+        "w": 104,
+        "h": 105
+      },
+      "dp": {
+        "x": 166,
+        "y": 478,
+        "w": 52,
+        "h": 52.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.2.colour",
+      "action": "navigate:/wardrobe/[id]",
+      "raw": {
+        "cornerPx": 14
+      },
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-4",
+      "order": 20,
+      "parent": "01.wardrobe",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 449,
+        "y": 956,
+        "w": 103,
+        "h": 105
+      },
+      "dp": {
+        "x": 224.5,
+        "y": 478,
+        "w": 51.5,
+        "h": 52.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.3.colour",
+      "action": "navigate:/wardrobe/[id]",
+      "raw": {
+        "cornerPx": 14
+      },
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-5",
+      "order": 21,
+      "parent": "01.wardrobe",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 565,
+        "y": 956,
+        "w": 104,
+        "h": 105
+      },
+      "dp": {
+        "x": 282.5,
+        "y": 478,
+        "w": 52,
+        "h": 52.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.4.colour",
+      "action": "navigate:/wardrobe/[id]",
+      "raw": {
+        "cornerPx": 14
+      },
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-1.badge",
+      "order": 22,
+      "parent": "01.wardrobe.tile-1",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 165,
+        "y": 1019,
+        "w": 28,
+        "h": 31
+      },
+      "dp": {
+        "x": 82.5,
+        "y": 509.5,
+        "w": 14,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-2.badge",
+      "order": 23,
+      "parent": "01.wardrobe.tile-2",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 282,
+        "y": 1022,
+        "w": 28,
+        "h": 28
+      },
+      "dp": {
+        "x": 141,
+        "y": 511,
+        "w": 14,
+        "h": 14
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-3.badge",
+      "order": 24,
+      "parent": "01.wardrobe.tile-3",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 398,
+        "y": 1024,
+        "w": 27,
+        "h": 25
+      },
+      "dp": {
+        "x": 199,
+        "y": 512,
+        "w": 13.5,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-4.badge",
+      "order": 25,
+      "parent": "01.wardrobe.tile-4",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 515,
+        "y": 1022,
+        "w": 28,
+        "h": 29
+      },
+      "dp": {
+        "x": 257.5,
+        "y": 511,
+        "w": 14,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.wardrobe.tile-5.badge",
+      "order": 26,
+      "parent": "01.wardrobe.tile-5",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 629,
+        "y": 1018,
+        "w": 30,
+        "h": 32
+      },
+      "dp": {
+        "x": 314.5,
+        "y": 509,
+        "w": 15,
+        "h": 16
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.colour-card",
+      "order": 27,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 74,
+        "y": 1105,
+        "w": 620,
+        "h": 117
+      },
+      "dp": {
+        "x": 37,
+        "y": 552.5,
+        "w": 310,
+        "h": 58.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.colour-card.title",
+      "order": 28,
+      "parent": "01.colour-card",
+      "component": "ui:Text",
+      "box": {
+        "x": 100,
+        "y": 1146,
+        "w": 409,
+        "h": 29
+      },
+      "dp": {
+        "x": 50,
+        "y": 573,
+        "w": 204.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.colourCard",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.colour-card.sample",
+      "order": 29,
+      "parent": "01.colour-card",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 565,
+        "y": 1140,
+        "w": 104,
+        "h": 80
+      },
+      "dp": {
+        "x": 282.5,
+        "y": 570,
+        "w": 52,
+        "h": 40
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 11.5
+      },
+      "copy": null
+    },
+    {
+      "id": "01.colour-card.note",
+      "order": 30,
+      "parent": "01.colour-card",
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 1188,
+        "w": 354,
+        "h": 18
+      },
+      "dp": {
+        "x": 50.5,
+        "y": 594,
+        "w": 177,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.provenance.note",
+      "action": null,
+      "raw": {
+        "emDp": 12.3
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.tabs",
+      "order": 31,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1222,
+        "w": 768,
+        "h": 154
+      },
+      "dp": {
+        "x": 0,
+        "y": 611,
+        "w": 384,
+        "h": 77
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.tabs.indicator",
+      "order": 32,
+      "parent": "01.tabs",
+      "component": null,
+      "box": {
+        "x": 89,
+        "y": 1224,
+        "w": 95,
+        "h": 5
+      },
+      "dp": {
+        "x": 44.5,
+        "y": 612,
+        "w": 47.5,
+        "h": 2.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.tabs.home.icon",
+      "order": 33,
+      "parent": "01.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 120,
+        "y": 1243,
+        "w": 33,
+        "h": 35
+      },
+      "dp": {
+        "x": 60,
+        "y": 621.5,
+        "w": 16.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "home",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/",
+      "copy": null
+    },
+    {
+      "id": "01.tabs.atlas.icon",
+      "order": 34,
+      "parent": "01.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 243,
+        "y": 1242,
+        "w": 35,
+        "h": 36
+      },
+      "dp": {
+        "x": 121.5,
+        "y": 621,
+        "w": 17.5,
+        "h": 18
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "atlas",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "01.tabs.lens.icon",
+      "order": 35,
+      "parent": "01.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 366,
+        "y": 1243,
+        "w": 36,
+        "h": 33
+      },
+      "dp": {
+        "x": 183,
+        "y": 621.5,
+        "w": 18,
+        "h": 16.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "lens",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/lens",
+      "copy": null
+    },
+    {
+      "id": "01.tabs.wardrobe.icon",
+      "order": 36,
+      "parent": "01.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 488,
+        "y": 1244,
+        "w": 39,
+        "h": 34
+      },
+      "dp": {
+        "x": 244,
+        "y": 622,
+        "w": 19.5,
+        "h": 17
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "wardrobe",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe",
+      "copy": null
+    },
+    {
+      "id": "01.tabs.profile.icon",
+      "order": 37,
+      "parent": "01.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 616,
+        "y": 1243,
+        "w": 31,
+        "h": 35
+      },
+      "dp": {
+        "x": 308,
+        "y": 621.5,
+        "w": 15.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile",
+      "copy": null
+    },
+    {
+      "id": "01.tabs.home.label",
+      "order": 38,
+      "parent": "01.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 111,
+        "y": 1290,
+        "w": 51,
+        "h": 15
+      },
+      "dp": {
+        "x": 55.5,
+        "y": 645,
+        "w": 25.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.home",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.tabs.atlas.label",
+      "order": 39,
+      "parent": "01.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 239,
+        "y": 1290,
+        "w": 42,
+        "h": 14
+      },
+      "dp": {
+        "x": 119.5,
+        "y": 645,
+        "w": 21,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.atlas",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.tabs.lens.label",
+      "order": 40,
+      "parent": "01.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 328,
+        "y": 1290,
+        "w": 112,
+        "h": 15
+      },
+      "dp": {
+        "x": 164,
+        "y": 645,
+        "w": 56,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.lens",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.tabs.wardrobe.label",
+      "order": 41,
+      "parent": "01.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 465,
+        "y": 1290,
+        "w": 85,
+        "h": 14
+      },
+      "dp": {
+        "x": 232.5,
+        "y": 645,
+        "w": 42.5,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.wardrobe",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "01.tabs.profile.label",
+      "order": 42,
+      "parent": "01.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 605,
+        "y": 1289,
+        "w": 54,
+        "h": 15
+      },
+      "dp": {
+        "x": 302.5,
+        "y": 644.5,
+        "w": 27,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.profile",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": ["01.tabs", "01.tabs.lens.label"],
+      "resolution": "P5 → 01: Home · Atlas · Lens · Wardrobe · Profile, icon and label; the Lens label reads Lens, not 01's Lens Camera",
+      "flippedByUser": false
+    },
+    {
+      "id": "C2",
+      "elements": [
+        "01.header.mark",
+        "01.header.wordmark",
+        "01.hero",
+        "01.hero.cta",
+        "01.wardrobe",
+        "01.tabs"
+      ],
+      "resolution": "P1 + P2: 01's layout governs Home in both themes; 25 governs only the light palette",
+      "flippedByUser": false
+    },
+    {
+      "id": "C4",
+      "elements": ["01.header.mark", "01.header.wordmark"],
+      "resolution": "the in-app lockup is 01’s: the mark (geometry from 14) and the wordmark, monochrome",
+      "flippedByUser": false
+    },
+    {
+      "id": "C7",
+      "elements": ["01.hero.sample"],
+      "resolution": "P1: the hero sample is 01's rounded square, not 25's circle",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "01.hero.sample.kanji",
+        "01.hero.sample.kana",
+        "01.hero.sample.name",
+        "01.hero.sample.oklch"
+      ],
+      "resolution": "text sits on the sample as 01 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)",
+      "flippedByUser": false
+    }
+  ]
+}

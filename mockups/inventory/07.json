@@ -1,0 +1,1687 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "07",
+  "mockupSha256": "44b29fb0bbefe79ccb11443544b3f815a883f004398b49ab45a960acd45e1afa",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "spec-card",
+    "screens": [
+      {
+        "id": "07.screen",
+        "box": {
+          "x": 103,
+          "y": 137,
+          "w": 564,
+          "h": 1212
+        },
+        "dpPerPx": 0.6809
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "07.back",
+      "order": 1,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 132,
+        "y": 154,
+        "w": 23,
+        "h": 20
+      },
+      "dp": {
+        "x": 19.5,
+        "y": 11.5,
+        "w": 15.5,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/[slug]",
+      "copy": null
+    },
+    {
+      "id": "07.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 175,
+        "y": 150,
+        "w": 443,
+        "h": 28
+      },
+      "dp": {
+        "x": 49,
+        "y": 9,
+        "w": 301.5,
+        "h": 19
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 26
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.anchor",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 129,
+        "y": 237,
+        "w": 512,
+        "h": 104
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 68,
+        "w": 348.5,
+        "h": 71
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F2126"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.anchor.swatch",
+      "order": 4,
+      "parent": "07.anchor",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 146,
+        "y": 251,
+        "w": 76,
+        "h": 76
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 77.5,
+        "w": 51.5,
+        "h": 51.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.anchor.name",
+      "order": 5,
+      "parent": "07.anchor",
+      "component": "ui:Text",
+      "box": {
+        "x": 239,
+        "y": 265,
+        "w": 236,
+        "h": 23
+      },
+      "dp": {
+        "x": 92.5,
+        "y": 87,
+        "w": 160.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "07.anchor.category",
+      "order": 6,
+      "parent": "07.anchor",
+      "component": "ui:Text",
+      "box": {
+        "x": 241,
+        "y": 294,
+        "w": 99,
+        "h": 20
+      },
+      "dp": {
+        "x": 94,
+        "y": 107,
+        "w": 67.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:anchor.category",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.occasion",
+      "order": 7,
+      "parent": null,
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 129,
+        "y": 397,
+        "w": 533,
+        "h": 43
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 177,
+        "w": 363,
+        "h": 29.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.occasion",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.occasion.selected",
+      "order": 8,
+      "parent": "07.occasion",
+      "component": null,
+      "box": {
+        "x": 213,
+        "y": 400,
+        "w": 185,
+        "h": 36
+      },
+      "dp": {
+        "x": 75,
+        "y": 179,
+        "w": 126,
+        "h": 24.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "select:occasion.office",
+      "copy": null
+    },
+    {
+      "id": "07.occasion.casual",
+      "order": 9,
+      "parent": "07.occasion",
+      "component": "ui:Text",
+      "box": {
+        "x": 144,
+        "y": 411,
+        "w": 53,
+        "h": 14
+      },
+      "dp": {
+        "x": 28,
+        "y": 186.5,
+        "w": 36,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.occasion.casual",
+      "action": "select:occasion.casual",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.occasion.classic",
+      "order": 10,
+      "parent": "07.occasion",
+      "component": "ui:Text",
+      "box": {
+        "x": 413,
+        "y": 411,
+        "w": 141,
+        "h": 17
+      },
+      "dp": {
+        "x": 211,
+        "y": 186.5,
+        "w": 96,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.occasion.classic",
+      "action": "select:occasion.classic",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.occasion.evening",
+      "order": 11,
+      "parent": "07.occasion",
+      "component": "ui:Text",
+      "box": {
+        "x": 584,
+        "y": 411,
+        "w": 62,
+        "h": 17
+      },
+      "dp": {
+        "x": 327.5,
+        "y": 186.5,
+        "w": 42,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.occasion.evening",
+      "action": "select:occasion.evening",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-1",
+      "order": 12,
+      "parent": null,
+      "component": "app:OutfitSlot",
+      "box": {
+        "x": 116,
+        "y": 495,
+        "w": 261,
+        "h": 184
+      },
+      "dp": {
+        "x": 9,
+        "y": 244,
+        "w": 177.5,
+        "h": 125.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.1.hex",
+      "action": null,
+      "measured": {
+        "bg": "#576775"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.slots.slot-2",
+      "order": 13,
+      "parent": null,
+      "component": "app:OutfitSlot",
+      "box": {
+        "x": 391,
+        "y": 496,
+        "w": 259,
+        "h": 183
+      },
+      "dp": {
+        "x": 196,
+        "y": 244.5,
+        "w": 176.5,
+        "h": 124.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.2.hex",
+      "action": null,
+      "measured": {
+        "bg": "#CDC4B9"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.slots.slot-1.title",
+      "order": 14,
+      "parent": "07.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 516,
+        "w": 176,
+        "h": 19
+      },
+      "dp": {
+        "x": 21,
+        "y": 258,
+        "w": 120,
+        "h": 13
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.slot.1",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-2.title",
+      "order": 15,
+      "parent": "07.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 408,
+        "y": 516,
+        "w": 141,
+        "h": 19
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 258,
+        "w": 96,
+        "h": 13
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.slot.2",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-2.hex",
+      "order": 16,
+      "parent": "07.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 547,
+        "w": 85,
+        "h": 16
+      },
+      "dp": {
+        "x": 207,
+        "y": 279,
+        "w": 58,
+        "h": 11
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.2.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "07.slots.slot-1.hex",
+      "order": 17,
+      "parent": "07.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 133,
+        "y": 565,
+        "w": 83,
+        "h": 16
+      },
+      "dp": {
+        "x": 20.5,
+        "y": 291.5,
+        "w": 56.5,
+        "h": 11
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.1.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "07.slots.slot-2.name",
+      "order": 18,
+      "parent": "07.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 408,
+        "y": 572,
+        "w": 204,
+        "h": 46
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 296,
+        "w": 139,
+        "h": 31.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.2.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "07.slots.slot-1.name",
+      "order": 19,
+      "parent": "07.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 590,
+        "w": 190,
+        "h": 17
+      },
+      "dp": {
+        "x": 21,
+        "y": 308.5,
+        "w": 129.5,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.1.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 1
+      }
+    },
+    {
+      "id": "07.slots.slot-2.swap",
+      "order": 20,
+      "parent": "07.slots.slot-2",
+      "component": "ui:Button",
+      "box": {
+        "x": 407,
+        "y": 627,
+        "w": 118,
+        "h": 40
+      },
+      "dp": {
+        "x": 207,
+        "y": 333.5,
+        "w": 80.5,
+        "h": 27
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "swap",
+      "illustration": null,
+      "binding": null,
+      "action": "select:slot.2.swap",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-2.lock",
+      "order": 21,
+      "parent": "07.slots.slot-2",
+      "component": "ui:Button",
+      "box": {
+        "x": 532,
+        "y": 626,
+        "w": 105,
+        "h": 41
+      },
+      "dp": {
+        "x": 292,
+        "y": 333,
+        "w": 71.5,
+        "h": 28
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "lock",
+      "illustration": null,
+      "binding": null,
+      "action": "toggle:slot.2.lock",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-3",
+      "order": 22,
+      "parent": null,
+      "component": "app:OutfitSlot",
+      "box": {
+        "x": 117,
+        "y": 694,
+        "w": 259,
+        "h": 146
+      },
+      "dp": {
+        "x": 9.5,
+        "y": 379.5,
+        "w": 176.5,
+        "h": 99.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.3.hex",
+      "action": null,
+      "measured": {
+        "bg": "#1F2025"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.slots.slot-4",
+      "order": 23,
+      "parent": null,
+      "component": "app:OutfitSlot",
+      "box": {
+        "x": 391,
+        "y": 694,
+        "w": 259,
+        "h": 146
+      },
+      "dp": {
+        "x": 196,
+        "y": 379.5,
+        "w": 176.5,
+        "h": 99.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.4.hex",
+      "action": null,
+      "measured": {
+        "bg": "#323B44"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.slots.slot-3.title",
+      "order": 24,
+      "parent": "07.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 714,
+        "w": 121,
+        "h": 19
+      },
+      "dp": {
+        "x": 21,
+        "y": 393,
+        "w": 82.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.slot.3",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-3.swap",
+      "order": 25,
+      "parent": "07.slots.slot-3",
+      "component": "ui:Button",
+      "box": {
+        "x": 279,
+        "y": 708,
+        "w": 82,
+        "h": 34
+      },
+      "dp": {
+        "x": 120,
+        "y": 389,
+        "w": 56,
+        "h": 23
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "swap",
+      "illustration": null,
+      "binding": null,
+      "action": "select:slot.3.swap",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-4.title",
+      "order": 26,
+      "parent": "07.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 713,
+        "w": 159,
+        "h": 21
+      },
+      "dp": {
+        "x": 207,
+        "y": 392,
+        "w": 108.5,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.slot.4",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-4.swap",
+      "order": 27,
+      "parent": "07.slots.slot-4",
+      "component": "ui:Button",
+      "box": {
+        "x": 573,
+        "y": 716,
+        "w": 65,
+        "h": 18
+      },
+      "dp": {
+        "x": 320,
+        "y": 394,
+        "w": 44.5,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "swap",
+      "illustration": null,
+      "binding": null,
+      "action": "select:slot.4.swap",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.slots.slot-3.hex",
+      "order": 28,
+      "parent": "07.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 133,
+        "y": 749,
+        "w": 82,
+        "h": 18
+      },
+      "dp": {
+        "x": 20.5,
+        "y": 416.5,
+        "w": 56,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.3.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "07.slots.slot-4.hex",
+      "order": 29,
+      "parent": "07.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 750,
+        "w": 86,
+        "h": 17
+      },
+      "dp": {
+        "x": 207,
+        "y": 417.5,
+        "w": 58.5,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.4.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "07.slots.slot-3.name",
+      "order": 30,
+      "parent": "07.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 775,
+        "w": 147,
+        "h": 47
+      },
+      "dp": {
+        "x": 21,
+        "y": 434.5,
+        "w": 100,
+        "h": 32
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.3.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "07.slots.slot-4.name",
+      "order": 31,
+      "parent": "07.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 775,
+        "w": 184,
+        "h": 46
+      },
+      "dp": {
+        "x": 207,
+        "y": 434.5,
+        "w": 125.5,
+        "h": 31.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:outfit.slot.4.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "07.intelligence",
+      "order": 32,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 117,
+        "y": 866,
+        "w": 549,
+        "h": 363
+      },
+      "dp": {
+        "x": 9.5,
+        "y": 496.5,
+        "w": 374,
+        "h": 247
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F1F25"
+      },
+      "copy": null
+    },
+    {
+      "id": "07.intelligence.title",
+      "order": 33,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 888,
+        "w": 469,
+        "h": 21
+      },
+      "dp": {
+        "x": 21,
+        "y": 511.5,
+        "w": 319.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.intelligence",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.intelligence.harmony.label",
+      "order": 34,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 135,
+        "y": 954,
+        "w": 141,
+        "h": 20
+      },
+      "dp": {
+        "x": 22,
+        "y": 556.5,
+        "w": 96,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.harmony",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.intelligence.harmony.value",
+      "order": 35,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 312,
+        "y": 954,
+        "w": 210,
+        "h": 20
+      },
+      "dp": {
+        "x": 142.5,
+        "y": 556.5,
+        "w": 143,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:harmony.relationship",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "07.intelligence.fit.label",
+      "order": 36,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 135,
+        "y": 987,
+        "w": 158,
+        "h": 15
+      },
+      "dp": {
+        "x": 22,
+        "y": 579,
+        "w": 107.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.fit",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.intelligence.fit.value",
+      "order": 37,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 312,
+        "y": 986,
+        "w": 274,
+        "h": 20
+      },
+      "dp": {
+        "x": 142.5,
+        "y": 578,
+        "w": 186.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:personalFit",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "07.intelligence.cvd.label",
+      "order": 38,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 1019,
+        "w": 138,
+        "h": 17
+      },
+      "dp": {
+        "x": 21,
+        "y": 600.5,
+        "w": 94,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.cvd",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.intelligence.cvd.value",
+      "order": 39,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 312,
+        "y": 1019,
+        "w": 322,
+        "h": 20
+      },
+      "dp": {
+        "x": 142.5,
+        "y": 600.5,
+        "w": 219,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:separation",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "07.intelligence.contrast.label",
+      "order": 40,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 134,
+        "y": 1052,
+        "w": 126,
+        "h": 16
+      },
+      "dp": {
+        "x": 21,
+        "y": 623,
+        "w": 86,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.contrast",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.intelligence.contrast.value",
+      "order": 41,
+      "parent": "07.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 312,
+        "y": 1051,
+        "w": 174,
+        "h": 21
+      },
+      "dp": {
+        "x": 142.5,
+        "y": 622.5,
+        "w": 118.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:contrast",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "07.intelligence.rule",
+      "order": 42,
+      "parent": "07.intelligence",
+      "component": null,
+      "box": {
+        "x": 134,
+        "y": 1089,
+        "w": 528,
+        "h": 1
+      },
+      "dp": {
+        "x": 21,
+        "y": 648,
+        "w": 359.5,
+        "h": 0.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.substitutions.warmer",
+      "order": 43,
+      "parent": "07.intelligence",
+      "component": "ui:Chip",
+      "box": {
+        "x": 134,
+        "y": 1139,
+        "w": 267,
+        "h": 33
+      },
+      "dp": {
+        "x": 21,
+        "y": 682.5,
+        "w": 182,
+        "h": 22.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:substitution.warmer",
+      "action": "select:substitution.warmer",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.substitutions.contrast",
+      "order": 44,
+      "parent": "07.intelligence",
+      "component": "ui:Chip",
+      "box": {
+        "x": 409,
+        "y": 1139,
+        "w": 238,
+        "h": 33
+      },
+      "dp": {
+        "x": 208.5,
+        "y": 682.5,
+        "w": 162,
+        "h": 22.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:substitution.contrast",
+      "action": "select:substitution.contrast",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.substitutions.monochrome",
+      "order": 45,
+      "parent": "07.intelligence",
+      "component": "ui:Chip",
+      "box": {
+        "x": 134,
+        "y": 1179,
+        "w": 252,
+        "h": 33
+      },
+      "dp": {
+        "x": 21,
+        "y": 709.5,
+        "w": 171.5,
+        "h": 22.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:substitution.monochrome",
+      "action": "select:substitution.monochrome",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.actions",
+      "order": 46,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 103,
+        "y": 1249,
+        "w": 564,
+        "h": 100
+      },
+      "dp": {
+        "x": 0,
+        "y": 757,
+        "w": 384,
+        "h": 68
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "07.actions.save",
+      "order": 47,
+      "parent": "07.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 124,
+        "y": 1279,
+        "w": 257,
+        "h": 54
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 777.5,
+        "w": 175,
+        "h": 37
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.saveToLab",
+      "action": "submit:outfit.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "07.actions.export",
+      "order": 48,
+      "parent": "07.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 395,
+        "y": 1281,
+        "w": 255,
+        "h": 50
+      },
+      "dp": {
+        "x": 199,
+        "y": 779,
+        "w": 173.5,
+        "h": 34
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wear.exportTokens",
+      "action": "navigate:/profile/export",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "the spec card’s frame",
+      "box": {
+        "x": 100,
+        "y": 134,
+        "w": 570,
+        "h": 1218
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the board title above the frame (with a stray prime mark)",
+      "box": {
+        "x": 53,
+        "y": 51,
+        "w": 547,
+        "h": 36
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "the route string printed under the title",
+      "box": {
+        "x": 53,
+        "y": 93,
+        "w": 180,
+        "h": 24
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "kimono line-art at the top right, drawn largely outside the frame",
+      "box": {
+        "x": 590,
+        "y": 40,
+        "w": 178,
+        "h": 690
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "a stray prime mark after the colour name in the header",
+      "box": {
+        "x": 175,
+        "y": 153,
+        "w": 114,
+        "h": 21
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as a section title",
+      "box": {
+        "x": 129,
+        "y": 207,
+        "w": 163,
+        "h": 22
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as a section title",
+      "box": {
+        "x": 129,
+        "y": 367,
+        "w": 265,
+        "h": 21
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as a section title, misspelt",
+      "box": {
+        "x": 129,
+        "y": 467,
+        "w": 228,
+        "h": 18
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name and level after the card title",
+      "box": {
+        "x": 135,
+        "y": 915,
+        "w": 201,
+        "h": 19
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as a section title",
+      "box": {
+        "x": 134,
+        "y": 1111,
+        "w": 208,
+        "h": 18
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name, read merged with the action bar’s top border",
+      "box": {
+        "x": 104,
+        "y": 1249,
+        "w": 560,
+        "h": 14
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "07.intelligence.fit.value",
+      "why": "the FR-29 personal-fit score stays; the word that makes it a match to a seasonal type does not (§4 E2, C12)"
+    },
+    {
+      "rule": "E2",
+      "element": "07.intelligence.cvd.value",
+      "why": "the computed separation (FR-5) stays with the model it was computed under; the safety suffix is a claim about people and does not ship (§4 E2)"
+    },
+    {
+      "rule": "E2",
+      "element": "07.intelligence.contrast.value",
+      "why": "the WCAG ratio and the APCA Lc are two figures — APCA has no ratio (FR-3, §4 E2)"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C8",
+      "elements": [
+        "07.slots.slot-1.title",
+        "07.slots.slot-1.hex",
+        "07.slots.slot-1.name",
+        "07.slots.slot-2.title",
+        "07.slots.slot-2.hex",
+        "07.slots.slot-2.name"
+      ],
+      "resolution": "text sits on the sample as 07 draws it, and takes per sample whichever of the two text colours passes 4.5:1 (E3)",
+      "flippedByUser": false
+    },
+    {
+      "id": "C12",
+      "elements": ["07.intelligence.fit.value"],
+      "resolution": "the seasonal label is derived from the four ranges by F-223, with an ADR",
+      "flippedByUser": false
+    }
+  ]
+}

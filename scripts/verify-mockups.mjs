@@ -32,9 +32,10 @@
  * ## Inventories have an end condition
  *
  * An inventory (F-220) records the sha256 of the image it describes, so an image cannot change
- * under its structure. Until F-220 is done every inventory is null and only the bytes are pinned;
- * **once F-220 is done, a null inventory is a failure**, read from its status rather than from a
- * date somebody has to remember.
+ * under its structure, and is checked element by element by `mockup-inventory.mjs` — ids, reading
+ * order, parents, bindings, dp against box, boxes inside their image and screen, and the §4 and §6
+ * ids it cites. **Once F-220 is done, a null inventory is a failure**, read from its status rather
+ * than from a date somebody has to remember.
  *
  * ## What this does not check
  *
@@ -53,6 +54,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { routePatterns } from './verify-route-targets.mjs';
 import { guardPlants } from './plant.mjs';
+import { conflictIdsIn, imageSize, inventoryProblems, ruleIdsIn } from './mockup-inventory.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MOCKUPS = join(ROOT, 'mockups');
@@ -121,6 +123,12 @@ export function findProblems() {
   const variantsOf = (url) =>
     new Set(entries.filter(([, e]) => (e.variantFor ?? []).includes(url)).map(([id]) => id));
   const required = inventoriesRequired();
+  const specText = readFileSync(SPEC, 'utf8');
+  const contract = {
+    ruleIds: ruleIdsIn(specText),
+    conflictIds: conflictIdsIn(specText),
+    openQuestions: openQuestions(),
+  };
 
   /* ---- images on disk ↔ rows ---- */
 
@@ -192,6 +200,12 @@ export function findProblems() {
             `the inventory for mockup ${id} was written against a different image`,
             `It records ${short(inventory.mockupSha256)}; the image is ${short(actual)}. Re-inventory the image — the elements it describes may no longer be the ones drawn.`,
           );
+        else if (inventory)
+          inventoryProblems(inventory, id, {
+            add,
+            ...contract,
+            image: imageSize(join(MOCKUPS, e.file)),
+          });
       }
     } else if (required) {
       add(
@@ -336,6 +350,15 @@ if (process.argv.includes('--prove')) {
       throw new Error('proof: the PRD has no open-questions table below its first line');
     writeFileSync(PRD, `${original[PRD].slice(0, at)}${line}\n${original[PRD].slice(at)}`, 'utf8');
   };
+  /** A real inventory, mutated, planted as its row's inventory — mockup 01's unless another is named. */
+  const withInventory = (mutate, id = '01') => {
+    const inventory = JSON.parse(readFileSync(join(MOCKUPS, 'inventory', `${id}.json`), 'utf8'));
+    mutate(inventory);
+    writeFileSync(probeInventory, JSON.stringify(inventory));
+    withIndex((i) => {
+      i.mockups[id].inventory = 'mockups/__probe_inventory__.json';
+    });
+  };
   /** Gate 0, run as the build runs it. Returns its exit status and everything it printed. */
   const gate0 = () => {
     try {
@@ -379,7 +402,6 @@ if (process.argv.includes('--prove')) {
   };
 
   try {
-    const sha01 = JSON.parse(original[INDEX]).mockups['01'].sha256;
     const cases = [
       /* ---- the images and their rows ---- */
       {
@@ -557,6 +579,124 @@ if (process.argv.includes('--prove')) {
         expect: 'mockup 14 is not in §7',
       },
 
+      /* ---- the inventories, element by element (F-220) ---- */
+      {
+        name: 'an inventory missing a key',
+        plant: () =>
+          withInventory((v) => {
+            delete v.notDesign;
+          }),
+        expect: 'has no notDesign',
+      },
+      {
+        name: 'two elements with one id',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[1].id = v.elements[0].id;
+          }),
+        expect: 'appears twice',
+      },
+      {
+        name: 'an element id from another image',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].id = '99.header';
+          }),
+        expect: 'is not prefixed 01.',
+      },
+      {
+        name: 'a gap in the order',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[2].order = 99;
+          }),
+        expect: 'where 3 comes next',
+      },
+      {
+        name: 'two elements out of reading order',
+        plant: () =>
+          withInventory((v) => {
+            [v.elements[1], v.elements[2]] = [v.elements[2], v.elements[1]];
+            v.elements.forEach((e, i) => {
+              e.order = i + 1;
+            });
+          }),
+        expect: 'reading order',
+      },
+      {
+        name: 'a child listed before its parent',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[1].parent = '01.hero';
+          }),
+        expect: 'as its parent',
+      },
+      {
+        name: 'a value copied off the picture',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].binding = 'hex:#5B6B78';
+          }),
+        expect: 'binds to',
+      },
+      {
+        name: 'a binding waiting on a question nobody asked',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].binding = 'oq:OQ-999';
+          }),
+        expect: 'which is not an open question',
+      },
+      {
+        name: 'dp edited on one side only',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].dp.x += 5;
+          }),
+        expect: 'where its box puts it at',
+      },
+      {
+        name: 'an element past its screen, undeclared',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].box.w = 900;
+          }),
+        expect: 'lies outside its screen',
+      },
+      {
+        name: 'a declared overhang with no presentation region',
+        plant: () =>
+          withInventory((v) => {
+            v.notDesign = v.notDesign.filter((n) => n.what !== 'presentation');
+          }, '04'),
+        expect: 'no presentation region names it',
+      },
+      {
+        name: 'a departure under a rule §4 does not list',
+        plant: () =>
+          withInventory((v) => {
+            v.departures.push({
+              rule: 'E9',
+              element: v.elements[0].id,
+              why: 'planted by the proof',
+            });
+          }),
+        expect: 'which §4 does not list',
+      },
+      {
+        name: 'a conflict §6 does not register',
+        plant: () =>
+          withInventory((v) => {
+            v.conflicts.push({
+              id: 'C99',
+              elements: [],
+              resolution: 'planted by the proof',
+              flippedByUser: false,
+            });
+          }),
+        expect: 'which §6 does not register',
+      },
+
       /* ---- must stay GREEN ---- */
       {
         // Row order carries no meaning; a check that depended on it would fail a harmless re-sort.
@@ -582,14 +722,15 @@ if (process.argv.includes('--prove')) {
         expect: null,
       },
       {
-        // F-220 will write inventories; one that matches is the normal case.
+        // A real inventory, copied under another name: the check reads the record, not the path.
         name: 'an inventory that matches its image — must stay GREEN',
-        plant: () => {
-          writeFileSync(probeInventory, JSON.stringify({ mockupSha256: sha01 }));
-          withIndex((i) => {
-            i.mockups['01'].inventory = 'mockups/__probe_inventory__.json';
-          });
-        },
+        plant: () => withInventory((v) => v),
+        expect: null,
+      },
+      {
+        // 04 draws two cards past its frame, declared and recorded as presentation — legitimate.
+        name: 'a declared overhang with its presentation region — must stay GREEN',
+        plant: () => withInventory((v) => v, '04'),
         expect: null,
       },
     ];

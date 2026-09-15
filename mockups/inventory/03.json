@@ -1,0 +1,1426 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "03",
+  "mockupSha256": "1a98d2eb07dd6bde37d90d4b247c8d9fe3fcdb312418eaf241e929d575459243",
+  "kind": "screen",
+  "governs": "state",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "03.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "03.capture",
+      "order": 1,
+      "parent": null,
+      "component": "app:CaptureImage",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 425
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 212.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:capture.frame",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.sheet",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Sheet",
+      "box": {
+        "x": 57,
+        "y": 360,
+        "w": 654,
+        "h": 957
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 180,
+        "w": 327,
+        "h": 478.5
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.sheet.handle",
+      "order": 3,
+      "parent": "03.sheet",
+      "component": null,
+      "box": {
+        "x": 344,
+        "y": 370,
+        "w": 80,
+        "h": 8
+      },
+      "dp": {
+        "x": 172,
+        "y": 185,
+        "w": 40,
+        "h": 4
+      },
+      "tokens": {
+        "fg": "border.strong",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.chips.conditions",
+      "order": 4,
+      "parent": "03.sheet",
+      "component": "ui:Chip",
+      "box": {
+        "x": 76,
+        "y": 393,
+        "w": 290,
+        "h": 33
+      },
+      "dp": {
+        "x": 38,
+        "y": 196.5,
+        "w": 145,
+        "h": 16.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": "sun",
+      "illustration": null,
+      "binding": "engine:captureConditions",
+      "action": null,
+      "raw": {
+        "cornerPx": 19.25
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.chips.gamut",
+      "order": 5,
+      "parent": "03.sheet",
+      "component": "ui:Chip",
+      "box": {
+        "x": 376,
+        "y": 393,
+        "w": 121,
+        "h": 33
+      },
+      "dp": {
+        "x": 188,
+        "y": 196.5,
+        "w": 60.5,
+        "h": 16.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": "colour-wheel",
+      "illustration": null,
+      "binding": "engine:gamut",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.chips.provenance",
+      "order": 6,
+      "parent": "03.sheet",
+      "component": "ui:Chip",
+      "box": {
+        "x": 506,
+        "y": 393,
+        "w": 202,
+        "h": 33
+      },
+      "dp": {
+        "x": 253,
+        "y": 196.5,
+        "w": 101,
+        "h": 16.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.provenance",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.sample",
+      "order": 7,
+      "parent": "03.sheet",
+      "component": "ui:Card",
+      "box": {
+        "x": 75,
+        "y": 445,
+        "w": 618,
+        "h": 296
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 222.5,
+        "w": 309,
+        "h": 148
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#20232A"
+      },
+      "raw": {
+        "cornerPx": 22.75
+      },
+      "copy": null
+    },
+    {
+      "id": "03.sample.title",
+      "order": 8,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 97,
+        "y": 469,
+        "w": 245,
+        "h": 24
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 234.5,
+        "w": 122.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.sampledCard",
+      "action": null,
+      "raw": {
+        "emDp": 12.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.sample.swatch",
+      "order": 9,
+      "parent": "03.sample",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 118,
+        "y": 509,
+        "w": 210,
+        "h": 209
+      },
+      "dp": {
+        "x": 59,
+        "y": 254.5,
+        "w": 105,
+        "h": 104.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 19.5
+      },
+      "copy": null
+    },
+    {
+      "id": "03.sample.hex.label",
+      "order": 10,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 361,
+        "y": 565,
+        "w": 36,
+        "h": 17
+      },
+      "dp": {
+        "x": 180.5,
+        "y": 282.5,
+        "w": 18,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.notation.hex",
+      "action": null,
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.sample.hex.value",
+      "order": 11,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 450,
+        "y": 564,
+        "w": 88,
+        "h": 19
+      },
+      "dp": {
+        "x": 225,
+        "y": 282,
+        "w": 44,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.sample.oklch.label",
+      "order": 12,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 360,
+        "y": 599,
+        "w": 67,
+        "h": 17
+      },
+      "dp": {
+        "x": 180,
+        "y": 299.5,
+        "w": 33.5,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.notation.oklch",
+      "action": null,
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.sample.oklch.value",
+      "order": 13,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 451,
+        "y": 598,
+        "w": 190,
+        "h": 19
+      },
+      "dp": {
+        "x": 225.5,
+        "y": 299,
+        "w": 95,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.sample.cielab.label",
+      "order": 14,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 360,
+        "y": 633,
+        "w": 72,
+        "h": 17
+      },
+      "dp": {
+        "x": 180,
+        "y": 316.5,
+        "w": 36,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.notation.cielab",
+      "action": null,
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.sample.cielab.value",
+      "order": 15,
+      "parent": "03.sample",
+      "component": "ui:Text",
+      "box": {
+        "x": 451,
+        "y": 632,
+        "w": 171,
+        "h": 19
+      },
+      "dp": {
+        "x": 225.5,
+        "y": 316,
+        "w": 85.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:cielab",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.sample.art",
+      "order": 16,
+      "parent": "03.sample",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 599,
+        "y": 661,
+        "w": 89,
+        "h": 73
+      },
+      "dp": {
+        "x": 299.5,
+        "y": 330.5,
+        "w": 44.5,
+        "h": 36.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "kimono",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.matches.heading",
+      "order": 17,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 97,
+        "y": 776,
+        "w": 559,
+        "h": 25
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 388,
+        "w": 279.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.nearestHeading",
+      "action": null,
+      "raw": {
+        "emDp": 12.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-1.swatch",
+      "order": 18,
+      "parent": "03.sheet",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 120,
+        "y": 820,
+        "w": 67,
+        "h": 68
+      },
+      "dp": {
+        "x": 60,
+        "y": 410,
+        "w": 33.5,
+        "h": 34
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 11.25
+      },
+      "copy": null
+    },
+    {
+      "id": "03.matches.row-1.name",
+      "order": 19,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 199,
+        "y": 823,
+        "w": 320,
+        "h": 32
+      },
+      "dp": {
+        "x": 99.5,
+        "y": 411.5,
+        "w": 160,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.name",
+      "action": null,
+      "raw": {
+        "emDp": 17.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-1.rank",
+      "order": 20,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 96,
+        "y": 845,
+        "w": 7,
+        "h": 18
+      },
+      "dp": {
+        "x": 48,
+        "y": 422.5,
+        "w": 3.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.0.rank",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-1.delta",
+      "order": 21,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 199,
+        "y": 862,
+        "w": 93,
+        "h": 24
+      },
+      "dp": {
+        "x": 99.5,
+        "y": 431,
+        "w": 46.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.0.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-1.match",
+      "order": 22,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 300,
+        "y": 862,
+        "w": 122,
+        "h": 24
+      },
+      "dp": {
+        "x": 150,
+        "y": 431,
+        "w": 61,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-1.open",
+      "order": 23,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 431,
+        "y": 862,
+        "w": 183,
+        "h": 24
+      },
+      "dp": {
+        "x": 215.5,
+        "y": 431,
+        "w": 91.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.openInAtlas",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.matches.row-2.swatch",
+      "order": 24,
+      "parent": "03.sheet",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 120,
+        "y": 911,
+        "w": 67,
+        "h": 68
+      },
+      "dp": {
+        "x": 60,
+        "y": 455.5,
+        "w": 33.5,
+        "h": 34
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 11.25
+      },
+      "copy": null
+    },
+    {
+      "id": "03.matches.row-2.name",
+      "order": 25,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 199,
+        "y": 914,
+        "w": 381,
+        "h": 31
+      },
+      "dp": {
+        "x": 99.5,
+        "y": 457,
+        "w": 190.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.name",
+      "action": null,
+      "raw": {
+        "emDp": 17.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-2.rank",
+      "order": 26,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 95,
+        "y": 936,
+        "w": 14,
+        "h": 19
+      },
+      "dp": {
+        "x": 47.5,
+        "y": 468,
+        "w": 7,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.1.rank",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-2.delta",
+      "order": 27,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 199,
+        "y": 954,
+        "w": 101,
+        "h": 18
+      },
+      "dp": {
+        "x": 99.5,
+        "y": 477,
+        "w": 50.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.1.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-2.match",
+      "order": 28,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 309,
+        "y": 954,
+        "w": 123,
+        "h": 18
+      },
+      "dp": {
+        "x": 154.5,
+        "y": 477,
+        "w": 61.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-3.swatch",
+      "order": 29,
+      "parent": "03.sheet",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 120,
+        "y": 1002,
+        "w": 67,
+        "h": 68
+      },
+      "dp": {
+        "x": 60,
+        "y": 501,
+        "w": 33.5,
+        "h": 34
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 11.25
+      },
+      "copy": null
+    },
+    {
+      "id": "03.matches.row-3.name",
+      "order": 30,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 198,
+        "y": 1005,
+        "w": 396,
+        "h": 32
+      },
+      "dp": {
+        "x": 99,
+        "y": 502.5,
+        "w": 198,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.name",
+      "action": null,
+      "raw": {
+        "emDp": 17.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.matches.row-3.rank",
+      "order": 31,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 95,
+        "y": 1027,
+        "w": 13,
+        "h": 18
+      },
+      "dp": {
+        "x": 47.5,
+        "y": 513.5,
+        "w": 6.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.2.rank",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-3.delta",
+      "order": 32,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 199,
+        "y": 1046,
+        "w": 97,
+        "h": 18
+      },
+      "dp": {
+        "x": 99.5,
+        "y": 523,
+        "w": 48.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.2.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "03.matches.row-3.match",
+      "order": 33,
+      "parent": "03.sheet",
+      "component": "ui:Text",
+      "box": {
+        "x": 304,
+        "y": 1046,
+        "w": 123,
+        "h": 18
+      },
+      "dp": {
+        "x": 152,
+        "y": 523,
+        "w": 61.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "03.actions.wear",
+      "order": 34,
+      "parent": "03.sheet",
+      "component": "ui:Button",
+      "box": {
+        "x": 94,
+        "y": 1149,
+        "w": 298,
+        "h": 64
+      },
+      "dp": {
+        "x": 47,
+        "y": 574.5,
+        "w": 149,
+        "h": 32
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/with/reading/[id]",
+      "copy": null
+    },
+    {
+      "id": "03.actions.add",
+      "order": 35,
+      "parent": "03.sheet",
+      "component": "ui:Button",
+      "box": {
+        "x": 402,
+        "y": 1150,
+        "w": 272,
+        "h": 63
+      },
+      "dp": {
+        "x": 201,
+        "y": 575,
+        "w": 136,
+        "h": 31.5
+      },
+      "tokens": {
+        "border": "border.strong",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe/add",
+      "copy": null
+    },
+    {
+      "id": "03.actions.wear.label",
+      "order": 36,
+      "parent": "03.actions.wear",
+      "component": "ui:Text",
+      "box": {
+        "x": 125,
+        "y": 1172,
+        "w": 209,
+        "h": 21
+      },
+      "dp": {
+        "x": 62.5,
+        "y": 586,
+        "w": 104.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "ground"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.wearIt",
+      "action": null,
+      "raw": {
+        "emDp": 11.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.actions.wear.icon",
+      "order": 37,
+      "parent": "03.actions.wear",
+      "component": null,
+      "box": {
+        "x": 343,
+        "y": 1174,
+        "w": 17,
+        "h": 15
+      },
+      "dp": {
+        "x": 171.5,
+        "y": 587,
+        "w": 8.5,
+        "h": 7.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.actions.add.icon",
+      "order": 38,
+      "parent": "03.actions.add",
+      "component": null,
+      "box": {
+        "x": 438,
+        "y": 1173,
+        "w": 16,
+        "h": 17
+      },
+      "dp": {
+        "x": 219,
+        "y": 586.5,
+        "w": 8,
+        "h": 8.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "plus",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "03.actions.add.label",
+      "order": 39,
+      "parent": "03.actions.add",
+      "component": "ui:Text",
+      "box": {
+        "x": 464,
+        "y": 1172,
+        "w": 175,
+        "h": 19
+      },
+      "dp": {
+        "x": 232,
+        "y": 586,
+        "w": 87.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.addToWardrobe",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "03.actions.hold",
+      "order": 40,
+      "parent": "03.sheet",
+      "component": "ui:Button",
+      "box": {
+        "x": 95,
+        "y": 1224,
+        "w": 578,
+        "h": 61
+      },
+      "dp": {
+        "x": 47.5,
+        "y": 612,
+        "w": 289,
+        "h": 30.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/lens/against",
+      "measured": {
+        "bg": "#282A2F"
+      },
+      "copy": null
+    },
+    {
+      "id": "03.actions.hold.label",
+      "order": 41,
+      "parent": "03.actions.hold",
+      "component": "ui:Text",
+      "box": {
+        "x": 227,
+        "y": 1245,
+        "w": 314,
+        "h": 23
+      },
+      "dp": {
+        "x": 113.5,
+        "y": 622.5,
+        "w": 157,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.holdAsTarget",
+      "action": null,
+      "raw": {
+        "emDp": 12.4
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "leaked-label",
+      "note": "a component name and level printed after the card title",
+      "box": {
+        "x": 352,
+        "y": 469,
+        "w": 244,
+        "h": 23
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as a section title",
+      "box": {
+        "x": 98,
+        "y": 1110,
+        "w": 195,
+        "h": 20
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "03.matches.row-1.match",
+      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+    },
+    {
+      "rule": "E2",
+      "element": "03.matches.row-2.match",
+      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+    },
+    {
+      "rule": "E2",
+      "element": "03.matches.row-3.match",
+      "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"
+    },
+    {
+      "rule": "E2",
+      "element": "03.matches.heading",
+      "why": "the heading names the nearest references as matches; FR-7 returns references ranked by ΔE00, and the heading says so (a §4 E2 row F-220 adds)"
+    }
+  ],
+  "conflicts": []
+}

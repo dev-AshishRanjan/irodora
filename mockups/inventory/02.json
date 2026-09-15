@@ -1,0 +1,1592 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "02",
+  "mockupSha256": "afc3ca45d8a7c67c4e46c9c2ce711f54f9635e669568af513d618d0bfba59ad0",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "02.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "02.title",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 220,
+        "y": 47,
+        "w": 328,
+        "h": 31
+      },
+      "dp": {
+        "x": 110,
+        "y": 23.5,
+        "w": 164,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.title",
+      "action": null,
+      "raw": {
+        "emDp": 21.2
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "02.modes",
+      "order": 2,
+      "parent": null,
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 27,
+        "y": 108,
+        "w": 714,
+        "h": 62
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 54,
+        "w": 357,
+        "h": 31
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.modes.selected",
+      "order": 3,
+      "parent": "02.modes",
+      "component": null,
+      "box": {
+        "x": 45,
+        "y": 116,
+        "w": 139,
+        "h": 47
+      },
+      "dp": {
+        "x": 22.5,
+        "y": 58,
+        "w": 69.5,
+        "h": 23.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#2B3139"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.modes.live-dot",
+      "order": 4,
+      "parent": "02.modes",
+      "component": null,
+      "box": {
+        "x": 57,
+        "y": 132,
+        "w": 14,
+        "h": 14
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 66,
+        "w": 7,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.modes.live",
+      "order": 5,
+      "parent": "02.modes",
+      "component": "ui:Text",
+      "box": {
+        "x": 83,
+        "y": 131,
+        "w": 88,
+        "h": 17
+      },
+      "dp": {
+        "x": 41.5,
+        "y": 65.5,
+        "w": 44,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.mode.live",
+      "action": "select:lens.mode.live",
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.modes.scan",
+      "order": 6,
+      "parent": "02.modes",
+      "component": "ui:Text",
+      "box": {
+        "x": 214,
+        "y": 131,
+        "w": 142,
+        "h": 17
+      },
+      "dp": {
+        "x": 107,
+        "y": 65.5,
+        "w": 71,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.mode.scan",
+      "action": "select:lens.mode.scan",
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.modes.divider-1",
+      "order": 7,
+      "parent": "02.modes",
+      "component": null,
+      "box": {
+        "x": 373,
+        "y": 123,
+        "w": 3,
+        "h": 32
+      },
+      "dp": {
+        "x": 186.5,
+        "y": 61.5,
+        "w": 1.5,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.modes.target",
+      "order": 8,
+      "parent": "02.modes",
+      "component": "ui:Text",
+      "box": {
+        "x": 389,
+        "y": 131,
+        "w": 147,
+        "h": 21
+      },
+      "dp": {
+        "x": 194.5,
+        "y": 65.5,
+        "w": 73.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.mode.target",
+      "action": "select:lens.mode.target",
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.modes.divider-2",
+      "order": 9,
+      "parent": "02.modes",
+      "component": null,
+      "box": {
+        "x": 550,
+        "y": 123,
+        "w": 2,
+        "h": 32
+      },
+      "dp": {
+        "x": 275,
+        "y": 61.5,
+        "w": 1,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.modes.card",
+      "order": 10,
+      "parent": "02.modes",
+      "component": "ui:Text",
+      "box": {
+        "x": 567,
+        "y": 131,
+        "w": 157,
+        "h": 17
+      },
+      "dp": {
+        "x": 283.5,
+        "y": 65.5,
+        "w": 78.5,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.mode.card",
+      "action": "select:lens.mode.card",
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.viewfinder",
+      "order": 11,
+      "parent": null,
+      "component": "app:CameraPreview",
+      "box": {
+        "x": 27,
+        "y": 199,
+        "w": 714,
+        "h": 1057
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 99.5,
+        "w": 357,
+        "h": 528.5
+      },
+      "tokens": {
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:lens.preview",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.conditions",
+      "order": 12,
+      "parent": "02.viewfinder",
+      "component": "ui:Chip",
+      "box": {
+        "x": 156,
+        "y": 237,
+        "w": 455,
+        "h": 53
+      },
+      "dp": {
+        "x": 78,
+        "y": 118.5,
+        "w": 227.5,
+        "h": 26.5
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:captureConditions",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.conditions.icon",
+      "order": 13,
+      "parent": "02.conditions",
+      "component": null,
+      "box": {
+        "x": 179,
+        "y": 250,
+        "w": 28,
+        "h": 27
+      },
+      "dp": {
+        "x": 89.5,
+        "y": 125,
+        "w": 14,
+        "h": 13.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "sun",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.conditions.text",
+      "order": 14,
+      "parent": "02.conditions",
+      "component": "ui:Text",
+      "box": {
+        "x": 219,
+        "y": 255,
+        "w": 371,
+        "h": 21
+      },
+      "dp": {
+        "x": 109.5,
+        "y": 127.5,
+        "w": 185.5,
+        "h": 10.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:captureConditions",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.reticle",
+      "order": 15,
+      "parent": "02.viewfinder",
+      "component": "app:Reticle",
+      "box": {
+        "x": 271,
+        "y": 582,
+        "w": 226,
+        "h": 212
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 291,
+        "w": 113,
+        "h": 106
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.corner-tl",
+      "order": 16,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 271,
+        "y": 582,
+        "w": 40,
+        "h": 38
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 291,
+        "w": 20,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.corner-tr",
+      "order": 17,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 457,
+        "y": 582,
+        "w": 40,
+        "h": 38
+      },
+      "dp": {
+        "x": 228.5,
+        "y": 291,
+        "w": 20,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.ring",
+      "order": 18,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 322,
+        "y": 626,
+        "w": 124,
+        "h": 123
+      },
+      "dp": {
+        "x": 161,
+        "y": 313,
+        "w": 62,
+        "h": 61.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.cross",
+      "order": 19,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 363,
+        "y": 667,
+        "w": 41,
+        "h": 43
+      },
+      "dp": {
+        "x": 181.5,
+        "y": 333.5,
+        "w": 20.5,
+        "h": 21.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.corner-bl",
+      "order": 20,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 271,
+        "y": 756,
+        "w": 40,
+        "h": 38
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 378,
+        "w": 20,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reticle.corner-br",
+      "order": 21,
+      "parent": "02.reticle",
+      "component": null,
+      "box": {
+        "x": 457,
+        "y": 756,
+        "w": 40,
+        "h": 38
+      },
+      "dp": {
+        "x": 228.5,
+        "y": 378,
+        "w": 20,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.reading",
+      "order": 22,
+      "parent": "02.viewfinder",
+      "component": "ui:Card",
+      "box": {
+        "x": 97,
+        "y": 833,
+        "w": 574,
+        "h": 257
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 416.5,
+        "w": 287,
+        "h": 128.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#212227"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.reading.sample",
+      "order": 23,
+      "parent": "02.reading",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 114,
+        "y": 851,
+        "w": 132,
+        "h": 117
+      },
+      "dp": {
+        "x": 57,
+        "y": 425.5,
+        "w": 66,
+        "h": 58.5
+      },
+      "tokens": {
+        "keyline": "keyline",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "raw": {
+        "cornerPx": 16.25
+      },
+      "copy": null
+    },
+    {
+      "id": "02.reading.label",
+      "order": 24,
+      "parent": "02.reading",
+      "component": "ui:Text",
+      "box": {
+        "x": 269,
+        "y": 861,
+        "w": 164,
+        "h": 18
+      },
+      "dp": {
+        "x": 134.5,
+        "y": 430.5,
+        "w": 82,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.liveOklch",
+      "action": null,
+      "raw": {
+        "emDp": 12.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.reading.value",
+      "order": 25,
+      "parent": "02.reading",
+      "component": "ui:Text",
+      "box": {
+        "x": 268,
+        "y": 895,
+        "w": 283,
+        "h": 26
+      },
+      "dp": {
+        "x": 134,
+        "y": 447.5,
+        "w": 141.5,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:oklch",
+      "action": null,
+      "raw": {
+        "emDp": 17.8
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "02.reading.srgb",
+      "order": 26,
+      "parent": "02.reading",
+      "component": "ui:Text",
+      "box": {
+        "x": 269,
+        "y": 936,
+        "w": 153,
+        "h": 19
+      },
+      "dp": {
+        "x": 134.5,
+        "y": 468,
+        "w": 76.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:srgb.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "02.reading.caption",
+      "order": 27,
+      "parent": "02.reading",
+      "component": "ui:Text",
+      "box": {
+        "x": 116,
+        "y": 975,
+        "w": 456,
+        "h": 21
+      },
+      "dp": {
+        "x": 58,
+        "y": 487.5,
+        "w": 228,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.nearestCaption",
+      "action": null,
+      "raw": {
+        "emDp": 11.3
+      },
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.reading.nearest-1",
+      "order": 28,
+      "parent": "02.reading",
+      "component": "ui:Chip",
+      "box": {
+        "x": 114,
+        "y": 1005,
+        "w": 178,
+        "h": 67
+      },
+      "dp": {
+        "x": 57,
+        "y": 502.5,
+        "w": 89,
+        "h": 33.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#3F5363"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.reading.nearest-2",
+      "order": 29,
+      "parent": "02.reading",
+      "component": "ui:Chip",
+      "box": {
+        "x": 306,
+        "y": 1006,
+        "w": 169,
+        "h": 65
+      },
+      "dp": {
+        "x": 153,
+        "y": 503,
+        "w": 84.5,
+        "h": 32.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#203247"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.reading.nearest-3",
+      "order": 30,
+      "parent": "02.reading",
+      "component": "ui:Chip",
+      "box": {
+        "x": 490,
+        "y": 1005,
+        "w": 160,
+        "h": 67
+      },
+      "dp": {
+        "x": 245,
+        "y": 502.5,
+        "w": 80,
+        "h": 33.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.hex",
+      "action": "navigate:/atlas/[slug]",
+      "measured": {
+        "bg": "#364351"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.reading.nearest-1.name",
+      "order": 31,
+      "parent": "02.reading.nearest-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 127,
+        "y": 1015,
+        "w": 143,
+        "h": 23
+      },
+      "dp": {
+        "x": 63.5,
+        "y": 507.5,
+        "w": 71.5,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.name",
+      "action": null,
+      "raw": {
+        "emDp": 12.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "02.reading.nearest-2.name",
+      "order": 32,
+      "parent": "02.reading.nearest-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 318,
+        "y": 1015,
+        "w": 142,
+        "h": 23
+      },
+      "dp": {
+        "x": 159,
+        "y": 507.5,
+        "w": 71,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.name",
+      "action": null,
+      "raw": {
+        "emDp": 12.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "02.reading.nearest-3.name",
+      "order": 33,
+      "parent": "02.reading.nearest-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 502,
+        "y": 1015,
+        "w": 134,
+        "h": 23
+      },
+      "dp": {
+        "x": 251,
+        "y": 507.5,
+        "w": 67,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "gothic",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.name",
+      "action": null,
+      "raw": {
+        "emDp": 12.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "02.reading.nearest-1.delta",
+      "order": 34,
+      "parent": "02.reading.nearest-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 128,
+        "y": 1045,
+        "w": 87,
+        "h": 19
+      },
+      "dp": {
+        "x": 64,
+        "y": 522.5,
+        "w": 43.5,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.0.deltaE00",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "02.reading.nearest-2.delta",
+      "order": 35,
+      "parent": "02.reading.nearest-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 319,
+        "y": 1045,
+        "w": 90,
+        "h": 19
+      },
+      "dp": {
+        "x": 159.5,
+        "y": 522.5,
+        "w": 45,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.1.deltaE00",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "02.reading.nearest-3.delta",
+      "order": 36,
+      "parent": "02.reading.nearest-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 503,
+        "y": 1045,
+        "w": 91,
+        "h": 19
+      },
+      "dp": {
+        "x": 251.5,
+        "y": 522.5,
+        "w": 45.5,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.2.deltaE00",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "02.capture",
+      "order": 37,
+      "parent": "02.viewfinder",
+      "component": "ui:Button",
+      "box": {
+        "x": 326,
+        "y": 1117,
+        "w": 116,
+        "h": 116
+      },
+      "dp": {
+        "x": 163,
+        "y": 558.5,
+        "w": 58,
+        "h": 58
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "capture:lens",
+      "copy": null
+    },
+    {
+      "id": "02.import",
+      "order": 38,
+      "parent": "02.viewfinder",
+      "component": "ui:Button",
+      "box": {
+        "x": 52,
+        "y": 1147,
+        "w": 225,
+        "h": 57
+      },
+      "dp": {
+        "x": 26,
+        "y": 573.5,
+        "w": 112.5,
+        "h": 28.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "open:photoPicker",
+      "measured": {
+        "bg": "#1F2026"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.capture.mark",
+      "order": 39,
+      "parent": "02.capture",
+      "component": "ui:Mark",
+      "box": {
+        "x": 361,
+        "y": 1153,
+        "w": 46,
+        "h": 44
+      },
+      "dp": {
+        "x": 180.5,
+        "y": 576.5,
+        "w": 23,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "ground"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.hold",
+      "order": 40,
+      "parent": "02.viewfinder",
+      "component": "ui:Button",
+      "box": {
+        "x": 491,
+        "y": 1147,
+        "w": 194,
+        "h": 57
+      },
+      "dp": {
+        "x": 245.5,
+        "y": 573.5,
+        "w": 97,
+        "h": 28.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/lens/against",
+      "measured": {
+        "bg": "#212227"
+      },
+      "copy": null
+    },
+    {
+      "id": "02.import.icon",
+      "order": 41,
+      "parent": "02.import",
+      "component": null,
+      "box": {
+        "x": 85,
+        "y": 1164,
+        "w": 26,
+        "h": 22
+      },
+      "dp": {
+        "x": 42.5,
+        "y": 582,
+        "w": 13,
+        "h": 11
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "image",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.import.label",
+      "order": 42,
+      "parent": "02.import",
+      "component": "ui:Text",
+      "box": {
+        "x": 124,
+        "y": 1167,
+        "w": 131,
+        "h": 20
+      },
+      "dp": {
+        "x": 62,
+        "y": 583.5,
+        "w": 65.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.importPhoto",
+      "action": null,
+      "raw": {
+        "emDp": 10.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.hold.label",
+      "order": 43,
+      "parent": "02.hold",
+      "component": "ui:Text",
+      "box": {
+        "x": 530,
+        "y": 1167,
+        "w": 117,
+        "h": 21
+      },
+      "dp": {
+        "x": 265,
+        "y": 583.5,
+        "w": 58.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.holdTarget",
+      "action": null,
+      "raw": {
+        "emDp": 11.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "02.tabs",
+      "order": 44,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1256,
+        "w": 768,
+        "h": 120
+      },
+      "dp": {
+        "x": 0,
+        "y": 628,
+        "w": 384,
+        "h": 60
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.tabs.indicator",
+      "order": 45,
+      "parent": "02.tabs",
+      "component": null,
+      "box": {
+        "x": 340,
+        "y": 1259,
+        "w": 88,
+        "h": 5
+      },
+      "dp": {
+        "x": 170,
+        "y": 629.5,
+        "w": 44,
+        "h": 2.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.tabs.lens.icon",
+      "order": 46,
+      "parent": "02.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 367,
+        "y": 1279,
+        "w": 34,
+        "h": 28
+      },
+      "dp": {
+        "x": 183.5,
+        "y": 639.5,
+        "w": 17,
+        "h": 14
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "lens",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/lens",
+      "copy": null
+    },
+    {
+      "id": "02.tabs.gallery.icon",
+      "order": 47,
+      "parent": "02.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 130,
+        "y": 1288,
+        "w": 32,
+        "h": 30
+      },
+      "dp": {
+        "x": 65,
+        "y": 644,
+        "w": 16,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "image",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "02.tabs.profile.icon",
+      "order": 48,
+      "parent": "02.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 605,
+        "y": 1288,
+        "w": 29,
+        "h": 30
+      },
+      "dp": {
+        "x": 302.5,
+        "y": 644,
+        "w": 14.5,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile",
+      "copy": null
+    },
+    {
+      "id": "02.tabs.lens.label",
+      "order": 49,
+      "parent": "02.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 362,
+        "y": 1317,
+        "w": 44,
+        "h": 17
+      },
+      "dp": {
+        "x": 181,
+        "y": 658.5,
+        "w": 22,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.lens",
+      "action": null,
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "device corner drawn into the render, top left",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 18,
+        "h": 12
+      }
+    },
+    {
+      "what": "bezel",
+      "note": "device corner drawn into the render, top right",
+      "box": {
+        "x": 750,
+        "y": 0,
+        "w": 18,
+        "h": 12
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "02.title",
+      "why": "the Japanese half of the title calls a camera estimate a measurement (測定, the E-089 defect); it reads as an estimate in both languages (golden rule 11)"
+    },
+    {
+      "rule": "E2",
+      "element": "02.conditions.text",
+      "why": "the exposure verdict is replaced by the capture-conditions assessment the engine produces (FR-17), in its own words"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": [
+        "02.tabs",
+        "02.tabs.indicator",
+        "02.tabs.lens.icon",
+        "02.tabs.gallery.icon",
+        "02.tabs.profile.icon",
+        "02.tabs.lens.label"
+      ],
+      "resolution": "P5 → 01: 02's three-item tab bar is replaced by 01's five, icon and label; the Lens label reads Lens",
+      "flippedByUser": false
+    },
+    {
+      "id": "C10",
+      "elements": ["02.conditions", "02.conditions.icon", "02.conditions.text"],
+      "resolution": "followed: the gold chip carries text and an icon (golden rule 13) and is declared a chroma-ceiling exception by F-225",
+      "flippedByUser": false
+    }
+  ]
+}
