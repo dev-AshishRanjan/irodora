@@ -8,7 +8,7 @@
       "primaryFor": ["/atlas/palettes"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/10.json"
     },
     "11": {
       "file": "11_wardrobe_gallery.jpg",
@@ -16,7 +16,7 @@
       "primaryFor": ["/wardrobe"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/11.json"
     },
     "12": {
       "file": "12_add_garment_flow.jpg",
@@ -24,7 +24,7 @@
       "primaryFor": ["/wardrobe/add"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/12.json"
     },
     "13": {
       "file": "13_outfit_lab_capsule_solver.jpg",
@@ -32,7 +32,7 @@
       "primaryFor": ["/wardrobe/outfit"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/13.json"
     },
     "14": {
       "file": "14_app_icon_and_splash.jpg",
@@ -48,7 +48,7 @@
       "primaryFor": ["/profile/preferences"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/15.json"
     },
     "16": {
       "file": "16_palette_builder_custom.jpg",

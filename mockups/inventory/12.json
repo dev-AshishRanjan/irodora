@@ -1,0 +1,1551 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "12",
+  "mockupSha256": "e6aa51e61564bfc01be79daec96aa1aa37fad4668a6b700ce9a3af2474c1c810",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "12.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "12.save",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 655,
+        "y": 22,
+        "w": 94,
+        "h": 56
+      },
+      "dp": {
+        "x": 327.5,
+        "y": 11,
+        "w": 47,
+        "h": 28
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.save",
+      "action": "submit:garment.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.cancel",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 28,
+        "y": 40,
+        "w": 109,
+        "h": 21
+      },
+      "dp": {
+        "x": 14,
+        "y": 20,
+        "w": 54.5,
+        "h": 10.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:garment.cancel",
+      "action": "dismiss:garment",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.title",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 243,
+        "y": 38,
+        "w": 281,
+        "h": 24
+      },
+      "dp": {
+        "x": 121.5,
+        "y": 19,
+        "w": 140.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.addTitle",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "12.header-rule",
+      "order": 4,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 99,
+        "w": 768,
+        "h": 6
+      },
+      "dp": {
+        "x": 0,
+        "y": 49.5,
+        "w": 384,
+        "h": 3
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.source",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 37,
+        "y": 129,
+        "w": 695,
+        "h": 261
+      },
+      "dp": {
+        "x": 18.5,
+        "y": 64.5,
+        "w": 347.5,
+        "h": 130.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2128"
+      },
+      "raw": {
+        "cornerPx": 21
+      },
+      "copy": null
+    },
+    {
+      "id": "12.art-top",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 732,
+        "y": 122,
+        "w": 36,
+        "h": 269
+      },
+      "dp": {
+        "x": 366,
+        "y": 61,
+        "w": 18,
+        "h": 134.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "leaves",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.source.swatch",
+      "order": 7,
+      "parent": "12.source",
+      "component": "new:FabricSwatch",
+      "box": {
+        "x": 67,
+        "y": 156,
+        "w": 167,
+        "h": 167
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 78,
+        "w": 83.5,
+        "h": 83.5
+      },
+      "tokens": {
+        "keyline": "keyline"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.colour.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.source.name",
+      "order": 8,
+      "parent": "12.source",
+      "component": "ui:Text",
+      "box": {
+        "x": 258,
+        "y": 197,
+        "w": 287,
+        "h": 25
+      },
+      "dp": {
+        "x": 129,
+        "y": 98.5,
+        "w": 143.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:draft.colour.label",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "12.source.provenance",
+      "order": 9,
+      "parent": "12.source",
+      "component": "ui:Chip",
+      "box": {
+        "x": 257,
+        "y": 237,
+        "w": 201,
+        "h": 37
+      },
+      "dp": {
+        "x": 128.5,
+        "y": 118.5,
+        "w": 100.5,
+        "h": 18.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:draft.colour.provenance",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.source.method",
+      "order": 10,
+      "parent": "12.source",
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 257,
+        "y": 308,
+        "w": 444,
+        "h": 46
+      },
+      "dp": {
+        "x": 128.5,
+        "y": 154,
+        "w": 222,
+        "h": 23
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.source.method.lens",
+      "order": 11,
+      "parent": "12.source.method",
+      "component": null,
+      "box": {
+        "x": 267,
+        "y": 312,
+        "w": 154,
+        "h": 38
+      },
+      "dp": {
+        "x": 133.5,
+        "y": 156,
+        "w": 77,
+        "h": 19
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.source.lens",
+      "action": "select:garment.source.lens",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.source.method.photo",
+      "order": 12,
+      "parent": "12.source.method",
+      "component": "ui:Text",
+      "box": {
+        "x": 437,
+        "y": 323,
+        "w": 54,
+        "h": 17
+      },
+      "dp": {
+        "x": 218.5,
+        "y": 161.5,
+        "w": 27,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.source.photo",
+      "action": "select:garment.source.photo",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.source.method.atlas-pick",
+      "order": 13,
+      "parent": "12.source.method",
+      "component": "ui:Text",
+      "box": {
+        "x": 515,
+        "y": 322,
+        "w": 90,
+        "h": 18
+      },
+      "dp": {
+        "x": 257.5,
+        "y": 161,
+        "w": 45,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.source.atlas-pick",
+      "action": "select:garment.source.atlas-pick",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.source.method.hex",
+      "order": 14,
+      "parent": "12.source.method",
+      "component": "ui:Text",
+      "box": {
+        "x": 629,
+        "y": 322,
+        "w": 53,
+        "h": 18
+      },
+      "dp": {
+        "x": 314.5,
+        "y": 161,
+        "w": 26.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.source.hex",
+      "action": "select:garment.source.hex",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.source.label",
+      "order": 15,
+      "parent": "12.source",
+      "component": "ui:Text",
+      "box": {
+        "x": 68,
+        "y": 342,
+        "w": 164,
+        "h": 22
+      },
+      "dp": {
+        "x": 34,
+        "y": 171,
+        "w": 82,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.colourSource",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form",
+      "order": 16,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 37,
+        "y": 409,
+        "w": 695,
+        "h": 491
+      },
+      "dp": {
+        "x": 18.5,
+        "y": 204.5,
+        "w": 347.5,
+        "h": 245.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2128"
+      },
+      "copy": null
+    },
+    {
+      "id": "12.form.title-label",
+      "order": 17,
+      "parent": "12.form",
+      "component": "ui:Text",
+      "box": {
+        "x": 68,
+        "y": 440,
+        "w": 137,
+        "h": 18
+      },
+      "dp": {
+        "x": 34,
+        "y": 220,
+        "w": 68.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.titleLabel",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.title",
+      "order": 18,
+      "parent": "12.form",
+      "component": "ui:TextField",
+      "box": {
+        "x": 67,
+        "y": 470,
+        "w": 634,
+        "h": 53
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 235,
+        "w": 317,
+        "h": 26.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.title",
+      "action": "adjust:draft.title",
+      "copy": {
+        "shape": "placeholder",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.category",
+      "order": 19,
+      "parent": "12.form",
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 67,
+        "y": 579,
+        "w": 634,
+        "h": 46
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 289.5,
+        "w": 317,
+        "h": 23
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.form.category.top",
+      "order": 20,
+      "parent": "12.form.category",
+      "component": null,
+      "box": {
+        "x": 75,
+        "y": 583,
+        "w": 85,
+        "h": 38
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 291.5,
+        "w": 42.5,
+        "h": 19
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.category.top",
+      "action": "select:garment.category.top",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.category.trousers",
+      "order": 21,
+      "parent": "12.form.category",
+      "component": "ui:Text",
+      "box": {
+        "x": 181,
+        "y": 594,
+        "w": 87,
+        "h": 17
+      },
+      "dp": {
+        "x": 90.5,
+        "y": 297,
+        "w": 43.5,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.category.trousers",
+      "action": "select:garment.category.trousers",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.category.outerwear",
+      "order": 22,
+      "parent": "12.form.category",
+      "component": "ui:Text",
+      "box": {
+        "x": 304,
+        "y": 593,
+        "w": 107,
+        "h": 19
+      },
+      "dp": {
+        "x": 152,
+        "y": 296.5,
+        "w": 53.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.category.outerwear",
+      "action": "select:garment.category.outerwear",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.category.footwear",
+      "order": 23,
+      "parent": "12.form.category",
+      "component": "ui:Text",
+      "box": {
+        "x": 446,
+        "y": 594,
+        "w": 94,
+        "h": 17
+      },
+      "dp": {
+        "x": 223,
+        "y": 297,
+        "w": 47,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.category.footwear",
+      "action": "select:garment.category.footwear",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.category.accessory",
+      "order": 24,
+      "parent": "12.form.category",
+      "component": "ui:Text",
+      "box": {
+        "x": 575,
+        "y": 594,
+        "w": 106,
+        "h": 22
+      },
+      "dp": {
+        "x": 287.5,
+        "y": 297,
+        "w": 53,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.category.accessory",
+      "action": "select:garment.category.accessory",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.material.linen",
+      "order": 25,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 67,
+        "y": 681,
+        "w": 112,
+        "h": 43
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 340.5,
+        "w": 56,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.material.linen",
+      "action": "select:garment.material.linen",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.material.cotton",
+      "order": 26,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 189,
+        "y": 681,
+        "w": 114,
+        "h": 43
+      },
+      "dp": {
+        "x": 94.5,
+        "y": 340.5,
+        "w": 57,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.material.cotton",
+      "action": "select:garment.material.cotton",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.material.wool",
+      "order": 27,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 313,
+        "y": 681,
+        "w": 90,
+        "h": 43
+      },
+      "dp": {
+        "x": 156.5,
+        "y": 340.5,
+        "w": 45,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.material.wool",
+      "action": "select:garment.material.wool",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.material.silk",
+      "order": 28,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 413,
+        "y": 681,
+        "w": 70,
+        "h": 43
+      },
+      "dp": {
+        "x": 206.5,
+        "y": 340.5,
+        "w": 35,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.material.silk",
+      "action": "select:garment.material.silk",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.material.denim",
+      "order": 29,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 493,
+        "y": 681,
+        "w": 99,
+        "h": 43
+      },
+      "dp": {
+        "x": 246.5,
+        "y": 340.5,
+        "w": 49.5,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.material.denim",
+      "action": "select:garment.material.denim",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.formality.casual",
+      "order": 30,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 67,
+        "y": 779,
+        "w": 126,
+        "h": 43
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 389.5,
+        "w": 63,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.formality.casual",
+      "action": "select:garment.formality.casual",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.formality.smart-casual",
+      "order": 31,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 203,
+        "y": 779,
+        "w": 169,
+        "h": 43
+      },
+      "dp": {
+        "x": 101.5,
+        "y": 389.5,
+        "w": 84.5,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.formality.smart-casual",
+      "action": "select:garment.formality.smart-casual",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.formality.formal",
+      "order": 32,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 382,
+        "y": 779,
+        "w": 108,
+        "h": 43
+      },
+      "dp": {
+        "x": 191,
+        "y": 389.5,
+        "w": 54,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.formality.formal",
+      "action": "select:garment.formality.formal",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.season.spring-summer",
+      "order": 33,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 67,
+        "y": 831,
+        "w": 214,
+        "h": 43
+      },
+      "dp": {
+        "x": 33.5,
+        "y": 415.5,
+        "w": 107,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.season.spring-summer",
+      "action": "select:garment.season.spring-summer",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.form.season.autumn-winter",
+      "order": 34,
+      "parent": "12.form",
+      "component": "ui:Chip",
+      "box": {
+        "x": 291,
+        "y": 831,
+        "w": 186,
+        "h": 43
+      },
+      "dp": {
+        "x": 145.5,
+        "y": 415.5,
+        "w": 93,
+        "h": 21.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.season.autumn-winter",
+      "action": "select:garment.season.autumn-winter",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.intelligence",
+      "order": 35,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 37,
+        "y": 917,
+        "w": 695,
+        "h": 130
+      },
+      "dp": {
+        "x": 18.5,
+        "y": 458.5,
+        "w": 347.5,
+        "h": 65
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F332A"
+      },
+      "copy": null
+    },
+    {
+      "id": "12.intelligence.icon",
+      "order": 36,
+      "parent": "12.intelligence",
+      "component": null,
+      "box": {
+        "x": 70,
+        "y": 940,
+        "w": 21,
+        "h": 23
+      },
+      "dp": {
+        "x": 35,
+        "y": 470,
+        "w": 10.5,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "shield",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.intelligence.title",
+      "order": 37,
+      "parent": "12.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 102,
+        "y": 942,
+        "w": 297,
+        "h": 23
+      },
+      "dp": {
+        "x": 51,
+        "y": 471,
+        "w": 148.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.intelligence",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.intelligence.check",
+      "order": 38,
+      "parent": "12.intelligence",
+      "component": null,
+      "box": {
+        "x": 71,
+        "y": 975,
+        "w": 19,
+        "h": 14
+      },
+      "dp": {
+        "x": 35.5,
+        "y": 487.5,
+        "w": 9.5,
+        "h": 7
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "check",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.intelligence.body",
+      "order": 39,
+      "parent": "12.intelligence",
+      "component": "ui:Text",
+      "box": {
+        "x": 104,
+        "y": 972,
+        "w": 573,
+        "h": 53
+      },
+      "dp": {
+        "x": 52,
+        "y": 486,
+        "w": 286.5,
+        "h": 26.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:duplicates.summary",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "12.art-bottom",
+      "order": 40,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 732,
+        "y": 1011,
+        "w": 36,
+        "h": 184
+      },
+      "dp": {
+        "x": 366,
+        "y": 505.5,
+        "w": 18,
+        "h": 92
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "leaves",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.tracking",
+      "order": 41,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 37,
+        "y": 1065,
+        "w": 695,
+        "h": 159
+      },
+      "dp": {
+        "x": 18.5,
+        "y": 532.5,
+        "w": 347.5,
+        "h": 79.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2128"
+      },
+      "copy": null
+    },
+    {
+      "id": "12.tracking.title",
+      "order": 42,
+      "parent": "12.tracking",
+      "component": "ui:Text",
+      "box": {
+        "x": 68,
+        "y": 1094,
+        "w": 196,
+        "h": 24
+      },
+      "dp": {
+        "x": 34,
+        "y": 547,
+        "w": 98,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.tracking",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.tracking.toggle",
+      "order": 43,
+      "parent": "12.tracking",
+      "component": null,
+      "box": {
+        "x": 678,
+        "y": 1098,
+        "w": 18,
+        "h": 11
+      },
+      "dp": {
+        "x": 339,
+        "y": 549,
+        "w": 9,
+        "h": 5.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "chevron-up",
+      "illustration": null,
+      "binding": null,
+      "action": "toggle:garment.tracking",
+      "copy": null
+    },
+    {
+      "id": "12.tracking.price",
+      "order": 44,
+      "parent": "12.tracking",
+      "component": "ui:Text",
+      "box": {
+        "x": 69,
+        "y": 1137,
+        "w": 249,
+        "h": 22
+      },
+      "dp": {
+        "x": 34.5,
+        "y": 568.5,
+        "w": 124.5,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.price",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "12.tracking.brand",
+      "order": 45,
+      "parent": "12.tracking",
+      "component": "ui:Text",
+      "box": {
+        "x": 69,
+        "y": 1176,
+        "w": 172,
+        "h": 23
+      },
+      "dp": {
+        "x": 34.5,
+        "y": 588,
+        "w": 86,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.brand",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "12.bar",
+      "order": 46,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 0,
+        "y": 1238,
+        "w": 768,
+        "h": 138
+      },
+      "dp": {
+        "x": 0,
+        "y": 619,
+        "w": 384,
+        "h": 69
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.bar.save",
+      "order": 47,
+      "parent": "12.bar",
+      "component": "ui:Button",
+      "box": {
+        "x": 36,
+        "y": 1273,
+        "w": 696,
+        "h": 66
+      },
+      "dp": {
+        "x": 18,
+        "y": 636.5,
+        "w": 348,
+        "h": 33
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:garment.saveToWardrobe",
+      "action": "submit:garment.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "garbled-text",
+      "note": "a stray bracketed number after the colour-source label",
+      "box": {
+        "x": 68,
+        "y": 342,
+        "w": 164,
+        "h": 22
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as the category group’s label",
+      "box": {
+        "x": 68,
+        "y": 549,
+        "w": 284,
+        "h": 22
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as the material group’s label",
+      "box": {
+        "x": 68,
+        "y": 650,
+        "w": 212,
+        "h": 23
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name printed as the formality and season groups’ label",
+      "box": {
+        "x": 68,
+        "y": 749,
+        "w": 236,
+        "h": 23
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the formal pill’s label is misspelt",
+      "box": {
+        "x": 382,
+        "y": 779,
+        "w": 108,
+        "h": 43
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C10",
+      "elements": [
+        "12.intelligence",
+        "12.intelligence.icon",
+        "12.intelligence.title",
+        "12.intelligence.check",
+        "12.intelligence.body"
+      ],
+      "resolution": "followed: the green card carries text and an icon (golden rule 13) and is declared a chroma-ceiling exception by F-225",
+      "flippedByUser": false
+    }
+  ]
+}

@@ -1,0 +1,1675 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "15",
+  "mockupSha256": "7118ab3a2505652ba237fe0c41bfec22e67c91898827f84adc7b1340da5182d3",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "15.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "15.title",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 28,
+        "y": 60,
+        "w": 523,
+        "h": 44
+      },
+      "dp": {
+        "x": 14,
+        "y": 30,
+        "w": 261.5,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "15.mark",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Mark",
+      "box": {
+        "x": 693,
+        "y": 57,
+        "w": 48,
+        "h": 45
+      },
+      "dp": {
+        "x": 346.5,
+        "y": 28.5,
+        "w": 24,
+        "h": 22.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.art",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 736,
+        "y": 100,
+        "w": 32,
+        "h": 1190
+      },
+      "dp": {
+        "x": 368,
+        "y": 50,
+        "w": 16,
+        "h": 595
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "leaves",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.section-1.heading",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 30,
+        "y": 152,
+        "w": 456,
+        "h": 27
+      },
+      "dp": {
+        "x": 15,
+        "y": 76,
+        "w": 228,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.appearance",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-1",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 27,
+        "y": 188,
+        "w": 711,
+        "h": 259
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 94,
+        "w": 355.5,
+        "h": 129.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#202227"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.sumi",
+      "order": 6,
+      "parent": "15.section-1",
+      "component": "new:ThemeTile",
+      "box": {
+        "x": 52,
+        "y": 214,
+        "w": 156,
+        "h": 213
+      },
+      "dp": {
+        "x": 26,
+        "y": 107,
+        "w": 78,
+        "h": 106.5
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.sumi",
+      "action": "select:theme.sumi",
+      "copy": null
+    },
+    {
+      "id": "15.themes.sumi.swatch",
+      "order": 7,
+      "parent": "15.themes.sumi",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 59,
+        "y": 220,
+        "w": 141,
+        "h": 123
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 110,
+        "w": 70.5,
+        "h": 61.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.sumi.ground",
+      "action": null,
+      "measured": {
+        "fill": "#171A1E"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.slate",
+      "order": 8,
+      "parent": "15.section-1",
+      "component": "new:ThemeTile",
+      "box": {
+        "x": 222,
+        "y": 214,
+        "w": 156,
+        "h": 213
+      },
+      "dp": {
+        "x": 111,
+        "y": 107,
+        "w": 78,
+        "h": 106.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.slate",
+      "action": "select:theme.slate",
+      "copy": null
+    },
+    {
+      "id": "15.themes.slate.swatch",
+      "order": 9,
+      "parent": "15.themes.slate",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 229,
+        "y": 220,
+        "w": 141,
+        "h": 124
+      },
+      "dp": {
+        "x": 114.5,
+        "y": 110,
+        "w": 70.5,
+        "h": 62
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.slate.ground",
+      "action": null,
+      "measured": {
+        "fill": "#2C323A"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.obsidian",
+      "order": 10,
+      "parent": "15.section-1",
+      "component": "new:ThemeTile",
+      "box": {
+        "x": 391,
+        "y": 214,
+        "w": 156,
+        "h": 213
+      },
+      "dp": {
+        "x": 195.5,
+        "y": 107,
+        "w": 78,
+        "h": 106.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.obsidian",
+      "action": "select:theme.obsidian",
+      "raw": {
+        "cornerPx": 18.5
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.obsidian.swatch",
+      "order": 11,
+      "parent": "15.themes.obsidian",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 399,
+        "y": 221,
+        "w": 140,
+        "h": 123
+      },
+      "dp": {
+        "x": 199.5,
+        "y": 110.5,
+        "w": 70,
+        "h": 61.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.obsidian.ground",
+      "action": null,
+      "measured": {
+        "fill": "#101115"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.washi",
+      "order": 12,
+      "parent": "15.section-1",
+      "component": "new:ThemeTile",
+      "box": {
+        "x": 561,
+        "y": 214,
+        "w": 156,
+        "h": 213
+      },
+      "dp": {
+        "x": 280.5,
+        "y": 107,
+        "w": 78,
+        "h": 106.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.washi",
+      "action": "select:theme.washi",
+      "copy": null
+    },
+    {
+      "id": "15.themes.washi.swatch",
+      "order": 13,
+      "parent": "15.themes.washi",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 568,
+        "y": 219,
+        "w": 143,
+        "h": 127
+      },
+      "dp": {
+        "x": 284,
+        "y": 109.5,
+        "w": 71.5,
+        "h": 63.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.washi.ground",
+      "action": null,
+      "measured": {
+        "fill": "#F3F2ED"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.themes.sumi.selected",
+      "order": 14,
+      "parent": "15.themes.sumi",
+      "component": null,
+      "box": {
+        "x": 68,
+        "y": 230,
+        "w": 16,
+        "h": 16
+      },
+      "dp": {
+        "x": 34,
+        "y": 115,
+        "w": 8,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.themes.sumi.name",
+      "order": 15,
+      "parent": "15.themes.sumi",
+      "component": "ui:Text",
+      "box": {
+        "x": 65,
+        "y": 356,
+        "w": 128,
+        "h": 15
+      },
+      "dp": {
+        "x": 32.5,
+        "y": 178,
+        "w": 64,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.sumi.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.themes.slate.name",
+      "order": 16,
+      "parent": "15.themes.slate",
+      "component": "ui:Text",
+      "box": {
+        "x": 236,
+        "y": 356,
+        "w": 126,
+        "h": 19
+      },
+      "dp": {
+        "x": 118,
+        "y": 178,
+        "w": 63,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.slate.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.themes.obsidian.name",
+      "order": 17,
+      "parent": "15.themes.obsidian",
+      "component": "ui:Text",
+      "box": {
+        "x": 409,
+        "y": 356,
+        "w": 121,
+        "h": 15
+      },
+      "dp": {
+        "x": 204.5,
+        "y": 178,
+        "w": 60.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.obsidian.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.themes.washi.name",
+      "order": 18,
+      "parent": "15.themes.washi",
+      "component": "ui:Text",
+      "box": {
+        "x": 574,
+        "y": 356,
+        "w": 129,
+        "h": 16
+      },
+      "dp": {
+        "x": 287,
+        "y": 178,
+        "w": 64.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.washi.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.themes.sumi.detail",
+      "order": 19,
+      "parent": "15.themes.sumi",
+      "component": "ui:Text",
+      "box": {
+        "x": 63,
+        "y": 381,
+        "w": 133,
+        "h": 31
+      },
+      "dp": {
+        "x": 31.5,
+        "y": 190.5,
+        "w": 66.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.sumi.detail",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "15.themes.slate.detail",
+      "order": 20,
+      "parent": "15.themes.slate",
+      "component": "ui:Text",
+      "box": {
+        "x": 252,
+        "y": 381,
+        "w": 94,
+        "h": 31
+      },
+      "dp": {
+        "x": 126,
+        "y": 190.5,
+        "w": 47,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.slate.detail",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "15.themes.obsidian.detail",
+      "order": 21,
+      "parent": "15.themes.obsidian",
+      "component": "ui:Text",
+      "box": {
+        "x": 430,
+        "y": 381,
+        "w": 78,
+        "h": 31
+      },
+      "dp": {
+        "x": 215,
+        "y": 190.5,
+        "w": 39,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.obsidian.detail",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "15.themes.washi.detail",
+      "order": 22,
+      "parent": "15.themes.washi",
+      "component": "ui:Text",
+      "box": {
+        "x": 592,
+        "y": 381,
+        "w": 95,
+        "h": 31
+      },
+      "dp": {
+        "x": 296,
+        "y": 190.5,
+        "w": 47.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:themes.washi.detail",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "15.section-2.heading",
+      "order": 23,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 24,
+        "y": 485,
+        "w": 651,
+        "h": 45
+      },
+      "dp": {
+        "x": 12,
+        "y": 242.5,
+        "w": 325.5,
+        "h": 22.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.accessibility",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-2",
+      "order": 24,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 27,
+        "y": 530,
+        "w": 711,
+        "h": 139
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 265,
+        "w": 355.5,
+        "h": 69.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.cvd.standard",
+      "order": 25,
+      "parent": "15.section-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 50,
+        "y": 550,
+        "w": 155,
+        "h": 51
+      },
+      "dp": {
+        "x": 25,
+        "y": 275,
+        "w": 77.5,
+        "h": 25.5
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.cvd.standard",
+      "action": "select:cvd.standard",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.cvd.protanopia",
+      "order": 26,
+      "parent": "15.section-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 216,
+        "y": 551,
+        "w": 152,
+        "h": 46
+      },
+      "dp": {
+        "x": 108,
+        "y": 275.5,
+        "w": 76,
+        "h": 23
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.cvd.protanopia",
+      "action": "select:cvd.protanopia",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.cvd.deuteranopia",
+      "order": 27,
+      "parent": "15.section-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 380,
+        "y": 551,
+        "w": 178,
+        "h": 46
+      },
+      "dp": {
+        "x": 190,
+        "y": 275.5,
+        "w": 89,
+        "h": 23
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.cvd.deuteranopia",
+      "action": "select:cvd.deuteranopia",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.cvd.tritanopia",
+      "order": 28,
+      "parent": "15.section-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 570,
+        "y": 551,
+        "w": 144,
+        "h": 46
+      },
+      "dp": {
+        "x": 285,
+        "y": 275.5,
+        "w": 72,
+        "h": 23
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.cvd.tritanopia",
+      "action": "select:cvd.tritanopia",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.cvd.badge",
+      "order": 29,
+      "parent": "15.section-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 51,
+        "y": 608,
+        "w": 375,
+        "h": 40
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 304,
+        "w": 187.5,
+        "h": 20
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": "contrast",
+      "illustration": null,
+      "binding": "engine:corpus.separation",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-3.heading",
+      "order": 30,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 28,
+        "y": 713,
+        "w": 385,
+        "h": 28
+      },
+      "dp": {
+        "x": 14,
+        "y": 356.5,
+        "w": 192.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.engine",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-3",
+      "order": 31,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 27,
+        "y": 752,
+        "w": 711,
+        "h": 199
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 376,
+        "w": 355.5,
+        "h": 99.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.engine.tabular.label",
+      "order": 32,
+      "parent": "15.section-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 51,
+        "y": 780,
+        "w": 401,
+        "h": 31
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 390,
+        "w": 200.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.tabular",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.engine.tabular.switch",
+      "order": 33,
+      "parent": "15.section-3",
+      "component": "ui:Switch",
+      "box": {
+        "x": 647,
+        "y": 773,
+        "w": 71,
+        "h": 45
+      },
+      "dp": {
+        "x": 323.5,
+        "y": 386.5,
+        "w": 35.5,
+        "h": 22.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:settings.tabular",
+      "action": "toggle:settings.tabular",
+      "copy": null
+    },
+    {
+      "id": "15.engine.tabular.state",
+      "order": 34,
+      "parent": "15.section-3",
+      "component": null,
+      "box": {
+        "x": 624,
+        "y": 790,
+        "w": 10,
+        "h": 11
+      },
+      "dp": {
+        "x": 312,
+        "y": 395,
+        "w": 5,
+        "h": 5.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.engine.haptics.switch",
+      "order": 35,
+      "parent": "15.section-3",
+      "component": "ui:Switch",
+      "box": {
+        "x": 647,
+        "y": 830,
+        "w": 71,
+        "h": 43
+      },
+      "dp": {
+        "x": 323.5,
+        "y": 415,
+        "w": 35.5,
+        "h": 21.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:settings.haptics",
+      "action": "toggle:settings.haptics",
+      "copy": null
+    },
+    {
+      "id": "15.engine.haptics.label",
+      "order": 36,
+      "parent": "15.section-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 52,
+        "y": 839,
+        "w": 399,
+        "h": 29
+      },
+      "dp": {
+        "x": 26,
+        "y": 419.5,
+        "w": 199.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.haptics",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.engine.haptics.state",
+      "order": 37,
+      "parent": "15.section-3",
+      "component": null,
+      "box": {
+        "x": 624,
+        "y": 847,
+        "w": 11,
+        "h": 11
+      },
+      "dp": {
+        "x": 312,
+        "y": 423.5,
+        "w": 5.5,
+        "h": 5.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.engine.provenance.switch",
+      "order": 38,
+      "parent": "15.section-3",
+      "component": "ui:Switch",
+      "box": {
+        "x": 646,
+        "y": 888,
+        "w": 72,
+        "h": 41
+      },
+      "dp": {
+        "x": 323,
+        "y": 444,
+        "w": 36,
+        "h": 20.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:settings.provenance",
+      "action": "toggle:settings.provenance",
+      "copy": null
+    },
+    {
+      "id": "15.engine.provenance.label",
+      "order": 39,
+      "parent": "15.section-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 52,
+        "y": 897,
+        "w": 416,
+        "h": 27
+      },
+      "dp": {
+        "x": 26,
+        "y": 448.5,
+        "w": 208,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.provenance",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.engine.provenance.state",
+      "order": 40,
+      "parent": "15.section-3",
+      "component": null,
+      "box": {
+        "x": 624,
+        "y": 904,
+        "w": 10,
+        "h": 11
+      },
+      "dp": {
+        "x": 312,
+        "y": 452,
+        "w": 5,
+        "h": 5.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.section-4.heading",
+      "order": 41,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 28,
+        "y": 994,
+        "w": 432,
+        "h": 28
+      },
+      "dp": {
+        "x": 14,
+        "y": 497,
+        "w": 216,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.weights",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-4",
+      "order": 42,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 27,
+        "y": 1032,
+        "w": 711,
+        "h": 113
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 516,
+        "w": 355.5,
+        "h": 56.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.weights.reset",
+      "order": 43,
+      "parent": "15.section-4",
+      "component": "ui:Button",
+      "box": {
+        "x": 470,
+        "y": 1057,
+        "w": 248,
+        "h": 52
+      },
+      "dp": {
+        "x": 235,
+        "y": 528.5,
+        "w": 124,
+        "h": 26
+      },
+      "tokens": {
+        "border": "border.strong",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.resetWeights",
+      "action": "submit:preferences.reset",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.weights.pair",
+      "order": 44,
+      "parent": "15.section-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 52,
+        "y": 1068,
+        "w": 278,
+        "h": 46
+      },
+      "dp": {
+        "x": 26,
+        "y": 534,
+        "w": 139,
+        "h": 23
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:preferences.weights.0",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "15.section-5.heading",
+      "order": 45,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 28,
+        "y": 1188,
+        "w": 453,
+        "h": 27
+      },
+      "dp": {
+        "x": 14,
+        "y": 594,
+        "w": 226.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:settings.security",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.section-5",
+      "order": 46,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 27,
+        "y": 1228,
+        "w": 711,
+        "h": 60
+      },
+      "dp": {
+        "x": 13.5,
+        "y": 614,
+        "w": 355.5,
+        "h": 30
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.security.badge",
+      "order": 47,
+      "parent": "15.section-5",
+      "component": "ui:Chip",
+      "box": {
+        "x": 61,
+        "y": 1251,
+        "w": 646,
+        "h": 29
+      },
+      "dp": {
+        "x": 30.5,
+        "y": 625.5,
+        "w": 323,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "lock",
+      "illustration": null,
+      "binding": "static:settings.securityBadge",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.tabs",
+      "order": 48,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1288,
+        "w": 768,
+        "h": 88
+      },
+      "dp": {
+        "x": 0,
+        "y": 644,
+        "w": 384,
+        "h": 44
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2126"
+      },
+      "copy": null
+    },
+    {
+      "id": "15.tabs.indicator",
+      "order": 49,
+      "parent": "15.tabs",
+      "component": null,
+      "box": {
+        "x": 605,
+        "y": 1293,
+        "w": 95,
+        "h": 1
+      },
+      "dp": {
+        "x": 302.5,
+        "y": 646.5,
+        "w": 47.5,
+        "h": 0.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.tabs.profile",
+      "order": 50,
+      "parent": "15.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 623,
+        "y": 1309,
+        "w": 59,
+        "h": 54
+      },
+      "dp": {
+        "x": 311.5,
+        "y": 654.5,
+        "w": 29.5,
+        "h": 27
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": "static:tabs.profile",
+      "action": "navigate:/profile",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "15.tabs.home",
+      "order": 51,
+      "parent": "15.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 102,
+        "y": 1320,
+        "w": 28,
+        "h": 29
+      },
+      "dp": {
+        "x": 51,
+        "y": 660,
+        "w": 14,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "home",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/",
+      "copy": null
+    },
+    {
+      "id": "15.tabs.compass",
+      "order": 52,
+      "parent": "15.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 279,
+        "y": 1319,
+        "w": 32,
+        "h": 32
+      },
+      "dp": {
+        "x": 139.5,
+        "y": 659.5,
+        "w": 16,
+        "h": 16
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "compass",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "15.tabs.bell",
+      "order": 53,
+      "parent": "15.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 458,
+        "y": 1319,
+        "w": 32,
+        "h": 31
+      },
+      "dp": {
+        "x": 229,
+        "y": 659.5,
+        "w": 16,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "bell",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render, with a carrier named Irodora",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 36
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "15.cvd.badge",
+      "why": "the computed separation score (FR-5) for the corpus palettes, printing 100 only when it is 100; a safety claim about people does not ship"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C9",
+      "elements": ["15.themes.sumi", "15.themes.slate", "15.themes.obsidian", "15.themes.washi"],
+      "resolution": "the four drawn themes (§5); system and device accent are kept (E4)",
+      "flippedByUser": false
+    },
+    {
+      "id": "C1",
+      "elements": [
+        "15.tabs",
+        "15.tabs.indicator",
+        "15.tabs.profile",
+        "15.tabs.compass",
+        "15.tabs.bell",
+        "15.tabs.home"
+      ],
+      "resolution": "P5 → 01: 15's four-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    }
+  ]
+}
