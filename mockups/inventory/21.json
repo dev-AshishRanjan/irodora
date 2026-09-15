@@ -1,0 +1,1780 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "21",
+  "mockupSha256": "7e346aeb82842e381a8e7eeaf6c0a35732e9d92f1edc67e756863d8975dfc20c",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "21.screen",
+        "box": {
+          "x": 77,
+          "y": 107,
+          "w": 614,
+          "h": 1190
+        },
+        "dpPerPx": 0.6254
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "21.back",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 105,
+        "y": 141,
+        "w": 89,
+        "h": 21
+      },
+      "dp": {
+        "x": 17.5,
+        "y": 21.5,
+        "w": 55.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:nearby.back",
+      "action": "navigate:/atlas",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 235,
+        "y": 138,
+        "w": 311,
+        "h": 29
+      },
+      "dp": {
+        "x": 99,
+        "y": 19.5,
+        "w": 194.5,
+        "h": 18
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:nearby.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "21.filter",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 631,
+        "y": 141,
+        "w": 31,
+        "h": 21
+      },
+      "dp": {
+        "x": 346.5,
+        "y": 21.5,
+        "w": 19.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "filter",
+      "illustration": null,
+      "binding": null,
+      "action": "open:nearby.filter",
+      "copy": null
+    },
+    {
+      "id": "21.anchor.heading",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 103,
+        "y": 223,
+        "w": 239,
+        "h": 20
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 72.5,
+        "w": 149.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.anchor",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 101,
+        "y": 257,
+        "w": 566,
+        "h": 178
+      },
+      "dp": {
+        "x": 15,
+        "y": 94,
+        "w": 354,
+        "h": 111.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#21232A"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.anchor.ring",
+      "order": 6,
+      "parent": "21.anchor",
+      "component": null,
+      "box": {
+        "x": 126,
+        "y": 277,
+        "w": 136,
+        "h": 137
+      },
+      "dp": {
+        "x": 30.5,
+        "y": 106.5,
+        "w": 85,
+        "h": 85.5
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "21.anchor.swatch",
+      "order": 7,
+      "parent": "21.anchor.ring",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 133,
+        "y": 284,
+        "w": 122,
+        "h": 122
+      },
+      "dp": {
+        "x": 35,
+        "y": 110.5,
+        "w": 76.5,
+        "h": 76.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:anchor.hex",
+      "action": null,
+      "measured": {
+        "fill": "#5A6C7A"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.anchor.name",
+      "order": 8,
+      "parent": "21.anchor",
+      "component": "ui:Text",
+      "box": {
+        "x": 285,
+        "y": 296,
+        "w": 331,
+        "h": 31
+      },
+      "dp": {
+        "x": 130,
+        "y": 118,
+        "w": 207,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:anchor.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "21.anchor.oklch",
+      "order": 9,
+      "parent": "21.anchor",
+      "component": "ui:Text",
+      "box": {
+        "x": 285,
+        "y": 336,
+        "w": 315,
+        "h": 20
+      },
+      "dp": {
+        "x": 130,
+        "y": 143,
+        "w": 197,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:anchor.oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "21.anchor.baseline",
+      "order": 10,
+      "parent": "21.anchor",
+      "component": "ui:Text",
+      "box": {
+        "x": 286,
+        "y": 372,
+        "w": 156,
+        "h": 23
+      },
+      "dp": {
+        "x": 130.5,
+        "y": 165.5,
+        "w": 97.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:nearby.baseline",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.heading",
+      "order": 11,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 103,
+        "y": 472,
+        "w": 359,
+        "h": 25
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 228.5,
+        "w": 224.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.subtitle",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 103,
+        "y": 502,
+        "w": 381,
+        "h": 22
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 247,
+        "w": 238.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:nearby.orderedBy",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "21.results.row-1",
+      "order": 13,
+      "parent": null,
+      "component": "new:CorpusRow",
+      "box": {
+        "x": 101,
+        "y": 539,
+        "w": 565,
+        "h": 126
+      },
+      "dp": {
+        "x": 15,
+        "y": 270,
+        "w": 353.5,
+        "h": 79
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#18181B"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-1.swatch",
+      "order": 14,
+      "parent": "21.results.row-1",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 117,
+        "y": 553,
+        "w": 98,
+        "h": 98
+      },
+      "dp": {
+        "x": 25,
+        "y": 279,
+        "w": 61.5,
+        "h": 61.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.hex",
+      "action": null,
+      "measured": {
+        "fill": "#5B8089"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-1.name",
+      "order": 15,
+      "parent": "21.results.row-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 230,
+        "y": 556,
+        "w": 201,
+        "h": 61
+      },
+      "dp": {
+        "x": 95.5,
+        "y": 281,
+        "w": 125.5,
+        "h": 38
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "21.results.row-1.distance",
+      "order": 16,
+      "parent": "21.results.row-1",
+      "component": "ui:Chip",
+      "box": {
+        "x": 539,
+        "y": 555,
+        "w": 111,
+        "h": 34
+      },
+      "dp": {
+        "x": 289,
+        "y": 280,
+        "w": 69.5,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.0.deltaE00",
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-1.hex",
+      "order": 17,
+      "parent": "21.results.row-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 231,
+        "y": 626,
+        "w": 96,
+        "h": 20
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 324.5,
+        "w": 60,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.0.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-1.view",
+      "order": 18,
+      "parent": "21.results.row-1",
+      "component": "ui:Button",
+      "box": {
+        "x": 570,
+        "y": 626,
+        "w": 78,
+        "h": 20
+      },
+      "dp": {
+        "x": 308.5,
+        "y": 324.5,
+        "w": 49,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:nearby.view",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.row-2",
+      "order": 19,
+      "parent": null,
+      "component": "new:CorpusRow",
+      "box": {
+        "x": 101,
+        "y": 674,
+        "w": 566,
+        "h": 127
+      },
+      "dp": {
+        "x": 15,
+        "y": 354.5,
+        "w": 354,
+        "h": 79.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#16171B"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-2.swatch",
+      "order": 20,
+      "parent": "21.results.row-2",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 118,
+        "y": 690,
+        "w": 96,
+        "h": 95
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 364.5,
+        "w": 60,
+        "h": 59.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.hex",
+      "action": null,
+      "measured": {
+        "fill": "#294A51"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-2.name",
+      "order": 21,
+      "parent": "21.results.row-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 231,
+        "y": 692,
+        "w": 265,
+        "h": 60
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 366,
+        "w": 165.5,
+        "h": 37.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "21.results.row-2.distance",
+      "order": 22,
+      "parent": "21.results.row-2",
+      "component": "ui:Chip",
+      "box": {
+        "x": 539,
+        "y": 691,
+        "w": 111,
+        "h": 33
+      },
+      "dp": {
+        "x": 289,
+        "y": 365,
+        "w": 69.5,
+        "h": 20.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.1.deltaE00",
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-2.hex",
+      "order": 23,
+      "parent": "21.results.row-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 231,
+        "y": 761,
+        "w": 94,
+        "h": 21
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 409,
+        "w": 59,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.1.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-2.view",
+      "order": 24,
+      "parent": "21.results.row-2",
+      "component": "ui:Button",
+      "box": {
+        "x": 570,
+        "y": 761,
+        "w": 78,
+        "h": 20
+      },
+      "dp": {
+        "x": 308.5,
+        "y": 409,
+        "w": 49,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:nearby.view",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.row-3",
+      "order": 25,
+      "parent": null,
+      "component": "new:CorpusRow",
+      "box": {
+        "x": 101,
+        "y": 809,
+        "w": 566,
+        "h": 127
+      },
+      "dp": {
+        "x": 15,
+        "y": 439,
+        "w": 354,
+        "h": 79.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#17181B"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-3.swatch",
+      "order": 26,
+      "parent": "21.results.row-3",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 117,
+        "y": 824,
+        "w": 98,
+        "h": 97
+      },
+      "dp": {
+        "x": 25,
+        "y": 448.5,
+        "w": 61.5,
+        "h": 60.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.hex",
+      "action": null,
+      "measured": {
+        "fill": "#6F7971"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-3.name",
+      "order": 27,
+      "parent": "21.results.row-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 230,
+        "y": 827,
+        "w": 228,
+        "h": 61
+      },
+      "dp": {
+        "x": 95.5,
+        "y": 450.5,
+        "w": 142.5,
+        "h": 38
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "21.results.row-3.distance",
+      "order": 28,
+      "parent": "21.results.row-3",
+      "component": "ui:Chip",
+      "box": {
+        "x": 538,
+        "y": 826,
+        "w": 112,
+        "h": 33
+      },
+      "dp": {
+        "x": 288.5,
+        "y": 449.5,
+        "w": 70,
+        "h": 20.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.2.deltaE00",
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-3.hex",
+      "order": 29,
+      "parent": "21.results.row-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 230,
+        "y": 897,
+        "w": 92,
+        "h": 20
+      },
+      "dp": {
+        "x": 95.5,
+        "y": 494,
+        "w": 57.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.2.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-3.view",
+      "order": 30,
+      "parent": "21.results.row-3",
+      "component": "ui:Button",
+      "box": {
+        "x": 570,
+        "y": 897,
+        "w": 78,
+        "h": 20
+      },
+      "dp": {
+        "x": 308.5,
+        "y": 494,
+        "w": 49,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:nearby.view",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.row-4",
+      "order": 31,
+      "parent": null,
+      "component": "new:CorpusRow",
+      "box": {
+        "x": 101,
+        "y": 946,
+        "w": 566,
+        "h": 125
+      },
+      "dp": {
+        "x": 15,
+        "y": 524.5,
+        "w": 354,
+        "h": 78
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#161519"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-4.swatch",
+      "order": 32,
+      "parent": "21.results.row-4",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 118,
+        "y": 960,
+        "w": 96,
+        "h": 96
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 533.5,
+        "w": 60,
+        "h": 60
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.3.hex",
+      "action": null,
+      "measured": {
+        "fill": "#175878"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-4.name",
+      "order": 33,
+      "parent": "21.results.row-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 230,
+        "y": 962,
+        "w": 144,
+        "h": 61
+      },
+      "dp": {
+        "x": 95.5,
+        "y": 534.5,
+        "w": 90,
+        "h": 38
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.3.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "21.results.row-4.distance",
+      "order": 34,
+      "parent": "21.results.row-4",
+      "component": "ui:Chip",
+      "box": {
+        "x": 539,
+        "y": 961,
+        "w": 111,
+        "h": 33
+      },
+      "dp": {
+        "x": 289,
+        "y": 534,
+        "w": 69.5,
+        "h": 20.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.3.deltaE00",
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-4.hex",
+      "order": 35,
+      "parent": "21.results.row-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 231,
+        "y": 1032,
+        "w": 89,
+        "h": 20
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 578.5,
+        "w": 55.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.3.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-4.view",
+      "order": 36,
+      "parent": "21.results.row-4",
+      "component": "ui:Button",
+      "box": {
+        "x": 571,
+        "y": 1032,
+        "w": 77,
+        "h": 20
+      },
+      "dp": {
+        "x": 309,
+        "y": 578.5,
+        "w": 48,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:nearby.view",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.results.row-5",
+      "order": 37,
+      "parent": null,
+      "component": "new:CorpusRow",
+      "box": {
+        "x": 101,
+        "y": 1081,
+        "w": 566,
+        "h": 121
+      },
+      "dp": {
+        "x": 15,
+        "y": 609,
+        "w": 354,
+        "h": 75.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#151619"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-5.swatch",
+      "order": 38,
+      "parent": "21.results.row-5",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 118,
+        "y": 1096,
+        "w": 96,
+        "h": 95
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 618.5,
+        "w": 60,
+        "h": 59.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.4.hex",
+      "action": null,
+      "measured": {
+        "fill": "#363D36"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.results.row-5.name",
+      "order": 39,
+      "parent": "21.results.row-5",
+      "component": "ui:Text",
+      "box": {
+        "x": 230,
+        "y": 1097,
+        "w": 221,
+        "h": 62
+      },
+      "dp": {
+        "x": 95.5,
+        "y": 619,
+        "w": 138,
+        "h": 39
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.4.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "21.results.row-5.distance",
+      "order": 40,
+      "parent": "21.results.row-5",
+      "component": "ui:Chip",
+      "box": {
+        "x": 538,
+        "y": 1096,
+        "w": 112,
+        "h": 34
+      },
+      "dp": {
+        "x": 288.5,
+        "y": 618.5,
+        "w": 70,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:nearest.4.deltaE00",
+      "action": null,
+      "raw": {
+        "cornerPx": 6.25
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-5.hex",
+      "order": 41,
+      "parent": "21.results.row-5",
+      "component": "ui:Text",
+      "box": {
+        "x": 231,
+        "y": 1167,
+        "w": 95,
+        "h": 20
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 663,
+        "w": 59.5,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:nearest.4.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "21.results.row-5.view",
+      "order": 42,
+      "parent": "21.results.row-5",
+      "component": "ui:Button",
+      "box": {
+        "x": 570,
+        "y": 1167,
+        "w": 78,
+        "h": 20
+      },
+      "dp": {
+        "x": 308.5,
+        "y": 663,
+        "w": 49,
+        "h": 12.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:nearby.view",
+      "action": "navigate:/atlas/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.tabs",
+      "order": 43,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 77,
+        "y": 1202,
+        "w": 614,
+        "h": 95
+      },
+      "dp": {
+        "x": 0,
+        "y": 685,
+        "w": 384,
+        "h": 59.5
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#16171B"
+      },
+      "copy": null
+    },
+    {
+      "id": "21.tabs.indicator",
+      "order": 44,
+      "parent": "21.tabs",
+      "component": null,
+      "box": {
+        "x": 145,
+        "y": 1204,
+        "w": 90,
+        "h": 4
+      },
+      "dp": {
+        "x": 42.5,
+        "y": 686,
+        "w": 56.5,
+        "h": 2.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "21.tabs.atlas.icon",
+      "order": 45,
+      "parent": "21.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 175,
+        "y": 1222,
+        "w": 30,
+        "h": 29
+      },
+      "dp": {
+        "x": 61.5,
+        "y": 697.5,
+        "w": 19,
+        "h": 18
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "atlas",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "21.tabs.library.icon",
+      "order": 46,
+      "parent": "21.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 369,
+        "y": 1221,
+        "w": 30,
+        "h": 31
+      },
+      "dp": {
+        "x": 182.5,
+        "y": 696.5,
+        "w": 19,
+        "h": 19.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "compass",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "21.tabs.search.icon",
+      "order": 47,
+      "parent": "21.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 562,
+        "y": 1223,
+        "w": 31,
+        "h": 25
+      },
+      "dp": {
+        "x": 303.5,
+        "y": 698,
+        "w": 19.5,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "search",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas/find",
+      "copy": null
+    },
+    {
+      "id": "21.tabs.atlas.label",
+      "order": 48,
+      "parent": "21.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 168,
+        "y": 1260,
+        "w": 43,
+        "h": 16
+      },
+      "dp": {
+        "x": 57,
+        "y": 721,
+        "w": 27,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.atlas",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.tabs.library.label",
+      "order": 49,
+      "parent": "21.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 355,
+        "y": 1261,
+        "w": 59,
+        "h": 19
+      },
+      "dp": {
+        "x": 174,
+        "y": 721.5,
+        "w": 37,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.library",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "21.tabs.search.label",
+      "order": 50,
+      "parent": "21.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 550,
+        "y": 1261,
+        "w": 56,
+        "h": 15
+      },
+      "dp": {
+        "x": 296,
+        "y": 721.5,
+        "w": 35,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.search",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "the device frame around the screen",
+      "box": {
+        "x": 74,
+        "y": 104,
+        "w": 619,
+        "h": 1197
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "leaf line-art above the device frame",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 104
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "leaf line-art left of the device frame",
+      "box": {
+        "x": 0,
+        "y": 104,
+        "w": 74,
+        "h": 1197
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "leaf line-art right of the device frame",
+      "box": {
+        "x": 693,
+        "y": 104,
+        "w": 75,
+        "h": 1197
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "leaf line-art below the device frame",
+      "box": {
+        "x": 0,
+        "y": 1301,
+        "w": 768,
+        "h": 75
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a region name printed above the frame",
+      "box": {
+        "x": 76,
+        "y": 72,
+        "w": 147,
+        "h": 22
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "the route string printed above the frame",
+      "box": {
+        "x": 498,
+        "y": 60,
+        "w": 211,
+        "h": 42
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a region name printed below the frame",
+      "box": {
+        "x": 348,
+        "y": 1324,
+        "w": 73,
+        "h": 18
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a component name and level printed after the anchor heading",
+      "box": {
+        "x": 349,
+        "y": 222,
+        "w": 232,
+        "h": 22
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a pixel size printed inside the anchor swatch",
+      "box": {
+        "x": 169,
+        "y": 335,
+        "w": 49,
+        "h": 23
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the results subtitle misspells a word",
+      "box": {
+        "x": 103,
+        "y": 502,
+        "w": 381,
+        "h": 22
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the middle tab’s label is misprinted",
+      "box": {
+        "x": 355,
+        "y": 1261,
+        "w": 59,
+        "h": 19
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "21.anchor.oklch",
+      "why": "#5B6B78’s printed OKLCh does not survive checking (§4 E1); the line shows the engine’s conversion"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": [
+        "21.tabs",
+        "21.tabs.indicator",
+        "21.tabs.atlas.icon",
+        "21.tabs.atlas.label",
+        "21.tabs.library.icon",
+        "21.tabs.library.label",
+        "21.tabs.search.icon",
+        "21.tabs.search.label"
+      ],
+      "resolution": "P5 → 01: 21's three-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    }
+  ]
+}

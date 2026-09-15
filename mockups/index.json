@@ -56,7 +56,7 @@
       "primaryFor": [],
       "variantFor": ["/atlas/palettes"],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/16.json"
     },
     "17": {
       "file": "17_profile_setup_swatch_test.jpg",
@@ -64,7 +64,7 @@
       "primaryFor": [],
       "variantFor": ["/profile"],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/17.json"
     },
     "18": {
       "file": "18_export_center_reports.jpg",
@@ -72,7 +72,7 @@
       "primaryFor": ["/profile/export"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/18.json"
     },
     "19": {
       "file": "19_what_goes_with_this.jpg",
@@ -80,7 +80,7 @@
       "primaryFor": ["/atlas/with/[slug]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/19.json"
     },
     "20": {
       "file": "20_colour_card_shareable.jpg",
@@ -88,7 +88,7 @@
       "primaryFor": ["/atlas/card/[slug]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/20.json"
     },
     "21": {
       "file": "21_nearest_in_corpus.jpg",
@@ -96,7 +96,7 @@
       "primaryFor": ["/atlas/nearby/[slug]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/21.json"
     },
     "22": {
       "file": "22_shopping_check.jpg",
@@ -208,7 +208,7 @@
       "primaryFor": ["/atlas/wear/[slug]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/07.json"
     },
     "08": {
       "file": "08_color_compare_instrument.jpg",
@@ -216,7 +216,7 @@
       "primaryFor": ["/atlas/compare"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/08.json"
     },
     "09": {
       "file": "09_semantic_finder_search.jpg",

@@ -1,0 +1,2230 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "16",
+  "mockupSha256": "474de9e172bc77f40008c3b668384c8106e198b229be305ead17ca9aa359f29c",
+  "kind": "screen",
+  "governs": "state",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "16.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "16.save",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 582,
+        "y": 24,
+        "w": 159,
+        "h": 51
+      },
+      "dp": {
+        "x": 291,
+        "y": 12,
+        "w": 79.5,
+        "h": 25.5
+      },
+      "tokens": {
+        "border": "border.strong",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palettes.save",
+      "action": "submit:palette.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.back",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 33,
+        "y": 41,
+        "w": 116,
+        "h": 18
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 20.5,
+        "w": 58,
+        "h": 9
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:palettes.back",
+      "action": "navigate:/atlas/palettes",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.title",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 259,
+        "y": 40,
+        "w": 250,
+        "h": 20
+      },
+      "dp": {
+        "x": 129.5,
+        "y": 20,
+        "w": 125,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palettes.createTitle",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.header-rule",
+      "order": 4,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 98,
+        "w": 768,
+        "h": 2
+      },
+      "dp": {
+        "x": 0,
+        "y": 49,
+        "w": 384,
+        "h": 1
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.name",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 76,
+        "y": 126,
+        "w": 616,
+        "h": 148
+      },
+      "dp": {
+        "x": 38,
+        "y": 63,
+        "w": 308,
+        "h": 74
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2126"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.name.field",
+      "order": 6,
+      "parent": "16.name",
+      "component": "ui:TextField",
+      "box": {
+        "x": 97,
+        "y": 148,
+        "w": 574,
+        "h": 54
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 74,
+        "w": 287,
+        "h": 27
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.name",
+      "action": "adjust:draft.palette.name",
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.art-right-top",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 690,
+        "y": 190,
+        "w": 78,
+        "h": 167
+      },
+      "dp": {
+        "x": 345,
+        "y": 95,
+        "w": 39,
+        "h": 83.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "sashiko",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.name.kind.capsule",
+      "order": 8,
+      "parent": "16.name",
+      "component": "ui:Chip",
+      "box": {
+        "x": 96,
+        "y": 211,
+        "w": 219,
+        "h": 42
+      },
+      "dp": {
+        "x": 48,
+        "y": 105.5,
+        "w": 109.5,
+        "h": 21
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.kind.capsule",
+      "action": "select:palette.kind.capsule",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.name.kind.kasane",
+      "order": 9,
+      "parent": "16.name",
+      "component": "ui:Chip",
+      "box": {
+        "x": 326,
+        "y": 212,
+        "w": 181,
+        "h": 40
+      },
+      "dp": {
+        "x": 163,
+        "y": 106,
+        "w": 90.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.kind.kasane",
+      "action": "select:palette.kind.kasane",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.name.kind.editorial",
+      "order": 10,
+      "parent": "16.name",
+      "component": "ui:Chip",
+      "box": {
+        "x": 518,
+        "y": 212,
+        "w": 99,
+        "h": 40
+      },
+      "dp": {
+        "x": 259,
+        "y": 106,
+        "w": 49.5,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.kind.editorial",
+      "action": "select:palette.kind.editorial",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.name.kind.capsule.selected",
+      "order": 11,
+      "parent": "16.name.kind.capsule",
+      "component": null,
+      "box": {
+        "x": 110,
+        "y": 225,
+        "w": 15,
+        "h": 15
+      },
+      "dp": {
+        "x": 55,
+        "y": 112.5,
+        "w": 7.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-1",
+      "order": 12,
+      "parent": null,
+      "component": "new:PaletteSlot",
+      "box": {
+        "x": 81,
+        "y": 297,
+        "w": 295,
+        "h": 224
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 148.5,
+        "w": 147.5,
+        "h": 112
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.1",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-2",
+      "order": 13,
+      "parent": null,
+      "component": "new:PaletteSlot",
+      "box": {
+        "x": 392,
+        "y": 297,
+        "w": 296,
+        "h": 225
+      },
+      "dp": {
+        "x": 196,
+        "y": 148.5,
+        "w": 148,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.2",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-1.heading",
+      "order": 14,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 315,
+        "w": 238,
+        "h": 22
+      },
+      "dp": {
+        "x": 50.5,
+        "y": 157.5,
+        "w": 119,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.slot.1.heading",
+      "action": null,
+      "raw": {
+        "emDp": 10.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-2.heading",
+      "order": 15,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 316,
+        "w": 182,
+        "h": 22
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 158,
+        "w": 91,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.slot.2.heading",
+      "action": null,
+      "raw": {
+        "emDp": 10.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.art-left",
+      "order": 16,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 0,
+        "y": 332,
+        "w": 80,
+        "h": 417
+      },
+      "dp": {
+        "x": 0,
+        "y": 166,
+        "w": 40,
+        "h": 208.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "kimono",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-1.swatch",
+      "order": 17,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 100,
+        "y": 346,
+        "w": 261,
+        "h": 68
+      },
+      "dp": {
+        "x": 50,
+        "y": 173,
+        "w": 130.5,
+        "h": 34
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.1.hex",
+      "action": null,
+      "measured": {
+        "fill": "#1D2424"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-2.swatch",
+      "order": 18,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 407,
+        "y": 346,
+        "w": 261,
+        "h": 70
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 173,
+        "w": 130.5,
+        "h": 35
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.2.hex",
+      "action": null,
+      "measured": {
+        "fill": "#E8E4DB"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-1.hex",
+      "order": 19,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 100,
+        "y": 426,
+        "w": 85,
+        "h": 18
+      },
+      "dp": {
+        "x": 50,
+        "y": 213,
+        "w": 42.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.1.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "16.slots.slot-2.hex",
+      "order": 20,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 426,
+        "w": 88,
+        "h": 18
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 213,
+        "w": 44,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.2.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "16.slots.slot-1.name",
+      "order": 21,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 451,
+        "w": 219,
+        "h": 18
+      },
+      "dp": {
+        "x": 50.5,
+        "y": 225.5,
+        "w": 109.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:draft.palette.slot.1.name",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.slots.slot-2.name",
+      "order": 22,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 408,
+        "y": 450,
+        "w": 191,
+        "h": 19
+      },
+      "dp": {
+        "x": 204,
+        "y": 225,
+        "w": 95.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:draft.palette.slot.2.name",
+      "action": null,
+      "raw": {
+        "emDp": 10.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.slots.slot-1.locked",
+      "order": 23,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Chip",
+      "box": {
+        "x": 102,
+        "y": 487,
+        "w": 103,
+        "h": 19
+      },
+      "dp": {
+        "x": 51,
+        "y": 243.5,
+        "w": 51.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": "lock",
+      "illustration": null,
+      "binding": "static:palette.locked",
+      "action": "toggle:slot.1.lock",
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-1.role",
+      "order": 24,
+      "parent": "16.slots.slot-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 216,
+        "y": 488,
+        "w": 110,
+        "h": 18
+      },
+      "dp": {
+        "x": 108,
+        "y": 244,
+        "w": 55,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.role.anchor",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-2.role",
+      "order": 25,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 488,
+        "w": 155,
+        "h": 19
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 244,
+        "w": 77.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.role.light-ground",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-2.replace",
+      "order": 26,
+      "parent": "16.slots.slot-2",
+      "component": "ui:Button",
+      "box": {
+        "x": 576,
+        "y": 487,
+        "w": 95,
+        "h": 19
+      },
+      "dp": {
+        "x": 288,
+        "y": 243.5,
+        "w": 47.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": "refresh",
+      "illustration": null,
+      "binding": "static:palette.replace",
+      "action": "select:slot.2.replace",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-3",
+      "order": 27,
+      "parent": null,
+      "component": "new:PaletteSlot",
+      "box": {
+        "x": 81,
+        "y": 534,
+        "w": 295,
+        "h": 227
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 267,
+        "w": 147.5,
+        "h": 113.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.3",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-4",
+      "order": 28,
+      "parent": null,
+      "component": "new:PaletteSlot",
+      "box": {
+        "x": 392,
+        "y": 535,
+        "w": 296,
+        "h": 225
+      },
+      "dp": {
+        "x": 196,
+        "y": 267.5,
+        "w": 148,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.4",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-3.heading",
+      "order": 29,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 100,
+        "y": 554,
+        "w": 149,
+        "h": 20
+      },
+      "dp": {
+        "x": 50,
+        "y": 277,
+        "w": 74.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.slot.3.heading",
+      "action": null,
+      "raw": {
+        "emDp": 9.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-4.heading",
+      "order": 30,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 553,
+        "w": 192,
+        "h": 22
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 276.5,
+        "w": 96,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.slot.4.heading",
+      "action": null,
+      "raw": {
+        "emDp": 10.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-3.swatch",
+      "order": 31,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 100,
+        "y": 584,
+        "w": 261,
+        "h": 70
+      },
+      "dp": {
+        "x": 50,
+        "y": 292,
+        "w": 130.5,
+        "h": 35
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.3.hex",
+      "action": null,
+      "measured": {
+        "fill": "#566876"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-4.swatch",
+      "order": 32,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 406,
+        "y": 584,
+        "w": 263,
+        "h": 70
+      },
+      "dp": {
+        "x": 203,
+        "y": 292,
+        "w": 131.5,
+        "h": 35
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.4.hex",
+      "action": null,
+      "measured": {
+        "fill": "#A27F61"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.slots.slot-3.hex",
+      "order": 33,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 100,
+        "y": 664,
+        "w": 89,
+        "h": 19
+      },
+      "dp": {
+        "x": 50,
+        "y": 332,
+        "w": 44.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.3.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "16.slots.slot-4.hex",
+      "order": 34,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 664,
+        "w": 91,
+        "h": 19
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 332,
+        "w": 45.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:draft.palette.slot.4.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "16.slots.slot-3.name",
+      "order": 35,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 689,
+        "w": 219,
+        "h": 19
+      },
+      "dp": {
+        "x": 50.5,
+        "y": 344.5,
+        "w": 109.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:draft.palette.slot.3.name",
+      "action": null,
+      "raw": {
+        "emDp": 10.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.slots.slot-4.name",
+      "order": 36,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 689,
+        "w": 158,
+        "h": 19
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 344.5,
+        "w": 79,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:draft.palette.slot.4.name",
+      "action": null,
+      "raw": {
+        "emDp": 10.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.slots.slot-3.role",
+      "order": 37,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 101,
+        "y": 726,
+        "w": 126,
+        "h": 18
+      },
+      "dp": {
+        "x": 50.5,
+        "y": 363,
+        "w": 63,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.role.mid-tone",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-3.replace",
+      "order": 38,
+      "parent": "16.slots.slot-3",
+      "component": "ui:Button",
+      "box": {
+        "x": 266,
+        "y": 726,
+        "w": 96,
+        "h": 19
+      },
+      "dp": {
+        "x": 133,
+        "y": 363,
+        "w": 48,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": "refresh",
+      "illustration": null,
+      "binding": "static:palette.replace",
+      "action": "select:slot.3.replace",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-4.role",
+      "order": 39,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Text",
+      "box": {
+        "x": 408,
+        "y": 726,
+        "w": 108,
+        "h": 19
+      },
+      "dp": {
+        "x": 204,
+        "y": 363,
+        "w": 54,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.role.accent",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.slots.slot-4.replace",
+      "order": 40,
+      "parent": "16.slots.slot-4",
+      "component": "ui:Button",
+      "box": {
+        "x": 576,
+        "y": 725,
+        "w": 96,
+        "h": 21
+      },
+      "dp": {
+        "x": 288,
+        "y": 362.5,
+        "w": 48,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": "refresh",
+      "illustration": null,
+      "binding": "static:palette.replace",
+      "action": "select:slot.4.replace",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix",
+      "order": 41,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 80,
+        "y": 781,
+        "w": 608,
+        "h": 254
+      },
+      "dp": {
+        "x": 40,
+        "y": 390.5,
+        "w": 304,
+        "h": 127
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2126"
+      },
+      "copy": null
+    },
+    {
+      "id": "16.matrix.title",
+      "order": 42,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 97,
+        "y": 801,
+        "w": 467,
+        "h": 23
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 400.5,
+        "w": 233.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.matrix.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix.rule-1",
+      "order": 43,
+      "parent": "16.matrix",
+      "component": null,
+      "box": {
+        "x": 97,
+        "y": 835,
+        "w": 574,
+        "h": 1
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 417.5,
+        "w": 287,
+        "h": 0.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.matrix.contrast.label",
+      "order": 44,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 106,
+        "y": 856,
+        "w": 132,
+        "h": 19
+      },
+      "dp": {
+        "x": 53,
+        "y": 428,
+        "w": 66,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.matrix.contrast",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix.contrast.pair",
+      "order": 45,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 244,
+        "y": 857,
+        "w": 96,
+        "h": 19
+      },
+      "dp": {
+        "x": 122,
+        "y": 428.5,
+        "w": 48,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.matrix.pair",
+      "action": null,
+      "raw": {
+        "emDp": 9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix.contrast.value",
+      "order": 46,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 402,
+        "y": 854,
+        "w": 256,
+        "h": 22
+      },
+      "dp": {
+        "x": 201,
+        "y": 427,
+        "w": 128,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:palette.contrast",
+      "action": null,
+      "raw": {
+        "emDp": 10.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.art-right-bottom",
+      "order": 47,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 690,
+        "y": 882,
+        "w": 73,
+        "h": 178
+      },
+      "dp": {
+        "x": 345,
+        "y": 441,
+        "w": 36.5,
+        "h": 89
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "sashiko",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.matrix.rule-2",
+      "order": 48,
+      "parent": "16.matrix",
+      "component": null,
+      "box": {
+        "x": 97,
+        "y": 892,
+        "w": 574,
+        "h": 2
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 446,
+        "w": 287,
+        "h": 1
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.matrix.harmony.label",
+      "order": 49,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 106,
+        "y": 913,
+        "w": 139,
+        "h": 22
+      },
+      "dp": {
+        "x": 53,
+        "y": 456.5,
+        "w": 69.5,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.matrix.harmony",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix.harmony.value",
+      "order": 50,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 402,
+        "y": 913,
+        "w": 247,
+        "h": 22
+      },
+      "dp": {
+        "x": 201,
+        "y": 456.5,
+        "w": 123.5,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:palette.harmony",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "16.matrix.rule-3",
+      "order": 51,
+      "parent": "16.matrix",
+      "component": null,
+      "box": {
+        "x": 97,
+        "y": 949,
+        "w": 574,
+        "h": 2
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 474.5,
+        "w": 287,
+        "h": 1
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.matrix.separation.label",
+      "order": 52,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 106,
+        "y": 969,
+        "w": 144,
+        "h": 18
+      },
+      "dp": {
+        "x": 53,
+        "y": 484.5,
+        "w": 72,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:palette.matrix.separation",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "16.matrix.separation.value",
+      "order": 53,
+      "parent": "16.matrix",
+      "component": "ui:Text",
+      "box": {
+        "x": 402,
+        "y": 967,
+        "w": 263,
+        "h": 44
+      },
+      "dp": {
+        "x": 201,
+        "y": 483.5,
+        "w": 131.5,
+        "h": 22
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:palette.separation",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "16.next-card",
+      "order": 54,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 81,
+        "y": 1057,
+        "w": 606,
+        "h": 13
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 528.5,
+        "w": 303,
+        "h": 6.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.tray",
+      "order": 55,
+      "parent": null,
+      "component": "new:CorpusTray",
+      "box": {
+        "x": 0,
+        "y": 1070,
+        "w": 768,
+        "h": 149
+      },
+      "dp": {
+        "x": 0,
+        "y": 535,
+        "w": 384,
+        "h": 74.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.tray.chip-1",
+      "order": 56,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 0,
+        "y": 1092,
+        "w": 42,
+        "h": 113
+      },
+      "dp": {
+        "x": 0,
+        "y": 546,
+        "w": 21,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.0",
+      "action": "select:tray.0",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.divider-left",
+      "order": 57,
+      "parent": "16.tray",
+      "component": null,
+      "box": {
+        "x": 63,
+        "y": 1094,
+        "w": 2,
+        "h": 112
+      },
+      "dp": {
+        "x": 31.5,
+        "y": 547,
+        "w": 1,
+        "h": 56
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.tray.chip-2",
+      "order": 58,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 87,
+        "y": 1092,
+        "w": 66,
+        "h": 113
+      },
+      "dp": {
+        "x": 43.5,
+        "y": 546,
+        "w": 33,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.1",
+      "action": "select:tray.1",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-3",
+      "order": 59,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 167,
+        "y": 1092,
+        "w": 79,
+        "h": 113
+      },
+      "dp": {
+        "x": 83.5,
+        "y": 546,
+        "w": 39.5,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.2",
+      "action": "select:tray.2",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-4",
+      "order": 60,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 259,
+        "y": 1092,
+        "w": 81,
+        "h": 113
+      },
+      "dp": {
+        "x": 129.5,
+        "y": 546,
+        "w": 40.5,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.3",
+      "action": "select:tray.3",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-5",
+      "order": 61,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 353,
+        "y": 1092,
+        "w": 60,
+        "h": 113
+      },
+      "dp": {
+        "x": 176.5,
+        "y": 546,
+        "w": 30,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.4",
+      "action": "select:tray.4",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-6",
+      "order": 62,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 425,
+        "y": 1091,
+        "w": 80,
+        "h": 115
+      },
+      "dp": {
+        "x": 212.5,
+        "y": 545.5,
+        "w": 40,
+        "h": 57.5
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.5",
+      "action": "select:tray.5",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-7",
+      "order": 63,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 517,
+        "y": 1092,
+        "w": 71,
+        "h": 113
+      },
+      "dp": {
+        "x": 258.5,
+        "y": 546,
+        "w": 35.5,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.6",
+      "action": "select:tray.6",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.chip-8",
+      "order": 64,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 601,
+        "y": 1092,
+        "w": 69,
+        "h": 113
+      },
+      "dp": {
+        "x": 300.5,
+        "y": 546,
+        "w": 34.5,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.7",
+      "action": "select:tray.7",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.divider-right",
+      "order": 65,
+      "parent": "16.tray",
+      "component": null,
+      "box": {
+        "x": 692,
+        "y": 1094,
+        "w": 2,
+        "h": 112
+      },
+      "dp": {
+        "x": 346,
+        "y": 547,
+        "w": 1,
+        "h": 56
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "16.tray.chip-9",
+      "order": 66,
+      "parent": "16.tray",
+      "component": "new:CorpusChip",
+      "box": {
+        "x": 714,
+        "y": 1092,
+        "w": 54,
+        "h": 113
+      },
+      "dp": {
+        "x": 357,
+        "y": 546,
+        "w": 27,
+        "h": 56.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:tray.8",
+      "action": "select:tray.8",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "16.tray.previous",
+      "order": 67,
+      "parent": "16.tray",
+      "component": "ui:Button",
+      "box": {
+        "x": 51,
+        "y": 1135,
+        "w": 27,
+        "h": 30
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 567.5,
+        "w": 13.5,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "chevron-left",
+      "illustration": null,
+      "binding": null,
+      "action": "select:tray.previous",
+      "copy": null
+    },
+    {
+      "id": "16.tray.next",
+      "order": 68,
+      "parent": "16.tray",
+      "component": "ui:Button",
+      "box": {
+        "x": 679,
+        "y": 1130,
+        "w": 27,
+        "h": 35
+      },
+      "dp": {
+        "x": 339.5,
+        "y": 565,
+        "w": 13.5,
+        "h": 17.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "chevron-right",
+      "illustration": null,
+      "binding": null,
+      "action": "select:tray.next",
+      "copy": null
+    },
+    {
+      "id": "16.create",
+      "order": 69,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 79,
+        "y": 1235,
+        "w": 610,
+        "h": 61
+      },
+      "dp": {
+        "x": 39.5,
+        "y": 617.5,
+        "w": 305,
+        "h": 30.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:palettes.createAndSave",
+      "action": "submit:palette.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 269,
+        "y": 1355,
+        "w": 229,
+        "h": 10
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "16.matrix.contrast.value",
+      "why": "the WCAG ratio and the APCA Lc are shown as two figures — APCA has no ratio (FR-3, §4 row 07 16)"
+    },
+    {
+      "rule": "E2",
+      "element": "16.matrix.separation.value",
+      "why": "the computed separation score (FR-5) for the palette shown, printing 100 only when it is 100; a safety claim about people does not ship"
+    }
+  ],
+  "conflicts": []
+}

@@ -1,0 +1,1861 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "17",
+  "mockupSha256": "68f2543baddda261ee15c9ed9527c7f0ae5d18759fcab4cec22c54e6c0c3d3fd",
+  "kind": "screen",
+  "governs": "state",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "17.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "17.title",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 92,
+        "y": 64,
+        "w": 585,
+        "h": 28
+      },
+      "dp": {
+        "x": 46,
+        "y": 32,
+        "w": 292.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.step",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Chip",
+      "box": {
+        "x": 164,
+        "y": 111,
+        "w": 441,
+        "h": 38
+      },
+      "dp": {
+        "x": 82,
+        "y": 55.5,
+        "w": 220.5,
+        "h": 19
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:profile.session.step",
+      "action": null,
+      "measured": {
+        "bg": "#343C46"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 51,
+        "y": 174,
+        "w": 667,
+        "h": 467
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 87,
+        "w": 333.5,
+        "h": 233.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1C2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.draping.title",
+      "order": 4,
+      "parent": "17.draping",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 200,
+        "w": 420,
+        "h": 25
+      },
+      "dp": {
+        "x": 37,
+        "y": 100,
+        "w": 210,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.prompt",
+      "order": 5,
+      "parent": "17.draping",
+      "component": "ui:Text",
+      "box": {
+        "x": 74,
+        "y": 236,
+        "w": 560,
+        "h": 47
+      },
+      "dp": {
+        "x": 37,
+        "y": 118,
+        "w": 280,
+        "h": 23.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.prompt",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "17.draping.option-a",
+      "order": 6,
+      "parent": "17.draping",
+      "component": "ui:Card",
+      "box": {
+        "x": 73,
+        "y": 301,
+        "w": 303,
+        "h": 327
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 150.5,
+        "w": 151.5,
+        "h": 163.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.draping.option-a.swatch",
+      "order": 7,
+      "parent": "17.draping.option-a",
+      "component": "new:DrapeSwatch",
+      "box": {
+        "x": 73,
+        "y": 301,
+        "w": 303,
+        "h": 176
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 150.5,
+        "w": 151.5,
+        "h": 88
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.a.hex",
+      "action": null,
+      "measured": {
+        "fill": "#BA6A31"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.draping.option-b",
+      "order": 8,
+      "parent": "17.draping",
+      "component": "ui:Card",
+      "box": {
+        "x": 393,
+        "y": 301,
+        "w": 303,
+        "h": 327
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 150.5,
+        "w": 151.5,
+        "h": 163.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.draping.option-b.swatch",
+      "order": 9,
+      "parent": "17.draping.option-b",
+      "component": "new:DrapeSwatch",
+      "box": {
+        "x": 393,
+        "y": 301,
+        "w": 303,
+        "h": 174
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 150.5,
+        "w": 151.5,
+        "h": 87
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.b.hex",
+      "action": null,
+      "measured": {
+        "fill": "#7C4F66"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.draping.option-a.label",
+      "order": 10,
+      "parent": "17.draping.option-a",
+      "component": "ui:Text",
+      "box": {
+        "x": 88,
+        "y": 491,
+        "w": 92,
+        "h": 19
+      },
+      "dp": {
+        "x": 44,
+        "y": 245.5,
+        "w": 46,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.option-a",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-b.label",
+      "order": 11,
+      "parent": "17.draping.option-b",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 491,
+        "w": 91,
+        "h": 19
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 245.5,
+        "w": 45.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.option-b",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-a.name",
+      "order": 12,
+      "parent": "17.draping.option-a",
+      "component": "ui:Text",
+      "box": {
+        "x": 87,
+        "y": 519,
+        "w": 160,
+        "h": 15
+      },
+      "dp": {
+        "x": 43.5,
+        "y": 259.5,
+        "w": 80,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.a.name",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-b.name",
+      "order": 13,
+      "parent": "17.draping.option-b",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 519,
+        "w": 128,
+        "h": 16
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 259.5,
+        "w": 64,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.b.name",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-a.hex",
+      "order": 14,
+      "parent": "17.draping.option-a",
+      "component": "ui:Text",
+      "box": {
+        "x": 88,
+        "y": 540,
+        "w": 133,
+        "h": 18
+      },
+      "dp": {
+        "x": 44,
+        "y": 270,
+        "w": 66.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.a.hex",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.draping.option-b.hex",
+      "order": 15,
+      "parent": "17.draping.option-b",
+      "component": "ui:Text",
+      "box": {
+        "x": 407,
+        "y": 540,
+        "w": 131,
+        "h": 18
+      },
+      "dp": {
+        "x": 203.5,
+        "y": 270,
+        "w": 65.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.trial.b.hex",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.draping.option-a.select",
+      "order": 16,
+      "parent": "17.draping.option-a",
+      "component": "ui:Button",
+      "box": {
+        "x": 88,
+        "y": 567,
+        "w": 274,
+        "h": 40
+      },
+      "dp": {
+        "x": 44,
+        "y": 283.5,
+        "w": 137,
+        "h": 20
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.select-a",
+      "action": "select:profile.trial.a",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-b.select",
+      "order": 17,
+      "parent": "17.draping.option-b",
+      "component": "ui:Button",
+      "box": {
+        "x": 406,
+        "y": 566,
+        "w": 276,
+        "h": 43
+      },
+      "dp": {
+        "x": 203,
+        "y": 283,
+        "w": 138,
+        "h": 21.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.draping.select-b",
+      "action": "select:profile.trial.b",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.draping.option-b.select.selected",
+      "order": 18,
+      "parent": "17.draping.option-b.select",
+      "component": null,
+      "box": {
+        "x": 443,
+        "y": 582,
+        "w": 11,
+        "h": 11
+      },
+      "dp": {
+        "x": 221.5,
+        "y": 291,
+        "w": 5.5,
+        "h": 5.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar",
+      "order": 19,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 51,
+        "y": 656,
+        "w": 667,
+        "h": 341
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 328,
+        "w": 333.5,
+        "h": 170.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1C2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.radar.title",
+      "order": 20,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 75,
+        "y": 680,
+        "w": 576,
+        "h": 26
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 340,
+        "w": 288,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.radar.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.subtitle",
+      "order": 21,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 75,
+        "y": 711,
+        "w": 612,
+        "h": 20
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 355.5,
+        "w": 306,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.radar.subtitle",
+      "action": null,
+      "raw": {
+        "emDp": 10.8
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.axis-temperature",
+      "order": 22,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 183,
+        "y": 749,
+        "w": 81,
+        "h": 16
+      },
+      "dp": {
+        "x": 91.5,
+        "y": 374.5,
+        "w": 40.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.temperature",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.temperature.label",
+      "order": 23,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 377,
+        "y": 756,
+        "w": 104,
+        "h": 17
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 378,
+        "w": 52,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.temperature",
+      "action": null,
+      "raw": {
+        "emDp": 9.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.temperature.value",
+      "order": 24,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 542,
+        "y": 754,
+        "w": 155,
+        "h": 18
+      },
+      "dp": {
+        "x": 271,
+        "y": 377,
+        "w": 77.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.temperature.label",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.radar.chart",
+      "order": 25,
+      "parent": "17.radar",
+      "component": "new:RadarChart",
+      "box": {
+        "x": 132,
+        "y": 767,
+        "w": 182,
+        "h": 182
+      },
+      "dp": {
+        "x": 66,
+        "y": 383.5,
+        "w": 91,
+        "h": 91
+      },
+      "tokens": {
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar.temperature.range",
+      "order": 26,
+      "parent": "17.radar",
+      "component": "ui:Slider",
+      "box": {
+        "x": 376,
+        "y": 778,
+        "w": 321,
+        "h": 17
+      },
+      "dp": {
+        "x": 188,
+        "y": 389,
+        "w": 160.5,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.primary",
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.temperature.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar.depth.label",
+      "order": 27,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 377,
+        "y": 813,
+        "w": 144,
+        "h": 20
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 406.5,
+        "w": 72,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.depth",
+      "action": null,
+      "raw": {
+        "emDp": 10.8
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.depth.value",
+      "order": 28,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 530,
+        "y": 813,
+        "w": 167,
+        "h": 20
+      },
+      "dp": {
+        "x": 265,
+        "y": 406.5,
+        "w": 83.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.depth.label",
+      "action": null,
+      "raw": {
+        "emDp": 9.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.radar.depth.range",
+      "order": 29,
+      "parent": "17.radar",
+      "component": "ui:Slider",
+      "box": {
+        "x": 376,
+        "y": 836,
+        "w": 322,
+        "h": 18
+      },
+      "dp": {
+        "x": 188,
+        "y": 418,
+        "w": 161,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary",
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.depth.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar.axis-muted-tolerance",
+      "order": 30,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 71,
+        "y": 852,
+        "w": 63,
+        "h": 29
+      },
+      "dp": {
+        "x": 35.5,
+        "y": 426,
+        "w": 31.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "emDp": 9.9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "17.radar.axis-depth",
+      "order": 31,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 318,
+        "y": 852,
+        "w": 38,
+        "h": 16
+      },
+      "dp": {
+        "x": 159,
+        "y": 426,
+        "w": 19,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.depth",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.chroma.label",
+      "order": 32,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 378,
+        "y": 872,
+        "w": 147,
+        "h": 16
+      },
+      "dp": {
+        "x": 189,
+        "y": 436,
+        "w": 73.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.chroma",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.chroma.value",
+      "order": 33,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 554,
+        "y": 872,
+        "w": 143,
+        "h": 18
+      },
+      "dp": {
+        "x": 277,
+        "y": 436,
+        "w": 71.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.chroma.label",
+      "action": null,
+      "raw": {
+        "emDp": 8.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.radar.chroma.range",
+      "order": 34,
+      "parent": "17.radar",
+      "component": "ui:Slider",
+      "box": {
+        "x": 377,
+        "y": 895,
+        "w": 321,
+        "h": 18
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 447.5,
+        "w": 160.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary",
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.chroma.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.radar.contrast.label",
+      "order": 35,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 378,
+        "y": 931,
+        "w": 163,
+        "h": 16
+      },
+      "dp": {
+        "x": 189,
+        "y": 465.5,
+        "w": 81.5,
+        "h": 8
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.contrast",
+      "action": null,
+      "raw": {
+        "emDp": 11
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.contrast.value",
+      "order": 36,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 544,
+        "y": 930,
+        "w": 155,
+        "h": 20
+      },
+      "dp": {
+        "x": 272,
+        "y": 465,
+        "w": 77.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.contrast.label",
+      "action": null,
+      "raw": {
+        "emDp": 9.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "17.radar.axis-chroma",
+      "order": 37,
+      "parent": "17.radar",
+      "component": "ui:Text",
+      "box": {
+        "x": 197,
+        "y": 956,
+        "w": 52,
+        "h": 13
+      },
+      "dp": {
+        "x": 98.5,
+        "y": 478,
+        "w": 26,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.chroma",
+      "action": null,
+      "raw": {
+        "emDp": 8.9
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.radar.contrast.range",
+      "order": 38,
+      "parent": "17.radar",
+      "component": "ui:Slider",
+      "box": {
+        "x": 376,
+        "y": 954,
+        "w": 323,
+        "h": 17
+      },
+      "dp": {
+        "x": 188,
+        "y": 477,
+        "w": 161.5,
+        "h": 8.5
+      },
+      "tokens": {
+        "fg": "text.primary",
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.contrast.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.palette",
+      "order": 39,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 51,
+        "y": 1012,
+        "w": 667,
+        "h": 217
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 506,
+        "w": 333.5,
+        "h": 108.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1C1F26"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.title",
+      "order": 40,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 75,
+        "y": 1037,
+        "w": 247,
+        "h": 20
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 518.5,
+        "w": 123.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.palette.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.subtitle",
+      "order": 41,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 75,
+        "y": 1067,
+        "w": 561,
+        "h": 20
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 533.5,
+        "w": 280.5,
+        "h": 10
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.palette.subtitle",
+      "action": null,
+      "raw": {
+        "emDp": 10.8
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.swatch-1",
+      "order": 42,
+      "parent": "17.palette",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 73,
+        "y": 1099,
+        "w": 117,
+        "h": 82
+      },
+      "dp": {
+        "x": 36.5,
+        "y": 549.5,
+        "w": 58.5,
+        "h": 41
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palette.0.hex",
+      "action": null,
+      "measured": {
+        "fill": "#828081"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.swatch-2",
+      "order": 43,
+      "parent": "17.palette",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 200,
+        "y": 1099,
+        "w": 117,
+        "h": 83
+      },
+      "dp": {
+        "x": 100,
+        "y": 549.5,
+        "w": 58.5,
+        "h": 41.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palette.1.hex",
+      "action": null,
+      "measured": {
+        "fill": "#C3C4C6"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.swatch-3",
+      "order": 44,
+      "parent": "17.palette",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 325,
+        "y": 1099,
+        "w": 118,
+        "h": 83
+      },
+      "dp": {
+        "x": 162.5,
+        "y": 549.5,
+        "w": 59,
+        "h": 41.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palette.2.hex",
+      "action": null,
+      "measured": {
+        "fill": "#F1F0EE"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.swatch-4",
+      "order": 45,
+      "parent": "17.palette",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 453,
+        "y": 1100,
+        "w": 116,
+        "h": 81
+      },
+      "dp": {
+        "x": 226.5,
+        "y": 550,
+        "w": 58,
+        "h": 40.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palette.3.hex",
+      "action": null,
+      "measured": {
+        "fill": "#49555E"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.swatch-5",
+      "order": 46,
+      "parent": "17.palette",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 578,
+        "y": 1099,
+        "w": 118,
+        "h": 83
+      },
+      "dp": {
+        "x": 289,
+        "y": 549.5,
+        "w": 59,
+        "h": 41.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palette.4.hex",
+      "action": null,
+      "measured": {
+        "fill": "#B48C6E"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.palette.swatch-1.name",
+      "order": 47,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 92,
+        "y": 1192,
+        "w": 79,
+        "h": 15
+      },
+      "dp": {
+        "x": 46,
+        "y": 596,
+        "w": 39.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.palette.0.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.swatch-2.name",
+      "order": 48,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 213,
+        "y": 1192,
+        "w": 89,
+        "h": 15
+      },
+      "dp": {
+        "x": 106.5,
+        "y": 596,
+        "w": 44.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.palette.1.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.swatch-3.name",
+      "order": 49,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 347,
+        "y": 1193,
+        "w": 75,
+        "h": 14
+      },
+      "dp": {
+        "x": 173.5,
+        "y": 596.5,
+        "w": 37.5,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.palette.2.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 9.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.swatch-4.name",
+      "order": 50,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 472,
+        "y": 1192,
+        "w": 78,
+        "h": 15
+      },
+      "dp": {
+        "x": 236,
+        "y": 596,
+        "w": 39,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.palette.3.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 10.3
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.palette.swatch-5.name",
+      "order": 51,
+      "parent": "17.palette",
+      "component": "ui:Text",
+      "box": {
+        "x": 607,
+        "y": 1193,
+        "w": 61,
+        "h": 14
+      },
+      "dp": {
+        "x": 303.5,
+        "y": 596.5,
+        "w": 30.5,
+        "h": 7
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:profile.palette.4.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 9.6
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "17.next-card",
+      "order": 52,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 54,
+        "y": 1246,
+        "w": 662,
+        "h": 11
+      },
+      "dp": {
+        "x": 27,
+        "y": 623,
+        "w": 331,
+        "h": 5.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "17.actions",
+      "order": 53,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 0,
+        "y": 1257,
+        "w": 768,
+        "h": 119
+      },
+      "dp": {
+        "x": 0,
+        "y": 628.5,
+        "w": 384,
+        "h": 59.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "17.actions.continue",
+      "order": 54,
+      "parent": "17.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 49,
+        "y": 1277,
+        "w": 670,
+        "h": 64
+      },
+      "dp": {
+        "x": 24.5,
+        "y": 638.5,
+        "w": 335,
+        "h": 32
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:profile.confirmContinue",
+      "action": "submit:profile.step",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "garbled-text",
+      "note": "the palette subtitle misspells a word",
+      "box": {
+        "x": 75,
+        "y": 1067,
+        "w": 561,
+        "h": 20
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "a faint mark in the render’s bottom-right corner (mean #1F2228), part of no element",
+      "box": {
+        "x": 734,
+        "y": 1368,
+        "w": 34,
+        "h": 8
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C15",
+      "elements": ["17.title", "17.step"],
+      "resolution": "17 is the in-progress state of profile/index, not a /profile/setup route; 23 is its finished state",
+      "flippedByUser": false
+    }
+  ]
+}

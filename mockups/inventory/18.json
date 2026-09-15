@@ -1,0 +1,1830 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "18",
+  "mockupSha256": "5434f022c52338bc8486c3849540b398b6bc563abeab1d35c49688da4b896c89",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "full-bleed",
+    "screens": [
+      {
+        "id": "18.screen",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 768,
+          "h": 1376
+        },
+        "dpPerPx": 0.5
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "18.header",
+      "order": 1,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 768,
+        "h": 89
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 44.5
+      },
+      "tokens": {
+        "bg": "level1"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1A1D24"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.back",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 23,
+        "y": 34,
+        "w": 94,
+        "h": 19
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 17,
+        "w": 47,
+        "h": 9.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:export.back",
+      "action": "navigate:/profile",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.title",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 210,
+        "y": 30,
+        "w": 346,
+        "h": 27
+      },
+      "dp": {
+        "x": 105,
+        "y": 15,
+        "w": 173,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "18.help",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 668,
+        "y": 30,
+        "w": 79,
+        "h": 26
+      },
+      "dp": {
+        "x": 334,
+        "y": 15,
+        "w": 39.5,
+        "h": 13
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "help",
+      "illustration": null,
+      "binding": "static:export.help",
+      "action": "open:export.help",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.header-rule",
+      "order": 5,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 0,
+        "y": 86,
+        "w": 768,
+        "h": 2
+      },
+      "dp": {
+        "x": 0,
+        "y": 43,
+        "w": 384,
+        "h": 1
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.heading",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 30,
+        "y": 129,
+        "w": 468,
+        "h": 29
+      },
+      "dp": {
+        "x": 15,
+        "y": 64.5,
+        "w": 234,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.report.heading",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 28,
+        "y": 177,
+        "w": 712,
+        "h": 395
+      },
+      "dp": {
+        "x": 14,
+        "y": 88.5,
+        "w": 356,
+        "h": 197.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1A1C23"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.report.fold",
+      "order": 8,
+      "parent": "18.report",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 648,
+        "y": 185,
+        "w": 84,
+        "h": 45
+      },
+      "dp": {
+        "x": 324,
+        "y": 92.5,
+        "w": 42,
+        "h": 22.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "page-fold",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.preview",
+      "order": 9,
+      "parent": "18.report",
+      "component": "new:ReportPreview",
+      "box": {
+        "x": 51,
+        "y": 201,
+        "w": 325,
+        "h": 347
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 100.5,
+        "w": 162.5,
+        "h": 173.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:report.preview",
+      "action": null,
+      "measured": {
+        "bg": "#FEFEFE"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.report.title",
+      "order": 10,
+      "parent": "18.report",
+      "component": "ui:Text",
+      "box": {
+        "x": 393,
+        "y": 206,
+        "w": 248,
+        "h": 24
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 103,
+        "w": 124,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.report.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report.preview.title",
+      "order": 11,
+      "parent": "18.report.preview",
+      "component": "ui:Text",
+      "box": {
+        "x": 81,
+        "y": 229,
+        "w": 225,
+        "h": 14
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 114.5,
+        "w": 112.5,
+        "h": 7
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:report.title",
+      "action": null,
+      "raw": {
+        "emDp": 7.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report.detail",
+      "order": 12,
+      "parent": "18.report",
+      "component": "ui:Text",
+      "box": {
+        "x": 393,
+        "y": 239,
+        "w": 280,
+        "h": 52
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 119.5,
+        "w": 140,
+        "h": 26
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.report.detail",
+      "action": null,
+      "raw": {
+        "emDp": 11.3
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.report.preview.matrix-heading",
+      "order": 13,
+      "parent": "18.report.preview",
+      "component": "ui:Text",
+      "box": {
+        "x": 80,
+        "y": 264,
+        "w": 60,
+        "h": 8
+      },
+      "dp": {
+        "x": 40,
+        "y": 132,
+        "w": 30,
+        "h": 4
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:report.matrixHeading",
+      "action": null,
+      "raw": {
+        "emDp": 5.5
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report.preview.matrix",
+      "order": 14,
+      "parent": "18.report.preview",
+      "component": "new:DataTable",
+      "box": {
+        "x": 80,
+        "y": 277,
+        "w": 268,
+        "h": 114
+      },
+      "dp": {
+        "x": 40,
+        "y": 138.5,
+        "w": 134,
+        "h": 57
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:report.deltaE00-matrix",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.art",
+      "order": 15,
+      "parent": "18.report",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 645,
+        "y": 354,
+        "w": 87,
+        "h": 68
+      },
+      "dp": {
+        "x": 322.5,
+        "y": 177,
+        "w": 43.5,
+        "h": 34
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "document",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.preview.oklch-heading",
+      "order": 16,
+      "parent": "18.report.preview",
+      "component": "ui:Text",
+      "box": {
+        "x": 81,
+        "y": 399,
+        "w": 67,
+        "h": 9
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 199.5,
+        "w": 33.5,
+        "h": 4.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:report.oklchHeading",
+      "action": null,
+      "raw": {
+        "emDp": 6.2
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report.preview.oklch",
+      "order": 17,
+      "parent": "18.report.preview",
+      "component": "ui:Text",
+      "box": {
+        "x": 81,
+        "y": 413,
+        "w": 133,
+        "h": 20
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 206.5,
+        "w": 66.5,
+        "h": 10
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:report.oklch",
+      "action": null,
+      "raw": {
+        "emDp": 6.2
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.report.preview.envelope",
+      "order": 18,
+      "parent": "18.report.preview",
+      "component": null,
+      "box": {
+        "x": 80,
+        "y": 439,
+        "w": 267,
+        "h": 83
+      },
+      "dp": {
+        "x": 40,
+        "y": 219.5,
+        "w": 133.5,
+        "h": 41.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.generate",
+      "order": 19,
+      "parent": "18.report",
+      "component": "ui:Button",
+      "box": {
+        "x": 393,
+        "y": 432,
+        "w": 323,
+        "h": 47
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 216,
+        "w": 161.5,
+        "h": 23.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": "arrow-right",
+      "illustration": null,
+      "binding": "static:export.report.generate",
+      "action": "submit:export.report",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.report.preview.envelope.text",
+      "order": 20,
+      "parent": "18.report.preview.envelope",
+      "component": "ui:Text",
+      "box": {
+        "x": 92,
+        "y": 451,
+        "w": 152,
+        "h": 23
+      },
+      "dp": {
+        "x": 46,
+        "y": 225.5,
+        "w": 76,
+        "h": 11.5
+      },
+      "tokens": {},
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:report.envelope",
+      "action": null,
+      "raw": {
+        "emDp": 5.9
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.report.preview.envelope.signature",
+      "order": 21,
+      "parent": "18.report.preview.envelope",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 244,
+        "y": 469,
+        "w": 88,
+        "h": 29
+      },
+      "dp": {
+        "x": 122,
+        "y": 234.5,
+        "w": 44,
+        "h": 14.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "signature",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.report.share",
+      "order": 22,
+      "parent": "18.report",
+      "component": "ui:Button",
+      "box": {
+        "x": 393,
+        "y": 497,
+        "w": 323,
+        "h": 47
+      },
+      "dp": {
+        "x": 196.5,
+        "y": 248.5,
+        "w": 161.5,
+        "h": 23.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.report.share",
+      "action": "open:share.report",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tools.heading",
+      "order": 23,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 30,
+        "y": 630,
+        "w": 512,
+        "h": 30
+      },
+      "dp": {
+        "x": 15,
+        "y": 315,
+        "w": 256,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.tools.heading",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tools.ase",
+      "order": 24,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 28,
+        "y": 678,
+        "w": 228,
+        "h": 315
+      },
+      "dp": {
+        "x": 14,
+        "y": 339,
+        "w": 114,
+        "h": 157.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1A1C22"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.tools.ase.art",
+      "order": 25,
+      "parent": "18.tools.ase",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 192,
+        "y": 684,
+        "w": 58,
+        "h": 73
+      },
+      "dp": {
+        "x": 96,
+        "y": 342,
+        "w": 29,
+        "h": 36.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "document",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.tokens",
+      "order": 26,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 271,
+        "y": 678,
+        "w": 226,
+        "h": 315
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 339,
+        "w": 113,
+        "h": 157.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#181B22"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.tools.tokens.art",
+      "order": 27,
+      "parent": "18.tools.tokens",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 434,
+        "y": 684,
+        "w": 59,
+        "h": 73
+      },
+      "dp": {
+        "x": 217,
+        "y": 342,
+        "w": 29.5,
+        "h": 36.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "document",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.csv",
+      "order": 28,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 512,
+        "y": 678,
+        "w": 228,
+        "h": 315
+      },
+      "dp": {
+        "x": 256,
+        "y": 339,
+        "w": 114,
+        "h": 157.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#191B21"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.tools.csv.art",
+      "order": 29,
+      "parent": "18.tools.csv",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 676,
+        "y": 684,
+        "w": 58,
+        "h": 73
+      },
+      "dp": {
+        "x": 338,
+        "y": 342,
+        "w": 29,
+        "h": 36.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "document",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.ase.icon",
+      "order": 30,
+      "parent": "18.tools.ase",
+      "component": null,
+      "box": {
+        "x": 55,
+        "y": 710,
+        "w": 37,
+        "h": 44
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 355,
+        "w": 18.5,
+        "h": 22
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "file-text",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.tokens.icon",
+      "order": 31,
+      "parent": "18.tools.tokens",
+      "component": null,
+      "box": {
+        "x": 296,
+        "y": 710,
+        "w": 36,
+        "h": 44
+      },
+      "dp": {
+        "x": 148,
+        "y": 355,
+        "w": 18,
+        "h": 22
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "file-code",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.csv.icon",
+      "order": 32,
+      "parent": "18.tools.csv",
+      "component": null,
+      "box": {
+        "x": 537,
+        "y": 710,
+        "w": 36,
+        "h": 44
+      },
+      "dp": {
+        "x": 268.5,
+        "y": 355,
+        "w": 18,
+        "h": 22
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "file-table",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tools.ase.title",
+      "order": 33,
+      "parent": "18.tools.ase",
+      "component": "ui:Text",
+      "box": {
+        "x": 52,
+        "y": 789,
+        "w": 168,
+        "h": 53
+      },
+      "dp": {
+        "x": 26,
+        "y": 394.5,
+        "w": 84,
+        "h": 26.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.ase.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.tokens.title",
+      "order": 34,
+      "parent": "18.tools.tokens",
+      "component": "ui:Text",
+      "box": {
+        "x": 293,
+        "y": 789,
+        "w": 148,
+        "h": 51
+      },
+      "dp": {
+        "x": 146.5,
+        "y": 394.5,
+        "w": 74,
+        "h": 25.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.tokens.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.csv.title",
+      "order": 35,
+      "parent": "18.tools.csv",
+      "component": "ui:Text",
+      "box": {
+        "x": 533,
+        "y": 789,
+        "w": 173,
+        "h": 52
+      },
+      "dp": {
+        "x": 266.5,
+        "y": 394.5,
+        "w": 86.5,
+        "h": 26
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.csv.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.tokens.formats",
+      "order": 36,
+      "parent": "18.tools.tokens",
+      "component": "ui:Text",
+      "box": {
+        "x": 373,
+        "y": 820,
+        "w": 102,
+        "h": 21
+      },
+      "dp": {
+        "x": 186.5,
+        "y": 410,
+        "w": 51,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.tokens.formats",
+      "action": null,
+      "raw": {
+        "emDp": 10
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tools.ase.detail",
+      "order": 37,
+      "parent": "18.tools.ase",
+      "component": "ui:Text",
+      "box": {
+        "x": 53,
+        "y": 855,
+        "w": 191,
+        "h": 42
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 427.5,
+        "w": 95.5,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.ase.detail",
+      "action": null,
+      "raw": {
+        "emDp": 10.8
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.tokens.detail",
+      "order": 38,
+      "parent": "18.tools.tokens",
+      "component": "ui:Text",
+      "box": {
+        "x": 294,
+        "y": 855,
+        "w": 161,
+        "h": 45
+      },
+      "dp": {
+        "x": 147,
+        "y": 427.5,
+        "w": 80.5,
+        "h": 22.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.tokens.detail",
+      "action": null,
+      "raw": {
+        "emDp": 11.6
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.csv.detail",
+      "order": 39,
+      "parent": "18.tools.csv",
+      "component": "ui:Text",
+      "box": {
+        "x": 533,
+        "y": 855,
+        "w": 192,
+        "h": 42
+      },
+      "dp": {
+        "x": 266.5,
+        "y": 427.5,
+        "w": 96,
+        "h": 21
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.csv.detail",
+      "action": null,
+      "raw": {
+        "emDp": 11.3
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "18.tools.ase.export",
+      "order": 40,
+      "parent": "18.tools.ase",
+      "component": "ui:Button",
+      "box": {
+        "x": 52,
+        "y": 922,
+        "w": 182,
+        "h": 47
+      },
+      "dp": {
+        "x": 26,
+        "y": 461,
+        "w": 91,
+        "h": 23.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.ase.action",
+      "action": "submit:export.ase",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tools.tokens.export",
+      "order": 41,
+      "parent": "18.tools.tokens",
+      "component": "ui:Button",
+      "box": {
+        "x": 293,
+        "y": 922,
+        "w": 182,
+        "h": 47
+      },
+      "dp": {
+        "x": 146.5,
+        "y": 461,
+        "w": 91,
+        "h": 23.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.tokens.action",
+      "action": "submit:export.tokens",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tools.csv.export",
+      "order": 42,
+      "parent": "18.tools.csv",
+      "component": "ui:Button",
+      "box": {
+        "x": 534,
+        "y": 922,
+        "w": 182,
+        "h": 47
+      },
+      "dp": {
+        "x": 267,
+        "y": 461,
+        "w": 91,
+        "h": 23.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.csv.action",
+      "action": "submit:export.csv",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.backup.heading",
+      "order": 43,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 30,
+        "y": 1045,
+        "w": 368,
+        "h": 30
+      },
+      "dp": {
+        "x": 15,
+        "y": 522.5,
+        "w": 184,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.backup.heading",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.backup",
+      "order": 44,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 28,
+        "y": 1095,
+        "w": 712,
+        "h": 180
+      },
+      "dp": {
+        "x": 14,
+        "y": 547.5,
+        "w": 356,
+        "h": 90
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.backup.art",
+      "order": 45,
+      "parent": "18.backup",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 668,
+        "y": 1101,
+        "w": 66,
+        "h": 49
+      },
+      "dp": {
+        "x": 334,
+        "y": 550.5,
+        "w": 33,
+        "h": 24.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "document",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.backup.title",
+      "order": 46,
+      "parent": "18.backup",
+      "component": "ui:Text",
+      "box": {
+        "x": 53,
+        "y": 1124,
+        "w": 370,
+        "h": 25
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 562,
+        "w": 185,
+        "h": 12.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.backup.title",
+      "action": null,
+      "raw": {
+        "emDp": 11.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.backup.detail",
+      "order": 47,
+      "parent": "18.backup",
+      "component": "ui:Text",
+      "box": {
+        "x": 52,
+        "y": 1160,
+        "w": 645,
+        "h": 22
+      },
+      "dp": {
+        "x": 26,
+        "y": 580,
+        "w": 322.5,
+        "h": 11
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.backup.detail",
+      "action": null,
+      "raw": {
+        "emDp": 11.8
+      },
+      "copy": {
+        "shape": "body",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.backup.export",
+      "order": 48,
+      "parent": "18.backup",
+      "component": "ui:Button",
+      "box": {
+        "x": 51,
+        "y": 1202,
+        "w": 327,
+        "h": 49
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 601,
+        "w": 163.5,
+        "h": 24.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.backup.export",
+      "action": "submit:export.backup",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.backup.restore",
+      "order": 49,
+      "parent": "18.backup",
+      "component": "ui:Button",
+      "box": {
+        "x": 390,
+        "y": 1202,
+        "w": 327,
+        "h": 48
+      },
+      "dp": {
+        "x": 195,
+        "y": 601,
+        "w": 163.5,
+        "h": 24
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:export.backup.restore",
+      "action": "open:backup.restore",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "18.tabs",
+      "order": 50,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 0,
+        "y": 1292,
+        "w": 768,
+        "h": 84
+      },
+      "dp": {
+        "x": 0,
+        "y": 646,
+        "w": 384,
+        "h": 42
+      },
+      "tokens": {
+        "bg": "ground",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1B1E24"
+      },
+      "copy": null
+    },
+    {
+      "id": "18.tabs.indicator",
+      "order": 51,
+      "parent": "18.tabs",
+      "component": null,
+      "box": {
+        "x": 3,
+        "y": 1295,
+        "w": 191,
+        "h": 4
+      },
+      "dp": {
+        "x": 1.5,
+        "y": 647.5,
+        "w": 95.5,
+        "h": 2
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tabs.profile.icon",
+      "order": 52,
+      "parent": "18.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 83,
+        "y": 1308,
+        "w": 27,
+        "h": 31
+      },
+      "dp": {
+        "x": 41.5,
+        "y": 654,
+        "w": 13.5,
+        "h": 15.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "profile",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile",
+      "copy": null
+    },
+    {
+      "id": "18.tabs.document.icon",
+      "order": 53,
+      "parent": "18.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 275,
+        "y": 1320,
+        "w": 26,
+        "h": 30
+      },
+      "dp": {
+        "x": 137.5,
+        "y": 660,
+        "w": 13,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "document",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tabs.export.icon",
+      "order": 54,
+      "parent": "18.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 466,
+        "y": 1320,
+        "w": 27,
+        "h": 30
+      },
+      "dp": {
+        "x": 233,
+        "y": 660,
+        "w": 13.5,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "file-export",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "18.tabs.settings.icon",
+      "order": 55,
+      "parent": "18.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 656,
+        "y": 1320,
+        "w": 31,
+        "h": 30
+      },
+      "dp": {
+        "x": 328,
+        "y": 660,
+        "w": 15.5,
+        "h": 15
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "settings",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/profile/settings",
+      "copy": null
+    },
+    {
+      "id": "18.tabs.profile.label",
+      "order": 56,
+      "parent": "18.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 68,
+        "y": 1345,
+        "w": 57,
+        "h": 18
+      },
+      "dp": {
+        "x": 34,
+        "y": 672.5,
+        "w": 28.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.profile",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "garbled-text",
+      "note": "the report description’s first line is unreadable",
+      "box": {
+        "x": 394,
+        "y": 239,
+        "w": 260,
+        "h": 17
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the preview’s Japanese subtitle is unreadable",
+      "box": {
+        "x": 81,
+        "y": 245,
+        "w": 188,
+        "h": 9
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the preview’s second OKLCh line misspells its label",
+      "box": {
+        "x": 81,
+        "y": 425,
+        "w": 133,
+        "h": 8
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the preview envelope’s signed-by line is unreadable",
+      "box": {
+        "x": 244,
+        "y": 502,
+        "w": 88,
+        "h": 9
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "a requirement id printed after the backup section’s heading",
+      "box": {
+        "x": 404,
+        "y": 1045,
+        "w": 90,
+        "h": 30
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "18.report.title",
+      "why": "a factual descriptor of the same length — grade language is banned by F-219 (§4 row 18)"
+    },
+    {
+      "rule": "E2",
+      "element": "18.report.detail",
+      "why": "the same grade word, repeated in lowercase, goes with the title (§4 row 18)"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "elements": [
+        "18.tabs",
+        "18.tabs.indicator",
+        "18.tabs.profile.icon",
+        "18.tabs.document.icon",
+        "18.tabs.export.icon",
+        "18.tabs.settings.icon",
+        "18.tabs.profile.label"
+      ],
+      "resolution": "P5 → 01: 18's four-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    }
+  ]
+}
