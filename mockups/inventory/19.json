@@ -191,7 +191,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": null,
       "raw": {
         "emDp": 18.4
@@ -421,7 +421,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": null,
       "copy": {
         "shape": "heading",
@@ -548,7 +548,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": "navigate:/atlas/wear/[slug]",
       "copy": {
         "shape": "label",
@@ -673,7 +673,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 500
       },
       "icon": null,
@@ -712,7 +712,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": "navigate:/atlas/wear/[slug]",
       "copy": {
         "shape": "label",
@@ -873,7 +873,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": "navigate:/atlas/wear/[slug]",
       "copy": {
         "shape": "label",
@@ -1034,7 +1034,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": "navigate:/atlas/wear/[slug]",
       "copy": {
         "shape": "label",
@@ -1195,7 +1195,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-26",
       "action": "navigate:/atlas/wear/[slug]",
       "copy": {
         "shape": "label",
@@ -1378,6 +1378,33 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "19.anchor.swatch",
+        "19.rows.row-1.swatch",
+        "19.rows.row-2.swatch",
+        "19.rows.row-3.swatch",
+        "19.rows.row-4.swatch",
+        "19.rows.row-5.swatch"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "19.anchor.name",
+        "19.anchor.oklch",
+        "19.rows.row-1.name",
+        "19.rows.row-2.name",
+        "19.rows.row-3.name",
+        "19.rows.row-4.name",
+        "19.rows.row-5.name"
+      ],
+      "resolution": "text sits beside the sample as 19 draws it",
+      "flippedByUser": false
+    },
     {
       "id": "C18",
       "elements": [

@@ -324,19 +324,53 @@ if (process.argv.includes('--prove')) {
   const tracked = [INDEX, FEATURES, SPEC, PRD, MOCKUP_MANUAL];
 
   const original = Object.fromEntries(tracked.map((f) => [f, readFileSync(f, 'utf8')]));
+  // Windows can refuse to reopen a file the proof has just rewritten — twice in F-220's runs the ~1 MB
+  // feature list failed with UNKNOWN on open, mid-restore. A restore that dies on the first such error
+  // leaves every later file planted and the journal open, so it writes only what differs, retries a
+  // transient refusal, carries on past a failure, and only then reports it.
+  const TRANSIENT = new Set(['UNKNOWN', 'EBUSY', 'EPERM', 'EACCES']);
+  const pause = (ms) => {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  };
+  const settle = (file, text) => {
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        if (existsSync(file) && readFileSync(file, 'utf8') === text) return;
+        writeFileSync(file, text, 'utf8');
+        return;
+      } catch (error) {
+        if (!TRANSIENT.has(error.code) || attempt === 8) throw error;
+        pause(50 * attempt);
+      }
+    }
+  };
   const restore = () => {
-    for (const f of tracked) writeFileSync(f, original[f], 'utf8');
-    for (const file of created) if (existsSync(file)) unlinkSync(file);
+    const failures = [];
+    for (const f of tracked) {
+      try {
+        settle(f, original[f]);
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+    for (const file of created) {
+      try {
+        if (existsSync(file)) unlinkSync(file);
+      } catch (error) {
+        failures.push(error);
+      }
+    }
+    if (failures.length > 0) throw failures[0];
   };
   const withIndex = (mutate) => {
     const index = JSON.parse(original[INDEX]);
     mutate(index);
-    writeFileSync(INDEX, `${JSON.stringify(index, null, 2)}\n`, 'utf8');
+    settle(INDEX, `${JSON.stringify(index, null, 2)}\n`);
   };
   const withFeatures = (mutate) => {
     const features = JSON.parse(original[FEATURES]);
     mutate(Object.fromEntries(features.features.map((f) => [f.id, f])));
-    writeFileSync(FEATURES, `${JSON.stringify(features, null, 2)}\n`, 'utf8');
+    settle(FEATURES, `${JSON.stringify(features, null, 2)}\n`);
   };
   /** Replace one exact §7 row fragment. A fragment that is not there is a broken case, not a pass. */
   const withSpec = (from, to) => {
@@ -670,12 +704,197 @@ if (process.argv.includes('--prove')) {
         expect: 'lies outside its screen',
       },
       {
-        name: 'a declared overhang with no presentation region',
+        name: 'an overhang waiting on a question that is not open',
         plant: () =>
           withInventory((v) => {
-            v.notDesign = v.notDesign.filter((n) => n.what !== 'presentation');
+            v.overhangs = v.overhangs.map((o) => ({ ...o, question: 'OQ-999' }));
           }, '04'),
-        expect: 'no presentation region names it',
+        expect: 'OQ-999 is not an open question',
+      },
+      {
+        name: 'an overhang declared for an element that stays inside',
+        plant: () =>
+          withInventory((v) => {
+            v.overhangs = [{ element: '01.hero', question: 'OQ-11' }];
+          }),
+        expect: 'and it stays inside its screen',
+      },
+      {
+        name: 'an element 3 px past its screen, undeclared',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].box.w += 3;
+          }),
+        expect: 'lies outside its screen',
+      },
+      {
+        name: 'an element outside the image',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].box = { x: 760, y: 0, w: 20, h: 10 };
+          }),
+        expect: 'lies outside the image',
+      },
+      {
+        name: 'a component that is not ui:, new: or app:',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].component = 'widget:Thing';
+          }),
+        expect: 'is built by "widget:Thing"',
+      },
+      {
+        name: 'dp missing on a scaled screen',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].dp = null;
+          }),
+        expect: 'has no dp on a scaled screen',
+      },
+      {
+        name: 'dp one dp off its box',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].dp.x += 1;
+          }),
+        expect: 'where its box puts it at',
+      },
+      {
+        name: 'an element in a screen the frame does not draw',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].screen = '01.nowhere';
+          }),
+        expect: 'which the frame does not draw',
+      },
+      {
+        name: 'two screens, and an element that names neither',
+        plant: () =>
+          withInventory((v) => {
+            v.frame.screens.push({
+              id: '01.second',
+              box: { x: 0, y: 0, w: 10, h: 10 },
+              dpPerPx: 0.5,
+            });
+          }),
+        expect: 'names no screen, and mockup 01 draws 2',
+      },
+      {
+        name: 'an element missing a key',
+        plant: () =>
+          withInventory((v) => {
+            delete v.elements[0].copy;
+          }),
+        expect: 'has no copy',
+      },
+      {
+        name: 'an element carrying a key the schema does not name',
+        plant: () =>
+          withInventory((v) => {
+            v.elements[0].colour = '#FFFFFF';
+          }),
+        expect: 'has a key the schema does not name: colour',
+      },
+      {
+        name: 'an inventory carrying a key the schema does not name',
+        plant: () =>
+          withInventory((v) => {
+            v.colour = '#FFFFFF';
+          }),
+        expect: 'has a key the schema does not name: colour',
+      },
+      {
+        name: 'an inventory with no elements key',
+        plant: () =>
+          withInventory((v) => {
+            delete v.elements;
+          }),
+        expect: 'has no elements',
+      },
+      {
+        name: 'an inventory with no frame',
+        plant: () =>
+          withInventory((v) => {
+            delete v.frame;
+          }),
+        expect: 'has no frame',
+      },
+      {
+        name: 'an empty inventory: no elements',
+        plant: () =>
+          withInventory((v) => {
+            v.elements = [];
+          }),
+        expect: 'draws no elements',
+      },
+      {
+        name: 'an empty inventory: no screen',
+        plant: () =>
+          withInventory((v) => {
+            v.frame.screens = [];
+          }),
+        expect: 'draws no screen',
+      },
+      {
+        name: 'an inventory for another image',
+        plant: () =>
+          withInventory((v) => {
+            v.mockup = '02';
+          }),
+        expect: 'says it describes mockup 02',
+      },
+      {
+        name: 'a kind that is neither screen nor board',
+        plant: () =>
+          withInventory((v) => {
+            v.kind = 'poster';
+          }),
+        expect: 'has kind "poster"',
+      },
+      {
+        name: 'a dimension a mockup cannot govern',
+        plant: () =>
+          withInventory((v) => {
+            v.governs = 'mood';
+          }),
+        expect: 'governs "mood"',
+      },
+      {
+        name: 'a not-design region of a kind §2 does not name',
+        plant: () =>
+          withInventory((v) => {
+            v.notDesign.push({ what: 'decoration', box: { x: 0, y: 0, w: 10, h: 10 } });
+          }),
+        expect: 'a not-design region is "decoration"',
+      },
+      {
+        name: 'a not-design region outside the image',
+        plant: () =>
+          withInventory((v) => {
+            v.notDesign.push({ what: 'callout', box: { x: 760, y: 0, w: 20, h: 10 } });
+          }),
+        expect: 'a not-design region lies outside the image',
+      },
+      {
+        name: 'a departure from an element the image does not draw',
+        plant: () =>
+          withInventory((v) => {
+            v.departures.push({ rule: 'E1', element: '01.nothing', why: 'planted by the proof' });
+          }),
+        expect: 'departs from 01.nothing, which is not one of its elements',
+      },
+      {
+        name: 'a conflict resolved for an element the image does not draw',
+        plant: () =>
+          withInventory((v) => {
+            v.conflicts.push({
+              id: 'C1',
+              elements: ['01.nothing'],
+              resolution: 'planted by the proof',
+              flippedByUser: false,
+            });
+          }),
+        expect: 'resolves C1 for 01.nothing',
       },
       {
         name: 'a departure under a rule §4 does not list',
@@ -734,8 +953,8 @@ if (process.argv.includes('--prove')) {
         expect: null,
       },
       {
-        // 04 draws two cards past its frame, declared and recorded as presentation — legitimate.
-        name: 'a declared overhang with its presentation region — must stay GREEN',
+        // 04 draws two cards past its frame, declared and waiting on OQ-16 — legitimate.
+        name: 'a declared overhang waiting on its open question — must stay GREEN',
         plant: () => withInventory((v) => v, '04'),
         expect: null,
       },
@@ -867,8 +1086,10 @@ if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(
       `${DIM}  ${String(stats.images)} image(s), ${String(stats.rows)} row(s), ${String(stats.routes)} route(s). ` +
         (stats.required
           ? `Every image must carry its inventory (${INVENTORY_OWNER} is done).`
-          : `${String(stats.withoutInventory)} image(s) have no element inventory yet, which is allowed until ` +
-            `${INVENTORY_OWNER} is done — until then their structure is checked by nothing, only their bytes.`) +
+          : stats.withoutInventory === 0
+            ? 'Every image carries an element inventory, and each is checked element by element.'
+            : `${String(stats.withoutInventory)} image(s) have no element inventory yet, which is allowed until ` +
+              `${INVENTORY_OWNER} is done — until then their structure is checked by nothing, only their bytes.`) +
         OFF,
     );
   console.log(

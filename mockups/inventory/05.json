@@ -1152,7 +1152,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.era",
+      "binding": "oq:OQ-17",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1189,7 +1189,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.era",
+      "binding": "oq:OQ-17",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1596,7 +1596,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.era",
+      "binding": "oq:OQ-17",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1664,7 +1664,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "corpus:entry.era",
+      "binding": "oq:OQ-17",
       "action": null,
       "raw": {
         "emDp": 10.3
@@ -1879,6 +1879,33 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": ["05.card-1.swatch", "05.card-2.swatch", "05.card-3.swatch", "05.card-4.swatch"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "05.card-1.kanji",
+        "05.card-2.kanji",
+        "05.card-3.kanji",
+        "05.card-4.kanji",
+        "05.card-1.romaji",
+        "05.card-2.romaji",
+        "05.card-3.romaji",
+        "05.card-4.romaji"
+      ],
+      "resolution": "text sits beside the sample as 05 draws it",
+      "flippedByUser": false
+    },
+    {
+      "id": "C6",
+      "elements": ["05.card-1.kanji", "05.card-2.kanji", "05.card-3.kanji", "05.card-4.kanji"],
+      "resolution": "each surface follows its own mockup — kanji are sans here",
+      "flippedByUser": false
+    },
     {
       "id": "C1",
       "elements": [

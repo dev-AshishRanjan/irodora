@@ -398,7 +398,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "display1",
+        "size": "title",
         "weight": 600,
         "tabular": true
       },
@@ -436,7 +436,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 500
       },
       "icon": null,
@@ -1113,7 +1113,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:shopping.pairs.0.deltaE00",
+      "binding": "oq:OQ-28",
       "action": null,
       "copy": {
         "shape": "badge",
@@ -1141,7 +1141,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:shopping.pairs.1.deltaE00",
+      "binding": "oq:OQ-28",
       "action": null,
       "copy": {
         "shape": "badge",
@@ -1169,7 +1169,7 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "engine:shopping.pairs.2.deltaE00",
+      "binding": "oq:OQ-28",
       "action": null,
       "copy": {
         "shape": "badge",
@@ -1409,7 +1409,7 @@
     {
       "rule": "E1",
       "element": "22.capture.notation",
-      "why": "#7D8B78’s printed OKLCh (0.58 / 0.04 / 135°) does not survive checking — it is 0.620 / 0.032 / 136.9° — sample content (§4 E1); the line shows the engine’s conversion"
+      "why": "#7D8B78’s printed OKLCh (0.58 / 0.04 / 135°) does not survive checking — it is 0.620 / 0.032 / 137.4° — sample content (§4 E1); the line shows the engine’s conversion"
     }
   ],
   "conflicts": []

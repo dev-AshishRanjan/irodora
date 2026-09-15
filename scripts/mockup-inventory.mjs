@@ -11,35 +11,26 @@
  * is named once and in order, sits inside its image and its screen, has dp that agree with its box,
  * binds to something §8 recognises, and that every departure and conflict it cites exists in the
  * contract. `add(what, detail)` is verify-mockups' own reporter.
+ *
+ * The vocabulary — the keys, the enums, the binding and component patterns — is read from the schema
+ * rather than restated here, so the schema a person reads and the check the build runs cannot drift.
  */
 
 import { readFileSync } from 'node:fs';
 
-const REQUIRED = [
-  'mockup',
-  'mockupSha256',
-  'kind',
-  'governs',
-  'frame',
-  'elements',
-  'notDesign',
-  'departures',
-  'conflicts',
-];
-const KINDS = new Set(['screen', 'board']);
-const GOVERNS = new Set(['layout', 'palette', 'locale', 'state', 'vocabulary']);
-const NOT_DESIGN = new Set([
-  'bezel',
-  'status-bar',
-  'callout',
-  'leaked-label',
-  'garbled-text',
-  'outside-art',
-  'board-annotation',
-  'presentation',
-]);
-const BINDING = /^(static|engine|corpus|store|derived|route|oq):\S+$/u;
-const COMPONENT = /^(ui|new|app):[A-Z][A-Za-z0-9.]*$/u;
+const SCHEMA = JSON.parse(
+  readFileSync(new URL('../mockups/inventory.schema.json', import.meta.url), 'utf8'),
+);
+const ELEMENT = SCHEMA.$defs.element;
+const REQUIRED = SCHEMA.required;
+const TOP_KEYS = new Set(Object.keys(SCHEMA.properties));
+const ELEMENT_KEYS = new Set(Object.keys(ELEMENT.properties));
+const ELEMENT_REQUIRED = ELEMENT.required;
+const KINDS = new Set(SCHEMA.properties.kind.enum);
+const GOVERNS = new Set(SCHEMA.properties.governs.enum);
+const NOT_DESIGN = new Set(SCHEMA.properties.notDesign.items.properties.what.enum);
+const BINDING = new RegExp(ELEMENT.properties.binding.oneOf[0].pattern, 'u');
+const COMPONENT = new RegExp(ELEMENT.properties.component.oneOf[0].pattern, 'u');
 /** Consecutive tops within this many px chain into one reading row (4 dp at 2 px/dp). */
 const ROW_CHAIN_PX = 8;
 /** dp are recorded to the half; a reading that disagrees by more than this is a wrong record. */
@@ -93,6 +84,12 @@ export function inventoryProblems(
         `${where} has no ${key}`,
         'Every inventory carries the same keys (mockups/inventory.schema.json). A missing one is a part of the image nobody recorded.',
       );
+  for (const key of Object.keys(inventory))
+    if (!TOP_KEYS.has(key))
+      add(
+        `${where} has a key the schema does not name: ${key}`,
+        'A key the schema does not describe is a record nobody can read the same way twice. Add it to mockups/inventory.schema.json first.',
+      );
   if (inventory.mockup !== id)
     add(
       `${where} says it describes mockup ${String(inventory.mockup)}`,
@@ -109,16 +106,35 @@ export function inventoryProblems(
   const picture = image ? { x: 0, y: 0, w: image.w, h: image.h } : null;
   const screens = new Map((inventory.frame?.screens ?? []).map((s) => [s.id, s]));
   const elements = Array.isArray(inventory.elements) ? inventory.elements : [];
+  if ('frame' in inventory && screens.size === 0)
+    add(
+      `${where} draws no screen`,
+      'frame.screens names the screen (or sheet) every box is measured in. An inventory without one measures nothing.',
+    );
+  if ('elements' in inventory && elements.length === 0)
+    add(
+      `${where} draws no elements`,
+      'Every image draws something a feature builds. An empty list satisfies the index and records nothing.',
+    );
   const byId = new Map(elements.map((e) => [e.id, e]));
-  const overhangs = new Set(inventory.overhangs ?? []);
-  const presentation = (inventory.notDesign ?? [])
-    .filter((n) => n.what === 'presentation')
-    .map((n) => n.note ?? '');
+  const overhangs = new Map((inventory.overhangs ?? []).map((o) => [o.element, o.question]));
 
   const seen = new Set();
   let expected = 1;
   for (const e of elements) {
     const name = `${where}: element ${String(e.id)}`;
+    for (const key of Object.keys(e))
+      if (!ELEMENT_KEYS.has(key))
+        add(
+          `${name} has a key the schema does not name: ${key}`,
+          'Add the key to the element definition in mockups/inventory.schema.json, or record it under an existing one.',
+        );
+    for (const key of ELEMENT_REQUIRED)
+      if (!(key in e))
+        add(
+          `${name} has no ${key}`,
+          'Every element carries every key, null where it has none, so a missing value is visible rather than implied.',
+        );
     if (typeof e.id !== 'string' || !e.id.startsWith(`${id}.`))
       add(
         `${name} is not prefixed ${id}.`,
@@ -214,14 +230,28 @@ export function inventoryProblems(
       if (!owner)
         add(
           `${name} lies outside its screen ${screen.id}`,
-          'A screen cannot draw past its edge. If the image does, declare the element in `overhangs` and record the overhang as presentation — and raise it as a question.',
+          'A screen cannot draw past its edge. If the image does, declare the element in `overhangs` with the open question that asks what to build — the record never decides it.',
         );
-      else if (!presentation.some((note) => note.includes(owner)))
+      else if (!openQuestions.has(overhangs.get(owner)))
         add(
-          `${name} overhangs its screen through ${owner}, and no presentation region names it`,
-          'The overhang itself is presentation, and says so.',
+          `${name} overhangs its screen through ${owner}, and ${String(overhangs.get(owner))} is not an open question`,
+          'An overhang is recorded as drawn only while a question in PRD §10 asks whether to keep it. When the question closes, the inventory follows its answer.',
         );
     }
+  }
+  for (const [element] of overhangs) {
+    const e = byId.get(element);
+    const screen = e?.screen ? screens.get(e.screen) : [...screens.values()][0];
+    if (!e)
+      add(
+        `${where} declares ${String(element)} an overhang, and it is not one of its elements`,
+        'Name the element drawn past its screen.',
+      );
+    else if (screen && isBox(e.box) && isBox(screen.box) && inside(e.box, screen.box))
+      add(
+        `${where} declares ${element} an overhang, and it stays inside its screen`,
+        'A declaration with nothing to declare hides the next element that really does overhang.',
+      );
   }
 
   // Reading order on a single screen: tops sorted, consecutive tops within ROW_CHAIN_PX chain into a

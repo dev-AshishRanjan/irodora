@@ -1432,5 +1432,17 @@
       "why": "the heading names the nearest references as matches; FR-7 returns references ranked by ΔE00, and the heading says so (a §4 E2 row F-220 adds)"
     }
   ],
-  "conflicts": []
+  "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "03.sample.swatch",
+        "03.matches.row-1.swatch",
+        "03.matches.row-2.swatch",
+        "03.matches.row-3.swatch"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    }
+  ]
 }

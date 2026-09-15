@@ -1653,6 +1653,17 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": [
+        "15.themes.sumi.swatch",
+        "15.themes.slate.swatch",
+        "15.themes.obsidian.swatch",
+        "15.themes.washi.swatch"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C9",
       "elements": ["15.themes.sumi", "15.themes.slate", "15.themes.obsidian", "15.themes.washi"],
       "resolution": "the four drawn themes (§5); system and device accent are kept (E4)",

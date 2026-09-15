@@ -1588,7 +1588,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "caption",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -2226,5 +2226,26 @@
       "why": "the computed separation score (FR-5) for the palette shown, printing 100 only when it is 100; a safety claim about people does not ship"
     }
   ],
-  "conflicts": []
+  "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "16.slots.slot-1.swatch",
+        "16.slots.slot-2.swatch",
+        "16.slots.slot-3.swatch",
+        "16.slots.slot-4.swatch",
+        "16.tray.chip-1",
+        "16.tray.chip-2",
+        "16.tray.chip-3",
+        "16.tray.chip-4",
+        "16.tray.chip-5",
+        "16.tray.chip-6",
+        "16.tray.chip-7",
+        "16.tray.chip-8",
+        "16.tray.chip-9"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    }
+  ]
 }

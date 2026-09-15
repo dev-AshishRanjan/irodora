@@ -1397,6 +1397,18 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": ["26.hero.photo", "26.kasane.bar"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C14",
+      "elements": ["26.kasane", "26.kasane.bar"],
+      "resolution": "F-224 authors the kasane palettes, labelled japanese-inspired (FR-23)",
+      "flippedByUser": false
+    },
+    {
       "id": "C3",
       "elements": ["26.kasane", "26.kasane.bar", "26.provenance.seal"],
       "resolution": "P1 + P2: 06's layout; 26's headings and Japanese typography. The hanko seal and the kasane bar are 26-only and not adopted by default",

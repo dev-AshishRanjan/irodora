@@ -1009,7 +1009,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-25",
       "action": null,
       "raw": {
         "emDp": 9.9
@@ -1851,6 +1851,20 @@
   ],
   "departures": [],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "17.draping.option-a.swatch",
+        "17.draping.option-b.swatch",
+        "17.palette.swatch-1",
+        "17.palette.swatch-2",
+        "17.palette.swatch-3",
+        "17.palette.swatch-4",
+        "17.palette.swatch-5"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
     {
       "id": "C15",
       "elements": ["17.title", "17.step"],

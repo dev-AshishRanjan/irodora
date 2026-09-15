@@ -35,9 +35,11 @@ in which script).
 **Measurement.** A full-bleed mockup is measured at **2 px = 1 dp** — its 768 px width is a
 **384 dp** reference screen. A framed mockup (device bezel or spec card: `04 06 07 19 21 22 23 24
 25 26`) is measured against the frame's inner screen width, scaled to 384 dp. A measured value
-snaps to the nearest step of the R9 scale (§5); where two steps are equally near, the smaller is taken (`F-220`): measured type already runs
-below the scale (OQ-13), and rounding a tie up would widen that gap instead of recording it.
-`raw.emDp` keeps the estimate either way.
+snaps to the nearest step of the R9 scale (§5); where two steps are equally near, the smaller is taken (`F-220`): text set a step smaller still
+fits the box the mockup draws, and text set a step larger may not. **Siblings drawn alike** — the
+same element in each card, row or tile of one image — take one step, the one most of them snap to
+(a tie again takes the smaller), so a record never sets two identical things at two sizes.
+`raw.emDp` keeps each element's own estimate.
 
 **Not design — never materialised:**
 
@@ -200,9 +202,14 @@ and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
 
 **Radius**: `sm 6 · md 10 · lg 16 · pill`. **Spacing**: `4 · 8 · 16 · 24 · 32 · 48` — still a
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and
-*Label* 14 in the sans; tabular figures for every number. The serif is named by no mockup, and the
-repository bundles none to identify it against — **OQ-29**. The icon stroke is 1.75 dp, `NavIcon`'s
-`STROKE` already.
+*Label* 14 in the sans; tabular figures for every number. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
+(20 faces, each rendered as the drawn word and scored by mask overlap after scaling to it): `01`'s
+wordmark matches **Georgia Pro** best (0.83; Georgia 0.77, Times New Roman 0.70), and so does `01`'s
+tagline (0.66; next 0.52). `00`, `14` and `25` do not separate the candidates — best 0.66–0.68 with
+the top four within 0.03, too small or too low in contrast at their size. Georgia Pro is under a
+commercial licence and no open face was a candidate, so which face ships is **OQ-29**. The icon
+stroke measures 3–4 px on `01`'s tab icons (mean ≈ 3.3 px, ≈ 1.65 dp at 2 px/dp): `NavIcon`'s 1.75 dp
+`STROKE`, inside the reading's ±0.5 dp.
 
 **Swatch corners**, measured by `F-220` (`corner.ps1`; the left-hand fit where the right is
 disturbed by what sits beside it), at each mockup's own scale: `00` 6.5–7.5 px (a board, no scale) ·
@@ -347,7 +354,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
 | **OQ-12** | Type below 14 dp (`01`'s tab labels ≈ 10 dp, its card note ≈ 12 dp). A caption step, or 14 as the floor? | `F-226` |
-| **OQ-13** | Measured type runs off the scale (≈ 13 dp section titles, `22`'s ≈ 46 dp figures). The screens' sizes (P3), or §5's steps? | `F-226` |
+| **OQ-13** | Measured type runs off the scale (`01`'s tagline ≈ 18.5 dp, `17`'s slider labels ≈ 9 dp, `22`'s figures ≈ 46 dp). The screens' sizes (P3), or §5's steps? | `F-226` |
 | **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
 | **OQ-15** | Multicoloured icons C10 does not register (`00 03 13 16 24`). Followed, or monochrome? | `F-225` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
@@ -357,13 +364,14 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-20** | `06`'s green check after the review line. Followed, or monochrome? | `F-247` |
 | **OQ-21** | `11`'s yellow bulb on the gap card. Followed, or monochrome? | `F-255` |
 | **OQ-22** | `12`'s form groups are labelled only by leaked prompt text. Visible labels, or accessible names only? | `F-256` |
-| **OQ-23** | `16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-260` `F-263` |
+| **OQ-23** | `13 16 17 18` print headings, roles and buttons in square brackets. Copy, or notation? | `F-251` `F-257` `F-260` `F-263` |
 | **OQ-24** | `17`'s radar is drawn blue. Followed, or monochrome like `23`? | `F-260` |
 | **OQ-25** | `17`'s radar axes and its ranges name different dimensions. Which four, and what does *Muted Tolerance* plot? | `F-260` |
 | **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
 | **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |
 | **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
-| **OQ-29** | The serif no mockup names, with none bundled to identify it against. Which face, under which licence? | `F-226` |
+| **OQ-29** | The serif: `01` matches Georgia Pro best of 20 installed faces (§5), under a commercial licence. Georgia Pro licensed, or an open face that matches it? | `F-226` |
+| **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
 
 ---
 

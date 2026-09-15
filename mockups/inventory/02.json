@@ -1570,6 +1570,12 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": ["02.reading.sample"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C1",
       "elements": [
         "02.tabs",

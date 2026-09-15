@@ -356,13 +356,33 @@
       }
     },
     {
-      "what": "garbled-text",
-      "note": "the three description paragraphs",
+      "what": "board-annotation",
+      "note": "the first description paragraph — readable, a note about the board",
       "box": {
         "x": 55,
         "y": 1080,
         "w": 642,
-        "h": 237
+        "h": 53
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the second description paragraph, which is unreadable",
+      "box": {
+        "x": 55,
+        "y": 1172,
+        "w": 513,
+        "h": 53
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the third description paragraph — readable, a note about the board",
+      "box": {
+        "x": 55,
+        "y": 1263,
+        "w": 607,
+        "h": 54
       }
     }
   ],

@@ -994,7 +994,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 400
       },
       "icon": null,
@@ -1165,7 +1165,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -1199,7 +1199,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -1267,7 +1267,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "title",
         "weight": 400
       },
       "icon": null,
@@ -1369,7 +1369,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 400
       },
       "icon": null,
@@ -1574,7 +1574,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -1642,7 +1642,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "title",
         "weight": 400
       },
       "icon": null,
@@ -1781,13 +1781,16 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 400
       },
       "icon": null,
       "illustration": null,
       "binding": "engine:with.3.relationship",
       "action": null,
+      "raw": {
+        "emDp": 20.6
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1912,7 +1915,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -1946,7 +1949,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "label",
         "weight": 400
       },
       "icon": null,
@@ -2206,6 +2209,33 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "24.capture.swatch",
+        "24.rows.row-1.swatch",
+        "24.rows.row-2.swatch",
+        "24.rows.row-3.swatch",
+        "24.rows.row-4.swatch"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "24.capture.title",
+        "24.capture.hex",
+        "24.capture.name",
+        "24.capture.oklch",
+        "24.rows.row-1.japanese.value",
+        "24.rows.row-2.japanese.value",
+        "24.rows.row-3.japanese.value",
+        "24.rows.row-4.japanese.value"
+      ],
+      "resolution": "text sits beside the sample as 24 draws it",
+      "flippedByUser": false
+    },
     {
       "id": "C10",
       "elements": [

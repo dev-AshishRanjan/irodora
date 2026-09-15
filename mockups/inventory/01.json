@@ -172,8 +172,33 @@
       }
     },
     {
-      "id": "01.hero",
+      "id": "01.side-art-right",
       "order": 6,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 696,
+        "y": 280,
+        "w": 72,
+        "h": 208
+      },
+      "dp": {
+        "x": 348,
+        "y": 140,
+        "w": 36,
+        "h": 104
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "plum-branch",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "01.hero",
+      "order": 7,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -208,7 +233,7 @@
     },
     {
       "id": "01.hero.sample",
-      "order": 7,
+      "order": 8,
       "parent": "01.hero",
       "component": "ui:Swatch",
       "box": {
@@ -239,7 +264,7 @@
     },
     {
       "id": "01.hero.sample.kanji",
-      "order": 8,
+      "order": 9,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -274,7 +299,7 @@
     },
     {
       "id": "01.hero.sample.kana",
-      "order": 9,
+      "order": 10,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -306,7 +331,7 @@
     },
     {
       "id": "01.hero.sample.name",
-      "order": 10,
+      "order": 11,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -338,7 +363,7 @@
     },
     {
       "id": "01.hero.sample.oklch",
-      "order": 11,
+      "order": 12,
       "parent": "01.hero.sample",
       "component": "ui:Text",
       "box": {
@@ -371,7 +396,7 @@
     },
     {
       "id": "01.hero.cta",
-      "order": 12,
+      "order": 13,
       "parent": "01.hero",
       "component": "ui:Button",
       "box": {
@@ -409,7 +434,7 @@
     },
     {
       "id": "01.side-art",
-      "order": 13,
+      "order": 14,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -434,7 +459,7 @@
     },
     {
       "id": "01.wardrobe",
-      "order": 14,
+      "order": 15,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -463,7 +488,7 @@
     },
     {
       "id": "01.wardrobe.title",
-      "order": 15,
+      "order": 16,
       "parent": "01.wardrobe",
       "component": "ui:Text",
       "box": {
@@ -483,13 +508,16 @@
       },
       "type": {
         "face": "sans",
-        "size": "label",
+        "size": "body",
         "weight": 500
       },
       "icon": null,
       "illustration": null,
       "binding": "static:home.wardrobePreview",
       "action": null,
+      "raw": {
+        "emDp": 15.8
+      },
       "copy": {
         "shape": "heading",
         "script": "latin"
@@ -497,7 +525,7 @@
     },
     {
       "id": "01.wardrobe.count",
-      "order": 16,
+      "order": 17,
       "parent": "01.wardrobe",
       "component": "ui:Chip",
       "box": {
@@ -528,7 +556,7 @@
     },
     {
       "id": "01.wardrobe.tile-1",
-      "order": 17,
+      "order": 18,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -559,7 +587,7 @@
     },
     {
       "id": "01.wardrobe.tile-2",
-      "order": 18,
+      "order": 19,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -590,7 +618,7 @@
     },
     {
       "id": "01.wardrobe.tile-3",
-      "order": 19,
+      "order": 20,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -621,7 +649,7 @@
     },
     {
       "id": "01.wardrobe.tile-4",
-      "order": 20,
+      "order": 21,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -652,7 +680,7 @@
     },
     {
       "id": "01.wardrobe.tile-5",
-      "order": 21,
+      "order": 22,
       "parent": "01.wardrobe",
       "component": "ui:Swatch",
       "box": {
@@ -683,7 +711,7 @@
     },
     {
       "id": "01.wardrobe.tile-1.badge",
-      "order": 22,
+      "order": 23,
       "parent": "01.wardrobe.tile-1",
       "component": "new:TextureBadge",
       "box": {
@@ -702,13 +730,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-11",
       "action": null,
       "copy": null
     },
     {
       "id": "01.wardrobe.tile-2.badge",
-      "order": 23,
+      "order": 24,
       "parent": "01.wardrobe.tile-2",
       "component": "new:TextureBadge",
       "box": {
@@ -727,13 +755,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-11",
       "action": null,
       "copy": null
     },
     {
       "id": "01.wardrobe.tile-3.badge",
-      "order": 24,
+      "order": 25,
       "parent": "01.wardrobe.tile-3",
       "component": "new:TextureBadge",
       "box": {
@@ -752,13 +780,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-11",
       "action": null,
       "copy": null
     },
     {
       "id": "01.wardrobe.tile-4.badge",
-      "order": 25,
+      "order": 26,
       "parent": "01.wardrobe.tile-4",
       "component": "new:TextureBadge",
       "box": {
@@ -777,13 +805,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-11",
       "action": null,
       "copy": null
     },
     {
       "id": "01.wardrobe.tile-5.badge",
-      "order": 26,
+      "order": 27,
       "parent": "01.wardrobe.tile-5",
       "component": "new:TextureBadge",
       "box": {
@@ -802,13 +830,13 @@
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": null,
+      "binding": "oq:OQ-11",
       "action": null,
       "copy": null
     },
     {
       "id": "01.colour-card",
-      "order": 27,
+      "order": 28,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -837,7 +865,7 @@
     },
     {
       "id": "01.colour-card.title",
-      "order": 28,
+      "order": 29,
       "parent": "01.colour-card",
       "component": "ui:Text",
       "box": {
@@ -871,7 +899,7 @@
     },
     {
       "id": "01.colour-card.sample",
-      "order": 29,
+      "order": 30,
       "parent": "01.colour-card",
       "component": "ui:Swatch",
       "box": {
@@ -902,20 +930,20 @@
     },
     {
       "id": "01.colour-card.note",
-      "order": 30,
+      "order": 31,
       "parent": "01.colour-card",
       "component": "ui:Text",
       "box": {
         "x": 101,
         "y": 1188,
         "w": 354,
-        "h": 18
+        "h": 34
       },
       "dp": {
         "x": 50.5,
         "y": 594,
         "w": 177,
-        "h": 9
+        "h": 17
       },
       "tokens": {
         "fg": "text.secondary"
@@ -934,12 +962,13 @@
       },
       "copy": {
         "shape": "body",
-        "script": "latin"
+        "script": "latin",
+        "lines": 2
       }
     },
     {
       "id": "01.tabs",
-      "order": 31,
+      "order": 32,
       "parent": null,
       "component": "app:TabBar",
       "box": {
@@ -967,7 +996,7 @@
     },
     {
       "id": "01.tabs.indicator",
-      "order": 32,
+      "order": 33,
       "parent": "01.tabs",
       "component": null,
       "box": {
@@ -994,7 +1023,7 @@
     },
     {
       "id": "01.tabs.home.icon",
-      "order": 33,
+      "order": 34,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1019,7 +1048,7 @@
     },
     {
       "id": "01.tabs.atlas.icon",
-      "order": 34,
+      "order": 35,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1044,7 +1073,7 @@
     },
     {
       "id": "01.tabs.lens.icon",
-      "order": 35,
+      "order": 36,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1069,7 +1098,7 @@
     },
     {
       "id": "01.tabs.wardrobe.icon",
-      "order": 36,
+      "order": 37,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1094,7 +1123,7 @@
     },
     {
       "id": "01.tabs.profile.icon",
-      "order": 37,
+      "order": 38,
       "parent": "01.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1119,7 +1148,7 @@
     },
     {
       "id": "01.tabs.home.label",
-      "order": 38,
+      "order": 39,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1156,7 +1185,7 @@
     },
     {
       "id": "01.tabs.atlas.label",
-      "order": 39,
+      "order": 40,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1193,7 +1222,7 @@
     },
     {
       "id": "01.tabs.lens.label",
-      "order": 40,
+      "order": 41,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1230,7 +1259,7 @@
     },
     {
       "id": "01.tabs.wardrobe.label",
-      "order": 41,
+      "order": 42,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1267,7 +1296,7 @@
     },
     {
       "id": "01.tabs.profile.label",
-      "order": 42,
+      "order": 43,
       "parent": "01.tabs",
       "component": "ui:Text",
       "box": {
@@ -1322,6 +1351,26 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "01.hero.sample",
+        "01.wardrobe.tile-1",
+        "01.wardrobe.tile-2",
+        "01.wardrobe.tile-3",
+        "01.wardrobe.tile-4",
+        "01.wardrobe.tile-5",
+        "01.colour-card.sample"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C6",
+      "elements": ["01.hero.sample.kanji"],
+      "resolution": "each surface follows its own mockup — kanji are sans here; the card (20) is the one that needs a Japanese serif",
+      "flippedByUser": false
+    },
     {
       "id": "C1",
       "elements": ["01.tabs", "01.tabs.lens.label"],

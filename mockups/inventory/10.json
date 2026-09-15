@@ -1504,6 +1504,18 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": [
+        "10.palette-1.strip",
+        "10.palette-2.swatch-1",
+        "10.palette-2.swatch-2",
+        "10.palette-2.swatch-3",
+        "10.palette-2.swatch-4"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C14",
       "elements": [
         "10.palette-2.title",

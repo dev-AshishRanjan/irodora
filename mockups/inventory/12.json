@@ -1536,6 +1536,12 @@
   "departures": [],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": ["12.source.swatch"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C10",
       "elements": [
         "12.intelligence",

@@ -510,7 +510,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "title",
         "weight": 400
       },
       "icon": null,
@@ -703,7 +703,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 400
       },
       "icon": null,
@@ -933,7 +933,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "title",
+        "size": "body",
         "weight": 400
       },
       "icon": null,
@@ -1645,6 +1645,24 @@
   ],
   "departures": [],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": ["23.palettes.kasane-1", "23.palettes.kasane-2", "23.palettes.kasane-3"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C15",
+      "elements": ["23.title", "23.profile"],
+      "resolution": "23 is the finished state of profile/index; 17 is its in-progress state",
+      "flippedByUser": false
+    },
+    {
+      "id": "C14",
+      "elements": ["23.palettes.kasane-1", "23.palettes.kasane-2", "23.palettes.kasane-3"],
+      "resolution": "F-224 authors the kasane palettes, labelled japanese-inspired (FR-23)",
+      "flippedByUser": false
+    },
     {
       "id": "C10",
       "elements": [

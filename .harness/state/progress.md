@@ -8,6 +8,89 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-15 — F-220 Every mockup is redlined into an element inventory
+
+**Done.** Golden rule 14 is now checkable per element: each of the 28 images has a record of what it
+draws, and gate 2 refuses a record that disagrees with its image, the contract or the open questions.
+
+- **`mockups/inventory/00–27.json`** — every element in reading order, with box, dp at its screen's
+  scale, tokens, face and size step, icon, binding (§8) and action; what is not design; the §4
+  departures and §6 conflicts each image cites. Full-bleed at 0.5 dp/px, framed ones at their inner
+  screen width (0.61–0.82), 00 and 27 as unscaled boards.
+- **The check** — `scripts/mockup-inventory.mjs`, run by `verify-mockups` in gate 2, reads its keys,
+  enums and patterns from `mockups/inventory.schema.json`. `--prove`: **61 planted failures, 6 cases
+  that must pass**. With F-220 done, a null inventory fails.
+- **The record's source is committed** — `mockups/tools/generate-inventory.mjs` and
+  `inventory-data/NN.mjs` (each header says what was derived rather than read), beside `measure.ps1`,
+  `mask.ps1`, `corner.ps1` and `serif-match.ps1`. The generator validates with the gate's own function.
+- **The contract** — PRD §10 and fidelity §11 gain **OQ-11 … OQ-30**, each naming the feature it
+  blocks. §5: Slate Graphite `#2C323A`; the swatch corner of every mockup (largest ratio 0.19, inside
+  ADR-0094's 0.25); the icon stroke measured at ≈ 1.65 dp against `NavIcon`'s 1.75. §2: ties take the
+  smaller step, and siblings drawn alike take one. §4: 03's heading as E2. C18 settled against FR-73's
+  text → OQ-27. E1 rows for every printed OKLCh / CIELAB that fails against its own printed hex — in
+  01 03 05 06 08 09 and 19–26 — each with the value the engine gives.
+- **The serif** — measured against the 20 serifs installed here: 01's wordmark matches **Georgia Pro**
+  (0.83, next 0.77) and so does its tagline; 00, 14 and 25 do not separate the candidates. Georgia Pro
+  is commercially licensed, so which face ships is OQ-29, and trying open-licence faces is F-275 —
+  it needs a download, which needs your permission.
+- **Effects** — E-128 and its note; E-126's guard brought up to date. **Backlog:** F-272 (raw control
+  bytes hide files from search), F-273 (type on 181 controls, caption estimates), F-274 (full schema
+  validation), F-275 (the serif against open faces).
+
+### The single review — FAIL, 4 blocking and 13 non-blocking — and what became of each
+
+Under the one-review rule every finding was fixed or recorded; none went back for a second review.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | serif not identified | measured against every installed serif, recorded in §5; open faces → F-275 |
+| 2 | conflicts not cited (C6 C8 C11 C14 C15 C17) | cited in every inventory §6 names; C11 on every sample in a dark inventory |
+| 3 | siblings drawn alike at different steps; OQ-13 built on a misread | sibling rule in §2, 11 groups re-snapped, 01's title re-read (15.8 dp), OQ-13 rewritten |
+| 4 | bindings answering open questions | bound `oq:` — OQ-11 17 25 26 28, and 13's *(Natural Dyes)* as new OQ-30 |
+| 5 | 16 branches weaken with the proof green | a planted case for each; 39 → 61 |
+| 6 | an empty inventory passes | refused, with cases |
+| 7 | overhangs listed as presentation | `overhangs: [{element, question}]`, the question open in PRD §10 |
+| 8 | schema drift, not gated | check reads the schema, unknown keys fail, descriptions corrected; full validation → F-274 |
+| 9 | generator and data uncommitted | committed under `mockups/tools/` |
+| 10 | E-126 stale | updated |
+| 11 | 181 controls with `type: null`, 25 captions without an estimate | → F-273 |
+| 12 | icon stroke asserted | measured: 3–4 px on 01's tab icons, ≈ 1.65 dp |
+| 13 | 01's line-art truncated, note's second line missing | recorded |
+| 14 | 22's hue 136.9° | 137.4°, the engine's value |
+| 15 | OQ-23 missing 13; 14's paragraphs; 25's ground; 13's *(Natural Dyes)* | fixed; OQ-30 |
+| 16 | the check's summary line false | corrected |
+| 17 | the tie rule's reason | restated: a smaller step still fits the drawn box |
+
+### What went wrong on my side
+
+- **Increment 5 was committed with the claims lint red** — `verify-claims | tail -1 && … git commit`,
+  the exact trap a lesson already names. Amended once green; the lesson gained the guard that held
+  for the rest of the feature: each status captured in a variable, never decided through a pipe.
+- **The null-inventory proof case stopped discriminating** the day the 28th inventory landed — it
+  leaned on an image the set had not reached. The full gate run caught it before the review.
+- **A proof's restore hit a Windows file lock** on `feature_list.json` — twice, UNKNOWN on open — and
+  left a plant journal, which then failed the claims lint, the format check and lint downstream. Each
+  time every entry was compared with the file on disk before `plant.mjs --recover`. The restore now
+  writes only what differs, retries a transient refusal and finishes every file before reporting; the
+  full re-run passed. The other proofs share the plant helpers and are F-271's to harden.
+
+### Gates
+
+**Mine, sequential, each on its own exit code, on the final tree:** `verify-mockups --prove` (61 planted
+failures rejected, 6 passes allowed) · `verify-mockups` · `state` · `verify-claims` · `format:check` · `lint`
+(full chain, 93 s) — **all exit 0**. On the tree just before the proof-restore fix: `typecheck` 35/35 ·
+`test` 35/35 (mobile 46 suites, 979 tests; ui 14 suites, 261) · `security` (no leaks; advisories passed)
+— exit 0, with turbo replaying package tasks from cache, since F-220 changes no package source. The
+evaluator ran the same set once, sequentially, and every gate exited 0 there too.
+
+### Not run, not verified
+
+`pnpm build`, golden, e2e and a11y — not in F-220's verification list. No ui: component name or
+static: key in the inventories is checked against the code; the surface features own that. Box
+readings are repeatable with the helpers, not re-measured by any gate.
+
+---
+
 ## 2026-09-14 — F-218 The mockup set says which route it is a mockup of, and the gate can tell
 
 **Done.** Golden rule 14 is now something the build checks rather than something a reader remembers.

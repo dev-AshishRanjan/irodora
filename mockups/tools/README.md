@@ -14,6 +14,23 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 | `measure.ps1 mean` / `px` | the average colour of a box / one pixel | a fill, before scanning against it |
 | `mask.ps1` | boxes of pixels by absolute brightness (`bright` / `dark`) | elements drawn over a photograph |
 | `corner.ps1` | a corner radius, fitted after subtracting the straight-side baseline | swatches, cards, chips |
+| `serif-match.ps1` | renders a word in each installed serif and scores it against a crop by mask overlap | naming the face a wordmark or tagline is drawn in (§5, OQ-29) |
+
+## From readings to the record
+
+`inventory-data/NN.mjs` holds one image's readings, and its header says which boxes were derived
+rather than read and why. `generate-inventory.mjs` turns it into `mockups/inventory/NN.json` — dp from
+each box and its screen, the reading order of §2 — and checks the result with the same
+`inventoryProblems()` the gate runs, so it cannot write a record the gate refuses:
+
+```
+node mockups/tools/generate-inventory.mjs 01 14      # then: pnpm exec prettier --write mockups/inventory
+```
+
+Change a reading in the data file and regenerate; never edit an inventory by hand. Type sizes follow
+§2: the em is estimated from the line box by glyph class and snapped to the nearest §5 step, a tie
+takes the smaller, and **siblings drawn alike take one step** — the one most of them snap to — with
+`raw.emDp` keeping each element's own estimate.
 
 ## Known failures, and what to do instead
 

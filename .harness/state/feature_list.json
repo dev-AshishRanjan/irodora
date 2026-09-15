@@ -7131,7 +7131,7 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-218"
       ],
@@ -7153,7 +7153,7 @@
         "format",
         "test"
       ],
-      "notes": "THE FEATURE EVERY SURFACE IS BUILT FROM. It completes docs/design/R9-MOCKUP-FIDELITY.md, which already holds the rules (§2–§4), the tokens (§5), the conflict register (§6), the route map (§7) and the bindings (§8). What it adds is the per-element redline that makes \"strict\" checkable. The inventories become the conformance-sweep assertions each surface feature adds.",
+      "notes": "DONE (2026-09-15). DELIVERED: 28 inventories (mockups/inventory/00–27.json) generated from committed readings (mockups/tools/inventory-data/ via generate-inventory.mjs); the check (scripts/mockup-inventory.mjs, gate 2) reads its vocabulary from the schema, and its proof plants 61 failures and 6 passes; OQ-11…OQ-30 in PRD §10 and fidelity §11; §5 values measured (Slate Graphite #2C323A, swatch corners, icon stroke ≈1.65 dp); E1 rows for every printed colour value that fails against its own hex. CRITERION 4, THE SERIF: measured against the 20 installed serifs — the closest to 01's wordmark is Georgia Pro (mask overlap 0.83), and 00/14/25 do not separate the candidates; open-licence faces need a download the user must approve (F-275), and which face ships is OQ-29. ONE REVIEW, FAIL (4 blocking, 13 non-blocking): every finding fixed or recorded (F-273, F-274, F-275); see progress.md 2026-09-15. THE FEATURE EVERY SURFACE IS BUILT FROM. It completes docs/design/R9-MOCKUP-FIDELITY.md, which already holds the rules (§2–§4), the tokens (§5), the conflict register (§6), the route map (§7) and the bindings (§8). What it adds is the per-element redline that makes \"strict\" checkable. The inventories become the conformance-sweep assertions each surface feature adds.",
       "plan": "plans/F-220-the-mockups-are-redlined.md"
     },
     {
@@ -9248,6 +9248,82 @@
         "test"
       ],
       "notes": "FOUND PREPARING F-220 (2026-09-14): grep called scripts/verify-mockups.mjs and packages/design-tokens/src/manifest.ts binary. A scan of 1,548 tracked text files finds 38 lines with a raw control character: raw NUL meant as a space or empty string (manifest.ts:587, preference.ts:105, ChoiceGroup.tsx:62, home-states.test.tsx:203/211, verify-mockups.mjs, two plans and progress.md), raw ESC in the colour constants of five scripts, raw BACKSPACE in prohibited.ts:60 and two memory-index lines. THE HARM IS TO SEARCH, NOT RUNTIME: the Grep tool omits manifest.ts from a directory search without a word, and grep -r prints Binary file matches in place of the lines — every agent searching a directory is blind to these files. It recurs and has been deferred before (progress.md records one fixed in screens.test.tsx; F-103 deferred another). F-220 edited verify-mockups.mjs around its NUL and did not touch it."
+    },
+    {
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-220"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "id": "F-273",
+      "title": "Every text-bearing element in the inventories records its type, and every caption its measured em",
+      "acceptance": [
+        "Every inventory element that carries copy and has type: null — 181 chips, buttons and fields after F-220 — records face, size step and weight, read from its label's line box by §2's glyph-class rule and the sibling rule",
+        "Every element whose size is caption records raw.emDp, the estimate the step replaced — 25 lack it after F-220",
+        "verify-mockups refuses an element with copy and no type, and one sized caption with no raw.emDp, and its proof plants each"
+      ],
+      "notes": "RECORDED FROM F-220'S SINGLE REVIEW (finding 11). The inventories gave type to free text and left it null on controls, whose label size a builder then has to read off the picture again — the thing the inventories exist to stop. The readings exist to be taken with mockups/tools/measure.ps1; caption itself stays a placeholder until OQ-12 is answered."
+    },
+    {
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-220"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "id": "F-274",
+      "title": "Every inventory validates against its schema in gate 2, not only against the checks written by hand",
+      "acceptance": [
+        "verify-mockups validates each inventory against mockups/inventory.schema.json — box integers, token and copy enums, the type and action patterns — with a validator the repository pins, and reports each failure by file and JSON path",
+        "Its proof plants a schema-only failure (a non-integer box, an unknown copy shape) and watches the gate go red"
+      ],
+      "notes": "RECORDED FROM F-220'S SINGLE REVIEW (finding 8). F-220 made the hand-written check read its keys, enums and binding and component patterns from the schema, and refuse keys the schema does not name, so the two cannot drift on those. Nested value types are still unchecked; ajv reaches the tree only transitively, so validating properly needs a pinned dependency and a security review of it."
+    },
+    {
+      "requirements": [
+        "FR-71",
+        "NFR-25"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-220"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "id": "F-275",
+      "title": "The serif is identified against open-licence candidates, and the result recorded beside F-220's",
+      "acceptance": [
+        "Open-licence serifs chosen for their resemblance to 01's wordmark are rendered by mockups/tools/serif-match.ps1 against 00, 01, 14 and 25, and the scores are recorded in R9-MOCKUP-FIDELITY §5 beside the installed-font result",
+        "OQ-29 is updated with the closest open face, so the person answering it chooses between measured options"
+      ],
+      "notes": "RECORDED FROM F-220'S SINGLE REVIEW (finding 1). F-220 measured the 20 serifs installed where it measured: 01's wordmark matches Georgia Pro best (0.83), 00, 14 and 25 do not separate the candidates, and Georgia Pro is commercially licensed. No open-licence face was installed or bundled, and fetching candidate font files is a download the user must approve first (the operating rules require explicit permission, with file, source and size named). Blocked on that permission as much as on F-220."
     }
   ]
 }

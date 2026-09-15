@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://irodora.com/schemas/mockup-inventory.schema.json",
   "title": "Irodora mockup element inventory",
-  "description": "Golden rule 14, per element (F-220). One file per image in mockups/: every element the image draws, top to bottom, with its measured geometry, token, face, icon, binding and action. The TEXT an image prints is never recorded as content (R9-MOCKUP-FIDELITY §4 E1) — only its shape and script. Checked by scripts/verify-mockups.mjs; the rules it applies are R9-MOCKUP-FIDELITY §2–§8.",
+  "description": "Golden rule 14, per element (F-220). One file per image in mockups/: every element the image draws, top to bottom, with its measured geometry, token, face, icon, binding and action. The text an image prints is not recorded as an element's content (R9-MOCKUP-FIDELITY §4 E1) — only its shape and script; a departure's why may quote the drawn construction it departs from. Generated from mockups/tools/inventory-data/NN.mjs by mockups/tools/generate-inventory.mjs; checked by scripts/verify-mockups.mjs, which reads its vocabulary from this file. The rules it applies are R9-MOCKUP-FIDELITY §2–§8.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -83,7 +83,8 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/element"
-      }
+      },
+      "minItems": 1
     },
     "notDesign": {
       "type": "array",
@@ -104,7 +105,7 @@
               "board-annotation",
               "presentation"
             ],
-            "description": "presentation: the setting an artefact is shown in that no surface of the app draws — the OS home screen an icon sits on."
+            "description": "presentation: what the OS or the render's setting draws and no surface of the app does — a home indicator, the home screen an icon sits on, a faint mark in the render."
           },
           "note": {
             "type": "string"
@@ -160,6 +161,24 @@
           },
           "flippedByUser": {
             "type": "boolean"
+          }
+        }
+      }
+    },
+    "overhangs": {
+      "type": "array",
+      "description": "Elements the image draws past its own screen's edge, each recorded as drawn only while an open question in PRD §10 asks what to build (fit it to the screen, or keep the drawn width). A child of a declared element overhangs through it. The record never decides the question.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["element", "question"],
+        "properties": {
+          "element": {
+            "$ref": "#/$defs/elementId"
+          },
+          "question": {
+            "type": "string",
+            "pattern": "^OQ-[0-9]+$"
           }
         }
       }
@@ -280,7 +299,7 @@
               "type": "null"
             }
           ],
-          "description": "The box at §2's scale, each value snapped to the R9 scale (§5). null on a board, where the render's scale is not a screen's."
+          "description": "The box at §2's scale — (box − screen origin) × dpPerPx, to the nearest half dp. Not snapped to the R9 scale: a token is chosen from it, it is not one. null on a board, where the render's scale is not a screen's."
         },
         "tokens": {
           "type": "object",
@@ -301,7 +320,8 @@
                   "enum": ["serif", "sans", "mincho", "gothic"]
                 },
                 "size": {
-                  "enum": ["display1", "title", "body", "label", "caption"]
+                  "enum": ["display1", "title", "body", "label", "caption"],
+                  "description": "A §5 step. caption marks an em measured below 12 dp, where §5 names no step (OQ-12 asks whether to add one); raw.emDp keeps the estimate. Siblings drawn alike take one step — the one most of them snap to, the smaller on a tie (§2)."
                 },
                 "weight": {
                   "enum": [300, 400, 500, 600, 700]
@@ -371,7 +391,7 @@
         },
         "raw": {
           "type": "object",
-          "description": "Optional. The dp values before snapping, where a snap moved one by more than 2 dp — so a reviewer can see what the scale changed.",
+          "description": "Optional. Readings kept beside a snapped value so a reviewer can see what the snap changed: emDp, the estimated em in dp (§2's glyph-class rule) wherever the size step moved it by more than 2 dp or the step is caption; cornerPx, a fitted corner radius in image px wherever the radius token moved it by more than 2 dp or the image has no scale.",
           "additionalProperties": {
             "type": "number"
           }

@@ -19,7 +19,20 @@
       }
     ]
   },
-  "overhangs": ["06.provenance", "06.combinations", "06.actions"],
+  "overhangs": [
+    {
+      "element": "06.provenance",
+      "question": "OQ-19"
+    },
+    {
+      "element": "06.combinations",
+      "question": "OQ-19"
+    },
+    {
+      "element": "06.actions",
+      "question": "OQ-19"
+    }
+  ],
   "elements": [
     {
       "id": "06.back.icon",
@@ -1594,36 +1607,6 @@
         "w": 326,
         "h": 173
       }
-    },
-    {
-      "what": "presentation",
-      "note": "06.provenance drawn wider than the upper frame",
-      "box": {
-        "x": 527,
-        "y": 889,
-        "w": 191,
-        "h": 146
-      }
-    },
-    {
-      "what": "presentation",
-      "note": "06.combinations drawn 2 px past the upper frame’s left edge",
-      "box": {
-        "x": 51,
-        "y": 1049,
-        "w": 2,
-        "h": 173
-      }
-    },
-    {
-      "what": "presentation",
-      "note": "06.actions drawn wider than the upper frame",
-      "box": {
-        "x": 527,
-        "y": 1222,
-        "w": 191,
-        "h": 78
-      }
     }
   ],
   "departures": [
@@ -1649,6 +1632,24 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": ["06.swatch"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": ["06.kanji", "06.kana", "06.name"],
+      "resolution": "text sits beside the sample as 06 draws it",
+      "flippedByUser": false
+    },
+    {
+      "id": "C6",
+      "elements": ["06.kanji"],
+      "resolution": "each surface follows its own mockup — kanji are sans here",
+      "flippedByUser": false
+    },
     {
       "id": "C3",
       "elements": ["06.readout.title", "06.provenance.title", "06.combinations.title"],

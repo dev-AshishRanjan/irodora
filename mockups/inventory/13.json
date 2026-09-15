@@ -1642,7 +1642,7 @@
       },
       "icon": null,
       "illustration": null,
-      "binding": "engine:outfit.affinity",
+      "binding": "oq:OQ-30",
       "action": null,
       "copy": {
         "shape": "value",
@@ -2039,6 +2039,27 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": ["13.slots.slot-1", "13.slots.slot-2", "13.slots.slot-3", "13.slots.slot-4"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
+      "id": "C8",
+      "elements": [
+        "13.slots.slot-1.hex",
+        "13.slots.slot-2.hex",
+        "13.slots.slot-3.hex",
+        "13.slots.slot-4.hex",
+        "13.slots.slot-1.name",
+        "13.slots.slot-2.name",
+        "13.slots.slot-3.name",
+        "13.slots.slot-4.name"
+      ],
+      "resolution": "text sits on the slot’s colour as 13 draws it, and takes per row whichever of the two text colours passes 4.5:1 (E3)",
+      "flippedByUser": false
+    },
     {
       "id": "C10",
       "elements": ["13.slots.slot-1", "13.slots.slot-4"],

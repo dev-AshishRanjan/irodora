@@ -19,7 +19,16 @@
       }
     ]
   },
-  "overhangs": ["04.gauge", "04.sheet"],
+  "overhangs": [
+    {
+      "element": "04.gauge",
+      "question": "OQ-16"
+    },
+    {
+      "element": "04.sheet",
+      "question": "OQ-16"
+    }
+  ],
   "elements": [
     {
       "id": "04.target",
@@ -1280,26 +1289,6 @@
         "w": 34,
         "h": 15
       }
-    },
-    {
-      "what": "presentation",
-      "note": "04.gauge drawn past the frame’s right edge",
-      "box": {
-        "x": 655,
-        "y": 686,
-        "w": 57,
-        "h": 355
-      }
-    },
-    {
-      "what": "presentation",
-      "note": "04.sheet drawn past the frame’s right edge",
-      "box": {
-        "x": 655,
-        "y": 1060,
-        "w": 22,
-        "h": 316
-      }
     }
   ],
   "departures": [
@@ -1315,6 +1304,17 @@
     }
   ],
   "conflicts": [
+    {
+      "id": "C11",
+      "elements": [
+        "04.target.swatch",
+        "04.gauge.lightness.bar",
+        "04.gauge.chroma.bar",
+        "04.gauge.hue.bar"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
     {
       "id": "C10",
       "elements": [

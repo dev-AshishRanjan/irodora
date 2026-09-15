@@ -1665,6 +1665,18 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": [
+        "07.anchor.swatch",
+        "07.slots.slot-1",
+        "07.slots.slot-2",
+        "07.slots.slot-3",
+        "07.slots.slot-4"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C8",
       "elements": [
         "07.slots.slot-1.title",

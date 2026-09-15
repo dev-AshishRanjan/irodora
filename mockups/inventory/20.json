@@ -851,6 +851,12 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": ["20.card.swatch"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C6",
       "elements": ["20.card.kanji"],
       "resolution": "each surface follows its own mockup — the card’s kanji are set in a Japanese serif face",

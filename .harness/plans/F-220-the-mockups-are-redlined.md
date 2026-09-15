@@ -81,9 +81,15 @@ each inventory applies.
    on each mockup (so far 00 ≈ 7 px board · 01 ≈ 6.75 dp · 02 ≈ 8.1 dp · 03 5.6 / 9.75 dp · 05 ≈ 4.5
    dp); the icon stroke weight — 1.75 dp, which is `NavIcon`'s `STROKE` already; the serif face,
    identified by rendering OFL candidates beside the wordmark in 00, 01, 14 and 25.
-   **Changed while building (2026-09-15):** the serif is NOT identified. The repository bundles no
-   serif (only `NotoSansJP-Subset.ttf`), so there is nothing to render against the wordmark without
-   downloading fonts — and which face ships, under which licence, is a person's call. It is OQ-29.
+   **Changed while building (2026-09-15):** no OFL serif is bundled or installed, so the candidates were
+   the 20 serifs installed on the measuring machine (`mockups/tools/serif-match.ps1`). 01's wordmark and
+   tagline match Georgia Pro best; 00, 14 and 25 do not separate the candidates. Georgia Pro is not an
+   open-licence face, so which face ships is OQ-29. Open-licence candidates would need a download,
+   which needs the user's permission.
+   **Changed after the review (2026-09-15):** the generator and the per-image data are committed
+   (`mockups/tools/generate-inventory.mjs`, `mockups/tools/inventory-data/`). They are not linted —
+   the root lint runs `eslint scripts` — and the generator validates its output with the gate's own
+   `inventoryProblems()`.
 7. **§4 E2 rows the inventories cite** that §4 does not yet list (so far: 03's list heading).
 
 **Increments:** (1) the schema, the check and its proof, with the eight drafted inventories; (2) the

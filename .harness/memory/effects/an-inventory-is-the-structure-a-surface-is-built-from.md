@@ -25,12 +25,12 @@ inventory's elements to the conformance sweep.
   over every inventory: required keys; ids unique and prefixed by their image; the order a strict
   sequence and, on a screen, the reading-order rule; parents before children; component and binding
   kinds; an `oq:` binding naming a question PRD §10 lists; dp equal to the box at its screen's scale;
-  every box inside its image and its screen unless declared an overhang with a presentation region;
+  every box inside its image and its screen unless declared an overhang waiting on an open question;
   departures citing a §4 rule and conflicts a §6 id.
 - **The end condition** is F-220's status: once it is `done`, a null inventory fails. The proof
   plants both halves — the missing row with F-220 done (red) and with it not done (green) — each
   planting the status itself, so neither depends on what the set happens to contain.
-- **`verify-mockups --prove`** plants 45 cases — 39 that must fail and 6 that must pass, each asserted by the name of the problem it produces.
+- **`verify-mockups --prove`** plants 67 cases — 61 that must fail and 6 that must pass, each asserted by the name of the problem it produces. The single review found 16 branches it could weaken with the proof still green; each has its case now, and the check reads its keys and enums from the schema, so the two cannot drift.
 
 ## What it does not hold
 

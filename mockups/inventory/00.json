@@ -1934,6 +1934,25 @@
   ],
   "conflicts": [
     {
+      "id": "C11",
+      "elements": [
+        "00.wells.hero",
+        "00.wells.detail",
+        "00.wells.list-a",
+        "00.wells.list-b",
+        "00.wells.strip-a",
+        "00.wells.strip-b",
+        "00.wells2.hero",
+        "00.wells2.detail",
+        "00.wells2.list48",
+        "00.wells2.list",
+        "00.wells2.akabeni",
+        "00.wells2.tetsukon"
+      ],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    },
+    {
       "id": "C4",
       "elements": ["00.mark", "00.wordmark"],
       "resolution": "00's coral outline mark and its lockup are not used: mark geometry comes from 14 and the in-app lockup from 01, monochrome",

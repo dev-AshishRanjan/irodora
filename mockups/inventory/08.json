@@ -1895,5 +1895,12 @@
       "why": "the computed separation (FR-5) stays with the model it was computed under; the safety suffix is a claim about people and does not ship"
     }
   ],
-  "conflicts": []
+  "conflicts": [
+    {
+      "id": "C11",
+      "elements": ["08.pair.a.swatch", "08.pair.b.swatch"],
+      "resolution": "followed — the user's decision (§6 C11): the sample sits on the tinted surface as drawn, judged against a surround of measured chroma",
+      "flippedByUser": false
+    }
+  ]
 }
