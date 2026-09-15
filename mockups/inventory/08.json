@@ -1865,6 +1865,16 @@
   ],
   "departures": [
     {
+      "rule": "E1",
+      "element": "08.pair.a.meta",
+      "why": "#5B6B78 is printed as OKLCh 0.490 · 240°; it is 0.519 / 0.028 / 242.7° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "08.pair.b.meta",
+      "why": "#5C828C is printed as OKLCh 0.540 · 210°; it is 0.582 / 0.045 / 215.9° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
       "rule": "E2",
       "element": "08.access.wcag.value",
       "why": "the ratio and the Lc stay; the one-word pairing verdict after them does not (FR-32, FR-3) — the pair shows its harmony relationship (FR-6) where it has one"

@@ -1402,6 +1402,16 @@
   ],
   "departures": [
     {
+      "rule": "E1",
+      "element": "03.sample.oklch.value",
+      "why": "#2E4756 is printed as OKLCh 0.44 / 0.042 / 228°; it is 0.384 / 0.040 / 235.6° (§4 E1) — the cell shows the reading’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "03.sample.cielab.value",
+      "why": "#2E4756 is printed as CIELAB 46.1 / -4.8 / -12.3; it is 28.80 / -5.00 / -11.93 (§4 E1) — the cell shows the reading’s conversion"
+    },
+    {
       "rule": "E2",
       "element": "03.matches.row-1.match",
       "why": "no such figure exists: naming returns the closest references ranked by ΔE00, never a match (FR-7) — held by OQ-9"

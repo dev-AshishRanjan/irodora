@@ -1304,7 +1304,23 @@
     }
   ],
   "notDesign": [],
-  "departures": [],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "01.hero.sample.oklch",
+      "why": "Ai-nezumi (#5B6B78) is printed as OKLCh 0.49 / 0.035 / 240°; it is 0.519 / 0.028 / 242.7° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "01.colour-card.title",
+      "why": "“Traditional” presents an inspired palette as historical (FR-23, §4 E1 names 01); the heading keeps its place and length and states the real classification"
+    },
+    {
+      "rule": "E1",
+      "element": "01.colour-card.note",
+      "why": "a Heian source is provenance no entry holds — none of the 120 claims an era (§4 E1, ADR-0065); the note is the entry’s own"
+    }
+  ],
   "conflicts": [
     {
       "id": "C1",

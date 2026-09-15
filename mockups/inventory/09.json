@@ -1563,7 +1563,13 @@
       }
     }
   ],
-  "departures": [],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "09.results.result-1.oklch",
+      "why": "#69821B is printed as OKLCh 0.52 / 0.062 / 140°; it is 0.567 / 0.128 / 122.8° (§4 E1) — the line shows the engine’s conversion"
+    }
+  ],
   "conflicts": [
     {
       "id": "C1",

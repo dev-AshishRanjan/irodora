@@ -1851,7 +1851,33 @@
       }
     }
   ],
-  "departures": [],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "05.title",
+      "why": "日本の伝統色 — “traditional colour” — presents an inspired palette as historical (FR-23, §4 E1 names 05); the heading keeps its place and length and states the real classification"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-1.oklch",
+      "why": "#5B6B78 is printed as OKLCh 0.49 / 0.035 / 240°; it is 0.519 / 0.028 / 242.7° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-2.oklch",
+      "why": "#7BA23F is printed as OKLCh 0.63 / 0.12 / 132°; it is 0.662 / 0.135 / 127.8° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-3.oklch",
+      "why": "#F4A7B9 is printed as OKLCh 0.74 / 0.08 / 15°; it is 0.808 / 0.093 / 4.1° (§4 E1) — the line shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "05.card-4.swatch",
+      "why": "05 renders #EB6EA5, a light pink, as deep crimson (§4 E1); the swatch renders the entry’s own hex"
+    }
+  ],
   "conflicts": [
     {
       "id": "C1",

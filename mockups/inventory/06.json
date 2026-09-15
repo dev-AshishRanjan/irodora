@@ -1629,6 +1629,11 @@
   "departures": [
     {
       "rule": "E1",
+      "element": "06.readout.table.oklch.value",
+      "why": "#5B6B78 is printed as OKLCh 0.490 / 0.035 / 240.2°; it is 0.519 / 0.028 / 242.7° (§4 E1) — the cell shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
       "element": "06.readout.table.cielab.value",
       "why": "06 prints CIELAB values that do not survive checking for its own hex (§4 E1); the cell shows the engine’s conversion"
     },
