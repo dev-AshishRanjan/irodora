@@ -8,6 +8,24 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-15 — F-224 blocked on OQ-35 · the seven family chips name no white and no grey
+
+**Not started — blocked.** F-224's second criterion puts every one of the corpus's 25 families in exactly
+one of the seven chips conflict C13 names (Ao 青 · Aka 赤 · Midori 緑 · Ki 黄 · Murasaki 紫 · Cha 茶 ·
+Kuro 黒). Grouped by family, the 120 entries split cleanly except for one block: charcoal fits Kuro and
+the tinted greys fit the hue they name, but **off-white (5 entries) and the neutral greys — stone,
+warm-grey, cool-grey, mineral-grey (15)** — have no honest home. None of the seven names a white or a
+grey (鼠), so any placement shows a person whites or greys under a chip that says black or a hue — a
+visible decision, and not an agent's (golden rule 14). **OQ-35** in PRD §10 and fidelity §11; F-224 is
+`blocked` on it. The kasane half waits only because the feature is one unit, and the question says so.
+
+Also seen in 05 while checking: the drawn family row shows six chips and runs past the screen's edge;
+Ki 黄 is not among the six drawn. OQ-35 records it.
+
+No gates beyond state, claims, mockups and format apply to a recorded question; they ran on the commit.
+
+---
+
 ## 2026-09-15 — F-223 The profile carries the seasonal summary the finished-profile mockup draws
 
 **Done.** Mockup 23's seasonal pill now has a value the product can stand behind: a summary computed

@@ -7292,7 +7292,7 @@
       "service": "content",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-220"
       ],
@@ -7315,7 +7315,10 @@
         "test",
         "content"
       ],
-      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23)."
+      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23). BLOCKED 2026-09-15 on OQ-35: criterion 2 requires every entry in exactly one of the seven groups, and off-white and the neutral greys (20 entries) have no honest home among them. The kasane half (criterion 1) waits only because the feature is one unit; the person may split it.",
+      "openQuestions": [
+        "OQ-35"
+      ]
     },
     {
       "id": "F-225",
