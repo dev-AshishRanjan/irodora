@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-14",
+  "updated": "2026-09-15",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -7166,7 +7166,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-218"
       ],
@@ -7192,7 +7192,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator. CRITERION ADDED 2026-09-14 BY F-219, recorded here where the change lives: the claims lint reads source lines, and the catalogues compose a figure and its label at render time, so a composed claim is invisible to it (evaluation 4 of F-219). This feature already captures every route; running the same patterns over the captured text is the guard that can see one."
+      "notes": "BLOCKED 2026-09-15 ON THE DEVICE RUN F-091 OWES. Criterion 2 requires captures from the running app on an Android emulator through the Maestro flows, and F-091 still owes the first on-device run of those flows (attested, outstanding). On this workstation: the Android SDK has emulator.exe and system images android-29/30/31 but no AVD; there is no Maestro CLI and no JDK. Installing Maestro and a JDK are downloads the user must approve — F-221 resumes when they are installed and F-091's run is recorded. The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator. CRITERION ADDED 2026-09-14 BY F-219, recorded here where the change lives: the claims lint reads source lines, and the catalogues compose a figure and its label at render time, so a composed claim is invisible to it (evaluation 4 of F-219). This feature already captures every route; running the same patterns over the captured text is the guard that can see one.",
+      "blockedByAttestation": [
+        "F-091"
+      ]
     },
     {
       "id": "F-222",
@@ -7247,7 +7250,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-220"
       ],
@@ -7267,7 +7270,8 @@
         "test",
         "content"
       ],
-      "notes": "Mockup 23: the brown pill \"Autumn Muted / Kasane Harmony\" at the top of the dimensions card. Conflict C12. The label is derived FROM the ranges, which is a lossy summary; it is not a quiz that produces a label first, which is the model ADR-0010 rejected."
+      "notes": "Mockup 23: the brown pill \"Autumn Muted / Kasane Harmony\" at the top of the dimensions card. Conflict C12. The label is derived FROM the ranges, which is a lossy summary; it is not a quiz that produces a label first, which is the model ADR-0010 rejected.",
+      "plan": "plans/F-223-the-profile-carries-its-seasonal-summary.md"
     },
     {
       "id": "F-224",
@@ -9324,6 +9328,60 @@
         "OQ-29 is updated with the closest open face, so the person answering it chooses between measured options"
       ],
       "notes": "RECORDED FROM F-220'S SINGLE REVIEW (finding 1). F-220 measured the 20 serifs installed where it measured: 01's wordmark matches Georgia Pro best (0.83), 00, 14 and 25 do not separate the candidates, and Georgia Pro is commercially licensed. No open-licence face was installed or bundled, and fetching candidate font files is a download the user must approve first (the operating rules require explicit permission, with file, source and size named). Blocked on that permission as much as on F-220."
+    },
+    {
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "id": "F-276",
+      "title": "A leans-warm guided profile is built as if it had no temperature preference, and a leans-cool one is not",
+      "requirements": [
+        "FR-26",
+        "FR-29"
+      ],
+      "service": "mobile",
+      "acceptance": [
+        "deriveProfile's 2-of-3 warm and 2-of-3 cool biases are treated alike by agreesWithBias and deriveAvoid, and a test over every guided answer set asserts the symmetry, with a decoy that reintroduces the asymmetry and is watched failing",
+        "The fix states which lists change for existing leans-warm profiles, and the E-030 trials check still passes"
+      ],
+      "notes": "FOUND PLANNING F-223, CONFIRMED BY RUNNING IT (2026-09-15). The bias is 2a/3 − 1: a 2-of-3 warm split is 0.33333333333333326 and a 2-of-3 cool split −0.33333333333333337, while TEMPERATURE_DECISIVE is 1/3 = 0.3333333333333333. agreesWithBias tests Math.abs(bias) < TEMPERATURE_DECISIVE and deriveAvoid tests >=, so leans cool counts as decisive and leans warm does not — a leans-warm person's neutrals, accents and avoid list are built as if they had no temperature preference, and a hand-set leans warm (exactly 1/3) is decisive where the same derived reading is not. ADR-0069 §3: a boundary sits in the gap, never on a reachable value. MOCKUPS: 17 and 23 draw the profile whose neutrals, accents and avoid list this derivation fills; the fix changes no layout.",
+      "mockups": [
+        "17",
+        "23"
+      ]
+    },
+    {
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "id": "F-277",
+      "title": "Gate 11 validates the weights files' provenance, as it does the lexicon's",
+      "requirements": [
+        "NFR-20",
+        "FR-67"
+      ],
+      "service": "root",
+      "acceptance": [
+        "Gate 11 reads every weights.*.json provenance block through parseProvenance, and refuses one that is incomplete, naming the field",
+        "Its in-memory spoilings include a provenance field removed, watched failing, beside the clean file passing"
+      ],
+      "notes": "FOUND PLANNING F-223, CONFIRMED BY READING scripts/verify-content.mjs (2026-09-15): the weights section parses the weights through parseWeightContent and never calls parseProvenance, and parseWeightContent does not read the provenance block. NFR-20 asks every rule file for complete provenance; for weights nothing checks it."
     }
   ]
 }
