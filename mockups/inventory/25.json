@@ -1,0 +1,1328 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "25",
+  "mockupSha256": "d81a68c004bfd241961466c5ce2aa181c59f6fd6afc1129a78e3a0de5306e17c",
+  "kind": "screen",
+  "governs": "palette",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "25.screen",
+        "box": {
+          "x": 149,
+          "y": 114,
+          "w": 470,
+          "h": 1185
+        },
+        "dpPerPx": 0.817
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "25.mark",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Mark",
+      "box": {
+        "x": 537,
+        "y": 185,
+        "w": 79,
+        "h": 59
+      },
+      "dp": {
+        "x": 317,
+        "y": 58,
+        "w": 64.5,
+        "h": 48
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wordmark",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Wordmark",
+      "box": {
+        "x": 182,
+        "y": 197,
+        "w": 301,
+        "h": 38
+      },
+      "dp": {
+        "x": 27,
+        "y": 68,
+        "w": 246,
+        "h": 31
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.header-rule",
+      "order": 3,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 149,
+        "y": 258,
+        "w": 470,
+        "h": 2
+      },
+      "dp": {
+        "x": 0,
+        "y": 117.5,
+        "w": 384,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.tagline",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 233,
+        "y": 283,
+        "w": 300,
+        "h": 115
+      },
+      "dp": {
+        "x": 68.5,
+        "y": 138,
+        "w": 245,
+        "h": 94
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "serif",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.tagline",
+      "action": null,
+      "raw": {
+        "emDp": 34.7
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "25.hero",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 165,
+        "y": 425,
+        "w": 438,
+        "h": 554
+      },
+      "dp": {
+        "x": 13,
+        "y": 254,
+        "w": 358,
+        "h": 452.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#FEFEFE"
+      },
+      "copy": null
+    },
+    {
+      "id": "25.hero.ring",
+      "order": 6,
+      "parent": "25.hero",
+      "component": null,
+      "box": {
+        "x": 244,
+        "y": 446,
+        "w": 280,
+        "h": 280
+      },
+      "dp": {
+        "x": 77.5,
+        "y": 271,
+        "w": 229,
+        "h": 229
+      },
+      "tokens": {
+        "border": "keyline",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.hero.sample",
+      "order": 7,
+      "parent": "25.hero.ring",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 254,
+        "y": 456,
+        "w": 260,
+        "h": 260
+      },
+      "dp": {
+        "x": 86,
+        "y": 279.5,
+        "w": 212.5,
+        "h": 212.5
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:today.hex",
+      "action": null,
+      "measured": {
+        "fill": "#38424C"
+      },
+      "copy": null
+    },
+    {
+      "id": "25.hero.kanji",
+      "order": 8,
+      "parent": "25.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 346,
+        "y": 744,
+        "w": 76,
+        "h": 37
+      },
+      "dp": {
+        "x": 161,
+        "y": 514.5,
+        "w": 62,
+        "h": 30
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:today.kanji",
+      "action": null,
+      "raw": {
+        "emDp": 33.6
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "25.hero.kana",
+      "order": 9,
+      "parent": "25.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 341,
+        "y": 788,
+        "w": 87,
+        "h": 17
+      },
+      "dp": {
+        "x": 157,
+        "y": 550.5,
+        "w": 71,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:today.kana",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "25.hero.hex.label",
+      "order": 10,
+      "parent": "25.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 248,
+        "y": 824,
+        "w": 27,
+        "h": 13
+      },
+      "dp": {
+        "x": 81,
+        "y": 580,
+        "w": 22,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.hero.oklch",
+      "order": 11,
+      "parent": "25.hero",
+      "component": "ui:Chip",
+      "box": {
+        "x": 346,
+        "y": 818,
+        "w": 185,
+        "h": 47
+      },
+      "dp": {
+        "x": 161,
+        "y": 575,
+        "w": 151,
+        "h": 38.5
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:today.oklch",
+      "action": null,
+      "measured": {
+        "bg": "#DFE0DA"
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "25.hero.hex.value",
+      "order": 12,
+      "parent": "25.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 247,
+        "y": 844,
+        "w": 78,
+        "h": 14
+      },
+      "dp": {
+        "x": 80,
+        "y": 596.5,
+        "w": 63.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:today.hex",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "25.hero.cta",
+      "order": 13,
+      "parent": "25.hero",
+      "component": "ui:Button",
+      "box": {
+        "x": 189,
+        "y": 884,
+        "w": 391,
+        "h": 68
+      },
+      "dp": {
+        "x": 32.5,
+        "y": 629,
+        "w": 319.5,
+        "h": 55.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.whatGoesWithThis",
+      "action": "navigate:/atlas/with/[slug]",
+      "measured": {
+        "bg": "#1D1D22"
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "25.art-blossom",
+      "order": 14,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 440,
+        "y": 955,
+        "w": 176,
+        "h": 110
+      },
+      "dp": {
+        "x": 237.5,
+        "y": 687,
+        "w": 144,
+        "h": 90
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "blossom",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.dots",
+      "order": 15,
+      "parent": null,
+      "component": "new:PageDots",
+      "box": {
+        "x": 361,
+        "y": 988,
+        "w": 61,
+        "h": 9
+      },
+      "dp": {
+        "x": 173,
+        "y": 714,
+        "w": 50,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "fg": "#191A1A"
+      },
+      "copy": null
+    },
+    {
+      "id": "25.art-waves",
+      "order": 16,
+      "parent": null,
+      "component": "ui:Illustration",
+      "box": {
+        "x": 150,
+        "y": 1040,
+        "w": 36,
+        "h": 150
+      },
+      "dp": {
+        "x": 1,
+        "y": 756.5,
+        "w": 29.5,
+        "h": 122.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "waves",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.title",
+      "order": 17,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 184,
+        "y": 1032,
+        "w": 276,
+        "h": 24
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 750,
+        "w": 225.5,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:home.wardrobeQuickAccess",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.wardrobe.tile-1",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 176,
+        "y": 1067,
+        "w": 160,
+        "h": 128
+      },
+      "dp": {
+        "x": 22,
+        "y": 778.5,
+        "w": 130.5,
+        "h": 104.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-2",
+      "order": 19,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 345,
+        "y": 1067,
+        "w": 156,
+        "h": 128
+      },
+      "dp": {
+        "x": 160,
+        "y": 778.5,
+        "w": 127.5,
+        "h": 104.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-3",
+      "order": 20,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 507,
+        "y": 1067,
+        "w": 111,
+        "h": 128
+      },
+      "dp": {
+        "x": 292.5,
+        "y": 778.5,
+        "w": 90.5,
+        "h": 104.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe/[id]",
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-1.badge",
+      "order": 21,
+      "parent": "25.wardrobe.tile-1",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 196,
+        "y": 1080,
+        "w": 37,
+        "h": 37
+      },
+      "dp": {
+        "x": 38.5,
+        "y": 789,
+        "w": 30,
+        "h": 30
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.0.texture",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-1.photo",
+      "order": 22,
+      "parent": "25.wardrobe.tile-1",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 238,
+        "y": 1080,
+        "w": 42,
+        "h": 84
+      },
+      "dp": {
+        "x": 72.5,
+        "y": 789,
+        "w": 34.5,
+        "h": 68.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.0.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-2.badge",
+      "order": 23,
+      "parent": "25.wardrobe.tile-2",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 359,
+        "y": 1080,
+        "w": 37,
+        "h": 37
+      },
+      "dp": {
+        "x": 171.5,
+        "y": 789,
+        "w": 30,
+        "h": 30
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.1.texture",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-2.photo",
+      "order": 24,
+      "parent": "25.wardrobe.tile-2",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 397,
+        "y": 1080,
+        "w": 71,
+        "h": 84
+      },
+      "dp": {
+        "x": 202.5,
+        "y": 789,
+        "w": 58,
+        "h": 68.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.1.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-3.badge",
+      "order": 25,
+      "parent": "25.wardrobe.tile-3",
+      "component": "new:TextureBadge",
+      "box": {
+        "x": 523,
+        "y": 1080,
+        "w": 36,
+        "h": 36
+      },
+      "dp": {
+        "x": 305.5,
+        "y": 789,
+        "w": 29.5,
+        "h": 29.5
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.2.texture",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-3.photo",
+      "order": 26,
+      "parent": "25.wardrobe.tile-3",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 562,
+        "y": 1080,
+        "w": 56,
+        "h": 84
+      },
+      "dp": {
+        "x": 337.5,
+        "y": 789,
+        "w": 46,
+        "h": 68.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.2.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "25.wardrobe.tile-1.name",
+      "order": 27,
+      "parent": "25.wardrobe.tile-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 196,
+        "y": 1171,
+        "w": 109,
+        "h": 21
+      },
+      "dp": {
+        "x": 38.5,
+        "y": 863.5,
+        "w": 89,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.0.name",
+      "action": null,
+      "raw": {
+        "emDp": 19
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.wardrobe.tile-2.name",
+      "order": 28,
+      "parent": "25.wardrobe.tile-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 360,
+        "y": 1171,
+        "w": 91,
+        "h": 21
+      },
+      "dp": {
+        "x": 172.5,
+        "y": 863.5,
+        "w": 74.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.1.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.wardrobe.tile-3.name",
+      "order": 29,
+      "parent": "25.wardrobe.tile-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 523,
+        "y": 1171,
+        "w": 95,
+        "h": 17
+      },
+      "dp": {
+        "x": 305.5,
+        "y": 863.5,
+        "w": 77.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garments.2.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.tabs",
+      "order": 30,
+      "parent": null,
+      "component": "app:TabBar",
+      "box": {
+        "x": 149,
+        "y": 1195,
+        "w": 470,
+        "h": 104
+      },
+      "dp": {
+        "x": 0,
+        "y": 883,
+        "w": 384,
+        "h": 85
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#FEFEFE"
+      },
+      "copy": null
+    },
+    {
+      "id": "25.tabs.home.icon",
+      "order": 31,
+      "parent": "25.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 200,
+        "y": 1205,
+        "w": 28,
+        "h": 25
+      },
+      "dp": {
+        "x": 41.5,
+        "y": 891.5,
+        "w": 23,
+        "h": 20.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": "home",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/",
+      "copy": null
+    },
+    {
+      "id": "25.tabs.lens.icon",
+      "order": 32,
+      "parent": "25.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 316,
+        "y": 1205,
+        "w": 23,
+        "h": 24
+      },
+      "dp": {
+        "x": 136.5,
+        "y": 891.5,
+        "w": 19,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": "lens",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/lens",
+      "copy": null
+    },
+    {
+      "id": "25.tabs.atlas.icon",
+      "order": 33,
+      "parent": "25.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 427,
+        "y": 1205,
+        "w": 27,
+        "h": 25
+      },
+      "dp": {
+        "x": 227,
+        "y": 891.5,
+        "w": 22,
+        "h": 20.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": "atlas",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/atlas",
+      "copy": null
+    },
+    {
+      "id": "25.tabs.wardrobe.icon",
+      "order": 34,
+      "parent": "25.tabs",
+      "component": "ui:NavIcon",
+      "box": {
+        "x": 539,
+        "y": 1205,
+        "w": 29,
+        "h": 25
+      },
+      "dp": {
+        "x": 318.5,
+        "y": 891.5,
+        "w": 23.5,
+        "h": 20.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": "wardrobe",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe",
+      "copy": null
+    },
+    {
+      "id": "25.tabs.home.label",
+      "order": 35,
+      "parent": "25.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 195,
+        "y": 1237,
+        "w": 38,
+        "h": 11
+      },
+      "dp": {
+        "x": 37.5,
+        "y": 917.5,
+        "w": 31,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.home",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.tabs.lens.label",
+      "order": 36,
+      "parent": "25.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 312,
+        "y": 1237,
+        "w": 30,
+        "h": 11
+      },
+      "dp": {
+        "x": 133,
+        "y": 917.5,
+        "w": 24.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.lens",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.tabs.atlas.label",
+      "order": 37,
+      "parent": "25.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 424,
+        "y": 1237,
+        "w": 33,
+        "h": 11
+      },
+      "dp": {
+        "x": 224.5,
+        "y": 917.5,
+        "w": 27,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.atlas",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "25.tabs.wardrobe.label",
+      "order": 38,
+      "parent": "25.tabs",
+      "component": "ui:Text",
+      "box": {
+        "x": 521,
+        "y": 1237,
+        "w": 64,
+        "h": 11
+      },
+      "dp": {
+        "x": 304,
+        "y": 917.5,
+        "w": 52.5,
+        "h": 9
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:tabs.wardrobe",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "board-annotation",
+      "note": "the board’s title and its dot, above the screen",
+      "box": {
+        "x": 33,
+        "y": 34,
+        "w": 495,
+        "h": 33
+      }
+    },
+    {
+      "what": "leaked-label",
+      "note": "the route string printed under the board’s title",
+      "box": {
+        "x": 301,
+        "y": 71,
+        "w": 167,
+        "h": 18
+      }
+    },
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render (9:41, signal, battery)",
+      "box": {
+        "x": 160,
+        "y": 134,
+        "w": 450,
+        "h": 32
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the lockup, with its leader line",
+      "box": {
+        "x": 29,
+        "y": 210,
+        "w": 147,
+        "h": 16
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the mark, with its leader line",
+      "box": {
+        "x": 593,
+        "y": 191,
+        "w": 153,
+        "h": 70
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the hero sample and its size, with its leader line",
+      "box": {
+        "x": 38,
+        "y": 554,
+        "w": 212,
+        "h": 71
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the hero ring as a keyline, with its leader line",
+      "box": {
+        "x": 518,
+        "y": 554,
+        "w": 230,
+        "h": 53
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the CTA, with its leader line",
+      "box": {
+        "x": 580,
+        "y": 911,
+        "w": 94,
+        "h": 12
+      }
+    },
+    {
+      "what": "callout",
+      "note": "a callout naming the texture badge, misspelt, with its leader line",
+      "box": {
+        "x": 69,
+        "y": 1092,
+        "w": 131,
+        "h": 53
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 299,
+        "y": 1283,
+        "w": 170,
+        "h": 7
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "25.hero.oklch",
+      "why": "#5B6B78’s printed OKLCh does not survive checking (§4 E1); the chip shows the engine’s conversion"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C2",
+      "elements": [
+        "25.tagline",
+        "25.hero",
+        "25.hero.cta",
+        "25.wardrobe.tile-1",
+        "25.wardrobe.tile-2",
+        "25.wardrobe.tile-3"
+      ],
+      "resolution": "P1 + P2: 01's layout, 25's palette — 25 is Home's light translation",
+      "flippedByUser": false
+    },
+    {
+      "id": "C4",
+      "elements": ["25.wordmark", "25.mark"],
+      "resolution": "the in-app lockup is 01's and the mark's geometry 14's; 25's variant is not used",
+      "flippedByUser": false
+    },
+    {
+      "id": "C7",
+      "elements": ["25.hero.ring", "25.hero.sample"],
+      "resolution": "P1: 01's rounded square, not 25's circle",
+      "flippedByUser": false
+    },
+    {
+      "id": "C1",
+      "elements": [
+        "25.tabs",
+        "25.tabs.home.icon",
+        "25.tabs.home.label",
+        "25.tabs.lens.icon",
+        "25.tabs.lens.label",
+        "25.tabs.atlas.icon",
+        "25.tabs.atlas.label",
+        "25.tabs.wardrobe.icon",
+        "25.tabs.wardrobe.label"
+      ],
+      "resolution": "P5 → 01: 25's four-item tab bar is replaced by 01's five, icon and label",
+      "flippedByUser": false
+    }
+  ]
+}

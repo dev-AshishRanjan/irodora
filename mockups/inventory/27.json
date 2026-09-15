@@ -1,0 +1,704 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "27",
+  "mockupSha256": "0e861a9f8678948ffe860708f5b5bc59c703d2914ef1b27e028eaa5d7ab30f9b",
+  "kind": "board",
+  "governs": "state",
+  "frame": {
+    "kind": "board",
+    "screens": [
+      {
+        "id": "27.board",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 1376,
+          "h": 768
+        },
+        "dpPerPx": null
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "27.wardrobe-empty",
+      "order": 1,
+      "parent": null,
+      "component": "ui:EmptyState",
+      "box": {
+        "x": 55,
+        "y": 184,
+        "w": 297,
+        "h": 544
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 10.5
+      },
+      "copy": null
+    },
+    {
+      "id": "27.wardrobe-empty.art",
+      "order": 2,
+      "parent": "27.wardrobe-empty",
+      "component": "ui:Illustration",
+      "box": {
+        "x": 116,
+        "y": 253,
+        "w": 175,
+        "h": 127
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": "hanger",
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "27.wardrobe-empty.title",
+      "order": 3,
+      "parent": "27.wardrobe-empty",
+      "component": "ui:Text",
+      "box": {
+        "x": 103,
+        "y": 416,
+        "w": 200,
+        "h": 56
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wardrobe.empty.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "27.wardrobe-empty.body",
+      "order": 4,
+      "parent": "27.wardrobe-empty",
+      "component": "ui:Text",
+      "box": {
+        "x": 84,
+        "y": 491,
+        "w": 239,
+        "h": 84
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wardrobe.empty.body",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 4
+      }
+    },
+    {
+      "id": "27.wardrobe-empty.scan",
+      "order": 5,
+      "parent": "27.wardrobe-empty",
+      "component": "ui:Button",
+      "box": {
+        "x": 76,
+        "y": 653,
+        "w": 255,
+        "h": 46
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:wardrobe.empty.scan",
+      "action": "navigate:/lens",
+      "raw": {
+        "cornerPx": 18.25
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "27.lens-working",
+      "order": 6,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 378,
+        "y": 184,
+        "w": 298,
+        "h": 543
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 9.5
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-working.progress",
+      "order": 7,
+      "parent": "27.lens-working",
+      "component": "new:ProgressRing",
+      "box": {
+        "x": 458,
+        "y": 253,
+        "w": 138,
+        "h": 138
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary",
+        "track": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:lens.progress",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "27.lens-working.mark",
+      "order": 8,
+      "parent": "27.lens-working.progress",
+      "component": "ui:Mark",
+      "box": {
+        "x": 487,
+        "y": 283,
+        "w": 78,
+        "h": 78
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "fg": "#E2B5EC"
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-working.step-1",
+      "order": 9,
+      "parent": "27.lens-working",
+      "component": "ui:Chip",
+      "box": {
+        "x": 406,
+        "y": 427,
+        "w": 241,
+        "h": 30
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:lens.pipeline.0",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "27.lens-working.step-2",
+      "order": 10,
+      "parent": "27.lens-working",
+      "component": "ui:Chip",
+      "box": {
+        "x": 400,
+        "y": 464,
+        "w": 254,
+        "h": 29
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level2",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:lens.pipeline.1",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "27.lens-working.title",
+      "order": 11,
+      "parent": "27.lens-working",
+      "component": "ui:Text",
+      "box": {
+        "x": 429,
+        "y": 535,
+        "w": 196,
+        "h": 51
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.working.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "27.lens-working.body",
+      "order": 12,
+      "parent": "27.lens-working",
+      "component": "ui:Text",
+      "box": {
+        "x": 409,
+        "y": 610,
+        "w": 234,
+        "h": 37
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.working.body",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "27.lens-refused",
+      "order": 13,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 700,
+        "y": 209,
+        "w": 298,
+        "h": 518
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 10.5
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-refused.icon",
+      "order": 14,
+      "parent": "27.lens-refused",
+      "component": null,
+      "box": {
+        "x": 800,
+        "y": 278,
+        "w": 99,
+        "h": 99
+      },
+      "dp": null,
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": "glare",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#574835"
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-refused.title",
+      "order": 15,
+      "parent": "27.lens-refused",
+      "component": "ui:Text",
+      "box": {
+        "x": 763,
+        "y": 412,
+        "w": 173,
+        "h": 80
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.refused.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "27.lens-refused.body",
+      "order": 16,
+      "parent": "27.lens-refused",
+      "component": "ui:Text",
+      "box": {
+        "x": 724,
+        "y": 516,
+        "w": 251,
+        "h": 62
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:lens.refusal.reason",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "27.lens-refused.retry",
+      "order": 17,
+      "parent": "27.lens-refused",
+      "component": "ui:Button",
+      "box": {
+        "x": 721,
+        "y": 653,
+        "w": 256,
+        "h": 46
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.refused.retry",
+      "action": "submit:lens.retry",
+      "raw": {
+        "cornerPx": 18.25
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "27.lens-permission",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 1024,
+        "y": 209,
+        "w": 297,
+        "h": 518
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 9.5
+      },
+      "copy": null
+    },
+    {
+      "id": "27.lens-permission.icon",
+      "order": 19,
+      "parent": "27.lens-permission",
+      "component": null,
+      "box": {
+        "x": 1122,
+        "y": 286,
+        "w": 105,
+        "h": 89
+      },
+      "dp": null,
+      "tokens": {},
+      "type": null,
+      "icon": "camera-locked",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "27.lens-permission.title",
+      "order": 20,
+      "parent": "27.lens-permission",
+      "component": "ui:Text",
+      "box": {
+        "x": 1080,
+        "y": 411,
+        "w": 185,
+        "h": 51
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.permission.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "27.lens-permission.body",
+      "order": 21,
+      "parent": "27.lens-permission",
+      "component": "ui:Text",
+      "box": {
+        "x": 1053,
+        "y": 486,
+        "w": 238,
+        "h": 61
+      },
+      "dp": null,
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.permission.body",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "latin",
+        "lines": 3
+      }
+    },
+    {
+      "id": "27.lens-permission.settings",
+      "order": 22,
+      "parent": "27.lens-permission",
+      "component": "ui:Button",
+      "box": {
+        "x": 1045,
+        "y": 653,
+        "w": 255,
+        "h": 46
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:lens.permission.openSettings",
+      "action": "open:device.settings",
+      "raw": {
+        "cornerPx": 18.25
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "board-annotation",
+      "note": "the board’s title",
+      "box": {
+        "x": 58,
+        "y": 59,
+        "w": 1050,
+        "h": 46
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the first card’s state name",
+      "box": {
+        "x": 89,
+        "y": 148,
+        "w": 228,
+        "h": 23
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the second card’s state name",
+      "box": {
+        "x": 397,
+        "y": 149,
+        "w": 260,
+        "h": 22
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the third card’s state name",
+      "box": {
+        "x": 712,
+        "y": 148,
+        "w": 274,
+        "h": 48
+      }
+    },
+    {
+      "what": "board-annotation",
+      "note": "the fourth card’s state name",
+      "box": {
+        "x": 1055,
+        "y": 149,
+        "w": 235,
+        "h": 47
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E2",
+      "element": "27.lens-refused.title",
+      "why": "a camera estimate is never called a measurement (golden rule 11, §4 row 02 27): the refused state names a reading"
+    },
+    {
+      "rule": "E2",
+      "element": "27.lens-working.step-1",
+      "why": "an RGB camera has no spectral data to extract (§4 row 27); the line names the pipeline’s real step"
+    },
+    {
+      "rule": "E2",
+      "element": "27.lens-working.step-2",
+      "why": "D65 is ≈6504 K, not 5500 K (§4 row 27); the line names the pipeline’s real step and its real illuminant"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C10",
+      "elements": [
+        "27.wardrobe-empty.art",
+        "27.lens-working.mark",
+        "27.lens-refused.icon",
+        "27.lens-permission.icon"
+      ],
+      "resolution": "followed: the tan, amber and purple state art carries text (golden rule 13) and is declared a chroma-ceiling exception by F-225; the purple mark here is the one place the mark takes a tint",
+      "flippedByUser": false
+    }
+  ]
+}

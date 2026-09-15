@@ -1,0 +1,1412 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "26",
+  "mockupSha256": "194a6b8d352a45fe6a3b1c5b0647e8b5f17409cd8fd2e72d647b8e259ca57d0a",
+  "kind": "screen",
+  "governs": "locale",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "26.screen",
+        "box": {
+          "x": 136,
+          "y": 114,
+          "w": 496,
+          "h": 1174
+        },
+        "dpPerPx": 0.7742
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "26.back",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 142,
+        "y": 185,
+        "w": 142,
+        "h": 27
+      },
+      "dp": {
+        "x": 4.5,
+        "y": 55,
+        "w": 110,
+        "h": 21
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:atlas.backJa",
+      "action": "navigate:/atlas",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 314,
+        "y": 186,
+        "w": 139,
+        "h": 25
+      },
+      "dp": {
+        "x": 138,
+        "y": 55.5,
+        "w": 107.5,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.detailTitleJa",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.share",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 585,
+        "y": 181,
+        "w": 29,
+        "h": 35
+      },
+      "dp": {
+        "x": 347.5,
+        "y": 52,
+        "w": 22.5,
+        "h": 27
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "share",
+      "illustration": null,
+      "binding": null,
+      "action": "open:share.colour",
+      "copy": null
+    },
+    {
+      "id": "26.header-rule",
+      "order": 4,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 136,
+        "y": 228,
+        "w": 496,
+        "h": 2
+      },
+      "dp": {
+        "x": 0,
+        "y": 88.5,
+        "w": 384,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.hero",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 149,
+        "y": 249,
+        "w": 470,
+        "h": 319
+      },
+      "dp": {
+        "x": 10,
+        "y": 104.5,
+        "w": 364,
+        "h": 247
+      },
+      "tokens": {
+        "border": "text.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.hero.photo",
+      "order": 6,
+      "parent": "26.hero",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 155,
+        "y": 254,
+        "w": 458,
+        "h": 309
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 108.5,
+        "w": 354.5,
+        "h": 239
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "measured": {
+        "fill": "#596875"
+      },
+      "copy": null
+    },
+    {
+      "id": "26.next-card",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 627,
+        "y": 255,
+        "w": 5,
+        "h": 307
+      },
+      "dp": {
+        "x": 380,
+        "y": 109,
+        "w": 4,
+        "h": 237.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": "select:atlas.next",
+      "copy": null
+    },
+    {
+      "id": "26.hero.kana",
+      "order": 8,
+      "parent": "26.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 172,
+        "y": 403,
+        "w": 95,
+        "h": 18
+      },
+      "dp": {
+        "x": 28,
+        "y": 223.5,
+        "w": 73.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.kana",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.hero.kanji",
+      "order": 9,
+      "parent": "26.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 172,
+        "y": 428,
+        "w": 95,
+        "h": 47
+      },
+      "dp": {
+        "x": 28,
+        "y": 243,
+        "w": 73.5,
+        "h": 36.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "gothic",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.kanji",
+      "action": null,
+      "raw": {
+        "emDp": 40.4
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.hero.description",
+      "order": 10,
+      "parent": "26.hero",
+      "component": "ui:Text",
+      "box": {
+        "x": 171,
+        "y": 492,
+        "w": 413,
+        "h": 47
+      },
+      "dp": {
+        "x": 27,
+        "y": 292.5,
+        "w": 319.5,
+        "h": 36.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.description",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "japanese",
+        "lines": 2
+      }
+    },
+    {
+      "id": "26.readout.title",
+      "order": 11,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 151,
+        "y": 594,
+        "w": 186,
+        "h": 29
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 371.5,
+        "w": 144,
+        "h": 22.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.readoutJa",
+      "action": null,
+      "raw": {
+        "emDp": 24.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.readout",
+      "order": 12,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 151,
+        "y": 637,
+        "w": 466,
+        "h": 228
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 405,
+        "w": 361,
+        "h": 176.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1D2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "26.readout.divider",
+      "order": 13,
+      "parent": "26.readout",
+      "component": null,
+      "box": {
+        "x": 383,
+        "y": 637,
+        "w": 2,
+        "h": 228
+      },
+      "dp": {
+        "x": 191,
+        "y": 405,
+        "w": 1.5,
+        "h": 176.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.readout.oklch.label",
+      "order": 14,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 167,
+        "y": 652,
+        "w": 122,
+        "h": 21
+      },
+      "dp": {
+        "x": 24,
+        "y": 416.5,
+        "w": 94.5,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.oklchJa",
+      "action": null,
+      "raw": {
+        "emDp": 18.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "26.readout.cielab.label",
+      "order": 15,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 401,
+        "y": 652,
+        "w": 123,
+        "h": 21
+      },
+      "dp": {
+        "x": 205,
+        "y": 416.5,
+        "w": 95,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.cielabJa",
+      "action": null,
+      "raw": {
+        "emDp": 18.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "26.readout.oklch.value",
+      "order": 16,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 167,
+        "y": 680,
+        "w": 200,
+        "h": 22
+      },
+      "dp": {
+        "x": 24,
+        "y": 438,
+        "w": 155,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:entry.oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "26.readout.cielab.value",
+      "order": 17,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 401,
+        "y": 681,
+        "w": 198,
+        "h": 17
+      },
+      "dp": {
+        "x": 205,
+        "y": 439,
+        "w": 153.5,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:entry.cielab",
+      "action": null,
+      "raw": {
+        "emDp": 18
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "26.readout.rule-1",
+      "order": 18,
+      "parent": "26.readout",
+      "component": null,
+      "box": {
+        "x": 151,
+        "y": 712,
+        "w": 466,
+        "h": 2
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 463,
+        "w": 361,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.readout.hex.label",
+      "order": 19,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 168,
+        "y": 728,
+        "w": 123,
+        "h": 21
+      },
+      "dp": {
+        "x": 25,
+        "y": 475.5,
+        "w": 95,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.hexJa",
+      "action": null,
+      "raw": {
+        "emDp": 18.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "26.readout.srgb.label",
+      "order": 20,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 400,
+        "y": 729,
+        "w": 68,
+        "h": 19
+      },
+      "dp": {
+        "x": 204.5,
+        "y": 476,
+        "w": 52.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.srgbJa",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "26.readout.hex.value",
+      "order": 21,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 168,
+        "y": 757,
+        "w": 80,
+        "h": 17
+      },
+      "dp": {
+        "x": 25,
+        "y": 498,
+        "w": 62,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.hex",
+      "action": null,
+      "raw": {
+        "emDp": 18
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "26.readout.srgb.value",
+      "order": 22,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 401,
+        "y": 757,
+        "w": 179,
+        "h": 17
+      },
+      "dp": {
+        "x": 205,
+        "y": 498,
+        "w": 138.5,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:entry.srgb",
+      "action": null,
+      "raw": {
+        "emDp": 18
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "26.readout.rule-2",
+      "order": 23,
+      "parent": "26.readout",
+      "component": null,
+      "box": {
+        "x": 151,
+        "y": 788,
+        "w": 466,
+        "h": 2
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 522,
+        "w": 361,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.readout.p3.label",
+      "order": 24,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 167,
+        "y": 805,
+        "w": 96,
+        "h": 21
+      },
+      "dp": {
+        "x": 24,
+        "y": 535,
+        "w": 74.5,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:notation.p3Ja",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "26.readout.p3.value",
+      "order": 25,
+      "parent": "26.readout",
+      "component": "ui:Text",
+      "box": {
+        "x": 167,
+        "y": 833,
+        "w": 182,
+        "h": 17
+      },
+      "dp": {
+        "x": 24,
+        "y": 556.5,
+        "w": 141,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:entry.p3",
+      "action": null,
+      "raw": {
+        "emDp": 18
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "26.kasane.title",
+      "order": 26,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 151,
+        "y": 891,
+        "w": 239,
+        "h": 28
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 601.5,
+        "w": 185,
+        "h": 21.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.kasaneJa",
+      "action": null,
+      "raw": {
+        "emDp": 24.1
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.kasane",
+      "order": 27,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 151,
+        "y": 933,
+        "w": 466,
+        "h": 119
+      },
+      "dp": {
+        "x": 11.5,
+        "y": 634,
+        "w": 361,
+        "h": 92
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2027"
+      },
+      "copy": null
+    },
+    {
+      "id": "26.kasane.label",
+      "order": 28,
+      "parent": "26.kasane",
+      "component": "ui:Text",
+      "box": {
+        "x": 168,
+        "y": 948,
+        "w": 242,
+        "h": 21
+      },
+      "dp": {
+        "x": 25,
+        "y": 645.5,
+        "w": 187.5,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.kasaneLabelJa",
+      "action": null,
+      "raw": {
+        "emDp": 18.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.kasane.bar",
+      "order": 29,
+      "parent": "26.kasane",
+      "component": "new:KasaneBar",
+      "box": {
+        "x": 168,
+        "y": 979,
+        "w": 433,
+        "h": 59
+      },
+      "dp": {
+        "x": 25,
+        "y": 669.5,
+        "w": 335,
+        "h": 45.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:entry.kasane",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.kasane.bar.segment-1",
+      "order": 30,
+      "parent": "26.kasane.bar",
+      "component": "ui:Text",
+      "box": {
+        "x": 237,
+        "y": 989,
+        "w": 138,
+        "h": 40
+      },
+      "dp": {
+        "x": 78,
+        "y": 677.5,
+        "w": 107,
+        "h": 31
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.kasane.0.label",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "26.kasane.bar.segment-2",
+      "order": 31,
+      "parent": "26.kasane.bar",
+      "component": "ui:Text",
+      "box": {
+        "x": 453,
+        "y": 989,
+        "w": 103,
+        "h": 39
+      },
+      "dp": {
+        "x": 245.5,
+        "y": 677.5,
+        "w": 79.5,
+        "h": 30
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.kasane.1.label",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "mixed",
+        "lines": 2
+      }
+    },
+    {
+      "id": "26.provenance.title",
+      "order": 32,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 1081,
+        "w": 237,
+        "h": 29
+      },
+      "dp": {
+        "x": 14,
+        "y": 748.5,
+        "w": 183.5,
+        "h": 22.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.provenanceJa",
+      "action": null,
+      "raw": {
+        "emDp": 24.9
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.provenance.corpus",
+      "order": 33,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 169,
+        "y": 1123,
+        "w": 231,
+        "h": 20
+      },
+      "dp": {
+        "x": 25.5,
+        "y": 781,
+        "w": 179,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.provenance.source",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "26.provenance.seal",
+      "order": 34,
+      "parent": null,
+      "component": "new:HankoSeal",
+      "box": {
+        "x": 562,
+        "y": 1123,
+        "w": 38,
+        "h": 38
+      },
+      "dp": {
+        "x": 330,
+        "y": 781,
+        "w": 29.5,
+        "h": 29.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "26.provenance.review",
+      "order": 35,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 168,
+        "y": 1149,
+        "w": 213,
+        "h": 20
+      },
+      "dp": {
+        "x": 25,
+        "y": 801.5,
+        "w": 165,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:entry.provenance.review",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.actions",
+      "order": 36,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 136,
+        "y": 1183,
+        "w": 496,
+        "h": 104
+      },
+      "dp": {
+        "x": 0,
+        "y": 827.5,
+        "w": 384,
+        "h": 80.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#15151B"
+      },
+      "copy": null
+    },
+    {
+      "id": "26.actions.add",
+      "order": 37,
+      "parent": "26.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 150,
+        "y": 1203,
+        "w": 229,
+        "h": 52
+      },
+      "dp": {
+        "x": 11,
+        "y": 843,
+        "w": 177.5,
+        "h": 40.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.addToWardrobeJa",
+      "action": "navigate:/wardrobe/add",
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "26.actions.share",
+      "order": 38,
+      "parent": "26.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 389,
+        "y": 1203,
+        "w": 229,
+        "h": 52
+      },
+      "dp": {
+        "x": 196,
+        "y": 843,
+        "w": 177.5,
+        "h": 40.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:atlas.shareCardJa",
+      "action": "navigate:/atlas/card/[slug]",
+      "copy": {
+        "shape": "label",
+        "script": "mixed"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "the camera cut-out drawn into the top of the screen",
+      "box": {
+        "x": 314,
+        "y": 122,
+        "w": 140,
+        "h": 37
+      }
+    },
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render (9:41, signal, battery)",
+      "box": {
+        "x": 150,
+        "y": 126,
+        "w": 470,
+        "h": 28
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the first kasane segment’s ΔE00 is printed with a triangle glyph",
+      "box": {
+        "x": 237,
+        "y": 1014,
+        "w": 69,
+        "h": 14
+      }
+    },
+    {
+      "what": "garbled-text",
+      "note": "the second kasane segment’s ΔE00 is printed with a triangle glyph",
+      "box": {
+        "x": 454,
+        "y": 1014,
+        "w": 69,
+        "h": 14
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 292,
+        "y": 1281,
+        "w": 184,
+        "h": 6
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "blossom line-art left of the screen",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 130,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "wave line-art right of the screen",
+      "box": {
+        "x": 638,
+        "y": 0,
+        "w": 130,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "the ground above the screen",
+      "box": {
+        "x": 130,
+        "y": 0,
+        "w": 508,
+        "h": 110
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "wave line-art below the screen",
+      "box": {
+        "x": 130,
+        "y": 1288,
+        "w": 508,
+        "h": 88
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "26.back",
+      "why": "伝統色 — “traditional colour” — presents an inspired palette as historical (FR-23, §4 E1); the words keep their place and length and state the real classification"
+    },
+    {
+      "rule": "E1",
+      "element": "26.title",
+      "why": "伝統色 — “traditional colour” — presents an inspired palette as historical (FR-23, §4 E1); the words keep their place and length and state the real classification"
+    },
+    {
+      "rule": "E1",
+      "element": "26.provenance.corpus",
+      "why": "伝統色 — “traditional colour” — presents an inspired palette as historical (FR-23, §4 E1); the words keep their place and length and state the real classification"
+    },
+    {
+      "rule": "E1",
+      "element": "26.hero.description",
+      "why": "the description dates the colour to the mid-Edo period — provenance no entry holds (§4 E1, ADR-0065); the line shows the entry’s own description"
+    },
+    {
+      "rule": "E1",
+      "element": "26.readout.oklch.value",
+      "why": "#5B6B78’s printed OKLCh does not survive checking (§4 E1); the cell shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "26.readout.cielab.value",
+      "why": "#5B6B78’s printed CIELAB does not survive checking (§4 E1); the cell shows the engine’s conversion"
+    },
+    {
+      "rule": "E1",
+      "element": "26.readout.p3.value",
+      "why": "the \"Display P3\" triplet is the sRGB values ÷ 255, not a P3 conversion (§4 E1); the cell shows the engine’s real conversion"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C3",
+      "elements": ["26.kasane", "26.kasane.bar", "26.provenance.seal"],
+      "resolution": "P1 + P2: 06's layout; 26's headings and Japanese typography. The hanko seal and the kasane bar are 26-only and not adopted by default",
+      "flippedByUser": false
+    },
+    {
+      "id": "C6",
+      "elements": ["26.hero.kanji"],
+      "resolution": "each surface follows its own mockup — 26’s kanji are sans",
+      "flippedByUser": false
+    }
+  ]
+}

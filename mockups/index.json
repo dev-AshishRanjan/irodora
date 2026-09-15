@@ -128,7 +128,7 @@
       "primaryFor": [],
       "variantFor": ["/"],
       "surfaces": ["light"],
-      "inventory": null
+      "inventory": "mockups/inventory/25.json"
     },
     "26": {
       "file": "26_color_detail_japanese.jpg",
@@ -136,7 +136,7 @@
       "primaryFor": [],
       "variantFor": ["/atlas/[slug]"],
       "surfaces": ["japanese"],
-      "inventory": null
+      "inventory": "mockups/inventory/26.json"
     },
     "27": {
       "file": "27_states_board.jpg",
@@ -144,7 +144,7 @@
       "primaryFor": [],
       "variantFor": ["/", "/lens", "/wardrobe"],
       "surfaces": ["states"],
-      "inventory": null
+      "inventory": "mockups/inventory/27.json"
     },
     "00": {
       "file": "00_component_design_system.jpg",
