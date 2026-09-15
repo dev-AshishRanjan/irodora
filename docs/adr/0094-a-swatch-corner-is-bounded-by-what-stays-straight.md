@@ -6,6 +6,9 @@
 [ADR-0090](0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md), and
 keeps its decision that a corner is a **ratio rather than a length**.
 
+**Amended by [ADR-0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)**
+(F-227): a corner is now a scale step, and this bound is its ceiling.
+
 ## Date
 
 2026-09-06

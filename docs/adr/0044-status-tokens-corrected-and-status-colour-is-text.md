@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted. Its *depth is tint, never shadow* is amended by
+[ADR-0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md): one
+shadow, where `25` draws it — light theme, elevation level 1.
 
 ## Date
 

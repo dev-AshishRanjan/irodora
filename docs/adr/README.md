@@ -67,7 +67,7 @@ Two rules that matter more than the format:
 | [0041](0041-three-luminance-definitions-coexist-deliberately.md) | Three definitions of relative luminance coexist, and none may be substituted for another | Accepted |
 | [0042](0042-wcag-luminance-cutoff-is-004045-not-003928.md) | The WCAG luminance cutoff is 0.04045; 0.03928 was superseded in 2021 | Accepted |
 | [0043](0043-the-oklch-field-is-authoritative-and-srgb-is-derived.md) | The `oklch` field is authoritative; `srgb` is derived output, not an input | Accepted |
-| [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Accepted |
+| [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Amended by ADR-0103 |
 | [0045](0045-gamut-mapping-is-chroma-bisection-without-minde.md) | Gamut mapping is OKLCh chroma bisection, without CSS Color 4 MINDE step | Accepted |
 | [0046](0046-published-corpus-is-an-immutable-generated-bundle.md) | A published corpus version is one immutable generated bundle, vouched for by a ledger | Accepted |
 | [0047](0047-editorial-identity-is-a-roster-id-not-a-name.md) | Editorial identity is a roster id, and every record records its author | Accepted |
@@ -97,7 +97,7 @@ Two rules that matter more than the format:
 | [0071](0071-a-token-with-no-reader-is-a-decision-nobody-applied.md) | A token with no reader is a decision nobody applied | Accepted |
 | [0072](0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) | A guided profile is forced choices, and confidence is agreement | Amended by ADR-0102 |
 | [0073](0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md) | The "Japanese aesthetic" score is corpus affinity, and says so | Accepted |
-| [0074](0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md) | The spacing scale is a four-point grid, and the step that was not one goes | Accepted |
+| [0074](0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md) | The spacing scale is a four-point grid, and the step that was not one goes | Amended by ADR-0103 |
 | [0075](0075-the-frame-output-is-requested-as-rgb-because-yuv-would-mean-writing-a-colour-transform.md) | The frame output is requested as `rgb`, because `yuv` would mean writing a colour transform | Accepted |
 | [0076](0076-a-near-neutral-has-no-temperature-and-scorecolor-now-agrees.md) | A near-neutral has no temperature, and `scoreColor` now agrees | Accepted |
 | [0077](0077-the-random-source-is-a-port-and-the-app-installs-it.md) | The random source is a port, and the app installs it | Accepted |
@@ -105,11 +105,11 @@ Two rules that matter more than the format:
 | [0079](0079-the-android-minimum-is-api-26-because-the-pixel-buffer-is-compiled-out-below-it.md) | The Android minimum is API 26, because the pixel buffer is compiled out below it | Accepted |
 | [0088](0088-an-unreached-design-token-is-unfinished-work-not-a-declared-exemption.md) | An unreached design token is unfinished work, not a declared exemption | Accepted |
 | [0089](0089-the-gesture-stack-is-pinned-to-the-version-heroui-was-built-against.md) | The gesture stack is pinned to the version HeroUI was built against | Accepted |
-| [0090](0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md) | A swatch corner is bounded by the area it removes, not fixed at zero | Accepted |
+| [0090](0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md) | A swatch corner is bounded by the area it removes, not fixed at zero | Amended by ADR-0103 |
 | [0091](0091-a-deliberate-capture-is-fr-15s-precision-pick.md) | A deliberate capture is FR-15 precision pick, and that is not the ceiling raise ADR-0087 refused | Accepted |
 | [0092](0092-pixels-come-out-of-a-file-in-javascript.md) | Pixels come out of a file in JavaScript, and the PNG walk is ours | Accepted |
 | [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Accepted |
-| [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Accepted |
+| [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Amended by ADR-0103 |
 | [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted |
 | [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Accepted |
 | [0097](0097-the-device-carries-the-policy-and-runs-the-gates-own-checks.md) | The device carries the policy and runs the gate’s own checks | Accepted |
@@ -118,6 +118,7 @@ Two rules that matter more than the format:
 | [0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md) | A computed colour is `derived`, and `declared` goes back to meaning a person | Accepted |
 | [0101](0101-contracts-is-retired-because-it-served-no-boundary.md) | `@irodora/contracts` is retired, because it served no boundary | Accepted |
 | [0102](0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md) | A seasonal label is a lossy summary read off the ranges | Accepted |
+| [0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md) | The radius and spacing scales are the mockups', a swatch corner is a step under the ratio ceiling, and a shadow exists only where a mockup draws one | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

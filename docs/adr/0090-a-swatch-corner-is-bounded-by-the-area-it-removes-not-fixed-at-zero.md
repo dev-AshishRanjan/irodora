@@ -1,6 +1,6 @@
 # ADR-0090 — A swatch corner is bounded by the area it removes, not fixed at zero
 
-- **Status:** accepted
+- **Status:** accepted; amended by [ADR-0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md) — the corner is a scale step under the ratio ceiling
 - **Date:** 2026-09-05
 - **Supersedes:** the `radius.swatch` clause of
   [ADR-0033](0033-frontend-foundation-own-the-token-layer-headless-primitives.md)

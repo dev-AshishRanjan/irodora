@@ -2,7 +2,9 @@
 
 ## Status
 
-**Accepted.**
+**Accepted.** Values amended by [ADR-0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)
+(F-227): the scale is the README's, `4 · 8 · 16 · 24 · 32 · 48`. The four-point rule and the named
+steps stand.
 
 ## Date
 
