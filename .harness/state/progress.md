@@ -8,6 +8,28 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-15 — F-225 blocked on OQ-36, F-226 on OQ-29 · two themes drawn as one swatch, and no open serif
+
+**Not started — both blocked.**
+
+- **F-225** (the token set and the four themes): the README specifies Sumi Charcoal and Washi Minimal
+  in full, but `15` draws **Slate Graphite** and **Obsidian Noir** as one swatch each — `#2C323A` read
+  from the render (L 0.315, about Sumi's level 2) and `#101114` printed (L 0.178, below Sumi's
+  ground). Criterion 5 needs gates 9 and 10 over every pairing in every theme, so each needs levels,
+  borders and text roles no mockup draws. Deriving them is designing a surface — **OQ-36**, with a
+  worked example of a stated rule for the person to accept, amend or replace.
+- **F-226** (the type): criterion 1 ships an open-licence serif matching the wordmark. F-220 measured
+  Georgia Pro closest (commercial licence) and found no open candidate among the installed faces —
+  **OQ-29**, already open; F-275 (trying open faces) waits on permission to download them. F-226 now
+  carries it.
+
+Measured with the sRGB → OKLab formulas on the printed hexes: Sumi's ramp is L 0.204 / 0.256 /
+0.293 / 0.337 at C 0.009–0.021, h ≈ 265°.
+
+Next eligible: **F-227** — radius, spacing and elevation.
+
+---
+
 ## 2026-09-15 — F-224 blocked on OQ-35 · the seven family chips name no white and no grey
 
 **Not started — blocked.** F-224's second criterion puts every one of the corpus's 25 families in exactly

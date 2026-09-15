@@ -7332,7 +7332,7 @@
       "package": "@irodora/design-tokens",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-220"
       ],
@@ -7358,7 +7358,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUPS: README token table (dark and light), 25 for light, 15 for the theme set. Measured: the renders agree with the table within JPEG noise (§2). THE USER’S DECISION, reaffirmed 2026-09-10 after the surround trade-off was raised (C11). The three forced moves: dark text.tertiary on cards #768290→#94A1AF, light text.tertiary #8C96A5→#5D6674, dark border.strong #464D5B→#5C6472 where it is the only state indicator."
+      "notes": "MOCKUPS: README token table (dark and light), 25 for light, 15 for the theme set. Measured: the renders agree with the table within JPEG noise (§2). THE USER’S DECISION, reaffirmed 2026-09-10 after the surround trade-off was raised (C11). The three forced moves: dark text.tertiary on cards #768290→#94A1AF, light text.tertiary #8C96A5→#5D6674, dark border.strong #464D5B→#5C6472 where it is the only state indicator. BLOCKED 2026-09-15 on OQ-36: criterion 5 needs every theme's full ramp, and 15 draws Slate Graphite and Obsidian Noir as one swatch each — their levels, borders and text roles are drawn nowhere, and deriving them is designing a surface no mockup draws.",
+      "openQuestions": [
+        "OQ-36"
+      ]
     },
     {
       "id": "F-226",
@@ -7371,7 +7374,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-220"
       ],
@@ -7400,7 +7403,10 @@
         "cvd",
         "content"
       ],
-      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it."
+      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it. BLOCKED 2026-09-15 on OQ-29: F-220 measured the wordmark closest to Georgia Pro, which is commercially licensed, and no open-licence face was a candidate; trying open faces is F-275, which needs the person's permission to download them.",
+      "openQuestions": [
+        "OQ-29"
+      ]
     },
     {
       "id": "F-227",
