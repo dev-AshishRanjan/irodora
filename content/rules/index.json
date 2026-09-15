@@ -40,5 +40,12 @@
     "occasionCount": 10,
     "rationaleCount": 70,
     "supersedes": "2026.08.3"
+  },
+  {
+    "label": "2026.09.1",
+    "kind": "seasonal-summary",
+    "checksum": "6c80ae26e914c404c7f68435159448e76cc74313dc613fe2e543dacc9b219a95",
+    "publishedAt": "2026-09-15",
+    "cellCount": 27
   }
 ]

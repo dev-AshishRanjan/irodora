@@ -49,6 +49,7 @@ import { join } from 'node:path';
 import {
   loadCorpusPackage,
   loadRecommendationPackage,
+  loadStorePackage,
   readCorpusRoot,
   readJsonFile,
   ROOT,
@@ -80,13 +81,27 @@ const {
   loadPublishedVersion,
   matchesRegion,
   parsePhraseLexicon,
+  parseProvenance,
   parseTaxonomyVocabulary,
   RESERVED_DEVICE_IDENTITIES,
 } = corpus;
 
 // The weight rules come from the engine that scores with them, never from a copy here (E-013).
 const recommendation = await loadRecommendationPackage();
-const { OCCASIONS, parseWeightContent, rationaleCount, ruleSetFor, SCORE_FACTORS } = recommendation;
+const {
+  MODIFIER_IDS,
+  OCCASIONS,
+  parseSeasonalRules,
+  parseWeightContent,
+  rationaleCount,
+  ruleSetFor,
+  SCORE_FACTORS,
+  SEASON_IDS,
+  seasonalCellCount,
+} = recommendation;
+
+// The NFR-22 vocabulary comes from the package the schema check uses, never from a copy (F-223).
+const { findProhibitedCopy } = await loadStorePackage();
 
 const failures = [];
 const notes = [];
@@ -748,6 +763,193 @@ for (const WEIGHTS_FILE of WEIGHTS_FILES)
   }
 }
 
+rulesExercised += 1;
+
+// --- the seasonal summary: schema, provenance, digest, NFR-22 --------------------------------
+
+/**
+ * F-223, [ADR-0102](../docs/adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md).
+ * The seasonal summary is rule content like the weights and the lexicon: versioned, provenanced,
+ * and checked against a checksum that lives in the ledger, never in the file it describes.
+ *
+ * What is checked here that the engine's own parser does not do:
+ *
+ * - **the provenance block**, through the corpus's `parseProvenance` — the same answer to
+ *   "complete" every corpus entry and palette gets (NFR-20) — and its source in the register;
+ * - **NFR-22 over the words**: every season and modifier the rule can answer, and every catalogue
+ *   string that names one, in English and Japanese, through `@irodora/store`'s
+ *   `findProhibitedCopy` — one vocabulary, the one the schema check uses;
+ * - **spoilings built in memory from the real file**, each required to fail, beside the clean file
+ *   required to pass in the same block [[a-decoy-that-is-not-broken-proves-nothing]].
+ *
+ * And the resolved table is printed, so the person reviewing a publish reads what the rule DOES.
+ */
+const SEASONAL_FILES = readdirSync(RULES_DIR)
+  .filter((name) => /^seasonal-summary\..+\.json$/u.test(name))
+  .sort();
+let seasonalFixtures = 0;
+if (SEASONAL_FILES.length === 0)
+  fail(
+    'content/rules has no seasonal-summary.*.json. F-223 published one, and a gate that lost ' +
+      'its own input must say so rather than pass over an empty set.',
+  );
+
+/** The catalogue strings that name a season pair, read as text: this gate runs before the app builds. */
+function seasonWords(locale) {
+  const text = readFileSync(join(ROOT, 'apps', 'mobile', 'src', 'i18n', `${locale}.ts`), 'utf8');
+  return [...text.matchAll(/'(profile\.season\.[a-z]+\.[a-z]+)':\s*'([^']*)'/gu)].map((m) => ({
+    key: m[1],
+    text: m[2],
+  }));
+}
+
+const seasonPairs = SEASON_IDS.length * MODIFIER_IDS.length;
+for (const locale of ['en', 'ja']) {
+  const words = seasonWords(locale);
+  if (words.length !== seasonPairs)
+    fail(
+      `apps/mobile/src/i18n/${locale}.ts: found ${String(words.length)} seasonal label(s), ` +
+        `expected ${String(seasonPairs)} (every season × modifier). A check that read none ` +
+        'would pass over nothing.',
+    );
+  for (const word of words)
+    for (const finding of findProhibitedCopy(word.text, `${locale} ${word.key}`))
+      fail(`${finding.where}: "${finding.match}" — ${finding.why} (NFR-22)`);
+}
+// The decoy, through the same function the check above uses.
+seasonalFixtures += 1;
+if (
+  findProhibitedCopy('Fair-Skinned Autumn', 'decoy').length === 0 ||
+  findProhibitedCopy('イエベ秋', 'decoy').length === 0
+)
+  fail(
+    'the NFR-22 copy check ACCEPTED a planted skin word in English or Japanese. A check nobody ' +
+      'has watched refuse anything might only be capable of passing.',
+  );
+
+for (const SEASONAL_FILE of SEASONAL_FILES)
+  try {
+    const raw = readJsonFile(join(RULES_DIR, SEASONAL_FILE));
+    const viaEngine = (document) => parseSeasonalRules(document, `fixture:${SEASONAL_FILE}`);
+    const viaProvenance = (document) =>
+      parseProvenance(
+        document.provenance,
+        `fixture:${SEASONAL_FILE}`,
+        'published',
+        document.unknowns ?? {},
+        new Set(),
+      );
+    const rules = parseSeasonalRules(raw, SEASONAL_FILE);
+    const provenance = parseProvenance(
+      raw.provenance,
+      SEASONAL_FILE,
+      'published',
+      raw.unknowns ?? {},
+      new Set(),
+    );
+    if (!readFileSync(REGISTER, 'utf8').includes(`| ${provenance.sourceId} |`))
+      fail(
+        `${SEASONAL_FILE}: provenance.sourceId ${provenance.sourceId} is not in the source ` +
+          'register. A source not in the register cannot appear in published content.',
+      );
+
+    // The digest lives in the ledger, never in the file it describes — same as the lexicon.
+    const ledgerRows = readJsonFile(join(RULES_DIR, 'index.json'));
+    const row = Array.isArray(ledgerRows)
+      ? ledgerRows.find((r) => r.label === rules.versionId && r.kind === 'seasonal-summary')
+      : undefined;
+    if (row === undefined)
+      fail(
+        `content/rules/index.json has no seasonal-summary row for ${rules.versionId}. The ` +
+          'ledger is what makes the checksum mean anything.',
+      );
+    else {
+      const actual = entryDigest(raw, sha256);
+      if (actual !== row.checksum)
+        fail(
+          `${SEASONAL_FILE}: digest ${actual} does not match the ledger's ${row.checksum}. ` +
+            'Published rule content is immutable — a change mints a new version rather than ' +
+            'editing this one.',
+        );
+      if (row.cellCount !== seasonalCellCount(rules))
+        fail(
+          `content/rules/index.json records ${String(row.cellCount)} cell(s) for ` +
+            `${rules.versionId}; the file carries ${String(seasonalCellCount(rules))}.`,
+        );
+    }
+
+    // NFR-22 over the rule's own answers. The ids are closed sets; the check costs nothing and
+    // its absence would be the one place a publish's words went unread.
+    for (const r of rules.rows)
+      if (r.outcome !== null)
+        for (const finding of findProhibitedCopy(
+          `${r.outcome.season} ${r.outcome.modifier}`,
+          SEASONAL_FILE,
+        ))
+          fail(`${finding.where}: "${finding.match}" — ${finding.why} (NFR-22)`);
+
+    // The resolved table, printed whole — a reviewer reads what the rule DOES.
+    const labelled = rules.rows.filter((r) => r.outcome !== null).length;
+    console.log(
+      DIM +
+        `${SEASONAL_FILE}: ${String(rules.rows.length)} cells — ${String(labelled)} label(s), ` +
+        `${String(rules.rows.length - labelled)} no summary; reads ` +
+        `${rules.axes.map((a) => a.axis).join(', ')}` +
+        OFF,
+    );
+    for (const r of rules.rows)
+      console.log(
+        DIM +
+          `  ${rules.axes.map((a) => `${a.axis}=${String(r.when[a.axis])}`).join(' ')} → ` +
+          (r.outcome === null ? 'no summary' : `${r.outcome.season} ${r.outcome.modifier}`) +
+          OFF,
+      );
+
+    const spoil = (label, mutate, parse) => {
+      seasonalFixtures += 1;
+      const draft = structuredClone(raw);
+      mutate(draft);
+      try {
+        parse(draft);
+        fail(
+          `${SEASONAL_FILE} fixture "${label}": the check ACCEPTED a file it must reject. A ` +
+            'validator nobody has watched reject anything might only be capable of passing.',
+        );
+      } catch {
+        /* expected */
+      }
+    };
+    spoil('a cell removed', (d) => d.table.splice(4, 1), viaEngine);
+    spoil('a cell answered twice', (d) => d.table.push(structuredClone(d.table[0])), viaEngine);
+    spoil('an axis about skin', (d) => (d.axes[0].axis = 'skin'), viaEngine);
+    spoil('boundaries out of order', (d) => d.axes[1].boundaries.reverse(), viaEngine);
+    spoil('a season nobody published', (d) => (d.table[3].season = 'monsoon'), viaEngine);
+    spoil('a rationale that says nothing', (d) => (d.table[0].rationale = 'ok'), viaEngine);
+    spoil('a provenance with no derivation', (d) => delete d.provenance.derivation, viaProvenance);
+    spoil(
+      'a provenance with no editorial notes',
+      (d) => delete d.provenance.editorialNotes,
+      viaProvenance,
+    );
+
+    // THE BASELINE, in the same block.
+    seasonalFixtures += 1;
+    try {
+      viaEngine(structuredClone(raw));
+      viaProvenance(structuredClone(raw));
+    } catch (error) {
+      fail(
+        `${SEASONAL_FILE} fixture "unspoiled": the check REJECTED the published file — ` +
+          `${error.message}. The spoilings above prove nothing if this one does not pass.`,
+      );
+    }
+  } catch (error) {
+    fail(`${SEASONAL_FILE}: ${error.message}`);
+  }
+notes.push(
+  `seasonal summary: ${String(seasonalFixtures)} fixture(s) exercised — every spoiling rejected ` +
+    'and the published file accepted, or the gate says otherwise above.',
+);
 rulesExercised += 1;
 
 // --- the device-local identities are RESERVED, and content may not use them -----------------
