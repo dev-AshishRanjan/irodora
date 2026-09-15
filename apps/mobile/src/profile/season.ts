@@ -8,8 +8,28 @@
  * `summariseSeason` over the published rule; this module only says which words name its answer.
  */
 
-import type { ModifierId, SeasonId } from '@irodora/recommendation';
+import {
+  summariseSeason,
+  type ModifierId,
+  type PersonalProfile,
+  type SeasonalRules,
+  type SeasonalSummary,
+  type SeasonId,
+} from '@irodora/recommendation';
 import type { MessageKey } from '../i18n/en';
+import { seasonalRules } from '../rules';
+
+/**
+ * A profile's seasonal summary, by the published rule — the one way the app gets a label.
+ *
+ * Computed on every read and never stored: a saved profile has no field for it, so a label cannot
+ * outlive a corrected range or stand in for one (ADR-0102). `rules` is for tests; the app passes
+ * nothing and gets the published rule.
+ */
+export const seasonalSummary = (
+  profile: PersonalProfile,
+  rules: SeasonalRules = seasonalRules(),
+): SeasonalSummary => summariseSeason(profile, rules);
 
 export const SEASON_LABEL_KEYS = {
   spring: {

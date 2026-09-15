@@ -34,7 +34,10 @@ import {
   parseWeightContent,
   rationaleCount,
   ruleSetFor,
+  parseSeasonalRules,
+  seasonalCellCount,
   type RuleSet,
+  type SeasonalRules,
 } from '@irodora/recommendation';
 import { canonicalize } from '@irodora/corpus';
 import { sha256 } from './corpus';
@@ -44,6 +47,12 @@ import {
   WEIGHTS_RATIONALE_COUNT,
   WEIGHTS_TEXT,
 } from './rules/generated/weights';
+import {
+  SEASONAL_CELL_COUNT,
+  SEASONAL_DIGEST,
+  SEASONAL_LABEL,
+  SEASONAL_TEXT,
+} from './rules/generated/seasonal';
 
 /**
  * The occasion the app reads.
@@ -101,4 +110,33 @@ export function ruleSet(): RuleSet {
 
   cached = ruleSetFor(content, OCCASION);
   return cached;
+}
+
+let cachedSeasonal: SeasonalRules | null = null;
+
+/**
+ * The published seasonal-summary rule (F-223, ADR-0102), checked the way `ruleSet()` checks the
+ * weights: the digest against the ledger's, then the engine's own parser, then the cell count the
+ * generated module recorded. Any mismatch is a build that bundled two generations, and throws.
+ */
+export function seasonalRules(): SeasonalRules {
+  if (cachedSeasonal !== null) return cachedSeasonal;
+  const actual = sha256(canonicalize(JSON.parse(SEASONAL_TEXT)));
+  if (actual !== SEASONAL_DIGEST)
+    throw new Error(
+      `seasonal summary: digest ${actual} does not match the ledger's ${SEASONAL_DIGEST}. ` +
+        'Published rule content is immutable, so there is no benign explanation for this.',
+    );
+  const rules = parseSeasonalRules(
+    JSON.parse(SEASONAL_TEXT),
+    `seasonal-summary.${SEASONAL_LABEL}.json`,
+  );
+  if (seasonalCellCount(rules) !== SEASONAL_CELL_COUNT)
+    throw new Error(
+      `seasonal summary: the generated module records ${String(SEASONAL_CELL_COUNT)} cell(s) ` +
+        `and the file carries ${String(seasonalCellCount(rules))}. The two came from different ` +
+        'generations — run `node scripts/generate-rules-bundle.mjs`.',
+    );
+  cachedSeasonal = rules;
+  return cachedSeasonal;
 }
