@@ -430,6 +430,8 @@ honestly and cheap to build dishonestly — and the difference is visible.
 | OQ-28 | Mockup 22 tints its capture chip and its ΔE00 badges green, which no conflict row registers, and each badge prints the notation without a figure. Followed, and does a badge print its ΔE00? | R9 |
 | OQ-29 | The serif: no mockup names it. Of the 20 serifs installed where it was measured, 01's wordmark and tagline match Georgia Pro best (R9-MOCKUP-FIDELITY §5) — a face under a commercial licence — and no open-licence face was among the candidates. Ship Georgia Pro under its licence, or choose an open face that matches it? | R9 |
 | OQ-30 | Mockup 13's fourth score row ends in *(Natural Dyes)* — a material family no computation in the product produces. Define what that note reports, or put a defined figure in its place? | R9 |
+| OQ-31 | Mockup 23's seasonal pill has a second half — *Kasane Harmony* — that no requirement, ADR or computation defines. Define what it reports and what it is derived from, or does the pill carry the seasonal summary alone? | R9 |
+| OQ-32 | Mockups 07 and 13 put the seasonal label beside the personal-fit score, with no ranges beside it, and F-223 requires the label always to sit beside the ranges it summarises. Show it there, show something else, or leave that note out? | R9 |
 
 **OQ-3 is closed by [ADR-0085](adr/0085-the-reference-card-is-a-partner-card-and-its-values-are-cited-not-measured.md).** The reference card is a partner card and its
 values are cited rather than measured — a card we manufactured would make us the authority on a

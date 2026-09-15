@@ -33,7 +33,7 @@ Two rules that matter more than the format:
 | [0007](0007-colour-corpus-provenance-and-licensing.md) | The colour corpus is compiled in-house with per-entry provenance | Accepted |
 | [0008](0008-search-postgres-fts-with-engine-side-perceptual-ranking.md) | Postgres narrows the candidates; the engine ranks them perceptually | Superseded in part by ADR-0051 |
 | [0009](0009-cvd-is-an-engine-concern-not-a-ui-filter.md) | CVD simulation lives in the engine and scores every recommendation | Accepted |
-| [0010](0010-personal-colour-is-a-profile-not-a-skin-rgb.md) | A personal colour profile is ranges, never a skin colour value | Accepted |
+| [0010](0010-personal-colour-is-a-profile-not-a-skin-rgb.md) | A personal colour profile is ranges, never a skin colour value | Amended by ADR-0102 |
 | [0011](0011-recommendation-rules-are-versioned-content.md) | Recommendation weights and harmony rules are versioned content | Accepted |
 | [0012](0012-backend-fastify-zod-openapi.md) | Fastify with Zod schemas that generate the OpenAPI document | Superseded by ADR-0051 | <!-- retired-ok: An index row whose own Status column reads "Superseded by ADR-0051". -->
 | [0013](0013-postgres-drizzle-single-system-of-record.md) | PostgreSQL is the single system of record, accessed through Drizzle | Superseded by ADR-0051 |
@@ -95,7 +95,7 @@ Two rules that matter more than the format:
 | [0069](0069-a-phrase-is-versioned-rule-content-and-a-hue-term-carries-a-chroma-floor.md) | A phrase is versioned rule content, and a hue term carries a chroma floor | Accepted |
 | [0070](0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md) | A shareable card is a deterministic document, not a bitmap | Accepted |
 | [0071](0071-a-token-with-no-reader-is-a-decision-nobody-applied.md) | A token with no reader is a decision nobody applied | Accepted |
-| [0072](0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) | A guided profile is forced choices, and confidence is agreement | Accepted |
+| [0072](0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) | A guided profile is forced choices, and confidence is agreement | Amended by ADR-0102 |
 | [0073](0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md) | The "Japanese aesthetic" score is corpus affinity, and says so | Accepted |
 | [0074](0074-the-spacing-scale-is-a-four-point-grid-and-the-step-that-was-not-goes.md) | The spacing scale is a four-point grid, and the step that was not one goes | Accepted |
 | [0075](0075-the-frame-output-is-requested-as-rgb-because-yuv-would-mean-writing-a-colour-transform.md) | The frame output is requested as `rgb`, because `yuv` would mean writing a colour transform | Accepted |
@@ -117,6 +117,7 @@ Two rules that matter more than the format:
 | [0099](0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) | The ground lifts off near-black, and the product gets one accent | Accepted |
 | [0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md) | A computed colour is `derived`, and `declared` goes back to meaning a person | Accepted |
 | [0101](0101-contracts-is-retired-because-it-served-no-boundary.md) | `@irodora/contracts` is retired, because it served no boundary | Accepted |
+| [0102](0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md) | A seasonal label is a lossy summary read off the ranges | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

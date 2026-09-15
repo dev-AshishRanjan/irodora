@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted, **amended by [ADR-0102](0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)**.
 
 ## Date
 
@@ -130,7 +130,9 @@ the swatches the person chose plus a declared pad, and the pad is a judgement. T
 editor offers cannot express every range the derivation can produce, so a correction is a
 snap-to-band rather than a free adjustment.
 
-**Neutral.** No seasonal label is produced, per ADR-0010. Whether the derivation performs evenly
+**Neutral.** No seasonal label is produced, per ADR-0010 — *amended by ADR-0102*, which adds a
+summary read off the ranges this derivation produces, discards contrast, and moves no boundary onto a
+value this derivation can reach. Whether the derivation performs evenly
 across skin tones is **not** addressed here and must not be assumed — that is NFR-23 and F-037,
 which is blocked on F-027 and F-028.
 

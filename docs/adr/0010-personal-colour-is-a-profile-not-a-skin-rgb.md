@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted, **amended by [ADR-0102](0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)**.
 
 ## Date
 
@@ -81,7 +81,9 @@ model and a more complex compatibility engine than comparing two RGB values.
 
 **Neutral.** The product does not produce a seasonal label ("you are a Deep Autumn"). It
 can *map* to seasonal vocabulary for users who want it, but the underlying model is
-continuous ranges.
+continuous ranges. *Amended by ADR-0102:* the product now shows that mapping — a seasonal summary
+computed from the ranges each time it is read, never stored, never scored, withheld when a range is
+unestablished, and never shown instead of the ranges.
 
 ## Alternatives considered
 

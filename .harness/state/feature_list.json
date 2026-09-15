@@ -7271,7 +7271,15 @@
         "content"
       ],
       "notes": "Mockup 23: the brown pill \"Autumn Muted / Kasane Harmony\" at the top of the dimensions card. Conflict C12. The label is derived FROM the ranges, which is a lossy summary; it is not a quiz that produces a label first, which is the model ADR-0010 rejected.",
-      "plan": "plans/F-223-the-profile-carries-its-seasonal-summary.md"
+      "plan": "plans/F-223-the-profile-carries-its-seasonal-summary.md",
+      "attested": [
+        {
+          "criterion": "The label is shown as a summary of the ranges beside it, never instead of them, and it carries no skin-tone, ethnic or body judgement (NFR-22)",
+          "verifiedBy": "(1) F-260's conformance sweep asserting inventory 23 on the rendered tree — 23.profile.label inside 23.profile, ahead of the four dimension rows — and its person-recorded side-by-side comparison; nothing in this repository can prove an element is drawn before its surface exists (the F-084 → F-018 precedent, ADR-0060 §5). (2) A competent Japanese reader confirming no ja word of the seasonal vocabulary carries a skin-tone, ethnic or body judgement: the gate refuses the listed terms and cannot know the ones nobody listed — OQ-5's standing gap. F-223 itself gates everything true before the label is drawn: derived only from the ranges, carrying the class of each range it summarises, never stored, never scored, withheld when a read range is unestablished, no prohibited word.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ]
     },
     {
       "id": "F-224",
@@ -8256,7 +8264,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports."
+      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports.",
+      "openQuestions": [
+        "OQ-32"
+      ]
     },
     {
       "id": "F-249",
@@ -8647,7 +8658,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: the overall-score verdict label → OQ-9; the personal-fit row keeps its FR-29 figure and loses its \"(Cool-Muted Match)\" suffix (E2, C12); \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity). ALSO DEPARTS (F-219): the CVD row keeps its figure and model without its safety suffix, and the contrast row shows the ratio and the Lc with the threshold they pass, without the one-word verdict 13 draws after the Lc (E2)."
+      "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: the overall-score verdict label → OQ-9; the personal-fit row keeps its FR-29 figure and loses its \"(Cool-Muted Match)\" suffix (E2, C12); \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity). ALSO DEPARTS (F-219): the CVD row keeps its figure and model without its safety suffix, and the contrast row shows the ratio and the Lc with the threshold they pass, without the one-word verdict 13 draws after the Lc (E2).",
+      "openQuestions": [
+        "OQ-32"
+      ]
     },
     {
       "id": "F-258",
@@ -8784,7 +8798,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1)."
+      "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1). F-223 (2026-09-15): the seasonal pill's value is seasonalSummary(profile); F-260 builds the guard that the pill's basis agrees with each dimension row's label beside it (E-129), and discharges F-223's attested criterion 3.",
+      "openQuestions": [
+        "OQ-31"
+      ]
     },
     {
       "id": "F-261",

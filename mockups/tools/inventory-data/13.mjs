@@ -200,7 +200,7 @@ export default {
       label: B(111, 912, 128, 20),
       value: B(357, 911, 47, 21),
       note: B(418, 911, 225, 25),
-      noteBinding: 'derived:F-223',
+      noteBinding: 'oq:OQ-32', // the seasonal label beside the fit score, with no ranges beside it
     }),
     rule(2, 947),
     ...component('contrast', {

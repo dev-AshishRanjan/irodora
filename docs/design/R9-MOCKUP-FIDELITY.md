@@ -301,7 +301,8 @@ themes and **both** locales — a screen never has two layouts.
 | `13` | *"Master Harmony"* | — | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
 | `15` | learned weights | preference weights | exists |
 | `17` `23` | four dimensions, radar, trials per dimension | the profile's ranges and agreement ([ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md)) | exists |
-| `23` | seasonal label | — | `F-223` |
+| `23` | seasonal label — a season and a modifier | `summariseSeason` over the published seasonal-summary rule ([ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)) | `F-223` |
+| `23` | the label's second half, *"Kasane Harmony"* | — | **OQ-31** |
 | `23` | *"Garment Calibration History · 94% concordance"* | — | **OQ-9** |
 | `19` `21` `24` | ΔE00 per row; *"5 matches"*, *"120 colors"* | color-difference; counts | exists |
 | `22` | outfits unlocked; duplicates and their threshold | `shoppingCheck` | exists |
@@ -334,7 +335,7 @@ Each needs its ADR, written by the feature named, before that feature is done
 
 - [ADR-0093](../adr/0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) — colour on the icon (`F-230`)
 - [ADR-0096](../adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) and [ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) — the neutral ground, the one gold accent, the theme recipes (`F-225`)
-- [ADR-0010](../adr/0010-personal-colour-is-a-profile-not-a-skin-rgb.md) and [ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) — no seasonal label (`F-223`)
+- [ADR-0010](../adr/0010-personal-colour-is-a-profile-not-a-skin-rgb.md) and [ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md) — no seasonal label (`F-223`); amended by [ADR-0102](../adr/0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md)
 - `F-168` — the tab bar is icons alone (`F-234`)
 - the spacing, radius and type values in the manifest (`F-226`, `F-227`)
 
@@ -372,6 +373,8 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
 | **OQ-29** | The serif: `01` matches Georgia Pro best of 20 installed faces (§5), under a commercial licence. Georgia Pro licensed, or an open face that matches it? | `F-226` |
 | **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
+| **OQ-31** | `23`'s seasonal pill ends in *Kasane Harmony*, which nothing defines. Define it, or the summary alone? | `F-260` |
+| **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 
 ---
 
