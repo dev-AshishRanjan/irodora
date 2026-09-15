@@ -106,4 +106,23 @@ export {
   type PreferenceTable,
 } from './preference.js';
 
-export const RECOMMENDATION_VERSION = '0.4.0' as const;
+export {
+  AXIS_CLASSES,
+  classifyAxis,
+  MODIFIER_IDS,
+  parseSeasonalRules,
+  SEASON_IDS,
+  seasonalCellCount,
+  summariseSeason,
+  type AxisClass,
+  type Boundary,
+  type ModifierId,
+  type SeasonalAxis,
+  type SeasonalRow,
+  type SeasonalRules,
+  type SeasonalSummary,
+  type SeasonId,
+  type Statistic,
+} from './season.js';
+
+export const RECOMMENDATION_VERSION = '0.5.0' as const;
