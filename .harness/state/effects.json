@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-14",
+  "updated": "2026-09-15",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -4959,6 +4959,43 @@
       "rationale": "A PLANT JOURNAL OPENED BEFORE AN EXIT CLAIMS A PLANT THAT NEVER HAPPENED. guardPlants() writes .harness/state/.plant-journal.json when it is called, and finally closes it; process.exit(1) does not run finally. A proof that opens its journal and then exits on a missing fixture or a red baseline leaves a journal the next run of ANY proof refuses to start past, until someone runs plant.mjs --recover against originals that were never displaced. LOUD, NOT SILENT, which is why this is medium: recovery compares against the recorded originals, so nothing is overwritten unseen — the cost is a blocked gate and a person deciding whether the journal is stale. SEEN TWICE ON 2026-09-14: verify-mockups --prove in F-218 (fixed there) and verify-claims-proof in F-219, which the feature made worse by adding a fixture exit after the journal opened, then fixed at the root — the journal now opens inside try, after every early exit, immediately before the first plant. GUARD: NONE YET. F-271 owns it; a crude scan flags verify-gate-mirror-proof, verify-no-inference-proof, verify-spacing-scale and verify-viewport, and cannot tell a baseline exit from the deliberate refuse-a-leftover branch, so each needs reading rather than a bulk edit.",
       "confidence": 0.85,
       "origin": "learned",
+      "status": "active"
+    },
+    {
+      "id": "E-128",
+      "from": {
+        "kind": "file",
+        "ref": "mockups/inventory"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "docs/design/R9-MOCKUP-FIDELITY.md"
+        },
+        {
+          "kind": "file",
+          "ref": "docs/PRD.md"
+        },
+        {
+          "kind": "file",
+          "ref": ".harness/state/feature_list.json"
+        },
+        {
+          "kind": "gate",
+          "ref": "lint"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "scripts/verify-mockups.mjs in gate 2 (lint) runs inventoryProblems() from scripts/mockup-inventory.mjs over all 28 inventories: required keys; ids unique and prefixed by their image; the order a strict sequence and, on a screen, the reading-order rule; parents before children; component and binding kinds, an oq: binding naming a question PRD §10 lists; dp equal to the box at its screen's dpPerPx; boxes inside the image and the screen unless declared an overhang with a presentation region; departures citing a §4 rule and conflicts a §6 id, both read from the contract. Once F-220 is done a null inventory fails, read from its status. verify-mockups --prove plants 39 failures and 6 cases that must pass; the null-inventory pair plants the status itself, after the first version relied on an image the set had not reached and stopped discriminating when the last inventory landed.",
+      "memory": "memory/effects/an-inventory-is-the-structure-a-surface-is-built-from.md",
+      "rationale": "F-220 turns each mockup into the element list a surface is built from and the conformance sweep (F-221) asserts. An image change now forces its inventory to move; an inventory change forces the surface built from it; a question closing in PRD §10 releases the elements it holds and the feature §11 says it blocks; renaming a §4 rule or a §6 conflict fails every inventory citing it.",
+      "confidence": 0.9,
+      "origin": "manual",
       "status": "active"
     }
   ]

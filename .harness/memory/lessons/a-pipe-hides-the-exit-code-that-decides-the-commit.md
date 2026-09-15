@@ -41,4 +41,24 @@ it will recur every time output is long — which is every gate in this reposito
 mode is silent in exactly the direction that matters: it never blocks a good commit, only ever
 permits a bad one.
 
+## Addendum — 2026-09-15, F-220: it recurred with this note in the index
+
+Increment 5 of F-220 committed with the claims lint red. The guard chain was
+`node scripts/verify-claims.mjs 2>&1 | tail -1 && … && git commit`, written by the same agent that
+had this lesson loaded, in a chain of four gates where the other three happened to be green. The
+lint flagged a banned construction in one inventory's departure note; nothing built on the commit
+before it was caught, and it was amended once the note was reworded and every gate re-ran green.
+
+What changes: the second-run advice above is not enough when a chain holds several gates — a
+second run gets skipped under the same impatience as the first. The guard that held for the rest of
+F-220 captures each status as it happens and decides on the variables, never on a pipe:
+
+```
+node scripts/verify-claims.mjs > "$LOG" 2>&1; c=$?
+node scripts/verify-state.mjs >> "$LOG" 2>&1; s=$?
+echo "claims=$c state=$s"; [ $c -eq 0 ] && [ $s -eq 0 ] && git commit …
+```
+
+The printed `claims=0 state=0` line is also the evidence the progress entry quotes.
+
 [[a-check-that-gets-quieter-is-worse-than-one-that-fails]]

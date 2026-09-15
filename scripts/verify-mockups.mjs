@@ -465,11 +465,17 @@ if (process.argv.includes('--prove')) {
         expect: 'written against a different image',
       },
       {
+        // Every row carries an inventory now, so the case takes one away itself; relying on a row
+        // the set had not reached yet stopped discriminating the day the last one was written.
         name: `no inventory once ${INVENTORY_OWNER} is done`,
-        plant: () =>
+        plant: () => {
+          withIndex((i) => {
+            i.mockups['27'].inventory = null;
+          });
           withFeatures((f) => {
             f[INVENTORY_OWNER].status = 'done';
-          }),
+          });
+        },
         expect: `has no element inventory, and ${INVENTORY_OWNER} is done`,
       },
 
@@ -731,6 +737,20 @@ if (process.argv.includes('--prove')) {
         // 04 draws two cards past its frame, declared and recorded as presentation — legitimate.
         name: 'a declared overhang with its presentation region — must stay GREEN',
         plant: () => withInventory((v) => v, '04'),
+        expect: null,
+      },
+      {
+        // The other half of the null-inventory case: the same missing row, with its owner not done.
+        // The status is planted too, so the case means the same thing after F-220 closes.
+        name: `no inventory while ${INVENTORY_OWNER} is not done — must stay GREEN`,
+        plant: () => {
+          withIndex((i) => {
+            i.mockups['27'].inventory = null;
+          });
+          withFeatures((f) => {
+            f[INVENTORY_OWNER].status = 'in_progress';
+          });
+        },
         expect: null,
       },
     ];

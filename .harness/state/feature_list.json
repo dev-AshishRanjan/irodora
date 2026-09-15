@@ -9223,6 +9223,31 @@
         "test"
       ],
       "notes": "CONFIRMED TWICE, BY THE DEFECT ITSELF. F-218: verify-mockups --prove opened its journal before its baseline check; gate 0 was red for an unrelated reason, process.exit(1) skipped finally, and the journal claimed five plants that never happened — fixed in that script. F-219: verify-claims-proof, run on a red baseline, planted nothing and left a journal for docs/__claims_proof__.md; guardPlants() sat at the module top, before its fixture exits and its baseline exit. Each time the next run refused to start until a person proved the journal false. The lesson is lessons/a-journal-opened-before-an-early-exit-claims-plants-that-never-happened.md. Filed rather than fixed inside F-219 because it is not that feature's acceptance (golden rule 2). verify-claims-proof ITSELF WAS FIXED IN F-219 (2026-09-14): that feature had added a fixture exit after the journal opened — the very defect recorded here — so the journal now opens inside try, after every early exit, immediately before the first plant. Criterion 1 is therefore met; the other four scripts and the demonstrating case remain. Linked as E-127."
+    },
+    {
+      "id": "F-272",
+      "title": "Raw control bytes in tracked source hide files from code search, and nothing refuses a new one",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "No tracked text file holds a raw control character other than tab, line feed, carriage return or form feed; each of the 38 lines found on 2026-09-14 is rewritten to the escape it meant, and each affected package's existing tests pass unchanged — the values are identical, which is the point",
+        "Gate 0 refuses a raw control character in a tracked text file, naming file, line and code point, and its proof plants one and watches the gate go red",
+        "The two memory-index descriptions read as written — the escape for backspace where U+0008 stands today"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "FOUND PREPARING F-220 (2026-09-14): grep called scripts/verify-mockups.mjs and packages/design-tokens/src/manifest.ts binary. A scan of 1,548 tracked text files finds 38 lines with a raw control character: raw NUL meant as a space or empty string (manifest.ts:587, preference.ts:105, ChoiceGroup.tsx:62, home-states.test.tsx:203/211, verify-mockups.mjs, two plans and progress.md), raw ESC in the colour constants of five scripts, raw BACKSPACE in prohibited.ts:60 and two memory-index lines. THE HARM IS TO SEARCH, NOT RUNTIME: the Grep tool omits manifest.ts from a directory search without a word, and grep -r prints Binary file matches in place of the lines — every agent searching a directory is blind to these files. It recurs and has been deferred before (progress.md records one fixed in screens.test.tsx; F-103 deferred another). F-220 edited verify-mockups.mjs around its NUL and did not touch it."
     }
   ]
 }
