@@ -8800,7 +8800,8 @@
       ],
       "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1). F-223 (2026-09-15): the seasonal pill's value is seasonalSummary(profile); F-260 builds the guard that the pill's basis agrees with each dimension row's label beside it (E-129), and discharges F-223's attested criterion 3.",
       "openQuestions": [
-        "OQ-31"
+        "OQ-31",
+        "OQ-33"
       ]
     },
     {
@@ -9398,7 +9399,7 @@
         "Gate 11 reads every weights.*.json provenance block through parseProvenance, and refuses one that is incomplete, naming the field",
         "Its in-memory spoilings include a provenance field removed, watched failing, beside the clean file passing"
       ],
-      "notes": "FOUND PLANNING F-223, CONFIRMED BY READING scripts/verify-content.mjs (2026-09-15): the weights section parses the weights through parseWeightContent and never calls parseProvenance, and parseWeightContent does not read the provenance block. NFR-20 asks every rule file for complete provenance; for weights nothing checks it."
+      "notes": "FOUND PLANNING F-223, CONFIRMED BY READING scripts/verify-content.mjs (2026-09-15): the weights section parses the weights through parseWeightContent and never calls parseProvenance, and parseWeightContent does not read the provenance block. NFR-20 asks every rule file for complete provenance; for weights nothing checks it. ALSO FOUND (F-223, 2026-09-15): weights.2026.08.4.json cites provenance.sourceId IRO-ED-003, and the licensing register gives IRO-ED-003 to the taxonomy vocabulary — the weights have no register row of their own, which a provenance check reading the register would have refused."
     }
   ]
 }

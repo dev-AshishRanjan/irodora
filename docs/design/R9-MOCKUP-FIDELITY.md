@@ -375,6 +375,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
 | **OQ-31** | `23`'s seasonal pill ends in *Kasane Harmony*, which nothing defines. Define it, or the summary alone? | `F-260` |
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
+| **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 
 ---
 

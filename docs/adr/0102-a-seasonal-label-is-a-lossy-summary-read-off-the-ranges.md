@@ -92,7 +92,11 @@ as data, printed whole by the content gate, and changed by a publish.
 — which is why it is withheld when a range is unestablished and never drawn without the ranges. It
 jumps at boundaries. The twelve-season convention is a convention, not an instrument: nothing here
 shows that it, or the derivation beneath it, performs evenly across skin tones (NFR-23, F-037), and
-nothing may say it does. The rule is self-reviewed until a second editor exists.
+nothing may say it does. The rule is self-reviewed until a second editor exists. **As first published
+(2026.09.1), most finished guided profiles get no summary** — 3,136 of the 4,096 the flow can produce,
+every one whose lightness and chroma ranges both sit in the middle — and only four labels are
+reachable. That is the rule withholding where it was written to; what mockup 23's pill shows then is
+OQ-33, and naming more cells is a later publish, not a change to this decision.
 
 **Neutral.** "Autumn" in a profile's label is unrelated to a colour's `taxonomy.season`; they have
 separate catalogue keys and the summary never reads the corpus. The pill's second half,

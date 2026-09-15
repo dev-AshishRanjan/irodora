@@ -326,3 +326,16 @@ mockup 17's radar (OQ-24, OQ-25).
 5. **F-276 and F-277 are filed as backlog**, each confirmed by running it, not only by reading.
 6. Chroma's statistic and anchor, the 27 cells, and the Japanese words are decided in increment 4 under
    anchor or ask — any value with no existing boundary to cite stops the increment and becomes a question.
+
+## What building it showed (2026-09-15)
+
+- Every boundary found an anchor: lightness and chroma at the phrase lexicon's measured gaps (chroma:
+  the lexicon over ProfileSetup's chips, recorded in `editorialNotes`), temperature at ±1/6. No value
+  needed asking.
+- **The enumeration over all 4,096 guided profiles: 3,136 get no summary**, and only four labels are
+  reachable (winter deep, autumn deep, summer muted, autumn muted). **OQ-33 is raised**, blocking F-260.
+  The thresholds are not moved to fill the pill — that would be tuning editorial content to a mockup.
+- fast-check is not a dependency of `@irodora/recommendation`; the property tests are exhaustive grids
+  that include every boundary value exactly, which needs no lockfile change.
+- Found and filed: `weights.2026.08.4.json` cites `IRO-ED-003`, which the register gives to the
+  taxonomy vocabulary — added to F-277.
