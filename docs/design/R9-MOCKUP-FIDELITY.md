@@ -109,17 +109,35 @@ computation ([golden rule 11](../../AGENTS.md), NFR-21, [ADR-0031](../adr/0031-m
 
 | mockup | drawn | resolution |
 |---|---|---|
-| `03` | *"97% Match"*, *"92%"*, *"88%"* beside ΔE00 | no such figure exists and FR-7 says naming returns a closest reference, never a match — **OQ-9** |
+| `03` | *"97% Match"*, *"92%"*, *"88%"* beside ΔE00 | no such figure exists and FR-7 says naming returns a closest reference, never a match — **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `07` `13` | *"94% Match (Cool-Muted profile)"*, *"92% (Cool-Muted Match)"* beside the personal-fit score | the FR-29 score stays; "Match" to a seasonal type does not (C12, `F-223`) (claims-ok: quotes the drawn construction this row resolves) |
 | `04` | *"Very Close Match"* | the ΔE00 descriptor band stays; "Match" does not (FR-74: *"it never asserts a match"*) — bands defined in `F-222` |
 | `02` | *"Excellent Exposure"* | the capture-conditions assessment the engine produces (FR-17), in its own words |
 | `07` `16` | *"6.2:1 (APCA Passed)"*, *"11.4:1 (APCA Passed - AAA)"* | the same element shows the WCAG ratio **and** the APCA Lc as two figures — APCA has no ratio (FR-3) |
-| `10` `15` `16` | *"CVD 100% Distinction"*, *"100% CVD-Safe"*, *"100% Distinguishable"* | the computed separation score (FR-5) for the palettes actually shown; it prints 100 only when it is 100 |
-| `13` | *"Master Harmony"* | **OQ-9** |
-| `18` | *"Museum-grade CJK PDF Report"* | a factual descriptor of the same length — grade language is banned by `F-219` |
-| `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps |
+| `00` `10` `15` `16` | *"100% CVD Safe"*, *"CVD 100% Distinction"*, *"100% CVD-Safe"*, *"100% Distinguishable"* | the computed separation score (FR-5) for the palettes actually shown; it prints 100 only when it is 100 (claims-ok: quotes the drawn construction this row resolves) |
+| `07` `08` `13` | *"98% Separation (Protan/Deutan Safe)"*, *"(Safe)"* after each separation figure, *"98% (Safe for Protan/Deutan)"* | the computed separation (FR-5) with the model it was computed under; "Safe" is a claim about people and does not ship (claims-ok: quotes the drawn construction this row resolves) |
+| `13` | *"Master Harmony"* | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
+| `08` `13` | *"1.48:1 • Non-Text / Harmonious Pairing"*, *"90% (APCA Lc 48 • Optimal)"* | the figures stay — the ratio, the Lc and the threshold they pass; the one-word verdict after them does not (FR-32, FR-3), and a pair shows its harmony relationship (FR-6) where it has one (claims-ok: quotes the drawn construction this row resolves) |
+| `04` | *"(Identical Hue)"* | the ΔH figure and its descriptor band; FR-74 never asserts identity. Outside `F-219`’s five classes, so this row and `F-245` hold it, not the lint |
+| `02` `27` | *"色の測定"*, *"Measurement Refused"* | a camera estimate is never called a measurement (golden rule 11, E-089): the Lens is an estimate in both languages, and the refused state names a reading. Outside `F-219`’s five classes; held by this row, `F-243` and `F-236` |
+| `18` | *"Museum-grade CJK PDF Report"*, and again in lowercase in its description | a factual descriptor of the same length — grade language is banned by `F-219` (claims-ok: quotes the drawn construction this row resolves) |
+| `27` | *"Extracting reflectance spectra…"*, *"Calibrating illuminant: D65 (5500K)"* | a phone camera measures no reflectance spectrum, and D65 is ≈6504 K (5500 K is D55). The lines name the pipeline's real steps (claims-ok: quotes the drawn construction this row resolves) |
 
-`F-219` extends the claims lint to these constructions; **today none of them trips it** — checked
-string by string before this was written.
+`F-219` extended the claims lint to the rows above that are **claims** — the percentage offered as a
+match, the absolute CVD-safety wording, the verdict on a score, the borrowed grade, the
+spectrum the camera never takes — in English and Japanese. What that means is exactly two lists:
+the lint refuses every line of [`drawn.md`](../../packages/testing/fixtures/claims/drawn.md) — each
+construction of those five classes drawn inside a screen or on a component, found by reading all 28
+images, verbatim — and every line of [`variants.md`](../../packages/testing/fixtures/claims/variants.md),
+their forms in both languages, and the claims proof fails the build if it misses one;
+[`near-misses.md`](../../packages/testing/fixtures/claims/near-misses.md) holds the honest copy it must
+leave alone. A phrasing in none of the lists is not known to be caught; it is added to `variants.md`
+before any pattern is widened. **What a source lint cannot see:** a figure and a label composed at
+render time — the catalogues hold them apart — so `F-221` runs the same patterns over the text of
+every capture. The other rows (`04`’s descriptor and hue, `02`’s exposure and title, the APCA ratio
+in `07 16`, the illuminant and the refusal heading in `27`) fall outside `F-219`’s five classes: each
+is resolved by binding the element to a defined value, and each is a departure in its feature’s
+record.
 
 ### E3 — Accessibility floors that are blocking gates
 
@@ -250,7 +268,7 @@ themes and **both** locales — a screen never has two layouts.
 | `01` | hero OKLCh; *"14 Garments • 38 Valid Outfits"* | corpus derivation; wardrobe count and `coverage()` | exists |
 | `02` | live OKLCh, sRGB, three nearest with ΔE00 | the Lens reading and naming | exists |
 | `03` | Hex · OKLCh · CIELAB; *"95% Confidence"* | the reading; `provenance.confidence` ∈ [0,1] — display format in `F-222` | exists |
-| `03` | *"97% Match"* | — | **OQ-9** |
+| `03` | *"97% Match"* | — | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
 | `04` | ΔE00, ΔL\*, ΔC\*, ΔH and their readings | the FR-48 metric set (FR-74) | exists; bands `F-222` |
 | `06` `26` | Hex · OKLCh · CIELAB · sRGB · Display-P3; family · era · season | engine conversions — P3 is a real conversion; taxonomy, where era is empty for all 120 | exists |
 | `07` | personal fit %, CVD separation %, contrast | FR-29, FR-5, FR-3 (ratio and Lc apart) | exists |
@@ -259,7 +277,7 @@ themes and **both** locales — a screen never has two layouts.
 | `11` | coverage %, outfits, outfits per garment, the gap; wears, cost per wear | `coverage()`, `gaps()`; wardrobe cost | exists |
 | `12` | duplicate check with ΔE00 | `findDuplicates` | exists |
 | `13` | overall and five components; capsule *"5 → 12"* | `scoreOutfit` (FR-32, [ADR-0073](../adr/0073-the-japanese-aesthetic-score-is-corpus-affinity-and-says-so.md)); `solveCapsule` | exists |
-| `13` | *"Master Harmony"* | — | **OQ-9** |
+| `13` | *"Master Harmony"* | — | **OQ-9** (claims-ok: quotes the drawn construction this row resolves) |
 | `15` | learned weights | preference weights | exists |
 | `17` `23` | four dimensions, radar, trials per dimension | the profile's ranges and agreement ([ADR-0072](../adr/0072-a-guided-profile-is-forced-choices-and-confidence-is-agreement.md)) | exists |
 | `23` | seasonal label | — | `F-223` |
@@ -311,7 +329,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 |---|---|---|
 | **OQ-7** | `profile/measure` has no mockup. Generate one, or compose it from `08`'s readout table and `12`'s form? | `F-261` |
 | **OQ-8** | The Lens states behind *Garment Scan* and *Calibrated Card* have no mockup. Generate them, or compose from `02`–`04`? | `F-243` |
-| **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` |
+| **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 
 ---

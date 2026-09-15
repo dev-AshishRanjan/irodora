@@ -65,3 +65,17 @@ device months later.
 
 Related: [[a-second-technology-a-second-blind-spot]] ·
 [[two-thorough-checks-and-neither-looked-at-a-pair]]
+
+## Since — what the guard is now (F-172, F-219)
+
+The link's guard said NONE YET until F-219 re-read it, which was no longer true. F-172 gave the
+lint Japanese patterns and a refusal: it now declines a scanned script for which it holds no pattern
+at all, and its proof watches that refusal happen by dropping the non-ASCII patterns. F-219 added
+five more, one mirror for each new English construction — the percentage offered as a match, the
+absolute claim about colour-vision safety, the verdict stacked on a score, grade borrowed from an
+institution or an instrument, and a spectrum the camera never takes — and a line-by-line bar:
+every Japanese form in `packages/testing/fixtures/claims/variants.md` must be refused by number.
+
+What is still not guarded is the part this note began with: whether the Japanese patterns match
+what a person would actually write. The lint prints its own scope on every run, and a Japanese
+reader's review is still owed under F-172.

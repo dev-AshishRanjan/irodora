@@ -48,15 +48,6 @@ const JA_FIXTURE = join(ROOT, 'packages/testing/fixtures/claims/japanese.md');
 // A real, scanned path. Removed in `finally`; its directory is created only if absent.
 const TARGET = join(ROOT, 'docs/__claims_proof__.md');
 
-/*
- * THE PLANT JOURNAL (F-173), even though this target is UNTRACKED.
- *
- * An untracked leftover is not harmless: `git add -A` adds it, and a file called
- * `__claims_proof__.md` in `docs/` is exactly the kind of thing that gets committed and then
- * lives there. The journal records that this path did not exist, so recovery removes it.
- */
-const journal = guardPlants('verify-claims-proof', [TARGET]);
-
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
 const DIM = '\x1b[2m';
@@ -83,6 +74,24 @@ if (!existsSync(JA_FIXTURE)) {
   process.exit(1);
 }
 const japanese = readFileSync(JA_FIXTURE, 'utf8');
+
+/*
+ * F-219. THE LINE-BY-LINE FIXTURES: every construction the mockups draw, verbatim; the forms copy
+ * actually takes; and near-misses that must stay green. The first two are held line by line, not
+ * as whole files, so one line the lint misses cannot hide behind another it catches.
+ */
+const LINE_FIXTURES = Object.fromEntries(
+  ['drawn', 'variants', 'near-misses'].map((name) => {
+    const file = join(ROOT, `packages/testing/fixtures/claims/${name}.md`);
+    if (!existsSync(file)) {
+      console.error(
+        `${RED}claims-proof: fixture missing at ${file}. Refusing to prove nothing.${OFF}`,
+      );
+      process.exit(1);
+    }
+    return [name, readFileSync(file, 'utf8')];
+  }),
+);
 
 /** Runs the lint. Returns {code, out}. Never throws on a non-zero exit — that is the signal. */
 function runLint(env = {}) {
@@ -166,6 +175,56 @@ const CASES = [
     body: japanese,
     expect: 'green',
   },
+  {
+    /*
+     * F-219. WHY "N% confidence" IS NOT BANNED. BRAND.md's replacement column recommends exactly
+     * this sentence as the honest form of a reading. A pattern set that caught it would ban the
+     * copy the policy exists to produce.
+     */
+    name: "the voice guide's own honest sentence, in both languages — must stay GREEN",
+    body: '# Proof\n\nEstimated, 81% confidence, mixed lighting.\n\n推定値、信頼度81%、混合光。\n',
+    expect: 'green',
+  },
+  {
+    /*
+     * F-219. Harmony is FR-6's vocabulary — twelve named relationships — and a separation score is
+     * FR-5's. Only a verdict stacked on a score is banned, never the words themselves.
+     */
+    name: 'harmony relationships, a gradient and a separation score — must stay GREEN',
+    body: '# Proof\n\nAn analogous harmony and a complementary harmony. 類似色の調和と補色の調和。\nA gradient track from cool to warm. 区別しやすさのスコア 92。\n',
+    expect: 'green',
+  },
+  {
+    /*
+     * F-219. NEAR-MISSES for the widened patterns: words that sit next to a banned construction
+     * and are not one. The engine's own honest sentence that it has no spectral data; grade and
+     * quality as ordinary adjectives; and the Japanese on-device security statement mockup 15 will
+     * need, which a colour-vision pattern not tied to 色覚 would have refused.
+     */
+    name: 'near-misses for the F-219 patterns, in both languages — must stay GREEN',
+    body: '# Proof\n\nHigh-grade wool, a studio visit, a museum of dyes. The full spectrum of seasonal colours, and no spectral data anywhere in the dependency tree.\nデータは完全にオフラインで安全に保存されます。完全には区別できない場合があります。高品質なウール、スペクトル状の配色。\n',
+    expect: 'green',
+  },
+  {
+    // F-219. The bar the feature is held to: every construction a mockup draws, verbatim.
+    name: 'every construction the mockups draw — refused LINE BY LINE',
+    body: LINE_FIXTURES.drawn,
+    expect: 'red',
+    everyListLine: true,
+  },
+  {
+    // F-219. The forms that copy actually takes, in both languages. An evaluation that finds a
+    // variant the lint lets through adds it here first.
+    name: 'their natural variants, English and Japanese — refused LINE BY LINE',
+    body: LINE_FIXTURES.variants,
+    expect: 'red',
+    everyListLine: true,
+  },
+  {
+    name: 'the near-miss fixture, unmutated — must stay GREEN',
+    body: LINE_FIXTURES['near-misses'],
+    expect: 'green',
+  },
 ];
 
 /** A phrase that trips each pattern. Written out rather than generated from the regex, so a
@@ -206,6 +265,21 @@ function sampleFor(id) {
     'ai-powered': 'AI-powered colour detection',
     'measures-the-colour': 'the app measures the colour precisely',
     'is-exact-match-identifier': 'the response carries isExactMatch as a field',
+
+    /*
+     * F-219. The constructions the R9 mockups draw. Each is a sentence a screen might actually
+     * carry, in the mockup's own words — not a string assembled from its pattern.
+     */
+    'percent-match': 'The nearest corpus colour is a 97% match for your shirt',
+    'ja-percent-match': 'あなたのシャツは収録色と97%一致します',
+    'absolute-cvd-safety': 'Every palette here is 100% CVD-safe',
+    'ja-absolute-cvd-safety': 'すべての配色は色覚特性に対して100%安全です',
+    'verdict-harmony': 'Outfit score 93 out of 100 — Master Harmony',
+    'ja-verdict-harmony': '完璧な調和のコーディネートです',
+    'institution-grade': 'Generate a museum-grade PDF report',
+    'ja-institution-grade': '美術館品質のPDFレポートを作成',
+    'unmeasured-spectra': 'Extracting reflectance spectra from the fabric',
+    'ja-unmeasured-spectra': '生地の分光反射率を抽出しています',
   }[id];
 }
 
@@ -225,6 +299,8 @@ console.log(
 
 let failures = 0;
 
+let journal = null;
+
 try {
   const baseline = runLint();
   if (baseline.code !== 0) {
@@ -234,6 +310,19 @@ try {
     console.error(baseline.out);
     process.exit(1);
   }
+
+  /*
+   * THE PLANT JOURNAL (F-173), even though this target is UNTRACKED.
+   *
+   * An untracked leftover is not harmless: `git add -A` adds it, and a file called
+   * `__claims_proof__.md` in `docs/` is exactly the kind of thing that gets committed and then
+   * lives there. The journal records that this path did not exist, so recovery removes it.
+   */
+  /*
+   * OPENED HERE, not at the top: every exit above plants nothing, and a journal opened before
+   * one of them claims a plant that never happened, so the next run refuses to start (F-271).
+   */
+  journal = guardPlants('verify-claims-proof', [TARGET]);
 
   mkdirSync(dirname(TARGET), { recursive: true });
 
@@ -246,8 +335,25 @@ try {
     const wanted = c.expect === 'red';
     let ok = wentRed === wanted;
 
+    // A whole-file red is not enough for a line fixture: every list line must be reported by its
+    // number, or one line the lint misses hides behind another it catches (F-219).
+    if (ok && wanted && c.everyListLine) {
+      const reported = new Set(
+        [...result.out.matchAll(/__claims_proof__\.md:(\d+)/gu)].map((m) => Number(m[1])),
+      );
+      const missed = c.body
+        .split('\n')
+        .map((line, i) => ({ line, n: i + 1 }))
+        .filter(({ line, n }) => line.startsWith('- ') && !reported.has(n));
+      if (missed.length > 0) {
+        ok = false;
+        console.error(`${RED}BAD ${c.name}: ${String(missed.length)} line(s) not refused${OFF}`);
+        for (const m of missed) console.error(`    ${String(m.n)}: ${m.line}`);
+      }
+    }
+
     // Red is not enough: it must be red for the RIGHT reason.
-    if (ok && wanted && c.names && !result.out.includes(c.names)) {
+    if (ok && wanted && c.names && !result.out.includes(`[${c.names}]`)) {
       ok = false;
       console.error(
         `${RED}BAD ${c.name}: went red, but did not name "${c.names}" — red for the wrong reason.${OFF}`,
@@ -270,7 +376,7 @@ try {
 } finally {
   rmSync(TARGET, { force: true });
   if (existsSync(TARGET)) console.error(`${RED}claims-proof: FAILED TO REMOVE ${TARGET}.${OFF}`);
-  else journal.close();
+  else journal?.close();
 }
 
 if (!proveCoverage()) failures++;

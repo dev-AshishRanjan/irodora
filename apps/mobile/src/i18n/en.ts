@@ -662,7 +662,7 @@ export const en = {
    *
    * THE WORD "MATCH" APPEARS NOWHERE, and that is criterion 3 rather than a stylistic
    * preference. `similarityPercent` exists in @irodora/color-naming and is deliberately unused:
-   * a percentage invites "96% match", which is a claim about identity that a distance does not
+   * a percentage invites "96% match" (claims-ok: quoted to refuse it), which is a claim about identity that a distance does not
    * make.
    *
    * The `same.*` strings say WHY they say the same — "within the band this product treats as

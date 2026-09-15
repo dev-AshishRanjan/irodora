@@ -21604,3 +21604,64 @@ reported. Each entry carries the GHSA ids it closes, which is what a future read
 against.
 
 ---
+
+## 2026-09-15 — F-219 The claims lint grows to meet the claims the mockups draw
+
+**Done.** Ten patterns (thirty in `claims.json`), five classes, English and Japanese: a percentage
+offered as a match, an absolute colour-vision safety claim, a verdict on a composite score, a grade
+borrowed from an institution or an instrument, and a spectrum the camera never takes. Each pattern's
+reason says only what the fixtures prove — what is caught, what is left alone — and that a form in
+neither list is not known either way.
+
+### The bar is in the repository
+
+- `packages/testing/fixtures/claims/drawn.md` — every construction of the five classes the mockups
+  draw inside a screen, verbatim, with its mockup number: 20 lines.
+- `variants.md` — 352 forms, including a Japanese rendering of each drawn line and every escape any
+  evaluator reported.
+- `near-misses.md` — 100 honest lines that must pass: the voice guide's confidence sentence, harmony
+  relationship names, the similarity percentage FR-7 requires, disclaimers and warnings.
+- The claims proof plants all three and requires every list line refused, or passed, by number.
+
+### Also changed
+
+- `R9-MOCKUP-FIDELITY.md` §4 E2 has a row for every drawn claim, and the owning features record
+  their departures (F-233, F-243, F-245, F-248, F-249, F-257, F-263). F-236's reworded criterion is
+  disclosed in F-236. F-221 gains the guard for a claim composed at render time, and the lint prints
+  that limit on every run.
+- The claims proof opens its plant journal after every early exit — F-271's defect, which this
+  feature had made worse. F-271 is `backlog`, linked as E-127.
+- **Gate 15 was red at HEAD**, from two of this session's own commits: gitleaks read feature prose
+  as an API key (an exact-token allowlist entry, with its reason) and no-inference read an
+  identifier as naming age (renamed).
+- **Cost, measured.** A negation lookbehind placed first cost the lint 2.3 s a pass; placed at the
+  end of the match, the thirty patterns cost 1.2 s (0.44 s for the twenty at HEAD), one pass 5 s.
+
+### Review
+
+Five evaluator rounds failed, each finding more — Japanese forms of drawn lines, reasons that
+claimed more than the patterns do, punctuation and disclaimer cases. Every finding was fixed or
+recorded. A sixth round was cut off by a session limit before it reported. **The user then ruled
+that a feature is reviewed once**: AGENTS.md loop step 5, `/verify`, verify-gate,
+definition-of-done and the evaluator's definition now say so, and
+[[a-review-that-can-be-repeated-is-a-loop-with-no-exit]] records why. F-219 closes on its gates.
+
+### Gates — the implementer's runs on the final tree
+
+state 0 · claims lint 0 · claims proof 0, every case, no plant journal left · lint 0 ·
+format:check 0 · security 0 · typecheck 0 · test 0 (35/35). One earlier test run timed out in
+`@irodora/store`'s conformance test while image scans loaded the machine; alone it is 143/143.
+
+### Lessons
+
+[[a-lost-turns-edits-look-like-a-second-author]] ·
+[[an-always-gate-nobody-runs-is-red-without-anyone-knowing]] ·
+[[a-lookbehind-at-the-start-of-a-lint-pattern-runs-at-every-character]] ·
+[[a-review-that-can-be-repeated-is-a-loop-with-no-exit]] · an addendum to the heredoc lesson.
+
+### Next
+
+F-220 — the element inventories. Eight of 28 are drafted outside the tree with the check that will
+hold them, and ten questions for a person were found on the way.
+
+---

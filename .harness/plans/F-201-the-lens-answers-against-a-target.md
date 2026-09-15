@@ -37,7 +37,7 @@ triples, which would let an unrecorded colour through.
 ## The word "match" appears nowhere
 
 Criterion 3, and it is the whole register of this feature. `similarityPercent` exists in
-`@irodora/color-naming` and is **not** used here: a percentage invites *"96% match"*, which is a
+`@irodora/color-naming` and is **not** used here: a percentage invites *"96% match"* (claims-ok: quoted to refuse it), which is a
 claim about identity that a ΔE00 does not make. The screen reports a distance and a
 decomposition, and the claims lint holds the wording in both languages.
 

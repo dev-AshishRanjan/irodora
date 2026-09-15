@@ -56,6 +56,15 @@ regexes = [
   # caught. THE COST: this one string can never again indicate a leak, which is acceptable
   # because it cannot be one.
   '''^0f9a3c1e-7b2d-4c6a-9e18-5d0b7c2a4f31$''',
+  # A column list in feature prose. Commit 56a4f5f (the R9 re-cut, 2026-09-14) describes a sampled
+  # card as a "sample with keyline, Hex/OKLCh/CIELAB table", and generic-api-key reads "keyline," as
+  # key = "Hex/OKLCh/CIELAB". NO SECRET TO ROTATE: it names three colour notations and opens nothing.
+  # This is the false-positive path the header describes, not the leak path.
+  #
+  # Added 2026-09-14 by F-219, which found gate 15 red at HEAD. Scoped to the exact token rather than
+  # to feature_list.json, so a real credential pasted into the state file is still caught. THE COST:
+  # this one string can never again indicate a leak, which is acceptable because it cannot be one.
+  '''^Hex/OKLCh/CIELAB$''',
 ]
 
 # Colour hex values and OKLCH triples are high-entropy by nature and appear in

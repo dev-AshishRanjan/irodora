@@ -27,7 +27,7 @@
  * ## The word "match" appears nowhere
  *
  * `similarityPercent` exists in `@irodora/color-naming` and is **not** used. A percentage
- * invites *"96% match"*, which is a claim about identity that a distance does not make. This
+ * invites *"96% match"* (claims-ok: quoted to refuse it), which is a claim about identity that a distance does not make. This
  * reports a distance and a decomposition, and the claims lint holds the wording.
  */
 

@@ -33,7 +33,14 @@ variable name · **your own report of what you verified**.
 "the true colour"    "lab-accurate"       "guaranteed"
 "AI-powered"         "professional-grade" (outside calibrated mode)
 "measures the colour" (for an estimated source)
+"an equivalent is a match"                         (F-155, FR-72)
+"97% match" beside a ΔE00      "100% CVD-safe"    "Master Harmony"   (F-219)
+"museum-grade"                 "extracting reflectance spectra"    (F-219)
 ```
+
+**The canonical list is [`claims.json`](../../verification/claims.json) — every construction, in English and Japanese, each with its
+reason, enforced by the claims lint and proven by its mutation proof.** This block is the
+reading copy; when the two disagree, `claims.json` is right and this is stale.
 
 ### 3. Is there a number? Then there must be a row
 

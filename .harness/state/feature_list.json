@@ -7100,13 +7100,13 @@
       "service": "root",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "mockups": [
         "all"
       ],
       "acceptance": [
-        "claims.json carries patterns, each with its reason, for: a percentage match or percentage confidence beside a colour difference; an absolute CVD safety claim; a composite score presented as a verdict; grade language borrowed from instruments or institutions; a named physical quantity the pipeline does not measure (\"reflectance spectra\")",
+        "claims.json carries patterns, each with its reason, for: a percentage match beside a colour difference; an absolute CVD safety claim; a composite score presented as a verdict; grade language borrowed from instruments or institutions; a named physical quantity the pipeline does not measure (\"reflectance spectra\" (claims-ok: the example this criterion bans))",
         "verify-claims-proof exercises every new pattern against a string that must fail and one that must pass, so a pattern that matches nothing cannot ship",
         "The Japanese equivalents land with the English ones, because the gate reads both (F-172)"
       ],
@@ -7117,7 +7117,8 @@
         "format",
         "test"
       ],
-      "notes": "CHECKED BEFORE FILING: \"97% Match\", \"95% Confidence\", \"100% CVD-Safe\", \"Museum-grade\", \"Master Harmony\" and \"Extracting reflectance spectra…\" all pass the CURRENT pattern list. The list is narrower than ADR-0031. Every construction in docs/design/R9-MOCKUP-FIDELITY.md §4 E2 is a test string."
+      "notes": "CHECKED BEFORE FILING: a percentage match, \"95% Confidence\", an absolute CVD-safety claim, institution-grade language, the overall-score verdict label and a spectrum the camera never measures all pass the CURRENT pattern list. The list is narrower than ADR-0031. Every construction in docs/design/R9-MOCKUP-FIDELITY.md §4 E2 is a test string. NARROWED BEFORE CLAIMING (2026-09-14): criterion 1 originally also named \"a percentage confidence\". Every draft pattern was run over the tree the lint scans (1,533 files), and that one fires on BRAND.md's REPLACEMENT column — \"Estimated, 81% confidence, mixed lighting\" — which the voice guide sanctions as the honest form, and on ADR-0005 and ADR-0044 using it the same way. A pattern that bans the sentence the policy exists to produce is the wrong pattern, so it is dropped and that sentence becomes a must-stay-green case. A SECOND NARROWING, FOUND BY THE FIRST EVALUATION AND REVERTED (2026-09-14): the same rewrite of criterion 1 had also changed \"grade language borrowed from instruments or institutions\" to \"from an institution\", and that change was not recorded here — which let grade language borrowed from instruments through. The original wording is restored, and the pattern now also refuses grade and quality language borrowed from instruments. The same evaluation found mockup 10's drawn CVD-distinction figure uncaught and the natural Japanese forms (一致率, the katakana verdict label) missing; the ten patterns were widened and calibrated against 51 variants that must fire and 19 near-misses that must not. One widened alternative — the bare noun \"spectral data\" — fired on the engine's own statement that it has none, and was dropped for that reason. THE HISTORY OF CRITERION 1, IN FULL (second evaluation, 2026-09-14). It was written as: a percentage match or percentage confidence beside a colour difference; an absolute CVD safety claim; a composite score presented as a verdict; grade language borrowed from instruments or institutions; a named physical quantity the pipeline does not measure, with its example. Before claiming it was rewritten, and FIVE changes were made where only one was recorded: the confidence clause was dropped (recorded, and kept — see above); \"instruments or institutions\" became \"an institution\" (reverted after the first evaluation); \"an absolute CVD safety claim\" became \"an absolute claim of CVD safety or distinguishability\"; \"a named physical quantity\" lost \"named\" and its example; and \"in English and in Japanese\" was appended, which criterion 3 already says. The criterion now reads as written, with the confidence clause as the one change, and its example carries a claims-ok aside. THE BAR IS NOW IN THE REPOSITORY, not in a calibration nobody can check: packages/testing/fixtures/claims/drawn.md holds every claim construction the mockups draw, verbatim — including three the fidelity spec had missed (07, 08, 13: a per-deficiency \"Safe\" beside a separation figure) — and variants.md the forms copy actually takes; the proof requires the lint to report every line of both by number, and near-misses.md to pass whole. A variant an evaluation finds uncaught is added to variants.md first. THE CONFIDENCE CLAUSE, STATED EXACTLY (third evaluation): no mockup draws a percentage confidence beside a colour difference — mockup 03 prints \"95% Confidence\" as a chip about the capture, which is the form BRAND.md sanctions — so there is no drawn construction for that clause to catch, and the sanctioned voice uses the same words. That, not the voice guide alone, is why it is dropped. The third evaluation also found drawn.md incomplete (00, a third 03 line, 07 and 13's fit-score \"Match\", 08's other two rows, 15 verbatim) and the Japanese forms of drawn constructions uncaught; both fixed, both now held line by line. EVALUATION 4 (FAIL) AND THE RESPONSE. (1) THE SIMILARITY CARVE-OUT, disclosed here as well as in the patterns: \"97% similarity\" and 類似度97% were reported as escapes and are NOT refused — FR-7 requires a similarity percentage and ADR-0048 defines it as a stated scale beside its ΔE00 — so both moved to near-misses.md; \"97% similarity match\" IS refused, because it is a match. (claims-ok: quotes the escaped variant this note records as refused) (2) Patterns rewritten STRUCTURALLY — a figure within a short window of the claim word in either order, whatever the punctuation — after re-punctuated drawn lines walked past word lists; every string the evaluator probed is a fixture line. (3) The Japanese CVD pattern no longer refuses capability copy (区別しやすさ as a noun) or a negated warning; the English one no longer refuses \"may not be fully distinguishable\"; a studio is no longer an institution. (4) Three drawn lines added to drawn.md (08, 13, 18’s second grade), and its header now says exactly which classes it holds; the other drawn claims (04, 02, 27) are §4 E2 rows with departures in F-245, F-243 and F-236. (5) Departures recorded in F-233, F-248, F-249, F-257 and F-263; F-236’s criterion change disclosed in F-236; a guard for claims composed at render time added to F-221 and disclosed there. ALSO IN THE RESPONSE TO EVALUATION 4: (6) \"enterprise-grade\" and \"industrial-grade\" were reported as escapes and are NOT refused — neither borrows an institution or an instrument, neither says anything about colour or accuracy, and \"enterprise grade\" is the owner's own quality bar throughout the harness; both moved to near-misses.md. (7) GATE 15 (SECURITY) WAS RED AT HEAD, from two of this session's own commits, and no evaluation had run it: gitleaks read \"keyline, Hex/OKLCh/CIELAB\" in 56a4f5f's feature prose as a generic API key, and verify-no-inference read the identifier for the mockups' manual in verify-mockups.mjs (F-218) as naming age. Both are false positives; both are fixed here, because no feature can close while an always-gate is red — an exact-token allowlist entry in .gitleaks.toml with its reason (the header's false-positive path, not the leak path: a column list opens nothing), and the identifier renamed MOCKUP_MANUAL. EVALUATION 5 (FAIL) AND THE RESPONSE: criterion 3 was false as drawn.md stated it — the Japanese forms of 08's and 13's drawn verdicts passed — so every drawn line now has a Japanese rendering in variants.md, one-for-one. The pattern reasons claimed properties the patterns lack; each now states only what the fixtures prove, and that a form in neither fixture is unknown. Every string the evaluator found is a fixture line. industrial-grade is refused again: the carve-out protected nothing, since nothing in the repository uses the word; enterprise-grade stays the owner's own bar, but joined to accuracy it is refused. PERFORMANCE, MEASURED AND FIXED IN THE SAME ROUND: the first disclaimer handling put a negation lookbehind at the start of institution-grade, which ran at every character of 272,909 lines and cost 2,322 ms a pass (all thirty patterns 3,503 ms, against 436 ms for the twenty at HEAD). Moved to a lookbehind at the end of the match, with the prefix bounded: institution-grade 147 ms, all patterns 1,216 ms, one whole lint pass 5 s. What each pattern catches is unchanged, as the fixtures show line by line. Lesson: a-lookbehind-at-the-start-of-a-lint-pattern-runs-at-every-character. EVALUATION 6 WAS NOT COMPLETED — a session limit stopped it before it reported — and none follows: on 2026-09-15 the user ruled that a feature is reviewed ONCE (AGENTS.md loop step 5, amended that day, with the lesson a-review-that-can-be-repeated-is-a-loop-with-no-exit). F-219 had six rounds, which the rule now forbids. It closes on its gates, re-run by the implementer on the final tree and recorded in progress.md, with the fifth evaluation's findings addressed as listed above and not re-reviewed.",
+      "plan": "plans/F-219-the-claims-lint-grows.md"
     },
     {
       "id": "F-220",
@@ -7175,7 +7176,8 @@
         "One command renders every route in the F-218 index at the 384 dp reference viewport and composes each capture beside its governing mockup, in both themes and both locales, into .harness/verification/evidence/",
         "The captures come from the running app on an Android emulator through the existing Maestro flows (ADR-0086), not from a re-implementation of the screen — a picture of something else is not evidence",
         "The run records which routes it captured and which it could not, so \"no difference found\" and \"nothing captured\" cannot read alike",
-        "The conformance sweep gains the structural half: every element in a surface’s F-220 inventory is asserted present on the rendered tree"
+        "The conformance sweep gains the structural half: every element in a surface’s F-220 inventory is asserted present on the rendered tree",
+        "The rendered text of every capture passes the claims lint’s patterns, so a claim composed at render time from a figure and a separate label — which a source lint cannot see — fails the sweep"
       ],
       "verification": [
         "state",
@@ -7189,7 +7191,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator."
+      "notes": "The conformance sweep states it \"cannot see a layout that is cramped or unbalanced — and every unprofessional report in this project has been about something that was green here at the time\" (.harness/verification/conformance-sweep.json). R9 is entirely about how things look, so without this the release has no evidence at all. There is no web target (no react-native-web) and the e2e gate is still pending, so the capture path is Maestro on an emulator. CRITERION ADDED 2026-09-14 BY F-219, recorded here where the change lives: the claims lint reads source lines, and the catalogues compose a figure and its label at render time, so a composed claim is invisible to it (evaluation 4 of F-219). This feature already captures every route; running the same patterns over the captured text is the guard that can see one."
     },
     {
       "id": "F-222",
@@ -7232,7 +7234,7 @@
         "test",
         "color-golden"
       ],
-      "notes": "OQ-9 must close before this starts: % Match (03), Master Harmony (13), Garment Calibration History and concordance (23), Wardrobe Pairings (22). Most of what the mockups print already exists — FR-5 separation, FR-29 fit, FR-32 components, coverage() and gaps(), findDuplicates, solveCapsule — the table in §8 is the audit."
+      "notes": "OQ-9 must close before this starts: % Match (03), the overall-score verdict label (13), Garment Calibration History and concordance (23), Wardrobe Pairings (22). Most of what the mockups print already exists — FR-5 separation, FR-29 fit, FR-32 components, coverage() and gaps(), findDuplicates, solveCapsule — the table in §8 is the audit."
     },
     {
       "id": "F-223",
@@ -7639,7 +7641,8 @@
         "a11y",
         "contrast",
         "cvd"
-      ]
+      ],
+      "notes": "DEPARTS (F-219): the caption board 00 draws under its ΔE00 badge is an absolute colour-vision safety claim; the sample family never carries it — a separation shows the computed figure and its model (E2)."
     },
     {
       "id": "F-234",
@@ -7751,7 +7754,7 @@
       "acceptance": [
         "Four state components as 27 draws them: empty (hanger and blossom art, heading, body, primary action), working (ring progress with the mark, two monospace step chips, heading, body), refused (amber glare tile, heading, reason with its threshold, retry), denied (camera and lock, heading, body, open settings)",
         "Every screen declares which of the four it shows in each data condition, so none can render a blank panel or report an absence as a zero",
-        "The step chips and the refusal reason are bound to what the pipeline actually did and why it refused (E2) — not 27’s \"reflectance spectra\" or \"D65 (5500K)\""
+        "The step chips and the refusal reason are bound to what the pipeline actually did and why it refused (E2) — not the spectrum 27’s render claims to extract, or its \"D65 (5500K)\""
       ],
       "verification": [
         "state",
@@ -7763,7 +7766,8 @@
         "a11y",
         "contrast",
         "cvd"
-      ]
+      ],
+      "notes": "CRITERION 3 REWORDED 2026-09-14 BY F-219, recorded here where the change lives: it quoted mockup 27’s loading line verbatim, which the claims lint now refuses, and now describes the same drawn claim (\"the spectrum 27’s render claims to extract\") with the same binding. The meaning is unchanged. ALSO DEPARTS (F-219): the refused state’s heading names a reading, not a measurement — 27 draws \"Measurement Refused\", and an estimate is never called a measurement (golden rule 11, E2)."
     },
     {
       "id": "F-237",
@@ -8022,7 +8026,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 02. ELEMENTS: centred title \"Colour Lens • 色の測定\"; four mode pills (Live Pick · Garment Scan · Against Target · Calibrated Card); the rounded viewfinder; the conditions HUD pill at top (gold tint, C10); the reticle — ring, crosshair, four corner brackets with lattice accents; the readout card with sample, \"Live OKLCh\", the triplet large, sRGB hex, three nearest corpus chips each tinted with its colour and carrying kanji, romaji and ΔE00; the control row — \"Import Photo\" pill, the shutter ring with the mark, \"Hold Target\" pill. DEPARTURES: \"Excellent Exposure\" → the engine’s own conditions wording (E2); the leaked \"Live badges for nearest…\" label is not design. OQ-8: the Garment Scan and Calibrated Card states are undrawn."
+      "notes": "MOCKUP 02. ELEMENTS: centred title \"Colour Lens • 色の測定\"; four mode pills (Live Pick · Garment Scan · Against Target · Calibrated Card); the rounded viewfinder; the conditions HUD pill at top (gold tint, C10); the reticle — ring, crosshair, four corner brackets with lattice accents; the readout card with sample, \"Live OKLCh\", the triplet large, sRGB hex, three nearest corpus chips each tinted with its colour and carrying kanji, romaji and ΔE00; the control row — \"Import Photo\" pill, the shutter ring with the mark, \"Hold Target\" pill. DEPARTURES: \"Excellent Exposure\" → the engine’s own conditions wording (E2); the leaked \"Live badges for nearest…\" label is not design. OQ-8: the Garment Scan and Calibrated Card states are undrawn. ALSO DEPARTS (F-219): 02’s Japanese title calls a camera estimate a measurement (測定 — the E-089 defect); it reads as an estimate in both languages (golden rule 11, E2). Outside F-219’s five lint classes."
     },
     {
       "id": "F-244",
@@ -8069,7 +8073,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 03. ELEMENTS: the captured frame behind; the sheet with handle; three provenance chips (conditions with confidence · colour space · \"Estimated Lens Reading\"); the sampled card — 120 sample with keyline, Hex/OKLCh/CIELAB table, kimono line-art at lower right; \"Ranked Japanese Corpus Matches (ranked by ΔE00)\" with three rows — rank, sample, kanji, romaji, English, ΔE00, \"Open in Atlas →\"; primary pill \"Wear It (Build Outfit) →\", outlined \"+ Add to Wardrobe\", full-width \"Hold as Target for Comparison\". DEPARTURES: \"97% Match\" → OQ-9 via F-222; \"95% Confidence\" → F-222’s confidence format; \"ranked Japanese corpus\" copy stays because it is true of this corpus."
+      "notes": "MOCKUP 03. ELEMENTS: the captured frame behind; the sheet with handle; three provenance chips (conditions with confidence · colour space · \"Estimated Lens Reading\"); the sampled card — 120 sample with keyline, Hex/OKLCh/CIELAB table, kimono line-art at lower right; \"Ranked Japanese Corpus Matches (ranked by ΔE00)\" with three rows — rank, sample, kanji, romaji, English, ΔE00, \"Open in Atlas →\"; primary pill \"Wear It (Build Outfit) →\", outlined \"+ Add to Wardrobe\", full-width \"Hold as Target for Comparison\". DEPARTURES: a percentage match → OQ-9 via F-222; \"95% Confidence\" → F-222’s confidence format; \"ranked Japanese corpus\" copy stays because it is true of this corpus."
     },
     {
       "id": "F-245",
@@ -8114,7 +8118,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10)."
+      "notes": "MOCKUP 04 (spec-framed; callouts are not design). ELEMENTS: armed-target header card — 32 sample, \"Armed Target: <kanji>\", name and hex, outlined \"Change Target\"; the viewfinder with corner brackets and a small reticle; the proximity card — ΔE00 headline with a descriptor and an icon, the split sample with a neutral divider, the left/right caption, three signed delta rows (Lightness, Chroma, Hue) each with a bar and a plain-language reading; the action sheet — tolerance pill with a check, \"Save Reading\", \"View Matching Outfits →\", \"Reset Target\". DEPARTURES: \"Very Close Match\" loses \"Match\" (E2, FR-74); green verdict kept with its icon and words (C10). ALSO DEPARTS (F-219): the hue delta keeps its figure and its descriptor band and drops the claim of an identical hue 04 draws — FR-74 never asserts identity (E2). This is outside F-219’s five lint classes, so this record and §4 E2 hold it, not the lint."
     },
     {
       "id": "F-246",
@@ -8247,7 +8251,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2)."
+      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports."
     },
     {
       "id": "F-249",
@@ -8290,7 +8294,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 08. ELEMENTS: app bar \"← Atlas | Colour Compare • 比較\" with a download action; the dual block — two samples, names, hex and OKLCh, \"Change A\" / \"Change B\", the neutral seam between; two cards side by side — delta metrics (ΔE00 with its reading, ΔEok, ΔL* with \"B is lighter\", ΔC* with \"B is more chromatic\", ΔH with its direction) and contrast and CVD (WCAG ratio with APCA Lc beneath, three separation rows); the sticky bar — \"Export Precision Delta PDF\" (F-263 builds the document) and outlined \"Add Pair to Palette Studio\"; plum-blossom art. DEPARTURES: \"(Safe)\" verdicts are bound to the defined separation floor or dropped (E2); the \"Divid seam\" caption and level=\"2\" label are not design."
+      "notes": "MOCKUP 08. ELEMENTS: app bar \"← Atlas | Colour Compare • 比較\" with a download action; the dual block — two samples, names, hex and OKLCh, \"Change A\" / \"Change B\", the neutral seam between; two cards side by side — delta metrics (ΔE00 with its reading, ΔEok, ΔL* with \"B is lighter\", ΔC* with \"B is more chromatic\", ΔH with its direction) and contrast and CVD (WCAG ratio with APCA Lc beneath, three separation rows); the sticky bar — \"Export Precision Delta PDF\" (F-263 builds the document) and outlined \"Add Pair to Palette Studio\"; plum-blossom art. DEPARTURES: \"(Safe)\" verdicts are bound to the defined separation floor or dropped (E2); the \"Divid seam\" caption and level=\"2\" label are not design. ALSO DEPARTS (F-219): the contrast cell drops the pairing verdict 08 draws after the ratio, and each separation row its Safe suffix (E2)."
     },
     {
       "id": "F-250",
@@ -8377,7 +8381,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); \"CVD 100%\", \"100% Distinguishable\", \"APCA Passed - AAA\" → computed figures (E2)."
+      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2)."
     },
     {
       "id": "F-252",
@@ -8638,7 +8642,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: \"Master Harmony\" → OQ-9; \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity)."
+      "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: the overall-score verdict label → OQ-9; the personal-fit row keeps its FR-29 figure and loses its \"(Cool-Muted Match)\" suffix (E2, C12); \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity). ALSO DEPARTS (F-219): the CVD row keeps its figure and model without its safety suffix, and the contrast row shows the ratio and the Lc with the threshold they pass, without the one-word verdict 13 draws after the Lc (E2)."
     },
     {
       "id": "F-258",
@@ -8865,7 +8869,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not \"100% CVD-Safe\"); system appearance and device accent are added in 15’s own row components (E4, FR-70)."
+      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not an absolute CVD-safety claim); system appearance and device accent are added in 15’s own row components (E4, FR-70)."
     },
     {
       "id": "F-263",
@@ -8910,7 +8914,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 18. ELEMENTS: app bar \"← Profile | Export & Reports • エクスポート | Help\"; the report card — the live preview, its description, \"Generate PDF Report →\", \"Share / Print\"; three export tiles — ASE, OKLCh design tokens, colorimetry CSV — each with icon, name, format, description and action; the backup card — \"Export Encrypted Backup\" and \"Restore from File\". DEPARTURES: \"Museum-grade\" → a factual descriptor (E2)."
+      "notes": "MOCKUP 18. ELEMENTS: app bar \"← Profile | Export & Reports • エクスポート | Help\"; the report card — the live preview, its description, \"Generate PDF Report →\", \"Share / Print\"; three export tiles — ASE, OKLCh design tokens, colorimetry CSV — each with icon, name, format, description and action; the backup card — \"Export Encrypted Backup\" and \"Restore from File\". DEPARTURES: institution-grade language → a factual descriptor (E2). ALSO (F-219): 18 draws the borrowed grade twice — the card title and, in lowercase, its description; both go (E2), and both are lines in the claims fixture."
     },
     {
       "id": "F-264",
@@ -9193,6 +9197,31 @@
         "test",
         "build"
       ]
+    },
+    {
+      "id": "F-271",
+      "title": "A proof that exits before it plants leaves a journal claiming plants that never happened",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "verify-claims-proof opens its plant journal only after its fixture checks and its baseline check, so a run that refuses to start leaves no journal behind",
+        "Each of the other proofs flagged in .harness/memory/observations.md — verify-gate-mirror-proof, verify-no-inference-proof, verify-spacing-scale, verify-viewport — is read and either fixed the same way or cleared with the reason it is safe",
+        "A case demonstrates it: a proof run against a red baseline exits non-zero and .harness/state/.plant-journal.json does not exist afterwards"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "CONFIRMED TWICE, BY THE DEFECT ITSELF. F-218: verify-mockups --prove opened its journal before its baseline check; gate 0 was red for an unrelated reason, process.exit(1) skipped finally, and the journal claimed five plants that never happened — fixed in that script. F-219: verify-claims-proof, run on a red baseline, planted nothing and left a journal for docs/__claims_proof__.md; guardPlants() sat at the module top, before its fixture exits and its baseline exit. Each time the next run refused to start until a person proved the journal false. The lesson is lessons/a-journal-opened-before-an-early-exit-claims-plants-that-never-happened.md. Filed rather than fixed inside F-219 because it is not that feature's acceptance (golden rule 2). verify-claims-proof ITSELF WAS FIXED IN F-219 (2026-09-14): that feature had added a fixture exit after the journal opened — the very defect recorded here — so the journal now opens inside try, after every early exit, immediately before the first plant. Criterion 1 is therefore met; the other four scripts and the demonstrating case remain. Linked as E-127."
     }
   ]
 }

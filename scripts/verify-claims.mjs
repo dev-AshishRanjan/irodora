@@ -270,6 +270,12 @@ console.log(
 );
 
 console.log(
+  `${YELLOW}  !${OFF} ${DIM}NOT CHECKED HERE: a claim composed at render time from a figure and a label ` +
+    `kept in separate places\n    — a catalogue key and a component, say. A composition inside one ` +
+    `source line is checked; one across lines or files is not.\n    F-221 runs these patterns over the text of every capture (F-219).${OFF}`,
+);
+
+console.log(
   `${YELLOW}  !${OFF} ${DIM}${String(cjkPatterns.length)} of ${String(banned.length)} pattern(s) can match Japanese, over ` +
     `${String(cjkFiles.length)} file(s) of it. A pattern that never\n    fires looks exactly like clean copy, so this ` +
     `number is the SCOPE of the check rather than\n    evidence about the copy — F-172 owes the review that closes ` +

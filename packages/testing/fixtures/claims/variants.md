@@ -1,0 +1,370 @@
+# The same claims in the forms copy actually takes
+
+Natural English and Japanese variants of the constructions in drawn.md. Each list item must be
+refused by the claims lint, line by line (F-219). When an evaluation finds a variant the lint lets
+through, it is added here first, and then the pattern is widened until this file is red again.
+
+- 96 % match
+- a 97 percent match
+- 97 per cent match
+- 97%-match
+- 97% color match
+- Match: 97%
+- Match 97%
+- Match rate: 97%
+- a match of 97%
+- 97％ match
+- 一致率97%
+- 一致度 97%
+- 一致度は97%です
+- 一致率は96％
+- マッチ度97%
+- 97%の一致
+- 97パーセント一致
+- Every palette here is 100% CVD-safe
+- fully distinguishable
+- perfectly distinguishable
+- safe for colour-blind users
+- colour-blind friendly
+- colour-blind safe
+- CVD: 100%
+- Deuteranopia-safe
+- 色覚特性に100%対応
+- 色覚多様性に完全対応
+- すべての色覚で区別可能
+- 全ての色覚タイプで識別可能
+- 100%見分けられます
+- 完全に判別できます
+- すべての配色は色覚特性に対して100%安全です
+- perfect harmony
+- ultimate harmony
+- flawless harmony
+- Excellent Harmony
+- Harmony: Excellent
+- 完璧な調和
+- 完全な調和
+- マスターハーモニー
+- パーフェクトハーモニー
+- 完璧なハーモニー
+- 最高のハーモニー
+- パーフェクトな調和
+- museum-quality
+- lab-grade
+- instrument-grade
+- gallery-grade
+- archival grade
+- medical-grade
+- 美術館品質
+- ミュージアムグレード
+- 美術館クオリティ
+- 美術館レベル
+- ラボ品質
+- 測色計レベルの精度
+- 計測器品質
+- 分光光度計グレード
+- Extracting spectra
+- spectral analysis
+- spectral measurement
+- reflectance curve
+- Capturing spectral data
+- Measuring the spectrum
+- 生地の分光反射率を抽出しています
+- スペクトル解析
+- スペクトルを抽出
+- スペクトル測定
+- 分光測定
+- スペクトルを解析
+- P型・D型に安全
+- CVD識別：98%分離（P型/D型に安全）
+- 分離92%（安全）
+- P型/D型セーフ
+- 色覚識別 100%
+- CVD識別：100%
+- パーソナル適合 92%（クールミュート一致）
+- a 97-percent match
+- 97% colour-match
+- Match score 97%
+- totally distinguishable
+- colour-blindness safe
+- Superb Harmony
+- Harmony score: Excellent
+- pro-grade
+- colorimeter-level accuracy
+- spectral profile
+- spectrum analysis
+- 合致率97%
+- CVD安全
+- 色覚異常の方にも安全
+- 理想的な調和
+- エクセレントハーモニー
+- 調和：完璧
+- 医療用グレード
+- 研究室レベル
+- 測色器レベル
+- スペクトル分析
+- 分光分析
+- 分光データを取得
+
+## Found by the fourth evaluation — escapes, and the drawn lines re-punctuated or put into Japanese
+
+- 97% similarity match
+- 97 % colour-match score
+- match: 97 %
+- Match (97%)
+- Match — 97%
+- 97% matched
+- 97% matching
+- matches at 97%
+- match likelihood 97%
+- 97% likely match
+- 97% close match
+- 97% Match Score
+- 97% true match
+- 97% tone match
+- 97/100 match
+- 0.97 match
+- {{percent}}% Match
+- {percent}% Match
+- ${percent}% Match
+- {fit}% Match (Cool-Muted profile)
+- {fit}% ({season} Match)
+- 97%マッチ
+- ９７％一致
+- 一致率９７％
+- 一致率：97%
+- マッチング率97%
+- 97%の確率で一致
+- 一致する確率97%
+- {percent}%一致
+- 一致率{percent}%
+- Safe for protanopes
+- Safe (Protan)
+- Protan: Safe
+- 92% Separation — Safe
+- 92% separation, safe
+- colour-vision safe
+- safe for colour-vision deficiency
+- CVD-proof
+- colour-blind proof
+- Distinguishable by everyone
+- Everyone can tell these apart
+- Accessible to all colour-blind users
+- safe under all CVD types
+- Safe across Protan, Deutan & Tritan
+- CVD {score}% Distinction
+- {score}% Distinguishable across Protan, Deutan & Tritan
+- All corpus palettes {pct}% CVD-Safe
+- 色覚に安全
+- CVDセーフ
+- カラーユニバーサルデザイン対応
+- 誰でも見分けられる配色
+- すべての人が区別できます
+- P型でも安全
+- 色覚の違いに関係なく区別できます
+- 色覚特性を問わず識別可能
+- 分離98%（P型/D型セーフ）
+- Harmony rating: Excellent
+- Harmony — Excellent
+- Great Harmony
+- Outstanding Harmony
+- Exceptional Harmony
+- Masterful Harmony
+- Harmonious Pairing
+- Optimal harmony
+- Outfit Score: 93 / 100 • Excellent
+- Outfit Score: 93 / 100 • Perfect
+- Perfect Outfit
+- 90% (APCA Lc 48 • Optimal)
+- 調和度：完璧
+- 調和スコア：最高
+- ハーモニー：完璧
+- 完璧に調和しています
+- 見事な調和
+- 抜群の調和
+- 至高のハーモニー
+- 極上のハーモニー
+- 総合スコア 93 / 100・完璧
+- museum‑grade
+- archive-grade
+- conservation-grade
+- hospital-grade
+- scientific-grade
+- museum-standard
+- museum-worthy
+- trusted by museums
+- colorimeter-accurate
+- 美術館仕様
+- ミュージアム仕様
+- ラボ仕様
+- 美術館クラス
+- 分光測色計に匹敵する精度
+- 計測器と同等の精度
+- 業務用グレード
+- Reading the fabric's spectrum
+- Reading spectral data
+- Scanning spectra
+- spectral scan
+- Spectral fingerprint
+- spectral readings
+- measuring reflectance
+- Recovering spectra from RGB
+- hyperspectral capture
+- Detecting the spectrum
+- Sampling the spectrum
+- スペクトルを取得しています
+- スペクトルデータを取得
+- 反射率を測定
+- 分光情報を解析
+- スペクトルをスキャン
+- 分光スキャン
+- スペクトル計測
+- 分光計測
+- スペクトルを読み取り
+- 100% CVDセーフ
+- CVD 100%安全
+- 色覚100%安全
+- ΔE00 1.18・97%一致
+- パーソナル適合スコア：94%一致（クールミュート）
+- パーソナル適合スコア：94%マッチ（クールミュート）
+- CVD識別：98%分離（P型/D型セーフ）
+- 色覚識別：分離98%（1型/2型に安全）
+- 1型色覚 92%分離（安全）
+- P型 分離92%（セーフ）
+- 分離92%（セーフ）
+- CVD 100%識別
+- 色覚識別100%
+- コーデスコア：93 / 100・マスターハーモニー
+- パーソナル適合 92%（クールミュートに一致）
+- CVD識別 98%（P型/D型に安全）
+- 全コーパスパレットが100% CVDセーフ
+- すべての配色が色覚に100%安全
+- P型・D型・T型で100%識別可能
+- 1型・2型・3型すべてで100%区別できます
+- 美術館品質のCJK PDFレポート
+- 反射スペクトルを抽出中…
+- 92% Separation — Safe
+- Protanopia 92% Separation · Safe
+- 98% Separation, Protan/Deutan safe
+- 98% Separation (Safe: Protan/Deutan)
+- CVD Distinction 98% — safe for Protan/Deutan
+- 100% CVD safe palettes
+- CVD: 100 % Distinction
+- Outfit Score 93/100 · Master-Harmony
+- Outfit Score: 93 / 100 • Excellent
+- 97 % Match
+- ΔE00 1.18 — 97% match
+- Museum grade CJK PDF report
+- Extracting reflectance spectra…
+
+## Found by the fifth evaluation — escapes
+
+- Match: 97/100
+- Match score: 97/100
+- Match 0.97
+- 97% chance of a match
+- a 97% likelihood of a match
+- 97% probability of matching
+- ΔE00 1.18 • 97% identical
+- ΔE00 1.18 • 97% the same colour
+- label: `${Math.round(similarity * 100)}% match`,
+- <Text>{Math.round(pct)}% Match</Text>
+- 一致率は約97%
+- 一致度はおよそ97%
+- 類似度97%で一致
+- 97％でマッチ
+- Protanopia — Safe
+- Deuteranopia (Safe)
+- Tritanopia · Safe
+- Safe for all types of colour blindness
+- Safe for people with colour blindness
+- Works for every type of colour blindness
+- Anyone can tell these apart
+- Every colour-blind user can tell these apart
+- Always distinguishable, whatever your colour vision
+- entirely distinguishable
+- Guaranteed distinguishable
+- colour-blind accessible
+- CVD-accessible palette
+- Colour-blind approved
+- どなたでも見分けられます
+- 誰にでも見分けられる配色
+- 色覚タイプに関わらず見分けられます
+- すべての色覚タイプで見分けられます
+- 色覚バリアフリー配色
+- 色覚障害の方でも安心
+- 色覚特性があっても区別できます
+- Harmony · Excellent
+- Harmony (Excellent)
+- Harmony | Excellent
+- Outfit Score: 93 / 100 • Strong Harmony
+- Outfit Score: 93 / 100 • Good
+- Outfit Score: 93 / 100 • A+
+- Beautiful harmony
+- Complete harmony
+- Total harmony
+- 1.48:1・非テキスト／調和のとれた組み合わせ
+- 調和のとれた組み合わせ
+- 90%（APCA Lc 48・最適）
+- 総合スコア 93 / 100・優秀
+- 調和：優秀
+- 素晴らしい調和
+- コーデスコア：93 / 100・素晴らしいハーモニー
+- as accurate as a colorimeter
+- Rivals a spectrophotometer
+- Laboratory precision on your phone
+- Lab precision
+- museum-caliber reports
+- Museum-approved colour
+- Used by museums and labs
+- conservator-grade
+- Pantone-level accuracy
+- Industrial-grade colour accuracy
+- 色彩計レベルの精度
+- 色彩色差計並みの精度
+- 測色器と同等の精度
+- 測色計に迫る精度
+- 研究機関レベルの精度
+- 医療機関レベルの精度
+- Reconstructing spectra from RGB
+- Spectral reconstruction
+- Spectral estimation from your camera
+- Analysing the fabric spectrum
+- Multispectral imaging
+- Estimating the illuminant's spectral power distribution
+- Spectrum scan
+- Capturing the full spectrum of the fabric
+- スペクトルの解析中…
+- 反射率の測定
+- 生地の分光特性を解析しています
+- スペクトル情報を取得
+- スペクトル推定
+- 分光分布を測定
+- {similarity, number, percent} Match
+
+## The drawn lines in Japanese — one rendering for each line of drawn.md, in its order, with its mockup number
+
+- 00 · 100% CVDセーフ
+- 03 · ΔE00 1.18・97%一致
+- 03 · ΔE00 2.45・92%一致
+- 03 · ΔE00 3.12・88%一致
+- 07 · パーソナル適合スコア：94%一致（クールミュート）
+- 07 · CVD識別：98%分離（P型/D型に安全）
+- 08 · 1型色覚 92%分離（安全）
+- 08 · 2型色覚 94%分離（安全）
+- 08 · 3型色覚 89%分離（安全）
+- 10 · WCAG AA 8.4:1・色覚識別100%
+- 13 · コーデスコア：93 / 100・マスターハーモニー
+- 13 · パーソナル適合 92%（クールミュートに一致）
+- 13 · CVD識別 98%（P型/D型に安全）
+- 15 · 全コーパスパレットが100% CVDセーフ
+- 16 · CVD識別：P型・D型・T型で100%識別可能
+- 18 · 美術館品質のCJK PDFレポート
+- 27 · 反射スペクトルを抽出中…
+- 08 · 1.48:1・非テキスト／調和のとれた組み合わせ
+- 13 · 90%（APCA Lc 48・最適）
+- 18 · 美術館グレードのCJK PDFレポート。
+
+## Restored after the fifth evaluation — nothing in the repository uses it
+
+- industrial-grade
+- Enterprise-grade colour accuracy

@@ -43,10 +43,12 @@ dyeworks manuscript that does not exist. Copying either into the product is the 
 
 ### 2. No drawn claim ships unless the product can demonstrate it
 
-*"97% Match"*, *"100% CVD-Safe"*, *"Museum-grade"*, *"Master Harmony"*, *"Extracting reflectance
-spectra"* — the element is built; its words come from a defined computation. **None of these
-trips [`claims.json`](../.harness/verification/claims.json) today**; `F-219` closes that. Until
-then this rule is enforced by reading.
+The element is built; its words come from a defined computation. The claims lint refuses the claims of
+F-219’s five classes that the mockups draw, as listed verbatim in
+`packages/testing/fixtures/claims/drawn.md`, and their forms in `variants.md` in English and
+Japanese (F-219); claims of other kinds are §4 E2 rows, held by their features — *"97% Match"*, *"100% CVD-Safe"*, *"Museum-grade"*, *"Master Harmony"* (claims-ok: quoted to name what the lint refuses)
+— and a spectrum the camera never measures. How each drawn element is resolved is
+[`R9-MOCKUP-FIDELITY.md` §4 E2](../docs/design/R9-MOCKUP-FIDELITY.md#e2--a-drawn-claim-the-product-cannot-demonstrate).
 
 ### 3. A changed image is a changed specification
 

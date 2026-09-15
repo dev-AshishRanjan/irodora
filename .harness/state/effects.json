@@ -3275,7 +3275,7 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "NONE YET, and that is the finding. The claims gate walks every file including `ja.ts` and every one of its eleven banned patterns is ASCII, so the Japanese catalogue has never been checked. Two defects are fixed by hand; the gate is F-172, because widening it correctly needs somebody who reads Japanese and guessing at the policy is how a lint ends up either useless or blocking correct copy.",
+      "guard": "verify-claims.mjs reads ja.ts with Japanese patterns: 13 of the 30 banned constructions can match Japanese — eight before F-219 — seven from F-172 and one from F-155 — and five more from F-219 (a percentage match, an absolute CVD-safety claim, a verdict on a score, institution grade, a spectrum the camera never measures). The lint refuses a scanned script for which it holds no pattern (\"COVERS NOTHING\"), and verify-claims-proof watches that refusal happen by dropping the non-ASCII patterns, besides one red case per Japanese pattern and the product's real Japanese copy as a case that must stay green. NOT GUARDED: whether the Japanese patterns match what a person would actually write. The lint prints its scope on every run — patterns that can match Japanese, and how many files of it — so a green result reads as coverage of that scope, not as a review; F-172 owes the review. (Superseded 2026-09-14 in F-219: this guard read \"NONE YET\", which stopped being true when F-172 landed.)",
       "memory": "memory/effects/the-claims-lint-only-speaks-english.md",
       "rationale": "THE JAPANESE HOME SCREEN CALLED AN ESTIMATE A MEASUREMENT. `home.lastReading` read 最後の測定 and `home.noReadings` read まだ測定がありません — 測定 is MEASUREMENT, and ADR-0031 binds that word to `reference` and `calibrated`, the two sources with an instrument behind them. A camera reading is `estimated`. Golden rule 11, broken at the front door, and found only because F-164 happened to be rewriting that copy. THE GATE WAS GREEN AND CORRECT BY ITS OWN LIGHTS: `verify-claims.mjs` walks EVERY file in the repository, `ja.ts` included, and all eleven banned patterns are ASCII — the ones about exactness, about a colour being the true or actual one, about a numeric accuracy percentage, about laboratory or professional grading, about guarantees, and about the app doing the measuring itself. So half the product's user-facing copy has never been checked for the rule the product cares about most. THE SHAPE IS NEW: every blind spot recorded before this was a checker that could not SEE its subject — a style engine resolving in Metro, colour arriving as an SVG prop, a signature reading the wrong axis. This one read every byte and had nothing to say, because what it knows how to recognise is written in one language. A CHECKER'S SCOPE CAN BE DEFINED BY ITS PATTERNS RATHER THAN BY ITS FILE LIST, and from outside those look identical: \"it scans everything\" and \"it checks everything\" are different claims, and the first is the one that gets stated. SIX OF THE EIGHT USES WERE FINE, which is the half that decides the fix: the `measure` screen says お手持ちの測定器の値を入力すると — enter the values from your own measuring device — and that is exactly the provenance the word is reserved for. So the answer is not to ban 測定 but to ban the specific overstatements, as the English list already does, and doing that in Japanese needs somebody who reads it. Recorded as F-172 rather than half-done.",
       "confidence": 0.95,
@@ -4129,7 +4129,7 @@
       "severity": "high",
       "guard": "CRITERION 4 IS AN ORDERING REQUIREMENT AND IS BUILT AS ONE: `poorCapture` is read off the capture QUALITY and never inferred from the distance, and the panel renders that line above the number. Its test is the case that matters — a reading landing exactly on the target with a poor capture must still be flagged, because a good number and a bad one can look alike. THE DEAD BANDS ARE CHECKED FROM BOTH SIDES: a band asserted only from the inside could be infinite. THE DIRECTIONS HAVE A DECOY: a reading identical to the target must report `same` on all three axes, or the words are being generated rather than measured. TWELVE DIRECTION STRINGS ARE PINNED IN BOTH DIRECTIONS in i18n.test.ts, because the panel builds `against.<direction>.<axis>` and the unused-key scan is a source-literal scan; the three AXIS LABELS are pinned forward only, and that is stated as safe rather than assumed — a leftover `against.something` is not in the exclusion list, so the scan still reports it. WHAT IS NOT GUARDED: that warm and cool are the right words for a hue direction. They are a convention with published poles, and the arc is reported beside them as a number so the word never replaces the measurement.",
       "memory": "memory/effects/a-direction-nobody-can-act-on-is-not-an-answer.md",
-      "rationale": "F-200 ARMED A TARGET; THIS IS THE HALF THAT ANSWERS AGAINST IT, completing the report *\"scan a colour and check its similarity/difference against a target colour\"*. NOTHING HERE COMPUTES A DIFFERENCE OF ITS OWN: `deltaE00` is the one `compare.ts` ranks with, `temperatureOf` is the outfit engine’s with the PUBLISHED poles, and `hueDelta` is the shortest signed arc — subtracting two hue angles being the one place the obvious arithmetic is wrong. `compare()` itself is NOT reused, and the reason is its own docblock: it takes two `PublishedEntry` values *\"so a caller cannot hand it a colour whose origin nobody recorded\"*, and neither side here is one — a reading is a capture and a target may be a colour the engine generated. The rule is kept by taking `Color` on both sides, which carries provenance under ADR-0005 for exactly that purpose; what is refused is a signature taking two triples. AND THE WORD \"MATCH\" APPEARS NOWHERE: `similarityPercent` exists in @irodora/color-naming and is deliberately unused, because a percentage invites \"96% match\", which is a claim about identity that a distance does not make.",
+      "rationale": "F-200 ARMED A TARGET; THIS IS THE HALF THAT ANSWERS AGAINST IT, completing the report *\"scan a colour and check its similarity/difference against a target colour\"*. NOTHING HERE COMPUTES A DIFFERENCE OF ITS OWN: `deltaE00` is the one `compare.ts` ranks with, `temperatureOf` is the outfit engine’s with the PUBLISHED poles, and `hueDelta` is the shortest signed arc — subtracting two hue angles being the one place the obvious arithmetic is wrong. `compare()` itself is NOT reused, and the reason is its own docblock: it takes two `PublishedEntry` values *\"so a caller cannot hand it a colour whose origin nobody recorded\"*, and neither side here is one — a reading is a capture and a target may be a colour the engine generated. The rule is kept by taking `Color` on both sides, which carries provenance under ADR-0005 for exactly that purpose; what is refused is a signature taking two triples. AND THE WORD \"MATCH\" APPEARS NOWHERE: `similarityPercent` exists in @irodora/color-naming and is deliberately unused, because a percentage invites \"96% match\" (claims-ok: quoted to refuse it), which is a claim about identity that a distance does not make.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -4914,6 +4914,51 @@
       "rationale": "Golden rule 14 made the mockups the specification for everything visible, and nothing a machine could read said which image governs which route. So a route could go undrawn and be designed by taste, an image could govern nothing, and an image could change under every feature built from it — each silently. The index is the map; the hash is what turns \"the picture changed\" from something nobody notices into a red build. The first version compared §7 only for primaries and left the inventory gap unowned; the evaluator found both, and both are closed.",
       "confidence": 0.9,
       "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-127",
+      "from": {
+        "kind": "symbol",
+        "ref": "scripts/plant.mjs#guardPlants"
+      },
+      "to": [
+        {
+          "kind": "test",
+          "ref": "scripts/verify-claims-proof.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-gate-mirror-proof.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-no-inference-proof.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-spacing-scale.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-viewport.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-mockups.mjs"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root"
+      ],
+      "severity": "medium",
+      "guard": "none — F-271 adds a check that each proof opens its plant journal only after its last early exit, and a case that demonstrates the stale journal",
+      "feature": "F-271",
+      "memory": "memory/effects/a-journal-opened-before-an-exit-claims-a-plant-that-never-happened.md",
+      "rationale": "A PLANT JOURNAL OPENED BEFORE AN EXIT CLAIMS A PLANT THAT NEVER HAPPENED. guardPlants() writes .harness/state/.plant-journal.json when it is called, and finally closes it; process.exit(1) does not run finally. A proof that opens its journal and then exits on a missing fixture or a red baseline leaves a journal the next run of ANY proof refuses to start past, until someone runs plant.mjs --recover against originals that were never displaced. LOUD, NOT SILENT, which is why this is medium: recovery compares against the recorded originals, so nothing is overwritten unseen — the cost is a blocked gate and a person deciding whether the journal is stale. SEEN TWICE ON 2026-09-14: verify-mockups --prove in F-218 (fixed there) and verify-claims-proof in F-219, which the feature made worse by adding a fixture exit after the journal opened, then fixed at the root — the journal now opens inside try, after every early exit, immediately before the first plant. GUARD: NONE YET. F-271 owns it; a crude scan flags verify-gate-mirror-proof, verify-no-inference-proof, verify-spacing-scale and verify-viewport, and cannot tell a baseline exit from the deliberate refuse-a-leftover branch, so each needs reading rather than a bulk edit.",
+      "confidence": 0.85,
+      "origin": "learned",
       "status": "active"
     }
   ]

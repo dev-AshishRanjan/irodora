@@ -24,7 +24,7 @@ never replaces the measurement; it makes the measurement usable.
 ## The related refusal
 
 `similarityPercent` exists in `@irodora/color-naming` and was not used. A percentage invites
-*"96% match"* — a claim about identity that a distance does not make, and the criterion said the
+*"96% match"* (claims-ok: quoted to refuse it) — a claim about identity that a distance does not make, and the criterion said the
 reading is never called a match.
 
 Same shape as the hue problem, opposite direction: there, a true number was unusable; here, a
