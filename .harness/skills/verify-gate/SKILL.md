@@ -62,6 +62,11 @@ execution failure as red, not as an absence of information.
 generous — it knows what it intended, and reads the code as the intention rather than the
 behaviour. The separation costs one invocation.
 
+**One invocation, never more.** The evaluator reviews a feature once and reports every finding in
+that pass. The implementer fixes or records (as `backlog` features) each finding, re-runs the gates
+and records the evidence; the feature is not sent back for another review. See
+[`/verify`](../../commands/verify.md).
+
 ## Sanity checks on the gates themselves
 
 Worth doing when you add or change one:

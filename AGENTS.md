@@ -98,8 +98,11 @@ initialize → select feature → plan → implement → verify → trace effect
    non-trivial work.
 4. **Implement** — [`add-feature`](.harness/skills/add-feature/SKILL.md) and the
    [rules](.harness/rules/). Small, verifiable increments. Tests alongside or first.
-5. **Verify** — [`verify-gate`](.harness/skills/verify-gate/SKILL.md). Prefer the
-   **evaluator** subagent, so the checker is not the implementer.
+5. **Verify** — [`verify-gate`](.harness/skills/verify-gate/SKILL.md). The **evaluator**
+   subagent reviews the feature **once**, so the checker is not the implementer. The implementer
+   then fixes its findings or records them as `backlog` features, re-runs the gates and records the
+   evidence — a feature is **never sent back for a second review**. A finding that can be neither
+   fixed nor recorded stops the loop for the user.
    → [`/verify`](.harness/commands/verify.md)
 6. **Trace effects** — [`effect-trace`](.harness/skills/effect-trace/SKILL.md).
    → [`/effects`](.harness/commands/effects.md)

@@ -32,9 +32,14 @@ Result:     green, 2m14s
 4. **On failure — fix the root cause.** Never skip a test, lower a threshold, weaken a gate,
    or mark `done` on red.
 
-## Use the evaluator
+## Use the evaluator — once
 
-Prefer the **evaluator** subagent so the checker is not the implementer.
+Use the **evaluator** subagent so the checker is not the implementer, and **use it once per
+feature**. Its brief asks for every finding in that one pass, classified blocking, significant and
+minor. After it reports, the implementer fixes each finding inside the feature or records it as a
+`backlog` feature, re-runs the gates, and records the evidence. **There is no second review round** —
+a loop of review, fix, review has no exit, and it cost F-219 six rounds before the user ruled it out
+(2026-09-15). A finding that can be neither fixed nor recorded stops the loop for the user.
 
 ## Reporting
 

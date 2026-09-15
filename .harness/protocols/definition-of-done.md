@@ -108,3 +108,7 @@ A feature is `done` only when **every** item below is true. If any fails, it sta
 **Prefer the evaluator subagent.** The implementer knows what they intended and reads the
 code as the intention. The evaluator reads it as the behaviour, which is the thing that
 ships.
+
+**The evaluator reviews once.** Done is then the gates green with recorded evidence after the
+implementer has fixed each finding or recorded it as a `backlog` feature — not a second verdict. A
+feature is never sent back for another review round.

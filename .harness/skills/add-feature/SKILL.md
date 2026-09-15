@@ -53,7 +53,8 @@ Colour engine work has extra obligations —
 
 ### 5. Verify
 
-[`verify-gate`](../verify-gate/SKILL.md). Prefer the **evaluator** subagent.
+[`verify-gate`](../verify-gate/SKILL.md). The **evaluator** subagent reviews **once**: fix or
+record (as `backlog` features) every finding, re-run the gates, record the evidence. No second review.
 
 Only a passing run with captured evidence counts. **Fix causes; never weaken a gate.**
 
