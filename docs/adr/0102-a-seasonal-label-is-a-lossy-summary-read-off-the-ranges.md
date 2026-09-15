@@ -79,8 +79,9 @@ and withheld rather than guessed.**
 
 9. **Editorial ownership as the repository already practises it.** The rule is drafted in a session
    under `ed-001` with `reviewIndependence: "self"` (ADR-0060), every boundary cites a boundary the
-   product already states or the draft stops and asks, and the person's reading — with a competent
-   Japanese reader's — is an outstanding attested criterion on F-223 that blocks the release.
+   product already states — and states for the same quantity — or the draft stops and asks, and the
+   person's reading — with a competent Japanese reader's — is an outstanding attested criterion on
+   F-223 that blocks the release.
 
 ## Consequences
 
@@ -92,11 +93,24 @@ as data, printed whole by the content gate, and changed by a publish.
 — which is why it is withheld when a range is unestablished and never drawn without the ranges. It
 jumps at boundaries. The twelve-season convention is a convention, not an instrument: nothing here
 shows that it, or the derivation beneath it, performs evenly across skin tones (NFR-23, F-037), and
-nothing may say it does. The rule is self-reviewed until a second editor exists. **As first published
-(2026.09.1), most finished guided profiles get no summary** — 3,136 of the 4,096 the flow can produce,
-every one whose lightness and chroma ranges both sit in the middle — and only four labels are
-reachable. That is the rule withholding where it was written to; what mockup 23's pill shows then is
-OQ-33, and naming more cells is a later publish, not a change to this decision.
+nothing may say it does. The rule is self-reviewed until a second editor exists.
+
+**As first published (2026.09.1), most finished guided profiles get no summary** — 3,136 of the 4,096
+the flow can produce — and only four labels are reachable: winter deep and autumn deep (256 each),
+summer muted and autumn muted (224 each). The table's *no summary* cells are not the whole cause, and
+the first draft of this ADR said they were. The rule reads a range's **midpoint** against the phrase
+lexicon's edges, and those edges classify **one colour's** lightness or chroma; a guided range is built
+from two deliberately spread swatches per trial and then padded, so its midpoint never reaches the
+light edge (at most 0.6945 against 0.725) or the vivid edge (at most 0.092 against 0.100). The rule's
+*light* and *bright* cells cannot be reached from the guided flow at all. For the same ranges, the
+profile screen's band chips name a different class on two of the eight lightness answer patterns and
+one of the eight chroma patterns (two more lightness patterns show *wide*, which the rule has no class
+for), and the only route to *deep* clears its boundary by 0.003.
+
+An anchor that measures a different quantity is no anchor, and §9 says what happens then: the draft
+asks. **OQ-34** puts the statistic and the thresholds to the person — and whether contrast is read —
+and **OQ-33** asks what the pill shows when there is no summary. 2026.09.1 is not settled until both are
+answered; answering them is a later publish, not a change to this decision.
 
 **Neutral.** "Autumn" in a profile's label is unrelated to a colour's `taxonomy.season`; they have
 separate catalogue keys and the summary never reads the corpus. The pill's second half,

@@ -31,15 +31,17 @@ describe('the seasonal summary words', () => {
 
   it('carry no NFR-22 word in either language', () => {
     for (const { key } of pairs) {
-      expect(findProhibitedCopy(en[key], `en ${key}`)).toEqual([]);
-      expect(findProhibitedCopy(ja[key], `ja ${key}`)).toEqual([]);
+      expect(findProhibitedCopy(en[key], `en ${key}`)).toHaveLength(0);
+      expect(findProhibitedCopy(ja[key], `ja ${key}`)).toHaveLength(0);
     }
   });
 
   it('would be refused with a planted word — the check sees what it is pointed at', () => {
     const { key } = pairs[0] ?? { key: seasonLabelKey('autumn', 'muted') };
-    expect(findProhibitedCopy(`Fair-Skinned ${en[key]}`, 'decoy')).not.toEqual([]);
-    expect(findProhibitedCopy(`イエベ${ja[key]}`, 'decoy')).not.toEqual([]);
+    expect(findProhibitedCopy(`Fair-Skinned ${en[key]}`, 'decoy').map((f) => f.id)).toContain(
+      'skin',
+    );
+    expect(findProhibitedCopy(`イエベ${ja[key]}`, 'decoy').map((f) => f.id)).toContain('skin');
   });
 
   it('describe the ranges, not the person — no label reads as a sentence about somebody', () => {

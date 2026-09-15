@@ -210,7 +210,7 @@ describe('the guided flow reaches no camera', () => {
   const CAMERA = /vision-camera|expo-camera|\.\.\/lens\/|from '\.\/camera'|ImagePicker/;
 
   /** The modules the guided flow depends on. `photo.ts` is deliberately not one of them. */
-  const GUIDED = ['dimensions.ts', 'trials.ts', 'derive.ts', 'store.ts'];
+  const GUIDED = ['dimensions.ts', 'trials.ts', 'derive.ts', 'store.ts', 'season.ts'];
 
   const guidedSources = (): { file: string; text: string }[] =>
     GUIDED.map((name) => {

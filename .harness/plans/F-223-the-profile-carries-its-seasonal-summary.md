@@ -181,6 +181,12 @@ its note; OQ-31 and OQ-32.
 6. **Effects and the record**: E-129 and its note; E-026 and E-009 rationales; REQUIREMENTS-COVERAGE;
    progress.md. OQ-33 only if increment 5 shows it reachable.
 
+> **Correction, after the review.** The *Verify:* lines above are what was planned. What ran at each
+> commit was narrower — the changed packages' eslint and the new test files — and increments 3 to 6
+> were committed with the root `pnpm lint` (`verify-empty-assertions`) and the app suite
+> (`profile.test.ts`'s roster of `src/profile/`) red. These lines are not evidence; the full gate run
+> recorded in progress.md is. Lesson: `a-package-gate-is-not-the-repository-gate`.
+
 ## Mockup fidelity
 
 - **Governing mockup:** `23`, the finished state of `(tabs)/profile/index` (C15). `17` draws no pill.

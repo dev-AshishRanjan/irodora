@@ -25,6 +25,8 @@ import {
   type ContrastPreference,
   type PersonalProfile,
   type ScoreFactor,
+  type SeasonalAxis,
+  type SeasonalSummary,
 } from '../src/index.js';
 
 const WHY = 'a fixture rationale that is long enough to count';
@@ -127,6 +129,12 @@ describe('the parser', () => {
       throw new Error(`the fixture has no element ${String(i)}`);
     return item as Json;
   };
+  /**
+   * The refusal naming a planted key. Built from strings: `verify-no-inference` reads a regex
+   * literal as code, and a bare prohibited word inside one is an identifier it rightly refuses.
+   */
+  const notAField = (at: string, key: string): RegExp =>
+    new RegExp(`${at}${key} is not a field`, 'u');
   const table = (v: Json): Json[] => v['table'] as Json[];
   const axis = (v: Json, i: number): Json => nth(v['axes'], i);
   const row = (v: Json, i: number): Json => nth(v['table'], i);
@@ -213,6 +221,58 @@ describe('the parser', () => {
       (v) => (axis(v, 2)['axis'] = 'lightness'),
       /axes name lightness twice/u,
     ],
+    // NFR-22's schema half: a field nobody reads is refused, at every level, by name.
+    [
+      'a field about skin on a row',
+      (v) => (row(v, 0)['skin'] = 'fair'),
+      notAField('table\\[0\\]\\.', 'skin'),
+    ],
+    [
+      'a field about undertone at the top',
+      (v) => (v['undertone'] = { yellow: 'spring' }),
+      notAField('fixture\\.', 'undertone'),
+    ],
+    [
+      'a field on an axis',
+      (v) => (axis(v, 0)['group'] = 'face'),
+      /axes\[0\]\.group is not a field/u,
+    ],
+    [
+      'a field on a boundary',
+      (v) => (nth(axis(v, 1)['boundaries'], 0)['label'] = 'fair'),
+      /axes\[1\]\.boundaries\[0\]\.label is not a field/u,
+    ],
+    [
+      'a date that is not one',
+      (v) => (v['publishedAt'] = '2026-13-45'),
+      /publishedAt must be a calendar date/u,
+    ],
+    [
+      'a leap day in a year without one',
+      (v) => (v['publishedAt'] = '2026-02-29'),
+      /publishedAt must be a calendar date/u,
+    ],
+    ['no version', (v) => (v['versionId'] = ''), /versionId is required/u],
+    [
+      'two boundaries at one value',
+      (v) => (nth(axis(v, 1)['boundaries'], 1)['at'] = 0.4),
+      /axes\[1\]\.boundaries must be in increasing order and apart/u,
+    ],
+    [
+      'one boundary',
+      (v) => (axis(v, 2)['boundaries'] as Json[]).pop(),
+      /axes\[2\]\.boundaries must be exactly two/u,
+    ],
+    [
+      'a boundary that is a string',
+      (v) => (nth(axis(v, 2)['boundaries'], 0)['at'] = '0.04'),
+      /axes\[2\]\.boundaries\[0\]\.at must be a finite number/u,
+    ],
+    [
+      'a boundary that is not finite',
+      (v) => (nth(axis(v, 2)['boundaries'], 0)['at'] = Number.POSITIVE_INFINITY),
+      /axes\[2\]\.boundaries\[0\]\.at must be a finite number/u,
+    ],
   ];
   it.each(cases)('refuses %s, naming the field', (_name, mutate, message) => {
     expect(() => parseSeasonalRules(spoil(mutate), 'fixture')).toThrow(RuleError);
@@ -225,6 +285,12 @@ describe('the parser', () => {
       table(v).splice(i, 1);
       expect(() => parseSeasonalRules(v, 'fixture')).toThrow(/no row for 1 of 27/u);
     }
+  });
+
+  it('accepts a leap day in a leap year — the date check is a calendar, not a pattern', () => {
+    const v = fixture();
+    v['publishedAt'] = '2028-02-29';
+    expect(parseSeasonalRules(v, 'fixture').publishedAt).toBe('2028-02-29');
   });
 });
 
@@ -259,38 +325,54 @@ function* everyProfile(): Generator<PersonalProfile> {
       for (const chroma of CHROMAS) yield profile(bias, lightness, chroma);
 }
 
+/** What a summary says, as one string: the words, or the kind of no. */
+const said = (s: SeasonalSummary): string =>
+  s.kind === 'label' ? `${s.season} ${s.modifier}` : `none ${s.reason}`;
+
 describe('the evaluator, over every profile in the grid', () => {
+  /*
+   * ONE ASSERTION PER PROPERTY over a list of what went wrong, not one per profile. The grid is
+   * about 50,000 profiles, and an `expect` for each made these tests take seconds on their own and
+   * time out under turbo's parallel load (F-223's review). The list also names every offender at
+   * once, where a failing `expect` stops at the first.
+   */
   it('is total and deterministic, and answers with a closed vocabulary', () => {
     let labels = 0;
+    const problems: string[] = [];
     for (const p of everyProfile()) {
       const first = summariseSeason(p, rules);
       const again = summariseSeason({ ...p, confidence: { ...p.confidence } }, rules);
-      expect(again).toEqual(first);
+      if (JSON.stringify(again) !== JSON.stringify(first))
+        problems.push(`differs on a second read: ${JSON.stringify(p)}`);
       if (first.kind === 'label') {
         labels += 1;
-        expect(SEASON_IDS).toContain(first.season);
-        expect(MODIFIER_IDS).toContain(first.modifier);
-        expect(Object.keys(first.basis).sort()).toEqual(['chroma', 'lightness', 'temperature']);
-      } else expect(first.reason).toBe('not-summarised');
+        if (!SEASON_IDS.includes(first.season) || !MODIFIER_IDS.includes(first.modifier))
+          problems.push(`outside the vocabulary: ${said(first)}`);
+        if (Object.keys(first.basis).sort().join(' ') !== 'chroma lightness temperature')
+          problems.push(`basis ${Object.keys(first.basis).join(' ')}: ${JSON.stringify(p)}`);
+      } else if (first.reason !== 'not-summarised')
+        problems.push(`${said(first)}: ${JSON.stringify(p)}`);
     }
+    expect(problems).toHaveLength(0);
     expect(labels).toBeGreaterThan(0);
   });
 
   it('never reads what it discards: contrast, and any confidence above zero', () => {
+    const problems: string[] = [];
     for (const p of everyProfile()) {
       const base = summariseSeason(p, rules);
-      for (const contrast of CONTRASTS) {
-        const other = summariseSeason({ ...p, contrast }, rules);
-        expect(other).toEqual(base);
-      }
+      const baseText = JSON.stringify(base);
+      for (const contrast of CONTRASTS)
+        if (JSON.stringify(summariseSeason({ ...p, contrast }, rules)) !== baseText)
+          problems.push(`contrast ${contrast} changed it: ${JSON.stringify(p)}`);
       const surer = summariseSeason(
         { ...p, confidence: { temperature: 1, lightness: 0.5, chroma: 0.25, contrast: 0 } },
         rules,
       );
-      expect(surer.kind).toBe(base.kind);
-      if (surer.kind === 'label' && base.kind === 'label')
-        expect([surer.season, surer.modifier]).toEqual([base.season, base.modifier]);
+      if (said(surer) !== said(base))
+        problems.push(`a surer confidence changed ${said(base)} to ${said(surer)}`);
     }
+    expect(problems).toHaveLength(0);
   });
 
   it('withholds the label exactly when an axis it reads was never established', () => {
@@ -355,6 +437,32 @@ describe('the evaluator, over every profile in the grid', () => {
     expect(() => summariseSeason(profile(Number.NaN, [0.5, 0.5], [0.05, 0.05]), rules)).toThrow(
       /temperature is NaN/u,
     );
+    expect(() => summariseSeason(profile(5, [0.5, 0.5], [0.05, 0.05]), rules)).toThrow(
+      /temperature is 5, not a bias/u,
+    );
+    expect(() => summariseSeason(profile(0.5, [0.8, 0.2], [0.05, 0.05]), rules)).toThrow(
+      /lightness is 0\.8 … 0\.2/u,
+    );
+    expect(() => summariseSeason(profile(0.5, [0.5, 0.5], [-0.1, 0.05]), rules)).toThrow(
+      /chroma is -0\.1 … 0\.05/u,
+    );
+  });
+
+  it('classifies contrast by its three values, and refuses a fourth rather than calling it high', () => {
+    const contrast: SeasonalAxis = {
+      axis: 'contrast',
+      statistic: 'preference',
+      boundaries: null,
+      rationale: WHY,
+    };
+    expect(
+      CONTRASTS.map((c) => classifyAxis(contrast, profile(0.5, [0.5, 0.5], [0.05, 0.05], c))),
+    ).toEqual(['low', 'middle', 'high']);
+    const bogus = {
+      ...profile(0.5, [0.5, 0.5], [0.05, 0.05]),
+      contrast: 'bogus' as unknown as ContrastPreference,
+    };
+    expect(() => classifyAxis(contrast, bogus)).toThrow(/contrast is "bogus"/u);
   });
 });
 

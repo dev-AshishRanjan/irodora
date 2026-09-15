@@ -208,7 +208,9 @@ const LEDGER_SOURCES = [
   {
     path: 'content/rules/index.json',
     kind: 'file',
-    why: 'the rules ledger — the phrase lexicon publishes its checksum here (F-021)',
+    why:
+      'the rules ledger — the weights, the phrase lexicon (F-021) and the seasonal summary ' +
+      '(F-223) publish their checksums here',
   },
 ];
 

@@ -68,8 +68,11 @@ export interface ProhibitedIdentifier {
 export const PROHIBITED_IDENTIFIERS: readonly ProhibitedIdentifier[] = [
   {
     id: 'skin',
-    stems: ['skin'],
-    pattern: /\bskin\w*\b/i,
+    // `undertone` and the two base words are the personal-colour trade's names for a skin undertone
+    // — イエベ and ブルベ, in English (F-223). No identifier in this repository uses them, so the
+    // source scan pays nothing for them, and the copy check that found the gap closes it.
+    stems: ['skin', 'undertone', 'yellow base', 'blue base'],
+    pattern: /\bskin\w*\b|\bundertone\w*\b|\byellow_base\w*\b|\bblue_base\w*\b/i,
     why:
       'A profile is a set of ranges, never a skin value (FR-30, ADR-0010). Skin is not one ' +
       'colour, a camera measures the light as much as the person, and the column is the input ' +
@@ -226,6 +229,10 @@ export function prohibitedError(findings: readonly ProhibitedFinding[]): StoreEr
  * alike. The list is deliberately short and literal — the gate refuses these and cannot know a
  * word nobody listed, which is why a competent Japanese reader's review stays an outstanding
  * attested criterion (F-223, OQ-5's standing gap).
+ *
+ * **Matched after normalising**, because one word has many spellings: half-width ｲｴﾍﾞ, a middle dot
+ * in イエロー・ベース, a space in ブルー ベース, hiragana いえべ. The terms are written normalised —
+ * full-width katakana, no separators — and the copy is brought to that form before it is searched.
  */
 export const PROHIBITED_COPY_JA: readonly {
   readonly term: string;
@@ -244,6 +251,14 @@ export const PROHIBITED_COPY_JA: readonly {
   },
   { term: 'イエローベース', id: 'skin', why: 'The long form of イエベ — a skin undertone.' },
   { term: 'ブルーベース', id: 'skin', why: 'The long form of ブルベ — a skin undertone.' },
+  { term: 'スキントーン', id: 'skin', why: 'Skin tone, transliterated.' },
+  {
+    term: 'アンダートーン',
+    id: 'skin',
+    why: "Undertone, transliterated — the trade's word for a skin undertone.",
+  },
+  { term: '色白', id: 'skin', why: "Fair-skinned — a judgement about a person's skin." },
+  { term: '地黒', id: 'skin', why: 'Dark-skinned — the same judgement, the other way.' },
   {
     term: '肌',
     id: 'skin',
@@ -262,6 +277,7 @@ export const PROHIBITED_COPY_JA: readonly {
     why: 'NFR-22: the product says what suits, not who is pretty.',
   },
   { term: '体型', id: 'body', why: 'NFR-22: no body judgement.' },
+  { term: '体重', id: 'body', why: 'Body weight — NFR-22: no body judgement.' },
   { term: '年齢', id: 'age', why: 'A protected characteristic the product has no use for.' },
 ];
 
@@ -279,21 +295,51 @@ export function copyWords(text: string): readonly string[] {
 }
 
 /**
+ * Whether a stem occurs among copy's words. One word matches a word by prefix (`skinned`); several
+ * must be a run of whole words with only the last by prefix (`body types`) — so `somebody types` and
+ * `nobody fatigue` are not `body type` and `body fat`, which searching the joined phrase said they
+ * were (F-223's review).
+ */
+function stemIn(stem: string, tokens: readonly string[]): boolean {
+  const parts = stem.split(' ');
+  const last = parts.length - 1;
+  for (let i = 0; i + last < tokens.length; i += 1)
+    if (
+      parts.every((part, j) => {
+        const token = tokens[i + j];
+        return token !== undefined && (j === last ? token.startsWith(part) : token === part);
+      })
+    )
+      return true;
+  return false;
+}
+
+/** Japanese copy in the form the terms are written: NFKC, no spaces or middle dots, katakana. */
+function normaliseJa(text: string): string {
+  return text
+    .normalize('NFKC')
+    .replace(/[\s・]/gu, '')
+    .replace(/[ぁ-ゖ]/gu, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
+}
+
+/**
  * Every NFR-22 word in a piece of copy — English by the identifier stems above, Japanese by the
  * terms in `PROHIBITED_COPY_JA`. Empty means clean. One vocabulary, applied to prose.
+ *
+ * **It fails closed.** A one-word stem matches by prefix, as the identifier scan does, so `Agenda`
+ * and `Racer` are refused under `age` and `race`. For copy that could name a person that is the
+ * direction to be wrong in: a refused word is reworded by whoever wrote it, and a missed one ships.
  */
 export function findProhibitedCopy(text: string, where: string): readonly ProhibitedFinding[] {
-  const tokens = copyWords(text);
-  const phrase = tokens.join(' ');
+  const tokens = copyWords(text.normalize('NFKC'));
   const findings: ProhibitedFinding[] = [];
   for (const rule of PROHIBITED_IDENTIFIERS) {
-    const stem = rule.stems.find((s) =>
-      s.includes(' ') ? phrase.includes(s) : tokens.some((t) => t.startsWith(s)),
-    );
+    const stem = rule.stems.find((s) => stemIn(s, tokens));
     if (stem !== undefined) findings.push({ id: rule.id, match: stem, where, why: rule.why });
   }
+  const ja = normaliseJa(text);
   for (const entry of PROHIBITED_COPY_JA)
-    if (text.includes(entry.term))
+    if (ja.includes(entry.term))
       findings.push({ id: entry.id, match: entry.term, where, why: entry.why });
   return findings;
 }

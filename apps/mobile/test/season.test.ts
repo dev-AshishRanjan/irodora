@@ -23,6 +23,7 @@ import {
 import type { NewPersonalProfile } from '@irodora/store';
 import { deriveProfile } from '../src/profile/derive';
 import { seasonalSummary } from '../src/profile/season';
+import type { ProfileStore } from '../src/profile/store';
 import { TRIALS, type TrialAnswer } from '../src/profile/trials';
 import { seasonalRules } from '../src/rules';
 import { LEXICON_LABEL, LEXICON_TEXT } from '../src/rules/generated/lexicon';
@@ -52,7 +53,7 @@ describe('the published seasonal rule over every guided profile', () => {
     expect(published.axes.map((a) => a.axis)).toEqual(['temperature', 'lightness', 'chroma']);
   });
 
-  it('summarises all 4,096 without throwing, and says what it did', () => {
+  it('summarises all 4,096 without throwing, into the distribution the documents state', () => {
     expect(profiles).toHaveLength(4096);
     const counts = new Map<string, number>();
     for (const profile of profiles) {
@@ -63,7 +64,9 @@ describe('the published seasonal rule over every guided profile', () => {
           : `none (${summary.reason})`;
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    // Printed, not asserted: the distribution is for the person reviewing the rule to read.
+    // Printed for the person reviewing a publish, AND asserted below: ADR-0102, OQ-33, OQ-34 and
+    // E-129 quote these numbers, so a publish or a trial change that moves them fails here and
+    // has to correct those texts in the same change.
     console.log(
       `seasonal summary over ${String(profiles.length)} guided profiles:\n` +
         [...counts.entries()]
@@ -74,17 +77,39 @@ describe('the published seasonal rule over every guided profile', () => {
     expect([...counts.values()].reduce((a, b) => a + b, 0)).toBe(4096);
     // No complete guided profile is unestablished: every read axis was asked three times.
     expect(counts.has('none (not-established)')).toBe(false);
+    expect(
+      Object.fromEntries([...counts.entries()].sort(([a], [b]) => a.localeCompare(b))),
+    ).toEqual({
+      'autumn deep': 256,
+      'autumn muted': 224,
+      'none (not-summarised)': 3136,
+      'summer muted': 224,
+      'winter deep': 256,
+    });
   });
 
-  it('reports whether a finished profile can reach "no summary" — the evidence OQ-33 needs', () => {
-    const none = profiles.filter((p) => seasonalSummary(p).kind === 'none').length;
-    console.log(
-      `finished guided profiles with no summary: ${String(none)} of ${String(profiles.length)}`,
-    );
-    expect(none).toBeGreaterThanOrEqual(0);
+  it('reaches only the classes OQ-34 names: no guided answer set is light, bright or neutral', () => {
+    /*
+     * The guided flow's range midpoints never pass the lexicon's light edge (0.725) or its vivid
+     * edge (0.100) — 0.6945 and 0.092 at most, because each trial's two swatches are spread and the
+     * range is padded — so the rule's "light" and "bright" cells cannot be reached from it, and a
+     * complete temperature is never neutral. OQ-34 puts the statistic and thresholds to the person;
+     * until it is answered, this is what the published rule does, held so the documents stay true.
+     */
+    const reached = {
+      temperature: new Set<AxisClass>(),
+      lightness: new Set<AxisClass>(),
+      chroma: new Set<AxisClass>(),
+    };
+    for (const p of profiles)
+      for (const name of ['temperature', 'lightness', 'chroma'] as const)
+        reached[name].add(classifyAxis(axis(published, name), p));
+    expect([...reached.temperature].sort()).toEqual(['high', 'low']);
+    expect([...reached.lightness].sort()).toEqual(['low', 'middle']);
+    expect([...reached.chroma].sort()).toEqual(['low', 'middle']);
   });
 
-  it('puts no reachable temperature on a boundary, and reports the closest any statistic comes', () => {
+  it('puts no reachable statistic within 1e-3 of a boundary', () => {
     const temperature = axis(published, 'temperature');
     const biases = new Set(profiles.map((p) => p.temperatureBias));
     for (const bias of biases)
@@ -101,6 +126,11 @@ describe('the published seasonal rule over every guided profile', () => {
     console.log(
       `smallest distance from a reachable statistic to a boundary: ${closest.toExponential(3)}`,
     );
+    // The nearest approach is 3.0e-3: all-dark lightness answers, midpoint 0.392 against 0.395 —
+    // the only route to "deep". Asserted with room above float noise, so a boundary moved closer,
+    // where a re-published swatch could flip a class, fails here. Whether 0.003 is margin enough
+    // is part of OQ-34.
+    expect(closest).toBeGreaterThan(1e-3);
   });
 });
 
@@ -184,12 +214,29 @@ describe('the rule is content, not code (FR-67)', () => {
 });
 
 describe('the label has nowhere to be stored', () => {
-  it('a profile carrying a label is not a profile the store accepts', () => {
-    const save = (profile: NewPersonalProfile): NewPersonalProfile => profile;
+  it('the store’s save path has no field for a label, and computing one adds none', () => {
     const profile = profiles[0];
     if (profile === undefined) throw new Error('no profile');
-    // @ts-expect-error — NewPersonalProfile has no field for a seasonal label (ADR-0102).
-    save({ ...profile, seasonalLabel: 'autumn muted' });
-    expect(Object.keys(profile)).not.toContain('seasonalLabel');
+    // The app's own save path, typed by the store interface it writes through (ADR-0102 §6). If the
+    // directive below stops being needed, somewhere to store a label has been added.
+    const save: ProfileStore['saveProfile'] = () => undefined;
+    // @ts-expect-error — NewPersonalProfile has no field for a seasonal label.
+    save({ ...profile, seasonalLabel: 'autumn muted' }, 0);
+    const before = Object.keys(profile).sort();
+    seasonalSummary(profile);
+    expect(Object.keys(profile).sort()).toEqual(before);
+    expect(before).toEqual([
+      'accents',
+      'avoid',
+      'chroma',
+      'confidence',
+      'contrast',
+      'id',
+      'lightness',
+      'method',
+      'neutrals',
+      'origin',
+      'temperatureBias',
+    ]);
   });
 });

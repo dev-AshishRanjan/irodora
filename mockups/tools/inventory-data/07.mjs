@@ -324,7 +324,7 @@ export default {
     {
       rule: 'E2',
       element: '07.intelligence.fit.value',
-      why: 'the FR-29 personal-fit score stays; the word that makes it a match to a seasonal type does not (§4 E2, C12)',
+      why: 'the FR-29 personal-fit score stays; the word that makes it a match to a seasonal type does not (§4 E2, C12). Whether the seasonal label is drawn beside the score instead, with no ranges beside it, is OQ-32',
     },
     {
       rule: 'E2',

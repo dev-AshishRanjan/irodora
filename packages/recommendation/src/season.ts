@@ -109,6 +109,36 @@ export type SeasonalSummary =
 const isIn = <T extends string>(set: readonly T[], value: unknown): value is T =>
   typeof value === 'string' && (set as readonly string[]).includes(value);
 
+/**
+ * Refuse a field the parser does not know, at every level.
+ *
+ * NFR-22 asks that *a schema check prevents such a field from being added*. A rule that carried
+ * `"skin": "fair"` beside its classes would be ignored by the evaluator — and published, reviewed
+ * and shipped all the same. A field nobody reads is a field nobody reviewed, so it is refused by
+ * name rather than carried.
+ */
+function onlyKeys(o: Record<string, unknown>, allowed: readonly string[], at: string): void {
+  for (const key of Object.keys(o))
+    if (!allowed.includes(key))
+      throw new RuleError(
+        `${at}.${key} is not a field of a seasonal rule here (allowed: ${allowed.join(', ')}). ` +
+          'A field the parser does not read is one nobody reviewed, and a schema check refuses ' +
+          'it rather than carrying it (NFR-22).',
+      );
+}
+
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+
+/** A real calendar date in `YYYY-MM-DD` — `2026-13-45` has the shape and is not one. */
+function isCalendarDate(value: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value);
+  if (m === null) return false;
+  const [year, month, day] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const last = month === 2 && leap ? 29 : DAYS_IN_MONTH[month - 1];
+  return last !== undefined && day >= 1 && day <= last;
+}
+
 function requireRationale(value: unknown, at: string): string {
   if (typeof value !== 'string' || value.trim().length < MIN_RATIONALE)
     throw new RuleError(
@@ -125,6 +155,7 @@ function parseBoundary(
   axis: Exclude<ScoreFactor, 'contrast'>,
 ): Boundary {
   const o = requireObject(value, at);
+  onlyKeys(o, ['at', 'side'], at);
   const where = o['at'];
   if (typeof where !== 'number' || !Number.isFinite(where))
     throw new RuleError(`${at}.at must be a finite number; got ${JSON.stringify(where)}`);
@@ -145,6 +176,7 @@ function parseBoundary(
 
 function parseAxis(value: unknown, at: string): SeasonalAxis {
   const o = requireObject(value, at);
+  onlyKeys(o, ['axis', 'statistic', 'boundaries', 'rationale'], at);
   const axis = o['axis'];
   if (!isIn(SCORE_FACTORS, axis))
     throw new RuleError(
@@ -185,6 +217,7 @@ function parseAxis(value: unknown, at: string): SeasonalAxis {
 
 function parseRow(value: unknown, at: string, read: readonly ScoreFactor[]): SeasonalRow {
   const o = requireObject(value, at);
+  onlyKeys(o, ['when', 'season', 'modifier', 'none', 'rationale'], at);
   const whenRaw = requireObject(o['when'], `${at}.when`);
   for (const key of Object.keys(whenRaw))
     if (!(read as readonly string[]).includes(key))
@@ -231,12 +264,17 @@ const tupleKey = (read: readonly ScoreFactor[], when: SeasonalRow['when']): stri
  */
 export function parseSeasonalRules(value: unknown, where: string): SeasonalRules {
   const o = requireObject(value, where);
+  // `provenance` and `unknowns` are read by gate 11 through the corpus's `parseProvenance`; the
+  // engine carries neither, but a file that has them is still a seasonal rule.
+  onlyKeys(o, ['versionId', 'publishedAt', 'provenance', 'unknowns', 'axes', 'table'], where);
   const versionId = o['versionId'];
   if (typeof versionId !== 'string' || versionId === '')
     throw new RuleError(`${where}: versionId is required`);
   const publishedAt = o['publishedAt'];
-  if (typeof publishedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/u.test(publishedAt))
-    throw new RuleError(`${where}: publishedAt must be YYYY-MM-DD; got ${String(publishedAt)}`);
+  if (typeof publishedAt !== 'string' || !isCalendarDate(publishedAt))
+    throw new RuleError(
+      `${where}: publishedAt must be a calendar date, YYYY-MM-DD; got ${JSON.stringify(publishedAt)}`,
+    );
 
   const rawAxes = o['axes'];
   if (!Array.isArray(rawAxes) || rawAxes.length === 0)
@@ -278,16 +316,33 @@ export function parseSeasonalRules(value: unknown, where: string): SeasonalRules
   return { versionId, publishedAt, axes, rows };
 }
 
+/**
+ * The number that stands for an axis — after checking the profile holds a value a profile can.
+ *
+ * A value outside its domain is refused rather than classified: a bias of 5 would otherwise read as
+ * "warm" and a lightness range whose min exceeds its max as whatever its midpoint happened to be.
+ */
 function statisticOf(axis: SeasonalAxis, profile: PersonalProfile): number {
   switch (axis.axis) {
-    case 'temperature':
-      return profile.temperatureBias;
+    case 'temperature': {
+      const bias = profile.temperatureBias;
+      if (!Number.isFinite(bias) || bias < -1 || bias > 1)
+        throw new RuleError(
+          `temperature is ${String(bias)}, not a bias a profile can hold (-1 … 1)`,
+        );
+      return bias;
+    }
     case 'lightness':
     case 'chroma': {
-      const range = profile[axis.axis];
-      if (axis.statistic === 'min') return range.min;
-      if (axis.statistic === 'max') return range.max;
-      return (range.min + range.max) / 2;
+      const { min, max } = profile[axis.axis];
+      if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max > 1 || min > max)
+        throw new RuleError(
+          `${axis.axis} is ${String(min)} … ${String(max)}, not a range a profile can hold ` +
+            '(0 ≤ min ≤ max ≤ 1)',
+        );
+      if (axis.statistic === 'min') return min;
+      if (axis.statistic === 'max') return max;
+      return (min + max) / 2;
     }
     case 'contrast':
       throw new RuleError('contrast is classified by its preference, not by a number');
@@ -296,13 +351,19 @@ function statisticOf(axis: SeasonalAxis, profile: PersonalProfile): number {
 
 /** Which class of `axis` a profile falls in. Exported so a surface can label a row by the same rule. */
 export function classifyAxis(axis: SeasonalAxis, profile: PersonalProfile): AxisClass {
-  if (axis.axis === 'contrast')
-    return profile.contrast === 'low' ? 'low' : profile.contrast === 'medium' ? 'middle' : 'high';
+  if (axis.axis === 'contrast') {
+    // Read as unknown: the type says three values, and a fourth must be refused, not read as high.
+    const contrast: unknown = profile.contrast;
+    if (contrast === 'low') return 'low';
+    if (contrast === 'medium') return 'middle';
+    if (contrast === 'high') return 'high';
+    throw new RuleError(
+      `contrast is ${JSON.stringify(contrast)}, not a preference a profile can hold (low, medium, high)`,
+    );
+  }
   if (axis.boundaries === null)
     throw new RuleError(`${axis.axis} has no boundaries; only contrast may omit them`);
   const value = statisticOf(axis, profile);
-  if (!Number.isFinite(value))
-    throw new RuleError(`${axis.axis} is ${String(value)}, not a number a range can hold`);
   const [first, second] = axis.boundaries;
   const below = (b: Boundary): boolean => value < b.at || (value === b.at && b.side === 'below');
   if (below(first)) return 'low';

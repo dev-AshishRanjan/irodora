@@ -7250,7 +7250,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-220"
       ],
@@ -7275,7 +7275,7 @@
       "attested": [
         {
           "criterion": "The label is shown as a summary of the ranges beside it, never instead of them, and it carries no skin-tone, ethnic or body judgement (NFR-22)",
-          "verifiedBy": "(1) F-260's conformance sweep asserting inventory 23 on the rendered tree — 23.profile.label inside 23.profile, ahead of the four dimension rows — and its person-recorded side-by-side comparison; nothing in this repository can prove an element is drawn before its surface exists (the F-084 → F-018 precedent, ADR-0060 §5). (2) A competent Japanese reader confirming no ja word of the seasonal vocabulary carries a skin-tone, ethnic or body judgement: the gate refuses the listed terms and cannot know the ones nobody listed — OQ-5's standing gap. F-223 itself gates everything true before the label is drawn: derived only from the ranges, carrying the class of each range it summarises, never stored, never scored, withheld when a read range is unestablished, no prohibited word.",
+          "verifiedBy": "(1) F-260's conformance sweep asserting inventory 23 on the rendered tree — 23.profile.label inside 23.profile, ahead of the four dimension rows — and its person-recorded side-by-side comparison; nothing in this repository can prove an element is drawn before its surface exists (the F-084 → F-018 precedent, ADR-0060 §5). (2) A competent Japanese reader confirming no ja word of the seasonal vocabulary carries a skin-tone, ethnic or body judgement: the gate refuses the listed terms and cannot know the ones nobody listed — OQ-5's standing gap. (3) The person's reading of the rule as published, 2026.09.1: its statistic and thresholds, and whether contrast is read — OQ-34, raised after F-223's review measured that the guided flow reaches neither 'light' nor 'bright' and that the rule and the profile screen's band chips name different classes for the same range (ADR-0102 §9). F-223 itself gates everything true before the label is drawn: derived only from the ranges, carrying the class of each range it summarises, never stored, never scored, withheld when a read range is unestablished, no prohibited word.",
           "blocks": "release",
           "status": "outstanding"
         }
@@ -8784,7 +8784,8 @@
         "Every value is bound as R9-MOCKUP-FIDELITY §8 states — no name, number, date or provenance line from the mockup reaches the build (E1)",
         "The only departures from mockup 17 and 23 are the ones this feature’s notes name, each from R9-MOCKUP-FIDELITY §4 or §6 — nothing is simplified, reordered, restyled or left out beyond them",
         "The fidelity harness captures the route beside mockup 17 and 23 in both themes and both locales, and a person has compared each pair and recorded the result",
-        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface"
+        "Every string is in both catalogues, every drawn action works, and the a11y, contrast and cvd gates pass on the rebuilt surface",
+        "The seasonal pill's basis agrees with the class of each dimension row drawn beside it, and a test over every guided profile fails on any disagreement — discharging F-223's attested criterion 3 (ADR-0102 §4, E-129)"
       ],
       "verification": [
         "state",
@@ -8801,7 +8802,8 @@
       "notes": "MOCKUP 17 (in progress) — title and Japanese subtitle; the step pill; the draping card with instruction and the A/B pair, each with fabric-fold art, name, hex and kanji, and its select control; the live card — radar and four sliders with readings; the recommended palette; sticky \"Confirm & Continue\". MOCKUP 23 (finished) — avatar (F-241), two-line title, share; the seasonal pill (F-223); four gradient sliders with value, end labels and a confidence note with its trial count; recommended kasane palettes (F-224); the calibration-history row (OQ-9); \"Retake Swatch Calibration\" and outlined \"Export Profile PDF\" (F-263); kimono and blossom art. DEPARTURES: 17’s recommended-palette swatches are bound to the real ranking — in the render none matches its label (E1). F-223 (2026-09-15): the seasonal pill's value is seasonalSummary(profile); F-260 builds the guard that the pill's basis agrees with each dimension row's label beside it (E-129), and discharges F-223's attested criterion 3.",
       "openQuestions": [
         "OQ-31",
-        "OQ-33"
+        "OQ-33",
+        "OQ-34"
       ]
     },
     {

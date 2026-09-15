@@ -94,6 +94,7 @@ const {
   parseSeasonalRules,
   parseWeightContent,
   rationaleCount,
+  RuleError,
   ruleSetFor,
   SCORE_FACTORS,
   SEASON_IDS,
@@ -794,10 +795,18 @@ if (SEASONAL_FILES.length === 0)
       'its own input must say so rather than pass over an empty set.',
   );
 
-/** The catalogue strings that name a season pair, read as text: this gate runs before the app builds. */
+/**
+ * The catalogue strings that name a season pair, read as text: this gate runs before the app builds.
+ * The key is built from the closed ids, so a later key under the same prefix — a reason line, say —
+ * is not counted as a label.
+ */
+const SEASON_KEY = new RegExp(
+  `'(profile\\.season\\.(?:${SEASON_IDS.join('|')})\\.(?:${MODIFIER_IDS.join('|')}))':\\s*'([^']*)'`,
+  'gu',
+);
 function seasonWords(locale) {
   const text = readFileSync(join(ROOT, 'apps', 'mobile', 'src', 'i18n', `${locale}.ts`), 'utf8');
-  return [...text.matchAll(/'(profile\.season\.[a-z]+\.[a-z]+)':\s*'([^']*)'/gu)].map((m) => ({
+  return [...text.matchAll(SEASON_KEY)].map((m) => ({
     key: m[1],
     text: m[2],
   }));
@@ -905,31 +914,89 @@ for (const SEASONAL_FILE of SEASONAL_FILES)
           OFF,
       );
 
-    const spoil = (label, mutate, parse) => {
+    /*
+     * Each spoiling must be refused FOR ITS OWN REASON: the error class the check throws, and a
+     * message naming the field it plants. A bare `catch` counted any exception as a rejection —
+     * with the parser's NFR-22 axis check deleted, "an axis about skin" still "failed", on a
+     * TypeError further down, and this gate stayed green over the hole (F-223's review).
+     */
+    const spoil = (label, mutate, parse, kind, reason) => {
       seasonalFixtures += 1;
       const draft = structuredClone(raw);
       mutate(draft);
+      let refused;
       try {
         parse(draft);
+      } catch (error) {
+        refused = error;
+      }
+      if (refused === undefined)
         fail(
           `${SEASONAL_FILE} fixture "${label}": the check ACCEPTED a file it must reject. A ` +
             'validator nobody has watched reject anything might only be capable of passing.',
         );
-      } catch {
-        /* expected */
-      }
+      else if (!(refused instanceof kind) || !reason.test(refused.message))
+        fail(
+          `${SEASONAL_FILE} fixture "${label}": refused, but not for the reason it plants — ` +
+            `${String(refused?.constructor?.name)}: ${String(refused?.message ?? refused)}. ` +
+            'A spoiling refused by accident proves nothing about the check it is aimed at.',
+        );
     };
-    spoil('a cell removed', (d) => d.table.splice(4, 1), viaEngine);
-    spoil('a cell answered twice', (d) => d.table.push(structuredClone(d.table[0])), viaEngine);
-    spoil('an axis about skin', (d) => (d.axes[0].axis = 'skin'), viaEngine);
-    spoil('boundaries out of order', (d) => d.axes[1].boundaries.reverse(), viaEngine);
-    spoil('a season nobody published', (d) => (d.table[3].season = 'monsoon'), viaEngine);
-    spoil('a rationale that says nothing', (d) => (d.table[0].rationale = 'ok'), viaEngine);
-    spoil('a provenance with no derivation', (d) => delete d.provenance.derivation, viaProvenance);
+    const engine = (label, mutate, reason) => spoil(label, mutate, viaEngine, RuleError, reason);
+    engine('a cell removed', (d) => d.table.splice(4, 1), /no row for 1 of 27 tuples/u);
+    engine(
+      'a cell answered twice',
+      (d) => d.table.push(structuredClone(d.table[0])),
+      /table\[27\] answers .* which table\[0\]/u,
+    );
+    engine('an axis about skin', (d) => (d.axes[0].axis = 'skin'), /axes\[0\]\.axis .*NFR-22/u);
+    engine(
+      'boundaries out of order',
+      (d) => d.axes[1].boundaries.reverse(),
+      /axes\[1\]\.boundaries must be in increasing order/u,
+    );
+    engine(
+      'a season nobody published',
+      (d) => (d.table[3].season = 'monsoon'),
+      /table\[3\]\.season must be one of/u,
+    );
+    engine(
+      'a rationale that says nothing',
+      (d) => (d.table[0].rationale = 'ok'),
+      /table\[0\]\.rationale is required/u,
+    );
+    // The planted keys, and the patterns naming them, are built from strings: `verify-no-inference`
+    // reads identifiers and regex literals as code, and a decoy written as `d.table[0].skin` — or a
+    // bare prohibited word in a `/…/` — is an identifier it rightly refuses.
+    const [onRow, atTop] = ['skin', 'undertone'];
+    engine(
+      'a field about skin on a row',
+      (d) => (d.table[0][onRow] = 'fair'),
+      new RegExp(`table\\[0\\]\\.${onRow} is not a field`, 'u'),
+    );
+    engine(
+      'a field about undertone at the top',
+      (d) => (d[atTop] = { yellow: 'spring' }),
+      new RegExp(`\\.${atTop} is not a field`, 'u'),
+    );
+    engine(
+      'a date that is not one',
+      (d) => (d.publishedAt = '2026-13-45'),
+      /publishedAt must be a calendar date/u,
+    );
+    spoil(
+      'a provenance with no derivation',
+      (d) => delete d.provenance.derivation,
+      viaProvenance,
+      CorpusError,
+      /derivation/u,
+    );
     spoil(
       'a provenance with no editorial notes',
       (d) => delete d.provenance.editorialNotes,
       viaProvenance,
+      CorpusError,
+      /editorialNotes/u,
     );
 
     // THE BASELINE, in the same block.

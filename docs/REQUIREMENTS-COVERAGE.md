@@ -124,7 +124,7 @@ a requirement is claimed by no feature. Coverage cannot silently rot.
 | NFR-19 Testability | F-004, F-006, F-071, F-080 | test, state | R0 |
 | NFR-20 Content provenance | F-011, F-196 | content | R1 |
 | NFR-21 Claims discipline | F-025, F-198, F-201 | lint | R1 |
-| NFR-22 Ethical guardrails | F-037, F-223 (NFR-22 over copy, both languages) | test, typecheck, content | R3 |
+| NFR-22 Ethical guardrails | F-037, F-223 (the 48 seasonal labels and the rule's words, both languages; the rule's schema refuses a field outside the profile's dimensions) | test, typecheck, content | R3 |
 | NFR-23 Bias testing | F-027, F-037 | test, review | R3 |
 | NFR-24 Boundary enforcement | F-001, F-002, F-072, F-073, F-183 | lint | R0 |
 | NFR-25 The design system reaches the product | F-140, F-143, F-144, F-175, F-184, F-187, F-188, F-189, F-202, F-203, F-204 | lint, a11y, contrast | R6 |

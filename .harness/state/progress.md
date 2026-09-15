@@ -8,6 +8,105 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-15 — F-223 The profile carries the seasonal summary the finished-profile mockup draws
+
+**Done.** Mockup 23's seasonal pill now has a value the product can stand behind: a summary computed
+from the profile's ranges on every read, by a rule that is content — never stored, never scored,
+withheld rather than guessed. What the published rule's numbers should be is the person's question
+(OQ-34), and their reading blocks the release.
+
+- **ADR-0102** amends ADR-0010 and ADR-0072: what the label summarises (temperature, lightness,
+  chroma), what it discards (contrast, the lists) and why; boundaries in gaps, never on a value the
+  derivation reaches; the closed vocabulary; ed-001, self-reviewed.
+- **The engine** — `@irodora/recommendation` `season.ts`: a parser that proves the table total and
+  unique, refuses any field it does not read at every level and any axis outside the profile's
+  dimensions (NFR-22's schema half), and a classify-and-look-up evaluator that abstains on an
+  unestablished axis, refuses a value no profile can hold, and reports its basis.
+- **The content** — `seasonal-summary.2026.09.1.json`: 27 cells, 16 labels, 11 no summary; provenance
+  IRO-ED-005; ledger and register rows; a gate 11 section with eleven spoilings, each required to fail
+  for its own reason, and the table printed.
+- **The words** — 24 labels in each catalogue (katakana, unreviewed); `findProhibitedCopy` in
+  `@irodora/store`, Japanese matched after normalising; the skin family gains `undertone`,
+  `yellow base` and `blue base`, which reaches all three NFR-22 checks (E-130).
+- **The app** — the third generated rule module, `seasonalRules()`, `seasonalSummary()`; a test over
+  all 4,096 guided answer sets asserting the distribution, the classes reached and a 1e-3 boundary
+  margin, with the temperature-symmetry decoy.
+
+### What the enumeration showed — and what the review corrected
+
+3,136 of the 4,096 profiles the guided flow can produce get **no summary**; four labels are reachable
+— winter deep and autumn deep 256 each, summer muted and autumn muted 224 each. I wrote that this was
+the rule withholding where it was written to. It is not. The rule reads a range's midpoint against
+the phrase lexicon's edges, which classify **one colour**; a guided range is two spread swatches plus
+padding, so its midpoint never passes the light edge (0.6945 at most, against 0.725) or the vivid edge
+(0.092 against 0.100). *Light* and *bright* are unreachable from the guided flow; the rule and the
+profile screen's band chips name different classes on 2 of 8 lightness and 1 of 8 chroma answer
+patterns (2 more lightness patterns show *wide*); *deep* is reached by 0.003. An anchor that measures
+another quantity is no anchor — it should have been asked, and now is: **OQ-34**. The thresholds were
+not moved; that is the person's call.
+
+### Open questions raised
+
+OQ-31 (the pill's *"Kasane Harmony"* half), OQ-32 (07 and 13 put the label beside the fit score, with
+no ranges), OQ-33 (what the pill shows with no summary), OQ-34 (the statistic, the thresholds, and
+contrast). None blocks F-223; OQ-31, 33 and 34 block F-260, OQ-32 blocks F-248 and F-257.
+
+### Found on the way
+
+F-276 (a leans-warm guided profile is built as if it had no temperature preference — confirmed by
+running it), F-277 (gate 11 never validates the weights' provenance; the weights cite IRO-ED-003, which
+the register gives to the taxonomy vocabulary). F-221 was blocked on F-091's device run: no JDK, no
+Maestro, no AVD here.
+
+### The single review — FAIL: 4 blocking, 7 significant, 8 minor — and what became of each
+
+Under the one-review rule every finding was fixed or recorded; none went back for a second review.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | lint red — five `toEqual([])` in the new tests | `toHaveLength(0)`; the decoy checks now name the family they expect |
+| 2 | app suite red — `src/profile/`'s roster lacked `season.ts` | added to `GUIDED`, so the no-camera and no-photo checks read it |
+| 3 | the package grid test timed out under turbo | one assertion per property over a collected list |
+| 4 | the rule disagrees with the band chips, light and bright are unreachable, and the documents gave the wrong cause | measured as above; ADR-0102, OQ-33, E-129 and its note corrected; OQ-34 raised on F-260; the numbers asserted; the person's reading of 2026.09.1 added to F-223's attested entry as (3) |
+| 5 | gate 11 counted any exception as a rejection | each spoiling must throw its own error class, naming its field; 8 → 11 spoilings |
+| 6 | the copy check missed undertone, yellow and blue base, and Japanese spellings | skin family widened (E-130); Japanese normalised (NFKC, no separators, katakana) and gains スキントーン アンダートーン 色白 地黒 体重; a decoy for each |
+| 7 | the parser accepted unknown keys and impossible dates | unknown keys refused at every level by name; a calendar check; spoilings for each |
+| 8 | tests that could not fail; stated numbers unasserted; the type check aimed at a stand-in | distribution, classes and margin asserted; `@ts-expect-error` on `ProfileStore['saveProfile']`; the profile's keys pinned before and after a summary |
+| 9 | criterion 3's discharge unbound; ADR §9 claimed a reading the attested entry lacked | F-260 gains the pill-basis acceptance line; F-223's attested entry gains (3) |
+| 10 | the vocabulary feeding two checks was untraced | E-130 and its note — three checks, now |
+| 11 | increments 3–6 committed on red gates | recorded here; the plan's *Verify:* lines corrected; lesson below |
+| 12 | false positives in the copy check | multi-word stems match runs of whole words; one-word prefix matching kept on purpose — it fails closed, and the docstring says so |
+| 13 | a bogus contrast read as high; out-of-domain input classified | refused, with tests |
+| 14 | dropping contrast was the agent's reading | put to the person in OQ-34 |
+| 15 | OQ-32 bound nowhere in 07 | 07's E2 departure on the fit value cites it (an overhang was tried; the check rightly refused it — overhangs are geometric) |
+| 16 | the coverage row overclaimed | reworded to what is checked |
+| 17 | surviving mutations | spoilings for equal boundaries, a missing version, one boundary, a string or non-finite boundary, a leap day both ways |
+| 18 | unreachable catalogue pairs; gate 11's key pattern fragile | the pattern is built from the closed ids; the 24 pairs stay — the catalogue carries every word the engine can answer, so a publish needs no release |
+| 19 | a stale ledger description | updated |
+
+### What went wrong on my side
+
+- **Increments 3 to 6 were committed with `pnpm lint` and the app suite red.** Each guard ran the
+  changed packages' eslint and the new test files — faithful checks of the new code, and not the
+  gates. Lesson: `a-package-gate-is-not-the-repository-gate`.
+- **Anchor or ask was misapplied**, and the misreading went into five documents as fact. Corrected
+  in each, and the numbers are now asserted so a publish cannot leave them stale.
+- **While fixing**, my own gate 11 decoys tripped `verify-no-inference` twice — a property access, then
+  a regex literal carrying the planted word; both are now built from strings. And a placeholder key
+  was briefly written into E-129 and removed before any gate read it.
+
+### Gates
+
+One sequential run after every fix, each status captured on its own:
+`state=0 typecheck=0 lint=0 format=0 build=0 test=0 content=0 security=0 no-inference-proof=0`.
+Before it: the app suite 994/994, store 179/179, recommendation 180/180.
+
+**Not run:** color-golden and cvd (no colour maths), a11y and contrast (no surface), e2e (gate
+pending), perf. Criterion 3 is attested: F-260 and a competent Japanese reader discharge it, and the
+person's reading of the rule is its third part.
+
+---
+
 ## 2026-09-15 — F-220 Every mockup is redlined into an element inventory
 
 **Done.** Golden rule 14 is now checkable per element: each of the 28 images has a record of what it

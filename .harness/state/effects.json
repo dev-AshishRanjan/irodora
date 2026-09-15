@@ -5032,9 +5032,54 @@
         "mobile"
       ],
       "severity": "high",
-      "guard": "Gate 11 parses every published seasonal-summary rule with the built engine (totality, uniqueness, partitions, closed vocabulary, rationales), checks its provenance through parseProvenance and its source in the register, compares digest and cell count with the ledger, runs NFR-22 over its answers and over all 48 catalogue labels through @irodora/store's findProhibitedCopy with a planted decoy, refuses eight in-memory spoilings beside the clean file, and prints the resolved table. generate-rules-bundle --check keeps the generated module in step, and seasonalRules() refuses a bundle whose digest or cell count disagree. apps/mobile/test/season.test.ts enumerates all 4,096 guided answer sets against the published rule, prints the label distribution, and asserts temperature symmetry with a decoy (the boundary moved onto 1/3) watched failing. NOT GUARDED HERE: that a drawn pill agrees with the rows beside it — F-260 builds that guard, using the summary's basis.",
+      "guard": "Gate 11 parses every published seasonal-summary rule with the built engine (totality, uniqueness, partitions, closed vocabulary, rationales), checks its provenance through parseProvenance and its source in the register, compares digest and cell count with the ledger, runs NFR-22 over its answers and over all 48 catalogue labels through @irodora/store's findProhibitedCopy with a planted decoy, refuses eleven in-memory spoilings beside the clean file — each for its own reason, the error class and a message naming the field it plants — and prints the resolved table. generate-rules-bundle --check keeps the generated module in step, and seasonalRules() refuses a bundle whose digest or cell count disagree. apps/mobile/test/season.test.ts enumerates all 4,096 guided answer sets against the published rule, asserts the label distribution, the classes reached and a minimum boundary margin of 1e-3, and asserts temperature symmetry with a decoy (the boundary moved onto 1/3) watched failing. NOT GUARDED HERE: that a drawn pill agrees with the rows beside it — F-260 builds that guard, using the summary's basis.",
       "memory": "memory/effects/a-seasonal-rule-renames-every-profile-it-is-published-over.md",
-      "rationale": "ADR-0102 made the seasonal label a summary computed from a profile's ranges on every read, by a rule that is content. That keeps it honest — it cannot outlive a corrected range and is withheld when a range is unestablished — and it makes a publish powerful: moving one boundary relabels people nobody touched. As first published (2026.09.1) the rule gives no summary for 3,136 of the 4,096 profiles the guided flow can produce, and only four labels are reachable; what the pill shows then is OQ-33, and a later version that names more cells is a publish this link reaches.",
+      "rationale": "ADR-0102 made the seasonal label a summary computed from a profile's ranges on every read, by a rule that is content. That keeps it honest — it cannot outlive a corrected range and is withheld when a range is unestablished — and it makes a publish powerful: moving one boundary relabels people nobody touched. As first published (2026.09.1) the rule gives no summary for 3,136 of the 4,096 profiles the guided flow can produce and only four labels are reachable — because a guided range's midpoint never reaches the lexicon's light or vivid edge, not only because of the table's no-summary cells. What the pill shows then is OQ-33; which statistic and thresholds a range is read by, and whether contrast is, is OQ-34; either answer is a publish this link reaches.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-130",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/store/src/prohibited.ts#PROHIBITED_IDENTIFIERS"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/prohibited.ts#assertMigrationsClean"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/verify-no-inference.mjs"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/prohibited.ts#findProhibitedCopy"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "packages/store/test/prohibited.test.ts runs the schema check against planted columns with decoys that must stay clean; packages/store/test/prohibited-copy.test.ts runs the copy check over decoys in both languages and near-misses that must stay clean, multi-word stems as runs of whole words; scripts/verify-no-inference-proof.mjs plants identifiers the source scan must find (CI, gate 15); gate 11 and apps/mobile/test/season-words.test.ts run the copy check over all 48 seasonal labels with a planted decoy. A change to a family's stems or pattern reaches all three checks' tests in the same run.",
+      "memory": "memory/effects/one-vocabulary-feeds-three-nfr-22-checks.md",
+      "rationale": "One vocabulary feeds three NFR-22 checks: the schema check over migrations and the live database, the source scan over identifiers (gate 15), and since F-223 the copy check over the seasonal labels and the rule's words (gate 11 and the app test). Narrowing a stem for one — as diagnos was narrowed for the source scan — narrows the other two silently; widening one widens all three, as F-223 did with undertone, yellow base and blue base after its review found the copy check missed them.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

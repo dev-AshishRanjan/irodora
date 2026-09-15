@@ -17,6 +17,22 @@ describe('findProhibitedCopy', () => {
     ['肌映えカラー', 'skin'],
     ['Beauty Winter', 'attractiveness'],
     ['年齢に合う色', 'age'],
+    // The English names of イエベ and ブルベ, and the word the trade uses for both.
+    ['Warm Undertone Autumn', 'skin'],
+    ['Yellow Base Autumn', 'skin'],
+    ['Blue-Base Summer', 'skin'],
+    ['ＳＫＩＮ', 'skin'],
+    ['Body Types', 'body'],
+    // One Japanese word, many spellings: the middle dot, a space, half-width, hiragana.
+    ['イエロー・ベース', 'skin'],
+    ['ブルー ベース', 'skin'],
+    ['ｲｴﾍﾞ', 'skin'],
+    ['いえべ', 'skin'],
+    ['スキントーン', 'skin'],
+    ['アンダートーン', 'skin'],
+    ['色白に見える', 'skin'],
+    ['地黒さん', 'skin'],
+    ['体重', 'body'],
   ];
   it.each(decoys)('refuses %s, naming the word and where it was', (text, id) => {
     const found = findProhibitedCopy(text, 'decoy');
@@ -34,9 +50,17 @@ describe('findProhibitedCopy', () => {
     'ソフトオータム',
     'オータム・ミュート',
     'スプリング・ブライト',
+    // A multi-word stem is a run of whole words, not a substring of the joined phrase.
+    'somebody types',
+    'Nobody fatigue',
+    'Base Layer, Blue',
+    'ベースカラー',
+    // The reversed compounds: a white colour, a black ground.
+    '白色',
+    '黒地に白',
   ];
   it.each(nearMisses)('leaves %s alone', (text) => {
-    expect(findProhibitedCopy(text, 'near-miss')).toEqual([]);
+    expect(findProhibitedCopy(text, 'near-miss')).toHaveLength(0);
   });
 
   it('tokenises copy the way the identifier scan does', () => {
