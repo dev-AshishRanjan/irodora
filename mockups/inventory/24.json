@@ -1,0 +1,2227 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "24",
+  "mockupSha256": "60a752d8680debfee0a2eacc1a1196f73f7b2b60c68f835059e4292a55e535c4",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "24.screen",
+        "box": {
+          "x": 116,
+          "y": 72,
+          "w": 536,
+          "h": 1239
+        },
+        "dpPerPx": 0.7164
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "24.header",
+      "order": 1,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 116,
+        "y": 72,
+        "w": 536,
+        "h": 128
+      },
+      "dp": {
+        "x": 0,
+        "y": 0,
+        "w": 384,
+        "h": 91.5
+      },
+      "tokens": {
+        "bg": "level1"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F2227"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.back",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 121,
+        "y": 154,
+        "w": 95,
+        "h": 36
+      },
+      "dp": {
+        "x": 3.5,
+        "y": 58.5,
+        "w": 68,
+        "h": 26
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": "static:with.back",
+      "action": "navigate:/wardrobe",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.title",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 275,
+        "y": 146,
+        "w": 219,
+        "h": 20
+      },
+      "dp": {
+        "x": 114,
+        "y": 53,
+        "w": 157,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.garmentTitle",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.share",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 604,
+        "y": 145,
+        "w": 33,
+        "h": 44
+      },
+      "dp": {
+        "x": 349.5,
+        "y": 52.5,
+        "w": 23.5,
+        "h": 31.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "share",
+      "illustration": null,
+      "binding": null,
+      "action": "open:share.garment",
+      "copy": null
+    },
+    {
+      "id": "24.subtitle",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 320,
+        "y": 172,
+        "w": 127,
+        "h": 19
+      },
+      "dp": {
+        "x": 146,
+        "y": 71.5,
+        "w": 91,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.garmentTitleJa",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "24.header-rule",
+      "order": 6,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 116,
+        "y": 200,
+        "w": 536,
+        "h": 2
+      },
+      "dp": {
+        "x": 0,
+        "y": 91.5,
+        "w": 384,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.capture",
+      "order": 7,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 130,
+        "y": 225,
+        "w": 508,
+        "h": 229
+      },
+      "dp": {
+        "x": 10,
+        "y": 109.5,
+        "w": 364,
+        "h": 164
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2028"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.capture.source",
+      "order": 8,
+      "parent": "24.capture",
+      "component": "ui:Chip",
+      "box": {
+        "x": 149,
+        "y": 241,
+        "w": 470,
+        "h": 35
+      },
+      "dp": {
+        "x": 23.5,
+        "y": 121,
+        "w": 336.5,
+        "h": 25
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": "camera",
+      "illustration": null,
+      "binding": "engine:reading.conditions",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.capture.swatch",
+      "order": 9,
+      "parent": "24.capture",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 149,
+        "y": 290,
+        "w": 145,
+        "h": 145
+      },
+      "dp": {
+        "x": 23.5,
+        "y": 156,
+        "w": 104,
+        "h": 104
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "measured": {
+        "fill": "#182937"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.capture.title",
+      "order": 10,
+      "parent": "24.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 305,
+        "y": 290,
+        "w": 282,
+        "h": 27
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 156,
+        "w": 202,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garment.name",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.capture.id",
+      "order": 11,
+      "parent": "24.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 305,
+        "y": 320,
+        "w": 151,
+        "h": 17
+      },
+      "dp": {
+        "x": 135.5,
+        "y": 177.5,
+        "w": 108,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:garment.id",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "24.capture.hex",
+      "order": 12,
+      "parent": "24.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 304,
+        "y": 356,
+        "w": 92,
+        "h": 19
+      },
+      "dp": {
+        "x": 134.5,
+        "y": 203.5,
+        "w": 66,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.hex",
+      "action": null,
+      "raw": {
+        "emDp": 18.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.capture.name",
+      "order": 13,
+      "parent": "24.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 306,
+        "y": 383,
+        "w": 176,
+        "h": 23
+      },
+      "dp": {
+        "x": 136,
+        "y": 223,
+        "w": 126,
+        "h": 16.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.capture.oklch",
+      "order": 14,
+      "parent": "24.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 306,
+        "y": 412,
+        "w": 237,
+        "h": 19
+      },
+      "dp": {
+        "x": 136,
+        "y": 243.5,
+        "w": 170,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:reading.oklch",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "24.scope",
+      "order": 15,
+      "parent": null,
+      "component": "ui:ChoiceGroup",
+      "box": {
+        "x": 133,
+        "y": 488,
+        "w": 502,
+        "h": 71
+      },
+      "dp": {
+        "x": 12,
+        "y": 298,
+        "w": 359.5,
+        "h": 51
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#2A2D34"
+      },
+      "raw": {
+        "cornerPx": 26
+      },
+      "copy": null
+    },
+    {
+      "id": "24.scope.wardrobe",
+      "order": 16,
+      "parent": "24.scope",
+      "component": null,
+      "box": {
+        "x": 138,
+        "y": 492,
+        "w": 246,
+        "h": 64
+      },
+      "dp": {
+        "x": 16,
+        "y": 301,
+        "w": 176,
+        "h": 46
+      },
+      "tokens": {
+        "bg": "level3",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.wardrobe.count",
+      "action": "select:with.scope.wardrobe",
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "24.scope.corpus",
+      "order": 17,
+      "parent": "24.scope",
+      "component": null,
+      "box": {
+        "x": 410,
+        "y": 503,
+        "w": 195,
+        "h": 42
+      },
+      "dp": {
+        "x": 210.5,
+        "y": 309,
+        "w": 139.5,
+        "h": 30
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.corpus.count",
+      "action": "select:with.scope.corpus",
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "24.rows",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 131,
+        "y": 584,
+        "w": 506,
+        "h": 604
+      },
+      "dp": {
+        "x": 10.5,
+        "y": 367,
+        "w": 362.5,
+        "h": 432.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2025"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-1.rank",
+      "order": 19,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 612,
+        "w": 15,
+        "h": 19
+      },
+      "dp": {
+        "x": 27,
+        "y": 387,
+        "w": 10.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.0.rank",
+      "action": null,
+      "raw": {
+        "emDp": 18.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-1.relationship",
+      "order": 20,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 185,
+        "y": 611,
+        "w": 217,
+        "h": 24
+      },
+      "dp": {
+        "x": 49.5,
+        "y": 386,
+        "w": 155.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.0.relationship",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-1.distance",
+      "order": 21,
+      "parent": "24.rows",
+      "component": "ui:Chip",
+      "box": {
+        "x": 513,
+        "y": 604,
+        "w": 103,
+        "h": 33
+      },
+      "dp": {
+        "x": 284.5,
+        "y": 381,
+        "w": 74,
+        "h": 23.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.0.deltaE00",
+      "action": null,
+      "measured": {
+        "bg": "#827252"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-1.swatch",
+      "order": 22,
+      "parent": "24.rows",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 184,
+        "y": 646,
+        "w": 76,
+        "h": 76
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 411,
+        "w": 54.5,
+        "h": 54.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.0.hex",
+      "action": null,
+      "measured": {
+        "fill": "#877954"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-1.japanese.label",
+      "order": 23,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 661,
+        "w": 85,
+        "h": 17
+      },
+      "dp": {
+        "x": 113,
+        "y": 422,
+        "w": 61,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.japanese",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-1.romaji.label",
+      "order": 24,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 378,
+        "y": 660,
+        "w": 59,
+        "h": 19
+      },
+      "dp": {
+        "x": 187.5,
+        "y": 421,
+        "w": 42.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-1.hex.label",
+      "order": 25,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 661,
+        "w": 34,
+        "h": 15
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 422,
+        "w": 24.5,
+        "h": 10.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-1.japanese.value",
+      "order": 26,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 682,
+        "w": 53,
+        "h": 27
+      },
+      "dp": {
+        "x": 113,
+        "y": 437,
+        "w": 38,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.0.japanese",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "24.rows.row-1.romaji.value",
+      "order": 27,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 379,
+        "y": 686,
+        "w": 111,
+        "h": 20
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 440,
+        "w": 79.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.0.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-1.hex.value",
+      "order": 28,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 686,
+        "w": 98,
+        "h": 20
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 440,
+        "w": 70,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.0.hex",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.rule-1",
+      "order": 29,
+      "parent": "24.rows",
+      "component": null,
+      "box": {
+        "x": 136,
+        "y": 739,
+        "w": 496,
+        "h": 2
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 478,
+        "w": 355.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-2.rank",
+      "order": 30,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 153,
+        "y": 768,
+        "w": 19,
+        "h": 20
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 498.5,
+        "w": 13.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.1.rank",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-2.relationship",
+      "order": 31,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 185,
+        "y": 768,
+        "w": 162,
+        "h": 24
+      },
+      "dp": {
+        "x": 49.5,
+        "y": 498.5,
+        "w": 116,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.1.relationship",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-2.distance",
+      "order": 32,
+      "parent": "24.rows",
+      "component": "ui:Chip",
+      "box": {
+        "x": 513,
+        "y": 761,
+        "w": 103,
+        "h": 33
+      },
+      "dp": {
+        "x": 284.5,
+        "y": 493.5,
+        "w": 74,
+        "h": 23.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.1.deltaE00",
+      "action": null,
+      "measured": {
+        "bg": "#3699A9"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-2.swatch",
+      "order": 33,
+      "parent": "24.rows",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 184,
+        "y": 803,
+        "w": 76,
+        "h": 76
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 523.5,
+        "w": 54.5,
+        "h": 54.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.1.hex",
+      "action": null,
+      "measured": {
+        "fill": "#359DAB"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-2.japanese.label",
+      "order": 34,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 818,
+        "w": 85,
+        "h": 18
+      },
+      "dp": {
+        "x": 113,
+        "y": 534.5,
+        "w": 61,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.japanese",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-2.romaji.label",
+      "order": 35,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 380,
+        "y": 816,
+        "w": 58,
+        "h": 20
+      },
+      "dp": {
+        "x": 189,
+        "y": 533,
+        "w": 41.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-2.hex.label",
+      "order": 36,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 817,
+        "w": 33,
+        "h": 16
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 533.5,
+        "w": 23.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-2.japanese.value",
+      "order": 37,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 275,
+        "y": 839,
+        "w": 79,
+        "h": 27
+      },
+      "dp": {
+        "x": 114,
+        "y": 549.5,
+        "w": 56.5,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.1.japanese",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "24.rows.row-2.romaji.value",
+      "order": 38,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 379,
+        "y": 843,
+        "w": 95,
+        "h": 24
+      },
+      "dp": {
+        "x": 188.5,
+        "y": 552.5,
+        "w": 68,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.1.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-2.hex.value",
+      "order": 39,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 843,
+        "w": 98,
+        "h": 20
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 552.5,
+        "w": 70,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.1.hex",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.rule-2",
+      "order": 40,
+      "parent": "24.rows",
+      "component": null,
+      "box": {
+        "x": 136,
+        "y": 896,
+        "w": 496,
+        "h": 2
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 590.5,
+        "w": 355.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-3.rank",
+      "order": 41,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 153,
+        "y": 925,
+        "w": 19,
+        "h": 20
+      },
+      "dp": {
+        "x": 26.5,
+        "y": 611,
+        "w": 13.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.2.rank",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-3.relationship",
+      "order": 42,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 186,
+        "y": 925,
+        "w": 274,
+        "h": 24
+      },
+      "dp": {
+        "x": 50,
+        "y": 611,
+        "w": 196.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.2.relationship",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-3.distance",
+      "order": 43,
+      "parent": "24.rows",
+      "component": "ui:Chip",
+      "box": {
+        "x": 509,
+        "y": 918,
+        "w": 108,
+        "h": 33
+      },
+      "dp": {
+        "x": 281.5,
+        "y": 606,
+        "w": 77.5,
+        "h": 23.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.2.deltaE00",
+      "action": null,
+      "measured": {
+        "bg": "#E1B161"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-3.swatch",
+      "order": 44,
+      "parent": "24.rows",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 184,
+        "y": 959,
+        "w": 76,
+        "h": 77
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 635.5,
+        "w": 54.5,
+        "h": 55
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.2.hex",
+      "action": null,
+      "measured": {
+        "fill": "#E2B45E"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-3.japanese.label",
+      "order": 45,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 974,
+        "w": 84,
+        "h": 18
+      },
+      "dp": {
+        "x": 113,
+        "y": 646,
+        "w": 60,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.japanese",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-3.romaji.label",
+      "order": 46,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 380,
+        "y": 973,
+        "w": 59,
+        "h": 19
+      },
+      "dp": {
+        "x": 189,
+        "y": 645.5,
+        "w": 42.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-3.hex.label",
+      "order": 47,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 974,
+        "w": 34,
+        "h": 16
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 646,
+        "w": 24.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-3.japanese.value",
+      "order": 48,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 996,
+        "w": 53,
+        "h": 27
+      },
+      "dp": {
+        "x": 113,
+        "y": 662,
+        "w": 38,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.2.japanese",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "24.rows.row-3.romaji.value",
+      "order": 49,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 381,
+        "y": 1000,
+        "w": 87,
+        "h": 24
+      },
+      "dp": {
+        "x": 190,
+        "y": 665,
+        "w": 62.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.2.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 18.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-3.hex.value",
+      "order": 50,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 1000,
+        "w": 97,
+        "h": 20
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 665,
+        "w": 69.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.2.hex",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.rule-3",
+      "order": 51,
+      "parent": "24.rows",
+      "component": null,
+      "box": {
+        "x": 136,
+        "y": 1053,
+        "w": 496,
+        "h": 2
+      },
+      "dp": {
+        "x": 14.5,
+        "y": 703,
+        "w": 355.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-4.rank",
+      "order": 52,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 152,
+        "y": 1082,
+        "w": 20,
+        "h": 19
+      },
+      "dp": {
+        "x": 26,
+        "y": 723.5,
+        "w": 14.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.3.rank",
+      "action": null,
+      "raw": {
+        "emDp": 18.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-4.relationship",
+      "order": 53,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 186,
+        "y": 1081,
+        "w": 121,
+        "h": 21
+      },
+      "dp": {
+        "x": 50,
+        "y": 723,
+        "w": 86.5,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.3.relationship",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-4.distance",
+      "order": 54,
+      "parent": "24.rows",
+      "component": "ui:Chip",
+      "box": {
+        "x": 514,
+        "y": 1075,
+        "w": 102,
+        "h": 33
+      },
+      "dp": {
+        "x": 285,
+        "y": 718.5,
+        "w": 73,
+        "h": 23.5
+      },
+      "tokens": {
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:with.3.deltaE00",
+      "action": null,
+      "measured": {
+        "bg": "#904546"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.rows.row-4.swatch",
+      "order": 55,
+      "parent": "24.rows",
+      "component": "ui:Swatch",
+      "box": {
+        "x": 184,
+        "y": 1117,
+        "w": 76,
+        "h": 71
+      },
+      "dp": {
+        "x": 48.5,
+        "y": 748.5,
+        "w": 54.5,
+        "h": 51
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.3.hex",
+      "action": null,
+      "measured": {
+        "fill": "#924749"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.rows.row-4.japanese.label",
+      "order": 56,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 1131,
+        "w": 84,
+        "h": 19
+      },
+      "dp": {
+        "x": 113,
+        "y": 758.5,
+        "w": 60,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.japanese",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-4.romaji.label",
+      "order": 57,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 380,
+        "y": 1130,
+        "w": 59,
+        "h": 20
+      },
+      "dp": {
+        "x": 189,
+        "y": 758,
+        "w": 42.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.romaji",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-4.hex.label",
+      "order": 58,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 1130,
+        "w": 33,
+        "h": 16
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 758,
+        "w": 23.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.field.hex",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-4.japanese.value",
+      "order": 59,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 274,
+        "y": 1153,
+        "w": 54,
+        "h": 27
+      },
+      "dp": {
+        "x": 113,
+        "y": 774.5,
+        "w": 38.5,
+        "h": 19.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.3.japanese",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "24.rows.row-4.romaji.value",
+      "order": 60,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 381,
+        "y": 1157,
+        "w": 84,
+        "h": 20
+      },
+      "dp": {
+        "x": 190,
+        "y": 777.5,
+        "w": 60,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.3.romaji",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "24.rows.row-4.hex.value",
+      "order": 61,
+      "parent": "24.rows",
+      "component": "ui:Text",
+      "box": {
+        "x": 506,
+        "y": 1157,
+        "w": 99,
+        "h": 20
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 777.5,
+        "w": 71,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:with.3.hex",
+      "action": null,
+      "raw": {
+        "emDp": 19.6
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "24.actions",
+      "order": 62,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 116,
+        "y": 1188,
+        "w": 536,
+        "h": 123
+      },
+      "dp": {
+        "x": 0,
+        "y": 799.5,
+        "w": 384,
+        "h": 88
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2028"
+      },
+      "copy": null
+    },
+    {
+      "id": "24.actions.create",
+      "order": 63,
+      "parent": "24.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 213,
+        "y": 1217,
+        "w": 343,
+        "h": 25
+      },
+      "dp": {
+        "x": 69.5,
+        "y": 820.5,
+        "w": 245.5,
+        "h": 18
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:with.createOutfit",
+      "action": "navigate:/wardrobe/outfit",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "bezel",
+      "note": "the phone’s bezel and notch around the screen",
+      "box": {
+        "x": 100,
+        "y": 59,
+        "w": 571,
+        "h": 1275
+      }
+    },
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render (9:41, signal, battery)",
+      "box": {
+        "x": 116,
+        "y": 80,
+        "w": 536,
+        "h": 40
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 286,
+        "y": 1284,
+        "w": 197,
+        "h": 10
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "blossom and wave line-art left of the phone",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "blossom and wave line-art right of the phone",
+      "box": {
+        "x": 671,
+        "y": 0,
+        "w": 97,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "the ground above the phone",
+      "box": {
+        "x": 100,
+        "y": 0,
+        "w": 571,
+        "h": 59
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "wave line-art below the phone",
+      "box": {
+        "x": 100,
+        "y": 1334,
+        "w": 571,
+        "h": 42
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "24.capture.oklch",
+      "why": "#1B2936’s printed OKLCh (0.28 / 0.045 / 252°) does not survive checking — it is 0.274 / 0.031 / 247° — sample content (§4 E1); the line shows the engine’s conversion"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C10",
+      "elements": [
+        "24.rows.row-1.distance",
+        "24.rows.row-2.distance",
+        "24.rows.row-3.distance",
+        "24.rows.row-4.distance"
+      ],
+      "resolution": "followed: the tinted ΔE00 badges carry their figure (golden rule 13) and are declared chroma-ceiling exceptions by F-225",
+      "flippedByUser": false
+    },
+    {
+      "id": "C16",
+      "elements": ["24.capture.source"],
+      "resolution": "24 also governs atlas/with/reading/[id]; its \"Estimated from a capture\" chip is that route’s case",
+      "flippedByUser": false
+    }
+  ]
+}

@@ -673,7 +673,7 @@
       },
       "type": {
         "face": "sans",
-        "size": "body",
+        "size": "title",
         "weight": 500
       },
       "icon": null,

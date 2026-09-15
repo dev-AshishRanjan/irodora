@@ -1,0 +1,1416 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "22",
+  "mockupSha256": "a8bf9b6fc5da257fe387a9e8ed696aa083663c09b30c794bf02cab2de0d4e8d6",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "22.screen",
+        "box": {
+          "x": 122,
+          "y": 76,
+          "w": 522,
+          "h": 1258
+        },
+        "dpPerPx": 0.7356
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "22.back",
+      "order": 1,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 153,
+        "y": 171,
+        "w": 26,
+        "h": 23
+      },
+      "dp": {
+        "x": 23,
+        "y": 70,
+        "w": 19,
+        "h": 17
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "back",
+      "illustration": null,
+      "binding": null,
+      "action": "navigate:/wardrobe",
+      "copy": null
+    },
+    {
+      "id": "22.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 300,
+        "y": 162,
+        "w": 168,
+        "h": 23
+      },
+      "dp": {
+        "x": 131,
+        "y": 63.5,
+        "w": 123.5,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.title",
+      "action": null,
+      "raw": {
+        "emDp": 18.2
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.mark",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Mark",
+      "box": {
+        "x": 583,
+        "y": 165,
+        "w": 35,
+        "h": 34
+      },
+      "dp": {
+        "x": 339,
+        "y": 65.5,
+        "w": 25.5,
+        "h": 25
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.subtitle",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 316,
+        "y": 188,
+        "w": 135,
+        "h": 20
+      },
+      "dp": {
+        "x": 142.5,
+        "y": 82.5,
+        "w": 99.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.titleJa",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "22.capture",
+      "order": 5,
+      "parent": null,
+      "component": "app:CaptureImage",
+      "box": {
+        "x": 148,
+        "y": 241,
+        "w": 473,
+        "h": 227
+      },
+      "dp": {
+        "x": 19,
+        "y": 121.5,
+        "w": 348,
+        "h": 167
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.capture",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.capture.live",
+      "order": 6,
+      "parent": "22.capture",
+      "component": "ui:Chip",
+      "box": {
+        "x": 165,
+        "y": 257,
+        "w": 169,
+        "h": 33
+      },
+      "dp": {
+        "x": 31.5,
+        "y": 133,
+        "w": 124.5,
+        "h": 24.5
+      },
+      "tokens": {
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.liveCapture",
+      "action": null,
+      "measured": {
+        "bg": "#5A6855"
+      },
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.capture.title",
+      "order": 7,
+      "parent": "22.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 178,
+        "y": 407,
+        "w": 399,
+        "h": 20
+      },
+      "dp": {
+        "x": 41,
+        "y": 243.5,
+        "w": 293.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.candidate.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.capture.notation",
+      "order": 8,
+      "parent": "22.capture",
+      "component": "ui:Text",
+      "box": {
+        "x": 177,
+        "y": 436,
+        "w": 210,
+        "h": 10
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 265,
+        "w": 154.5,
+        "h": 7.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "caption",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shopping.candidate.notation",
+      "action": null,
+      "raw": {
+        "emDp": 10.1
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "22.stats.unlocked",
+      "order": 9,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 148,
+        "y": 493,
+        "w": 230,
+        "h": 153
+      },
+      "dp": {
+        "x": 19,
+        "y": 306.5,
+        "w": 169,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F232B"
+      },
+      "copy": null
+    },
+    {
+      "id": "22.stats.pairings",
+      "order": 10,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 391,
+        "y": 493,
+        "w": 229,
+        "h": 153
+      },
+      "dp": {
+        "x": 198,
+        "y": 306.5,
+        "w": 168.5,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F232A"
+      },
+      "copy": null
+    },
+    {
+      "id": "22.stats.unlocked.figure",
+      "order": 11,
+      "parent": "22.stats.unlocked",
+      "component": "ui:Text",
+      "box": {
+        "x": 213,
+        "y": 522,
+        "w": 102,
+        "h": 45
+      },
+      "dp": {
+        "x": 67,
+        "y": 328,
+        "w": 75,
+        "h": 33
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shoppingCheck.outfitsUnlocked",
+      "action": null,
+      "raw": {
+        "emDp": 45.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.stats.pairings.figure",
+      "order": 12,
+      "parent": "22.stats.pairings",
+      "component": "ui:Text",
+      "box": {
+        "x": 487,
+        "y": 521,
+        "w": 37,
+        "h": 47
+      },
+      "dp": {
+        "x": 268.5,
+        "y": 327.5,
+        "w": 27,
+        "h": 34.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "display1",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "raw": {
+        "emDp": 47.4
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.stats.unlocked.label",
+      "order": 13,
+      "parent": "22.stats.unlocked",
+      "component": "ui:Text",
+      "box": {
+        "x": 183,
+        "y": 583,
+        "w": 159,
+        "h": 19
+      },
+      "dp": {
+        "x": 45,
+        "y": 373,
+        "w": 117,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.unlocked",
+      "action": null,
+      "raw": {
+        "emDp": 19.1
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.stats.pairings.label",
+      "order": 14,
+      "parent": "22.stats.pairings",
+      "component": "ui:Text",
+      "box": {
+        "x": 418,
+        "y": 583,
+        "w": 175,
+        "h": 22
+      },
+      "dp": {
+        "x": 217.5,
+        "y": 373,
+        "w": 128.5,
+        "h": 16
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.pairings",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.stats.unlocked.detail",
+      "order": 15,
+      "parent": "22.stats.unlocked",
+      "component": "ui:Text",
+      "box": {
+        "x": 166,
+        "y": 611,
+        "w": 193,
+        "h": 16
+      },
+      "dp": {
+        "x": 32.5,
+        "y": 393.5,
+        "w": 142,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.unlockedDetail",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "22.stats.pairings.detail",
+      "order": 16,
+      "parent": "22.stats.pairings",
+      "component": "ui:Text",
+      "box": {
+        "x": 422,
+        "y": 611,
+        "w": 168,
+        "h": 16
+      },
+      "dp": {
+        "x": 220.5,
+        "y": 393.5,
+        "w": 123.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "22.stats.duplicates",
+      "order": 17,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 148,
+        "y": 660,
+        "w": 230,
+        "h": 153
+      },
+      "dp": {
+        "x": 19,
+        "y": 429.5,
+        "w": 169,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F2429"
+      },
+      "copy": null
+    },
+    {
+      "id": "22.stats.gaps",
+      "order": 18,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 391,
+        "y": 660,
+        "w": 229,
+        "h": 153
+      },
+      "dp": {
+        "x": 198,
+        "y": 429.5,
+        "w": 168.5,
+        "h": 112.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F242C"
+      },
+      "copy": null
+    },
+    {
+      "id": "22.stats.duplicates.figure",
+      "order": 19,
+      "parent": "22.stats.duplicates",
+      "component": "ui:Text",
+      "box": {
+        "x": 244,
+        "y": 689,
+        "w": 37,
+        "h": 46
+      },
+      "dp": {
+        "x": 89.5,
+        "y": 451,
+        "w": 27,
+        "h": 34
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shoppingCheck.duplicates",
+      "action": null,
+      "raw": {
+        "emDp": 46.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.stats.gaps.figure",
+      "order": 20,
+      "parent": "22.stats.gaps",
+      "component": "ui:Text",
+      "box": {
+        "x": 492,
+        "y": 689,
+        "w": 22,
+        "h": 45
+      },
+      "dp": {
+        "x": 272,
+        "y": 451,
+        "w": 16,
+        "h": 33
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600,
+        "tabular": true
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "raw": {
+        "emDp": 45.3
+      },
+      "copy": {
+        "shape": "value",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.stats.duplicates.label",
+      "order": 21,
+      "parent": "22.stats.duplicates",
+      "component": "ui:Text",
+      "box": {
+        "x": 177,
+        "y": 750,
+        "w": 172,
+        "h": 21
+      },
+      "dp": {
+        "x": 40.5,
+        "y": 496,
+        "w": 126.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.duplicates",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.stats.gaps.label",
+      "order": 22,
+      "parent": "22.stats.gaps",
+      "component": "ui:Text",
+      "box": {
+        "x": 427,
+        "y": 750,
+        "w": 155,
+        "h": 21
+      },
+      "dp": {
+        "x": 224.5,
+        "y": 496,
+        "w": 114,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.gaps",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.stats.duplicates.detail",
+      "order": 23,
+      "parent": "22.stats.duplicates",
+      "component": "ui:Text",
+      "box": {
+        "x": 190,
+        "y": 778,
+        "w": 145,
+        "h": 13
+      },
+      "dp": {
+        "x": 50,
+        "y": 516.5,
+        "w": 106.5,
+        "h": 9.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shoppingCheck.threshold",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "22.stats.gaps.detail",
+      "order": 24,
+      "parent": "22.stats.gaps",
+      "component": "ui:Text",
+      "box": {
+        "x": 404,
+        "y": 778,
+        "w": 203,
+        "h": 16
+      },
+      "dp": {
+        "x": 207.5,
+        "y": 516.5,
+        "w": 149.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-222",
+      "action": null,
+      "copy": {
+        "shape": "body",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "22.compat.heading",
+      "order": 25,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 153,
+        "y": 843,
+        "w": 331,
+        "h": 24
+      },
+      "dp": {
+        "x": 23,
+        "y": 564,
+        "w": 243.5,
+        "h": 17.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.compatibility",
+      "action": null,
+      "raw": {
+        "emDp": 19
+      },
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.compat.owned",
+      "order": 26,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 552,
+        "y": 845,
+        "w": 62,
+        "h": 16
+      },
+      "dp": {
+        "x": 316.5,
+        "y": 565.5,
+        "w": 45.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.tertiary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.owned",
+      "action": "navigate:/wardrobe",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.compat",
+      "order": 27,
+      "parent": null,
+      "component": null,
+      "box": {
+        "x": 152,
+        "y": 876,
+        "w": 488,
+        "h": 231
+      },
+      "dp": {
+        "x": 22,
+        "y": 588.5,
+        "w": 359,
+        "h": 170
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-1",
+      "order": 28,
+      "parent": "22.compat",
+      "component": "ui:Card",
+      "box": {
+        "x": 152,
+        "y": 876,
+        "w": 186,
+        "h": 230
+      },
+      "dp": {
+        "x": 22,
+        "y": 588.5,
+        "w": 137,
+        "h": 169
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 20.9
+      },
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-2",
+      "order": 29,
+      "parent": "22.compat",
+      "component": "ui:Card",
+      "box": {
+        "x": 345,
+        "y": 876,
+        "w": 175,
+        "h": 231
+      },
+      "dp": {
+        "x": 164,
+        "y": 588.5,
+        "w": 128.5,
+        "h": 170
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 20.9
+      },
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-3",
+      "order": 30,
+      "parent": "22.compat",
+      "component": "ui:Card",
+      "box": {
+        "x": 529,
+        "y": 876,
+        "w": 111,
+        "h": 230
+      },
+      "dp": {
+        "x": 299.5,
+        "y": 588.5,
+        "w": 81.5,
+        "h": 169
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "lg"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "raw": {
+        "cornerPx": 20.9
+      },
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-1.photo",
+      "order": 31,
+      "parent": "22.compat.garment-1",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 161,
+        "y": 885,
+        "w": 168,
+        "h": 156
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 595,
+        "w": 123.5,
+        "h": 115
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.0.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-2.photo",
+      "order": 32,
+      "parent": "22.compat.garment-2",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 355,
+        "y": 885,
+        "w": 157,
+        "h": 156
+      },
+      "dp": {
+        "x": 171.5,
+        "y": 595,
+        "w": 115.5,
+        "h": 115
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.1.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-3.photo",
+      "order": 33,
+      "parent": "22.compat.garment-3",
+      "component": "app:GarmentPhoto",
+      "box": {
+        "x": 537,
+        "y": 885,
+        "w": 105,
+        "h": 156
+      },
+      "dp": {
+        "x": 305.5,
+        "y": 595,
+        "w": 77,
+        "h": 115
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.2.photo",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "22.compat.garment-1.distance",
+      "order": 34,
+      "parent": "22.compat.garment-1.photo",
+      "component": "ui:Chip",
+      "box": {
+        "x": 264,
+        "y": 894,
+        "w": 55,
+        "h": 26
+      },
+      "dp": {
+        "x": 104.5,
+        "y": 601.5,
+        "w": 40.5,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shopping.pairs.0.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.compat.garment-2.distance",
+      "order": 35,
+      "parent": "22.compat.garment-2.photo",
+      "component": "ui:Chip",
+      "box": {
+        "x": 449,
+        "y": 895,
+        "w": 53,
+        "h": 26
+      },
+      "dp": {
+        "x": 240.5,
+        "y": 602.5,
+        "w": 39,
+        "h": 19
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shopping.pairs.1.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.compat.garment-3.distance",
+      "order": 36,
+      "parent": "22.compat.garment-3.photo",
+      "component": "ui:Chip",
+      "box": {
+        "x": 620,
+        "y": 895,
+        "w": 24,
+        "h": 40
+      },
+      "dp": {
+        "x": 366.5,
+        "y": 602.5,
+        "w": 17.5,
+        "h": 29.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:shopping.pairs.2.deltaE00",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "figures"
+      }
+    },
+    {
+      "id": "22.compat.garment-1.name",
+      "order": 37,
+      "parent": "22.compat.garment-1",
+      "component": "ui:Text",
+      "box": {
+        "x": 162,
+        "y": 1052,
+        "w": 122,
+        "h": 40
+      },
+      "dp": {
+        "x": 29.5,
+        "y": 718,
+        "w": 89.5,
+        "h": 29.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.0.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "22.compat.garment-2.name",
+      "order": 38,
+      "parent": "22.compat.garment-2",
+      "component": "ui:Text",
+      "box": {
+        "x": 356,
+        "y": 1051,
+        "w": 147,
+        "h": 41
+      },
+      "dp": {
+        "x": 172,
+        "y": 717,
+        "w": 108,
+        "h": 30
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.1.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "22.compat.garment-3.name",
+      "order": 39,
+      "parent": "22.compat.garment-3",
+      "component": "ui:Text",
+      "box": {
+        "x": 539,
+        "y": 1052,
+        "w": 81,
+        "h": 20
+      },
+      "dp": {
+        "x": 306.5,
+        "y": 718,
+        "w": 59.5,
+        "h": 14.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "store:shopping.pairs.2.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.save",
+      "order": 40,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 147,
+        "y": 1140,
+        "w": 474,
+        "h": 60
+      },
+      "dp": {
+        "x": 18.5,
+        "y": 782.5,
+        "w": 348.5,
+        "h": 44
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.save",
+      "action": "submit:garment.save",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "22.scan",
+      "order": 41,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 149,
+        "y": 1210,
+        "w": 470,
+        "h": 58
+      },
+      "dp": {
+        "x": 20,
+        "y": 834,
+        "w": 345.5,
+        "h": 42.5
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:shopping.scanAnother",
+      "action": "navigate:/lens",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render (9:41, signal, battery)",
+      "box": {
+        "x": 128,
+        "y": 100,
+        "w": 512,
+        "h": 30
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 291,
+        "y": 1297,
+        "w": 186,
+        "h": 10
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "hanger and blossom line-art left of the screen",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 122,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "hanger and blossom line-art right of the screen",
+      "box": {
+        "x": 644,
+        "y": 0,
+        "w": 124,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "the ground above the screen",
+      "box": {
+        "x": 122,
+        "y": 0,
+        "w": 522,
+        "h": 76
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "the ground below the screen",
+      "box": {
+        "x": 122,
+        "y": 1334,
+        "w": 522,
+        "h": 42
+      }
+    }
+  ],
+  "departures": [
+    {
+      "rule": "E1",
+      "element": "22.capture.notation",
+      "why": "#7D8B78’s printed OKLCh (0.58 / 0.04 / 135°) does not survive checking — it is 0.620 / 0.032 / 136.9° — sample content (§4 E1); the line shows the engine’s conversion"
+    }
+  ],
+  "conflicts": []
+}

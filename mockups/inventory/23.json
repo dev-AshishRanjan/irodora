@@ -1,0 +1,1667 @@
+{
+  "$schema": "../inventory.schema.json",
+  "mockup": "23",
+  "mockupSha256": "60a39cf1d1add7e88b4bde04aad93d7c70e00b7434f2c18808f7e29016402080",
+  "kind": "screen",
+  "governs": "layout",
+  "frame": {
+    "kind": "device",
+    "screens": [
+      {
+        "id": "23.screen",
+        "box": {
+          "x": 114,
+          "y": 88,
+          "w": 540,
+          "h": 1211
+        },
+        "dpPerPx": 0.7111
+      }
+    ]
+  },
+  "elements": [
+    {
+      "id": "23.avatar",
+      "order": 1,
+      "parent": null,
+      "component": "new:Avatar",
+      "box": {
+        "x": 135,
+        "y": 162,
+        "w": 51,
+        "h": 50
+      },
+      "dp": {
+        "x": 15,
+        "y": 52.5,
+        "w": 36.5,
+        "h": 35.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:profile.avatar",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.title",
+      "order": 2,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 251,
+        "y": 163,
+        "w": 267,
+        "h": 22
+      },
+      "dp": {
+        "x": 97.5,
+        "y": 53.5,
+        "w": 190,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 600
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.title",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.share",
+      "order": 3,
+      "parent": null,
+      "component": "ui:Button",
+      "box": {
+        "x": 601,
+        "y": 170,
+        "w": 28,
+        "h": 33
+      },
+      "dp": {
+        "x": 346.5,
+        "y": 58.5,
+        "w": 20,
+        "h": 23.5
+      },
+      "tokens": {},
+      "type": null,
+      "icon": "share",
+      "illustration": null,
+      "binding": null,
+      "action": "open:share.profile",
+      "copy": null
+    },
+    {
+      "id": "23.subtitle",
+      "order": 4,
+      "parent": null,
+      "component": "ui:Text",
+      "box": {
+        "x": 306,
+        "y": 194,
+        "w": 154,
+        "h": 18
+      },
+      "dp": {
+        "x": 136.5,
+        "y": 75.5,
+        "w": 109.5,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.titleJa",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "japanese"
+      }
+    },
+    {
+      "id": "23.profile",
+      "order": 5,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 135,
+        "y": 236,
+        "w": 497,
+        "h": 568
+      },
+      "dp": {
+        "x": 15,
+        "y": 105,
+        "w": 353.5,
+        "h": 404
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1F2229"
+      },
+      "copy": null
+    },
+    {
+      "id": "23.profile.label",
+      "order": 6,
+      "parent": "23.profile",
+      "component": "ui:Chip",
+      "box": {
+        "x": 203,
+        "y": 256,
+        "w": 362,
+        "h": 41
+      },
+      "dp": {
+        "x": 63.5,
+        "y": 119.5,
+        "w": 257.5,
+        "h": 29
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "derived:F-223",
+      "action": null,
+      "copy": {
+        "shape": "badge",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.rule-1",
+      "order": 7,
+      "parent": "23.profile",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 312,
+        "w": 460,
+        "h": 2
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 159.5,
+        "w": 327,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.temperature.label",
+      "order": 8,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 155,
+        "y": 334,
+        "w": 129,
+        "h": 22
+      },
+      "dp": {
+        "x": 29,
+        "y": 175,
+        "w": 91.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.temperature",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.temperature.value",
+      "order": 9,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 501,
+        "y": 334,
+        "w": 113,
+        "h": 20
+      },
+      "dp": {
+        "x": 275,
+        "y": 175,
+        "w": 80.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.temperature.label",
+      "action": null,
+      "raw": {
+        "emDp": 19.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "23.profile.temperature.range",
+      "order": 10,
+      "parent": "23.profile",
+      "component": "ui:Slider",
+      "box": {
+        "x": 153,
+        "y": 365,
+        "w": 462,
+        "h": 26
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 197,
+        "w": 328.5,
+        "h": 18.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.temperature.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.temperature.low",
+      "order": 11,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 397,
+        "w": 39,
+        "h": 18
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 219.5,
+        "w": 27.5,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.temperature.low",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.temperature.confidence",
+      "order": 12,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 245,
+        "y": 398,
+        "w": 249,
+        "h": 19
+      },
+      "dp": {
+        "x": 93,
+        "y": 220.5,
+        "w": 177,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.temperature.confidence",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.temperature.high",
+      "order": 13,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 562,
+        "y": 398,
+        "w": 51,
+        "h": 16
+      },
+      "dp": {
+        "x": 318.5,
+        "y": 220.5,
+        "w": 36.5,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.temperature.high",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.rule-2",
+      "order": 14,
+      "parent": "23.profile",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 434,
+        "w": 459,
+        "h": 2
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 246,
+        "w": 326.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.depth.label",
+      "order": 15,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 155,
+        "y": 456,
+        "w": 61,
+        "h": 22
+      },
+      "dp": {
+        "x": 29,
+        "y": 261.5,
+        "w": 43.5,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.depth",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.depth.value",
+      "order": 16,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 417,
+        "y": 456,
+        "w": 197,
+        "h": 24
+      },
+      "dp": {
+        "x": 215.5,
+        "y": 261.5,
+        "w": 140,
+        "h": 17
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.depth.label",
+      "action": null,
+      "raw": {
+        "emDp": 18.4
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "23.profile.depth.range",
+      "order": 17,
+      "parent": "23.profile",
+      "component": "ui:Slider",
+      "box": {
+        "x": 153,
+        "y": 487,
+        "w": 457,
+        "h": 27
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 283.5,
+        "w": 325,
+        "h": 19
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.depth.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.depth.low",
+      "order": 18,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 155,
+        "y": 520,
+        "w": 44,
+        "h": 20
+      },
+      "dp": {
+        "x": 29,
+        "y": 307,
+        "w": 31.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.depth.low",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.depth.confidence",
+      "order": 19,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 249,
+        "y": 520,
+        "w": 241,
+        "h": 19
+      },
+      "dp": {
+        "x": 96,
+        "y": 307,
+        "w": 171.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.depth.confidence",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.depth.high",
+      "order": 20,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 567,
+        "y": 520,
+        "w": 47,
+        "h": 20
+      },
+      "dp": {
+        "x": 322,
+        "y": 307,
+        "w": 33.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.depth.high",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.rule-3",
+      "order": 21,
+      "parent": "23.profile",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 556,
+        "w": 459,
+        "h": 2
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 333,
+        "w": 326.5,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.chroma.label",
+      "order": 22,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 578,
+        "w": 185,
+        "h": 20
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 348.5,
+        "w": 131.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.chroma",
+      "action": null,
+      "raw": {
+        "emDp": 19.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.chroma.value",
+      "order": 23,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 497,
+        "y": 578,
+        "w": 117,
+        "h": 20
+      },
+      "dp": {
+        "x": 272.5,
+        "y": 348.5,
+        "w": 83,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.chroma.label",
+      "action": null,
+      "raw": {
+        "emDp": 19.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "23.profile.chroma.range",
+      "order": 24,
+      "parent": "23.profile",
+      "component": "ui:Slider",
+      "box": {
+        "x": 153,
+        "y": 609,
+        "w": 461,
+        "h": 28
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 370.5,
+        "w": 328,
+        "h": 20
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.chroma.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.chroma.low",
+      "order": 25,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 641,
+        "w": 55,
+        "h": 18
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 393,
+        "w": 39,
+        "h": 13
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.chroma.low",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.chroma.confidence",
+      "order": 26,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 246,
+        "y": 642,
+        "w": 248,
+        "h": 19
+      },
+      "dp": {
+        "x": 94,
+        "y": 394,
+        "w": 176.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.chroma.confidence",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.chroma.high",
+      "order": 27,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 570,
+        "y": 641,
+        "w": 43,
+        "h": 17
+      },
+      "dp": {
+        "x": 324.5,
+        "y": 393,
+        "w": 30.5,
+        "h": 12
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.chroma.high",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.rule-4",
+      "order": 28,
+      "parent": "23.profile",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 678,
+        "w": 460,
+        "h": 2
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 419.5,
+        "w": 327,
+        "h": 1.5
+      },
+      "tokens": {
+        "fg": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.contrast.label",
+      "order": 29,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 700,
+        "w": 203,
+        "h": 20
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 435,
+        "w": 144.5,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.contrast",
+      "action": null,
+      "raw": {
+        "emDp": 19.5
+      },
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.contrast.value",
+      "order": 30,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 465,
+        "y": 700,
+        "w": 149,
+        "h": 20
+      },
+      "dp": {
+        "x": 249.5,
+        "y": 435,
+        "w": 106,
+        "h": 14
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "title",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.contrast.label",
+      "action": null,
+      "raw": {
+        "emDp": 19.5
+      },
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "23.profile.contrast.range",
+      "order": 31,
+      "parent": "23.profile",
+      "component": "ui:Slider",
+      "box": {
+        "x": 153,
+        "y": 731,
+        "w": 461,
+        "h": 28
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 457,
+        "w": 328,
+        "h": 20
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.contrast.range",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.profile.contrast.low",
+      "order": 32,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 155,
+        "y": 765,
+        "w": 35,
+        "h": 16
+      },
+      "dp": {
+        "x": 29,
+        "y": 481.5,
+        "w": 25,
+        "h": 11.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.contrast.low",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.contrast.confidence",
+      "order": 33,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 250,
+        "y": 764,
+        "w": 267,
+        "h": 19
+      },
+      "dp": {
+        "x": 96.5,
+        "y": 480.5,
+        "w": 190,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.dimensions.contrast.confidence",
+      "action": null,
+      "copy": {
+        "shape": "caption",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.profile.contrast.high",
+      "order": 34,
+      "parent": "23.profile",
+      "component": "ui:Text",
+      "box": {
+        "x": 573,
+        "y": 763,
+        "w": 40,
+        "h": 21
+      },
+      "dp": {
+        "x": 326.5,
+        "y": 480,
+        "w": 28.5,
+        "h": 15
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.dimension.contrast.high",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.palettes",
+      "order": 35,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 137,
+        "y": 821,
+        "w": 495,
+        "h": 191
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 521,
+        "w": 352,
+        "h": 136
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#1E2228"
+      },
+      "copy": null
+    },
+    {
+      "id": "23.palettes.heading",
+      "order": 36,
+      "parent": "23.palettes",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 843,
+        "w": 443,
+        "h": 22
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 537,
+        "w": 315,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.palettes.heading",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.palettes.kasane-1",
+      "order": 37,
+      "parent": "23.palettes",
+      "component": "new:KasaneStrip",
+      "box": {
+        "x": 153,
+        "y": 876,
+        "w": 167,
+        "h": 64
+      },
+      "dp": {
+        "x": 27.5,
+        "y": 560.5,
+        "w": 119,
+        "h": 45.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palettes.0",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.palettes.kasane-2",
+      "order": 38,
+      "parent": "23.palettes",
+      "component": "new:KasaneStrip",
+      "box": {
+        "x": 329,
+        "y": 876,
+        "w": 167,
+        "h": 64
+      },
+      "dp": {
+        "x": 153,
+        "y": 560.5,
+        "w": 119,
+        "h": 45.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palettes.1",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.palettes.kasane-3",
+      "order": 39,
+      "parent": "23.palettes",
+      "component": "new:KasaneStrip",
+      "box": {
+        "x": 506,
+        "y": 876,
+        "w": 144,
+        "h": 64
+      },
+      "dp": {
+        "x": 279,
+        "y": 560.5,
+        "w": 102.5,
+        "h": 45.5
+      },
+      "tokens": {
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "engine:profile.palettes.2",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.palettes.kasane-1.name",
+      "order": 40,
+      "parent": "23.palettes",
+      "component": "ui:Text",
+      "box": {
+        "x": 154,
+        "y": 952,
+        "w": 115,
+        "h": 41
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 614.5,
+        "w": 82,
+        "h": 29
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:kasane.0.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "23.palettes.kasane-2.name",
+      "order": 41,
+      "parent": "23.palettes",
+      "component": "ui:Text",
+      "box": {
+        "x": 331,
+        "y": 953,
+        "w": 152,
+        "h": 37
+      },
+      "dp": {
+        "x": 154.5,
+        "y": 615,
+        "w": 108,
+        "h": 26.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:kasane.1.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "23.palettes.kasane-3.name",
+      "order": 42,
+      "parent": "23.palettes",
+      "component": "ui:Text",
+      "box": {
+        "x": 507,
+        "y": 952,
+        "w": 143,
+        "h": 41
+      },
+      "dp": {
+        "x": 279.5,
+        "y": 614.5,
+        "w": 101.5,
+        "h": 29
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:kasane.2.name",
+      "action": null,
+      "copy": {
+        "shape": "label",
+        "script": "latin",
+        "lines": 2
+      }
+    },
+    {
+      "id": "23.history",
+      "order": 43,
+      "parent": null,
+      "component": "ui:Card",
+      "box": {
+        "x": 137,
+        "y": 1029,
+        "w": 494,
+        "h": 74
+      },
+      "dp": {
+        "x": 16.5,
+        "y": 669,
+        "w": 351.5,
+        "h": 52.5
+      },
+      "tokens": {
+        "bg": "level1",
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.history.icon",
+      "order": 44,
+      "parent": "23.history",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 1047,
+        "w": 49,
+        "h": 49
+      },
+      "dp": {
+        "x": 28.5,
+        "y": 682,
+        "w": 35,
+        "h": 35
+      },
+      "tokens": {
+        "bg": "level2",
+        "radius": "sm"
+      },
+      "type": null,
+      "icon": "history",
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.history.title",
+      "order": 45,
+      "parent": "23.history",
+      "component": "ui:Text",
+      "box": {
+        "x": 214,
+        "y": 1051,
+        "w": 266,
+        "h": 22
+      },
+      "dp": {
+        "x": 71,
+        "y": 685,
+        "w": 189,
+        "h": 15.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "body",
+        "weight": 500
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.history",
+      "action": null,
+      "copy": {
+        "shape": "heading",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.history.detail",
+      "order": 46,
+      "parent": "23.history",
+      "component": "ui:Text",
+      "box": {
+        "x": 215,
+        "y": 1077,
+        "w": 334,
+        "h": 19
+      },
+      "dp": {
+        "x": 72,
+        "y": 703.5,
+        "w": 237.5,
+        "h": 13.5
+      },
+      "tokens": {
+        "fg": "text.secondary"
+      },
+      "type": {
+        "face": "sans",
+        "size": "label",
+        "weight": 400
+      },
+      "icon": null,
+      "illustration": null,
+      "binding": "oq:OQ-9",
+      "action": null,
+      "copy": {
+        "shape": "value",
+        "script": "mixed"
+      }
+    },
+    {
+      "id": "23.actions",
+      "order": 47,
+      "parent": null,
+      "component": "app:ActionBar",
+      "box": {
+        "x": 114,
+        "y": 1102,
+        "w": 540,
+        "h": 196
+      },
+      "dp": {
+        "x": 0,
+        "y": 721,
+        "w": 384,
+        "h": 139.5
+      },
+      "tokens": {
+        "border": "border.subtle"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "23.actions.retake",
+      "order": 48,
+      "parent": "23.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 134,
+        "y": 1122,
+        "w": 499,
+        "h": 57
+      },
+      "dp": {
+        "x": 14,
+        "y": 735.5,
+        "w": 355,
+        "h": 40.5
+      },
+      "tokens": {
+        "bg": "action.primary",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.retake",
+      "action": "submit:profile.retake",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    },
+    {
+      "id": "23.actions.export",
+      "order": 49,
+      "parent": "23.actions",
+      "component": "ui:Button",
+      "box": {
+        "x": 136,
+        "y": 1188,
+        "w": 496,
+        "h": 55
+      },
+      "dp": {
+        "x": 15.5,
+        "y": 782,
+        "w": 352.5,
+        "h": 39
+      },
+      "tokens": {
+        "border": "border.subtle",
+        "radius": "md"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "static:profile.exportPdf",
+      "action": "navigate:/profile/export",
+      "copy": {
+        "shape": "label",
+        "script": "latin"
+      }
+    }
+  ],
+  "notDesign": [
+    {
+      "what": "status-bar",
+      "note": "a device status bar drawn into the render (9:41, signal, battery)",
+      "box": {
+        "x": 130,
+        "y": 104,
+        "w": 510,
+        "h": 28
+      }
+    },
+    {
+      "what": "presentation",
+      "note": "the OS home indicator, which no surface of the app draws",
+      "box": {
+        "x": 286,
+        "y": 1268,
+        "w": 196,
+        "h": 10
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "kimono and blossom line-art left of the screen",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 110,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "kimono and blossom line-art right of the screen",
+      "box": {
+        "x": 660,
+        "y": 0,
+        "w": 108,
+        "h": 1376
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "kimono line-art above the screen",
+      "box": {
+        "x": 110,
+        "y": 0,
+        "w": 550,
+        "h": 81
+      }
+    },
+    {
+      "what": "outside-art",
+      "note": "kimono line-art below the screen",
+      "box": {
+        "x": 110,
+        "y": 1311,
+        "w": 550,
+        "h": 65
+      }
+    }
+  ],
+  "departures": [],
+  "conflicts": [
+    {
+      "id": "C10",
+      "elements": [
+        "23.profile.label",
+        "23.profile.temperature.range",
+        "23.profile.depth.range",
+        "23.profile.chroma.range",
+        "23.profile.contrast.range"
+      ],
+      "resolution": "followed: the gradient tracks and the brown label pill carry text (golden rule 13) and are declared chroma-ceiling exceptions by F-225",
+      "flippedByUser": false
+    },
+    {
+      "id": "C12",
+      "elements": ["23.profile.label", "23.avatar"],
+      "resolution": "followed: F-223 derives the label from the four ranges with an ADR; F-241 adds an optional on-device avatar with a security review",
+      "flippedByUser": false
+    }
+  ]
+}

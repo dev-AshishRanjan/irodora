@@ -104,7 +104,7 @@
       "primaryFor": ["/wardrobe/shopping"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/22.json"
     },
     "23": {
       "file": "23_profile_finished.jpg",
@@ -112,7 +112,7 @@
       "primaryFor": ["/profile"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/23.json"
     },
     "24": {
       "file": "24_garment_combinations.jpg",
@@ -120,7 +120,7 @@
       "primaryFor": ["/wardrobe/with/[id]", "/atlas/with/reading/[id]"],
       "variantFor": [],
       "surfaces": [],
-      "inventory": null
+      "inventory": "mockups/inventory/24.json"
     },
     "25": {
       "file": "25_home_light_mode.jpg",
