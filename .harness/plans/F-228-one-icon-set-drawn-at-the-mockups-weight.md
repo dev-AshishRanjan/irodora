@@ -42,6 +42,30 @@ the list does not name — `arrow-right`, `bell`, `camera-locked`, `chevron-*`, 
 `document`, `file-*`, `grid`, `list`, `map`, `more`, `plus`, `reticle`, `score` and its five kinds,
 `shield`, `sparkle` — and they are built, because they are drawn.
 
+### Which drawing, when the mockups disagree
+
+Rendering every instance of each name side by side showed the mockups draw **one name several ways**:
+`atlas` as a globe (01, 25), an open book (05) and a folded map (21); `search` as a magnifier (05) and
+two people (21); `swap` as a single circular arrow (07) and a two-headed one (13); `lens` as an
+outline camera (01), a filled one (02) and a ring (25). The contract's precedence decides each, so none
+of it is this feature's choice:
+
+- **The tab bar is `01`'s** (§6 C1, by P5): Home · Atlas · Lens · Wardrobe · Profile. So `atlas` is the
+  globe, `lens` the outline camera, `wardrobe` the shirt, `profile` the outline person — and 01
+  draws its ACTIVE tab filled (home), so each tab glyph has a filled variant for that state.
+- **A superseded element never sets a shape** that a governing one draws. The tab bars of 02 05 09 11
+  15 18 21 and 25 are replaced by C1, so 05's book and 21's map are not `atlas`, 21's two people are not
+  `search` (05's search field draws the magnifier), and 25's ring is not `lens`. Names drawn ONLY in
+  those tab bars — `bell`, `compass`, `map`, `grid`, `document`, `file-export` — are still built as
+  drawn, because the acceptance asks for every icon any mockup draws.
+- **Inside a screen, that screen governs** (P1). 07 draws its Swap buttons with the single circular
+  arrow it shares with `refresh`, and 13 draws swap as a two-headed arrow — so 07's three elements are
+  rebound to `refresh` (the glyph shown; the action stays a swap), and `swap` is 13's drawing.
+- **Colour is not the glyph's.** Every glyph is drawn in one ink, and tinting is the surface's under
+  §6 C10. C10 already declares 02's gold HUD, 04 and 12's green verdicts and 27's tan state art. Four
+  tinted icons it does not list — 00's colour wheel and palette, 13's harmony circles, 11's bulb — are
+  **OQ-37**, which blocks the surfaces that draw them rather than this feature.
+
 ### One registry
 
 - **`Glyph`** in `packages/ui` — SVG on a 24-unit grid, keyed by the inventory's own names, so a

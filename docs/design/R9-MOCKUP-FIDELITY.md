@@ -442,6 +442,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
 | **OQ-35** | `05`'s seven family chips (C13) name no white and no grey: off-white and the neutral greys (20 entries) have no honest home among them. New chips past the drawn edge, a stated folding rule, out of the filter, or something else? | `F-224` |
 | **OQ-36** | `15` draws Slate Graphite and Obsidian Noir as one swatch each; their levels, borders and text roles are drawn nowhere. A stated derivation, supplied values, or ground only — and is Slate's swatch its ground or its card? | `F-225` |
+| **OQ-37** | `00 11 13` draw four icons in colours C10 does not list — the colour wheel, the palette, the harmony circles, the bulb. Further C10 exceptions, or ink? | `F-232` `F-255` `F-257` |
 
 ---
 

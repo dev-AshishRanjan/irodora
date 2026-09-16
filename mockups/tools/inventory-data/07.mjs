@@ -180,9 +180,12 @@ export default {
     s1.hex,
     s2.name,
     s1.name,
+    // F-228: 07 draws its Swap buttons with the single circular arrow it also uses for refresh, not the
+    // two-headed arrow 13 draws for swap. The ACTION is a swap; the GLYPH is refresh's, and the icon
+    // field records the glyph, so one name draws one shape across the set.
     el('07.slots.slot-2.swap', 'ui:Button', B(407, 627, 118, 40), {
       parent: '07.slots.slot-2',
-      icon: 'swap',
+      icon: 'refresh',
       action: 'select:slot.2.swap',
       copy: { shape: 'label', script: 'latin' },
     }),
@@ -206,14 +209,14 @@ export default {
     s3.title,
     el('07.slots.slot-3.swap', 'ui:Button', B(279, 708, 82, 34), {
       parent: '07.slots.slot-3',
-      icon: 'swap',
+      icon: 'refresh',
       action: 'select:slot.3.swap',
       copy: { shape: 'label', script: 'latin' },
     }),
     s4.title,
     el('07.slots.slot-4.swap', 'ui:Button', B(573, 716, 65, 18), {
       parent: '07.slots.slot-4',
-      icon: 'swap',
+      icon: 'refresh',
       action: 'select:slot.4.swap',
       copy: { shape: 'label', script: 'latin' },
     }),

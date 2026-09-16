@@ -7478,7 +7478,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01. RECONCILED 2026-09-16 against the inventories and the images (increment 1): the set is every icon name an inventory binds — 57, once 00's box-with-arrow was rebound from `share` to `external` (it is a different drawing from the tray-and-arrow every screen draws as share). The acceptance list maps onto it: clear = close, photo = image, regenerate = refresh, light = sun (02, 03) and bulb (11) — both drawn — and t-shirt = wardrobe (11 and 25 draw the wardrobe glyph as a shirt). Hanger is an illustration (22, 27) and belongs to F-229. CALENDAR IS DRAWN IN NONE of 00, 01, 02, 06, 08, 11, 12, 13, 18, 22, 24 and 27, so it is not built: an icon no mockup draws is a design nobody made."
+      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01. RECONCILED 2026-09-16 against the inventories and the images (increment 1): the set is every icon name an inventory binds — 57, once 00's box-with-arrow was rebound from `share` to `external` (it is a different drawing from the tray-and-arrow every screen draws as share). The acceptance list maps onto it: clear = close, photo = image, regenerate = refresh, light = sun (02, 03) and bulb (11) — both drawn — and t-shirt = wardrobe (11 and 25 draw the wardrobe glyph as a shirt). Hanger is an illustration (22, 27) and belongs to F-229. CALENDAR IS DRAWN IN NONE of 00, 01, 02, 06, 08, 11, 12, 13, 18, 22, 24 and 27, so it is not built: an icon no mockup draws is a design nobody made. WHICH DRAWING (increment 1, 2026-09-16): the mockups draw one name several ways (atlas as globe, book and map; search as magnifier and people; swap as one arrow and two), and the contract decides each — C1/P5 makes the tab bar 01's, a superseded tab bar never sets a shape, and P1 lets each screen govern its own elements, so 07's swap buttons (which draw refresh's glyph) are rebound to `refresh`. Tints belong to the surfaces under C10; four C10 does not list are OQ-37."
     },
     {
       "id": "F-229",
@@ -7628,7 +7628,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that)."
+      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that).",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-233",
@@ -8580,7 +8583,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 11; empty state from 27. ELEMENTS: title \"Wardrobe Intelligence • 衣服\"; three outlined actions — \"+ Add Garment\", \"Outfit Lab\", \"Shopping Check\"; the coverage card — dial with percentage and label, the headline, the garments-to-outfits line; the gap card — icon, the named gap, the sentence, \"Explore in Atlas →\"; two-column garment cards — fabric photo or sample, the caption with hex, the garment name, type, wears and cost per wear; kimono line-art top right. DEPARTURES: absent cost data shows unknown, never an invented figure (FR-46)."
+      "notes": "MOCKUP 11; empty state from 27. ELEMENTS: title \"Wardrobe Intelligence • 衣服\"; three outlined actions — \"+ Add Garment\", \"Outfit Lab\", \"Shopping Check\"; the coverage card — dial with percentage and label, the headline, the garments-to-outfits line; the gap card — icon, the named gap, the sentence, \"Explore in Atlas →\"; two-column garment cards — fabric photo or sample, the caption with hex, the garment name, type, wears and cost per wear; kimono line-art top right. DEPARTURES: absent cost data shows unknown, never an invented figure (FR-46).",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-256",
@@ -8671,7 +8677,8 @@
       ],
       "notes": "MOCKUP 13. ELEMENTS: app bar \"← Wardrobe | Outfit Lab • 組み合わせ | Capsule Solver\"; four slot rows — garment line-art tile, hex, garment name, locked chip or Swap and lock controls, locked and outer rows tinted with the garment colour (C10); the score card — overall with its band and the check icon, five factor rows each with icon, figure and reason; the capsule result card; sticky \"Generate Next Match ↻\" and \"Save Outfit to Lookbook\" (F-238); garment line-art pattern behind. DEPARTURES: the overall-score verdict label → OQ-9; the personal-fit row keeps its FR-29 figure and loses its \"(Cool-Muted Match)\" suffix (E2, C12); \"(Natural Dyes)\" → the reason ADR-0073 actually computes (corpus affinity). ALSO DEPARTS (F-219): the CVD row keeps its figure and model without its safety suffix, and the contrast row shows the ratio and the Lc with the threshold they pass, without the one-word verdict 13 draws after the Lc (E2).",
       "openQuestions": [
-        "OQ-32"
+        "OQ-32",
+        "OQ-37"
       ]
     },
     {
