@@ -1351,10 +1351,10 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "gate:typecheck FIRST — since F-103 the steps are named, so removing or renaming one is a compile error at every call site that wanted it, naming the file and the property (watched: renaming `md` failed Chip.tsx:88, SearchField.tsx:74 and TextField.tsx:115 and nothing else). gate:a11y (verify-spacing-scale.mjs) still guards the LITERALS — any padding, margin or gap not on the scale — and is proven by verify-spacing-scale.mjs --prove. THE LIMIT THAT USED TO MATTER IS GONE: this link was created because the literal check could not see a stale INDEX. There are no indices any more.",
+      "guard": "gate:typecheck FIRST — since F-103 the steps are named, so removing or renaming one is a compile error at every call site that wanted it, naming the file and the property (watched: renaming `md` failed Chip.tsx:88, SearchField.tsx:74 and TextField.tsx:115 and nothing else). gate:a11y (verify-spacing-scale.mjs) still guards the LITERALS — any padding, margin or gap not on the scale — and is proven by verify-spacing-scale.mjs --prove. THE LIMIT THAT USED TO MATTER IS GONE: this link was created because the literal check could not see a stale INDEX. There are no indices any more. F-227 ADDED THE HALF THIS GUARD WAS MISSING: token reach counted a step only as nativeSpacing.<step>, on an F-111 note that step-named props \"would match nothing\" — true when it was written, and false since the layout primitives, so a step whose only readers were gap=\"lg\" and padding=\"lg\" was reported unreached. The check now reads gap, padding and padY as well, which is what makes a declaration in unreached-tokens.json mean anything for spacing.",
       "feature": "F-095",
       "memory": "memory/effects/a-scale-with-no-names-shifts-under-its-readers.md",
-      "rationale": "THE SCALE IS POSITIONAL IN ALL FOUR TARGETS — `--space-1..N`, `--spacing-1..N`, `SPACING[]` and `nativeSpacing[]`. So adding a step at the front or removing one from the middle changes what EVERY index above it means, while every call site still compiles and every test still passes: React Native style props take `number`, `nativeSpacing[2]` has literal type 12 today and would have literal type 14 tomorrow, and both are equally assignable. No test asserts a component’s padding VALUE — the conformance suite resolves colours, not lengths. The symptom is a layout subtly wrong everywhere, which is the symptom nobody bisects. CONTRAST WITH `nativeRadius`, WHICH IS A NAMED RECORD: `nativeRadius.swatch` survives any reordering and fails loudly if the name goes. Spacing and radius come from the same manifest and got different shapes, and only one of them is safe to edit. WHY F-095 COULD MOVE THE SCALE ANYWAY: ADR-0074 renumbered every index above 1, and that was safe PRECISELY BECAUSE NOTHING READ IT — the defect E-029 recorded. That window closed the moment it was fixed; five components read it now. GUARD, AND ITS HONEST LIMIT. `verify-spacing-scale.mjs` fails on any padding, margin or gap LITERAL that is not a step, naming file, line, property and value, and reads the scale from the manifest rather than repeating it — a `--prove` case removes a step from the manifest and asserts the verdict follows, which is what distinguishes reading the scale from carrying a copy. IT CANNOT SEE A STALE INDEX: `nativeSpacing[2]` is not a literal, the check reads no indices, and it says so. What stands in for a guard is the doc comment emitted onto the binding itself and the fact that only five call sites exist — protection that works until it does not. THE STRUCTURAL FIX IS NAMES, as radius already has, and it is F-103 rather than smuggled into F-095: it changes the manifest schema and all four emitters. F-103 NAMED THE STEPS, and the silent failure this link was created for no longer has a shape to happen in. `spacing.scale` is a named record in the manifest — xs, sm, md, lg, xl, xl2..xl5, following `radius`, which was named all along — and all four targets emit names: `--space-md`, `--spacing-md`, `SPACING.md`, `nativeSpacing.md`. The eight index reads in five components became name reads. WHY THIS LINK STAYS ACTIVE RATHER THAN RESOLVING: the DEPENDENCY is unchanged and still high — a change to `spacing.scale` still propagates to four generated targets and every component that spaces anything, and the generated files still have to be regenerated and committed together or they drift. What resolved is the SILENCE. A step removed or renamed is now a typecheck failure that names the file, the line and the property, where before it was a valid number in a valid field and a layout subtly wrong everywhere. THE PART THAT IS STILL ONLY A CONVENTION: nothing forces a component to reach for the scale at all, and nothing checks `borderWidth` or any other numeric style property. Those were outside this link when it was written and they still are.",
+      "rationale": "THE SCALE IS POSITIONAL IN ALL FOUR TARGETS — `--space-1..N`, `--spacing-1..N`, `SPACING[]` and `nativeSpacing[]`. So adding a step at the front or removing one from the middle changes what EVERY index above it means, while every call site still compiles and every test still passes: React Native style props take `number`, `nativeSpacing[2]` has literal type 12 today and would have literal type 14 tomorrow, and both are equally assignable. No test asserts a component’s padding VALUE — the conformance suite resolves colours, not lengths. The symptom is a layout subtly wrong everywhere, which is the symptom nobody bisects. CONTRAST WITH `nativeRadius`, WHICH IS A NAMED RECORD: `nativeRadius.swatch` survives any reordering and fails loudly if the name goes. Spacing and radius come from the same manifest and got different shapes, and only one of them is safe to edit. WHY F-095 COULD MOVE THE SCALE ANYWAY: ADR-0074 renumbered every index above 1, and that was safe PRECISELY BECAUSE NOTHING READ IT — the defect E-029 recorded. That window closed the moment it was fixed; five components read it now. GUARD, AND ITS HONEST LIMIT. `verify-spacing-scale.mjs` fails on any padding, margin or gap LITERAL that is not a step, naming file, line, property and value, and reads the scale from the manifest rather than repeating it — a `--prove` case removes a step from the manifest and asserts the verdict follows, which is what distinguishes reading the scale from carrying a copy. IT CANNOT SEE A STALE INDEX: `nativeSpacing[2]` is not a literal, the check reads no indices, and it says so. What stands in for a guard is the doc comment emitted onto the binding itself and the fact that only five call sites exist — protection that works until it does not. THE STRUCTURAL FIX IS NAMES, as radius already has, and it is F-103 rather than smuggled into F-095: it changes the manifest schema and all four emitters. F-103 NAMED THE STEPS, and the silent failure this link was created for no longer has a shape to happen in. `spacing.scale` is a named record in the manifest — xs, sm, md, lg, xl, xl2..xl5, following `radius`, which was named all along — and all four targets emit names: `--space-md`, `--spacing-md`, `SPACING.md`, `nativeSpacing.md`. The eight index reads in five components became name reads. WHY THIS LINK STAYS ACTIVE RATHER THAN RESOLVING: the DEPENDENCY is unchanged and still high — a change to `spacing.scale` still propagates to four generated targets and every component that spaces anything, and the generated files still have to be regenerated and committed together or they drift. What resolved is the SILENCE. A step removed or renamed is now a typecheck failure that names the file, the line and the property, where before it was a valid number in a valid field and a layout subtly wrong everywhere. THE PART THAT IS STILL ONLY A CONVENTION: nothing forces a component to reach for the scale at all, and nothing checks `borderWidth` or any other numeric style property. Those were outside this link when it was written and they still are. F-227 REPLACED THE SCALE WITH THE MOCKUPS OWN (ADR-0103): 4, 8, 16, 24, 32, 48. The names collide with the old ones — md was 12 and is 16, lg was 16 and is 24 — so this link was at its most dangerous on the day it changed: every reference still compiled and meant a different number. All 365 were rewritten explicitly by the contract snap rule and each checked against the snap of what it replaced, rather than trusting that a name still meant what it used to.",
       "confidence": 0.95,
       "origin": "manual",
       "status": "active"
@@ -5080,6 +5080,90 @@
       "guard": "packages/store/test/prohibited.test.ts runs the schema check against planted columns with decoys that must stay clean; packages/store/test/prohibited-copy.test.ts runs the copy check over decoys in both languages and near-misses that must stay clean, multi-word stems as runs of whole words; scripts/verify-no-inference-proof.mjs plants identifiers the source scan must find (CI, gate 15); gate 11 and apps/mobile/test/season-words.test.ts run the copy check over all 48 seasonal labels with a planted decoy. A change to a family's stems or pattern reaches all three checks' tests in the same run.",
       "memory": "memory/effects/one-vocabulary-feeds-three-nfr-22-checks.md",
       "rationale": "One vocabulary feeds three NFR-22 checks: the schema check over migrations and the live database, the source scan over identifiers (gate 15), and since F-223 the copy check over the seasonal labels and the rule's words (gate 11 and the app test). Narrowing a stem for one — as diagnos was narrowed for the source scan — narrows the other two silently; widening one widens all three, as F-223 did with undertone, yellow base and blue base after its review found the copy check missed them.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-131",
+      "from": {
+        "kind": "symbol",
+        "ref": "docs/design/design-system.manifest.json#radius"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Swatch.tsx#swatchCorner"
+        },
+        {
+          "kind": "module",
+          "ref": "packages/ui/src"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "typecheck"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "packages/ui/test/swatch-corners.test.tsx asserts the step at every size the product draws, the ceiling below about 24 px where a step would take more than a quarter of the side, the keyline one pixel outside the sample and the well one inset outside that, at ten sizes — each with a decoy: a component returning its step unconditionally fails the ceiling case, and one returning the ceiling unconditionally fails the step case. packages/design-tokens/test/manifest.test.ts keeps ADR-0094 bound itself (a ratio leaving too little of each edge straight throws, with a decoy inside it). gate:typecheck refuses a radius step that no longer exists.",
+      "feature": "F-227",
+      "memory": "memory/effects/a-corner-is-a-step-and-the-ratio-is-its-ceiling.md",
+      "rationale": "ADR-0090 made a swatch corner a RATIO of its side and ADR-0094 bounded that ratio by what stays straight. F-220 then measured what the mockups actually draw: 4 to 11.5 dp across 28 images, bound per element in the inventories as sm or md — lengths, not proportions, and a hero at 0.25 would take 85 px. So ADR-0103 makes the corner a step and keeps the ratio as its CEILING. The link is high because it reaches every sample in the product at once and nothing else would report it: the contrast gate reads colours, the conformance suite reads structure, and neither has a geometry. It also reaches the inventories in the other direction — a surface built to a mockup that binds md must pass corner=\"md\", and a surface that forgets gets sm quietly.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-132",
+      "from": {
+        "kind": "symbol",
+        "ref": "docs/design/design-system.manifest.json#elevation.shadow"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/elevation.ts#elevationShadow"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Card.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Surface.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "The manifest parser refuses a shadow on any mode but light, at any level that is not one, with an opacity past a half, or spelled as a CSS string — each watched failing in packages/design-tokens/test/manifest.test.ts and typography.test.ts, with a decoy accepting both the drawn shadow and a plain \"none\". packages/ui/test/elevation.test.tsx asserts the light card carries exactly the declared numbers and that a dark card, a light level 2 and a light level 3 carry none, with a vacuity guard that fails if the manifest ever declares \"none\". NOT GUARDED: that the drawn shadow matches 25 pixel for pixel — F-221 captures beside the mockup are where a person judges that.",
+      "feature": "F-227",
+      "memory": "memory/effects/a-shadow-exists-only-where-a-mockup-draws-one.md",
+      "rationale": "This product refused shadows outright: depth is tint, because a shadow tints what it surrounds and a colour sample must not be judged against a tinted surround (ADR-0044). Mockup 25 draws one under its light cards, and golden rule 14 says build what is drawn — so ADR-0103 allows exactly that one and the parser refuses the rest. The link is high because the refusal is the kind that erodes: once a shadow exists anywhere, the argument for one more is easy, and the only thing standing in its way is a parser that throws and a test that names the levels. The numbers are derived from a JPEG (2 dp offset, 8 dp blur, a tenth of the ink) and carry that uncertainty; the shape of the rule does not.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

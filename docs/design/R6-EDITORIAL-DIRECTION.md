@@ -33,6 +33,12 @@ The application renders none of it:
 | forty HeroUI components available | **five** used; no sheet, dialog, popover, tab bar or card |
 | a token system with **80** names | **36 of them declared unreached** — 45 % of the system |
 
+> **R6 as it stood.** The rows above are the audit that opened R6 and are left as written. The
+> scales themselves moved in R9: F-227 replaced them with the ones the mockups are drawn with
+> ([ADR-0103](../adr/0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)) —
+> spacing `4 · 8 · 16 · 24 · 32 · 48`, radius `sm 6 · md 10 · lg 16 · pill` — so `xl2`…`xl5` no
+> longer exist to be unused.
+
 Spacing is also written as numeric literals in 147 places rather than through `nativeSpacing`
 — the gate confirms they all land on the scale, so those values agree with it by inspection
 rather than by reference.
@@ -109,16 +115,26 @@ Everything else holds still. A page with three bold moves has none.
 These are constraints, not preferences, and no feature in R6 may relax one.
 
 1. **Colour is never the only channel.** Anywhere. Ever.
-2. **A swatch corner is bounded by the area it removes** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
+2. **A swatch corner is bounded** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md),
+   [ADR-0094](../adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md),
+   [ADR-0103](../adr/0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)).
    This read "the swatch keeps `radius: 0`", on the reasoning that a corner removes sampled area
    from exactly the region the eye uses to judge a flat colour and that the effect grows as the
-   swatch shrinks. The second half is why it is a RATIO now — 0.125, costing 1.34 % of the sample
-   at every size — rather than zero. The bound stayed; the value moved.
+   swatch shrinks. The second half is why it stopped being zero. What the corner IS has moved twice
+   since — a ratio, then what stays straight, and in R9 a SCALE STEP, because F-220 measured the
+   drawn corners and they are lengths: 4 to 11.5 dp across 28 mockups. THE BOUND NEVER MOVED. It is
+   now the ceiling a step may not exceed: `min(step, 0.25 × side)`, so a sample too small for its
+   step still rounds by a quarter of its side.
 3. **The swatch well, the two-tone keyline and the chart ramp stay neutral in every theme**,
    including a device-seeded one.
 4. **Motion may never alter a colour mid-transition.** Intermediate frames of a cross-fade are
    plausible colours that never existed.
-5. **No shadow.** Elevation is tonal. A shadow tints what it surrounds.
+5. **Elevation is tonal, and a shadow exists only where a mockup draws one.** A shadow tints what
+   it surrounds, which is disqualifying next to a sample — so depth is tint everywhere, with one
+   drawn exception: `25`'s light cards, measured and declared as light mode at level 1
+   ([ADR-0103](../adr/0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)).
+   The manifest parser refuses a shadow on any other mode or level, so this cannot spread by
+   preference — only by a mockup and a publish.
 6. **Every claim stays honest.** The claims lint is binding on all new copy; an estimate is
    called an estimate.
 7. **WCAG 2.2 AA, gated in both themes, both locales, and under CVD simulation.**
