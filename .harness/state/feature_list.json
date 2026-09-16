@@ -7454,7 +7454,8 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
+      "plan": "plans/F-228-one-icon-set-drawn-at-the-mockups-weight.md",
       "blockedBy": [
         "F-220"
       ],
@@ -7477,7 +7478,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01."
+      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01. RECONCILED 2026-09-16 against the inventories and the images (increment 1): the set is every icon name an inventory binds — 57, once 00's box-with-arrow was rebound from `share` to `external` (it is a different drawing from the tray-and-arrow every screen draws as share). The acceptance list maps onto it: clear = close, photo = image, regenerate = refresh, light = sun (02, 03) and bulb (11) — both drawn — and t-shirt = wardrobe (11 and 25 draw the wardrobe glyph as a shirt). Hanger is an illustration (22, 27) and belongs to F-229. CALENDAR IS DRAWN IN NONE of 00, 01, 02, 06, 08, 11, 12, 13, 18, 22, 24 and 27, so it is not built: an icon no mockup draws is a design nobody made."
     },
     {
       "id": "F-229",

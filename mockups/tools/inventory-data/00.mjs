@@ -181,9 +181,12 @@ export default {
       tokens: { bg: 'level2' },
       icon: 'edit',
     }),
-    el('00.controls.icon-share', 'ui:Button', B(1243, 91, 32, 33), {
+    // Rebound by F-228: drawn as a box with an arrow leaving its corner — an EXTERNAL glyph. It was
+    // recorded as `share`, which every screen draws as a tray with an arrow up (06 20 23 24 26), so
+    // one name would have drawn two shapes.
+    el('00.controls.icon-external', 'ui:Button', B(1243, 91, 32, 33), {
       tokens: { bg: 'level2' },
-      icon: 'share',
+      icon: 'external',
     }),
     el('00.controls.icon-contrast', 'ui:Button', B(1288, 91, 32, 33), {
       tokens: { bg: 'level2' },

@@ -1089,7 +1089,7 @@
       "copy": null
     },
     {
-      "id": "00.controls.icon-share",
+      "id": "00.controls.icon-external",
       "order": 42,
       "parent": null,
       "component": "ui:Button",
@@ -1104,7 +1104,7 @@
         "bg": "level2"
       },
       "type": null,
-      "icon": "share",
+      "icon": "external",
       "illustration": null,
       "binding": null,
       "action": null,
