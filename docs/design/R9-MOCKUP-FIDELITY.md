@@ -210,38 +210,64 @@ the top four within 0.03, too small or too low in contrast at their size. Georgi
 commercial licence, so which face ships is **OQ-29** — and `F-275` measured what an open licence can
 offer, so that question is now a choice between measured options rather than one option.
 
-**Open-licence candidates (`F-275`, 2026-09-16).** Twenty SIL OFL faces from `google/fonts`, scored by
-the same tool in the same runs as the installed ones — which reproduce F-220's numbers to the third
-decimal (Georgia Pro 0.825, Georgia 0.772, Times New Roman 0.695), so the two sets are comparable. A
-variable font is scored at each named instance, so the weight is part of the answer. **The word
-matters as much as the crop**: the wordmark is drawn *Irodora* on `00`, `01` and `14` and *IRODORA* on
-`25`, and scoring caps against a mixed-case target puts every face near 0.23 in almost random order.
+**Open-licence candidates (`F-275`, 2026-09-16).** Twenty open-licence families from
+`google/fonts`' `ofl/` tree — **an implementing session's shortlist**, chosen for resemblance to the
+drawn letterforms rather than by popularity, and pinned by file, size, sha256 and source commit in
+[`serif-candidates.json`](../../mockups/tools/serif-candidates.json). Nineteen carry an `OFL.txt`
+beside the font; **Tinos does not** — its `METADATA.pb` declares OFL but no licence text sits in its
+directory, so its terms are unconfirmed and it is excluded from any claim about the set (it scored
+0.609 on `01`, 26th).
+
+They were scored by the same tool in the same runs as the installed faces, which reproduce F-220's
+published figures (0.825, 0.772, 0.695 round to its 0.83, 0.77, 0.70), so the two sets are comparable.
+A variable font is scored at each named instance, so twenty families became 89 faces and, with the
+installed twenty, **109 candidates per run** — and the weight is part of the answer. **The word matters
+as much as the crop**: the wordmark is drawn *Irodora* on `00`, `01` and `14` and *IRODORA* on `25`,
+and scoring caps against a mixed-case target collapses the whole field to 0.06–0.29 (mean 0.20),
+ranked by weight rather than by shape.
 
 | image | drawn | closest open-licence | for comparison |
 |---|---|---|---|
-| `01` wordmark | *Irodora* | **Source Serif 4 Medium 0.747** · Gelasio SemiBold 0.732 · Source Serif 4 0.726 · Gelasio 0.719 | Georgia Pro 0.825 · Georgia 0.772 · Times New Roman 0.695 · Charis SIL 0.602 (31st) |
-| `00` wordmark | *Irodora* | **Charis SIL 0.762** · Lora SemiBold 0.739 · Source Serif 4 SemiBold 0.734 | Georgia Pro 0.653 (25th) · Georgia 0.612 |
-| `14` splash | *Irodora* | **Charis SIL 0.793** · Lora SemiBold 0.726 · Bitter SemiBold 0.691 | Source Serif 4 0.641 (27th) · Georgia Pro 0.599 (47th) |
-| `25` wordmark | *IRODORA* | Newsreader Medium 0.511 · Charis SIL 0.465 | Rockwell 0.58 · Palatino Linotype 0.532 · Georgia Pro 0.313 (83rd) |
+| image | target aspect | closest open-licence (aspect) | for comparison |
+|---|---|---|---|
+| `01` wordmark *Irodora* | 4.31 | **Source Serif 4 Medium 0.747** (4.63) · Gelasio SemiBold 0.732 (5.04) · Source Serif 4 0.726 (4.57) · Gelasio 0.719 (4.34) | Georgia Pro 0.825 (4.45) · Georgia 0.772 · Times New Roman 0.695 · Charis SIL 0.602, 30th of 109, tied with Century |
+| `00` wordmark *Irodora* | 4.15 | **Charis SIL 0.762** (4.41) · Lora SemiBold 0.739 (4.69) · Source Serif 4 SemiBold 0.734 (4.70) | Georgia Pro 0.653 (24th) · Georgia 0.612 |
+| `14` splash *Irodora* | 4.29 | **Charis SIL 0.793** (4.41) · Lora SemiBold 0.726 · Bitter SemiBold 0.691 | Source Serif 4 0.641 (26th) · Georgia Pro 0.599 (46th) |
+| `25` wordmark *IRODORA* | 6.11 | Newsreader Medium 0.511 · Charis SIL 0.465 | Rockwell 0.58 · Palatino Linotype 0.532 · Georgia Pro 0.313 (82nd) |
 
-**The images disagree, and that is the finding.** On `01` — the one image whose spread is wide enough
-to separate anything, 0.825 down to 0.60 — the closest open faces are Source Serif 4 Medium and
-Gelasio SemiBold, short of Georgia Pro by 0.08–0.09 and ahead of Times New Roman. On `00` and `14`
-Charis SIL leads every candidate, installed ones included, while sitting 31st on `01`. **Gelasio is
-Georgia's metric-compatible counterpart**, which answers a different question from an outline match:
-it keeps the drawn metrics.
+**The images disagree, and that is the finding.** On `01` — where the top of the field stands
+furthest above its body, 0.223 from the leader to the 30th, against 0.157 on `14` and 0.116 on `00` —
+the closest open faces are Source Serif 4 Medium and Gelasio SemiBold, short of Georgia Pro by
+0.08–0.09 and ahead of Times New Roman. On `00` and `14` Charis SIL leads every candidate, installed
+ones included, while sitting 30th on `01`. **Gelasio is Georgia's metric-compatible counterpart**,
+which answers a different question from an outline match: it keeps the drawn metrics.
 
 **`25` is the one to be careful with.** It is the only wordmark drawn in caps, its whole field is low
-(the best of 109 candidates is Rockwell, a slab, at 0.58) and **Georgia Pro ranks 83rd there (0.313)**
+(the best of 109 candidates is Rockwell, a slab, at 0.58) and **Georgia Pro ranks 82nd there (0.313)**
 — the face that wins `01` outright. Either `25` is not drawn in the face `01` is, or a caps
 comparison at 38 px separates nothing. This measurement cannot tell which, and says so rather than
-averaging the two readings into a recommendation.
+averaging the two readings into a recommendation. **It also supersedes F-220's `25` figure above**:
+under this crop — the Latin 229 px of a 301 px box — `25`'s best is 0.58 with the top four spread
+0.077, where F-220 recorded "0.66–0.68, top four within 0.03" for `00`, `14` and `25` together. Its
+`00` and `14` figures do reproduce here (0.663 and 0.676 among installed faces); its `25` figure does
+not.
 
-What the score is: mask overlap at one size, after both bounding boxes are scaled to one grid. It says
-nothing about spacing, hinting, Japanese coverage (`20` and `26` draw a serif and no Latin face
-answers that — `F-226`'s second criterion), or licence terms beyond the OFL each candidate carries.
-The font files are not committed: `F-275` measured them, and `F-226` is what ships one, with
-`NOTICE.md`, the subset and the coverage gate. The icon
+What the score is: mask overlap at one size, after each bounding box is scaled onto the target's grid
+**independently in x and y** — so a face wider than the drawn word is squashed to fit rather than
+penalised for it, which is why the aspects are quoted above. Gelasio SemiBold's natural aspect is 5.04
+against a target of 4.31: it scores well on shape after a 17 % horizontal squash, and a person
+choosing on score alone would be choosing a face wider than the one drawn. The score says nothing
+about spacing, hinting, Japanese coverage (`20` and `26` draw a serif and no Latin face answers that —
+`F-226`'s second criterion), or licence terms.
+
+**The tagline was not re-measured.** F-220's reading (Georgia Pro 0.66, next 0.52) stands as it is:
+`01.header.tagline` is three lines in a 269 × 112 box and this tool renders one line, so an
+open-licence comparison there needs a different measurement rather than a rerun.
+
+The font files are not committed — `F-275` measured them and `F-226` is what ships one, with
+`NOTICE.md`, the subset and the coverage gate — but what is needed to fetch the same twenty and get
+the same numbers is: [`serif-candidates.json`](../../mockups/tools/serif-candidates.json), pinned by
+sha256 and by the `google/fonts` commit the files were read at. The icon
 stroke measures 3–4 px on `01`'s tab icons (mean ≈ 3.3 px, ≈ 1.65 dp at 2 px/dp): `NavIcon`'s 1.75 dp
 `STROKE`, inside the reading's ±0.5 dp.
 
@@ -408,7 +434,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
 | **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |
 | **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
-| **OQ-29** | The serif: `01` matches Georgia Pro best (0.825) of 20 installed faces, under a commercial licence. Of 20 SIL OFL faces, Source Serif 4 Medium (0.747) and Gelasio SemiBold (0.732, Georgia-metric-compatible) are closest on `01`; Charis SIL leads `00` (0.762) and `14` (0.793) ahead of every installed face; `25`'s caps separate nothing and rank Georgia Pro 83rd (§5). Georgia Pro licensed, or one of those? | `F-226` |
+| **OQ-29** | The serif: `01` matches Georgia Pro best (0.825) of 20 installed faces, under a commercial licence. Of 20 SIL OFL faces, Source Serif 4 Medium (0.747) and Gelasio SemiBold (0.732, Georgia-metric-compatible) are closest on `01`; Charis SIL leads `00` (0.762) and `14` (0.793) ahead of every installed face; on `25` the field is low and Georgia Pro ranks 82nd, so either that image is drawn in another face or caps at that size separate nothing (§5). Georgia Pro licensed, or one of those? | `F-226` |
 | **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
 | **OQ-31** | `23`'s seasonal pill ends in *Kasane Harmony*, which nothing defines. Define it, or the summary alone? | `F-260` |
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |

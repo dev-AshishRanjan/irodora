@@ -9342,7 +9342,8 @@
       "service": "root",
       "release": "R9",
       "priority": "should",
-      "status": "backlog",
+      "status": "done",
+      "plan": "plans/F-275-the-serif-against-open-licence-candidates.md",
       "blockedBy": [
         "F-220"
       ],
@@ -9362,8 +9363,7 @@
     {
       "release": "R9",
       "priority": "should",
-      "status": "in_progress",
-      "plan": "plans/F-275-the-serif-against-open-licence-candidates.md",
+      "status": "backlog",
       "blockedBy": [],
       "verification": [
         "state",
@@ -9413,6 +9413,50 @@
         "Its in-memory spoilings include a provenance field removed, watched failing, beside the clean file passing"
       ],
       "notes": "FOUND PLANNING F-223, CONFIRMED BY READING scripts/verify-content.mjs (2026-09-15): the weights section parses the weights through parseWeightContent and never calls parseProvenance, and parseWeightContent does not read the provenance block. NFR-20 asks every rule file for complete provenance; for weights nothing checks it. ALSO FOUND (F-223, 2026-09-15): weights.2026.08.4.json cites provenance.sourceId IRO-ED-003, and the licensing register gives IRO-ED-003 to the taxonomy vocabulary — the weights have no register row of their own, which a provenance check reading the register would have refused."
+    },
+    {
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "id": "F-278",
+      "title": "Gate 0 requires an in-progress feature to carry its own plan, not any plan",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "acceptance": [
+        "The plan-before-code check refuses an in_progress feature whose plan path does not belong to it — the plan file named for the feature's own id — naming both ids",
+        "A proof plants a feature carrying another feature’s plan and watches the check fail, beside the real state passing"
+      ],
+      "notes": "RECORDED FROM F-275'S SINGLE REVIEW (finding 18). scripts/verify-state.mjs asserts only that an in_progress feature's `plan` path EXISTS. F-275's claim was written onto F-276 by an edit that searched a fixed window past F-275's id and replaced the next status it found: F-276 went in_progress carrying F-275's plan, F-275 stayed in the backlog with none, and gate 0 passed twice — once on the claim and once on the commit that did F-275's work. The state gate was the check that should have refused it, and the plan-before-code rule it enforces was satisfied vacuously."
+    },
+    {
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "id": "F-279",
+      "title": "The PowerShell tools stay readable by Windows PowerShell, and a check says so",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "acceptance": [
+        "A lint-chain check refuses a tracked .ps1 that holds a byte above 127 without a UTF-8 byte-order mark, naming the file and the first offending line",
+        "A planted em dash in a copy of a tool is watched failing, beside the real tools passing"
+      ],
+      "notes": "RECORDED FROM F-275'S SINGLE REVIEW (finding 17). Windows PowerShell 5.1 reads a .ps1 without a BOM as ANSI, so an em dash inside a string is a parse error rather than a character: F-275 broke mockups/tools/serif-match.ps1 exactly that way and the error surfaced only when the tool was run. mockups/tools/README.md now states the convention; nothing enforces it, and the tools are run by hand, so the next breakage is found by whoever runs one next."
     }
   ]
 }

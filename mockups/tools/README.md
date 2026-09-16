@@ -20,16 +20,23 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 
 The wordmark is drawn *Irodora* on `00`, `01` and `14`, and *IRODORA* on `25` — so the word passed
 has to be the one drawn. All-caps against a mixed-case target scores every face at about 0.23 and
-ranks them almost at random, which is what F-275's first run did until the crop was looked at rather
-than assumed.
+ranks them by weight rather than shape — the whole field collapses to 0.06–0.29 — which is what
+F-275's first run did until the crop was looked at rather than assumed.
 
 ```
-# installed faces only — the control, which reproduces F-220's numbers
+# the control: installed faces only, which reproduces F-220's numbers
 powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg -x 170 -y 93 -w 212 -h 51 -word Irodora -polarity light
 
-# with open-licence candidates fetched into a directory (F-275)
-powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg -x 170 -y 93 -w 212 -h 51 -word Irodora -polarity light -fontDir <a directory of .ttf files>
+# the four F-275 measured, with candidates fetched into a directory (-top prints the whole field)
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg              -x 170 -y 93  -w 212 -h 51 -word Irodora -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/00_component_design_system.jpg  -x 189 -y 109 -w 222 -h 56 -word Irodora -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/14_app_icon_and_splash.jpg      -x 485 -y 665 -w 147 -h 35 -word Irodora -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/25_home_light_mode.jpg          -x 182 -y 197 -w 229 -h 38 -word IRODORA -polarity dark  -fontDir <dir> -top 109
 ```
+
+Which files to put in `<dir>`, and where they came from:
+[`serif-candidates.json`](serif-candidates.json) — family, file, size, sha256, URL and the
+`google/fonts` commit they were read at. The binaries are not committed (F-275 measures; F-226 ships).
 
 The crops are the inventories' own wordmark boxes; `25` is cropped to its Latin part (w 229 of 301,
 the rest being 彩度). A variable font loads as its named instances, so each weight is scored

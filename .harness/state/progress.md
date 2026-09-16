@@ -8,6 +8,72 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-16 — F-275 The serif is measured against twenty open-licence candidates
+
+**Done — taken out of the backlog on the user's word** (*"For downloading fonts, do it yourself"*),
+which was its only blocker, because OQ-29 blocks F-226. OQ-29 offered one option — license Georgia Pro
+or pick something unmeasured. It now offers measured ones, and still ends in a question.
+
+- **The candidates** — twenty open-licence families from `google/fonts`' `ofl/` tree, an implementing
+  session's shortlist chosen for resemblance to the drawn letterforms, pinned by file, size, sha256
+  and source commit in `mockups/tools/serif-candidates.json`. Nineteen carry an `OFL.txt`; Tinos does
+  not, and is excluded from any claim about the set. No binary is committed: this measures, F-226 ships.
+- **The tool** — `serif-match.ps1` gains `-fontDir` (faces loaded from files, never installed) and
+  `-top`; it now exits non-zero on a missing image or font directory, and names every candidate that
+  drops out, installed or not.
+- **The result** (R9-MOCKUP-FIDELITY §5), with the installed faces reproducing F-220's figures in the
+  same runs:
+  - `01`: Georgia Pro 0.825 · **Source Serif 4 Medium 0.747** · **Gelasio SemiBold 0.732** (Georgia's
+    metric-compatible counterpart) · Times New Roman 0.695.
+  - `00` and `14`: **Charis SIL** leads every candidate (0.762, 0.793) and is 30th on `01`.
+  - `25`, the only caps wordmark: a low field topped by a slab (0.58), Georgia Pro 82nd — either another
+    face or a comparison that separates nothing, and the record keeps both readings.
+  - The score normalises each word's box independently in x and y, so the aspects are quoted: a face
+    can score well on shape while being wider than the word drawn.
+
+### The single review — FAIL: 4 blocking, 7 significant, 8 minor — and what became of each
+
+Under the one-review rule every finding was fixed or recorded; none went back for a second review.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | the claim landed on F-276 — F-275 stayed in the backlog with no plan while its work was committed, and gate 0 passed | moved by key and read back; the gate's gap is **F-278** |
+| 2 | five published ranks one too high — grep line numbers quoted as ranks | corrected; the tie on `01` named |
+| 3 | "twenty SIL OFL faces" while the provenance record said Tinos had no licence file | confirmed over the network; Tinos excluded from the claim |
+| 4 | the candidate set's provenance lived only in a scratchpad, unpinned | `serif-candidates.json` committed with sha256 and the `google/fonts` commit |
+| 5 | "the one image whose spread separates anything" named no statistic and was contradicted | the statistic is named |
+| 6 | §5 held F-220's `25` figure and F-275's side by side, irreconcilably | scoped: F-275's crop supersedes it; `00` and `14` reproduce |
+| 7 | "no open face reaches Georgia Pro" generalised a shortlist | "among the twenty measured", and how the twenty were chosen |
+| 8 | §11 dropped one branch of `25`'s disjunction | restored |
+| 9 | the non-uniform normalisation was unstated | stated, with aspects quoted |
+| 10 | the tagline was not re-measured, silently | said so, and why: three lines, a one-line tool |
+| 11 | one invocation of four in the README | all four |
+| 12 | "reproduce to the third decimal" against a two-decimal source | "round to F-220's published figures" |
+| 13 | "every face near 0.23" | the measured range, 0.06–0.29 |
+| 14 | the tool failed open on a wrong image or directory | exits non-zero on both — checked |
+| 15 | installed faces dropped out silently | reported, as file faces are |
+| 16 | the load-failure message asserted a cause | states the symptom |
+| 17 | the ASCII rule for `.ps1` has no check | **F-279** |
+| 18 | gate 0 accepts any plan file for an in-progress feature | **F-278** |
+| 19 | the PRD row did not say twenty families became 109 candidates | it does |
+
+### What went wrong on my side
+
+Five things, each producing output that looked right: the claim written onto the next feature by a
+fixed-window text replace; italic files fetched for 17 of 20 families; caps scored against a
+mixed-case wordmark; line numbers quoted as ranks; "SIL OFL" written over a record that said otherwise.
+The first two and the fourth are one habit — trusting where text sat rather than what the data says.
+Lesson: `a-text-edit-on-structured-data-lands-wherever-the-text-matches`.
+
+### Gates
+
+After every review fix, each status captured on its own: `state=0 lint=0 format=0 mockups=0 claims=0`.
+The tool was also run: a missing image and a missing font directory each exit 1, and the installed-face
+control still prints Georgia Pro 0.825, Georgia 0.772, Times New Roman 0.695.
+
+**Not run:** typecheck, test, build and the UI gates — no source, token or asset changed, and none is
+in the feature's verification list.
+
 ## 2026-09-16 — F-227 Radius, spacing and elevation are the mockups' scales
 
 **Done.** Every corner and gap in the product now comes from the four radius steps and six spacing

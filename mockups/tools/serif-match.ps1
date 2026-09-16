@@ -16,6 +16,12 @@ param(
   # How many rows to print. The default is a shortlist; a record wants the whole field.
   [int]$top = 12
 )
+# FAIL LOUDLY. A wrong -img printed 109 rows of IoU 0 and exited 0; a -fontDir that does not exist
+# printed one line to stderr and exited 0 with an installed-only table, which reads as a complete run
+# once stdout is redirected to a log. A measurement that cannot say it failed is worse than none.
+$ErrorActionPreference = 'Stop'
+if (-not (Test-Path -LiteralPath $img)) { Write-Error "no image at $img"; exit 2 }
+if ($fontDir -ne '' -and -not (Test-Path -LiteralPath $fontDir)) { Write-Error "no font directory at $fontDir"; exit 2 }
 Add-Type -AssemblyName System.Drawing
 function MaskOf([System.Drawing.Bitmap]$b, [bool]$light, [int]$t) {
   $m = New-Object 'bool[,]' $b.Width, $b.Height
@@ -57,7 +63,9 @@ if ($fontDir -ne '') {
   foreach ($file in Get-ChildItem -Path $fontDir -File -Recurse | Where-Object { $_.Extension -in '.ttf', '.otf' }) {
     $before = $private.Families.Count
     try { $private.AddFontFile($file.FullName) } catch { $failed += "$($file.Name): $($_.Exception.Message)"; continue }
-    if ($private.Families.Count -eq $before) { $failed += "$($file.Name): loaded no new family (GDI+ refused it -- a variable font usually needs a static instance)" }
+    # The SYMPTOM, not a guessed cause: a broken file and a variable font GDI+ will not open both
+    # arrive here, and naming one of them as the reason sent the last reader looking the wrong way.
+    if ($private.Families.Count -eq $before) { $failed += "$($file.Name): loaded, but GDI+ exposed no new family from it" }
   }
   foreach ($fam in $private.Families) { $candidates += [pscustomobject]@{ label = $fam.Name; family = $fam; source = 'file' } }
 }
@@ -65,9 +73,11 @@ if ($fontDir -ne '') {
 $rows = @()
 foreach ($c in $candidates) {
   if ($null -eq $c.family) {
-    try { $font = New-Object System.Drawing.Font($c.label, 72, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel) } catch { continue }
+    # An installed family is reported when it drops out, exactly as a file is: the count in the
+    # header says how many were scored, and a face missing from a table reads as one that scored badly.
+    try { $font = New-Object System.Drawing.Font($c.label, 72, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel) } catch { $failed += "$($c.label): not installed here"; continue }
     # GDI+ substitutes silently for a family that is not installed; the name check is what catches it.
-    if ($font.Name -ne $c.label) { continue }
+    if ($font.Name -ne $c.label) { $failed += "$($c.label): not installed here (GDI+ substituted $($font.Name))"; continue }
   }
   else {
     try { $font = New-Object System.Drawing.Font($c.family, 72, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel) } catch { $failed += "$($c.label): $($_.Exception.Message)"; continue }
