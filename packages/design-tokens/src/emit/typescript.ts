@@ -62,6 +62,7 @@ export function emitTypescript(manifest: Manifest): string {
     out.push(`  ${key(name)}: ${String(value)},`);
   out.push('} as const;');
   out.push(`export const TAP_TARGET = ${String(manifest.size.tapTarget)} as const;`);
+  out.push(`export const ICON_STROKE = ${String(manifest.size.iconStroke)} as const;`);
   out.push(
     `/** The smallest a sample may be where a screen asks you to judge it, in dp (ADR-0095). */
 export const JUDGEABLE_SAMPLE = ${String(manifest.size.judgeable)} as const;`,

@@ -267,6 +267,7 @@ export const SPACING = {
   xxl: 48,
 } as const;
 export const TAP_TARGET = 44 as const;
+export const ICON_STROKE = 1.65 as const;
 /** The smallest a sample may be where a screen asks you to judge it, in dp (ADR-0095). */
 export const JUDGEABLE_SAMPLE = 77 as const;
 

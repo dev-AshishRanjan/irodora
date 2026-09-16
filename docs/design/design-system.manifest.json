@@ -924,6 +924,8 @@
   },
   "size": {
     "tapTarget": 44,
+    "iconStroke": 1.65,
+    "_iconStrokeNote": "The rendered width of every icon's line, in dp — F-220 measured it at about 3.3 px on 01's tab icons at 2 px per dp (R9-MOCKUP-FIDELITY section 5). A WIDTH ON SCREEN, NOT IN THE GLYPH: an icon drawn on a 24-unit grid at 16 dp and at 28 dp carries the same line, so the glyph converts this into its own units at every size (F-228).",
     "observerDegrees": 2,
     "viewingDistanceMm": 350,
     "dpPerInch": 160,

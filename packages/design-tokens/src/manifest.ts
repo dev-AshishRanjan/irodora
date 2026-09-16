@@ -305,6 +305,11 @@ export interface Manifest {
   readonly size: {
     readonly tapTarget: number;
     /**
+     * The rendered width of an icon's line, in dp (F-228) — measured from the mockups, and held
+     * constant across icon sizes rather than scaled with them.
+     */
+    readonly iconStroke: number;
+    /**
      * The smallest a sample may be drawn when the screen asks you to JUDGE it, in dp.
      *
      * Derived, never declared — see the parser. Scoped by what the surface asks of the reader:
@@ -829,8 +834,21 @@ export function parseManifest(input: unknown): Manifest {
     );
 
   const fieldMm = 2 * viewingDistanceMm * Math.tan((observerDegrees / 2) * (Math.PI / 180));
+  /*
+   * THE ICON WEIGHT (F-228), measured rather than chosen: F-220 read about 1.65 dp off 01's tab icons.
+   * Bounded so a typo cannot make every glyph a hairline or a slab — below half a dp a line breaks
+   * up on a real screen, and above three it stops being a line drawing at the sizes icons are drawn.
+   */
+  const iconStroke = requireNumber(sizeRaw['iconStroke'], 'size.iconStroke');
+  if (iconStroke < 0.5 || iconStroke > 3)
+    throw new ManifestError(
+      'size.iconStroke',
+      `expected [0.5, 3] dp; got ${String(iconStroke)} — below half a dp a line breaks up on a ` +
+        'screen, and above three an outline icon stops reading as one',
+    );
   const size = {
     tapTarget: requireNumber(sizeRaw['tapTarget'], 'size.tapTarget'),
+    iconStroke,
     judgeable: Math.round(fieldMm / (MM_PER_INCH / dpPerInch)),
   };
 

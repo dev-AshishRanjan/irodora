@@ -135,6 +135,10 @@ export function emitReactNative(manifest: Manifest): string {
   out.push('} as const;');
   out.push(`export const nativeTapTarget = ${String(manifest.size.tapTarget)} as const;`);
   out.push(
+    "/** An icon line's rendered width in dp. The glyph converts it to grid units at every size. */",
+  );
+  out.push(`export const nativeIconStroke = ${String(manifest.size.iconStroke)} as const;`);
+  out.push(
     `/**
  * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
  *

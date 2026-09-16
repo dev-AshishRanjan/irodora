@@ -26,24 +26,28 @@
  * takes no third-party foundation dependency, and an icon font would reintroduce the coverage
  * problem ADR-0057 exists to solve — a missing glyph renders as tofu, silently.
  *
+ * ## Two of the three are the drawn set's own (F-228)
+ *
+ * `icon.check` is the `check` the mockups draw (`04`, `06`, `12`), and `icon.cross` is their
+ * `close` — the same crossed strokes — so both draw through {@link Glyph}, at the mockups' line
+ * weight, and exist once. `icon.alert` has no drawn counterpart in any mockup, so its triangle stays
+ * where it was: a status glyph nobody drew is not redrawn by an agent.
+ *
  * **The shapes differ, not only the colours** (NFR-9). A check, a triangle and a cross are
  * distinguishable in greyscale, under every simulated deficiency, and at thumbnail size —
  * which is the actual requirement. Three dots in three colours would satisfy every "has an
  * icon" check and fail the person the rule is for.
  */
 
-import { View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 import type { STATUS_PAIRING } from '@irodora/design-tokens';
+import { Glyph } from './Glyph.js';
 import { useTheme, type ThemeColors } from './theme.js';
 
 /** Every icon token the manifest declares, as a union derived from it. */
 export type IconToken = (typeof STATUS_PAIRING)[keyof typeof STATUS_PAIRING]['iconToken'];
 
-type Glyph = (color: string, size: number) => React.JSX.Element;
-
-const bar = (color: string, style: ViewStyle): React.JSX.Element => (
-  <View style={{ position: 'absolute', backgroundColor: color, borderRadius: 1, ...style }} />
-);
+type Draw = (color: string, size: number) => React.JSX.Element;
 
 /**
  * The glyphs.
@@ -53,24 +57,7 @@ const bar = (color: string, style: ViewStyle): React.JSX.Element => (
  * key set, which is what the both-directions test reads.
  */
 const GLYPHS = {
-  'icon.check': (color, size) => (
-    <>
-      {bar(color, {
-        left: size * 0.16,
-        top: size * 0.52,
-        width: size * 0.34,
-        height: size * 0.14,
-        transform: [{ rotate: '45deg' }],
-      })}
-      {bar(color, {
-        left: size * 0.36,
-        top: size * 0.42,
-        width: size * 0.56,
-        height: size * 0.14,
-        transform: [{ rotate: '-45deg' }],
-      })}
-    </>
-  ),
+  'icon.check': (color, size) => <Glyph name="check" color={color} size={size} />,
   // A triangle, via the border trick — RN has no polygon primitive and this needs no asset.
   'icon.alert': (color, size) => (
     <View
@@ -90,25 +77,8 @@ const GLYPHS = {
       }}
     />
   ),
-  'icon.cross': (color, size) => (
-    <>
-      {bar(color, {
-        left: size * 0.1,
-        top: size * 0.43,
-        width: size * 0.8,
-        height: size * 0.14,
-        transform: [{ rotate: '45deg' }],
-      })}
-      {bar(color, {
-        left: size * 0.1,
-        top: size * 0.43,
-        width: size * 0.8,
-        height: size * 0.14,
-        transform: [{ rotate: '-45deg' }],
-      })}
-    </>
-  ),
-} satisfies Record<IconToken, Glyph>;
+  'icon.cross': (color, size) => <Glyph name="close" color={color} size={size} />,
+} satisfies Record<IconToken, Draw>;
 
 /** The registry's own key set, for the both-directions coverage test. */
 export const ICON_TOKENS = Object.keys(GLYPHS) as readonly IconToken[];

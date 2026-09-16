@@ -18,8 +18,11 @@ import {
   STATUS_PAIRING,
 } from '@irodora/design-tokens';
 import { useColorScheme as rnUseColorScheme } from 'react-native';
+import { Path } from 'react-native-svg';
 import {
   EmptyState,
+  Glyph,
+  type GlyphName,
   Icon,
   ICON_TOKENS,
   resolveThemeName,
@@ -72,6 +75,24 @@ describe('the icon registry closes the gap NFR-9 had left open', () => {
       );
     const shapes = ICON_TOKENS.map(shapeOf);
     expect(new Set(shapes).size).toBe(ICON_TOKENS.length);
+  });
+
+  it('draws the check and the cross the mockups draw, from the one registry (F-228)', () => {
+    const pathsOf = (node: React.JSX.Element): string[] =>
+      render(node)
+        .UNSAFE_queryAllByType(Path)
+        .map((p) => String((p.props as { d?: unknown }).d));
+    const drawn = (name: GlyphName): string[] =>
+      pathsOf(<Glyph name={name} color="#F2F2F2" size={16} />);
+    const check = pathsOf(wrap(<Icon token="icon.check" color="foreground" />));
+    const cross = pathsOf(wrap(<Icon token="icon.cross" color="foreground" />));
+    expect(check.length).toBeGreaterThan(0);
+    expect(check).toEqual(drawn('check'));
+    expect(cross).toEqual(drawn('close'));
+    // DECOY — the comparison tells two drawings apart, so the equalities above are not vacuous.
+    expect(check).not.toEqual(drawn('close'));
+    // The triangle no mockup draws is left as it was: not a path from the drawn set.
+    expect(pathsOf(wrap(<Icon token="icon.alert" color="foreground" />))).toHaveLength(0);
   });
 });
 

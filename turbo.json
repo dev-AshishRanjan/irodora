@@ -9,6 +9,7 @@
     "content/colors/**",
     "content/versions/**",
     "docs/design/design-system.manifest.json",
+    "mockups/inventory/**",
     ".harness/verification/claims.json"
   ],
   "globalEnv": ["NODE_ENV", "IRODORA_TOOLCHAIN"],
