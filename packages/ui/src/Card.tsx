@@ -61,6 +61,7 @@ import {
   nativeSpacing,
   nativeTapTarget,
 } from '@irodora/design-tokens';
+import { elevationShadow } from './elevation.js';
 import { usePress } from './motion.js';
 import { SelectionMark, selectionStyle, selectionTone } from './selection.js';
 import { useTheme, type ThemeColors } from './theme.js';
@@ -146,7 +147,7 @@ export function Card({
   loading = false,
   testID,
 }: CardProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const token = nativeElevation[level] as keyof ThemeColors;
   const tone = selectionTone({ selected, focused }, colors);
   // The press response (F-189). Only a pressable card has one; a static card is not a control.
@@ -162,6 +163,8 @@ export function Card({
    */
   const shell: ViewStyle = {
     backgroundColor: colors[token],
+    // Tint is the depth (ADR-0044); this is the one drawn exception — 25 light cards (ADR-0103).
+    ...elevationShadow(mode, level, colors),
     borderRadius: nativeRadius[radius],
     // `overflow: hidden` is what makes MEDIA edge-to-edge possible: without it a photograph
     // squares off the corners it is supposed to follow.

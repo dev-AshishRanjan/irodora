@@ -19,6 +19,7 @@
 
 import { View, type ViewProps } from 'react-native';
 import { nativeElevation, nativeRadius, nativeSpacing } from '@irodora/design-tokens';
+import { elevationShadow } from './elevation.js';
 import { useTheme, type ThemeColors } from './theme.js';
 import type { SpacingStep } from './layout.js';
 
@@ -45,7 +46,7 @@ export function Surface({
   children,
   ...rest
 }: SurfaceProps): React.JSX.Element {
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   // The level names a token; the token names a colour. Neither is written here.
   const token = nativeElevation[level] as keyof ThemeColors;
   return (
@@ -53,6 +54,7 @@ export function Surface({
       {...rest}
       style={{
         backgroundColor: colors[token],
+        ...elevationShadow(mode, level, colors),
         borderRadius: nativeRadius[radius],
         padding: nativeSpacing[padding],
       }}

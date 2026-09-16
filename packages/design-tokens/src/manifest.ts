@@ -260,10 +260,27 @@ export interface Typography {
   readonly numeric: { readonly fontFeature: string };
 }
 
-/** Tonal elevation: each level names the surface token it resolves to. Never a shadow. */
+/**
+ * The one shadow a mockup draws (ADR-0103): light mode, the levels named, the ink a colour token.
+ *
+ * Every field is what a component needs to build one style string and nothing else — a shadow
+ * this product cannot express as "ink, opacity, offset, blur" is a shadow nobody measured.
+ */
+export interface ElevationShadow {
+  /** Light only. The parser refuses any other mode: no dark mockup draws a shadow. */
+  readonly modes: readonly string[];
+  readonly levels: readonly string[];
+  /** A colour token, resolved against the theme in force. */
+  readonly ink: string;
+  readonly opacity: number;
+  readonly offsetY: number;
+  readonly blur: number;
+}
+
+/** Tonal elevation: each level names the surface token it resolves to. A shadow only where drawn. */
 export interface Elevation {
   readonly levels: Readonly<Record<string, string>>;
-  readonly shadow: string;
+  readonly shadow: 'none' | ElevationShadow;
 }
 
 export interface Motion {
@@ -881,15 +898,57 @@ export function parseManifest(input: unknown): Manifest {
     if (name.startsWith('_') || name === 'shadow') continue;
     levels[name] = requireString(value, `elevation.${name}`);
   }
-  // Tonal, never shadow — a shadow tints what it surrounds, which is disqualifying next to
-  // a colour sample. Enforced here so it cannot be relaxed in a component.
-  const shadow = requireString(elevationRaw['shadow'], 'elevation.shadow');
-  if (shadow !== 'none')
-    throw new ManifestError(
-      'elevation.shadow',
-      `expected "none", got "${shadow}" — elevation is tonal here, because a shadow tints ` +
-        'what it surrounds and the swatch rule forbids that next to a sample',
-    );
+  /*
+   * TONAL, EXCEPT WHERE A MOCKUP DRAWS OTHERWISE (ADR-0103).
+   *
+   * This read `shadow !== 'none'` and threw, because a shadow tints what it surrounds and a
+   * sample must not be judged against a tinted surround (ADR-0044). That reasoning holds, and it
+   * is why the exception is narrow rather than a switch: `25` draws a soft shadow under its light
+   * cards, so light level 1 may carry one and nothing else may. A dark mode naming a shadow, a
+   * level that is not one, an ink that is not a token, or an opacity past a half all still throw
+   * here — where a component cannot relax it.
+   */
+  const shadowRaw: unknown = elevationRaw['shadow'];
+  let shadow: 'none' | ElevationShadow = 'none';
+  if (typeof shadowRaw === 'string') {
+    if (shadowRaw !== 'none')
+      throw new ManifestError(
+        'elevation.shadow',
+        `expected "none" or a shadow object, got "${shadowRaw}"`,
+      );
+  } else {
+    const s = requireRecord(shadowRaw, 'elevation.shadow');
+    const list = (name: string): readonly string[] => {
+      const value: unknown = s[name];
+      if (!Array.isArray(value) || value.length === 0)
+        throw new ManifestError(`elevation.shadow.${name}`, `expected a non-empty array`);
+      return value.map((v, i) => requireString(v, `elevation.shadow.${name}[${String(i)}]`));
+    };
+    const modes = list('modes');
+    for (const mode of modes)
+      if (mode !== 'light')
+        throw new ManifestError(
+          'elevation.shadow.modes',
+          `"${mode}" — only light may carry a shadow: no dark mockup draws one, and a shadow ` +
+            'tints what it surrounds (ADR-0044, ADR-0103)',
+        );
+    const shadowLevels = list('levels');
+    for (const level of shadowLevels)
+      if (!Object.hasOwn(levels, level))
+        throw new ManifestError('elevation.shadow.levels', `"${level}" is not an elevation level`);
+    const ink = requireString(s['ink'], 'elevation.shadow.ink');
+    const opacity = requireNumber(s['opacity'], 'elevation.shadow.opacity');
+    if (opacity <= 0 || opacity > 0.5)
+      throw new ManifestError(
+        'elevation.shadow.opacity',
+        `expected (0, 0.5]; got ${String(opacity)} — past a half a shadow is a colour of its own`,
+      );
+    const offsetY = requireNumber(s['offsetY'], 'elevation.shadow.offsetY');
+    const blur = requireNumber(s['blur'], 'elevation.shadow.blur');
+    if (offsetY < 0 || blur < 0)
+      throw new ManifestError('elevation.shadow', 'offsetY and blur are lengths, never negative');
+    shadow = { modes, levels: shadowLevels, ink, opacity, offsetY, blur };
+  }
   // Every level must name a real token, in every theme, or a surface resolves to undefined
   // on whichever theme the author was not looking at.
   //

@@ -343,6 +343,16 @@ export const nativeElevation = {
   '3': 'surface.3',
 } as const;
 
+/** The one shadow a mockup draws (ADR-0103) — light level 1, read off 25 — or "none". */
+export const nativeShadow = {
+  modes: ['light'],
+  levels: ['1'],
+  ink: 'foreground',
+  opacity: 0.1,
+  offsetY: 2,
+  blur: 8,
+} as const;
+
 export const nativeMotion = {
   durations: {
     micro: 120,

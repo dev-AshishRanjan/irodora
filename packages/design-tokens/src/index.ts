@@ -115,6 +115,7 @@ export {
   nativeNumericFeature,
   nativeElevation,
   nativeMotion,
+  nativeShadow,
   nativeDefaultTheme,
   nativeLargeTextSizes,
   nativeSmallTextSizes,

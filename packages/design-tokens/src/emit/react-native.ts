@@ -254,6 +254,27 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   out.push('} as const;');
   out.push('');
 
+  // The shadow, where a mockup draws one. Emitted to the native target only: it is a platform
+  // style rather than a value, the web target would need a string composed over a colour the
+  // theme supplies at runtime, and no web surface exists to read it (ADR-0051).
+  out.push(
+    '/** The one shadow a mockup draws (ADR-0103) — light level 1, read off 25 — or "none". */',
+  );
+  if (manifest.elevation.shadow === 'none')
+    out.push("export const nativeShadow = 'none' as const;");
+  else {
+    const shadow = manifest.elevation.shadow;
+    out.push('export const nativeShadow = {');
+    out.push(`  modes: [${shadow.modes.map((m) => quote(m)).join(', ')}],`);
+    out.push(`  levels: [${shadow.levels.map((l) => quote(l)).join(', ')}],`);
+    out.push(`  ink: ${quote(shadow.ink)},`);
+    out.push(`  opacity: ${String(shadow.opacity)},`);
+    out.push(`  offsetY: ${String(shadow.offsetY)},`);
+    out.push(`  blur: ${String(shadow.blur)},`);
+    out.push('} as const;');
+  }
+  out.push('');
+
   out.push('export const nativeMotion = {');
   out.push('  durations: {');
   for (const [name, ms] of Object.entries(manifest.motion.durations))

@@ -36,6 +36,7 @@ export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';
 export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
+export { elevationShadow } from './elevation.js';
 export { Card, type CardLevel, type CardProps } from './Card.js';
 export { Chip, chipAccessibleName, type ChipProps } from './Chip.js';
 export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './ChoiceGroup.js';

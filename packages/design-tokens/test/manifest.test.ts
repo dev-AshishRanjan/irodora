@@ -215,6 +215,32 @@ describe('what the loader refuses', () => {
     expect(() => parseManifest(withValue(['radius', 'swatchRatio'], 0.1))).not.toThrow();
   });
 
+  it('a shadow on a dark mode — no dark mockup draws one', () => {
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'modes'], ['dark']))).toThrow(
+      /only light may carry a shadow/u,
+    );
+  });
+
+  it('a shadow at a level that is not one', () => {
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'levels'], ['9']))).toThrow(
+      /not an elevation level/u,
+    );
+  });
+
+  it('a shadow dense enough to be a colour of its own', () => {
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'opacity'], 0.8))).toThrow(
+      /past a half/u,
+    );
+  });
+
+  it('DECOY — the drawn shadow and a plain "none" are both accepted', () => {
+    // Without this the three refusals above would pass for a loader that refused every shadow,
+    // which is the rule ADR-0103 replaced rather than the one it wrote.
+    expect(() =>
+      parseManifest(withValue(['elevation', 'shadow', 'modes'], ['light'])),
+    ).not.toThrow();
+    expect(() => parseManifest(withValue(['elevation', 'shadow'], 'none'))).not.toThrow();
+  });
   it('an OKLCh lightness outside [0,1]', () => {
     expect(() =>
       parseManifest(withValue(['color', 'dark', 'background', 'oklch', 'l'], 1.4)),

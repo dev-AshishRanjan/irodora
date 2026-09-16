@@ -996,7 +996,15 @@
     "2": "surface.2",
     "3": "surface.3",
     "_note": "Tonal, never shadow. Surfaces lift by tint — which is what the swatch rule required anyway, because a shadow tints what it surrounds.",
-    "shadow": "none"
+    "shadow": {
+      "_note": "THE ONE SHADOW ANY MOCKUP DRAWS (ADR-0103, F-227). Depth here is tint, because a shadow tints what it surrounds and a sample must not be judged against a tinted surround — that is ADR-0044 and it holds everywhere else. 25 draws its light cards with a soft downward shadow, and the README's light table says so in words: \"Elevated card surface with subtle shadow\". DERIVED FROM PIXELS, and saying so: the luminance profile across 25's card edges falls off over about 10 px below the card and 5-7 px at the sides, with nothing above it, against a screen ground of about 237; at that image\u0027s 0.8170 dp per px that is an offset of 2 dp, a blur of 8 dp and an ink at about a tenth. The 1-px darker line at each edge is JPEG ringing around a white edge, not a border, and is not reproduced. A person comparing F-221\u0027s captures beside 25 is where these numbers get refined.",
+      "modes": ["light"],
+      "levels": ["1"],
+      "ink": "foreground",
+      "opacity": 0.1,
+      "offsetY": 2,
+      "blur": 8
+    }
   },
   "motion": {
     "_note": "Motion must NEVER alter a colour mid-transition — the intermediate frames are plausible, so a user reads a colour that never existed. Every duration collapses to 0 under prefers-reduced-motion.",

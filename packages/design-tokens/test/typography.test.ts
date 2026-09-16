@@ -141,10 +141,18 @@ describe('the parser refuses the manifests that would produce silent breakage', 
     expect(() => parseManifest(m)).toThrow(/tracking is relative to the font size/u);
   });
 
-  it('rejects a shadow, because elevation here is tonal', () => {
+  it('rejects a shadow spelled as CSS — a shadow is declared in fields, never in a string', () => {
+    /*
+     * THIS CASE OUTLIVED THE RULE IT WAS WRITTEN FOR, and is kept rather than deleted. It read
+     * "rejects a shadow, because elevation here is tonal", which was the whole rule until F-227:
+     * `25` draws one under its light cards, so ADR-0103 allows exactly that one, declared as
+     * modes, levels, ink, opacity, offset and blur. A CSS string is still refused, because a
+     * shadow nobody can read field by field is a shadow no gate can check — and the narrow
+     * allowance is proven in manifest.test.ts, refusal and decoy together.
+     */
     const m = clone();
     (m['elevation'] as Record<string, unknown>)['shadow'] = '0 2px 8px rgba(0,0,0,0.2)';
-    expect(() => parseManifest(m)).toThrow(/elevation is tonal/u);
+    expect(() => parseManifest(m)).toThrow(/expected "none" or a shadow object/u);
   });
 
   it('rejects an elevation level naming a token that does not exist', () => {
