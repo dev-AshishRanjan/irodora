@@ -65,11 +65,22 @@ const NARROWEST_WIDTH = 320;
 /**
  * The most a screen can inset its content and still be reasonable.
  *
- * `xl2` is 28 and is the `Screen` default, so a full-bleed element has at least
- * `NARROWEST_WIDTH − 2 × 28` to live in. A constant larger than that cannot fit on the narrowest
- * phone in ANY layout, which is what makes this checkable without a layout engine.
+ * The largest step of the manifest's spacing scale, READ rather than copied: `Screen` insets the
+ * page by a step, so a full-bleed element has at least `NARROWEST_WIDTH − 2 × max` to live in. A
+ * constant larger than that cannot fit on the narrowest phone in ANY layout, which is what makes
+ * this checkable without a layout engine.
+ *
+ * It was `28` written out, with a comment naming `xl2` as the `Screen` default. F-227 moved the
+ * scale (ADR-0103) and both the number and the step name went stale while this stayed green — a
+ * ceiling copied out of a scale is a second copy of it
+ * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
  */
-const MAX_PADDING = 28;
+const MAX_PADDING = Math.max(
+  ...Object.values(
+    JSON.parse(readFileSync(join(ROOT, 'docs/design/design-system.manifest.json'), 'utf8')).spacing
+      .scale,
+  ).filter((v) => typeof v === 'number'),
+);
 const CEILING = NARROWEST_WIDTH - MAX_PADDING * 2;
 
 /** Where insets may be read. One file, and the reason is in its own docblock. */

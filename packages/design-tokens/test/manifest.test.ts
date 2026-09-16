@@ -227,6 +227,41 @@ describe('what the loader refuses', () => {
     );
   });
 
+  it('a shadow whose ink is not a colour token', () => {
+    // It resolves against the theme in force, so an ink no palette carries composes a style over
+    // `undefined` — and nothing downstream catches it: the conformance suite's colour rule reads
+    // `shadowColor`, and what this produces is a `boxShadow` string.
+    expect(() =>
+      parseManifest(withValue(['elevation', 'shadow', 'ink'], 'not-a-token-at-all')),
+    ).toThrow(/is not a token in color\./u);
+  });
+
+  it('a shadow under the page ground, which is not a surface that lifts', () => {
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'levels'], ['0']))).toThrow(
+      /page ground/u,
+    );
+  });
+
+  it('a shadow with a negative length', () => {
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'offsetY'], -2))).toThrow(
+      /never negative/u,
+    );
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'blur'], -1))).toThrow(
+      /never negative/u,
+    );
+  });
+
+  it('a shadow declaring no mode or no level at all', () => {
+    // An empty array is the shape that reads as "declared" and means nothing — it would leave the
+    // shadow unreachable rather than refused, which is the quiet failure.
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'modes'], []))).toThrow(
+      /non-empty array/u,
+    );
+    expect(() => parseManifest(withValue(['elevation', 'shadow', 'levels'], []))).toThrow(
+      /non-empty array/u,
+    );
+  });
+
   it('a shadow dense enough to be a colour of its own', () => {
     expect(() => parseManifest(withValue(['elevation', 'shadow', 'opacity'], 0.8))).toThrow(
       /past a half/u,

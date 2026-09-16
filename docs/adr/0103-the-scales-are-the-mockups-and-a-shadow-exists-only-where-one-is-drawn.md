@@ -36,10 +36,20 @@ Three things make this more than a table swap:
 1. **The scales are the README's.** Radius `sm 6 · md 10 · lg 16 · pill 9999`; spacing
    `xs 4 · sm 8 · md 16 · lg 24 · xl 32 · xxl 48`. Still a four-point grid with named steps (ADR-0074).
 2. **Every existing reference is moved explicitly, by the contract's own snap rule.** R9-MOCKUP-FIDELITY
-   §2: *"a measured value snaps to the nearest step of the R9 scale; where two steps are equally
-   near, the smaller is taken."* Applied to the product's own values: spacing 12 → 8, 20 → 16, 28 → 24,
-   40 → 32, 56 and 96 → 48; radius 14, 20 and 28 → 16. No reference keeps a name whose meaning moved;
-   each is rewritten, and every rewrite is checked to equal the snap of what it replaced.
+   §2, in full: *"A measured value snaps to the nearest step of the R9 scale (§5); where two steps
+   are equally near, the smaller is taken (F-220): text set a step smaller still fits the box the
+   mockup draws, and text set a step larger may not."* Applied to the product's own values: spacing
+   12 → 8, 20 → 16, 28 → 24, 40 → 32, 56 and 96 → 48; radius 14, 20 and 28 → 16. No reference keeps a
+   name whose meaning moved; each is rewritten, and every rewrite is checked to equal the snap of
+   what it replaced.
+
+   **The tie-break is extended past its stated justification, and that is worth saying plainly.**
+   The reason §2 gives for taking the smaller is about TYPE fitting a drawn box, and four of the
+   values moved here — 12, 20, 28 and 40 — are ties it decides in places where nothing is being
+   fitted into a box. What carries over is the direction rather than the argument: a gap set a step
+   smaller leaves a layout that still fits the screen it was built for, and a step larger may not.
+   Where that is the wrong call it is visible at once and cheap to change, because these screens are
+   rebuilt to their mockups by F-242 onward and removed by F-269.
 3. **A swatch corner is a scale step, held under the ratio ceiling.** `min(step, ⌊0.25 × side⌋)`, with
    `sm` by default — the step most drawn swatches carry in the inventories — and `md` where a surface's
    inventory binds it. ADR-0094's bound stays exactly as written, now as the ceiling that keeps a small

@@ -491,9 +491,11 @@ export function Atlas({
         /*
           THE EDITORIAL RHYTHM, and the two steps whose exemption named this feature.
 
-          `xl5` (96) separates the CONTROLS from the WORK — the one interval on this screen that
-          is a break rather than a gap. `xl4` (56) separates one entry from the next: each is a
-          single large object, and 56 is what stops a column of them reading as a table.
+          IT WAS TWO INTERVALS AND IS NOW ONE. `xl5` (96) separated the CONTROLS from the WORK
+          — a break rather than a gap — and `xl4` (56) separated one entry from the next. F-227
+          replaced the scale with the mockups' own (ADR-0103), whose top step is 48, and both
+          snapped onto it: the break and the gap are the same size until `05` is built to its
+          mockup (F-246), which is where this screen's rhythm comes from.
         */
         ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xxl }}
         ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xxl }} />}

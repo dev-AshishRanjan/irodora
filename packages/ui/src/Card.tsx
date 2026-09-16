@@ -34,11 +34,15 @@
  * express. That is why 48 surfaces never became cards: a photograph inside `Surface` is inset
  * by `nativeSpacing`, and a photograph inset by 16px is a thumbnail with a frame.
  *
- * ## Depth is tint, never shadow
+ * ## Depth is tint, with one drawn exception
  *
- * The manifest refuses a shadow at parse time and ADR-0044 states why: elevation lifts by tint,
- * because a shadow tints what it surrounds. `level` is the existing elevation scale, so a card
- * gets its depth from the same three tokens every other surface does.
+ * Elevation lifts by TINT, because a shadow tints what it surrounds (ADR-0044). `level` is the
+ * existing elevation scale, so a card gets its depth from the same three tokens every other
+ * surface does — and in the dark themes that is all it gets.
+ *
+ * Mockup `25` draws its LIGHT cards with a soft downward shadow, so ADR-0103 allows exactly that
+ * one: {@link elevationShadow} returns a style for light level 1 and `{}` everywhere else, and the
+ * manifest parser refuses a shadow on any other mode or level. This component chooses nothing.
  *
  * ## A pressable card is ONE target
  *

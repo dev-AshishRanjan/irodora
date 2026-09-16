@@ -25,6 +25,7 @@ reads colours, the conformance suite reads structure, and neither has a geometry
 
 ## What it does not hold
 
-That a surface takes the step ITS mockup binds. The default is `sm` — 42 of the 67 swatch bindings in
-the inventories — and a surface built to a mockup that binds `md` has to pass `corner="md"`. F-242
+That a surface takes the step ITS mockup binds. The default is `sm` — 42 of the 70 drawn `ui:Swatch` elements, against 25 bound `md`, one `pill`
+(25 circular hero, C7) and two unbound — and a surface built to a mockup that binds `md` has to pass
+`corner="md"`. F-242
 onward set it per element; until then a drawn `md` renders as `sm` and no check says so.

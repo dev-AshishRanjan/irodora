@@ -219,8 +219,11 @@ disturbed by what sits beside it), at each mockup's own scale: `00` 6.5–7.5 px
 strips) · `24` 10.6 reading, 9.7 rows · `26` 9.1 (the hero card). `12`'s fabric swatch is pinked and
 has none; `11 13 22` draw photographs; `25`'s circle yields to `01` (C7). The largest corner-to-side
 ratio is `19`'s, 0.19 — inside [ADR-0094](../adr/0094-a-swatch-corner-is-bounded-by-what-stays-straight.md)'s
-0.25. The readings span `sm` and `md`, so no one radius is what the set draws; each component's
-token is `F-227`'s to set from them.
+0.25. The readings span `sm` and `md`, so no one radius is what the set draws. `F-227` declares
+both steps and the ceiling a corner may not exceed (ADR-0103); **each drawn element's step is bound in
+its inventory**, and the surface feature that builds the element passes it — a sample whose surface
+passes nothing takes `sm`, which is what 42 of the 70 drawn samples are bound to. The 25 bound `md`
+draw `sm` until their surfaces are rebuilt (F-242 onward).
 
 ---
 

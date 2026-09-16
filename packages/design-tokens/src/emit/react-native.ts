@@ -247,7 +247,9 @@ export const nativeJudgeableSample = ${String(manifest.size.judgeable)} as const
   out.push('');
 
   // --- elevation, motion, default theme -------------------------------------------------
-  out.push('/** Tonal. Each level names the surface token it resolves to; there is no shadow. */');
+  out.push(
+    '/** Tonal. Each level names the surface token it resolves to; the one drawn shadow is below. */',
+  );
   out.push('export const nativeElevation = {');
   for (const [level, token] of Object.entries(manifest.elevation.levels))
     out.push(`  ${key(level)}: ${quote(token)},`);

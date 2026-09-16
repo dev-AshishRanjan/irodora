@@ -995,7 +995,7 @@
     "1": "surface.1",
     "2": "surface.2",
     "3": "surface.3",
-    "_note": "Tonal, never shadow. Surfaces lift by tint — which is what the swatch rule required anyway, because a shadow tints what it surrounds.",
+    "_note": "Tonal. Surfaces lift by tint — which is what the swatch rule required anyway, because a shadow tints what it surrounds. THAT REMAINS THE RULE EVERYWHERE EXCEPT WHERE A MOCKUP DRAWS OTHERWISE (ADR-0103, F-227): 25 draws its light cards with a soft downward shadow, so `shadow` below declares that one — light mode, level 1 — and the parser refuses any other mode, any other level, an ink that is not a colour token, an opacity past a half and a shadow spelled as a CSS string.",
     "shadow": {
       "_note": "THE ONE SHADOW ANY MOCKUP DRAWS (ADR-0103, F-227). Depth here is tint, because a shadow tints what it surrounds and a sample must not be judged against a tinted surround — that is ADR-0044 and it holds everywhere else. 25 draws its light cards with a soft downward shadow, and the README's light table says so in words: \"Elevated card surface with subtle shadow\". DERIVED FROM PIXELS, and saying so: the luminance profile across 25's card edges falls off over about 10 px below the card and 5-7 px at the sides, with nothing above it, against a screen ground of about 237; at that image\u0027s 0.8170 dp per px that is an offset of 2 dp, a blur of 8 dp and an ink at about a tenth. The 1-px darker line at each edge is JPEG ringing around a white edge, not a border, and is not reproduced. A person comparing F-221\u0027s captures beside 25 is where these numbers get refined.",
       "modes": ["light"],

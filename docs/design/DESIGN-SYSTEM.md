@@ -23,10 +23,14 @@ sampled area from exactly the region the eye uses to judge a large flat colour, 
 grows as the swatch shrinks — at 24 px a 10 px radius eats a fifth of the shape"*.
 
 **That worked example is the reason the rule changed rather than the reason it held.** 10 px on
-24 px is a ratio of 0.42, and it does cost about 15 % of the sample. The corner shipped now is a
-ratio of **0.125**, which costs **1.34 %** at every size — because a rounded square loses
-`(4 − π)r²`, so the fraction lost depends on radius *relative to* size, exactly as that sentence
-says. The manifest declares the ceiling and refuses a ratio that exceeds it.
+24 px is a ratio of 0.42, and it does cost about 15 % of the sample — because a rounded square
+loses `(4 − π)r²`, so the fraction lost depends on radius *relative to* size, exactly as that
+sentence says. The corner was a ratio for two releases on that reasoning. **It is a scale step
+now** ([ADR-0103](../adr/0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md)):
+F-220 measured what the mockups draw and they are lengths — 4 to 11.5 dp across 28 images, `sm` or
+`md` per element. The ratio survives as the CEILING the manifest declares and refuses a corner
+beyond — `min(step, 0.25 × side)` — so a sample too small for its step still rounds by a quarter of
+its side.
 
 What is given up is the older idea that a hard edge surrounded by softness reads as *deliberate
 precision*. It is a real idea and it lost to the person looking at the product, who asked twice.
@@ -48,7 +52,7 @@ product page.
 | From | Taken | Refused |
 |---|---|---|
 | **Apple HIG** | Deference — chrome recedes, content leads. 44 px targets | **Translucency and vibrancy near a swatch.** A material that tints what shows through it is disqualified on a colour surface |
-| **Material 3** | Tonal elevation — surfaces lift by tint, not shadow. Generous radii and state layers | **Dynamic colour.** Deriving a UI palette from a source colour would tint the entire interface from the thing being examined. Fatal here |
+| **Material 3** | Tonal elevation — surfaces lift by tint, not shadow, with one drawn exception (`25`'s light card, ADR-0103). Generous radii and state layers | **Dynamic colour.** Deriving a UI palette from a source colour would tint the entire interface from the thing being examined. Fatal here |
 | **Fashion retail** | The whole information hierarchy: product first at full size, spec quiet beneath, editorial type, air | — |
 
 ---
@@ -146,9 +150,10 @@ is why this is checked over the rendered tree (`checkStatusAdjacency`, F-069) ra
 token pairing. No `pairsWith` can express it: the other side of the adjacency is an arbitrary
 garment colour.
 
-**`radius.swatchRatio: 0.25`, bounded by `_minStraightEdgeFraction`** — the corner is a ratio, so
-a chip and a card round alike — capped at `radius.xl`, because a pure ratio gives the hero an
-85 px corner, which is a curve rather than a corner.
+**`radius.swatchRatio: 0.25`, bounded by `_minStraightEdgeFraction`** — the ceiling a sample's
+corner may not exceed. The corner itself is a SCALE STEP (`sm` or `md`, bound per element in the
+inventories), and the ratio is what keeps a small sample a field: `min(step, 0.25 × side)`. A pure
+ratio gave the hero an 85 px corner, which is a curve rather than a corner (ADR-0103).
 
 This was `radius.swatch: 0`, described here as inviolable.
 [ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)

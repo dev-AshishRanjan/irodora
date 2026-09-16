@@ -335,7 +335,7 @@ export const nativeFamilies = { jp: 'NotoSansJP' } as const;
 
 export const nativeNumericFeature = 'tabular-nums' as const;
 
-/** Tonal. Each level names the surface token it resolves to; there is no shadow. */
+/** Tonal. Each level names the surface token it resolves to; the one drawn shadow is below. */
 export const nativeElevation = {
   '0': 'background',
   '1': 'surface.1',

@@ -49,10 +49,12 @@ rename** while meaning a different number. So the migration is table-driven and 
 | radius `xl` | 28 | 16 (the top length) | `lg` |
 | radius `pill` | 999 | 9999 | `pill` |
 
-The snap rule is the contract's, not a new one: R9-MOCKUP-FIDELITY §2 — *"a measured value snaps to
-the nearest step of the R9 scale; where two steps are equally near, the smaller is taken"*. Every
-removed spacing step except 56 and 96 sits exactly between two new ones, so the tie rule decides most
-of the table, and it is applied as written.
+The snap rule is the contract's, not a new one: R9-MOCKUP-FIDELITY §2 — *"A measured value snaps to
+the nearest step of the R9 scale (§5); where two steps are equally near, the smaller is taken
+(F-220): text set a step smaller still fits the box the mockup draws, and text set a step larger may
+not."* Every removed spacing step except 56 and 96 sits exactly between two new ones, so the tie rule
+decides most of the table. Its stated justification is about type fitting a box and does not transfer
+to a gap; ADR-0103 §2 records that the direction was taken and the argument was not.
 
 **New:**
 
@@ -82,11 +84,14 @@ of the table, and it is applied as written.
 **Increments** — each leaves the build green:
 
 1. **Record before building**: ADR-0103 and its index row; the plan; the claim.
-2. **The audit, before anything moves**: `scale-migration.mjs` in report mode over today's tree; its
-   inventory of references committed as the plan's evidence of scope.
-3. **The scales**: manifest radius and spacing; parser checks (steps multiples of the base, radius
-   steps increasing, the swatch ratio still ≤ 0.25); regenerate; the migration applied; `--check`
-   green; design-tokens, ui and app tests updated where they pin a step value.
+2. **The audit, before anything moves**: the migration script in report mode over today's tree —
+   365 references, none unclassified. The tally is quoted in the increment's commit message and the
+   progress entry; the diff is the evidence, and it is reconstructible by projecting the old tree
+   through the table (the review did exactly that: 128 of 131 step rewrites verified, 0 wrong).
+3. **The scales**: manifest radius and spacing; regenerate; the migration applied and its check
+   green; design-tokens, ui and app tests updated where they pin a step value. *No new parser checks*
+   — the four-point rule is enforced by `verify-spacing-scale.mjs`, which reads the scale from the
+   manifest, and adding a second enforcer would give one rule two owners that can disagree.
 4. **The swatch corner**: `swatchCorner(size, step)`, `Swatch.corner`, `swatch-corners.test.tsx`
    rewritten around the step and the ceiling, with decoys.
 5. **The light shadow**: manifest, parser, emitter, `Card` / `Surface`, tests — dark stays shadowless,
@@ -114,7 +119,6 @@ packages/design-tokens/src/manifest.ts; emit/*; generated/*   parse, emit
 packages/design-tokens/test/*                      pinned values
 packages/ui/src/Swatch.tsx, Card.tsx, Surface.tsx, feedback.tsx, layout.tsx; ui tests
 apps/mobile/src/**                                 the migrated references
-scripts/scale-migration.mjs                        new — migrate and audit
 .harness/verification/unreached-tokens.json        a step nothing reaches yet
 docs/design/R6-EDITORIAL-DIRECTION.md              quotes the old scale
 .harness/state/effects.json; memory/effects/*; progress.md
@@ -128,9 +132,11 @@ docs/design/R6-EDITORIAL-DIRECTION.md              quotes the old scale
    the names that survive with new meanings, the spacing scanner.
 2. **Swatch corners** → every sample in the product; the concentric keyline and well. Guard:
    `swatch-corners.test.tsx` (the ceiling at small sizes, the step at large ones, concentricity).
-3. **A shadow where there was none** → `Card`, `Surface`, the conformance suite's colour check
-   (`shadowColor` is read; a `boxShadow` ink is a token by construction). Guard: parser refusal
-   elsewhere, component tests in both modes.
+3. **A shadow where there was none** → `Card`, `Surface`. **The conformance suite cannot see it**:
+   its colour rule reads `shadowColor`, and this draws a `boxShadow` string. So the ink is made a
+   token by the PARSER — checked against every theme, with a refusal test — rather than by a
+   component or the suite. Guard: the parser's refusals (mode, level, ground, ink, opacity, length,
+   CSS string), each with a decoy, and `elevation.test.tsx` over both modes and three levels.
 4. **Token reach** → a step with no reader fails gate 8. Guard: `verify-token-reach` and its proof.
 5. **Snapshots and layout tests** that pin a pixel value. Guard: the test suite, each update read
    against the table rather than accepted wholesale.
@@ -154,7 +160,6 @@ node scripts/verify-state.mjs
 corepack pnpm typecheck && corepack pnpm lint && corepack pnpm format:check
 corepack pnpm build && corepack pnpm test
 corepack pnpm test:a11y && corepack pnpm test:contrast
-node scripts/scale-migration.mjs --check
 node scripts/verify-spacing-scale.mjs --prove && node scripts/verify-token-reach.mjs --prove
 ```
 
@@ -174,3 +179,34 @@ Each captured in its own variable, on the root commands
 Component-by-component radius and padding choices for rebuilt surfaces (F-232–F-236 and the screen
 features set them from their inventories); the colour tokens and themes (F-225, blocked on OQ-36);
 motion (F-266).
+
+---
+
+## Decisions taken by the implementer
+
+1. **The snap rule was extended from measuring mockups to moving the product's own values.** §2 is
+   written about reading a mockup; acceptance 4 forces *some* mapping of the existing values, so the
+   choice was between the contract's documented rule and an invented one. See ADR-0103 §2, which now
+   quotes the clause in full — including the justification that does *not* transfer.
+2. **The migration script was one-shot and is not committed.** After it runs the old names are gone,
+   so a re-run would migrate the migrated; a committed script that must refuse to run is dead code.
+3. **The swatch corner defaults to `sm`** — 44 of the 69 bound swatch elements — and `md` is a prop
+   a surface passes. Until F-242 onward set it, the 25 elements bound `md` draw 6 rather than 10.
+4. **Increments 3 and 4 were folded together**, because the smaller radius cap broke the corner tests
+   that increment 4 rewrites; splitting them would have rewritten the same file twice.
+5. **Two checks were changed rather than declared around**: token reach now counts a step read
+   through `gap`/`padding`/`padY`, and two spacing-proof cases were re-pointed off the old scale.
+
+## What building it showed
+
+- **A rename is only as complete as the shapes you enumerated.** Step names as test data, and a
+  gate's own assumption about which shapes count as a read, were both missed by a table-driven
+  migration that was otherwise exact. The lesson is
+  `a-rename-is-as-complete-as-the-shapes-you-enumerated`.
+- **A scale change is a change to every check that quotes it.** Two proof plants and a viewport
+  ceiling carried values from the old scale; one of them was still green while asserting the
+  opposite of its own name.
+- **The review found four live statements saying the product forbids shadows** — the manifest's own
+  note, `Card`'s docblock, the emitted header and the HeroUI emitter's reason — each one a place the
+  next agent would read to decide. Correcting behaviour without correcting what the code SAYS about
+  itself leaves a repository that argues with itself.

@@ -21,7 +21,7 @@
  * overload, deliberately:
  *
  * ```tsx
- * <Stack gap="md">     // 16, because `lg` is 16 in the manifest
+ * <Stack gap="md">     // 16, because `md` is 16 in the manifest
  * <Stack gap={16}>     // does not compile
  * ```
  *
@@ -30,9 +30,10 @@
  * compile error instead — the move ADR-0005 makes for provenance and F-139 makes for empty
  * states, applied to layout [[the-careless-version-should-not-compile]].
  *
- * **The step name is also the only thing that carries the design intent.** A bare `28` says a
+ * **The step name is also the only thing that carries the design intent.** A bare `24` says a
  * number somebody chose; `gap="lg"` says the step the manifest argues for, and when the
- * manifest revises that step the screen follows without being edited.
+ * manifest revises that step the screen follows without being edited — which is what F-227 did:
+ * `lg` went from 16 to 24 and every screen that named it moved with it.
  *
  * ## What is deliberately NOT here
  *
@@ -313,9 +314,9 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
    * `scroll={false}` and says so at the call site.
    */
   readonly scroll?: boolean;
-  /** Page inset. `xl2` (28) is the editorial default; a dense surface may take less. */
+  /** Page inset. `lg` (24) is the editorial default; a dense surface may take less. */
   readonly padding?: SpacingStep;
-  /** Rhythm between top-level blocks. `xl3` (40) is the editorial default. */
+  /** Rhythm between top-level blocks. `xl` (32) is the editorial default. */
   readonly gap?: SpacingStep;
   /** Threaded to the title and eyebrow. See {@link Script}. */
   readonly script?: Script;

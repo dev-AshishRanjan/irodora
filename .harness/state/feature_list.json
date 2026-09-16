@@ -7418,7 +7418,7 @@
       "package": "@irodora/design-tokens",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "plan": "plans/F-227-radius-spacing-and-elevation-are-the-mockups-scales.md",
       "blockedBy": [
         "F-220"

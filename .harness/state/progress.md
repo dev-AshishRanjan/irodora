@@ -8,6 +8,87 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-16 — F-227 Radius, spacing and elevation are the mockups' scales
+
+**Done.** Every corner and gap in the product now comes from the four radius steps and six spacing
+steps the mockups are drawn with, a swatch corner is a measured step rather than a proportion, and
+the one shadow any mockup draws exists — under `25`'s light cards, and nowhere else.
+
+- **The scales** — radius `sm 6 · md 10 · lg 16 · pill`, spacing `4 · 8 · 16 · 24 · 32 · 48`, the
+  README's own, still a four-point grid with named steps (ADR-0074 stands; ADR-0103 moves the values).
+- **The migration** — 365 references, rewritten explicitly. The new names collide with the old ones
+  (`md` was 12 and is 16, `lg` was 16 and is 24), so every one of them would have kept compiling and
+  meant a different number. Each was moved by R9-MOCKUP-FIDELITY §2's snap rule and checked against
+  the snap of the value it replaced: spacing 12→8 (62 references), 16→`md` 16 (43), 20→16 (7), 28→24
+  (8), 40→32 (4), 56 and 96→48 (4); radius 14, 20 and 28 → `lg` 16.
+- **The corner** — `min(step, ⌊0.25 × side⌋)`: the step F-220 measured, under ADR-0094's ratio as its
+  ceiling. `Swatch` gains `corner`; `sm` is the default, which is what 42 of the 70 drawn samples are
+  bound to. The 25 bound `md` draw `sm` until their surfaces are rebuilt — recorded in E-131.
+- **The shadow** — light mode, elevation level 1, ink `foreground` at a tenth, offset 2, blur 8, read
+  off `25`'s pixels and recorded as derived. The parser refuses every other mode, the page ground,
+  an unknown level, an ink no theme carries, an opacity past a half, a negative length and a shadow
+  spelled as CSS — each with a refusal test and a decoy.
+- **The checks** — token reach now counts a spacing step read through `gap`, `padding` and `padY`, and
+  takes its proof's steps from the emitted scale; the spacing proof's two green cases no longer plant
+  values the scale dropped; `verify-viewport`'s ceiling is read from the manifest instead of copied.
+
+### What the migration showed
+
+`screen-insets.json` — F-210's pin on every padded box in every screen — was moved through the same
+snap arithmetic rather than re-captured by hand, and the renders then agreed with it: 37 subjects
+changed, 221 tests green. That is the pin working rather than the pin being edited around.
+
+### The single review — FAIL: 2 blocking, 10 significant, 7 minor — and what became of each
+
+Under the one-review rule every finding was fixed; none went back for a second review. The verdict was
+not about a red gate — all thirteen were green — but about what the code SAID about itself afterwards.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | four live statements still said the product forbids shadows — the manifest's own note two lines above the shadow it declares, `Card`'s docblock, the emitted header, the HeroUI emitter's stated reason | all four rewritten to the ADR-0103 rule; the HeroUI one now says *why* the web target does not take it (ADR-0051) rather than that none exists |
+| 2 | `elevation.shadow.ink` was never checked to be a token, while the parser's comment and the plan both said it was; `boxShadow` is invisible to the conformance colour rule, which reads `shadowColor` — an unknown ink would have shipped `0px 2px 8px undefined` | the parser validates the ink against every theme, with a refusal test; E-132 and the plan record what the suite cannot see |
+| 3 | `layout.tsx` — the sample said "16, because `lg` is 16" and the prose argued from a bare `28` | corrected to `md` and 24 |
+| 4 | `ScreenProps` JSDoc still named `xl2` (28) and `xl3` (40) as the defaults | `lg` (24) and `xl` (32) |
+| 5 | `Atlas.tsx` claimed a break (96) and a gap (56) that the snap collapsed onto one step | the comment says so, and names F-246 as where the real rhythm comes from |
+| 6 | `verify-viewport.mjs` carried `MAX_PADDING = 28` and a comment naming a step that no longer exists | read from the manifest's scale |
+| 7 | `DESIGN-SYSTEM.md` — the canonical document — still described the corner as a ratio capped at `radius.xl`, and tonal elevation with no shadow | all three passages corrected |
+| 8 | the token-reach proof enumerated steps from a hard-coded list containing four that no longer exist | taken from the emitted binding |
+| 9 | `screen-insets.json`'s `$comment` said F-227 while its fields still said F-214 | fields corrected |
+| 10 | four branches deletable with everything green: `Math.floor` in the corner, two parser refusals, a test case that reimplemented the formula | the corner test pins literal numbers at 18, 22 and 26 — 22 is where floor and round differ — and the untested refusals have tests |
+| 11 | the plan's Files and Verification sections named a script that was deliberately not committed | reconciled, with the reasoning kept in Approach |
+| 12 | ADR-0103 quoted §2 truncated at exactly the clause that limits it: the tie-break's justification is about type fitting a box | both the ADR and the plan quote it in full and say the direction was taken while the argument was not |
+| 13 | "a step four screens use" — three files, two screens and a primitive | corrected (golden rule 11 applies to our own reports) |
+| 14 | `SwatchCornerStep` says two steps; one inventory element is bound `pill` | the comment says which, and that C7 resolves it |
+| 15 | `Swatch`'s module docblock still began "`radius: 0`, at every size, forever" | rewritten through all three decisions, with the reasoning kept |
+| 16 | `elevation.shadow.levels` accepted `"0"`, the page ground | refused, with a test |
+| 17 | a comment example in the spacing scanner named `xl2` | corrected |
+| 18 | R6's narrative line still said "tonal elevation with no shadows" | notes the one drawn in R9 |
+| 19 | increments 2 and 6 have no commit of their own | recorded here: the audit is increment 3's commit message and this entry; the scanners' work landed with the increment that broke them |
+
+### What went wrong on my side
+
+- **A rename is only as complete as the shapes you enumerated.** The migration matched member access
+  and step-named props, and missed step names carried as data in a test table — and a gate's own
+  assumption that spacing is never a prop. Lesson:
+  `a-rename-is-as-complete-as-the-shapes-you-enumerated`.
+- **Correcting behaviour is not correcting what the code says about itself.** Nineteen findings, and
+  eleven of them were statements — in the manifest, in docblocks, in a canonical document, in a
+  check's own comment — that had quietly become false. Gates cannot see those.
+- **Two of my own patch scripts damaged the files they edited** (a duplicated block in `Swatch.tsx`,
+  a relative link and an out-of-scope variable), each caught by typecheck, gate 0 or lint within the
+  minute. Cheap, but it is why the increments end on a full run rather than a targeted one.
+
+### Gates
+
+One sequential run after every review fix, each status captured on its own:
+`state=0 typecheck=0 build=0 test=0 lint=0 format=0 a11y=0 contrast=0 cvd=0 content=0 spacing-proof=0
+reach-proof=0 security=0`. Suites: mobile 994, ui 276, design-tokens 291. Before the fixes the same
+set ran green too — the review FAILED on what the code said, not on a gate.
+
+**Not run:** `e2e` (no journey changed, and no device here — the harness needs a JDK this machine will
+not have), `perf`, `color-golden` (no colour maths). The light shadow is not verified against `25`
+pixel for pixel; F-221's captures beside the mockup are where a person judges that, and E-132 says so.
+
 ## 2026-09-15 — F-225 blocked on OQ-36, F-226 on OQ-29 · two themes drawn as one swatch, and no open serif
 
 **Not started — both blocked.**

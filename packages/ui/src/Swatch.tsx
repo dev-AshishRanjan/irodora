@@ -3,11 +3,13 @@
  *
  * ## Four rules, three of them structural
  *
- * 1. **`radius: 0`, at every size, forever.** Corner radius removes sampled area from exactly
- *    the region the eye uses to judge a large flat colour, and the effect grows as the swatch
- *    shrinks — at 24 px a 10 px radius eats a fifth of the shape. The manifest refuses any
- *    other value at parse time, and this component reads `nativeRadius.swatch` rather than
- *    writing `0`, so the rule has one home.
+ * 1. **The corner is bounded, and it is now a step.** This read *"`radius: 0`, at every size,
+ *    forever"*, then a ratio (ADR-0090, ADR-0094), and is a scale step under that ratio as a
+ *    ceiling since ADR-0103 — `swatchCorner` below is where the arithmetic lives. THE REASONING
+ *    NEVER MOVED: corner radius removes sampled area from exactly the region the eye uses to
+ *    judge a large flat colour, and the effect grows as the swatch shrinks — at 24 px a 10 px
+ *    radius eats a fifth of the shape, which is why the ceiling is a proportion even though the
+ *    corner is a length.
  * 2. **A `swatch.well` beneath every sample.** Functional, not decorative: simultaneous
  *    contrast means whatever touches a sample changes how it reads.
  * 3. **A TWO-TONE OPAQUE keyline**, so the boundary is perceptible against any SAMPLE — not
@@ -69,8 +71,10 @@ export interface SwatchProps {
   /**
    * Which step the corner takes — `sm` unless the governing mockup's inventory binds `md`.
    *
-   * Defaulted rather than required: `sm` is the step most drawn samples carry (42 of 67 bound
-   * across the inventories), and a surface built to a mockup that binds `md` says so here.
+   * Defaulted rather than required: `sm` is the step most drawn samples carry — 42 of the 70
+   * `ui:Swatch` elements across the inventories, against 25 bound `md` — and a surface built to a
+   * mockup that binds `md` says so here. Until those surfaces are rebuilt (F-242 onward) the 25
+   * draw `sm`, which is recorded in E-131 rather than left to be noticed.
    */
   readonly corner?: SwatchCornerStep;
 }
@@ -85,7 +89,14 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
   return `${name}. Hex ${hex.replace('#', '')}. ${source}, ${String(percent)} percent confidence.`;
 }
 
-/** The two steps a drawn sample takes, measured by F-220 across the 28 mockups. */
+/**
+ * The two steps a drawn sample takes, measured by F-220 across the 28 mockups.
+ *
+ * Two, not three: one inventory element is bound `pill` — `25.hero.sample`, the light Home's
+ * circular hero — and that is resolved by conflict C7, which yields `25`'s circle to `01`'s
+ * rounded square. A round sample is a shape decision rather than a corner, and it is deliberately
+ * not expressible here.
+ */
 export type SwatchCornerStep = 'sm' | 'md';
 
 /**

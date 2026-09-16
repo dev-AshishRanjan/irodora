@@ -19,7 +19,8 @@ a stated direction instead of against taste.
 
 [`design-system.manifest.json`](design-system.manifest.json) specifies an editorial fashion
 product in some detail — a type scale from 72px to 10px, a spacing scale topping out at 96
-with the note that 間 (*ma*) is a design element, tonal elevation with no shadows, a motion
+with the note that 間 (*ma*) is a design element, tonal elevation with no shadows (R9 draws one
+— see §5), a motion
 system with an allow-list, and a colour ramp designed to survive being read without hue.
 
 The application renders none of it:

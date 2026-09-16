@@ -362,7 +362,7 @@ function run() {
    * is that the two gates can see different things. This one reads style declarations, so it
    * cannot resolve `nativeSpacing[step]` — the computed form the layout primitives use, where
    * the step is whatever the caller passed. token-reach reads the step NAMES, so it sees
-   * `padding = 'xl2'` in a default and counts it.
+   * `padding = 'lg'` in a default and counts it.
    *
    * Two gates enforcing one rule from different evidence would disagree, and the disagreement
    * would be resolved by whoever was editing that day. So ownership is single: token-reach

@@ -904,9 +904,10 @@ export function parseManifest(input: unknown): Manifest {
    * This read `shadow !== 'none'` and threw, because a shadow tints what it surrounds and a
    * sample must not be judged against a tinted surround (ADR-0044). That reasoning holds, and it
    * is why the exception is narrow rather than a switch: `25` draws a soft shadow under its light
-   * cards, so light level 1 may carry one and nothing else may. A dark mode naming a shadow, a
-   * level that is not one, an ink that is not a token, or an opacity past a half all still throw
-   * here — where a component cannot relax it.
+   * cards, so light level 1 may carry one and nothing else may. A dark mode naming a shadow, the
+   * page ground as a level, a level that is not one, an ink no theme carries, an opacity past a
+   * half, a negative length and a shadow spelled as CSS all throw here — where a component cannot
+   * relax any of them.
    */
   const shadowRaw: unknown = elevationRaw['shadow'];
   let shadow: 'none' | ElevationShadow = 'none';
@@ -933,10 +934,33 @@ export function parseManifest(input: unknown): Manifest {
             'tints what it surrounds (ADR-0044, ADR-0103)',
         );
     const shadowLevels = list('levels');
-    for (const level of shadowLevels)
+    for (const level of shadowLevels) {
       if (!Object.hasOwn(levels, level))
         throw new ManifestError('elevation.shadow.levels', `"${level}" is not an elevation level`);
+      // Level 0 is the page ground, not a surface that lifts off one: a shadow there would sit
+      // under the whole screen, which is not what any mockup draws.
+      if (level === '0')
+        throw new ManifestError(
+          'elevation.shadow.levels',
+          '"0" is the page ground rather than a surface that lifts — a shadow there sits under ' +
+            'the whole screen (ADR-0103)',
+        );
+    }
     const ink = requireString(s['ink'], 'elevation.shadow.ink');
+    /*
+     * THE INK IS A TOKEN, IN EVERY THEME, for the same reason the levels are: a component
+     * resolves it against the theme in force, so an ink no palette carries composes a style over
+     * `undefined` and ships a shadow nobody can see or measure. NOTHING DOWNSTREAM WOULD CATCH
+     * IT — the conformance suite's colour rule reads `shadowColor`, and what this declaration
+     * produces is a `boxShadow` string, which is not a colour it can resolve.
+     */
+    for (const theme of THEMES)
+      if (!Object.hasOwn(themes[theme] ?? {}, ink))
+        throw new ManifestError(
+          'elevation.shadow.ink',
+          `"${ink}" is not a token in color.${theme} — a shadow's ink is a colour token, resolved ` +
+            'against the theme in force',
+        );
     const opacity = requireNumber(s['opacity'], 'elevation.shadow.opacity');
     if (opacity <= 0 || opacity > 0.5)
       throw new ManifestError(

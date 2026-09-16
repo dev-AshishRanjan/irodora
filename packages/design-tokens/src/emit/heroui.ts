@@ -31,9 +31,13 @@ import { wcagContrast } from '@irodora/color-difference';
 /**
  * HeroUI's 35 required theme variables, each resolved to a manifest token.
  *
- * `SHADOW` rather than a token because `elevation.shadow` is `"none"` — surfaces here lift by
- * tint, and a shadow tints what it surrounds, which is the one thing a colour product cannot
- * afford next to a sample.
+ * `SHADOW` rather than a token because surfaces here lift by TINT — a shadow tints what it
+ * surrounds, which is the one thing a colour product cannot afford next to a sample.
+ *
+ * `elevation.shadow` is no longer `"none"`: ADR-0103 declares the one shadow a mockup draws,
+ * under `25`'s light cards. This target does not take it, and the reason is ADR-0051 rather than
+ * taste — there is no web surface to draw it on, and a HeroUI variable composed over a colour the
+ * theme supplies at runtime would be a value no gate here can check. The native target carries it.
  */
 const SHADOW = Symbol('none');
 

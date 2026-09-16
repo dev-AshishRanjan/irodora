@@ -1,8 +1,8 @@
 {
   "$comment": "EVERY `padding` FOUND ON A STYLE IN A RENDERED CONFORMANCE SUBJECT, sorted, per subject. The pin asserts the distinct set is identical and no value occurs less often — not the multiset, because a Card draws a header box AND a body box where a Surface drew one, so the COUNT necessarily grows on a conversion that changed no spacing at all. RE-CAPTURED BY F-214, WHICH IS THE PIN WORKING RATHER THAN THE PIN BEING EDITED AROUND: ten sites wrapped their content in a padded View inside a Surface that already pads, rendering 24pt where every call site read 12. Removing those boxes makes values occur less often, which is exactly what this refuses, so the capture is part of that feature and its numbers are in progress.md. F-210 captured the first version BEFORE converting 24 Surfaces into Cards; that baseline has done its job and is in the F-210 commit. Asserted by apps/mobile/test/screens.test.tsx. WHAT IT DOES NOT SEE: rhythm, and overflow. Equal insets are not the same screen. RE-CAPTURED BY F-227, and by arithmetic rather than by hand: the scales became the mockups own (ADR-0103), so every inset moved through the same snap rule as every reference — 12 to 8, 20 to 16, 28 to 24, 40 to 32, 56 and 96 to 48, everything else where it was. The 1 is the Swatch keyline and is not spacing. This file is the EXPECTATION, so moving it by the rule and letting the render check it is the honest direction: a screen whose padding did not follow the rule fails here.",
-  "capturedAt": "2026-09-09",
-  "capturedFor": "F-214",
-  "supersedes": "the F-210 capture, taken before the Surface-to-Card conversion",
+  "capturedAt": "2026-09-15",
+  "capturedFor": "F-227",
+  "supersedes": "the F-214 capture, taken before F-227 moved every inset onto the mockups own spacing scale",
   "subjects": 72,
   "values": 1460,
   "insets": {

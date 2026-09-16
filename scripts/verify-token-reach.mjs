@@ -207,8 +207,9 @@ function namesOf(bindings) {
        * surely as a style object does.
        *
        * F-227 is where the omission showed: the scales became the mockups' own, `lg` moved from
-       * 16 to 24, and its only readers were props — so a step four screens use was reported
-       * unreached, and the declaration that would have silenced it would have been false.
+       * 16 to 24, and its only readers were props — two screens and the `Screen` primitive's own
+       * default — so a step in live use was reported unreached, and the declaration that would
+       * have silenced it would have been false.
        *
        * `margin` is deliberately not here: no component takes one by name.
        */
@@ -795,7 +796,11 @@ async function prove() {
    */
   const stepPattern = (s) => new RegExp(`nativeSpacing\\.${s}(?![0-9])|['"]${s}['"]`, 'u');
   const spacingReaders = new Map();
-  for (const step of ['xs', 'sm', 'md', 'lg', 'xl', 'xl2', 'xl3', 'xl4', 'xl5']) {
+  // The steps come from the BINDING, never from a list here: F-227 renamed four of them out of
+  // existence and added xxl, and a hard-coded list would have quietly stopped being able to pick
+  // the new step while every case still passed.
+  const emitted = await loadEmitted();
+  for (const step of Object.keys(emitted.get('nativeSpacing'))) {
     const files = sources()
       .filter((f) => stepPattern(step).test(f.source))
       .map((f) => rel(f.path));

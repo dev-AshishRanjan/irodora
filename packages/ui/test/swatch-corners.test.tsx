@@ -77,17 +77,38 @@ describe('swatchCorner', () => {
     expect(well).toBeGreaterThan(nativeRadius.sm);
   });
 
-  it('takes its step at every size the product draws it at (ADR-0103)', () => {
+  /*
+   * PINNED TO NUMBERS, NOT TO THE FORMULA. The first version of this case computed its `md`
+   * expectation as `min(nativeRadius.md, floor(size × swatchRatio))` — the implementation, spelled
+   * twice — so it could not have failed on a wrong formula, only on a wrong constant.
+   *
+   * THE SIZES ARE CHOSEN FOR WHAT THEY SEPARATE. 18, 22 and 26 are the ones where a quarter of the
+   * side is not a whole number: at 22 a floor gives 5 and a rounding gives 6, and every other size
+   * this product draws has an integer quarter — so without them `Math.floor` could become
+   * `Math.round` with the whole suite still green, which the review found it could.
+   */
+  const CORNERS: readonly (readonly [number, number, number])[] = [
+    // size, sm, md
+    [16, 4, 4],
+    [18, 4, 4],
+    [22, 5, 5],
+    [24, 6, 6],
+    [26, 6, 6],
+    [32, 6, 8],
+    [44, 6, 10],
+    [56, 6, 10],
+    [80, 6, 10],
+    [140, 6, 10],
+    [320, 6, 10],
+  ];
+
+  it.each(CORNERS)('at %s the corner is sm %s and md %s (ADR-0103)', (size, sm, md) => {
     // The corners F-220 measured are lengths, not fractions: 4 to 11.5 dp across 28 images, bound
-    // per element as `sm` or `md`. Above the ceiling's reach the step is simply the corner.
-    for (const size of REAL_SIZES) {
-      expect(`${String(size)} sm: ${String(swatchCorner(size).sample)}`).toBe(
-        `${String(size)} sm: ${String(nativeRadius.sm)}`,
-      );
-      expect(`${String(size)} md: ${String(swatchCorner(size, 'md').sample)}`).toBe(
-        `${String(size)} md: ${String(Math.min(nativeRadius.md, Math.floor(size * nativeRadius.swatchRatio)))}`,
-      );
-    }
+    // per element as `sm` or `md`. Below about 24 px the ratio ceiling takes over, and the two
+    // steps converge because neither fits.
+    expect(
+      `sm ${String(swatchCorner(size).sample)} md ${String(swatchCorner(size, 'md').sample)}`,
+    ).toBe(`sm ${String(sm)} md ${String(md)}`);
   });
 
   it('does not grow with the sample: a hero and a card take the same corner', () => {
