@@ -265,6 +265,7 @@ const NO_JOURNAL_NEEDED = {
   'verify-layout-primitives-proof.mjs':
     'plants a fixture component under the OS temp directory (F-203)',
   'verify-surface-not-card-proof.mjs': 'plants fixture screens under the OS temp directory (F-210)',
+  'verify-app-glyphs.mjs': 'plants fixture screens under the OS temp directory (F-228)',
 };
 
 {
