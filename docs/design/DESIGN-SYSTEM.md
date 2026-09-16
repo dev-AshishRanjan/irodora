@@ -203,6 +203,25 @@ label. A hue-coded chart would put five competing colours beside a sample the us
 to read, and hue-coding is also the encoding that fails under CVD. The accessible answer and
 the correct-perception answer are the same answer.
 
+**One icon set, and its line is a token** (F-228). Every icon a mockup draws is one entry in
+[`Glyph`](../../packages/ui/src/Glyph.tsx), keyed by the name its inventory binds — 57 of them,
+checked in both directions against `mockups/inventory/`, so an icon renamed there fails in
+`@irodora/ui` rather than at a screen. **`size.iconStroke` (1.65 dp, F-220's reading of `01`'s tab
+icons) is a rendered width, not a grid width**: a glyph draws its lines at `iconStroke × 24 / size`
+grid units, so a 16 dp icon and a 28 dp icon carry the same line. Glyphs are outline and one ink —
+tint is the surface's (R9-MOCKUP-FIDELITY §6 C10) — and differ by silhouette, so the five `score-*`
+kinds are five shapes before they are five colours (NFR-9). Four glyphs have the filled drawing a
+mockup uses for an active state — `home` (01), `lens` (02), `profile` (02, 15, 18) and `compass`
+(09); asking any other glyph for a fill draws its outline.
+
+A glyph is **decorative to a screen reader**. One that is the whole of a control is an
+[`IconButton`](../../packages/ui/src/IconButton.tsx), whose `label` is required by type and is its
+only name. `NavIcon` and the status `check` and `cross` draw through the same registry; the status
+alert triangle, which no mockup draws, does not. `scripts/verify-app-glyphs.mjs` holds the app to
+it: no screen imports `react-native-svg` or an icon library, or writes SVG markup — except the share
+card, which is a document rather than an icon
+([ADR-0070](../adr/0070-a-shareable-card-is-a-deterministic-document-not-a-bitmap.md)).
+
 ---
 
 ## Component contract

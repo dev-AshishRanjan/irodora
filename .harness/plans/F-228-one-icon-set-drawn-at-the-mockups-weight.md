@@ -53,6 +53,9 @@ of it is this feature's choice:
 - **The tab bar is `01`'s** (§6 C1, by P5): Home · Atlas · Lens · Wardrobe · Profile. So `atlas` is the
   globe, `lens` the outline camera, `wardrobe` the shirt, `profile` the outline person — and 01
   draws its ACTIVE tab filled (home), so each tab glyph has a filled variant for that state.
+  **As built:** only where a filled drawing exists — `home` (01), `lens` (02), `profile` (02 15 18),
+  `compass` (09). `atlas` and `wardrobe` are drawn filled nowhere, so they have no filled drawing;
+  how 01's tab bar shows either one active is F-234's question, recorded on it.
 - **A superseded element never sets a shape** that a governing one draws. The tab bars of 02 05 09 11
   15 18 21 and 25 are replaced by C1, so 05's book and 21's map are not `atlas`, 21's two people are not
   `search` (05's search field draws the magnifier), and 25's ring is not `lens`. Names drawn ONLY in
@@ -85,8 +88,11 @@ of it is this feature's choice:
 ### Drawn, checked against the image
 
 Each glyph is drawn after a magnified crop of the element that binds it (the inventory gives the box),
-in batches by mockup, and the crops are kept beside the plan's evidence. The paths are ours (NavIcon's
-reasoning: no vendored artwork, one family, one source).
+and the paths are ours (NavIcon's reasoning: no vendored artwork, one family, one source). **As built:**
+all 57 were drawn in one pass and compared on one contact sheet — each crop beside its glyph at 72 and
+20 dp — rather than in batches; the seal and the padlock were redrawn after that comparison. The crops
+are derived from committed images by the inventory's own boxes, so they are not committed; which element
+each glyph was drawn against is recorded under *Evidence* below, and that is enough to regenerate them.
 
 ### The accessible name
 
@@ -98,8 +104,10 @@ word is hidden from screen readers; a glyph that is the whole control is named.
 
 **`verify-app-glyphs.mjs`** in the lint chain: `apps/mobile` may not import `react-native-svg`, with
 **one declared exception** — the share-card document renderer (`card.ts`, `ColourCard.tsx`), which
-draws a DOCUMENT (ADR-0070), not an icon. A `--prove` plants an SVG import in a screen and watches it
-fail, beside the real tree passing, and a dead exemption fails too.
+draws a DOCUMENT (ADR-0070), not an icon. **As built:** two rules, not one — an import of an SVG or icon
+module, and SVG markup in a string — because `card.ts` imports nothing and writes the markup, while
+`ColourCard.tsx` imports `react-native-svg` and writes none; each exemption names its rule. A `--prove`
+plants eighteen cases beside the real tree, and a dead exemption fails too.
 
 ### Increments
 
@@ -108,7 +116,7 @@ fail, beside the real tree passing, and a dead exemption fails too.
 2. **The registry and the weight**: `size.iconStroke`, `Glyph`, the five nav glyphs moved in, NavIcon
    and the status `check` drawing through it; registry tests (every inventory icon name has a glyph,
    every glyph is an inventory name — both directions, read from the inventories).
-3. **The glyphs**, in batches by mockup, each against its crop.
+3. **The glyphs**, in batches by mockup, each against its crop. *(Built with increment 2 — one sheet.)*
 4. **`IconButton`** with the required name; type-level refusal and render tests.
 5. **The check** and its proof.
 6. **Effects and the record.**
@@ -117,7 +125,7 @@ fail, beside the real tree passing, and a dead exemption fails too.
 
 - **Governing mockups:** every one that binds an icon — `00 01 02 03 04 05 06 07 08 09 10 11 12 13 15
   16 17 18 19 20 21 22 23 24 25 26 27`, per the inventories.
-- **Inventory:** the `icon` field of every element; 56 names.
+- **Inventory:** the `icon` field of every element; 57 names once 00's `external` is rebound.
 - **Bindings:** none — a glyph is a shape, not a value.
 - **Departures:** none. Names the acceptance lists and no mockup draws are not built, and that is
   following rule 14 rather than departing from it.
@@ -157,6 +165,34 @@ docs/design/DESIGN-SYSTEM.md                the icon section
   rendered tree carries the name and role.
 - **The check**: its proof, planted and dead-exemption cases.
 - **Gates**: state, typecheck, lint, format, test, build, a11y, contrast, cvd.
+
+## Evidence
+
+Each glyph was drawn against a magnified crop of the element below (an inventory id, or where the
+inventory binds a compound element, the part of it that is the icon). Crops: the inventory box with a
+3 px margin, fitted into a 96 px cell from the mockup's own pixels.
+
+| | | |
+|---|---|---|
+| `arrow-right` · 04.sheet.outfits.icon | `edit` · 00.controls.icon-edit-2 | `palette` · 00.buttons.icon-palette |
+| `atlas` · 01.tabs.atlas.icon | `export` · 06.export | `plus` · 03.actions.add.icon |
+| `back` · 22.back | `external` · 00.controls.icon-external | `profile` · 15.tabs.profile |
+| `bag` · bag (11, icon part) | `file-code` · file-code (18) | `refresh` · refresh (13, icon part) |
+| `bell` · 15.tabs.bell | `file-export` · file-export (18) | `reticle` · 06.actions.hold.icon |
+| `bookmark` · 06.bookmark | `file-table` · 18.tools.csv.icon | `score` · score (13, icon part) |
+| `bulb` · 11.gap.icon | `file-text` · file-text (18) | `score-balance` · 13.score.balance.icon |
+| `camera` · 00.buttons.icon-camera | `filter` · 19.filter | `score-contrast` · score-contrast (13) |
+| `camera-locked` · 27.lens-permission.icon | `glare` · 27.lens-refused.icon | `score-cvd` · 13.score.cvd.icon |
+| `check` · 12.intelligence.check | `grid` · 11.tabs.grid.icon | `score-fit` · 13.score.fit.icon |
+| `chevron-left` · 16.tray.previous | `help` · help (18, icon part) | `score-harmony` · 13.score.harmony.icon |
+| `chevron-right` · 16.tray.next | `history` · history (23) | `search` · search (05 tab) |
+| `chevron-up` · 12.tracking.toggle | `home` · 01.tabs.home.icon | `settings` · 09.tabs.settings.icon |
+| `close` · 09.search.clear | `image` · 00.buttons.icon-image | `share` · 24.share |
+| `colour-wheel` · colour-wheel (00) | `lens` · 01.tabs.lens.icon | `shield` · 12.intelligence.icon |
+| `compass` · 09.tabs.atlas.icon | `list` · list (05.count, icon part) | `sparkle` · sparkle (04) |
+| `contrast` · contrast (00) | `lock` · 13.slots.slot-2.lock | `sun` · 02.conditions.icon |
+| `document` · 18.tabs.document.icon | `map` · 09.tabs.map.icon | `swap` · swap (13, icon part) |
+| `download` · 08.export | `more` · more (05.more) | `wardrobe` · 01.tabs.wardrobe.icon |
 
 ## Risks and open questions
 

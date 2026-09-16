@@ -215,6 +215,24 @@ describe('what the loader refuses', () => {
     expect(() => parseManifest(withValue(['radius', 'swatchRatio'], 0.1))).not.toThrow();
   });
 
+  it('an icon line too fine to draw, or too heavy to read as a line (F-228)', () => {
+    expect(() => parseManifest(withValue(['size', 'iconStroke'], 0.4))).toThrow(
+      /size\.iconStroke.*expected \[0\.5, 3\] dp; got 0\.4/u,
+    );
+    expect(() => parseManifest(withValue(['size', 'iconStroke'], 3.1))).toThrow(
+      /expected \[0\.5, 3\] dp; got 3\.1/u,
+    );
+    expect(() => parseManifest(withValue(['size', 'iconStroke'], '1.65'))).toThrow(/iconStroke/u);
+    expect(() => parseManifest(without(['size', 'iconStroke']))).toThrow(/iconStroke/u);
+  });
+
+  it('DECOY — an icon line at either end of the range, and the one declared, is accepted', () => {
+    // Without this the case above would pass for a loader refusing every stroke.
+    expect(() => parseManifest(withValue(['size', 'iconStroke'], 0.5))).not.toThrow();
+    expect(() => parseManifest(withValue(['size', 'iconStroke'], 3))).not.toThrow();
+    expect(parseManifest(clone()).size.iconStroke).toBe(1.65);
+  });
+
   it('a shadow on a dark mode — no dark mockup draws one', () => {
     expect(() => parseManifest(withValue(['elevation', 'shadow', 'modes'], ['dark']))).toThrow(
       /only light may carry a shadow/u,

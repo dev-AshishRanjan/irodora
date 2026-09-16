@@ -7628,7 +7628,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that).",
+      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that). FROM F-228 (2026-09-16): `IconButton` is the named, weighted glyph inside a control and draws no plate. The inventories record 00's icon-only controls — thirty elements — as `ui:Button` with an icon and no copy, their plate on each element's `tokens`; this feature decides whether those draw as IconButton inside the plate or as a Button form, and says so in the inventory vocabulary.",
       "openQuestions": [
         "OQ-37"
       ]
@@ -7708,7 +7708,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1)."
+      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1). FROM F-228 (2026-09-16): the glyph registry has filled drawings only where a mockup draws one — home (01), lens (02), profile (02 15 18), compass (09). ATLAS AND WARDROBE ARE DRAWN FILLED NOWHERE, so if 01's active-tab treatment is a filled glyph, the active Atlas and Wardrobe tabs are undrawn and are an open question for a person, not a drawing to invent. NavIcon takes no `filled` prop yet; this feature adds it with the treatment."
     },
     {
       "id": "F-235",

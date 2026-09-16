@@ -27,8 +27,20 @@ import {
   THEMES,
   type Manifest,
 } from '../src/index.js';
-import { COLOR, RADIUS, SPACING, STATUS_PAIRING, TAP_TARGET } from '../src/generated/tokens.js';
-import { nativeColors, nativeRadius, nativeSpacing } from '../src/generated/native.js';
+import {
+  COLOR,
+  ICON_STROKE,
+  RADIUS,
+  SPACING,
+  STATUS_PAIRING,
+  TAP_TARGET,
+} from '../src/generated/tokens.js';
+import {
+  nativeColors,
+  nativeIconStroke,
+  nativeRadius,
+  nativeSpacing,
+} from '../src/generated/native.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PACKAGE = join(HERE, '..');
@@ -144,6 +156,14 @@ describe('the non-colour scales survive the trip', () => {
     expect(SPACING).toEqual(manifest.spacing.scale);
     expect(nativeSpacing).toEqual(manifest.spacing.scale);
     expect(TAP_TARGET).toBe(manifest.size.tapTarget);
+  });
+
+  it('the icon line reaches both targets as the one declared width (F-228)', () => {
+    expect(ICON_STROKE).toBe(manifest.size.iconStroke);
+    expect(nativeIconStroke).toBe(manifest.size.iconStroke);
+    expect(emitCss(manifest)).toContain(
+      `--irodora-size-icon-stroke: ${String(manifest.size.iconStroke)}px;`,
+    );
   });
 
   it('the swatch corner reaches every target as a bounded ratio', () => {
