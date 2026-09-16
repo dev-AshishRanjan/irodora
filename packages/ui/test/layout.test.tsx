@@ -3,7 +3,7 @@
  *
  * ## What is actually being proven here
  *
- * That a screen **cannot** express spacing as a number. The behavioural half — that `gap="lg"`
+ * That a screen **cannot** express spacing as a number. The behavioural half — that `gap="md"`
  * produces 16 — is worth little on its own, because a component that read the wrong step would
  * still pass a test written against whatever it read. The half that matters is the compile-time
  * refusal, and `tsc` errors on an unused `@ts-expect-error`, so each of those directives is an
@@ -38,8 +38,8 @@ describe('a step name resolves to the step the manifest declares', () => {
   it.each([
     ['xs', nativeSpacing.xs],
     ['md', nativeSpacing.md],
-    ['xl2', nativeSpacing.xl2],
-    ['xl5', nativeSpacing.xl5],
+    ['lg', nativeSpacing.lg],
+    ['xxl', nativeSpacing.xxl],
   ] as const)('Stack gap=%s -> %s', (step, expected) => {
     const tree = draw(
       <Stack gap={step} testID="s">
@@ -68,13 +68,13 @@ describe('a step name resolves to the step the manifest declares', () => {
 
   it('Surface resolves its padding through the scale', () => {
     const tree = draw(
-      <Surface level="1" padding="lg" testID="surf">
+      <Surface level="1" padding="md" testID="surf">
         <Text size="body" color="foreground">
           Ai-nezumi
         </Text>
       </Surface>,
     );
-    expect(styleOf(tree, 'surf')['padding']).toBe(nativeSpacing.lg);
+    expect(styleOf(tree, 'surf')['padding']).toBe(nativeSpacing.md);
   });
 });
 
@@ -145,7 +145,7 @@ describe('spacing cannot be expressed as a number (F-140)', () => {
     // shared by two components can be widened on one of them.
     const bad = <Row gap={16} />;
     expect(bad).toBeTruthy();
-    const good = <Row gap="lg" />;
+    const good = <Row gap="md" />;
     expect(good).toBeTruthy();
   });
 
@@ -157,19 +157,20 @@ describe('spacing cannot be expressed as a number (F-140)', () => {
     // and all 32 of its call sites passed a literal.
     const badSurface = <Surface padding={12} />;
     expect(badSurface).toBeTruthy();
-    const goodScreen = <Screen padding="xl2" />;
-    const goodSurface = <Surface padding="md" />;
+    const goodScreen = <Screen padding="lg" />;
+    const goodSurface = <Surface padding="sm" />;
     expect(goodScreen).toBeTruthy();
     expect(goodSurface).toBeTruthy();
   });
 
   it('refuses a step the scale does not contain', () => {
-    // @ts-expect-error — `xxl` is not a step. This is the case a numeric type would NOT have
-    // caught, and it is why the prop is a key of the emitted token rather than a hand-written
-    // union that agreed with the manifest on the day it was typed.
-    const bad = <Stack gap="xxl" />;
+    // @ts-expect-error — `xl5` is not a step (it was one before F-227, which is the point: a
+    // name that leaves the scale has to stop compiling). This is the case a numeric type would
+    // NOT have caught, and it is why the prop is a key of the emitted token rather than a
+    // hand-written union that agreed with the manifest on the day it was typed.
+    const bad = <Stack gap="xl5" />;
     expect(bad).toBeTruthy();
-    const good = <Stack gap="xl5" />;
+    const good = <Stack gap="xxl" />;
     expect(good).toBeTruthy();
   });
 
@@ -222,7 +223,7 @@ describe('the status bar inset moves the scroller, not the content inside it (F-
     const tree = withInsets(<Screen testID="page" />);
     const content = flatten(tree.getByTestId('page').props['contentContainerStyle']);
 
-    expect(content['padding']).toBe(nativeSpacing.xl2);
+    expect(content['padding']).toBe(nativeSpacing.lg);
     expect(content['paddingTop']).toBeUndefined();
     for (const value of Object.values(content)) expect(value).not.toBe(INSET.top);
   });
@@ -267,7 +268,7 @@ describe('the status bar inset moves the scroller, not the content inside it (F-
       </ThemeProvider>,
     );
     const content = flatten(tree.getByTestId('page').props['contentContainerStyle']);
-    expect(content['padding']).toBe(nativeSpacing.xl2);
+    expect(content['padding']).toBe(nativeSpacing.lg);
   });
 });
 

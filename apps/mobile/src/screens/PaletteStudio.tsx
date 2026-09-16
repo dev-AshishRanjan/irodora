@@ -218,7 +218,7 @@ export function PaletteStudio({
     if (entry === null) return null;
     return (
       <View style={{ gap: nativeSpacing.sm, paddingVertical: nativeSpacing.sm }}>
-        <Row gap="md">
+        <Row gap="sm">
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
@@ -317,7 +317,7 @@ export function PaletteStudio({
       <Surface
         /* surface-not-card: one TextField. A header over a single labelled field is the label written twice. */
         level="1"
-        padding="lg"
+        padding="md"
       >
         <TextField
           label={t('studio.name')}
@@ -332,7 +332,7 @@ export function PaletteStudio({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.members')}
@@ -380,7 +380,7 @@ export function PaletteStudio({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.add')}
@@ -419,7 +419,7 @@ export function PaletteStudio({
       <Surface
         /* surface-not-card: a save button and the reason it is disabled, which belongs beside the control rather than under a title. */
         level="1"
-        padding="lg"
+        padding="md"
       >
         <Stack gap="sm">
           <Button
@@ -464,7 +464,7 @@ export function PaletteStudio({
       */}
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('cvd.title')}
@@ -499,7 +499,7 @@ export function PaletteStudio({
                     {t('cvd.noAlternative')}
                   </Text>
                 ) : (
-                  <Row gap="md" wrap>
+                  <Row gap="sm" wrap>
                     {(() => {
                       const entry = entryBySlug(finding.alternative.slug);
                       return entry === null ? null : (
@@ -531,7 +531,7 @@ export function PaletteStudio({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('studio.yours')}

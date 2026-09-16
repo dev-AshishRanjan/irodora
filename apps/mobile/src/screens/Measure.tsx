@@ -213,14 +213,14 @@ export function Measure({
       {/* ------------------------------------------------------ the entry form */}
       <Card
         level="1"
-        padding="md"
+        padding="sm"
         header={
           <Text size="body" color="foreground" heading script={script}>
             {t('measure.space')}
           </Text>
         }
       >
-        <Stack gap="md">
+        <Stack gap="sm">
           <Row gap="sm">
             {ENTRY_SPACES.map((candidate) => (
               <Button

@@ -547,7 +547,7 @@ export function __spacingProofStack(): null {
       // MUST STAY GREEN. The tokenised form is what the codebase is supposed to be written in.
       name: 'a valid reference to a step — must stay GREEN',
       expect: 'green',
-      plant: (source) => plantValue('gap: nativeSpacing.xl2')(source),
+      plant: (source) => plantValue('gap: nativeSpacing.xxl')(source),
     },
     {
       // MUST STAY GREEN. This repository's styles are heavily commented and the comments
@@ -559,10 +559,12 @@ export function __spacingProofStack(): null {
         `${source}\n// The scale used to carry a 14, and a gap: 6 was written on every row.\n`,
     },
     {
-      // MUST STAY GREEN. A step of the scale is a step of the scale.
+      // MUST STAY GREEN. A step of the scale is a step of the scale. The value moved from 28 to
+      // 24 with the scale itself (F-227, ADR-0103): a green case planting a value the scale no
+      // longer carries would assert the opposite of what it is named for.
       name: 'a newly added ON-scale value — must stay GREEN',
       expect: 'green',
-      plant: plantValue('gap: 28'),
+      plant: plantValue('gap: 24'),
     },
   ];
 
@@ -654,30 +656,35 @@ export function __spacingProofStack(): null {
      * from a positional array into a named record and this line still said `.filter(...)`,
      * which threw — the proof was written against a shape the check no longer accepts, and it
      * is the reason CI went red on a change every other gate passed. Deleting whichever entry
-     * holds 20 keeps the case about the VALUE the screens use, so a future rename of `xl`
-     * cannot quietly turn this into a no-op the way a hard-coded key would.
+     * holds the value keeps the case about the VALUE the screens use, so a rename cannot quietly
+     * turn this into a no-op the way a hard-coded key would.
+     *
+     * THE VALUE WAS 20 AND IS NOW 16, because F-227 replaced the scale with the mockups' own
+     * (ADR-0103) and 20 stopped being a step — this case threw with a message naming its own
+     * repair, which is the shape a proof should fail in. 16 is `md`, referenced thirteen times
+     * through `nativeSpacing.md`, so removing it is still a mutation the product feels.
      */
     const manifestText = readFileSync(MANIFEST, 'utf8');
     const perturbed = JSON.parse(manifestText);
     const steps = Object.entries(perturbed.spacing.scale);
-    if (!steps.some(([, v]) => v === 20))
+    if (!steps.some(([, v]) => v === 16))
       throw new Error(
-        'the manifest scale no longer contains 20, which this case removes to prove the check ' +
+        'the manifest scale no longer contains 16, which this case removes to prove the check ' +
           'reads the scale — pick another value present in both the scale and a screen',
       );
     // Rebuilt without it rather than `delete`d: the key is computed, and a dynamic delete is
     // banned by lint. Filtering is also nearer the original array `.filter(...)` this replaced.
-    perturbed.spacing.scale = Object.fromEntries(steps.filter(([, v]) => v !== 20));
+    perturbed.spacing.scale = Object.fromEntries(steps.filter(([, v]) => v !== 16));
     writeFileSync(MANIFEST, `${JSON.stringify(perturbed, null, 2)}\n`, 'utf8');
     const followed = runCheck();
     writeFileSync(MANIFEST, manifestText, 'utf8');
     /*
      * EITHER SPELLING IS VALID EVIDENCE, and F-140 is why this now says so.
      *
-     * The case removes step 20 from the manifest and asserts the check notices. It used to
+     * The case removes the step from the manifest and asserts the check notices. It used to
      * notice as `padding: 20 is not a step`, because a screen carried that literal. After F-140
-     * the product references `nativeSpacing.xl` instead — five times — so the same mutation
-     * surfaces as an unresolvable reference.
+     * the product references the step by name instead, so the same mutation surfaces as an
+     * unresolvable reference — `nativeSpacing.md`, thirteen times, since F-227.
      *
      * The check went red either way; only the expected wording was stale, which is a proof
      * whose subject moved rather than a regression. Accepting both spellings keeps the case
@@ -685,8 +692,8 @@ export function __spacingProofStack(): null {
      * nothing to do with what it is proving.
      */
     const noticed =
-      /padding: 20 is not a step/u.test(followed.output) ||
-      /nativeSpacing\.xl is not a step of the scale/u.test(followed.output);
+      /padding: 16 is not a step/u.test(followed.output) ||
+      /nativeSpacing\.md is not a step of the scale/u.test(followed.output);
     if (followed.code === 0 || !noticed)
       problems.push(
         'removing a step from the MANIFEST did not change the verdict — the check is reading a ' +

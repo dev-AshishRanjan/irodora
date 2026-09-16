@@ -197,20 +197,26 @@ function namesOf(bindings) {
     },
     {
       /*
-       * SPACING IS READ AS A PROPERTY ACCESS, NEVER AS A PROP LITERAL (F-111).
+       * SPACING IS READ AS A PROPERTY ACCESS **AND**, SINCE F-140, THROUGH A STEP-NAMED PROP.
        *
-       * `radius` and `size` arrive as `radius="md"` and `size="xs"` — string literals in a
-       * prop, which is why those groups carry a `props` list. Spacing arrives as
-       * `nativeSpacing.md` inside a style object, so the owner-qualified form is the ONLY
-       * shape that reads it and `props` is deliberately empty. Adding a plausible-looking
-       * `['gap', 'padding', 'margin']` here would match nothing and quietly report every step
-       * as unreached, which is four declarations that would all be false.
+       * This said "never as a prop literal" and left `props` empty, with the reason that
+       * `['gap', 'padding', 'margin']` would match nothing — true when F-111 wrote it, because
+       * spacing only ever arrived as `nativeSpacing.md` inside a style object. The layout
+       * primitives changed that: `Stack`, `Row`, `Screen`, `Section`, `Card` and `Surface`
+       * take a SpacingStep by name, and a screen that writes `gap="lg"` reads that step as
+       * surely as a style object does.
+       *
+       * F-227 is where the omission showed: the scales became the mockups' own, `lg` moved from
+       * 16 to 24, and its only readers were props — so a step four screens use was reported
+       * unreached, and the declaration that would have silenced it would have been false.
+       *
+       * `margin` is deliberately not here: no component takes one by name.
        */
       group: 'spacing step',
       kind: 'literal',
       names: Object.keys(bindings.get('nativeSpacing')),
       owners: ['nativeSpacing', 'SPACING'],
-      props: [],
+      props: ['gap', 'padding', 'padY'],
     },
     {
       group: 'type step',

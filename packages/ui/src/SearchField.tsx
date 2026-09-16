@@ -70,8 +70,8 @@ export function SearchField({
         style={{
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
-          borderRadius: nativeRadius.sm,
-          paddingHorizontal: nativeSpacing.md,
+          borderRadius: nativeRadius.md,
+          paddingHorizontal: nativeSpacing.sm,
           backgroundColor: colors['surface.2'],
           color: colors.foreground,
           fontSize: nativeType.latin.body.fontSize,

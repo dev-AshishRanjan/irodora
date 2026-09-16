@@ -41,7 +41,7 @@ export function TargetBar({ target, onDisarm }: TargetBarProps): React.JSX.Eleme
         /* surface-not-card: a bar, not content — a swatch and a label pinned above the screen, with no heading and nothing a header slot could hold. */
         level="1"
         padding="sm"
-        radius="xs"
+        radius="sm"
       >
         <Row gap="sm" align="center">
           <Swatch

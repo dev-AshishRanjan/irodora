@@ -213,14 +213,14 @@ export function Preferences({
       */}
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('appearance.title')}
           </Text>
         }
       >
-        <Stack gap="md">
+        <Stack gap="sm">
           {/*
             A SELECT, AND F-156 IS WHY THIS COMMENT CHANGED RATHER THAN THE ROW BELOW IT.
 
@@ -358,7 +358,7 @@ export function Preferences({
         <Surface
           /* surface-not-card: an EmptyState, or the route out of it. Both are the component, not a card around it. */
           level="1"
-          padding="lg"
+          padding="md"
         >
           {/*
             THE DESIGNED EMPTY STATE (F-152 criterion 2), and the union forced the interesting
@@ -388,14 +388,14 @@ export function Preferences({
       ) : (
         <Card
           level="1"
-          padding="lg"
+          padding="md"
           header={
             <Text size="body" color="foreground" script={script} heading>
               {t('preferences.learned')}
             </Text>
           }
         >
-          <Stack gap="md">
+          <Stack gap="sm">
             <Text size="xs" color="foreground.2" script={script}>
               {`${t('preferences.formula')} ${String(PREFERENCE_SATURATION)}`}
             </Text>
@@ -444,7 +444,7 @@ export function Preferences({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('preferences.resetTitle')}

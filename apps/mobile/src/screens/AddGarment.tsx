@@ -346,7 +346,7 @@ export function AddGarment({
         /* surface-not-card: a group of optional fields opened by a lead-in sentence rather than a heading. */
         level="1"
       >
-        <Stack gap="md">
+        <Stack gap="sm">
           <Text size="body" color="foreground.2" script={script}>
             {t('wardrobe.optional')}
           </Text>

@@ -113,8 +113,8 @@ export function Chip({
         minWidth: nativeTapTarget,
         minHeight: nativeTapTarget,
         alignItems: 'center',
-        borderRadius: nativeRadius.sm,
-        paddingHorizontal: nativeSpacing.md,
+        borderRadius: nativeRadius.md,
+        paddingHorizontal: nativeSpacing.sm,
         justifyContent: 'center',
         backgroundColor: colors['surface.2'],
         /*

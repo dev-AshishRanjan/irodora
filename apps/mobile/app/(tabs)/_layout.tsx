@@ -99,7 +99,7 @@ function TabGlyph({
       <View
         style={{
           height: 2,
-          width: nativeSpacing.lg,
+          width: nativeSpacing.md,
           backgroundColor: focused ? colors.accent : 'transparent',
         }}
       />

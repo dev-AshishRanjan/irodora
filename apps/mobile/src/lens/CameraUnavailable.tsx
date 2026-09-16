@@ -52,7 +52,7 @@ export function CameraUnavailable({ error }: CameraUnavailableProps): React.JSX.
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: nativeSpacing.xl, gap: nativeSpacing.lg }}
+      contentContainerStyle={{ padding: nativeSpacing.md, gap: nativeSpacing.md }}
     >
       <Text size="title" color="foreground" script={script} heading>
         {t('lens.unavailable')}
@@ -64,7 +64,7 @@ export function CameraUnavailable({ error }: CameraUnavailableProps): React.JSX.
       <Surface
         /* surface-not-card: two sentences, one of them the platform's own message. The screen title is the heading. */
         level="1"
-        padding="lg"
+        padding="md"
       >
         <View style={{ gap: nativeSpacing.xs }}>
           <Text size="small" color="foreground.2" script={script}>

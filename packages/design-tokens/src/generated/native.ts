@@ -252,12 +252,10 @@ export const nativeColors = {
 } as const;
 
 export const nativeRadius = {
-  xs: 6,
-  sm: 10,
-  md: 14,
-  lg: 20,
-  xl: 28,
-  pill: 999,
+  sm: 6,
+  md: 10,
+  lg: 16,
+  pill: 9999,
   swatchRatio: 0.25,
 } as const;
 
@@ -278,13 +276,10 @@ export const nativeRadius = {
 export const nativeSpacing = {
   xs: 4,
   sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xl2: 28,
-  xl3: 40,
-  xl4: 56,
-  xl5: 96,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
 } as const;
 export const nativeTapTarget = 44 as const;
 /**

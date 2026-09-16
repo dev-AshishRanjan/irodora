@@ -66,6 +66,13 @@ export interface SwatchProps {
    * that string is Japanese on a Japanese device. Latin by default, matching `Text`.
    */
   readonly script?: Script;
+  /**
+   * Which step the corner takes — `sm` unless the governing mockup's inventory binds `md`.
+   *
+   * Defaulted rather than required: `sm` is the step most drawn samples carry (42 of 67 bound
+   * across the inventories), and a surface built to a mockup that binds `md` says so here.
+   */
+  readonly corner?: SwatchCornerStep;
 }
 
 /**
@@ -78,54 +85,49 @@ export function swatchAccessibleName(name: string, hex: string, color: Color): s
   return `${name}. Hex ${hex.replace('#', '')}. ${source}, ${String(percent)} percent confidence.`;
 }
 
-/**
- * The corner radius of a sample of a given size, and of the keyline around it.
- *
- * ## A ratio, not a length (ADR-0090), bounded by what stays straight (ADR-0094)
- *
- * `radius.swatch` was 0 and the manifest parser threw on anything else, because a corner
- * removes sampled area from exactly the region the eye uses to judge a flat colour. That
- * reasoning is right and it does not require zero — it requires the LOSS to stay small, which is
- * a function of radius relative to size. The manifest's own note said as much: *"the effect grows
- * as the swatch shrinks"*.
- *
- * This product draws samples from 32px to about 380px. A single pixel value is 37% of the
- * smaller and 3% of the larger — unusable at one end, invisible at the other. At the declared
- * ratio a sample loses **1.34%** of its area at every size, and the manifest refuses a ratio that
- * would lose more than 2%.
- *
- * ## Why the outer layer takes one pixel more
- *
- * The keyline is a 1px-inset parent around the sample. Two concentric rounded rectangles are only
- * concentric when the outer radius exceeds the inner by the inset — give them the same radius and
- * the outer arc is tighter than the inner one, so a sliver of ground shows through each corner.
- *
- * At radius 0 that was invisible, which is why the old comment could say the two "must be 0 on
- * BOTH nested views" and be complete. With a corner it is the one genuinely new failure mode,
- * and `swatch-corners.test.ts` is what would catch it.
- */
-/**
- * The largest corner a sample may take, however big it is.
- *
- * **A pure ratio is right in the middle of the range and wrong at the top.** ADR-0090 made the
- * corner a ratio for a good reason — this product draws samples from 32px to about 380px, and a
- * single pixel value is invisible at one end and overwhelming at the other. But at 0.25 the hero
- * on a colour page would take an 85px corner, which is not a corner: it is a curve, and the
- * sample stops reading as a rectangle at exactly the size where the flat field matters most.
- *
- * `radius.xl` is the largest corner this design system draws anywhere. Beyond it a sample would
- * be rounder than every other container in the product, which is a statement nobody made.
- *
- * NOT A NEW NUMBER: the cap is the top of the existing scale, so it moves when the scale does.
- */
-const SWATCH_MAX_CORNER = nativeRadius.xl;
+/** The two steps a drawn sample takes, measured by F-220 across the 28 mockups. */
+export type SwatchCornerStep = 'sm' | 'md';
 
-export function swatchCorner(size: number): {
+/**
+ * The corner radius of a sample of a given size, and of the keyline and well around it.
+ *
+ * ## A step, with the ratio as its ceiling (ADR-0103)
+ *
+ * ADR-0090 made the corner a RATIO of the side, because the alternative on offer was a single
+ * pixel value that is 37% of a 32px chip and 3% of a card. ADR-0094 then bounded that ratio by
+ * what stays straight. The mockups say something narrower than either: F-220 measured every drawn
+ * sample corner across the 28 images and they span 4 to 11.5 dp — `sm` and `md`, bound per
+ * element in the inventories. A hero at ratio 0.25 takes 85 px, which is a curve rather than a
+ * corner; the hero `01` draws takes 6.75.
+ *
+ * So the corner is a SCALE STEP, and ADR-0094's bound becomes what it may not exceed:
+ * `min(step, floor(0.25 x side))`. The ceiling binds only below about 24 px, where a step would
+ * take more than a quarter of the side — a sample that small is one whose corner has to shrink
+ * with it, which is the case the ratio was right about.
+ *
+ * ## Why the outer layers take one more
+ *
+ * The keyline is a 1px-inset parent around the sample, and the well one more nesting outside it.
+ * Two concentric rounded rectangles are only concentric when the outer radius exceeds the inner by
+ * the inset — give them the same radius and the outer arc is tighter, so a sliver of ground shows
+ * through each corner. `swatch-corners.test.tsx` is what would catch it.
+ */
+export function swatchCorner(
+  size: number,
+  step: SwatchCornerStep = 'sm',
+): {
   readonly sample: number;
   readonly keyline: number;
   readonly well: number;
 } {
-  const sample = Math.min(Math.round(size * nativeRadius.swatchRatio), SWATCH_MAX_CORNER);
+  /*
+   * THE CEILING, NOT THE VALUE (ADR-0103). `swatchRatio` is what a corner may not exceed, so a
+   * sample too small for its step rounds by a quarter of its side instead. Floored rather than
+   * rounded: at the boundary the bound has to hold, and a rounded-up corner at 22 px would leave
+   * slightly less than half the edge straight — which is the one thing ADR-0094 forbids.
+   */
+  const ceiling = Math.floor(Math.max(size, 0) * nativeRadius.swatchRatio);
+  const sample = Math.min(nativeRadius[step], ceiling);
   const keyline = sample + KEYLINE_INSET;
   /*
    * THE WELL IS THE SAME RULE, ONE LEVEL OUT (F-187).
@@ -135,15 +137,9 @@ export function swatchCorner(size: number): {
    * called the roundness done, while the ground it sits on stayed a rectangle. A rounded sample
    * inside a square well is a shape somebody drew half of.
    *
-   * The keyline's corner is the sample's plus its own 1px inset, so that two nested rounded
-   * rectangles stay concentric — give them the same radius and the outer arc is TIGHTER than
-   * the inner one, and a sliver of ground shows through each corner. The well is one more
-   * nesting with a larger inset, and the arithmetic is identical.
-   *
-   * NOT CAPPED at `SWATCH_MAX_CORNER`. That cap exists so a SAMPLE does not become a curve at
-   * the sizes this product draws heroes at; a container following its own content past it is
-   * the correct direction, and capping the well while the keyline kept growing is exactly the
-   * sliver this rule exists to prevent.
+   * NOT HELD TO THE STEP. The ceiling exists so a SAMPLE stays a field; a container following its
+   * own content outward is the correct direction, and holding the well while the keyline kept
+   * growing is exactly the sliver this rule exists to prevent.
    */
   return { sample, keyline, well: keyline + WELL_INSET };
 }
@@ -222,6 +218,7 @@ export function Swatch({
   loading = false,
   onPress,
   script = 'latin',
+  corner: cornerStep = 'sm',
 }: SwatchProps): React.JSX.Element {
   const { colors } = useTheme();
   const tone = selectionTone({ selected, focused }, colors);
@@ -231,7 +228,7 @@ export function Swatch({
    * Scale only, on the micro step, gone entirely under reduced motion.
    */
   const press = usePress();
-  const corner = swatchCorner(size);
+  const corner = swatchCorner(size, cornerStep);
   const keyline = keylineTones(hex, colors['swatch.hairline'], colors['swatch.hairline.inverse']);
   const label = swatchAccessibleName(name, hex, color);
   const inert = disabled || loading;

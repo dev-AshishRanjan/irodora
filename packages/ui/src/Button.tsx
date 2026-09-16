@@ -112,7 +112,7 @@ export function Button({
         minWidth: nativeTapTarget,
         minHeight: nativeTapTarget,
         borderRadius: nativeRadius.pill,
-        paddingHorizontal: nativeSpacing.xl,
+        paddingHorizontal: nativeSpacing.md,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: background,

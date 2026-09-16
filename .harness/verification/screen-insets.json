@@ -1,5 +1,5 @@
 {
-  "$comment": "EVERY `padding` FOUND ON A STYLE IN A RENDERED CONFORMANCE SUBJECT, sorted, per subject. The pin asserts the distinct set is identical and no value occurs less often — not the multiset, because a Card draws a header box AND a body box where a Surface drew one, so the COUNT necessarily grows on a conversion that changed no spacing at all. RE-CAPTURED BY F-214, WHICH IS THE PIN WORKING RATHER THAN THE PIN BEING EDITED AROUND: ten sites wrapped their content in a padded View inside a Surface that already pads, rendering 24pt where every call site read 12. Removing those boxes makes values occur less often, which is exactly what this refuses, so the capture is part of that feature and its numbers are in progress.md. F-210 captured the first version BEFORE converting 24 Surfaces into Cards; that baseline has done its job and is in the F-210 commit. Asserted by apps/mobile/test/screens.test.tsx. WHAT IT DOES NOT SEE: rhythm, and overflow. Equal insets are not the same screen.",
+  "$comment": "EVERY `padding` FOUND ON A STYLE IN A RENDERED CONFORMANCE SUBJECT, sorted, per subject. The pin asserts the distinct set is identical and no value occurs less often — not the multiset, because a Card draws a header box AND a body box where a Surface drew one, so the COUNT necessarily grows on a conversion that changed no spacing at all. RE-CAPTURED BY F-214, WHICH IS THE PIN WORKING RATHER THAN THE PIN BEING EDITED AROUND: ten sites wrapped their content in a padded View inside a Surface that already pads, rendering 24pt where every call site read 12. Removing those boxes makes values occur less often, which is exactly what this refuses, so the capture is part of that feature and its numbers are in progress.md. F-210 captured the first version BEFORE converting 24 Surfaces into Cards; that baseline has done its job and is in the F-210 commit. Asserted by apps/mobile/test/screens.test.tsx. WHAT IT DOES NOT SEE: rhythm, and overflow. Equal insets are not the same screen. RE-CAPTURED BY F-227, and by arithmetic rather than by hand: the scales became the mockups own (ADR-0103), so every inset moved through the same snap rule as every reference — 12 to 8, 20 to 16, 28 to 24, 40 to 32, 56 and 96 to 48, everything else where it was. The 1 is the Swatch keyline and is not spacing. This file is the EXPECTATION, so moving it by the rule and letting the render check it is the honest direction: a screen whose padding did not follow the rule fails here.",
   "capturedAt": "2026-09-09",
   "capturedFor": "F-214",
   "supersedes": "the F-210 capture, taken before the Surface-to-Card conversion",
@@ -86,7 +86,7 @@
       8,
       8,
       8,
-      28
+      24
     ],
     "screens/ColourDetail": [
       1,
@@ -96,7 +96,7 @@
       16,
       16,
       16,
-      28
+      24
     ],
     "screens/ColourDetail (sections folded)": [
       1,
@@ -106,7 +106,7 @@
       16,
       16,
       16,
-      28
+      24
     ],
     "screens/Combinations": [
       1,
@@ -808,10 +808,10 @@
     "screens/Compare": [
       1,
       8,
-      12,
-      12,
-      12,
-      12,
+      8,
+      8,
+      8,
+      8,
       16,
       16,
       16,
@@ -822,8 +822,8 @@
       16
     ],
     "screens/ColourCard": [
-      12,
-      12
+      8,
+      8
     ],
     "screens/Contemporary": [
       1,
@@ -860,9 +860,9 @@
       8,
       8,
       8,
-      12,
-      12,
-      12
+      8,
+      8,
+      8
     ],
     "screens/OutfitBuilder": [
       1,
@@ -871,22 +871,22 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/OutfitBuilder (nothing wearable)": [
-      12,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/OutfitBuilder (a slot locked)": [
       1,
@@ -895,13 +895,13 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/OutfitBuilder (cost per wear)": [
       1,
@@ -912,13 +912,13 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/Shopping": [
       1,
@@ -997,11 +997,11 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/Shopping (no slot for this garment)": [
       1,
@@ -1028,11 +1028,11 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/Shopping (the investment signal)": [
       1,
@@ -1059,11 +1059,11 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/Shopping (not enough to compare against)": [
       1,
@@ -1090,23 +1090,23 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/Export": [
-      12,
-      12
+      8,
+      8
     ],
     "screens/Export (the write failed)": [
-      12,
-      12
+      8,
+      8
     ],
     "screens/Export (saved)": [
-      12,
-      12
+      8,
+      8
     ],
     "screens/Export (nothing to export)": [],
     "screens/Export (nothing to export, nowhere to go)": [],
@@ -1123,9 +1123,9 @@
       8,
       8,
       8,
-      12,
-      12,
-      12
+      8,
+      8,
+      8
     ],
     "screens/Measure (a table with rows)": [
       1,
@@ -1140,11 +1140,11 @@
       8,
       8,
       8,
-      12,
-      12,
-      12,
-      12,
-      12
+      8,
+      8,
+      8,
+      8,
+      8
     ],
     "screens/AddGarment": [
       1,
@@ -1171,7 +1171,7 @@
       8,
       8,
       8,
-      12
+      8
     ],
     "screens/AddGarment (the photograph was refused)": [
       1,
@@ -1199,7 +1199,7 @@
       8,
       8,
       8,
-      12
+      8
     ],
     "screens/AddGarment (from the Lens)": [
       1,
@@ -1226,7 +1226,7 @@
       8,
       8,
       8,
-      12
+      8
     ],
     "screens/AddGarment (from a chosen colour)": [
       1,
@@ -1253,7 +1253,7 @@
       8,
       8,
       8,
-      12
+      8
     ],
     "screens/Wear (with destinations)": [
       1,
@@ -1358,8 +1358,8 @@
       8,
       8,
       8,
-      12,
-      12
+      8,
+      8
     ],
     "screens/Wardrobe (nothing in it)": [],
     "screens/Wardrobe (nothing in it, nowhere to go)": [],
@@ -1367,17 +1367,17 @@
       1,
       8,
       8,
-      12,
-      12
+      8,
+      8
     ],
     "screens/Wardrobe (nothing matches)": [
-      12,
-      12
+      8,
+      8
     ],
     "screens/Wardrobe (a garment open)": [
       1,
       8,
-      12
+      8
     ],
     "screens/PaletteStudio": [
       16,
@@ -1544,12 +1544,12 @@
       16
     ],
     "screens/Lens (waiting, with a diagnostic)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (still, at rest)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (against a target)": [
       1,
@@ -1560,36 +1560,36 @@
       8,
       8,
       8,
+      8,
       10,
-      12,
       16
     ],
     "screens/Lens (live)": [
       1,
       8,
-      10,
-      12,
-      12
+      8,
+      8,
+      10
     ],
     "screens/Lens (awaiting a capture)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (nothing was read)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (aimed off centre)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (a photograph open)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (a photograph refused)": [
-      10,
-      12
+      8,
+      10
     ],
     "screens/Lens (a capture on screen)": [
       1,
@@ -1600,8 +1600,8 @@
       8,
       8,
       8,
+      8,
       10,
-      12,
       16
     ]
   }

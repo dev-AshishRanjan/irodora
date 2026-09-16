@@ -136,7 +136,7 @@ export function Card({
   footer,
   media,
   level = '1',
-  padding = 'lg',
+  padding = 'md',
   radius = 'lg',
   onPress,
   label,

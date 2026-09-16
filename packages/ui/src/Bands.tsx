@@ -102,7 +102,7 @@ export function Bands({ bands, unit, script = 'latin', testID }: BandsProps): Re
           <View
             style={{
               height: BAR,
-              borderRadius: nativeRadius.sm,
+              borderRadius: nativeRadius.md,
               // ZERO IS A WIDTH TOO. An empty band drawn as nothing is indistinguishable from a
               // band that is not there, and "no garments appear in this many outfits" is a fact
               // worth showing rather than a row to omit.

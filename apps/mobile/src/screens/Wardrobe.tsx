@@ -401,7 +401,7 @@ function GarmentCell({
       style={({ pressed }) => ({ flex: 1 / COLUMNS, opacity: pressed ? PRESSED_OPACITY : 1 })}
     >
       <Stack gap="sm">
-        <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.md }}>
+        <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.lg }}>
           {uri === null ? (
             <Swatch
               name={swatchAccessibleName(
@@ -463,7 +463,7 @@ function GarmentCell({
  * Android leaves after padding, and far more than a 320pt iPhone SE. The grid overflowed on
  * every phone narrower than about 390pt, which is most of them.
  */
-const GRID_GUTTERS = nativeSpacing.md * 2 + nativeSpacing.md;
+const GRID_GUTTERS = nativeSpacing.sm * 2 + nativeSpacing.sm;
 
 export function Wardrobe({
   store,
@@ -602,9 +602,9 @@ export function Wardrobe({
         <Surface
           /* surface-not-card: the selected garment: a swatch and its type in a row, with no heading over it. */
           level="1"
-          padding="md"
+          padding="sm"
         >
-          <Row gap="lg">
+          <Row gap="md">
             <Swatch
               name={swatchAccessibleName(
                 selected.color.name,
@@ -763,14 +763,14 @@ export function Wardrobe({
       {garments.length === 0 ? null : (
         <Card
           level="1"
-          padding="md"
+          padding="sm"
           header={
             <Text size="body" color="foreground" script={script} heading>
               {t('browse.filters')}
             </Text>
           }
         >
-          <Stack gap="md">
+          <Stack gap="sm">
             <FilterRow
               label={t('browse.filterType')}
               options={options.types.map((v) => ({ value: v, label: v }))}
@@ -907,14 +907,14 @@ export function Wardrobe({
           {coverage === undefined ? null : (
             <Card
               level="1"
-              padding="md"
+              padding="sm"
               header={
                 <Text size="body" color="foreground" script={script} heading>
                   {t('browse.coverage')}
                 </Text>
               }
             >
-              <Stack gap="md">
+              <Stack gap="sm">
                 {garments.length < 2 ? (
                   <Text size="small" color="foreground.2" script={script}>
                     {t('browse.coverageOne')}
@@ -941,14 +941,14 @@ export function Wardrobe({
           {gaps === undefined || gaps.length === 0 ? null : (
             <Card
               level="1"
-              padding="md"
+              padding="sm"
               header={
                 <Text size="body" color="foreground" script={script} heading>
                   {t('browse.gaps')}
                 </Text>
               }
             >
-              <Stack gap="md">
+              <Stack gap="sm">
                 <Bands
                   unit={t('browse.gapsUnit')}
                   script={script}
@@ -999,7 +999,7 @@ export function Wardrobe({
               </Stack>
             )}
             renderItem={({ item: row }) => (
-              <Row gap="md" align="start">
+              <Row gap="sm" align="start">
                 {row.map((garment) => (
                   <GarmentCell
                     key={garment.id}
@@ -1026,7 +1026,7 @@ export function Wardrobe({
                 {row.length < COLUMNS ? <View style={{ flex: 1 / COLUMNS }} /> : null}
               </Row>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.md }} />}
+            ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
             SectionSeparatorComponent={() => <View style={{ height: nativeSpacing.sm }} />}
             scrollEnabled={false}
             initialNumToRender={4}

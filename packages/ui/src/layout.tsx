@@ -21,7 +21,7 @@
  * overload, deliberately:
  *
  * ```tsx
- * <Stack gap="lg">     // 16, because `lg` is 16 in the manifest
+ * <Stack gap="md">     // 16, because `lg` is 16 in the manifest
  * <Stack gap={16}>     // does not compile
  * ```
  *
@@ -31,7 +31,7 @@
  * states, applied to layout [[the-careless-version-should-not-compile]].
  *
  * **The step name is also the only thing that carries the design intent.** A bare `28` says a
- * number somebody chose; `gap="xl2"` says the step the manifest argues for, and when the
+ * number somebody chose; `gap="lg"` says the step the manifest argues for, and when the
  * manifest revises that step the screen follows without being edited.
  *
  * ## What is deliberately NOT here
@@ -145,7 +145,7 @@ export type StackProps = FlowProps;
  * `View`, and both of those are visible in review.
  */
 export function Stack({
-  gap = 'md',
+  gap = 'sm',
   align,
   padding,
   padY,
@@ -181,7 +181,7 @@ export type RowProps = FlowProps & {
  * looks like nobody looked.
  */
 export function Row({
-  gap = 'md',
+  gap = 'sm',
   align = 'center',
   justify,
   wrap = false,
@@ -251,7 +251,7 @@ export type SectionProps = Omit<ViewProps, 'style'> & {
 export function Section({
   title,
   eyebrow,
-  gap = 'lg',
+  gap = 'md',
   index,
   script = 'latin',
   children,
@@ -343,8 +343,8 @@ export function Screen({
   title,
   eyebrow,
   scroll = true,
-  padding = 'xl2',
-  gap = 'xl3',
+  padding = 'lg',
+  gap = 'xl',
   script = 'latin',
   children,
   ...rest

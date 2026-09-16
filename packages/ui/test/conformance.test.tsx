@@ -344,7 +344,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
       draw(
         <Screen title="Atlas" eyebrow="Corpus" scroll={false}>
           <Section title="Harmony" eyebrow="Relationships">
-            <Stack gap="lg">
+            <Stack gap="md">
               <Row gap="sm" justify="between">
                 <Text size="body" color="foreground">
                   Ai-nezumi

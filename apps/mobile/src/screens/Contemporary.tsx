@@ -252,7 +252,7 @@ export function Contemporary({
       {membership.length === 0 ? null : (
         <Card
           level="1"
-          padding="lg"
+          padding="md"
           header={
             <Text size="body" color="foreground" script={script} heading>
               {t('contemporary.itself')}
@@ -283,7 +283,7 @@ export function Contemporary({
         <Surface
           /* surface-not-card: a refusal and the threshold it was measured against; a heading would name a section that is one sentence long. */
           level="1"
-          padding="lg"
+          padding="md"
         >
           <Stack gap="xs">
             <Text size="body" color="foreground" script={script}>

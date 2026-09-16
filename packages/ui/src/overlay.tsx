@@ -172,7 +172,7 @@ export function Popover({
             borderRadius: nativeRadius.lg,
             borderWidth: 1,
             borderColor: colors['border.strong'],
-            padding: nativeSpacing.lg,
+            padding: nativeSpacing.md,
             gap: nativeSpacing.sm,
           }}
         >
@@ -255,7 +255,7 @@ export function Tabs({
             accessibilityLabel={item.label}
             style={{
               paddingVertical: nativeSpacing.sm,
-              paddingHorizontal: nativeSpacing.lg,
+              paddingHorizontal: nativeSpacing.md,
               borderRadius: nativeRadius.pill,
               /*
                * `currentTone`, NOT `selectionTone` (F-176), and the difference is the whole
@@ -290,7 +290,7 @@ export function Tabs({
         ))}
       </HeroTabs.List>
       {children === undefined ? null : (
-        <View style={{ paddingTop: nativeSpacing.lg }}>{children}</View>
+        <View style={{ paddingTop: nativeSpacing.md }}>{children}</View>
       )}
     </HeroTabs>
   );
@@ -351,8 +351,8 @@ export function Dialog({
             borderRadius: nativeRadius.lg,
             borderWidth: 1,
             borderColor: colors['border.strong'],
-            padding: nativeSpacing.xl,
-            gap: nativeSpacing.md,
+            padding: nativeSpacing.md,
+            gap: nativeSpacing.sm,
           }}
         >
           <Text size="title" color="foreground" script={script} heading>
@@ -570,7 +570,7 @@ export function Sheet({
           */}
           <BottomSheetScrollView
             {...(testID === undefined ? {} : { testID })}
-            contentContainerStyle={{ padding: nativeSpacing.xl, gap: nativeSpacing.md }}
+            contentContainerStyle={{ padding: nativeSpacing.md, gap: nativeSpacing.sm }}
           >
             <Text size="title" color="foreground" script={script} heading>
               {title}

@@ -98,7 +98,7 @@ export interface SkeletonProps {
 export function Skeleton({
   height,
   width = '100%',
-  radius = 'md',
+  radius = 'lg',
   label,
   testID,
 }: SkeletonProps): React.JSX.Element {
@@ -197,8 +197,8 @@ export function useConfirm(): { readonly confirm: (c: Confirmation) => void } {
               borderRadius: nativeRadius.lg,
               borderWidth: 1,
               borderColor: colors['border.strong'],
-              paddingVertical: nativeSpacing.md,
-              paddingHorizontal: nativeSpacing.lg,
+              paddingVertical: nativeSpacing.sm,
+              paddingHorizontal: nativeSpacing.md,
             }}
           >
             <Text size="small" color="foreground">

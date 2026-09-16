@@ -500,22 +500,17 @@
 }
 
 :root {
-  --irodora-radius-xs: 6px;
-  --irodora-radius-sm: 10px;
-  --irodora-radius-md: 14px;
-  --irodora-radius-lg: 20px;
-  --irodora-radius-xl: 28px;
-  --irodora-radius-pill: 999px;
+  --irodora-radius-sm: 6px;
+  --irodora-radius-md: 10px;
+  --irodora-radius-lg: 16px;
+  --irodora-radius-pill: 9999px;
   --irodora-radius-swatchRatio: 0.25px;
   --irodora-space-xs: 4px;
   --irodora-space-sm: 8px;
-  --irodora-space-md: 12px;
-  --irodora-space-lg: 16px;
-  --irodora-space-xl: 20px;
-  --irodora-space-xl2: 28px;
-  --irodora-space-xl3: 40px;
-  --irodora-space-xl4: 56px;
-  --irodora-space-xl5: 96px;
+  --irodora-space-md: 16px;
+  --irodora-space-lg: 24px;
+  --irodora-space-xl: 32px;
+  --irodora-space-xxl: 48px;
   --irodora-size-tap-target: 44px;
   --irodora-size-judgeable: 77px;
 }

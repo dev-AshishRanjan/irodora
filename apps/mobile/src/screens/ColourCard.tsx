@@ -41,7 +41,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
 
   if (entry === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -72,7 +72,7 @@ export function ColourCard({ slug }: ColourCardProps): React.JSX.Element {
 
       <Card
         level="1"
-        padding="md"
+        padding="sm"
         header={
           <Text size="label" color="foreground.2" script={script} heading>
             {t('card.thumbnail')}

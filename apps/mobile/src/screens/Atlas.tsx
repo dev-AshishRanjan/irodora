@@ -210,7 +210,7 @@ function AtlasEntry({
       onPress={onSelect}
       style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
     >
-      <Stack gap="lg">
+      <Stack gap="md">
         {/*
           `derived.hex` — the engine's answer AT PUBLISH TIME, not recomputed here. The Color
           comes from the entry's own authored XYZ, so this path converts nothing at all.
@@ -318,7 +318,7 @@ export function Atlas({
    * Native error — so `Screen` stops scrolling and the list scrolls instead, header and all.
    */
   const header = (
-    <Stack gap="xl2">
+    <Stack gap="lg">
       {/*
         The version is on the root screen rather than buried in a settings page. Which corpus
         the app holds is what makes every value on every detail screen reproducible (FR-25).
@@ -435,7 +435,7 @@ export function Atlas({
       />
 
       {active ? (
-        <Row gap="md">
+        <Row gap="sm">
           <Text size="small" color="foreground.2" script={script}>
             {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
           </Text>
@@ -459,7 +459,7 @@ export function Atlas({
         <Surface
           /* surface-not-card: an empty state — a message and a hint. The box is its ground, not a card about it. */
           level="1"
-          padding="lg"
+          padding="md"
         >
           <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
@@ -483,7 +483,7 @@ export function Atlas({
       would reproduce F-104 is turning scrolling off here and NOT giving the list the height to
       scroll in, which is why the list carries `flex: 1` rather than inheriting a size.
     */
-    <Screen title={t('atlas.title')} script={script} scroll={false} gap="lg">
+    <Screen title={t('atlas.title')} script={script} scroll={false} gap="md">
       <FlatList
         data={shown}
         keyExtractor={(item) => item.entry.slug}
@@ -495,8 +495,8 @@ export function Atlas({
           is a break rather than a gap. `xl4` (56) separates one entry from the next: each is a
           single large object, and 56 is what stops a column of them reading as a table.
         */
-        ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xl5 }}
-        ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xl4 }} />}
+        ListHeaderComponentStyle={{ paddingBottom: nativeSpacing.xxl }}
+        ItemSeparatorComponent={() => <View style={{ height: nativeSpacing.xxl }} />}
         renderItem={({ item, index }) => (
           /*
             THE ENTRANCE (F-144). Each entry fades and rises, staggered behind the one above it
@@ -521,7 +521,7 @@ export function Atlas({
           </Appear>
         )}
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: nativeSpacing.xl3 }}
+        contentContainerStyle={{ paddingBottom: nativeSpacing.xl }}
         showsVerticalScrollIndicator={false}
         /*
           Tuned for the device criterion 4 names rather than left at the defaults. A full-width

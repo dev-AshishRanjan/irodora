@@ -268,10 +268,10 @@ export function ProfileSetup({
       <Surface
         /* surface-not-card: the trial itself — a row of swatches to choose between. A heading would describe the question twice. */
         level="1"
-        padding="lg"
+        padding="md"
       >
-        <Stack gap="md">
-          <Row gap="md">
+        <Stack gap="sm">
+          <Row gap="sm">
             {entries.map((e) => (
               <Swatch
                 key={e.entry.slug}
@@ -306,7 +306,7 @@ export function ProfileSetup({
     return (
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t(DIMENSION_KEYS[dimension])}
@@ -435,7 +435,7 @@ export function ProfileSetup({
           if (found === null) return null;
           const on = kept.includes(slug);
           return (
-            <Row key={slug} gap="md" wrap>
+            <Row key={slug} gap="sm" wrap>
               <Swatch
                 name={found.entry.name.en}
                 hex={found.derived.hex}
@@ -533,7 +533,7 @@ export function ProfileSetup({
       </Text>
 
       {!showSummary && current !== undefined ? (
-        <Stack gap="md">
+        <Stack gap="sm">
           <Row gap="sm" align="baseline">
             <Text size="small" color="foreground.2" script={script}>
               {t('profile.progress')}
@@ -551,7 +551,7 @@ export function ProfileSetup({
           ))}
         </Stack>
       ) : (
-        <Stack gap="md">
+        <Stack gap="sm">
           <Text size="body" color="foreground" script={script} heading>
             {t('profile.summary')}
           </Text>

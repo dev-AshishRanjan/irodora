@@ -371,7 +371,7 @@ export function Shopping({
           {/* --------------------------------------- the investment signal (FR-52, ADR-0082) */}
           <Card
             level="1"
-            padding="md"
+            padding="sm"
             header={
               <Text size="body" color="foreground" heading script={script}>
                 {t('shopping.investment')}

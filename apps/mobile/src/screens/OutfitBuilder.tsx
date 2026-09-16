@@ -215,20 +215,20 @@ export function OutfitBuilder({
         return (
           <Card
             level="1"
-            padding="md"
+            padding="sm"
             header={
               <Text size="body" color="foreground" heading script={script}>
                 {t(SLOT_KEYS[slot])}
               </Text>
             }
           >
-            <Stack gap="md">
+            <Stack gap="sm">
               {placed === undefined ? (
                 <Text size="body" color="foreground.2" script={script}>
                   {t('outfit.slotEmpty')}
                 </Text>
               ) : (
-                <Row gap="md">
+                <Row gap="sm">
                   <Swatch
                     name={placed.garment.color.name}
                     hex={placed.garment.color.hex}
@@ -374,7 +374,7 @@ export function OutfitBuilder({
         /* surface-not-card: a control group led by its button. The action is the subject. */
         level="1"
       >
-        <Stack gap="md">
+        <Stack gap="sm">
           <Button
             label={t('outfit.wore')}
             disabled={draft.length === 0}

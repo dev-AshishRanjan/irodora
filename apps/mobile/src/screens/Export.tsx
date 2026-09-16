@@ -135,7 +135,7 @@ export function Export({
         <>
           <Card
             level="1"
-            padding="md"
+            padding="sm"
             header={
               <Text size="body" color="foreground" script={script} heading>
                 {t('export.subject')}
@@ -210,7 +210,7 @@ export function Export({
             <Surface
               /* surface-not-card: the writer's own refusal message, quoted verbatim. Titling it would be this screen speaking over the engine. */
               level="1"
-              padding="md"
+              padding="sm"
             >
               <Stack gap="xs">
                 <Text size="body" color="foreground" script={script}>

@@ -902,13 +902,11 @@
     "adr": "0053"
   },
   "radius": {
-    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. A SWATCH CORNER IS A RATIO, NOT A LENGTH (ADR-0090): this product draws samples from 32px to about 380px, so any single pixel value is unusable at one end and invisible at the other. WHAT BOUNDS IT CHANGED IN ADR-0094. It was the sampled AREA a corner removes, capped at 2%, which capped the ratio near 0.15 and left a 44px swatch with a 5.5px corner — a rectangle with the edges taken off, reported as such. Area was the wrong measure: colour appearance does depend on area, and it needs an order-of-magnitude change to matter, so the difference between losing 1.3% and 5.4% is not something anyone can see. What actually degrades a sample is the corner growing until the shape stops being a field and becomes a blob — at ratio 0.5 a square is a circle, and a circle is a worse container for judging a colour because proportionally more of it is edge, which is where simultaneous contrast acts. So the bound is now the STRAIGHT PART OF EACH EDGE: side - 2r >= side/2 gives ratio <= 0.25, at which half of every edge is still a straight run of colour. minStraightEdgeFraction is what the parser enforces. The corner is additionally CAPPED at radius.xl in Swatch.tsx, because a pure ratio gives the hero an 85px corner, which is a curve rather than a corner.",
-    "xs": 6,
-    "sm": 10,
-    "md": 14,
-    "lg": 20,
-    "xl": 28,
-    "pill": 999,
+    "_note": "Material-3-scaled and generous — that softness is where the warmth comes from. A SWATCH CORNER IS A RATIO, NOT A LENGTH (ADR-0090): this product draws samples from 32px to about 380px, so any single pixel value is unusable at one end and invisible at the other. WHAT BOUNDS IT CHANGED IN ADR-0094. It was the sampled AREA a corner removes, capped at 2%, which capped the ratio near 0.15 and left a 44px swatch with a 5.5px corner — a rectangle with the edges taken off, reported as such. Area was the wrong measure: colour appearance does depend on area, and it needs an order-of-magnitude change to matter, so the difference between losing 1.3% and 5.4% is not something anyone can see. What actually degrades a sample is the corner growing until the shape stops being a field and becomes a blob — at ratio 0.5 a square is a circle, and a circle is a worse container for judging a colour because proportionally more of it is edge, which is where simultaneous contrast acts. So the bound is now the STRAIGHT PART OF EACH EDGE: side - 2r >= side/2 gives ratio <= 0.25, at which half of every edge is still a straight run of colour. minStraightEdgeFraction is what the parser enforces. The corner is additionally CAPPED at radius.xl in Swatch.tsx, because a pure ratio gives the hero an 85px corner, which is a curve rather than a corner. F-227 REPLACED THE SCALE WITH THE MOCKUPS OWN (ADR-0103): sm 6, md 10, lg 16, pill. Every reference was rewritten by R9-MOCKUP-FIDELITY section 2 snap rule — nearest step, ties take the smaller — so 14, 20 and 28 all became lg 16. AND A SAMPLE CORNER IS NOW A STEP rather than a ratio of its side: swatchRatio stays as the CEILING that keeps a small sample a field (min(step, 0.25 x side)), which is ADR-0094 bound doing the job it was written for instead of setting every corner.",
+    "sm": 6,
+    "md": 10,
+    "lg": 16,
+    "pill": 9999,
     "swatchRatio": 0.25,
     "_minStraightEdgeFraction": 0.5
   },
@@ -917,15 +915,12 @@
     "scale": {
       "xs": 4,
       "sm": 8,
-      "md": 12,
-      "lg": 16,
-      "xl": 20,
-      "xl2": 28,
-      "xl3": 40,
-      "xl4": 56,
-      "xl5": 96
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "xxl": 48
     },
-    "_note": "Editorial rhythm: the larger steps carry more of the layout than in a typical dense UI. 間 (ma) is a design element. EVERY STEP IS A MULTIPLE OF `base`, and ADR-0074 is where that stopped being an aspiration: the scale carried a 14, which no padding, margin or gap anywhere in the product used, while 12 and 16 were used 24 times between them and were absent here. The larger steps — xl2 upward — are used nowhere yet and are KEPT, because they are rhythm for layouts not built rather than a rule the scale breaks. scripts/verify-spacing-scale.mjs reads this object; nothing repeats it. THE STEPS ARE NAMED, AND F-103 IS WHY: this was a positional array, so a component wrote `nativeSpacing[2]` and nothing in that expression named 12. ADR-0074 renumbered every index above 1, which was safe only because nothing read the scale — five components read it by the time F-103 ran, and a step inserted or removed would have changed what every index above it meant while every call site still compiled and every style prop still received a valid number. The names follow `radius`, which was a named record all along; that asymmetry was the root cause of F-095."
+    "_note": "Editorial rhythm: the larger steps carry more of the layout than in a typical dense UI. 間 (ma) is a design element. EVERY STEP IS A MULTIPLE OF `base`, and ADR-0074 is where that stopped being an aspiration: the scale carried a 14, which no padding, margin or gap anywhere in the product used, while 12 and 16 were used 24 times between them and were absent here. The larger steps — xl2 upward — are used nowhere yet and are KEPT, because they are rhythm for layouts not built rather than a rule the scale breaks. scripts/verify-spacing-scale.mjs reads this object; nothing repeats it. THE STEPS ARE NAMED, AND F-103 IS WHY: this was a positional array, so a component wrote `nativeSpacing[2]` and nothing in that expression named 12. ADR-0074 renumbered every index above 1, which was safe only because nothing read the scale — five components read it by the time F-103 ran, and a step inserted or removed would have changed what every index above it meant while every call site still compiled and every style prop still received a valid number. The names follow `radius`, which was a named record all along; that asymmetry was the root cause of F-095. F-227 REPLACED THE SCALE WITH THE MOCKUPS OWN (ADR-0103): 4, 8, 16, 24, 32, 48, named xs sm md lg xl xxl. The four-point rule and the named steps are ADR-0074 and stand. THE NAMES COLLIDE WITH THE OLD ONES — md was 12 and is 16, lg was 16 and is 24 — so every one of the 365 references was rewritten explicitly by the snap rule above, never left to keep a name whose meaning had moved."
   },
   "size": {
     "tapTarget": 44,

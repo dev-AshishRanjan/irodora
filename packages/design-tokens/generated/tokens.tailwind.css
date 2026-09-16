@@ -36,11 +36,9 @@
   --color-accent: var(--irodora-color-accent);
   --color-accent-foreground: var(--irodora-color-accent-foreground);
   --color-accent-muted: var(--irodora-color-accent-muted);
-  --radius-xs: var(--irodora-radius-xs);
   --radius-sm: var(--irodora-radius-sm);
   --radius-md: var(--irodora-radius-md);
   --radius-lg: var(--irodora-radius-lg);
-  --radius-xl: var(--irodora-radius-xl);
   --radius-pill: var(--irodora-radius-pill);
   --radius-swatchRatio: var(--irodora-radius-swatchRatio);
   --spacing-xs: var(--irodora-space-xs);
@@ -48,8 +46,5 @@
   --spacing-md: var(--irodora-space-md);
   --spacing-lg: var(--irodora-space-lg);
   --spacing-xl: var(--irodora-space-xl);
-  --spacing-xl2: var(--irodora-space-xl2);
-  --spacing-xl3: var(--irodora-space-xl3);
-  --spacing-xl4: var(--irodora-space-xl4);
-  --spacing-xl5: var(--irodora-space-xl5);
+  --spacing-xxl: var(--irodora-space-xxl);
 }

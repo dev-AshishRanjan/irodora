@@ -6,10 +6,12 @@
  * by the inset — with equal radii the outer arc is TIGHTER than the inner one and a sliver of
  * ground shows through each corner.
  *
- * **A corner that outgrows the shape.** ADR-0090 made the corner a ratio, which is right in the
- * middle of the range and wrong at the top: at 0.25 the hero on a colour page would take an 85px
- * corner, which is a curve rather than a corner. ADR-0094 caps it, and a cap is a second thing
- * that can be wrong in two directions.
+ * **A corner that outgrows the shape.** ADR-0090 made the corner a ratio, which is right at the
+ * bottom of the range and wrong at the top: at 0.25 the hero on a colour page takes an 85px
+ * corner, which is a curve rather than a corner. ADR-0103 makes the corner a SCALE STEP and keeps
+ * ADR-0094 bound as its ceiling, so there are two things to get wrong in two directions each —
+ * the step at ordinary sizes, and the ceiling below about 24px where a step would take more than
+ * a quarter of the side.
  *
  * Nothing else in the system would see either. The contrast gate reads colours, the conformance
  * suite reads structure, and `swatch-edge.test.ts` scans the gamut for the two tones — none of
@@ -64,43 +66,51 @@ describe('swatchCorner', () => {
     }
   });
 
-  it('lets the well keep growing past the cap the SAMPLE stops at', () => {
+  it('lets the well keep growing past the step the SAMPLE stops at', () => {
     /*
-     * The cap exists so a sample does not become a curve at hero sizes. A container following
-     * its own content past it is the correct direction — and capping the well while the keyline
-     * kept growing is precisely the sliver the rule above forbids.
+     * The step exists so a sample stays a field rather than becoming a curve at hero sizes. A
+     * container following its own content outward is the correct direction — and holding the well
+     * while the keyline kept growing is precisely the sliver the rule above forbids.
      */
     const { sample, well } = swatchCorner(1000);
-    expect(sample).toBe(nativeRadius.xl);
-    expect(well).toBeGreaterThan(nativeRadius.xl);
+    expect(sample).toBe(nativeRadius.sm);
+    expect(well).toBeGreaterThan(nativeRadius.sm);
   });
 
-  it('is proportional below the cap, so a chip and a card round alike', () => {
-    // The reason the corner is a ratio rather than a length. A fixed radius would take 37% of a
-    // 32px chip and 3% of a card; this takes the same fraction of both.
-    for (const size of [32, 44, 56, 80]) {
-      const { sample } = swatchCorner(size);
-      // Rounding to whole pixels makes the ratio approximate at small sizes, which is why this
-      // allows a pixel of slack rather than asserting an exact quotient.
-      expect(Math.abs(sample / size - nativeRadius.swatchRatio)).toBeLessThan(1 / size);
+  it('takes its step at every size the product draws it at (ADR-0103)', () => {
+    // The corners F-220 measured are lengths, not fractions: 4 to 11.5 dp across 28 images, bound
+    // per element as `sm` or `md`. Above the ceiling's reach the step is simply the corner.
+    for (const size of REAL_SIZES) {
+      expect(`${String(size)} sm: ${String(swatchCorner(size).sample)}`).toBe(
+        `${String(size)} sm: ${String(nativeRadius.sm)}`,
+      );
+      expect(`${String(size)} md: ${String(swatchCorner(size, 'md').sample)}`).toBe(
+        `${String(size)} md: ${String(Math.min(nativeRadius.md, Math.floor(size * nativeRadius.swatchRatio)))}`,
+      );
     }
   });
 
-  it('stops growing at the largest corner the system draws (ADR-0094)', () => {
+  it('does not grow with the sample: a hero and a card take the same corner', () => {
     /*
-     * A pure ratio gives the hero an 85px corner. `radius.xl` is the biggest corner anything in
-     * this product takes, and a sample rounder than every container around it is a statement
-     * nobody made.
+     * A pure ratio gives the hero an 85px corner. The mockups draw 6.75 dp on `01`'s hero and
+     * 5.75 on the card sample beneath it — the same step, which is what this asserts.
      */
-    expect(swatchCorner(340).sample).toBe(nativeRadius.xl);
-    expect(swatchCorner(1000).sample).toBe(nativeRadius.xl);
+    expect(swatchCorner(140).sample).toBe(nativeRadius.sm);
+    expect(swatchCorner(340).sample).toBe(nativeRadius.sm);
+    expect(swatchCorner(1000).sample).toBe(nativeRadius.sm);
   });
 
-  it('DECOY — the cap is not simply the answer at every size', () => {
-    // Without this, `swatchCorner` could return `radius.xl` unconditionally and the case above
-    // would pass [[a-decoy-that-is-not-broken-proves-nothing]].
-    expect(swatchCorner(44).sample).toBeLessThan(nativeRadius.xl);
-    expect(swatchCorner(44).sample).toBeGreaterThan(0);
+  it('DECOY — the ceiling really binds below the size a step fits in', () => {
+    /*
+     * Without this, `swatchCorner` could return its step unconditionally and every case above
+     * would pass [[a-decoy-that-is-not-broken-proves-nothing]]. At 16px a quarter of the side is
+     * 4, which is below both steps, so both must come back at 4 — and the two steps must differ
+     * where both fit, or the parameter is decoration.
+     */
+    expect(swatchCorner(16).sample).toBe(4);
+    expect(swatchCorner(16, 'md').sample).toBe(4);
+    expect(swatchCorner(44, 'md').sample).toBe(nativeRadius.md);
+    expect(swatchCorner(44).sample).toBeLessThan(swatchCorner(44, 'md').sample);
   });
 
   it('leaves at least half of every edge straight, at every size drawn', () => {

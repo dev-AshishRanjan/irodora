@@ -140,7 +140,7 @@ export function Switch({
   const thumb = checked ? colors['inverse.foreground'] : colors['surface.1'];
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: nativeSpacing.md }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: nativeSpacing.sm }}>
       {/*
         THE VISIBLE LABEL IS NOT AN ACCESSIBILITY ELEMENT, and the switch carries the name.
 
@@ -334,8 +334,8 @@ export function Select({
             minWidth: nativeTapTarget,
             minHeight: nativeTapTarget,
             justifyContent: 'center',
-            paddingHorizontal: nativeSpacing.md,
-            borderRadius: nativeRadius.sm,
+            paddingHorizontal: nativeSpacing.sm,
+            borderRadius: nativeRadius.md,
             borderWidth: focused ? 2 : 1,
             borderColor: focused ? colors.ring : colors['border.strong'],
             backgroundColor: colors['surface.2'],
@@ -421,7 +421,7 @@ export function Select({
                   minWidth: nativeTapTarget,
                   minHeight: nativeTapTarget,
                   justifyContent: 'center',
-                  paddingHorizontal: nativeSpacing.md,
+                  paddingHorizontal: nativeSpacing.sm,
                   gap: nativeSpacing.xs,
                   /*
                     `radius.xs` — THE STEP THE LEDGER WAS WAITING FOR. It has been declared
@@ -429,7 +429,7 @@ export function Select({
                     surface yet"*, and this is the surface: a row nested inside a panel that
                     already has `radius.lg`, where the same corner would read as a bubble.
                   */
-                  borderRadius: nativeRadius.xs,
+                  borderRadius: nativeRadius.sm,
                   /*
                     `surface.1` FOR THE CHOSEN ROW, not `surface.3`, and the manifest decided
                     it. `surface.3` pairs with `foreground` and with nothing else, so an option
@@ -774,7 +774,7 @@ export function Accordion({
               <Chevron open={isOpen} color={colors['foreground.2']} />
             </HeroAccordion.Trigger>
             <HeroAccordion.Content>
-              <View style={{ paddingBottom: nativeSpacing.md, gap: nativeSpacing.xs }}>
+              <View style={{ paddingBottom: nativeSpacing.sm, gap: nativeSpacing.xs }}>
                 {item.children}
               </View>
             </HeroAccordion.Content>

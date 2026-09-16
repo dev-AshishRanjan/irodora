@@ -40,8 +40,8 @@ export type SurfaceProps = Omit<ViewProps, 'style'> & {
 
 export function Surface({
   level = '1',
-  radius = 'md',
-  padding = 'md',
+  radius = 'lg',
+  padding = 'sm',
   children,
   ...rest
 }: SurfaceProps): React.JSX.Element {

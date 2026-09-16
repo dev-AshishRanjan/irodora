@@ -214,7 +214,7 @@ export function ColourDetail({
 
   if (found === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -289,7 +289,7 @@ export function ColourDetail({
     return (
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {title}
@@ -372,7 +372,7 @@ export function ColourDetail({
       run edge to edge: the page inset is exactly the thing that stops a colour bleeding, so it
       moves off the page and onto the content.
     */
-    <Screen script={script} padding="xs" gap="xl3">
+    <Screen script={script} padding="xs" gap="xl">
       {/*
         THE COLOUR, FULL BLEED, ABOVE THE FOLD (criterion 1).
 
@@ -388,7 +388,7 @@ export function ColourDetail({
       */}
       <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={heroSize} />
 
-      <Stack padding="xl2" gap="xl3">
+      <Stack padding="lg" gap="xl">
         <Stack gap="xs">
           {/*
             The name leads in Japanese and the English is a gloss — the corpus's own order. The
@@ -641,7 +641,7 @@ export function ColourDetail({
           ) : null}
           {panel === 'vision' ? (
             <DetailSection title={t('detail.colourVision')}>
-              <Row gap="md" wrap align="stretch" padY="xs">
+              <Row gap="sm" wrap align="stretch" padY="xs">
                 <Stack gap="xs" align="center">
                   <Swatch
                     name={entry.name.en}

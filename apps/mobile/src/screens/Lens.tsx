@@ -644,7 +644,7 @@ export function Lens({
         <Surface
           /* surface-not-card: the permission ask: a sentence, a sentence and a button. */
           level="1"
-          padding="lg"
+          padding="md"
         >
           <Stack gap="sm">
             <Text size="body" color="foreground" script={script}>
@@ -672,7 +672,7 @@ export function Lens({
         `accessibilityState`, so the wait is stated to a screen reader as well as drawn.
       */}
       {granted || photo !== null ? (
-        <Stack gap="md">
+        <Stack gap="sm">
           <Button
             label={t(awaiting ? 'lens.capturing' : 'lens.capture')}
             loading={awaiting}
@@ -807,13 +807,13 @@ export function Lens({
         <Surface
           /* surface-not-card: the live readout, updating at frame rate. Its label is a label, not a heading. */
           level="1"
-          padding="md"
+          padding="sm"
         >
           <Stack gap="sm">
             <Text size="label" color="foreground.2" script={script}>
               {t('lens.liveReadout')}
             </Text>
-            <Row gap="md">
+            <Row gap="sm">
               <Swatch
                 name={t('lens.reading')}
                 script={script}
@@ -883,9 +883,9 @@ export function Lens({
             <Surface
               /* surface-not-card: the capture readout inside a sheet. The sheet is the container; a card in it is a box in a box. */
               level="1"
-              padding="lg"
+              padding="md"
             >
-              <Stack gap="md">
+              <Stack gap="sm">
                 {/*
                   ONE READOUT, WHERE THERE WERE THREE ELEMENTS.
 
@@ -968,7 +968,7 @@ export function Lens({
                   )}
                 </Stack>
 
-                <Row gap="md">
+                <Row gap="sm">
                   <Swatch
                     name={t('lens.reading')}
                     script={script}
@@ -1082,7 +1082,7 @@ export function Lens({
                   {t('lens.nearest')}
                 </Text>
                 {nearest.map(({ entry, deltaE00 }) => (
-                  <Row key={entry.entry.slug} gap="md">
+                  <Row key={entry.entry.slug} gap="sm">
                     <Swatch
                       name={entry.entry.name.en}
                       hex={entry.derived.hex}

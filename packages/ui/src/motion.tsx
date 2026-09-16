@@ -74,7 +74,7 @@ const STAGGER_STEP = nativeMotion.durations.micro / 2;
 const STAGGER_CAP = 6;
 
 /** How far an entering element rises, in pixels — one step of the spacing scale, not a number. */
-const RISE = nativeSpacing.md;
+const RISE = nativeSpacing.sm;
 
 export interface MotionValues {
   /** Whether the platform is asking for reduced motion right now. */

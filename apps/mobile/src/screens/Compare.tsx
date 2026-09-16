@@ -130,7 +130,7 @@ export function Compare({
 
   if (a === null || b === null)
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.xl }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, padding: nativeSpacing.md }}>
         <Text size="body" color="foreground" script={script}>
           {t('detail.notFound')}
         </Text>
@@ -235,7 +235,7 @@ export function Compare({
     return (
       <Card
         level="1"
-        padding="md"
+        padding="sm"
         header={
           <Text size="label" color="foreground.2" script={script} heading>
             {label}
@@ -309,7 +309,7 @@ export function Compare({
       {/* The headline number, DIRECTLY beneath the boundary it describes. */}
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.difference')}
@@ -328,7 +328,7 @@ export function Compare({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.perAxis')}
@@ -357,7 +357,7 @@ export function Compare({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.separation')}
@@ -429,7 +429,7 @@ export function Compare({
 
       <Card
         level="1"
-        padding="lg"
+        padding="md"
         header={
           <Text size="body" color="foreground" script={script} heading>
             {t('compare.contrast')}

@@ -142,7 +142,7 @@ export function Home({
   /** The reading block, at whichever size its position calls for. */
   const readingBlock = (size: number): React.JSX.Element | null =>
     content.lastReading === null ? null : (
-      <Row gap="lg" align="start">
+      <Row gap="md" align="start">
         {/*
           The Swatch requires a `Color`, so a reading with no provenance cannot be drawn
           (ADR-0005). The row carries its own — `source` and `confidence` are NOT NULL columns
@@ -186,7 +186,7 @@ export function Home({
           if (content.today !== null) onOpenColour?.(content.today.entry.slug);
         }}
       >
-        <Row gap="lg" align="start">
+        <Row gap="md" align="start">
           <Swatch name={content.today.entry.name.en} {...entrySwatch(content.today)} size={size} />
           <Stack gap="xs">
             {/*
@@ -223,7 +223,7 @@ export function Home({
         NO CLAIM ABOUT ACCURACY anywhere in it. A front door is where an overstatement would be
         least noticed and most damaging, and NFR-21's lint is binding here like everywhere else.
       */}
-      <Stack gap="lg">
+      <Stack gap="md">
         <Wordmark size="display.1" script={script} heading />
         <Stack gap="xs">
           <Text size="title" color="foreground" script={script}>
@@ -330,7 +330,7 @@ export function Home({
           }
         >
           {content.wardrobe.count === 0 ? (
-            <Stack gap="md">
+            <Stack gap="sm">
               <Text size="body" color="foreground.2" script={script}>
                 {t('home.wardrobeEmpty')}
               </Text>
@@ -393,7 +393,7 @@ export function Home({
               </Text>
             }
           >
-            <Stack gap="md">
+            <Stack gap="sm">
               <Text size="body" color="foreground.2" script={script}>
                 {t('home.noReadings')}
               </Text>

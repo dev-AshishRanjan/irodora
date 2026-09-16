@@ -90,7 +90,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
         }}
         style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}
       >
-        <Row gap="md" padY="sm">
+        <Row gap="sm" padY="sm">
           <Swatch
             name={entry.entry.name.en}
             hex={entry.derived.hex}
@@ -164,7 +164,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
             <Surface
               /* surface-not-card: a result list opened by a count. A count is a fact about the list, not a heading over it. */
               level="1"
-              padding="md"
+              padding="sm"
             >
               <View>
                 <Text size="xs" color="foreground.2" script={script}>
@@ -198,7 +198,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
           {result.region === undefined ? null : (
             <Card
               level="1"
-              padding="md"
+              padding="sm"
               header={
                 <Text size="label" color="foreground.2" script={script} heading>
                   {t('finder.region')}
