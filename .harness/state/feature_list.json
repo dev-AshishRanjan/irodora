@@ -9362,7 +9362,8 @@
     {
       "release": "R9",
       "priority": "should",
-      "status": "backlog",
+      "status": "in_progress",
+      "plan": "plans/F-275-the-serif-against-open-licence-candidates.md",
       "blockedBy": [],
       "verification": [
         "state",

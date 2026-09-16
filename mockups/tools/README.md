@@ -14,7 +14,31 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 | `measure.ps1 mean` / `px` | the average colour of a box / one pixel | a fill, before scanning against it |
 | `mask.ps1` | boxes of pixels by absolute brightness (`bright` / `dark`) | elements drawn over a photograph |
 | `corner.ps1` | a corner radius, fitted after subtracting the straight-side baseline | swatches, cards, chips |
-| `serif-match.ps1` | renders a word in each installed serif and scores it against a crop by mask overlap | naming the face a wordmark or tagline is drawn in (§5, OQ-29) |
+| `serif-match.ps1` | renders a word in each candidate serif and scores it against a crop by mask overlap; `-fontDir` adds font FILES, loaded without being installed | naming the face a wordmark or tagline is drawn in (§5, OQ-29) |
+
+## Naming the serif (§5, OQ-29)
+
+The wordmark is drawn *Irodora* on `00`, `01` and `14`, and *IRODORA* on `25` — so the word passed
+has to be the one drawn. All-caps against a mixed-case target scores every face at about 0.23 and
+ranks them almost at random, which is what F-275's first run did until the crop was looked at rather
+than assumed.
+
+```
+# installed faces only — the control, which reproduces F-220's numbers
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg -x 170 -y 93 -w 212 -h 51 -word Irodora -polarity light
+
+# with open-licence candidates fetched into a directory (F-275)
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg -x 170 -y 93 -w 212 -h 51 -word Irodora -polarity light -fontDir <a directory of .ttf files>
+```
+
+The crops are the inventories' own wordmark boxes; `25` is cropped to its Latin part (w 229 of 301,
+the rest being 彩度). A variable font loads as its named instances, so each weight is scored
+separately — which is what says *which weight* matches rather than only which family. A file GDI+
+refuses is printed as `COULD NOT MEASURE`, because a candidate missing from the table would read as
+one that scored badly.
+
+**The script is ASCII on purpose.** Windows PowerShell reads a `.ps1` without a BOM as ANSI, so an em
+dash in a string is a parse error rather than a character — which is how F-275 broke it once.
 
 ## From readings to the record
 
