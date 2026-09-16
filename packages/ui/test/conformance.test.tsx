@@ -22,6 +22,7 @@ import {
   ChoiceGroup,
   Dialog,
   EmptyState,
+  IconButton,
   Illustration,
   Mark,
   NavIcon,
@@ -509,6 +510,28 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           disabled={state === 'disabled'}
           loading={state === 'loading'}
           variant={state === 'focus' ? 'secondary' : 'primary'}
+          testID={state}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
+     * A GLYPH AS THE WHOLE CONTROL (F-228). The name is required by type; this checks the one
+     * that renders — a role, a name that says what it does rather than what it is, the declared
+     * target, and an ink that resolves to a token in both themes. The glyph itself is decorative,
+     * so the only name in the tree is the control's.
+     */
+    name: 'IconButton',
+    kind: 'interactive',
+    forbiddenNames: ['icon', 'glyph', 'share'],
+    render: (state, theme) =>
+      draw(
+        <IconButton
+          name="share"
+          label="Share this colour"
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
           testID={state}
         />,
         theme,
