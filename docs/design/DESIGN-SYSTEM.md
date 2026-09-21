@@ -236,6 +236,35 @@ text character standing in for an icon — four places still spell one as `✓`,
 Nor does anything yet check that a glyph LOOKS like the element it was drawn from (**F-281**); the
 F-228 review caught nine that did not, by eye.
 
+**One illustration set, at a measured tone** (F-229). The line art the screens are drawn with —
+the plum branch, the kimono, the leaves, the sashiko stitching, the seigaiha wave, the silk band, the
+hanger, the viewfinder, the documents — is one set in
+[`Illustration`](../../packages/ui/src/Illustration.tsx), keyed by the names the inventories bind and
+checked against them in both directions. **Each drawing carries its own grid**, because a 96-unit
+silk band and a 24-unit sashiko tile are not one square, and `size.artStroke` (0.5 dp — half the icon
+line) is converted into those units at the size being rendered, so the whole set holds one line
+everywhere.
+
+**The tone is a measurement.** F-229 read every bound element off the images and found the art drawn
+two ways: as a **backdrop** behind a screen's content at 0.10 – 0.18 of `foreground` (median 0.15,
+declared as `opacity.art`), and as a **figure**, where the drawing is the content, at 0.80 – 0.96.
+No declared colour token matches that backdrop ink — the nearest are `chart.5` and `chart.4` at
+ΔE00 4.6 – 7, which mean something else — so art is the foreground token turned down, not a colour of
+its own. `27`'s hanger is tan, and `C10` declares that; the tint is its surface's.
+
+Three rules hold, and the second changed in R9. **Every colour is a token.** **Outline, with the
+fills the mockups actually draw** — R7's rule was outline-only, and that reasoning survives as
+*where* art may go rather than as a ban on a fill, since `27` draws a solid hanger and `18` a solid
+watermark. **A drawing never carries meaning the text does not**: every one is hidden from a screen
+reader, and every query in its test has to ask for hidden elements to see it at all.
+
+**Never over a sample** is asserted over the record's own geometry — no drawn illustration box
+overlaps a drawn sample box, across 33 drawings and 73 samples — because simultaneous contrast is
+the same physics that puts a sample in a well (F-069). The set carries a **version and a digest of
+its path data**, so a redrawn line is a recorded change. What nothing yet checks is whether a drawing
+LOOKS like the element it was drawn from (**F-281**); `18`'s script-face signature is not drawn at
+all, pending **OQ-38**.
+
 ---
 
 ## Component contract

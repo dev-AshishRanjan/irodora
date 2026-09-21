@@ -32,7 +32,7 @@ per drawing, a version over the path data, and a conformance rule for the sample
 
 ### Which illustrations — the record, not the list
 
-The acceptance names nine groups; F-220's inventories bind **13 names across 34 elements**, and the
+The acceptance names nine groups; F-220's inventories bind **13 names across 33 elements**, and the
 acceptance's governing clause is *"every illustration the screens draw"* — so the inventories decide,
 as they did for the icon set. Reconciled:
 
@@ -96,18 +96,40 @@ parent. Simultaneous contrast is the reason, and it is the same reason the statu
    expiring; both-directions test against the inventories.
 4. **The rules**: the sample-adjacency conformance rule and its decoy; the set version and its
    digest test.
-5. **Effects and the record.**
+5. **Effects and the record.** (E-136, E-137, their notes, the index, DESIGN-SYSTEM's section.)
 
 ## Mockup fidelity
 
 - **Governing mockups:** every one that binds an illustration — `00 01 03 06 08 09 10 11 12 13 14 15
   16 18 25 27`, per the inventories.
-- **Inventory:** the `illustration` field of every element (34 of them; 13 names), and each element's
-  `dp` box for the scale its drawing is read at.
+- **Inventory:** the `illustration` field of every element (33 of them; 13 names), and each element's
+  `dp` box for the scale its drawing is read at. (The 34th art-like element is `26`'s hanko seal, a
+  `new:HankoSeal` component rather than an illustration — C3 leaves it to whoever builds `26`.)
 - **Bindings:** none — an illustration is a shape, not a value.
-- **Departures:** none expected. The drawings are the mockups'; where one name is drawn differently
-  by two governing elements, the element takes a name of its own, as the icon set did (F-228's
-  review). A tone no declared token matches is an open question.
+- **Departures:** none. One name is NOT drawn — `signature`, `18`'s envelope word *Signed* in a
+  script face — and that is **OQ-38** rather than a departure: type traced into paths is a word
+  pretending to be a picture, and set as text it needs a face nothing bundles. It is declared unbuilt
+  in the registry, held to its question by a test, and F-263 waits on it.
+
+**As built, where it differs from the plan:**
+
+  - **The tone question did not need an OQ.** The measurement answered it: art is drawn as a
+    BACKDROP at 0.10 – 0.18 of `foreground` (median 0.15, 21 elements) or as a FIGURE at 0.80 – 0.96
+    (5), so `opacity.art` and `size.artStroke` are declared from the reading rather than chosen.
+    No declared COLOUR token matches that ink — nearest `chart.5` at ΔE00 4.6 — which is why the art
+    is the foreground turned down rather than a token of its own.
+  - **Never over a sample is asserted over the record's geometry**, not as a new conformance rule:
+    33 drawn illustration boxes against 73 drawn sample boxes, with a planted overlap as the decoy.
+    A rendered-tree rule would first need a marker that tells a drawing from an icon in the tree, and
+    the inventories already carry the evidence — the mockups never do it. Two of the drawings are
+    registered as conformance subjects instead, so they are read under the colour and both-theme
+    rules. **It found one pair**: `10.art` over `10.palette-2.swatch-4`, where the image draws the
+    leaves BESIDE the card — the box is a scan blob, which is **F-282**, and the exception is declared
+    and held to still overlapping.
+  - **Five drawings were wrong on the first pass** and were corrected against their crops: `18`'s
+    document (solid, not outline), its page-fold (a turned corner, not a slab), `25`'s waves (a corner
+    fan, not half circles), `16`'s sashiko (blocks of inset stitches, not diagonals joining across
+    blocks) and `27`'s hanger (slim, not twice its drawn thickness).
 
 ## Files to touch
 
