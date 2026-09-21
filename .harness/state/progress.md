@@ -8,6 +8,91 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-21 — F-229 The illustration set the mockups are drawn with
+
+**Done.** The line art the screens are drawn with is one vector set in `Illustration` — twelve
+drawings keyed by the names F-220's inventories bind — at a line and a tone read off the images
+rather than chosen.
+
+- **The set is the record's, not the list's.** The acceptance names nine groups; the inventories bind
+  13 names across 33 elements, and the acceptance's governing clause is *every illustration the
+  screens draw*. So `asanoha lattice` is the inventory's `sashiko`, the plum branch is `01 06 08` and
+  not `05` or `15`, `17` binds no art at all, and five the acceptance never names — `viewfinder`,
+  `no-results`, `document`, `page-fold`, `blossom` — are drawn and therefore built. `26`'s hanko seal
+  is a component C3 leaves to whoever builds `26`.
+- **The tone and the line are measurements** (`art-measure.ps1`, §5). The art is drawn two ways: a
+  BACKDROP behind a screen's content at 0.10–0.18 of `foreground` (median 0.15, 21 elements) and a
+  FIGURE, where the drawing is the content, at 0.80–0.96 (5). The line is 1 px at 2 px/dp ≈ 0.5 dp,
+  half the icon's. **No declared colour token matches that backdrop ink** — nearest `chart.5` at
+  ΔE00 4.6 — so the art is the `foreground` token turned down, declared as `opacity.art`, and the
+  parser refuses an "opacity" past half the foreground because that is not a backdrop any more.
+- **Each drawing carries its own grid.** A 96-unit silk band and a 24-unit sashiko tile are not one
+  square, so the declared dp is converted at the size being rendered and the set holds one line
+  everywhere — the arithmetic `Glyph` does for an icon.
+- **Never over a sample, asserted over the record's own geometry**: 33 drawn illustration boxes
+  against 73 drawn sample boxes, with a planted overlap as the decoy.
+- **One versioned set**: a digest over every path, against `ILLUSTRATION_SET_VERSION`, so a redrawn
+  line is a recorded change rather than a silent one.
+
+### What the work found
+
+- **OQ-38.** `18`'s envelope draws a signature — the word *Signed* in a script face. Traced it is a
+  word pretending to be a picture; set as text it needs a face nothing bundles; and it is the one
+  drawing that makes a claim about a person having signed something. Not built: declared unbuilt,
+  held to its question by a test, and F-263 waits on it.
+- **F-282.** Seven inventory boxes catch a neighbouring element, so their tone could not be measured
+  — and one of them, `10.art`, overlaps a sample box by 54 px while the image draws the leaves
+  BESIDE the card. The box is a scan blob; the record is wrong, not the mockup.
+- **Five drawings were wrong on the first pass**, caught by comparing each against a magnified crop:
+  `18`'s document (solid, drawn as an outline), its page-fold (a turned corner, drawn as a slab),
+  `25`'s waves (a corner fan, drawn as half circles), `16`'s sashiko (blocks of inset stitches, drawn
+  as diagonals that joined across blocks), `27`'s hanger (slim, drawn twice its thickness). That
+  comparison is exactly what F-228's review said a name check cannot do — and **F-281 is still the
+  gap**: nothing automated can see it, and the test says so in its own docblock.
+
+### The single review — FAIL: 2 blocking, 8 significant, 13 minor — and what became of each
+
+Under the one-review rule every finding was fixed or recorded; none went back for a second review.
+**Both blocking findings were drawings, and the first is the same class of error F-228's review
+found, inverted** — this time a solid where the mockup strokes, after last time's outline where the
+mockup fills.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | **`document` drawn solid**, where `18`'s five elements stroke a page over a second sheet — and the feature's own measurement said so (3–4 px stroke, a fifth of the box inked) and was not read | redrawn: an outlined page, the sheet behind it, an outlined turned corner, filled lines. DESIGN-SYSTEM's "solid watermark" sentence corrected |
+| 2 | **`sashiko` emitted 16 zero-length segments** — round caps drew them as dots `16` does not have, and every block drew two stitches where three were asked for | the generator draws `count` stitches of equal length about the block's centre; the weave is 6 × 6 blocks of three, which is the density `16` draws |
+| 3 | the blossom was five overlapping circles where every mockup draws one scalloped outline with stamens that end in a dot | redrawn as a single five-lobed contour with 14 stamens and their tips; the bud lost the calyx that made it a balloon. It is used by `plum-branch`, `blossom` and `hanger` — 11 of the 33 elements |
+| 4 | `kimono` was a near-rectangle with a straight hem, three short folds and a V collar `00` does not draw | flared body, curved hem, five full-height folds and a centre line, a narrow collar band, rail tips |
+| 5 | `leaves` drew six small almonds where `09`, `12` and `15` draw long blades that run off the strip | seven long tapered blades on a sweeping stem |
+| 6 | `hanger` was a flat triangle with one sprig where `27` draws curved shoulders and two | curved shoulders, a smaller hook, two sprigs with three flowers and a bud |
+| 7 | the hanger's tan is declared by C10 and **no surface can pass it** — `color` admits two neutrals — while the docblock and DESIGN-SYSTEM said the tint was the surface's | both corrected to say what is true, and the gap recorded against **F-236**, which builds `27`'s states |
+| 8 | the sample scan asked only for a name ending in `Swatch`, so `ui:Bands` and `new:KasaneStrip` — runs of colour samples — sat outside it | widened to the eight components that draw a colour a person judges: 73 → 86. **It found the second pair the review predicted**, `10.art over 10.palette-1.strip`, the same blob box; both are declared against F-282 |
+| 9 | `Drawing.box`'s comment claimed the aspect was "the mockup's"; it is the one element it was drawn from | the comment says so, with `leaves`' five bindings from 0.03 to 0.64 as the example |
+| 10 | the plan named the tiling risk for `10`'s and `13`'s 1150 px strips and neither resolved nor recorded it | **F-283**: a strip repeats without a seam, and a drawing that is not a motif is never tiled |
+| 11 | the manifest note said "1 px across the 21 backdrops"; 15 read 1 px, one read 2, and `18`'s five read 3–4 | the note says which reading is modal and names the exceptions |
+| 12 | §5 quoted "median 0.15" without saying which of the tool's two readings it is | it says `inkP90`, and gives `inkP50`'s median (0.13) beside it |
+| 13 | the ink fraction is measured on gamma-encoded luma, which the record did not state — the same pixels read 0.036 in linear light | both the manifest note and §5 state the space and why it is the right one for an opacity |
+| 14 | the digest docblock claimed the version "has to be bumped"; nothing can see an entry edited in place | the claim says what it holds and what it cannot; every version's digest is kept, and a second case refuses two versions with the same drawings. The set is `1.1.0` |
+| 15 | `page-fold` drew its diagonal twice — the path's own `z` plus a separate line | one path; `18`'s corner takes the card's radius |
+| 16 | the ink test allowed `fill: undefined`, which is exactly the black-injection hazard the module's docblock describes | every shape must state a fill; the stroke rule is separate |
+| 17 | "no two drawings are the same shape" had no decoy | one added |
+| 18 | `viewfinder`'s brackets were rounded; `00` draws them square | square |
+| 19 | `no-results`' peaks met at a valley; `00` draws them crossing | crossing |
+| 20 | `waves` drew six arcs and let the outer one leave the box | ten, none past the box |
+| 21 | `silk-wave` drew eleven ripples, one reaching y = −0.5 | two crossing trains, sixteen lines, all inside the box |
+| 22 | E-136's guard named four grid widths; there are five | corrected |
+| 23 | `progress.md` had no F-229 entry | this entry |
+
+### Gates
+
+`state=0 typecheck=0 lint=0 format=0 test=0 build=0 a11y=0 contrast=0 cvd=0`, plus
+`token-reach --prove=0` and `spacing --prove=0`. Suites: ui 336, mobile 994, design-tokens 298.
+
+**Not run:** `e2e` (no journey changed; no JDK on this machine), `perf`, `color-golden`, `content`,
+`security` — no colour maths, no content, no dependency change.
+**Not checked at all:** whether a drawing looks like the element it was drawn from (F-281); the tone
+of the seven blob boxes (F-282); `18`'s signature (OQ-38).
+
 ## 2026-09-21 — F-228 One icon set, drawn at the mockups' weight
 
 **Done.** Every icon any mockup draws is one entry in `Glyph` — 65 of them, keyed by the names F-220's
