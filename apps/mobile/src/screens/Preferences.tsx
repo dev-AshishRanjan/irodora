@@ -40,14 +40,19 @@ import {
   Chip,
   DEFAULT_APPEARANCE,
   DEVICE_FAMILY,
+  DISPLAY_SETTING_KEYS,
+  DRAWN_DISPLAY_SETTINGS,
   EmptyState,
   Row,
   Screen,
   Select,
   Stack,
   Surface,
+  Switch,
   Text,
   type Appearance,
+  type DisplaySettingKey,
+  type DisplaySettings,
 } from '@irodora/ui';
 import { THEME_FAMILIES, type ThemeFamily } from '@irodora/design-tokens';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
@@ -100,6 +105,16 @@ export interface PreferencesProps {
   readonly onChooseAppearance?: (next: Appearance) => void;
   /** The haptic port (F-206). Choosing a theme is a commit; scrolling past one is not. */
   readonly haptics?: Haptics;
+  /**
+   * The three display settings `15` draws, and how to change one (F-239).
+   *
+   * PROPS RATHER THAN THE HOOK, for a different reason from `appearance` above.
+   * `useDisplaySettings()` does not throw outside its provider — it returns what `15` draws —
+   * so a screen reading it would render perfectly and change nothing when a switch was tapped.
+   * A missing writer is the failure that would be invisible; a missing prop is a type error.
+   */
+  readonly display?: DisplaySettings;
+  readonly onChangeDisplaySetting?: (key: DisplaySettingKey, value: boolean) => void;
   /**
    * What came of asking the platform for its colour (F-154).
    *
@@ -165,6 +180,18 @@ const DEVICE_KEYS = {
   applied: 'appearance.device.checked',
 } as const satisfies Record<DeviceTheme['kind'], MessageKey>;
 
+/**
+ * The label `15` draws over each switch. Total, so a fourth setting cannot be added silently.
+ *
+ * Order comes from `DISPLAY_SETTING_KEYS` rather than from this object, and the two agree with
+ * the mockup: tabular, haptics, provenance, top to bottom.
+ */
+const DISPLAY_KEYS = {
+  tabularNumerals: 'settings.tabular',
+  hapticOnSelection: 'settings.haptics',
+  provenanceBadges: 'settings.provenance',
+} as const satisfies Record<DisplaySettingKey, MessageKey>;
+
 const MODE_KEYS = {
   system: 'appearance.mode.system',
   light: 'appearance.mode.light',
@@ -183,6 +210,8 @@ export function Preferences({
   onChooseAppearance,
   haptics = noHaptics,
   device = { kind: 'none', why: 'unsupported' },
+  display = DRAWN_DISPLAY_SETTINGS,
+  onChangeDisplaySetting,
 }: PreferencesProps): React.JSX.Element {
   const { t, locale, script } = useMessages();
   const [confirming, setConfirming] = useState(initialConfirming);
@@ -333,10 +362,55 @@ export function Preferences({
         neither has an in-app switch, and neither is going to get one — the platform already
         asked, and asking again is how two answers start disagreeing. An absence somebody has to
         infer is a worse state than one the screen names.
+
+        HAPTICS ARE THE EXCEPTION, AND SUBORDINATE RATHER THAN PARALLEL (ADR-0104). `15` draws a
+        haptics switch, so there is one; off means this app asks for nothing, on means it asks and
+        the phone still decides. There is no state in which the two disagree and this app wins,
+        which is the failure the paragraph above is about.
       */}
       <Text size="xs" color="foreground.2" script={script}>
         {t('settings.platform')}
       </Text>
+
+      {/*
+        THE ENGINE SECTION, WHICH IS THREE SWITCHES AND THE FIRST BOOLEANS THIS PRODUCT HAS
+        (F-239). `15` draws them under a heading numbered "3."; the ordinal is a position in that
+        mockup's section order and F-262 is the feature that puts the sections in it, so the
+        number is not printed over the second card on today's screen.
+
+        NO HAPTIC FIRES HERE, and the omission is deliberate rather than forgotten. F-206 names
+        what a commit is — "a garment saved, a reading taken, a theme chosen" — and a preference
+        switch is not on that list. The middle row makes the point by itself: a switch that
+        buzzed to confirm being turned off would be answering with the thing it just refused.
+
+        THE DOT BESIDE EACH TRACK is `15.engine.*.state`, drawn when the switch is on. The
+        reading is argued in `Switch`'s `marker` prop, where the alternative is written down.
+      */}
+      <Card
+        level="1"
+        padding="md"
+        header={
+          <Text size="body" color="foreground" script={script} heading>
+            {t('settings.engine')}
+          </Text>
+        }
+      >
+        <Stack gap="sm">
+          {DISPLAY_SETTING_KEYS.map((key) => (
+            <Switch
+              key={key}
+              testID={`display.${key}`}
+              label={t(DISPLAY_KEYS[key])}
+              checked={display[key]}
+              marker
+              script={script}
+              onCheckedChange={(next) => {
+                onChangeDisplaySetting?.(key, next);
+              }}
+            />
+          ))}
+        </Stack>
+      </Card>
 
       {/*
         THE LEARNED PREFERENCES KEEP THEIR OWN NAME, one level down. This screen was TITLED

@@ -27,7 +27,7 @@
 import { render } from '@testing-library/react-native';
 import { Pressable, Text as RNText, View } from 'react-native';
 import { Accordion, percentOf, Select, Slider, Switch, ThemeProvider } from '../src/index.js';
-import { pressableNodes, type TestNode } from '../src/testing/index.js';
+import { flattenStyle, pressableNodes, resolveColor, type TestNode } from '../src/testing/index.js';
 
 /** Render, capture the tree, unmount — the same arrangement the registry uses for portals. */
 function draw(node: React.JSX.Element): TestNode {
@@ -94,6 +94,77 @@ describe('Switch — checked, from the tree', () => {
       return here + kids.reduce((n, c) => n + hidden(c), 0);
     };
     expect(hidden(tree)).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The dot `15` draws in the gutter (F-239).
+ *
+ * `15` draws it beside three switches that are all ON, and board `00` draws a switch on and a
+ * switch off with no dot on either — so the only state the mockups show it in is on. The
+ * component draws it there and nowhere else, and `marker`'s docblock argues why that reading is
+ * the one that is right whichever of the two the drawing meant.
+ */
+describe('Switch — the marker 15 draws', () => {
+  /** Every node whose own style is a square of exactly the drawn size. */
+  function dots(node: TestNode, out: Record<string, unknown>[] = []): Record<string, unknown>[] {
+    const style = flattenStyle(node.props['style']);
+    if (style['width'] === MARKER_DP && style['height'] === MARKER_DP) out.push(style);
+    for (const child of node.children ?? []) if (typeof child !== 'string') dots(child, out);
+    return out;
+  }
+
+  /** 10 x 11 px on a 2x render of `15`, which is 5 dp. Restated here so the test moves with it. */
+  const MARKER_DP = 5;
+
+  it('draws one when the switch is on and the caller asked for it', () => {
+    const found = dots(
+      draw(<Switch label="Announce readings aloud" checked marker onCheckedChange={noop} />),
+    );
+    expect(found).toHaveLength(1);
+    /*
+     * A TOKEN, NOT A LITERAL, and it is resolved rather than restated. `15` binds the dot
+     * `text.tertiary`; the R9 map reads that as `foreground.3`, which is the one token the
+     * manifest restricts to decoration and text above the large-text floor — a 5 dp dot is
+     * decoration, and this is the assertion that says the restriction was honoured.
+     */
+    const painted = resolveColor(found[0]?.['backgroundColor'] as string | undefined, 'light');
+    expect(painted.kind).toBe('token');
+    expect(painted.kind === 'token' ? painted.tokens : []).toContain('foreground.3');
+  });
+
+  it('draws none when the switch is off', () => {
+    expect(
+      dots(
+        draw(
+          <Switch label="Announce readings aloud" checked={false} marker onCheckedChange={noop} />,
+        ),
+      ),
+    ).toHaveLength(0);
+  });
+
+  /*
+   * THE DECOY. Without it, a component that drew the dot unconditionally would satisfy the first
+   * assertion and the prop would be decoration on a decoration
+   * [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
+   */
+  it('DECOY — an on switch without the prop draws none', () => {
+    expect(
+      dots(draw(<Switch label="Announce readings aloud" checked onCheckedChange={noop} />)),
+    ).toHaveLength(0);
+  });
+
+  it('adds no second announcement, because the switch already says checked', () => {
+    // The state is announced once, by the control. A dot that announced it again would be the
+    // same fact read twice — the failure the hidden label wrapper above exists to prevent.
+    const named = (tree: TestNode) =>
+      responders(tree).filter((n) => n.accessibilityLabel === 'Announce readings aloud');
+    const withDot = draw(
+      <Switch label="Announce readings aloud" checked marker onCheckedChange={noop} />,
+    );
+    const without = draw(<Switch label="Announce readings aloud" checked onCheckedChange={noop} />);
+    expect(named(withDot)).toHaveLength(named(without).length);
+    expect(responders(withDot)).toHaveLength(responders(without).length);
   });
 });
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { deviceHaptics } from '../../../src/haptics';
+import { useDisplaySettings } from '@irodora/ui';
+import { deviceHaptics, selectionGated } from '../../../src/haptics';
 import { Stack } from 'expo-router';
 import { AddGarment } from '../../../src/screens/AddGarment';
 import { takeOffer } from '../../../src/lens/handoff';
@@ -28,6 +29,15 @@ import { deviceRepository } from '../../../src/store/repository';
  */
 export default function AddGarmentRoute(): React.JSX.Element {
   const [offered] = useState(() => takeOffer('wardrobe'));
+  /*
+   * THE HAPTICS PREFERENCE IS APPLIED HERE, ONCE (ADR-0104, F-239).
+   *
+   * `useDisplaySettings()` reads what the root layout provided and falls back to what `15`
+   * draws, so this route cannot render an ungated port by accident. The screen below calls
+   * `select()` without knowing whether anything happens — which is what keeps the preference
+   * out of every swatch.
+   */
+  const { hapticOnSelection } = useDisplaySettings();
 
   return (
     <>
@@ -36,7 +46,7 @@ export default function AddGarmentRoute(): React.JSX.Element {
         store={deviceRepository()}
         imageSource={devicePicker()}
         offered={offered}
-        haptics={deviceHaptics()}
+        haptics={selectionGated(deviceHaptics(), hapticOnSelection)}
       />
     </>
   );

@@ -68,6 +68,15 @@ import type { Script } from './layout.js';
  */
 const SWITCH_WIDTH = 68;
 const SWITCH_THUMB = 34;
+/**
+ * The dot `15` draws in the gutter, at the size it draws it (F-239).
+ *
+ * `15.engine.tabular.state` and its two siblings are 10 × 11 px on a 2× render — **5 dp**, which
+ * is off the 4-point grid and is what the image measures. Rounding it to 4 or 8 would be the kind
+ * of tidying rule 14 forbids, and `SWITCH_WIDTH` above is already a measured number rather than a
+ * spacing step.
+ */
+const SWITCH_MARKER = 5;
 /** Centres a 34px thumb in a 44px track. HeroUI's `left` is the offset from the near edge. */
 const SWITCH_THUMB_INSET = (nativeTapTarget - SWITCH_THUMB) / 2;
 
@@ -93,6 +102,27 @@ export interface SwitchProps {
   readonly disabled?: boolean;
   /** The thing behind this switch is still settling. Announced busy, not only dimmed. */
   readonly loading?: boolean;
+  /**
+   * Draw `15`'s dot in the gutter beside the track, **when this switch is on** (F-239).
+   *
+   * ## What the mockup draws, and what it does not
+   *
+   * `15` draws a 5 dp `text.tertiary` dot to the left of each of its three switch tracks, and
+   * draws all three switches **on**. Board `00` draws a switch on and a switch off, and neither
+   * carries one. So the mockups show the dot in exactly one state — on — and show nothing at all
+   * about what happens to it when a switch is turned off.
+   *
+   * Two readings survive that: the dot is decoration on every row, or it marks the on state the
+   * way `15.themes.sumi.selected` marks the chosen tile — also an unbound dot, also drawn on
+   * exactly the one tile that is selected. **Drawn-when-on is the reading that is right under
+   * both**, because it differs from a static dot only in a state no mockup draws, while a static
+   * dot would be visibly wrong if the second reading is the true one. Nothing drawn is left out
+   * either way, so this is a reading of the picture rather than a departure from it.
+   *
+   * It is decoration in the accessibility tree regardless: the switch already announces
+   * `checked`, and a dot that announced it again would be the state said twice.
+   */
+  readonly marker?: boolean;
   readonly script?: Script;
   readonly testID?: string;
 }
@@ -107,18 +137,21 @@ export interface SwitchProps {
  * deficiency; `accessibilityState.checked`, which a screen reader announces; and the track
  * colour, which is the one a person who cannot separate the two tones does not need.
  *
- * ## Nothing in this product uses one yet, and that is recorded rather than papered over
+ * ## It had no consumer for eleven features, and `15` is the one that gave it three
  *
- * *"No wrapper without a consumer"* — and after looking, **this product has no user-facing
- * boolean.** The message catalogue holds no on/off copy, the wardrobe schema has no boolean
- * column, and twice a feature reached the place a toggle would go and chose labelled
- * alternatives with the reason written down: the Lens (*"two chips rather than a button that
- * toggles: a toggle says what it will do next"*) and the profile bands (*"discrete rather than
- * a slider"*).
+ * *"No wrapper without a consumer"* — and F-156 could find none. **This product had no
+ * user-facing boolean**: the message catalogue held no on/off copy, the wardrobe schema has no
+ * boolean column, and twice a feature reached the place a toggle would go and chose labelled
+ * alternatives with the reason written down — the Lens (*"two chips rather than a button that
+ * toggles: a toggle says what it will do next"*) and the profile bands (*"discrete rather than a
+ * slider"*). A colour product's settings are *which one*, not *whether*. So this shipped
+ * registered in the conformance registry, which ADR-0054 and gate 8 accept as a consumer, with
+ * the absence stated rather than closed by inventing a preference to justify a control.
  *
- * A colour product's settings are *which one*, not *whether*. So this is registered in the
- * conformance registry — which ADR-0054 and gate 8 accept as a consumer — and the absence is
- * stated here rather than closed by inventing a preference to justify a control.
+ * **F-239 is the consumer**, and it did not invent the preference either: `15` draws three
+ * switches under its engine section, and rule 14 makes a drawn control a control that exists.
+ * The registry entry stays — it is still the only place the disabled, focused and loading states
+ * are rendered — but it is no longer the only place this component is used at all.
  */
 export function Switch({
   label,
@@ -128,6 +161,7 @@ export function Switch({
   focused = false,
   disabled = false,
   loading = false,
+  marker = false,
   script = 'latin',
   testID,
 }: SwitchProps): React.JSX.Element {
@@ -164,6 +198,25 @@ export function Switch({
           </Text>
         )}
       </View>
+      {/*
+        THE GUTTER DOT, AND IT IS NEVER THE PLACE THE STATE LIVES. The thumb's position and
+        `accessibilityState.checked` both already say on; this is a third channel, drawn because
+        `15` draws it. `accessible={false}` rather than a hidden wrapper: an empty `View` is not
+        an accessibility element in React Native, and saying so out loud keeps it from becoming
+        one if a prop is ever spread onto it.
+      */}
+      {marker && checked ? (
+        <View
+          accessible={false}
+          style={{
+            width: SWITCH_MARKER,
+            height: SWITCH_MARKER,
+            borderRadius: nativeRadius.pill,
+            backgroundColor: colors['foreground.3'],
+            opacity: inert ? 0.5 : 1,
+          }}
+        />
+      ) : null}
       <HeroSwitch
         testID={testID}
         isSelected={checked}

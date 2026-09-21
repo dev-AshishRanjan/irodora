@@ -50,3 +50,33 @@ type is enforcement; a document is a reminder. And the tempting API is usually t
 library hands you, named exactly for the thing you should not do.
 
 [[a-tested-module-nobody-wired-up-passes-every-test-it-has]]
+
+---
+
+## What happened to it: F-239 made it two (2026-09-21)
+
+Mockup `15` draws a switch labelled *Haptic Feedback on Swatch Selection*. Golden rule 14 makes
+the drawing the specification, so the port gained `select()` and the app gained the preference
+this note's feature refused — recorded in
+[ADR-0104](../../../docs/adr/0104-the-mockup-draws-a-haptics-preference-so-the-port-gains-its-second-verb.md).
+
+**The lesson above survives the change, and is the reason the change was containable.** The
+guarantee was never *"one"*; it was *"a number small enough that adding to it is visible"*. Going
+from one verb to two took an ADR, a changed assertion in `haptics.test.tsx` (`['commit']` →
+`['commit', 'select']`), and a diff a reviewer can see. A module with `impactAsync(style)` on it
+would have absorbed the same requirement with no diff at all — which is what "cannot express the
+excess" buys, whether or not the count ever moves.
+
+Two things kept the erosion bounded:
+
+- **The new verb names a gesture, not a strength.** `select()` can be called on the one gesture
+  `15` draws a switch for. `light()` could be called on anything.
+- **The preference gates one verb, at one place.** `selectionGated()` wraps the port where a route
+  composes it, so no call site holds the branch and `commit()` passes through untouched — turning
+  the switch off is not a request to mute a save.
+
+And the refusal it reversed was narrower than it read. F-206 argued against *"a second switch
+beside the platform's"* because the two can disagree. ADR-0104 keeps the app's switch
+**subordinate**: off means this app asks for nothing, on means it asks and the OS still decides.
+There is no state where the app wins an argument with the phone, which is what the original
+objection was actually about.

@@ -8,6 +8,7 @@ import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
 import { DEVICE_FAMILY, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
+import { DisplayProvider } from '../src/displaySettings';
 import { deviceRepository } from '../src/store/repository';
 import { Launch } from '../src/launch';
 import { TargetProvider, useTarget } from '../src/target';
@@ -229,7 +230,17 @@ export default function RootLayout(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <AppearanceProvider store={deviceRepository()}>
-        <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
+        {/*
+          THE THREE DISPLAY SETTINGS, INSIDE THE APPEARANCE AND OUTSIDE THE THEME (F-239).
+
+          Inside, because both read the same settings table and the appearance is the choice the
+          theme is derived from; outside `ThemeProvider`, because `Text` reads the display
+          settings and `Themed` renders the theme around every `Text` there is. A provider that
+          sat under the theme would leave the first frame of every screen reading the default.
+        */}
+        <DisplayProvider store={deviceRepository()}>
+          <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
+        </DisplayProvider>
       </AppearanceProvider>
     </SafeAreaProvider>
   );

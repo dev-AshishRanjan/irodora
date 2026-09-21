@@ -48,6 +48,7 @@ import {
   type TextToken,
 } from '@irodora/design-tokens';
 import { useTheme } from './theme.js';
+import { useDisplaySettings } from './displaySettings.js';
 
 /** A step of the type scale. */
 export type TypeSize = keyof typeof nativeType.latin;
@@ -92,6 +93,12 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
    * The value comes from `nativeNumericFeature`, which the manifest owns. Until F-019 that
    * token was emitted, asserted against the manifest by its own test, and **consumed by
    * nothing** — a generated value that reached no pixel for two releases.
+   *
+   * **Since F-239 this prop says what the text IS, and the setting says what to do about it.**
+   * `15` draws a *Tabular Numeric Figures* switch; a caller still declares that its text carries
+   * figures, because no heuristic can tell `"0.42"` from `"F-019"`, and
+   * {@link useDisplaySettings} decides whether those figures are set tabular. The switch is drawn
+   * on and defaults on, so a caller that says nothing sees exactly what it saw before.
    */
   readonly numeric?: boolean;
 };
@@ -106,6 +113,7 @@ export function Text<S extends TypeSize>({
   ...rest
 }: TextProps<S>): React.JSX.Element {
   const { colors } = useTheme();
+  const { tabularNumerals } = useDisplaySettings();
   const step = nativeType[script][size];
   const japanese = script === 'japanese';
   return (
@@ -145,7 +153,7 @@ export function Text<S extends TypeSize>({
         // Spread conditionally rather than passed as `fontVariant: numeric ? [...] : undefined`:
         // under `exactOptionalPropertyTypes` a present-and-undefined key is not the same as an
         // absent one, and the conformance suite reads what the NODE carries.
-        ...(numeric ? { fontVariant: [nativeNumericFeature] } : {}),
+        ...(numeric && tabularNumerals ? { fontVariant: [nativeNumericFeature] } : {}),
       }}
     >
       {children}

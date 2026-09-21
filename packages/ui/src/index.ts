@@ -45,6 +45,15 @@ export {
   type IllustrationName,
   type IllustrationProps,
 } from './Illustration.js';
+export {
+  DisplaySettingsProvider,
+  DRAWN_DISPLAY_SETTINGS,
+  DISPLAY_SETTING_KEYS,
+  useDisplaySettings,
+  type DisplaySettings,
+  type DisplaySettingKey,
+  type DisplaySettingsProviderProps,
+} from './displaySettings.js';
 export { Status, type StatusProps } from './Status.js';
 export { Surface, type ElevationLevel, type SurfaceProps } from './Surface.js';
 export { Button, type ButtonProps, type ButtonVariant } from './Button.js';

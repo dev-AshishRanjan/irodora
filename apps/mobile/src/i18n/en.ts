@@ -554,6 +554,22 @@ export const en = {
   'settings.openHint': 'Appearance, and what the app has learned about you.',
   'settings.platform':
     'Language and reduced motion follow your phone. Irodora does not ask for them separately.',
+  /*
+   * F-239 — THE THREE SWITCHES 15 DRAWS, IN THE WORDS IT DRAWS THEM IN.
+   *
+   * Each label is the mockup's own copy, read off the image rather than paraphrased: golden
+   * rule 14 makes the drawing the specification, and "Tabular figures" would already be a
+   * different string from the one a person was shown. The parenthesised "(ΔE / OKLCh)" is part
+   * of the drawn label and says where the figures it affects actually appear.
+   *
+   * The section heading drops 15's leading "3." — the ordinal is a POSITION in 15's section
+   * order, and F-262 is the feature that puts the sections in it. A "3." over the second card
+   * on today's screen would be a number that is simply wrong.
+   */
+  'settings.engine': 'Professional Engine & Controls',
+  'settings.tabular': 'Tabular Numeric Figures (ΔE / OKLCh)',
+  'settings.haptics': 'Haptic Feedback on Swatch Selection',
+  'settings.provenance': 'Show Provenance Badges on Swatches',
   'preferences.title': 'What the app has learned',
   /*
    * F-194 — THE TWELVE RELATIONSHIPS, NAMED IN PLAIN WORDS.

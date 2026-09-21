@@ -21,6 +21,8 @@ import {
   Chip,
   ChoiceGroup,
   Dialog,
+  DisplaySettingsProvider,
+  DRAWN_DISPLAY_SETTINGS,
   EmptyState,
   IconButton,
   Illustration,
@@ -625,10 +627,14 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     /*
      * THE FORM CONTROLS (F-156). Four subjects, and each one is here for its own reason.
      *
-     * `Switch` is the one with no screen consumer — this product has no user-facing boolean, and
-     * the reason is in `controls.tsx`. So this registry entry is not a formality: it is the only
-     * place the control is rendered at all, and a switch that shipped with an unnamed track or
-     * an unannounced checked state would be found here or nowhere.
+     * `Switch` had NO SCREEN CONSUMER for eleven features — this product had no user-facing
+     * boolean, and the reason is in `controls.tsx`. F-239 gave it three: `15` draws switches, and
+     * rule 14 makes a drawn control one that exists. This entry is still not a formality, because
+     * `Preferences` renders the on and off states and nothing else — disabled, focused and
+     * loading are rendered here or nowhere.
+     *
+     * `marker` is set for the same reason the subject sets `description`: the screen draws it, so
+     * the sweep should measure the thing the screen draws rather than a plainer relative of it.
      */
     name: 'Switch',
     kind: 'interactive',
@@ -644,6 +650,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           // switch reports `checked`, and demanding `selected` as well would be asking it to
           // announce itself as two different kinds of control.
           checked={state === 'active'}
+          marker
           onCheckedChange={() => {
             /* the suite renders; it does not drive */
           }}
@@ -1721,5 +1728,42 @@ describe('figures are tabular where a caller asks for them (C9)', () => {
     // If someone writes 'tabular-nums' into Text.tsx and the manifest later says something
     // else, this is what disagrees. The token is the single home.
     expect(nativeNumericFeature).toBe('tabular-nums');
+  });
+
+  /*
+   * THE SWITCH 15 DRAWS (F-239). `numeric` says the text carries figures; the setting says
+   * whether they are set tabular. Rendered through the provider both ways, because the whole
+   * claim is that one person's choice changes what the other sees.
+   */
+  const withSetting = (tabularNumerals: boolean): readonly unknown[] =>
+    variants(
+      draw(
+        <DisplaySettingsProvider settings={{ ...DRAWN_DISPLAY_SETTINGS, tabularNumerals }}>
+          <Text size="small" color="foreground" numeric>
+            12.34
+          </Text>
+        </DisplaySettingsProvider>,
+        'light',
+      ),
+    );
+
+  it('drops the feature when the setting is off, and keeps it when on', () => {
+    expect(withSetting(true)).toContainEqual([nativeNumericFeature]);
+    expect(withSetting(false)).toHaveLength(0);
+  });
+
+  it('defaults to what 15 draws — every switch on — where nobody provided a setting', () => {
+    // The default is the reason this change is invisible until somebody uses it.
+    expect(DRAWN_DISPLAY_SETTINGS.tabularNumerals).toBe(true);
+    expect(
+      variants(
+        draw(
+          <Text size="small" color="foreground" numeric>
+            12.34
+          </Text>,
+          'light',
+        ),
+      ),
+    ).toContainEqual([nativeNumericFeature]);
   });
 });

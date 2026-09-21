@@ -4342,6 +4342,14 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/displaySettings.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/(tabs)/wardrobe/add.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -4349,12 +4357,13 @@
         "apps/mobile"
       ],
       "severity": "medium",
-      "guard": "THE PORT HAS ONE VERB, AND THAT IS THE GUARANTEE. A module that cannot express \"buzz on scroll\" is one nobody can use to buzz on scroll — stronger than a rule saying not to and a reviewer remembering it. `light()`, `selection()` and `impact(style)` are each an invitation to fire on something that is not a commit, and a test asserts the export set is exactly `[\"commit\"]`. A SECOND TEST REFUSES ANY IMPORT OF `expo-haptics` OUTSIDE THE PORT, so the one verb cannot be bypassed — the same shape as the Lens exit table (F-178) — with a decoy proving the scan reads files at all. THE DECOY THAT MATTERS: rendering and re-rendering must fire NONE, because \"fires on a commit\" is satisfied by an implementation that fires on everything. WHAT IS NOT GUARDED: that a device actually buzzes, and that the platform setting is honoured. Both are properties of the library and the OS on hardware this workstation does not have, and a test asserting \"the platform was consulted\" would be asserting that a function was called. Attested.",
+      "guard": "THE PORT HAS TWO VERBS, AND THE COUNT IS THE GUARANTEE (amended by F-239; it was one until ADR-0104). A module that cannot express \"buzz on scroll\" is one nobody can use to buzz on scroll — stronger than a rule saying not to and a reviewer remembering it. `light()`, `impact(style)` and `scroll()` are each an invitation to fire on something that is neither a commit nor a choice, and a test asserts the export set is exactly `[\"commit\", \"select\"]` — the assertion a third verb has to come through. A SECOND TEST REFUSES ANY IMPORT OF `expo-haptics` OUTSIDE THE PORT, so the verbs cannot be bypassed — the same shape as the Lens exit table (F-178) — with a decoy proving the scan reads files at all. THE DECOY THAT MATTERS: rendering and re-rendering must fire NONE, because \"fires on a commit\" is satisfied by an implementation that fires on everything; F-239 added its sibling, that toggling any of the three display switches fires neither verb. THE PREFERENCE IS GATED IN ONE PLACE: `selectionGated(port, on)` wraps the port where a route composes it, and display-settings.test.tsx asserts it silences `select()` when off, fires it when on, passes `commit()` through EITHER WAY, and still exposes exactly two verbs. WHAT IS NOT GUARDED: that a device actually buzzes, and that the platform setting is honoured. Both are properties of the library and the OS on hardware this workstation does not have, and a test asserting \"the platform was consulted\" would be asserting that a function was called. Attested.",
       "memory": "memory/effects/one-verb-is-a-stronger-rule-than-a-rule.md",
-      "rationale": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY: its criterion asked for haptics, `expo-haptics` was not a dependency, and *\"adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision\"*. THE FEATURE IS RESTRAINT, NOT FIRING. A haptic on a scroll is why people turn haptics off, so the whole value is in the small number of moments that are commits — and the enforceable shape of that is a port with ONE verb rather than a convention about when to call five. EACH CALL SITE IS AFTER THE WRITE, NOT ON THE PRESS: the garment is in the database at the line the haptic fires, and the Lens fires on the branch that HAS a reading rather than the one that asked the camera for one — a haptic on the press confirms an intention, and the two differ exactly when the thing fails. NO PREFERENCE OF OUR OWN, deliberately: `expo-haptics` delegates to the OS, and a second switch beside the platform’s is a setting somebody has to keep in sync with one they already set. COST: 34 KB of JavaScript, 31 KB Android and 8 KB iOS native source, peer range `expo: *`, stated because a dependency whose cost nobody wrote down is one nobody can weigh later.",
+      "rationale": "SPLIT OUT OF F-189 RATHER THAN DONE BADLY: its criterion asked for haptics, `expo-haptics` was not a dependency, and *\"adding one in the middle of a wave to satisfy a clause is how a dependency arrives without a decision\"*. THE FEATURE IS RESTRAINT, NOT FIRING. A haptic on a scroll is why people turn haptics off, so the whole value is in the small number of moments that are commits — and the enforceable shape of that is a port with ONE verb rather than a convention about when to call five. EACH CALL SITE IS AFTER THE WRITE, NOT ON THE PRESS: the garment is in the database at the line the haptic fires, and the Lens fires on the branch that HAS a reading rather than the one that asked the camera for one — a haptic on the press confirms an intention, and the two differ exactly when the thing fails. NO PREFERENCE OF OUR OWN, deliberately: `expo-haptics` delegates to the OS, and a second switch beside the platform’s is a setting somebody has to keep in sync with one they already set. COST: 34 KB of JavaScript, 31 KB Android and 8 KB iOS native source, peer range `expo: *`, stated because a dependency whose cost nobody wrote down is one nobody can weigh later. AMENDED BY F-239 (2026-09-21): mockup `15` draws a switch labelled \"Haptic Feedback on Swatch Selection\", so golden rule 14 supersedes both of this link's refusals — the one verb and the \"no preference of our own\" — and ADR-0104 records what that costs. The erosion is bounded by the new verb naming a GESTURE rather than a strength, by its single call site (the swatch grid in AddGarment), and by the app's switch being SUBORDINATE to the platform rather than parallel to it: off means this app asks for nothing, on means it asks and the OS still decides. There is no state where the app wins an argument with the phone, which is what the original objection was about.",
       "confidence": 0.9,
       "origin": "manual",
-      "status": "active"
+      "status": "active",
+      "feature": "F-206"
     },
     {
       "id": "E-113",
@@ -5374,6 +5383,55 @@
       "feature": "F-229",
       "memory": "memory/effects/the-illustration-set-is-keyed-by-the-inventories.md",
       "rationale": "The drawings are keyed by the names F-220's inventories bind, so the inventories are an input to @irodora/ui for a second time (E-134 is the icon set's). High for the same reason: a renamed illustration leaves a surface asking for a drawing that does not exist, and a drawing nothing binds is a design nobody made — and neither shows up as a colour, a contrast or a layout failure. It also reaches the eight screens that still render R7's three empty-state drawings, which is why those are kept and declared rather than deleted.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-138",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/displaySettings.tsx#DisplaySettings"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Text.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/displaySettings.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Preferences.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/app/_layout.tsx"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/ui/src/Swatch.tsx#swatchAccessibleName"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "THE DEFAULT IS WHAT `15` DRAWS, which is what makes a change reaching every screen invisible until somebody moves a switch: `useDisplaySettings()` returns DRAWN_DISPLAY_SETTINGS outside its provider — all three on — and conformance.test.tsx asserts a `numeric` Text carries the manifest feature with no provider at all, keeps it with the setting on, and DROPS it with the setting off, beside the existing decoy that a Text without `numeric` carries no variant ever. apps/mobile/test/display-settings.test.tsx holds the device half: an absent row reads as the drawn default; nine values that are not exactly \"false\" read as ON (including \"\", \"no\", \"0\", \"FALSE\" and a JSON blob), and only \"false\" reads off; each setting round-trips; and the DECOY FOR A TYPO IN THE KEY TABLE — turning one setting off leaves the other two on and writes exactly one row, which the round trip alone would pass with all three keys spelled the same. The provider is asserted to hand the ui provider the values it holds, to persist a change in the same frame, and to THROW outside itself where `useDisplaySettings()` deliberately does not. The screen is asserted to draw all three rows named as `15` names them, each announcing its checked state, each reporting which switch moved and to what. controls.test.tsx holds `15`'s gutter dot: drawn at 5 dp in a resolved `foreground.3` when the switch is on and the caller asked, none when off, a DECOY that an on switch without the prop draws none, and that it adds no second announcement. NOT GUARDED: the provenance badge itself, which does not exist — F-233 owns it and is blocked behind F-225 (OQ-36). What IS guarded is the boundary: swatchAccessibleName takes a name, a hex and a colour, and no setting, so the badge is hideable and the provenance is not (ADR-0005).",
+      "memory": "memory/effects/a-setting-that-changes-what-text-means.md",
+      "rationale": "`15` draws three switches, and one of them lands on a prop that already existed: `Text`'s `numeric` stops meaning \"use tabular figures\" and starts meaning \"this text carries figures\", with the setting deciding. Nothing at any call site changed and every call site changed meaning, which is why this is high severity — it reaches every screen that shows a number, and the failure mode is silent. The prop could not be removed in favour of the setting because no heuristic can tell \"0.42\" from \"F-019\": the caller knows, the component cannot. The values live in @irodora/ui because `Text` cannot read an app context; everything touching the device lives in apps/mobile, and the app's provider mounts the ui one so the two cannot drift. The third switch writes to a reader that does not exist yet and says so, rather than being built here (F-233's scope) or left undone.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

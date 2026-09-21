@@ -287,6 +287,16 @@ export function AddGarment({
                 colorFor(entry.entry),
               )}
               onPress={() => {
+                /*
+                 * A SELECTION (ADR-0104, F-239). The one gesture `15`'s middle switch names, and
+                 * the only place in this app that fires this verb. It is not a commit: nothing is
+                 * written, and the garment is saved by a button further down — which is why the
+                 * two are different verbs rather than one called twice.
+                 *
+                 * The port is already gated by the preference when the route composed it, so
+                 * there is no setting to read here (`selectionGated`).
+                 */
+                haptics.select();
                 setDraft((d) => ({ ...d, colour: { kind: 'corpus', slug: entry.entry.slug } }));
               }}
               style={{ minWidth: nativeTapTarget, minHeight: nativeTapTarget }}

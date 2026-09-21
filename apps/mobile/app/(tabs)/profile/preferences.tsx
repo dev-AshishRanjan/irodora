@@ -3,6 +3,7 @@ import { deviceHaptics } from '../../../src/haptics';
 import { Preferences } from '../../../src/screens/Preferences';
 import { deviceRepository } from '../../../src/store/repository';
 import { useAppearance } from '../../../src/appearance';
+import { useDisplay } from '../../../src/displaySettings';
 
 /**
  * The route. Navigation options, and the one wire the screen cannot make itself.
@@ -25,6 +26,12 @@ export default function PreferencesRoute(): React.JSX.Element {
    * level up.
    */
   const { appearance, choose, device } = useAppearance();
+  /*
+   * THE SAME SEAM FOR THE DISPLAY SETTINGS (F-239). `useDisplay()` throws outside its provider
+   * exactly as `useAppearance()` does, and for the identical reason — so the screen takes the
+   * value and the writer as props, and the conformance suite renders it with neither.
+   */
+  const { settings, change } = useDisplay();
   return (
     <>
       <Stack.Screen options={{ title: 'Irodora' }} />
@@ -34,6 +41,8 @@ export default function PreferencesRoute(): React.JSX.Element {
         onChooseAppearance={choose}
         haptics={deviceHaptics()}
         device={device}
+        display={settings}
+        onChangeDisplaySetting={change}
       />
     </>
   );

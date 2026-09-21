@@ -501,6 +501,11 @@ export const ja: Record<MessageKey, string> = {
   'settings.open': '設定',
   'settings.openHint': '外観と、アプリが学習した好み。',
   'settings.platform': '言語と視差効果の軽減は端末の設定に従います。Irodora では別途たずねません。',
+  // F-239 — see en.ts for why the labels are the mockup's own words and the ordinal is not here.
+  'settings.engine': '詳細なエンジンと操作',
+  'settings.tabular': '数字を等幅で表示（ΔE / OKLCh）',
+  'settings.haptics': '色見本を選んだときの触覚フィードバック',
+  'settings.provenance': '色見本に出典バッジを表示',
   'preferences.title': '学習した好み',
   // F-194 — see en.ts for why these are plain words rather than terms of art.
   'combos.title': 'この色に合う色',
