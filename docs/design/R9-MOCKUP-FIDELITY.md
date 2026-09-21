@@ -273,6 +273,33 @@ as `size.iconStroke` 1.65 dp and every glyph renders that width at every size. (
 1.75 dp `STROKE`, inside the reading's ±0.5 dp" — that constant is gone, and it was a width in GRID
 units, about 1.46 dp as drawn, never a dp value.)
 
+**The line art**, measured by `F-229` ([`art-measure.ps1`](../../mockups/tools/art-measure.ps1)) over
+the 33 elements the inventories bind an `illustration` to. Two readings per box: the width of a line
+the shorter way across it, and how strongly the art is inked against the ground it sits on — as a
+fraction of the `foreground` that theme declares, which is what *"at its mockup's opacity"* can mean
+when art and ground are read off the same image.
+
+**The art is drawn two ways, and the difference is large.**
+
+| use | what it is | ink, as a fraction of `foreground` | line |
+|---|---|---|---|
+| **backdrop** | the branch, leaves, kimono, sashiko and the `18` document watermarks, behind a screen's content — 21 of the 33 | **0.10 – 0.18, median 0.15**, and two exceptions below at 0.31 and 0.33 | 1 px at 2 px/dp ≈ **0.5 dp**; `18`'s documents 3–4 px ≈ 1.5–2 dp |
+| **figure** | the drawing IS the content: `27`'s hanger (0.92), `00`'s three specimens on the component board (0.80 – 0.85), `18`'s signature (0.96) | **0.80 – 0.96** | 1–2 px |
+
+- **The two exceptions** are `06.provenance.art` (0.31) and `15.art` (0.33) — twice the backdrop
+  tone, on a card ground rather than the page. They are recorded as read; a surface that draws them
+  binds its own value rather than the median.
+- **`27`'s hanger is chromatic** (tan) and `C10` already declares that; the measurement reports its
+  strength, not its hue.
+- **Seven boxes could not be measured cleanly** — the inventory box catches a neighbouring element, so
+  what the tool reads there is that element: `09.art`, `10.art` and `11.art` (text and cards),
+  `14.splash.wave` (the progress bar beneath it), `18.report.fold` (the word *Report*),
+  `25.art-blossom` and `25.art-waves` (a heading and a rule). The drawings are legible in the crops;
+  only the numbers are unusable, and they are excluded rather than averaged in.
+- **No declared colour token matches the backdrop ink**: the nearest are `chart.5` and `chart.4` at
+  ΔE00 ≈ 4.6–7, which are a chart ramp and mean something else. So the art is the `foreground` token
+  at a declared opacity rather than a colour of its own — `F-229` declares the measured 0.15.
+
 **Swatch corners**, measured by `F-220` (`corner.ps1`; the left-hand fit where the right is
 disturbed by what sits beside it), at each mockup's own scale: `00` 6.5–7.5 px (a board, no scale) ·
 `01` 6.75 dp hero, 7 tiles, 5.75 card sample · `02` 8.1 · `03` 9.75 sample, 5.6 matches · `04` 5.1 ·
@@ -444,6 +471,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
 | **OQ-35** | `05`'s seven family chips (C13) name no white and no grey: off-white and the neutral greys (20 entries) have no honest home among them. New chips past the drawn edge, a stated folding rule, out of the filter, or something else? | `F-224` |
 | **OQ-36** | `15` draws Slate Graphite and Obsidian Noir as one swatch each; their levels, borders and text roles are drawn nowhere. A stated derivation, supplied values, or ground only — and is Slate's swatch its ground or its card? | `F-225` |
+| **OQ-38** | `18`'s report envelope draws a signature — the word *Signed*, written in a script face (`18.report.preview.envelope.signature`). It is TYPE, not a drawing: traced into paths it is a word pretending to be a picture, and set as text it needs a script face the product does not bundle (ADR-0057 bundles a Japanese subset; `F-226` ships the serif). It is also the one drawing that makes a claim about a person having signed something. Trace it, set it in a bundled face, or drop the element? | `F-229` `F-263` |
 | **OQ-37** | Icons drawn in colours C10 does not list, and two whose SHAPE in one ink cannot be read off the image: `00`'s colour wheel and palette, `03`'s hue ring, `06`'s green verification seal, `07 15 16`'s gold padlocks, `11`'s bulb, `13`'s harmony circles and gold sparkles, `15`'s two-colour CVD badge. Further C10 exceptions, or ink — and for the harmony circles and the CVD badge, what shape survives the answer? Overlaps `OQ-15`, which asks the same of `00 03 13 16 24` as a set; this is the per-icon list the icon set found. | `F-232` `F-243` `F-244` `F-247` `F-248` `F-251` `F-255` `F-257` `F-262` |
 
 ---
