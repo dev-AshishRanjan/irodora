@@ -159,33 +159,45 @@ describe('drawn at the measured line and tone (R9-MOCKUP-FIDELITY §5)', () => {
     expect(nativeArtOpacity).toBeLessThan(1);
   });
 
-  it('paints only the theme token it is given', () => {
-    const allowed = new Set([
+  it('paints only the theme token it is given, and states a fill on every shape', () => {
+    // `undefined` is NOT allowed for a fill: react-native-svg injects #000000 where a shape states
+    // none — the hazard this module's docblock describes, which the first draft's `allowed` set let
+    // straight through (F-229's review, finding 16).
+    const inks = new Set<string>([
       nativeColors.dark['foreground.3'],
       nativeColors.dark['foreground.2'],
-      'none',
-      undefined,
     ]);
     const stray: string[] = [];
     for (const name of ILLUSTRATIONS)
-      for (const el of shapes(name))
-        for (const key of ['stroke', 'fill'] as const)
-          if (!allowed.has(el.props[key] as string | undefined))
-            stray.push(`${name}.${key}: ${JSON.stringify(el.props[key])}`);
+      for (const el of shapes(name)) {
+        const fill = el.props['fill'] as string | undefined;
+        const stroke = el.props['stroke'] as string | undefined;
+        if (fill === undefined || (fill !== 'none' && !inks.has(fill)))
+          stray.push(`${name}.fill: ${JSON.stringify(fill)}`);
+        if (stroke !== undefined && !inks.has(stroke))
+          stray.push(`${name}.stroke: ${JSON.stringify(stroke)}`);
+      }
     expect(stray).toHaveLength(0);
   });
 });
 
 describe('one versioned set', () => {
   /**
-   * The digest of every drawing's path data, against the version that names it.
+   * The digest of every drawing's path data, per version — every version the set has had.
    *
    * *One versioned, vector set* is the acceptance's phrase, and a version nobody can fail is a
-   * number in a file. This is the half a check can hold: change a line and the digest moves, so
-   * the change has to be recorded here — with the version bumped — rather than landing silently.
+   * number in a file. **What this holds:** change a line and the digest moves, so the change has to
+   * be written down here. **What it cannot hold** (F-229's review, finding 14): that the VERSION
+   * was bumped rather than the old entry edited in place — no test can see a value that used to be
+   * different. Keeping every version's digest is what makes such an edit visible in a diff, and the
+   * second case below refuses two versions that claim the same drawings.
+   *
+   * `1.1.0` is this feature's review: five drawings were wrong against their crops and were
+   * redrawn — the document, the sashiko weave, the flower, the leaves and the hanger.
    */
   const DIGESTS: Readonly<Record<string, string>> = {
     '1.0.0': '798289fb3a6b7de1',
+    '1.1.0': '4c0a47eb6a6c6476',
   };
 
   const digest = (): string =>
@@ -197,6 +209,12 @@ describe('one versioned set', () => {
   it('carries the digest recorded for its version', () => {
     expect(Object.keys(DIGESTS)).toContain(ILLUSTRATION_SET_VERSION);
     expect(digest()).toBe(DIGESTS[ILLUSTRATION_SET_VERSION]);
+  });
+
+  it('gives no two versions the same drawings', () => {
+    // A bump with nothing behind it is as misleading as a change with no bump.
+    const recorded = Object.values(DIGESTS);
+    expect(new Set(recorded).size).toBe(recorded.length);
   });
 
   it('DECOY — the digest moves when a drawing does', () => {
@@ -288,6 +306,26 @@ describe('never over a sample (the rule the well exists for)', () => {
     readonly h: number;
   }
 
+  /**
+   * What counts as a colour sample — every component that draws colour a person judges.
+   *
+   * The first draft asked only for a name ending in `Swatch`, which left `ui:Bands` and
+   * `new:KasaneStrip` — both runs of colour samples — outside the scan, so the assertion was
+   * narrower than the sentence it made (F-229's review, finding 8).
+   */
+  const SAMPLE_COMPONENTS = [
+    'ui:Swatch',
+    'ui:Bands',
+    'new:DrapeSwatch',
+    'new:FabricSwatch',
+    'new:KasaneBar',
+    'new:KasaneStrip',
+    'new:SplitBar',
+    'new:ThemeTile',
+  ];
+  const carriesColour = (component: string | null | undefined): boolean =>
+    SAMPLE_COMPONENTS.includes(component ?? '');
+
   /** Every drawn illustration and every drawn sample, per mockup. */
   function boxes(): ReadonlyMap<string, Box[]> {
     const byMockup = new Map<string, Box[]>();
@@ -304,11 +342,7 @@ describe('never over a sample (the rule the well exists for)', () => {
       const list: Box[] = [];
       for (const e of inv.elements ?? []) {
         const kind =
-          typeof e.illustration === 'string'
-            ? 'art'
-            : (e.component ?? '').endsWith('Swatch')
-              ? 'sample'
-              : null;
+          typeof e.illustration === 'string' ? 'art' : carriesColour(e.component) ? 'sample' : null;
         if (kind !== null) list.push({ id: e.id, kind, ...e.box });
       }
       byMockup.set(inv.mockup, list);
@@ -335,16 +369,20 @@ describe('never over a sample (the rule the well exists for)', () => {
   });
 
   /**
-   * The one pair the boxes report and the IMAGE does not, with the feature that will fix it.
+   * The pairs the boxes report and the IMAGE does not, with the feature that will fix them.
    *
-   * `10.art`'s box is a scan blob that reaches into the card column — the leaves are drawn beside
-   * the palette card, not over its sample, which the crop shows plainly. The box is wrong, not the
-   * mockup, and F-282 re-measures the seven boxes of that kind. Declared rather than filtered out
-   * silently, and held to still overlapping, so it cannot outlive the fix.
+   * Both are `10.art`, whose box is a scan blob reaching into the card column — the leaves are drawn
+   * beside the palette card, not over its sample or its strip, which the crop shows plainly. The box
+   * is wrong, not the mockup, and F-282 re-measures the seven boxes of that kind. The second pair
+   * appeared only once the scan was widened past `Swatch` (F-229's review, finding 8), which is the
+   * point of widening it. Declared rather than filtered out silently, and held to still overlapping,
+   * so neither can outlive the fix.
    */
   const BLOB_BOXES: Readonly<Record<string, string>> = {
     '10.art over 10.palette-2.swatch-4':
       'F-282 — 10.art is a scan blob; the image draws the leaves beside the card',
+    '10.art over 10.palette-1.strip':
+      'F-282 — the same blob box, against the strip above that sample',
   };
 
   it('no mockup draws an illustration over a colour sample', () => {

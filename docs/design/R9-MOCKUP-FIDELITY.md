@@ -277,13 +277,17 @@ units, about 1.46 dp as drawn, never a dp value.)
 the 33 elements the inventories bind an `illustration` to. Two readings per box: the width of a line
 the shorter way across it, and how strongly the art is inked against the ground it sits on — as a
 fraction of the `foreground` that theme declares, which is what *"at its mockup's opacity"* can mean
-when art and ground are read off the same image.
+when art and ground are read off the same image. **Two readings and one space, both stated because
+the numbers move with them:** the fractions below are the tool's `inkP90` — the line at full
+strength — and the median of `inkP50`, the line as it is mostly drawn, is 0.13 rather than 0.15.
+Both are measured on gamma-encoded luma, which is the space an opacity composites in; in linear
+light the same pixels read about 0.036.
 
 **The art is drawn two ways, and the difference is large.**
 
 | use | what it is | ink, as a fraction of `foreground` | line |
 |---|---|---|---|
-| **backdrop** | the branch, leaves, kimono, sashiko and the `18` document watermarks, behind a screen's content — 21 of the 33 | **0.10 – 0.18, median 0.15**, and two exceptions below at 0.31 and 0.33 | 1 px at 2 px/dp ≈ **0.5 dp**; `18`'s documents 3–4 px ≈ 1.5–2 dp |
+| **backdrop** | the branch, leaves, kimono, sashiko and the `18` documents, behind a screen's content — 21 of the 33 | **0.10 – 0.18, median 0.15**, and two exceptions below at 0.31 and 0.33 | 1 px at 2 px/dp ≈ **0.5 dp** for 15 of the 21; `13.art-left` 2 px; `18`'s five documents 3–4 px ≈ 1.5–2 dp |
 | **figure** | the drawing IS the content: `27`'s hanger (0.92), `00`'s three specimens on the component board (0.80 – 0.85), `18`'s signature (0.96) | **0.80 – 0.96** | 1–2 px |
 
 - **The two exceptions** are `06.provenance.art` (0.31) and `15.art` (0.33) — twice the backdrop

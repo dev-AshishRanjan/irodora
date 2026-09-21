@@ -7795,7 +7795,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "CRITERION 3 REWORDED 2026-09-14 BY F-219, recorded here where the change lives: it quoted mockup 27’s loading line verbatim, which the claims lint now refuses, and now describes the same drawn claim (\"the spectrum 27’s render claims to extract\") with the same binding. The meaning is unchanged. ALSO DEPARTS (F-219): the refused state’s heading names a reading, not a measurement — 27 draws \"Measurement Refused\", and an estimate is never called a measurement (golden rule 11, E2)."
+      "notes": "CRITERION 3 REWORDED 2026-09-14 BY F-219, recorded here where the change lives: it quoted mockup 27’s loading line verbatim, which the claims lint now refuses, and now describes the same drawn claim (\"the spectrum 27’s render claims to extract\") with the same binding. The meaning is unchanged. ALSO DEPARTS (F-219): the refused state’s heading names a reading, not a measurement — 27 draws \"Measurement Refused\", and an estimate is never called a measurement (golden rule 11, E2). FROM F-229's REVIEW (2026-09-21): 27 draws its hanger in TAN (C10 declares the tint) and Illustration cannot take one — its `color` prop admits only foreground.2 and foreground.3, the two quiet neutrals R7 constrained it to. This feature builds 27's states, so widening the ink to the tokens C10 declares — or recording why it stays neutral — belongs here."
     },
     {
       "id": "F-237",
@@ -9571,6 +9571,39 @@
         "test"
       ],
       "notes": "FROM F-229 (2026-09-21). Seven illustration boxes catch a neighbouring element: measuring them reports that element instead of the art (R9-MOCKUP-FIDELITY section 5), and 10.art overlaps 10.palette-2.swatch-4 by 54 px in x although the image draws the leaves BESIDE the card rather than over the sample. So the boxes overstate the drawings, which matters twice: the tone and line of those seven are unmeasured, and the rule that no art sits over a sample has to carry an exception for 10.art until the box is right. mockups/tools/art-measure.ps1 is the tool that reads them."
+    },
+    {
+      "id": "F-283",
+      "title": "A strip of art repeats down a screen without a seam",
+      "requirements": [
+        "FR-69"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-229"
+      ],
+      "mockups": [
+        "09",
+        "10",
+        "12",
+        "13",
+        "15",
+        "16"
+      ],
+      "acceptance": [
+        "A drawing bound to a strip taller than its own grid repeats down that strip rather than stretching: 10.art is 1150 px and 13.art-left 1140 px, against drawings 96 units tall",
+        "The repeat has no visible seam at the sizes the screens draw — the motif meets itself, asserted on the rendered geometry rather than by eye",
+        "A drawing that is not a repeating motif (the hanger, the viewfinder, the documents) is never tiled"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-229's REVIEW (2026-09-21), which found the plan had named this risk and neither resolved nor recorded it: Illustration takes a width and derives its height from a fixed aspect, so a 96-unit strip of leaves asked for a 1150 px column is scaled, not repeated. The six mockups listed draw art columns several times their motif's height. F-282 may change those boxes, so the two are worth reading together."
     }
   ]
 }

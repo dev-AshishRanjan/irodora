@@ -119,7 +119,8 @@ parent. Simultaneous contrast is the reason, and it is the same reason the statu
     No declared COLOUR token matches that ink — nearest `chart.5` at ΔE00 4.6 — which is why the art
     is the foreground turned down rather than a token of its own.
   - **Never over a sample is asserted over the record's geometry**, not as a new conformance rule:
-    33 drawn illustration boxes against 73 drawn sample boxes, with a planted overlap as the decoy.
+    33 drawn illustration boxes against the 86 elements that draw a colour a person judges, with a
+    planted overlap as the decoy.
     A rendered-tree rule would first need a marker that tells a drawing from an icon in the tree, and
     the inventories already carry the evidence — the mockups never do it. Two of the drawings are
     registered as conformance subjects instead, so they are read under the colour and both-theme

@@ -45,8 +45,10 @@
  * filled shape at illustration scale is a large flat field of colour and this product asks people
  * to judge large flat fields of colour a few centimetres away. That reasoning survives as WHERE
  * art may go — never over a sample — rather than as a ban on a fill: `27` draws a solid hanger and
- * `18` a solid turned corner, and F-228's review is the warning against a house style the images
- * do not have.
+ * `18` fills the lines on its document. **Which is which is read off the image, not decided here**,
+ * and the first pass got `18`'s page exactly backwards — solid with its lines knocked out, where
+ * `18` draws a stroked page over a second sheet (F-229's review). Both reviews in this release
+ * found the same class of error, in opposite directions.
  *
  * **3. A drawing may never carry meaning the text does not.** These are `accessibilityElements
  * Hidden` and they say nothing a screen reader needs — the message beside them is the whole
@@ -111,7 +113,7 @@ export const EMPTY_STATE_ILLUSTRATIONS = ['swatches', 'reading', 'pairing'] as c
  * version, so a redrawn line fails until it is recorded as a change. A version nobody can fail is
  * a number in a file; this one is the set's identity.
  */
-export const ILLUSTRATION_SET_VERSION = '1.0.0';
+export const ILLUSTRATION_SET_VERSION = '1.1.0';
 
 export const ILLUSTRATIONS = [...DRAWN_ILLUSTRATIONS, ...EMPTY_STATE_ILLUSTRATIONS] as const;
 export type IllustrationName = (typeof ILLUSTRATIONS)[number];
@@ -175,7 +177,13 @@ interface Pen {
 type Draw = (pen: Pen) => React.JSX.Element;
 
 interface Drawing {
-  /** The grid this drawing is expressed on — width, height. Its aspect is the mockup's. */
+  /**
+   * The grid this drawing is expressed on — width, height.
+   *
+   * The aspect of the ELEMENT it was drawn from, not of every element that binds the name: `leaves`
+   * is drawn from `12`'s strip and is also bound by boxes from 0.03 to 0.64 (F-229's review,
+   * finding 9). A surface scales the drawing; it does not restate it.
+   */
   readonly box: readonly [number, number];
   /** A line fixed in grid units, for the three that predate the measured one. */
   readonly fixedStroke?: number;
@@ -211,35 +219,57 @@ const polar = (cx: number, cy: number, r: number, deg: number): readonly [number
 };
 
 /**
- * A plum blossom: five rounded petals around a centre, with its stamens.
+ * A plum blossom: ONE outline of five lobes meeting at cusps, and stamens that end in a dot.
  *
- * `01`, `06`, `08`, `25` and `27` all draw this flower, at five sizes. Generated once and placed,
- * rather than drawn five times with five sets of numbers that would drift apart.
+ * `01`, `06`, `08`, `25` and `27` all draw this flower, at five sizes, and they draw it as a single
+ * scalloped contour — not as five overlapping circles, which is what the first draft drew and what
+ * the review caught (F-229's review, finding 3). The difference is visible at any size: circles cross
+ * inside the flower and leave a rosette of arcs where the mockups leave an open centre.
  */
 function blossom(cx: number, cy: number, r: number, pen: Pen, key: string): React.JSX.Element {
+  const cusp = r * 0.34;
+  const petals: string[] = [];
+  for (let i = 0; i < 5; i += 1) {
+    const a = i * 72 - 90;
+    const [x0, y0] = polar(cx, cy, cusp, a - 36);
+    const [c1x, c1y] = polar(cx, cy, r * 1.22, a - 29);
+    const [c2x, c2y] = polar(cx, cy, r * 1.22, a + 29);
+    const [x1, y1] = polar(cx, cy, cusp, a + 36);
+    if (i === 0) petals.push(`M${n(x0)} ${n(y0)}`);
+    petals.push(`C${n(c1x)} ${n(c1y)} ${n(c2x)} ${n(c2y)} ${n(x1)} ${n(y1)}`);
+  }
   const stamens: string[] = [];
-  for (let i = 0; i < 12; i += 1) {
-    const [x1, y1] = polar(cx, cy, r * 0.12, i * 30 - 90);
-    const [x2, y2] = polar(cx, cy, r * 0.4, i * 30 - 90);
+  const tips: React.JSX.Element[] = [];
+  for (let i = 0; i < 14; i += 1) {
+    const a = (360 / 14) * i - 90;
+    const [x1, y1] = polar(cx, cy, r * 0.08, a);
+    const [x2, y2] = polar(cx, cy, r * 0.46, a);
     stamens.push(`M${n(x1)} ${n(y1)}L${n(x2)} ${n(y2)}`);
+    tips.push(
+      <Circle
+        key={`${key}-t${String(i)}`}
+        cx={Number(n(x2))}
+        cy={Number(n(y2))}
+        r={Number(n(r * 0.075))}
+        fill={pen.ink}
+      />,
+    );
   }
   return (
     <Fragment key={key}>
-      {[0, 1, 2, 3, 4].map((i) => {
-        const [px, py] = polar(cx, cy, r * 0.56, i * 72 - 90);
-        return ring(Number(n(px)), Number(n(py)), Number(n(r * 0.46)), pen, `${key}-p${String(i)}`);
-      })}
+      {stroked(`${petals.join('')}z`, pen, `${key}-p`)}
       {stroked(stamens.join(''), pen, `${key}-s`)}
+      {tips}
     </Fragment>
   );
 }
 
-/** A bud: the same flower before it opens — a small circle on a short stem. */
+/** A bud: the flower before it opens — a small round head on its calyx and stem. */
 function bud(cx: number, cy: number, r: number, pen: Pen, key: string): React.JSX.Element {
   return (
     <Fragment key={key}>
       {ring(cx, cy, r, pen, `${key}-o`)}
-      {stroked(`M${n(cx)} ${n(cy + r)}L${n(cx)} ${n(cy + r * 2.2)}`, pen, `${key}-t`)}
+      {stroked(`M${n(cx)} ${n(cy + r)}L${n(cx + r * 0.3)} ${n(cy + r * 2.1)}`, pen, `${key}-t`)}
     </Fragment>
   );
 }
@@ -256,21 +286,42 @@ function leaf(x: number, y: number, len: number, deg: number): string {
 }
 
 /**
- * Sashiko: a block of short parallel stitches, turned one way or the other.
+ * A blade: a long tapered leaf, drawn as two curves meeting at its tip.
  *
- * Inset inside its block, because a stitch that reaches the block's corners joins the next block's
- * and the weave reads as one long diagonal — which is what the first draft drew.
+ * `bow` is how far the blade bends across its own length — the strips in `09`, `12` and `15` draw
+ * blades that sweep rather than points that stick out.
  */
-function stitches(x: number, y: number, size: number, turned: boolean, count = 3): string {
+function blade(x: number, y: number, dx: number, dy: number, bow: number): string {
+  const [tx, ty] = [x + dx, y + dy];
+  const [mx, my] = [x + dx * 0.5, y + dy * 0.5];
+  const [px, py] = [-dy * bow, dx * bow];
+  return (
+    `M${n(x)} ${n(y)}Q${n(mx + px)} ${n(my + py)} ${n(tx)} ${n(ty)}` +
+    `Q${n(mx - px * 0.35)} ${n(my - py * 0.35)} ${n(x)} ${n(y)}`
+  );
+}
+
+/**
+ * Sashiko: a block of parallel stitches of EQUAL length, turned one way or the other.
+ *
+ * Drawn about the block's centre rather than corner to corner. The first draft walked an offset from
+ * one edge to the other, which made the last stitch of every block a point — 16 zero-length segments
+ * that `strokeLinecap="round"` then drew as dots the mockups do not have, and two stitches where
+ * three were asked for (F-229's review, finding 2). `16` draws a dense weave and nothing else.
+ */
+function stitches(x: number, y: number, size: number, turned: boolean, count = 4): string {
   const parts: string[] = [];
-  const m = size * 0.16;
-  const step = (size - 2 * m) / (count - 1);
+  const angle = turned ? -45 : 45;
+  const [ux, uy] = [Math.cos((angle * Math.PI) / 180), Math.sin((angle * Math.PI) / 180)];
+  const [vx, vy] = [-uy, ux];
+  const [cx, cy] = [x + size / 2, y + size / 2];
+  const half = size * 0.34;
+  const gap = (size * 0.82) / count;
   for (let i = 0; i < count; i += 1) {
-    const o = m + step * i;
+    const off = (i - (count - 1) / 2) * gap;
+    const [mx, my] = [cx + off * vx, cy + off * vy];
     parts.push(
-      turned
-        ? `M${n(x + o)} ${n(y + m)}L${n(x + size - m)} ${n(y + size - o)}`
-        : `M${n(x + m)} ${n(y + o)}L${n(x + size - o)} ${n(y + size - m)}`,
+      `M${n(mx - half * ux)} ${n(my - half * uy)}L${n(mx + half * ux)} ${n(my + half * uy)}`,
     );
   }
   return parts.join('');
@@ -311,31 +362,43 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     draw: (p) => (
       <Fragment>
         {stroked('M0 27C9 24 15 18 22 9M22 20C29 23 38 22 48 17M31 9C34 5 39 3 45 2', p, 'twigs')}
-        {blossom(16, 13, 7, p, 'b1')}
-        {blossom(34, 19, 8, p, 'b2')}
-        {bud(6, 21, 2.3, p, 'd1')}
-        {bud(43, 7, 2.1, p, 'd2')}
+        {blossom(15.5, 12.5, 5, p, 'b1')}
+        {blossom(25, 18, 4, p, 'b2')}
+        {blossom(34.5, 19.5, 5.6, p, 'b3')}
+        {bud(6, 21, 1.8, p, 'd1')}
+        {bud(42.5, 7, 1.6, p, 'd2')}
       </Fragment>
     ),
   },
 
   /**
-   * `18`: the sheet its exports are drawn as — SOLID, with its turned corner and its lines cut
-   * out of it, which is how `18` draws the watermark behind each export card.
+   * `18`: the sheet its exports are drawn as — an OUTLINED page over a second sheet, with a turned
+   * corner and filled lines.
+   *
+   * The first draft drew it solid with the lines cut out, and the review caught it: the five elements
+   * that bind it draw a stroked page with the card's own ground showing through, and `18.report.art`
+   * draws a stack (F-229's review, finding 1). The measurement said so too and was not read —
+   * `strokePx` 3–4 with a fifth of the box inked is an outline, not a fill.
    */
   document: {
     box: [24, 30],
     draw: (p) => (
       <Fragment>
+        {stroked('M3.5 10A2.5 2.5 0 0 1 6 7.5M3.5 10v13A2.5 2.5 0 0 0 6 25.5', p, 'behind')}
+        {stroked(
+          'M6 5.5A2.5 2.5 0 0 1 8.5 3h8l5 5v18.5a2.5 2.5 0 0 1-2.5 2.5H8.5A2.5 2.5 0 0 1 6 26.5z',
+          p,
+          'page',
+        )}
+        {stroked('M16.5 3v2.5A2.5 2.5 0 0 0 19 8h2.5', p, 'fold')}
         {filled(
           [
-            'M3 4a3 3 0 0 1 3-3h8l7 7v19a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z',
-            'M14 1.4 20.6 8H17a3 3 0 0 1-3-3z',
-            'M7 15h10a1 1 0 0 1 0 2H7a1 1 0 0 1 0-2z',
-            'M7 19h10a1 1 0 0 1 0 2H7a1 1 0 0 1 0-2z',
-            'M7 23h6a1 1 0 0 1 0 2H7a1 1 0 0 1 0-2z',
+            'M9.5 13.5h8a1 1 0 0 1 0 2h-8a1 1 0 0 1 0-2z',
+            'M9.5 17.5h8a1 1 0 0 1 0 2h-8a1 1 0 0 1 0-2z',
+            'M9.5 21.5h5a1 1 0 0 1 0 2h-5a1 1 0 0 1 0-2z',
           ].join(' '),
           p,
+          'lines',
         )}
       </Fragment>
     ),
@@ -344,29 +407,35 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
   /**
    * `27`'s empty wardrobe: a hanger with a sprig of blossom growing across it.
    *
-   * Solid, because `27` draws it solid — and in tan, which `C10` declares. The tint is the
-   * surface's; this is the shape.
+   * Solid, because `27` draws it solid. **Its tan is NOT available here**: `C10` declares the
+   * tint, and `color` below takes only the two quiet foregrounds, so no surface can pass one yet —
+   * the gap is recorded against F-236, which builds `27`'s states (F-229's review, finding 7).
    */
   hanger: {
     box: [48, 34],
     draw: (p) => (
       <Fragment>
-        {stroked('M24 14V8.4a2.6 2.6 0 1 0-2.6-2.6', p, 'hook')}
+        {stroked('M24 14V10a2.2 2.2 0 1 0-2.2-2.2', p, 'hook')}
         {filled(
           [
-            // The shoulders: a slim sloped bar from the hook down to each end.
-            'M24 13.6 44.8 28.2l-1.1 1.6L24 16.3 4.3 29.8l-1.1-1.6z',
-            // The bar across the bottom, thinner than the shoulders and rounded at its ends.
-            'M4.6 28.4h38.8a1 1 0 0 1 0 2H4.6a1 1 0 0 1 0-2z',
+            // The shoulders CURVE down from the hook, the way a wooden hanger is cut — the first
+            // draft drew a flat triangle (F-229's review, finding 6).
+            'M24 13.6c2.2 0 15.6 10.6 20.4 14.4l-1.2 1.6C38.2 25.6 26 15.8 24 15.8S9.8 25.6 4.8 29.6l-1.2-1.6C8.4 24.2 21.8 13.6 24 13.6z',
+            // The bar across the bottom, rounded at its ends.
+            'M5 28.2h38a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2z',
           ].join(' '),
           p,
           'body',
         )}
-        {stroked('M28 31c5-1.6 8.6-5.6 10.6-11.2 1.3-3.6 2.8-6 4.4-7.4', p, 'sprig')}
-        {blossom(33.5, 22.5, 3.8, p, 'f1')}
-        {blossom(41, 9.5, 3.2, p, 'f2')}
-        {stroked(leaf(38.6, 14.6, 3.6, -42), p, 'l1')}
-        {stroked(leaf(30.4, 27.4, 3.2, 26), p, 'l2')}
+        {/* Two sprigs, as 27 draws them: one over the shoulder, one crossing the bar. */}
+        {stroked('M36 28c3.6-2.2 6-6 7.2-11.4.7-3 1.6-5.2 2.8-6.6', p, 'sprig-a')}
+        {stroked('M9.5 31c2.6-1.6 4.4-3.6 5.4-6 .8-2 1.8-3.4 3-4.4', p, 'sprig-b')}
+        {blossom(41.4, 10.6, 3, p, 'f1')}
+        {blossom(38.4, 19.4, 2.6, p, 'f2')}
+        {blossom(17.6, 21.4, 3, p, 'f3')}
+        {bud(13.2, 27.6, 1.5, p, 'd1')}
+        {stroked(leaf(43.4, 14.2, 3.2, -38), p, 'l1')}
+        {stroked(leaf(13.8, 25, 3, 148), p, 'l2')}
       </Fragment>
     ),
   },
@@ -376,11 +445,18 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     box: [48, 44],
     draw: (p) => (
       <Fragment>
-        {stroked('M6 6h36M22 6a2 2 0 0 1 4 0', p, 'rail')}
-        {stroked('M14 7h20l3 33H11z', p, 'body')}
-        {stroked('M14 7H4v16a2 2 0 0 0 2 2h8M34 7h10v16a2 2 0 0 1-2 2h-8', p, 'sleeves')}
-        {stroked('M20 7l4 13 4-13', p, 'collar')}
-        {stroked('M18 20v20M24 20v20M30 20v20', p, 'folds')}
+        {stroked('M3.5 8 6 6h36l2.5 2M23 6a1.6 1.6 0 0 1 2 0', p, 'rail')}
+        {/* The body FLARES to a curved hem, which is what 00 draws; the first draft was a
+            near-rectangle with a straight one (F-229's review, finding 4). */}
+        {stroked('M13.5 7.5h21l4.5 31.5q-15 2-30 0z', p, 'body')}
+        {stroked('M13.5 7.5H4v17.5h9.7M34.5 7.5H44V25h-9.7', p, 'sleeves')}
+        {/* A narrow collar band down the centre, not a wide V. */}
+        {stroked('M21.4 7.5 23 19.5M26.6 7.5 25 19.5M23 19.5h2', p, 'collar')}
+        {stroked(
+          'M17 8.6 15.4 39M20.3 8 19.6 39.6M27.7 8l.7 31.6M31 8.6 32.6 39M24 20v19.8',
+          p,
+          'folds',
+        )}
       </Fragment>
     ),
   },
@@ -390,13 +466,16 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     box: [24, 96],
     draw: (p) => (
       <Fragment>
-        {stroked('M13 96C10 76 15 60 12 40 9 24 12 12 15 2', p, 'stem')}
-        {stroked(leaf(12.6, 78, 13, -32), p, 'a')}
-        {stroked(leaf(13.4, 64, 12, 26), p, 'b')}
-        {stroked(leaf(12.2, 50, 13, -28), p, 'c')}
-        {stroked(leaf(11.4, 36, 11, 32), p, 'd')}
-        {stroked(leaf(12.4, 22, 12, -34), p, 'e')}
-        {stroked(leaf(14, 10, 9, 28), p, 'f')}
+        {stroked('M11 96C9 74 13 54 11 34 10 20 12 9 14 1', p, 'stem')}
+        {/* LONG blades that run off the strip, which is how 09, 12 and 15 draw them — the first
+            draft drew six small almonds sized to fit the grid (F-229's review, finding 5). */}
+        {stroked(blade(11.6, 76, 18, -30, 0.3), p, 'a')}
+        {stroked(blade(11.8, 63, -14, -24, 0.28), p, 'b')}
+        {stroked(blade(11.4, 51, 19, -26, 0.3), p, 'c')}
+        {stroked(blade(11, 39, -15, -22, 0.28), p, 'd')}
+        {stroked(blade(11.4, 27, 17, -24, 0.3), p, 'e')}
+        {stroked(blade(12.4, 15, -13, -19, 0.26), p, 'f')}
+        {stroked(blade(13.2, 7, 14, -16, 0.26), p, 'g')}
       </Fragment>
     ),
   },
@@ -407,7 +486,9 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     draw: (p) => (
       <Fragment>
         {ring(9, 6, 3.4, p, 'sun')}
-        {stroked('M3 18l8-8 6 6 5-5 7 7', p, 'peaks')}
+        {/* The peaks CROSS, which is the placeholder figure 00 draws; the first draft had them
+            meeting at a valley (F-229's review, finding 19). */}
+        {stroked('M2.5 18.5 9 11l5.5 6.5M8 18.5 16 9.5l7.5 9', p, 'peaks')}
         {stroked('M3 21.5h26', p, 'ground')}
       </Fragment>
     ),
@@ -423,8 +504,10 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     box: [24, 16],
     draw: (p) => (
       <Fragment>
-        {stroked('M3 1h19.5a0.5 0.5 0 0 1 0.5 0.5V15z', p, 'flap')}
-        {stroked('M3 1 23 15', p, 'fold')}
+        {/* ONE path: its `z` IS the fold line, and the first draft drew that line twice, so it
+            carried a double stroke (F-229's review, finding 15). 18's corner takes the card's own
+            radius rather than a hairline one. */}
+        {stroked('M3 1h17.5a2.5 2.5 0 0 1 2.5 2.5V15z', p, 'flap')}
       </Fragment>
     ),
   },
@@ -434,15 +517,21 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     box: [60, 52],
     draw: (p) => (
       <Fragment>
-        {stroked('M1 50C13 46 20 37 26 27 31 19 41 10 59 4', p, 'branch')}
+        {stroked(
+          'M1 50C13 46 20 37 26 27 31 19 41 10 59 4M2.6 52C14 48 22 39 28 29 33 21 43 12 59.6 6',
+          p,
+          'branch',
+        )}
         {stroked('M26 27c4 6 10 9 18 10M33 18c-3-6-7-10-13-13M44 15c4-3 9-5 15-6', p, 'twigs')}
-        {blossom(19, 17, 7, p, 'b1')}
-        {blossom(41, 28, 8.5, p, 'b2')}
-        {blossom(51, 12, 6, p, 'b3')}
-        {bud(9, 30, 2.6, p, 'd1')}
-        {bud(30, 7, 2.4, p, 'd2')}
-        {bud(47, 41, 2.4, p, 'd3')}
-        {bud(57, 25, 2.2, p, 'd4')}
+        {blossom(18.5, 16.5, 5.2, p, 'b1')}
+        {blossom(29.5, 24, 4.4, p, 'b2')}
+        {blossom(41, 28.5, 6, p, 'b3')}
+        {blossom(49.5, 11.5, 4.6, p, 'b4')}
+        {bud(9.5, 30.5, 1.9, p, 'd1')}
+        {bud(24, 8.5, 1.7, p, 'd2')}
+        {bud(35.5, 15.5, 1.6, p, 'd3')}
+        {bud(47.5, 40, 1.8, p, 'd4')}
+        {bud(56.5, 24.5, 1.6, p, 'd5')}
       </Fragment>
     ),
   },
@@ -453,9 +542,9 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     draw: (p) => (
       <Fragment>
         {stroked(
-          Array.from({ length: 16 }, (_, i) => {
-            const [col, row] = [i % 4, Math.floor(i / 4)];
-            return stitches(col * 6, row * 6, 6, (col + row) % 2 === 0);
+          Array.from({ length: 36 }, (_, i) => {
+            const [col, row] = [i % 6, Math.floor(i / 6)];
+            return stitches(col * 4, row * 4, 4, (col + row) % 2 === 0, 3);
           }).join(''),
           p,
           'stitches',
@@ -469,10 +558,17 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     box: [96, 24],
     draw: (p) => (
       <Fragment>
+        {/* TWO trains that cross, sixteen lines, and every one inside the box — the first draft
+            drew eleven and let the top one reach y = -0.5 (F-229's review, finding 21). */}
         {stroked(
-          Array.from({ length: 11 }, (_, i) =>
-            ripple(96, 4 + i * 1.6, 4.5 - i * 0.18, i * 0.42),
-          ).join(''),
+          [
+            ...Array.from({ length: 9 }, (_, i) =>
+              ripple(96, 6 + i * 1.4, 4.4 - i * 0.22, i * 0.4),
+            ),
+            ...Array.from({ length: 7 }, (_, i) =>
+              ripple(96, 9 + i * 1.5, 3.6 - i * 0.2, Math.PI + i * 0.5, 3),
+            ),
+          ].join(''),
           p,
           'ripples',
         )}
@@ -486,7 +582,8 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
     draw: (p) => (
       <Fragment>
         {stroked(
-          'M2 9V4a2 2 0 0 1 2-2h5M23 2h5a2 2 0 0 1 2 2v5M30 23v5a2 2 0 0 1-2 2h-5M9 30H4a2 2 0 0 1-2-2v-5',
+          // SQUARE corners, as 00 draws them (F-229's review, finding 18).
+          'M2 9V2h7M23 2h7v7M30 23v7h-7M9 30H2v-7',
           p,
           'brackets',
         )}
@@ -502,7 +599,19 @@ const DRAWINGS: Readonly<Record<IllustrationName, Drawing>> = {
   waves: {
     box: [24, 24],
     draw: (p) => (
-      <Fragment>{stroked(seigaiha(24, 24, [4.5, 9, 13.5, 18, 22.5, 27]), p, 'fan')}</Fragment>
+      <Fragment>
+        {/* Ten arcs, and none past the box: the first draft drew six and let the outer one leave
+            the viewBox at both ends (F-229's review, finding 20). */}
+        {stroked(
+          seigaiha(
+            24,
+            24,
+            Array.from({ length: 10 }, (_, i) => +(2.4 * (i + 1)).toFixed(2)),
+          ),
+          p,
+          'fan',
+        )}
+      </Fragment>
     ),
   },
 

@@ -250,16 +250,19 @@ two ways: as a **backdrop** behind a screen's content at 0.10 – 0.18 of `foreg
 declared as `opacity.art`), and as a **figure**, where the drawing is the content, at 0.80 – 0.96.
 No declared colour token matches that backdrop ink — the nearest are `chart.5` and `chart.4` at
 ΔE00 4.6 – 7, which mean something else — so art is the foreground token turned down, not a colour of
-its own. `27`'s hanger is tan, and `C10` declares that; the tint is its surface's.
+its own. `27`'s hanger is tan, and `C10` declares that — but no surface can pass that tint yet: the ink
+is constrained to the two quiet foregrounds, and widening it belongs to F-236, which builds `27`.
 
 Three rules hold, and the second changed in R9. **Every colour is a token.** **Outline, with the
 fills the mockups actually draw** — R7's rule was outline-only, and that reasoning survives as
-*where* art may go rather than as a ban on a fill, since `27` draws a solid hanger and `18` a solid
-watermark. **A drawing never carries meaning the text does not**: every one is hidden from a screen
+*where* art may go rather than as a ban on a fill, since `27` draws a solid hanger and `18` fills the
+lines on its document — which is which is read off the image, and F-229's review caught the first
+pass drawing `18`'s page solid where the mockup strokes it. **A drawing never carries meaning the text does not**: every one is hidden from a screen
 reader, and every query in its test has to ask for hidden elements to see it at all.
 
 **Never over a sample** is asserted over the record's own geometry — no drawn illustration box
-overlaps a drawn sample box, across 33 drawings and 73 samples — because simultaneous contrast is
+overlaps a drawn sample box, across 33 drawings and the 86 elements that draw colour a person
+judges — swatches, bands, kasane strips and theme tiles — because simultaneous contrast is
 the same physics that puts a sample in a well (F-069). The set carries a **version and a digest of
 its path data**, so a redrawn line is a recorded change. What nothing yet checks is whether a drawing
 LOOKS like the element it was drawn from (**F-281**); `18`'s script-face signature is not drawn at
