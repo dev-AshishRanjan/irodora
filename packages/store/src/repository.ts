@@ -482,13 +482,23 @@ export interface StoredPreference {
 /** What a person did about one pairing, once. */
 export type PreferenceVerdict = 'accepted' | 'rejected';
 
-/** What a caller can learn about an image without loading it. */
-export interface GarmentImageInfo {
+/** What a caller can learn about a stored image without loading it. */
+export interface StoredImageInfo {
   readonly byteLength: number;
   readonly width: number;
   readonly height: number;
   readonly format: 'jpeg' | 'png';
 }
+
+/**
+ * The garment photograph's shape, which is now the shape of every stored image.
+ *
+ * An ALIAS since F-241 rather than a rename: the avatar needed the same four facts, and the
+ * name `GarmentImageInfo` is read at every wardrobe call site. Renaming those to prove a point
+ * about generality is churn a reviewer has to read; keeping the name and widening the type says
+ * the same thing and moves nothing.
+ */
+export type GarmentImageInfo = StoredImageInfo;
 
 /**
  * A row the database can hold but the product cannot use.
@@ -602,7 +612,7 @@ export interface Repository {
   listProfiles(): StoredPersonalProfile[];
   /** One profile, tombstoned or not — same reason as `getColor`. */
   getProfile(id: string): StoredPersonalProfile | undefined;
-  /** Tombstones the profile and every live list entry. */
+  /** Tombstones the profile, every live list entry, and the avatar (F-241). */
   deleteProfile(id: string, now: Millis): void;
   /**
    * Create a garment from a colour and a type, and nothing else (FR-39).
@@ -649,6 +659,29 @@ export interface Repository {
   getGarmentImageInfo(garmentId: string): GarmentImageInfo | undefined;
   /** The bytes. Loads the whole blob, which is why the info call above exists. */
   getGarmentImage(garmentId: string): Uint8Array | undefined;
+  /**
+   * Attach the profile's avatar, replacing any existing one (F-241, FR-26).
+   *
+   * **A `SanitisedImage` and nothing else**, for the reason `putGarmentImage` takes one: an
+   * un-ingested picture still carries the EXIF that says where it was taken, and no overload
+   * here accepts a raw buffer. On a photograph of a person that matters more, not less.
+   *
+   * **The picture is decoration.** Nothing in this port reads a colour or a face out of it, and
+   * ADR-0010's camera-free profile path is untouched by its presence or its absence.
+   */
+  putProfileAvatar(profileId: string, image: SanitisedImage, now: Millis): void;
+  /** The avatar's dimensions and size **without reading the blob** — the gallery's reason. */
+  getProfileAvatarInfo(profileId: string): StoredImageInfo | undefined;
+  /** The bytes. Loads the whole blob, which is why the info call above exists. */
+  getProfileAvatar(profileId: string): Uint8Array | undefined;
+  /**
+   * Remove the avatar, keeping the profile.
+   *
+   * Its own method rather than `putProfileAvatar(id, null)`: taking an image OR nothing would
+   * make every call site that meant to attach one able to clear it by passing a value it did
+   * not check. A person removing their picture is a different act from choosing one.
+   */
+  clearProfileAvatar(profileId: string, now: Millis): void;
   /**
    * Record one verdict about a pairing of colour families (FR-37).
    *

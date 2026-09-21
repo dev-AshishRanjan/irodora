@@ -26,6 +26,7 @@ import {
   type Millis,
   type GarmentColorRole,
   type GarmentImageInfo,
+  type StoredImageInfo,
   type PairingPreferenceRow,
   type PreferenceVerdict,
   type StoredPreference,
@@ -869,6 +870,21 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           );
           log('profile_dimension_color', row.id, 'delete', now);
         }
+        // THE AVATAR GOES WITH IT (F-241), and for the same reason as the loop above rather
+        // than by the foreign key: `profile_avatar` declares ON DELETE CASCADE, a cascade
+        // fires on a DELETE, and this is an UPDATE. A photograph of a person left live under
+        // a deleted profile is the worst version of the defect that comment describes.
+        for (const row of driver.query<{ id: string }>(
+          'SELECT id FROM profile_avatar WHERE profile_id = ? AND deleted_at IS NULL',
+          [id],
+        )) {
+          driver.run('UPDATE profile_avatar SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+            now,
+            now,
+            row.id,
+          ]);
+          log('profile_avatar', row.id, 'delete', now);
+        }
       });
     },
 
@@ -1051,6 +1067,102 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
         [garmentId],
       )[0];
       return row === undefined ? undefined : Uint8Array.from(row.bytes);
+    },
+
+    putProfileAvatar(profileId: string, image: SanitisedImage, now: Millis): void {
+      driver.transaction(() => {
+        const profile = driver.query<{ id: string }>(
+          'SELECT id FROM personal_color_profile WHERE id = ?',
+          [profileId],
+        );
+        if (profile.length === 0)
+          throw new StoreError(
+            `putProfileAvatar: no profile ${profileId}. The foreign key would refuse this ` +
+              'anyway; saying so here names the id instead of surfacing a constraint error.',
+          );
+
+        // One picture per profile — `profile_avatar.profile_id` is UNIQUE — so this replaces
+        // rather than accumulates, and the row id is derived from the profile so a replacement
+        // is one change-log entry about one thing. The same shape as the garment's image.
+        const id = `${profileId}:avatar`;
+        driver.run(
+          `INSERT INTO profile_avatar
+             (id, created_at, updated_at, deleted_at, profile_id, bytes, byte_length,
+              width, height, format)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (id) DO UPDATE SET
+             deleted_at = NULL, updated_at = excluded.updated_at, bytes = excluded.bytes,
+             byte_length = excluded.byte_length, width = excluded.width,
+             height = excluded.height, format = excluded.format`,
+          [
+            id,
+            now,
+            now,
+            profileId,
+            image.bytes,
+            image.bytes.length,
+            image.width,
+            image.height,
+            image.format,
+          ],
+        );
+        log('profile_avatar', id, 'insert', now);
+      });
+    },
+
+    getProfileAvatarInfo(profileId: string): StoredImageInfo | undefined {
+      // Every column EXCEPT `bytes`, for the reason the garment's info call exists: a header
+      // asking whether there is a picture must not load one to find out.
+      const row = driver.query<{
+        byte_length: number;
+        width: number;
+        height: number;
+        format: string;
+      }>(
+        `SELECT byte_length, width, height, format FROM profile_avatar
+         WHERE profile_id = ? AND deleted_at IS NULL`,
+        [profileId],
+      )[0];
+      if (row === undefined) return undefined;
+      if (row.format !== 'jpeg' && row.format !== 'png')
+        throw new StoreError(
+          `profile ${profileId} has an avatar in format "${row.format}", which is neither jpeg ` +
+            'nor png. Refused by name rather than cast into the union.',
+        );
+      return {
+        byteLength: row.byte_length,
+        width: row.width,
+        height: row.height,
+        format: row.format,
+      };
+    },
+
+    getProfileAvatar(profileId: string): Uint8Array | undefined {
+      const row = driver.query<{ bytes: Uint8Array }>(
+        'SELECT bytes FROM profile_avatar WHERE profile_id = ? AND deleted_at IS NULL',
+        [profileId],
+      )[0];
+      return row === undefined ? undefined : Uint8Array.from(row.bytes);
+    },
+
+    clearProfileAvatar(profileId: string, now: Millis): void {
+      driver.transaction(() => {
+        for (const row of driver.query<{ id: string }>(
+          'SELECT id FROM profile_avatar WHERE profile_id = ? AND deleted_at IS NULL',
+          [profileId],
+        )) {
+          // TOMBSTONED, NOT DELETED, like every other removal here — a hard delete is invisible
+          // to a future sync, which could not tell it from a row that never existed. The BYTES
+          // stay until the erase path runs, which is true of a deleted garment's photograph too
+          // and is the honest thing to say about it rather than a claim of destruction.
+          driver.run('UPDATE profile_avatar SET deleted_at = ?, updated_at = ? WHERE id = ?', [
+            now,
+            now,
+            row.id,
+          ]);
+          log('profile_avatar', row.id, 'delete', now);
+        }
+      });
     },
 
     recordPreference(a: string, b: string, verdict: PreferenceVerdict, now: Millis): void {

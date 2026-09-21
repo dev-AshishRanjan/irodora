@@ -46,7 +46,7 @@ export const CONNECTION_PRAGMAS = [
 ] as const;
 
 /** Schema version. Forward-only; every step is applied in order and never edited afterwards. */
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 /**
  * The columns every user-data table carries. Written once so a new table cannot forget one —
@@ -557,6 +557,63 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
       ) STRICT;
     `,
   },
+  {
+    version: 9,
+    /**
+     * The avatar mockup `23` draws at the head of a finished profile (F-241, FR-26).
+     *
+     * ## The same table as a garment's photograph, and deliberately not a new idea
+     *
+     * Column for column this is `garment_image` with a different parent. That is the point: the
+     * guarantees a wardrobe photograph already has — the bytes in the SQLCipher database rather
+     * than beside it (ADR-0078, NFR-13), the format constrained to what `ingestImage` produces,
+     * the dimensions recorded so a caller can ask about the picture without loading it — are
+     * exactly the guarantees a picture of a person needs, and inventing a second shape for them
+     * would be inventing a second set of them.
+     *
+     * ## It is DECORATION, and the schema is where that stops being a promise
+     *
+     * There is no `face_` anything, no colour, no landmark, no embedding, and there is nowhere
+     * to put one. FR-26 asks for a picture at the top of a profile; ADR-0010's whole argument is
+     * that this product does not read a person's colouring off a photograph of their face, and a
+     * column here would be the first place that argument could quietly stop being true.
+     *
+     * ## `UNIQUE`, and what actually removes it
+     *
+     * One picture per profile, so choosing another replaces it. `ON DELETE CASCADE` is the
+     * backstop for a real row delete — the erase path — but **it does not fire on the ordinary
+     * delete**, because `deleteProfile` tombstones with an UPDATE. So the avatar is tombstoned
+     * explicitly beside `profile_dimension_color`, for the reason that method already gives:
+     * a cascade fires on a DELETE, and this is not one. Forgetting the profile has to forget the
+     * face, and a row that outlived its profile would be a photograph of a person with nothing
+     * left to say why it was kept.
+     *
+     * ## In SYNC_TABLES, which puts it in the archive
+     *
+     * The archive is plaintext JSON on purpose — *"a backup the user cannot read is not a backup
+     * they own"* — and `garment_image` is already in it, so photographs are already in the clear
+     * in an export. Migration 8 draws the line this sits on the other side of: a SETTING is not
+     * part of an export because it is not something the person made, and an avatar is. Leaving it
+     * out would mean a restore that silently came back without the picture somebody chose.
+     *
+     * **This is the decision F-241's third criterion sends to the security reviewer**, recorded
+     * here rather than left implicit: a face in a plaintext file is the cost, and if that is the
+     * wrong trade the table leaves `SYNC_TABLES` and the export copy says what it does not carry.
+     */
+    up: `
+      CREATE TABLE profile_avatar (
+        ${SYNC_COLUMNS},
+        profile_id  TEXT    NOT NULL UNIQUE REFERENCES personal_color_profile (id) ON DELETE CASCADE,
+        bytes       BLOB    NOT NULL,
+        byte_length INTEGER NOT NULL CHECK (byte_length > 0),
+        width       INTEGER NOT NULL CHECK (width > 0),
+        height      INTEGER NOT NULL CHECK (height > 0),
+        format      TEXT    NOT NULL CHECK (format IN ('jpeg','png'))
+      ) STRICT;
+
+      CREATE INDEX profile_avatar_profile ON profile_avatar (profile_id);
+    `,
+  },
 ];
 
 /** Every table that carries the sync columns. Used by the conformance suite. */
@@ -566,6 +623,10 @@ export const SYNC_TABLES = [
   'palette_member',
   'personal_color_profile',
   'profile_dimension_color',
+  // F-241. An avatar is something the person chose, which is migration 8's test for whether a
+  // row belongs in an export — and it puts a photograph of a face in a plaintext archive, which
+  // is the cost that migration states and this feature's security review signs off.
+  'profile_avatar',
   'garment',
   'garment_season',
   'garment_color',

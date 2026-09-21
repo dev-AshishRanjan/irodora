@@ -46,9 +46,16 @@ CREATE TABLE profile_avatar (
 ) STRICT;
 ```
 
-`UNIQUE` because a profile has one picture and replacing it is the ordinary case. `CASCADE`
-because **forgetting the profile has to forget the face** — an avatar that outlived the profile it
-belonged to would be a photograph of a person with nothing left to explain why it is there.
+`UNIQUE` because a profile has one picture and replacing it is the ordinary case.
+
+**The cascade is a backstop, not the mechanism**, and increment 2 found this before writing the
+code: `deleteProfile` tombstones with an `UPDATE`, and `ON DELETE CASCADE` fires on a `DELETE`.
+Its own comment already says so about `profile_dimension_color` — *"a cascade fires on a DELETE and
+this is an UPDATE, so the list entries would stay live under a deleted profile and nothing would
+report it"*. So the avatar is tombstoned explicitly beside them: **forgetting the profile has to
+forget the face**, and an avatar that outlived its profile would be a photograph of a person with
+nothing left to explain why it was kept. The test asserts the tombstone, with a decoy proving a
+second profile keeps its own.
 
 ### The one decision that is not mine, and goes to the security reviewer
 
