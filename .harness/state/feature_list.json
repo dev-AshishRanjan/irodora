@@ -7490,7 +7490,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-220"
       ],
@@ -7513,7 +7513,8 @@
         "contrast",
         "cvd"
       ],
-      "notes": "The 27 state art is chromatic (tan hanger, amber tile, purple mark) — followed, per C10."
+      "notes": "The 27 state art is chromatic (tan hanger, amber tile, purple mark) — followed, per C10. RECONCILED 2026-09-21 against the inventories (increment 1): the set is every name an inventory binds — 13 across 34 elements — plum-branch (01 06 08), kimono (00 03 11 13 16), leaves (09 10 12 15), waves and blossom (25), sashiko (16), silk-wave (14), hanger (27), viewfinder and no-results (00), document, page-fold and signature (18). The acceptance list maps onto it: asanoha lattice = sashiko (the inventory names the stitch); seigaiha waves = 25 waves; the plum branch is drawn on 01 06 08 and NOT on 05 or 15 (15 binds leaves); kimono line-art is not on 06, 07 or 23. 17 binds no illustration at all (its figure is new:RadarChart, F-235). THE HANKO SEAL IS NOT BUILT HERE: C3 says 26-only elements are not adopted by default, so it belongs to whoever builds 26. Five names the acceptance does not list are drawn and therefore built: viewfinder, no-results, document, page-fold, signature. The three R7 empty-state drawings (swatches, reading, pairing) are in no inventory; they are kept as a declared, expiring set because eight screens render them today and F-236 rebuilds those surfaces.",
+      "plan": "plans/F-229-the-illustration-set-the-mockups-are-drawn-with.md"
     },
     {
       "id": "F-230",
