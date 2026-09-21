@@ -7807,7 +7807,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-220"
       ],
@@ -7827,7 +7827,10 @@
         "build",
         "security"
       ],
-      "notes": "Mockup 06, app bar, first trailing icon. No implementation exists today (checked 2026-09-10)."
+      "notes": "Mockup 06, app bar, first trailing icon. No implementation exists today (checked 2026-09-10). BLOCKED 2026-09-21 on OQ-39, raised while planning it. The FIRST criterion is fully specified and nearly free: packages/store already has saveColor/listColors/deleteColor with a corpus_slug column and a change log, ARCHIVE_TABLES already covers the colors table so backup and restore come with it, and ColourDetail already takes its ports as props — so the toggle on 06 is a port, a deterministic row id derived from the slug, and a test. THE SECOND CRITERION HAS NO PLACE TO POINT AT: no mockup draws where a bookmarked set is read back, and inventing that surface is what rule 14 forbids. The work is not started rather than half-started, so the feature waits as a whole.",
+      "openQuestions": [
+        "OQ-39"
+      ]
     },
     {
       "id": "F-238",
