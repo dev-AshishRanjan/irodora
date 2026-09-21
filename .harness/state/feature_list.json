@@ -7454,7 +7454,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "plan": "plans/F-228-one-icon-set-drawn-at-the-mockups-weight.md",
       "blockedBy": [
         "F-220"

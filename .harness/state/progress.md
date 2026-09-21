@@ -8,6 +8,73 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-21 — F-228 One icon set, drawn at the mockups' weight
+
+**Done.** Every icon any mockup draws is one entry in `Glyph` — 65 of them, keyed by the names F-220's
+inventories bind — drawn at the line F-220 measured, and no screen may draw its own.
+
+- **The weight is a token, and it does not scale.** `size.iconStroke` (1.65 dp) is parsed within
+  [0.5, 3] and emitted to all four targets; `glyphStroke(size) = iconStroke × 24 / size` converts it
+  into grid units, so a 16 dp icon and a 28 dp icon carry the same line. That arithmetic is asserted
+  on every stroked shape of every glyph at 16, 20, 24 and 28 dp.
+- **The set is the inventories', in both directions.** A name an inventory binds with no glyph is a
+  surface that will ask and get nothing; a glyph no inventory binds is a design nobody made. The test
+  reads `mockups/inventory/*.json` — now a turbo global dependency, so an inventory edit reruns it.
+- **Which drawing, where a name is drawn twice**, is the contract's call, not this feature's: the tab
+  bar is `01`'s (C1 by P5), a superseded tab bar never sets a shape, and inside a screen that screen
+  governs (P1) — so `07`'s Swap buttons, which draw `refresh`'s glyph, are bound to `refresh`.
+- **`IconButton`** is a glyph that is the whole of a control, and `label` is required by type. So is
+  the refusal of every prop that could add a second name, change the role, contradict the state or
+  hide it — and they are removed at render too, because React Native lets `aria-disabled` win over
+  `accessibilityState`.
+- **`verify-app-glyphs.mjs`** (gate 2): no screen imports `react-native-svg`, an icon or drawing
+  library, or an image file, and none writes SVG markup. The share card is the one exception — a
+  document, not an icon (ADR-0070) — and its exemption names the single binding it may take.
+- **The acceptance's list was reconciled against the record** in increment 1: `clear` = `close`,
+  `photo` = `image`, `regenerate` = `refresh`, `light` = `sun` and `bulb`, `t-shirt` = `wardrobe`;
+  `hanger` is an illustration (F-229); `calendar` is drawn in no mockup and is not built.
+
+### The single review — FAIL: 1 blocking, 5 significant, 5 minor — and what became of each
+
+Under the one-review rule every finding was fixed or recorded; none went back for a second review.
+**The blocking one is the entry worth reading:** every gate was green, both directions of the registry
+test were green, and nine glyphs were still not what their mockup draws.
+
+| # | finding | disposition |
+|---|---|---|
+| 1 | **the first draft drew every glyph as an outline** — a house style, not the mockups': `00` draws a solid pencil and a solid palette button, `02` and `03` a solid sun, `11` a solid bulb, `13` a solid eye, figure and scales, `09` a solid disc behind its clear cross. An unrecorded departure from rule 14 | each redrawn as its governing element draws it; eight elements whose drawing differed from the name they shared took a name of their own (`close-circle`, `hue-ring`, `image-solid`, `palette-solid`, `lock-solid`, `seal-star`, `seal-check`, `filter-lines`), and `24`/`26`'s chevron back buttons moved to the `chevron-left` that already existed. 57 names → 65 |
+| 2 | OQ-37 listed four tinted icons; eight more are drawn in colours C10 does not declare, and two of those are told apart ONLY by colour | OQ-37 rewritten to the full per-icon list and to cover their SHAPE where one ink cannot express it; it now blocks `F-243 F-244 F-247 F-248 F-251 F-262` as well as `F-232 F-255 F-257`, and says how it overlaps OQ-15 |
+| 3 | a `✓` character still stands in for the drawn check in `Chip`, `Select` and `Swatch`, and `Export` draws its own `●`/`○` | **F-280**, with the check's printed limits naming it |
+| 4 | the share-card exemption was file-wide: the renderer could have imported any drawing library | narrowed to one module and one binding (`SvgXml`), with four proof cases — a second binding, a default import, another library, and the rename that is still allowed |
+| 5 | the check missed a raster icon, four icon libraries, a drawing surface, a template-literal specifier and capitalised markup; its comment stripping was two regular expressions a string could fool, and it flagged a comment after a closing quote | the scan is a tokenizer now — code, strings, templates and `${…}` — and every case is in `--prove`: 33 planted cases beside the real tree |
+| 6 | `IconButton`'s name could be doubled or its state contradicted through `aria-*`, which TSX does not excess-check | the owned props are declared `never` (which is what makes TSX refuse a hyphenated attribute) and stripped at render; a test smuggles them past the type with a cast and reads the native views |
+| 7 | the contract still quoted `NavIcon`'s "1.75 dp `STROKE`" — a constant that is gone, and a grid width rather than a dp value | corrected in §5, with what the number actually was |
+| 8 | the Evidence table cited superseded tab bars for `profile` and `settings` | rebuilt from the inventories against the GOVERNING element, marking the names no governing element draws; `settings` is `00`'s ring of dots, not the gear those tab bars draw |
+| 9 | three counts wrong: "the other 29", "eighteen cases", "gates 3 and 4" | 24, 33-beside-the-real-tree, and gates 2, 4 and 8 |
+| 10 | the hidden-glyph test would have passed on an exposed glyph; one refusal had no decoy; filled drawings were never compared | the test reads the `Svg` inside the button; every refusal has a decoy; uniqueness now covers filled drawings, with the one declared identity (`lens` filled IS `camera`) named |
+| 11 | nothing checks that a glyph LOOKS like its crop — which is what let finding 1 through | **F-281**, and both effect notes say it plainly rather than pointing at F-221 (blocked: no JDK here) |
+
+### What went wrong on my side
+
+- **Both directions of a name check say nothing about which drawing.** `GLYPH_NAMES` matched the
+  inventories exactly while nine glyphs were the wrong shape, and no gate could see it. The registry
+  test is a name test; the drawing is checked by a person, and now by F-281 when it lands.
+- **A house style is a departure.** "Every glyph is an outline, in one ink" reads like restraint and
+  was a decision the mockups had already made differently — the kind rule 14 exists to catch.
+- **One name, two drawings** is the case the first pass kept resolving by picking one. The contract's
+  answer is to split the name, as `07`'s swap buttons already had been in increment 1b.
+
+### Gates
+
+`state=0 typecheck=0 lint=0 format=0 test=0 build=0 a11y=0 contrast=0 cvd=0`, plus
+`token-reach --prove=0`, `spacing --prove=0`, `verify-app-glyphs --prove=0` (33 cases + the real
+tree), `plant-proof=0`. Suites: ui 312, mobile 994, design-tokens 294.
+
+**Not run:** `e2e` (no journey changed; the harness needs a JDK this machine will not have),
+`perf`, `color-golden`, `content`, `security` (no colour maths, no content, no dependency change).
+**Not checked at all:** whether a glyph matches its crop pixel for pixel (F-281), a drawing made of
+`View`s, and a text character standing in for an icon (F-280) — each printed by the check on every run.
+
 ## 2026-09-16 — F-275 The serif is measured against twenty open-licence candidates
 
 **Done — taken out of the backlog on the user's word** (*"For downloading fonts, do it yourself"*),
