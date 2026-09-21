@@ -43,7 +43,11 @@ defined. Read the manifest, not another component.
 - **Tighten tracking as size grows.** −0.04em at display, 0 at body. Large type set at default
   tracking reads loose and amateur.
 - **Uppercase micro-labels need +0.16em**, or the letterforms collide.
-- **`tabular-nums` on every number.** Mandatory, not stylistic — columns of ΔE values must align.
+- **Declare every number `numeric`.** Mandatory, not stylistic — columns of ΔE values must
+  align. Since F-239 the prop says *"this text carries figures"* and `15`'s **Tabular Numeric
+  Figures** switch decides whether they are set tabular; it is drawn on and defaults on, so what
+  is mandatory here is the DECLARATION, which is the half a component cannot work out for itself
+  ("0.42" and "F-019" are both strings).
 - **Japanese needs its own line-height** (1.85 vs 1.65). One value for both is a layout that
   was only ever checked in one language.
 

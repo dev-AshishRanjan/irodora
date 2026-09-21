@@ -117,6 +117,18 @@ describe('Switch — the marker 15 draws', () => {
   /** 10 x 11 px on a 2x render of `15`, which is 5 dp. Restated here so the test moves with it. */
   const MARKER_DP = 5;
 
+  /** The dot's own node, so what it carries can be asserted rather than inferred. */
+  function markerNode(node: TestNode): TestNode | undefined {
+    const style = flattenStyle(node.props['style']);
+    if (style['width'] === MARKER_DP && style['height'] === MARKER_DP) return node;
+    for (const child of node.children ?? []) {
+      if (typeof child === 'string') continue;
+      const found = markerNode(child);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+
   it('draws one when the switch is on and the caller asked for it', () => {
     const found = dots(
       draw(<Switch label="Announce readings aloud" checked marker onCheckedChange={noop} />),
@@ -124,9 +136,12 @@ describe('Switch — the marker 15 draws', () => {
     expect(found).toHaveLength(1);
     /*
      * A TOKEN, NOT A LITERAL, and it is resolved rather than restated. `15` binds the dot
-     * `text.tertiary`; the R9 map reads that as `foreground.3`, which is the one token the
-     * manifest restricts to decoration and text above the large-text floor — a 5 dp dot is
-     * decoration, and this is the assertion that says the restriction was honoured.
+     * `text.tertiary`. **Nothing in the repository maps an inventory token name to a ui token**,
+     * so reading that as `foreground.3` is F-239's own reading — said here rather than attributed
+     * to a table that does not exist. It is the third foreground step, and the one token the
+     * manifest restricts to decoration and text above the large-text floor, which a 5 dp dot is.
+     * R9-MOCKUP-FIDELITY §5 gives `text.tertiary` a VALUE and F-225 (blocked on OQ-36) is what
+     * adopts that ramp; if it lands on a different step, this assertion is what disagrees.
      */
     const painted = resolveColor(found[0]?.['backgroundColor'] as string | undefined, 'light');
     expect(painted.kind).toBe('token');
@@ -155,16 +170,40 @@ describe('Switch — the marker 15 draws', () => {
   });
 
   it('adds no second announcement, because the switch already says checked', () => {
-    // The state is announced once, by the control. A dot that announced it again would be the
-    // same fact read twice — the failure the hidden label wrapper above exists to prevent.
-    const named = (tree: TestNode) =>
-      responders(tree).filter((n) => n.accessibilityLabel === 'Announce readings aloud');
-    const withDot = draw(
+    /*
+     * ASSERTED ON THE DOT ITSELF, not by comparing two trees.
+     *
+     * F-239's review caught the first draft comparing the responders of a switch with the dot
+     * against one without: a `<View accessible={false}>` with no handler is never in
+     * `pressableNodes` whatever it carries, so both sides were structurally equal however the
+     * component behaved. What can fail is the node: if somebody puts a label or a role on the
+     * dot to "explain" it, the state is announced twice and these two lines say so.
+     */
+    const tree = draw(
       <Switch label="Announce readings aloud" checked marker onCheckedChange={noop} />,
     );
-    const without = draw(<Switch label="Announce readings aloud" checked onCheckedChange={noop} />);
-    expect(named(withDot)).toHaveLength(named(without).length);
-    expect(responders(withDot)).toHaveLength(responders(without).length);
+    const node = markerNode(tree);
+    expect(node?.props['accessible']).toBe(false);
+    for (const key of ['accessibilityLabel', 'accessibilityRole', 'role', 'accessibilityState'])
+      expect(node?.props[key]).toBeUndefined();
+  });
+
+  /*
+   * A DISABLED SWITCH THAT IS ON. The review found the dot's `opacity` branch had no renderer:
+   * the conformance subject sets `checked` only in the active state, so nothing drew a dot that
+   * was also inert. A branch nothing renders is a branch nobody has looked at.
+   */
+  it('dims with the track when the switch is inert', () => {
+    const inert = dots(
+      draw(
+        <Switch label="Announce readings aloud" checked marker disabled onCheckedChange={noop} />,
+      ),
+    );
+    expect(inert[0]?.['opacity']).toBe(0.5);
+    const live = dots(
+      draw(<Switch label="Announce readings aloud" checked marker onCheckedChange={noop} />),
+    );
+    expect(live[0]?.['opacity']).toBe(1);
   });
 });
 

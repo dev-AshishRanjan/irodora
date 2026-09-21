@@ -501,8 +501,19 @@ export const ja: Record<MessageKey, string> = {
   'settings.open': '設定',
   'settings.openHint': '外観と、アプリが学習した好み。',
   'settings.platform': '言語と視差効果の軽減は端末の設定に従います。Irodora では別途たずねません。',
-  // F-239 — see en.ts for why the labels are the mockup's own words and the ordinal is not here.
-  'settings.engine': '詳細なエンジンと操作',
+  /*
+   * F-239 — see en.ts for why the labels are the mockup’s own words, ordinal included.
+   *
+   * THE CLAIMS LINT REFUSED THE LITERAL RENDERING, and it was right to.
+   *
+   * 「プロ仕様」 is the ordinary Japanese for the graded claim. claims-ok: names the phrase this catalogue refuses, in the line that refuses it
+   * A grade is a standard nobody set and nobody measured, which is golden rule 11 and the rule named `ja-professional-grade`. claims-ok: names the English rule it mirrors, in the line that rejects the claim
+   *
+   * 「プロ向け」 says who the controls are FOR, which is what the drawn heading is actually
+   * labelling — a section of controls for professional use — and claims nothing about what they
+   * meet.
+   */
+  'settings.engine': '3. プロ向けのエンジンと操作',
   'settings.tabular': '数字を等幅で表示（ΔE / OKLCh）',
   'settings.haptics': '色見本を選んだときの触覚フィードバック',
   'settings.provenance': '色見本に出典バッジを表示',

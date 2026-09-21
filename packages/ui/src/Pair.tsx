@@ -222,7 +222,7 @@ export function Pair({ a, b, height, script = 'latin', testID }: PairProps): Rea
             <Text size="small" color="foreground" script={script}>
               {half.name}
             </Text>
-            {/* Tabular and selectable, like every other colour value in the app (C9). */}
+            {/* Declared as figures and selectable, like every other colour value in the app (C9) — whether they are SET tabular is `15`'s switch (F-239). */}
             <Text size="xs" color="foreground.2" numeric selectable>
               {half.hex}
             </Text>

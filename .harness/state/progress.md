@@ -8,6 +8,83 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-21 — F-239 The display preferences mockup 15 draws are real settings
+
+**Done, with one criterion short and recorded.** `15`'s three engine switches — *Tabular Numeric
+Figures (ΔE / OKLCh)*, *Haptic Feedback on Swatch Selection*, *Show Provenance Badges on Swatches*
+— persist through the settings table F-153 added and default to what `15` draws, which is all
+three on. Nothing a person already sees changes until they move one.
+
+- **The split, and why it is two packages.** The values and `DisplaySettingsProvider` live in
+  `@irodora/ui` because `Text` reads them and `Text` cannot see an app context; the keys, the
+  parsing and the writes live in `apps/mobile`, whose `DisplayProvider` mounts the ui one so the
+  two cannot drift. `useDisplaySettings()` **defaults** outside its provider where `useTheme`
+  throws — every `Text` would otherwise need one. `useDisplay()`, the writer, **does** throw: a
+  writer that silently did nothing is the failure a settings screen cannot show you.
+- **`numeric` changed meaning at every call site and no call site changed.** It said *"use tabular
+  figures"*; it says *"this text carries figures"*, and the setting decides. It could not be
+  removed in favour of the setting because no heuristic tells `"0.42"` from `"F-019"`.
+- **The port has two verbs** (ADR-0104). `select()`, and `selectionGated()` applying the
+  preference where a route composes the port — so the one call site calls a verb that is already
+  correct, and `commit()` passes through either way. `Object.keys(noHaptics)` is now
+  `['commit', 'select']`, which is the line a third verb has to come through.
+- **Only `"false"` is off.** Absent, empty, `"no"`, `"0"`, `"FALSE"`, a JSON blob from a future
+  build — all read as on. A setting whose off state depended on parsing succeeding turns itself
+  back on after a bad write.
+- **`Switch` has a screen consumer for the first time in eleven features**, and gained `marker`
+  for `15`'s 5 dp gutter dot.
+
+### Review — one round, and it was worth it
+
+Twelve of its findings were real. **Fixed:** the section heading now renders `15`'s leading
+ordinal (dropping it was an agent deciding what a person sees, and *"the screen is not rebuilt
+yet"* is not one of rule 14's five causes); the gutter dot's justification argued from a symmetry
+that supports neither reading and is now **OQ-41** with F-262 carrying it; `swatchAccessibleName.length === 3`
+could never fail — `Function.length` ignores optional parameters — and is replaced by a `Swatch`
+rendered under both settings; *"named as 15 names them"* compared the screen's string with itself
+and now compares against the words transcribed off the image; the conformance sweep gained a
+subject with a row **off**, which no subject had drawn; the dot's inert branch gained a renderer;
+and five stale claims were corrected (`Text`'s lead paragraph, `Pair`, the `Slider` readout's
+*"must not reflow"*, `build-ui` and `design-review`).
+
+**The claims lint refused the Japanese heading**, and was right to: the literal rendering of
+*Professional* is the ordinary Japanese for a graded claim, and a grade is a standard nobody set.
+The catalogue says who the controls are FOR instead, which is what the drawn heading labels. Rule
+11 catching a translation is the gate working on the one language a reviewer here cannot check.
+
+**Recorded, not fixed.** `F-284`: the provenance switch names a badge that does not exist — the
+chip belongs to F-233, which is blocked behind F-225 (OQ-36) — so **two of three switches change
+the app today**, and criterion 1 is met for two. `F-285`: `Switch` renders 68 × 44 dp where `15`
+draws 35.5 × 22.5, against §E3's *"through the hit area, not the drawn size"* — defensible while
+it had no consumer, and fixing it needs the conformance rule to learn `hitSlop`. Four done
+features (F-019, F-147, F-151, and the blocked F-226) stated tabular figures unconditionally and
+each now carries a note. The plan's claim that these settings survive a backup was **false** —
+`ARCHIVE_TABLES` is `[...SYNC_TABLES]` and a setting is in neither — and is corrected in the plan.
+
+### Gates — the implementer's runs, re-run after the review's fixes
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (ui 343, mobile 1023) · build 0 ·
+security 0 · a11y 0 · contrast 0 · cvd 0. The evaluator re-ran all ten itself on the pre-fix tree
+with `--force` to defeat the turbo cache.
+
+**NOT RUN:** `e2e` (gate 7 is pending, no Maestro here, and it is not in F-239's verification
+array) · the fidelity capture and a person's comparison against `15` (F-262's fourth criterion) ·
+any device run — no JDK on this machine, so *"the phone actually buzzes"* and *"the OS setting is
+honoured"* remain attested rather than gated, as F-206 left them.
+
+### Lessons
+
+[[a-setting-that-changes-what-text-means]] · the amendment to
+[[one-verb-is-a-stronger-rule-than-a-rule]] — going from one verb to two cost an ADR, a changed
+assertion and a visible diff, which is what *"a shape that cannot express the excess"* buys whether
+or not the count ever moves.
+
+### Next
+
+F-241 — the next eligible feature in R9.
+
+---
+
 ## 2026-09-21 — F-229 The illustration set the mockups are drawn with
 
 **Done.** The line art the screens are drawn with is one vector set in `Illustration` — twelve

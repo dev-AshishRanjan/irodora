@@ -562,11 +562,15 @@ export const en = {
    * different string from the one a person was shown. The parenthesised "(ΔE / OKLCh)" is part
    * of the drawn label and says where the figures it affects actually appear.
    *
-   * The section heading drops 15's leading "3." — the ordinal is a POSITION in 15's section
-   * order, and F-262 is the feature that puts the sections in it. A "3." over the second card
-   * on today's screen would be a number that is simply wrong.
+   * THE ORDINAL IS PART OF THE DRAWN STRING, and F-239's review is why it is here. The first
+   * draft dropped it, reasoning that "3." is a position in a section order F-262 establishes and
+   * would read wrong over today's second card. That reasoning is an agent deciding what a person
+   * sees, and rule 14 does not leave that open: a departure exists only if R9-MOCKUP-FIDELITY
+   * lists it, and "the screen is not rebuilt yet" is not one of the five causes that can put it
+   * there. So the drawn string is rendered, and F-262 — which puts 15's sections in 15's order —
+   * is what makes the number read correctly.
    */
-  'settings.engine': 'Professional Engine & Controls',
+  'settings.engine': '3. Professional Engine & Controls',
   'settings.tabular': 'Tabular Numeric Figures (ΔE / OKLCh)',
   'settings.haptics': 'Haptic Feedback on Swatch Selection',
   'settings.provenance': 'Show Provenance Badges on Swatches',

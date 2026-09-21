@@ -822,6 +822,28 @@ const SCREENS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * THE DISPLAY SWITCHES, WITH ONE OF THEM OFF (F-239).
+     *
+     * Every other subject renders the three rows in their drawn state — all on — so the sweep
+     * never saw an OFF row at all: not its track, not its thumb at the near edge, and not the
+     * gutter dot's absence. F-239's review found that, and this is the tree that fixes it. The
+     * middle one is off because it is the row whose off state a person is most likely to choose.
+     */
+    name: 'screens/Preferences (a display switch off)',
+    kind: 'static',
+    sampleValues: SAMPLE_HEXES,
+    render: (_state, theme) =>
+      draw(
+        <Preferences
+          store={preferenceStore()}
+          display={{ tabularNumerals: true, hapticOnSelection: false, provenanceBadges: true }}
+          onChangeDisplaySetting={() => undefined}
+        />,
+        theme,
+      ),
+  },
+  {
+    /*
      * MID-CONFIRMATION. The destructive path meets the same contrast and naming bar as the
      * rest — it is the state a person is least likely to be in and most likely to be harmed by.
      */

@@ -19,7 +19,9 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import {
   DISPLAY_SETTING_KEYS,
+  DisplaySettingsProvider,
   DRAWN_DISPLAY_SETTINGS,
+  Swatch,
   swatchAccessibleName,
   ThemeProvider,
   useDisplaySettings,
@@ -175,11 +177,40 @@ describe('the provider holds the choice and writes it once', () => {
 });
 
 describe('the rows 15 draws', () => {
+  /**
+   * The three strings READ OFF `mockups/15_settings_preferences.jpg`, at the crop
+   * `x 20 y 740 w 730 h 220` scaled 2x — `15.engine.*.label`, top to bottom.
+   *
+   * ## Why they are written out here rather than taken from the catalogue
+   *
+   * F-239's review caught the first draft comparing each rendered label to `en['settings.tabular']`
+   * and calling that *"named as 15 names them"*. It is not: it is the screen's own string compared
+   * with itself, and a typo in `en.ts` passes it. Nothing in the repository holds drawn COPY — the
+   * inventories record a box, a token and `copy.shape`, never the words — so this is the one place
+   * the drawing's text exists as data, and it is a transcription a second person can check against
+   * the image.
+   *
+   * The heading carries `15`'s leading ordinal for the same reason the catalogue does.
+   */
+  const DRAWN = {
+    heading: '3. Professional Engine & Controls',
+    tabularNumerals: 'Tabular Numeric Figures (ΔE / OKLCh)',
+    hapticOnSelection: 'Haptic Feedback on Swatch Selection',
+    provenanceBadges: 'Show Provenance Badges on Swatches',
+  } as const;
+
   const LABELS = {
     tabularNumerals: en['settings.tabular'],
     hapticOnSelection: en['settings.haptics'],
     provenanceBadges: en['settings.provenance'],
   } as const satisfies Record<DisplaySettingKey, string>;
+
+  it('renders the words the mockup draws, not a paraphrase of them', () => {
+    // Rule 14: the drawing is the specification. This is the assertion that fails if somebody
+    // tidies "Figures" to "figures" or drops the "(ΔE / OKLCh)" that says where they appear.
+    expect(en['settings.engine']).toBe(DRAWN.heading);
+    for (const key of DISPLAY_SETTING_KEYS) expect(LABELS[key]).toBe(DRAWN[key]);
+  });
 
   function screen(
     display: Record<DisplaySettingKey, boolean>,
@@ -296,13 +327,41 @@ describe('the provenance switch never reaches the provenance', () => {
    * at all. A person using a screen reader is told where the colour came from whatever the switch
    * says, which is the rule a badge-hiding preference could plausibly break later.
    */
-  it('composes the name from the source and the confidence, with no setting in reach', () => {
-    const color = fromSpace('srgb', [0.18, 0.35, 0.53], { source: 'reference', confidence: 1 });
-    const name = swatchAccessibleName('Konjo', '#2E5A88', color);
-    expect(name).toContain('reference');
-    expect(name).toContain('100 percent confidence');
-    // The signature is the proof, and it is worth saying out loud: three arguments, none of them
-    // a setting. A future badge preference cannot change this string without changing this line.
-    expect(swatchAccessibleName.length).toBe(3);
+  const color = fromSpace('srgb', [0.18, 0.35, 0.53], { source: 'reference', confidence: 1 });
+
+  /** What a screen reader is handed for this swatch, under a given setting. */
+  function announced(provenanceBadges: boolean): string | undefined {
+    const tree = render(
+      <ThemeProvider>
+        <DisplaySettingsProvider settings={{ ...DRAWN_DISPLAY_SETTINGS, provenanceBadges }}>
+          <Swatch name="Konjo" hex="#2E5A88" color={color} />
+        </DisplaySettingsProvider>
+      </ThemeProvider>,
+    );
+    const node = tree.getByLabelText(/Konjo/u);
+    const label: unknown = node.props['accessibilityLabel'];
+    return typeof label === 'string' ? label : undefined;
+  }
+
+  it('says where the colour came from whichever way the switch is set', () => {
+    /*
+     * RENDERED BOTH WAYS, rather than asserting the function's arity.
+     *
+     * The first draft of this test asserted `swatchAccessibleName.length === 3` and claimed that
+     * a future badge preference could not change the string without changing that line. F-239's
+     * review was right that it cannot fail: `Function.length` does not count optional or
+     * defaulted parameters, so a fourth `settings?` argument leaves it at 3 and the test stays
+     * green. This renders the component under both settings instead, which is what F-233's chip
+     * would have to change to break the rule.
+     */
+    expect(announced(true)).toBe(announced(false));
+    expect(announced(false)).toContain('reference');
+    expect(announced(false)).toContain('100 percent confidence');
+  });
+
+  it('DECOY — the name is the one the helper composes, not a string this test invented', () => {
+    // Without this, "both settings agree" would also pass for a component that announced its
+    // own name and nothing else, in both states, forever.
+    expect(announced(true)).toBe(swatchAccessibleName('Konjo', '#2E5A88', color));
   });
 });

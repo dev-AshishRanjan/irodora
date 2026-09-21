@@ -114,10 +114,19 @@ export interface SwitchProps {
    *
    * Two readings survive that: the dot is decoration on every row, or it marks the on state the
    * way `15.themes.sumi.selected` marks the chosen tile — also an unbound dot, also drawn on
-   * exactly the one tile that is selected. **Drawn-when-on is the reading that is right under
-   * both**, because it differs from a static dot only in a state no mockup draws, while a static
-   * dot would be visibly wrong if the second reading is the true one. Nothing drawn is left out
-   * either way, so this is a reading of the picture rather than a departure from it.
+   * exactly the one tile that is selected.
+   *
+   * **Which of the two is right is OQ-41, and a person answers it.** F-239's review was right that
+   * the first draft's argument here was empty: it claimed drawn-when-on is correct under both
+   * readings *"because it differs from a static dot only in a state no mockup draws"* — which is
+   * true of a static dot as well, by definition, and so supports neither. The two readings fail
+   * symmetrically in the off state, and choosing between them is a preference about a drawing.
+   *
+   * What is rendered until that is answered is the second reading, on evidence rather than on a
+   * symmetry: `15` is the only mockup that draws this dot, it draws it on three switches that are
+   * all on, and the one other unbound dot in the same image marks the selected theme tile. Nothing
+   * drawn is left out either way. **F-262 carries the question**, because it is the feature that
+   * rebuilds this screen against `15` and draws its off state for the first time.
    *
    * It is decoration in the accessibility tree regardless: the switch already announces
    * `checked`, and a dot that announced it again would be the state said twice.
@@ -586,7 +595,12 @@ export function Slider({
           {label}
         </Text>
         {/*
-          `numeric` is the tabular face: a value under a moving thumb must not reflow.
+          `numeric` DECLARES that the readout carries figures, and `15`'s tabular
+   * switch decides whether they are set tabular (F-239). With that switch off a value under a
+   * moving thumb reflows — the cost of the switch existing, stated here rather than left as a
+   * guarantee this file no longer holds. The readout does not exempt itself: somebody who turned
+   * proportional figures on asked for them everywhere, and the one control that opted out would
+   * be the place the setting silently did not apply.
 
           `selectable` because this repository's rule is that a figure you can read is a figure
           you can copy — `screens.test.tsx` asserts it over every tabular node on Compare, and

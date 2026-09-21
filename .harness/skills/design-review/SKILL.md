@@ -37,7 +37,7 @@ carries it (NFR-10). C2, C3, C5 and C11 are backed by golden rules and still bin
 | **C6** | No gradient, glow or shadow on or near a swatch |
 | **C7** | Motion never changes a colour mid-transition |
 | **C8** | Works in English and Japanese, at both text lengths |
-| **C9** | Numbers are tabular and aligned |
+| **C9** | Numbers are declared as figures and align — set tabular unless `15`'s switch is off (F-239) |
 | **C10** | Keyboard completes every journey |
 | **C11** | No claim the product cannot support |
 | **C12** | No body imagery, attractiveness framing, or gendered defaults |

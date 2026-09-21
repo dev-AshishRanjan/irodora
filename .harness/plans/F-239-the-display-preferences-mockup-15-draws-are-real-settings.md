@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Feature** | F-239 — [`feature_list.json`](../state/feature_list.json) |
-| **Requirements** | FR-70, NFR-8 — [`docs/PRD.md`](../../docs/PRD.md) |
+| **Requirements** | FR-61, NFR-8 — [`docs/PRD.md`](../../docs/PRD.md) |
 | **Service / package** | `apps/mobile` · `@irodora/ui` |
 | **Author** | implementing session |
 | **Date** | 2026-09-21 |
@@ -89,6 +89,14 @@ site, and a preference that gates only what this app fires — never what the OS
   labels are `static:settings.*` copy.
 - **Departures:** none. The clash with F-206 is a recorded default superseded by a mockup
   (ADR-0104), not a departure from the mockup.
+- **Two readings of the picture, after the review.** The heading is rendered with `15`'s leading
+  ordinal — *"3. Professional Engine & Controls"*. The first draft dropped it on the reasoning that
+  the number is a position in a section order `F-262` establishes; the review was right that this
+  is an agent deciding what a person sees, and *"the screen is not rebuilt yet"* is not one of rule
+  14's five causes. The gutter dot (`15.engine.*.state`) is drawn when the switch is on, and
+  **that is now OQ-41** rather than a decision: `15` draws it in one state only, the two readings
+  fail symmetrically in the other, and `F-262` — which draws the off state first — carries the
+  question.
 
 ## Files to touch
 
@@ -111,8 +119,17 @@ packages/ui/test/*, apps/mobile/test/*          the tests below
    the screens suite, plus a test that the default is unchanged behaviour.
 2. **A second haptic verb** → the one-verb guarantee F-206 built. Guard: ADR-0104, and a test that
    `select()` is called only where a swatch is chosen.
-3. **A new settings key set** → the settings table, backup and restore (rows already covered).
-   Guard: the persistence test, and the archive's existing table coverage.
+3. **A new settings key set** → the settings table. Guard: the persistence test, including the
+   decoy that turning one setting off leaves the other two alone and writes exactly one row.
+
+   **CORRECTED AFTER THE REVIEW (2026-09-21).** This said *"the settings table, backup and restore
+   (rows already covered) … the archive's existing table coverage"*, and that is false in both
+   halves: `ARCHIVE_TABLES` is `[...SYNC_TABLES]` and `createRepository` says in its own comment
+   that a setting is not in `SYNC_TABLES`. **These three preferences do not survive a backup and
+   restore**, which is F-153's design for a device-local choice — the appearance does not survive
+   one either — but the plan claimed the opposite and nothing would have caught it. The committed
+   `effects.json` guard for E-138 never repeated the claim, so the record is clean; this file was
+   not.
 4. **A setting whose reader is F-233's chip** → the sample family. Guard: the note on F-233 and the
    accessible-name test here.
 

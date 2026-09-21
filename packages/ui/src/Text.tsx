@@ -79,7 +79,9 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
    */
   readonly heading?: boolean;
   /**
-   * Render figures as **tabular** — equal-width, so columns of numbers align.
+   * This text **carries figures** — so `15`'s tabular switch can decide whether they are set
+   * equal-width, and columns of numbers align (F-239; it meant *"render tabular"* until then, and
+   * the paragraph below says what changed).
    *
    * C9 in the design brief, and it is not a stylistic preference: *"colour values appear in
    * columns and must align — proportional figures make a ΔE table unscannable."* A professional
