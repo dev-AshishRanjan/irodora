@@ -7842,7 +7842,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "blocked",
       "blockedBy": [
         "F-220"
       ],
@@ -7862,7 +7862,10 @@
         "build",
         "security"
       ],
-      "notes": "Mockup 13, sticky bar, \"Save Outfit to Lookbook\". No implementation exists today."
+      "notes": "Mockup 13, sticky bar, \"Save Outfit to Lookbook\". No implementation exists today. BLOCKED 2026-09-21 on OQ-40, raised while planning it — the same shape as OQ-39, which blocked F-237 the same day. The first criterion is well specified: what a saved outfit owes (slots, locks, scores, the rule and corpus versions that produced them) is stated, and the store already carries palettes and their members atomically, so an outfit row is that pattern again. The second criterion has nothing to point at: no mockup draws a lookbook, and inventing one is what rule 14 forbids. Not started rather than half-started.",
+      "openQuestions": [
+        "OQ-40"
+      ]
     },
     {
       "id": "F-239",
