@@ -24,6 +24,7 @@ export {
   type ThemeValue,
 } from './theme.js';
 export { Text, type ColorFor, type LargeTypeSize, type TextProps, type TypeSize } from './Text.js';
+export { Avatar, AVATAR_SIZE, type AvatarProps } from './Avatar.js';
 export {
   Glyph,
   GLYPH_NAMES,

@@ -15,6 +15,7 @@ import type { Theme } from '@irodora/design-tokens';
 import {
   Accordion,
   Appear,
+  Avatar,
   Bands,
   Button,
   Card,
@@ -166,6 +167,17 @@ const SAMPLE_B = fromSpace('oklch', [0.44, 0.08, 258], { source: 'declared', con
  * that has cost this repository six increments
  * [[a-tested-module-nobody-wired-up-passes-every-test-it-has]].
  */
+/**
+ * A one-pixel PNG, as a data URI.
+ *
+ * The SMALLEST thing that is genuinely an image: the suite checks what the component paints
+ * around a picture rather than the picture, and a fixture with visible content would invite
+ * somebody to assert something about its colours — which is the one thing an avatar must never
+ * be read for.
+ */
+const AVATAR_FIXTURE =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
 const SUBJECTS: readonly ConformanceSubject[] = [
   {
     /*
@@ -447,6 +459,35 @@ const SUBJECTS: readonly ConformanceSubject[] = [
     name: 'Illustration (the empty wardrobe)',
     kind: 'static',
     render: (_state, theme) => draw(<Illustration name="hanger" width={96} />, theme),
+  },
+  {
+    /*
+     * THE AVATAR, IN BOTH STATES, BECAUSE THEY ARE DIFFERENT TREES (F-241).
+     *
+     * `23` draws a photograph; a person who has not chosen one gets the mark, which is an SVG
+     * where the other is an `Image`. A subject that rendered only the picture would leave the
+     * state most people are in outside every contrast and both-theme run — and the mark is the
+     * half that CAN fail those, because a photograph paints whatever it paints and a mark takes
+     * a foreground token.
+     *
+     * `static`, like the illustrations: an avatar has one state per picture.
+     */
+    name: 'Avatar (a picture)',
+    kind: 'static',
+    /*
+     * IT PAINTS NOTHING, AND THAT IS THE FEATURE. The circle is a window onto a photograph: no
+     * ring, no well, no tint — `23.avatar` binds no tokens, and a colour here would be one
+     * nothing drew. The other subject below, with no picture, DOES paint: the mark takes
+     * `foreground.2`, which is the half that can fail a contrast or a both-theme run.
+     */
+    paintsNoColour:
+      'A window onto a photograph. 23.avatar binds no tokens, so a ring or a well here would be a colour no mockup drew — and the picture paints whatever it paints.',
+    render: (_state, theme) => draw(<Avatar uri={AVATAR_FIXTURE} label="Your profile" />, theme),
+  },
+  {
+    name: 'Avatar (no picture yet)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Avatar uri={null} label="Your profile" />, theme),
   },
   {
     /*
