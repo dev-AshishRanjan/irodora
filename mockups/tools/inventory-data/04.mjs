@@ -94,7 +94,7 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1F2126' },
     }),
-    el('04.gauge.sparkle', null, B(606, 705, 44, 45), { parent: '04.gauge', icon: 'sparkle' }),
+    el('04.gauge.sparkle', null, B(606, 705, 44, 45), { parent: '04.gauge', icon: 'seal-star' }),
     el('04.gauge.distance', 'ui:Text', B(243, 716, 129, 22), {
       parent: '04.gauge',
       tokens: { fg: 'text.primary' },

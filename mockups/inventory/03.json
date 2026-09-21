@@ -158,7 +158,7 @@
         "radius": "pill"
       },
       "type": null,
-      "icon": "colour-wheel",
+      "icon": "hue-ring",
       "illustration": null,
       "binding": "engine:gamut",
       "action": null,

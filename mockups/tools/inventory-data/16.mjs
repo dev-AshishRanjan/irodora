@@ -75,7 +75,7 @@ const slot = (n, role, s) => {
           el(`${p}.locked`, 'ui:Chip', s.locked, {
             parent: p,
             tokens: { fg: 'text.tertiary' },
-            icon: 'lock',
+            icon: 'lock-solid',
             binding: 'static:palette.locked',
             action: `toggle:slot.${n}.lock`,
             copy: { shape: 'badge', script: 'latin' },

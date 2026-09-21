@@ -23,18 +23,29 @@
  * it — so the line is the same on every icon at every size, which is what "drawn at the mockups'
  * weight" means.
  *
- * ## Ink, not colour
+ * ## Outline or solid, as drawn — in one ink
+ *
+ * A glyph is outline where its governing element is drawn in outline and solid where it is drawn
+ * solid: `00`'s pencil, `02` and `03`'s sun, `13`'s eye, figure and scales are solid, and so they
+ * are here. The first draft made every glyph an outline, which was a style of its own and not the
+ * mockups' (the F-228 review). Where one name was drawn two ways by screens that each govern their
+ * own element, the element was given a name of its own — `seal-check`, `close-circle`, `lock-solid`
+ * and the rest — so a name still means one shape.
  *
  * Every glyph is drawn in the one colour its caller resolves from a theme token. Tinting a glyph is
- * a surface's decision under §6 C10, and the four tinted icons C10 does not list are OQ-37. What a
- * glyph guarantees instead is SILHOUETTE (NFR-9): each is an outline that differs in shape from its
- * neighbours, so it reads with no colour, at 16 dp, under any deficiency.
+ * a surface's decision under §6 C10, and the tinted icons C10 does not list are OQ-37 — including
+ * the two whose shape in one ink cannot be read off the image at all (`13`'s harmony circles and
+ * `15`'s split badge), which are drawn here as the nearest ink form and block their surfaces until
+ * the question is answered. What a glyph guarantees is SILHOUETTE (NFR-9): each differs in shape
+ * from its neighbours, so it reads with no colour, at 16 dp, under any deficiency.
  *
  * ## Filled, where a mockup draws the active state filled
  *
- * `01` draws its active tab filled (home), `02` its active lens, `15` and `18` their active profile,
- * `09` its active compass. Those four take `filled`; the others have no filled drawing to follow, and
- * asking for one draws the outline. `camera` is drawn filled wherever it appears (`00`).
+ * `01` draws its active tab filled (home), `02` its active lens, `02`, `15` and `18` their active
+ * profile, `09` its active compass. Those four take `filled`; the others have no filled drawing to
+ * follow, and asking for one draws the outline. Only `home`'s comes from the governing tab bar —
+ * the other three are drawn only in tab bars C1 supersedes, so whether `01`'s bar uses them is
+ * F-234's question, recorded there. `camera` is drawn filled wherever it appears (`00`).
  *
  * ## The paths are ours
  *
@@ -65,6 +76,7 @@ export const GLYPH_NAMES = [
   'chevron-right',
   'chevron-up',
   'close',
+  'close-circle',
   'colour-wheel',
   'compass',
   'contrast',
@@ -78,18 +90,23 @@ export const GLYPH_NAMES = [
   'file-table',
   'file-text',
   'filter',
+  'filter-lines',
   'glare',
   'grid',
   'help',
   'history',
   'home',
+  'hue-ring',
   'image',
+  'image-solid',
   'lens',
   'list',
   'lock',
+  'lock-solid',
   'map',
   'more',
   'palette',
+  'palette-solid',
   'plus',
   'profile',
   'refresh',
@@ -100,6 +117,8 @@ export const GLYPH_NAMES = [
   'score-cvd',
   'score-fit',
   'score-harmony',
+  'seal-check',
+  'seal-star',
   'search',
   'settings',
   'share',
@@ -215,24 +234,76 @@ function rays(count: number, from: number, to: number, offset = 0): string {
   return parts.join('');
 }
 
-/** A gear: eight teeth, each a flat-topped trapezoid on a ring. Computed once, at load. */
-const GEAR = (() => {
-  const [outer, inner, teeth] = [9.6, 7.2, 8];
-  const pts: string[] = [];
-  for (let i = 0; i < teeth; i += 1) {
-    const a = (360 / teeth) * i - 90;
-    for (const [r, d] of [
-      [inner, a - 16],
-      [outer, a - 9],
-      [outer, a + 9],
-      [inner, a + 16],
-    ] as const) {
-      const [x, y] = polar(12, 12, r, d);
-      pts.push(`${n(x)} ${n(y)}`);
-    }
-  }
-  return `M${pts.join('L')}z`;
+/**
+ * A polygon from local coordinates: `t` along an axis at `degrees`, `s` across it, from `origin`.
+ * The pencil and the knocked-out cross are drawn square to their own axis and turned here.
+ */
+function turned(
+  origin: readonly [number, number],
+  degrees: number,
+  points: readonly (readonly [number, number])[],
+): string {
+  const a = (degrees * Math.PI) / 180;
+  const [ux, uy, vx, vy] = [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a)];
+  const at = ([t, w]: readonly [number, number]): string =>
+    `${n(origin[0] + t * ux + w * vx)} ${n(origin[1] + t * uy + w * vy)}`;
+  return `M${points.map(at).join('L')}z`;
+}
+
+/** A four-pointed star with concave sides — `13`'s sparkles and the mark in `04`'s seal. */
+function star4(cx: number, cy: number, r: number): string {
+  const c = r * 0.16;
+  return (
+    `M${n(cx)} ${n(cy - r)}` +
+    `Q${n(cx + c)} ${n(cy - c)} ${n(cx + r)} ${n(cy)}` +
+    `Q${n(cx + c)} ${n(cy + c)} ${n(cx)} ${n(cy + r)}` +
+    `Q${n(cx - c)} ${n(cy + c)} ${n(cx - r)} ${n(cy)}` +
+    `Q${n(cx - c)} ${n(cy - c)} ${n(cx)} ${n(cy - r)}z`
+  );
+}
+
+/** `00`'s pencil, solid: a pointed body and, past a gap, its rounded cap. Tip at lower left. */
+const PENCIL = (() => {
+  const h = 2.3;
+  const body = turned([4.4, 19.6], -45, [
+    [0, 0],
+    [4, -h],
+    [14.4, -h],
+    [14.4, h],
+    [4, h],
+  ]);
+  const cap = turned([4.4, 19.6], -45, [
+    [15.8, -h],
+    [18.2, -h],
+    [19.6, -h * 0.55],
+    [19.6, h * 0.55],
+    [18.2, h],
+    [15.8, h],
+  ]);
+  return `${body} ${cap}`;
 })();
+
+/** An X as a closed shape, so it can be cut out of a disc (`09`'s clear button). */
+const CROSS_HOLE = (() => {
+  const [w, e] = [0.95, 4.6];
+  return turned([12, 12], 45, [
+    [-w, -e],
+    [w, -e],
+    [w, -w],
+    [e, -w],
+    [e, w],
+    [w, w],
+    [w, e],
+    [-w, e],
+    [-w, w],
+    [-e, w],
+    [-e, -w],
+    [-w, -w],
+  ]);
+})();
+
+/** A check as a closed shape, so it can be cut out of `06`'s seal. */
+const CHECK_HOLE = 'M7.4 12.4l1.35-1.35 2.15 2.15 4.35-4.35 1.35 1.35-5.7 5.7z';
 
 /**
  * A scalloped seal: twelve smooth bumps, each a quadratic curve whose control point sits outside the
@@ -253,10 +324,6 @@ const SEAL = (() => {
   return `${parts.join('')}z`;
 })();
 
-/** A four-pointed star, the mark inside `04`'s seal. */
-const STAR =
-  'M12 6.8c.5 2.8 2.4 4.7 5.2 5.2-2.8.5-4.7 2.4-5.2 5.2-.5-2.8-2.4-4.7-5.2-5.2 2.8-.5 4.7-2.4 5.2-5.2z';
-
 /** A camera body with its viewfinder bump — `01`'s lens and `00`'s camera share it. */
 const CAMERA_BODY =
   'M3 8.6a2 2 0 0 1 2-2h2.6l1.5-2.1a1.6 1.6 0 0 1 1.3-.7h3.2a1.6 1.6 0 0 1 1.3.7l1.5 2.1H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z';
@@ -276,6 +343,14 @@ const HOUSE = 'M4 10.3 12 3.8l8 6.5V19a1.5 1.5 0 0 1-1.5 1.5h-4V15h-5v5.5h-4A1.5
 
 const PALETTE =
   'M12 3a9 9 0 0 0 0 18c1.2 0 1.7-.8 1.5-1.8-.3-1 .3-2.2 1.5-2.2h2a4 4 0 0 0 4-4C21 7.2 17 3 12 3z';
+
+/** The palette's paint wells: dots on the outline palette, holes in the solid one. */
+const WELLS: readonly (readonly [number, number])[] = [
+  [7.5, 11.5],
+  [9, 7.8],
+  [13.5, 6.8],
+  [17, 9.5],
+];
 
 // --- the glyphs -----------------------------------------------------------------------------
 
@@ -315,14 +390,15 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     <>{line('M6.5 4.5A1.5 1.5 0 0 1 8 3h8a1.5 1.5 0 0 1 1.5 1.5V21L12 17l-5.5 4z', p)}</>
   ),
 
+  /** `11`: a lit bulb, solid, on a banded base. Its yellow is OQ-37. */
   bulb: (p) => (
     <>
-      {line(
-        'M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2v1h5v-1c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z',
+      {solid(
+        'M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.7.5 1.1 1.3 1.1 2.2V17h5.6v-.6c0-.9.4-1.7 1.1-2.2A6.5 6.5 0 0 0 12 2.5z',
         p,
         'glass',
       )}
-      {line('M9.5 19.5h5M10.5 21.5h3', p, 'base')}
+      {solid(`${rrect(9.2, 18, 5.6, 1.6, 0.8)} ${rrect(10.2, 20.2, 3.6, 1.6, 0.8)}`, p, 'base')}
     </>
   ),
 
@@ -343,20 +419,28 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
   'chevron-left': (p) => <>{line('M14.5 5.5 8 12l6.5 6.5', p)}</>,
   'chevron-right': (p) => <>{line('M9.5 5.5 16 12l-6.5 6.5', p)}</>,
   'chevron-up': (p) => <>{line('M5.5 15 12 8.5l6.5 6.5', p)}</>,
+  /** `09`'s Clear: the bare cross beside its word. */
   close: (p) => <>{line('M6.5 6.5l11 11M17.5 6.5l-11 11', p)}</>,
 
-  /** `00`'s wheel is a hue disc with a palette on it; in ink, a ring holding the palette. */
+  /** `09`'s search-field clear: a solid disc with the cross cut out of it. */
+  'close-circle': (p) => <>{solid(`${circlePath(12, 12, 10)} ${CROSS_HOLE}`, p)}</>,
+
+  /**
+   * `00`'s wheel: a solid hue disc with a palette cut out of it and the palette's wells inside. Its
+   * hues — and the palette's white against them — are OQ-37.
+   */
   'colour-wheel': (p) => (
     <>
-      {ring(12, 12, 9.5, p, 'wheel')}
-      {line(
-        'M12 6.5a5.5 5.5 0 0 0 0 11c.7 0 1-.5.9-1.1-.2-.6.2-1.3.9-1.3h1.2a2.5 2.5 0 0 0 2.5-2.5c0-3.4-2.5-6.1-5.5-6.1z',
+      {solid(
+        [
+          circlePath(12, 12, 10),
+          'M12 6.3a5.7 5.7 0 0 0 0 11.4c.7 0 1-.5.9-1.1-.2-.6.2-1.3.9-1.3h1.3a2.6 2.6 0 0 0 2.6-2.6c0-3.5-2.6-6.4-5.7-6.4z',
+          circlePath(9.3, 11.2, 0.85),
+          circlePath(10.6, 8.9, 0.85),
+          circlePath(13.3, 8.7, 0.85),
+        ].join(' '),
         p,
-        'palette',
       )}
-      {dot(9.3, 11, 0.8, p, 'a')}
-      {dot(10.6, 8.8, 0.8, p, 'b')}
-      {dot(13.4, 8.6, 0.8, p, 'c')}
     </>
   ),
 
@@ -366,15 +450,19 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     ) : (
       <>
         {ring(12, 12, 9, p, 'dial')}
-        {line('M15.5 8.5l-2 5-5 2 2-5z', p, 'needle')}
+        {solid('M15.8 8.2l-2.1 5.5-5.5 2.1 2.1-5.5z', p, 'needle')}
       </>
     ),
 
-  /** `00`: a disc with its right half filled. `score-contrast` is its mirror. */
+  /**
+   * `00`: a ring with a crescent filled on its right, bounded by a curve rather than a diameter.
+   * `score-contrast` is `13`'s straight half. `15`'s two-colour split badge is also bound here, and
+   * what it is in one ink is part of OQ-37.
+   */
   contrast: (p) => (
     <>
       {ring(12, 12, 8.5, p, 'disc')}
-      {solid('M12 3.5a8.5 8.5 0 0 1 0 17z', p, 'half')}
+      {solid('M12 3.5A8.5 8.5 0 0 1 17.46 18.51Q10.6 13.4 12 3.5z', p, 'crescent')}
     </>
   ),
 
@@ -393,16 +481,8 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
-  edit: (p) => (
-    <>
-      {line(
-        'M4 20l1.1-4.2L15.8 5.1a1.8 1.8 0 0 1 2.6 0l.5.5a1.8 1.8 0 0 1 0 2.6L8.2 18.9z',
-        p,
-        'pencil',
-      )}
-      {line('M14 7l3 3', p, 'ferrule')}
-    </>
-  ),
+  /** `00`: a solid pencil, its cap parted from the body. */
+  edit: (p) => <>{solid(PENCIL, p)}</>,
 
   /** `06`: a shallow tray and an arrow leaving it. `share` is the deeper, iOS box. */
   export: (p) => (
@@ -463,6 +543,9 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /** `21`: three centred bars, each shorter than the one above. */
+  'filter-lines': (p) => <>{line('M3.5 7h17M7 12h10M10 17h4', p)}</>,
+
   /** `27`: a sun with a slash through it — too much light to read. */
   glare: (p) => (
     <>
@@ -501,11 +584,28 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
   /** A house with its door. Filled, it is `01`'s active tab. */
   home: (p) => (p.filled ? <>{solid(HOUSE, p)}</> : <>{line(HOUSE, p)}</>),
 
+  /** `03`'s gamut chip: a thick ring. Its hues are OQ-37. */
+  'hue-ring': (p) => <>{solid(`${circlePath(12, 12, 9)} ${circlePath(12, 12, 5.6)}`, p)}</>,
+
+  /** `00`: a framed picture in line — hills and a sun. `image-solid` is `02`'s. */
   image: (p) => (
     <>
       {line(rrect(3, 4.5, 18, 15, 2.5), p, 'frame')}
       {line('M3.5 17l4.5-4.5 3.5 3.5 3-3 6 6', p, 'hills')}
       {ring(15.5, 9.5, 1.6, p, 'sun')}
+    </>
+  ),
+
+  /** `02`'s import: a frame, and inside it solid hills and a solid sun at the upper left. */
+  'image-solid': (p) => (
+    <>
+      {line(rrect(3, 4.5, 18, 15, 2.5), p, 'frame')}
+      {solid(
+        'M3.8 16.6 8.6 12.3l2.9 2.7 4.4-4.9 4.3 4.6V17a2.5 2.5 0 0 1-2.5 2.5H6.3A2.5 2.5 0 0 1 3.8 17z',
+        p,
+        'hills',
+      )}
+      {dot(8.3, 8.9, 1.9, p, 'sun')}
     </>
   ),
 
@@ -536,6 +636,14 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /** `07`, `15` and `16`: a solid padlock under a heavy shackle. Their gold is OQ-37. */
+  'lock-solid': (p) => (
+    <>
+      {solid(rrect(5, 10.5, 14, 10.5, 2), p, 'body')}
+      {solid('M7.3 10.5V8a4.7 4.7 0 0 1 9.4 0v2.5h-1.8V8a2.9 2.9 0 0 0-5.8 0v2.5z', p, 'shackle')}
+    </>
+  ),
+
   map: (p) => (
     <>
       {line('M3 6.2 9 4l6 2.2L21 4v13.8L15 20l-6-2.2L3 20z', p, 'sheet')}
@@ -551,14 +659,17 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /** `00`'s palette control: the palette in line, its wells as dots. */
   palette: (p) => (
     <>
       {line(PALETTE, p, 'palette')}
-      {dot(7.5, 11.5, 1.2, p, 'a')}
-      {dot(9, 7.8, 1.2, p, 'b')}
-      {dot(13.5, 6.8, 1.2, p, 'c')}
-      {dot(17, 9.5, 1.2, p, 'd')}
+      {WELLS.map(([x, y]) => dot(x, y, 1.2, p, `${String(x)}-${String(y)}`))}
     </>
+  ),
+
+  /** `00`'s palette button: the palette solid, its wells cut out. Its colours are OQ-37. */
+  'palette-solid': (p) => (
+    <>{solid([PALETTE, ...WELLS.map(([x, y]) => circlePath(x, y, 1.25))].join(' '), p)}</>
   ),
 
   plus: (p) => <>{line('M12 5v14M5 12h14', p)}</>,
@@ -601,10 +712,22 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /** `13`: solid scales — post, beam, base and two bowls — hung on fine lines. */
   'score-balance': (p) => (
     <>
-      {line('M12 4.5V20M8 20h8M5 7h14', p, 'frame')}
-      {line('M5 7l-2.5 6a2.5 1.5 0 0 0 5 0zM19 7l-2.5 6a2.5 1.5 0 0 0 5 0z', p, 'pans')}
+      {solid(
+        [
+          circlePath(12, 4.4, 1.3),
+          rrect(11.1, 5.2, 1.8, 14, 0.5),
+          rrect(3.8, 6.4, 16.4, 1.5, 0.75),
+          rrect(7, 19, 10, 2, 1),
+          'M2 13.6h7.2a3.6 3.6 0 0 1-7.2 0z',
+          'M14.8 13.6H22a3.6 3.6 0 0 1-7.2 0z',
+        ].join(' '),
+        p,
+        'frame',
+      )}
+      {line('M2.6 13.4 5.6 7.6l3 5.8M15.4 13.4l3-5.8 3 5.8', p, 'strings')}
     </>
   ),
 
@@ -616,28 +739,56 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /** `13`: a solid eye, the iris cut out as a ring around a solid pupil. */
   'score-cvd': (p) => (
     <>
-      {line('M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z', p, 'eye')}
-      {ring(12, 12, 3, p, 'iris')}
-      {dot(12, 12, 1.2, p, 'pupil')}
+      {solid(
+        [
+          'M2 12c2.5-4.7 5.9-6.8 10-6.8s7.5 2.1 10 6.8c-2.5 4.7-5.9 6.8-10 6.8S4.5 16.7 2 12z',
+          circlePath(12, 12, 4.4),
+          circlePath(12, 12, 2.5),
+        ].join(' '),
+        p,
+      )}
     </>
   ),
 
-  /** `13`: a figure with its arms out. */
+  /** `13`: a solid figure, arms raised out to the sides, legs apart. */
   'score-fit': (p) => (
     <>
-      {dot(12, 4.8, 2, p, 'head')}
-      {line('M4.5 8.5 12 10l7.5-1.5M12 10v5M12 15l-3 5.5M12 15l3 5.5', p, 'body')}
+      {dot(12, 4.4, 2.2, p, 'head')}
+      {solid(
+        'M3.2 7.1 12 8.7l8.8-1.6-.6 2.1-5.8 1.5v3.8l1.8 6.1-2 .6L12 15.8l-2.2 5.4-2-.6 1.8-6.1v-3.8L3.8 9.2z',
+        p,
+        'body',
+      )}
     </>
   ),
 
-  /** `13`: three overlapping circles. In ink; their colours are OQ-37. */
+  /**
+   * `13`: three overlapping circles, told apart in the image only by their colours. What they are
+   * in one ink is part of OQ-37; until it is answered this draws them as three outlines and F-257,
+   * the surface that shows them, is blocked.
+   */
   'score-harmony': (p) => (
     <>
       {ring(12, 8.6, 4.8, p, 'a')}
       {ring(8.6, 14.6, 4.8, p, 'b')}
       {ring(15.4, 14.6, 4.8, p, 'c')}
+    </>
+  ),
+
+  /** `06`'s editorial review: a solid seal with the check cut out of it. Its green is OQ-37. */
+  'seal-check': (p) => <>{solid(`${SEAL} ${CHECK_HOLE}`, p)}</>,
+
+  /**
+   * `04`'s gauge: a scalloped seal in line — its body is only a tint (C10's green) — holding a solid
+   * four-pointed star.
+   */
+  'seal-star': (p) => (
+    <>
+      {line(SEAL, p, 'seal')}
+      {solid(star4(12, 12, 5.2), p, 'star')}
     </>
   ),
 
@@ -649,10 +800,17 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
+  /**
+   * `00`'s settings button — the only settings a governing element draws: a ring of eight small
+   * rings round a hub. The toothed gear is drawn only in tab bars C1 supersedes, so it is not built.
+   */
   settings: (p) => (
     <>
-      {line(GEAR, p, 'gear')}
       {ring(12, 12, 3, p, 'hub')}
+      {Array.from({ length: 8 }, (_, i) => {
+        const [x, y] = polar(12, 12, 7.3, 45 * i - 90);
+        return ring(Number(n(x)), Number(n(y)), 1.7, p, `petal-${String(i)}`);
+      })}
     </>
   ),
 
@@ -675,18 +833,16 @@ const GLYPHS: Readonly<Record<GlyphName, Draw>> = {
     </>
   ),
 
-  /** `04`: a scalloped seal holding a four-pointed star. */
+  /** `13`'s capsule: three solid four-pointed stars, one large. Their gold is OQ-37. */
   sparkle: (p) => (
-    <>
-      {line(SEAL, p, 'seal')}
-      {solid(STAR, p, 'star')}
-    </>
+    <>{solid([star4(14.5, 12, 7.5), star4(5.8, 6, 3.2), star4(6.3, 18.2, 2.6)].join(' '), p)}</>
   ),
 
+  /** `02` and `03`: a solid disc and eight short rays. */
   sun: (p) => (
     <>
-      {ring(12, 12, 4, p, 'disc')}
-      {line(rays(8, 6.5, 9), p, 'rays')}
+      {dot(12, 12, 4.3, p, 'disc')}
+      {line(rays(8, 7, 9.5), p, 'rays')}
     </>
   ),
 

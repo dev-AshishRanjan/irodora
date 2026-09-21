@@ -142,28 +142,56 @@ describe('drawn at the mockups’ weight', () => {
     expect((glyphStroke(16) * 16) / 24).toBeCloseTo((glyphStroke(28) * 28) / 24, 12);
   });
 
-  it('draws at least one line in every glyph that is not solid by design', () => {
-    const solidByDesign = new Set<GlyphName>(['camera', 'more']);
-    const lineless = GLYPH_NAMES.filter(
-      (name) =>
-        !solidByDesign.has(name) &&
-        !shapes(name).some((el) => el.props['strokeWidth'] !== undefined),
-    );
-    expect(lineless).toHaveLength(0);
+  /**
+   * THE GLYPHS WITH NO LINE AT ALL, and the element that draws each one that way. The first draft
+   * made every glyph an outline, which the mockups do not (the F-228 review); the list is held in
+   * both directions, so a solid glyph cannot quietly become an outline and an outline cannot quietly
+   * lose its line.
+   */
+  const SOLID: Readonly<Partial<Record<GlyphName, string>>> = {
+    bulb: '11.gap.icon',
+    camera: '00.buttons.icon-camera',
+    'close-circle': '09.search.clear',
+    'colour-wheel': '00.controls.icon-wheel',
+    edit: '00.controls.icon-edit',
+    'hue-ring': '03.chips.gamut',
+    'lock-solid': '15.security.badge',
+    more: '05.more',
+    'palette-solid': '00.buttons.icon-palette',
+    'score-cvd': '13.score.cvd.icon',
+    'score-fit': '13.score.fit.icon',
+    'seal-check': '06.provenance.review',
+    sparkle: '13.capsule.icon',
+  };
+  const lined = (name: GlyphName): boolean =>
+    shapes(name).some((el) => el.props['stroke'] !== undefined);
+
+  it('draws a line in every glyph its mockup draws with one', () => {
+    expect(GLYPH_NAMES.filter((name) => SOLID[name] === undefined && !lined(name))).toHaveLength(0);
+  });
+
+  it('draws no line in a glyph its mockup draws solid', () => {
+    const named = Object.keys(SOLID) as GlyphName[];
+    expect(named.length).toBeGreaterThan(10);
+    expect(named.filter(lined)).toHaveLength(0);
   });
 });
 
 describe('told apart by shape, not by colour (NFR-9)', () => {
-  it('no two glyphs draw the same shape', () => {
-    const seen = new Map<string, GlyphName>();
+  it('no two drawings are the same shape, filled ones included, but for the one declared', () => {
+    // A filled drawing is a shape a person sees as much as an outline is. `lens` filled IS the
+    // camera — 02's active lens tab draws the camera 00 draws — and that is the only identity.
+    const seen = new Map<string, string>();
     const twins: string[] = [];
-    for (const name of GLYPH_NAMES) {
-      const s = silhouette(name);
-      const earlier = seen.get(s);
-      if (earlier !== undefined) twins.push(`${earlier} = ${name}`);
-      seen.set(s, name);
-    }
-    expect(twins).toHaveLength(0);
+    for (const name of GLYPH_NAMES)
+      for (const filled of FILLABLE_GLYPHS.includes(name as never) ? [false, true] : [false]) {
+        const label = filled ? `${name} (filled)` : name;
+        const s = silhouette(name, filled);
+        const earlier = seen.get(s);
+        if (earlier !== undefined) twins.push(`${earlier} = ${label}`);
+        else seen.set(s, label);
+      }
+    expect(twins).toEqual(['camera = lens (filled)']);
   });
 
   it('the five score kinds 13 draws side by side are five shapes', () => {
@@ -211,7 +239,7 @@ describe('filled, where a mockup draws the active state filled', () => {
     ).toHaveLength(0);
   });
 
-  it('draws every other glyph as its outline when asked for a fill it was never drawn with', () => {
+  it('draws every other glyph as it always is when asked for a fill it was never drawn with', () => {
     const changed = GLYPH_NAMES.filter(
       (name) =>
         !(FILLABLE_GLYPHS as readonly GlyphName[]).includes(name) &&

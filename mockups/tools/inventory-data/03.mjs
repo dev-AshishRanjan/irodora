@@ -149,7 +149,7 @@ export default {
     el('03.chips.gamut', 'ui:Chip', B(376, 393, 121, 33), {
       parent: sheet,
       tokens: { border: 'border.subtle', radius: 'pill' },
-      icon: 'colour-wheel',
+      icon: 'hue-ring',
       binding: 'engine:gamut',
       copy: { shape: 'badge', script: 'latin' },
     }),

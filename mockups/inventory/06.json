@@ -1024,7 +1024,7 @@
         "size": "label",
         "weight": 400
       },
-      "icon": "check",
+      "icon": "seal-check",
       "illustration": null,
       "binding": "corpus:entry.review",
       "action": null,

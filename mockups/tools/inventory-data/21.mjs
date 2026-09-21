@@ -100,7 +100,7 @@ export default {
       copy: { shape: 'heading', script: 'mixed' },
     }),
     el('21.filter', 'ui:Button', B(631, 141, 31, 21), {
-      icon: 'filter',
+      icon: 'filter-lines',
       action: 'open:nearby.filter',
     }),
     // ---- the anchor

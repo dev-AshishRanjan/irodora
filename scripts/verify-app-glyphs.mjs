@@ -12,21 +12,26 @@
  *
  * ## The two ways in, and the one exception to each
  *
- * - **An import** of `react-native-svg` (any subpath), of an icon library, or of an `.svg` asset.
- * - **SVG markup in a string** — a screen can hand a hand-written `<svg>` to anything that renders
- *   one, and no import rule would see it.
+ * - **An import** of `react-native-svg` (any subpath), of an icon, SVG or drawing library, or of an
+ *   image file — `.svg` or raster.
+ * - **SVG markup in a string**, in any capitalisation — a screen can hand a hand-written `<svg>` to
+ *   anything that renders one, and no import rule would see it.
  *
  * The share card is the exception to both, and it is one thing in two files: `card.ts` builds the
  * card as an SVG DOCUMENT and `ColourCard.tsx` displays it with `SvgXml` (ADR-0070). A card is a
- * document someone sends, not an icon. Each exemption names its rule, so the renderer is not
- * thereby free to write markup and the builder is not free to import a drawing library — and an
- * exemption that no longer matches anything fails, so the list cannot outlive the reason.
+ * document someone sends, not an icon. Each exemption names its rule, and the import exemption
+ * names the one BINDING it allows, so the renderer cannot also take `Path` and the builder cannot
+ * import a drawing library — and an exemption that no longer matches anything fails, so the list
+ * cannot outlive the reason.
  *
  * ## What it does NOT check
  *
- * A drawing made of `View`s — borders and rotations, the way `Icon`'s alert triangle is made.
- * That is indistinguishable from layout by source analysis. `verify-surface-not-card` and review
- * are the defence there; this closes the two ways that need no ingenuity.
+ * - A drawing made of `View`s — borders and rotations, the way `Icon`'s alert triangle is made.
+ *   That is indistinguishable from layout by source analysis.
+ * - A text character standing in for an icon — `✓`, `●`, `○`. Four places still do it (F-280).
+ * - A regular-expression literal holding a quote, which the comment tokenizer reads as a string.
+ *
+ * Each is printed on every run.
  *
  * Usage:
  *   node scripts/verify-app-glyphs.mjs
@@ -61,13 +66,18 @@ const GREEN = '\x1b[32m',
   OFF = '\x1b[0m';
 
 /**
- * The declared exceptions, relative to the app root. One rule each.
- * @type {readonly { file: string, rule: 'import' | 'markup', reason: string }[]}
+ * The declared exceptions, relative to the app root. One rule each, and the import exemption names
+ * the ONE binding it allows: the share card's renderer may take `SvgXml` from `react-native-svg`
+ * and nothing else — not `Path`, not a default `Svg`, not another library (the F-228 review found the
+ * first draft exempted the whole file).
+ * @type {readonly ({ file: string, rule: 'markup', reason: string } | { file: string, rule: 'import', module: string, names: readonly string[], reason: string })[]}
  */
 export const EXEMPT = [
   {
     file: 'src/screens/ColourCard.tsx',
     rule: 'import',
+    module: 'react-native-svg',
+    names: ['SvgXml'],
     reason: 'displays the share card with SvgXml — a document, not an icon (ADR-0070)',
   },
   {
@@ -78,21 +88,29 @@ export const EXEMPT = [
 ];
 
 /**
- * Icon libraries by name, and the words that name the rest. A list alone is only as complete as
- * its table; the words catch the library nobody has heard of yet (`*-icons`, `*-symbols`, `*svg*`).
+ * Icon and drawing libraries by name, and the words that name the rest. A list alone is only as
+ * complete as its table; the words catch the library nobody has heard of yet.
  */
-const ICON_PACKAGES = ['lucide-react-native', 'phosphor-react-native'];
+const ICON_PACKAGES = ['lucide-react-native', 'phosphor-react-native', '@mdi/js', '@mdi/react'];
 /**
  * Judged per SEGMENT of the name (`@expo/vector-icons` → expo, vector, icons), so `lexicon` and
- * `designer-kit` are not icon packages and `ionicons`, `heroicons` and `svgr` are.
+ * `designer-kit` are not icon packages and `ionicons`, `heroicons`, `iconsax`, `svgr`,
+ * `fontawesome`, `feather` and `skia` (a drawing surface) are.
  */
-const ICON_SEGMENT = /^svg|svg$|^icons?$|icons$|^symbols?$/i;
+const ICON_SEGMENT =
+  /^svg|svg$|^icon|icons$|^symbols?$|^fontawesome$|^feather$|^skia$|^lucide$|^phosphor$|^tabler$/i;
 const namesIcons = (pkg) => pkg.split(/[@/-]/).some((s) => s !== '' && ICON_SEGMENT.test(s));
 
-/** `from '…'`, `import '…'`, `import('…')`, `require('…')` — every specifier, bare or relative. */
-const IMPORT_PATTERN = /(?:\bfrom\s+|\bimport\s+|\bimport\(\s*|\brequire\(\s*)(['"])([^'"\n]+)\1/g;
-/** `<svg ` and `<svg>`, and the self-closing `<svg/>` the proof caught the first draft missing. */
-const MARKUP_PATTERN = /<svg[\s/>]/g;
+/**
+ * `from '…'`, `import '…'`, `import('…')`, `require('…')` — every specifier, bare or relative, and
+ * the template-literal spelling a `require` or a lazy `import` also accepts.
+ */
+const IMPORT_PATTERN =
+  /(?:\bfrom\s+|\bimport\s+|\bimport\(\s*|\brequire\(\s*)(['"`])([^'"`\n]+)\1/g;
+/** `<svg ` and `<svg>`, the self-closing `<svg/>`, and any capitalisation of it. */
+const MARKUP_PATTERN = /<svg[\s/>]/gi;
+/** An image file: a raster icon is as much a screen's own drawing as an `.svg` is. */
+const IMAGE_ASSET = /\.(?:svg|png|jpe?g|gif|webp|avif|bmp|ico)(?:\?.*)?$/i;
 
 /** The package a specifier names — `@scope/name` or `name` — or null for a relative path. */
 function packageOf(specifier) {
@@ -103,12 +121,12 @@ function packageOf(specifier) {
 
 /** Why a specifier draws an icon, or null if it does not. */
 export function forbiddenImport(specifier) {
-  if (/\.svg(?:\?.*)?$/i.test(specifier)) return 'an .svg asset';
+  if (IMAGE_ASSET.test(specifier)) return 'an image asset — icons are Glyph, pictures are F-229';
   const pkg = packageOf(specifier);
   if (pkg === null) return null;
   if (pkg === 'react-native-svg') return 'react-native-svg';
   if (ICON_PACKAGES.includes(pkg)) return `the icon library ${pkg}`;
-  if (namesIcons(pkg)) return `${pkg}, which names itself an icon or SVG package`;
+  if (namesIcons(pkg)) return `${pkg}, which names itself an icon, SVG or drawing package`;
   return null;
 }
 
@@ -121,11 +139,95 @@ function sourceFiles(dir) {
   });
 }
 
-/** Line comments and block comments blanked, lengths kept, so a note about SVG is not SVG. */
-function withoutComments(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
-    .replace(/(^|[^:'"`\\])\/\/[^\n]*/g, (m, lead) => lead + ' '.repeat(m.length - lead.length));
+/**
+ * Comments blanked, lengths and line breaks kept, so a note about SVG is not SVG.
+ *
+ * A TOKENIZER, because the first draft's two regular expressions were not one: a string holding
+ * `/*` hid everything up to a later `*\/`, a string holding `//` hid the rest of its line, and a
+ * comment straight after a closing quote was read as code (the F-228 review). This walks code,
+ * strings and template literals — `${…}` included — and blanks only what is a comment in code.
+ * NOT HANDLED: a regular-expression literal holding a quote, which it reads as a string to the end
+ * of the line. Printed on every run.
+ */
+export function withoutComments(text) {
+  const out = [];
+  const resume = [];
+  let [i, state, quote, depth] = [0, 'code', '', 0];
+  while (i < text.length) {
+    const [c, d] = [text[i], text[i + 1]];
+    if (state === 'code') {
+      if (c === '/' && d === '/') {
+        let j = text.indexOf('\n', i);
+        if (j < 0) j = text.length;
+        out.push(' '.repeat(j - i));
+        i = j;
+        continue;
+      }
+      if (c === '/' && d === '*') {
+        let j = text.indexOf('*/', i + 2);
+        j = j < 0 ? text.length : j + 2;
+        out.push(text.slice(i, j).replace(/[^\n]/g, ' '));
+        i = j;
+        continue;
+      }
+      if (c === "'" || c === '"') [state, quote] = ['string', c];
+      else if (c === '`') state = 'template';
+      else if (c === '{') depth += 1;
+      else if (c === '}') {
+        if (resume.length > 0 && resume[resume.length - 1] === depth) {
+          resume.pop();
+          state = 'template';
+        } else depth -= 1;
+      }
+      out.push(c);
+      i += 1;
+      continue;
+    }
+    if (c === '\\') {
+      out.push(text.slice(i, i + 2));
+      i += 2;
+      continue;
+    }
+    if (state === 'string') {
+      if (c === quote || c === '\n') state = 'code';
+      out.push(c);
+      i += 1;
+      continue;
+    }
+    if (c === '`') state = 'code';
+    else if (c === '$' && d === '{') {
+      resume.push(depth);
+      state = 'code';
+      out.push('${');
+      i += 2;
+      continue;
+    }
+    out.push(c);
+    i += 1;
+  }
+  return out.join('');
+}
+
+/**
+ * The bindings a static `import { … } from` takes, or null for any other shape — a default or
+ * namespace import, a side-effect import, a `require`, a lazy `import()`.
+ */
+function namedBindings(text, match) {
+  if (!match[0].startsWith('from')) return null;
+  const head = text.slice(0, match.index);
+  const clause = head.slice(head.lastIndexOf('import') + 'import'.length).trim();
+  const named = /^(?:type\s+)?\{([^}]*)\}$/.exec(clause);
+  if (named === null) return null;
+  return named[1]
+    .split(',')
+    .map(
+      (b) =>
+        b
+          .trim()
+          .replace(/^type\s+/, '')
+          .split(/\s+as\s+/)[0],
+    )
+    .filter((b) => b !== '');
 }
 
 /**
@@ -142,31 +244,33 @@ export function appGlyphFindings(appRoot = APP, exempt = EXEMPT) {
       scanned++;
       const rel = relative(appRoot, file).split('\\').join('/');
       const text = withoutComments(readFileSync(file, 'utf8'));
-      const exemptFrom = (rule) => {
-        const hit = exempt.find((e) => e.file === rel && e.rule === rule);
-        if (hit) used.add(`${hit.file}#${hit.rule}`);
-        return hit !== undefined;
-      };
       const lineOf = (index) => text.slice(0, index).split('\n').length;
+      const flag = (index, rule, detail) =>
+        violations.push({ file: rel, line: lineOf(index), rule, detail });
 
       for (const m of text.matchAll(IMPORT_PATTERN)) {
         const why = forbiddenImport(m[2]);
-        if (why !== null && !exemptFrom('import'))
-          violations.push({
-            file: rel,
-            line: lineOf(m.index),
-            rule: 'import',
-            detail: `imports ${why}`,
-          });
+        if (why === null) continue;
+        const allowance = exempt.find((e) => e.file === rel && e.rule === 'import');
+        if (allowance === undefined || m[2] !== allowance.module) {
+          flag(m.index, 'import', `imports ${why}`);
+          continue;
+        }
+        const names = namedBindings(text, m);
+        const stray = names === null ? null : names.filter((b) => !allowance.names.includes(b));
+        if (names === null || names.length === 0 || stray.length > 0)
+          flag(
+            m.index,
+            'import',
+            `imports ${names === null ? 'more than named bindings' : stray.join(', ') || 'nothing named'} from ${m[2]}; the exemption allows only ${allowance.names.join(', ')}`,
+          );
+        else used.add(`${allowance.file}#import`);
       }
-      for (const m of text.matchAll(MARKUP_PATTERN))
-        if (!exemptFrom('markup'))
-          violations.push({
-            file: rel,
-            line: lineOf(m.index),
-            rule: 'markup',
-            detail: 'writes SVG markup',
-          });
+      for (const m of text.matchAll(MARKUP_PATTERN)) {
+        const allowance = exempt.find((e) => e.file === rel && e.rule === 'markup');
+        if (allowance === undefined) flag(m.index, 'markup', 'writes SVG markup');
+        else used.add(`${allowance.file}#markup`);
+      }
     }
 
   const dead = exempt.filter((e) => !used.has(`${e.file}#${e.rule}`));
@@ -185,7 +289,13 @@ function prove() {
   const renderer = join(work, 'src', 'screens', 'Card.tsx');
   const builder = join(work, 'src', 'card.ts');
   const exempt = [
-    { file: 'src/screens/Card.tsx', rule: 'import', reason: 'proof' },
+    {
+      file: 'src/screens/Card.tsx',
+      rule: 'import',
+      module: 'react-native-svg',
+      names: ['SvgXml'],
+      reason: 'proof',
+    },
     { file: 'src/card.ts', rule: 'markup', reason: 'proof' },
   ];
   const RENDERER = "import { SvgXml } from 'react-native-svg';\nexport const R = SvgXml;\n";
@@ -218,6 +328,53 @@ function prove() {
       fail: true,
     },
     { name: 'an .svg asset', probe: "import Star from '../../assets/star.svg';\n", fail: true },
+    // THE F-228 REVIEW'S CASES. Every one of them passed the first draft.
+    {
+      name: 'a raster icon',
+      probe: "export const share = require('../../assets/share.png');\n",
+      fail: true,
+    },
+    {
+      name: 'an icon font by its vendor',
+      probe: "import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';\n",
+      fail: true,
+    },
+    { name: 'feather icons', probe: "import Icon from 'react-native-feather';\n", fail: true },
+    { name: 'iconsax', probe: "import { Home } from 'iconsax-react-native';\n", fail: true },
+    { name: 'material design paths', probe: "import { mdiHome } from '@mdi/js';\n", fail: true },
+    {
+      name: 'a drawing surface',
+      probe: "import { Canvas } from '@shopify/react-native-skia';\n",
+      fail: true,
+    },
+    {
+      // ` is a backtick: the specifier a require or a lazy import also accepts.
+      name: 'a template-literal require',
+      probe: 'const svg = require(`react-native-svg`);\n',
+      fail: true,
+    },
+    {
+      name: 'a string holding a comment opener, ahead of a real import',
+      probe:
+        "const glob = 'images/*';\nimport { Path } from 'react-native-svg';\nconst end = '*/';\n",
+      fail: true,
+    },
+    {
+      name: 'markup in a string that also holds a comment opener',
+      probe: 'export const s = \'a//b <svg viewBox="0 0 1 1"/>\';\n',
+      fail: true,
+    },
+    { name: 'capitalised markup', probe: 'export const s = \'<SVG width="1">\';\n', fail: true },
+    {
+      name: 'a comment straight after a closing quote',
+      probe: "export const s = 'x'; // an <svg> in a comment is not markup\n",
+      fail: false,
+    },
+    {
+      name: 'a comment after a template that holds a comment opener',
+      probe: 'export const t = `a//b`; // <svg> here really is a comment\n',
+      fail: false,
+    },
     {
       name: 'SVG markup handed over as a string',
       probe: 'export const s = \'<svg viewBox="0 0 24 24"/>\';\n',
@@ -239,6 +396,32 @@ function prove() {
       probe: '',
       renderer: RENDERER + 'export const m = `<svg/>`;\n',
       fail: true,
+    },
+    {
+      name: 'the renderer taking a path as well as the document — exempt for SvgXml only',
+      probe: '',
+      renderer:
+        "import { SvgXml, Path } from 'react-native-svg';\nexport const R = [SvgXml, Path];\n",
+      fail: true,
+    },
+    {
+      name: 'the renderer taking the default drawing surface',
+      probe: '',
+      renderer: "import Svg from 'react-native-svg';\nexport const R = Svg;\n",
+      fail: true,
+    },
+    {
+      name: 'the renderer importing another icon library',
+      probe: '',
+      renderer: RENDERER + "import { Star } from 'lucide-react-native';\n",
+      fail: true,
+    },
+    {
+      name: 'the renderer renaming the binding it is allowed',
+      probe: '',
+      renderer:
+        "import { SvgXml as Document } from 'react-native-svg';\nexport const R = Document;\n",
+      fail: false,
     },
     {
       name: 'the builder importing a drawing library — exempt from markup only',
@@ -305,7 +488,7 @@ if (process.argv.includes('--prove')) {
     `${DIM}  ${String(scanned)} file(s) scanned across ${SCANNED.join(', ')}; ${String(EXEMPT.length)} declared exemption(s)${OFF}`,
   );
   console.log(
-    `  ${YELLOW}!${OFF} ${DIM}NOT CHECKED HERE: a drawing assembled from Views — borders and rotations — which source analysis cannot tell from layout.${OFF}`,
+    `  ${YELLOW}!${OFF} ${DIM}NOT CHECKED HERE: a drawing assembled from Views — borders and rotations — which source analysis cannot tell from layout; a text character standing in for an icon (✓ ● ○), which four places still are — F-280; a regular-expression literal holding a quote, which the comment tokenizer reads as a string to the end of its line.${OFF}`,
   );
 
   if (scanned === 0) {

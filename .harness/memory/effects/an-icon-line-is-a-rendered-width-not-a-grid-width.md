@@ -1,7 +1,7 @@
 # An icon line is a rendered width, not a grid width
 
 **Effect:** [E-133](../../state/effects.json) · `manifest.size.iconStroke` → the emitters →
-`glyphStroke` → every glyph · gates 3 and 4 · **medium**
+`glyphStroke` → every glyph · gates 2, 4 and 8 · **medium**
 
 ## Why the link exists
 

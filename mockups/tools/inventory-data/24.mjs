@@ -117,7 +117,7 @@ export default {
       action: 'open:share.garment',
     }),
     el('24.back', 'ui:Button', B(121, 154, 95, 36), {
-      icon: 'back',
+      icon: 'chevron-left',
       binding: 'static:with.back',
       action: 'navigate:/wardrobe',
       copy: { shape: 'label', script: 'latin' },

@@ -665,7 +665,7 @@
       },
       "tokens": {},
       "type": null,
-      "icon": "lock",
+      "icon": "lock-solid",
       "illustration": null,
       "binding": null,
       "action": "toggle:slot.2.lock",

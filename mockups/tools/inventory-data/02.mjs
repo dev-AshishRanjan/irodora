@@ -193,7 +193,7 @@ export default {
       measured: { bg: '#212227' },
       action: 'navigate:/lens/against',
     }),
-    el('02.import.icon', null, B(85, 1164, 26, 22), { parent: '02.import', icon: 'image' }),
+    el('02.import.icon', null, B(85, 1164, 26, 22), { parent: '02.import', icon: 'image-solid' }),
     el('02.import.label', 'ui:Text', B(124, 1167, 131, 20), {
       parent: '02.import',
       tokens: { fg: 'text.primary' },

@@ -268,8 +268,10 @@ The font files are not committed — `F-275` measured them and `F-226` is what s
 `NOTICE.md`, the subset and the coverage gate — but what is needed to fetch the same twenty and get
 the same numbers is: [`serif-candidates.json`](../../mockups/tools/serif-candidates.json), pinned by
 sha256 and by the `google/fonts` commit the files were read at. The icon
-stroke measures 3–4 px on `01`'s tab icons (mean ≈ 3.3 px, ≈ 1.65 dp at 2 px/dp): `NavIcon`'s 1.75 dp
-`STROKE`, inside the reading's ±0.5 dp.
+stroke measures 3–4 px on `01`'s tab icons (mean ≈ 3.3 px, ≈ 1.65 dp at 2 px/dp). `F-228` declares it
+as `size.iconStroke` 1.65 dp and every glyph renders that width at every size. (This said "`NavIcon`'s
+1.75 dp `STROKE`, inside the reading's ±0.5 dp" — that constant is gone, and it was a width in GRID
+units, about 1.46 dp as drawn, never a dp value.)
 
 **Swatch corners**, measured by `F-220` (`corner.ps1`; the left-hand fit where the right is
 disturbed by what sits beside it), at each mockup's own scale: `00` 6.5–7.5 px (a board, no scale) ·
@@ -442,7 +444,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
 | **OQ-35** | `05`'s seven family chips (C13) name no white and no grey: off-white and the neutral greys (20 entries) have no honest home among them. New chips past the drawn edge, a stated folding rule, out of the filter, or something else? | `F-224` |
 | **OQ-36** | `15` draws Slate Graphite and Obsidian Noir as one swatch each; their levels, borders and text roles are drawn nowhere. A stated derivation, supplied values, or ground only — and is Slate's swatch its ground or its card? | `F-225` |
-| **OQ-37** | `00 11 13` draw four icons in colours C10 does not list — the colour wheel, the palette, the harmony circles, the bulb. Further C10 exceptions, or ink? | `F-232` `F-255` `F-257` |
+| **OQ-37** | Icons drawn in colours C10 does not list, and two whose SHAPE in one ink cannot be read off the image: `00`'s colour wheel and palette, `03`'s hue ring, `06`'s green verification seal, `07 15 16`'s gold padlocks, `11`'s bulb, `13`'s harmony circles and gold sparkles, `15`'s two-colour CVD badge. Further C10 exceptions, or ink — and for the harmony circles and the CVD badge, what shape survives the answer? Overlaps `OQ-15`, which asks the same of `00 03 13 16 24` as a set; this is the per-icon list the icon set found. | `F-232` `F-243` `F-244` `F-247` `F-248` `F-251` `F-255` `F-257` `F-262` |
 
 ---
 

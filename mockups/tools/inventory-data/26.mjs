@@ -61,7 +61,7 @@ export default {
   elements: [
     // ---- header
     el('26.back', 'ui:Button', B(142, 185, 142, 27), {
-      icon: 'back',
+      icon: 'chevron-left',
       binding: 'static:atlas.backJa',
       action: 'navigate:/atlas',
       copy: { shape: 'label', script: 'japanese' },

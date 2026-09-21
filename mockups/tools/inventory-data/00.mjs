@@ -150,7 +150,7 @@ export default {
     }),
     el('00.buttons.icon-palette', 'ui:Button', B(804, 478, 37, 37), {
       tokens: { bg: 'level2' },
-      icon: 'palette',
+      icon: 'palette-solid',
     }),
     el('00.buttons.icon-settings', 'ui:Button', B(851, 478, 36, 37), {
       tokens: { bg: 'level2' },

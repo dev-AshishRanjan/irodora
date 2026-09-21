@@ -37,7 +37,7 @@ as written:
 | external | `share` on `00.controls`, **rebound** | 00 draws a box with an arrow leaving its corner; every screen draws `share` as a tray with an arrow up (06 20 23 24 26). One name was drawing two shapes, so 00's element is now `external` |
 | calendar | — | **drawn in none** of the twelve images the notes cite: not built |
 
-The other 29 of the acceptance's names appear in the inventories as written. The inventories add 27
+The other 24 of the acceptance's names appear in the inventories as written. The inventories add 27
 the list does not name — `arrow-right`, `bell`, `camera-locked`, `chevron-*`, `colour-wheel`, `compass`,
 `document`, `file-*`, `grid`, `list`, `map`, `more`, `plus`, `reticle`, `score` and its five kinds,
 `shield`, `sparkle` — and they are built, because they are drawn.
@@ -89,7 +89,7 @@ of it is this feature's choice:
 
 Each glyph is drawn after a magnified crop of the element that binds it (the inventory gives the box),
 and the paths are ours (NavIcon's reasoning: no vendored artwork, one family, one source). **As built:**
-all 57 were drawn in one pass and compared on one contact sheet — each crop beside its glyph at 72 and
+all of them were drawn in one pass and compared on one contact sheet — each crop beside its glyph at 72 and
 20 dp — rather than in batches; the seal and the padlock were redrawn after that comparison. The crops
 are derived from committed images by the inventory's own boxes, so they are not committed; which element
 each glyph was drawn against is recorded under *Evidence* below, and that is enough to regenerate them.
@@ -107,7 +107,7 @@ word is hidden from screen readers; a glyph that is the whole control is named.
 draws a DOCUMENT (ADR-0070), not an icon. **As built:** two rules, not one — an import of an SVG or icon
 module, and SVG markup in a string — because `card.ts` imports nothing and writes the markup, while
 `ColourCard.tsx` imports `react-native-svg` and writes none; each exemption names its rule. A `--prove`
-plants eighteen cases beside the real tree, and a dead exemption fails too.
+plants thirty-three cases beside the real tree, and a dead exemption fails too.
 
 ### Increments
 
@@ -125,10 +125,30 @@ plants eighteen cases beside the real tree, and a dead exemption fails too.
 
 - **Governing mockups:** every one that binds an icon — `00 01 02 03 04 05 06 07 08 09 10 11 12 13 15
   16 17 18 19 20 21 22 23 24 25 26 27`, per the inventories.
-- **Inventory:** the `icon` field of every element; 57 names once 00's `external` is rebound.
+- **Inventory:** the `icon` field of every element; **65 names** — 57 after 00's `external` was
+  rebound (increment 1), and eight more after the review, below.
 - **Bindings:** none — a glyph is a shape, not a value.
-- **Departures:** none. Names the acceptance lists and no mockup draws are not built, and that is
-  following rule 14 rather than departing from it.
+- **Departures:** none now. **The first draft had one and did not record it** (the review's blocking
+  finding): every glyph was drawn as an outline, which is a style of this feature's own — `00` draws
+  a solid pencil, `02` and `03` a solid sun, `13` a solid eye, figure and scales, `11` a solid bulb.
+  Each is now drawn as its governing element draws it, and where two governing elements drew one name
+  differently the element took a name of its own:
+
+  | element | was | now | because |
+  |---|---|---|---|
+  | `09.search.clear` | `close` | `close-circle` | a solid disc with the cross cut out; `09.clear` is the bare cross |
+  | `03.chips.gamut` | `colour-wheel` | `hue-ring` | a ring, where `00` draws a disc with a palette on it |
+  | `02.import.icon` | `image` | `image-solid` | solid hills and a solid sun, where `00` draws them in line |
+  | `00.buttons.icon-palette` | `palette` | `palette-solid` | the solid palette beside `00`'s own outline one |
+  | `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked` | `lock` | `lock-solid` | a solid padlock, where `13` draws an outline one |
+  | `04.gauge.sparkle` | `sparkle` | `seal-star` | a seal holding a star, where `13` draws three stars |
+  | `06.provenance.review` | `check` | `seal-check` | a solid seal with the check cut out, not the bare check |
+  | `21.filter` | `filter` | `filter-lines` | three centred bars, where `19` draws sliders |
+  | `24.back`, `26.back` | `back` | `chevron-left` | a chevron, where every other back is an arrow |
+
+  Two remain undrawable in one ink and are recorded rather than decided: `13`'s harmony circles and
+  `15`'s split CVD badge are told apart in the image only by their colours, so **OQ-37** now covers
+  their shape as well as their tint, and blocks the surfaces that draw them.
 
 ## Files to touch
 
@@ -168,31 +188,43 @@ docs/design/DESIGN-SYSTEM.md                the icon section
 
 ## Evidence
 
-Each glyph was drawn against a magnified crop of the element below (an inventory id, or where the
-inventory binds a compound element, the part of it that is the icon). Crops: the inventory box with a
-3 px margin, fitted into a 96 px cell from the mockup's own pixels.
+Each glyph was drawn against a magnified crop of the element below — the GOVERNING one where a name
+is drawn more than once, which is the correction the review made to this table (`profile` had been
+drawn against `15`'s superseded tab bar, `settings` against `09`'s). A row marked *superseded tab
+bars only* is a name no governing element draws at all; it is built as drawn, because the acceptance
+asks for every icon any mockup draws. Crops: the inventory box with a 3 px margin, fitted into a
+96 px cell from the mockup's own pixels.
 
 | | | |
 |---|---|---|
-| `arrow-right` · 04.sheet.outfits.icon | `edit` · 00.controls.icon-edit-2 | `palette` · 00.buttons.icon-palette |
-| `atlas` · 01.tabs.atlas.icon | `export` · 06.export | `plus` · 03.actions.add.icon |
-| `back` · 22.back | `external` · 00.controls.icon-external | `profile` · 15.tabs.profile |
-| `bag` · bag (11, icon part) | `file-code` · file-code (18) | `refresh` · refresh (13, icon part) |
-| `bell` · 15.tabs.bell | `file-export` · file-export (18) | `reticle` · 06.actions.hold.icon |
-| `bookmark` · 06.bookmark | `file-table` · 18.tools.csv.icon | `score` · score (13, icon part) |
-| `bulb` · 11.gap.icon | `file-text` · file-text (18) | `score-balance` · 13.score.balance.icon |
-| `camera` · 00.buttons.icon-camera | `filter` · 19.filter | `score-contrast` · score-contrast (13) |
-| `camera-locked` · 27.lens-permission.icon | `glare` · 27.lens-refused.icon | `score-cvd` · 13.score.cvd.icon |
-| `check` · 12.intelligence.check | `grid` · 11.tabs.grid.icon | `score-fit` · 13.score.fit.icon |
-| `chevron-left` · 16.tray.previous | `help` · help (18, icon part) | `score-harmony` · 13.score.harmony.icon |
-| `chevron-right` · 16.tray.next | `history` · history (23) | `search` · search (05 tab) |
-| `chevron-up` · 12.tracking.toggle | `home` · 01.tabs.home.icon | `settings` · 09.tabs.settings.icon |
-| `close` · 09.search.clear | `image` · 00.buttons.icon-image | `share` · 24.share |
-| `colour-wheel` · colour-wheel (00) | `lens` · 01.tabs.lens.icon | `shield` · 12.intelligence.icon |
-| `compass` · 09.tabs.atlas.icon | `list` · list (05.count, icon part) | `sparkle` · sparkle (04) |
-| `contrast` · contrast (00) | `lock` · 13.slots.slot-2.lock | `sun` · 02.conditions.icon |
-| `document` · 18.tabs.document.icon | `map` · 09.tabs.map.icon | `swap` · swap (13, icon part) |
-| `download` · 08.export | `more` · more (05.more) | `wardrobe` · 01.tabs.wardrobe.icon |
+| `arrow-right` · 01.hero.cta (+14) | `external` · 00.controls.icon-external | `palette-solid` · 00.buttons.icon-palette |
+| `atlas` · 01.tabs.atlas.icon | `file-code` · 18.tools.tokens.icon | `plus` · 03.actions.add.icon (+2) |
+| `back` · 06.back.icon (+12) | `file-export` · 18.tabs.export.icon *(superseded tab bars only)* | `profile` · 01.tabs.profile.icon |
+| `bag` · 11.actions.shopping | `file-table` · 18.tools.csv.icon | `refresh` · 07.slots.slot-2.swap (+6) |
+| `bell` · 15.tabs.bell *(superseded tab bars only)* | `file-text` · 18.tools.ase.icon | `reticle` · 06.actions.hold.icon |
+| `bookmark` · 06.bookmark | `filter` · 19.filter | `score` · 13.score.figure |
+| `bulb` · 11.gap.icon | `filter-lines` · 21.filter | `score-balance` · 13.score.balance.icon |
+| `camera` · 00.buttons.icon-camera (+3) | `glare` · 27.lens-refused.icon | `score-contrast` · 13.score.contrast.icon |
+| `camera-locked` · 27.lens-permission.icon | `grid` · 11.tabs.grid.icon *(superseded tab bars only)* | `score-cvd` · 13.score.cvd.icon |
+| `check` · 04.sheet.tolerance (+1) | `help` · 18.help | `score-fit` · 13.score.fit.icon |
+| `chevron-left` · 16.tray.previous (+2) | `history` · 23.history.icon | `score-harmony` · 13.score.harmony.icon |
+| `chevron-right` · 16.tray.next | `home` · 01.tabs.home.icon | `seal-check` · 06.provenance.review |
+| `chevron-up` · 12.tracking.toggle | `hue-ring` · 03.chips.gamut | `seal-star` · 04.gauge.sparkle |
+| `close` · 09.clear | `image` · 00.buttons.icon-image | `search` · 05.search |
+| `close-circle` · 09.search.clear | `image-solid` · 02.import.icon | `settings` · 00.buttons.icon-settings |
+| `colour-wheel` · 00.controls.icon-wheel | `lens` · 01.tabs.lens.icon | `share` · 06.share (+4) |
+| `compass` · 05.tabs.compass.icon (+3) *(superseded tab bars only)* | `list` · 05.count | `shield` · 12.intelligence.icon |
+| `contrast` · 00.controls.icon-contrast (+1) | `lock` · 13.slots.slot-1.locked (+3) | `sparkle` · 13.capsule.icon |
+| `document` · 18.tabs.document.icon *(superseded tab bars only)* | `lock-solid` · 07.slots.slot-2.lock (+2) | `sun` · 02.conditions.icon (+1) |
+| `download` · 08.export | `map` · 09.tabs.map.icon *(superseded tab bars only)* | `swap` · 13.slots.slot-2.swap (+2) |
+| `edit` · 00.controls.icon-edit (+1) | `more` · 05.more | `wardrobe` · 01.tabs.wardrobe.icon (+1) |
+| `export` · 06.export | `palette` · 00.controls.icon-palette |  |
+
+**What nothing checks is whether a glyph LOOKS like its crop.** The comparison is a person reading a
+contact sheet, which is how the review found nine drawings that were not their element's — so the
+sheet is not evidence that survives this session. **F-281** is that gap: the crops and a measure of
+how far a drawing sits from its own crop, committed. F-221's device captures are the other half, and
+it is blocked on this machine having no JDK.
 
 ## Risks and open questions
 

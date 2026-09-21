@@ -69,7 +69,7 @@
       },
       "tokens": {},
       "type": null,
-      "icon": "back",
+      "icon": "chevron-left",
       "illustration": null,
       "binding": "static:with.back",
       "action": "navigate:/wardrobe",

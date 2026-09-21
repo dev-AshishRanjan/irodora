@@ -184,7 +184,7 @@ export default {
     card(5, B(27, 1228, 711, 60)),
     el('15.security.badge', 'ui:Chip', B(61, 1251, 646, 29), {
       parent: '15.section-5',
-      icon: 'lock',
+      icon: 'lock-solid',
       binding: 'static:settings.securityBadge',
       copy: { shape: 'badge', script: 'latin' },
     }),

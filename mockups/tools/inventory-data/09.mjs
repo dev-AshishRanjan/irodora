@@ -103,7 +103,7 @@ export default {
     }),
     el('09.search.clear', 'ui:Button', B(669, 201, 35, 35), {
       parent: '09.search',
-      icon: 'close',
+      icon: 'close-circle',
       action: 'submit:finder.query.clear',
     }),
     ...[

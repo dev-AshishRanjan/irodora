@@ -893,7 +893,7 @@
         "bg": "level2"
       },
       "type": null,
-      "icon": "palette",
+      "icon": "palette-solid",
       "illustration": null,
       "binding": null,
       "action": null,

@@ -730,7 +730,7 @@
         "fg": "text.tertiary"
       },
       "type": null,
-      "icon": "lock",
+      "icon": "lock-solid",
       "illustration": null,
       "binding": "static:palette.locked",
       "action": "toggle:slot.1.lock",

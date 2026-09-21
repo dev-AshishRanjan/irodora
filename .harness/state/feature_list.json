@@ -7478,7 +7478,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01. RECONCILED 2026-09-16 against the inventories and the images (increment 1): the set is every icon name an inventory binds — 57, once 00's box-with-arrow was rebound from `share` to `external` (it is a different drawing from the tray-and-arrow every screen draws as share). The acceptance list maps onto it: clear = close, photo = image, regenerate = refresh, light = sun (02, 03) and bulb (11) — both drawn — and t-shirt = wardrobe (11 and 25 draw the wardrobe glyph as a shirt). Hanger is an illustration (22, 27) and belongs to F-229. CALENDAR IS DRAWN IN NONE of 00, 01, 02, 06, 08, 11, 12, 13, 18, 22, 24 and 27, so it is not built: an icon no mockup draws is a design nobody made. WHICH DRAWING (increment 1, 2026-09-16): the mockups draw one name several ways (atlas as globe, book and map; search as magnifier and people; swap as one arrow and two), and the contract decides each — C1/P5 makes the tab bar 01's, a superseded tab bar never sets a shape, and P1 lets each screen govern its own elements, so 07's swap buttons (which draw refresh's glyph) are rebound to `refresh`. Tints belong to the surfaces under C10; four C10 does not list are OQ-37."
+      "notes": "Inventory from 00 (icon buttons), 02, 06, 08, 11, 12, 13, 18, 22, 24, 27 and the tab bar of 01. RECONCILED 2026-09-16 against the inventories and the images (increment 1): the set is every icon name an inventory binds — 57, once 00's box-with-arrow was rebound from `share` to `external` (it is a different drawing from the tray-and-arrow every screen draws as share). The acceptance list maps onto it: clear = close, photo = image, regenerate = refresh, light = sun (02, 03) and bulb (11) — both drawn — and t-shirt = wardrobe (11 and 25 draw the wardrobe glyph as a shirt). Hanger is an illustration (22, 27) and belongs to F-229. CALENDAR IS DRAWN IN NONE of 00, 01, 02, 06, 08, 11, 12, 13, 18, 22, 24 and 27, so it is not built: an icon no mockup draws is a design nobody made. WHICH DRAWING (increment 1, 2026-09-16): the mockups draw one name several ways (atlas as globe, book and map; search as magnifier and people; swap as one arrow and two), and the contract decides each — C1/P5 makes the tab bar 01's, a superseded tab bar never sets a shape, and P1 lets each screen govern its own elements, so 07's swap buttons (which draw refresh's glyph) are rebound to `refresh`. Tints belong to the surfaces under C10; four C10 does not list are OQ-37. REVIEW (2026-09-21): the single review FAILED on golden rule 14 — the first draft drew every glyph as an outline, which is a style of this feature's own and not the mockups': 00 draws a solid pencil and a solid palette button, 02 and 03 a solid sun, 11 a solid bulb, 13 a solid eye, figure and scales, 09 a solid disc behind its clear cross. Every glyph is now drawn as its governing element draws it, and eight elements whose drawing differs from the name they shared took a name of their own — close-circle (09), hue-ring (03), image-solid (02), palette-solid (00), lock-solid (07 15 16), seal-star (04), seal-check (06), filter-lines (21) — while 24's and 26's back buttons, drawn as chevrons, are rebound to the chevron-left that already existed. The set is 65 names. Two shapes cannot be read off the image in one ink at all — 13's harmony circles and 15's split CVD badge — and OQ-37 now covers their shape as well as their tint."
     },
     {
       "id": "F-229",
@@ -7628,7 +7628,7 @@
         "contrast",
         "cvd"
       ],
-      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that). FROM F-228 (2026-09-16): `IconButton` is the named, weighted glyph inside a control and draws no plate. The inventories record 00's icon-only controls — thirty elements — as `ui:Button` with an icon and no copy, their plate on each element's `tokens`; this feature decides whether those draw as IconButton inside the plate or as a Button form, and says so in the inventory vocabulary.",
+      "notes": "HeroUI Native stays the foundation behind @irodora/ui (ADR-0062); a screen never imports it (the boundary guard already refuses that). FROM F-228 (2026-09-16): `IconButton` is the named, weighted glyph inside a control and draws no plate. The inventories record 00's icon-only controls — thirty elements — as `ui:Button` with an icon and no copy, their plate on each element's `tokens`; this feature decides whether those draw as IconButton inside the plate or as a Button form, and says so in the inventory vocabulary. ALSO FROM THE F-228 REVIEW (2026-09-21): Button spreads its caller props AFTER its own accessibilityRole, accessibilityLabel and accessibilityState, so a caller can rename it, change its role or contradict its state — and an aria-* prop would win over the accessibility* twin even if the order were fixed (RN View.js and Pressable.js). IconButton now refuses those props by type and removes them at render; this feature should do the same for Button and the rest of the controls it rebuilds.",
       "openQuestions": [
         "OQ-37"
       ]
@@ -7708,7 +7708,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1). FROM F-228 (2026-09-16): the glyph registry has filled drawings only where a mockup draws one — home (01), lens (02), profile (02 15 18), compass (09). ATLAS AND WARDROBE ARE DRAWN FILLED NOWHERE, so if 01's active-tab treatment is a filled glyph, the active Atlas and Wardrobe tabs are undrawn and are an open question for a person, not a drawing to invent. NavIcon takes no `filled` prop yet; this feature adds it with the treatment."
+      "notes": "The current order already matches 01 (apps/mobile/src/tabs.ts); tabBarShowLabel is false today and becomes true. 01 labels the lens tab \"Lens Camera\"; 02 and 25 say \"Lens\" — \"Lens\" wins (C1). FROM F-228 (2026-09-16): the glyph registry has filled drawings only where a mockup draws one — home (01), lens (02), profile (02 15 18), compass (09). CORRECTED 2026-09-21 after the F-228 review: 01 — the governing tab bar — draws ONLY home active. The filled lens, profile and compass come from the tab bars of 02, 15, 18 and 09, which C1 supersedes, and a superseded element never sets a shape a governing one draws; atlas and wardrobe are drawn filled nowhere at all. So what 01's bar does for any active tab but Home is undrawn, and is an open question for a person rather than a drawing to invent. NavIcon takes no `filled` prop yet; this feature adds it with the treatment."
     },
     {
       "id": "F-235",
@@ -8029,7 +8029,8 @@
         "F-236"
       ],
       "openQuestions": [
-        "OQ-8"
+        "OQ-8",
+        "OQ-37"
       ],
       "mockups": [
         "02"
@@ -8053,7 +8054,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 02. ELEMENTS: centred title \"Colour Lens • 色の測定\"; four mode pills (Live Pick · Garment Scan · Against Target · Calibrated Card); the rounded viewfinder; the conditions HUD pill at top (gold tint, C10); the reticle — ring, crosshair, four corner brackets with lattice accents; the readout card with sample, \"Live OKLCh\", the triplet large, sRGB hex, three nearest corpus chips each tinted with its colour and carrying kanji, romaji and ΔE00; the control row — \"Import Photo\" pill, the shutter ring with the mark, \"Hold Target\" pill. DEPARTURES: \"Excellent Exposure\" → the engine’s own conditions wording (E2); the leaked \"Live badges for nearest…\" label is not design. OQ-8: the Garment Scan and Calibrated Card states are undrawn. ALSO DEPARTS (F-219): 02’s Japanese title calls a camera estimate a measurement (測定 — the E-089 defect); it reads as an estimate in both languages (golden rule 11, E2). Outside F-219’s five lint classes."
+      "notes": "MOCKUP 02. ELEMENTS: centred title \"Colour Lens • 色の測定\"; four mode pills (Live Pick · Garment Scan · Against Target · Calibrated Card); the rounded viewfinder; the conditions HUD pill at top (gold tint, C10); the reticle — ring, crosshair, four corner brackets with lattice accents; the readout card with sample, \"Live OKLCh\", the triplet large, sRGB hex, three nearest corpus chips each tinted with its colour and carrying kanji, romaji and ΔE00; the control row — \"Import Photo\" pill, the shutter ring with the mark, \"Hold Target\" pill. DEPARTURES: \"Excellent Exposure\" → the engine’s own conditions wording (E2); the leaked \"Live badges for nearest…\" label is not design. OQ-8: the Garment Scan and Calibrated Card states are undrawn. ALSO DEPARTS (F-219): 02’s Japanese title calls a camera estimate a measurement (測定 — the E-089 defect); it reads as an estimate in both languages (golden rule 11, E2). Outside F-219’s five lint classes. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not."
     },
     {
       "id": "F-244",
@@ -8100,7 +8101,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 03. ELEMENTS: the captured frame behind; the sheet with handle; three provenance chips (conditions with confidence · colour space · \"Estimated Lens Reading\"); the sampled card — 120 sample with keyline, Hex/OKLCh/CIELAB table, kimono line-art at lower right; \"Ranked Japanese Corpus Matches (ranked by ΔE00)\" with three rows — rank, sample, kanji, romaji, English, ΔE00, \"Open in Atlas →\"; primary pill \"Wear It (Build Outfit) →\", outlined \"+ Add to Wardrobe\", full-width \"Hold as Target for Comparison\". DEPARTURES: a percentage match → OQ-9 via F-222; \"95% Confidence\" → F-222’s confidence format; \"ranked Japanese corpus\" copy stays because it is true of this corpus."
+      "notes": "MOCKUP 03. ELEMENTS: the captured frame behind; the sheet with handle; three provenance chips (conditions with confidence · colour space · \"Estimated Lens Reading\"); the sampled card — 120 sample with keyline, Hex/OKLCh/CIELAB table, kimono line-art at lower right; \"Ranked Japanese Corpus Matches (ranked by ΔE00)\" with three rows — rank, sample, kanji, romaji, English, ΔE00, \"Open in Atlas →\"; primary pill \"Wear It (Build Outfit) →\", outlined \"+ Add to Wardrobe\", full-width \"Hold as Target for Comparison\". DEPARTURES: a percentage match → OQ-9 via F-222; \"95% Confidence\" → F-222’s confidence format; \"ranked Japanese corpus\" copy stays because it is true of this corpus. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not.",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-245",
@@ -8233,7 +8237,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 06; Japanese headings and type from 26 (C3 ⇄). ELEMENTS: app bar \"← Atlas\" with bookmark (F-237), share-card and export icons; the full-width sample with keyline and its offset second layer; display kanji with kana and \"romaji • English\"; the family · era · season pill; the \"Scientific Color Space Readout Table\" card — Hex, OKLCh, CIELAB, sRGB with Display-P3 on the same row; the provenance card with its text, the review line and botanical line-art at right; \"Wearable Combinations\" with three numbered circular garment thumbnails and their names and hex; the sticky bar — \"Wear It (Build Outfit) →\" and outlined \"Hold as Target in Lens\". DEPARTURES: every provenance line is the entry’s real one — no Edo manuscript (E1); P3 is a real conversion (E1); the right-hand garbled card is not design (C19). 26’s headings map onto 06’s sections: 測色値と表色系 → the readout table; 着こなしの配色調和 → wearable combinations; コーパス典拠と査読 → provenance; \"伝統色\" → classification-true (FR-23)."
+      "notes": "MOCKUP 06; Japanese headings and type from 26 (C3 ⇄). ELEMENTS: app bar \"← Atlas\" with bookmark (F-237), share-card and export icons; the full-width sample with keyline and its offset second layer; display kanji with kana and \"romaji • English\"; the family · era · season pill; the \"Scientific Color Space Readout Table\" card — Hex, OKLCh, CIELAB, sRGB with Display-P3 on the same row; the provenance card with its text, the review line and botanical line-art at right; \"Wearable Combinations\" with three numbered circular garment thumbnails and their names and hex; the sticky bar — \"Wear It (Build Outfit) →\" and outlined \"Hold as Target in Lens\". DEPARTURES: every provenance line is the entry’s real one — no Edo manuscript (E1); P3 is a real conversion (E1); the right-hand garbled card is not design (C19). 26’s headings map onto 06’s sections: 測色値と表色系 → the readout table; 着こなしの配色調和 → wearable combinations; コーパス典拠と査読 → provenance; \"伝統色\" → classification-true (FR-23). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not.",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-248",
@@ -8278,9 +8285,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports.",
+      "notes": "MOCKUP 07 — route atlas/wear/[slug], as the README now says. ELEMENTS: app bar \"← <name> | Wear It • Outfit Combinations\"; the anchor card — sample, kanji, name and hex, the slot; occasion segmented control (Casual · Minimalist Office · Japanese Classic · Evening); the 2×2 slot canvas, each slot filled with its colour and carrying slot name, hex and garment name ON the colour (C8), with Swap and Lock controls; the intelligence card — harmony badge, personal fit, CVD separation, contrast; substitution pills along a stated dimension (FR-38); the sticky bar — \"Save to Outfit Lab\" and outlined \"Export Palette Tokens\"; kimono line-art top right. DEPARTURES: \"6.2:1 (APCA Passed)\" → ratio and Lc as two figures (E2); the personal-fit figure keeps its FR-29 score and loses its \"Match\" suffix (E2, and C12 for the seasonal type it names) (claims-ok: quotes the drawn construction this note resolves). ALSO DEPARTS (F-219): the CVD separation keeps its figure and the model it was computed under, and loses the Safe suffix 07 draws after the deficiency names (E2) — a claim about people no simulation supports. FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not.",
       "openQuestions": [
-        "OQ-32"
+        "OQ-32",
+        "OQ-37"
       ]
     },
     {
@@ -8411,7 +8419,10 @@
         "contrast",
         "cvd"
       ],
-      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2)."
+      "notes": "MOCKUPS 10 (catalogue) and 16 (the draft, which lives inside atlas/palettes — C15-style README correction). 10 ELEMENTS: app bar \"← Atlas\" with outlined \"+ Create New Palette\"; \"Palette Studio • 配色工房\"; segmented Curated Systems / My Custom Palettes; palette cards — two-script title, description and provenance line, the joined band with role labels, hex, kanji and names beneath, the intelligence badges, \"Apply to Outfit Lab\" and \"Export Tokens\"; the second card style — separate samples with the hex ON them (C8) and two badges; sticky \"Export Selected as ASE / CSS / JSON / PDF\". 16 ELEMENTS: app bar \"← Palettes | Create Custom Palette | Save Palette\"; the name field and three type chips; the 2×2 role slots — bar sample, hex, kanji and names, lock or replace, role; the live matrix (contrast of slot 1 against 2, harmony, CVD); the corpus drawer — horizontal tiles with the kanji set vertically (tategaki) and chevrons; sticky \"Create & Save Palette →\"; kimono line-art and asanoha. DEPARTURES: \"Heian Verified\" and \"Traditional Kasane Layering\" → classification-true (E1); the absolute CVD and distinguishability claims, \"APCA Passed - AAA\" → computed figures (E2). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not.",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-252",
@@ -8912,7 +8923,10 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not an absolute CVD-safety claim); system appearance and device accent are added in 15’s own row components (E4, FR-70)."
+      "notes": "MOCKUP 15. ELEMENTS: \"Settings & Preferences • 設定\" with the outline mark at right; numbered sections — 1 the four theme tiles with name, description and hex, the selected tile ringed with a dot; 2 the CVD mode chips (F-240) and the palette-separation pill; 3 three switches (F-239); 4 learned preference weights with the reset action; 5 the on-device security statement; leaf line-art. DEPARTURES: the separation pill states the computed figure (E2, not an absolute CVD-safety claim); system appearance and device accent are added in 15’s own row components (E4, FR-70). FROM F-228 (2026-09-21): this mockup draws an icon in a colour C10 does not declare, so OQ-37 blocks it — the glyph exists, its tint (and for 13 and 15 its one-ink shape) does not.",
+      "openQuestions": [
+        "OQ-37"
+      ]
     },
     {
       "id": "F-263",
@@ -9465,6 +9479,61 @@
         "A planted em dash in a copy of a tool is watched failing, beside the real tools passing"
       ],
       "notes": "RECORDED FROM F-275'S SINGLE REVIEW (finding 17). Windows PowerShell 5.1 reads a .ps1 without a BOM as ANSI, so an em dash inside a string is a parse error rather than a character: F-275 broke mockups/tools/serif-match.ps1 exactly that way and the error surfaced only when the tool was run. mockups/tools/README.md now states the convention; nothing enforces it, and the tools are run by hand, so the next breakage is found by whoever runs one next."
+    },
+    {
+      "id": "F-280",
+      "requirements": [
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-228"
+      ],
+      "mockups": [
+        "all"
+      ],
+      "acceptance": [
+        "No user-facing string contains a glyph character standing in for an icon — the ✓ in Chip, Select and Swatch, the ●/○ Export draws as its own markers — and each is the drawn glyph or nothing",
+        "The accessible name says what the drawn state says, without the character (chipAccessibleName today appends \"✓\" to the label, so a screen reader hears the tick twice)",
+        "verify-app-glyphs.mjs refuses a glyph character in apps/mobile and in packages/ui, with a --prove case each way"
+      ],
+      "verification": [
+        "lint",
+        "test",
+        "a11y"
+      ],
+      "notes": "FROM THE F-228 REVIEW (2026-09-21). The icon set made every drawn icon one Glyph, but four places still spell one as text: packages/ui/src/Chip.tsx (chipAccessibleName, rendered as the visible label), packages/ui/src/controls.tsx (the Select item mark), packages/ui/src/Swatch.tsx, and apps/mobile/src/screens/Export.tsx (● and ○ as selection markers). A character is not the drawn set: it takes the platform font, it is not held to the mockups’ line weight, and in Chip it is announced as well as drawn. verify-app-glyphs.mjs prints this as a limit on every run.",
+      "title": "No character stands in for a drawn icon"
+    },
+    {
+      "id": "F-281",
+      "requirements": [
+        "NFR-9"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-228"
+      ],
+      "mockups": [
+        "all"
+      ],
+      "acceptance": [
+        "The crop of each governing element is produced from the committed mockup and its inventory box by a committed tool, so it is reproducible rather than kept in a session",
+        "A check measures each rendered glyph against its crop — coverage of ink against ink, aligned by bounding box — and fails a drawing that is not the shape its element draws (the F-228 review found nine, and both directions of the registry test were green throughout)",
+        "The measure is calibrated: an outline planted where the mockup draws a solid fails, and the shipped set passes, with the numbers printed"
+      ],
+      "verification": [
+        "lint",
+        "test"
+      ],
+      "notes": "FROM THE F-228 REVIEW (2026-09-21). Nothing checks what a glyph LOOKS like. The registry is held to the inventories in both directions and to the line weight, and every gate was green while nine glyphs were drawn in outline where their element is solid — a person reading a contact sheet is what caught it, and that evidence does not survive the session. F-221's device captures are the other half of this and are blocked on this machine having no JDK; this half needs no device. Rendering a glyph outside a test harness is the work: the session that raised this rendered them by walking the element tree into plain SVG and screenshotting with headless Edge.",
+      "title": "Every glyph is measured against the element it was drawn from"
     }
   ]
 }

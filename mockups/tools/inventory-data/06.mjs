@@ -184,7 +184,7 @@ export default {
       parent: '06.provenance',
       tokens: { fg: 'text.secondary' },
       type: text('sans', 'label'),
-      icon: 'check',
+      icon: 'seal-check',
       binding: 'corpus:entry.review',
       copy: { shape: 'label', script: 'latin' },
     }),

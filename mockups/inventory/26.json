@@ -39,7 +39,7 @@
       },
       "tokens": {},
       "type": null,
-      "icon": "back",
+      "icon": "chevron-left",
       "illustration": null,
       "binding": "static:atlas.backJa",
       "action": "navigate:/atlas",

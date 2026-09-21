@@ -10,7 +10,7 @@
 import { render, screen } from '@testing-library/react-native';
 import { nativeColors, nativeTapTarget } from '@irodora/design-tokens';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { Glyph, IconButton, ThemeProvider } from '../src/index.js';
 
 const INK = '#F2F2F2';
@@ -31,7 +31,78 @@ describe('an icon-only control cannot be written without its name', () => {
   it('refuses a second name by the side door, where it could disagree with the first', () => {
     // @ts-expect-error — `accessibilityLabel` is not a prop; `label` is the one name.
     const doubled = <IconButton name="share" label="Share" accessibilityLabel="Export" />;
-    expect(doubled).toBeDefined();
+    // @ts-expect-error — nor is naming it after another element.
+    const borrowed = <IconButton name="share" label="Share" accessibilityLabelledBy="h" />;
+    // @ts-expect-error — nor the web spelling of either.
+    const aria = <IconButton name="share" label="Share" aria-labelledby="h" />;
+    // DECOY — a hint describes what happens; it is not a name, and it compiles.
+    const hinted = <IconButton name="share" label="Share" accessibilityHint="Opens a sheet" />;
+    expect([doubled, borrowed, aria, hinted]).toHaveLength(4);
+  });
+
+  it('refuses a role, a state or a hiding that would contradict what it announces', () => {
+    // @ts-expect-error — the role is the component's.
+    const role = <IconButton name="share" label="Share" accessibilityRole="image" />;
+    // @ts-expect-error — in either spelling.
+    const webRole = <IconButton name="share" label="Share" role="img" />;
+    // @ts-expect-error — the state comes from `disabled` and `loading`, and nowhere else.
+    const state = <IconButton name="share" label="Share" accessibilityState={{}} />;
+    // @ts-expect-error — nor the web spelling of it.
+    const ariaOff = <IconButton name="share" label="Share" aria-disabled={false} />;
+    // @ts-expect-error — nor busy.
+    const ariaBusy = <IconButton name="share" label="Share" aria-busy />;
+    // @ts-expect-error — a control a screen reader cannot reach is not a control.
+    const hidden = <IconButton name="share" label="Share" aria-hidden />;
+    // @ts-expect-error — in any of its forms.
+    const merged = <IconButton name="share" label="Share" accessible={false} />;
+    // @ts-expect-error — including Android's.
+    const removed = <IconButton name="share" label="Share" importantForAccessibility="no" />;
+    // DECOY — the props that set the state honestly compile.
+    const honest = <IconButton name="share" label="Share" disabled loading={false} testID="t" />;
+    expect([role, webRole, state, ariaOff, ariaBusy, hidden, merged, removed, honest]).toHaveLength(
+      9,
+    );
+  });
+
+  it('keeps its role and state when a cast slips the refused props past the type', () => {
+    // React Native gives each `aria-*` prop precedence over its `accessibility*` twin, so the web
+    // spellings are the ones that would win if they got through.
+    const smuggled = {
+      accessibilityRole: 'image',
+      accessibilityState: { disabled: false, busy: false },
+      accessibilityLabel: 'Something else',
+      accessible: false,
+      'aria-label': 'Something else again',
+      'aria-disabled': false,
+      'aria-busy': true,
+      'aria-hidden': true,
+    } as unknown as Record<string, never>;
+    render(
+      <ThemeProvider theme="dark">
+        <IconButton name="share" label="Share this colour" disabled {...smuggled} testID="b" />
+      </ThemeProvider>,
+    );
+    // THE NATIVE VIEWS ARE WHAT IS READ, not a role query. The testing library judges "hidden" by
+    // walking every ancestor's props, composite ones included, so the `aria-hidden` still sitting on
+    // the IconButton ELEMENT hides everything beneath it from its queries — a prop no native view
+    // ever receives. The views below are what a screen reader is given.
+    const hosts = screen.getAllByTestId('b', { includeHiddenElements: true });
+    expect(hosts.length).toBeGreaterThan(0);
+    for (const host of hosts) {
+      const p = host.props as Record<string, unknown>;
+      expect(p['accessibilityRole']).toBe('button');
+      expect(p['accessibilityLabel']).toBe('Share this colour');
+      expect(p['accessibilityState']).toEqual({ disabled: true, busy: false });
+      expect(p['accessible']).toBe(true);
+      for (const key of ['aria-hidden', 'aria-label', 'aria-busy', 'aria-disabled'])
+        expect(p[key]).toBeUndefined();
+      expect(p['accessibilityElementsHidden']).not.toBe(true);
+      expect(p['importantForAccessibility']).not.toBe('no-hide-descendants');
+    }
+    // DECOY — neither smuggled name is on anything.
+    expect(
+      screen.queryAllByLabelText(/Something else/u, { includeHiddenElements: true }),
+    ).toHaveLength(0);
   });
 
   it('refuses a glyph no mockup draws, and compiles one that is drawn', () => {
@@ -50,9 +121,13 @@ describe('what a screen reader and a finger get', () => {
       </ThemeProvider>,
     );
     const button = screen.getByRole('button', { name: 'Share this colour' });
-    expect(button).toBeTruthy();
-    // The glyph is decorative: the only name in the tree is the control's.
-    expect(screen.queryAllByLabelText(/share/iu)).toHaveLength(1);
+    // The glyph INSIDE this button is the one hidden — read off the drawing, not off the absence of
+    // a second label, which an exposed but unnamed glyph would satisfy just as well.
+    const drawing = button.findByType(Svg);
+    expect(drawing.props['accessible']).toBe(false);
+    expect(drawing.props['importantForAccessibility']).toBe('no-hide-descendants');
+    // DECOY — the control around it is not hidden.
+    expect(button.props['importantForAccessibility']).not.toBe('no-hide-descendants');
   });
 
   it('announces disabled and busy from the two props that set them', () => {

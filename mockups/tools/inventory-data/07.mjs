@@ -191,7 +191,7 @@ export default {
     }),
     el('07.slots.slot-2.lock', 'ui:Button', B(532, 626, 105, 41), {
       parent: '07.slots.slot-2',
-      icon: 'lock',
+      icon: 'lock-solid',
       action: 'toggle:slot.2.lock',
       copy: { shape: 'label', script: 'latin' },
     }),

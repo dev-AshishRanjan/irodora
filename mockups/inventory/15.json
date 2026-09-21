@@ -1461,7 +1461,7 @@
       },
       "tokens": {},
       "type": null,
-      "icon": "lock",
+      "icon": "lock-solid",
       "illustration": null,
       "binding": "static:settings.securityBadge",
       "action": null,
