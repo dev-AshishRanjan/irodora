@@ -9538,6 +9538,39 @@
       ],
       "notes": "FROM THE F-228 REVIEW (2026-09-21). Nothing checks what a glyph LOOKS like. The registry is held to the inventories in both directions and to the line weight, and every gate was green while nine glyphs were drawn in outline where their element is solid — a person reading a contact sheet is what caught it, and that evidence does not survive the session. F-221's device captures are the other half of this and are blocked on this machine having no JDK; this half needs no device. Rendering a glyph outside a test harness is the work: the session that raised this rendered them by walking the element tree into plain SVG and screenshotting with headless Edge.",
       "title": "Every glyph is measured against the element it was drawn from"
+    },
+    {
+      "id": "F-282",
+      "title": "The inventory boxes that are scan blobs are re-measured",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [
+        "F-220"
+      ],
+      "mockups": [
+        "09",
+        "10",
+        "11",
+        "14",
+        "18",
+        "25"
+      ],
+      "acceptance": [
+        "Each element whose box was read as a scan blob is re-measured to the drawn figure it names: 09.art, 10.art, 11.art, 14.splash.wave, 18.report.fold, 25.art-blossom, 25.art-waves",
+        "A measurement over each corrected box reports the art rather than a neighbouring element — the tone and line readings F-229 could not take are taken",
+        "The geometric rule in illustrations.test.tsx carries no declared exception afterwards"
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-229 (2026-09-21). Seven illustration boxes catch a neighbouring element: measuring them reports that element instead of the art (R9-MOCKUP-FIDELITY section 5), and 10.art overlaps 10.palette-2.swatch-4 by 54 px in x although the image draws the leaves BESIDE the card rather than over the sample. So the boxes overstate the drawings, which matters twice: the tone and line of those seven are unmeasured, and the rule that no art sits over a sample has to carry an exception for 10.art until the box is right. mockups/tools/art-measure.ps1 is the tool that reads them."
     }
   ]
 }

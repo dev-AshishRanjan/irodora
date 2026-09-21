@@ -103,6 +103,16 @@ export const UNBUILT_ILLUSTRATIONS = {
 /** R7's three, keyed by what is missing. No mockup draws them; F-236 rebuilds their surfaces. */
 export const EMPTY_STATE_ILLUSTRATIONS = ['swatches', 'reading', 'pairing'] as const;
 
+/**
+ * The set's version — *one versioned, vector set* is what F-229 asks for, and this is the half a
+ * check can hold.
+ *
+ * Its test digests every drawing's path data and compares the digest recorded against THIS
+ * version, so a redrawn line fails until it is recorded as a change. A version nobody can fail is
+ * a number in a file; this one is the set's identity.
+ */
+export const ILLUSTRATION_SET_VERSION = '1.0.0';
+
 export const ILLUSTRATIONS = [...DRAWN_ILLUSTRATIONS, ...EMPTY_STATE_ILLUSTRATIONS] as const;
 export type IllustrationName = (typeof ILLUSTRATIONS)[number];
 

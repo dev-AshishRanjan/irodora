@@ -429,6 +429,25 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   },
   {
     /*
+     * TWO OF THE MOCKUPS' OWN DRAWINGS (F-229), and they are here for what they differ in rather
+     * than to represent the set: `plum-branch` is the motif five mockups draw and is all outline;
+     * `hanger` is the one drawn with FILLS, which is the case R7's outline-only rule refused and
+     * `27` draws anyway. A fill is where a drawing could paint something no token declared.
+     *
+     * Drawn as a `backdrop` — the tone 21 of the 33 bound elements are drawn at — so the opacity
+     * the manifest declares is in the tree the suite reads, not only in a unit test.
+     */
+    name: 'Illustration (the plum branch)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Illustration name="plum-branch" tone="backdrop" />, theme),
+  },
+  {
+    name: 'Illustration (the empty wardrobe)',
+    kind: 'static',
+    render: (_state, theme) => draw(<Illustration name="hanger" width={96} />, theme),
+  },
+  {
+    /*
      * THE LOADING STATE THIS PRODUCT RENDERED AS NOTHING (F-185).
      *
      * `static`: a skeleton has one state by definition — it IS the state. What the suite checks

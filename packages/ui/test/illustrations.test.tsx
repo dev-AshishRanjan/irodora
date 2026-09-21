@@ -8,6 +8,7 @@
  * comparison outlive this session.
  */
 
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { type ReactElement, type ReactNode } from 'react';
@@ -18,6 +19,7 @@ import {
   DRAWN_ILLUSTRATIONS,
   EMPTY_STATE_ILLUSTRATIONS,
   Illustration,
+  ILLUSTRATION_SET_VERSION,
   ILLUSTRATIONS,
   illustrationBox,
   ThemeProvider,
@@ -174,6 +176,43 @@ describe('drawn at the measured line and tone (R9-MOCKUP-FIDELITY §5)', () => {
   });
 });
 
+describe('one versioned set', () => {
+  /**
+   * The digest of every drawing's path data, against the version that names it.
+   *
+   * *One versioned, vector set* is the acceptance's phrase, and a version nobody can fail is a
+   * number in a file. This is the half a check can hold: change a line and the digest moves, so
+   * the change has to be recorded here — with the version bumped — rather than landing silently.
+   */
+  const DIGESTS: Readonly<Record<string, string>> = {
+    '1.0.0': '798289fb3a6b7de1',
+  };
+
+  const digest = (): string =>
+    createHash('sha256')
+      .update(DRAWN_ILLUSTRATIONS.map((name) => `${name}:${silhouette(name)}`).join('\n'))
+      .digest('hex')
+      .slice(0, 16);
+
+  it('carries the digest recorded for its version', () => {
+    expect(Object.keys(DIGESTS)).toContain(ILLUSTRATION_SET_VERSION);
+    expect(digest()).toBe(DIGESTS[ILLUSTRATION_SET_VERSION]);
+  });
+
+  it('DECOY — the digest moves when a drawing does', () => {
+    // Without this the assertion above would pass for a digest of nothing.
+    const withOneChanged = createHash('sha256')
+      .update(
+        DRAWN_ILLUSTRATIONS.map((name) =>
+          name === 'kimono' ? `${name}:moved` : `${name}:${silhouette(name)}`,
+        ).join('\n'),
+      )
+      .digest('hex')
+      .slice(0, 16);
+    expect(withOneChanged).not.toBe(digest());
+  });
+});
+
 describe('told apart by shape (NFR-9), and hidden from a screen reader', () => {
   it('no two drawings are the same shape', () => {
     const seen = new Map<string, string>();
@@ -223,5 +262,115 @@ describe('told apart by shape (NFR-9), and hidden from a screen reader', () => {
       expect(host.props['importantForAccessibility']).toBe('no-hide-descendants');
       expect(host.props['accessibilityLabel']).toBeUndefined();
     }
+  });
+});
+
+describe('never over a sample (the rule the well exists for)', () => {
+  /**
+   * Read off the RECORD's own geometry, which is where the evidence is.
+   *
+   * Simultaneous contrast is why a sample sits in a neutral well: whatever touches a colour
+   * changes how it reads, and a drawing behind one would tint it exactly as a status chip beside
+   * one does (F-069). The mockups never do it, and this asserts that over every box F-220
+   * measured rather than over a component that happens to be registered — a surface built from an
+   * inventory inherits the property.
+   *
+   * NOT CHECKED HERE: a screen that places art over a sample the inventory does not draw. The
+   * surface features' own inventory sweeps are what hold that, and the conformance subject below
+   * puts the drawings under the colour rules in both themes.
+   */
+  interface Box {
+    readonly id: string;
+    readonly kind: 'art' | 'sample';
+    readonly x: number;
+    readonly y: number;
+    readonly w: number;
+    readonly h: number;
+  }
+
+  /** Every drawn illustration and every drawn sample, per mockup. */
+  function boxes(): ReadonlyMap<string, Box[]> {
+    const byMockup = new Map<string, Box[]>();
+    for (const file of readdirSync(INVENTORY).filter((f) => /^\d\d\.json$/u.test(f))) {
+      const inv = JSON.parse(readFileSync(join(INVENTORY, file), 'utf8')) as {
+        mockup: string;
+        elements?: readonly {
+          id: string;
+          component?: string | null;
+          illustration?: string | null;
+          box: { x: number; y: number; w: number; h: number };
+        }[];
+      };
+      const list: Box[] = [];
+      for (const e of inv.elements ?? []) {
+        const kind =
+          typeof e.illustration === 'string'
+            ? 'art'
+            : (e.component ?? '').endsWith('Swatch')
+              ? 'sample'
+              : null;
+        if (kind !== null) list.push({ id: e.id, kind, ...e.box });
+      }
+      byMockup.set(inv.mockup, list);
+    }
+    return byMockup;
+  }
+
+  /** Where a drawing's box and a sample's box overlap — the pairs, named. */
+  const overlaps = (list: readonly Box[]): string[] => {
+    const found: string[] = [];
+    for (const a of list.filter((b) => b.kind === 'art'))
+      for (const s of list.filter((b) => b.kind === 'sample'))
+        if (a.x < s.x + s.w && s.x < a.x + a.w && a.y < s.y + s.h && s.y < a.y + a.h)
+          found.push(`${a.id} over ${s.id}`);
+    return found;
+  };
+
+  const drawn = boxes();
+
+  it('finds both kinds to compare — a scan with no samples would agree with anything', () => {
+    const all = [...drawn.values()].flat();
+    expect(all.filter((b) => b.kind === 'art').length).toBeGreaterThan(30);
+    expect(all.filter((b) => b.kind === 'sample').length).toBeGreaterThan(30);
+  });
+
+  /**
+   * The one pair the boxes report and the IMAGE does not, with the feature that will fix it.
+   *
+   * `10.art`'s box is a scan blob that reaches into the card column — the leaves are drawn beside
+   * the palette card, not over its sample, which the crop shows plainly. The box is wrong, not the
+   * mockup, and F-282 re-measures the seven boxes of that kind. Declared rather than filtered out
+   * silently, and held to still overlapping, so it cannot outlive the fix.
+   */
+  const BLOB_BOXES: Readonly<Record<string, string>> = {
+    '10.art over 10.palette-2.swatch-4':
+      'F-282 — 10.art is a scan blob; the image draws the leaves beside the card',
+  };
+
+  it('no mockup draws an illustration over a colour sample', () => {
+    const found = [...drawn.entries()].flatMap(([mockup, list]) =>
+      overlaps(list)
+        .filter((pair) => BLOB_BOXES[pair] === undefined)
+        .map((pair) => `${mockup}: ${pair}`),
+    );
+    expect(found).toHaveLength(0);
+  });
+
+  it('keeps the blob-box exception only while the boxes still overlap', () => {
+    const all = new Set([...drawn.values()].flatMap((list) => overlaps(list)));
+    for (const [pair, why] of Object.entries(BLOB_BOXES)) {
+      expect(all.has(pair)).toBe(true);
+      expect(why).toMatch(/F-\d+/u);
+    }
+  });
+
+  it('DECOY — the comparison does report an overlap', () => {
+    // Without this the case above passes for a comparison that never fires.
+    const planted: Box[] = [
+      { id: 'art', kind: 'art', x: 10, y: 10, w: 40, h: 40 },
+      { id: 'sample', kind: 'sample', x: 30, y: 30, w: 40, h: 40 },
+      { id: 'elsewhere', kind: 'sample', x: 400, y: 400, w: 20, h: 20 },
+    ];
+    expect(overlaps(planted)).toEqual(['art over sample']);
   });
 });
