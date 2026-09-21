@@ -7948,7 +7948,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-220"
       ],
@@ -7969,7 +7969,8 @@
         "build",
         "security"
       ],
-      "notes": "Mockup 23, top-left of the header. C12."
+      "notes": "Mockup 23, top-left of the header. C12. RECONCILED 2026-09-21 (increment 1): 23.avatar is new:Avatar at 36.5 x 35.5 dp in the SCREEN HEADER (parent null, order 1), left of the title, bound store:profile.avatar. STORAGE mirrors garment_image exactly, hung off personal_color_profile with ON DELETE CASCADE so forgetting the profile forgets the face. THE DECISION CRITERION 3 EXISTS FOR: ARCHIVE_TABLES is [...SYNC_TABLES] and the archive is PLAINTEXT JSON by design (a backup the user cannot read is not one they own); garment_image is already in it, so adding profile_avatar puts a photograph of a face in the clear. The plan takes the consistent option — in, beside garment_image — and sends it to the security reviewer rather than deciding it quietly. No app surface exports an archive today. NOTHING READS THE PICTURE: Avatar takes no Color, a scan refuses colour/vision/ML imports on the avatar path with a plant proof, and the camera-free profile path (ADR-0010) is asserted unchanged.",
+      "plan": "plans/F-241-the-profile-can-carry-an-avatar-and-it-never-leaves-the-device.md"
     },
     {
       "id": "F-242",
