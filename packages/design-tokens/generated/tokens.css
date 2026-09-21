@@ -513,5 +513,7 @@
   --irodora-space-xxl: 48px;
   --irodora-size-tap-target: 44px;
   --irodora-size-icon-stroke: 1.65px;
+  --irodora-size-art-stroke: 0.5px;
+  --irodora-opacity-art: 0.15;
   --irodora-size-judgeable: 77px;
 }

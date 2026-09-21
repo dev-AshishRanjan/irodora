@@ -30,6 +30,8 @@ import {
 import {
   COLOR,
   ICON_STROKE,
+  ART_STROKE,
+  ART_OPACITY,
   RADIUS,
   SPACING,
   STATUS_PAIRING,
@@ -38,6 +40,8 @@ import {
 import {
   nativeColors,
   nativeIconStroke,
+  nativeArtStroke,
+  nativeArtOpacity,
   nativeRadius,
   nativeSpacing,
 } from '../src/generated/native.js';
@@ -156,6 +160,16 @@ describe('the non-colour scales survive the trip', () => {
     expect(SPACING).toEqual(manifest.spacing.scale);
     expect(nativeSpacing).toEqual(manifest.spacing.scale);
     expect(TAP_TARGET).toBe(manifest.size.tapTarget);
+  });
+
+  it('the illustration line and the backdrop opacity reach every target (F-229)', () => {
+    expect(ART_STROKE).toBe(manifest.size.artStroke);
+    expect(nativeArtStroke).toBe(manifest.size.artStroke);
+    expect(ART_OPACITY).toBe(manifest.opacity.art);
+    expect(nativeArtOpacity).toBe(manifest.opacity.art);
+    const css = emitCss(manifest);
+    expect(css).toContain(`--irodora-size-art-stroke: ${String(manifest.size.artStroke)}px;`);
+    expect(css).toContain(`--irodora-opacity-art: ${String(manifest.opacity.art)};`);
   });
 
   it('the icon line reaches both targets as the one declared width (F-228)', () => {

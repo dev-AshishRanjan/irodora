@@ -139,6 +139,14 @@ export function emitReactNative(manifest: Manifest): string {
   );
   out.push(`export const nativeIconStroke = ${String(manifest.size.iconStroke)} as const;`);
   out.push(
+    "/** An illustration line's rendered width in dp, half the icon's: the drawing converts it. */",
+  );
+  out.push(`export const nativeArtStroke = ${String(manifest.size.artStroke)} as const;`);
+  out.push(
+    "/** How strongly a backdrop drawing is inked, as a fraction of the theme's foreground. */",
+  );
+  out.push(`export const nativeArtOpacity = ${String(manifest.opacity.art)} as const;`);
+  out.push(
     `/**
  * The smallest a sample may be drawn where the screen asks you to JUDGE a colour, in dp.
  *

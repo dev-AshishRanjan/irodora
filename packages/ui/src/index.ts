@@ -37,6 +37,10 @@ export { Icon, ICON_TOKENS, type IconProps, type IconToken } from './Icon.js';
 export {
   Illustration,
   ILLUSTRATIONS,
+  DRAWN_ILLUSTRATIONS,
+  EMPTY_STATE_ILLUSTRATIONS,
+  UNBUILT_ILLUSTRATIONS,
+  illustrationBox,
   type IllustrationName,
   type IllustrationProps,
 } from './Illustration.js';

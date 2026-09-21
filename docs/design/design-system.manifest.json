@@ -929,7 +929,9 @@
     "observerDegrees": 2,
     "viewingDistanceMm": 350,
     "dpPerInch": 160,
-    "_note": "tapTarget is Apple's floor, applied on web too — comfortable is also accessible. A SAMPLE THAT CARRIES A NUMBER MUST SUBTEND THE OBSERVER THAT NUMBER WAS FIT FOR (ADR-0095). This product’s colorimetry is the CIE 2° standard observer — whitepoints.ts carries D65/2° and D50/2°, the calibration reader refuses a patch value whose observer is unstated, and ΔE00 is parameterised for it. So a sample presented as the SUBJECT of a colour difference and drawn smaller than 2° is being judged under conditions the number was not fit for; below roughly 1° that is measurable rather than theoretical, because the central fovea is sparse in S-cones and small fields lose blue–yellow discrimination. THE VALUE IS NOT WRITTEN HERE: manifest.ts computes it from these three inputs, and refuses a `judgeable` key written literally — a constant nobody can re-derive is how the Android safe zone came to carry the previous mark’s numbers (E-085). viewingDistanceMm is the one SOFT input and the ADR says so: it is a central figure for a phone in the hand, not a guarantee about anybody’s posture. dpPerInch is the density-independent pixel’s definition, not a device. THE FLOOR IS SCOPED BY WHAT THE SCREEN ASKS: a list that ranks may keep thumbnails, a surface that asks you to judge a difference may not — see ADR-0095 for the line."
+    "_note": "tapTarget is Apple's floor, applied on web too — comfortable is also accessible. A SAMPLE THAT CARRIES A NUMBER MUST SUBTEND THE OBSERVER THAT NUMBER WAS FIT FOR (ADR-0095). This product’s colorimetry is the CIE 2° standard observer — whitepoints.ts carries D65/2° and D50/2°, the calibration reader refuses a patch value whose observer is unstated, and ΔE00 is parameterised for it. So a sample presented as the SUBJECT of a colour difference and drawn smaller than 2° is being judged under conditions the number was not fit for; below roughly 1° that is measurable rather than theoretical, because the central fovea is sparse in S-cones and small fields lose blue–yellow discrimination. THE VALUE IS NOT WRITTEN HERE: manifest.ts computes it from these three inputs, and refuses a `judgeable` key written literally — a constant nobody can re-derive is how the Android safe zone came to carry the previous mark’s numbers (E-085). viewingDistanceMm is the one SOFT input and the ADR says so: it is a central figure for a phone in the hand, not a guarantee about anybody’s posture. dpPerInch is the density-independent pixel’s definition, not a device. THE FLOOR IS SCOPED BY WHAT THE SCREEN ASKS: a list that ranks may keep thumbnails, a surface that asks you to judge a difference may not — see ADR-0095 for the line.",
+    "artStroke": 0.5,
+    "_artStrokeNote": "The line an ILLUSTRATION is drawn with, in dp. F-229 measured it at 1 px at 2 px/dp across the 21 backdrop drawings the inventories bind (R9-MOCKUP-FIDELITY section 5) — half the icon line, because art sits behind content and an icon sits in it. Like size.iconStroke this is the width on screen: a drawing expressed on its own grid converts it at the size it is rendered, so a 64 dp drawing and a 240 dp one carry the same line."
   },
   "typography": {
     "families": {
@@ -999,9 +1001,13 @@
     "3": "surface.3",
     "_note": "Tonal. Surfaces lift by tint — which is what the swatch rule required anyway, because a shadow tints what it surrounds. THAT REMAINS THE RULE EVERYWHERE EXCEPT WHERE A MOCKUP DRAWS OTHERWISE (ADR-0103, F-227): 25 draws its light cards with a soft downward shadow, so `shadow` below declares that one — light mode, level 1 — and the parser refuses any other mode, any other level, an ink that is not a colour token, an opacity past a half and a shadow spelled as a CSS string.",
     "shadow": {
-      "_note": "THE ONE SHADOW ANY MOCKUP DRAWS (ADR-0103, F-227). Depth here is tint, because a shadow tints what it surrounds and a sample must not be judged against a tinted surround — that is ADR-0044 and it holds everywhere else. 25 draws its light cards with a soft downward shadow, and the README's light table says so in words: \"Elevated card surface with subtle shadow\". DERIVED FROM PIXELS, and saying so: the luminance profile across 25's card edges falls off over about 10 px below the card and 5-7 px at the sides, with nothing above it, against a screen ground of about 237; at that image\u0027s 0.8170 dp per px that is an offset of 2 dp, a blur of 8 dp and an ink at about a tenth. The 1-px darker line at each edge is JPEG ringing around a white edge, not a border, and is not reproduced. A person comparing F-221\u0027s captures beside 25 is where these numbers get refined.",
-      "modes": ["light"],
-      "levels": ["1"],
+      "_note": "THE ONE SHADOW ANY MOCKUP DRAWS (ADR-0103, F-227). Depth here is tint, because a shadow tints what it surrounds and a sample must not be judged against a tinted surround — that is ADR-0044 and it holds everywhere else. 25 draws its light cards with a soft downward shadow, and the README's light table says so in words: \"Elevated card surface with subtle shadow\". DERIVED FROM PIXELS, and saying so: the luminance profile across 25's card edges falls off over about 10 px below the card and 5-7 px at the sides, with nothing above it, against a screen ground of about 237; at that image's 0.8170 dp per px that is an offset of 2 dp, a blur of 8 dp and an ink at about a tenth. The 1-px darker line at each edge is JPEG ringing around a white edge, not a border, and is not reproduced. A person comparing F-221's captures beside 25 is where these numbers get refined.",
+      "modes": [
+        "light"
+      ],
+      "levels": [
+        "1"
+      ],
       "ink": "foreground",
       "opacity": 0.1,
       "offsetY": 2,
@@ -1116,5 +1122,9 @@
       "hue": 130,
       "chromaScale": 2
     }
+  },
+  "opacity": {
+    "_note": "How strongly a drawing is inked. F-229 measured every element the inventories bind an illustration to and found two uses: a BACKDROP behind a screen's content at 0.10-0.18 of the theme's foreground (median 0.15, 21 elements) and a FIGURE, where the drawing is the content, at 0.80-0.96. The figure is drawn at full ink, so only the backdrop needs a number. No declared colour token matches that ink — the nearest are chart.5 and chart.4 at deltaE00 4.6-7, which are a chart ramp and mean something else — so the art is the foreground token at this opacity rather than a colour of its own. 06's card art (0.31) and 15's strip (0.33) are twice this and are recorded as read; the surfaces that draw them settle that with a person.",
+    "art": 0.15
   }
 }

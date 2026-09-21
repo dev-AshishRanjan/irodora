@@ -310,6 +310,13 @@ export interface Manifest {
      */
     readonly iconStroke: number;
     /**
+     * The line an illustration is drawn with, in dp — half the icon's (F-229, §5).
+     *
+     * Also a width ON SCREEN: a drawing carries its own grid, and converts this at the size it is
+     * rendered, so the whole set holds one line at every size.
+     */
+    readonly artStroke: number;
+    /**
      * The smallest a sample may be drawn when the screen asks you to JUDGE it, in dp.
      *
      * Derived, never declared — see the parser. Scoped by what the surface asks of the reader:
@@ -320,6 +327,8 @@ export interface Manifest {
   };
   readonly typography: Typography;
   readonly elevation: Elevation;
+  /** How strongly a drawing is inked, where full ink is the theme's `foreground` (F-229). */
+  readonly opacity: { readonly art: number };
   readonly motion: Motion;
   readonly exceptions: readonly ChromaException[];
   readonly gate: { readonly contrast: ContrastGateConfig };
@@ -846,9 +855,23 @@ export function parseManifest(input: unknown): Manifest {
       `expected [0.5, 3] dp; got ${String(iconStroke)} — below half a dp a line breaks up on a ` +
         'screen, and above three an outline icon stops reading as one',
     );
+  /*
+   * THE ILLUSTRATION LINE, half the icon's and measured the same way (F-229, §5). The floor is
+   * lower than the icon's because the mockups draw art at 1 px at 2 px/dp, which IS half a dp;
+   * the ceiling is the icon's, since art heavier than an icon stops being a backdrop.
+   */
+  const artStroke = requireNumber(sizeRaw['artStroke'], 'size.artStroke');
+  if (artStroke < 0.25 || artStroke > 3)
+    throw new ManifestError(
+      'size.artStroke',
+      `expected [0.25, 3] dp; got ${String(artStroke)} — below a quarter of a dp a line cannot ` +
+        'render at any density this product ships to, and above three a backdrop is drawing ' +
+        'attention rather than holding it',
+    );
   const size = {
     tapTarget: requireNumber(sizeRaw['tapTarget'], 'size.tapTarget'),
     iconStroke,
+    artStroke,
     judgeable: Math.round(fieldMm / (MM_PER_INCH / dpPerInch)),
   };
 
@@ -908,6 +931,26 @@ export function parseManifest(input: unknown): Manifest {
     latin: latinLeading,
     japanese: japaneseLeading,
   };
+
+  // --- opacity ------------------------------------------------------------------------
+  //
+  // A fraction of the foreground, so it is a number rather than a colour: F-229 measured the
+  // backdrop art at 0.10-0.18 and no declared colour token sits within deltaE00 4 of that ink.
+  const opacityRaw = requireRecord(root['opacity'], 'opacity');
+  const artOpacity = requireNumber(opacityRaw['art'], 'opacity.art');
+  if (artOpacity <= 0 || artOpacity > 1)
+    throw new ManifestError(
+      'opacity.art',
+      `expected (0, 1]; got ${String(artOpacity)} — at zero the drawing is not there, and above ` +
+        'one it is not an opacity',
+    );
+  if (artOpacity > 0.5)
+    throw new ManifestError(
+      'opacity.art',
+      `expected a backdrop, got ${String(artOpacity)} — art past half the foreground competes ` +
+        'with the content in front of it, and the mockups draw it at 0.10 to 0.18 (F-229)',
+    );
+  const opacity = { art: artOpacity };
 
   // --- elevation ----------------------------------------------------------------------
   const elevationRaw = requireRecord(root['elevation'], 'elevation');
@@ -1046,6 +1089,7 @@ export function parseManifest(input: unknown): Manifest {
     radius,
     spacing: { base: requireNumber(spacingRaw['base'], 'spacing.base'), scale },
     size,
+    opacity,
     typography: {
       families,
       scale: typeScale,

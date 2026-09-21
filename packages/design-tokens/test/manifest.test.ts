@@ -233,6 +233,37 @@ describe('what the loader refuses', () => {
     expect(parseManifest(clone()).size.iconStroke).toBe(1.65);
   });
 
+  it('an illustration line too fine for any density, or heavy enough to compete (F-229)', () => {
+    expect(() => parseManifest(withValue(['size', 'artStroke'], 0.2))).toThrow(
+      /size\.artStroke.*expected \[0\.25, 3\] dp; got 0\.2/u,
+    );
+    expect(() => parseManifest(withValue(['size', 'artStroke'], 3.5))).toThrow(
+      /expected \[0\.25, 3\] dp; got 3\.5/u,
+    );
+    expect(() => parseManifest(without(['size', 'artStroke']))).toThrow(/artStroke/u);
+  });
+
+  it('art inked past a backdrop, or at no opacity at all (F-229)', () => {
+    // The mockups draw it at 0.10 to 0.18. Past half the foreground it is not behind the content
+    // any more, and the message this illustration set exists to stay out of the way of loses.
+    expect(() => parseManifest(withValue(['opacity', 'art'], 0.8))).toThrow(
+      /expected a backdrop, got 0\.8/u,
+    );
+    expect(() => parseManifest(withValue(['opacity', 'art'], 0))).toThrow(/expected \(0, 1\]/u);
+    expect(() => parseManifest(withValue(['opacity', 'art'], 1.5))).toThrow(/expected \(0, 1\]/u);
+    expect(() => parseManifest(without(['opacity', 'art']))).toThrow(/opacity\.art/u);
+  });
+
+  it('DECOY — the measured line and opacity, and both ends of each range, are accepted', () => {
+    // Without this the two cases above would pass for a loader that refused every value.
+    const m = parseManifest(clone());
+    expect(m.size.artStroke).toBe(0.5);
+    expect(m.opacity.art).toBe(0.15);
+    expect(() => parseManifest(withValue(['size', 'artStroke'], 0.25))).not.toThrow();
+    expect(() => parseManifest(withValue(['size', 'artStroke'], 3))).not.toThrow();
+    expect(() => parseManifest(withValue(['opacity', 'art'], 0.5))).not.toThrow();
+  });
+
   it('a shadow on a dark mode — no dark mockup draws one', () => {
     expect(() => parseManifest(withValue(['elevation', 'shadow', 'modes'], ['dark']))).toThrow(
       /only light may carry a shadow/u,
