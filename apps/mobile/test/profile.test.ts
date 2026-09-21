@@ -212,6 +212,17 @@ describe('the guided flow reaches no camera', () => {
   /** The modules the guided flow depends on. `photo.ts` is deliberately not one of them. */
   const GUIDED = ['dimensions.ts', 'trials.ts', 'derive.ts', 'store.ts', 'season.ts'];
 
+  /**
+   * The modules in this directory that the guided flow must NOT depend on, and why each is here.
+   *
+   * `photo.ts` reaches a camera reading. `avatar.ts` (F-241) reaches the photo library — it is
+   * a picture somebody chose to look at, nothing is read from it, and FR-26's guarantee is still
+   * that a person who will not photograph their face can finish the guided flow. Neither may be
+   * imported by a guided module, and the roster assertion below is what makes a THIRD one a
+   * failure here rather than a file nobody scanned.
+   */
+  const NOT_GUIDED = ['photo.ts', 'avatar.ts'];
+
   const guidedSources = (): { file: string; text: string }[] =>
     GUIDED.map((name) => {
       const file = join(__dirname, '..', 'src', 'profile', name);
@@ -225,11 +236,47 @@ describe('the guided flow reaches no camera', () => {
     expect(offenders).toHaveLength(0);
   });
 
-  it('does not depend on the photo path either', () => {
+  it('does not depend on the photo path, or on the picture path either', () => {
     // The dependency claim, which is the one FR-26 actually makes. Without it "no camera" would
-    // be satisfied by a guided module that imported `photo.ts`, which imports the lens.
+    // be satisfied by a guided module that imported `photo.ts`, which imports the lens — or,
+    // since F-241, `avatar.ts`, which reaches the photo library.
     for (const { file, text } of guidedSources())
-      expect(`${file}: ${String(text.includes('./photo'))}`).toBe(`${file}: false`);
+      for (const forbidden of NOT_GUIDED) {
+        const specifier = `./${forbidden.replace('.ts', '')}`;
+        expect(`${file} -> ${specifier}: ${String(text.includes(specifier))}`).toBe(
+          `${file} -> ${specifier}: false`,
+        );
+      }
+  });
+
+  it('and the picture path reaches no camera of its own (F-241)', () => {
+    /*
+     * `avatar.ts` asks for the LIBRARY. `ImageSource` offers a camera too, and a profile
+     * picture taken through it would put a capture path beside a face and ask for a permission
+     * this feature does not need. The port is shared; which half is called is the decision.
+     */
+    const avatar = readFileSync(join(__dirname, '..', 'src', 'profile', 'avatar.ts'), 'utf8');
+    expect(avatar).toContain('pickFromLibrary()');
+    expect(avatar).not.toContain('captureWithCamera');
+    /*
+     * AND IT READS NOTHING OUT OF THE PICTURE — asserted on the module's IMPORT SPECIFIERS
+     * rather than on its text.
+     *
+     * The first draft scanned the whole file for "vision" and "face" and went red on its own
+     * docblock, which says the module imports neither. A text scan a comment can trip is the
+     * shape [[a-comment-that-mentions-a-forbidden-import-is-not-one]] is about, and the fix is
+     * the same one `verify-app-glyphs.mjs` uses: look at what is imported, not at what is
+     * written.
+     */
+    const specifiers = [...avatar.matchAll(/from '([^']+)'|import('([^']+)')/gu)].map(
+      (m) => m[1] ?? m[2] ?? '',
+    );
+    expect(specifiers.length).toBeGreaterThan(0);
+    const reads = /color-|cvd|vision|face|ml-|tensor/u;
+    expect(specifiers.filter((spec) => reads.test(spec))).toStrictEqual([]);
+    // THE DECOY: the same rule applied to a line that WOULD offend, so "no matches" is not
+    // "the pattern matches nothing".
+    expect(reads.test('@irodora/color-core')).toBe(true);
   });
 
   it('and photo.ts reaches the lens by TYPE ONLY, so no camera is in the runtime graph', () => {
@@ -270,7 +317,7 @@ describe('the guided flow reaches no camera', () => {
     const onDisk = readdirSync(join(__dirname, '..', 'src', 'profile')).filter((f) =>
       f.endsWith('.ts'),
     );
-    expect([...onDisk].sort()).toEqual([...GUIDED, 'photo.ts'].sort());
+    expect([...onDisk].sort()).toEqual([...GUIDED, ...NOT_GUIDED].sort());
   });
 });
 

@@ -32,7 +32,7 @@
  */
 
 import { useState } from 'react';
-import { Button, Card, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
+import { Avatar, Button, Card, Chip, Row, Screen, Stack, Surface, Swatch, Text } from '@irodora/ui';
 import { PROFILE_DIMENSIONS, uuidv7, type ProfileDimension } from '@irodora/store';
 import { colorFor, entryBySlug } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -167,12 +167,46 @@ export interface ProfileSetupProps {
    */
   readonly onOpenMeasure?: (() => void) | undefined;
   readonly onOpenExport?: (() => void) | undefined;
+  /**
+   * The profile's picture, and how to change it (F-241, FR-26).
+   *
+   * `23` draws it at the head of the screen, left of the title. PROPS rather than a store read,
+   * for the reason every seam on this screen is one: reading the picture means reaching the
+   * repository, which reaches the device database, and a screen that imported that could not be
+   * rendered by the suite where the accessibility guarantees are checked.
+   *
+   * (The module is deliberately not named here. `screens.test.tsx` proves no screen mentions it
+   * by scanning the source text, which a comment quoting it would trip — the same shape as the
+   * decoy that check's own docblock describes.)
+   *
+   * `avatarUri` absent or `null` means there is no picture, which renders the mark — the
+   * ordinary state, and the one a person is in before they choose.
+   */
+  readonly avatarUri?: string | null;
+  /**
+   * Choose one. Absent means the control is not offered, which is what the conformance suite
+   * renders — a button that picks nothing is worse than no button.
+   */
+  readonly onChooseAvatar?: (() => void) | undefined;
+  /** Remove it. Offered only when there IS one, for the same reason. */
+  readonly onRemoveAvatar?: (() => void) | undefined;
+  /**
+   * The last attempt was refused — not a JPEG or a PNG, or past the limits.
+   *
+   * A PROP rather than state held here: the refusal happens in the route, which owns the picker
+   * and the store, and a screen holding its own copy would have two places that disagree.
+   */
+  readonly avatarRefused?: boolean;
 }
 
 export function ProfileSetup({
   store,
   initialAnswers,
   reading,
+  avatarUri = null,
+  onChooseAvatar,
+  onRemoveAvatar,
+  avatarRefused = false,
   onOpenSettings,
   onOpenMeasure,
   onOpenExport,
@@ -472,7 +506,62 @@ export function ProfileSetup({
   );
 
   return (
-    <Screen title={t('profile.title')} script={script}>
+    <Screen
+      title={t('profile.title')}
+      script={script}
+      /*
+        THE PICTURE SITS WHERE `23` DRAWS IT (F-241): `23.avatar` at x 135 against the title at
+        x 251, on the same line. Putting it above the first card instead would be reordering what
+        a mockup draws.
+
+        NO LABEL, so it is decorative: the title beside it already says what this is, and an
+        avatar that announced itself would make a screen reader stop twice on one thing.
+      */
+      lead={<Avatar uri={avatarUri} />}
+    >
+      {/*
+        CHOOSING ONE IS A BUTTON, not a tap on the picture.
+
+        A tappable avatar is the pattern everywhere else, and it is the one this product cannot
+        use: a 36 dp circle is below the 44 dp target WCAG 2.2 asks for, and growing the circle
+        to meet it would change the size `23` draws. A named button says what it does, meets the
+        target, and is reachable by somebody navigating by control rather than by sight.
+
+        ABSENT WHEN NOBODY WIRED IT, like every other optional control here.
+      */}
+      {onChooseAvatar === undefined ? null : (
+        <Stack gap="xs">
+          <Row gap="sm" wrap>
+            <Button
+              label={t(avatarUri === null ? 'profile.avatar.choose' : 'profile.avatar.replace')}
+              variant="secondary"
+              onPress={onChooseAvatar}
+              script={script}
+            />
+            {avatarUri === null || onRemoveAvatar === undefined ? null : (
+              <Button
+                label={t('profile.avatar.remove')}
+                variant="secondary"
+                onPress={onRemoveAvatar}
+                script={script}
+              />
+            )}
+          </Row>
+          {/*
+            WHAT THE PICTURE IS FOR, said once. It is decoration, and a person who has just been
+            asked for a photograph of themselves by a colour app deserves to be told that nothing
+            reads it — especially this one, whose whole subject is reading colour off images.
+          */}
+          <Text size="xs" color="foreground.2" script={script}>
+            {t('profile.avatar.hint')}
+          </Text>
+          {avatarRefused ? (
+            <Text size="small" color="foreground" script={script}>
+              {t('profile.avatar.refused')}
+            </Text>
+          ) : null}
+        </Stack>
+      )}
       {/*
         THE WAY INTO SETTINGS (F-180), and it is the whole of the reported defect.
 

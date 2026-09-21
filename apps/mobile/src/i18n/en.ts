@@ -549,6 +549,20 @@ export const en = {
    * and options to choose themes in app"* — and the themes were there the whole time, on a
    * screen with no way in and the wrong name over it.
    */
+  /*
+   * F-241 — THE PICTURE AT THE HEAD OF THE PROFILE, and the sentence that says what it is not.
+   *
+   * `23` draws the avatar and draws no copy for it, so these words are this feature's. The hint
+   * is the one that matters: a colour app asking somebody for a photograph of themselves has to
+   * say plainly that nothing reads it, because reading colour off an image is exactly what the
+   * rest of this product does. ADR-0010's camera-free promise is what it is protecting.
+   */
+  'profile.avatar.choose': 'Add a picture',
+  'profile.avatar.replace': 'Change picture',
+  'profile.avatar.remove': 'Remove picture',
+  'profile.avatar.hint':
+    'Yours to look at. It stays on this device, nothing is measured from it, and your profile does not change.',
+  'profile.avatar.refused': 'That file could not be used. A JPEG or a PNG, and not too large.',
   'settings.title': 'Settings',
   'settings.open': 'Settings',
   'settings.openHint': 'Appearance, and what the app has learned about you.',

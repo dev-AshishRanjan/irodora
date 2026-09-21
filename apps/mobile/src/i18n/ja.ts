@@ -497,6 +497,14 @@ export const ja: Record<MessageKey, string> = {
   'outfit.woreNothing': '服を選ぶと、着用を記録できます。',
   // F-109 — the preference weights are inspectable and resettable (FR-37).
   // F-180 — see en.ts for why this screen is named twice.
+  // F-241 — see en.ts for why the hint says what the picture is NOT used for.
+  'profile.avatar.choose': '写真を追加',
+  'profile.avatar.replace': '写真を変更',
+  'profile.avatar.remove': '写真を削除',
+  'profile.avatar.hint':
+    'ご自身のための写真です。この端末に保存され、そこから色を測ることはありません。プロフィールは変わりません。',
+  'profile.avatar.refused':
+    'このファイルは使えませんでした。JPEGかPNGで、大きすぎないものを選んでください。',
   'settings.title': '設定',
   'settings.open': '設定',
   'settings.openHint': '外観と、アプリが学習した好み。',

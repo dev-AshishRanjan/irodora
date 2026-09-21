@@ -305,6 +305,18 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
   /** Above the title, same rule as {@link SectionProps.eyebrow}: only a real category. */
   readonly eyebrow?: string;
   /**
+   * Something drawn to the LEFT of the title, on the same line (F-241).
+   *
+   * `23` draws the profile's avatar there — `23.avatar` at x 135 against the title at x 251,
+   * both at y ≈ 162 — and that is the arrangement rather than a new one. A screen that wanted
+   * the picture above the card instead would be reordering what a mockup draws, which rule 14
+   * refuses and which is how the same mistake was made and caught on F-239.
+   *
+   * **It takes a node, not a name.** This package has no device seam, so what goes here is
+   * composed by the caller; `Screen` only says where it sits.
+   */
+  readonly lead?: React.ReactNode;
+  /**
    * Whether the page scrolls. **Defaults to true**, and the default is load-bearing: F-104
    * found a fixed `View` whose last two controls could not be tapped at all, and nothing could
    * have caught it — a react-test-renderer tree has no viewport, so "rendered" and "reachable"
@@ -343,6 +355,7 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
 export function Screen({
   title,
   eyebrow,
+  lead,
   scroll = true,
   padding = 'lg',
   gap = 'xl',
@@ -352,9 +365,9 @@ export function Screen({
 }: ScreenProps): React.JSX.Element {
   const { colors } = useTheme();
 
-  const header =
+  const words =
     eyebrow === undefined && title === undefined ? null : (
-      <View style={{ flexDirection: 'column', gap: nativeSpacing.sm }}>
+      <View style={{ flexDirection: 'column', gap: nativeSpacing.sm, flexShrink: 1 }}>
         {eyebrow === undefined ? null : (
           <Text size="label" color="foreground.2" script={script}>
             {eyebrow}
@@ -365,6 +378,24 @@ export function Screen({
             {title}
           </Text>
         )}
+      </View>
+    );
+
+  /*
+   * THE LEAD SITS BESIDE THE WORDS, and the words shrink rather than the picture.
+   *
+   * `flexShrink: 1` on the column and nothing on the lead: a long title at 200% text scale has
+   * somewhere to go, and an avatar squeezed to a sliver would be a picture nobody can see. The
+   * row centres them, which is what `23` draws — the avatar's box and the title's are the same
+   * 22 dp band.
+   */
+  const header =
+    lead === undefined ? (
+      words
+    ) : (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: nativeSpacing.md }}>
+        {lead}
+        {words}
       </View>
     );
 

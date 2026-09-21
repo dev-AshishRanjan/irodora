@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { ProfileSetup } from '../../../src/screens/ProfileSetup';
 import { deviceRepository } from '../../../src/store/repository';
+import { devicePicker } from '../../../src/wardrobe/picker';
 import { takeReading } from '../../../src/lens/handoff';
+import { activeProfile } from '../../../src/profile/store';
+import { avatarUri, chooseAvatar } from '../../../src/profile/avatar';
 
 /**
  * The route. Navigation options and the store, and nothing else.
@@ -24,6 +27,47 @@ export default function ProfileRoute(): React.JSX.Element {
    */
   const [reading] = useState(() => takeReading('profile'));
 
+  /*
+   * THE PICTURE (F-241), read through the repository and re-read when it changes.
+   *
+   * `version` is what makes the re-read happen: the store is not reactive, so choosing a picture
+   * has to say so. The same shape `Preferences` uses after a reset, and cheaper than it sounds —
+   * `avatarUri` asks for the INFO row first and only loads the blob when there is one.
+   */
+  const [version, setVersion] = useState(0);
+  const [refused, setRefused] = useState(false);
+  const store = deviceRepository();
+  const profile = activeProfile(store);
+  void version;
+  const uri = profile === null ? null : avatarUri(store, profile.id);
+
+  const choose = useCallback((): void => {
+    if (profile === null) return;
+    setRefused(false);
+    /*
+     * FIRE AND FORGET, deliberately. The picker is a promise because the OS dialogue is, and a
+     * route cannot await inside a press handler. A refusal is a RESULT here rather than a throw
+     * — `chooseAvatar` catches only `ImageRejected` — so the `.catch` below is for the things
+     * that are genuinely faults, and it says nothing to the person because a database that
+     * cannot be written is not something a sentence under a button can help with.
+     */
+    void chooseAvatar(devicePicker(), store, profile.id, Date.now())
+      .then((result) => {
+        if (result.kind === 'refused') setRefused(true);
+        if (result.kind === 'chosen') setVersion((v) => v + 1);
+      })
+      .catch(() => {
+        /* Not a refused picture. Nothing a caption can do about it. */
+      });
+  }, [profile, store]);
+
+  const remove = useCallback((): void => {
+    if (profile === null) return;
+    setRefused(false);
+    store.clearProfileAvatar(profile.id, Date.now());
+    setVersion((v) => v + 1);
+  }, [profile, store]);
+
   return (
     <>
       <Stack.Screen options={{ title: 'Profile' }} />
@@ -35,8 +79,23 @@ export default function ProfileRoute(): React.JSX.Element {
         make "no camera was used" depend on a distinction the type system exists to remove.
       */}
       <ProfileSetup
+        /*
+          `deviceRepository()` AT THE CALL SITE, not the binding above it, and the two are the
+          same object — the module memoises. `screens.test.tsx` reads this line as source text to
+          prove the route reaches for the real repository rather than a fake, and a binding it
+          could not follow would weaken that check to make this file tidier.
+        */
         store={deviceRepository()}
         {...(reading === null ? {} : { reading })}
+        /*
+          THE AVATAR CONTROLS ARE OFFERED ONLY WHEN THERE IS A PROFILE TO ATTACH ONE TO.
+          `profile_avatar` hangs off `personal_color_profile`, so a picture before there is a
+          profile has nothing to belong to — and a button that could not work is worse than one
+          that is not there, which is the call F-154 made about the device colour.
+        */
+        avatarUri={uri}
+        avatarRefused={refused}
+        {...(profile === null ? {} : { onChooseAvatar: choose, onRemoveAvatar: remove })}
         /*
           THE ROUTE OWNS THE DESTINATION (F-180). `/profile/preferences` has existed since
           F-109 and NOTHING navigated to it — the appearance chooser inside it was unreachable
