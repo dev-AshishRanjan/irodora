@@ -5,7 +5,7 @@
 | **Status** | Baseline · reviewed each release |
 | **Method** | STRIDE per trust boundary |
 | **Implements** | NFR-12, NFR-13, NFR-14 |
-| **Version** | 2.0 · 2026-08-19 |
+| **Version** | 2.1 · 2026-09-21 — F-241 added the first asset that identifies a person, and one boundary-③ row its review found |
 | **Supersedes** | Version 1.0 — nine trust boundaries across a server tier retired by [ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) |
 
 Every control below maps to a test or a gate. A control that is only a paragraph in this
@@ -52,6 +52,7 @@ as input. Boundary ③ is where that assumption gets exploited.
 | **Content integrity** (corpus, palettes, weights) | Every user gets manipulated answers. No code change is visible. Silent, product-wide, hard to notice |
 | **The user's data itself** | **There is no backup but their own export.** Corruption or accidental erasure is permanent — this rose sharply when the server left |
 | The database encryption key | Defeats at-rest encryption entirely; wardrobe images are photographs of people's homes |
+| **The profile avatar** (F-241) | **A photograph of the user's face.** The first directly identifying datum this product holds — there is no account, no name, no email, and the app cannot even draw initials because it does not know one. Its loss is not *"a picture"*: it attaches an identity to the appearance data beside it. It is kept out of the plaintext archive for that reason ([ADR-0105](../../adr/0105-a-face-stays-out-of-the-plaintext-archive.md)), and removing it blanks the bytes rather than only the row |
 | Wardrobe images | Photographs of people's homes and possessions |
 | Personal colour profiles | Appearance-adjacent inference |
 | Corpus provenance records | Our licensing defence |
@@ -96,6 +97,7 @@ Verifying at load catches both, and costs nothing.
 | **T** | Database written by a newer app version | Schema version checked before open; refuse rather than guess | test |
 | **D** | Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test |
 | **S** | Deep link or share intent claiming to be internal | Treated as untrusted input; no privileged action reachable from one | test |
+| **T** | An imported archive carries image bytes that never passed `ingestImage` | **NOT CONTROLLED.** `importArchive` writes blob columns straight from parsed rows, so the `SanitisedImage` brand — which is meaningful only because the `put*` methods are the sole writers — is bypassed: no magic-byte check, no byte cap, no pixel cap, and the bytes reach the platform decoder through a `data:` URI. Found by F-241's security review. Latent today only because blobs do not survive the archive's JSON round trip at all (`Uint8Array` serialises as `{"0":137,…}` and cannot be bound on import). **The two must be fixed together and before any export or import surface ships** — fixing the encoding alone makes this live in the same commit | none yet |
 
 **Parse, never cast.** A row read from SQLite is not automatically ours — it may have been
 written by an older build with different assumptions. `as` on data crossing this boundary is

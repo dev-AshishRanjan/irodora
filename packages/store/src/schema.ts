@@ -623,9 +623,15 @@ export const SYNC_TABLES = [
   'palette_member',
   'personal_color_profile',
   'profile_dimension_color',
-  // F-241. An avatar is something the person chose, which is migration 8's test for whether a
-  // row belongs in an export — and it puts a photograph of a face in a plaintext archive, which
-  // is the cost that migration states and this feature's security review signs off.
+  /*
+   * F-241. It carries the sync columns, so it is here — and it is NOT in `ARCHIVE_TABLES`,
+   * which stopped being `[...SYNC_TABLES]` on the day those two questions disagreed.
+   *
+   * The reasoning is ADR-0105's: this feature's security review recommended keeping a face out
+   * of a plaintext export, and the decisive point was that the cost of leaving it out is one tap
+   * — the picture necessarily still exists in the library it was chosen from, which is not true
+   * of a garment photograph that may have been taken with the camera.
+   */
   'profile_avatar',
   'garment',
   'garment_season',

@@ -32,8 +32,39 @@ import { SCHEMA_VERSION, SYNC_TABLES } from './schema.js';
 import { forgetDatabaseKey, type SecureKeyStore } from './key.js';
 import type { Driver } from './repository.js';
 
-/** Tables an archive carries, in a fixed order. `change_log` is deliberately absent — see below. */
-export const ARCHIVE_TABLES = [...SYNC_TABLES] as const;
+/**
+ * Tables an archive carries, in a fixed order. `change_log` is deliberately absent — see below.
+ *
+ * ## An EXPLICIT list since F-241, and not `[...SYNC_TABLES]` any more
+ *
+ * It was the sync list, and the two questions were being answered by one array: *does this table
+ * carry the sync columns* and *does this table belong in a file a person can read*. Those are
+ * different questions, and the day they disagreed the answer would have been whichever one the
+ * array was originally written for.
+ *
+ * **`profile_avatar` is the table that made them disagree** (ADR-0105). It carries the sync
+ * columns and it is out of the archive, because a photograph of a person's face in a plaintext
+ * file is a different kind of disclosure from a photograph of a jumper — and because the picture
+ * necessarily still exists in the library it was chosen from, so a restore that omits it costs
+ * one tap rather than a loss.
+ *
+ * **Adding a table here later is safe; removing one is not.** `parseArchive` treats a missing
+ * table as empty, so an archive written without a table imports cleanly into a build that expects
+ * it. The reverse — files already written carrying a face — cannot be taken back.
+ */
+export const ARCHIVE_TABLES = [
+  'saved_color',
+  'palette',
+  'palette_member',
+  'personal_color_profile',
+  'profile_dimension_color',
+  'garment',
+  'garment_season',
+  'garment_color',
+  'garment_image',
+  'pairing_preference',
+  'calibration',
+] as const;
 
 export interface Archive {
   readonly format: 'irodora.archive';
@@ -218,9 +249,20 @@ export function importArchive(driver: Driver, input: unknown): void {
  */
 export function eraseEverything(driver: Driver, keys: SecureKeyStore): void {
   driver.transaction(() => {
-    // Children before parents: foreign keys are ON, so the reverse order fails — which is the
-    // pragma doing its job, and a reason not to write this loop over SYNC_TABLES in order.
-    for (const table of [...ARCHIVE_TABLES].reverse()) driver.exec(`DELETE FROM ${table}`);
+    /*
+     * OVER `SYNC_TABLES`, NOT `ARCHIVE_TABLES` (F-241, ADR-0105).
+     *
+     * These were the same array until a table was kept OUT of the archive, and erasure is the
+     * one place that difference would have been silent: a table outside the export list would
+     * have survived "erase everything" on the foreign key's cascade alone, which is the exact
+     * trap this feature's own `deleteProfile` had already fallen into once — a cascade fires on
+     * a DELETE and most removals here are an UPDATE. **Erasure iterates what EXISTS; the archive
+     * iterates what a person may read.**
+     *
+     * Children before parents: foreign keys are ON, so the reverse order fails — which is the
+     * pragma doing its job.
+     */
+    for (const table of [...SYNC_TABLES].reverse()) driver.exec(`DELETE FROM ${table}`);
     driver.exec('DELETE FROM change_log');
   });
   forgetDatabaseKey(keys);

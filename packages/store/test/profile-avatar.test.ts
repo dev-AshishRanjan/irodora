@@ -231,23 +231,75 @@ describe('forgetting the profile forgets the face', () => {
   });
 });
 
-describe('what the archive carries, stated rather than discovered', () => {
+describe('what the archive carries, and the one thing it deliberately does not', () => {
   /*
-   * THE DECISION F-241's THIRD CRITERION SENDS TO THE SECURITY REVIEWER.
+   * THE DECISION F-241's THIRD CRITERION SENT TO THE SECURITY REVIEWER, AND ITS ANSWER.
    *
-   * The archive is plaintext JSON on purpose — "a backup the user cannot read is not a backup
-   * they own" — and `garment_image` is already in it. Migration 8 draws the line: a SETTING is
-   * not part of an export because it is not something the person made, and an avatar is. This
-   * test is where that decision is visible rather than implied by a list somebody has to read.
+   * The plan proposed including the avatar: the archive is plaintext JSON on purpose — "a backup
+   * the user cannot read is not a backup they own" — `garment_image` is already in it, and
+   * migration 8's line is that a SETTING is not part of an export because it is not something
+   * the person made, while an avatar is.
+   *
+   * **The review recommended the opposite and was right** (ADR-0105). A face is the first
+   * directly identifying datum this product holds, and the cost of leaving it out is one tap:
+   * the only source is the photo library, so the picture is still there to choose again. A
+   * garment photograph can come from the camera and may exist nowhere else, which is why the
+   * two are not the same call.
    */
-  it('carries the avatar, beside the garment photographs it already carried', () => {
-    expect(SYNC_TABLES).toContain('profile_avatar');
-    expect(ARCHIVE_TABLES).toContain('profile_avatar');
+  it('leaves the avatar out, and keeps the garment photographs it already carried', () => {
+    expect(ARCHIVE_TABLES as readonly string[]).not.toContain('profile_avatar');
     expect(ARCHIVE_TABLES).toContain('garment_image');
   });
 
-  it('DECOY — it does not carry a setting, which is the line the two sit either side of', () => {
+  it('still SYNCS it, because the two lists answer different questions', () => {
+    // `SYNC_TABLES` is "carries the sync columns"; `ARCHIVE_TABLES` is "a person may read this".
+    // They were one array until this table made them disagree.
+    expect(SYNC_TABLES).toContain('profile_avatar');
+    expect(ARCHIVE_TABLES.length).toBe(SYNC_TABLES.length - 1);
+  });
+
+  it('DECOY — a setting is in neither, so "not in the archive" is not "not in anything"', () => {
     expect(SYNC_TABLES as readonly string[]).not.toContain('setting');
     expect(ARCHIVE_TABLES as readonly string[]).not.toContain('setting');
+  });
+});
+
+describe('removing the picture removes the picture', () => {
+  /*
+   * F-241's SECURITY REVIEW, CONDITION 2. The tombstone stays — a future sync has to be able to
+   * tell "removed" from "never existed" — but the pixels are not part of that record, and the
+   * archive reads tombstoned rows DELIBERATELY. Without this, a face somebody had explicitly
+   * removed would still have been in an export.
+   */
+  const blobOf = (driver: Driver, id: string): Uint8Array | undefined =>
+    driver.query<{ bytes: Uint8Array }>('SELECT bytes FROM profile_avatar WHERE profile_id = ?', [
+      id,
+    ])[0]?.bytes;
+
+  it('blanks the bytes when the picture is removed', () => {
+    const { repo, driver, id } = withProfile();
+    repo.putProfileAvatar(id, ingestImage(pngBytes()), NOW + 1);
+    expect(blobOf(driver, id)?.length ?? 0).toBeGreaterThan(0);
+
+    repo.clearProfileAvatar(id, NOW + 2);
+    expect(blobOf(driver, id)?.length ?? 0).toBe(0);
+    // The ROW is still there, which is the half the tombstone is for.
+    expect(driver.query<{ n: number }>('SELECT COUNT(*) AS n FROM profile_avatar', [])[0]?.n).toBe(
+      1,
+    );
+  });
+
+  it('blanks them when the whole profile is forgotten', () => {
+    const { repo, driver, id } = withProfile();
+    repo.putProfileAvatar(id, ingestImage(pngBytes()), NOW + 1);
+    repo.deleteProfile(id, NOW + 2);
+    expect(blobOf(driver, id)?.length ?? 0).toBe(0);
+  });
+
+  it('DECOY — a picture nobody removed still has its bytes', () => {
+    // Without this, "the bytes are gone" would also pass for a store that never wrote them.
+    const { repo, driver, id } = withProfile();
+    repo.putProfileAvatar(id, ingestImage(pngBytes()), NOW + 1);
+    expect(blobOf(driver, id)?.length ?? 0).toBeGreaterThan(0);
   });
 });

@@ -126,11 +126,17 @@ const config: ExpoConfig = {
       // claims lint: it says what we do with the frame, and does not promise accuracy.
       NSCameraUsageDescription:
         'Irodora reads colour from the camera on this device. Frames are analysed and discarded, and are never sent anywhere.',
-      // The wardrobe photograph (FR-40, F-043). A DIFFERENT operation from the sentence above
-      // and it says so: this one is kept, and the string has to be honest about that or the
-      // camera string becomes false the first time somebody adds a garment.
+      /*
+       * The wardrobe photograph (FR-40, F-043) AND the profile picture (FR-26, F-241). A
+       * DIFFERENT operation from the camera sentence above and it says so: these are kept.
+       *
+       * THE SECOND USE WAS ADDED WITHOUT THIS SENTENCE, and F-241's security review caught it.
+       * The string is the only declaration that ships, so a person being asked for a photograph
+       * of themselves would have read a sentence about their wardrobe — narrower than the truth,
+       * which is golden rule 11 in the one place nothing gates the wording.
+       */
       NSPhotoLibraryUsageDescription:
-        'Irodora can attach a photo you choose to an item in your wardrobe. It is stored in the encrypted database on this device and is never sent anywhere.',
+        'Irodora can attach a photo you choose to an item in your wardrobe, or to your colour profile. Photos are stored in the encrypted database on this device, nothing is measured from them, and they are never sent anywhere.',
     },
   },
 

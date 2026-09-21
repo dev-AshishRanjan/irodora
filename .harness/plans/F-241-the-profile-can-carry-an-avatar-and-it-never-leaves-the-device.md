@@ -68,14 +68,24 @@ Putting `profile_avatar` in `SYNC_TABLES` therefore means **a photograph of the 
 plaintext file**. Leaving it out means an export that silently drops something a person chose, and
 a restore that comes back without their picture.
 
-This plan takes the **consistent** option — in, beside `garment_image` — because the alternative
-makes "export everything" false and the plaintext cost is one the product already states and
-already pays for photographs. It is exactly the call criterion 3 sends to the security reviewer,
-so it is written here as a decision to be signed off rather than a detail to be discovered: if the
-reviewer says a face is a different category of data from a garment, the table comes out of
-`SYNC_TABLES` and the export copy says what it does not carry. **No app surface exports an archive
-today** (`backup.ts` exists; nothing in `apps/mobile` calls it), so this is a decision about the
-shape the backup will have when it ships, not about a file a person can produce this week.
+This plan took the **consistent** option — in, beside `garment_image`.
+
+**THE SECURITY REVIEW RECOMMENDED THE OPPOSITE, AND IT WAS RIGHT** (ADR-0105). A face is the first
+directly identifying datum this product holds; the cost of leaving it out is one tap, because the
+only source is the library and the picture is still there; the decision is reversible in one
+direction only; and inclusion bought no restore fidelity at all, because BLOB columns do not
+survive the archive's JSON round trip today. `profile_avatar` is out of `ARCHIVE_TABLES`, which
+stopped being `[...SYNC_TABLES]`, and `eraseEverything` moved onto `SYNC_TABLES` so a table outside
+the export list is still erased.
+
+The original reasoning is kept above rather than deleted: it was the argument the review answered,
+and writing the decision down as *"to be signed off"* rather than discovering it in the diff is what
+made the review able to answer it at all.
+
+**No app surface exports an archive today** (`backup.ts` exists; nothing in `apps/mobile` calls it),
+so this settled the shape a backup will have when it ships rather than a file anyone can produce
+this week — which is also why excluding the table now costs nothing and including it could not have
+been taken back.
 
 ### Nothing reads it, and that has to be checkable
 
@@ -83,10 +93,14 @@ Criterion 2 is a negative, so the guards are negative:
 
 - `Avatar` takes **no `Color`** and returns no value. Its props are bytes-as-a-URI, a size and a
   name. There is nothing in its type to read a colour into.
-- A scan, in the shape of `verify-app-glyphs.mjs`: the avatar modules may not import
-  `@irodora/color-*`, `@irodora/cvd-engine`, or any face, vision or ML module — with a planted
-  offender proving the scan reads files, and a planted acceptable import proving it is not simply
-  refusing everything.
+- A scan of the avatar modules' IMPORT SPECIFIERS: no `@irodora/color-*`, no `cvd`, no face,
+  vision or ML module, with a decoy asserting the pattern matches something. **In two test files
+  rather than a script in the lint chain** — `apps/mobile/test/profile.test.ts` for `avatar.ts`
+  and `packages/ui/test/avatar.test.tsx` for the component. A repo-wide script would scan the same
+  two files; what makes the guarantee hold for a THIRD module is the roster assertion beside it,
+  which fails when `src/profile/` gains a file nobody has classified. Both run in gate 4.
+  (The first draft scanned file TEXT and went red on its own docblock —
+  [[a-comment-that-mentions-a-forbidden-import-is-not-one]].)
 - The picker path asks for the **library**, never the camera, and requests no camera permission.
 - ADR-0010's camera-free path is asserted unchanged: the existing profile tests still build a
   complete profile from twelve forced choices with no image anywhere.
@@ -135,7 +149,7 @@ apps/mobile/src/profile/avatar.ts (new)   the app half: ingest, store, read back
 apps/mobile/src/screens/ProfileSetup.tsx  the avatar in the header, and choosing one
 apps/mobile/app/(tabs)/profile/index.tsx  wiring: the repository and the picker
 apps/mobile/src/i18n/*                    the copy, both scripts
-scripts/verify-avatar-reads.mjs (new)     nothing reads the picture, with its plant proof
+(no new script — see below)               nothing reads the picture, in two test files
 packages/store/test/*, packages/ui/test/*, apps/mobile/test/*
 .harness/state/*, .harness/memory/effects/*
 ```

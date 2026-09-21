@@ -878,11 +878,12 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           'SELECT id FROM profile_avatar WHERE profile_id = ? AND deleted_at IS NULL',
           [id],
         )) {
-          driver.run('UPDATE profile_avatar SET deleted_at = ?, updated_at = ? WHERE id = ?', [
-            now,
-            now,
-            row.id,
-          ]);
+          // The bytes go with it, for the reason `clearProfileAvatar` gives at length: a
+          // tombstone is a record that something was removed, not a copy of what it was.
+          driver.run(
+            "UPDATE profile_avatar SET deleted_at = ?, updated_at = ?, bytes = X'' WHERE id = ?",
+            [now, now, row.id],
+          );
           log('profile_avatar', row.id, 'delete', now);
         }
       });
@@ -1151,15 +1152,23 @@ export function createRepository(driver: Driver, info: DriverInfo): Repository {
           'SELECT id FROM profile_avatar WHERE profile_id = ? AND deleted_at IS NULL',
           [profileId],
         )) {
-          // TOMBSTONED, NOT DELETED, like every other removal here — a hard delete is invisible
-          // to a future sync, which could not tell it from a row that never existed. The BYTES
-          // stay until the erase path runs, which is true of a deleted garment's photograph too
-          // and is the honest thing to say about it rather than a claim of destruction.
-          driver.run('UPDATE profile_avatar SET deleted_at = ?, updated_at = ? WHERE id = ?', [
-            now,
-            now,
-            row.id,
-          ]);
+          /*
+           * TOMBSTONED, AND THE BYTES GO WITH IT (F-241's security review).
+           *
+           * The row stays because a hard delete is invisible to a future sync, which could not
+           * tell it from one that never existed. **The pixels are not part of that record.** A
+           * tombstone needs an id and a timestamp; keeping a photograph of somebody's face in a
+           * row they asked to remove would make "Remove picture" false of the only thing it is
+           * about — and the archive reads tombstones deliberately, so a removed face would have
+           * been exported.
+           *
+           * `byte_length` is left alone: it carries `CHECK (byte_length > 0)`, and it is the
+           * record of how big the picture WAS, which a tombstone may honestly keep.
+           */
+          driver.run(
+            "UPDATE profile_avatar SET deleted_at = ?, updated_at = ?, bytes = X'' WHERE id = ?",
+            [now, now, row.id],
+          );
           log('profile_avatar', row.id, 'delete', now);
         }
       });

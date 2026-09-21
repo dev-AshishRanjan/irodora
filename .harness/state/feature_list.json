@@ -9673,6 +9673,85 @@
         "a11y"
       ],
       "notes": "FROM F-239's REVIEW (2026-09-21). R9-MOCKUP-FIDELITY E3 is explicit: \"Tap targets meet 44 dp (iOS) / 48 dp (Android) THROUGH THE HIT AREA, not the drawn size — the chip stays the size the mockup draws.\" Switch does the opposite: controls.tsx raises the track to 68 x 44 and says why — the conformance rule reads minWidth/minHeight off the rendered node because a JS render tree has no Yoga pass (ADR-0055), so a hitSlop is invisible to it AND to a reviewer. That was a defensible trade while Switch had no screen consumer; F-239 made it the first control on a mockup-governed surface and did not re-examine it. FIXING IT NEEDS THE CONFORMANCE RULE TO LEARN hitSlop, which is why this is a feature rather than a constant: change the number alone and the a11y gate goes red on a control that is genuinely reachable. F-262 rebuilds 15 and will meet this; it is worth doing once for every control rather than per screen."
+    },
+    {
+      "id": "F-286",
+      "title": "An archive carries its images, and an imported one is sanitised before it is written",
+      "requirements": [
+        "FR-58",
+        "NFR-12",
+        "NFR-13"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "must",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "A database holding a garment photograph exports and re-imports to an identical digest — asserted across the SERIALISED string, not over the in-memory Archive object",
+        "Blob columns are encoded as base64 rather than as a JSON object of byte indices, and the archive states its encoding so an older file is refused rather than misread",
+        "Every image restored from an archive passes the same header, byte and pixel checks as one chosen from the library — the SanitisedImage brand is not bypassed by the import path",
+        "A hostile archive carrying arbitrary bytes in an image column is refused with an ArchiveError, with a planted case proving it"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "security"
+      ],
+      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21), two findings that must land TOGETHER. (A) THE ARCHIVE CANNOT RESTORE ANY IMAGE: serialiseArchive is JSON.stringify, a BLOB arrives from the driver as a Uint8Array, and that serialises as {\"0\":137,\"1\":80,...}; on import JSON.parse yields a plain object and driver.run refuses to bind it — verified against node:sqlite, and it throws a TypeError, which is not an ArchiveError, so it escapes the archive's own error type and the restore rolls back whole. ANY USER WITH ONE GARMENT PHOTOGRAPH HAS AN UNRESTORABLE BACKUP, and the threat model ranks their own export as the only backup there is. archive.test.ts misses it because its fixture writes only colours AND because importArchive is handed the in-memory object, where the Uint8Array is still a Uint8Array — the test never crosses the string. Secondary: at indent 2 each image byte costs 20-25 bytes of JSON, so a 4 MB photo builds a ~100 MB string in Hermes. (B) IMPORT WRITES PAST ingestImage: importArchive does INSERT INTO ${table} from parsed rows and parseArchive validates only that each row has a string id, so the SanitisedImage brand — meaningful only because the put* methods are the sole writers — is bypassed, and the bytes reach the platform decoder through a data: URI with no magic-byte check and no caps. FIXING (A) ALONE MAKES (B) LIVE IN THE SAME COMMIT. Both must ship before any export or import surface does; no surface calls backup.ts today. Threat model 2.1 carries the boundary-3 row with 'none yet' as its guard."
+    },
+    {
+      "id": "F-287",
+      "title": "A photograph is downscaled to what the screen can show before it is kept",
+      "requirements": [
+        "NFR-12",
+        "NFR-14"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "An image kept for a surface that draws it small is stored at a bounded pixel size rather than at the 50-megapixel ceiling DEFAULT_IMAGE_LIMITS allows",
+        "The avatar takes its own ImageLimits, and a large library photograph is accepted and reduced rather than refused",
+        "ingestImage keeps an APP2 segment only when its payload begins with ICC_PROFILE, so an MPF-embedded second JPEG does not ride inside a sanitised blob"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "security"
+      ],
+      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). THREE THINGS, one subject: what is actually retained. (1) DEFAULT_IMAGE_LIMITS allows 12 MiB and 50 megapixels for a circle drawn at 36 dp; avatar.ts passes no limits. Tightening them ALONE is the wrong fix — ingestImage refuses rather than reduces, so a tighter cap would reject most phone photographs — so this needs a downscale, which is why it is a feature and not an argument. It reduces retained facial detail (privacy.md's Minimise), archive exposure and decode cost at once: a 50 MP image decoded by Fresco is ~200 MB resident, and the threat model's decoder-bomb row is explicit that there is no process to sacrifice. (2) JPEG_DROP keeps APP2 unconditionally so the ICC profile survives; APP2 also carries MPF, which on many phones embeds a complete second JPEG with its own metadata — for a face photograph that is a second copy riding inside the sanitised blob, bounded only by the byte cap. Keep APP2 only when its payload begins with ICC_PROFILE\\0. (3) Pre-existing for garments, sharper for a face."
+    },
+    {
+      "id": "F-288",
+      "title": "The profile route reads the avatar once rather than on every render",
+      "requirements": [
+        "NFR-14"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [
+        "23"
+      ],
+      "acceptance": [
+        "The avatar is read and encoded once per change rather than once per render, and the measurement says which",
+        "A multi-megabyte base64 string of the picture is not repeatedly created on the JS thread"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test"
+      ],
+      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). app/(tabs)/profile/index.tsx computes avatarUri(store, profile.id) inline in the render body: a full blob read plus a base64 encode on the JS thread every time the route renders, which also keeps a large string of the person's face repeatedly alive in the JS heap. Availability and jank rather than confidentiality, and the fix is a memo keyed on the same version counter the route already holds. The wardrobe's gallery.ts solved the same problem with a bounded cache and is the shape to copy."
     }
   ]
 }

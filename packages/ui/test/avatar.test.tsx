@@ -12,6 +12,8 @@
  * it lives beside the code it scans.
  */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { render } from '@testing-library/react-native';
 import { Avatar, AVATAR_SIZE, ThemeProvider, type AvatarProps } from '../src/index.js';
 import { flattenStyle, type TestNode } from '../src/testing/index.js';
@@ -144,6 +146,25 @@ describe('nothing about it is a colour', () => {
         .filter((v) => v !== undefined);
       expect(painted).toStrictEqual([]);
     }
+  });
+
+  it('imports nothing that could read a photograph', () => {
+    /*
+     * ON THE IMPORT SPECIFIERS, not on the file's text.
+     *
+     * The app's half of this check scanned raw text first and went red on the module's own
+     * docblock, which says in words that it imports no vision module
+     * [[a-comment-that-mentions-a-forbidden-import-is-not-one]]. This is the version that reads
+     * what is imported — and the decoy below is what says the pattern matches anything at all.
+     */
+    const source = readFileSync(join(__dirname, '..', 'src', 'Avatar.tsx'), 'utf8');
+    const specifiers = [...source.matchAll(/from '([^']+)'|import('([^']+)')/gu)].map(
+      (m) => m[1] ?? m[2] ?? '',
+    );
+    expect(specifiers.length).toBeGreaterThan(0);
+    const reads = /color-|cvd|vision|face|ml-|tensor/u;
+    expect(specifiers.filter((spec) => reads.test(spec))).toStrictEqual([]);
+    expect(reads.test('@irodora/color-core')).toBe(true);
   });
 
   it('takes a uri, a size and a label — and no Color', () => {
