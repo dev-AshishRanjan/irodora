@@ -32,6 +32,7 @@ string and has no counterpart.
 1. **Bytes, before `JSON.parse`.** The only place a size limit can do anything.
 2. **Depth, before `JSON.parse`** — a linear bracket scan. An archive is six levels deep; a file
    that is four hundred is not one, and `JSON.parse` answers it with a stack overflow.
+   (Five, not six — see *What the review changed*.)
 3. `JSON.parse`, then **rows**, before any insert.
 
 `importArchive` gains the row bound too, because it takes `unknown` and can be called directly.
@@ -51,7 +52,7 @@ picked:
 - **`maxRows: 200_000`.** A wardrobe of five hundred garments with their seasons, colours and
   preferences is a few thousand rows; this is two orders of magnitude above a real archive and
   still bounds the insert loop.
-- **`maxDepth: 32`.** The archive's own shape is six.
+- **`maxDepth: 32`.** The archive's own shape is six. *(Five — see below.)*
 
 Each is stated with that arithmetic where it is declared, because a limit whose derivation nobody
 wrote down is one nobody can raise safely.
@@ -59,7 +60,7 @@ wrote down is one nobody can raise safely.
 ### Increments
 
 1. **Record**: the claim, this plan.
-2. **The bound**: `ARCHIVE_LIMITS`, `deserialiseArchive`, the row check in `importArchive`, tests.
+2. **The bound**: `DEFAULT_ARCHIVE_LIMITS`, `deserialiseArchive`, the row check in `importArchive`, tests.
 3. **The record**: the threat model's row names its guard; the effect link.
 
 ## Mockup fidelity
@@ -69,7 +70,7 @@ Not applicable. Nothing here is a surface.
 ## Files to touch
 
 ```
-packages/store/src/backup.ts      deserialiseArchive, ARCHIVE_LIMITS
+packages/store/src/backup.ts      deserialiseArchive, DEFAULT_ARCHIVE_LIMITS
 packages/store/src/archive.ts     the row bound in importArchive
 packages/store/src/index.ts       exports
 packages/store/test/archive-limits.test.ts (new)
@@ -109,6 +110,15 @@ docs/architecture/security/threat-model.md   the row names its guard
 node scripts/verify-state.mjs
 pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm security
 ```
+
+## What the review changed
+
+The numbers and their names, mostly. `maxBytes` counted UTF-16 code units and the message said
+"bytes", so it is `maxChars` now with the arithmetic restated; the two limits were sized against
+two different wardrobes, so they are sized against one and the row cap is described as what it is
+— a backstop against a row-count bomb inside a small file, not a second limit on how much a person
+may own. The archive is **five** levels deep, not six. And the export side is unbounded, which is
+`F-290`: a reader's limit with no writer's limit is a product that can make a file it cannot open.
 
 ## Risks and open questions
 

@@ -8,6 +8,74 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-22 — F-288 An archive is bounded before it is parsed
+
+**Done.** The threat model's boundary-③ table has said *"hard limits on bytes and record count
+before parsing"* for about a year, in a table whose own header says **every control maps to a test
+or a gate**. There were none. `F-286`'s review found the row describing a check nobody had
+written; this is the check.
+
+- **The bound had to act on the string, and nothing took a string.** `parseArchive` takes
+  `unknown` — by then `JSON.parse` has already allocated whatever the file asked for. So the
+  feature is really `serialiseArchive`'s missing half: `deserialiseArchive` bounds characters and
+  depth **before** parsing, then rows before any insert. `importArchive` carries the row bound
+  too, because it takes `unknown` and need never have touched a file.
+- **Composing the two doors found a bug neither had alone.** The ordinary restore path parses
+  twice, so `parseArchive` has to be idempotent — and was not: a decoded `Uint8Array` *is* an
+  object whose keys are decimal indices and whose values are bytes, which is exactly the broken
+  pre-`F-286` shape, so the second pass refused a good file.
+
+### Review — four blockers, and one of them was a hole my own fix opened
+
+- **The early return that fixed idempotence skipped the declared-column check one line below**,
+  re-opening the asymmetry `F-286`'s review had closed: an in-memory caller could put bytes in a
+  TEXT column and reach `driver.run` as a plain `Error`. **A fix placed above a guard is a fix
+  that skips it.** Gated, tested, watched failing.
+- **The escaped-quote test could not fail.** The scanner's escape branch is the only part a
+  hostile file could target; the fixture was depth 4 and the limit 8, and a scanner with escape
+  handling *deleted* reports exactly 8 — so both passed. At 5 it discriminates, and the reviewer
+  measured that rather than inferring it.
+- **The depth half of "nowhere near any limit" pasted the scanner into the test** and asserted on
+  the copy, so `maxNestingOf` could have been deleted with it green — the same shape `F-286`'s
+  review rejected once already in this package. Two calls to `deserialiseArchive` instead.
+- **The threat-model row named `ARCHIVE_LIMITS`, which does not exist.** This feature exists
+  because that table described a control nobody had written, and the fix described a constant
+  nobody had declared.
+
+And seven more: `maxBytes` counted UTF-16 code units while the message said *bytes* — for a
+Japanese corpus that under-counts the file by up to 3× — so it is `maxChars` with the arithmetic
+restated; the byte test's regex had a dead alternation branch and never checked the number; the
+"realistic" fixture had **no realistic photograph**, while the limit's whole derivation is about
+photographs; the two limits were sized against **two different wardrobes**; "round-trips" asserted
+only that nothing threw, and now compares digests; E-142 pointed at another feature's memory note;
+and "an order of magnitude clear" was 6× for depth.
+
+### Gates
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (store 248, ui 357, mobile 1038) ·
+build 0 · security 0.
+
+**NOT RUN:** a11y, contrast, cvd, e2e, golden — no surface, no colour value, no engine change.
+
+### Owed
+
+**F-290** — the export side is unbounded, so a wardrobe past roughly a hundred photographed
+garments writes a backup this refuses to read, and finds out at restore. `eraseWithBackupPrompt`
+is the sharp case: it offers a backup and then erases.
+
+### Lessons
+
+[[a-limit-that-fires-on-real-data-is-worse-than-no-limit]] — a bound is easy to write and easy to
+get wrong in the direction nobody notices, the fixture has to be real enough to carry the claim,
+and a reader's limit with no writer's limit makes files the product cannot open.
+
+### Next
+
+Still nothing eligible in R9: `F-221` waits on a device run this workstation cannot do, 22
+features wait on `F-221`, and the rest wait on a person.
+
+---
+
 ## 2026-09-22 — F-289 OQ-36 measured: Obsidian derives cleanly, Slate spends contrast
 
 **Done.** `OQ-36` blocks `F-225`, which blocks `F-233` and `F-240` and most of the mockup rebuild

@@ -200,7 +200,24 @@ const decodeValue = (table: string, column: string, value: unknown): unknown => 
    * the file with a message about a build that could not encode it. Found by F-288's own tests
    * the first time the two doors were composed.
    */
-  if (value instanceof Uint8Array) return value;
+  if (value instanceof Uint8Array) {
+    /*
+     * ...BUT IT STILL HAS TO BE A COLUMN THAT HOLDS BYTES (F-288's review).
+     *
+     * The first version returned early before the declared-column check below, which re-opened
+     * the asymmetry that check exists to close: `importArchive` takes `unknown`, so an in-memory
+     * caller could put a `Uint8Array` in `saved_color.name`, sail past `sanitiseImages` — that
+     * table has no image column — and reach `driver.run`, where STRICT answers with a plain
+     * `Error`. Not reachable from a FILE, because `JSON.parse` cannot produce a `Uint8Array`;
+     * reachable from the door that takes an object, which is public and has no caller yet.
+     */
+    if (imageColumnOf(table) !== column)
+      throw new ArchiveError(
+        `archive table "${table}" column "${column}" holds binary data, and that column holds ` +
+          'none. Only a declared image column may.',
+      );
+    return value;
+  }
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return value;
 
   const o = value as Record<string, unknown>;

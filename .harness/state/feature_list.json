@@ -9748,7 +9748,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "should",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [],
       "mockups": [],
       "acceptance": [
@@ -9762,7 +9762,7 @@
         "test",
         "security"
       ],
-      "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control.",
+      "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control. FROM THE REVIEW (2026-09-22): FOUR BLOCKERS. The early return that made parseArchive idempotent skipped the declared-column check one line below, re-opening a hole F-286's review had closed — a fix placed above a guard is a fix that skips it. The escaped-quote test could not fail: at maxDepth 8 a scanner with escape handling deleted also reports 8, and 8 > 8 is false; at 5 it discriminates. The depth half of the realistic test pasted the scanner into the test and asserted on the copy, so maxNestingOf could have been deleted with it green. And the threat-model row named ARCHIVE_LIMITS, which does not exist. SEVEN MORE: maxBytes counted UTF-16 code units while the message said bytes (now maxChars, arithmetic restated); the byte test's regex had a dead alternation branch and never asserted the number; the realistic fixture had no realistic photograph though the limit is derived from photographs; the two limits were sized against two different wardrobes; the round-trip test asserted only that nothing threw; E-142 pointed at another feature's memory note; and the archive is five levels deep, not six. RECORDED: F-290, the export side is unbounded.",
       "plan": "plans/F-288-an-archive-is-bounded-before-it-is-parsed.md"
     },
     {
@@ -9796,6 +9796,32 @@
       ],
       "notes": "THE SHAPE IS F-275's, which did this for OQ-29 and is done: 'OQ-29 is updated with the closest open face, so the person answering it chooses between measured options.' OQ-36 blocks F-225, which blocks F-233 and F-240 and, through them, most of the mockup rebuild. 15 draws Slate Graphite (#2C323A) and Obsidian Noir (#101114) as ONE SWATCH EACH; their levels, borders and text roles are drawn nowhere, and F-225's own note says deriving them is designing a surface no mockup draws. WHAT THIS FEATURE DOES IS MEASURE, NOT DECIDE: it implements the derivation the PRD's own OQ-36 row proposes (Sumi's lightness steps above its ground re-anchored at each theme's ground, text roles held), computes the full ramps, and runs checkContrast and checkSeparation — the real gate 9 and gate 10 code — over every declared pairing. A person still chooses; they choose knowing whether the obvious rule works, where it breaks, and what the nearest passing value is. NOTE the derivation cannot use themeRecipes: that mechanism is a tint that NEVER moves lightness (ADR-0096), and these two themes are ground changes. F-225's fourth criterion already supersedes ADR-0096, so this measures the world F-225 would create. FROM THE REVIEW (2026-09-22): the arithmetic was confirmed exact — hex-exact round trip, no non-linear averaging, nothing out of gamut, deltas matching the plan, checkers used as the gates use them, every nearestPassing value genuinely passing with nothing nearer missed. SIX CLAIMS OUTRAN IT AND ARE FIXED: the sensitivity the plan promised was never built, and Slate's 'seven' runs 6-11 across its own ±2 ΔE00 read error while Obsidian holds at zero; 'gate 10 is 12/12' measured nothing, because no cvdPair contains a token the ramp moves; 'the real gate 9 and 10 code' was only checkContrast; the control was degenerate (the delta is exactly zero when Sumi re-derives itself, and three wrong derivations passed it) and now also asserts the derived ramps differ from Sumi's and that a ground lifted 0.1 L lifts every step; §4/E3's #5C6472 is CONDITIONAL and was applied everywhere, so the counts with §5's tabled #464D5B (six and five) are stated too; and the held-token caveat was understated at 34 of 48 pairings. Also fixed: the direction crossover is L ≈ 0.564 not 0.5 (latent on dark grounds, not on Washi's), ΔL was printed to four places from a 0.005 grid, and the §5 insert had split a sentence in half.",
       "plan": "plans/F-289-the-two-undrawn-themes-are-measured.md"
+    },
+    {
+      "id": "F-290",
+      "title": "An export is bounded by what an import will accept",
+      "requirements": [
+        "FR-58",
+        "NFR-14"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "An export that would exceed what deserialiseArchive accepts refuses BEFORE writing, naming the limit and what to do about it — while the data still exists",
+        "The two limits are one declaration, so a reader and a writer cannot be sized against different wardrobes",
+        "A wardrobe too large to fit one archive is told so in words a person can act on, rather than discovering it at restore time"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "security"
+      ],
+      "notes": "FROM F-288's REVIEW (2026-09-22). F-288 bounded the READ side; exportArchive, serialiseArchive and eraseWithBackupPrompt are unbounded, so a wardrobe past roughly a hundred photographed garments writes a backup file that deserialiseArchive then refuses. The failure surfaces at RESTORE, which is the worst available moment — the threat model ranks a person's own export as the only backup there is. It is also the second half of the review's finding that the two limits were sized against two different wardrobes: one declaration is what stops that recurring. eraseWithBackupPrompt is the sharpest case, because it offers a backup and then erases: a backup written there that cannot be read back is the exact shape that function's own docblock says it exists to prevent."
     }
   ]
 }

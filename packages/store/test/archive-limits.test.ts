@@ -4,8 +4,8 @@
  * ## The control the threat model described for a year
  *
  * Boundary ③'s import-bomb row said *"hard limits on bytes and record count before parsing"*.
- * There were none — `F-286`'s review found the row describing a check nobody had written. This
- * file is the test that row now names.
+ * There were none — `F-286`'s review found the row describing a check nobody had written. The row
+ * now names `test`, and this is where that test lives.
  *
  * ## Both halves are asserted, and the second is the one that matters
  *
@@ -18,13 +18,14 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { nodeDriver } from '../src/drivers/node.js';
 import {
   ArchiveError,
   createRepository,
   DEFAULT_ARCHIVE_LIMITS,
   deserialiseArchive,
+  digest,
   exportArchive,
   importArchive,
   ingestImage,
@@ -76,7 +77,16 @@ const chunk = (type: string, body: number[]): number[] => [
   0,
   0,
 ];
-const png = (): Uint8Array =>
+/**
+ * A PNG with a payload the size a photograph's is.
+ *
+ * The byte limit's whole derivation is *"a photograph arrives at `quality: 0.8`, one to three
+ * megabytes, base64 costs 4/3"* — and the first version of this file proved a
+ * PHOTOGRAPH-FREE archive was clear of 256 Mi characters, which is not the claim the threat model
+ * reads off it. F-288's review caught that. 300 KB each is a conservative phone photograph, and
+ * twelve of them is the fixture below.
+ */
+const png = (payload = 0x8000): Uint8Array =>
   Uint8Array.from([
     0x89,
     0x50,
@@ -87,7 +97,10 @@ const png = (): Uint8Array =>
     0x1a,
     0x0a,
     ...chunk('IHDR', [...be32(640), ...be32(480), 0x08, 0x02, 0x00, 0x00, 0x00]),
-    ...chunk('IDAT', [0x78, 0x9c, 0x63, 0x00]),
+    ...chunk(
+      'IDAT',
+      Array.from({ length: payload }, (_, i) => (i * 7) & 0xff),
+    ),
     ...chunk('IEND', []),
   ]);
 
@@ -109,13 +122,14 @@ const colour = (id: string): NewSavedColor => ({
   corpus_slug: null,
 });
 
-/** Twelve garments, one with a photograph — something like a real, small wardrobe. */
+/** Twelve garments, EVERY ONE photographed at ~300 KB — something like a real, small wardrobe. */
 function realistic() {
   const { repo, driver } = open();
+  const photo = ingestImage(png(300_000));
   for (let i = 0; i < 12; i += 1) {
     const id = uuidv7();
     repo.createGarment({ id, type: 'jumper', color: colour(uuidv7()) }, 1000 + i);
-    if (i === 0) repo.putGarmentImage(id, ingestImage(png()), 1100);
+    repo.putGarmentImage(id, photo, 1100 + i);
   }
   return { repo, driver };
 }
@@ -126,11 +140,23 @@ describe('a realistic archive is nowhere near any limit', () => {
    * "does not throw" would not notice one set an order of magnitude too low. These assert the
    * DISTANCE, so a future edit that tightens a limit toward real data fails here.
    */
-  const { driver } = realistic();
-  const text = serialiseArchive(exportArchive(driver, 3000));
+  let source: ReturnType<typeof realistic>;
+  let text: string;
+  // BUILT IN A HOOK, not at collection time: a fixture that throws while the file is being
+  // collected surfaces as "cannot collect" rather than as a failing test.
+  beforeAll(() => {
+    source = realistic();
+    text = serialiseArchive(exportArchive(source.driver, 3000));
+  });
 
-  it('is far inside the byte limit', () => {
-    expect(text.length).toBeLessThan(DEFAULT_ARCHIVE_LIMITS.maxBytes / 100);
+  it('holds twelve photographs, so the distances below mean something', () => {
+    // Without this the file could be photograph-free and every "far inside" would be about an
+    // archive nobody has. The byte limit is derived from photographs; the fixture must have them.
+    expect(text.length).toBeGreaterThan(3_000_000);
+  });
+
+  it('is far inside the character limit', () => {
+    expect(text.length).toBeLessThan(DEFAULT_ARCHIVE_LIMITS.maxChars / 10);
   });
 
   it('is far inside the row limit', () => {
@@ -139,38 +165,36 @@ describe('a realistic archive is nowhere near any limit', () => {
     expect(rows).toBeLessThan(DEFAULT_ARCHIVE_LIMITS.maxRows / 100);
   });
 
-  it('is far inside the depth limit — an archive is six levels, not thirty-two', () => {
-    // Counted the way the implementation counts, on the real thing rather than on a fixture.
-    let depth = 0;
-    let deepest = 0;
-    let inString = false;
-    let escaped = false;
-    for (const ch of text) {
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-      if (inString) {
-        if (ch === '\\') escaped = true;
-        else if (ch === '"') inString = false;
-        continue;
-      }
-      if (ch === '"') inString = true;
-      else if (ch === '{' || ch === '[') deepest = Math.max(deepest, (depth += 1));
-      else if (ch === '}' || ch === ']') depth -= 1;
-    }
-    expect(deepest).toBeLessThanOrEqual(6);
-    expect(deepest * 4).toBeLessThan(DEFAULT_ARCHIVE_LIMITS.maxDepth);
+  it('is well inside the depth limit — an archive is five levels, not thirty-two', () => {
+    /*
+     * THROUGH THE IMPLEMENTATION, not through a copy of it. The first version pasted the scanner
+     * body into the test and asserted on the copy, so `maxNestingOf` could have been deleted with
+     * this still green — the same shape F-286's review had already rejected once in this package.
+     *
+     * Two calls instead: one at the archive's real depth, which must pass, and one below it,
+     * which must not. Together they pin the number without restating the algorithm.
+     */
+    expect(() =>
+      deserialiseArchive(text, { ...DEFAULT_ARCHIVE_LIMITS, maxDepth: 5 }),
+    ).not.toThrow();
+    expect(() => deserialiseArchive(text, { ...DEFAULT_ARCHIVE_LIMITS, maxDepth: 4 })).toThrow(
+      /nests 5 deep/u,
+    );
+    // And the real limit is comfortably above it — six times, not the ten the others have.
+    expect(5 * 6).toBeLessThan(DEFAULT_ARCHIVE_LIMITS.maxDepth);
   });
 
-  it('round-trips through the new door, image and all', () => {
-    // `deserialiseArchive` is `serialiseArchive`'s missing half; if they drift, a backup written
-    // by one cannot be read by the other and nothing else would say so.
-    const archive = deserialiseArchive(text);
+  it('round-trips through the new door: the same data, not merely no error', () => {
+    /*
+     * A DIGEST COMPARISON, which is what this module means by "identical". Asserting only that
+     * `importArchive` did not throw would not notice a door that dropped every column but `id` —
+     * and `serialiseArchive`/`deserialiseArchive` are halves of one thing, so a drift between
+     * them is a backup written by one that the other cannot read.
+     */
+    const before = digest(source.driver);
     const { driver: fresh } = open();
-    expect(() => {
-      importArchive(fresh, archive);
-    }).not.toThrow();
+    importArchive(fresh, deserialiseArchive(text));
+    expect(digest(fresh)).toBe(before);
   });
 });
 
@@ -201,6 +225,23 @@ describe('parsing twice is parsing once', () => {
     );
   });
 
+  it('refuses a Uint8Array in a column that holds no binary data', () => {
+    /*
+     * THE HOLE THE EARLY RETURN OPENED, found by F-288's review. `importArchive` takes
+     * `unknown`, so an in-memory caller can put bytes anywhere; before the fix they sailed past
+     * the declared-column check, past `sanitiseImages` (that table has no image column) and into
+     * `driver.run`, where STRICT answers with a plain `Error` — the asymmetry F-286 spent a
+     * feature closing. Not reachable from a file, because `JSON.parse` makes no `Uint8Array`.
+     */
+    const bad = {
+      format: 'irodora.archive',
+      schemaVersion: 1,
+      exportedAt: 1,
+      tables: { saved_color: [{ id: 'a', name: Uint8Array.from([1, 2, 3]) }] },
+    };
+    expect(() => parseArchive(bad)).toThrow(/holds binary data, and that column holds none/u);
+  });
+
   it('DECOY — the legacy byte-index shape is still refused', () => {
     // Without this, "a Uint8Array passes through" could be a parser that stopped checking.
     const bad = {
@@ -214,12 +255,36 @@ describe('parsing twice is parsing once', () => {
 });
 
 describe('each bound refuses, and says which', () => {
-  it('refuses a file past the byte limit before parsing it', () => {
-    // Not valid JSON either — which is the point: it is refused before anything tries to parse
-    // it, so the failure cannot be the parser's.
-    const huge = 'x'.repeat(DEFAULT_ARCHIVE_LIMITS.maxBytes + 1);
-    expect(() => deserialiseArchive(huge)).toThrow(ArchiveError);
-    expect(() => deserialiseArchive(huge)).toThrow(/past the .* -byte limit|byte limit/u);
+  it('refuses a file past the character limit before parsing it, and names the limit', () => {
+    /*
+     * NOT VALID JSON EITHER, which is the point: it is refused before anything tries to parse it,
+     * so the failure cannot be the parser's.
+     *
+     * AT A CUSTOM LIMIT, because the first version allocated 268 MB on every `pnpm test` to make
+     * the same point — and its regex was `/past the .* -byte limit|byte limit/`, whose first
+     * branch is dead (the message has no space before the hyphen), so it silently asserted only
+     * `/byte limit/` and never checked the NUMBER. F-288's review found both.
+     */
+    const limits = { ...DEFAULT_ARCHIVE_LIMITS, maxChars: 100 };
+    const over = 'x'.repeat(101);
+    expect(() => deserialiseArchive(over, limits)).toThrow(ArchiveError);
+    expect(() => deserialiseArchive(over, limits)).toThrow(
+      /archive is 101 characters, past the 100-character limit/u,
+    );
+  });
+
+  it('accepts a file exactly AT each limit, so > cannot quietly become >=', () => {
+    // Nothing else here would notice an off-by-one in the permissive direction.
+    const rows = [{ id: 'a' }, { id: 'b' }];
+    const text = JSON.stringify({
+      format: 'irodora.archive',
+      schemaVersion: 1,
+      exportedAt: 1,
+      tables: { saved_color: rows },
+    });
+    expect(() =>
+      deserialiseArchive(text, { maxChars: text.length, maxRows: 2, maxDepth: 4 }),
+    ).not.toThrow();
   });
 
   it('refuses nesting past the depth limit, which JSON.parse answers with a stack overflow', () => {
@@ -259,7 +324,7 @@ describe('each bound refuses, and says which', () => {
         },
         { ...DEFAULT_ARCHIVE_LIMITS, maxRows: 2 },
       );
-    }).toThrow(ArchiveError);
+    }).toThrow(/3 rows, past the 2 limit/u);
   });
 
   it('turns malformed JSON into an ArchiveError rather than a SyntaxError', () => {
@@ -283,32 +348,31 @@ describe('the depth scan counts brackets, not characters', () => {
       tables: { saved_color: [{ id: 'a', ...extra }] },
     });
 
+  /*
+   * AT maxDepth 5, WHICH IS WHAT MAKES THESE DISCRIMINATE.
+   *
+   * The structure is 4 deep. F-288's review measured what a scanner with the escape branch
+   * DELETED would report for the escaped-quote fixture: 8. At the old limit of 8 both the good
+   * and the broken scanner passed, so the only branch a hostile file could target had no test
+   * that could fail. At 5, the broken one refuses and the good one does not.
+   */
+  const DEPTH = { ...DEFAULT_ARCHIVE_LIMITS, maxDepth: 5 };
+
   it('does not count brackets inside a string', () => {
     // Depth 4 in structure; the value holds 200 open brackets and must not raise it.
-    expect(() =>
-      deserialiseArchive(archive({ name: '['.repeat(200) }), {
-        ...DEFAULT_ARCHIVE_LIMITS,
-        maxDepth: 8,
-      }),
-    ).not.toThrow(/nests/u);
+    expect(() => deserialiseArchive(archive({ name: '['.repeat(200) }), DEPTH)).not.toThrow();
   });
 
   it('is not fooled by an escaped quote', () => {
-    expect(() =>
-      deserialiseArchive(archive({ name: 'a\\"[[[[' }), {
-        ...DEFAULT_ARCHIVE_LIMITS,
-        maxDepth: 8,
-      }),
-    ).not.toThrow(/nests/u);
+    expect(() => deserialiseArchive(archive({ name: 'a\\"[[[[' }), DEPTH)).not.toThrow();
+  });
+
+  it('is not fooled by a literal backslash before a quote', () => {
+    expect(() => deserialiseArchive(archive({ name: 'a\\\\' }), DEPTH)).not.toThrow();
   });
 
   it('DECOY — real nesting IS counted at the same limit', () => {
     // Without this, "not fooled by a string" would also pass for a scan that counted nothing.
-    expect(() =>
-      deserialiseArchive(archive({ nested: [[[[[[1]]]]]] }), {
-        ...DEFAULT_ARCHIVE_LIMITS,
-        maxDepth: 8,
-      }),
-    ).toThrow(/nests/u);
+    expect(() => deserialiseArchive(archive({ nested: [[[[[[1]]]]]] }), DEPTH)).toThrow(/nests/u);
   });
 });

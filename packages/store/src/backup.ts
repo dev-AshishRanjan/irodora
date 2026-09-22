@@ -72,27 +72,41 @@ export function serialiseArchive(archive: Archive): string {
  *
  * A cap that refuses a legitimate backup is worse than no cap.
  *
- * - **`maxBytes`** — a photograph arrives through the picker at `quality: 0.8`, so one to three
- *   megabytes, and base64 costs 4/3. 256 MiB is roughly **a hundred garments with photographs**,
- *   and `DEFAULT_IMAGE_LIMITS.maxBytes` bounds the worst single one at 12 MiB. A phone cannot
- *   hold a string much past this anyway, which is the honest reason it is not larger.
- * - **`maxRows`** — a wardrobe of five hundred garments with their seasons, colours and
- *   preferences is a few thousand rows. 200,000 is two orders of magnitude clear of a real
- *   archive and still bounds the insert loop.
- * - **`maxDepth`** — the archive's own shape is six levels: root, `tables`, a table, a row, a
- *   value, a `$bytes` wrapper.
+ * **Both numbers are sized against ONE wardrobe** — about a hundred garments with photographs —
+ * because F-288's review found them sized against two, which is how a limit ends up refusing a
+ * file the rest of the product was happy to write.
+ *
+ * - **`maxChars`** — and it is CHARACTERS, not bytes, because that is what `String.length` counts
+ *   and checking anything else would mean encoding the whole file to measure it. A photograph
+ *   arrives through the picker at `quality: 0.8`, so one to three megabytes, and base64 costs
+ *   4/3; 256 Mi characters is roughly **a hundred garments with photographs**, with
+ *   `DEFAULT_IMAGE_LIMITS.maxBytes` bounding the worst single one at 12 MiB.
+ *
+ *   Two honest consequences of counting characters. A JS string costs up to two bytes per
+ *   character, so this bounds the heap at about 512 MiB — which is the real reason it is not
+ *   larger. And a Japanese-heavy file is up to three bytes of UTF-8 per character, so the file on
+ *   disk can be larger than the count; the limit errs permissive, never refusing a file it should
+ *   have accepted.
+ *
+ * - **`maxRows`** — **not a wardrobe-size limit.** At the byte cap the archive holds low
+ *   thousands of rows, so 200,000 is a backstop against a row-count bomb inside a SMALL file
+ *   rather than a second bound on how much a person may own. Bytes are what bind.
+ * - **`maxDepth`** — the archive's own shape is **five** levels: root, `tables`, a table, a row,
+ *   a `$bytes` wrapper. (Six was a miscount; F-288's review built the deepest legal archive and
+ *   scanned it.)
  *
  * Passable per call, like `ImageLimits`, so a limit is a value a reader can find rather than a
  * number buried in a condition.
  */
 export interface ArchiveLimits {
-  readonly maxBytes: number;
+  /** Characters, not bytes — see above, and the message says "characters" too. */
+  readonly maxChars: number;
   readonly maxRows: number;
   readonly maxDepth: number;
 }
 
 export const DEFAULT_ARCHIVE_LIMITS: ArchiveLimits = {
-  maxBytes: 256 * 1024 * 1024,
+  maxChars: 256 * 1024 * 1024,
   maxRows: 200_000,
   maxDepth: 32,
 };
@@ -109,25 +123,36 @@ export const DEFAULT_ARCHIVE_LIMITS: ArchiveLimits = {
  * removing from this module.
  */
 function maxNestingOf(text: string): number {
+  // BY CHAR CODE, not `for…of`: the iterator decodes surrogate pairs this loop does not care
+  // about, and F-288's review measured 612 ms against 201 ms over 64 MiB on V8 — worse under
+  // Hermes, on the JS thread, at the moment somebody is restoring a backup.
+  const QUOTE = 34;
+  const BACKSLASH = 92;
+  const OPEN_BRACE = 123;
+  const OPEN_BRACKET = 91;
+  const CLOSE_BRACE = 125;
+  const CLOSE_BRACKET = 93;
+
   let depth = 0;
   let deepest = 0;
   let inString = false;
   let escaped = false;
-  for (const ch of text) {
+  for (let i = 0; i < text.length; i += 1) {
+    const code = text.charCodeAt(i);
     if (escaped) {
       escaped = false;
       continue;
     }
     if (inString) {
-      if (ch === '\\') escaped = true;
-      else if (ch === '"') inString = false;
+      if (code === BACKSLASH) escaped = true;
+      else if (code === QUOTE) inString = false;
       continue;
     }
-    if (ch === '"') inString = true;
-    else if (ch === '{' || ch === '[') {
+    if (code === QUOTE) inString = true;
+    else if (code === OPEN_BRACE || code === OPEN_BRACKET) {
       depth += 1;
       if (depth > deepest) deepest = depth;
-    } else if (ch === '}' || ch === ']') depth -= 1;
+    } else if (code === CLOSE_BRACE || code === CLOSE_BRACKET) depth -= 1;
   }
   return deepest;
 }
@@ -139,18 +164,21 @@ function maxNestingOf(text: string): number {
  * time `parseArchive` sees an object the allocation has already happened, and that is exactly
  * what an import bomb is for.
  */
-export function deserialiseArchive(text: string, limits: ArchiveLimits = DEFAULT_ARCHIVE_LIMITS) {
-  if (text.length > limits.maxBytes)
+export function deserialiseArchive(
+  text: string,
+  limits: ArchiveLimits = DEFAULT_ARCHIVE_LIMITS,
+): Archive {
+  if (text.length > limits.maxChars)
     throw new ArchiveError(
-      `archive is ${String(text.length)} bytes, past the ${String(limits.maxBytes)}-byte limit. ` +
-        'Refused before parsing, because parsing it is what it would cost.',
+      `archive is ${String(text.length)} characters, past the ${String(limits.maxChars)}-` +
+        'character limit. Refused before parsing, because parsing it is what it would cost.',
     );
 
   const depth = maxNestingOf(text);
   if (depth > limits.maxDepth)
     throw new ArchiveError(
       `archive nests ${String(depth)} deep, past the ${String(limits.maxDepth)} limit. An ` +
-        'Irodora archive is six levels deep; this is not one.',
+        'Irodora archive is five levels deep; this is not one.',
     );
 
   let parsed: unknown;
@@ -167,8 +195,20 @@ export function deserialiseArchive(text: string, limits: ArchiveLimits = DEFAULT
   return archive;
 }
 
-/** Total rows across every table — the bound on what an import will insert. */
-export function assertRowCount(archive: Archive, limits: ArchiveLimits = DEFAULT_ARCHIVE_LIMITS) {
+/**
+ * Total rows across every table — the bound on what an import will insert.
+ *
+ * **It runs after the parse, and that residual is stated rather than implied.** `parseArchive`
+ * has already walked every row and decoded every image by the time this fires, so an archive
+ * INSIDE `maxChars` holding millions of rows is fully materialised before the count refuses it.
+ * The character bound is what keeps that finite; this one keeps the insert loop finite. Bounding
+ * rows earlier would mean counting them without parsing, which is a second parser
+ * [[parse-by-matching-what-you-want-not-by-removing-what-you-recognise]].
+ */
+export function assertRowCount(
+  archive: Archive,
+  limits: ArchiveLimits = DEFAULT_ARCHIVE_LIMITS,
+): void {
   let rows = 0;
   for (const table of Object.values(archive.tables)) rows += table.length;
   if (rows > limits.maxRows)
