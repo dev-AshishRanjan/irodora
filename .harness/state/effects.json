@@ -5439,6 +5439,101 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-139",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/store/src/schema.ts#profile_avatar"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/archive.ts#ARCHIVE_TABLES"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/archive.ts#eraseEverything"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/createRepository.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/profile/avatar.ts"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/security/threat-model.md"
+        },
+        {
+          "kind": "decision",
+          "ref": "docs/adr/0105-a-face-stays-out-of-the-plaintext-archive.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "THE ARCHIVE LIST IS NOW EXPLICIT AND THE ERASE LIST IS NOT THE SAME ONE, and profile-avatar.test.ts asserts both directions: the avatar is NOT in ARCHIVE_TABLES, garment_image still is, the avatar IS in SYNC_TABLES, ARCHIVE_TABLES is exactly one shorter — and a decoy that a setting is in neither, so \"not in the archive\" is not \"not in anything\". eraseEverything iterates SYNC_TABLES, because a table outside the export list would otherwise have survived erase-everything on a foreign key cascade that does not fire (every removal here is an UPDATE) — the same trap deleteProfile had already hit in this feature. REMOVING THE PICTURE BLANKS THE BYTES: three tests over both removal paths, with a decoy that a picture nobody removed still has its bytes, because the archive reads tombstones deliberately and a removed face would otherwise still be exported. THE PICTURE IS NEVER READ: both avatar modules are scanned by IMPORT SPECIFIER for colour, cvd, vision, face and ML packages with a decoy on the pattern, Avatar takes no Color (an EXHAUSTIVE prop-key assertion, `Record<keyof AvatarProps, true>` — a new prop is a missing-property error and a key that is not a prop is an excess-property error; F-241's review proved the first version, `readonly (keyof AvatarProps)[]`, could not fail, which was the same defect F-239's review had already caught once), the picker path asks pickFromLibrary and never captureWithCamera with a call counter proving the library WAS asked, and the roster assertion makes a new module in src/profile/ a failure rather than a file nobody scans. NOT GUARDED, AND RECORDED AS F-286: an imported archive writes blob columns straight past ingestImage, so the SanitisedImage brand is bypassed on that path — latent only because blobs do not survive the archive round trip at all, which is the other half of the same feature. NOT GUARDED: that a device encrypts the row (F-041 attestation), and the iOS usage-description string, which nothing asserts. ALSO GUARDED SINCE THE REVIEW: that a picture can be chosen AGAIN after it was removed — `profile_id` is UNIQUE and the row survives a removal, so `ON CONFLICT … DO UPDATE SET deleted_at = NULL` is the only thing that makes a second choice possible, and nothing crossed that branch until the review found it.",
+      "memory": "memory/effects/the-export-list-stopped-being-the-sync-list.md",
+      "rationale": "F-241 added the first directly identifying datum this product holds — a photograph of the user's face — and it landed on a derived constant that had answered two questions with one array since the archive was built. ARCHIVE_TABLES was [...SYNC_TABLES]: carries the sync columns, and a person may read this. The avatar is the case that separated them. High severity because three things reach outward from one table: what an export discloses (a plaintext file, by ADR-0051's deliberate design), what erase-everything actually erases (a list that used to be the same array), and what a tombstone keeps. The security review reversed the plan's own call on the export and was right to — the deciding argument was a measurement rather than a principle: BLOB columns do not survive the archive's JSON round trip today, so inclusion would have paid the full disclosure cost for a restore that cannot happen.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-140",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/ui/src/layout.tsx#Screen"
+      },
+      "to": [
+        {
+          "kind": "module",
+          "ref": "apps/mobile/src/screens"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/ui/src/Avatar.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "a11y"
+        },
+        {
+          "kind": "gate",
+          "ref": "contrast"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "mobile"
+      ],
+      "severity": "medium",
+      "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34).",
+      "memory": "memory/effects/a-screen-header-is-a-slot-not-a-screens-business.md",
+      "rationale": "Mockup 23 draws the avatar in the screen header, left of the title, so the arrangement belongs to Screen rather than to the profile screen — and putting the picture above the first card instead would have been reordering what a mockup draws, which is the mistake F-239's review caught in a smaller form. Medium rather than high: the slot is additive and absent by default, so the blast radius is a header that gains a row wrapper only where a caller asks for one. It reaches every screen because every screen renders this component, which is also why the guard is the sweep rather than the profile screen's own test.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

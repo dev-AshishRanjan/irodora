@@ -122,21 +122,44 @@ const config: ExpoConfig = {
     supportsTablet: false,
     bundleIdentifier: 'com.irodora.app',
     infoPlist: {
-      // The camera is the Lens (F-040). The string is user-facing copy and is bound by the
-      // claims lint: it says what we do with the frame, and does not promise accuracy.
-      NSCameraUsageDescription:
-        'Irodora reads colour from the camera on this device. Frames are analysed and discarded, and are never sent anywhere.',
       /*
-       * The wardrobe photograph (FR-40, F-043) AND the profile picture (FR-26, F-241). A
-       * DIFFERENT operation from the camera sentence above and it says so: these are kept.
+       * THE CAMERA IS USED TWO WAYS, and this string described one of them (F-040, F-043).
        *
-       * THE SECOND USE WAS ADDED WITHOUT THIS SENTENCE, and F-241's security review caught it.
-       * The string is the only declaration that ships, so a person being asked for a photograph
-       * of themselves would have read a sentence about their wardrobe — narrower than the truth,
-       * which is golden rule 11 in the one place nothing gates the wording.
+       * 1. The Lens — frames are analysed and discarded, and none is ever written down.
+       * 2. A wardrobe photograph taken rather than chosen — `AddGarment` calls
+       *    `captureWithCamera()`, ingests the bytes and calls `putGarmentImage`. **It is kept.**
+       *
+       * F-241's review found this while checking the library string one door over: the same
+       * defect, in the same file, for the same reason — a sentence written for one use that
+       * stayed after a second was added. The reassuring half ("analysed and discarded") is the
+       * part that stopped being true, which is the pattern worth noticing rather than the line.
+       *
+       * User-facing copy, bound by the claims lint: it says what happens to the frame and does
+       * not promise accuracy.
+       */
+      NSCameraUsageDescription:
+        'Irodora reads colour from the camera on this device; those frames are analysed and discarded. If you photograph a garment for your wardrobe, that photo is kept in the encrypted database on this device. Nothing is ever sent anywhere.',
+      /*
+       * THE LIBRARY IS USED THREE WAYS, and this sentence is the only declaration that ships.
+       *
+       * 1. A reading from a photograph (FR-27, F-097) — `CameraLens` picks one and
+       *    `lens/photo.ts` DECODES IT AND MEASURES A COLOUR. The photo is not kept.
+       * 2. A wardrobe photograph (FR-40, F-043) — kept, not measured.
+       * 3. The profile picture (FR-26, F-241) — kept, not measured, decoration.
+       *
+       * IT HAS BEEN WRONG TWICE, in opposite directions, and both are recorded because the
+       * second was made while fixing the first. F-241 added use 3 without touching this string,
+       * so somebody being asked for a photograph of themselves read a sentence about their
+       * wardrobe — too NARROW, which is what the security review caught. The repair then said
+       * *"nothing is measured from them"* of every photo, which is flatly false of use 1 and is
+       * too BROAD — a claim the product cannot support, which is golden rule 11, in the one
+       * place no gate reads the wording.
+       *
+       * So it is specific per use. A blanket reassurance is the failure mode here: the
+       * comfortable sentence is the one that stops being true first.
        */
       NSPhotoLibraryUsageDescription:
-        'Irodora can attach a photo you choose to an item in your wardrobe, or to your colour profile. Photos are stored in the encrypted database on this device, nothing is measured from them, and they are never sent anywhere.',
+        'Irodora can read a colour from a photo you choose, attach a photo to an item in your wardrobe, or show one as your profile picture. A photo you attach or use as your picture is kept in the encrypted database on this device and nothing is measured from it; a photo you read a colour from is not kept. Nothing is ever sent anywhere.',
     },
   },
 

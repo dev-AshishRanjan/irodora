@@ -178,6 +178,33 @@ describe('a picture in the database', () => {
     expect(repo.getProfileAvatarInfo(id)).toBeUndefined();
   });
 
+  it('can be chosen again after it was removed', () => {
+    /*
+     * THE BRANCH NOTHING CROSSED, found by F-241's review. `profile_id` is UNIQUE and
+     * `clearProfileAvatar` KEEPS the row with `deleted_at` set, so `ON CONFLICT … DO UPDATE SET
+     * deleted_at = NULL` is the only thing that lets somebody who removed their picture ever
+     * have another. Delete those four characters and every other test here still passed, while
+     * the product acquired "remove your picture once and you can never add one again".
+     *
+     * It is also the journey a person most plausibly takes: choose, dislike it, remove, choose
+     * a different one.
+     */
+    const { repo, driver, id } = withProfile();
+    repo.putProfileAvatar(id, ingestImage(pngBytes(100, 100)), NOW + 1);
+    repo.clearProfileAvatar(id, NOW + 2);
+    expect(repo.getProfileAvatarInfo(id)).toBeUndefined();
+
+    repo.putProfileAvatar(id, ingestImage(pngBytes(200, 200)), NOW + 3);
+    const after = repo.getProfileAvatarInfo(id);
+    expect(after?.width).toBe(200);
+    // Still one row: the second choice reuses the tombstone rather than racing the UNIQUE.
+    expect(driver.query<{ n: number }>('SELECT COUNT(*) AS n FROM profile_avatar', [])[0]?.n).toBe(
+      1,
+    );
+    // And the bytes are back — the blank left by the removal is not what gets read.
+    expect((repo.getProfileAvatar(id) ?? new Uint8Array()).length).toBeGreaterThan(0);
+  });
+
   it('names the profile when there is none, rather than surfacing a constraint error', () => {
     const { repo } = open();
     expect(() => {

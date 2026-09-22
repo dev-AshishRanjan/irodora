@@ -112,15 +112,19 @@ describe('choosing a picture', () => {
     expect(store.rows.has(PROFILE)).toBe(true);
   });
 
-  it('NEVER asks the camera', () => {
+  it('NEVER asks the camera', async () => {
     /*
      * `ImageSource` offers both halves and this feature uses one. A profile picture taken
      * through the camera would put a capture path beside a face and ask for a permission the
      * feature does not need — and the port being shared is exactly why the choice has to be
      * asserted rather than assumed from the module's name.
+     *
+     * AWAITED, because F-241's review caught the first version asserting synchronously after a
+     * `void`: only the body up to the first `await` had run, so a `captureWithCamera()` call
+     * placed after it would not have been seen.
      */
     const picker = fakePicker(png());
-    void chooseAvatar(picker, fakeStore(), PROFILE, 1000);
+    await chooseAvatar(picker, fakeStore(), PROFILE, 1000);
     expect(picker.camera()).toBe(0);
   });
 

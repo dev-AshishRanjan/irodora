@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { ProfileSetup } from '../../../src/screens/ProfileSetup';
 import { deviceRepository } from '../../../src/store/repository';
@@ -38,8 +38,18 @@ export default function ProfileRoute(): React.JSX.Element {
   const [refused, setRefused] = useState(false);
   const store = deviceRepository();
   const profile = activeProfile(store);
-  void version;
-  const uri = profile === null ? null : avatarUri(store, profile.id);
+  /*
+   * MEMOISED ON `version`, which is the counter a change already bumps (F-241's review).
+   *
+   * Inline, this was a full BLOB read plus a base64 encode of a photograph of somebody's face on
+   * every render, on the JS thread, with a multi-megabyte string repeatedly alive in the JS heap.
+   * The review recorded it as a feature and it is one line, so it is fixed here instead: the
+   * dependency that says "the picture changed" is the same one that already says so.
+   */
+  const uri = useMemo(
+    () => (profile === null ? null : avatarUri(store, profile.id)),
+    [store, profile, version],
+  );
 
   const choose = useCallback((): void => {
     if (profile === null) return;

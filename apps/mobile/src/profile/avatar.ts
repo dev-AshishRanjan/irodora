@@ -8,9 +8,19 @@
  *
  * **It is not a reader.** Nothing here looks at what is in the photograph — no face, no colour,
  * no dominant tone, no orientation heuristic. That is F-241's second criterion and ADR-0010's
- * whole argument, and it is checked from the outside by `verify-avatar-reads.mjs` rather than
- * promised here: this file may not import a colour package, a vision module or the engine, and a
- * scan refuses one with a planted offender proving it reads files at all.
+ * whole argument, and it is **checked rather than promised here**:
+ *
+ * - `apps/mobile/test/profile.test.ts` scans this module's IMPORT SPECIFIERS and refuses a
+ *   colour, cvd, vision, face or ML package, with a decoy proving the pattern matches something;
+ *   `packages/ui/test/avatar.test.tsx` does the same for the component.
+ * - The same file asserts the directory roster, so a THIRD module in `src/profile/` fails the
+ *   suite rather than sitting unscanned — which is what makes the guarantee survive the next
+ *   feature rather than only this one.
+ *
+ * There is no `verify-avatar-reads.mjs`: the plan proposed one and dropped it, because a
+ * repo-wide script would scan the same two files while the roster assertion is what covers the
+ * file nobody has written yet. This sentence named it for a while anyway, which F-241's review
+ * caught — a docblock promising a check by name is worth less than nothing when the name is wrong.
  *
  * ## Bytes, never a file
  *

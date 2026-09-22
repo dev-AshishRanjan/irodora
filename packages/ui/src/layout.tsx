@@ -307,10 +307,15 @@ export type ScreenProps = Omit<ViewProps, 'style'> & {
   /**
    * Something drawn to the LEFT of the title, on the same line (F-241).
    *
-   * `23` draws the profile's avatar there — `23.avatar` at x 135 against the title at x 251,
-   * both at y ≈ 162 — and that is the arrangement rather than a new one. A screen that wanted
-   * the picture above the card instead would be reordering what a mockup draws, which rule 14
-   * refuses and which is how the same mistake was made and caught on F-239.
+   * `23` draws the profile's avatar there — `23.avatar` at dp x 15 against the title at dp
+   * x 97.5 — so this puts the picture on the SIDE `23` draws it on. A screen that wanted it
+   * above the first card instead would be reordering what a mockup draws, which rule 14 refuses
+   * and which is how the same mistake was made and caught on F-239.
+   *
+   * **It is not yet `23`'s header.** In that image the title and its Japanese subtitle are
+   * CENTRED in the frame with a share control at the right edge; here the words sit against the
+   * avatar, left-aligned, because this screen is not the `23` rebuild — `F-260` is, and it is
+   * blocked on OQ-33/OQ-34. F-241's review caught this comment claiming more than the build does.
    *
    * **It takes a node, not a name.** This package has no device seam, so what goes here is
    * composed by the caller; `Screen` only says where it sits.

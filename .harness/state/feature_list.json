@@ -7948,7 +7948,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-220"
       ],
@@ -7969,8 +7969,17 @@
         "build",
         "security"
       ],
-      "notes": "Mockup 23, top-left of the header. C12. RECONCILED 2026-09-21 (increment 1): 23.avatar is new:Avatar at 36.5 x 35.5 dp in the SCREEN HEADER (parent null, order 1), left of the title, bound store:profile.avatar. STORAGE mirrors garment_image exactly, hung off personal_color_profile with ON DELETE CASCADE so forgetting the profile forgets the face. THE DECISION CRITERION 3 EXISTS FOR: ARCHIVE_TABLES is [...SYNC_TABLES] and the archive is PLAINTEXT JSON by design (a backup the user cannot read is not one they own); garment_image is already in it, so adding profile_avatar puts a photograph of a face in the clear. The plan takes the consistent option — in, beside garment_image — and sends it to the security reviewer rather than deciding it quietly. No app surface exports an archive today. NOTHING READS THE PICTURE: Avatar takes no Color, a scan refuses colour/vision/ML imports on the avatar path with a plant proof, and the camera-free profile path (ADR-0010) is asserted unchanged.",
-      "plan": "plans/F-241-the-profile-can-carry-an-avatar-and-it-never-leaves-the-device.md"
+      "notes": "Mockup 23, top-left of the header. C12. RECONCILED 2026-09-21 (increment 1): 23.avatar is new:Avatar at 36.5 x 35.5 dp in the SCREEN HEADER (parent null, order 1), left of the title, bound store:profile.avatar. STORAGE mirrors garment_image exactly, hung off personal_color_profile with ON DELETE CASCADE so forgetting the profile forgets the face. THE DECISION CRITERION 3 EXISTS FOR: ARCHIVE_TABLES is [...SYNC_TABLES] and the archive is PLAINTEXT JSON by design (a backup the user cannot read is not one they own); garment_image is already in it, so adding profile_avatar puts a photograph of a face in the clear. The plan takes the consistent option — in, beside garment_image — and sends it to the security reviewer rather than deciding it quietly. No app surface exports an archive today. NOTHING READS THE PICTURE: Avatar takes no Color, a scan refuses colour/vision/ML imports on the avatar path with a plant proof, and the camera-free profile path (ADR-0010) is asserted unchanged. FROM THE REVIEW (2026-09-22): FIXED — the prop-key assertion could not fail (`readonly (keyof AvatarProps)[]` requires each element to be a key and never requires the list to be complete; it is now `Record<keyof AvatarProps, true>`, exhaustive both ways), which was the SAME defect F-239s review caught, re-shipped with a comment saying it was the version that could fail; the avatar module named a guard script `verify-avatar-reads.mjs` that does not exist and never did; migration 9s docblock still argued the position ADR-0105 reversed; NSCameraUsageDescription made the same over-broad claim one door over (a wardrobe photograph TAKEN with the camera is kept, not discarded); the un-tombstone branch had no test, so `remove then choose again` could have been broken by deleting four characters with every gate green; the camera assertion ran before the await; two comments claimed `23`s header arrangement when what they have is its SIDE (that header centres its title and carries a share control — F-260s rebuild); and the per-render blob read recorded as F-288 was one line, so it was fixed and F-288 withdrawn. RECORDED: the absent states rendering is F-241s rather than any mockups (R9-MOCKUP-FIDELITY C12). NOT RUN BY ANYONE: the fidelity capture of this route beside `23` in both themes and both locales, compared by a person — that is F-260s fourth criterion and needs the rebuild.",
+      "plan": "plans/F-241-the-profile-can-carry-an-avatar-and-it-never-leaves-the-device.md",
+      "attested": [
+        {
+          "criterion": "The security reviewer signs off the storage, the picker permission and the backup path",
+          "verifiedBy": "The security-reviewer agent, 2026-09-21, over commits a22cc52..3c61c1a: the storage (SQLCipher BLOB, the SanitisedImage brand, the tombstone), the picker permission (library only, no new Android permission, the iOS usage string) and the backup path (what a plaintext archive discloses).",
+          "blocks": "release",
+          "status": "verified",
+          "evidence": "STORAGE — signed off. Bytes are a BLOB in the SQLCipher database, never a file; `putProfileAvatar` takes a `SanitisedImage` so no path skips `ingestImage`; `getProfileAvatarInfo` parses the format column rather than casting it; the tombstone is explicit because a cascade does not fire on an UPDATE. ONE CONDITION, MET in c46a180: removing the picture now blanks the bytes, because the archive reads tombstoned rows deliberately and a removed face would otherwise still have been exported. PICKER PERMISSION — signed off. `pickFromLibrary()` only, asserted with a call counter; no new Android permission, checked against the shipped APK by gate 16. ONE CONDITION, MET: the iOS usage string covered one use of the library and there are three — it was rewritten, then rewritten again when F-241s own review found the repair had claimed \"nothing is measured from them\" of every photo, which is false of the Lens photo path. BACKUP PATH — NOT signed off as built, and CHANGED rather than accepted: the reviewer recommended keeping a face out of the plaintext archive, `profile_avatar` was taken out of ARCHIVE_TABLES, and ADR-0105 records it. TWO LIVE DEFECTS REMAIN THERE, recorded as F-286: BLOB columns do not survive the archives JSON round trip at all (so any user with one garment photograph has an unrestorable backup), and `importArchive` writes blob columns past `ingestImage`. THE BACKUP PATH IS SIGNED OFF ONLY ON CONDITION THAT F-286 LANDS BEFORE ANY EXPORT OR IMPORT SURFACE SHIPS. No surface calls `backup.ts` today. WHY THIS IS ATTESTED RATHER THAN GATED: No script signs anything off. `pnpm security` is gitleaks, a key scan, an advisory audit and the no-inference scan; none of them is a review, and criterion 3 asks for a judgement about what a photograph of a face costs. ADR-0038 says such a criterion is declared here rather than left to look gated."
+        }
+      ]
     },
     {
       "id": "F-242",
@@ -9727,31 +9736,6 @@
         "security"
       ],
       "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). THREE THINGS, one subject: what is actually retained. (1) DEFAULT_IMAGE_LIMITS allows 12 MiB and 50 megapixels for a circle drawn at 36 dp; avatar.ts passes no limits. Tightening them ALONE is the wrong fix — ingestImage refuses rather than reduces, so a tighter cap would reject most phone photographs — so this needs a downscale, which is why it is a feature and not an argument. It reduces retained facial detail (privacy.md's Minimise), archive exposure and decode cost at once: a 50 MP image decoded by Fresco is ~200 MB resident, and the threat model's decoder-bomb row is explicit that there is no process to sacrifice. (2) JPEG_DROP keeps APP2 unconditionally so the ICC profile survives; APP2 also carries MPF, which on many phones embeds a complete second JPEG with its own metadata — for a face photograph that is a second copy riding inside the sanitised blob, bounded only by the byte cap. Keep APP2 only when its payload begins with ICC_PROFILE\\0. (3) Pre-existing for garments, sharper for a face."
-    },
-    {
-      "id": "F-288",
-      "title": "The profile route reads the avatar once rather than on every render",
-      "requirements": [
-        "NFR-14"
-      ],
-      "service": "mobile",
-      "release": "R9",
-      "priority": "should",
-      "status": "backlog",
-      "blockedBy": [],
-      "mockups": [
-        "23"
-      ],
-      "acceptance": [
-        "The avatar is read and encoded once per change rather than once per render, and the measurement says which",
-        "A multi-megabyte base64 string of the picture is not repeatedly created on the JS thread"
-      ],
-      "verification": [
-        "typecheck",
-        "lint",
-        "test"
-      ],
-      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). app/(tabs)/profile/index.tsx computes avatarUri(store, profile.id) inline in the render body: a full blob read plus a base64 encode on the JS thread every time the route renders, which also keeps a large string of the person's face repeatedly alive in the JS heap. Availability and jank rather than confidentiality, and the fix is a memo keyed on the same version counter the route already holds. The wardrobe's gallery.ts solved the same problem with a bounded cache and is the shape to copy."
     }
   ]
 }

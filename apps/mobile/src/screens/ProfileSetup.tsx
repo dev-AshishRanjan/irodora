@@ -510,9 +510,10 @@ export function ProfileSetup({
       title={t('profile.title')}
       script={script}
       /*
-        THE PICTURE SITS WHERE `23` DRAWS IT (F-241): `23.avatar` at x 135 against the title at
-        x 251, on the same line. Putting it above the first card instead would be reordering what
-        a mockup draws.
+        THE PICTURE SITS ON THE SIDE `23` DRAWS IT ON (F-241): `23.avatar` at dp x 15, left of
+        the title, on the same line. Putting it above the first card would be reordering what a
+        mockup draws. It is NOT yet `23`'s header — that one centres the title and carries a share
+        control, and rebuilding it is `F-260`, blocked on OQ-33/OQ-34.
 
         NO LABEL, so it is decorative: the title beside it already says what this is, and an
         avatar that announced itself would make a screen reader stop twice on one thing.

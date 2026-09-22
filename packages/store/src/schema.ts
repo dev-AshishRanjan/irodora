@@ -588,17 +588,23 @@ export const MIGRATIONS: readonly { readonly version: number; readonly up: strin
      * face, and a row that outlived its profile would be a photograph of a person with nothing
      * left to say why it was kept.
      *
-     * ## In SYNC_TABLES, which puts it in the archive
+     * ## In SYNC_TABLES, and NOT in the archive (ADR-0105)
      *
-     * The archive is plaintext JSON on purpose — *"a backup the user cannot read is not a backup
-     * they own"* — and `garment_image` is already in it, so photographs are already in the clear
-     * in an export. Migration 8 draws the line this sits on the other side of: a SETTING is not
-     * part of an export because it is not something the person made, and an avatar is. Leaving it
-     * out would mean a restore that silently came back without the picture somebody chose.
+     * It carries the sync columns, so it is in `SYNC_TABLES`. It is **out of `ARCHIVE_TABLES`**,
+     * which stopped being `[...SYNC_TABLES]` on the day those two questions disagreed — *carries
+     * the sync columns* and *a person may read this* are different questions, and this is the
+     * table that separated them.
      *
-     * **This is the decision F-241's third criterion sends to the security reviewer**, recorded
-     * here rather than left implicit: a face in a plaintext file is the cost, and if that is the
-     * wrong trade the table leaves `SYNC_TABLES` and the export copy says what it does not carry.
+     * The argument for including it was real and was answered. The archive is plaintext JSON on
+     * purpose — *"a backup the user cannot read is not a backup they own"* — `garment_image` is
+     * already in it, and migration 8's line is that a SETTING is not part of an export because it
+     * is not something the person made, while an avatar is. F-241's security review recommended
+     * the opposite and was right: a face is the first directly identifying datum this product
+     * holds, the cost of leaving it out is ONE TAP because the only source is the photo library
+     * and the picture is still there, and the decision is reversible in one direction only.
+     *
+     * Erasure iterates `SYNC_TABLES` rather than the archive list, so a table outside the export
+     * is still erased — see `eraseEverything`, which says why at length.
      */
     up: `
       CREATE TABLE profile_avatar (

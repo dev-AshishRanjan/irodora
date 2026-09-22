@@ -8,6 +8,102 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-22 — F-241 The profile can carry an avatar, and it never leaves the device
+
+**Done.** `23` draws a round picture at the head of the finished profile. A person chooses one
+from their library, it is kept as a BLOB in the SQLCipher database beside the wardrobe
+photographs, the brand mark stands in its place until they do, and **nothing reads it**.
+
+- **The schema is where "decoration" stops being a promise.** Migration 9 is `garment_image`
+  column for column with a different parent: no `face_` anything, no colour, no landmark, no
+  embedding, and nowhere to put one.
+- **The cascade is a backstop, not the mechanism.** `profile_avatar` declares
+  `ON DELETE CASCADE`; `deleteProfile` tombstones with an `UPDATE`, and a cascade fires on a
+  `DELETE`. The same trap appeared twice more in this feature — see below.
+- **`Screen` gained a `lead` slot**, because the title is not the profile screen's to arrange.
+  The alternative — the picture above the first card — is reordering what a mockup draws.
+- **The library is asked, never the camera**, with a call counter proving the library WAS asked;
+  a refused file is a result rather than a throw, and anything that is not `ImageRejected`
+  propagates, because a database that cannot be written is not a refused photograph.
+
+### The security review, which criterion 3 requires
+
+It signed off storage and the picker permission with one condition each, and **refused the
+backup path as built**. All three conditions were met.
+
+**The backup call was reversed** ([ADR-0105](../../docs/adr/0105-a-face-stays-out-of-the-plaintext-archive.md)).
+The plan put the avatar in the archive for consistency with `garment_image`; a face is the first
+directly identifying datum this product holds, the cost of leaving it out is **one tap** because
+the only source is the photo library, and the decision is reversible in one direction only. What
+settled it was a measurement rather than a principle: BLOB columns do not survive the archive's
+JSON round trip at all, so inclusion would have paid the full disclosure cost for a restore that
+cannot happen. `ARCHIVE_TABLES` stopped being `[...SYNC_TABLES]`, and `eraseEverything` moved
+onto `SYNC_TABLES` — **the second appearance of the cascade trap**: a table outside the export
+list would otherwise have survived *erase everything* on a foreign key that never fires.
+
+**Removing the picture now removes the picture.** The tombstone stays; the pixels are not part of
+that record, and the archive reads tombstoned rows deliberately.
+
+### Review — one round, and it found the same defect twice over
+
+**The prop-key assertion could not fail.** `readonly (keyof AvatarProps)[]` requires each element
+to BE a key and never requires the list to be complete — so a fourth prop compiles and passes.
+It carried a comment saying *"F-239's review caught an arity check that could not fail; this is
+the version that can"*. It was the same defect, re-shipped with a note claiming otherwise, and a
+high-severity effect link named it as a guard. Now `Record<keyof AvatarProps, true>`, exhaustive
+in both directions.
+
+**The un-tombstone branch had no test.** `profile_id` is `UNIQUE` and the row survives a removal,
+so `DO UPDATE SET deleted_at = NULL` is the only thing that lets somebody who removed their
+picture have another. Deleting those four characters left every gate green and the product with
+*remove once, never again*. **The third appearance of the same shape** — a branch that only the
+ordinary journey crosses.
+
+Also fixed: the module named a guard script (`verify-avatar-reads.mjs`) that does not exist and
+never did; migration 9's docblock still argued the position ADR-0105 reversed;
+`NSCameraUsageDescription` made the same over-broad claim one door over — a wardrobe photograph
+**taken** with the camera is kept, not *"analysed and discarded"*; the camera assertion ran before
+the `await`; two comments claimed `23`'s header when what they have is its **side** (that header
+centres its title and carries a share control — F-260's rebuild); and the per-render blob read
+recorded as F-288 turned out to be one line, so it was fixed and F-288 withdrawn.
+
+**And the claim I got wrong twice, in opposite directions.** The review before this one found the
+iOS library string covered one use when there were two. The repair then said *"nothing is measured
+from them"* of every photo — false, because `CameraLens` picks a library photo and `lens/photo.ts`
+measures a colour from it. There are **three** uses, and the string is now specific per use. The
+comfortable blanket sentence is the one that stops being true first.
+
+### Gates — the implementer's runs on the final tree
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (ui 357, mobile 1038, store 195) ·
+build 0 · security 0 · a11y 0 · contrast 0 · cvd 0.
+
+**NOT RUN:** `e2e` (gate 7 is pending, no Maestro here, not in F-241's verification array) · any
+device run — no JDK on this machine, so *"the row is encrypted"* stays F-041's standing
+attestation, stated in the test file rather than implied · **the fidelity capture of this route
+beside `23` in both themes and both locales, compared by a person** — that is F-260's fourth
+criterion and needs the rebuild this feature does not do.
+
+### Owed
+
+Criterion 3 is **attested, not gated**, and the backup path is signed off *only on condition that*
+**F-286** lands before any export or import surface ships: the archive cannot restore an image at
+all today, and `importArchive` writes blob columns past `ingestImage`. Threat model 2.1 carries
+that boundary row with its guard honestly recorded as *none yet*. **F-287** records the missing
+downscale and the APP2/MPF payload that can ride inside a "sanitised" blob.
+
+### Lessons
+
+[[a-comment-that-mentions-a-forbidden-import-is-not-one]] — two source scans went red on docblocks
+explaining the rules they enforce · [[the-export-list-stopped-being-the-sync-list]] ·
+[[a-screen-header-is-a-slot-not-a-screens-business]].
+
+### Next
+
+The next eligible R9 feature.
+
+---
+
 ## 2026-09-21 — F-239 The display preferences mockup 15 draws are real settings
 
 **Done, with one criterion short and recorded.** `15`'s three engine switches — *Tabular Numeric

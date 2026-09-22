@@ -169,11 +169,19 @@ describe('nothing about it is a colour', () => {
 
   it('takes a uri, a size and a label — and no Color', () => {
     /*
-     * A TYPE ASSERTION, because the runtime cannot see a prop nobody passed. F-239's review
-     * caught an arity check that could not fail; this is the version that can: it does not
-     * compile if `AvatarProps` grows a key outside this list.
+     * EXHAUSTIVE, AND THIS IS THE SECOND ATTEMPT AT IT.
+     *
+     * F-239's review caught an arity check that could not fail. The first version of THIS test
+     * was `const keys: readonly (keyof AvatarProps)[] = [...]`, which carried a comment saying
+     * it was the version that can fail — and F-241's review proved it cannot: that type requires
+     * each element to BE a key and never requires the list to be complete, so a fourth prop
+     * compiles and passes. Twice now, a test written to catch this class has been in the class.
+     *
+     * `Record<keyof AvatarProps, true>` is exhaustive in both directions: a NEW prop is a
+     * missing-property error, and a key that is not a prop is an excess-property error. The
+     * runtime line then says something even if the type is ever loosened.
      */
-    const keys: readonly (keyof AvatarProps)[] = ['uri', 'size', 'label'];
-    expect(keys).toStrictEqual(['uri', 'size', 'label']);
+    const KEYS: Record<keyof AvatarProps, true> = { uri: true, size: true, label: true };
+    expect(Object.keys(KEYS).sort()).toStrictEqual(['label', 'size', 'uri']);
   });
 });
