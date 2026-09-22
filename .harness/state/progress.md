@@ -8,6 +8,75 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-22 — F-289 OQ-36 measured: Obsidian derives cleanly, Slate spends contrast
+
+**Done.** `OQ-36` blocks `F-225`, which blocks `F-233` and `F-240` and most of the mockup rebuild
+behind them — and it was being asked blind. `15` draws Slate Graphite and Obsidian Noir as **one
+swatch each**, so their levels are drawn nowhere, and nobody knew whether the obvious derivation
+produces a palette that holds up. Now they do. The shape is `F-275`'s, which did the same for
+`OQ-29` and is done: *"so the person answering it chooses between measured options."*
+
+**It adopts nothing.** `git status` after the run is the tool, two documents and the record. No
+manifest value, no token, no emitted file — which was the plan's first anticipated effect, stated
+because a measurement that quietly adopted its own result is the failure mode here.
+
+- **Obsidian Noir introduces zero failures** (`#101114 / #1A1D24 / #22262E / #2B303B`).
+- **Slate Graphite introduces seven**, because a lighter ground spends contrast: two between tokens
+  §5 specifies, five on `ring` and `status.*`, which §5 never lists.
+- **Sumi itself — the theme that IS fully drawn — fails four.** `border.strong` reaches 2.0–2.64
+  against levels 1–3 and `swatch.well` where 3 is required. That is `F-225`'s fifth criterion on a
+  palette nobody has a question about, and it is worth answering before OQ-36.
+
+### Review — the arithmetic was right and six of the claims were not
+
+The colour scientist confirmed what mattered most and could not fault it: the round trip is
+hex-exact (max float error 9.99e-16), nothing averages in non-linear sRGB, no derived value or
+search candidate is out of gamut, Sumi's deltas are exactly the plan's, the checkers are used the
+way the gates use them, and every `nearestPassing` value genuinely passes with nothing nearer
+missed. **The findings were all about what I claimed, not what I computed** — which is golden rule
+11's shape.
+
+- **"Slate introduces seven" was not robust to its own read error**, and the plan had promised that
+  check before the first version shipped without it. Slate's ground came off a JPEG at ΔE00 ≈ 2;
+  across that band the count runs **6 to 11**. Obsidian holds at zero. The sensitivity is now
+  computed and printed, and both records say the qualitative answer survives while the count does
+  not.
+- **"Gate 10 is 12/12 in all three" measured nothing about the derivation.** No `cvdPair` contains
+  a token the ramp moves, so it is the same twelve numbers printed three times. Said so.
+- **"The real gate 9 and gate 10 code" overstated it.** Only `checkContrast` ran; gate 9 is also
+  `checkChromaCeiling`, `checkStructure`, `checkSalience` and ADR-0043's derived-hex check. It now
+  claims *the contrast pairings and the CVD pairs*.
+- **The control was real but degenerate.** Re-deriving Sumi from Sumi makes the delta exactly zero,
+  so it exercised the round trip and not the re-anchoring — and three wrong derivations passed it,
+  the worst handing every candidate Sumi's own ramp silently. Two assertions added: the derived
+  ramps must differ from Sumi's, and a ground lifted 0.1 L must lift every step by 0.1.
+- **`#5C6472` is conditional** (§4/E3: *"where it is the only indicator of a state"*) and was
+  applied everywhere; with §5's tabled `#464D5B` the counts are six and five. Both are now stated
+  and `--drawn` measures the second.
+- **The held-token caveat was understated**: 34 of the 48 pairings have at least one token §5 does
+  not specify, held at a pre-R9 value tuned against the old ground. "Zero" is a statement about a
+  palette that is three-quarters unfinished, and it says so.
+- Also: `text.tertiary` has two values and the token has one, so the generous one was used —
+  Slate's margin there is 3.30, not 4.91; `border.subtle` is mapped onto a translucent token that
+  declares no pairings, so that assignment is checked by nothing; the direction crossover is
+  L ≈ 0.564 rather than 0.5 (latent here, not on Washi's L 0.96 ground); and the §5 insert had
+  **split a sentence in half**, which is fixed.
+
+### Gates
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (unchanged: ui 357, mobile 1038, store
+230) · the script runs clean both ways.
+
+**NOT RUN:** everything else — nothing here is a surface and nothing in the build moved.
+
+### Next
+
+Still nothing in R9 is eligible. `F-221` waits on a device run this workstation cannot do and 22
+features wait on `F-221`; the rest wait on a person. **OQ-36 is now answerable from numbers, and
+so is a question nobody had asked: whether `border.strong` can stay where `15` draws it.**
+
+---
+
 ## 2026-09-22 — F-286 An archive carries its images, and an imported one is sanitised
 
 **Done.** Anyone with one garment photograph had a backup that could not be restored — on the only

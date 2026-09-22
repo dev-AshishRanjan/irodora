@@ -195,12 +195,15 @@ mockup ramp (C 0.0086 – 0.0251, h ≈ 264°) and is re-stated by `F-225` with 
 | text.tertiary | `#768290` on ground, `#94A1AF` on cards (§E3) | `#5D6674` (§E3) |
 | primary action | `#FFFFFF` pill, dark text | `#1A1B1E` pill, light text (`25`) |
 
-**Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (`#2C323A` — no mockup
+**Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (`#2C323A` — no
+mockup prints it; `F-220` read it at the centre of `15`'s tile, and a colour read from a render carries
+ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
+and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
 
-**What the two undrawn themes would be, measured (`F-289`, OQ-36).** `15` draws Slate Graphite and
-Obsidian Noir as one swatch each, so their levels are drawn nowhere. Running OQ-36's own proposed
-derivation — Sumi's lightness steps above its ground, re-anchored, chroma and hue carried from
-Sumi's corresponding step, everything else held — gives:
+**What the two undrawn themes would be, and what the numbers actually say (`F-289`, OQ-36).**
+`15` draws Slate Graphite and Obsidian Noir as one swatch each, so their levels are drawn
+nowhere. Running OQ-36's own proposed derivation — Sumi's lightness steps above its ground,
+re-anchored, chroma and hue carried from Sumi's corresponding step, everything else held — gives:
 
 | | ground | level 1 | level 2 | level 3 |
 |---|---|---|---|---|
@@ -208,16 +211,44 @@ Sumi's corresponding step, everything else held — gives:
 | Slate Graphite (derived) | `#2C323A` | `#3B3F46` | `#444952` | `#4F5460` |
 | Obsidian Noir (derived) | `#101114` | `#1A1D24` | `#22262E` | `#2B303B` |
 
-Measured with `checkContrast` and `checkSeparation` — the gate 9 and gate 10 code itself — against
-§4/E3's corrected `border.strong` (`#5C6472`), with Sumi re-derived from itself as the control.
-**Obsidian introduces no failure; Slate introduces seven**, two of them between tokens this table
-specifies. **And Sumi itself fails four**: `border.strong` reaches only 2.0–2.64 against levels 1–3
-and `swatch.well` where 3 is required, which is `F-225`'s fifth criterion on the theme that is
-fully drawn. Reproduce: `node mockups/tools/derive-theme.mjs` (`--drawn` measures `15`'s
-uncorrected `#464D5B` instead, which fails a fifth pairing).
-prints it; `F-220` read it at the centre of `15`'s tile, and a colour read from a render carries
-ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
-and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
+**Obsidian introduces no failure. Slate introduces seven**, two of them between tokens this table
+specifies (`foreground.2` on level 2 at 4.12 where 4.5 is required, passing at `#AEB8C4`;
+`border.strong` on the ground at 2.17 where 3 is, passing at `#727B89`). **And Sumi itself fails
+four** — `border.strong` reaches 2.0–2.64 against levels 1–3 and `swatch.well` where 3 is
+required — which is `F-225`'s fifth criterion on the theme that IS fully drawn, and is worth
+answering before OQ-36 is.
+
+**What those numbers do and do not rest on**, because the first version of this block claimed more
+than the run supports and `F-289`'s review said so:
+
+- **Measured with `checkContrast` and `checkSeparation`** — the checker functions themselves, not
+  a ratio rewritten for the occasion. That is *the contrast pairings and the CVD pairs*, **not
+  "gates 9 and 10"**: gate 9 is also `checkChromaCeiling`, `checkStructure`, `checkSalience` and
+  ADR-0043's derived-hex check, and none of those ran.
+- **The CVD result says nothing about the derivation.** No `cvdPair` contains a token the ramp
+  moves, so all three palettes return the same twelve numbers. They pass; that is a fact about
+  the status colours, not about these themes.
+- **"Seven" assumes §4/E3's conditional `#5C6472` for `border.strong`**, applied to the token
+  everywhere. With the value this table carries (`#464D5B`) it is **six introduced for Slate, none
+  for Obsidian, and five inherited by each** — `--drawn` measures that.
+- **"Seven" is not robust to Slate's own read error.** Its ground came off a JPEG at ΔE00 ≈ 2;
+  moving it along L within that band gives 6 introduced at ΔE00 1.6 below and 11 at ΔE00 1.6
+  above. Obsidian's ground was printed on its tile and holds at 0 across the same band. **The
+  qualitative result survives and the count does not.**
+- **34 of the 48 pairings have at least one token this table does not specify** (25 with one side,
+  9 with neither): `status.*`, `ring`, `accent`, `chart.*` and `swatch.well` are held at their
+  pre-R9 values, tuned against the old `#12100F` ground. `F-225` owes those a re-tune for every
+  theme including Sumi, so "Obsidian introduces zero" is a statement about a palette that is
+  three-quarters unfinished.
+- **`text.tertiary` has two values here and the token has one.** The measurement holds the cards
+  value (`#94A1AF`) on the ground too, which is the more generous of the pair; with the on-ground
+  `#768290`, Slate's `foreground.3` on ground is 3.30 against a largeText 3 rather than 4.91. No
+  verdict changes, and Slate's margin there is thinner than the run prints.
+- **`border.subtle` is mapped onto the `border` token, which is translucent** and declares no
+  pairings, so that assignment is checked by nothing; the `keyline` row has no token at all.
+
+Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's `border.strong`,
+`--json` for the per-pairing numbers and the sensitivity rows).
 
 **Radius**: `sm 6 · md 10 · lg 16 · pill`. **Spacing**: `4 · 8 · 16 · 24 · 32 · 48` — still a
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and

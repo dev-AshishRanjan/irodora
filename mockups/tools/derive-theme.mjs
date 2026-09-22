@@ -8,10 +8,16 @@
  * it is being asked blind: nobody knows whether the obvious derivation produces a palette that
  * clears gates 9 and 10.
  *
- * So this runs the obvious derivation and measures it **with the real checkers** —
- * `checkContrast` and `checkSeparation` out of `@irodora/design-tokens`, the same functions the
- * gates call. A ratio reimplemented here would agree with itself on day one
+ * So this runs the obvious derivation and measures it with **`checkContrast` and
+ * `checkSeparation` out of `@irodora/design-tokens`** — the functions the gates call, rather than
+ * a ratio reimplemented here, which would agree with itself on day one
  * [[a-check-that-reimplements-its-subject-agrees-with-it-on-day-one]].
+ *
+ * **That is the contrast pairings and the CVD pairs, NOT "gate 9 and gate 10".** Gate 9 is also
+ * `checkChromaCeiling`, `checkStructure`, `checkSalience` and ADR-0043's derived-hex check
+ * (`scripts/verify-contrast.mjs`), and this supplies no `exceptions`, so the chroma ceiling could
+ * not run against surfaces that carry C 0.0139–0.0206 over a declared 0.01. F-289's review caught
+ * the overstatement; the narrower claim is the true one.
  *
  * Nothing in the build moves. No manifest value is touched. `F-225` is where an answer lands.
  *
@@ -55,9 +61,10 @@ const ROOT = join(HERE, '..', '..');
  */
 const dist = (pkg) => pathToFileURL(join(ROOT, 'packages', pkg, 'dist', 'index.js')).href;
 const { checkContrast, checkSeparation } = await import(dist('design-tokens'));
-const { srgbToXyz, xyzToOklch, oklchToXyz, xyzToSrgb, srgbToHex } = await import(
+const { srgbToXyz, xyzToOklch, oklchToXyz, xyzToSrgb, srgbToHex, xyzToLab } = await import(
   dist('color-spaces')
 );
+const { deltaE00 } = await import(dist('color-difference'));
 const manifest = JSON.parse(
   readFileSync(join(ROOT, 'docs', 'design', 'design-system.manifest.json'), 'utf8'),
 );
@@ -161,13 +168,19 @@ const checkable = (palettes) => ({
 function nearestPassing(palettes, theme, textToken, surfaceToken) {
   const start = palettes[theme][textToken];
   /*
-   * WHICH WAY TO MOVE is decided by the SURFACE, not by the text. A dark ground needs its text
+   * WHICH WAY TO MOVE is decided by the SURFACE, not by the text: a dark ground needs its text
    * lighter and a light ground needs it darker, and asking the text where it already sits gets
-   * that backwards for a mid-lightness token — which is the case most likely to be failing.
+   * that backwards for a mid-lightness token — the case most likely to be failing.
+   *
+   * **The crossover is L ≈ 0.564, not 0.5.** WCAG's ratio is a function of relative luminance, and
+   * the surface at which "lighter" stops being the direction that gains contrast is Y ≈ 0.179 —
+   * OKLCh L ≈ 0.564, not the 0.5 this first used. Nothing in three dark palettes sits in that gap
+   * (the lightest surface here is L ≈ 0.45), so it was latent — but Washi's ground is L 0.96 and
+   * this tool is reusable. F-289's review found it.
    */
-  const up = palettes[theme][surfaceToken].oklch.l < 0.5;
-  for (let step = 1; step <= 120; step += 1) {
-    const l = Math.min(1, Math.max(0, start.oklch.l + (up ? step : -step) * 0.005));
+  const up = palettes[theme][surfaceToken].oklch.l < 0.564;
+  for (let step = 1; step <= 600; step += 1) {
+    const l = Math.min(1, Math.max(0, start.oklch.l + (up ? step : -step) * 0.001));
     const candidateHex = oklchToHex({ l, c: start.oklch.c, h: start.oklch.h });
     const trial = {
       ...palettes,
@@ -185,9 +198,11 @@ function nearestPassing(palettes, theme, textToken, surfaceToken) {
       (r) => r.foreground === textToken && r.background === surfaceToken,
     );
     if (pairing?.passes === true)
+      // A 0.001 grid, and reported at three places — the first version searched at 0.005 and
+      // printed four decimals, which claimed a precision the search did not have.
       return {
         hex: candidateHex.toUpperCase(),
-        deltaL: Number((l - start.oklch.l).toFixed(4)),
+        deltaL: Number((l - start.oklch.l).toFixed(3)),
         wcag: Number(pairing.wcag.toFixed(2)),
       };
     if (l === 0 || l === 1) break;
@@ -200,6 +215,17 @@ for (const [name, { ground }] of Object.entries(CANDIDATES))
   palettes[name] = derive(ground).palette;
 // The control: Sumi through the same arithmetic must reproduce Sumi.
 palettes['sumi-charcoal'] = derive(SUMI_R9.background).palette;
+
+/**
+ * Does any CVD pair contain a token the derivation moves?
+ *
+ * **No, and the report has to say so.** All four `cvdPairs` are status colours and
+ * `ring`/`border.strong`, none of which the ramp touches — so the separation numbers are
+ * identical in all three palettes, and printing "12/12" three times reads as evidence about the
+ * derivation when it is the same twelve numbers repeated. F-289's review caught that.
+ */
+const MOVED = new Set(['background', ...RAMP]);
+const cvdTouchesDerivation = manifest.cvdPairs.pairs.some(([a, b]) => MOVED.has(a) || MOVED.has(b));
 
 const themes = Object.keys(palettes);
 const { results, findings } = checkContrast(checkable(palettes), themes, palettes);
@@ -250,6 +276,39 @@ report.control.reproduced =
   JSON.stringify(report.control.expected) === JSON.stringify(report.control.actual);
 
 /*
+ * AND THE SECOND HALF OF THE CONTROL, which F-289's review is the reason for.
+ *
+ * Re-deriving Sumi from Sumi makes `ground.l - sumiGround.l` exactly ZERO, so that check
+ * exercises the round trip and the sign of the delta — and NOT the re-anchoring. The review
+ * mutation-tested it: three wrong derivations pass it, and the worst of them (reading
+ * `sumiGround.l` where `ground.l` belongs) hands every candidate Sumi's own ramp, silently.
+ *
+ * So: the derived ramps must DIFFER from Sumi's, and a synthetic ground exactly 0.1 L above
+ * Sumi's must produce steps exactly 0.1 above Sumi's. The second is the one with a hand-computable
+ * answer, which is what makes it a control rather than another run of the same code.
+ */
+const sumiRamp = JSON.stringify(report.derivation['sumi-charcoal']);
+report.control.derivedRampsDifferFromSumi = themes
+  .filter((t) => t !== 'sumi-charcoal')
+  .every((t) => JSON.stringify(report.derivation[t]) !== sumiRamp);
+
+const sumiGroundL = hexToOklch(SUMI_R9.background).l;
+const liftedGround = oklchToHex({
+  l: sumiGroundL + 0.1,
+  c: hexToOklch(SUMI_R9.background).c,
+  h: hexToOklch(SUMI_R9.background).h,
+});
+const lifted = derive(liftedGround).values;
+report.control.aLiftedGroundLiftsEveryStep = RAMP.every((step) => {
+  const want = hexToOklch(SUMI_R9[step]).l + 0.1;
+  return Math.abs(hexToOklch(lifted[step]).l - want) < 0.002;
+});
+report.control.passes =
+  report.control.reproduced === true &&
+  report.control.derivedRampsDifferFromSumi === true &&
+  report.control.aLiftedGroundLiftsEveryStep === true;
+
+/*
  * THE QUESTION OQ-36 IS ACTUALLY ASKING is not "does this palette pass" — that is F-225's
  * criterion 5, over a palette a person has not chosen yet. It is "does DERIVING these two make
  * anything worse than the theme they are derived from".
@@ -258,6 +317,44 @@ report.control.reproduced =
  * property of the R9 ramp and of the tokens §5 does not list, and it is F-225's to answer for
  * every theme at once. A pairing that passes in Sumi and fails here is what the derivation COST.
  */
+/**
+ * How many failures the derivation introduces if the ground is somewhere else within its own
+ * read error.
+ *
+ * **Slate's `#2C323A` was read off a JPEG and carries ΔE00 ≈ 2.** A verdict that changes inside
+ * that error is a lucky number, not a measurement, and the plan promised this check before the
+ * first version shipped without it — which F-289's review caught. Obsidian's value was PRINTED on
+ * its tile, so it has no comparable error, and measuring it anyway is what shows the difference.
+ *
+ * The ground is moved along L only: perturbing chroma or hue by the same ΔE00 leaves the count
+ * unchanged, so the sensitivity is one-dimensional and can be reported as one row per step.
+ */
+function sensitivity(groundHex, sumiFails) {
+  const base = hexToOklch(groundHex);
+  // CIEDE2000 takes CIELAB, and this is the one place in the script that leaves OKLCh — the
+  // read error on Slate's ground is quoted in ΔE00, so it has to be measured in the space that
+  // number is defined in rather than in the one the derivation works in.
+  const lab = (hex) => xyzToLab(srgbToXyz(hexToRgb(hex)));
+  const out = [];
+  for (const dl of [-0.04, -0.02, 0, 0.02, 0.04]) {
+    const hex = oklchToHex({ l: base.l + dl, c: base.c, h: base.h }).toUpperCase();
+    const a = lab(groundHex);
+    const b = lab(hex);
+    const palette = derive(hex).palette;
+    const trial = { probe: palette };
+    const { results } = checkContrast(checkable(trial), ['probe'], trial);
+    const failing = results
+      .filter((r) => !r.passes)
+      .map((r) => `${r.foreground} on ${r.background}`);
+    out.push({
+      ground: hex,
+      deltaE00: Number(deltaE00(a, b).toFixed(2)),
+      introduced: failing.filter((p) => !sumiFails.has(p)).length,
+    });
+  }
+  return out;
+}
+
 const failedIn = (theme) =>
   new Set(report.contrast[theme].filter((r) => r.verdict === 'FAIL').map((r) => r.pairing));
 const sumiFailures = failedIn('sumi-charcoal');
@@ -278,6 +375,8 @@ for (const theme of themes) {
   const introduced = [...mine].filter((p) => !sumiFailures.has(p));
   report.derivationCost[theme] = {
     introduced,
+    sensitivity: sensitivity(CANDIDATES[theme].ground, sumiFailures),
+    groundRead: CANDIDATES[theme].read,
     introducedOnSpecifiedTokens: introduced.filter(specified),
     introducedOnTokensR9DoesNotList: introduced.filter((p) => !specified(p)),
     inherited: [...mine].filter((p) => sumiFailures.has(p)),
@@ -303,7 +402,16 @@ if (process.argv.includes('--json')) {
     `border.strong: ${process.argv.includes('--drawn') ? '#464D5B, as 15 DRAWS it' : '#5C6472, as §4/E3 corrects it'}`,
   );
   console.log(
-    `control: ${report.control.reproduced ? 'reproduced Sumi' : 'DID NOT reproduce Sumi'}`,
+    'control: ' +
+      [
+        `re-derives Sumi ${report.control.reproduced ? 'yes' : 'NO'}`,
+        `derived ramps differ from Sumi's ${report.control.derivedRampsDifferFromSumi ? 'yes' : 'NO'}`,
+        `a ground lifted 0.1 L lifts every step ${report.control.aLiftedGroundLiftsEveryStep ? 'yes' : 'NO'}`,
+      ].join(' | '),
+  );
+  console.log(
+    `CVD: no cvdPair contains a token the derivation moves, so the separation numbers are ` +
+      `identical in all three palettes${cvdTouchesDerivation ? ' — WHICH IS NO LONGER TRUE' : ''}.`,
   );
   for (const theme of themes) {
     console.log(`\n${theme}`);
@@ -348,6 +456,11 @@ if (process.argv.includes('--json')) {
       `  inherited from the palette (F-225's, not the derivation's): ${String(cost.inherited.length)}`,
     );
     for (const p of cost.inherited) console.log(`    ${p}`);
+    console.log(`  sensitivity to the ground's own read error (${cost.groundRead}):`);
+    for (const row of cost.sensitivity)
+      console.log(
+        `    ${row.ground} (ΔE00 ${String(row.deltaE00)}) → ${String(row.introduced)} introduced`,
+      );
     if (cost.fixedByTheDerivation.length > 0) {
       console.log(`  no longer failing: ${String(cost.fixedByTheDerivation.length)}`);
       for (const p of cost.fixedByTheDerivation) console.log(`    ${p}`);
