@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-21",
+  "updated": "2026-09-22",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -5531,6 +5531,56 @@
       "guard": "THE CONFORMANCE SWEEP OVER EVERY SCREEN IS THE GUARD, because every screen in the product renders a Screen and the slot changes its header from a column into a row. 73 subjects in both themes and both locales, plus screen-insets.json, which pins the padding values per subject and refuses a value occurring less often than it did. The slot is OPTIONAL and absent by default, so a screen that passes nothing renders exactly the tree it rendered before — which is what makes a change reaching every screen at once safe to land. Avatar itself is registered twice, with a picture and without, because the two are different trees: one is an Image that paints nothing of its own (declared paintsNoColour with its reason) and the other is the mark taking foreground.2, which is the half that can fail a contrast or a both-theme run. WHAT IS NOT GUARDED: layout. A react-test-renderer tree has no Yoga pass, so whether a long title at 200% text scale actually wraps beside a 36 dp circle is a device attestation — flexShrink is on the words and not on the picture, which is the decision a reader can check. WHAT THE SLOT DOES NOT MAKE TRUE, said in the code since the review: `23` CENTRES its title and carries a share control, and this renders the words left-aligned against the avatar — the slot gets the SIDE right and the rest of that header is F-260 (blocked on OQ-33/OQ-34).",
       "memory": "memory/effects/a-screen-header-is-a-slot-not-a-screens-business.md",
       "rationale": "Mockup 23 draws the avatar in the screen header, left of the title, so the arrangement belongs to Screen rather than to the profile screen — and putting the picture above the first card instead would have been reordering what a mockup draws, which is the mistake F-239's review caught in a smaller form. Medium rather than high: the slot is additive and absent by default, so the blast radius is a header that gains a row wrapper only where a caller asks for one. It reaches every screen because every screen renders this component, which is also why the guard is the sweep rather than the profile screen's own test.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-141",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/store/src/archive.ts#ARCHIVE_TABLES"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "packages/store/src/backup.ts"
+        },
+        {
+          "kind": "file",
+          "ref": "packages/store/src/base64.ts"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/image.ts#ingestImage"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/wardrobe/source.ts"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/security/threat-model.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages",
+        "mobile"
+      ],
+      "severity": "high",
+      "guard": "THE ROUND TRIP IS ASSERTED ACROSS THE SERIALISED STRING, which is the gap that let the defect live: archive-images.test.ts goes exportArchive -> serialiseArchive -> JSON.parse -> importArchive for every case, because that is what a person's backup is, and the existing suite handed importArchive the in-memory object where a Uint8Array is still a Uint8Array. A database holding a garment photograph restores to an identical digest; the bytes come back byte for byte with their metadata; the serialised text carries \"$bytes\" and never the byte-index object form; and a DECOY asserts an image-free archive still round-trips, so the change is about images rather than about age. AN ARCHIVE THAT CANNOT BE RESTORED SAYS SO: the old byte-index shape is refused as an ArchiveError naming it, as is a $bytes value that is not base64 and any other object (no column holds one). INGEST ON IMPORT: bytes that are not an image, and an image past the pixel cap, are refused as ArchiveError rather than reaching the platform decoder; the metadata is taken from the SanitisedImage so a hand-edited row cannot claim a 1x1 image over 640x480 of PNG; and ingestImage is asserted IDEMPOTENT, which is what lets the re-ingest leave the digest identical. THE DECLARED MAP IS HELD TO THE SCHEMA: IMAGE_COLUMNS is asserted to name every ARCHIVED table with a BLOB column, read out of MIGRATIONS rather than restated, so a future table that forgets it fails here rather than storing bytes unchecked. BOTH HALVES WERE WATCHED FAILING: reverting the encoding reddens three tests, removing the sanitise step reddens three more. NOT GUARDED: an archive written by an older build that holds an image is still unrestorable — nothing can change that, and the refusal says what happened.",
+      "memory": "memory/effects/a-backup-nobody-restored-is-not-a-backup.md",
+      "rationale": "F-241's security review found that FR-58's export — the only backup this product has, because there is no server — could not restore any image: JSON.stringify renders a Uint8Array as an object of numeric keys, JSON.parse returns a plain object, driver.run refuses to bind it, and the TypeError is not an ArchiveError so it escapes the module's own error type. Anyone with one garment photograph had an unrestorable backup, and the suite was green because its fixture wrote colours and its round trip never crossed the string. High severity: it is the asset the threat model ranks second, and the failure is total and silent until the day somebody needs it. The second half could not be split off — importArchive writes blob columns straight from parsed rows, bypassing the SanitisedImage brand that means something only because the put* methods are the sole writers, so fixing the encoding alone would have put a hostile archive's bytes in front of the platform decoder in the same commit.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

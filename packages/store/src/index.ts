@@ -6,6 +6,7 @@
  * `@irodora/store/node`, the app never imports it, and a boundary guard proves the rule fires.
  */
 
+export { base64FromBytes, bytesFromBase64 } from './base64.js';
 export {
   CONNECTION_PRAGMAS,
   MIGRATIONS,

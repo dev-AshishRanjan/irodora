@@ -5,7 +5,7 @@
 | **Status** | Baseline · reviewed each release |
 | **Method** | STRIDE per trust boundary |
 | **Implements** | NFR-12, NFR-13, NFR-14 |
-| **Version** | 2.1 · 2026-09-21 — F-241 added the first asset that identifies a person, and one boundary-③ row its review found |
+| **Version** | 2.2 · 2026-09-22 — F-241 added the first asset that identifies a person and a boundary-③ row its review found; F-286 closed that row and fixed the export that could not restore an image |
 | **Supersedes** | Version 1.0 — nine trust boundaries across a server tier retired by [ADR-0051](../../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md) |
 
 Every control below maps to a test or a gate. A control that is only a paragraph in this
@@ -97,7 +97,7 @@ Verifying at load catches both, and costs nothing.
 | **T** | Database written by a newer app version | Schema version checked before open; refuse rather than guess | test |
 | **D** | Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test |
 | **S** | Deep link or share intent claiming to be internal | Treated as untrusted input; no privileged action reachable from one | test |
-| **T** | An imported archive carries image bytes that never passed `ingestImage` | **NOT CONTROLLED.** `importArchive` writes blob columns straight from parsed rows, so the `SanitisedImage` brand — which is meaningful only because the `put*` methods are the sole writers — is bypassed: no magic-byte check, no byte cap, no pixel cap, and the bytes reach the platform decoder through a `data:` URI. Found by F-241's security review. Latent today only because blobs do not survive the archive's JSON round trip at all (`Uint8Array` serialises as `{"0":137,…}` and cannot be bound on import). **The two must be fixed together and before any export or import surface ships** — fixing the encoding alone makes this live in the same commit | none yet |
+| **T** | An imported archive carries image bytes that never passed `ingestImage` | **CONTROLLED SINCE F-286.** `importArchive` re-ingests every image column through `ingestImage` before writing — magic bytes, byte cap, pixel cap — and takes `width`, `height`, `format` and `byte_length` from the result, so a hand-edited row cannot claim to be something it is not. A refusal is an `ArchiveError`, not an `ImageRejected` escaping the module. Which columns are images is declared in `IMAGE_COLUMNS`, and a test holds that map to the schema so a future BLOB column cannot be stored unchecked. Found by F-241’s review and fixed with the encoding it could not be separated from: until F-286 no image could be imported at all, so fixing the encoding alone would have made this live in the same commit | test |
 
 **Parse, never cast.** A row read from SQLite is not automatically ours — it may have been
 written by an older build with different assumptions. `as` on data crossing this boundary is

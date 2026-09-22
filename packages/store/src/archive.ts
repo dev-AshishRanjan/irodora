@@ -30,7 +30,50 @@
 
 import { SCHEMA_VERSION, SYNC_TABLES } from './schema.js';
 import { forgetDatabaseKey, type SecureKeyStore } from './key.js';
+import { base64FromBytes, bytesFromBase64 } from './base64.js';
+import { ingestImage, ImageRejected } from './image.js';
 import type { Driver } from './repository.js';
+
+/**
+ * How bytes travel in an archive (F-286).
+ *
+ * `{ "$bytes": "iVBORw0KGgo…" }` — a TAGGED value rather than a convention about which column
+ * is binary. A convention is a rule the next table forgets; a tag is self-describing, can be
+ * validated like every other field, and cannot be confused with a string somebody typed.
+ *
+ * ## What it replaced, and why that could not be left alone
+ *
+ * `JSON.stringify` renders a `Uint8Array` as `{"0":137,"1":80,…}`. `JSON.parse` gives back a
+ * plain object, `driver.run` refuses to bind it, and the `TypeError` is not an `ArchiveError`,
+ * so it escapes this module's own error type and the restore rolls back whole. **Every archive
+ * ever written holding a photograph is unrestorable**, and the only backup this product has is
+ * the one a person exports (ADR-0051 §5). Found by F-241's security review.
+ *
+ * Base64 is also the honest size: at indent 2 the index-object form costs 20–25 bytes per image
+ * byte, so a 4 MB photograph built a ~100 MB string in Hermes. This costs 4/3.
+ */
+const BYTES_TAG = '$bytes';
+
+/**
+ * Which archived column holds an image, declared rather than sniffed (F-286).
+ *
+ * ## The brand is only as good as the set of writers
+ *
+ * `putGarmentImage` takes a `SanitisedImage` and no overload takes a buffer, so "every stored
+ * photograph passed `ingestImage`" is a type fact **at those call sites**. `importArchive` was
+ * not one of them: it writes `INSERT INTO ${table}` from parsed rows, so a hand-edited or
+ * hostile archive could put arbitrary bytes in a blob column, and `avatarUri`-style code hands
+ * them to the platform decoder with no magic-byte check and no caps. Found by F-241's security
+ * review, in the same breath as the encoding above — and **fixing the encoding alone would have
+ * made this live in the same commit**, which is why they are one feature.
+ *
+ * ## Declared, and the test holds the declaration to the schema
+ *
+ * A table that grows a BLOB column and forgets this map stores its bytes unchecked. So the map
+ * is asserted complete against the schema rather than trusted — the shape F-241's roster
+ * assertion uses, where the thing that catches the NEXT feature is a test about the set itself.
+ */
+const IMAGE_COLUMNS: Readonly<Record<string, string>> = { garment_image: 'bytes' };
 
 /**
  * Tables an archive carries, in a fixed order. `change_log` is deliberately absent — see below.
@@ -77,8 +120,73 @@ export interface Archive {
 /** Column order is declared by sorting, so two runs cannot differ on key insertion order. */
 const canonicalRow = (row: Record<string, unknown>): Record<string, unknown> => {
   const out: Record<string, unknown> = {};
-  for (const key of Object.keys(row).sort()) out[key] = row[key];
+  for (const key of Object.keys(row).sort()) {
+    const value = row[key];
+    // The one transformation on the way out. Everything else a driver returns — a string, a
+    // number, null — is already something JSON can carry.
+    out[key] = value instanceof Uint8Array ? { [BYTES_TAG]: base64FromBytes(value) } : value;
+  }
   return out;
+};
+
+/**
+ * Does this look like a `Uint8Array` that went through `JSON.stringify`?
+ *
+ * `{"0":137,"1":80,…}` — every key a decimal index from zero, every value a byte. Recognising
+ * it is what turns *"the restore failed with a TypeError"* into a sentence that says what
+ * happened, which is the difference between a defect somebody can act on and one they report as
+ * "it did not work".
+ */
+const looksLikeSerialisedBytes = (value: Record<string, unknown>): boolean => {
+  const keys = Object.keys(value);
+  if (keys.length === 0) return false;
+  return keys.every((k, i) => {
+    const byte = value[k];
+    return (
+      k === String(i) &&
+      typeof byte === 'number' &&
+      Number.isInteger(byte) &&
+      byte >= 0 &&
+      byte <= 255
+    );
+  });
+};
+
+/**
+ * Turn one archived value back into something a driver can bind.
+ *
+ * **Parse by matching what is wanted** [[parse-by-matching-what-you-want-not-by-removing-what-you-recognise]].
+ * SQLite hands back strings, numbers, nulls and blobs — never an object — so an object here is
+ * either the tag or something that does not belong, and both are answered explicitly.
+ */
+const decodeValue = (table: string, column: string, value: unknown): unknown => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return value;
+
+  const o = value as Record<string, unknown>;
+  const tagged = o[BYTES_TAG];
+  if (typeof tagged === 'string') {
+    try {
+      return bytesFromBase64(tagged);
+    } catch {
+      throw new ArchiveError(
+        `archive table "${table}" column "${column}" holds a ${BYTES_TAG} value that is not ` +
+          'base64.',
+      );
+    }
+  }
+
+  if (looksLikeSerialisedBytes(o))
+    throw new ArchiveError(
+      `archive table "${table}" column "${column}" holds binary data written by a build that ` +
+        'could not encode it: a byte array serialised as an object of numeric keys. That ' +
+        'archive cannot be restored — the images in it were never written in a form anything ' +
+        'could read back (F-286). An archive without images from the same build imports ' +
+        'normally.',
+    );
+
+  throw new ArchiveError(
+    `archive table "${table}" column "${column}" holds an object, which no column can.`,
+  );
 };
 
 /**
@@ -125,6 +233,51 @@ export function exportArchive(driver: Driver, now: number): Archive {
 export class ArchiveError extends Error {}
 
 /**
+ * Put an archived row's image through the same door a chosen one goes through.
+ *
+ * **The metadata comes from the bytes, not from the file.** A row claiming a 1 × 1 PNG over five
+ * megapixels of JPEG would otherwise be stored with dimensions that lie about what it holds —
+ * and every caller that trusts `width`/`height`/`format` without re-reading the blob is then
+ * reading a claim rather than a fact. `ingestImage` already knows all four, so they are taken
+ * from it and the row's own values are overwritten.
+ *
+ * Rows without an image column, and rows whose image column is absent, pass through untouched.
+ */
+function sanitiseImages(table: string, row: Record<string, unknown>): Record<string, unknown> {
+  const column = IMAGE_COLUMNS[table];
+  if (column === undefined) return row;
+
+  const value = row[column];
+  if (value === undefined || value === null) return row;
+  if (!(value instanceof Uint8Array))
+    throw new ArchiveError(
+      `archive table "${table}" column "${column}" must hold binary data, and holds ` +
+        `${typeof value}.`,
+    );
+
+  try {
+    const image = ingestImage(value);
+    return {
+      ...row,
+      [column]: image.bytes,
+      byte_length: image.bytes.length,
+      width: image.width,
+      height: image.height,
+      format: image.format,
+    };
+  } catch (error) {
+    // AN IMAGE THE CHECKS REFUSE IS AN ARCHIVE ERROR, not an `ImageRejected` escaping this
+    // module: a caller restoring a file should get one kind of failure from one function, which
+    // is the whole reason `parseArchive` refuses everything else by name too.
+    if (!(error instanceof ImageRejected)) throw error;
+    throw new ArchiveError(
+      `archive table "${table}" holds an image the checks refuse: ${error.message} Row ` +
+        `"${String(row['id'])}".`,
+    );
+  }
+}
+
+/**
  * Validate untrusted input into an `Archive`.
  *
  * Every field is checked because every field arrives from a file on a device — possibly hand
@@ -163,14 +316,20 @@ export function parseArchive(input: unknown): Archive {
       continue;
     }
     if (!Array.isArray(rows)) throw new ArchiveError(`archive table "${table}" is not an array`);
-    for (const row of rows)
+    const decoded: Record<string, unknown>[] = [];
+    for (const row of rows) {
       if (
         typeof row !== 'object' ||
         row === null ||
         typeof (row as { id?: unknown }).id !== 'string'
       )
         throw new ArchiveError(`archive table "${table}" holds a row with no string id`);
-    tables[table] = rows as Record<string, unknown>[];
+      const out: Record<string, unknown> = {};
+      for (const [column, value] of Object.entries(row as Record<string, unknown>))
+        out[column] = decodeValue(table, column, value);
+      decoded.push(out);
+    }
+    tables[table] = decoded;
   }
 
   return { format: 'irodora.archive', schemaVersion, exportedAt, tables };
@@ -213,7 +372,8 @@ export function importArchive(driver: Driver, input: unknown): void {
 
   driver.transaction(() => {
     for (const table of ARCHIVE_TABLES) {
-      for (const row of archive.tables[table] ?? []) {
+      for (const raw of archive.tables[table] ?? []) {
+        const row = sanitiseImages(table, raw);
         const columns = Object.keys(row).sort();
         driver.run(
           `INSERT INTO ${table} (${columns.join(', ')}) ` +

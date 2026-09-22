@@ -53,33 +53,14 @@ export interface ImageSource {
  * `crypto` was real in every runtime except the one that ships.
  */
 /**
- * Encode bytes as a base64 payload.
+ * Base64, in both directions — **re-exported from `@irodora/store`** (F-286).
  *
- * The inverse of {@link bytesFromBase64}, and it exists for one reason: React Native's
- * `<Image>` takes a URI, and the only URI a BLOB held in SQLCipher can have is a `data:` one.
- * The photograph is deliberately NOT a file on disk — an `image_path` column would have made
- * NFR-13 false while looking like it satisfied it — so there is no path to hand to `<Image>`
- * and there was never going to be.
+ * These were implemented here, for a `data:` URI. F-286 needed the same codec one layer down,
+ * because an archive is JSON and JSON has no bytes — and two copies of a codec is two places for
+ * an off-by-one that corrupts every photograph in a way the caller reports as a malformed file.
  *
- * `btoa` for the same reason `atob` is used above: this runs in Hermes, where `Buffer` does
- * not exist unless something polyfills it.
- *
- * CHUNKED, because `String.fromCharCode(...bytes)` on a photograph is a spread of a hundred
- * thousand arguments and Hermes throws before it is slow. The chunk size is well under any
- * engine's argument limit and the concatenation is linear.
+ * So the package that owns the blobs owns the encoding, and this re-export keeps every call site
+ * here unchanged. The reasoning that chose `atob`/`btoa` over `Buffer` — *"this runs in Hermes,
+ * where `Buffer` does not exist unless something polyfills it"* — moved with the code.
  */
-const CHUNK = 0x8000;
-
-export function base64FromBytes(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += CHUNK)
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  return btoa(binary);
-}
-
-export function bytesFromBase64(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
+export { base64FromBytes, bytesFromBase64 } from '@irodora/store';
