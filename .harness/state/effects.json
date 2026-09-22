@@ -5588,6 +5588,47 @@
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
+    },
+    {
+      "id": "E-142",
+      "from": {
+        "kind": "symbol",
+        "ref": "packages/store/src/backup.ts#DEFAULT_ARCHIVE_LIMITS"
+      },
+      "to": [
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/backup.ts#deserialiseArchive"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/store/src/archive.ts#importArchive"
+        },
+        {
+          "kind": "doc",
+          "ref": "docs/architecture/security/threat-model.md"
+        },
+        {
+          "kind": "gate",
+          "ref": "test"
+        },
+        {
+          "kind": "gate",
+          "ref": "security"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        "packages"
+      ],
+      "severity": "medium",
+      "guard": "EVERY BOUND IS TESTED TWICE, and the second time is the one that matters: archive-limits.test.ts refuses a file past maxBytes BEFORE JSON.parse (the string is not even valid JSON, so the failure cannot be the parser's), refuses 500-deep nesting by name, refuses more than maxRows through both doors — the string one and importArchive, which takes unknown and need never have touched a file — and turns malformed JSON into an ArchiveError rather than a SyntaxError. AND it asserts a realistic archive (twelve garments, one photograph) is an ORDER OF MAGNITUDE inside every limit, with the actual distance asserted rather than a bare 'does not throw', because a cap that fires on real data is worse than no cap and 'does not throw' would not notice one set ten times too low. THE DEPTH SCAN IS PLANTED BOTH WAYS: brackets inside a string are not nesting, an escaped quote does not end its string, and a DECOY proves real nesting is counted at the same limit — without it, 'not fooled by a string' would pass for a scan that counted nothing. PARSING TWICE IS PARSING ONCE: the ordinary restore path parses the file and then parses again inside importArchive, and parseArchive was NOT idempotent — a decoded Uint8Array is an object whose keys are decimal indices and whose values are bytes, which is exactly the pre-F-286 broken shape, so the second pass refused a good file. Fixed, tested by name, watched failing, with a decoy that the real legacy shape is still refused. NOT GUARDED: whether 256 MiB is the right number against a real large wardrobe — nobody here has one, so the arithmetic is written down instead.",
+      "memory": "memory/effects/a-backup-nobody-restored-is-not-a-backup.md",
+      "rationale": "The threat model's boundary-3 table claimed 'hard limits on bytes and record count before parsing' and there were none — no byte limit, no record count, no depth limit anywhere in parseArchive. F-286's review found the row describing a check nobody had written, and F-286 made it material: the import path now base64-decodes every image payload into memory, so an archive is the largest untrusted input this product accepts. Medium rather than high because no app surface reads an archive yet, which is also why now is the time: the bound lands before the surface does, rather than after somebody's phone runs out of memory. The bound had to act on the STRING, and nothing took a string — parseArchive takes unknown, by which time JSON.parse has already allocated whatever the file asked for. So the feature is really the missing half of serialiseArchive.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
     }
   ]
 }

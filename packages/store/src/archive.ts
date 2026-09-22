@@ -31,6 +31,7 @@
 import { SCHEMA_VERSION, SYNC_TABLES } from './schema.js';
 import { forgetDatabaseKey, type SecureKeyStore } from './key.js';
 import { base64FromBytes, bytesFromBase64 } from './base64.js';
+import { assertRowCount, DEFAULT_ARCHIVE_LIMITS, type ArchiveLimits } from './backup.js';
 import { ingestImage, ImageRejected } from './image.js';
 import type { Driver } from './repository.js';
 
@@ -189,6 +190,17 @@ const looksLikeSerialisedBytes = (value: Record<string, unknown>): boolean => {
  * either the tag or something that does not belong, and both are answered explicitly.
  */
 const decodeValue = (table: string, column: string, value: unknown): unknown => {
+  /*
+   * ALREADY DECODED, AND THAT HAS TO BE A NO-OP (F-288).
+   *
+   * `deserialiseArchive` parses, then hands the result to `importArchive`, which parses again —
+   * so this function runs twice over the same row on the ordinary restore path. A `Uint8Array`
+   * IS an object whose keys are decimal indices and whose values are bytes, so without this line
+   * the second pass mistakes a correctly decoded blob for the broken pre-F-286 shape and refuses
+   * the file with a message about a build that could not encode it. Found by F-288's own tests
+   * the first time the two doors were composed.
+   */
+  if (value instanceof Uint8Array) return value;
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return value;
 
   const o = value as Record<string, unknown>;
@@ -387,13 +399,25 @@ export function parseArchive(input: unknown): Archive {
  * - **A non-empty database is refused**, not merged. A silent merge is how a restore
  *   duplicates everything a user owns, and it looks like it worked.
  */
-export function importArchive(driver: Driver, input: unknown): void {
+export function importArchive(
+  driver: Driver,
+  input: unknown,
+  limits: ArchiveLimits = DEFAULT_ARCHIVE_LIMITS,
+): void {
   // `unknown`, NOT `Archive`. An archive arrives from a FILE the user chose — it is untrusted
   // input, and typing the parameter as `Archive` would be the type asserting a fact about
   // data nobody has checked. The lint caught that: with `Archive` as the parameter type, the
   // format check below was flagged as a comparison that is always false, which is precisely
   // the type describing a guarantee the runtime does not have.
   const archive = parseArchive(input);
+
+  /*
+   * THE ROW BOUND, HERE TOO (F-288). `deserialiseArchive` bounds the string before it is parsed,
+   * which is the only place a size limit can do anything — but this function takes `unknown` and
+   * can be called with an object that never came through a file. A control that only holds on one
+   * of two doors is a control somebody routes around without meaning to.
+   */
+  assertRowCount(archive, limits);
 
   if (archive.schemaVersion > SCHEMA_VERSION)
     throw new ArchiveError(

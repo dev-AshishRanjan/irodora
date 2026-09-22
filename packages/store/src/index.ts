@@ -40,8 +40,12 @@ export {
 } from './archive.js';
 export {
   archiveFileName,
+  assertRowCount,
+  DEFAULT_ARCHIVE_LIMITS,
+  deserialiseArchive,
   eraseWithBackupPrompt,
   serialiseArchive,
+  type ArchiveLimits,
   type ArchiveSink,
   type DestructiveConfirm,
   type EraseOutcome,

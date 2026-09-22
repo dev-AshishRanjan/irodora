@@ -9748,7 +9748,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "should",
-      "status": "backlog",
+      "status": "in_progress",
       "blockedBy": [],
       "mockups": [],
       "acceptance": [
@@ -9762,7 +9762,8 @@
         "test",
         "security"
       ],
-      "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control."
+      "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control.",
+      "plan": "plans/F-288-an-archive-is-bounded-before-it-is-parsed.md"
     },
     {
       "id": "F-289",
