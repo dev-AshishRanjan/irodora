@@ -8,6 +8,88 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-22 — F-286 An archive carries its images, and an imported one is sanitised
+
+**Done.** Anyone with one garment photograph had a backup that could not be restored — on the only
+backup this product has, because there is no server. Found by F-241's security review, fixed here
+with the half it could not be separated from.
+
+- **A `Uint8Array` serialises as `{"0":137,"1":80,…}`**, `JSON.parse` returns a plain object,
+  SQLite refuses to bind it, and the `TypeError` is not an `ArchiveError` — so it escaped the
+  module's own error type and the restore rolled back whole. Bytes now travel tagged:
+  `{"$bytes":"iVBOR…"}`, a per-value tag rather than a column-name convention (a rule the next
+  table forgets) or a format bump (which would refuse every archive that ever worked).
+- **An archive in the old shape is refused BY NAME**, with a sentence saying what happened.
+  Image-free archives — the only ones that have ever imported — still import.
+- **`importArchive` wrote blob columns straight from parsed rows**, bypassing the
+  `SanitisedImage` brand that means something only because the `put*` methods are the sole
+  writers. It re-ingests now, and takes `width`, `height`, `format` and `byte_length` from the
+  result, so a hand-edited row cannot claim a 1 × 1 image over 640 × 480 of PNG. **Fixing the
+  encoding alone would have made that live in the same commit**, which is why they are one feature.
+
+### The loop stopped, and this is what it did instead
+
+No `todo` feature in R9 is eligible: `F-221` waits on a device run this workstation cannot do
+(F-091's three outstanding attestations — no JDK, no Maestro, no AVD) and **22 features wait on
+F-221**; every other `todo` waits on one of sixteen open questions for a person. This was
+promoted from `backlog` because it is `must`, unblocked, and the defect is live rather than
+latent.
+
+### Review — one round, and the same class for the fourth feature running
+
+**The guard three records named did not exist.** `effects.json`, the threat model and the source
+comment all said a test held `IMAGE_COLUMNS` to the schema. The test never imported the map — it
+compared the schema against a **restated literal**, which is a guard agreeing with itself, and it
+was the class of defect it had been written to catch. It was also blind to
+`ALTER TABLE … ADD COLUMN`, which this repository already uses five times.
+
+Now the map is exported and compared directly, column as well as table, from both statement
+forms, with a decoy that the schema read finds anything at all — and a second BLOB column on an
+archived table is refused, because the metadata is written onto the row and two would make it
+ambiguous. **Watched failing**: emptying the map reddens it.
+
+Also fixed: the `$bytes` tag was honoured in *every* column while the ingest ran on one, so a
+tagged value in a TEXT column decoded to a blob, skipped the sanitiser and died at `driver.run`
+as a plain `Error` — the exact failure this feature exists to remove; idempotence was asserted
+for PNG only, and the JPEG walk is the fragile one; the plan's fourth hostile case was missing;
+the metadata test asserted one field of four; the not-base64 test could not tell its refusal from
+the ingest's; a plain string in an image column had no test; and the codec had no tests in the
+package that now owns it, while every fixture here is eighty bytes and never crosses the chunk
+boundary the implementation exists to handle.
+
+**A standing requirement fell out of it.** The import re-ingests, so `ingestImage` must stay
+idempotent or every restore silently stops matching its source. F-287 proposes a downscale inside
+that function; a downscale that is not idempotent breaks this round trip without breaking
+anything F-287 would think to test. Named on F-287 and in E-141.
+
+### Gates
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (store 230, ui 357, mobile 1038) ·
+build 0 · security 0.
+
+**NOT RUN:** a11y, contrast, cvd, e2e, golden, content — none is in F-286's verification list and
+nothing here is a surface. No device run.
+
+### Owed
+
+**F-288** — `parseArchive` has no byte, record-count or depth limit, and the threat model's
+import-bomb row claimed it did. The row now says `none yet`, which is what the rest of that
+document requires of itself. **F-287** — the downscale, the APP2/MPF payload, and the idempotence
+requirement above.
+
+### Lessons
+
+[[a-backup-nobody-restored-is-not-a-backup]] — a careful round-trip test that never crossed the
+serialised string, over a fixture with no images. A backup is a **file**; test the file. And a
+brand is a guarantee about a *set of writers*, which an importer quietly joins.
+
+### Next
+
+Nothing in R9 is eligible. The remaining unblocked backlog is F-271 to F-285 and F-287 to F-288,
+all `should` or `could`; everything else waits on the device run or on a person's answer.
+
+---
+
 ## 2026-09-22 — F-241 The profile can carry an avatar, and it never leaves the device
 
 **Done.** `23` draws a round picture at the head of the finished profile. A person chooses one

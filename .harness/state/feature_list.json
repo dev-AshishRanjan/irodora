@@ -9694,7 +9694,7 @@
       "service": "packages",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [],
       "mockups": [],
       "acceptance": [
@@ -9709,7 +9709,7 @@
         "test",
         "security"
       ],
-      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21), two findings that must land TOGETHER. (A) THE ARCHIVE CANNOT RESTORE ANY IMAGE: serialiseArchive is JSON.stringify, a BLOB arrives from the driver as a Uint8Array, and that serialises as {\"0\":137,\"1\":80,...}; on import JSON.parse yields a plain object and driver.run refuses to bind it — verified against node:sqlite, and it throws a TypeError, which is not an ArchiveError, so it escapes the archive's own error type and the restore rolls back whole. ANY USER WITH ONE GARMENT PHOTOGRAPH HAS AN UNRESTORABLE BACKUP, and the threat model ranks their own export as the only backup there is. archive.test.ts misses it because its fixture writes only colours AND because importArchive is handed the in-memory object, where the Uint8Array is still a Uint8Array — the test never crosses the string. Secondary: at indent 2 each image byte costs 20-25 bytes of JSON, so a 4 MB photo builds a ~100 MB string in Hermes. (B) IMPORT WRITES PAST ingestImage: importArchive does INSERT INTO ${table} from parsed rows and parseArchive validates only that each row has a string id, so the SanitisedImage brand — meaningful only because the put* methods are the sole writers — is bypassed, and the bytes reach the platform decoder through a data: URI with no magic-byte check and no caps. FIXING (A) ALONE MAKES (B) LIVE IN THE SAME COMMIT. Both must ship before any export or import surface does; no surface calls backup.ts today. Threat model 2.1 carries the boundary-3 row with 'none yet' as its guard. CLAIMED 2026-09-22: promoted from backlog because no todo feature in R9 is eligible — F-221 waits on a device run this workstation cannot do (F-091 attestations, no JDK) and every other todo waits on one of sixteen open questions for a person. This is must-priority, unblocked, and records a defect that is live now rather than latent: the archive cannot restore an image at all.",
+      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21), two findings that must land TOGETHER. (A) THE ARCHIVE CANNOT RESTORE ANY IMAGE: serialiseArchive is JSON.stringify, a BLOB arrives from the driver as a Uint8Array, and that serialises as {\"0\":137,\"1\":80,...}; on import JSON.parse yields a plain object and driver.run refuses to bind it — verified against node:sqlite, and it throws a TypeError, which is not an ArchiveError, so it escapes the archive's own error type and the restore rolls back whole. ANY USER WITH ONE GARMENT PHOTOGRAPH HAS AN UNRESTORABLE BACKUP, and the threat model ranks their own export as the only backup there is. archive.test.ts misses it because its fixture writes only colours AND because importArchive is handed the in-memory object, where the Uint8Array is still a Uint8Array — the test never crosses the string. Secondary: at indent 2 each image byte costs 20-25 bytes of JSON, so a 4 MB photo builds a ~100 MB string in Hermes. (B) IMPORT WRITES PAST ingestImage: importArchive does INSERT INTO ${table} from parsed rows and parseArchive validates only that each row has a string id, so the SanitisedImage brand — meaningful only because the put* methods are the sole writers — is bypassed, and the bytes reach the platform decoder through a data: URI with no magic-byte check and no caps. FIXING (A) ALONE MAKES (B) LIVE IN THE SAME COMMIT. Both must ship before any export or import surface does; no surface calls backup.ts today. Threat model 2.1 carries the boundary-3 row with 'none yet' as its guard. CLAIMED 2026-09-22: promoted from backlog because no todo feature in R9 is eligible — F-221 waits on a device run this workstation cannot do (F-091 attestations, no JDK) and every other todo waits on one of sixteen open questions for a person. This is must-priority, unblocked, and records a defect that is live now rather than latent: the archive cannot restore an image at all. FROM THE REVIEW (2026-09-22): FIXED — the map assertion never read IMAGE_COLUMNS (it compared the schema against a restated literal, which is the class of defect it was written to catch, and was blind to ALTER TABLE ... ADD COLUMN); the $bytes tag was honoured in every column while the ingest ran on one, so a tagged value in a TEXT column escaped as a plain Error; idempotence was asserted for PNG only; the plan's fourth hostile case (the byte cap) was missing; the metadata test asserted one field of four; the not-base64 test could not tell its refusal from the ingest's; a plain string in an image column had no test; the codec had no tests in the package that now owns it. RECORDED: F-288 (parseArchive has no record-count or byte cap, which the threat model's import-bomb row claims it does).",
       "plan": "plans/F-286-an-archive-carries-its-images-and-an-imported-one-is-sanitised.md"
     },
     {
@@ -9736,7 +9736,33 @@
         "test",
         "security"
       ],
-      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). THREE THINGS, one subject: what is actually retained. (1) DEFAULT_IMAGE_LIMITS allows 12 MiB and 50 megapixels for a circle drawn at 36 dp; avatar.ts passes no limits. Tightening them ALONE is the wrong fix — ingestImage refuses rather than reduces, so a tighter cap would reject most phone photographs — so this needs a downscale, which is why it is a feature and not an argument. It reduces retained facial detail (privacy.md's Minimise), archive exposure and decode cost at once: a 50 MP image decoded by Fresco is ~200 MB resident, and the threat model's decoder-bomb row is explicit that there is no process to sacrifice. (2) JPEG_DROP keeps APP2 unconditionally so the ICC profile survives; APP2 also carries MPF, which on many phones embeds a complete second JPEG with its own metadata — for a face photograph that is a second copy riding inside the sanitised blob, bounded only by the byte cap. Keep APP2 only when its payload begins with ICC_PROFILE\\0. (3) Pre-existing for garments, sharper for a face."
+      "notes": "FROM F-241's SECURITY REVIEW (2026-09-21). THREE THINGS, one subject: what is actually retained. (1) DEFAULT_IMAGE_LIMITS allows 12 MiB and 50 megapixels for a circle drawn at 36 dp; avatar.ts passes no limits. Tightening them ALONE is the wrong fix — ingestImage refuses rather than reduces, so a tighter cap would reject most phone photographs — so this needs a downscale, which is why it is a feature and not an argument. It reduces retained facial detail (privacy.md's Minimise), archive exposure and decode cost at once: a 50 MP image decoded by Fresco is ~200 MB resident, and the threat model's decoder-bomb row is explicit that there is no process to sacrifice. (2) JPEG_DROP keeps APP2 unconditionally so the ICC profile survives; APP2 also carries MPF, which on many phones embeds a complete second JPEG with its own metadata — for a face photograph that is a second copy riding inside the sanitised blob, bounded only by the byte cap. Keep APP2 only when its payload begins with ICC_PROFILE\\0. (3) Pre-existing for garments, sharper for a face. FROM F-286 (2026-09-22): THE DOWNSCALE MUST BE IDEMPOTENT, and this is the only place that says so. importArchive re-ingests every image column through ingestImage, so sanitising already-sanitised bytes has to return them unchanged or every restore silently stops matching the database it came from — archive-images.test.ts asserts the property for a PNG and a JPEG today. A downscale that re-encodes on the second pass breaks the round trip without breaking anything this feature would think to test, and E-141 carries the link."
+    },
+    {
+      "id": "F-288",
+      "title": "An archive is bounded before it is parsed",
+      "requirements": [
+        "FR-58",
+        "NFR-14"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "mockups": [],
+      "acceptance": [
+        "An archive past a declared byte size is refused before it is parsed, with an ArchiveError naming the limit",
+        "An archive past a declared row count is refused the same way, and the two limits are declared where a reader can find them",
+        "The threat model’s import-bomb row names the check that enforces it, rather than describing one that does not exist"
+      ],
+      "verification": [
+        "typecheck",
+        "lint",
+        "test",
+        "security"
+      ],
+      "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control."
     }
   ]
 }

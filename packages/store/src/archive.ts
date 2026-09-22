@@ -55,27 +55,6 @@ import type { Driver } from './repository.js';
 const BYTES_TAG = '$bytes';
 
 /**
- * Which archived column holds an image, declared rather than sniffed (F-286).
- *
- * ## The brand is only as good as the set of writers
- *
- * `putGarmentImage` takes a `SanitisedImage` and no overload takes a buffer, so "every stored
- * photograph passed `ingestImage`" is a type fact **at those call sites**. `importArchive` was
- * not one of them: it writes `INSERT INTO ${table}` from parsed rows, so a hand-edited or
- * hostile archive could put arbitrary bytes in a blob column, and `avatarUri`-style code hands
- * them to the platform decoder with no magic-byte check and no caps. Found by F-241's security
- * review, in the same breath as the encoding above — and **fixing the encoding alone would have
- * made this live in the same commit**, which is why they are one feature.
- *
- * ## Declared, and the test holds the declaration to the schema
- *
- * A table that grows a BLOB column and forgets this map stores its bytes unchecked. So the map
- * is asserted complete against the schema rather than trusted — the shape F-241's roster
- * assertion uses, where the thing that catches the NEXT feature is a test about the set itself.
- */
-const IMAGE_COLUMNS: Readonly<Record<string, string>> = { garment_image: 'bytes' };
-
-/**
  * Tables an archive carries, in a fixed order. `change_log` is deliberately absent — see below.
  *
  * ## An EXPLICIT list since F-241, and not `[...SYNC_TABLES]` any more
@@ -109,6 +88,52 @@ export const ARCHIVE_TABLES = [
   'calibration',
 ] as const;
 
+/**
+ * Which archived column holds an image, declared rather than sniffed (F-286).
+ *
+ * ## The brand is only as good as the set of writers
+ *
+ * `putGarmentImage` takes a `SanitisedImage` and no overload takes a buffer, so "every stored
+ * photograph passed `ingestImage`" is a type fact **at those call sites**. `importArchive` was
+ * not one of them: it writes `INSERT INTO ${table}` from parsed rows, so a hand-edited or
+ * hostile archive could put arbitrary bytes in a blob column, and `avatarUri`-style code hands
+ * them to the platform decoder with no magic-byte check and no caps. Found by F-241's security
+ * review, in the same breath as the encoding above — and **fixing the encoding alone would have
+ * made this live in the same commit**, which is why they are one feature.
+ *
+ * ## Declared, and EXPORTED so the test can hold the declaration to the schema
+ *
+ * A table that grows a BLOB column and forgets this map stores its bytes unchecked. So the map
+ * is asserted complete against the schema — read out of `MIGRATIONS`, `CREATE TABLE` and
+ * `ALTER TABLE … ADD COLUMN` alike — rather than trusted.
+ *
+ * **It is exported for that test, and F-286's review is why.** The first version of the
+ * assertion compared the schema against a restated literal and never read this map at all,
+ * which is the same shape as the check it was written to be: a guard that agrees with itself.
+ *
+ * ## One image column per table, and that is a property of the row rather than a shortcut
+ *
+ * The metadata below — `width`, `height`, `format`, `byte_length` — is taken from the ingested
+ * bytes and written onto the ROW. Two image columns in one row would make those four ambiguous,
+ * so a second BLOB on an archived table is a design question rather than a map entry, and the
+ * test refuses one rather than letting it arrive unnoticed.
+ */
+export const IMAGE_COLUMNS = { garment_image: 'bytes' } as const satisfies Readonly<
+  Partial<Record<(typeof ARCHIVE_TABLES)[number], string>>
+>;
+
+/**
+ * The declared image column for a table name, or `undefined`.
+ *
+ * The widening is deliberate and is where the honesty is: `table` is a runtime string from a
+ * loop over `ARCHIVE_TABLES`, and asserting it into the map's key type would make TypeScript
+ * believe every table has an image column — which then reports the `undefined` check as
+ * impossible, exactly as the linter did. The map stays narrow so a typo in it is a type error;
+ * the LOOKUP is what admits it might miss.
+ */
+const imageColumnOf = (table: string): string | undefined =>
+  (IMAGE_COLUMNS as Readonly<Record<string, string | undefined>>)[table];
+
 export interface Archive {
   readonly format: 'irodora.archive';
   readonly schemaVersion: number;
@@ -136,6 +161,10 @@ const canonicalRow = (row: Record<string, unknown>): Record<string, unknown> => 
  * it is what turns *"the restore failed with a TypeError"* into a sentence that says what
  * happened, which is the difference between a defect somebody can act on and one they report as
  * "it did not work".
+ *
+ * `{}` reads as FALSE and falls through to the general "no column holds an object" refusal. An
+ * empty blob is unreachable — `CHECK (byte_length > 0)` and `ingestImage` both refuse one — so
+ * the distinction costs nothing, and calling `{}` a serialised byte array would be guessing.
  */
 const looksLikeSerialisedBytes = (value: Record<string, unknown>): boolean => {
   const keys = Object.keys(value);
@@ -165,6 +194,19 @@ const decodeValue = (table: string, column: string, value: unknown): unknown => 
   const o = value as Record<string, unknown>;
   const tagged = o[BYTES_TAG];
   if (typeof tagged === 'string') {
+    /*
+     * ONLY WHERE BYTES ARE DECLARED (F-286's review). The tag was honoured in every column and
+     * the ingest runs on one, so `{"$bytes":"…"}` in `saved_color.name` decoded to a blob,
+     * skipped `sanitiseImages`, and failed at `driver.run` as a plain `Error` — *"cannot store
+     * BLOB value in TEXT column"*. No data was at risk (STRICT refuses it, the transaction rolls
+     * back), but an error escaping this module's own type is the exact failure F-286 exists to
+     * remove, and a universal tag with a one-column check is an asymmetry worth closing.
+     */
+    if (imageColumnOf(table) !== column)
+      throw new ArchiveError(
+        `archive table "${table}" column "${column}" carries a ${BYTES_TAG} value, and that ` +
+          'column holds no binary data. Only a declared image column may.',
+      );
     try {
       return bytesFromBase64(tagged);
     } catch {
@@ -244,7 +286,7 @@ export class ArchiveError extends Error {}
  * Rows without an image column, and rows whose image column is absent, pass through untouched.
  */
 function sanitiseImages(table: string, row: Record<string, unknown>): Record<string, unknown> {
-  const column = IMAGE_COLUMNS[table];
+  const column = imageColumnOf(table);
   if (column === undefined) return row;
 
   const value = row[column];
