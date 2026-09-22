@@ -15,6 +15,7 @@ They need **Windows PowerShell 5.1** (they decode the image with .NET's `System.
 | `mask.ps1` | boxes of pixels by absolute brightness (`bright` / `dark`) | elements drawn over a photograph |
 | `corner.ps1` | a corner radius, fitted after subtracting the straight-side baseline | swatches, cards, chips |
 | `serif-match.ps1` | renders a word in each candidate serif and scores it against a crop by mask overlap; `-fontDir` adds font FILES, loaded without being installed | naming the face a wordmark or tagline is drawn in (§5, OQ-29) |
+| `derive-theme.mjs` | whether a derived theme ramp passes gates 9 and 10, using the gate code itself | the two themes `15` draws as one swatch each (OQ-36, `F-289`) |
 
 ## Naming the serif (§5, OQ-29)
 

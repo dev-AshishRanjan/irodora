@@ -196,6 +196,25 @@ mockup ramp (C 0.0086 – 0.0251, h ≈ 264°) and is re-stated by `F-225` with 
 | primary action | `#FFFFFF` pill, dark text | `#1A1B1E` pill, light text (`25`) |
 
 **Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (`#2C323A` — no mockup
+
+**What the two undrawn themes would be, measured (`F-289`, OQ-36).** `15` draws Slate Graphite and
+Obsidian Noir as one swatch each, so their levels are drawn nowhere. Running OQ-36's own proposed
+derivation — Sumi's lightness steps above its ground, re-anchored, chroma and hue carried from
+Sumi's corresponding step, everything else held — gives:
+
+| | ground | level 1 | level 2 | level 3 |
+|---|---|---|---|---|
+| Sumi Charcoal (drawn) | `#15171B` | `#20232A` | `#282C35` | `#323742` |
+| Slate Graphite (derived) | `#2C323A` | `#3B3F46` | `#444952` | `#4F5460` |
+| Obsidian Noir (derived) | `#101114` | `#1A1D24` | `#22262E` | `#2B303B` |
+
+Measured with `checkContrast` and `checkSeparation` — the gate 9 and gate 10 code itself — against
+§4/E3's corrected `border.strong` (`#5C6472`), with Sumi re-derived from itself as the control.
+**Obsidian introduces no failure; Slate introduces seven**, two of them between tokens this table
+specifies. **And Sumi itself fails four**: `border.strong` reaches only 2.0–2.64 against levels 1–3
+and `swatch.well` where 3 is required, which is `F-225`'s fifth criterion on the theme that is
+fully drawn. Reproduce: `node mockups/tools/derive-theme.mjs` (`--drawn` measures `15`'s
+uncorrected `#464D5B` instead, which fails a fifth pairing).
 prints it; `F-220` read it at the centre of `15`'s tile, and a colour read from a render carries
 ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
 and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).

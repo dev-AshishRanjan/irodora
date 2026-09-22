@@ -9763,6 +9763,38 @@
         "security"
       ],
       "notes": "FROM F-286's REVIEW (2026-09-22). The threat model's boundary-3 table says 'Import bomb — a huge or deeply nested file | Hard limits on bytes and record count before parsing | test', and there is no byte limit, no record-count limit and no depth limit anywhere in parseArchive; the only cap in the package is image.ts's per-image one. The row is pre-existing and was not F-286's edit, but F-286 made it material: the import path now base64-decodes every image payload into memory, and it bumped that table to 2.2 while rewriting the row directly beneath it. Golden rule 5 says a known break is fixed now or recorded, so it is recorded — and the row is marked honestly in the meantime rather than left claiming a control."
+    },
+    {
+      "id": "F-289",
+      "title": "The two undrawn themes are measured, so OQ-36 is answered from numbers",
+      "requirements": [
+        "FR-70",
+        "NFR-9",
+        "NFR-10"
+      ],
+      "service": "packages",
+      "release": "R9",
+      "priority": "should",
+      "status": "in_progress",
+      "blockedBy": [],
+      "mockups": [
+        "15"
+      ],
+      "acceptance": [
+        "Slate Graphite and Obsidian Noir are given full ramps by a STATED derivation from Sumi Charcoal’s, and the rule is written down rather than applied by hand",
+        "Every declared pairing in both derived themes is run through the real gate 9 and gate 10 checkers, and the results are recorded pass by pass — not summarised as \"it passes\"",
+        "Where a pairing fails, the nearest value that passes is computed and reported, so the choice is between measured options rather than between a proposal and nothing",
+        "OQ-36 and R9-MOCKUP-FIDELITY carry the result, and this feature adopts nothing: F-225 is where a person’s answer lands"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "lint",
+        "format",
+        "test"
+      ],
+      "notes": "THE SHAPE IS F-275's, which did this for OQ-29 and is done: 'OQ-29 is updated with the closest open face, so the person answering it chooses between measured options.' OQ-36 blocks F-225, which blocks F-233 and F-240 and, through them, most of the mockup rebuild. 15 draws Slate Graphite (#2C323A) and Obsidian Noir (#101114) as ONE SWATCH EACH; their levels, borders and text roles are drawn nowhere, and F-225's own note says deriving them is designing a surface no mockup draws. WHAT THIS FEATURE DOES IS MEASURE, NOT DECIDE: it implements the derivation the PRD's own OQ-36 row proposes (Sumi's lightness steps above its ground re-anchored at each theme's ground, text roles held), computes the full ramps, and runs checkContrast and checkSeparation — the real gate 9 and gate 10 code — over every declared pairing. A person still chooses; they choose knowing whether the obvious rule works, where it breaks, and what the nearest passing value is. NOTE the derivation cannot use themeRecipes: that mechanism is a tint that NEVER moves lightness (ADR-0096), and these two themes are ground changes. F-225's fourth criterion already supersedes ADR-0096, so this measures the world F-225 would create.",
+      "plan": "plans/F-289-the-two-undrawn-themes-are-measured.md"
     }
   ]
 }
