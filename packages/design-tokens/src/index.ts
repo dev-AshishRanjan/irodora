@@ -59,6 +59,15 @@ export {
 } from './derive.js';
 
 export {
+  hexToOklch,
+  reanchorTheme,
+  smallestLightnessMove,
+  withOklch,
+  type MoveSearch,
+  type MoveSpace,
+} from './derive-theme.js';
+
+export {
   checkChromaCeiling,
   checkContrast,
   checkSeparation,

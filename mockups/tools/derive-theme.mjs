@@ -60,7 +60,9 @@ const ROOT = join(HERE, '..', '..');
  * `scripts/verify-contrast.mjs` needs, for the same two reasons.
  */
 const dist = (pkg) => pathToFileURL(join(ROOT, 'packages', pkg, 'dist', 'index.js')).href;
-const { checkContrast, checkSeparation } = await import(dist('design-tokens'));
+const { checkContrast, checkSeparation, reanchorTheme, withOklch } = await import(
+  dist('design-tokens')
+);
 const { srgbToXyz, xyzToOklch, oklchToXyz, xyzToSrgb, srgbToHex, xyzToLab } = await import(
   dist('color-spaces')
 );
@@ -129,15 +131,19 @@ const RAMP = ['surface.1', 'surface.2', 'surface.3'];
  */
 function derive(groundHex) {
   const base = manifest.color.dark;
-  const sumiGround = hexToOklch(SUMI_R9.background);
-  const ground = hexToOklch(groundHex);
+  // THE RULE IS THE PACKAGE'S (F-225): `reanchorTheme` in @irodora/design-tokens is what the
+  // manifest derives Slate and Obsidian with, so this tool measures the shipped arithmetic rather
+  // than a copy of it that agreed on the day it was written.
+  const sumi = Object.fromEntries(
+    ['background', ...RAMP].map((n) => [
+      n,
+      withOklch({ ...base[n], oklch: hexToOklch(SUMI_R9[n]) }, hexToOklch(SUMI_R9[n]), n),
+    ]),
+  );
+  const derived = reanchorTheme(sumi, hexToOklch(groundHex), RAMP, 'derive');
 
   const values = { ...SUMI_R9, background: groundHex };
-  for (const step of RAMP) {
-    const sumiStep = hexToOklch(SUMI_R9[step]);
-    const moved = { l: ground.l + (sumiStep.l - sumiGround.l), c: sumiStep.c, h: sumiStep.h };
-    values[step] = oklchToHex(moved);
-  }
+  for (const step of RAMP) values[step] = derived[step].srgb;
 
   const palette = {};
   for (const [name, token] of Object.entries(base)) {
