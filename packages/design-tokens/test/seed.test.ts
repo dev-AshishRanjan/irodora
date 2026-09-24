@@ -19,6 +19,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   BASE_THEMES,
+  checkContrast,
+  checkSeparation,
   isInGamut,
   MINIMUM_SEED_CHROMA,
   oklchToRgb,
@@ -182,19 +184,17 @@ describe('refusal, and its reason', () => {
 });
 
 describe('the checks are the gate’s own', () => {
-  it('answers about a built-in palette the way the gate does', () => {
+  it('answers about a seeded palette the way the gate does', () => {
     /*
-     * A seed whose hue is a built-in family's produces that family's palette, so running it
-     * through the runtime path and getting `applied` is the same statement gate 9 makes about
-     * that theme at build time. If the two ever disagreed, one of them would be a copy.
+     * The runtime path said `applied`. The gate's own checkers, run over the same palette, must
+     * say the same: every declared pairing passes and every CVD pair separates. If the two ever
+     * disagreed, one of them would be a copy. (This compared against the fuka recipe until F-225
+     * withdrew the recipes; the gate's functions are the reference that does not go away.)
      */
     const outcome = themeFromSeed(manifest, 'light', seedAt(240));
     expect(outcome.kind).toBe('applied');
-
-    const fuka = manifest.color['fuka.light'];
-    for (const [name, token] of Object.entries(applied(outcome)?.colors ?? {}))
-      expect(`${name}: ${String(token.oklch.h)}`).toBe(
-        `${name}: ${String(fuka[name]?.oklch.h ?? token.oklch.h)}`,
-      );
+    const palettes = { ...manifest.color, seeded: applied(outcome)?.colors ?? {} };
+    expect(checkContrast(manifest, ['seeded'], palettes).results.every((r) => r.passes)).toBe(true);
+    expect(checkSeparation(manifest, ['seeded'], palettes).every((r) => r.passes)).toBe(true);
   });
 });

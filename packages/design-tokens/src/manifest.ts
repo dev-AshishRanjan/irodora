@@ -30,40 +30,31 @@ export const BASE_THEMES = ['dark', 'light'] as const;
 export type Mode = (typeof BASE_THEMES)[number];
 
 /**
- * The theme families a person can choose between.
+ * Every palette, by name. Sumi Charcoal keeps the name `dark` and Washi Minimal `light`, so
+ * nothing downstream changed meaning when the mockups' palette arrived (F-225).
  *
- * `base` is the authored warm neutral. The rest are RECIPES — see `themeRecipes` in the
- * manifest and the derivation below — and each exists in both modes, because choosing a theme
- * and choosing light or dark are two different choices (FR-70).
+ * EVERYTHING ITERATES THIS. The gates, the emitters and the conformance suite all read `THEMES`
+ * rather than naming a theme, which is why adding a palette costs no call sites.
  */
-export const THEME_FAMILIES = ['base', 'fuka', 'yama', 'aota'] as const;
-export type ThemeFamily = (typeof THEME_FAMILIES)[number];
-
-/**
- * Every palette, by name. `base` keeps the names `light` and `dark` so nothing downstream
- * changed meaning when the families arrived.
- *
- * EVERYTHING ITERATES THIS. The gates, the four emitters and the conformance suite all read
- * `THEMES` rather than naming a theme, which is why eight palettes cost no call sites — that
- * was measured before it was proposed, and there is exactly one exhaustive `Record<Theme, …>`
- * in the repository.
- */
-export const THEMES = [
-  'dark',
-  'light',
-  'fuka.dark',
-  'fuka.light',
-  'yama.dark',
-  'yama.light',
-  'aota.dark',
-  'aota.light',
-] as const;
+export const THEMES = ['dark', 'light'] as const;
 export type Theme = (typeof THEMES)[number];
 
-/** The palette name for a family in a mode. `base` is the pair that has always been there. */
-export function themeName(family: ThemeFamily, mode: Mode): Theme {
-  return family === 'base' ? mode : `${family}.${mode}`;
-}
+/**
+ * The themes mockup `15` draws, in the order it draws them (F-225, ADR-0111).
+ *
+ * A person chooses one of these, or the phone's own light or dark, or the phone's colour (E4).
+ * Each paints exactly one palette. The fuka, yama and aota recipes are withdrawn: no mockup draws
+ * them. The manifest's `themes` list is parsed against this constant, so the picker's order and
+ * the manifest's cannot drift apart.
+ */
+export const DRAWN_THEMES = ['sumi', 'washi'] as const;
+export type DrawnTheme = (typeof DRAWN_THEMES)[number];
+
+/** Which palette each drawn theme paints. Total, so a drawn theme with no palette cannot compile. */
+export const DRAWN_THEME_PALETTE: Readonly<Record<DrawnTheme, Theme>> = {
+  sumi: 'dark',
+  washi: 'light',
+};
 
 /** Which mode a palette is, which is what decides whether it is a light or a dark reading. */
 export function themeMode(theme: Theme): Mode {
@@ -71,15 +62,14 @@ export function themeMode(theme: Theme): Mode {
 }
 
 /**
- * A theme recipe: a hue, and how far to lift the chroma the base already carries.
+ * A tint: a hue, and how far to lift the chroma a base already carries.
  *
- * THE HUE COMES FROM THE CORPUS, pinned by slug. Not invented — `themes.test.ts` reads the
- * published entry and fails if the declared hue has drifted from it, the same pin
- * `generate-brand-assets.mjs` puts on the icon's five petals so a republish is a decision
- * rather than a silent redraw.
+ * The declared recipes are gone (F-225: no mockup draws fuka, yama or aota). What remains is the
+ * DEVICE colour (FR-70, E4): `seed.ts` turns the platform's accent into one of these at runtime,
+ * and `deriveTheme` applies it with every check the gate runs.
  */
 export interface ThemeRecipe {
-  /** The corpus entry this hue belongs to, by slug. */
+  /** Where the hue came from — a corpus slug for a declared recipe, `device` for a seed. */
   readonly entry: string;
   /** Its hue in OKLCh degrees. */
   readonly hue: number;
@@ -549,64 +539,27 @@ export function parseManifest(input: unknown): Manifest {
   }
 
   /*
-   * THE DERIVED THEMES, BEFORE ANY CHECK RUNS.
-   *
-   * This is the whole of criterion 3. Every gate in this repository reads the parsed manifest,
-   * so deriving here means the contrast and CVD checks run over the ACTUAL VALUES a device will
-   * paint — never over a recipe, a promise, or a claim that the derivation is safe.
-   *
-   * A recipe the theme list does not name, or a name the recipes do not cover, is a parse
-   * error: the const and the manifest have to agree or the types stop describing the data.
+   * THE DRAWN THEMES, in 15's order, each naming the palette it paints (F-225). A list that
+   * disagrees with `DRAWN_THEMES` is a parse error: the picker reads the constant, the manifest
+   * records the design, and the two are only worth having if they cannot drift.
    */
-  /*
-   * Read here rather than after the gate block, because the derivation needs it and the
-   * derivation has to happen before anything checks the result. One reader, one value: the
-   * ceiling a theme respects is the SAME number `checkChromaCeiling` enforces, not a copy.
-   */
-  const chromaCeiling = requireNumber(
-    requireRecord(
-      requireRecord(requireRecord(root['gate'], 'gate')['contrast'], 'gate.contrast')[
-        'chromaCeiling'
-      ],
-      'gate.contrast.chromaCeiling',
-    )['maxChroma'],
-    'gate.contrast.chromaCeiling.maxChroma',
-  );
-
-  const recipesRaw = requireRecord(root['themeRecipes'], 'themeRecipes');
-  const recipes: Record<string, ThemeRecipe> = {};
-  for (const [name, value] of Object.entries(recipesRaw)) {
-    if (name.startsWith('_')) continue;
-    const o = requireRecord(value, `themeRecipes.${name}`);
-    recipes[name] = {
-      entry: requireString(o['entry'], `themeRecipes.${name}.entry`),
-      hue: requireNumber(o['hue'], `themeRecipes.${name}.hue`),
-      chromaScale: requireNumber(o['chromaScale'], `themeRecipes.${name}.chromaScale`),
+  const drawnRaw = root['themes'];
+  if (!Array.isArray(drawnRaw))
+    throw new ManifestError('themes', 'expected the list of themes mockup 15 draws');
+  const drawn = drawnRaw.map((t, k) => {
+    const o = requireRecord(t, `themes[${String(k)}]`);
+    return {
+      id: requireString(o['id'], `themes[${String(k)}].id`),
+      palette: requireString(o['palette'], `themes[${String(k)}].palette`),
     };
-  }
-
-  const tinted = THEME_FAMILIES.filter((f) => f !== 'base');
-  const declared = Object.keys(recipes).sort().join(' ');
-  if (declared !== [...tinted].sort().join(' '))
+  });
+  const expected = DRAWN_THEMES.map((id) => `${id}→${DRAWN_THEME_PALETTE[id]}`).join(' ');
+  const declared = drawn.map((d) => `${d.id}→${d.palette}`).join(' ');
+  if (declared !== expected)
     throw new ManifestError(
-      'themeRecipes',
-      `declares [${declared}] and THEME_FAMILIES expects [${[...tinted].sort().join(' ')}]. ` +
-        'The list is a const so every theme name is a literal type; a recipe the list does not ' +
-        'name would be derived into a palette nothing can refer to.',
+      'themes',
+      `declares [${declared}] and DRAWN_THEMES expects [${expected}], in 15's order.`,
     );
-
-  for (const family of tinted) {
-    const recipe = recipes[family];
-    if (recipe === undefined) continue;
-    if (recipe.chromaScale <= 0)
-      throw new ManifestError(`themeRecipes.${family}.chromaScale`, 'must be positive');
-    if (recipe.hue < 0 || recipe.hue >= 360)
-      throw new ManifestError(`themeRecipes.${family}.hue`, 'must be a degree in [0, 360)');
-    for (const mode of BASE_THEMES) {
-      const name = `${family}.${mode}`;
-      themes[name] = deriveTheme(themes[mode] ?? {}, recipe, chromaCeiling, `color.${name}`);
-    }
-  }
 
   // Every theme declares the same token names, or a component written against one theme
   // resolves to `undefined` in the other — at runtime, on whichever theme the author was

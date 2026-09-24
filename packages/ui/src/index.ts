@@ -11,8 +11,9 @@
  */
 
 export {
+  APPEARANCES,
   DEFAULT_APPEARANCE,
-  DEVICE_FAMILY,
+  DEVICE_APPEARANCE,
   formatAppearance,
   parseAppearance,
   resolveThemeName,

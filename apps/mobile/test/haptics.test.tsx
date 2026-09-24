@@ -97,10 +97,16 @@ describe('a commit fires exactly one, and nothing else fires any', () => {
     const h = counting();
     const tree = render(
       <ThemeProvider>
-        <Preferences store={store} haptics={h} onChooseAppearance={() => undefined} />
+        <Preferences
+          store={store}
+          haptics={h}
+          onChooseAppearance={() => undefined}
+          initialThemeListOpen
+        />
       </ThemeProvider>,
     );
-    const target = tree.queryAllByText(en['appearance.mode.dark'])[0];
+    // One of the themes 15 draws, chosen from the open list (F-225: there is no mode chip).
+    const target = tree.queryAllByText(en['appearance.theme.washi'])[0];
     expect(target).toBeDefined();
     fireEvent.press(target!);
     expect(h.commits()).toBe(1);

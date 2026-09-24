@@ -37,9 +37,9 @@ import { noHaptics, type Haptics } from '../haptics';
 import {
   Button,
   Card,
-  Chip,
+  APPEARANCES,
   DEFAULT_APPEARANCE,
-  DEVICE_FAMILY,
+  DEVICE_APPEARANCE,
   DISPLAY_SETTING_KEYS,
   DRAWN_DISPLAY_SETTINGS,
   EmptyState,
@@ -54,7 +54,6 @@ import {
   type DisplaySettingKey,
   type DisplaySettings,
 } from '@irodora/ui';
-import { THEME_FAMILIES, type ThemeFamily } from '@irodora/design-tokens';
 import { PREFERENCE_SATURATION, preferenceWeight } from '@irodora/recommendation';
 import { familyLabel } from '../corpus';
 import { useMessages } from '../i18n/useMessages';
@@ -148,30 +147,27 @@ const familyWordOr = (family: string, locale: 'en' | 'ja'): string => {
   }
 };
 
-/** Family → its label. Total, so a fifth theme is a compile error rather than a blank chip. */
-const FAMILY_KEYS = {
-  base: 'appearance.family.base',
-  fuka: 'appearance.family.fuka',
-  yama: 'appearance.family.yama',
-  aota: 'appearance.family.aota',
-} as const satisfies Record<ThemeFamily, MessageKey>;
+/**
+ * Each choice → its label. Total, so a theme added to `DRAWN_THEMES` is a compile error here
+ * rather than a blank row (F-225). The names are the ones `15` prints on its tiles.
+ */
+const APPEARANCE_KEYS = {
+  sumi: 'appearance.theme.sumi',
+  washi: 'appearance.theme.washi',
+  system: 'appearance.system',
+  device: 'appearance.device',
+} as const satisfies Record<Appearance, MessageKey>;
 
 /**
  * The catalogue's own union, narrowed from the string a `Select` hands back.
  *
- * Not a cast. `Select` speaks in strings because it does not know what it is choosing between,
- * and a `as ThemeFamily` here would compile for a value that is not one — which is how a theme
- * nobody defined reaches the store and the app falls back to the base palette with no
- * explanation. The list this narrows is built from `THEME_FAMILIES`, so the only way to reach
- * the fallback is a bug in that list, and the fallback is the declared default rather than
- * whatever arrived.
+ * Not a cast: `Select` speaks in strings, and an `as Appearance` would compile for a value that is
+ * not one — which is how a theme nobody defined reaches the store. The list this narrows is built
+ * from `APPEARANCES`, so the fallback is reachable only through a bug in that list.
  */
-function asFamily(value: string): ThemeFamily {
-  return THEME_FAMILIES.find((family) => family === value) ?? 'base';
+function asAppearance(value: string): Appearance {
+  return APPEARANCES.find((choice) => choice === value) ?? DEFAULT_APPEARANCE;
 }
-
-/** The three answers to "light or dark", in the order they are offered. */
-const MODES = ['system', 'light', 'dark'] as const;
 
 /** What to say about the device colour, per outcome. Total, so a fourth kind is a compile error. */
 const DEVICE_KEYS = {
@@ -191,12 +187,6 @@ const DISPLAY_KEYS = {
   hapticOnSelection: 'settings.haptics',
   provenanceBadges: 'settings.provenance',
 } as const satisfies Record<DisplaySettingKey, MessageKey>;
-
-const MODE_KEYS = {
-  system: 'appearance.mode.system',
-  light: 'appearance.mode.light',
-  dark: 'appearance.mode.dark',
-} as const satisfies Record<(typeof MODES)[number], MessageKey>;
 
 const signed = (net: number): string => (net > 0 ? `+${String(net)}` : String(net));
 
@@ -251,27 +241,15 @@ export function Preferences({
       >
         <Stack gap="sm">
           {/*
-            A SELECT, AND F-156 IS WHY THIS COMMENT CHANGED RATHER THAN THE ROW BELOW IT.
-
-            The previous version said, of five chips: *"`Select` is F-156 and does not exist
-            yet. Chips are already registered in the conformance suite, already announce their
-            selected state, and are honest about there being four of something."* All true, and
-            it was an interim.
-
-            The list is five long, four of the entries are palettes and the fifth is a SOURCE —
-            the phone's own colour — so a wrapping row of chips flattened a distinction that
-            matters. A trigger showing what is chosen, and a list showing what else there is,
-            says both.
+            ONE LIST, AND IT IS INTERIM (F-225). Mockup 15 draws the four themes as tiles, which
+            F-262 builds; until then the choices 15 offers are here, in 15's order, followed by the
+            two FR-70 asks for that no mockup draws (E4): follow the phone, and the phone's colour.
+            There is no light-or-dark control any more — each drawn theme already is one, and 15
+            draws none.
 
             THE PHONE'S OWN COLOUR IS A DISABLED OPTION rather than an absent one, which is the
             same call F-154 made and for the same reason: a control that is not there cannot
-            explain itself. Android 12 and later offer a colour; iOS offers none and never
-            will, so somebody looking for the feature they read about gets a row they can see
-            and a sentence beneath it, not a gap.
-
-            THE MODE BELOW STAYS CHIPS. Three mutually exclusive options, all visible at once,
-            all one word — that is a segmented control, and putting it behind a trigger would
-            hide two thirds of it to save one line.
+            explain itself. Android 12 and later offer a colour; iOS offers none and never will.
           */}
           <Select
             open={themeListOpen}
@@ -279,26 +257,17 @@ export function Preferences({
             label={t('appearance.theme')}
             closeLabel={t('appearance.close')}
             script={script}
-            value={appearance.family}
-            options={[
-              ...THEME_FAMILIES.map((family) => ({
-                value: family,
-                label: t(FAMILY_KEYS[family]),
-              })),
-              {
-                value: DEVICE_FAMILY,
-                label: t('appearance.family.device'),
-                disabled: device.kind !== 'applied',
-              },
-            ]}
-            onValueChange={(family) => {
+            value={appearance}
+            options={APPEARANCES.map((choice) => ({
+              value: choice,
+              label: t(APPEARANCE_KEYS[choice]),
+              ...(choice === DEVICE_APPEARANCE ? { disabled: device.kind !== 'applied' } : {}),
+            }))}
+            onValueChange={(choice) => {
               haptics.commit();
-              onChooseAppearance?.({
-                ...appearance,
-                // The catalogue's own union, narrowed rather than cast: a value that is not a
-                // family is a bug in the option list above, and it should not reach the store.
-                family: family === DEVICE_FAMILY ? DEVICE_FAMILY : asFamily(family),
-              });
+              // Narrowed rather than cast: a value that is not a choice is a bug in the option
+              // list above, and it should not reach the store.
+              onChooseAppearance?.(asAppearance(choice));
             }}
           />
 
@@ -326,28 +295,10 @@ export function Preferences({
             </Row>
           ) : null}
 
-          <Text size="label" color="foreground.2" script={script}>
-            {t('appearance.mode')}
-          </Text>
-          <Row gap="sm" wrap>
-            {MODES.map((mode) => (
-              <Chip
-                key={mode}
-                label={t(MODE_KEYS[mode])}
-                selected={mode === appearance.mode}
-                script={script}
-                onPress={() => {
-                  haptics.commit();
-                  onChooseAppearance?.({ ...appearance, mode });
-                }}
-              />
-            ))}
-          </Row>
-
           {/*
-            WHAT A THEME DOES NOT DO, said on the screen rather than only in the manifest. The
-            ground a colour is judged against is never tinted, and a person choosing a theme in
-            a colour-measurement app deserves to know that before they wonder.
+            WHAT A THEME DOES, said on the screen rather than only in the manifest (F-225). The
+            cards a colour sits on carry the theme's slight tint, which is what the colour is seen
+            against (ADR-0111), and a person choosing a theme in a colour app deserves to know it.
           */}
           <Text size="xs" color="foreground.2" script={script}>
             {t('appearance.hint')}

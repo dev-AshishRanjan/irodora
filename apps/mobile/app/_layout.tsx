@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
-import { DEVICE_FAMILY, durations, ThemeProvider, useTheme } from '@irodora/ui';
+import { DEVICE_APPEARANCE, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
 import { DisplayProvider } from '../src/displaySettings';
@@ -137,7 +137,7 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
    * reaches the screen.
    */
   const palette =
-    appearance.family === DEVICE_FAMILY && device.kind === 'applied'
+    appearance === DEVICE_APPEARANCE && device.kind === 'applied'
       ? { name: device.name, mode: device.mode, colors: device.colors }
       : undefined;
 

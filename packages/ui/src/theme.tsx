@@ -16,14 +16,14 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useColorScheme, type ColorSchemeName } from 'react-native';
 import {
+  DRAWN_THEME_PALETTE,
+  DRAWN_THEMES,
   nativeColors,
   nativeDefaultTheme,
-  THEME_FAMILIES,
   themeMode,
-  themeName,
+  type DrawnTheme,
   type Mode,
   type Theme,
-  type ThemeFamily,
 } from '@irodora/design-tokens';
 
 /** Colour tokens for one theme, exactly as the manifest declares them. */
@@ -52,55 +52,64 @@ export interface ThemeValue {
 }
 
 /**
- * What a person chose, which is TWO choices rather than one (FR-70).
+ * What a person chose: ONE choice (F-225, ADR-0111).
  *
- * Choosing a theme and choosing light or dark are independent: somebody can want the blue theme
- * *and* want it to follow the phone. Collapsing them into one list would mean eight entries
- * where four of them differ only in a way the system can already answer.
+ * Mockup `15` draws four theme tiles — Sumi Charcoal, Slate Graphite, Obsidian Noir, Washi
+ * Minimal — and no light-or-dark control, because each drawn theme already IS a light or a dark
+ * reading. FR-70 also asks for the phone's own light or dark (`system`) and the phone's colour
+ * (`device`), which no mockup draws (E4). So a person picks one of the drawn themes or one of
+ * those two, and nothing else. The two-part `family:mode` choice of F-153 is gone with the
+ * recipes it chose between.
  */
-/** The device's own colour, which is a choice a person makes and not a family we declare. */
-export const DEVICE_FAMILY = 'device';
+export const APPEARANCES = [...DRAWN_THEMES, 'system', 'device'] as const;
+export type Appearance = (typeof APPEARANCES)[number];
 
-export interface Appearance {
-  /**
-   * A declared family, or `device` for a palette derived from the platform accent (F-154).
-   *
-   * `device` is deliberately NOT a `ThemeFamily`: the families are the manifest's recipes and
-   * the parser refuses a list that disagrees with them, while a seeded palette has no recipe by
-   * construction. Keeping them different types is what stops one being mistaken for the other.
-   */
-  readonly family: ThemeFamily | typeof DEVICE_FAMILY;
-  /** `system` follows the platform. The other two state a preference. */
-  readonly mode: 'system' | Mode;
-}
+/** The device's own colour, which is a choice a person makes and not a theme we declare. */
+export const DEVICE_APPEARANCE = 'device' satisfies Appearance;
+
+/** Follow the phone: Sumi when it is dark, Washi when it is light. */
+export const SYSTEM_APPEARANCE = 'system' satisfies Appearance;
 
 /** The appearance a device has until somebody chooses otherwise. */
-export const DEFAULT_APPEARANCE: Appearance = { family: 'base', mode: 'system' };
+export const DEFAULT_APPEARANCE: Appearance = SYSTEM_APPEARANCE;
 
-/**
- * The stored form: `family:mode`.
- *
- * A string rather than two columns, because the store keeps settings as text and this is one
- * choice made in one place. Round-tripped by `parseAppearance`, which is total.
- */
+/** The stored form is the choice itself. Round-tripped by `parseAppearance`, which is total. */
 export function formatAppearance(appearance: Appearance): string {
-  return `${appearance.family}:${appearance.mode}`;
+  return appearance;
 }
 
 /**
  * Read a stored appearance back. **Anything unrecognised falls back to the default.**
  *
- * Total on purpose. This value comes off a device that may have been written by an older
- * build, or a newer one, or by a theme family that has since been removed — and a person whose
- * app refuses to start because their saved theme no longer exists has lost more than a colour.
+ * Total on purpose. This value comes off a device that may have been written by an older build,
+ * and a person whose app refuses to start because their saved theme no longer exists has lost
+ * more than a colour.
+ *
+ * A VALUE FROM BEFORE F-225 is `family:mode` — `base:dark`, `fuka:light`, `device:system`. It is
+ * mapped by what it meant for light and dark, because the family it named is withdrawn: dark
+ * lands on Sumi, light on Washi, system on system, and the device colour stays the device colour.
+ * Nothing is rewritten until the person chooses again, and nothing is announced — no mockup draws
+ * a notice, and the theme they land on is the drawn one of the mode they chose.
  */
 export function parseAppearance(stored: string | undefined): Appearance {
   if (stored === undefined) return DEFAULT_APPEARANCE;
+  const current = APPEARANCES.find((a) => a === stored);
+  if (current !== undefined) return current;
+
   const [family, mode] = stored.split(':');
-  const families: readonly string[] = [...THEME_FAMILIES, DEVICE_FAMILY];
-  if (family === undefined || !families.includes(family)) return DEFAULT_APPEARANCE;
-  if (mode !== 'system' && mode !== 'light' && mode !== 'dark') return DEFAULT_APPEARANCE;
-  return { family: family as ThemeFamily | typeof DEVICE_FAMILY, mode };
+  if (family === undefined || !['base', 'fuka', 'yama', 'aota', 'device'].includes(family))
+    return DEFAULT_APPEARANCE;
+  if (family === 'device' && (mode === 'system' || mode === 'light' || mode === 'dark'))
+    return DEVICE_APPEARANCE;
+  if (mode === 'dark') return 'sumi';
+  if (mode === 'light') return 'washi';
+  if (mode === 'system') return SYSTEM_APPEARANCE;
+  return DEFAULT_APPEARANCE;
+}
+
+/** Whether a choice is one of the themes `15` draws, which each paint one palette. */
+function isDrawn(appearance: Appearance): appearance is DrawnTheme {
+  return (DRAWN_THEMES as readonly string[]).includes(appearance);
 }
 
 const ThemeContext = createContext<ThemeValue | undefined>(undefined);
@@ -110,8 +119,8 @@ export interface ThemeProviderProps {
   /** Force a palette. For tests and for the conformance suite, which runs every component in both. */
   readonly theme?: Theme;
   /**
-   * What the person chose. Absent means the default, which is the base pair following the
-   * platform — exactly what this provider did before there was anything to choose.
+   * What the person chose. Absent means the default, which follows the platform: Sumi when it is
+   * dark, Washi when it is light.
    */
   readonly appearance?: Appearance;
   /**
@@ -142,23 +151,20 @@ export function resolveThemeName(
   appearance: Appearance = DEFAULT_APPEARANCE,
 ): Theme {
   if (override !== undefined) return override;
-  // A stated mode is a stated mode. Only `system` asks the platform, which is the whole
-  // difference between the three choices a person is offered.
+  // A drawn theme paints its own palette, whatever the phone says.
+  if (isDrawn(appearance)) return DRAWN_THEME_PALETTE[appearance];
   /*
-   * The DEVICE family has no declared palette, so what it resolves to here is the BASE one —
-   * the seeded colours reach the provider as a `palette` instead. That is not a fallback
-   * hidden in a resolver: when the seed produced a theme the provider uses it, and when it did
-   * not, the base is what the person sees and the screen says why.
+   * `system` asks the platform, and so does `device` for its DECLARED palette: the seeded
+   * colours reach the provider as a `palette` instead, and when the seed produced nothing the
+   * person sees the drawn theme of the phone's mode and the screen says why.
+   *
+   * Allow-list rather than "not dark, therefore light". React Native's `ColorSchemeName` is
+   * `'light' | 'dark' | 'unspecified' | null | undefined`, and `'unspecified'` is EXACTLY the
+   * no-preference case the manifest's `defaultTheme` fills.
    */
-  const family = appearance.family === DEVICE_FAMILY ? 'base' : appearance.family;
-  if (appearance.mode !== 'system') return themeName(family, appearance.mode);
-  // Allow-list rather than "not dark, therefore light". React Native's `ColorSchemeName` is
-  // `'light' | 'dark' | 'unspecified' | null | undefined`, and `'unspecified'` is EXACTLY the
-  // no-preference case this fallback exists for — a check written as `=== 'dark' ? dark :
-  // light` silently treats it as a stated preference for light. tsc caught that here; the
-  // first version of this signature omitted `'unspecified'` entirely.
-  if (scheme === 'light' || scheme === 'dark') return themeName(family, scheme);
-  return themeName(family, themeMode(nativeDefaultTheme));
+  if (scheme === 'light') return DRAWN_THEME_PALETTE.washi;
+  if (scheme === 'dark') return DRAWN_THEME_PALETTE.sumi;
+  return nativeDefaultTheme;
 }
 
 /**

@@ -2140,23 +2140,6 @@ describe('every screen conforms', () => {
  * THE SAME SUBJECTS, NOT A COPY OF THEM. A second registry would be a second thing to drift,
  * and the one that drifted would be the one nobody was reading.
  */
-/**
- * A TINTED THEME, THROUGH THE SAME SUITE (F-153).
- *
- * Eight palettes exist and gate 9 measures every declared pairing in all of them. What gate 9
- * cannot do is RENDER anything — so the question left over is whether a component still
- * resolves every colour it paints to a token when the palette is one nobody authored by hand.
- *
- * ONE TINTED THEME RATHER THAN SIX, and the reason is worth stating rather than assumed: the
- * suite checks structure and token resolution, and a hue cannot change either. Running all
- * eight would make this file four times slower to learn nothing the first one does not say.
- * Contrast across every theme is gate 9's job, and gate 9 is exhaustive.
- */
-describe('a derived theme conforms too (F-153)', () => {
-  it('produces no findings on a palette nobody authored', () => {
-    expect(formatFindings(checkAll(SCREENS, ['aota.light', 'aota.dark']))).toBe('');
-  });
-});
 
 describe('every screen conforms in Japanese too (F-152)', () => {
   beforeAll(() => {
@@ -3688,15 +3671,12 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
    */
   it('names the chosen theme on the trigger, not just the field', () => {
     const labels = labelsOf(
-      draw(
-        <Preferences store={preferenceStore()} appearance={{ family: 'yama', mode: 'system' }} />,
-        'dark',
-      ),
+      draw(<Preferences store={preferenceStore()} appearance="washi" />, 'dark'),
     );
-    // The field AND the value. "Theme" does not say what is chosen; "Yamabuki" does not say
-    // what it is.
+    // The field AND the value. "Theme" does not say what is chosen; "Washi Minimal" does not
+    // say what it is.
     const trigger = labels.find((l) => l.startsWith(`${en['appearance.theme']}: `));
-    expect(trigger).toBe(`${en['appearance.theme']}: ${en['appearance.family.yama']}`);
+    expect(trigger).toBe(`${en['appearance.theme']}: ${en['appearance.theme.washi']}`);
   });
 
   it("offers the phone's own colour as a DISABLED row rather than hiding it", () => {
@@ -3709,11 +3689,7 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
      * exists" and "the option is refused" are different facts and only the second is useful.
      */
     const tree = draw(
-      <Preferences
-        store={preferenceStore()}
-        appearance={{ family: 'base', mode: 'system' }}
-        initialThemeListOpen
-      />,
+      <Preferences store={preferenceStore()} appearance="system" initialThemeListOpen />,
       'dark',
     );
     const nodes: TestNode[] = [];
@@ -3722,9 +3698,7 @@ describe('preferences are inspectable, with the counts the weight comes from (F-
       for (const c of n.children ?? []) if (typeof c !== 'string') walk(c);
     };
     walk(tree);
-    const device = nodes.find(
-      (n) => n.props['accessibilityLabel'] === en['appearance.family.device'],
-    );
+    const device = nodes.find((n) => n.props['accessibilityLabel'] === en['appearance.device']);
     expect(device).toBeDefined();
     expect((device?.props['accessibilityState'] as { disabled?: unknown }).disabled).toBe(true);
   });

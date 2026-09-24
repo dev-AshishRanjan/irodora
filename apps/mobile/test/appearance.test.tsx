@@ -1,18 +1,20 @@
 /**
- * The chosen appearance (F-153, FR-70).
+ * The chosen appearance (F-153, FR-70; one choice since F-225).
  *
  * ## What is worth asserting here
  *
- * Not that a theme looks different — gate 9 measures all eight palettes and
- * `packages/design-tokens/test/themes.test.ts` proves what a theme is allowed to change.
+ * Not that a theme looks different — gate 9 measures every palette and
+ * `packages/design-tokens/test/themes.test.ts` proves which themes exist.
  *
- * What only this layer can answer is whether the CHOICE survives: that it is two independent
- * choices rather than one, that it reaches the provider, that it persists, and that a stored
- * value written by a build that no longer exists does not stop the app from opening.
+ * What only this layer can answer is whether the CHOICE survives: that it reaches the provider,
+ * that it persists, and that a stored value written by a build that no longer exists — including
+ * every `family:mode` value from before F-225 — does not stop the app from opening, and lands
+ * on the drawn theme of the mode the person chose.
  */
 
 import { render } from '@testing-library/react-native';
 import {
+  APPEARANCES,
   DEFAULT_APPEARANCE,
   formatAppearance,
   parseAppearance,
@@ -47,53 +49,66 @@ function fakeSettings(initial?: string): AppearanceStore & { readonly rows: Map<
 
 describe('parseAppearance', () => {
   it('round-trips every choice', () => {
-    for (const family of ['base', 'fuka', 'yama', 'aota'] as const)
-      for (const mode of ['system', 'light', 'dark'] as const) {
-        const appearance: Appearance = { family, mode };
-        expect(parseAppearance(formatAppearance(appearance))).toEqual(appearance);
-      }
+    for (const appearance of APPEARANCES)
+      expect(parseAppearance(formatAppearance(appearance))).toBe(appearance);
+  });
+
+  it('maps every value from before F-225 by the mode it chose, since its family is withdrawn', () => {
+    const want: Record<string, Appearance> = { dark: 'sumi', light: 'washi', system: 'system' };
+    for (const family of ['base', 'fuka', 'yama', 'aota'])
+      for (const mode of ['system', 'light', 'dark'])
+        expect([family, mode, parseAppearance(`${family}:${mode}`)]).toEqual([
+          family,
+          mode,
+          want[mode],
+        ]);
+    for (const mode of ['system', 'light', 'dark'])
+      expect(parseAppearance(`device:${mode}`)).toBe('device');
   });
 
   it('falls back to the default for anything it does not recognise', () => {
     /*
      * TOTAL ON PURPOSE. This value comes off a device that may have been written by an older
-     * build, or a newer one, or by a theme family that has since been removed — and a person
-     * whose app refuses to start because their saved theme no longer exists has lost more than
-     * a colour.
+     * build, or a newer one — and a person whose app refuses to start because their saved theme
+     * no longer exists has lost more than a colour.
      */
-    for (const stored of [undefined, '', 'nonsense', 'fuka', 'fuka:sideways', 'ghost:light'])
-      expect(parseAppearance(stored)).toEqual(DEFAULT_APPEARANCE);
+    for (const stored of [
+      undefined,
+      '',
+      'nonsense',
+      'fuka',
+      'fuka:sideways',
+      'ghost:light',
+      'mizu:dark',
+      'fuka:dusk',
+    ])
+      expect(parseAppearance(stored)).toBe(DEFAULT_APPEARANCE);
   });
 });
 
 describe('resolveThemeName', () => {
-  it('follows the platform only when the mode is `system`', () => {
-    // The whole difference between the three answers a person is offered.
-    expect(resolveThemeName('dark', undefined, { family: 'base', mode: 'system' })).toBe('dark');
-    expect(resolveThemeName('dark', undefined, { family: 'base', mode: 'light' })).toBe('light');
-    expect(resolveThemeName('light', undefined, { family: 'base', mode: 'dark' })).toBe('dark');
+  it('paints a drawn theme whatever the phone says', () => {
+    for (const scheme of ['light', 'dark', null] as const) {
+      expect(resolveThemeName(scheme, undefined, 'sumi')).toBe('dark');
+      expect(resolveThemeName(scheme, undefined, 'washi')).toBe('light');
+    }
   });
 
-  it('carries the family through both, which is why they are two choices', () => {
-    expect(resolveThemeName('dark', undefined, { family: 'fuka', mode: 'system' })).toBe(
-      'fuka.dark',
-    );
-    expect(resolveThemeName('dark', undefined, { family: 'fuka', mode: 'light' })).toBe(
-      'fuka.light',
-    );
+  it('follows the phone for `system`, and for the device colour’s declared fallback', () => {
+    for (const appearance of ['system', 'device'] as const) {
+      expect(resolveThemeName('dark', undefined, appearance)).toBe('dark');
+      expect(resolveThemeName('light', undefined, appearance)).toBe('light');
+    }
   });
 
   it('uses the manifest default when the platform states no preference', () => {
-    // `null` is the absence of a preference, not a preference for light — the distinction this
-    // function was extracted to make in the first place.
-    expect(resolveThemeName(null, undefined, { family: 'yama', mode: 'system' })).toBe('yama.dark');
+    // `null` is the absence of a preference, not a preference for light.
+    expect(resolveThemeName(null, undefined, 'system')).toBe('dark');
     expect(resolveThemeName('unspecified', undefined, DEFAULT_APPEARANCE)).toBe('dark');
   });
 
   it('an explicit palette still wins, because that is what the suite renders with', () => {
-    expect(resolveThemeName('light', 'aota.dark', { family: 'base', mode: 'light' })).toBe(
-      'aota.dark',
-    );
+    expect(resolveThemeName('dark', 'light', 'sumi')).toBe('light');
   });
 });
 
@@ -121,13 +136,17 @@ describe('AppearanceProvider', () => {
   }
 
   it('reads a stored choice and hands it to the theme', () => {
-    const tree = draw(fakeSettings('yama:light'));
+    const tree = draw(fakeSettings('washi'));
     expect(tree.toJSON()).toBeTruthy();
-    expect(JSON.stringify(tree.toJSON())).toContain('yama:light → yama.light');
+    expect(JSON.stringify(tree.toJSON())).toContain('washi → light');
+  });
+
+  it('reads a value from before F-225 as the drawn theme of its mode', () => {
+    expect(JSON.stringify(draw(fakeSettings('yama:light')).toJSON())).toContain('washi → light');
   });
 
   it('starts at the default when nothing is stored', () => {
-    expect(JSON.stringify(draw(fakeSettings()).toJSON())).toContain('base:system');
+    expect(JSON.stringify(draw(fakeSettings()).toJSON())).toContain('system');
   });
 
   it('does not write on read, because opening the app is not a choice', () => {
@@ -200,7 +219,7 @@ describe('the device colour', () => {
      * and a seed that did not pass is not applied at all.
      */
     const chosenAndChecked =
-      parseAppearance('device:light').family === 'device' &&
+      parseAppearance('device') === 'device' &&
       deviceTheme({ read: () => accent }, 'light').kind === 'applied';
     expect(chosenAndChecked).toBe(true);
 
@@ -209,8 +228,8 @@ describe('the device colour', () => {
   });
 
   it('round-trips `device` as a stored choice', () => {
-    // `device` is not a theme FAMILY — the families are the manifest's recipes — but it is a
-    // choice somebody makes, so the stored form has to carry it.
-    expect(parseAppearance('device:system')).toEqual({ family: 'device', mode: 'system' });
+    // `device` is not a drawn theme, but it is a choice somebody makes, so the stored form has
+    // to carry it.
+    expect(parseAppearance(formatAppearance('device'))).toBe('device');
   });
 });
