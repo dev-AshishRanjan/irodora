@@ -93,9 +93,10 @@ jobs:
       # that check for effects.json alone and the same hole was found in feature_list.json and
       # gates.json within the hour, so it became a table over seven spaces. A table has a
       # failure mode a single check does not: a space it cannot locate and silently skips.
-      # Seven cases — three duplicates, two fail-closed (renamed array, absent file) and two
-      # controls that must stay GREEN. The two halves are independent: neutering the duplicate
-      # check leaves the fail-closed cases passing and vice versa.
+      # Eight cases — three duplicates, two fail-closed (renamed array, absent file), one through
+      # the `--features` override (F-291), and two controls that must stay GREEN. The two halves
+      # are independent: neutering the duplicate check leaves the fail-closed cases passing and
+      # vice versa.
       - name: 'Gate 0 — state id-uniqueness proof'
         run: node scripts/verify-state-id-proof.mjs
 

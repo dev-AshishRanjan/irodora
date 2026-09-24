@@ -49,7 +49,16 @@
 
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { routePatterns } from './verify-route-targets.mjs';
@@ -393,13 +402,19 @@ if (process.argv.includes('--prove')) {
       i.mockups[id].inventory = 'mockups/__probe_inventory__.json';
     });
   };
+  /** Where the override case writes its feature list: the system temp directory, never the tree. */
+  let overrideDir;
   /** Gate 0, run as the build runs it. Returns its exit status and everything it printed. */
-  const gate0 = () => {
+  const gate0 = (args = []) => {
     try {
-      const out = execFileSync(process.execPath, [join(ROOT, 'scripts', 'verify-state.mjs')], {
-        encoding: 'utf8',
-        stdio: 'pipe',
-      });
+      const out = execFileSync(
+        process.execPath,
+        [join(ROOT, 'scripts', 'verify-state.mjs'), ...args],
+        {
+          encoding: 'utf8',
+          stdio: 'pipe',
+        },
+      );
       return { status: 0, out };
     } catch (error) {
       return { status: error.status ?? 1, out: `${error.stdout ?? ''}${error.stderr ?? ''}` };
@@ -1042,6 +1057,22 @@ if (process.argv.includes('--prove')) {
         expect: 'mockups/AGENTS.md appears to relax a golden rule',
       },
       {
+        // THROUGH THE OVERRIDE. The same plant as the first case, in a list `--features` names,
+        // with the committed list untouched. 9b used to re-read the committed file, so this passed
+        // while every other section checked the plant (F-291). Returns the arguments gate 0 runs
+        // with; the list goes to the system temp directory, never the tree.
+        name: 'gate 0: a UI feature that names no mockup, in the list --features names',
+        plant: () => {
+          const features = JSON.parse(original[FEATURES]);
+          delete features.features.find((f) => f.id === 'F-242').mockups;
+          overrideDir ??= mkdtempSync(join(tmpdir(), 'irodora-mockups-proof-'));
+          const path = join(overrideDir, 'features.json');
+          writeFileSync(path, `${JSON.stringify(features, null, 2)}\n`, 'utf8');
+          return ['--features', path];
+        },
+        expect: 'F-242 is a UI feature in R9 and names no mockup',
+      },
+      {
         // MUST STAY GREEN. The rule is scoped to what a person sees; an engine feature is not.
         name: 'gate 0: an engine feature with no mockups — must stay GREEN',
         plant: () =>
@@ -1052,14 +1083,14 @@ if (process.argv.includes('--prove')) {
       },
     ];
     for (const c of gateCases) {
-      c.plant();
-      const { status, out } = gate0();
+      const { status, out } = gate0(c.plant() ?? []);
       restore();
       const hit = c.expect === null ? status === 0 : status !== 0 && out.includes(c.expect);
       report(c.name, c.expect !== null, hit);
     }
   } finally {
     restore();
+    if (overrideDir !== undefined) rmSync(overrideDir, { recursive: true, force: true });
   }
   journal.close();
 

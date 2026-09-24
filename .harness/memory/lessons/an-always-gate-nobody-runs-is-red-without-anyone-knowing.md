@@ -29,3 +29,22 @@ finding behind a false one: the next genuine secret would have landed in a gate 
    never a path — and a false positive in an identifier is fixed by renaming, not by exempting.
 
 Links: [[a-check-must-report-its-scope-not-only-its-verdict]]
+
+## Addendum — 2026-09-24 (F-291): the rule covers gates, and a proof is not a gate
+
+`d59bc44`, the second commit above, broke something else as well, and rule 1 would not have
+caught it. Its new section 9b re-read
+the feature list and crashed gate 0 on `verify-state-id-proof.mjs`'s renamed-array plant. **No
+gate's command runs that proof.** It is its own step in `ci.yml`, one of twenty-odd, so running
+every always-gate stays green. CI first ran it on the next push, 2026-09-21, and stopped there
+with 33 steps skipped, on that push and the one after.
+
+`pnpm verify:ci` runs every `ci.yml` step in order, derived from the workflow, and its
+gate 0 proofs finish in under a minute.
+
+5. Before committing a change to `scripts/` or `.harness/`, run `pnpm verify:ci`, not only the
+   gates. Put its result in the verification record as well.
+
+Until **F-295** is done, `verify-ci` reports test, a11y and contrast red on a clean tree when they
+run uncached: each prints about 7 MB, and its `spawnSync` stops reading at 1 MiB. Read those three
+by their own exit codes.

@@ -43,8 +43,19 @@ runs:
         distribution: temurin
         java-version: '17'
 
+    # `packages` IS NAMED, NOT DEFAULTED. v3's default is `tools platform-tools`, and `tools`
+    # is the legacy SDK Tools package, which Google stopped serving around 2026-09-15. The
+    # internal lane's first run after that died here with `Failed to find package 'tools'`,
+    # before reaching Gradle, and the release lane runs this same step (F-291; upstream
+    # android-actions/setup-android#537). Upstream dropped `tools` from the default in v4.0.2;
+    # the v3 tag, v3.2.2, does not have that change. So the list is ours and does not depend on
+    # anyone's default. Nothing here reads `tools/`: the components the build needs are pinned
+    # in the next step. `platform-tools` is kept because the action has always installed it and
+    # put it on PATH.
     - name: Set up the Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        packages: platform-tools
 
     # Explicit rather than left to AGP's auto-download. AGP will fetch a missing platform,
     # but the failure when it cannot is a Gradle stack trace about a licence — and the

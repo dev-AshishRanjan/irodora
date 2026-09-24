@@ -8,6 +8,153 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-24 — F-291 CI is red twice: gate 0 crashes on a list it cannot read, and the Android SDK setup asks for a package Google withdrew
+
+**Done, with one attestation owed.** The user reported both workflows red. They are two defects
+with two causes, and fixing the first uncovered a third.
+
+### 1 — CI: gate 0 crashed, and a crash has no findings
+
+CI has stopped at step 8 on both pushes since 2026-09-21 (runs 35619327328 and 35957177781), with
+33 steps skipped. The failing case is `verify-state-id-proof.mjs`'s *"FAILS CLOSED — the array is
+renamed"*: it expects section 4b to say the space *"is unchecked"* and got nothing.
+
+- **F-218's section 9b re-parsed `feature_list.json` and iterated `.features` unguarded.** On the
+  renamed array it threw `JSON.parse.features is not iterable`, and an uncaught throw takes every
+  finding with it, including the schema finding that named the real fault. Gate 0 still exited 1,
+  but printed a stack trace about 9b. Measured in throwaway worktrees: 7/7 at `d59bc44^`, 6/7 at
+  `d59bc44`.
+- **The fix deletes the second read.** 9b reads the schema-checked `featureList` inside
+  `if (featureList)`, like every section that needs a valid list. On the committed state gate 0's
+  output is byte-identical before and after.
+- **It had a silent half, and 4b had it too.** Both sections read the committed file, not the list
+  `--features` names, so a list with a UI feature missing its mockups, or with a duplicate id,
+  passed gate 0 through the override. 9b is fixed by the same change. 4b still reads the raw file
+  on purpose, because it must report a space it cannot find after the schema has failed, and now
+  reads `featuresPath`. The id proof gains case 6 and the mockup proof an override case. **Both were
+  watched failing against the pre-fix gate.**
+
+### 2 — Android: an action default named a package that no longer exists
+
+`android-actions/setup-android@v3` defaults `packages` to `tools platform-tools`. Google stopped
+serving the legacy `tools` package around 2026-09-15 (upstream #537). The first internal build after
+that (run 35961027407) died in setup with `Failed to find package 'tools'`. The release lane runs
+the same composite action.
+
+- Upstream fixed the default in v4.0.2 (#538). The `v3` tag, v3.2.2, does not have that change.
+- **The shared action now names `packages: platform-tools`.** `platform-tools` is what the action
+  has always installed and put on PATH. Nothing here reads `tools/`: every SDK path used is
+  `build-tools/*` or `platforms/*`, pinned in the next step. One edit fixes both lanes.
+- **Not verified here.** There is no JDK on this workstation, so `sdkmanager` cannot run, and a
+  dispatch needs a push. It is attested: the next `workflow_dispatch` of `android-build.yml` must
+  pass step 3. **Beyond setup, the lane has not been through Gradle since 2026-09-09**, and this
+  feature claims nothing about later steps.
+
+### 3 — found behind the first: gate 11 has been red too
+
+With the proof fixed, every CI step was run in order and one more failed: **gate 11's font
+coverage.** 幅 and 触 (settings copy) and two kanji from a comment, all added by F-239 on
+2026-09-21, are not in `NotoSansJP-Subset.ttf`. That is a different defect, F-147's shape again,
+recorded as **F-292** and claimed next.
+
+### Review — one round, and the blocker was mine
+
+- **Blocker:** F-292's note quoted the very phrase the claims lint refuses, so `pnpm lint` was red
+  on the tree under review. My first CI walk ran before that note existed, so its "all green but
+  gate 11" did not describe the final tree. Reworded, and the walk re-run on the final tree.
+- **4b's silent half** (above). Fixed here, because it is the same defect.
+- **The guard was misnamed:** `verify-blocked-reason-proof.mjs` passes against the pre-fix gate, so
+  it is not a guard for this. The two new override cases are.
+- **Criterion 1 said "reads the feature list once"**, which was false because 4b reads it
+  deliberately. Reworded.
+- **Criterion 3 bundled a checkable half into an attestation.** The static check is now **F-293**,
+  together with `cmdline-tools-version`, still defaulted.
+- **Overstatement:** the comment and E-144 claimed that both lanes died, that every runner
+  failed, and that v3 "will not" get the fix. Corrected.
+- **Recorded, not fixed:** 9b's unguarded parse of `mockups/index.json`, and a double message and
+  over-count on an unparseable list, are **F-294**.
+- **Behaviour change:** on a list that fails its schema but still parses, 9b is now silent until the
+  schema is fixed, like every other `featureList` reader. The verdict is unchanged.
+
+### Gates — the final tree, `node scripts/verify-ci.mjs --all`, Node 24.19.0, pnpm 11.21.0, `TURBO_FORCE=true`
+
+36 steps (the 37th, installing gitleaks, is CI plumbing and is skipped). **32 green.** Four reported
+red:
+
+- **Gate 11 — content: really red.** It is F-292, above.
+- **Gate 4 — test, Gate 8 — a11y and Gate 9 — contrast: false reds from the tool.** Uncached, each
+  prints 6.7–7.0 MB, and `verify-ci` runs steps through `spawnSync` with the default 1 MiB
+  buffer. The child is killed (`ENOBUFS`, `SIGTERM`, status `null`) and reported as failed, and
+  the output it shows ends mid-word. Run directly, uncached, each **exits 0**: test 35/35 tasks
+  (mobile 1038, ui 357), a11y 21/21 (mobile 222, ui 104), contrast 22/22 (mobile 222, ui 80).
+  Recorded as **F-295**. GitHub CI streams output and is not affected.
+
+The earlier walk, which wrote each step to a file and had no buffer, agreed step for step: every
+step green except gate 11. Its typecheck, test and build were Turbo cache replays; the final run's
+were not.
+
+gitleaks here is a `go install` build, not CI's 8.30.1 pin.
+
+### Two plants reached the tree during verification, and the journal that recorded them was deleted
+
+Re-running the gate 0 proofs by hand after the final run, `verify-lockfile-proof.mjs` exited 1 and
+left its first plant: `@irodora/color-core` added to `packages/store/package.json`. The journal
+worked. The next three proofs refused to start, and `verify-gate-mirror-proof.mjs` crashed partway
+and left **its** plant, the `Gate 4 — test` step deleted from `ci.yml`. Then `plant-proof.mjs` ran,
+and it deletes the **real** journal in its `reset()` and its `finally`. With both records gone, a
+later `pnpm` call re-resolved `pnpm-lock.yaml` against the planted manifest, and gate 0 went red on
+a missing CI step with nothing saying why.
+
+Both were found by `git diff` and restored by hand: the manifest and lockfile from `HEAD`, and the
+CI step re-inserted exactly as `HEAD` has it. Every other diff was then audited line by line and is
+this feature's own. The lockfile proof's failure **did not reproduce** in three more runs, so its
+cause is not known. The journal that would have said is what `plant-proof` deleted. Recorded as
+**F-296** (`todo`, must).
+
+The checks were then re-run one at a time, with the tree and the journal checked after every step:
+
+| check | exit | time |
+|---|---|---|
+| `node scripts/verify-state.mjs` | 0 | 0 s |
+| `node scripts/verify-gate-mirror.mjs` | 0 | 12 s |
+| `node scripts/verify-stale-rationale-proof.mjs` | 0 | 2 s |
+| `node scripts/verify-effect-id-proof.mjs` | 0 | 3 s |
+| `node scripts/verify-state-id-proof.mjs` | 0 | 5 s |
+| `node scripts/verify-lockfile-proof.mjs` | 0 | 4 s |
+| `node scripts/verify-claims.mjs` | 0 | 6 s |
+| `node scripts/verify-claims-proof.mjs` | 0 | 525 s |
+| `node scripts/verify-blocked-reason-proof.mjs` | 0 | 2 s |
+| `node scripts/verify-mockups.mjs --prove` | 0 | 9 s |
+| `node scripts/verify-gate-mirror-proof.mjs` | 0 | 18 s |
+| `node scripts/plant-proof.mjs` | 0 | 0 s |
+| `pnpm lint` | 0 | 102 s |
+| `pnpm format:check` | 0 | 10 s |
+| `pnpm security` | 0 | 10 s |
+
+No step changed the tree, and no journal appeared after any of them.
+
+**NOT RUN:** e2e (pending gate); artifact, and both Android lanes (no JDK, and a run needs a push);
+CI itself (nothing is pushed).
+
+### Effects
+
+E-143 (`verify-state.mjs#featureList`: a second read of checked state skips the check) and E-144
+(the shared Android setup, and an action default being a dependency the tag does not pin), each
+with its note. The lesson [[an-always-gate-nobody-runs-is-red-without-anyone-knowing]] gains an
+addendum: F-218 also broke a proof that no gate runs, so running every always-gate would not have
+caught it, and `pnpm verify:ci` would have.
+
+### Owed
+
+- **F-291's attestation:** dispatch `android-build.yml` after the push, and read step 3.
+- **F-292** (next), then **F-295** and **F-296** (`todo`). **F-293** and **F-294** are backlog.
+
+### Next
+
+F-292: regenerate the subset from the cached source, whose git blob matches google/fonts `main`.
+
+---
+
 ## 2026-09-22 — F-288 An archive is bounded before it is parsed
 
 **Done.** The threat model's boundary-③ table has said *"hard limits on bytes and record count

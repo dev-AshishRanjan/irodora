@@ -1,7 +1,7 @@
 {
   "$schemaRef": "schemas/effects.schema.json",
   "version": 1,
-  "updated": "2026-09-22",
+  "updated": "2026-09-24",
   "description": "Recorded causal dependencies: if A changes, B must change too. Seeded with the ten structural invariants that exist by construction, before any code is written — these are consequences of the architecture, not of any particular implementation. Every link names the automated guard that catches a violation; a critical link with guard 'none' fails the state gate, which is what makes this graph a backlog of the checks we still owe rather than a wiki. See ADR-0030.",
   "links": [
     {
@@ -5626,6 +5626,80 @@
       "guard": "EVERY BOUND IS TESTED TWICE, and the second time is the one that matters: archive-limits.test.ts refuses a file past maxBytes BEFORE JSON.parse (the string is not even valid JSON, so the failure cannot be the parser's), refuses 500-deep nesting by name, refuses more than maxRows through both doors — the string one and importArchive, which takes unknown and need never have touched a file — and turns malformed JSON into an ArchiveError rather than a SyntaxError. AND it asserts a realistic archive — twelve garments, EVERY ONE photographed at ~300 KB, because the character limit is derived from photographs and the first fixture had none — is clear of every limit by a stated factor (~10x characters, ~1000x rows, 6x depth, each asserted rather than described), with the actual distance asserted rather than a bare 'does not throw', because a cap that fires on real data is worse than no cap and 'does not throw' would not notice one set ten times too low. THE DEPTH SCAN IS PLANTED BOTH WAYS: brackets inside a string are not nesting, an escaped quote does not end its string, and a DECOY proves real nesting is counted at the same limit — without it, 'not fooled by a string' would pass for a scan that counted nothing. PARSING TWICE IS PARSING ONCE: the ordinary restore path parses the file and then parses again inside importArchive, and parseArchive was NOT idempotent — a decoded Uint8Array is an object whose keys are decimal indices and whose values are bytes, which is exactly the pre-F-286 broken shape, so the second pass refused a good file. Fixed, tested by name, watched failing, with a decoy that the real legacy shape is still refused. NOT GUARDED: whether 256 MiB is the right number against a real large wardrobe — nobody here has one, so the arithmetic is written down instead. THE DEPTH ASSERTION GOES THROUGH THE IMPLEMENTATION: the first version pasted the scanner into the test and asserted on the copy, so maxNestingOf could have been deleted with it still green — the shape F-286's review had already rejected once in this package. It is now two calls to deserialiseArchive, one at the archive's real depth and one below it. THE ESCAPE BRANCH IS DISCRIMINATED: at the old maxDepth of 8 a scanner with escape handling deleted also reported 8, and 8 > 8 is false, so the only branch a hostile file could target had no test that could fail; at 5 it does, watched failing. THE ROUND TRIP COMPARES DIGESTS rather than asserting nothing threw. AND THE EARLY RETURN IS GATED: making parseArchive idempotent by returning a Uint8Array early skipped the declared-column check one line below, which let an in-memory caller put bytes in a TEXT column and reach driver.run as a plain Error — a hole a previous review had closed, re-opened by a fix placed above the guard. Tested and watched failing. NOT GUARDED: the EXPORT side is unbounded (F-290), so a large enough wardrobe writes a file this refuses to read.",
       "memory": "memory/effects/a-limit-that-fires-on-real-data-is-worse-than-no-limit.md",
       "rationale": "The threat model's boundary-3 table claimed 'hard limits on bytes and record count before parsing' and there were none — no byte limit, no record count, no depth limit anywhere in parseArchive. F-286's review found the row describing a check nobody had written, and F-286 made it material: the import path now base64-decodes every image payload into memory, so an archive is the largest untrusted input this product accepts. Medium rather than high because no app surface reads an archive yet, which is also why now is the time: the bound lands before the surface does, rather than after somebody's phone runs out of memory. The bound had to act on the STRING, and nothing took a string — parseArchive takes unknown, by which time JSON.parse has already allocated whatever the file asked for. So the feature is really the missing half of serialiseArchive.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-143",
+      "from": {
+        "kind": "symbol",
+        "ref": "scripts/verify-state.mjs#featureList"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": "scripts/verify-state.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-state-id-proof.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-mockups.mjs"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-blocked-reason-proof.mjs"
+        },
+        {
+          "kind": "gate",
+          "ref": "state"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        ".harness"
+      ],
+      "severity": "high",
+      "guard": "gate:state, proven three ways, each watched failing against the gate before F-291: script:verify-state-id-proof.mjs case 4 (a list whose `features` array is renamed must still be REPORTED, so a section that crashes on it turns the proof red, which is how F-218’s second read was found) and case 6 (a duplicate feature id in the list `--features` names must be found, so section 4b cannot read the committed file instead); and script:verify-mockups.mjs --prove’s override case (a UI feature with no mockups in the list `--features` names must be rejected, so section 9b cannot either). verify-blocked-reason-proof.mjs also drives gate 0 through `--features`, but it passed against the pre-fix gate and is not a guard for this. WHERE IT STOPS: the override cases cover 4b and 9b. A NEW section that re-reads the file would be caught only if it crashes on case 4’s plant, or if a proof happens to drive it through the override. See the note.",
+      "memory": "memory/effects/a-second-read-of-checked-state-skips-the-check.md",
+      "rationale": "GATE 0 READS THE FEATURE LIST THROUGH ITS SCHEMA CHECK, AND EVERY SECTION THAT NEEDS A VALID LIST DEPENDS ON READING THAT VALUE. `checkSchema` returns the parsed list, or null when the list fails its schema, and every such section sits inside `if (featureList)`. That null is what lets a broken list produce a report instead of a TypeError, and `featureList` is read from `featuresPath`, so it honours the `--features` override (F-137). One section reads the raw file on purpose: 4b, the id-uniqueness table, which must report a space it cannot find even when the schema has already failed, and is guarded for exactly that. It now reads `featuresPath` too. A section that parses the committed file again gets neither protection: it iterates whatever is on disk unguarded, and it reads the committed path while the rest read the override. F-218 added section 9b that way. A list with its array renamed then crashed the gate with `JSON.parse.features is not iterable`, and an uncaught throw takes every finding with it, INCLUDING the schema finding that named the real fault. The exit code stayed non-zero, so gate 0 did not pass, but it reported a stack trace about 9b instead of the fault. The defect was on main from 2026-09-14; CI first ran it on the next push, 2026-09-21, and was red at step 8 on both pushes since, with 33 steps skipped behind it (F-291). The override half was silent, and 4b had it too, from before F-218: pointing gate 0 at a list with a UI feature missing its mockups, or with a duplicate feature id, gave a green gate, because 9b and 4b were checking the committed file.",
+      "confidence": 0.95,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-144",
+      "from": {
+        "kind": "file",
+        "ref": ".github/actions/setup-android-build/action.yml"
+      },
+      "to": [
+        {
+          "kind": "file",
+          "ref": ".github/workflows/android-build.yml"
+        },
+        {
+          "kind": "file",
+          "ref": ".github/workflows/release.yml"
+        },
+        {
+          "kind": "gate",
+          "ref": "artifact"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "root",
+        ".github"
+      ],
+      "severity": "high",
+      "guard": "gate:artifact, indirectly: both lanes run this action before gate 16, so a setup failure turns the lane red before an artefact exists. It runs only on a GitHub runner, on `workflow_dispatch` or a tag. Nothing on a workstation reads this file, so deleting the `with:` block passes every local gate; F-293 is the check that would refuse it. This workstation has no JDK to run sdkmanager at all.",
+      "memory": "memory/effects/an-action-default-is-a-dependency-the-tag-does-not-pin.md",
+      "rationale": "ONE SETUP, TWO LANES. The internal build lane and the release lane both call this composite action, deliberately, so they cannot drift into building against different toolchains (F-085). The cost is that any fault here breaks both at once, including the lane that publishes. THE FAULT THAT HAPPENED WAS AN INPUT WE NEVER SET. `android-actions/setup-android@v3` defaults `packages` to `tools platform-tools` and runs `sdkmanager <pkg>` for each. `tools` is the legacy SDK Tools package, and Google stopped serving it around 2026-09-15. The first dispatch after that, on 2026-09-24, died at `Failed to find package 'tools'` before reaching Gradle (F-291; upstream #537), and a release would have died the same way. The `@v3` tag pins the action's CODE, not the outside world its defaults point at: the default names a live package on Google's repository, which can disappear without any change on our side. Upstream dropped `tools` from the default in v4.0.2; the v3 tag (v3.2.2) does not have that change. So the input is named: `packages: platform-tools`, which keeps what the action has always installed and put on PATH and drops the one package nothing here reads. Every SDK component the build needs is pinned in the step after it.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

@@ -885,6 +885,11 @@ if (effects && claimsRaw) {
 const ID_SPACES = [
   {
     file: 'state/feature_list.json',
+    // The list `--features` names, so a proof that points gate 0 at a mutated list has its ids
+    // checked too, rather than the committed file's (F-291). This section still reads the raw
+    // file, deliberately: it has to report a space it cannot find even when the schema has
+    // already failed, which `featureList` (null by then) could not tell it.
+    at: featuresPath,
     path: 'features',
     key: 'id',
     plural: 'features',
@@ -969,7 +974,7 @@ const FIX =
 let idEntries = 0;
 
 for (const space of ID_SPACES) {
-  const path = join(HARNESS, space.file);
+  const path = space.at ?? join(HARNESS, space.file);
 
   if (!existsSync(path)) {
     fail(
@@ -1729,9 +1734,14 @@ if (agentsMd) {
  * F-218. From R9 a feature a person will see is built to a mockup (golden rule 14), so it has to
  * say which. Read from mockups/index.json rather than from a list here, so adding a mockup is one
  * edit. Scoped to service "mobile" and package "@irodora/ui": an engine feature has no layout.
+ *
+ * It reads `featureList`, the list the schema check already passed, like every section that needs
+ * a valid list. It used to parse the file a second time. That iterated `.features` unguarded, so a
+ * list whose array was renamed crashed the whole gate with a TypeError, and the crash took every
+ * finding with it, including the schema finding that named the real fault. It also ignored
+ * `--features` (F-291).
  */
 {
-  const listText = readText(join(HARNESS, 'state/feature_list.json'));
   const indexText = readText(join(ROOT, 'mockups/index.json'));
   if (!indexText) {
     fail(
@@ -1740,10 +1750,10 @@ if (agentsMd) {
       'Golden rule 14 cannot be checked without the map from routes to mockups.',
       'Restore it; scripts/verify-mockups.mjs describes its shape.',
     );
-  } else if (listText) {
+  } else if (featureList) {
     const known = new Set(Object.keys(JSON.parse(indexText).mockups ?? {}));
     let named = 0;
-    for (const f of JSON.parse(listText).features) {
+    for (const f of featureList.features) {
       const release = Number(String(f.release).slice(1));
       const ui = f.service === 'mobile' || f.package === '@irodora/ui';
       if (release >= 9 && ui) {

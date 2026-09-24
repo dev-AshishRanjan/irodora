@@ -2,7 +2,7 @@
   "$schemaRef": "schemas/feature_list.schema.json",
   "version": 1,
   "project": "Irodora",
-  "updated": "2026-09-15",
+  "updated": "2026-09-24",
   "policy": {
     "wip_limit": 1,
     "ordering": "Lowest id first within the current release, with every blockedBy done. Release order is deliberate: R1 proves the colour engine in public before anything is built on top of it."
@@ -9822,6 +9822,148 @@
         "security"
       ],
       "notes": "FROM F-288's REVIEW (2026-09-22). F-288 bounded the READ side; exportArchive, serialiseArchive and eraseWithBackupPrompt are unbounded, so a wardrobe past roughly a hundred photographed garments writes a backup file that deserialiseArchive then refuses. The failure surfaces at RESTORE, which is the worst available moment — the threat model ranks a person's own export as the only backup there is. It is also the second half of the review's finding that the two limits were sized against two different wardrobes: one declaration is what stops that recurring. eraseWithBackupPrompt is the sharpest case, because it offers a backup and then erases: a backup written there that cannot be read back is the exact shape that function's own docblock says it exists to prevent."
+    },
+    {
+      "id": "F-291",
+      "title": "CI is red twice: gate 0 crashes on a list it cannot read, and the Android SDK setup asks for a package Google withdrew",
+      "requirements": [
+        "NFR-19",
+        "NFR-17"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "must",
+      "status": "done",
+      "blockedBy": [],
+      "plan": "plans/F-291-ci-is-red-twice.md",
+      "acceptance": [
+        "Every section of gate 0 that reads the feature list reads the list `--features` names, and a list it cannot read is reported as a finding rather than crashing the gate and every finding with it — verify-state-id-proof.mjs reports 8/8 and verify-mockups.mjs --prove rejects its override case, both watched failing against the gate before the fix",
+        "Every CI step the failure skipped is run in order on the pinned toolchain with `node scripts/verify-ci.mjs --all`, and the result recorded in progress.md",
+        "The Android build lane passes its SDK setup step on a GitHub runner"
+      ],
+      "attested": [
+        {
+          "criterion": "The Android build lane passes its SDK setup step on a GitHub runner",
+          "verifiedBy": "The next workflow_dispatch run of android-build.yml, read from the public jobs API: step 3 (./.github/actions/setup-android-build) concludes success. Whether a package resolves is a fact about Google’s SDK repository and the runner image, neither of which this repository controls, and this workstation has no JDK to run sdkmanager at all. The run needs a push, which is the user’s call. The static half — that the setup names its packages rather than taking the action’s default — is checkable here and is F-293, not attested.",
+          "blocks": "release",
+          "status": "outstanding"
+        }
+      ],
+      "verification": [
+        "state",
+        "lint",
+        "format"
+      ],
+      "notes": "REPORTED BY THE USER (2026-09-24): CI red and the Android build red. TWO DEFECTS, TWO CAUSES. (1) CI has stopped at step 8, the id-uniqueness proof, on both pushes since 2026-09-21, with 33 steps skipped. F-218 (d59bc44, 2026-09-14) added gate 0 section 9b, which re-parsed feature_list.json and iterated .features unguarded, so the proof’s renamed-array plant crashed the gate with a TypeError and took every finding with it. Measured in throwaway worktrees: 7/7 at d59bc44^, 6/7 at d59bc44. 9b now reads the schema-checked featureList, which also makes it honour --features for the first time. (2) android-actions/setup-android@v3 defaults `packages` to `tools platform-tools`; Google stopped serving the legacy `tools` package around 2026-09-15 (upstream #537, fixed only in v4.0.2), and the first internal build after that died in setup. The shared action now names `packages: platform-tools`, which fixes the internal lane and the release lane together. THE CI WALK FOUND A THIRD, HIDDEN BEHIND THE FIRST: gate 11’s font coverage, recorded as F-292. FROM THE REVIEW (one round, 2026-09-24): the blocker was mine — F-292’s note quoted a phrase the claims lint refuses, so lint was red on the tree under review. Section 4b had the same silent half as 9b (it checked the committed list, not the one --features names) and is fixed here with `at: featuresPath`; the override is now tested in both proofs, each case watched failing against the pre-fix gate. Criterion 1 had said the list is read once, which was false; criterion 3 bundled a checkable half into an attestation, which is now F-293. mockups/index.json’s unguarded parse and two report defects on an unparseable list are F-294. Recorded behaviour change: on a list that fails its schema but still parses, 9b is now silent until the schema is fixed, like every other section that reads featureList; the verdict is unchanged."
+    },
+    {
+      "id": "F-292",
+      "title": "The settings copy outgrew the Japanese font subset, and gate 11 has been red behind gate 0",
+      "requirements": [
+        "NFR-11"
+      ],
+      "service": "mobile",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "mockups": [
+        "15"
+      ],
+      "acceptance": [
+        "Every codepoint the Japanese catalogue, the corpus, the phrase lexicon and the taxonomy vocabulary require is in the committed subset, so gate 11 passes font coverage and the subset --check",
+        "The subset is regenerated from the same source bytes CI fetches, confirmed by git blob hash rather than assumed, so CI’s byte comparison agrees with the local one"
+      ],
+      "verification": [
+        "state",
+        "content"
+      ],
+      "notes": "FOUND BY F-291’s CI WALK (2026-09-24). With the id-uniqueness proof fixed, every ci.yml step was run in order and ONE more was red: Gate 11 — content, at verify-font-coverage.mjs. Four codepoints in apps/mobile/src/i18n/ja.ts are not in NotoSansJP-Subset.ttf: 幅 and 触, in settings.tabular and settings.haptics (F-239 increments 2–5, c83d0e5), and 仕 and 様, from a word quoted in a COMMENT F-239’s review added at ja.ts:517 (5c584ce). The generator and the check both read the whole file, comments included, and they agree with each other, so a comment costs a glyph and not a failure. All four arrived on 2026-09-21 and were in that day’s push, but CI stopped at step 8 on that push and on 2026-09-24’s, so step 34 never ran. This is F-147’s shape again (“Japanese copy outgrew the font subset”, recorded in verify-ci.mjs’s header). The source font is cached at .cache/fonts, and its git blob (cdd8f083…) equals google/fonts main’s, which has not changed since 2022-11-03."
+    },
+    {
+      "id": "F-293",
+      "title": "The Android setup’s inputs are checked, not only set",
+      "requirements": [
+        "NFR-17",
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A check that runs on a workstation refuses a setup-android step that leaves `packages` to the action’s default or names `tools`, watched failing on both, with the committed setup green",
+        "cmdline-tools-version is named rather than defaulted, or the record says why its default is safe to leave"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FROM F-291’s REVIEW (2026-09-24). F-291 fixed the Android lanes by naming `packages: platform-tools` on android-actions/setup-android@v3, whose default `tools platform-tools` asked for a package Google withdrew. Nothing on a workstation checks that the input stays named: deleting the `with:` block passes state, lint and format, and would be found only on the next dispatch or tag, after the lane is already red (E-144). The evaluator also noted that `cmdline-tools-version` is still left to its default (12266719, fetched from dl.google.com on any runner without the matching cmdline-tools preinstalled), which is the same kind of dependency E-144’s note says to name."
+    },
+    {
+      "id": "F-294",
+      "title": "Gate 0 on an unreadable input: 9b’s index parse crashes, and 4b’s pass line over-counts",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A malformed mockups/index.json is reported by gate 0 as a finding, not a SyntaxError that takes every other finding with it, and a proof plants it",
+        "When the feature list is not valid JSON, gate 0 says so once, and section 4b’s pass line counts only the id spaces it actually read"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FROM F-291’s REVIEW (2026-09-24). F-291 removed section 9b’s second read of the feature list, which crashed gate 0 on a list with a renamed array. Two neighbours were left, both about what gate 0 REPORTS on an unreadable input rather than whether it passes (it exits 1 in every case): 9b still runs JSON.parse on mockups/index.json with no try, so a malformed index crashes gate 0 at CI step 4 with a SyntaxError and no findings, before verify-mockups.mjs in gate 2 can name it; and when feature_list.json is not valid JSON, “is not valid JSON” is printed twice and 4b’s pass line still counts seven id spaces though one was unread. Out of F-291’s scope: a different file, and pre-existing."
+    },
+    {
+      "id": "F-295",
+      "title": "verify-ci reports a passing step as failed when it prints more than 1 MiB",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "A step that exits 0 is reported as passing whatever the size of its output, watched failing first on a step that prints more than 1 MiB",
+        "A step the runner killed or could not start is reported as that, naming the error, rather than as a failed check"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "FOUND BY F-291’s FINAL RUN (2026-09-24). `node scripts/verify-ci.mjs --all` with TURBO_FORCE=true reported Gate 4 (test), Gate 8 (a11y) and Gate 9 (contrast) red on a tree where all three pass. verify-ci runs each step with spawnSync and no maxBuffer, and spawnSync’s default is 1 MiB. Uncached, those three steps print 6.7–7.0 MB, mostly console stack traces from @irodora/mobile’s suites, so the child is killed with SIGTERM, result.error is ENOBUFS, status is null, and `result.status ?? 1` reports a failure. The output it shows ends mid-word, at the cut. Demonstrated with a 2 MiB writer (status null, SIGTERM, ENOBUFS, 1114112 bytes captured). Run directly, uncached, all three exit 0: test 35/35 tasks (mobile 1038, ui 357), a11y 21/21 (mobile 222, ui 104), contrast 22/22 (mobile 222, ui 80). GitHub CI streams step output and is not affected. It matters because the tool exists so that “what would CI say?” has an answer without a push, and a tool that cries wolf on three steps teaches people to skip it: the always-gate lesson now recommends it."
+    },
+    {
+      "id": "F-296",
+      "title": "plant-proof deletes a plant journal it did not write, so a real leftover plant goes unrecorded",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "must",
+      "status": "todo",
+      "blockedBy": [],
+      "acceptance": [
+        "plant-proof refuses to start while a journal it did not write exists, naming the files it records, and never deletes one — watched failing first with a real leftover journal in place",
+        "A leftover journal survives every proof in the lint chain and in ci.yml until a person or recover() acts on it"
+      ],
+      "verification": [
+        "state",
+        "lint"
+      ],
+      "notes": "SEEN IN F-291 (2026-09-24), TWO PLANTS DEEP. A sequence of gate-0 proofs, run one after another by hand: verify-lockfile-proof.mjs exited 1 and left its first plant in packages/store/package.json (`@irodora/color-core` added). The journal did its job — the next three proofs (blocked-reason, mockups --prove, gate-mirror-proof) refused, and gate-mirror-proof crashed partway and left ITS plant, the `Gate 4 — test` step deleted from ci.yml. Then plant-proof.mjs ran, and its reset() and finally both `rmSync(JOURNAL, { force: true })` the REAL journal at .harness/state/.plant-journal.json, not a private one. The record of both plants was gone, a later pnpm invocation re-resolved pnpm-lock.yaml against the planted manifest, and gate 0 went red on a missing CI step with nothing saying why. Both were found by `git diff` and restored by hand; the lockfile failure did not reproduce in three further runs, so its cause is unknown — the journal that would have said is what was deleted. plant-proof runs inside `pnpm lint`, so in that chain it wipes any journal an earlier proof left. F-173 built the journal so that “a finally is a hope about how a process ends” stops being true; a proof of the journal that deletes the journal undoes it."
     }
   ]
 }

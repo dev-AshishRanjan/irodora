@@ -11,7 +11,7 @@
  * `verify-effect-id-proof.mjs` proves the effects row and is not repeated here. This script
  * proves the rest, and the two things that are true of the table rather than of any one row.
  *
- * ## Seven cases: five red, two green
+ * ## Eight cases: six red, two green
  *
  *   1. A duplicate FEATURE id. The worst of them — `blockedBy` resolves by id and
  *      `next-feature` selects by id, so a collision makes a BLOCKER ambiguous rather than a
@@ -23,11 +23,15 @@
  *      reads exactly like a check that found nothing wrong, and a rename would disable it in
  *      silence. This is `a-gate-that-errors-is-failing-open` aimed at the table itself.
  *   5. FAILS CLOSED — a declared file is absent.
+ *   6. THROUGH THE OVERRIDE — a duplicate feature id in the list `--features` names, with the
+ *      committed file untouched. The table used to resolve every space under `.harness/`, so
+ *      a proof that pointed gate 0 at a mutated list had its ids checked against the committed
+ *      file and got a green gate (F-291). Nothing is planted in the tree for this one.
  *
- *   6. CONTROL — an entry added with a DERIVED fresh id stays GREEN. Derived, never a
+ *   7. CONTROL — an entry added with a DERIVED fresh id stays GREEN. Derived, never a
  *      literal: F-102's equivalent control hard-coded an id, the repository allocated it
  *      hours later, and the control began planting a duplicate while asserting green.
- *   7. CONTROL — a file reformatted with no content change stays GREEN.
+ *   8. CONTROL — a file reformatted with no content change stays GREEN.
  *
  * Without the controls, a check that failed on any edit at all would pass every red case and
  * prove nothing. Cases 4 and 5 are the ones worth having: they are the difference between a
@@ -39,7 +43,9 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { guardPlants } from './plant.mjs';
 
 const FEATURES = '.harness/state/feature_list.json';
@@ -56,6 +62,9 @@ const originals = new Map(TOUCHED.map((p) => [p, readFileSync(p, 'utf8')]));
  * broke and the bytes to undo it. A `finally` is a hope about how a process ends.
  */
 const journal = guardPlants('verify-state-id-proof', TOUCHED);
+
+/** Where the override case writes its list: the system temp directory, never the tree. */
+let scratch;
 
 const GREEN = '\x1b[32m',
   RED = '\x1b[31m',
@@ -78,9 +87,12 @@ const MARKERS = [
   'has an entry with no',
 ];
 
-function findings() {
+function findings(args = []) {
   try {
-    execFileSync('node', ['scripts/verify-state.mjs'], { encoding: 'utf8', stdio: 'pipe' });
+    execFileSync('node', ['scripts/verify-state.mjs', ...args], {
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
     return '';
   } catch (error) {
     const out = `${error.stdout ?? ''}${error.stderr ?? ''}`;
@@ -153,6 +165,22 @@ const CASES = [
     expect: (f) => f.includes('is declared as an id space and is not there'),
   },
   {
+    name: 'THROUGH THE OVERRIDE — a duplicate FEATURE id in the list --features names',
+    // Returns the arguments gate 0 runs with. The committed list is not touched, so a table
+    // that reads it instead of the override finds nothing and this case goes the wrong way.
+    plant: () => {
+      const d = JSON.parse(originals.get(FEATURES));
+      const clone = structuredClone(entry(d.features, 'id', 'F-103'));
+      clone.id = 'F-102';
+      d.features.push(clone);
+      scratch ??= mkdtempSync(join(tmpdir(), 'irodora-id-proof-'));
+      const path = join(scratch, 'features.json');
+      writeFileSync(path, `${JSON.stringify(d, null, 2)}\n`, 'utf8');
+      return ['--features', path];
+    },
+    expect: (f) => f.includes('F-102 is used by two different features'),
+  },
+  {
     name: 'CONTROL — an entry with a DERIVED fresh id stays green',
     plant: () =>
       withFile(FEATURES, (d) => {
@@ -187,8 +215,7 @@ console.log(`  ${GREEN}✓${OFF} baseline is green ${DIM}before the plants${OFF}
 let correct = 0;
 try {
   for (const c of CASES) {
-    c.plant();
-    const found = findings();
+    const found = findings(c.plant() ?? []);
     const ok = c.expect(found);
     if (ok) correct += 1;
     console.log(`  ${ok ? `${GREEN}✓` : `${RED}✗`}${OFF} ${c.name}`);
@@ -200,6 +227,7 @@ try {
   for (const p of TOUCHED) writeFileSync(p, originals.get(p), 'utf8');
   // Cleared only after every restore has returned.
   journal.close();
+  if (scratch !== undefined) rmSync(scratch, { recursive: true, force: true });
 }
 
 /*
@@ -226,5 +254,5 @@ if (correct !== CASES.length) {
 }
 console.log(
   `\n${GREEN}${BOLD}Proven.${OFF} ${DIM}${String(correct)}/${String(CASES.length)} cases ` +
-    `(5 red, 2 green controls), all files restored byte-for-byte.${OFF}\n`,
+    `(6 red, 2 green controls), all files restored byte-for-byte.${OFF}\n`,
 );
