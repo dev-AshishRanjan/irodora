@@ -200,6 +200,8 @@ mockup prints it; `F-220` read it at the centre of `15`'s tile, and a colour rea
 ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
 and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
 
+**Answered 2026-09-24 ([ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md), OQ-36 closed on the person's delegation):** each tile draws its theme's **ground**. Sumi's swatch reads `#171A1E` against its ground `#15171B` (card `#20232A`), and Washi's reads `#F3F2ED` against `#F6F5F2` (card `#FFFFFF`). The ramps below are adopted as the rule produces them, and a pairing that fails moves the E3 way, in that theme only. `F-225` implements it.
+
 **What the two undrawn themes would be, and what the numbers actually say (`F-289`, OQ-36).**
 `15` draws Slate Graphite and Obsidian Noir as one swatch each, so their levels are drawn
 nowhere. Running OQ-36's own proposed derivation — Sumi's lightness steps above its ground,
@@ -258,7 +260,8 @@ wordmark matches **Georgia Pro** best (0.83; Georgia 0.77, Times New Roman 0.70)
 tagline (0.66; next 0.52). `00`, `14` and `25` do not separate the candidates — best 0.66–0.68 with
 the top four within 0.03, too small or too low in contrast at their size. Georgia Pro is under a
 commercial licence, so which face ships is **OQ-29** — and `F-275` measured what an open licence can
-offer, so that question is now a choice between measured options rather than one option.
+offer, so that question is now a choice between measured options rather than one option — and it is
+answered below, by [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md).
 
 **Open-licence candidates (`F-275`, 2026-09-16).** Twenty open-licence families from
 `google/fonts`' `ofl/` tree — **an implementing session's shortlist**, chosen for resemblance to the
@@ -313,6 +316,25 @@ about spacing, hinting, Japanese coverage (`20` and `26` draw a serif and no Lat
 **The tagline was not re-measured.** F-220's reading (Georgia Pro 0.66, next 0.52) stands as it is:
 `01.header.tagline` is three lines in a 269 × 112 box and this tool renders one line, so an
 open-licence comparison there needs a different measurement rather than a rerun.
+
+**The answer — eight crops, not three (2026-09-24, [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md), OQ-29 closed on the person's delegation).** Three wordmarks are three samples of one word. The mockups also draw `00`'s *Display 1* and *Title* samples and `01`'s tagline. The tagline is three lines, and each line is one line, so each was measured on its own. Same tool, same twenty files re-fetched at the pinned commit and checked against every sha256, and F-275's figures reproduce exactly:
+
+| face | mean of 8 (rank of 109) | wordmarks `00` · `01` · `14` | *Display 1* · *Title* | tagline lines 1 · 2 · 3 |
+|---|---|---|---|---|
+| **Gelasio SemiBold** | **0.671 (1)** | 0.699 · 0.732 · 0.615 | **0.711** · 0.570 | **0.663** · 0.702 · 0.675 |
+| Gelasio | 0.640 (2) | 0.592 · 0.719 · 0.570 | 0.664 · 0.535 | 0.660 · 0.669 · 0.709 |
+| Gelasio Medium | 0.638 (3) | 0.606 · 0.709 · 0.590 | 0.677 · 0.493 | 0.663 · 0.640 · **0.730** |
+| Georgia Pro (commercial) | 0.637 (4) | 0.653 · **0.825** · 0.599 | 0.524 · 0.487 | 0.662 · 0.673 · 0.671 |
+| Source Serif 4 SemiBold | 0.606 (11) | 0.734 · 0.713 · 0.670 | 0.442 · 0.603 | 0.588 · 0.550 · 0.546 |
+| Charis SIL | 0.574 (25) | **0.762** · 0.602 · **0.793** | 0.262 · 0.626 | 0.493 · 0.413 · 0.641 |
+
+**The Gelasio family takes the top three places**, above Georgia Pro, and leads where the mockups set
+serif at length (*Display 1*, the tagline). Gelasio is metric-compatible with Georgia, and that
+explains the result: the drawn type is Georgia-shaped. **It loses on `14`'s splash (38th) and `00`'s
+*Title* (24th)**, which are drawn in something else, and that is the cost of one face for a set that
+was not drawn in one. The weight per role is F-226's: stroke weight and width point to different
+instances (SemiBold leads the mean, Regular's aspect on `01` is 4.34 against the drawn 4.31), and
+neither GDI+ named instances nor a JPEG's bloom is an instrument to choose between them.
 
 The font files are not committed — `F-275` measured them and `F-226` is what ships one, with
 `NOTICE.md`, the subset and the coverage gate — but what is needed to fetch the same twenty and get
@@ -389,7 +411,7 @@ themes and **both** locales — a screen never has two layouts.
 | **C10** | Chroma where the monochrome brief says none: `02` gold HUD, `04 12` green verdicts, `24` tinted ΔE00 badges, `27` tan / amber / purple state art, `23` gradient slider tracks and a brown label pill, `13` tinted slot rows | followed. Each also carries text or an icon (golden rule 13); each is declared as a chroma-ceiling exception by `F-225`; the purple mark in `27` is the one place the mark takes a tint |
 | **C11** | Samples sit on tinted cards (C up to 0.0206). A neutral well at the same lightness would **visibly** differ from them — ΔE00 2.94 (ground) to 6.50 (level 3) | followed — **the user's decision**, reaffirmed 2026-09-10 after this was raised. The ADR superseding [ADR-0096](../adr/0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) records that samples are now judged against a surround of measured chroma, which is the consequence that ADR existed to prevent |
 | **C12** | `23` draws a seasonal label (*"Autumn Muted / Kasane Harmony"*) and an avatar; [ADR-0010](../adr/0010-personal-colour-is-a-profile-not-a-skin-rgb.md) and ADR-0072 produce no seasonal label, and the product has no avatar | followed: `F-223` derives the label from the four ranges with an ADR; `F-241` adds an optional on-device avatar with a security review ([ADR-0105](../adr/0105-a-face-stays-out-of-the-plaintext-archive.md)). **THE ABSENT STATE IS F-241's, NOT A MOCKUP'S**: `23` always draws a picture and `23.avatar` binds `"tokens": {}`, so the size (36 dp) and the circle are read off the image while the fallback — the mark at two thirds of the diameter in `foreground.2` — comes from the feature's own criterion (*"replaced by the mark when absent"*). Initials are impossible: the product asks for no name. Covered by the conformance sweep in both themes rather than by a drawing, because there is no drawing to cover it |
-| **C13** | `05` draws family chips *Ao 青 · Aka 赤 · Midori 緑 · Ki 黄 · Murasaki 紫 · Cha 茶 · Kuro 黒*; the corpus has 25 English family slugs | `F-224` groups the families under those seven, as content with provenance |
+| **C13** | `05` draws family chips *Ao 青 · Aka 赤 · Midori 緑 · Murasaki 紫 · Cha 茶 · Kuro 黒*, the last cut by the screen’s edge; the corpus has 25 English family slugs | `F-224` groups the families under nine chips — the six drawn, in the drawn order, then *Ki 黄 · Shiro 白 · Nezumi 鼠* past the edge ([ADR-0108](../adr/0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md), OQ-35; this row once listed Ki between Midori and Murasaki, which `05` does not draw) — as content with provenance |
 | **C14** | `10 23 26` draw *kasane* palettes; the corpus has five palettes and none is kasane | `F-224` authors them, labelled `japanese-inspired` (FR-23) |
 | **C15** | The README routes `17` to `/profile/setup`, which does not exist | `17` is the in-progress state of `profile/index`; `23` is its finished state |
 | **C16** | `24` is routed to `wardrobe/with/[id]` only | it also governs `atlas/with/reading/[id]` — its *"Estimated from a capture"* chip is that route's case |
@@ -493,6 +515,8 @@ Each needs its ADR, written by the feature named, before that feature is done
 
 Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it and closes as an ADR.
 
+**Delegated, 2026-09-24.** Asked OQ-29, OQ-35 and OQ-36, the person answered each with *"Follow mockup strictly. Decide yourself. Think reason research before deciding"*. Asked whether that extends to the rest, they answered the same way. So from that date, **a question the mockups answer when read strictly** is decided by the implementing session and closed by an ADR. That covers a drawn colour, a measured size, an inset, notation, which of two drawings wins, and which face. The session measures or researches first, and the ADR quotes the delegation and states the evidence and its limits. **Golden rule 14's last sentence is not delegated**: a surface no mockup draws (OQ-7, OQ-8, OQ-39, OQ-40) is still not designed by an agent, and a decision that changes a gate threshold or a golden value still needs a person.
+
 | | question | blocks |
 |---|---|---|
 | **OQ-7** | `profile/measure` has no mockup. Generate one, or compose it from `08`'s readout table and `12`'s form? | `F-261` |
@@ -517,20 +541,25 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-26** | `19` and `21` head sections with component names, and `19`'s rows read *Action: Wear*. Design, or leaked? | `F-252` `F-254` |
 | **OQ-27** | FR-73's gamut cost, family and generated-or-curated mark, none drawn by `19` (C18). Where do they appear? | `F-252` |
 | **OQ-28** | `22`'s green chip and ΔE00 badges (not in C10), badges with no figure. Followed, and do they print ΔE00? | `F-258` |
-| **OQ-29** | The serif: `01` matches Georgia Pro best (0.825) of 20 installed faces, under a commercial licence. Of 20 SIL OFL faces, Source Serif 4 Medium (0.747) and Gelasio SemiBold (0.732, Georgia-metric-compatible) are closest on `01`; Charis SIL leads `00` (0.762) and `14` (0.793) ahead of every installed face; on `25` the field is low and Georgia Pro ranks 82nd, so either that image is drawn in another face or caps at that size separate nothing (§5). Georgia Pro licensed, or one of those? | `F-226` |
 | **OQ-30** | `13`'s fourth score row ends in *(Natural Dyes)*, which no computation produces. Define it, or a defined figure in its place? | `F-257` |
 | **OQ-31** | `23`'s seasonal pill ends in *Kasane Harmony*, which nothing defines. Define it, or the summary alone? | `F-260` |
 | **OQ-32** | `07` and `13` put the seasonal label beside the fit score with no ranges beside it. Show it there, something else, or nothing? | `F-248` `F-257` |
 | **OQ-33** | `23`'s pill has no summary for 3,136 of the 4,096 finished guided profiles (ADR-0102's rule, as published). What does it show then — nothing, a line, or a rule that names more? | `F-260` |
 | **OQ-34** | The rule reads a range's midpoint against edges that classify one colour: *light* and *bright* are unreachable from the guided flow, and it disagrees with the profile screen's band chips on 3 of 16 answer patterns. Which statistic and thresholds — and is contrast read? | `F-260` |
-| **OQ-35** | `05`'s seven family chips (C13) name no white and no grey: off-white and the neutral greys (20 entries) have no honest home among them. New chips past the drawn edge, a stated folding rule, out of the filter, or something else? | `F-224` |
-| **OQ-36** | `15` draws Slate Graphite and Obsidian Noir as one swatch each; their levels, borders and text roles are drawn nowhere. A stated derivation, supplied values, or ground only — and is Slate's swatch its ground or its card? | `F-225` |
 | **OQ-41** | `15` draws a 5 dp `text.tertiary` dot in the gutter of each engine switch row (`15.engine.*.state`, unbound) and draws all three switches ON; `00` draws a switch on and off with no dot on either. Decoration on every row, or a mark of the on state like `15`'s selected theme tile? `F-239` renders it when on and says why; nothing drawn is left out either way | `F-262` |
 | **OQ-40** | `13` draws *Save Outfit to Lookbook*, and no mockup draws the lookbook — nothing in any inventory reads a saved outfit back (see `OQ-39`, the same gap for colours) | `F-238` |
 | **OQ-39** | `06` draws a bookmark toggle, and no mockup draws where the bookmarks are read back — no saved list, no filter, no route | `F-237` |
 | **OQ-38** | `18`'s report envelope draws a signature — the word *Signed*, written in a script face (`18.report.preview.envelope.signature`). It is TYPE, not a drawing: traced into paths it is a word pretending to be a picture, and set as text it needs a script face the product does not bundle (ADR-0057 bundles a Japanese subset; `F-226` ships the serif). It is also the one drawing that makes a claim about a person having signed something. Trace it, set it in a bundled face, or drop the element? | `F-229` `F-263` |
 | **OQ-37** | Icons drawn in colours C10 does not list, and two whose SHAPE in one ink cannot be read off the image: `00`'s colour wheel and palette, `03`'s hue ring, `06`'s green verification seal, `07 15 16`'s gold padlocks, `11`'s bulb, `13`'s harmony circles and gold sparkles, `15`'s two-colour CVD badge. Further C10 exceptions, or ink — and for the harmony circles and the CVD badge, what shape survives the answer? Overlaps `OQ-15`, which asks the same of `00 03 13 16 24` as a set; this is the per-icon list the icon set found. | `F-232` `F-243` `F-244` `F-247` `F-248` `F-251` `F-255` `F-257` `F-262` |
 
+
+**Closed.**
+
+| | answer | ADR |
+|---|---|---|
+| **OQ-29** | The serif is **Gelasio** (OFL), Georgia’s metric-compatible counterpart: first of 109 over the eight serif crops the mockups draw (§5) | [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) |
+| **OQ-35** | Nine chips: the six `05` draws, in its order, then Ki 黄, Shiro 白, Nezumi 鼠 past the drawn edge | [ADR-0108](../adr/0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) |
+| **OQ-36** | Each tile draws its theme’s ground; Slate and Obsidian are Sumi’s drawn steps re-anchored there; a failing pairing moves the E3 way, per theme | [ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md) |
 ---
 
 ## 12. How fidelity is proven

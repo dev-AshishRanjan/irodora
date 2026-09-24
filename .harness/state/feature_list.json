@@ -7292,7 +7292,7 @@
       "service": "content",
       "release": "R9",
       "priority": "must",
-      "status": "blocked",
+      "status": "todo",
       "blockedBy": [
         "F-220"
       ],
@@ -7304,7 +7304,7 @@
       ],
       "acceptance": [
         "Kasane palettes exist in content/palettes with complete provenance, classified japanese-inspired, never historical — enough to fill 10, 23 and 26 as drawn",
-        "The 25 taxonomy families are grouped under the seven chips mockup 05 draws — Ao 青, Aka 赤, Midori 緑, Ki 黄, Murasaki 紫, Cha 茶, Kuro 黒 — as content with a stated rule, and every entry lands in exactly one group",
+        "The 25 taxonomy families are grouped under the nine chips ADR-0108 fixes — the six mockup 05 draws, in its order, Ao 青, Aka 赤, Midori 緑, Murasaki 紫, Cha 茶, Kuro 黒, then Ki 黄, Shiro 白, Nezumi 鼠 past the drawn edge — as content with a stated rule, and every entry lands in exactly one group",
         "The content gate passes, and font coverage passes for every new string"
       ],
       "verification": [
@@ -7315,10 +7315,7 @@
         "test",
         "content"
       ],
-      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23). BLOCKED 2026-09-15 on OQ-35: criterion 2 requires every entry in exactly one of the seven groups, and off-white and the neutral greys (20 entries) have no honest home among them. The kasane half (criterion 1) waits only because the feature is one unit; the person may split it.",
-      "openQuestions": [
-        "OQ-35"
-      ]
+      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23). BLOCKED 2026-09-15 on OQ-35: criterion 2 requires every entry in exactly one of the seven groups, and off-white and the neutral greys (20 entries) have no honest home among them. The kasane half (criterion 1) waits only because the feature is one unit; the person may split it. UNBLOCKED 2026-09-24: OQ-35 is closed by ADR-0108, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The chips are NINE, not seven: the six 05 draws, in the drawn order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge. Ki had been listed between Midori and Murasaki, which 05 draws side by side, so criterion 2 is amended to the drawn order. Off-white goes under 白 and the neutral greys under 鼠; the rest of the mapping is this feature's stated rule."
     },
     {
       "id": "F-225",
@@ -7332,7 +7329,7 @@
       "package": "@irodora/design-tokens",
       "release": "R9",
       "priority": "must",
-      "status": "blocked",
+      "status": "todo",
       "blockedBy": [
         "F-220"
       ],
@@ -7358,10 +7355,7 @@
         "cvd",
         "e2e"
       ],
-      "notes": "MOCKUPS: README token table (dark and light), 25 for light, 15 for the theme set. Measured: the renders agree with the table within JPEG noise (§2). THE USER’S DECISION, reaffirmed 2026-09-10 after the surround trade-off was raised (C11). The three forced moves: dark text.tertiary on cards #768290→#94A1AF, light text.tertiary #8C96A5→#5D6674, dark border.strong #464D5B→#5C6472 where it is the only state indicator. BLOCKED 2026-09-15 on OQ-36: criterion 5 needs every theme's full ramp, and 15 draws Slate Graphite and Obsidian Noir as one swatch each — their levels, borders and text roles are drawn nowhere, and deriving them is designing a surface no mockup draws.",
-      "openQuestions": [
-        "OQ-36"
-      ]
+      "notes": "MOCKUPS: README token table (dark and light), 25 for light, 15 for the theme set. Measured: the renders agree with the table within JPEG noise (§2). THE USER’S DECISION, reaffirmed 2026-09-10 after the surround trade-off was raised (C11). The three forced moves: dark text.tertiary on cards #768290→#94A1AF, light text.tertiary #8C96A5→#5D6674, dark border.strong #464D5B→#5C6472 where it is the only state indicator. BLOCKED 2026-09-15 on OQ-36: criterion 5 needs every theme's full ramp, and 15 draws Slate Graphite and Obsidian Noir as one swatch each — their levels, borders and text roles are drawn nowhere, and deriving them is designing a surface no mockup draws. UNBLOCKED 2026-09-24: OQ-36 is closed by ADR-0107, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). Each of 15's tiles draws its theme's GROUND. Slate Graphite #2C323A (read) and Obsidian Noir #101114 (printed) take Sumi's drawn lightness steps re-anchored at those grounds (F-289's rule, mockups/tools/derive-theme.mjs) and generated from the rule rather than typed. A pairing that fails in a theme moves the E3 way, in that theme only, and is listed in §4 E3."
     },
     {
       "id": "F-226",
@@ -7374,7 +7368,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "blocked",
+      "status": "todo",
       "blockedBy": [
         "F-220"
       ],
@@ -7403,10 +7397,7 @@
         "cvd",
         "content"
       ],
-      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it. BLOCKED 2026-09-15 on OQ-29: F-220 measured the wordmark closest to Georgia Pro, which is commercially licensed, and no open-licence face was a candidate; trying open faces is F-275, which needs the person's permission to download them. FROM F-239 (2026-09-21): this feature’s criterion \"every number renders in tabular figures\" is now true WHILE 15’s Tabular Numeric Figures switch is on, which is its drawn state and its default — a person who never opens Preferences sees exactly what this feature shipped. Turning that switch off sets the same text in proportional figures deliberately; Text’s numeric prop still DECLARES that the text carries figures, and every call site this feature added still declares it. E-138 carries the link.",
-      "openQuestions": [
-        "OQ-29"
-      ]
+      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it. BLOCKED 2026-09-15 on OQ-29: F-220 measured the wordmark closest to Georgia Pro, which is commercially licensed, and no open-licence face was a candidate; trying open faces is F-275, which needs the person's permission to download them. FROM F-239 (2026-09-21): this feature’s criterion \"every number renders in tabular figures\" is now true WHILE 15’s Tabular Numeric Figures switch is on, which is its drawn state and its default — a person who never opens Preferences sees exactly what this feature shipped. Turning that switch off sets the same text in proportional figures deliberately; Text’s numeric prop still DECLARES that the text carries figures, and every call site this feature added still declares it. E-138 carries the link. UNBLOCKED 2026-09-24: OQ-29 is closed by ADR-0106, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The serif is GELASIO (SIL OFL), Georgia's metric-compatible open counterpart — first of 109 over the eight serif crops the mockups draw. The weight per role is this feature's to measure (stem width against the drawn stems), and upstream ships a variable [wght] file, so static instances are cut from it reproducibly."
     },
     {
       "id": "F-227",

@@ -33,7 +33,18 @@ powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg  
 powershell -File mockups/tools/serif-match.ps1 -img mockups/00_component_design_system.jpg  -x 189 -y 109 -w 222 -h 56 -word Irodora -polarity light -fontDir <dir> -top 109
 powershell -File mockups/tools/serif-match.ps1 -img mockups/14_app_icon_and_splash.jpg      -x 485 -y 665 -w 147 -h 35 -word Irodora -polarity light -fontDir <dir> -top 109
 powershell -File mockups/tools/serif-match.ps1 -img mockups/25_home_light_mode.jpg          -x 182 -y 197 -w 229 -h 38 -word IRODORA -polarity dark  -fontDir <dir> -top 109
+
+# the five ADR-0106 added (2026-09-24): 00's type samples, and 01's tagline one line at a time
+# (line bounds from `measure.ps1 edges ... 73 195 269 125 16181C 150`: rows 201-225, 244-274, 287-310)
+powershell -File mockups/tools/serif-match.ps1 -img mockups/00_component_design_system.jpg  -x 52  -y 276 -w 206 -h 60 -word "Display 1"            -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/00_component_design_system.jpg  -x 52  -y 345 -w 66  -h 32 -word "Title"                -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg              -x 70  -y 198 -w 275 -h 30 -word "What colour is this." -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg              -x 70  -y 241 -w 275 -h 36 -word "What goes with it."   -polarity light -fontDir <dir> -top 109
+powershell -File mockups/tools/serif-match.ps1 -img mockups/01_home_screen.jpg              -x 70  -y 284 -w 275 -h 30 -word "Does it suit me."     -polarity light -fontDir <dir> -top 109
 ```
+
+The eight lower-case crops (the three wordmarks and these five) are what ADR-0106 averages. `25` is
+left out of the mean because its whole field is low (§5).
 
 Which files to put in `<dir>`, and where they came from:
 [`serif-candidates.json`](serif-candidates.json) — family, file, size, sha256, URL and the

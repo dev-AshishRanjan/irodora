@@ -8,6 +8,45 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-24 — OQ-29, OQ-35, OQ-36 closed on the person's delegation
+
+**Decided, not built.** F-242 was asked for, and it is not eligible. F-221 waits on F-091's device
+run, which needs a JDK this machine will not have. F-230 and F-232–F-236 wait on F-225 and F-226,
+which waited on OQ-36 and OQ-29. Asked those two and OQ-35, the person answered each with
+*"Follow mockup strictly. Decide yourself. Think reason research before deciding"*. Asked whether
+that extends to the other open questions, they answered the same way. R9-MOCKUP-FIDELITY §11 now
+states the scope: questions the mockups answer when read strictly are decided and closed by ADR,
+and undrawn surfaces (OQ-7, OQ-8, OQ-39, OQ-40) still wait for a person.
+
+- **OQ-29 → ADR-0106: Gelasio.** F-275 scored three wordmarks. This run added the five serif crops
+  it left out: `00`'s *Display 1* and *Title*, and `01`'s tagline, one line at a time. The twenty
+  files were re-fetched at the pinned commit (20/20 sha256) and F-275's figures reproduce. Over
+  the eight crops, the Gelasio family takes places 1–3 of 109 (SemiBold 0.671), above Georgia Pro
+  (0.637), and leads *Display 1* and the tagline. It loses `14`'s splash (38th) and `00`'s *Title*
+  (24th), as stated. The weight per role is F-226's to measure.
+- **OQ-36 → ADR-0107: each tile draws its ground.** Sumi's swatch reads `#171A1E` against its
+  ground `#15171B`, and Washi's reads `#F3F2ED` against `#F6F5F2`, not their cards. Slate and
+  Obsidian take F-289's re-anchored ramps. `derive-theme.mjs` re-run: Obsidian 0 introduced,
+  Slate 7. Failing pairings move the E3 way, per theme.
+- **OQ-35 → ADR-0108: nine chips.** The six `05` draws, in its order, then Ki 黄, Shiro 白 and
+  Nezumi 鼠 past the drawn edge. 鼠 is the corpus taxonomy's own word for grey. Ki had been listed
+  between Midori and Murasaki, which `05` draws side by side, so C13 and F-224's criterion 2 are
+  amended to the drawn order.
+
+F-224, F-225 and F-226 move from blocked to todo.
+
+### Gates
+
+state 0 · format:check 0 · verify:claims 0 (first run refused ADR-0106's "best single match
+anywhere: 0.825" as a percent-match construction; reworded) · verify:mockups 0.
+**NOT RUN:** typecheck, lint, test, build (no source changed).
+
+### Next
+
+F-224 (lowest eligible), then F-225, F-226, and the foundations behind them.
+
+---
+
 ## 2026-09-24 — F-292 The settings copy outgrew the Japanese font subset
 
 **Done.** Found by F-291's CI walk: with step 8 fixed, step 34, **gate 11 — content**, was red.
