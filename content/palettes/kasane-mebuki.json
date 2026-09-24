@@ -1,0 +1,53 @@
+{
+  "slug": "kasane-mebuki",
+  "name": {
+    "en": "Budding",
+    "ja": "芽吹"
+  },
+  "classification": "japanese-inspired",
+  "category": "kasane",
+  "colors": [
+    {
+      "slug": "haru-na",
+      "role": "anchor",
+      "rank": 1,
+      "weight": 1
+    },
+    {
+      "slug": "fuka-shida",
+      "role": "accent",
+      "rank": 2,
+      "weight": 0.8
+    },
+    {
+      "slug": "kare-eda",
+      "role": "neutral",
+      "rank": 3,
+      "weight": 0.6
+    }
+  ],
+  "provenance": {
+    "source": "Irodora editorial curation — kasane palettes, 2026",
+    "sourceId": "IRO-ED-006",
+    "sourceType": "editorial",
+    "publisher": null,
+    "publishedYear": null,
+    "rightsHolder": "Irodora",
+    "sourceLicence": "Proprietary — Irodora original work",
+    "sourceUrl": null,
+    "derivation": "Composed in the manner of kasane no irome, for spring: 3 of our own published entries read as layers from the outermost inward — 春菜 haru-na (#BDD18E), then 深羊歯 fuka-shida (#4B6E43), then 枯枝 kare-eda (#65482E). NOT a historical combination: no layer is asserted to reproduce a documented Heian kasane, and no value was read from any kasane table. Chosen by hand, not generated. Adjacent layers are separated by ΔE00 33.3, 27.3 under @irodora/color-difference 0.1.0 — each above the ΔE00 5 at which the product calls two items the same (FR-44), because a layering whose edges cannot be told apart is not one. Weights fall inward (1, 0.8, 0.6, 0.5) because each inner layer shows less than the one over it.",
+    "authoredBy": "ed-001",
+    "authoredAt": "2026-09-24",
+    "verifiedBy": "ed-001",
+    "verifiedAt": "2026-09-24",
+    "reviewIndependence": "self",
+    "editorialNotes": "Early spring read from the outside in: the first greens (春菜) over a deeper fern (深羊歯), over the bare branch they grow from (枯枝). The pale layer is outermost because it is the season arriving; the brown is innermost because it is what the season is arriving over, showing only at the edge. The name is ours (芽吹, \"Budding\"), coined as a seasonal image the way the historical names are; it is not presented as a traditional kasane name."
+  },
+  "unknowns": {
+    "provenance.publisher": "our own editorial work, so there is no external publisher",
+    "provenance.publishedYear": "our own editorial work, so there is no publication date",
+    "provenance.sourceUrl": "not published outside this repository"
+  },
+  "status": "published",
+  "versionId": "2026.09.2"
+}

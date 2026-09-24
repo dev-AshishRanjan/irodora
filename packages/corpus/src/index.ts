@@ -70,8 +70,13 @@ export {
 export { ISO_DATE_PATTERN, SLUG_PATTERN, VERSION_ID_PATTERN } from './primitives.js';
 
 export {
+  entriesPerGroup,
+  FAMILY_GROUPS,
+  familyGroup,
   familyWord,
   parseTaxonomyVocabulary,
+  type FamilyGroup,
+  type FamilyGroupId,
   type FamilyVocabulary,
   type TaxonomyVocabulary,
 } from './taxonomy.js';
@@ -137,6 +142,7 @@ export {
 } from './combination.js';
 
 export {
+  KASANE_MIN_LAYERS,
   PALETTE_CATEGORIES,
   PALETTE_ROLES,
   parsePalette,

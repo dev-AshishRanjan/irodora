@@ -70,3 +70,12 @@ somebody else made. The Studio never renders the corpus classification label and
 asserts its absence — but that assertion lives on **one screen**. A future surface rendering
 user palettes with the corpus renderer reintroduces the defect and this graph would say nothing.
 Recorded in ADR-0067 as the consequence to watch.
+
+## F-224 (2026-09-24): the schema gained `kasane`, and its rules travel too
+
+`PALETTE_CATEGORIES` gained `kasane`: a palette whose members are layers, rank 1 outermost. Two
+rules ride with it into every caller, the phone included. A kasane is classified as **our own
+curation whatever its `sourceType`** (F-196 made the same rule unconditional for combinations),
+and it has **at least two layers**. When Palette Studio offers mockup `16`'s *kasane* kind
+(F-251), the palette a person saves must carry `japanese-inspired` or `editorial`, or the parser
+refuses it. That is the rule working, not something to route around.

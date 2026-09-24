@@ -874,7 +874,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/the-palette-schema-now-runs-on-a-phone.md",
-      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change.",
+      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -1042,6 +1042,22 @@
         {
           "kind": "gate",
           "ref": "content"
+        },
+        {
+          "kind": "symbol",
+          "ref": "packages/corpus/src/taxonomy.ts#FAMILY_GROUPS"
+        },
+        {
+          "kind": "file",
+          "ref": "mockups/inventory/05.json"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "turbo.json"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -1051,9 +1067,9 @@
         "packages/corpus"
       ],
       "severity": "high",
-      "guard": "gate:content",
+      "guard": "gate:content (parseTaxonomyVocabulary refuses a family in no group, in two, an unknown one, the groups out of order or not nine; verify-content.mjs refuses a chip holding no authored entry, through entriesPerGroup) + gate:test (packages/corpus/test/taxonomy.test.ts pins all 25 placements and the printed chip row) + gate:lint (verify-cache-scope: content/taxonomy.json is a turbo global dependency so a taxonomy edit reruns that test)",
       "memory": "memory/effects/a-family-word-is-content-because-the-family-is.md",
-      "rationale": "THE KEY SET COMES FROM CORPUS DATA, SO THE COMPILER CANNOT CHECK IT. Every other user-facing string in this app is a key in an enumerated TypeScript record whose completeness `tsc` proves (ADR-0056). A family is different: `taxonomy.family` is authored in content/colors, so the set of words that must exist is decided by a PUBLISH rather than by source — and tsc cannot see a key set that comes from JSON. That is why F-018 left the Atlas rendering `blue-grey` and `off-white` in the ja locale rather than adding a lookup table: a table in the app would be enumerated against a set the corpus controls, and a family added by a future publish would render blank or fall back to English, which ADR-0028 forbids precisely because fallback makes a gap invisible. SO COMPLETENESS MOVED FROM THE COMPILER TO GATE 11, and the link runs BOTH ways: publishing an entry with a new family breaks the vocabulary, and removing a vocabulary row breaks the corpus. A row nobody uses fails too — a dead row is how a live gap gets waved through later, the same rule the source register and the advisory register both carry. THE THIRD DESTINATION IS THE FONT, and it caught something: the Japanese family words render on the Atlas filter, every Atlas row and the detail screen, so verify-font-coverage.mjs now reads them — and doing so immediately reported 鼠 and 陶, which nothing else in the repository required. 鼠 alone appears in six of the 25 families, so a Japanese reader would have seen tofu on most of the grey filter chips. THE LOOKUP IS TOTAL OR IT THROWS: familyLabel has no fallback to the slug, because returning `blue-grey` quietly is the behaviour that let this survive from F-018 to F-090 in the first place.",
+      "rationale": "THE KEY SET COMES FROM CORPUS DATA, SO THE COMPILER CANNOT CHECK IT. Every other user-facing string in this app is a key in an enumerated TypeScript record whose completeness `tsc` proves (ADR-0056). A family is different: `taxonomy.family` is authored in content/colors, so the set of words that must exist is decided by a PUBLISH rather than by source — and tsc cannot see a key set that comes from JSON. That is why F-018 left the Atlas rendering `blue-grey` and `off-white` in the ja locale rather than adding a lookup table: a table in the app would be enumerated against a set the corpus controls, and a family added by a future publish would render blank or fall back to English, which ADR-0028 forbids precisely because fallback makes a gap invisible. SO COMPLETENESS MOVED FROM THE COMPILER TO GATE 11, and the link runs BOTH ways: publishing an entry with a new family breaks the vocabulary, and removing a vocabulary row breaks the corpus. A row nobody uses fails too — a dead row is how a live gap gets waved through later, the same rule the source register and the advisory register both carry. THE THIRD DESTINATION IS THE FONT, and it caught something: the Japanese family words render on the Atlas filter, every Atlas row and the detail screen, so verify-font-coverage.mjs now reads them — and doing so immediately reported 鼠 and 陶, which nothing else in the repository required. 鼠 alone appears in six of the 25 families, so a Japanese reader would have seen tofu on most of the grey filter chips. THE LOOKUP IS TOTAL OR IT THROWS: familyLabel has no fallback to the slug, because returning `blue-grey` quietly is the behaviour that let this survive from F-018 to F-090 in the first place. F-224 (2026-09-24) MADE IT CARRY THE CHIPS. `groups` places the 25 families under the nine chips ADR-0108 fixes — the six mockup 05 draws, in its order, then Ki, Shiro, Nezumi past the edge — by a rule written into the file (`groupRule`) and read from each family's OWN Japanese name, so the word a family is called by and the chip it sits under cannot disagree. The parser proves the groups partition the families; the content gate proves every chip finds an entry, because that is a fact about the corpus and not about this file. The order is `FAMILY_GROUPS`, a constant the Atlas imports rather than retypes, so a file that reorders the chips is refused instead of reordering a drawing. THE FONT AGAIN: each chip prints its kanji, so both font scripts read `groups[].kanji`. And the corpus package's test reads this file, so it became a turbo global dependency — verify-cache-scope refused the test until it was.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -5700,6 +5716,56 @@
       "guard": "gate:artifact, indirectly: both lanes run this action before gate 16, so a setup failure turns the lane red before an artefact exists. It runs only on a GitHub runner, on `workflow_dispatch` or a tag. Nothing on a workstation reads this file, so deleting the `with:` block passes every local gate; F-293 is the check that would refuse it. This workstation has no JDK to run sdkmanager at all.",
       "memory": "memory/effects/an-action-default-is-a-dependency-the-tag-does-not-pin.md",
       "rationale": "ONE SETUP, TWO LANES. The internal build lane and the release lane both call this composite action, deliberately, so they cannot drift into building against different toolchains (F-085). The cost is that any fault here breaks both at once, including the lane that publishes. THE FAULT THAT HAPPENED WAS AN INPUT WE NEVER SET. `android-actions/setup-android@v3` defaults `packages` to `tools platform-tools` and runs `sdkmanager <pkg>` for each. `tools` is the legacy SDK Tools package, and Google stopped serving it around 2026-09-15. The first dispatch after that, on 2026-09-24, died at `Failed to find package 'tools'` before reaching Gradle (F-291; upstream #537), and a release would have died the same way. The `@v3` tag pins the action's CODE, not the outside world its defaults point at: the default names a live package on Google's repository, which can disappear without any change on our side. Upstream dropped `tools` from the default in v4.0.2; the v3 tag (v3.2.2) does not have that change. So the input is named: `packages: platform-tools`, which keeps what the action has always installed and put on PATH and drops the one package nothing here reads. Every SDK component the build needs is pinned in the step after it.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-145",
+      "from": {
+        "kind": "content",
+        "ref": "content/palettes"
+      },
+      "to": [
+        {
+          "kind": "content",
+          "ref": "content/combinations"
+        },
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/NotoSansJP-Subset.ttf"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/Combinations.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "guard": "script:verify-font-coverage.mjs in gate:content — it now reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs, and its --prove case shows a present glyph read as covered and an absent one as missing",
+      "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
+      "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

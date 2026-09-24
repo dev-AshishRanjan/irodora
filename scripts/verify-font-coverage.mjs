@@ -138,6 +138,8 @@ const isJapanese = (cp) =>
   (cp >= 0x3400 && cp <= 0x4dbf);
 
 const RULES = join(ROOT, 'content', 'rules');
+const PALETTES = join(ROOT, 'content', 'palettes');
+const COMBINATIONS = join(ROOT, 'content', 'combinations');
 
 function requiredCodepoints() {
   const required = new Map(); // codepoint -> where it came from
@@ -198,7 +200,37 @@ function requiredCodepoints() {
     for (const f of parsed?.families ?? [])
       for (const cp of codepointsOf(String(f.ja ?? '')))
         if (isJapanese(cp)) required.set(cp, 'content/taxonomy.json');
+    // The family CHIPS (F-224, ADR-0108): each prints its kanji beside its romaji on the Atlas
+    // filter. Only `kanji` — the rationale never reaches a screen.
+    for (const g of parsed?.groups ?? [])
+      for (const cp of codepointsOf(String(g.kanji ?? '')))
+        if (isJapanese(cp)) required.set(cp, 'content/taxonomy.json groups');
   }
+
+  /*
+   * Palette and combination NAMES (F-224). The colour detail screen prints each palette's
+   * Japanese name (ColourDetail, "In these palettes"), Palette Studio prints it beside the
+   * English one (mockup 10: "Autumn Dew • 秋の露"), the profile prints kasane names (23), and the
+   * combinations screen prints each curated combination's. None of the four was read here until
+   * F-224, and three palette names were drawing tofu (森, 鉱, 藍). Only `name.ja`: a derivation
+   * is editorial prose that never reaches a screen. IN STEP WITH generate-font-subset.mjs.
+   */
+  for (const [dir, label] of [
+    [PALETTES, 'palettes'],
+    [COMBINATIONS, 'combinations'],
+  ])
+    if (existsSync(dir))
+      for (const file of readdirSync(dir)) {
+        if (!file.endsWith('.json')) continue;
+        let parsed;
+        try {
+          parsed = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+        } catch {
+          continue;
+        }
+        for (const cp of codepointsOf(String(parsed?.name?.ja ?? '')))
+          if (isJapanese(cp)) required.set(cp, `${label}/${file}`);
+      }
   return { required, entries };
 }
 
@@ -307,7 +339,7 @@ const { required, entries } = requiredCodepoints();
 // "every codepoint is covered" from "there were no codepoints".
 console.log(
   `${DIM}  ${String(required.size)} Japanese codepoint(s) required, from ${String(entries)} ` +
-    `authored corpus entr(ies), the ja catalogue, the phrase lexicon and the taxonomy vocabulary.${OFF}`,
+    `authored corpus entr(ies), the ja catalogue, the phrase lexicon, the taxonomy vocabulary and its chips, and the palette and combination names.${OFF}`,
 );
 
 if (!existsSync(FONT)) {

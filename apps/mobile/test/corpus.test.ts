@@ -64,7 +64,13 @@ describe('the pinned bundle loads', () => {
 
   it('holds the seed corpus, not an empty set', () => {
     expect(CORPUS_ENTRY_COUNT).toBeGreaterThanOrEqual(120);
-    expect(CORPUS_PALETTE_COUNT).toBe(5);
+    // The five seed palettes and, from 2026.09.2, the eight kasane F-224 composed for mockups 10
+    // and 23 — two per season, one of three layers and one of four.
+    expect(CORPUS_PALETTE_COUNT).toBe(13);
+    const kasane = allPalettes().filter((p) => p.palette.category === 'kasane');
+    expect(kasane).toHaveLength(8);
+    expect(kasane.every((k) => k.palette.classification === 'japanese-inspired')).toBe(true);
+    expect(kasane.map((k) => k.palette.colors.length).sort()).toEqual([3, 3, 3, 3, 4, 4, 4, 4]);
   });
 });
 

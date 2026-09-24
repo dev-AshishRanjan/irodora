@@ -74,6 +74,7 @@ const {
   checkCorpus,
   CorpusError,
   deriveColor,
+  entriesPerGroup,
   entryDigest,
   FIXTURE_PREFIX,
   hexToXyz,
@@ -388,6 +389,7 @@ if (!existsSync(TAXONOMY_FILE)) {
 
 let vocabulary = null;
 let familiesChecked = 0;
+let groupsChecked = 0;
 try {
   vocabulary = parseTaxonomyVocabulary(readJsonFile(TAXONOMY_FILE), 'taxonomy.json');
 
@@ -417,6 +419,21 @@ try {
           'row is how a live one gets waved through later — remove it, or publish an entry ' +
           'that needs it.',
       );
+
+  // THE CHIPS (F-224, ADR-0108). The parser proves the nine groups partition the families; this
+  // is the half that is a fact about the corpus. `entriesPerGroup` is the package's own count, so
+  // the gate and the unit test that plants a zero run the same code.
+  for (const { group, entries } of entriesPerGroup(
+    vocabulary,
+    real.entries.map(({ record }) => record.taxonomy.family),
+  )) {
+    groupsChecked += 1;
+    if (entries === 0)
+      fail(
+        `content/taxonomy.json group "${group.group}" (${group.romaji} ${group.kanji}) holds no ` +
+          'authored entry. A chip that filters to nothing is a broken control, not an empty state.',
+      );
+  }
 } catch (error) {
   fail(`taxonomy.json: ${error.message}`);
 }
@@ -1093,6 +1110,11 @@ console.log(
 console.log(
   `${DIM}  ${String(familiesChecked)} famil(ies) used by an entry, all with a word in ` +
     `${String(vocabulary === null ? 0 : vocabulary.families.length)} vocabulary row(s)${OFF}`,
+);
+// And the chips (F-224): a green check over zero groups would mean the family filter was never
+// looked at.
+console.log(
+  `${DIM}  ${String(groupsChecked)} family chip(s), each holding an authored entry${OFF}`,
 );
 // And the same again for the weights (F-029, E-009). A section that reports nothing is one
 // nobody can tell ran: a green gate over a weight file that failed to load and a green gate

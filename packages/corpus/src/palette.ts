@@ -25,7 +25,13 @@
  * gate that rejects correct palettes.
  */
 
-import { checkClassification, isClassification, type Classification } from './classification.js';
+import {
+  checkClassification,
+  isClassification,
+  isOurOwnCuration,
+  OUR_OWN_CURATION,
+  type Classification,
+} from './classification.js';
 import { CorpusError } from './errors.js';
 import {
   checkUnknowns,
@@ -45,8 +51,17 @@ import { isEntryStatus, type EntryStatus } from './workflow.js';
 export const PALETTE_ROLES = ['anchor', 'neutral', 'light', 'accent'] as const;
 export type PaletteRole = (typeof PALETTE_ROLES)[number];
 
-export const PALETTE_CATEGORIES = ['contemporary', 'traditional', 'seasonal'] as const;
+/**
+ * `kasane` (F-224): a palette whose members are LAYERS, read outermost first — `rank` 1 is the
+ * *omote*, the layer that shows most. Mockups `10` and `23` draw them. The Heian system of
+ * *kasane no irome* is historical; a combination composed in its manner is not, and
+ * `parsePalette` makes that structural rather than a reviewer's catch (see `KASANE_*` below).
+ */
+export const PALETTE_CATEGORIES = ['contemporary', 'traditional', 'seasonal', 'kasane'] as const;
 export type PaletteCategory = (typeof PALETTE_CATEGORIES)[number];
+
+/** A single colour is not a layering. */
+export const KASANE_MIN_LAYERS = 2;
 
 export interface PaletteMember {
   /** A slug in `content/colors/`. Resolved by the whole-corpus check, not here. */
@@ -229,5 +244,36 @@ export function parsePalette(value: unknown, source: string): CorpusPalette {
     source,
   );
 
+  if (palette.category === 'kasane') checkKasane(palette, source);
+
   return palette;
+}
+
+/**
+ * A kasane is ours, and it is layered. Both are in the type, not in a review.
+ *
+ * **Our own curation, whatever the `sourceType`.** `checkClassification` already ties an
+ * editorial source to `OUR_OWN_CURATION`, but that is conditional on the source. This is not: a
+ * palette *composed in the manner of* kasane no irome is never the historical system itself, and
+ * the easiest way to present it as one is a `historical` or `traditional` label on a record whose
+ * source says something grander than "our editor chose these". F-196 made the same rule
+ * unconditional for combinations, for the same reason (content/AGENTS.md rule 3, FR-23).
+ */
+function checkKasane(palette: CorpusPalette, source: string): void {
+  if (!isOurOwnCuration(palette.classification))
+    throw new CorpusError(
+      source,
+      'classification',
+      `a kasane is classified "${palette.classification}"; it must be one of ` +
+        `${OUR_OWN_CURATION.join(', ')}. Kasane no irome is a Heian system; a combination ` +
+        'composed in its manner is ours, and labelling it historical is presenting our curation ' +
+        'as attested history (FR-23).',
+    );
+  if (palette.colors.length < KASANE_MIN_LAYERS)
+    throw new CorpusError(
+      source,
+      'colors',
+      `a kasane has ${String(palette.colors.length)} layer(s); it needs at least ` +
+        `${String(KASANE_MIN_LAYERS)}. A single colour is not a layering.`,
+    );
 }

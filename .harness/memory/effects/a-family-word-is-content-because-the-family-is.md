@@ -74,3 +74,14 @@ Whether the Japanese words are *right*. They are written by one editor and unrev
 (ADR-0060, OQ-5), and a family name is far more visible than a rationale — it is on every row.
 `era` and `material` will need the same treatment the day a measured entry carries one; both are
 null on every seed entry today.
+
+## F-224 (2026-09-24): the file also carries the chips
+
+`groups` places the 25 families under the nine chips of ADR-0108, by `groupRule`, read from each
+family's **own Japanese name**, so a family's word and its chip cannot disagree. The split of
+guards is the lesson. The **parser** proves the groups partition the families (none missing,
+none twice, none unknown, nine in the drawn order). The **content gate** proves every chip finds
+an entry (`entriesPerGroup`), because emptiness is a fact about the corpus and not about this file.
+The order is the constant `FAMILY_GROUPS`, which a surface imports rather than retypes. Both font
+scripts read `groups[].kanji`. The corpus test reads this file directly, so `content/taxonomy.json`
+became a turbo global dependency; `verify-cache-scope` refused the test until it was.

@@ -73,6 +73,8 @@ const isJapanese = (cp) =>
   (cp >= 0x3400 && cp <= 0x4dbf);
 
 const RULES = join(ROOT, 'content', 'rules');
+const PALETTES = join(ROOT, 'content', 'palettes');
+const COMBINATIONS = join(ROOT, 'content', 'combinations');
 
 function requiredCodepoints() {
   const required = new Set();
@@ -128,7 +130,25 @@ function requiredCodepoints() {
       parsed = null;
     }
     for (const f of parsed?.families ?? []) add(String(f.ja ?? ''));
+    // The family chips' kanji (F-224). IN STEP WITH verify-font-coverage.mjs.
+    for (const g of parsed?.groups ?? []) add(String(g.kanji ?? ''));
   }
+
+  // Palette and combination names (F-224) — the colour detail screen, Palette Studio, the
+  // profile and the combinations screen print them. IN STEP WITH verify-font-coverage.mjs; only
+  // `name.ja`, never the prose.
+  for (const dir of [PALETTES, COMBINATIONS])
+    if (existsSync(dir))
+      for (const file of readdirSync(dir)) {
+        if (!file.endsWith('.json')) continue;
+        let parsed;
+        try {
+          parsed = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+        } catch {
+          continue;
+        }
+        add(String(parsed?.name?.ja ?? ''));
+      }
   return { required, entries, fromContent };
 }
 
@@ -150,7 +170,7 @@ console.log(`\n${BOLD}Font subset${OFF}\n`);
 const { required, entries, fromContent } = requiredCodepoints();
 console.log(
   `${DIM}  ${String(required.size)} codepoint(s) required — ${String(fromContent)} from ` +
-    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue + the phrase lexicon + the taxonomy vocabulary), the rest ` +
+    `content (${String(entries)} authored corpus entr(ies) + the ja catalogue + the phrase lexicon + the taxonomy vocabulary and its chips + the palette and combination names), the rest ` +
     `from the always-included ranges.${OFF}`,
 );
 

@@ -253,7 +253,7 @@ describe('a palette carries the same provenance obligations as a colour', () => 
 });
 
 describe('category', () => {
-  it('rejects a category outside the three', () => {
+  it('rejects a category outside the four', () => {
     expectRejection(
       mutate((d) => {
         d['category'] = 'modern';
@@ -261,6 +261,86 @@ describe('category', () => {
       'category',
       /expected one of contemporary, traditional, seasonal/u,
     );
+  });
+});
+
+/*
+ * KASANE (F-224). A palette composed in the manner of kasane no irome is OURS and it is LAYERED,
+ * and both are refused in the parser rather than caught in review. The classification decoys use
+ * a `publication` source on purpose: an editorial source is already refused a historical label by
+ * `checkClassification`, so a test written with one would pass without the kasane rule existing.
+ */
+describe('a kasane', () => {
+  const kasane = (change: (draft: Record<string, unknown>) => void = () => undefined) =>
+    mutate((d) => {
+      d['category'] = 'kasane';
+      change(d);
+    });
+
+  /** A source that IS allowed a claim about the canon, so only the kasane rule can refuse it. */
+  const publishedSource = (d: Record<string, unknown>) => {
+    const p = d['provenance'] as Record<string, unknown>;
+    p['sourceType'] = 'publication';
+    p['publisher'] = 'A Press';
+    p['publishedYear'] = 1850;
+    const u = d['unknowns'] as Record<string, unknown>;
+    delete u['provenance.publisher'];
+    delete u['provenance.publishedYear'];
+  };
+
+  it('DECOY — ours, with three layers, parses', () => {
+    const palette = parsePalette(kasane(), 'k.json');
+    expect(palette.category).toBe('kasane');
+    expect(palette.colors).toHaveLength(3);
+  });
+
+  it('DECOY — the same published source parses as an ordinary palette', () => {
+    // Proves the refusals below come from the kasane rule, not from the source.
+    expect(() =>
+      parsePalette(
+        mutate((d) => {
+          publishedSource(d);
+          d['classification'] = 'traditional';
+        }),
+        'p.json',
+      ),
+    ).not.toThrow();
+  });
+
+  for (const classification of ['historical', 'traditional', 'modern-japanese'])
+    it(`refuses one classified "${classification}", whatever its source says`, () => {
+      expectRejection(
+        kasane((d) => {
+          publishedSource(d);
+          d['classification'] = classification;
+        }),
+        'classification',
+        /a kasane is classified .* composed in its manner is ours/u,
+      );
+    });
+
+  it('refuses a single layer', () => {
+    expectRejection(
+      kasane((d) => {
+        d['colors'] = [{ slug: 'fixture-sumi', role: 'anchor', rank: 1, weight: 1 }];
+      }),
+      'colors',
+      /not a layering/u,
+    );
+  });
+
+  it('DECOY — two layers are a layering', () => {
+    expect(() =>
+      parsePalette(
+        kasane((d) => {
+          d['colors'] = [
+            { slug: 'fixture-sumi', role: 'anchor', rank: 1, weight: 1 },
+            { slug: 'fixture-kinari', role: 'light', rank: 2, weight: 0.8 },
+          ];
+        }),
+        'k.json',
+      ),
+    ).not.toThrow();
   });
 });
 

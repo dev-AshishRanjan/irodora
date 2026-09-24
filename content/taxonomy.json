@@ -8,13 +8,13 @@
     "rightsHolder": "Irodora",
     "sourceLicence": "Proprietary — Irodora original work",
     "sourceUrl": null,
-    "derivation": "Editorial. Each family already had an English authoring slug; the Japanese form is a choice, not a translation of that slug. Where an ordinary Japanese colour word exists it is used (茶, 赤, 緑); where the family names a MATERIAL or a QUALITY rather than a hue, the Japanese follows the material (陶土色, 石色) rather than transliterating the English. Katakana is used only where the loanword is genuinely the word a Japanese speaker would reach for.",
+    "derivation": "Editorial. Each family already had an English authoring slug; the Japanese form is a choice, not a translation of that slug. Where an ordinary Japanese colour word exists it is used (茶, 赤, 緑); where the family names a MATERIAL or a QUALITY rather than a hue, the Japanese follows the material (陶土色, 石色) rather than transliterating the English. Katakana is used only where the loanword is genuinely the word a Japanese speaker would reach for. GROUPS (F-224, 2026-09-24): the nine colour-family chips of ADR-0108, each holding the families groupRule places under it. The placement is read from each family's OWN Japanese name above, not from its English slug and not from a measurement, so the chip a family sits under and the word it is called by cannot disagree.",
     "authoredBy": "ed-001",
     "authoredAt": "2026-08-25",
     "verifiedBy": "ed-001",
-    "verifiedAt": "2026-08-25",
+    "verifiedAt": "2026-09-24",
     "reviewIndependence": "self",
-    "editorialNotes": "The families are the most VISIBLE editorial choice in the product — they are on the Atlas filter, every list row and the detail screen — and until F-090 a Japanese reader saw the English authoring slug on all three. THE JAPANESE HERE IS WRITTEN BY ONE EDITOR AND NOT REVIEWED by a competent speaker; that is the same standing gap the corpus and the phrase lexicon carry (ADR-0060, OQ-5), and it matters more here than in a rationale because a family name is read by everyone who opens the Atlas. A reviewer should expect to change several of these."
+    "editorialNotes": "The families are the most VISIBLE editorial choice in the product — they are on the Atlas filter, every list row and the detail screen — and until F-090 a Japanese reader saw the English authoring slug on all three. THE JAPANESE HERE IS WRITTEN BY ONE EDITOR AND NOT REVIEWED by a competent speaker; that is the same standing gap the corpus and the phrase lexicon carry (ADR-0060, OQ-5), and it matters more here than in a rationale because a family name is read by everyone who opens the Atlas. A reviewer should expect to change several of these. The groups inherit the same gap: the chip words (Ao 青 … Nezumi 鼠) and the placement of four families by usage rather than by a hue word in their names (陶土色, 錆色, 桃, 岩緑青) are one editor's judgement, stated per group so a reviewer can argue with each."
   },
   "unknowns": {
     "provenance.publisher": "our own editorial work, so there is no external publisher",
@@ -171,6 +171,88 @@
       "en": "Yellow-green",
       "ja": "黄緑",
       "rationale": "The ordinary compound, and the direct counterpart to 青緑 at the other end of the green region."
+    }
+  ],
+  "groupRule": "A family goes under exactly one chip, read from its own Japanese name. (1) A family named for no hue goes to the achromatic class its name names: 生成り to 白; 墨 to 黒; the greys named for temperature or material rather than a hue — 寒色系の鼠, 暖色系の鼠, 石の鼠, 石色 — to 鼠. (2) Otherwise the hue in the name decides: the head of a hue compound (青緑 and 黄緑 to 緑, 金茶 to 茶), the hue that tints a grey (青鼠 to 青, 緑鼠 to 緑, 紫鼠 to 紫), or the hue word the name carries (深い青, 中間の青, 淡い青 to 青; 淡い緑 to 緑; 淡い黄 and 黄土 to 黄). (3) A name with no hue word goes by established usage, stated in its group: 陶土色 and 錆色 to 茶, 桃 to 赤, 岩緑青 to 緑. A tinted grey goes to its hue and not to 鼠, because the corpus's only purples are its violet-greys and 紫 is a chip mockup 05 draws.",
+  "groups": [
+    {
+      "group": "ao",
+      "romaji": "Ao",
+      "kanji": "青",
+      "en": "Blue",
+      "families": ["deep-blue", "mid-blue", "pale-blue", "blue-grey"],
+      "rationale": "The blues by the hue word in their names — 深い青, 中間の青, 淡い青 — and 青鼠, a grey tinted blue, by the hue that tints it (rule 2). 青緑 is not here: its head is 緑."
+    },
+    {
+      "group": "aka",
+      "romaji": "Aka",
+      "kanji": "赤",
+      "en": "Red",
+      "families": ["red", "pink"],
+      "rationale": "赤 by its name. 桃 carries no hue word and goes by established usage (rule 3): in Japanese colour naming a peach-blossom pink is a light red, and the corpus has no other home for it that names a hue."
+    },
+    {
+      "group": "midori",
+      "romaji": "Midori",
+      "kanji": "緑",
+      "en": "Green",
+      "families": [
+        "green",
+        "pale-green",
+        "yellow-green",
+        "blue-green",
+        "mineral-green",
+        "green-grey"
+      ],
+      "rationale": "緑 and 淡い緑 by their hue word; 黄緑 and 青緑 by the head of the compound, which is 緑 in both; 緑鼠 by the hue that tints it; and 岩緑青 by usage (rule 3) — 緑青 is the green pigment verdigris, whatever its second character says."
+    },
+    {
+      "group": "murasaki",
+      "romaji": "Murasaki",
+      "kanji": "紫",
+      "en": "Purple",
+      "families": ["violet-grey"],
+      "rationale": "紫鼠, a grey tinted purple, by the hue that tints it (rule 2). It is the corpus's only purple family, which is why rule 2 sends tinted greys to their hue: a 紫 chip holding nothing would be a control that filters to an empty page."
+    },
+    {
+      "group": "cha",
+      "romaji": "Cha",
+      "kanji": "茶",
+      "en": "Brown",
+      "families": ["brown", "gold", "clay", "rust"],
+      "rationale": "茶 by its name and 金茶 by the head of its compound. 陶土色 (potter's clay) and 錆色 (rust) carry no hue word and go by usage (rule 3): both are the warm earths Japanese colour naming counts among its browns, the family of the Edo phrase shijūhatcha, forty-eight browns."
+    },
+    {
+      "group": "kuro",
+      "romaji": "Kuro",
+      "kanji": "黒",
+      "en": "Black",
+      "families": ["charcoal"],
+      "rationale": "墨 is ink-black and names no hue (rule 1). The near-blacks the charcoal family holds are what 黒 means on this row."
+    },
+    {
+      "group": "ki",
+      "romaji": "Ki",
+      "kanji": "黄",
+      "en": "Yellow",
+      "families": ["pale-yellow", "ochre"],
+      "rationale": "淡い黄 by its hue word, and 黄土 — yellow earth — by the hue word it carries (rule 2), not by 土, which names a material. Past the drawn edge of 05, as conflict C13 already placed it (ADR-0108)."
+    },
+    {
+      "group": "shiro",
+      "romaji": "Shiro",
+      "kanji": "白",
+      "en": "White",
+      "families": ["off-white"],
+      "rationale": "生成り, unbleached cloth, names no hue (rule 1) and is what the corpus holds of white. Past the drawn edge (ADR-0108): 05 draws no white, and a white under any drawn chip would be labelled black or a hue it does not have."
+    },
+    {
+      "group": "nezumi",
+      "romaji": "Nezumi",
+      "kanji": "鼠",
+      "en": "Grey",
+      "families": ["stone", "warm-grey", "cool-grey", "mineral-grey"],
+      "rationale": "The greys named for temperature or material rather than a hue — 石色, 暖色系の鼠, 寒色系の鼠, 石の鼠 (rule 1). 鼠 is the corpus's own word for grey (see blue-grey above) and the period's: shijūhatcha hyakunezumi, a hundred greys. Past the drawn edge (ADR-0108)."
     }
   ]
 }
