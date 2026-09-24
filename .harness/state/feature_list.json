@@ -9865,7 +9865,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "done",
       "blockedBy": [],
       "mockups": [
         "15"
@@ -9878,7 +9878,8 @@
         "state",
         "content"
       ],
-      "notes": "FOUND BY F-291’s CI WALK (2026-09-24). With the id-uniqueness proof fixed, every ci.yml step was run in order and ONE more was red: Gate 11 — content, at verify-font-coverage.mjs. Four codepoints in apps/mobile/src/i18n/ja.ts are not in NotoSansJP-Subset.ttf: 幅 and 触, in settings.tabular and settings.haptics (F-239 increments 2–5, c83d0e5), and 仕 and 様, from a word quoted in a COMMENT F-239’s review added at ja.ts:517 (5c584ce). The generator and the check both read the whole file, comments included, and they agree with each other, so a comment costs a glyph and not a failure. All four arrived on 2026-09-21 and were in that day’s push, but CI stopped at step 8 on that push and on 2026-09-24’s, so step 34 never ran. This is F-147’s shape again (“Japanese copy outgrew the font subset”, recorded in verify-ci.mjs’s header). The source font is cached at .cache/fonts, and its git blob (cdd8f083…) equals google/fonts main’s, which has not changed since 2022-11-03."
+      "notes": "FOUND BY F-291’s CI WALK (2026-09-24). With the id-uniqueness proof fixed, every ci.yml step was run in order and ONE more was red: Gate 11 — content, at verify-font-coverage.mjs. Four codepoints in apps/mobile/src/i18n/ja.ts are not in NotoSansJP-Subset.ttf: 幅 and 触, in settings.tabular and settings.haptics (F-239 increments 2–5, c83d0e5), and 仕 and 様, from a word quoted in a COMMENT F-239’s review added at ja.ts:517 (5c584ce). The generator and the check both read the whole file, comments included, and they agree with each other, so a comment costs a glyph and not a failure. All four arrived on 2026-09-21 and were in that day’s push, but CI stopped at step 8 on that push and on 2026-09-24’s, so step 34 never ran. This is F-147’s shape again (“Japanese copy outgrew the font subset”, recorded in verify-ci.mjs’s header). The source font is cached at .cache/fonts, and its git blob (cdd8f083…) equals google/fonts main’s, which has not changed since 2022-11-03. DONE 2026-09-24: regenerated from the cached source — 706380 → 708212 bytes, 1687 → 1691 glyphs, exactly the four codepoints added and every existing glyph’s outline, variation data and metrics byte-identical (measured by the review). FROM THE REVIEW (one round, PASS): the E-017 note stated CI’s agreement as fact before CI had run, and said nothing in CI marks a hidden step (the jobs API marks them skipped) — both reworded; the plan asserted hb-subset determinism without evidence — it now cites four earlier Windows-generated subsets that passed CI’s byte comparison, and says the claim is confirmed only when CI runs; the plan’s “the two rows render in full” claimed a render nobody observed. NOTICE.md’s shipped size had been false since F-012 and is corrected. Recorded: F-297 (the source is fetched from `main` and not hash-checked) and F-298 (a NUL byte in progress.md).",
+      "plan": "plans/F-292-the-settings-copy-outgrew-the-font-subset.md"
     },
     {
       "id": "F-293",
@@ -9964,6 +9965,47 @@
         "lint"
       ],
       "notes": "SEEN IN F-291 (2026-09-24), TWO PLANTS DEEP. A sequence of gate-0 proofs, run one after another by hand: verify-lockfile-proof.mjs exited 1 and left its first plant in packages/store/package.json (`@irodora/color-core` added). The journal did its job — the next three proofs (blocked-reason, mockups --prove, gate-mirror-proof) refused, and gate-mirror-proof crashed partway and left ITS plant, the `Gate 4 — test` step deleted from ci.yml. Then plant-proof.mjs ran, and its reset() and finally both `rmSync(JOURNAL, { force: true })` the REAL journal at .harness/state/.plant-journal.json, not a private one. The record of both plants was gone, a later pnpm invocation re-resolved pnpm-lock.yaml against the planted manifest, and gate 0 went red on a missing CI step with nothing saying why. Both were found by `git diff` and restored by hand; the lockfile failure did not reproduce in three further runs, so its cause is unknown — the journal that would have said is what was deleted. plant-proof runs inside `pnpm lint`, so in that chain it wipes any journal an earlier proof left. F-173 built the journal so that “a finally is a hope about how a process ends” stops being true; a proof of the journal that deletes the journal undoes it."
+    },
+    {
+      "id": "F-297",
+      "title": "The Japanese font source is pinned by hash, not by a branch",
+      "requirements": [
+        "NFR-11"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "generate-font-subset.mjs fetches the source from a commit, not from `main`, and refuses a fetched or cached source whose hash is not the declared one, watched failing on a changed byte",
+        "A source that changes upstream turns the check red with a message naming the source, not the subset"
+      ],
+      "verification": [
+        "state",
+        "content"
+      ],
+      "notes": "FROM F-292’s REVIEW (2026-09-24). scripts/generate-font-subset.mjs fetches NotoSansJP[wght].ttf from google/fonts `main` whenever it is not cached, and trusts any cached file without checking it. CI has no cache, so every CI run of gate 11’s `--check` subsets whatever `main` serves that day and byte-compares the result with the committed subset. If upstream ever changes that file, CI goes red on every push while every local run, reading the old cached copy, stays green, and the message says the SUBSET is stale. F-292 confirmed the two agree today by comparing git blob hashes (cdd8f083…; upstream last changed 2022-11-03), but that was a one-off check by hand and nothing repeats it."
+    },
+    {
+      "id": "F-298",
+      "title": "progress.md carries the raw NUL byte its own entry describes",
+      "requirements": [
+        "NFR-19"
+      ],
+      "service": "root",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "progress.md contains no NUL byte, and the entry that meant to write the escape `\u0000` says it in text",
+        "Gate 0 refuses a NUL byte in any governed document, watched failing on a planted one"
+      ],
+      "verification": [
+        "state"
+      ],
+      "notes": "FROM F-292’s REVIEW (2026-09-24). .harness/state/progress.md has a raw NUL at byte offset 254086, in the entry that reports finding “a raw NUL byte in screens.test.tsx, where the source meant \u0000” — the entry repeats the defect it describes. ripgrep and git grep treat the whole file as binary, so a search of the project history silently skips it. Pre-existing; present at HEAD before F-291."
     }
   ]
 }

@@ -8,6 +8,61 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-24 — F-292 The settings copy outgrew the Japanese font subset
+
+**Done.** Found by F-291's CI walk: with step 8 fixed, step 34, **gate 11 — content**, was red.
+Four codepoints in the ja catalogue were not in `NotoSansJP-Subset.ttf`. 幅 and 触 are in
+`settings.tabular` and `settings.haptics`. 仕 and 様 come from a word quoted in a comment. All four
+were added by F-239 on 2026-09-21 and were in that day's push. Gate 11's check was right from the
+first push, but CI never reached it: steps 9–35 were *skipped* on both runs.
+
+- **Regenerated, nothing else changed.** `node scripts/generate-font-subset.mjs` against the cached
+  source: 706,380 → 708,212 bytes, 1,687 → 1,691 glyphs. The review measured exactly four
+  codepoints added and every existing glyph's outline, variation data and metrics byte-identical.
+- **CI's byte comparison is expected to agree, and not yet observed.** CI fetches the source from
+  google/fonts `main`. The cached copy's git blob (`cdd8f083…`) matches upstream's, compared through
+  the contents API without downloading; upstream last changed it 2022-11-03. `subset-font` and
+  `harfbuzzjs` are the lockfile's versions. Four earlier subsets generated on this workstation passed
+  CI's gate 11 on ubuntu. It is confirmed when CI runs gate 11 on the pushed commit.
+- **NOTICE.md** gave the shipped size as 440 KB, which had been false since F-012. It now says
+  about 0.7 MB.
+
+### Review — one round, PASS
+
+Nothing blocked. The E-017 note stated CI's agreement as a fact, and it claimed nothing in CI marks a
+hidden step, when the jobs API marks them skipped. Both are reworded. The plan asserted
+determinism without evidence and claimed the two rows "render in full", a render nobody observed.
+Both are corrected. The note's `updated:` date and the plan's file list were stale and are updated.
+
+### Gates
+
+state 0 · `pnpm test:content` 0 (coverage: 630 required, 950 in the face; `--check` current) ·
+content mutation proof 0 (25/25) · security 0 · claims 0 · format:check 0. The implementer and the
+evaluator each ran these, and the evaluator also ran `verify-font-coverage.mjs --prove` (0). A copy
+of the check pointed at HEAD's font named exactly the four codepoints. gitleaks here is a
+`go install` build, not CI's 8.30.1.
+
+**NOT RUN:** CI (nothing pushed); a device render of screen 15 in Japanese; typecheck, lint, test,
+build (no source changed).
+
+### Effects
+
+E-017 (corpus and catalogue → the font subset, guard `verify-font-coverage.mjs`) held. Its note
+gains this recurrence. The PDF export embeds the subset whole (ADR-0083), so each PDF grows by
+1,832 bytes. There is no size budget.
+
+### Owed
+
+**F-297**: the font source is fetched from `main` and never hash-checked, so an upstream change
+would turn CI red with a message blaming the subset. **F-298**: a raw NUL byte in this file.
+
+### Next
+
+F-295, then F-296. F-291's attestation needs the user: push, dispatch `android-build.yml`, and
+read step 3.
+
+---
+
 ## 2026-09-24 — F-291 CI is red twice: gate 0 crashes on a list it cannot read, and the Android SDK setup asks for a package Google withdrew
 
 **Done, with one attestation owed.** The user reported both workflows red. They are two defects

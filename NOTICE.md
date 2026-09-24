@@ -109,7 +109,7 @@ marks, wordmark and generated illustration are proprietary and covered by
 | **Copyright** | © 2014–2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source' |
 | **Version** | `Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603` |
 | **Source** | `google/fonts`, `ofl/notosansjp/NotoSansJP[wght].ttf` |
-| **Shipped as** | `apps/mobile/assets/fonts/NotoSansJP-Subset.ttf` — 440 KB |
+| **Shipped as** | `apps/mobile/assets/fonts/NotoSansJP-Subset.ttf` — about 0.7 MB; it grows as content adds characters |
 
 **We ship a subset, and the OFL permits it.** §2 of the licence allows modification and
 redistribution provided the Reserved Font Name is not used and the licence travels with the

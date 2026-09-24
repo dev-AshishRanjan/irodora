@@ -4,7 +4,7 @@ title: A corpus publish can outrun the font that renders it, and the failure is 
 category: contract
 confidence: 0.95
 created: 2026-08-20
-updated: 2026-08-24
+updated: 2026-09-24
 scope: [content, apps/mobile]
 links: [[the-message-key-set-is-a-contract-with-every-render-site]], [[a-gate-that-ships-before-its-data-must-carry-its-own-fixtures]], [[corpus-version-pins-caches-and-envelopes]]
 ---
@@ -76,3 +76,20 @@ gate, not the gate against the note.
 
 Regenerate the subset. A codepoint the app can render and the font cannot is a tofu box, and a
 widened tolerance would only make it a silent one.
+
+## 2026-09-24 (F-292): the guard fired, and nothing ran it
+
+F-239 added 幅 and 触 to the settings copy, plus 仕 and 様 in a comment. The generator and the
+check both read comments, so a comment costs a glyph and not a failure. The subset was not
+regenerated. The guard was right from the first push, 2026-09-21, but CI stopped at step 8 on a
+different failure (F-291) and never reached step 34, where this check runs. **A guard behind a red
+step is not running.** CI marks the steps after a failure *skipped*, not failed, and a skipped
+step reads like one with nothing to report. `pnpm verify:ci --all` runs past the first failure.
+
+The subset is regenerated from the cached source, and CI's byte comparison is **expected** to
+agree, on three conditions. The source is the same bytes: its git blob matches google/fonts
+`main`. `subset-font` and `harfbuzzjs` are the lockfile's versions. And hb-subset gives the same
+bytes on ubuntu as on Windows. The evidence for the third is four earlier subsets generated on this
+Windows workstation that passed CI's gate 11 (3d70459, a6b60ea, a56e7b4, c81ffe7). It is confirmed
+only when CI runs gate 11 on the pushed commit, and the source is not pinned by hash anywhere
+(F-297).
