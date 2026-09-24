@@ -78,6 +78,8 @@ const {
   entryDigest,
   FIXTURE_PREFIX,
   hexToXyz,
+  KASANE_LAYER_FLOOR,
+  kasaneEdges,
   ledgerRowFor,
   loadPublishedVersion,
   matchesRegion,
@@ -184,6 +186,39 @@ for (const { file, record } of real.combinations) {
         'did not originate is one we cannot publish. "Wada is public domain" is not the same ' +
         'statement as "this digitisation is free to ingest".',
     );
+}
+rulesExercised += 1;
+
+// --- kasane are layered, and their edges show (F-224) ------------------------------------------
+
+/*
+ * A kasane states in its derivation that every adjacent pair of layers is more than ΔE00 5 apart
+ * (FR-44's "the same thing"). The figure is COMPUTED HERE, on every run, under the current engine
+ * — `kasaneEdges` is the package's own function — rather than typed into the record, because a
+ * typed derived value agrees with the engine on the day it is typed and not after (E-001).
+ */
+let kasaneEdgesChecked = 0;
+{
+  const labBySlug = new Map(
+    real.entries.map(({ record }) => [record.slug, deriveColor(record.color.xyz).lab]),
+  );
+  for (const { file, record } of real.palettes) {
+    if (record.category !== 'kasane') continue;
+    try {
+      for (const edge of kasaneEdges(record, (slug) => labBySlug.get(slug))) {
+        kasaneEdgesChecked += 1;
+        if (edge.deltaE00 <= KASANE_LAYER_FLOOR)
+          fail(
+            `${file}: the edge between "${edge.outer}" and "${edge.inner}" measures ΔE00 ` +
+              `${edge.deltaE00.toFixed(2)}, at or under the ${String(KASANE_LAYER_FLOOR)} below which ` +
+              'the product calls two items the same (FR-44). A layering whose edges cannot be told ' +
+              'apart is not one.',
+          );
+      }
+    } catch (error) {
+      fail(`${file}: ${error.message}`);
+    }
+  }
 }
 rulesExercised += 1;
 
@@ -1115,6 +1150,11 @@ console.log(
 // looked at.
 console.log(
   `${DIM}  ${String(groupsChecked)} family chip(s), each holding an authored entry${OFF}`,
+);
+// And the kasane edges: zero here would mean the separation every kasane derivation promises was
+// never measured.
+console.log(
+  `${DIM}  ${String(kasaneEdgesChecked)} kasane edge(s) measured above ΔE00 ${String(KASANE_LAYER_FLOOR)}${OFF}`,
 );
 // And the same again for the weights (F-029, E-009). A section that reports nothing is one
 // nobody can tell ran: a green gate over a weight file that failed to load and a green gate

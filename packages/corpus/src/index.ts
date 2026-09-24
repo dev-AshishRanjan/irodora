@@ -142,11 +142,14 @@ export {
 } from './combination.js';
 
 export {
+  KASANE_LAYER_FLOOR,
   KASANE_MIN_LAYERS,
+  kasaneEdges,
   PALETTE_CATEGORIES,
   PALETTE_ROLES,
   parsePalette,
   type CorpusPalette,
+  type KasaneEdge,
   type PaletteCategory,
   type PaletteMember,
   type PaletteName,

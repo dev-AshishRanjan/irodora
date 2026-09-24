@@ -7292,7 +7292,7 @@
       "service": "content",
       "release": "R9",
       "priority": "must",
-      "status": "in_progress",
+      "status": "done",
       "blockedBy": [
         "F-220"
       ],
@@ -7315,7 +7315,7 @@
         "test",
         "content"
       ],
-      "notes": "Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23). BLOCKED 2026-09-15 on OQ-35: criterion 2 requires every entry in exactly one of the seven groups, and off-white and the neutral greys (20 entries) have no honest home among them. The kasane half (criterion 1) waits only because the feature is one unit; the person may split it. UNBLOCKED 2026-09-24: OQ-35 is closed by ADR-0108, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The chips are NINE, not seven: the six 05 draws, in the drawn order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge. Ki had been listed between Midori and Murasaki, which 05 draws side by side, so criterion 2 is amended to the drawn order. Off-white goes under 白 and the neutral greys under 鼠; the rest of the mapping is this feature's stated rule.",
+      "notes": "DONE (2026-09-24). DELIVERED: the nine family chips as content (groups + groupRule in content/taxonomy.json; FAMILY_GROUPS, familyGroup, entriesPerGroup in @irodora/corpus; gate 11 refuses an empty chip); a kasane palette category (ADR-0109: our own curation whatever the source, at least two layers, every edge above ΔE00 5 recomputed by gate 11); eight kasane from our own entries, two per season, 3 and 4 layers, IRO-ED-006; corpus 2026.09.3 (2026.09.2 corrected); the font check reads palette and combination names and chip kanji, which found seven missing glyphs including three in seed palette names. ONE REVIEW, FAIL (1 blocking, 3 significant, 9 minor): every finding fixed or recorded (F-299, F-300); see progress.md 2026-09-24. Conflicts C13 and C14. The corpus has five palettes (earth-and-clay, forest-and-mineral, indigo-studies, quiet-neutrals, seasonal) and none is kasane. \"Kasane no irome\" names a Heian system; a palette we construct in its manner is labelled as ours (content/AGENTS.md rule 3, FR-23). BLOCKED 2026-09-15 on OQ-35: criterion 2 requires every entry in exactly one of the seven groups, and off-white and the neutral greys (20 entries) have no honest home among them. The kasane half (criterion 1) waits only because the feature is one unit; the person may split it. UNBLOCKED 2026-09-24: OQ-35 is closed by ADR-0108, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The chips are NINE, not seven: the six 05 draws, in the drawn order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge. Ki had been listed between Midori and Murasaki, which 05 draws side by side, so criterion 2 is amended to the drawn order. Off-white goes under 白 and the neutral greys under 鼠; the rest of the mapping is this feature's stated rule. MOCKUP 26 (review finding M7): criterion 1 names 26, but the 26 kasane bar is a 26-only element that C3 does not adopt by default, so no data is owed to it; 10 (one four-layer kasane) and 23 (three three-layer kasane) are what the eight fill.",
       "plan": "plans/F-224-the-corpus-holds-kasane-and-the-family-groups.md"
     },
     {
@@ -9998,6 +9998,53 @@
         "state"
       ],
       "notes": "FROM F-292’s REVIEW (2026-09-24). .harness/state/progress.md has a raw NUL at byte offset 254086, in the entry that reports finding “a raw NUL byte in screens.test.tsx, where the source meant \u0000” — the entry repeats the defect it describes. ripgrep and git grep treat the whole file as binary, so a search of the project history silently skips it. Pre-existing; present at HEAD before F-291."
+    },
+    {
+      "id": "F-299",
+      "title": "The violet-grey family is re-examined by measurement, so the 紫 chip does not show navy",
+      "requirements": [
+        "FR-22",
+        "NFR-20"
+      ],
+      "service": "content",
+      "release": "R9",
+      "priority": "should",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "Each violet-grey entry's family is re-examined against its measured OKLCh hue, and any entry whose hue is not violet is moved to the family it measures as, in a new corpus version with the reason in its provenance",
+        "After the change the 紫 chip holds only entries a person would call purple or violet-grey, or it is stated why it cannot, and the Murasaki group rationale says which"
+      ],
+      "verification": [
+        "state",
+        "test",
+        "content"
+      ],
+      "notes": "FROM F-224’s REVIEW (2026-09-24, finding S1). F-224’s groupRule sends a tinted grey to the hue its NAME carries, so 紫 holds the violet-grey family (紫鼠) — the corpus’s only purples. Its three entries measure OKLCh hue 282° (冬影, violet), 272° (寒星, where 星無 sits under 青) and 258° (霜夜, bluer than half the deep blues). A person tapping 紫 sees navy-violets. The placement is honest to the family name and dishonest to the measurement; ADR-0108 carries a correction saying so. Published entries are immutable, so moving an entry between families is a new corpus version. If the corpus then has no purple at all, the question of what 紫 shows returns — and that is a question for a person, not an agent."
+    },
+    {
+      "id": "F-300",
+      "title": "A kasane carries its season as data, so a recommender does not read it out of prose",
+      "requirements": [
+        "FR-22"
+      ],
+      "service": "packages",
+      "package": "@irodora/corpus",
+      "release": "R9",
+      "priority": "could",
+      "status": "backlog",
+      "blockedBy": [],
+      "acceptance": [
+        "A kasane palette records the season it is composed for as a field the parser validates, and the eight published kasane carry it in a new corpus version",
+        "Nothing reads a season out of a derivation string"
+      ],
+      "verification": [
+        "state",
+        "typecheck",
+        "test",
+        "content"
+      ],
+      "notes": "FROM F-224’s REVIEW (2026-09-24, finding M8). The eight kasane are composed two per season, and that season exists only in each derivation’s prose (\"for autumn: …\"). F-260 recommends kasane for a profile (mockup 23); if it wants to weigh the season, the only way today is to parse text. Recorded rather than built: F-224’s criteria do not ask for it, and whether F-260 needs it is F-260’s call."
     }
   ]
 }

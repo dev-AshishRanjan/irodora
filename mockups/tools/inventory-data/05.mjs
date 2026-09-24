@@ -360,7 +360,7 @@ export default {
         '05.filters.family.kuro',
       ],
       resolution:
-        "F-224 groups the corpus's 25 families under these seven, as content with provenance",
+        "F-224 groups the corpus's 25 families under nine chips — these six, in the drawn order, then Ki, Shiro and Nezumi past the edge (ADR-0108, OQ-35) — as content with provenance",
       flippedByUser: false,
     },
   ],

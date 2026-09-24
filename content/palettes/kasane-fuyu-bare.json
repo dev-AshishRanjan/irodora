@@ -35,7 +35,7 @@
     "rightsHolder": "Irodora",
     "sourceLicence": "Proprietary — Irodora original work",
     "sourceUrl": null,
-    "derivation": "Composed in the manner of kasane no irome, for winter: 3 of our own published entries read as layers from the outermost inward — 寒空 samu-zora (#A1B3C6), then 雪気 yuki-ge (#E3E7F1), then 寒星 samu-boshi (#2B3353). NOT a historical combination: no layer is asserted to reproduce a documented Heian kasane, and no value was read from any kasane table. Chosen by hand, not generated. Adjacent layers are separated by ΔE00 14.3, 65.0 under @irodora/color-difference 0.1.0 — each above the ΔE00 5 at which the product calls two items the same (FR-44), because a layering whose edges cannot be told apart is not one. Weights fall inward (1, 0.8, 0.6, 0.5) because each inner layer shows less than the one over it.",
+    "derivation": "Composed in the manner of kasane no irome, for winter: 3 of our own published entries read as layers from the outermost inward — 寒空 samu-zora, then 雪気 yuki-ge, then 寒星 samu-boshi. NOT a historical combination: no layer is asserted to reproduce a documented Heian kasane, and no value was read from any kasane table. Chosen by hand, not generated. Every adjacent pair of layers is more than ΔE00 5 apart — the distance below which the product calls two items the same (FR-44) — because a layering whose edges cannot be told apart is not one; gate 11 recomputes that under the current engine on every run, so no figure is typed here. Weights fall inward (1, 0.8, 0.6) because each inner layer shows less than the one over it.",
     "authoredBy": "ed-001",
     "authoredAt": "2026-09-24",
     "verifiedBy": "ed-001",
@@ -49,5 +49,5 @@
     "provenance.sourceUrl": "not published outside this repository"
   },
   "status": "published",
-  "versionId": "2026.09.2"
+  "versionId": "2026.09.3"
 }

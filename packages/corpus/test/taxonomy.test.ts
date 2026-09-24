@@ -198,10 +198,18 @@ describe('the family groups', () => {
     expect(() => parse(two, [...nine, group('hai', [])])).toThrow(/exactly 9/u);
   });
 
-  it('refuses a kanji written in Latin letters', () => {
+  it('refuses a kanji that is not one ideograph — Latin letters, a digit, a phrase', () => {
+    for (const kanji of ['Ao', '１', '青色']) {
+      const nine = grouped(['blue-grey'], ['off-white']);
+      nine[0] = { ...nine[0], kanji };
+      expect(() => parse(two, nine)).toThrow(/not one/u);
+    }
+  });
+
+  it("refuses a chip that prints another chip's romaji, with the ids still in order", () => {
     const nine = grouped(['blue-grey'], ['off-white']);
-    nine[0] = { ...nine[0], kanji: 'Ao' };
-    expect(() => parse(two, nine)).toThrow(/Latin letters/u);
+    nine[0] = { ...nine[0], romaji: 'Aka' };
+    expect(() => parse(two, nine)).toThrow(/The id is the romaji/u);
   });
 
   it('refuses a group rationale too short to be a reason', () => {
@@ -279,7 +287,9 @@ describe('content/taxonomy.json as shipped', () => {
     'mineral-grey': 'nezumi',
   };
 
-  it('places each of the 25 families where the rule says', () => {
+  // A PINNED TABLE, not the rule re-executed: groupRule is prose a person applies, so what can be
+  // checked is that the file still places every family where it did when the rule was applied.
+  it('places each of the 25 families where the file placed them by groupRule', () => {
     expect(shipped.families).toHaveLength(25);
     const placed = Object.fromEntries(
       shipped.families.map((f) => [f.family, familyGroup(shipped, f.family).group]),

@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { CorpusError, parsePalette } from '../src/index.js';
+import { CorpusError, KASANE_LAYER_FLOOR, kasaneEdges, parsePalette } from '../src/index.js';
 
 const valid = {
   slug: 'fixture-quiet-neutrals',
@@ -341,6 +341,49 @@ describe('a kasane', () => {
         'k.json',
       ),
     ).not.toThrow();
+  });
+});
+
+/*
+ * THE EDGES (F-224). A layering whose edges cannot be told apart is not one, and the figure is
+ * computed on every run rather than typed into a record. Lab values here are hand-picked: two far
+ * apart, two within the floor.
+ */
+describe('the edges of a kasane', () => {
+  const k = parsePalette(
+    mutate((d) => {
+      d['category'] = 'kasane';
+    }),
+    'k.json',
+  );
+  const lab: Record<string, [number, number, number]> = {
+    'fixture-kinari': [95, 0, 2],
+    'fixture-hai-iro': [60, 0, 0],
+    'fixture-sumi': [20, 0, 0],
+  };
+
+  it('DECOY — distinct layers measure far above the floor, outermost first', () => {
+    const edges = kasaneEdges(k, (s) => lab[s]);
+    expect(edges.map((e) => [e.outer, e.inner])).toEqual([
+      ['fixture-kinari', 'fixture-hai-iro'],
+      ['fixture-hai-iro', 'fixture-sumi'],
+    ]);
+    for (const e of edges) expect(e.deltaE00).toBeGreaterThan(KASANE_LAYER_FLOOR);
+  });
+
+  it('reports an edge the eye cannot find as under the floor', () => {
+    const close: Record<string, [number, number, number]> = {
+      ...lab,
+      'fixture-hai-iro': [94, 0, 2],
+    };
+    const edges = kasaneEdges(k, (s) => close[s]);
+    expect(edges[0]?.deltaE00).toBeLessThan(KASANE_LAYER_FLOOR);
+  });
+
+  it('throws for a layer with no value rather than skipping its edge', () => {
+    expect(() => kasaneEdges(k, (s) => (s === 'fixture-sumi' ? undefined : lab[s]))).toThrow(
+      /no measured value/u,
+    );
   });
 });
 

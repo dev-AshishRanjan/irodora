@@ -124,6 +124,7 @@ Two rules that matter more than the format:
 | [0106](0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) | The serif is Gelasio, because the type the mockups draw is Georgia’s, and Gelasio is Georgia’s open-licence counterpart | Accepted |
 | [0107](0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md) | Slate Graphite and Obsidian Noir are Sumi Charcoal’s drawn steps re-anchored at their own drawn grounds, and a pairing that fails moves the E3 way | Accepted |
 | [0108](0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) | The family chips are the six mockup 05 draws, in its order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge | Accepted |
+| [0109](0109-a-kasane-in-the-corpus-is-our-own-composition-and-its-edges-must-show.md) | A kasane in the corpus is our own composition, layered outermost first, and its edges must show | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

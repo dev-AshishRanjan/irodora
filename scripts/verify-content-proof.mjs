@@ -39,6 +39,12 @@ const ENTRY_A = join(VALID, 'colors', 'fixture-a.json');
 const PALETTE = join(VALID, 'palettes', 'fixture-quiet.json');
 const EDITORS = join(VALID, 'editors.json');
 
+// F-224's cases plant into REAL content, because the checks they prove read nothing else.
+const TAXONOMY = join(ROOT, 'content', 'taxonomy.json');
+const TAXONOMY_ORIGINAL = readFileSync(TAXONOMY, 'utf8');
+const REAL_KASANE = join(ROOT, 'content', 'palettes', 'kasane-mebuki.json');
+const PLANTED_KASANE = join(ROOT, 'content', 'palettes', 'kasane-proof-edge.json');
+
 /** Run gate 11. Note the exit status is read directly — never through a pipe. */
 function runGate() {
   const result = spawnSync(process.execPath, [GATE], { encoding: 'utf8' });
@@ -164,6 +170,60 @@ const CASES = [
       const p = JSON.parse(readFileSync(PALETTE, 'utf8'));
       p.colors[0].role = 'accent';
       writeFileSync(PALETTE, `${JSON.stringify(p, null, 2)}\n`, 'utf8');
+    },
+  },
+  // --- F-224: kasane and the family chips -----------------------------------------------
+  //
+  // The review found both new gate branches never seen to fail: the parser's kasane rules were
+  // unit-tested but not watched through the gate, and the empty-chip and edge checks run over
+  // REAL content only, so they had no case at all. The last two plant into content/ and are
+  // journalled first, the way the E-001 case journals the engine.
+  {
+    name: 'a kasane of one layer (F-224)',
+    expect: 'red',
+    matching: /not a layering/u,
+    apply: () => {
+      const p = JSON.parse(readFileSync(PALETTE, 'utf8'));
+      p.category = 'kasane';
+      p.colors = p.colors.filter((c) => c.role === 'anchor').map((c) => ({ ...c, rank: 1 }));
+      writeFileSync(PALETTE, `${JSON.stringify(p, null, 2)}\n`, 'utf8');
+    },
+  },
+  {
+    name: 'a kasane whose edge the eye cannot find (F-224)',
+    expect: 'red',
+    matching: /kasane-proof-edge\.json: the edge between "usu-gami" and "kai-jiro"/u,
+    apply: () => {
+      journal.record(PLANTED_KASANE);
+      const p = JSON.parse(readFileSync(REAL_KASANE, 'utf8'));
+      p.slug = 'kasane-proof-edge';
+      // 薄紙 over 貝白: ΔE00 2.3 apart, the closest pair in the corpus.
+      p.colors = [
+        { slug: 'usu-gami', role: 'anchor', rank: 1, weight: 1 },
+        { slug: 'kai-jiro', role: 'light', rank: 2, weight: 0.8 },
+      ];
+      writeFileSync(PLANTED_KASANE, `${JSON.stringify(p, null, 2)}\n`, 'utf8');
+    },
+    cleanup: () => {
+      rmSync(PLANTED_KASANE, { force: true });
+      journal.release(PLANTED_KASANE);
+    },
+  },
+  {
+    name: 'a family chip that holds nothing (F-224)',
+    expect: 'red',
+    matching: /group "murasaki" \(Murasaki 紫\) holds no authored entry/u,
+    apply: () => {
+      journal.record(TAXONOMY, TAXONOMY_ORIGINAL);
+      const t = JSON.parse(TAXONOMY_ORIGINAL);
+      const murasaki = t.groups.find((g) => g.group === 'murasaki');
+      t.groups.find((g) => g.group === 'ao').families.push(...murasaki.families);
+      murasaki.families = [];
+      writeFileSync(TAXONOMY, `${JSON.stringify(t, null, 2)}\n`, 'utf8');
+    },
+    cleanup: () => {
+      writeFileSync(TAXONOMY, TAXONOMY_ORIGINAL, 'utf8');
+      journal.release(TAXONOMY);
     },
   },
   {

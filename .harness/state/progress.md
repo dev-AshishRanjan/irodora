@@ -8,6 +8,77 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-24 — F-224 The corpus holds the family chips and the kasane the mockups draw
+
+**Done.** Two things the mockups draw had no data behind them: `05`'s colour-family chips (C13)
+and the kasane of `10` and `23` (C14).
+
+- **The nine chips, as content.** `content/taxonomy.json` gains `groups` and `groupRule`: the six
+  chips `05` draws, in its order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the edge (ADR-0108). The
+  parser proves the chips partition the 25 families in the drawn order, and binds each chip's romaji
+  and single kanji to its id. Gate 11 proves every chip holds an authored entry
+  (`entriesPerGroup`). Counts: Ao 29, Aka 5, Midori 31, Murasaki 3, Cha 20, Kuro 4, Ki 8, Shiro 5,
+  Nezumi 15.
+- **Kasane.** A `kasane` palette category (ADR-0109). The parser makes a kasane our own curation
+  whatever its source, with at least two layers. Gate 11 recomputes every edge (`kasaneEdges`) and
+  refuses one at or under ΔE00 5 (FR-44's "the same"). Eight kasane from our own entries, two per
+  season, one of three layers and one of four. Registered as IRO-ED-006. `10`'s *Autumn Dew · 秋の露*
+  is adopted as ours; the other seven names are coined.
+- **Corpus 2026.09.2, then 2026.09.3.** 2026.09.2 published a template sentence that misstated
+  three-layer weights, and typed ΔE00 figures into prose. Published records are immutable, so
+  2026.09.3 corrects them, and the derivations now state the floor and leave the figure to the gate.
+  The app's bundle is pinned to 2026.09.3.
+- **The font check had never read a palette or combination name.** Taught to read them and the chip
+  kanji, it named seven missing glyphs at once. Four were in the new names; **three (森 鉱 藍) were in
+  seed palette names published 2026-08-24**, so ColourDetail has drawn tofu for them in Japanese for a
+  month. The subset was regenerated: 708,212 → 712,028 bytes, +7 glyphs, nothing removed (the
+  evaluator diffed the cmap). E-145 / E-146.
+
+### Review — one round, FAIL (1 blocking, 3 significant, 9 minor), every finding fixed or recorded
+
+- **B1**: the stated grouping rule did not produce two placements. 岩緑青 read literally ends in 青,
+  and 石色 names no class. The rule was rewritten to say which placements ADR-0108 fixed and which go
+  by usage, the derivation's "read from the name, never a measurement" claim was corrected, and the
+  test is renamed for what it is (a pinned table).
+- **S1**: the 紫 chip holds the violet-greys, whose hues measure 258–282°, and 霜夜 is bluer than half
+  the deep blues. The cost is stated in the group's rationale and in a correction to ADR-0108 →
+  **F-299** (backlog).
+- **S2**: the false weights sentence was in the immutable 2026.09.2, so 2026.09.3 corrects it.
+- **S3**: a separation check was promised and not built. It is now `kasaneEdges` in gate 11, plus
+  three new cases in `verify-content-proof.mjs` (one layer, an invisible edge planted as 薄紙 over
+  貝白, an empty chip). 28/28 discriminate, and the journal was clean afterwards.
+- **M1** ColourDetail now lists kasane rows under palette role words, recorded in E-024 for F-247.
+  **M2** Autumn Dew's note, and the IRO-ED-006 and IRO-ED-003 register rows, now say "adopted"
+  where they said "coined". **M3** 霜杉's "only chromatic layer" was false, corrected. **M4** chip
+  words are bound to ids. **M5** E-145 is split into E-145 and E-146, and the guard says what `--prove`
+  does not exercise. **M6** inventory 05's "seven" was stale, regenerated. **M7** 26 is out of scope
+  by C3, noted on the feature. **M8** a kasane's season exists only as prose → **F-300**. **M9** the
+  kasane category decision → ADR-0109.
+
+### Gates
+
+state 0 · typecheck 0 · lint 0 · format:check 0 · test 0 (TURBO_FORCE, 35/35; corpus 308, mobile
+1038) · test:content 0 (9 chips, 20 kasane edges, font 637 required of 957) ·
+`verify-content-proof.mjs` 28/28 · `generate-corpus.mjs --label 2026.09.3 --check` 0 (evaluator ran
+it for 2026.09.2). A libuv assertion (`UV_HANDLE_CLOSING`, win32) crashed one `test:content` run
+on exit, after every check had passed. It did not reproduce in four direct runs or in the
+evaluator's two.
+
+**NOT RUN:** build (not in this feature's verification; the evaluator ran it, 19/19), e2e, a11y,
+contrast, cvd, golden (no engine or surface change), CI (nothing pushed).
+
+### Effects
+
+E-024 (palette schema: `kasane`, and ColourDetail now lists kasane), E-028 (taxonomy: chips,
+`FAMILY_GROUPS`, turbo global dependency), E-022 (app pinned to 2026.09.3), E-030 (e2e flow label),
+new E-145 / E-146 (a name is Japanese text; the font never read it).
+
+### Next
+
+F-225, then F-226.
+
+---
+
 ## 2026-09-24 — OQ-29, OQ-35, OQ-36 closed on the person's delegation
 
 **Decided, not built.** F-242 was asked for, and it is not eligible. F-221 waits on F-091's device

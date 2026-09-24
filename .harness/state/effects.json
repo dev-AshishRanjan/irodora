@@ -863,6 +863,10 @@
         {
           "kind": "gate",
           "ref": "test"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/screens/ColourDetail.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -874,7 +878,7 @@
       "severity": "high",
       "guard": "gate:test",
       "memory": "memory/effects/the-palette-schema-now-runs-on-a-phone.md",
-      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it.",
+      "rationale": "SINCE F-020 `parsePalette` HAS A SECOND CALLER, AND IT IS NOT A BUILD STEP. It runs on a device every time somebody saves a palette (FR-49, ADR-0067) — deliberately, because the two rules a palette EDITOR breaks are the two the schema already states: at least one anchor, and ranks contiguous from 1. What that buys in correctness it costs in reach: tightening the schema for editorial records — requiring `sourceUrl`, lengthening MIN_DERIVATION, adding a provenance field — now breaks SAVING ON A PHONE, with no compile error, because the device record is assembled as `unknown` and only the parse decides. The content gate would stay green throughout: `content/palettes/*.json` would be updated in the same commit and the app would not be. The guard is the round-trip in packages/store/test/palette.test.ts plus the malformed-draft table in apps/mobile/test/palette.test.ts, which fail on exactly that change. F-224 (2026-09-24) ADDED `kasane`, and two rules that ride with it into every caller, the phone included: a kasane is classified as our own curation whatever its sourceType, and it has at least two layers. A palette built on a device goes through this same parser (ADR-0067), so when Palette Studio offers mockup 16's \"kasane\" kind (F-251) the palette it saves must carry an own-curation classification or be refused — which is the rule working, not a bug to route around. `contemporary.ts` filters on category === \"contemporary\", so kasane are correctly outside it. SEEN ON A SCREEN, UNPLANNED (F-224 review): ColourDetail lists every palette containing the entry, so from 2026.09.3 the 28 entries that are kasane layers show kasane rows there, each labelled with the palette ROLE word — 夏影, a green layer of 夏野, reads \"夏野 · Neutral\". Nothing asserts it and the layer order is not shown. It is not wrong data, and the colour page is rebuilt to mockup 06 by F-247, which decides what that section becomes; recorded here so F-247 starts from it rather than discovering it.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"
@@ -5728,10 +5732,6 @@
       },
       "to": [
         {
-          "kind": "content",
-          "ref": "content/combinations"
-        },
-        {
           "kind": "test",
           "ref": "scripts/verify-font-coverage.mjs"
         },
@@ -5746,6 +5746,44 @@
         {
           "kind": "file",
           "ref": "apps/mobile/src/screens/ColourDetail.tsx"
+        },
+        {
+          "kind": "gate",
+          "ref": "content"
+        }
+      ],
+      "kind": "EFFECT_LINK",
+      "scope": [
+        "content",
+        "apps/mobile",
+        "scripts"
+      ],
+      "severity": "high",
+      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing.",
+      "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
+      "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step.",
+      "confidence": 0.9,
+      "origin": "manual",
+      "status": "active"
+    },
+    {
+      "id": "E-146",
+      "from": {
+        "kind": "content",
+        "ref": "content/combinations"
+      },
+      "to": [
+        {
+          "kind": "test",
+          "ref": "scripts/verify-font-coverage.mjs"
+        },
+        {
+          "kind": "file",
+          "ref": "scripts/generate-font-subset.mjs"
+        },
+        {
+          "kind": "artifact",
+          "ref": "apps/mobile/assets/fonts/NotoSansJP-Subset.ttf"
         },
         {
           "kind": "file",
@@ -5763,9 +5801,9 @@
         "scripts"
       ],
       "severity": "high",
-      "guard": "script:verify-font-coverage.mjs in gate:content — it now reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs, and its --prove case shows a present glyph read as covered and an absent one as missing",
+      "guard": "script:verify-font-coverage.mjs in gate:content reads name.ja of every palette and every combination, IN STEP WITH generate-font-subset.mjs. Watched failing on real content on 2026-09-24 — it named seven missing glyphs the moment the collection was added. Its --prove case proves the cmap reader (a present glyph covered, an absent one missing); it does NOT exercise the collection, so a collection block deleted from one script would not be caught by the proof — only by the next name whose glyph is missing.",
       "memory": "memory/effects/a-name-is-japanese-text-and-the-font-never-read-it.md",
-      "rationale": "A PALETTE OR COMBINATION NAME IS JAPANESE TEXT ON A SCREEN, AND THE FONT CHECK NEVER READ ONE. ColourDetail prints `palette.name.ja` under \"In these palettes\"; Combinations prints `combination.name.ja`; Palette Studio (10) and the profile (23) will print kasane names. verify-font-coverage.mjs and generate-font-subset.mjs collected the corpus entries, the ja catalogue, the phrase lexicon and the family words — never a palette or a combination. The moment F-224 taught them to, the check named SEVEN missing glyphs: four in the new kasane names (露 匂 錦 吹) and THREE in palettes published on 2026-08-24 (森 in 森と鉱物, 鉱, 藍 in 藍の習作) — a Japanese reader has seen tofu in two of the five seed palette names for a month, with every gate green. The combinations needed nothing new, which is luck, not coverage; they are read now too. This is E-017 and E-028 a third time: every new kind of Japanese content arrives without telling the font, and the only guard is the collection list in two scripts that must stay in step.",
+      "rationale": "E-145's twin for the curated combinations (F-196): Combinations.tsx prints `combination.name.ja`, and neither font script read it until F-224. The four seed names needed no new glyph — every character was already required by an entry — which is luck, not coverage. A combination named with a character no entry uses would have shipped as tofu with every gate green. Read now, in the same collection block as palette names.",
       "confidence": 0.9,
       "origin": "manual",
       "status": "active"

@@ -196,3 +196,28 @@ pnpm test:content
 Rendering either: the Atlas chip row (F-246), Palette Studio (F-251), the profile's recommended
 kasane (F-260). Recommending kasane for a profile is F-260's computation. `26`'s kasane bar is not
 adopted (C3).
+
+---
+
+## As built, and where the plan was wrong (after the review, 2026-09-24)
+
+- **"Nothing a person sees changes" was false.** ColourDetail lists every palette that contains the
+  entry, so from 2026.09.3 the 28 entries that are kasane layers show kasane rows there, labelled
+  with the palette role word ("夏野 · Neutral"). This is recorded in E-024 for F-247, which rebuilds
+  that screen to mockup 06.
+- **The separation test is a gate check, not a unit test.** `kasaneEdges` (`@irodora/corpus`)
+  measures every adjacent pair, and gate 11 refuses one at or under ΔE00 5 on every run. The
+  derivations state only the floor; F-224's first records typed the figures, and 2026.09.3
+  removed them. The unit test plants an edge under the floor.
+- **The negative proofs** in `verify-content-proof.mjs` cover a one-layer kasane, an edge the eye
+  cannot find (a planted palette of 薄紙 over 貝白, ΔE00 2.3) and a chip holding nothing. The
+  historical-kasane refusal is proven in the parser's unit tests, with a publication source so
+  that only the kasane rule can refuse it. Through the gate, an editorial source would already be
+  refused by `checkClassification`.
+- **Two corpus versions, not one.** 2026.09.2 published a template sentence that misstated
+  three-layer weights. Published records are immutable, so the corrections went out as 2026.09.3.
+- **The grouping rule was rewritten**, because two placements did not follow from its first text
+  (岩緑青, 石色). It now names which placements ADR-0108 fixed and which go by usage. The 紫 chip's
+  cost is stated in its rationale and in F-299.
+- Recorded rather than built: **F-299** (the violet-grey family measured) and **F-300** (a
+  kasane's season as data).

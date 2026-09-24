@@ -166,15 +166,25 @@ function parseGroup(v: unknown, index: number, src: string): FamilyGroup {
         'draws, in its order, and a file that reorders them would reorder a drawing (ADR-0108).',
     );
 
+  // THE WORDS ARE BOUND TO THE ID. The id is the romaji, lower-cased, so a file whose `ao` group
+  // prints "Aka" — ids in order, labels swapped — is refused rather than parsed; without this,
+  // "a file that reorders the groups is refused" would be true of the ids and false of the chips.
   const romaji = requireString(o['romaji'], `${path}.romaji`, src);
+  if (romaji.toLowerCase() !== group)
+    throw new CorpusError(
+      src,
+      `${path}.romaji`,
+      `is "${romaji}" on the "${group}" chip. The id is the romaji; a chip that prints another ` +
+        "group's word shows a person one chip's name over another chip's colours.",
+    );
+  // One ideograph: the chips print a single character each (青 … 鼠). Latin letters, a digit or a
+  // phrase satisfies "has a kanji" while printing something else.
   const kanji = requireString(o['kanji'], `${path}.kanji`, src);
-  // The same failure `ja === slug` is for a family: a "kanji" that is Latin letters satisfies
-  // "has a kanji" while printing the romaji twice.
-  if (/[A-Za-z]/u.test(kanji))
+  if (!/^\p{Script=Han}$/u.test(kanji))
     throw new CorpusError(
       src,
       `${path}.kanji`,
-      `is "${kanji}", which has Latin letters in it. The chip prints the romaji beside it.`,
+      `is "${kanji}". A chip prints one kanji beside its romaji (ADR-0108), and this is not one.`,
     );
 
   const families = o['families'];

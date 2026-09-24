@@ -8,9 +8,9 @@ scope: [content, apps/mobile, scripts]
 links: [[a-corpus-publish-can-outrun-the-font-that-renders-it]], [[a-family-word-is-content-because-the-family-is]], [[the-palette-schema-now-runs-on-a-phone]]
 ---
 
-# E-145 — a name is Japanese text, and the font never read it
+# E-145 / E-146 — a name is Japanese text, and the font never read it
 
-**`content/palettes` (and `content/combinations`) → `verify-font-coverage.mjs` ·
+**`content/palettes` (E-145) and `content/combinations` (E-146) → `verify-font-coverage.mjs` ·
 `generate-font-subset.mjs` · the bundled subset · ColourDetail · Combinations · gate 11**
 
 ## What happened
@@ -39,3 +39,10 @@ When content gains a field a screen prints in Japanese, add it to **both** colle
 the same change, then run `node scripts/verify-font-coverage.mjs` before anything else. If it names
 a codepoint, regenerate with `node scripts/generate-font-subset.mjs` from the cached source. Only
 the printed field, never prose that stays off-screen.
+
+## What the guard does not prove
+
+`--prove` exercises the cmap reader, not the collection: a collection block deleted from one
+script would pass the proof and be caught only by the next name whose glyph is missing. The
+guard was watched failing on real content (seven glyphs, 2026-09-24), which is evidence it
+works today, not a check that it keeps working.

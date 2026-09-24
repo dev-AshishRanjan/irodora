@@ -67,6 +67,13 @@ ordinary class word for the whites, the off-white family's 生成り among them.
 - C13 and F-224's criterion change wording, which a reader comparing them with older records will have
   to trace back to here.
 
+**Correction, the same day (F-224's review).** The first Good point above overclaims, and it is
+wrong in one place. F-224 places tinted greys under their hue (its `groupRule`), so 紫 holds the
+violet-grey family, 紫鼠. Its three entries measure OKLCh hue 258°–282°. 霜夜, at 258°, is bluer than
+half the deep blues under 青. The family's NAME places it, not a measurement, so one grey IS shown
+under a hue its measurement does not support. The decision stands: 紫 is drawn and the corpus has no
+other purple. The cost is stated in the 紫 group's rationale, and F-299 re-examines the family.
+
 **Neutral.** The Atlas filter gains two values in the store's filter vocabulary; nothing is persisted
 per chip.
 

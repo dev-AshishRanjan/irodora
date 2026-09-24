@@ -25,6 +25,8 @@
  * gate that rejects correct palettes.
  */
 
+import { deltaE00 } from '@irodora/color-difference';
+import type { Triple } from '@irodora/color-spaces';
 import {
   checkClassification,
   isClassification,
@@ -62,6 +64,53 @@ export type PaletteCategory = (typeof PALETTE_CATEGORIES)[number];
 
 /** A single colour is not a layering. */
 export const KASANE_MIN_LAYERS = 2;
+
+/**
+ * The ΔE00 a kasane's adjacent layers must exceed: the distance below which the product calls two
+ * items the same (FR-44). A layering whose edges cannot be told apart is not one.
+ */
+export const KASANE_LAYER_FLOOR = 5;
+
+/** One edge of a kasane: two adjacent layers, outer first, and how far apart they measure. */
+export interface KasaneEdge {
+  readonly outer: string;
+  readonly inner: string;
+  readonly deltaE00: number;
+}
+
+/**
+ * Every edge of a kasane, outermost first, measured under the current engine.
+ *
+ * Computed, never typed: F-224's first derivations quoted these figures by hand, and a typed
+ * derived value is the thing content/AGENTS.md forbids — so the gate recomputes them on every run
+ * and a record states only the floor. Throws for a layer the lookup cannot resolve, because a
+ * silently skipped layer is an edge nobody measured.
+ */
+export function kasaneEdges(
+  palette: CorpusPalette,
+  labOf: (slug: string) => Triple | undefined,
+): readonly KasaneEdge[] {
+  const layers = [...palette.colors]
+    .sort((a, b) => a.rank - b.rank)
+    .map((m) => {
+      const lab = labOf(m.slug);
+      if (lab === undefined)
+        throw new CorpusError(
+          palette.slug,
+          'colors',
+          `layer "${m.slug}" has no measured value, so the edge beside it cannot be checked.`,
+        );
+      return { slug: m.slug, lab };
+    });
+  const edges: KasaneEdge[] = [];
+  for (let i = 1; i < layers.length; i += 1) {
+    const outer = layers[i - 1];
+    const inner = layers[i];
+    if (outer === undefined || inner === undefined) continue;
+    edges.push({ outer: outer.slug, inner: inner.slug, deltaE00: deltaE00(outer.lab, inner.lab) });
+  }
+  return edges;
+}
 
 export interface PaletteMember {
   /** A slug in `content/colors/`. Resolved by the whole-corpus check, not here. */
