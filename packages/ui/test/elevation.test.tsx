@@ -53,8 +53,10 @@ describe('the one shadow a mockup draws', () => {
     );
     const shadow = styleOf(tree, 'c')['boxShadow'];
     if (declared === 'none') throw new Error('declared none');
+    // The ink is light `foreground`, pinned as channels so a wrong token cannot pass by also being
+    // a colour: `#1A1B1E` since F-225 took the README's sumi ink (it was `#171411`).
     expect(shadow).toBe(
-      `0px ${String(declared.offsetY)}px ${String(declared.blur)}px rgba(23, 20, 17, ${String(
+      `0px ${String(declared.offsetY)}px ${String(declared.blur)}px rgba(26, 27, 30, ${String(
         declared.opacity,
       )})`,
     );

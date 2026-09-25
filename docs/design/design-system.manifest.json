@@ -58,11 +58,11 @@
     "dark": {
       "background": {
         "oklch": {
-          "l": 0.175,
-          "c": 0.004,
-          "h": 70
+          "l": 0.20423564960316032,
+          "c": 0.008553488228561541,
+          "h": 264.3666987591157
         },
-        "srgb": "#12100F",
+        "srgb": "#15171B",
         "usage": "surface",
         "role": "The page.",
         "pairsWith": [
@@ -73,11 +73,11 @@
       },
       "surface.1": {
         "oklch": {
-          "l": 0.21,
-          "c": 0.004,
-          "h": 70
+          "l": 0.2561043944595853,
+          "c": 0.013913560447872099,
+          "h": 267.01858257458343
         },
-        "srgb": "#191816",
+        "srgb": "#20232A",
         "usage": "surface",
         "role": "Cards, panels.",
         "pairsWith": [
@@ -88,11 +88,11 @@
       },
       "surface.2": {
         "oklch": {
-          "l": 0.24,
-          "c": 0.004,
-          "h": 70
+          "l": 0.2929779112096327,
+          "c": 0.01737787288040014,
+          "h": 266.3606544077609
         },
-        "srgb": "#201F1D",
+        "srgb": "#282C35",
         "usage": "surface",
         "role": "Raised — the confidence card, popovers.",
         "pairsWith": [
@@ -103,11 +103,11 @@
       },
       "surface.3": {
         "oklch": {
-          "l": 0.265,
-          "c": 0.004,
-          "h": 70
+          "l": 0.3365397921614289,
+          "c": 0.020573304198048047,
+          "h": 265.95855430056014
         },
-        "srgb": "#262523",
+        "srgb": "#323742",
         "usage": "surface",
         "role": "Meter tracks, inset wells.",
         "pairsWith": [
@@ -141,22 +141,22 @@
       },
       "foreground": {
         "oklch": {
-          "l": 0.968,
-          "c": 0.005,
-          "h": 85
+          "l": 0.9789322309380892,
+          "c": 0.0028651757449798102,
+          "h": 264.5421421909542
         },
-        "srgb": "#F6F4F1",
+        "srgb": "#F7F8FA",
         "usage": "text",
         "role": "Primary text. Warm off-white, never pure white.",
         "pairsWith": []
       },
       "foreground.2": {
         "oklch": {
-          "l": 0.715,
-          "c": 0.006,
-          "h": 80
+          "l": 0.7530898415351641,
+          "c": 0.02057640060167442,
+          "h": 252.9217214821914
         },
-        "srgb": "#A5A39F",
+        "srgb": "#A6B0BC",
         "usage": "text",
         "role": "Secondary text AND all micro-labels.",
         "pairsWith": []
@@ -190,20 +190,13 @@
       },
       "border": {
         "oklch": {
-          "l": 1,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.08
+          "l": 0.32041726700498324,
+          "c": 0.01915627225379902,
+          "h": 264.25644677294986
         },
-        "srgb": "rgba(255, 255, 255, 0.08)",
+        "srgb": "#2E333D",
         "usage": "nonText",
-        "compositeOver": [
-          "background",
-          "surface.1",
-          "surface.2",
-          "surface.3"
-        ],
-        "role": "Hairline. Translucent overlay, never a solid grey — depth reads as lift, not outline.",
+        "role": "Hairline structural division (the README `border.subtle`). OPAQUE since F-225, as the mockups draw it: a solid line between two surfaces, not a translucent overlay.",
         "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.",
         "pairsWith": []
       },
@@ -450,16 +443,35 @@
           "accent"
         ],
         "srgb": "#2C2615"
+      },
+      "swatch.keyline": {
+        "oklch": {
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.13333333333333333
+        },
+        "srgb": "rgba(255, 255, 255, 0.13333333333333333)",
+        "usage": "nonText",
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "role": "The README's neutralKeyline (#FFFFFF22): the line around a colour sample. Declared by F-225 as drawn; drawn by the sample family (F-233), which decides how it sits beside the two-tone hairline.",
+        "pairsWith": [],
+        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. Whether it keeps an edge against every sample is the sample family’s question (F-233), and swatch-edge.test.ts records that it cannot on its own."
       }
     },
     "light": {
       "background": {
         "oklch": {
-          "l": 0.99,
-          "c": 0.003,
-          "h": 85
+          "l": 0.9700818876373151,
+          "c": 0.004122095072712324,
+          "h": 91.44637793652691
         },
-        "srgb": "#FDFCF9",
+        "srgb": "#F6F5F2",
         "usage": "surface",
         "role": "The page.",
         "pairsWith": [
@@ -485,11 +497,11 @@
       },
       "surface.2": {
         "oklch": {
-          "l": 0.972,
-          "c": 0.004,
-          "h": 85
+          "l": 0.9454846246558881,
+          "c": 0.006748582529609743,
+          "h": 97.35465486682676
         },
-        "srgb": "#F7F6F3",
+        "srgb": "#EEEDE8",
         "usage": "surface",
         "role": "Raised.",
         "pairsWith": [
@@ -500,11 +512,11 @@
       },
       "surface.3": {
         "oklch": {
-          "l": 0.95,
-          "c": 0.004,
-          "h": 85
+          "l": 0.9159872521518699,
+          "c": 0.00706754037676315,
+          "h": 88.64560184061156
         },
-        "srgb": "#F0EEEB",
+        "srgb": "#E5E3DE",
         "usage": "surface",
         "role": "Meter tracks.",
         "pairsWith": [
@@ -538,33 +550,33 @@
       },
       "foreground": {
         "oklch": {
-          "l": 0.195,
-          "c": 0.008,
-          "h": 70
+          "l": 0.2223215245555405,
+          "c": 0.006012717775781599,
+          "h": 271.1392735408755
         },
-        "srgb": "#171411",
+        "srgb": "#1A1B1E",
         "usage": "text",
         "role": "Primary text. Sumi-inspired, never pure black.",
         "pairsWith": []
       },
       "foreground.2": {
         "oklch": {
-          "l": 0.47,
-          "c": 0.008,
-          "h": 72
+          "l": 0.5006171373567372,
+          "c": 0.021555965451808348,
+          "h": 258.3719239797196
         },
-        "srgb": "#5E5A56",
+        "srgb": "#5C6470",
         "usage": "text",
         "role": "Secondary text AND all micro-labels.",
         "pairsWith": []
       },
       "foreground.3": {
         "oklch": {
-          "l": 0.635,
-          "c": 0.006,
-          "h": 75
+          "l": 0.5076181223305936,
+          "c": 0.02488841397003061,
+          "h": 259.18426993519626
         },
-        "srgb": "#8D8A87",
+        "srgb": "#5D6674",
         "usage": "largeText",
         "role": "Decorative and large text only. NOT for micro-labels.",
         "pairsWith": []
@@ -587,20 +599,13 @@
       },
       "border": {
         "oklch": {
-          "l": 0,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.08
+          "l": 0.9159872521518699,
+          "c": 0.00706754037676315,
+          "h": 88.64560184061156
         },
-        "srgb": "rgba(0, 0, 0, 0.08)",
+        "srgb": "#E5E3DE",
         "usage": "nonText",
-        "compositeOver": [
-          "background",
-          "surface.1",
-          "surface.2",
-          "surface.3"
-        ],
-        "role": "Hairline.",
+        "role": "Hairline structural division (the README `border.subtle`). OPAQUE since F-225, as the mockups draw it: a solid line between two surfaces, not a translucent overlay.",
         "uncheckedReason": "A decorative hairline beside tonal elevation. WCAG 1.4.11 applies to visual information REQUIRED to identify a component, and a card here is already identified by its surface tint — the line is reinforcement. Exempt by the standard, not by convenience.",
         "pairsWith": []
       },
@@ -847,6 +852,25 @@
           "accent"
         ],
         "srgb": "#ECE8D6"
+      },
+      "swatch.keyline": {
+        "oklch": {
+          "l": 0.2223215245555405,
+          "c": 0.006012717775781599,
+          "h": 271.1392735408755,
+          "alpha": 0.09411764705882353
+        },
+        "srgb": "rgba(26, 27, 30, 0.09411764705882353)",
+        "usage": "nonText",
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "role": "The README's neutralKeyline (#1A1B1E18): the line around a colour sample. Declared by F-225 as drawn; drawn by the sample family (F-233), which decides how it sits beside the two-tone hairline.",
+        "pairsWith": [],
+        "uncheckedReason": "The other side of a keyline is a colour sample, which can be ANY colour, so no declared pairing can stand for it. Whether it keeps an edge against every sample is the sample family’s question (F-233), and swatch-edge.test.ts records that it cannot on its own."
       }
     }
   },
@@ -1100,8 +1124,8 @@
       "_largeTextNote": "The px floor that makes `usage: \"largeText\"` mean something. WCAG 2.2 defines large text as >= 18.66px, or >= 24px bold (14pt/18pt at 96dpi). It lived only in prose and doc comments until F-017, while the rendered small-text check and the Text component's types both depend on it — a number three things agree about by copying it is a number that will eventually disagree.",
       "blockingWhenStatus": "approved",
       "chromaCeiling": {
-        "maxChroma": 0.01,
-        "_note": "Above this, ANY token needs an entry in `exceptions` — the scope is every token, so a chromatic accent cannot escape the rule by being classified nonText. The interface is near-achromatic by rule so that the garment colour is the only chroma competing for the eye."
+        "maxChroma": 0.026,
+        "_note": "RE-STATED BY F-225 (ADR-0111), from 0.01. The ceiling is the largest OKLCh chroma among the values the mockups DRAW in chrome — the README token table, both themes: dark text.tertiary #768290 at C 0.0256, rounded up to the third decimal. Computed, not chosen, and recomputed by mockup-palette.test.ts. Above it, ANY token needs an entry in `exceptions`. The interface stays near-achromatic so the garment colour is the only strong chroma competing for the eye; what the mockups draw is a cool slate at C 0.009–0.026, which is the ceiling, not an exception to it."
       }
     }
   },

@@ -9,17 +9,17 @@
  */
 
 :root, [data-theme="dark"] {
-  --irodora-color-background: #12100F;
-  --irodora-color-surface-1: #191816;
-  --irodora-color-surface-2: #201F1D;
-  --irodora-color-surface-3: #262523;
+  --irodora-color-background: #15171B;
+  --irodora-color-surface-1: #20232A;
+  --irodora-color-surface-2: #282C35;
+  --irodora-color-surface-3: #323742;
   --irodora-color-swatch-well: #2D2B29;
   --irodora-color-swatch-hairline: #F6F5F3;
-  --irodora-color-foreground: #F6F4F1;
-  --irodora-color-foreground-2: #A5A39F;
+  --irodora-color-foreground: #F7F8FA;
+  --irodora-color-foreground-2: #A6B0BC;
   --irodora-color-foreground-3: #82807C;
   --irodora-color-link: #F6F4F1;
-  --irodora-color-border: rgba(255, 255, 255, 0.08);
+  --irodora-color-border: #2E333D;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
   --irodora-color-border-strong: #858381;
   --irodora-color-inverse: #F6F4F1;
@@ -37,20 +37,21 @@
   --irodora-color-accent: #FFE38D;
   --irodora-color-accent-foreground: #12100F;
   --irodora-color-accent-muted: #2C2615;
+  --irodora-color-swatch-keyline: rgba(255, 255, 255, 0.13333333333333333);
 }
 
 [data-theme="light"] {
-  --irodora-color-background: #FDFCF9;
+  --irodora-color-background: #F6F5F2;
   --irodora-color-surface-1: #FFFFFF;
-  --irodora-color-surface-2: #F7F6F3;
-  --irodora-color-surface-3: #F0EEEB;
+  --irodora-color-surface-2: #EEEDE8;
+  --irodora-color-surface-3: #E5E3DE;
   --irodora-color-swatch-well: #ECEAE7;
   --irodora-color-swatch-hairline: #131110;
-  --irodora-color-foreground: #171411;
-  --irodora-color-foreground-2: #5E5A56;
-  --irodora-color-foreground-3: #8D8A87;
+  --irodora-color-foreground: #1A1B1E;
+  --irodora-color-foreground-2: #5C6470;
+  --irodora-color-foreground-3: #5D6674;
   --irodora-color-link: #171411;
-  --irodora-color-border: rgba(0, 0, 0, 0.08);
+  --irodora-color-border: #E5E3DE;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
   --irodora-color-border-strong: #817F7D;
   --irodora-color-inverse: #171411;
@@ -68,21 +69,22 @@
   --irodora-color-accent: #4F4301;
   --irodora-color-accent-foreground: #FBFAF7;
   --irodora-color-accent-muted: #ECE8D6;
+  --irodora-color-swatch-keyline: rgba(26, 27, 30, 0.09411764705882353);
 }
 
 @supports (color: oklch(0 0 0)) {
   :root, [data-theme="dark"] {
-    --irodora-color-background: oklch(0.175 0.004 70);
-    --irodora-color-surface-1: oklch(0.21 0.004 70);
-    --irodora-color-surface-2: oklch(0.24 0.004 70);
-    --irodora-color-surface-3: oklch(0.265 0.004 70);
+    --irodora-color-background: oklch(0.20423564960316032 0.008553488228561541 264.3666987591157);
+    --irodora-color-surface-1: oklch(0.2561043944595853 0.013913560447872099 267.01858257458343);
+    --irodora-color-surface-2: oklch(0.2929779112096327 0.01737787288040014 266.3606544077609);
+    --irodora-color-surface-3: oklch(0.3365397921614289 0.020573304198048047 265.95855430056014);
     --irodora-color-swatch-well: oklch(0.29 0.004 70);
     --irodora-color-swatch-hairline: oklch(0.97 0.003 85);
-    --irodora-color-foreground: oklch(0.968 0.005 85);
-    --irodora-color-foreground-2: oklch(0.715 0.006 80);
+    --irodora-color-foreground: oklch(0.9789322309380892 0.0028651757449798102 264.5421421909542);
+    --irodora-color-foreground-2: oklch(0.7530898415351641 0.02057640060167442 252.9217214821914);
     --irodora-color-foreground-3: oklch(0.6 0.006 80);
     --irodora-color-link: oklch(0.968 0.005 85);
-    --irodora-color-border: oklch(1 0 0 / 0.08);
+    --irodora-color-border: oklch(0.32041726700498324 0.01915627225379902 264.25644677294986);
     --irodora-color-backdrop: oklch(0 0 0 / 0.6);
     --irodora-color-border-strong: oklch(0.61 0.004 70);
     --irodora-color-inverse: oklch(0.968 0.005 85);
@@ -100,19 +102,20 @@
     --irodora-color-accent: oklch(0.92 0.11 92);
     --irodora-color-accent-foreground: oklch(0.175 0.004 70);
     --irodora-color-accent-muted: oklch(0.27 0.03 92);
+    --irodora-color-swatch-keyline: oklch(1 0 0 / 0.13333333333333333);
   }
   [data-theme="light"] {
-    --irodora-color-background: oklch(0.99 0.003 85);
+    --irodora-color-background: oklch(0.9700818876373151 0.004122095072712324 91.44637793652691);
     --irodora-color-surface-1: oklch(1 0 0);
-    --irodora-color-surface-2: oklch(0.972 0.004 85);
-    --irodora-color-surface-3: oklch(0.95 0.004 85);
+    --irodora-color-surface-2: oklch(0.9454846246558881 0.006748582529609743 97.35465486682676);
+    --irodora-color-surface-3: oklch(0.9159872521518699 0.00706754037676315 88.64560184061156);
     --irodora-color-swatch-well: oklch(0.938 0.005 85);
     --irodora-color-swatch-hairline: oklch(0.18 0.004 70);
-    --irodora-color-foreground: oklch(0.195 0.008 70);
-    --irodora-color-foreground-2: oklch(0.47 0.008 72);
-    --irodora-color-foreground-3: oklch(0.635 0.006 75);
+    --irodora-color-foreground: oklch(0.2223215245555405 0.006012717775781599 271.1392735408755);
+    --irodora-color-foreground-2: oklch(0.5006171373567372 0.021555965451808348 258.3719239797196);
+    --irodora-color-foreground-3: oklch(0.5076181223305936 0.02488841397003061 259.18426993519626);
     --irodora-color-link: oklch(0.195 0.008 70);
-    --irodora-color-border: oklch(0 0 0 / 0.08);
+    --irodora-color-border: oklch(0.9159872521518699 0.00706754037676315 88.64560184061156);
     --irodora-color-backdrop: oklch(0 0 0 / 0.4);
     --irodora-color-border-strong: oklch(0.598 0.004 85);
     --irodora-color-inverse: oklch(0.195 0.008 70);
@@ -130,6 +133,7 @@
     --irodora-color-accent: oklch(0.385 0.079 98);
     --irodora-color-accent-foreground: oklch(0.985 0.004 85);
     --irodora-color-accent-muted: oklch(0.93 0.025 98);
+    --irodora-color-swatch-keyline: oklch(0.2223215245555405 0.006012717775781599 271.1392735408755 / 0.09411764705882353);
   }
 }
 

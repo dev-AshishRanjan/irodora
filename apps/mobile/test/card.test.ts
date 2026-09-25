@@ -121,7 +121,12 @@ describe('every colour in the document is accounted for', () => {
    */
   it('DECOY — a hand-typed colour is reported', () => {
     const tokens = new Set(Object.values(nativeColors.light).map((v) => v.toUpperCase()));
-    const planted = cardSvg(ENTRY, OPTIONS).replace('fill="#FDFCF9"', 'fill="#BADA55"');
+    // Planted over the ground TOKEN'S current value, not a hex from one palette generation: a
+    // literal here went stale when F-225 retuned the ground, and the replace then planted nothing.
+    const ground = `fill="${nativeColors.light.background}"`;
+    const svg = cardSvg(ENTRY, OPTIONS);
+    expect(svg).toContain(ground);
+    const planted = svg.replace(ground, 'fill="#BADA55"');
     const unaccounted = colours(planted).filter(
       (c) => !tokens.has(c) && c !== ENTRY.derived.hex.toUpperCase(),
     );

@@ -21,11 +21,11 @@ export const runtimeManifest: CheckableManifest = {
     "dark": {
       "background": {
         "oklch": {
-          "l": 0.175,
-          "c": 0.004,
-          "h": 70
+          "l": 0.20423564960316032,
+          "c": 0.008553488228561541,
+          "h": 264.3666987591157
         },
-        "srgb": "#12100F",
+        "srgb": "#15171B",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -36,11 +36,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.1": {
         "oklch": {
-          "l": 0.21,
-          "c": 0.004,
-          "h": 70
+          "l": 0.2561043944595853,
+          "c": 0.013913560447872099,
+          "h": 267.01858257458343
         },
-        "srgb": "#191816",
+        "srgb": "#20232A",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -51,11 +51,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.2": {
         "oklch": {
-          "l": 0.24,
-          "c": 0.004,
-          "h": 70
+          "l": 0.2929779112096327,
+          "c": 0.01737787288040014,
+          "h": 266.3606544077609
         },
-        "srgb": "#201F1D",
+        "srgb": "#282C35",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -66,11 +66,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.3": {
         "oklch": {
-          "l": 0.265,
-          "c": 0.004,
-          "h": 70
+          "l": 0.3365397921614289,
+          "c": 0.020573304198048047,
+          "h": 265.95855430056014
         },
-        "srgb": "#262523",
+        "srgb": "#323742",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -104,22 +104,22 @@ export const runtimeManifest: CheckableManifest = {
       },
       "foreground": {
         "oklch": {
-          "l": 0.968,
-          "c": 0.005,
-          "h": 85
+          "l": 0.9789322309380892,
+          "c": 0.0028651757449798102,
+          "h": 264.5421421909542
         },
-        "srgb": "#F6F4F1",
+        "srgb": "#F7F8FA",
         "role": "",
         "usage": "text",
         "pairsWith": []
       },
       "foreground.2": {
         "oklch": {
-          "l": 0.715,
-          "c": 0.006,
-          "h": 80
+          "l": 0.7530898415351641,
+          "c": 0.02057640060167442,
+          "h": 252.9217214821914
         },
-        "srgb": "#A5A39F",
+        "srgb": "#A6B0BC",
         "role": "",
         "usage": "text",
         "pairsWith": []
@@ -153,21 +153,14 @@ export const runtimeManifest: CheckableManifest = {
       },
       "border": {
         "oklch": {
-          "l": 1,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.08
+          "l": 0.32041726700498324,
+          "c": 0.01915627225379902,
+          "h": 264.25644677294986
         },
-        "srgb": "rgba(255, 255, 255, 0.08)",
+        "srgb": "#2E333D",
         "role": "",
         "usage": "nonText",
         "pairsWith": [],
-        "compositeOver": [
-          "background",
-          "surface.1",
-          "surface.2",
-          "surface.3"
-        ],
         "uncheckedReason": ""
       },
       "backdrop": {
@@ -413,16 +406,35 @@ export const runtimeManifest: CheckableManifest = {
           "foreground.2",
           "accent"
         ]
+      },
+      "swatch.keyline": {
+        "oklch": {
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.13333333333333333
+        },
+        "srgb": "rgba(255, 255, 255, 0.13333333333333333)",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "uncheckedReason": ""
       }
     },
     "light": {
       "background": {
         "oklch": {
-          "l": 0.99,
-          "c": 0.003,
-          "h": 85
+          "l": 0.9700818876373151,
+          "c": 0.004122095072712324,
+          "h": 91.44637793652691
         },
-        "srgb": "#FDFCF9",
+        "srgb": "#F6F5F2",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -448,11 +460,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.2": {
         "oklch": {
-          "l": 0.972,
-          "c": 0.004,
-          "h": 85
+          "l": 0.9454846246558881,
+          "c": 0.006748582529609743,
+          "h": 97.35465486682676
         },
-        "srgb": "#F7F6F3",
+        "srgb": "#EEEDE8",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -463,11 +475,11 @@ export const runtimeManifest: CheckableManifest = {
       },
       "surface.3": {
         "oklch": {
-          "l": 0.95,
-          "c": 0.004,
-          "h": 85
+          "l": 0.9159872521518699,
+          "c": 0.00706754037676315,
+          "h": 88.64560184061156
         },
-        "srgb": "#F0EEEB",
+        "srgb": "#E5E3DE",
         "role": "",
         "usage": "surface",
         "pairsWith": [
@@ -501,33 +513,33 @@ export const runtimeManifest: CheckableManifest = {
       },
       "foreground": {
         "oklch": {
-          "l": 0.195,
-          "c": 0.008,
-          "h": 70
+          "l": 0.2223215245555405,
+          "c": 0.006012717775781599,
+          "h": 271.1392735408755
         },
-        "srgb": "#171411",
+        "srgb": "#1A1B1E",
         "role": "",
         "usage": "text",
         "pairsWith": []
       },
       "foreground.2": {
         "oklch": {
-          "l": 0.47,
-          "c": 0.008,
-          "h": 72
+          "l": 0.5006171373567372,
+          "c": 0.021555965451808348,
+          "h": 258.3719239797196
         },
-        "srgb": "#5E5A56",
+        "srgb": "#5C6470",
         "role": "",
         "usage": "text",
         "pairsWith": []
       },
       "foreground.3": {
         "oklch": {
-          "l": 0.635,
-          "c": 0.006,
-          "h": 75
+          "l": 0.5076181223305936,
+          "c": 0.02488841397003061,
+          "h": 259.18426993519626
         },
-        "srgb": "#8D8A87",
+        "srgb": "#5D6674",
         "role": "",
         "usage": "largeText",
         "pairsWith": []
@@ -550,21 +562,14 @@ export const runtimeManifest: CheckableManifest = {
       },
       "border": {
         "oklch": {
-          "l": 0,
-          "c": 0,
-          "h": 0,
-          "alpha": 0.08
+          "l": 0.9159872521518699,
+          "c": 0.00706754037676315,
+          "h": 88.64560184061156
         },
-        "srgb": "rgba(0, 0, 0, 0.08)",
+        "srgb": "#E5E3DE",
         "role": "",
         "usage": "nonText",
         "pairsWith": [],
-        "compositeOver": [
-          "background",
-          "surface.1",
-          "surface.2",
-          "surface.3"
-        ],
         "uncheckedReason": ""
       },
       "backdrop": {
@@ -810,6 +815,25 @@ export const runtimeManifest: CheckableManifest = {
           "foreground.2",
           "accent"
         ]
+      },
+      "swatch.keyline": {
+        "oklch": {
+          "l": 0.2223215245555405,
+          "c": 0.006012717775781599,
+          "h": 271.1392735408755,
+          "alpha": 0.09411764705882353
+        },
+        "srgb": "rgba(26, 27, 30, 0.09411764705882353)",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [],
+        "compositeOver": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ],
+        "uncheckedReason": ""
       }
     }
   },
@@ -824,7 +848,7 @@ export const runtimeManifest: CheckableManifest = {
       "largeTextMinBoldPx": 24,
       "blockingWhenStatus": "approved",
       "chromaCeiling": {
-        "maxChroma": 0.01
+        "maxChroma": 0.026
       }
     }
   },

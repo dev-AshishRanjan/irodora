@@ -36,6 +36,7 @@
   --color-accent: var(--irodora-color-accent);
   --color-accent-foreground: var(--irodora-color-accent-foreground);
   --color-accent-muted: var(--irodora-color-accent-muted);
+  --color-swatch-keyline: var(--irodora-color-swatch-keyline);
   --radius-sm: var(--irodora-radius-sm);
   --radius-md: var(--irodora-radius-md);
   --radius-lg: var(--irodora-radius-lg);

@@ -132,6 +132,24 @@ describe('a sample of ANY colour keeps a perceptible edge', () => {
     expect(worst).toBeLessThan(NON_TEXT_FLOOR);
   });
 
+  it.each(['dark', 'light'] as const)(
+    'F-225, %s: the README keyline ALONE fails this check — which is why it is F-233’s question',
+    (theme) => {
+      /*
+       * F-225 declares `swatch.keyline` as the README draws it (#FFFFFF22 dark, #1A1B1E18 light)
+       * and paints nothing with it. Measured the way the two-tone keyline is measured, a single
+       * translucent line cannot keep an edge against every sample — the same failure the decoys
+       * above record for the treatments that shipped before. So whether the sample family draws
+       * it, and with what beside it, is decided by F-233, where the sample is rebuilt; this
+       * records the fact that decision starts from.
+       */
+      const { oklch } = COLOR[theme]['swatch.keyline'];
+      const rgb = theme === 'dark' ? [1, 1, 1] : hex('#1A1B1E');
+      const { worst } = worstCase([{ rgb, alpha: oklch.alpha }]);
+      expect(worst).toBeLessThan(NON_TEXT_FLOOR);
+    },
+  );
+
   it('uses the same contrast function the gate uses', () => {
     // Not a second implementation. If this disagreed with gate 9, one of them would be wrong
     // and nothing would say which.

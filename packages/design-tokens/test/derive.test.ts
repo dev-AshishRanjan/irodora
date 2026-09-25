@@ -137,23 +137,23 @@ describe('compositing', () => {
       if (t === undefined) throw new Error(`no token ${name}`);
       return t;
     };
-    // `border`, the hairline — NOT `border.strong`, which F-070 made OPAQUE because a
-    // translucent boundary reached only 1.17 against every surface. This test needs a token
-    // that is genuinely translucent, and moving it is the point rather than a workaround.
-    const border = lookup('border');
+    // `swatch.keyline`, the README's line around a sample. It used to be `border`, which F-225
+    // made OPAQUE as the README draws it — as `border.strong` was before it (F-070). This test
+    // needs a token that is genuinely translucent, and moving it is the point, not a workaround.
+    const border = lookup('swatch.keyline');
     const grounds = border.compositeOver ?? [];
     expect(grounds.length).toBeGreaterThan(1);
 
     // Two per ground: the linear blend and the encoded one. Neither model is uniformly
     // stricter, so both are produced and the caller takes the worst.
-    const appearances = resolveAll('border', border, lookup);
+    const appearances = resolveAll('swatch.keyline', border, lookup);
     expect(appearances).toHaveLength(grounds.length * 2);
     expect(new Set(appearances.map((a) => a.model))).toEqual(new Set(['linear', 'encoded']));
 
     for (const { over, rgb } of appearances) {
       expect(over).not.toBeNull();
       const base = tokenRgb(over!, lookup(over!));
-      // A 14% white overlay on a dark ground must land ABOVE the ground and BELOW pure
+      // A 13% white overlay on a dark ground must land ABOVE the ground and BELOW pure
       // white. Bracketing rather than pinning a hex keeps this about the operation rather
       // than about the current value of any one surface.
       expect(rgb[0], `over ${String(over)}`).toBeGreaterThan(base[0]);
@@ -169,9 +169,9 @@ describe('compositing', () => {
       return t;
     };
     // The decoy for the whole worst-ground change: if every ground produced the same
-    // appearance, checking all of them would be ceremony. In the light theme the same 8%
-    // black hairline is measurably different on white than on a meter track.
-    const appearances = resolveAll('border', lookup('border'), lookup);
+    // appearance, checking all of them would be ceremony. In the light theme the same 9% ink
+    // keyline is measurably different on white than on a meter track.
+    const appearances = resolveAll('swatch.keyline', lookup('swatch.keyline'), lookup);
     const hexes = new Set(appearances.map((a) => toHex(a.rgb)));
     expect(hexes.size).toBeGreaterThan(1);
   });

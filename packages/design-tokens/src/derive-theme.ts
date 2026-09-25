@@ -43,7 +43,17 @@ export function hexToOklch(hex: string): ManifestOklch {
   const [, r, g, b] = m;
   const rgb = [r, g, b].map((x) => parseInt(x ?? '0', 16) / 255) as [number, number, number];
   const [l, c, h] = xyzToOklch(srgbToXyz(rgb));
-  return { l, c, h };
+  /*
+   * WHITE COMES BACK AS L 1.0000000000000002 and a hue-less grey as C 1e-8 at an arbitrary hue:
+   * float noise from the matrices, not colour. Clamped and snapped, so the stored value is the
+   * colour the hex names — and the manifest's own [0, 1] check does not refuse the README's white.
+   */
+  const achromatic = c < 1e-6;
+  return {
+    l: Math.min(1, Math.max(0, l)),
+    c: achromatic ? 0 : c,
+    h: achromatic ? 0 : h,
+  };
 }
 
 /** A token at a new OKLCh, its `srgb` derived from it, everything else as it was. */
