@@ -21,6 +21,7 @@
  */
 
 import { derivedSrgb, isInGamut, oklchToRgb } from './derive.js';
+import { reanchorTheme, withOklch } from './derive-theme.js';
 
 /**
  * The two AUTHORED themes. Both are written by hand, checked independently, and neither is
@@ -36,7 +37,7 @@ export type Mode = (typeof BASE_THEMES)[number];
  * EVERYTHING ITERATES THIS. The gates, the emitters and the conformance suite all read `THEMES`
  * rather than naming a theme, which is why adding a palette costs no call sites.
  */
-export const THEMES = ['dark', 'light'] as const;
+export const THEMES = ['dark', 'light', 'slate.dark', 'obsidian.dark'] as const;
 export type Theme = (typeof THEMES)[number];
 
 /**
@@ -47,14 +48,26 @@ export type Theme = (typeof THEMES)[number];
  * them. The manifest's `themes` list is parsed against this constant, so the picker's order and
  * the manifest's cannot drift apart.
  */
-export const DRAWN_THEMES = ['sumi', 'washi'] as const;
+export const DRAWN_THEMES = ['sumi', 'slate', 'obsidian', 'washi'] as const;
 export type DrawnTheme = (typeof DRAWN_THEMES)[number];
 
 /** Which palette each drawn theme paints. Total, so a drawn theme with no palette cannot compile. */
 export const DRAWN_THEME_PALETTE: Readonly<Record<DrawnTheme, Theme>> = {
   sumi: 'dark',
+  slate: 'slate.dark',
+  obsidian: 'obsidian.dark',
   washi: 'light',
 };
+
+/**
+ * The two themes `15` draws as one swatch each, derived rather than authored (ADR-0107).
+ *
+ * Each is a base palette re-anchored at its drawn ground by `reanchorTheme`, plus the moves a
+ * floor forced, which `generate-design-tokens.mjs` computes by `settleFloors` and `--check`
+ * holds to the rule. The parser applies both before any check runs, so every gate reads the values
+ * a device paints.
+ */
+export const DERIVED_THEMES = { slate: 'slate.dark', obsidian: 'obsidian.dark' } as const;
 
 /** Which mode a palette is, which is what decides whether it is a light or a dark reading. */
 export function themeMode(theme: Theme): Mode {
@@ -550,6 +563,55 @@ export function parseManifest(input: unknown): Manifest {
    * disagrees with `DRAWN_THEMES` is a parse error: the picker reads the constant, the manifest
    * records the design, and the two are only worth having if they cannot drift.
    */
+  /*
+   * THE DERIVED THEMES (F-225, ADR-0107), before any check runs: re-anchored at the drawn ground,
+   * then the stored floor moves applied. A derivation the constant does not name, or a named one
+   * the manifest omits, is a parse error — the palette names are literal types.
+   */
+  const derivationsRaw = requireRecord(root['themeDerivations'], 'themeDerivations');
+  const declaredDerived = Object.keys(derivationsRaw).filter((k) => !k.startsWith('_'));
+  if (declaredDerived.sort().join(' ') !== Object.keys(DERIVED_THEMES).sort().join(' '))
+    throw new ManifestError(
+      'themeDerivations',
+      `declares [${declaredDerived.join(' ')}] and DERIVED_THEMES expects [${Object.keys(DERIVED_THEMES).join(' ')}]`,
+    );
+  for (const [id, palette] of Object.entries(DERIVED_THEMES)) {
+    const path = `themeDerivations.${id}`;
+    const o = requireRecord(derivationsRaw[id], path);
+    const from = requireString(o['from'], `${path}.from`);
+    const base = themes[from];
+    if (base === undefined || !(BASE_THEMES as readonly string[]).includes(from))
+      throw new ManifestError(`${path}.from`, `"${from}" is not an authored palette`);
+    requireString(o['groundSource'], `${path}.groundSource`);
+    const ground = parseOklch(o['ground'], `${path}.ground`);
+    const reanchor = o['reanchor'];
+    if (!Array.isArray(reanchor) || reanchor.length === 0)
+      throw new ManifestError(`${path}.reanchor`, 'expected the tokens that sit on the ground');
+    const names = reanchor.map((r, i) => requireString(r, `${path}.reanchor[${String(i)}]`));
+    for (const n of names)
+      if (!(n in base)) throw new ManifestError(`${path}.reanchor`, `"${n}" is not a token`);
+    const derived = reanchorTheme(base, ground, names, `color.${palette}`);
+
+    const movesRaw = o['moves'];
+    if (!Array.isArray(movesRaw)) throw new ManifestError(`${path}.moves`, 'expected an array');
+    for (const [i, m] of movesRaw.entries()) {
+      const mp = `${path}.moves[${String(i)}]`;
+      const mo = requireRecord(m, mp);
+      const token = requireString(mo['token'], `${mp}.token`);
+      const l = requireNumber(mo['l'], `${mp}.l`);
+      requireString(mo['forcedBy'], `${mp}.forcedBy`);
+      if (mo['space'] !== 'oklab')
+        throw new ManifestError(`${mp}.space`, 'a derived theme moves in OKLab (ADR-0107)');
+      const at = derived[token];
+      if (at === undefined) throw new ManifestError(`${mp}.token`, `"${token}" is not a token`);
+      if (l < 0 || l > 1) throw new ManifestError(`${mp}.l`, 'OKLCh L is [0,1]');
+      // `c` only on a CVD separation move (settleSeparation): hue is never moved.
+      const c = mo['c'] === undefined ? at.oklch.c : requireNumber(mo['c'], `${mp}.c`);
+      derived[token] = withOklch(at, { ...at.oklch, l, c }, `color.${palette}.${token}`);
+    }
+    themes[palette] = derived;
+  }
+
   const drawnRaw = root['themes'];
   if (!Array.isArray(drawnRaw))
     throw new ManifestError('themes', 'expected the list of themes mockup 15 draws');

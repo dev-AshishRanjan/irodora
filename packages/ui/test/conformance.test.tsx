@@ -988,6 +988,20 @@ const SUBJECTS: readonly ConformanceSubject[] = [
   },
 ];
 
+/**
+ * THE DERIVED THEMES, THROUGH THE SAME SUITE (F-225).
+ *
+ * Slate Graphite and Obsidian Noir are nobody's hand-authored palette: Sumi re-anchored at their
+ * drawn grounds, plus the moves a gate forced (ADR-0107). Gate 9 and gate 10 measure every declared
+ * pairing in them; what those gates cannot do is RENDER — so this asks whether every component still
+ * resolves every colour it paints to a token, and draws only declared pairs, on those palettes.
+ */
+describe('the derived themes conform too (F-225)', () => {
+  it('produces no findings on Slate or Obsidian', () => {
+    expect(formatFindings(checkAll(SUBJECTS, ['slate.dark', 'obsidian.dark']))).toBe('');
+  });
+});
+
 describe('the registry itself', () => {
   it('is not empty, and every kind it claims has a required state set', () => {
     expect(SUBJECTS.length).toBeGreaterThan(0);

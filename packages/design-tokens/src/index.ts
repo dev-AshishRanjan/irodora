@@ -18,6 +18,7 @@ export {
   parseManifest,
   BASE_THEMES,
   THEMES,
+  DERIVED_THEMES,
   DRAWN_THEMES,
   DRAWN_THEME_PALETTE,
   themeMode,
@@ -66,6 +67,14 @@ export {
   type MoveSearch,
   type MoveSpace,
 } from './derive-theme.js';
+
+export {
+  CONTRAST_CROSSOVER_L,
+  settleFloors,
+  settleSeparation,
+  type FloorMove,
+  type SeparationMove,
+} from './settle.js';
 
 export {
   checkChromaCeiling,

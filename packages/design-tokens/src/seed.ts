@@ -45,7 +45,7 @@
 
 import { checkContrast, checkSeparation, type CheckableManifest, type Finding } from './check.js';
 import { isInGamut, oklchToRgb } from './derive.js';
-import { smallestLightnessMove } from './derive-theme.js';
+import { settleFloors } from './settle.js';
 import { deriveTheme, type ColorToken, type ManifestOklch, type Mode } from './manifest.js';
 
 /** The name the runtime palette is checked under. Never a member of `THEMES`. */
@@ -63,58 +63,6 @@ export interface SeedCorrection {
    * lightness move that passes, hue and chroma held, in this theme only.
    */
   readonly bound: 'ceiling' | 'gamut' | 'floor';
-}
-
-/**
- * Where "lighter" stops being the direction that gains contrast: WCAG's crossover at relative
- * luminance ≈ 0.179, which is OKLCh L ≈ 0.564 — not 0.5 (F-289's review measured it).
- */
-const CONTRAST_CROSSOVER_L = 0.564;
-
-/**
- * Settle every contrast floor the tint broke, the E3 way (F-225, ADR-0107 d.4, ADR-0111).
- *
- * WHY THIS EXISTS. The manifest's own gate-forced values — tertiary text on cards, the focus ring
- * — sit exactly at their floors, because §4 E3 moves a drawn value by the SMALLEST step that
- * passes. A tint moves a surface's luminance a little even at the same OKLab L, and a value with no
- * margin falls under. Refusing would lose the device colour on a third of all hues; the rule the
- * manifest already follows says a pairing that fails in a theme moves the E3 way in that theme,
- * and the device theme is a theme. So each failing token moves by the smallest lightness step that
- * passes, and the move is REPORTED, like every other correction. Returns `null` when a floor
- * cannot be met that way — the checks below then refuse the seed, with their findings.
- */
-function settleFloors(
-  manifest: CheckableManifest,
-  colors: Record<string, ColorToken>,
-): SeedCorrection[] | null {
-  const moves: SeedCorrection[] = [];
-  const failing = (palette: Record<string, ColorToken>) =>
-    checkContrast(manifest, [RUNTIME_THEME], { [RUNTIME_THEME]: palette }).results.filter(
-      (r) => !r.passes,
-    );
-  for (let guard = Object.keys(colors).length; guard > 0; guard -= 1) {
-    const [first] = failing(colors);
-    if (first === undefined) return moves;
-    const name = first.foreground;
-    const token = colors[name];
-    const ground = colors[first.background];
-    if (token === undefined || ground === undefined || token.usage === 'surface') return null;
-    const passes = (candidate: ColorToken): boolean =>
-      !failing({ ...colors, [name]: candidate }).some(
-        (r) => r.foreground === name || r.background === name,
-      );
-    const moved = smallestLightnessMove({
-      token,
-      direction: ground.oklch.l < CONTRAST_CROSSOVER_L ? 'lighter' : 'darker',
-      space: 'oklab',
-      passes,
-      where: `${RUNTIME_THEME}.${name}`,
-    });
-    if (moved === null) return null;
-    moves.push({ token: name, was: token.oklch.l, now: moved.oklch.l, bound: 'floor' });
-    colors[name] = moved;
-  }
-  return null;
 }
 
 export type SeedOutcome =
@@ -202,8 +150,11 @@ export function themeFromSeed(
 
   /* --- the floors the tint broke, the E3 way (F-225) -------------------------------------- */
 
-  const floors = settleFloors(manifest, colors);
-  if (floors !== null) corrections.push(...floors);
+  // The shared settling rule (settle.ts), which the manifest's derived themes use too. A floor it
+  // cannot meet is left for the checks below to refuse, with their findings.
+  const floors = settleFloors(manifest, RUNTIME_THEME, colors);
+  for (const move of floors ?? [])
+    corrections.push({ token: move.token, was: move.from, now: move.to, bound: 'floor' });
 
   /* --- the gate's own checks, over the derived values ------------------------------------ */
 

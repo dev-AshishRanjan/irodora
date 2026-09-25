@@ -42,6 +42,14 @@
       "palette": "dark"
     },
     {
+      "id": "slate",
+      "palette": "slate.dark"
+    },
+    {
+      "id": "obsidian",
+      "palette": "obsidian.dark"
+    },
+    {
       "id": "washi",
       "palette": "light"
     }
@@ -1124,5 +1132,90 @@
   "opacity": {
     "_note": "How strongly a drawing is inked, as a fraction of the theme's foreground, measured on GAMMA-ENCODED luma — the space React Native composites an opacity in. (In linear light the same pixels read about 0.036; a number that moves fourfold with the space it is read in has to say which space, in a repository whose engine rule is that averaging happens in linear light.) F-229 measured every element the inventories bind an illustration to and found two uses: a BACKDROP behind a screen's content at 0.10-0.18 of the foreground (the 90th-percentile reading; median 0.15 over 21 elements) and a FIGURE, where the drawing is the content, at 0.80-0.96. The figure is drawn at full ink, so only the backdrop needs a number. No declared colour token matches that ink - the nearest are chart.5 and chart.4 at deltaE00 4.6-7, which are a chart ramp and mean something else - so the art is the foreground token at this opacity rather than a colour of its own. 06's card art (0.31) and 15's strip (0.33) are twice this and are recorded as read; the surfaces that draw them settle that with a person.",
     "art": 0.15
+  },
+  "themeDerivations": {
+    "_note": "ADR-0107 (OQ-36, closed on the person’s delegation). Mockup 15 draws Slate Graphite and Obsidian Noir as ONE SWATCH EACH, and each tile’s swatch is its theme’s GROUND — the two fully specified themes read at their grounds, not their cards. So each is Sumi (`from`) re-anchored at its drawn ground: every token in `reanchor` keeps Sumi’s OKLab lightness STEP above the ground, with Sumi’s chroma and hue; everything else is Sumi’s value. `moves` are the pairings that then failed, each moved by the smallest lightness step that passes, hue and chroma held (R9-MOCKUP-FIDELITY §4 E3) — COMPUTED by generate-design-tokens.mjs from the rule and held there by --check, never typed.",
+    "slate": {
+      "from": "dark",
+      "ground": {
+        "l": 0.3146671601438604,
+        "c": 0.01659574570409328,
+        "h": 255.64193068066527
+      },
+      "groundSource": "#2C323A, read from the centre of mockup 15’s tile (no hex is printed); a colour read from a render carries ΔE00 ≈ 2 (R9-MOCKUP-FIDELITY §5)",
+      "reanchor": [
+        "surface.1",
+        "surface.2",
+        "surface.3",
+        "swatch.well",
+        "accent.muted",
+        "accent.foreground",
+        "inverse.foreground"
+      ],
+      "moves": [
+        {
+          "token": "foreground.2",
+          "l": 0.8320898415351641,
+          "space": "oklab",
+          "forcedBy": "foreground.2 on surface.2 4.14:1 < 4.5"
+        },
+        {
+          "token": "foreground.3",
+          "l": 0.6805678678878281,
+          "space": "oklab",
+          "forcedBy": "foreground.3 on background 3.30:1 < 4.5"
+        },
+        {
+          "token": "foreground.3.card",
+          "l": 0.8322400162820793,
+          "space": "oklab",
+          "forcedBy": "foreground.3.card on surface.1 4.02:1 < 4.5"
+        },
+        {
+          "token": "ring",
+          "l": 0.717353403336669,
+          "space": "oklab",
+          "forcedBy": "ring on surface.1 2.67:1 < 3"
+        },
+        {
+          "token": "status.ok",
+          "l": 0.764,
+          "space": "oklab",
+          "forcedBy": "status.ok on surface.1 3.73:1 < 4.5"
+        },
+        {
+          "token": "status.warn",
+          "l": 0.7849999999999999,
+          "space": "oklab",
+          "forcedBy": "status.warn on surface.1 3.86:1 < 4.5"
+        },
+        {
+          "token": "status.bad",
+          "l": 0.8840000000000005,
+          "c": 0.06000000000000003,
+          "space": "oklab",
+          "forcedBy": "status.ok / status.bad separate by 29.5 under deutan < 60"
+        }
+      ]
+    },
+    "obsidian": {
+      "from": "dark",
+      "ground": {
+        "l": 0.17786923358635712,
+        "c": 0.006370287913118377,
+        "h": 271.04219528891264
+      },
+      "groundSource": "#101114, printed on mockup 15’s tile",
+      "reanchor": [
+        "surface.1",
+        "surface.2",
+        "surface.3",
+        "swatch.well",
+        "accent.muted",
+        "accent.foreground",
+        "inverse.foreground"
+      ],
+      "moves": []
+    }
   }
 }

@@ -772,6 +772,8 @@ export const en = {
   'appearance.close': 'Close the theme list',
   'appearance.theme': 'Theme',
   'appearance.theme.sumi': 'Sumi Charcoal',
+  'appearance.theme.slate': 'Slate Graphite',
+  'appearance.theme.obsidian': 'Obsidian Noir',
   'appearance.theme.washi': 'Washi Minimal',
   'appearance.system': 'Follow the phone',
   'appearance.device': 'The phone’s colour',

@@ -28,7 +28,10 @@ const PACKAGE = join(ROOT, 'packages', 'design-tokens');
 const MANIFEST = join(ROOT, 'docs', 'design', 'design-system.manifest.json');
 
 const {
+  DERIVED_THEMES,
   parseManifest,
+  settleFloors,
+  settleSeparation,
   derivedSrgb,
   emitCss,
   emitTailwind,
@@ -44,6 +47,51 @@ const checkOnly = process.argv.includes('--check');
 
 const raw = readFileSync(MANIFEST, 'utf8');
 const parsed = JSON.parse(raw);
+
+// --- 0. the derived themes' floor moves (F-225, ADR-0107 d.4) ------------------------------
+//
+// Slate Graphite and Obsidian Noir are Sumi's steps re-anchored at their drawn grounds; where a
+// declared pairing then fails, the failing token moves by the smallest lightness step that passes
+// (`settleFloors`, the gate's own checker). The moves are COMPUTED here from a manifest with none,
+// and `--check` fails if what is stored differs — "a check fails if the shipped values drift from
+// what the rule produces" (ADR-0107).
+const unmoved = structuredClone(parsed);
+for (const id of Object.keys(DERIVED_THEMES)) unmoved.themeDerivations[id].moves = [];
+const bare = parseManifest(unmoved);
+const movesChanged = [];
+for (const [id, palette] of Object.entries(DERIVED_THEMES)) {
+  const colors = { ...bare.color[palette] };
+  const moves = settleFloors(bare, palette, colors);
+  if (moves === null) {
+    console.error(
+      `design tokens: ${palette} has a contrast floor no lightness move can meet — the rule stops ` +
+        'here rather than searching jointly; this is a question for a person (ADR-0107).',
+    );
+    process.exit(1);
+  }
+  // Then any CVD pair the floors broke, by the smallest ΔE00 change with hue held (settleSeparation).
+  const separations = settleSeparation(bare, palette, colors);
+  if (separations === null) {
+    console.error(
+      `design tokens: ${palette} has a CVD pair no hue-held move can separate — a question for a person.`,
+    );
+    process.exit(1);
+  }
+  const want = [
+    ...moves.map((m) => ({ token: m.token, l: m.to, space: 'oklab', forcedBy: m.forcedBy })),
+    ...separations.map((m) => ({
+      token: m.token,
+      l: m.l,
+      c: m.c,
+      space: 'oklab',
+      forcedBy: m.forcedBy,
+    })),
+  ];
+  if (JSON.stringify(parsed.themeDerivations[id].moves) !== JSON.stringify(want)) {
+    movesChanged.push(`${id}: ${want.map((m) => m.token).join(', ') || '(none)'}`);
+    parsed.themeDerivations[id].moves = want;
+  }
+}
 const manifest = parseManifest(parsed);
 
 // --- 1. the derived srgb field ------------------------------------------------------
@@ -84,7 +132,7 @@ for (const [path, content] of outputs) {
 }
 
 if (checkOnly) {
-  if (rewritten.length === 0 && stale.length === 0) {
+  if (rewritten.length === 0 && stale.length === 0 && movesChanged.length === 0) {
     console.log('design tokens: generated output is current.');
     process.exit(0);
   }
@@ -92,6 +140,7 @@ if (checkOnly) {
     'design tokens: generated output is STALE. Run `pnpm --filter @irodora/design-tokens generate`.',
   );
   for (const line of rewritten) console.error(`  srgb  ${line}`);
+  for (const line of movesChanged) console.error(`  moves ${line}`);
   for (const path of stale) console.error(`  file  ${path.replace(ROOT, '.')}`);
   process.exit(1);
 }
@@ -111,6 +160,18 @@ for (const theme of ['dark', 'light'])
     if (occurrences === 0) throw new Error(`could not locate ${needle} for ${theme}.${name}`);
     next = next.replace(needle, replacement);
   }
+// A move changed: the whole file is re-serialised. The manifest round-trips byte-identically
+// through JSON.stringify(_, null, 2), which is asserted rather than assumed.
+if (movesChanged.length > 0) {
+  if (JSON.stringify(JSON.parse(next), null, 2) + '\n' !== next)
+    throw new Error(
+      'the manifest no longer round-trips through JSON.stringify; re-format it first',
+    );
+  const withMoves = JSON.parse(next);
+  for (const id of Object.keys(DERIVED_THEMES))
+    withMoves.themeDerivations[id].moves = parsed.themeDerivations[id].moves;
+  next = JSON.stringify(withMoves, null, 2) + '\n';
+}
 if (next !== raw) writeFileSync(MANIFEST, next, 'utf8');
 
 for (const [path, content] of outputs) {
@@ -119,6 +180,7 @@ for (const [path, content] of outputs) {
 }
 
 console.log(
-  `design tokens: ${rewritten.length} srgb value(s) regenerated, ${outputs.length} target(s) written.`,
+  `design tokens: ${rewritten.length} srgb value(s) regenerated, ${movesChanged.length} derived theme(s) re-settled, ${outputs.length} target(s) written.`,
 );
+for (const line of movesChanged) console.log(`  moves ${line}`);
 for (const line of rewritten) console.log(`  ${line}`);

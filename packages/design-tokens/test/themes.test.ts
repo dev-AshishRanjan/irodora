@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   BASE_THEMES,
+  DERIVED_THEMES,
   DRAWN_THEME_PALETTE,
   DRAWN_THEMES,
   ManifestError,
@@ -44,9 +45,11 @@ const manifest = parseManifest(clone());
 
 describe('the themes 15 draws', () => {
   it('are offered in the order 15 draws them, each painting a declared palette', () => {
-    expect([...DRAWN_THEMES]).toEqual(['sumi', 'washi']);
+    expect([...DRAWN_THEMES]).toEqual(['sumi', 'slate', 'obsidian', 'washi']);
     for (const id of DRAWN_THEMES) expect(THEMES).toContain(DRAWN_THEME_PALETTE[id]);
     expect(DRAWN_THEME_PALETTE.sumi).toBe('dark');
+    expect(DRAWN_THEME_PALETTE.slate).toBe('slate.dark');
+    expect(DRAWN_THEME_PALETTE.obsidian).toBe('obsidian.dark');
     expect(DRAWN_THEME_PALETTE.washi).toBe('light');
   });
 
@@ -63,6 +66,74 @@ describe('the themes 15 draws', () => {
 
   it('keeps the authored pair as the base themes', () => {
     expect([...BASE_THEMES]).toEqual(['dark', 'light']);
+  });
+});
+
+/*
+ * SLATE GRAPHITE AND OBSIDIAN NOIR (ADR-0107). Derived at parse time — so every gate reads the
+ * values a device paints — and held here to the table the ADR publishes, which F-289 measured.
+ */
+describe('the two themes 15 draws as one swatch each', () => {
+  const ramp = (palette: string): string[] =>
+    ['background', 'surface.1', 'surface.2', 'surface.3'].map(
+      (n) => manifest.color[palette as (typeof THEMES)[number]][n]?.srgb ?? '',
+    );
+
+  it('re-anchor Sumi’s drawn steps at their drawn grounds, as ADR-0107 publishes', () => {
+    expect(ramp(DERIVED_THEMES.slate)).toEqual(['#2C323A', '#3B3F46', '#444952', '#4F5460']);
+    expect(ramp(DERIVED_THEMES.obsidian)).toEqual(['#101114', '#1A1D24', '#22262E', '#2B303B']);
+  });
+
+  it('Obsidian needs no move at all; Slate’s are lightness only, but for one hue-held CVD move', () => {
+    const raw = clone()['themeDerivations'] as Record<
+      string,
+      { moves: { token: string; c?: number }[] }
+    >;
+    expect(raw['obsidian']?.moves).toHaveLength(0);
+    const slate = raw['slate']?.moves ?? [];
+    expect(slate.length).toBeGreaterThan(0);
+    for (const move of slate) {
+      const derived = manifest.color['slate.dark'][move.token];
+      const sumi = manifest.color.dark[move.token];
+      // Hue is never moved; chroma only where a move says so.
+      expect([move.token, derived?.oklch.h]).toStrictEqual([move.token, sumi?.oklch.h]);
+      if (move.c === undefined)
+        expect([move.token, derived?.oklch.c]).toStrictEqual([move.token, sumi?.oklch.c]);
+    }
+    expect(slate.filter((m) => m.c !== undefined).map((m) => m.token)).toStrictEqual([
+      'status.bad',
+    ]);
+  });
+
+  it('holds every token it was not told to move at Sumi’s value', () => {
+    const raw = clone()['themeDerivations'] as Record<
+      string,
+      { reanchor: string[]; moves: { token: string }[] }
+    >;
+    for (const [id, palette] of Object.entries(DERIVED_THEMES)) {
+      const touched = new Set([
+        'background',
+        ...(raw[id]?.reanchor ?? []),
+        ...(raw[id]?.moves ?? []).map((m) => m.token),
+      ]);
+      for (const [name, token] of Object.entries(manifest.color[palette]))
+        if (!touched.has(name))
+          expect([palette, name, token.srgb]).toStrictEqual([
+            palette,
+            name,
+            manifest.color.dark[name]?.srgb,
+          ]);
+    }
+  });
+
+  it('refuses a derivation the constant does not name, and a move that would shift a hue', () => {
+    const extra = clone();
+    (extra['themeDerivations'] as Json)['mizu'] = {};
+    expect(() => parseManifest(extra)).toThrow(/DERIVED_THEMES expects/u);
+    const wrongSpace = clone();
+    const moves = ((wrongSpace['themeDerivations'] as Json)['slate'] as Json)['moves'] as Json[];
+    if (moves[0] !== undefined) moves[0]['space'] = 'cielab';
+    expect(() => parseManifest(wrongSpace)).toThrow(/moves in OKLab/u);
   });
 });
 

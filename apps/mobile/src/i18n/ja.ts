@@ -637,6 +637,8 @@ export const ja: Record<MessageKey, string> = {
   'appearance.close': 'テーマ一覧を閉じる',
   'appearance.theme': 'テーマ',
   'appearance.theme.sumi': '墨チャコール',
+  'appearance.theme.slate': 'スレートグラファイト',
+  'appearance.theme.obsidian': 'オブシディアン・ノワール',
   'appearance.theme.washi': '和紙ミニマル',
   'appearance.system': '端末に合わせる',
   'appearance.device': '端末の色',

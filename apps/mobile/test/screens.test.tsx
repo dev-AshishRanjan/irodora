@@ -2173,6 +2173,11 @@ describe('every screen conforms in Japanese too (F-152)', () => {
     expect(formatFindings(checkAll(SCREENS))).toBe('');
   });
 
+  // The two themes 15 draws as one swatch each (F-225, ADR-0107): every screen, rendered on them.
+  it('produces no findings on the derived themes, Slate and Obsidian', () => {
+    expect(formatFindings(checkAll(SCREENS, ['slate.dark', 'obsidian.dark']))).toBe('');
+  });
+
   /*
    * THE TYPE SCALE, WHICH THE RUN ABOVE CANNOT SEE (F-152 criterion 1).
    *

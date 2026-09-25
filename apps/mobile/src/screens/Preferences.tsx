@@ -153,6 +153,8 @@ const familyWordOr = (family: string, locale: 'en' | 'ja'): string => {
  */
 const APPEARANCE_KEYS = {
   sumi: 'appearance.theme.sumi',
+  slate: 'appearance.theme.slate',
+  obsidian: 'appearance.theme.obsidian',
   washi: 'appearance.theme.washi',
   system: 'appearance.system',
   device: 'appearance.device',
