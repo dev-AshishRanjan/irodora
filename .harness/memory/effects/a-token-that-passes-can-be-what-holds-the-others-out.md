@@ -67,3 +67,11 @@ only distinguish tokens that differ; two tokens sharing a value are one token to
 Related: [[a-decoy-that-is-not-broken-proves-nothing]] ·
 [[a-rule-can-be-right-about-the-thing-and-wrong-about-the-value]] ·
 [[a-check-that-reads-one-of-two-spellings]]
+
+## F-225 (2026-09-25)
+
+The proof was re-derived a second time, against the README grounds. Its hex anchor moved
+(`#15171B` → `#16181C`), and a `foreground.3.card` case replaced the accent case, because the
+accent is white or ink now. `swatch.well` is level 1 (C11), so its pairings measure the card, and
+the margins quoted above predate that. Gate 9 prints the current ones. On Slate the status triple
+could not be settled by lightness at all; see [[a-derived-theme-stores-the-moves-its-rule-computed]].

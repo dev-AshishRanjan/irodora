@@ -8,7 +8,7 @@
  */
 
 import { render } from '@testing-library/react-native';
-import { nativeColors } from '@irodora/design-tokens';
+import { nativeColors, THEMES as ALL_THEMES } from '@irodora/design-tokens';
 import {
   currentTone,
   SelectionMark,
@@ -16,7 +16,9 @@ import {
   selectionTone,
   SELECTION_EDGE,
 } from '../src/selection.js';
+import { SearchField } from '../src/SearchField.js';
 import { Swatch } from '../src/Swatch.js';
+import { TextField } from '../src/TextField.js';
 import { ThemeProvider } from '../src/theme.js';
 import { fromSpace } from '@irodora/color-core';
 
@@ -199,5 +201,51 @@ describe('the mark', () => {
     const node = getByTestId('mark');
     expect(node.props['accessible']).not.toBe(true);
     expect(node.props['accessibilityLabel']).toBeUndefined();
+  });
+});
+
+describe('focus is `ring` wherever it is drawn, in every theme (F-225, ADR-0111)', () => {
+  /**
+   * `border.strong` became DECORATIVE in F-225 — the mockups draw it where a label already names
+   * the component — and `ring` took the state. The text fields drew focus in `border.strong` until
+   * then, and nothing held them to it: the tone tests above cover `selectionTone`, which neither
+   * field uses. So they are rendered here, focused and not, in every palette.
+   */
+  const fields = [
+    [
+      'TextField',
+      'Name',
+      () => <TextField label="Name" value="" onChangeText={() => undefined} focused />,
+      () => <TextField label="Name" value="" onChangeText={() => undefined} />,
+    ],
+    [
+      'SearchField',
+      'Search',
+      () => <SearchField label="Search" value="" onChangeText={() => undefined} focused />,
+      () => <SearchField label="Search" value="" onChangeText={() => undefined} />,
+    ],
+  ] as const;
+
+  const edge = (
+    theme: (typeof ALL_THEMES)[number],
+    label: string,
+    field: () => React.JSX.Element,
+  ) => {
+    const { getByLabelText } = render(<ThemeProvider theme={theme}>{field()}</ThemeProvider>);
+    return getByLabelText(label).props['style'] as {
+      readonly borderColor?: string;
+      readonly borderWidth?: number;
+    };
+  };
+
+  it.each(
+    ALL_THEMES.flatMap((t) =>
+      fields.map(([name, label, on, off]) => [t, name, label, on, off] as const),
+    ),
+  )('%s — %s draws focus in ring, and no edge without it', (theme, _name, label, on, off) => {
+    const colors = nativeColors[theme];
+    expect(edge(theme, label, on).borderColor).toBe(colors.ring);
+    expect(edge(theme, label, on).borderColor).not.toBe(colors['border.strong']);
+    expect(edge(theme, label, off).borderWidth).toBe(0);
   });
 });

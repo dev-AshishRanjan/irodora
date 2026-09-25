@@ -79,3 +79,24 @@ compare against the snapshot, not against git.
 
 Related: [[a-mechanism-nobody-used-is-a-mechanism-nobody-measured]] ·
 [[a-derived-check-catches-the-change-a-written-down-one-waves-through]]
+
+## F-225 (2026-09-25): the answer was overruled, by the person
+
+The ceiling's answer — "a theme is a trace of hue, never a lightness" — held until R9. Then the
+person decided the mockups are the specification (golden rule 14), and the mockups draw a cool slate
+ramp at C up to 0.0256. They also draw four themes, none of which is a recipe. The person chose that
+twice, knowing a sample would then be judged against a tinted card (C11).
+
+So [ADR-0111](../../../docs/adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)
+supersedes ADR-0096:
+
+- the ceiling is 0.026, computed from what is drawn;
+- the fuka, yama and aota recipes are **removed**, not re-tuned;
+- Slate and Obsidian are ADR-0107's re-anchored derivations;
+- a stored recipe choice reads as its mode.
+
+The lesson above still stands, with a limit worth writing down: **a constraint that answers a
+question is a good answer until someone with the authority to ask differently does.** The rule was
+never wrong about physics. It was outranked on purpose, and the ADR records the cost. See
+[[the-mockups-readme-is-the-palette-now]] · [[a-derived-theme-stores-the-moves-its-rule-computed]] ·
+[[a-stored-choice-outlives-the-vocabulary-it-was-written-in]].

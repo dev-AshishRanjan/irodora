@@ -383,7 +383,7 @@ export function nonHexDeclarations(css: string): readonly string[] {
 /*
  * THE BASE PAIR ONLY, AND THAT IS A STATEMENT ABOUT WHAT THIS SHEET IS FOR (F-153).
  *
- * Every other target emits all eight palettes. This one emits two, because HeroUI's own
+ * Every other target emits all four palettes (F-225). This one emits two, because HeroUI's own
  * theming is a light/dark class pair and every colour this product controls reaches its
  * components through `style` rather than through a class — Uniwind resolves className in
  * Metro and jest never runs Metro, which is why that decision was made and why it holds here

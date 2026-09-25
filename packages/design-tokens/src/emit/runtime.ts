@@ -14,9 +14,9 @@
  *
  * ## Only the authored pair
  *
- * The derived families are computed from these two by the same function the device uses, so
- * shipping all eight would be shipping six palettes the device can rebuild — and it is the base
- * that a seeded theme is derived FROM.
+ * Slate Graphite and Obsidian Noir are derived from Sumi when the manifest is parsed (ADR-0107,
+ * F-225), and a device never derives them — it paints the generated palettes. What the device
+ * derives is the seeded theme, and the base pair is what a seed is derived FROM.
  *
  * ## What keeps it from drifting
  *

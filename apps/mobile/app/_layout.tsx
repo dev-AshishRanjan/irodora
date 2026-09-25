@@ -84,8 +84,8 @@ function Chrome(): React.JSX.Element {
       {target === null ? null : <TargetBar target={target} onDisarm={disarm} />}
       {/*
         THE MODE, NOT THE NAME (F-153). This read `name === 'dark'`, which was the same
-        question while there were two palettes called `light` and `dark`. There are eight now,
-        and `fuka.dark` is a dark reading whose name is neither.
+        question while there were two palettes called `light` and `dark`. There are four now
+        (F-225), and `slate.dark` is a dark reading whose name is neither.
       */}
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <Stack

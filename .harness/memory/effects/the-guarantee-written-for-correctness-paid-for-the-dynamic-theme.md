@@ -78,3 +78,17 @@ thing.
 
 Related: [[a-rule-that-already-existed-was-the-answer-to-a-question-nobody-had-asked-it]] ·
 [[a-mechanism-nobody-used-is-a-mechanism-nobody-measured]]
+
+## F-225 (2026-09-25): the path that could not fail, failed, and the check caught it
+
+"A derived theme preserves lightness exactly … so it differs from a palette the gate already passed
+by less than the check can resolve." That was true of the old palette, which had margin. The
+README's values have none: the E3 moves are the *smallest* passing step, so they sit exactly on
+their floors. A tint that lifts chroma can now push one under.
+
+The check that "cannot fail today" was kept for exactly this, and it is what failed. The device now
+settles a broken floor with `settleFloors`, the same function the generator uses for Slate
+([[a-derived-theme-stores-the-moves-its-rule-computed]]). The move is made in its own theme only,
+by the E3 rule, and reported as a `floor` correction. Lightness now moves only with a correction
+naming it, and `seed.test.ts` asserts that across all 720 seeds, every one of which still applies.
+The ceiling it clamps to is 0.026 now, not 0.01.

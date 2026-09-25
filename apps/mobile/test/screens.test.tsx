@@ -4274,8 +4274,8 @@ describe('the Finder results do not move (F-151)', () => {
  *
  * ## CVD is CITED, not re-simulated
  *
- * Gate 9 runs every declared pairing through WCAG, APCA and **eleven CVD severities** in all
- * eight palettes. A second simulation here would be a second answer to one question (E-005).
+ * Gate 9 runs every declared pairing through WCAG, APCA and **eleven CVD severities** in every
+ * declared palette. A second simulation here would be a second answer to one question (E-005).
  */
 /**
  * THE INSET OF EVERY BOX ON EVERY SCREEN, PINNED (F-210).
@@ -4542,7 +4542,7 @@ describe('the conformance sweep, with evidence (F-204)', () => {
       cited: {
         cvd:
           'NOT re-simulated here. Gate 9 (pnpm test:contrast) runs every declared pairing ' +
-          'through WCAG, APCA and eleven CVD severities across all eight palettes. A second ' +
+          'through WCAG, APCA and eleven CVD severities across every declared palette. A second ' +
           'simulation would be a second answer to one question (E-005).',
         tokenReach:
           'NOT checked here. scripts/verify-token-reach.mjs (F-092) checks both directions — a ' +

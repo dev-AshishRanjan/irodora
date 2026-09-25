@@ -53,3 +53,12 @@ pairing here had no callers at all, and the honest answer was available before a
 colour maths.
 
 [[a-bound-can-be-rigorous-about-the-wrong-quantity]]
+
+## F-225 (2026-09-25)
+
+The well takes level 1's value (C11). `checkStatusAdjacency` keys on the token *name*
+`swatch.well`, so the adjacency rule holds as written. What changed is the physics this note leans
+on: the well is no longer neutral, and a sample in its well is judged against the card's chroma
+(ADR-0111). The `border.strong` move described above is superseded. The token is decorative at its
+drawn value, and `ring` carries the state it was moved for; see
+[[a-token-that-changes-meaning-keeps-its-name-and-loses-its-readers]].
