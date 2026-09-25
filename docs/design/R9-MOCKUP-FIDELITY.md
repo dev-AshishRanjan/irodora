@@ -159,6 +159,36 @@ Dark `text.tertiary` on the **ground** passes (4.59:1) and keeps the mockup valu
 `border.strong` where a label also identifies the component is decorative and keeps its value.
 Every other mockup token passes as drawn.
 
+**As adopted by `F-225` ([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)), with every move and the space it is made in.**
+The rule above says "CIE L\*". **The three values it publishes are OKLab's**: `smallestLightnessMove`
+gives `#94A1AF` and `#5D6674` in both spaces, but the third row is `#5C6472` in OKLab and `#5D6472`
+in CIE L\*. OKLab is the space the manifest stores, so every move is made there and records
+`space: "oklab"`. Each value is computed by the search and judged by the gate's own checker, not
+typed.
+
+| theme | token | drawn | as shipped | forced by |
+|---|---|---|---|---|
+| Sumi | `foreground.3` (ground) | `#768290` | `#768290` | nothing: 4.59:1 passes |
+| Sumi | `foreground.3.card` | `#768290` | `#94A1AF` | row 1 |
+| Sumi | `border.strong` | `#464D5B` | `#464D5B` | nothing: decorative, a label identifies the component |
+| Sumi | `ring` | `#464D5B` | **`#788090`** | row 3 **as corrected**: `#5C6472` was measured on the ground only, and focus also lands on levels 1–3 (2.0–2.64:1 there). The same rule over those surfaces gives this value (F-225 decision A) |
+| Washi | `foreground.3`, `foreground.3.card` | `#8C96A5` | `#5D6674` | row 2 |
+| Washi | `ring` | `#1A1B1E` | **`#3A3B3E`** | a **fourth row**. The drawn value is also `foreground` and the primary action, so gate 10's `[ring, border.strong]` pair cannot separate. This is the smallest lightness step that does (F-225 decision B) |
+| Slate | `foreground.2` | `#A6B0BC` | `#BFC9D5` | on level 2: 4.14:1 < 4.5 |
+| Slate | `foreground.3` | `#768290` | `#8D9AA8` | on its ground: 3.30:1 < 4.5 |
+| Slate | `foreground.3.card` | `#94A1AF` | `#BCCAD8` | on level 1: 4.02:1 < 4.5 |
+| Slate | `ring` | `#788090` | `#9CA4B4` | on level 1: 2.67:1 < 3 |
+| Slate | `status.ok` | `#49AB79` | `#69C995` | on level 1: 3.73:1 < 4.5 |
+| Slate | `status.warn` | `#D58D25` | `#F2A847` | on level 1: 3.86:1 < 4.5 |
+| Slate | `status.bad` | `#FEAAAC` | `#FECACA` (L 0.884, **C 0.060**) | the two moves above leave `status.ok / status.bad` at 29.5 under deutan (< 60). **No lightness-only move exists**: 13,662 in-gamut combinations of the triple, none clean. So the smallest-ΔE00 move with **hue held** is taken, lightness and chroma free (ADR-0111 §5) |
+| Obsidian | none | | | every pairing passes as derived |
+
+Slate's and Obsidian's "drawn" column is ADR-0107's derivation, since neither theme's roles are
+drawn. The moves live in the manifest's `themeDerivations` and are recomputed by
+`generate-design-tokens.mjs`, and `--check` fails if they drift. **The device colour**
+(`seed.ts`) applies the same rule at runtime, in its own theme only, and reports each move as a
+floor correction. All 720 hue-and-mode seeds apply.
+
 **Tap targets** meet 44 dp (iOS) / 48 dp (Android) through the hit area, not the drawn size — the
 chip stays the size the mockup draws.
 
@@ -178,8 +208,11 @@ Preserved, built from the mockup's own components, and listed here so it is visi
 ## 5. Tokens
 
 **Dark** (`Sumi Charcoal`, the default) and **light** (`Washi Minimal`) take the README table
-exactly, except the three E3 moves. The manifest's `chromaCeiling` of `0.01` is exceeded by the
-mockup ramp (C 0.0086 – 0.0251, h ≈ 264°) and is re-stated by `F-225` with an ADR.
+exactly, except the E3 moves. **Adopted by `F-225`
+([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md))**,
+and a test reads the table out of the README and holds the manifest to it. The mockup ramp exceeds
+the old `chromaCeiling` of `0.01` (C 0.0086–0.0256, h ≈ 264°), so the ceiling is re-stated at
+**0.026**: the largest chroma drawn in chrome, rounded up, and recomputed by that test.
 
 | | dark | light |
 |---|---|---|
@@ -188,19 +221,19 @@ mockup ramp (C 0.0086 – 0.0251, h ≈ 264°) and is re-stated by `F-225` with 
 | level 2 | `#282C35` | `#EEEDE8` |
 | level 3 | `#323742` | `#E5E3DE` |
 | border.subtle | `#2E333D` | `#E5E3DE` |
-| border.strong | `#464D5B` (§E3) | `#1A1B1E` |
-| keyline | `#FFFFFF22` | `#1A1B1E18` |
+| border.strong | `#464D5B`, decorative; the state is `ring` `#788090` (§E3) | `#1A1B1E`; `ring` `#3A3B3E` (§E3) |
+| keyline | `#FFFFFF22` (`swatch.keyline`; the hairline stays until `F-233` draws it) | `#1A1B1E18` |
 | text.primary | `#F7F8FA` | `#1A1B1E` |
 | text.secondary | `#A6B0BC` | `#5C6470` |
-| text.tertiary | `#768290` on ground, `#94A1AF` on cards (§E3) | `#5D6674` (§E3) |
+| text.tertiary | `#768290` on ground (`foreground.3`), `#94A1AF` on cards (`foreground.3.card`) (§E3) | `#5D6674`, both tokens (§E3) |
 | primary action | `#FFFFFF` pill, dark text | `#1A1B1E` pill, light text (`25`) |
 
 **Themes** are the four `15` draws: *Sumi Charcoal* (`#15171B`), *Slate Graphite* (`#2C323A` — no
 mockup prints it; `F-220` read it at the centre of `15`'s tile, and a colour read from a render carries
-ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The current `fuka`, `yama`
-and `aota` families retire (`F-269`). *System* and *device accent* stay (E4).
+ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The `fuka`, `yama`
+and `aota` families are **removed by `F-225`** (ADR-0111), and a stored choice is read by the mode it chose. *System* and *device accent* stay (E4).
 
-**Answered 2026-09-24 ([ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md), OQ-36 closed on the person's delegation):** each tile draws its theme's **ground**. Sumi's swatch reads `#171A1E` against its ground `#15171B` (card `#20232A`), and Washi's reads `#F3F2ED` against `#F6F5F2` (card `#FFFFFF`). The ramps below are adopted as the rule produces them, and a pairing that fails moves the E3 way, in that theme only. `F-225` implements it.
+**Answered 2026-09-24 ([ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md), OQ-36 closed on the person's delegation):** each tile draws its theme's **ground**. Sumi's swatch reads `#171A1E` against its ground `#15171B` (card `#20232A`), and Washi's reads `#F3F2ED` against `#F6F5F2` (card `#FFFFFF`). The ramps below are adopted as the rule produces them, and a pairing that fails moves the E3 way, in that theme only. **`F-225` implements it**: Obsidian needs no move, and Slate takes the seven listed in §4 E3. The four Sumi failures described below are gone. `border.strong` is decorative, `ring` carries the state at `#788090`, and `swatch.well` is level 1 (C11).
 
 **What the two undrawn themes would be, and what the numbers actually say (`F-289`, OQ-36).**
 `15` draws Slate Graphite and Obsidian Noir as one swatch each, so their levels are drawn
@@ -418,6 +451,37 @@ themes and **both** locales — a screen never has two layouts.
 | **C17** ⇄ | `14` draws the splash dark only | light appearance: `14`'s composition in `25`'s palette — so a light-mode launch does not flash dark then light |
 | **C18** | `19` prints ΔE00 **from the anchor** (48.2); the current Combinations prints the gamut-mapping cost | `19`: ΔE00 from the anchor, as drawn. Settled by `F-220` against FR-73's acceptance text: it also requires each proposed colour's gamut cost and each combination's family and generated-or-curated mark, none of which `19` draws — **OQ-27** |
 | **C19** | `06`'s right-hand card holds only garbled text | not design (§2) — *Wearable Combinations* spans the row |
+
+**The C10 census (`F-225`, [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)).**
+Each element C10 and ADR-0110 name is declared once in the manifest's `exceptions`, keyed by the
+inventory elements that draw it, with the tints read off the image and the feature that mints its
+token. `c10-exceptions.test.ts` holds the two lists together, and `checkChromaCeiling` reports an
+exception whose every measured tint falls under the ceiling (0.026). A spectrum, a gradient or a
+sample-coloured element has nothing single to measure.
+
+| elements | kind | measured | minted by |
+|---|---|---|---|
+| `02.conditions` (and its icon and text): the gold HUD | tint | `#9E9374` | `F-243` |
+| `04.gauge.band`, `.sparkle`, `.chroma.bar`, `04.sheet.tolerance`: the green verdict | tints | `#538666` `#47795F` `#5BB27C` `#385847` | `F-245` |
+| `12.intelligence` (and its icon, title, check, body): the green card | tints | `#345D47` `#336649` `#376B4C` | `F-256` |
+| `13.slots.slot-1`, `slot-4`: rows tinted by their garment | sample | — (slot 1 reads `#556574` under a `#5B6B78` shirt) | `F-257` |
+| `23.profile.temperature.range`: cool-to-warm track | gradient | — | `F-260` |
+| `23.profile.label`: the brown pill (C12) | tint | `#69523A` | `F-260` |
+| `24.rows.row-1…4.distance`: ΔE00 badges tinted by their row | sample | — (row 1 `#87795D`, row 2 `#4495A3`) | `F-259` |
+| `27.wardrobe-empty.art`, `27.lens-working.mark`, `27.lens-refused.icon`, `27.lens-permission.icon` | tints | `#BFA184` `#926C9A` `#634E32` `#B7A07F` | `F-236` |
+| `00.controls.icon-wheel` (ADR-0110) | spectrum | — | `F-232` |
+| `00.buttons.icon-palette` (ADR-0110) | multi | — | `F-232` |
+| `03.chips.gamut` (ADR-0110) | spectrum | — | `F-244` |
+| `06.provenance.review`: the green seal (ADR-0110) | tint | `#4B9D61` | `F-247` |
+| `07.slots.slot-2.lock`, `15.security.badge`, `16.slots.slot-1.locked`: the padlock (ADR-0110) | tint | `#C8A145` (read on `07`, where it is largest) | `F-248` |
+| `11.gap.icon`: the bulb (ADR-0110) | tint | `#E7DDB2` | `F-255` |
+| `13.score.harmony.icon`: three circles (ADR-0110) | multi | — (≈ `#B0514E` · `#83A665` · `#535FA0`) | `F-257` |
+| `13.capsule.icon`: the sparkles (ADR-0110) | tint | `#9E813F` | `F-257` |
+| `15.cvd.badge`: split disc (ADR-0110) | multi | — (≈ `#44628A` / `#787F57`) | `F-262` |
+
+`23`'s depth, chroma and contrast tracks **measure achromatic** and need no exception. They are
+named in the test, so their absence is on record rather than an omission. The three status
+tokens keep their own exceptions (ADR-0044), which makes 20 in all.
 
 ---
 

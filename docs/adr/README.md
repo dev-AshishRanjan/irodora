@@ -67,7 +67,7 @@ Two rules that matter more than the format:
 | [0041](0041-three-luminance-definitions-coexist-deliberately.md) | Three definitions of relative luminance coexist, and none may be substituted for another | Accepted |
 | [0042](0042-wcag-luminance-cutoff-is-004045-not-003928.md) | The WCAG luminance cutoff is 0.04045; 0.03928 was superseded in 2021 | Accepted |
 | [0043](0043-the-oklch-field-is-authoritative-and-srgb-is-derived.md) | The `oklch` field is authoritative; `srgb` is derived output, not an input | Accepted |
-| [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Amended by ADR-0103 |
+| [0044](0044-status-tokens-corrected-and-status-colour-is-text.md) | The status tokens are corrected to pass their own gates, and status colour is classified as text | Amended by ADR-0103, ADR-0111 |
 | [0045](0045-gamut-mapping-is-chroma-bisection-without-minde.md) | Gamut mapping is OKLCh chroma bisection, without CSS Color 4 MINDE step | Accepted |
 | [0046](0046-published-corpus-is-an-immutable-generated-bundle.md) | A published corpus version is one immutable generated bundle, vouched for by a ledger | Accepted |
 | [0047](0047-editorial-identity-is-a-roster-id-not-a-name.md) | Editorial identity is a roster id, and every record records its author | Accepted |
@@ -111,10 +111,10 @@ Two rules that matter more than the format:
 | [0093](0093-the-mark-is-monochrome-in-the-app-and-carries-colour-on-the-icon.md) | The mark is monochrome inside the app and carries colour on the icon | Accepted |
 | [0094](0094-a-swatch-corner-is-bounded-by-what-stays-straight.md) | A swatch corner is bounded by what stays straight, not by the area it removes | Amended by ADR-0103 |
 | [0095](0095-a-sample-that-carries-a-number-subtends-the-observer-that-number-was-fit-for.md) | A sample that carries a number subtends the observer that number was fit for | Accepted |
-| [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Accepted |
+| [0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) | A theme is a hue on the chrome, and never touches the ground a colour is judged against | Superseded by ADR-0111 |
 | [0097](0097-the-device-carries-the-policy-and-runs-the-gates-own-checks.md) | The device carries the policy and runs the gate’s own checks | Accepted |
 | [0098](0098-the-status-triple-moves-together-because-cvd-separation-not-contrast-is-what-binds-it.md) | The status triple moves together, because CVD separation and not contrast is what binds it | Accepted |
-| [0099](0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) | The ground lifts off near-black, and the product gets one accent | Accepted |
+| [0099](0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md) | The ground lifts off near-black, and the product gets one accent | Superseded by ADR-0111 |
 | [0100](0100-a-computed-colour-is-derived-and-declared-goes-back-to-meaning-a-person.md) | A computed colour is `derived`, and `declared` goes back to meaning a person | Accepted |
 | [0101](0101-contracts-is-retired-because-it-served-no-boundary.md) | `@irodora/contracts` is retired, because it served no boundary | Accepted |
 | [0102](0102-a-seasonal-label-is-a-lossy-summary-read-off-the-ranges.md) | A seasonal label is a lossy summary read off the ranges | Accepted |
@@ -126,6 +126,7 @@ Two rules that matter more than the format:
 | [0108](0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) | The family chips are the six mockup 05 draws, in its order, then Ki 黄, Shiro 白 and Nezumi 鼠 past the drawn edge | Accepted |
 | [0109](0109-a-kasane-in-the-corpus-is-our-own-composition-and-its-edges-must-show.md) | A kasane in the corpus is our own composition, layered outermost first, and its edges must show | Accepted |
 | [0110](0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) | The multicoloured icons are followed as drawn, over a silhouette that still reads in one ink | Accepted |
+| [0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md) | The palette is the mockups', the themes are the four mockup 15 draws, and a sample is judged against the surface it sits on | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

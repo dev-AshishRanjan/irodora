@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Accepted |
+| **Status** | **Superseded by [ADR-0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)** (F-225, 2026-09-25) — the ground is the README's and the gold accent is withdrawn. Was: Accepted |
 | **Date** | 2026-09-08 |
 | **Feature** | F-175 |
 | **Amends** | the chroma ceiling rule stated in [ADR-0044](0044-status-tokens-corrected-and-status-colour-is-text.md) and restated in [ADR-0096](0096-a-theme-is-a-hue-on-the-chrome-and-never-touches-the-ground-a-colour-is-judged-against.md) — the ceiling stands, and the exception list grows by two |

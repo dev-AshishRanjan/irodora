@@ -2,28 +2,58 @@
   "$schema": "https://irodora.com/schemas/design-system.manifest.schema.json",
   "version": 1,
   "status": "approved",
-  "updated": "2026-09-08",
+  "updated": "2026-09-25",
   "approvedAt": "2026-08-14",
   "valuesChangedSinceApproval": {
-    "date": "2026-09-08",
-    "adr": "0099",
+    "date": "2026-09-25",
+    "adr": "0111",
     "tokens": [
       "dark.background",
       "dark.surface.1",
       "dark.surface.2",
       "dark.surface.3",
       "dark.swatch.well",
+      "dark.foreground",
+      "dark.foreground.2",
+      "dark.foreground.3",
+      "dark.foreground.3.card",
+      "dark.link",
+      "dark.border",
+      "dark.border.strong",
+      "dark.swatch.keyline",
+      "dark.inverse",
       "dark.inverse.foreground",
+      "dark.ring",
       "dark.accent",
       "dark.accent.foreground",
       "dark.accent.muted",
+      "light.background",
+      "light.surface.2",
+      "light.surface.3",
+      "light.swatch.well",
+      "light.foreground",
+      "light.foreground.2",
+      "light.foreground.3",
+      "light.foreground.3.card",
+      "light.link",
+      "light.border",
+      "light.border.strong",
+      "light.swatch.keyline",
+      "light.inverse",
+      "light.inverse.foreground",
+      "light.ring",
       "light.accent",
       "light.accent.foreground",
-      "light.accent.muted"
+      "light.accent.muted",
+      "slate.dark.*",
+      "obsidian.dark.*"
     ],
-    "reviewedBy": "NOT YET APPROVED BY A PERSON. The values are the output of a search over the feasible box judged by the gate's own checkers — every declared pairing passes in all eight palettes, gate 10 is unchanged and green, and the well's lightness ceiling was found by measurement rather than chosen. WHAT NOBODY HAS DONE IS LOOK AT THEM. This is the third consecutive change in this area to end that way (F-161, F-165), and F-175 carries it as an attested criterion rather than as a note.",
-    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This field exists so the file cannot claim, in the one place a machine reads, that a human signed off values which postdate the signature. THREE RE-APPROVALS ARE NOW OWED: this entry, the 2026-09-07 / ADR-0098 entry for the three LIGHT status tokens, and the 2026-08-19 / ADR-0053 entry for the three DARK ones. A supersede records which entry is current, not that the older decision was ratified — and this one supersedes NEITHER of them, because it touches different tokens.",
-    "supersedes": null,
+    "reviewedBy": "NOT YET APPROVED BY A PERSON. The values are the mockups' README table and the moves blocking gates forced off it, each computed by the smallest-lightness-move search and judged by the gate's own checkers (R9-MOCKUP-FIDELITY §4 E3); Slate's and Obsidian's are ADR-0107's derivation, recomputed by the generator and held by --check. Every declared pairing passes in all four palettes and gate 10 is green. WHAT NOBODY HAS DONE IS COMPARE A SCREEN WITH ITS MOCKUP — that is F-267.",
+    "note": "`status` stays `approved` because it is the gate switch and the values DO meet every gate. This entry SUPERSEDES the 2026-09-08 / ADR-0099 entry: every token that entry named has been replaced by a README value or withdrawn. It supersedes NEITHER older entry — Sumi's and Washi's status triples pass against the new grounds unchanged, so ADR-0098's light values and ADR-0053's dark ones are still the values in force and still owe their re-approval. Slate's moved status triple is this entry's. THREE RE-APPROVALS ARE OWED: this one, ADR-0098's and ADR-0053's; F-267 is where a person makes them.",
+    "supersedes": {
+      "date": "2026-09-08",
+      "adr": "0099"
+    },
     "alsoOutstanding": [
       {
         "date": "2026-09-07",
@@ -33,9 +63,10 @@
         "date": "2026-08-19",
         "adr": "0053"
       }
-    ]
+    ],
+    "unchanged": "status.*, chart.*, swatch.hairline(.inverse), backdrop and light surface.1 keep their approved values in dark and light."
   },
-  "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour — every radius is generous except the swatch, which is 0 forever.",
+  "description": "Machine-readable design tokens. The `contrast` gate reads this file and is BLOCKING from the moment it exists (F-003). Token NAMES are shadcn/Base-UI compatible so the wider ecosystem's tooling stays usable as reference — that is compatibility, not adoption (ADR-0033). Values are ours. Thesis: soft chrome, unaltered colour. From R9 the values are the mockups' (ADR-0111), and a swatch's corner is a scale step bounded so that half of every edge stays straight (ADR-0094, ADR-0103).",
   "themes": [
     {
       "id": "sumi",
@@ -58,9 +89,9 @@
   "notes": {
     "authority": "`oklch` is the authoritative field. `srgb` is DERIVED from it by the engine and rewritten by `pnpm --filter @irodora/design-tokens generate` — never typed by hand, and a hand-edited value fails the contrast gate (ADR-0043).",
     "usage": "Every colour token declares `usage`, because a contrast gate cannot pick a WCAG minimum without knowing whether it is looking at text, large text, a non-text component, or a surface. The default is the strictest, so an omission fails safe.",
-    "surfaces": "Four tonal steps lifted from one ground, Material-3 style, rather than five arbitrary greys. The neutral carries a trace of warmth (hue 70-85) because a cold slate casts on every sample beside it.",
-    "chroma": "The interface is near-achromatic by rule. Chroma above 0.01 in ANY token requires an entry in `exceptions` — every token, not only surface and text ones, so that the exception count is the real count (ADR-0044). The single accent appears only in focus rings and selection.",
-    "foreground3": "`foreground.3` FAILS AA against every surface at small sizes and is therefore restricted to decorative use and text >= 18.66px. Micro-labels use `foreground.2`. It is declared `usage: \"largeText\"`, checked at 3:1 against the surfaces that carry secondary text, and emitted under a TypeScript type that is not assignable where normal text is expected."
+    "surfaces": "Four tonal steps lifted from one ground, Material-3 style. The values are the mockups' README table (ADR-0111, F-225): Sumi Charcoal #15171B → #20232A · #282C35 · #323742 and Washi Minimal #F6F5F2 → #FFFFFF · #EEEDE8 · #E5E3DE, a cool slate at h ≈ 264°. Slate Graphite and Obsidian Noir are Sumi's steps re-anchored at their drawn grounds (ADR-0107, `themeDerivations`). The swatch well is level 1 — the card the mockups draw a sample on (R9-MOCKUP-FIDELITY C11) — so a sample is judged against a surround of C ≤ 0.0206, ΔE00 2.94–6.50 from a neutral of the same lightness. That is the consequence ADR-0096 existed to prevent, accepted by the person twice.",
+    "chroma": "Chroma above the ceiling (0.026: the largest the mockups draw in chrome, #768290 at C 0.0256, rounded up and recomputed by a test) in ANY token requires an entry in `exceptions` — every token, not only surface and text ones, so that the exception count is the real count (ADR-0044, amended by ADR-0111). Chroma a mockup draws where no token exists yet (C10, ADR-0110) is declared by inventory ELEMENT, with the tints measured off the image and the feature that mints its token. There is no chromatic accent: the primary action is the README's white on Sumi and ink on Washi.",
+    "foreground3": "`foreground.3` keeps the README's #768290 on Sumi's ground, where it passes 4.5:1; `foreground.3.card` is its E3 move (#94A1AF) for levels 1–3, where the drawn value fails. On Washi both are #5D6674. Both are ordinary `text` (R9-MOCKUP-FIDELITY §4 E3, ADR-0111): no token is large-text-only any more, and the largeText machinery is proven against a stand-in."
   },
   "color": {
     "dark": {

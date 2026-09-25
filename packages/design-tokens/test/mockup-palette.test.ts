@@ -14,6 +14,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { deltaE00 } from '@irodora/color-difference';
+import { oklchToXyz, xyzToLab } from '@irodora/color-spaces';
 import { COLOR, hexToOklch, parseManifest } from '../src/index.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -117,5 +119,26 @@ describe('the chroma ceiling is what the mockups draw', () => {
     expect(ceiling).toBe(Math.ceil(max * 1000) / 1000);
     // And it is a real ceiling: every drawn value sits under it.
     for (const o of drawn) expect(o.c).toBeLessThanOrEqual(ceiling);
+  });
+});
+
+/*
+ * THE CONSEQUENCE ADR-0111 STATES, reproduced rather than quoted. Samples sit on the drawn cards
+ * (C11), and those carry chroma: a neutral well at the same lightness would differ visibly. These are
+ * the numbers the ADR prints; if the palette moves, this names the new ones.
+ */
+describe('the surround a sample is judged against (C11, ADR-0111)', () => {
+  const lab = (o: { l: number; c: number; h: number }) => xyzToLab(oklchToXyz([o.l, o.c, o.h]));
+  const SURROUND = ['background', 'surface.1', 'surface.2', 'surface.3'] as const;
+
+  it('carries chroma up to 0.0206, which a neutral well at the same lightness could not hide', () => {
+    const measured = SURROUND.map((n) => {
+      const o = COLOR.dark[n].oklch;
+      return { c: o.c, d: deltaE00(lab(o), lab({ ...o, c: 0 })) };
+    });
+    expect(Math.max(...measured.map((m) => m.c)).toFixed(4)).toBe('0.0206');
+    expect(measured.map((m) => m.d.toFixed(2))).toStrictEqual(['2.94', '4.64', '5.63', '6.50']);
+    // And the well IS a card: the sample sits on level 1, as drawn.
+    expect(COLOR.dark['swatch.well'].srgb).toBe(COLOR.dark['surface.1'].srgb);
   });
 });

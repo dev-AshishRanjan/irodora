@@ -62,12 +62,17 @@ checking against a picture nobody specified.
 
 Until 2026-09-10 this file said the colour ramp was not the mockups' to set. **The user decided
 otherwise, after the trade-off was put to them**, and the decision is recorded here rather than
-softened: `F-225` adopts the README token table, including a surround behind samples that carries
-chroma (C up to 0.0206), and its ADR states that consequence plainly.
+softened. **`F-225` adopted the README token table on 2026-09-25**
+([ADR-0111](../docs/adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)),
+including a surround behind samples that carries chroma (C up to 0.0206), and the ADR states that
+consequence plainly. A test reads the table out of this folder's README and holds the manifest to
+it. **Editing the README's table is therefore editing the product's palette**: the gates run on the
+new values, and `F-267`'s person-led comparison is the check nothing automated can do.
 
-**Three tokens still move**, because a blocking accessibility gate may not be lowered — the
-smallest passing step, listed with its ΔE00 in
-[§4 E3](../docs/design/R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates).
+**Some tokens still move**, because a blocking accessibility gate may not be lowered. Each takes the
+smallest passing OKLab lightness step, hue and chroma held. Every move, per theme, is listed in
+[§4 E3](../docs/design/R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates):
+Sumi's card tertiary and focus ring, Washi's tertiary and ring, Slate's seven, and none for Obsidian.
 
 ---
 

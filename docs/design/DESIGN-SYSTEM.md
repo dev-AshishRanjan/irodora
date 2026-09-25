@@ -1,6 +1,6 @@
 # Irodora — Design System
 
-> **From R9 the mockups decide where this document and an approved mockup disagree** ([golden rule 14](../../AGENTS.md)). "Near-achromatic by rule" and the token values below are superseded by the mockup palette `F-225` adopts. The departures and their reasons are in [`R9-MOCKUP-FIDELITY.md`](R9-MOCKUP-FIDELITY.md) §6 (C10, C11); golden rules 11–13 are not affected and still bind.
+> **From R9 the mockups decide where this document and an approved mockup disagree** ([golden rule 14](../../AGENTS.md)). "Near-achromatic by rule" and the token values below are superseded by the mockup palette, which **`F-225` adopted on 2026-09-25** ([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)): the README's Sumi Charcoal and Washi Minimal, plus Slate Graphite and Obsidian Noir derived per ADR-0107. The departures and their reasons are in [`R9-MOCKUP-FIDELITY.md`](R9-MOCKUP-FIDELITY.md) §6 (C10, C11); golden rules 11–13 are not affected and still bind.
 
 | | |
 |---|---|
@@ -15,8 +15,8 @@
 
 > **Soft chrome, unaltered colour.**
 
-Everything is generous — 20 px cards, 28 px containers, full pills, 44 px targets, warm
-neutrals. **The swatch is generous too, in proportion** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
+Everything is generous — 20 px cards, 28 px containers, full pills, 44 px targets, the
+mockups' slate neutrals (ADR-0111). **The swatch is generous too, in proportion** ([ADR-0090](../adr/0090-a-swatch-corner-is-bounded-by-the-area-it-removes-not-fixed-at-zero.md)).
 
 This said `radius: 0` at every size, forever, and argued the case well: corner radius removes
 sampled area from exactly the region the eye uses to judge a large flat colour, *"and the effect
@@ -101,39 +101,34 @@ the mark keep saying *chosen***, so the two states are visible at once.
 are*, and a tick would claim *what you chose*. The conformance rule `selection-treatment`
 reads the treatment out of the rendered tree, so a component that draws its own fails.
 
-**One accent, and it may not go near a sample** (F-175,
-[ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md)).
-The product had none until R7 — `link` is still defined as the same value as `foreground`,
-because there the underline is the channel — so every emphasis was carried by weight and grey.
+**No chromatic accent: the primary action is white or ink** (F-225, [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)).
+The README's primary action is a white pill on Sumi and a sumi-ink pill on Washi, with the ground as
+its text, so `accent` and `inverse` take those values and `accent.foreground` takes the ground.
+`link` stays the same value as `foreground`, because there the underline is the channel. So
+emphasis is carried by weight and grey, as it was before R7.
 
-`accent` is gold on dark (`#FFE38D`) and an olive-gold on light (`#4F4301`), with
-`accent.foreground` for what sits on a filled one and `accent.muted` for a quiet ground.
-Two things about it are unusual and both are load-bearing:
+**The gold accent is withdrawn.** R7 gave the product one accent (F-175,
+[ADR-0099](../adr/0099-the-ground-lifts-off-near-black-and-the-product-gets-one-accent.md)): gold on
+dark and olive-gold on light, recorded as a chroma exception and kept away from every sample. No
+mockup draws it. `accent.muted` is level 1, so a selected tile shows its card, and the one
+selection treatment above keeps its shape with those values.
 
-- **It is above the chroma ceiling and recorded as an exception, not waived.** The ceiling
-  exists so the interface does not compete with the garment sample, and that reasoning is
-  preserved by *where the accent may go*: never on `swatch.well`, never on either keyline
-  tone, never on `status.*` or `chart.*`. It is spent on navigation and the primary action,
-  which are never adjacent to a colour reading.
-- **The two themes are not the same hue, and that is a measurement.** An accent clearing 4.5:1
-  on white must be dark; a dark gold is a bronze; and `status.warn` on light *is* a bronze at
-  h 70. The first light candidate measured ΔE00 5.6 from it — one colour with two meanings, one
-  of which is *something is wrong*. The shipped value is the warmest one that stays ΔE00 ≥ 18
-  from every signal.
+**The ramp is the README's**, a cool slate at h ≈ 264°. Sumi's ground is `#15171B` and its levels
+are `#20232A` · `#282C35` · `#323742`. Washi's ground is `#F6F5F2`, with levels `#FFFFFF` ·
+`#EEEDE8` · `#E5E3DE`. Where a blocking gate forced a value off the drawing, it moved the smallest
+OKLab lightness step that passes, hue and chroma held. Every move is listed in
+[R9-MOCKUP-FIDELITY §4 E3](R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates).
+**Focus is `ring`** (`#788090` / `#3A3B3E`), and `border.strong` (`#464D5B` / `#1A1B1E`) is
+decorative wherever a label identifies the component.
 
-It is listed in `NEUTRAL_IN_EVERY_THEME` alongside `ring`, so it is the same accent in all
-eight palettes. That is forced as well as right: `deriveTheme` clamps tinted tokens to the
-chroma ceiling, so a tintable accent would be flattened to grey in all four derived families.
-
-**The dark ramp is compressed, and there is no headroom left at the top.** The ground sits at
-L 0.175 and `swatch.well` at L 0.290, against a measured ceiling of L 0.310 — past which
-`border.strong` and `status.ok` fall below their floors *against the well*. A ground does
-not lift what sits on it; it eats the headroom of everything that does.
-
-
-**`swatch.well`** — a mandatory neutral ground beneath every colour sample, at every size.
-Functional, not decorative: simultaneous contrast means whatever touches a sample changes how
-it reads.
+**`swatch.well`** — the ground beneath every colour sample, at every size. Functional, not
+decorative: simultaneous contrast means whatever touches a sample changes how it reads. **It is
+no longer neutral** ([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md), R9-MOCKUP-FIDELITY C11). The mockups draw every sample on its card,
+the person decided twice to follow them, and so the well is level 1. The surround carries C 0.0086 to
+0.0206. A neutral well at the same lightness would differ from it by ΔE00 2.94 to 6.50, and
+`mockup-palette.test.ts` reproduces those numbers. ADR-0096 existed to prevent exactly this, and it
+is superseded. `swatch.keyline` (`#FFFFFF22` / `#1A1B1E18`) is the README's hairline around a
+sample; the older neutral hairline stays until F-233 draws the keyline.
 
 **No status colour beside a sample** — the same physics, one step out. A saturated `status.*`
 token adjacent to a colour sample changes how that sample reads, and the person is looking at
@@ -167,9 +162,13 @@ shape stops being a field**: at ratio 0.5 a square is a circle, and a circle is 
 for judging a colour because proportionally more of it is edge, which is where simultaneous
 contrast acts. So the loader now enforces that half of every edge stays straight.
 
-**`chromaCeiling`** — surfaces and text may not exceed chroma 0.01 without a recorded
-exception. The interface is near-achromatic *by rule*, so the garment colour is the only
-chroma competing for the eye.
+**`chromaCeiling`** — no token may exceed chroma **0.026** without a recorded exception
+([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)). The value is the largest chroma the mockups draw in chrome (`#768290`, C 0.0256),
+rounded up, and a test recomputes it. It was 0.01 while the interface was near-achromatic by rule.
+The chrome is now the mockups' cool slate, and the rule it keeps is that nothing chromatic enters
+the chrome unrecorded. **An exception names a token or the drawn elements**: chroma a mockup draws
+where no token exists yet (C10, ADR-0110) is declared by inventory element, with its measured tints
+and the feature that mints its token (the census is in R9-MOCKUP-FIDELITY §6).
 
 **`cvdPairs`** — semantic pairs asserted distinguishable under simulated CVD at severity 1.0.
 The product's own interface is held to the standard it applies to outfits. **The first time
@@ -186,8 +185,14 @@ ADR-0044 is really about.
 judges it on the worst. Naming one ground lets a check pass a black hairline on white while
 it is invisible on a meter track.
 
-**`foreground.3` is `usage: "largeText"`** — it fails AA against every surface at small sizes,
-so micro-labels use `foreground.2`. Until F-003 this restriction was *claimed* to be gate-
+**`foreground.3` is ordinary text again, and has a card twin** (F-225, [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)). The README's
+tertiary `#768290` passes 4.5:1 on Sumi's ground but not on its cards. So `foreground.3` keeps the
+drawn value on the ground, and `foreground.3.card` (`#94A1AF`) is its E3 move for levels 1–3. On
+Washi, both are `#5D6674`. **No token is large-text-only any more**; the machinery below stays
+and is proven against a stand-in.
+
+*Until F-225:* **`foreground.3` was `usage: "largeText"`** — it failed AA against every surface
+at small sizes, so micro-labels used `foreground.2`. Until F-003 this restriction was *claimed* to be gate-
 enforced while `foreground.3` appeared in no `pairsWith` list, so nothing checked it at all.
 It is now declared on the three surfaces that carry secondary text and checked at 3:1, and the
 generated TypeScript emits `TEXT_TOKENS` and `LARGE_TEXT_TOKENS` **derived from the manifest's
@@ -301,7 +306,7 @@ Every component in `@irodora/ui` must:
 
 | Gate | Checks |
 |---|---|
-| `contrast` | Every `pairsWith` combination at the AA minimum its `usage` selects, **both themes**; APCA reported, never substituted; every `srgb` recomputed from its own OKLCh (ADR-0043); `chromaCeiling` on **every** token, exceptions recorded in the manifest. The **rendered** half landed in F-017: every colour a component paints must resolve to a token — an unresolvable one is a failure, never a skip — and a `largeText`-only token used below the size floor is reported. Each half prints which one it is, because neither can do the other's job |
+| `contrast` | Every `pairsWith` combination at the AA minimum its `usage` selects, **all four themes** (Sumi, Washi, Slate, Obsidian); APCA reported, never substituted; every `srgb` recomputed from its own OKLCh (ADR-0043); `chromaCeiling` on **every** token, exceptions recorded in the manifest. The **rendered** half landed in F-017: every colour a component paints must resolve to a token — an unresolvable one is a failure, never a skip — and a `largeText`-only token used below the size floor is reported. Each half prints which one it is, because neither can do the other's job |
 | `a11y` | WCAG 2.2 A/AA over the rendered **accessibility tree**, every component and every screen, zero violations. Not axe — there is no DOM ([ADR-0055](../adr/0055-the-a11y-gate-renders-under-jest-expo-and-proves-the-tree-not-the-pixels.md)). It proves the tree, **not the pixels**: clipping at 200 %, overflow and measured tap-target size stay attested |
 | `cvd` | `cvdPairs` separable at severity 1.0 |
 | ~~`web-perf`~~ | Retired with the web surface ([ADR-0051](../adr/0051-irodora-is-a-local-first-mobile-app-with-no-server-tier.md)). It was still listed here, and still named in F-017 and F-038, nine months after the gate stopped existing — see F-074 |

@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted** — F-153.
+**Superseded by [ADR-0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)** (F-225, 2026-09-25) — the recipes are withdrawn and a sample is judged against the drawn card (C11). Accepted — F-153.
 
 ## Date
 
