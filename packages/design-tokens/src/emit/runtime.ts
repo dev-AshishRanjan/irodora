@@ -50,7 +50,9 @@ export function emitRuntime(manifest: Manifest): string {
     cvdPairs: manifest.cvdPairs,
     salience: manifest.salience,
     statusPairing: manifest.statusPairing,
-    exceptions: manifest.exceptions,
+    // Token exceptions only: a device checks tokens, and the element exceptions (C10, ADR-0110)
+    // are prose about images a phone never sees.
+    exceptions: manifest.exceptions.filter((e) => 'token' in e),
   };
 
   return [

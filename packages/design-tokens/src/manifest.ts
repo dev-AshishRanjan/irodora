@@ -210,13 +210,48 @@ export interface CvdPairs {
   readonly pairs: readonly (readonly [string, string])[];
 }
 
-export interface ChromaException {
+/** A token whose chroma is above the ceiling, with its reason (ADR-0044). */
+export interface TokenChromaException {
   readonly rule: 'chromaCeiling';
   readonly token: string;
   readonly reason: string;
   readonly owner: string;
   readonly recordedAt: string;
 }
+
+/**
+ * How an element's drawn chroma varies (F-225): one colour; several; a gradient; a hue spectrum;
+ * or the colour of the content it sits beside (a garment, a pairing).
+ */
+export const ELEMENT_CHROMA_KINDS = [
+  'tint',
+  'tints',
+  'gradient',
+  'spectrum',
+  'multi',
+  'sample',
+] as const;
+export type ElementChromaKind = (typeof ELEMENT_CHROMA_KINDS)[number];
+
+/**
+ * Chroma a MOCKUP DRAWS in chrome (C10, ADR-0110), keyed by the inventory elements that draw it —
+ * declared before any token exists, because the surface that draws the element mints the token
+ * (`mintedBy`). `measured` holds the tint(s) read off the image; a spectrum, a gradient or a
+ * sample-coloured element has none to hold. `checkChromaCeiling` reports one whose every measured
+ * value is under the ceiling: an exception nobody needs.
+ */
+export interface ElementChromaException {
+  readonly rule: 'chromaCeiling';
+  readonly elements: readonly string[];
+  readonly kind: ElementChromaKind;
+  readonly measured: readonly string[];
+  readonly reason: string;
+  readonly owner: string;
+  readonly recordedAt: string;
+  readonly mintedBy: string;
+}
+
+export type ChromaException = TokenChromaException | ElementChromaException;
 
 export interface ContrastGateConfig {
   readonly standard: string;
@@ -733,12 +768,40 @@ export function parseManifest(input: unknown): Manifest {
         `exceptions[${String(i)}].rule`,
         'the only recognised rule is chromaCeiling',
       );
+    const at = `exceptions[${String(i)}]`;
+    const common = {
+      rule: 'chromaCeiling' as const,
+      reason: requireString(o['reason'], `${at}.reason`),
+      owner: requireString(o['owner'], `${at}.owner`),
+      recordedAt: requireString(o['recordedAt'], `${at}.recordedAt`),
+    };
+    if (o['token'] !== undefined && o['elements'] !== undefined)
+      throw new ManifestError(at, 'names a token AND elements; an exception is one or the other');
+    if (o['token'] !== undefined)
+      return { ...common, token: requireString(o['token'], `${at}.token`) };
+    const elements = o['elements'];
+    if (!Array.isArray(elements) || elements.length === 0)
+      throw new ManifestError(at, 'names neither a token nor any elements');
+    const kind = requireString(o['kind'], `${at}.kind`);
+    if (!(ELEMENT_CHROMA_KINDS as readonly string[]).includes(kind))
+      throw new ManifestError(`${at}.kind`, `expected one of ${ELEMENT_CHROMA_KINDS.join(', ')}`);
+    const measured = o['measured'];
+    if (!Array.isArray(measured))
+      throw new ManifestError(`${at}.measured`, 'expected a list of hexes');
+    const hexes = measured.map((h, k) => {
+      const v = requireString(h, `${at}.measured[${String(k)}]`);
+      if (!/^#[0-9A-F]{6}$/u.test(v))
+        throw new ManifestError(`${at}.measured[${String(k)}]`, 'expected #RRGGBB, upper case');
+      return v;
+    });
+    if ((kind === 'tint' || kind === 'tints') && hexes.length === 0)
+      throw new ManifestError(`${at}.measured`, 'a tint is a colour someone read off the image');
     return {
-      rule: 'chromaCeiling',
-      token: requireString(o['token'], `exceptions[${String(i)}].token`),
-      reason: requireString(o['reason'], `exceptions[${String(i)}].reason`),
-      owner: requireString(o['owner'], `exceptions[${String(i)}].owner`),
-      recordedAt: requireString(o['recordedAt'], `exceptions[${String(i)}].recordedAt`),
+      ...common,
+      elements: elements.map((el, k) => requireString(el, `${at}.elements[${String(k)}]`)),
+      kind: kind as ElementChromaKind,
+      measured: hexes,
+      mintedBy: requireString(o['mintedBy'], `${at}.mintedBy`),
     };
   });
 

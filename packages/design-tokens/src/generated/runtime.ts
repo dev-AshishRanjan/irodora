@@ -917,24 +917,24 @@ export const runtimeManifest: CheckableManifest = {
   "exceptions": [
     {
       "rule": "chromaCeiling",
-      "token": "status.ok",
       "reason": "A semantic status colour cannot be near-achromatic and still read as success. The ceiling exists so the interface does not compete with the garment sample; a status indicator is the one place where the interface must assert itself, and it is always accompanied by an icon and a text label (statusPairing), so the chroma is a reinforcement rather than the channel.",
       "owner": "design",
-      "recordedAt": "2026-08-15"
+      "recordedAt": "2026-08-15",
+      "token": "status.ok"
     },
     {
       "rule": "chromaCeiling",
-      "token": "status.warn",
       "reason": "As status.ok. Chroma is where this token buys its CVD separation, because lightness is already carrying contrast, salience rank and gamut headroom. The value is the output of the search recorded in ADR-0044, not a preference; the gate run in that ADR is the evidence.",
       "owner": "design",
-      "recordedAt": "2026-08-15"
+      "recordedAt": "2026-08-15",
+      "token": "status.warn"
     },
     {
       "rule": "chromaCeiling",
-      "token": "status.bad",
       "reason": "As status.ok. Error carries the highest chroma in the system (0.14 dark, 0.16 light) because it is the one state that must survive being glanced at.",
       "owner": "design",
-      "recordedAt": "2026-08-15"
+      "recordedAt": "2026-08-15",
+      "token": "status.bad"
     }
   ]
 };

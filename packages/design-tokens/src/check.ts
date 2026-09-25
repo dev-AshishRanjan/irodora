@@ -28,6 +28,7 @@ import {
 import { deltaE00 } from '@irodora/color-difference';
 import { srgbToXyz, xyzToLab, type Rgb } from '@irodora/color-spaces';
 import { resolveAll } from './derive.js';
+import { hexToOklch } from './derive-theme.js';
 import { THEMES, type ColorToken, type Manifest, type Usage } from './manifest.js';
 
 /** The deficiencies every semantic pair is checked against. */
@@ -351,7 +352,7 @@ export function checkSeparation(
  */
 export function checkChromaCeiling(manifest: Manifest): readonly Finding[] {
   const ceiling = manifest.gate.contrast.chromaCeiling.maxChroma;
-  const excepted = new Set(manifest.exceptions.map((e) => e.token));
+  const excepted = new Set(manifest.exceptions.flatMap((e) => ('token' in e ? [e.token] : [])));
   const findings: Finding[] = [];
 
   for (const theme of THEMES)
@@ -370,6 +371,20 @@ export function checkChromaCeiling(manifest: Manifest): readonly Finding[] {
   // An exception nobody needs is an exception nobody will remove. Counting them only means
   // something if the count is real.
   for (const exception of manifest.exceptions) {
+    // An ELEMENT exception (C10, ADR-0110) is needed while any tint it measured is above the
+    // ceiling; one with nothing measured (a spectrum, a gradient, a sample colour) is chromatic by
+    // what it is, and is checked for coverage by c10-exceptions.test.ts instead.
+    if (!('token' in exception)) {
+      const over = exception.measured.some((hex) => hexToOklch(hex).c > ceiling);
+      if (exception.measured.length > 0 && !over)
+        findings.push({
+          check: 'chromaCeiling',
+          detail:
+            `exceptions: ${exception.elements.join(', ')} measured ${exception.measured.join(', ')}, ` +
+            'none above the ceiling. Remove the exception — a stale one makes the count meaningless.',
+        });
+      continue;
+    }
     const needed = THEMES.some((theme) => {
       const token = manifest.color[theme][exception.token];
       return token !== undefined && token.oklch.c > ceiling;

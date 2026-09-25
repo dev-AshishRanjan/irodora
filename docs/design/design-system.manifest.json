@@ -1110,6 +1110,254 @@
       "owner": "design",
       "recordedAt": "2026-08-15",
       "adr": "0044"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "02.conditions",
+        "02.conditions.icon",
+        "02.conditions.text"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#9E9374"
+      ],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 02's conditions HUD is a gold chip over the viewfinder.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-243"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "04.gauge.band",
+        "04.gauge.sparkle",
+        "04.gauge.chroma.bar",
+        "04.sheet.tolerance"
+      ],
+      "kind": "tints",
+      "measured": [
+        "#538666",
+        "#47795F",
+        "#5BB27C",
+        "#385847"
+      ],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 04's proximity verdict is drawn in greens: the gauge band, its star, the chroma bar and the tolerance sheet.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-245"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "12.intelligence",
+        "12.intelligence.icon",
+        "12.intelligence.title",
+        "12.intelligence.check",
+        "12.intelligence.body"
+      ],
+      "kind": "tints",
+      "measured": [
+        "#345D47",
+        "#336649",
+        "#376B4C"
+      ],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 12's colour-intelligence card is a green card with a green icon and check.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-256"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "13.slots.slot-1",
+        "13.slots.slot-4"
+      ],
+      "kind": "sample",
+      "measured": [],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 13 tints a slot's row with the colour of the garment in it (slot 1's row carries its shirt's #5B6B78, measured #556574), so the chroma is the sample's, not the chrome's.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-257"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "23.profile.temperature.range"
+      ],
+      "kind": "gradient",
+      "measured": [],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 23's temperature track runs cool blue to warm orange. The depth, chroma and contrast tracks measure achromatic and need no exception.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-260"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "23.profile.label"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#69523A"
+      ],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 23's seasonal summary is a brown pill (C12).",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-260"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "24.rows.row-1.distance",
+        "24.rows.row-2.distance",
+        "24.rows.row-3.distance",
+        "24.rows.row-4.distance"
+      ],
+      "kind": "sample",
+      "measured": [],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 24 tints each ΔE00 badge with its row's colour (row 1 measures #87795D, row 2 #4495A3), and each badge carries its figure.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-259"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "27.wardrobe-empty.art",
+        "27.lens-working.mark",
+        "27.lens-refused.icon",
+        "27.lens-permission.icon"
+      ],
+      "kind": "tints",
+      "measured": [
+        "#BFA184",
+        "#926C9A",
+        "#634E32",
+        "#B7A07F"
+      ],
+      "reason": "C10 (R9-MOCKUP-FIDELITY §6): followed as drawn — the element also carries text or an icon, so colour is never the only channel (golden rule 13). 27's state art is tan, amber-brown and purple; the purple mark is the one place the mark takes a tint.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-236"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "00.controls.icon-wheel"
+      ],
+      "kind": "spectrum",
+      "measured": [],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 00's colour-wheel button is a full hue disc.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-232"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "00.buttons.icon-palette"
+      ],
+      "kind": "multi",
+      "measured": [],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 00's palette button holds coloured wells.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-232"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "03.chips.gamut"
+      ],
+      "kind": "spectrum",
+      "measured": [],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 03's gamut chip is a full hue ring.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-244"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "06.provenance.review"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#4B9D61"
+      ],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 06's editorial-review seal is green (OQ-20).",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-247"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "07.slots.slot-2.lock",
+        "15.security.badge",
+        "16.slots.slot-1.locked"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#C8A145"
+      ],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. The padlock is gold on 07, 15 and 16 — one gold, read from 07's lock, where it is largest; 15's and 16's read desaturated (≈ #A1965D) from JPEG blending at their size.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-248"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "11.gap.icon"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#E7DDB2"
+      ],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 11's wardrobe-gap bulb is yellow (OQ-21).",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-255"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "13.score.harmony.icon"
+      ],
+      "kind": "multi",
+      "measured": [],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 13's harmony icon is three overlapping circles, red, green and blue (≈ #B0514E · #83A665 · #535FA0), over their one-ink outline.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-257"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "13.capsule.icon"
+      ],
+      "kind": "tint",
+      "measured": [
+        "#9E813F"
+      ],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 13's capsule sparkles are gold.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-257"
+    },
+    {
+      "rule": "chromaCeiling",
+      "elements": [
+        "15.cvd.badge"
+      ],
+      "kind": "multi",
+      "measured": [],
+      "reason": "ADR-0110: an icon drawn in colour is followed as drawn, over the one-ink silhouette F-228 registered; its meaning is carried by shape and by the text beside it. 15's CVD badge is a disc split blue and olive (≈ #44628A / #787F57), over the ring-and-crescent silhouette.",
+      "owner": "design",
+      "recordedAt": "2026-09-25",
+      "mintedBy": "F-262"
     }
   ],
   "gate": {
