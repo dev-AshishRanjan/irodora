@@ -327,7 +327,10 @@ export function ColourInStyle(): React.JSX.Element {
       accessibilityRole="button"
       accessibilityLabel="Measure this colour"
       {...withClassName('rounded-3xl px-4')}
-      style={{ backgroundColor: c.inverse, borderCurve: 'continuous' }}
+      // Dark `background`: a token in the dark theme and a LITERAL in the light one, which is what
+      // the transparent/literal case needs. It was dark `inverse` until F-225 made that #FFFFFF,
+      // which is also light level 1 — a colour two themes share cannot be a literal in either.
+      style={{ backgroundColor: c.background, borderCurve: 'continuous' }}
     />
   );
 }

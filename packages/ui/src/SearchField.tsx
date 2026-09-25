@@ -78,7 +78,7 @@ export function SearchField({
           // Focus is a ring. On a field whose fill already signals "input", changing the fill
           // would be a second meaning for one channel.
           borderWidth: focused ? 2 : 0,
-          ...(focused ? { borderColor: colors['border.strong'] } : {}),
+          ...(focused ? { borderColor: colors.ring } : {}),
           opacity: inert ? 0.5 : 1,
         }}
       />

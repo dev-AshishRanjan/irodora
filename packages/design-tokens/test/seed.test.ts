@@ -80,25 +80,40 @@ describe('every hue, in both modes', () => {
     expect(checked).toBe(720);
 
     // AND EVERY ONE OF THEM APPLIES. A seed that is a real colour on the device always produces
-    // a theme, because the derivation cannot move lightness and cannot pass the ceiling — so a
-    // sweep where half the cases were refusals would be measuring the fixture, not the policy.
+    // a theme: the tint keeps lightness and the ceiling, and a floor the tint breaks is settled
+    // the E3 way (F-225) — so a sweep where cases were refusals would be measuring the fixture.
+    // Before that settling existed this measured 9 of 24 Washi hues refused, on the gate-forced
+    // values that sit exactly at their floors.
     expect(refused).toBe(0);
   });
 
-  it('preserves lightness exactly, in every one of them', () => {
-    // The same assertion the build-time themes get, made here because this is the derivation's
-    // other caller and a second copy of the rule is where it would drift.
+  it('moves lightness ONLY where a reported floor correction says so', () => {
+    /*
+     * The tint preserves L; a contrast floor it breaks is settled the E3 way (F-225, ADR-0111),
+     * and that is the one way L may move. So every token either keeps its lightness exactly or
+     * carries a `floor` correction naming the move — a silent L change is the failure.
+     */
+    let moved = 0;
     for (const mode of BASE_THEMES)
       for (const h of [0, 37, 120, 211, 300, 359]) {
         const outcome = applied(themeFromSeed(manifest, mode, seedAt(h)));
         expect(outcome).not.toBeNull();
-        for (const [name, token] of Object.entries(manifest.color[mode]))
-          expect(`${mode}/${String(h)}/${name}`).toBe(
-            outcome?.colors[name]?.oklch.l === token.oklch.l
-              ? `${mode}/${String(h)}/${name}`
-              : 'L moved',
-          );
+        const floors = new Map(
+          (outcome?.corrections ?? []).filter((c) => c.bound === 'floor').map((c) => [c.token, c]),
+        );
+        for (const [name, token] of Object.entries(manifest.color[mode])) {
+          const now = outcome?.colors[name]?.oklch.l;
+          const floor = floors.get(name);
+          if (floor === undefined) expect([name, now]).toStrictEqual([name, token.oklch.l]);
+          else {
+            moved += 1;
+            expect([name, now]).toStrictEqual([name, floor.now]);
+            expect(floor.was).toBe(token.oklch.l);
+          }
+        }
       }
+    // Non-vacuity: dark seeds do settle floors, so the second branch is exercised.
+    expect(moved).toBeGreaterThan(0);
   });
 
   it('produces only values a device can paint', () => {
@@ -125,9 +140,11 @@ describe('correction within stated bounds', () => {
     expect(outcome?.corrections.length).toBeGreaterThan(0);
 
     for (const c of outcome?.corrections ?? []) {
-      expect(['ceiling', 'gamut']).toContain(c.bound);
-      // A correction only ever takes chroma away; it is the one lever that leaves L and hue alone.
-      expect(c.now).toBeLessThan(c.was);
+      expect(['ceiling', 'gamut', 'floor']).toContain(c.bound);
+      // A chroma correction only takes chroma away; a floor correction moves lightness, and
+      // either way something changed.
+      if (c.bound !== 'floor') expect(c.now).toBeLessThan(c.was);
+      else expect(c.now).not.toBe(c.was);
       expect(c.token.length).toBeGreaterThan(0);
     }
   });

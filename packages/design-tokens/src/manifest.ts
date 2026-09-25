@@ -106,6 +106,13 @@ export const NEUTRAL_IN_EVERY_THEME = [
   'status.warn',
   'status.bad',
   'ring',
+  // GATE-FORCED VALUES, since F-225. R9-MOCKUP-FIDELITY §4 E3 moves a drawn value by the SMALLEST
+  // step that passes, so these sit at their floors with no margin — and a tint that lifts their
+  // chroma pushes them back under it (measured: a device seed failed 9 of 24 hues on Washi, on
+  // exactly these). They are what the gate settled, so the tint leaves them where the gate put them.
+  'foreground.3',
+  'foreground.3.card',
+  'border.strong',
   // The accent joins the neutral list for the reason `ring` is on it, and one that is forced:
   // `deriveTheme` clamps every tinted token to the chroma ceiling, so an accent left tintable
   // would be FLATTENED TO GREY in all four derived families — the gold would exist only in

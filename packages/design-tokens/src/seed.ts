@@ -1,5 +1,5 @@
 /**
- * A theme from a seed nobody knew about at build time (F-154, ADR-0096).
+ * A theme from a seed nobody knew about at build time (F-154; FR-70 E4 since F-225, ADR-0111).
  *
  * ## Why this can exist at all
  *
@@ -18,32 +18,34 @@
  *
  * ## What a seed may change, which is the same as what a theme may change
  *
- * `deriveTheme` — the function `parseManifest` uses for the built-in families — does the work.
- * **Lightness is never touched, chroma never passes the manifest's ceiling, and the sample's
- * furniture and the signals are never tinted.** A runtime theme is not a relaxation of the rule;
- * it is the same rule with the hue supplied later.
+ * `deriveTheme` does the tint: **chroma never passes the manifest's ceiling, and the sample's
+ * furniture, the signals and the gate-forced values are never tinted** (`NEUTRAL_IN_EVERY_THEME`).
+ * The tint itself preserves lightness. What it may then do is what every theme may do since F-225:
+ * where a contrast floor fails in this theme, the failing token moves THE E3 WAY — the smallest
+ * lightness step that passes, hue and chroma held (ADR-0107 d.4, ADR-0111) — and the move is
+ * reported. ADR-0096's "a theme never moves lightness" was the recipes' rule, and it went with
+ * them.
  *
  * ## Three outcomes, and only one of them is a surprise
  *
- * **Applied, with corrections.** Chroma is the only lever that preserves lightness and hue, so a
- * correction is always a chroma reduction — bounded by the manifest's ceiling and by the sRGB
- * gamut at that token's own lightness. The second is the common one: at L 0.99 the gamut is a
- * sliver, so nearly every seed is corrected somewhere. Corrections are reported because a theme
- * that quietly did less than it was asked is a theme nobody can reason about.
+ * **Applied, with corrections.** A chroma correction is bounded by the manifest's ceiling or by
+ * the sRGB gamut at that token's own lightness — at L 0.99 the gamut is a sliver, so nearly every
+ * seed is corrected somewhere. A `floor` correction is a lightness move a contrast floor forced.
+ * Corrections are reported because a theme that quietly did less than it was asked is a theme
+ * nobody can reason about.
  *
  * **Refused.** A seed with no chroma has no hue to take — a greyscale wallpaper is a real thing,
  * and the honest answer is to say so and leave the base theme alone rather than fabricate one.
  * A seed outside sRGB or carrying a non-finite number is refused for the same reason.
  *
- * **Refused by the checks.** This is the path that cannot fire today, and saying so is better
- * than pretending: the derivation preserves lightness exactly and caps chroma at 0.01, so a
- * derived theme differs from one the gate already passed by less than the check can resolve.
- * The check still runs. It is the same code, it costs a few milliseconds, and *"it cannot fail
- * today"* is a statement about today's derivation rule rather than a licence to stop asking.
+ * **Refused by the checks.** When a floor cannot be met by a lightness move, or a CVD pair stops
+ * separating, the seed is refused with the checker's own findings. The checks are the gate's
+ * functions, run over the values that would be painted.
  */
 
 import { checkContrast, checkSeparation, type CheckableManifest, type Finding } from './check.js';
 import { isInGamut, oklchToRgb } from './derive.js';
+import { smallestLightnessMove } from './derive-theme.js';
 import { deriveTheme, type ColorToken, type ManifestOklch, type Mode } from './manifest.js';
 
 /** The name the runtime palette is checked under. Never a member of `THEMES`. */
@@ -52,10 +54,67 @@ export const RUNTIME_THEME = 'device';
 /** What one token gave up, and to which bound. */
 export interface SeedCorrection {
   readonly token: string;
+  /** Chroma for `ceiling` and `gamut`; OKLCh lightness for `floor`. */
   readonly was: number;
   readonly now: number;
-  /** `ceiling` — the manifest's near-achromatic rule. `gamut` — sRGB at that lightness. */
-  readonly bound: 'ceiling' | 'gamut';
+  /**
+   * `ceiling` — the manifest's chroma ceiling. `gamut` — sRGB at that lightness. `floor` — a
+   * contrast floor the tint pushed a token under, answered the E3 way (F-225): the smallest
+   * lightness move that passes, hue and chroma held, in this theme only.
+   */
+  readonly bound: 'ceiling' | 'gamut' | 'floor';
+}
+
+/**
+ * Where "lighter" stops being the direction that gains contrast: WCAG's crossover at relative
+ * luminance ≈ 0.179, which is OKLCh L ≈ 0.564 — not 0.5 (F-289's review measured it).
+ */
+const CONTRAST_CROSSOVER_L = 0.564;
+
+/**
+ * Settle every contrast floor the tint broke, the E3 way (F-225, ADR-0107 d.4, ADR-0111).
+ *
+ * WHY THIS EXISTS. The manifest's own gate-forced values — tertiary text on cards, the focus ring
+ * — sit exactly at their floors, because §4 E3 moves a drawn value by the SMALLEST step that
+ * passes. A tint moves a surface's luminance a little even at the same OKLab L, and a value with no
+ * margin falls under. Refusing would lose the device colour on a third of all hues; the rule the
+ * manifest already follows says a pairing that fails in a theme moves the E3 way in that theme,
+ * and the device theme is a theme. So each failing token moves by the smallest lightness step that
+ * passes, and the move is REPORTED, like every other correction. Returns `null` when a floor
+ * cannot be met that way — the checks below then refuse the seed, with their findings.
+ */
+function settleFloors(
+  manifest: CheckableManifest,
+  colors: Record<string, ColorToken>,
+): SeedCorrection[] | null {
+  const moves: SeedCorrection[] = [];
+  const failing = (palette: Record<string, ColorToken>) =>
+    checkContrast(manifest, [RUNTIME_THEME], { [RUNTIME_THEME]: palette }).results.filter(
+      (r) => !r.passes,
+    );
+  for (let guard = Object.keys(colors).length; guard > 0; guard -= 1) {
+    const [first] = failing(colors);
+    if (first === undefined) return moves;
+    const name = first.foreground;
+    const token = colors[name];
+    const ground = colors[first.background];
+    if (token === undefined || ground === undefined || token.usage === 'surface') return null;
+    const passes = (candidate: ColorToken): boolean =>
+      !failing({ ...colors, [name]: candidate }).some(
+        (r) => r.foreground === name || r.background === name,
+      );
+    const moved = smallestLightnessMove({
+      token,
+      direction: ground.oklch.l < CONTRAST_CROSSOVER_L ? 'lighter' : 'darker',
+      space: 'oklab',
+      passes,
+      where: `${RUNTIME_THEME}.${name}`,
+    });
+    if (moved === null) return null;
+    moves.push({ token: name, was: token.oklch.l, now: moved.oklch.l, bound: 'floor' });
+    colors[name] = moved;
+  }
+  return null;
 }
 
 export type SeedOutcome =
@@ -140,6 +199,11 @@ export function themeFromSeed(
       bound: derived.oklch.c === ceiling ? 'ceiling' : 'gamut',
     });
   }
+
+  /* --- the floors the tint broke, the E3 way (F-225) -------------------------------------- */
+
+  const floors = settleFloors(manifest, colors);
+  if (floors !== null) corrections.push(...floors);
 
   /* --- the gate's own checks, over the derived values ------------------------------------ */
 

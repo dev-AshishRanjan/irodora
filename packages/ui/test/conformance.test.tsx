@@ -1548,9 +1548,13 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
 
   it('reports a pair no `pairsWith` covers, even when both sides are tokens', () => {
     /*
-     * `surface.3` pairs with `foreground` and with nothing else — deliberately, because it is
-     * the deepest tonal surface and secondary text on it is a pairing nobody has measured.
-     * Both colours resolve to tokens; not one check that existed before this said a word.
+     * A STATUS ON LEVEL 3: the status tokens pair with the ground, levels 1 and 2 and nothing
+     * else, because no surface draws a status on the deepest level. Both colours resolve to
+     * tokens with values of their own; not one check that existed before this said a word.
+     *
+     * THIS CASE NAMED `foreground.2` ON `surface.3` UNTIL F-225, which declared that pairing
+     * because the mockups draw secondary text on cards — the third time a decoy built from a gap
+     * in the manifest has outlived the gap.
      *
      * THIS CASE NAMED `status.warn` ON `swatch.well` UNTIL F-174, and it stopped
      * discriminating the moment that pairing was declared — the rule correctly reported
@@ -1565,10 +1569,10 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
      * distinguish tokens that differ; two tokens sharing a value are one token to it.
      */
     const reported = pairFindings(
-      probe(nativeColors.light['surface.3'], nativeColors.light['foreground.2']),
+      probe(nativeColors.light['surface.3'], nativeColors.light['status.warn']),
     );
     expect(reported.length).toBeGreaterThan(0);
-    expect(reported[0]?.detail).toContain('surface.3');
+    expect(reported[0]?.detail).toContain('status.warn');
   });
 
   it('DECOY — the same tree passes once the ground is one the pairing declares', () => {
@@ -1577,35 +1581,23 @@ describe('the pair on the screen has to be one the manifest declared (F-171)', (
      * would still pass. Same text, same token, a ground the manifest actually declares for it.
      */
     expect(
-      pairFindings(probe(nativeColors.light['surface.1'], nativeColors.light['foreground.2'])),
+      pairFindings(probe(nativeColors.light['surface.1'], nativeColors.light['status.warn'])),
     ).toHaveLength(0);
   });
 
-  it('SUCCESS on the well is no longer a declared pairing, and is reported (F-205)', () => {
+  it('a status on the well is a status on the card since F-225, and so is declared', () => {
     /*
-     * THIS TEST FIRED, AND IT WAS RIGHT TO. It used to assert the opposite — F-174/ADR-0098
-     * added `swatch.well` to all three status `pairsWith` lists, because `Status` had taken
-     * `adjacentToSample` since F-069 and gate scope follows what the manifest declares — and it
-     * ended: *"if somebody removes that declaration, this goes red and says why."* F-205 removed
-     * it. This is the why.
-     *
-     * `status.ok` on `swatch.well` measured APCA **Lc 43.6** against a floor of 45, while
-     * passing WCAG at 4.98:1 — which is how it stayed invisible. It could not be fixed by moving
-     * the colour: `status.ok` needs L 0.68 to clear the floor there, and at 0.68 its salience
-     * against `background` overtakes `status.warn` and breaks the rank ADR-0053 fixed; raising
-     * `warn` to make room drops its CVD separation from `status.bad` to 54, under the declared
-     * minimum of 60. **No value satisfies all three.**
-     *
-     * So the SEPARATOR changed rather than the colour. `Status` paints `surface.1` now — darker
-     * than the well, so every status gains contrast, and `status.ok` measures Lc 46.5. The token
-     * VALUES ADR-0098 chose are untouched; what is withdrawn is a pairing nothing renders any
-     * more, and a declared pairing no component produces is a claim about a combination that
-     * does not exist.
+     * F-205 made `status.ok` on `swatch.well` an UNDECLARED pairing, reported here, because the
+     * well was its own grey and `status.ok` measured APCA Lc 43.6 on it. Since F-225 the well IS
+     * level 1 — the card the mockups draw a sample on (C11, ADR-0111) — so the two are one colour,
+     * and a rule that reads rendered colours sees a status on the card: `status.ok` pairs with
+     * `surface.1`, and gate 9 measures it there. The history stays in this comment because the
+     * next person to wonder why the well stopped being reported will look here.
      */
+    expect(nativeColors.light['swatch.well']).toBe(nativeColors.light['surface.1']);
     expect(
-      pairFindings(probe(nativeColors.light['swatch.well'], nativeColors.light['status.ok']))
-        .length,
-    ).toBeGreaterThan(0);
+      pairFindings(probe(nativeColors.light['swatch.well'], nativeColors.light['status.ok'])),
+    ).toHaveLength(0);
   });
 
   it('says nothing about a pair it cannot resolve, rather than guessing', () => {

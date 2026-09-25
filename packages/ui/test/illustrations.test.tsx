@@ -49,9 +49,13 @@ const missingFrom = (from: Iterable<string>, into: ReadonlySet<string>): string[
 type Props = Record<string, unknown> & { children?: ReactNode };
 
 /** The drawn shapes of one illustration, as rendered at `width`. */
-function shapes(name: IllustrationName, width = 240): ReactElement<Props>[] {
+function shapes(
+  name: IllustrationName,
+  width = 240,
+  theme: 'dark' | 'light' = 'dark',
+): ReactElement<Props>[] {
   const tree = render(
-    <ThemeProvider theme="dark">
+    <ThemeProvider theme={theme}>
       <Illustration name={name} width={width} />
     </ThemeProvider>,
   );
@@ -62,12 +66,20 @@ function shapes(name: IllustrationName, width = 240): ReactElement<Props>[] {
   ] as unknown as ReactElement<Props>[];
 }
 
-/** A drawing's geometry, with ink and line left out — what a person sees as its shape. */
-const silhouette = (name: IllustrationName): string =>
+/**
+ * A drawing's geometry, with ink and line left out — what a person sees as its shape.
+ *
+ * `fill` is reduced to WHETHER a shape is filled, never to its colour: a solid shape is filled
+ * with the pen's ink, which is a theme token. Until F-225 the raw colour went into the digest, so
+ * retuning the palette moved every "drawing" digest while no line had moved — the leak this comment
+ * already said was not there.
+ */
+const silhouette = (name: IllustrationName, theme: 'dark' | 'light' = 'dark'): string =>
   JSON.stringify(
-    shapes(name).map((el) => {
+    shapes(name, 240, theme).map((el) => {
       const p = el.props;
-      return [p['d'], p['cx'], p['cy'], p['r'], p['x1'], p['y1'], p['x2'], p['y2'], p['fill']];
+      const filled = p['fill'] === undefined || p['fill'] === 'none' ? p['fill'] : 'solid';
+      return [p['d'], p['cx'], p['cy'], p['r'], p['x1'], p['y1'], p['x2'], p['y2'], filled];
     }),
   );
 
@@ -194,10 +206,16 @@ describe('one versioned set', () => {
    *
    * `1.1.0` is this feature's review: five drawings were wrong against their crops and were
    * redrawn — the document, the sashiko weave, the flower, the leaves and the hanger.
+   *
+   * **The digest FUNCTION changed in F-225, and the drawings did not.** It used to hash each
+   * solid shape's fill colour, which is a theme token, so retuning the palette moved it with no
+   * line moved. It now hashes only whether a shape is filled (`silhouette` above), and `1.1.0` is
+   * re-recorded under it — `4c0a47eb6a6c6476` before. `1.0.0` keeps the value computed under
+   * the old function, as history: those drawings no longer exist to be hashed again.
    */
   const DIGESTS: Readonly<Record<string, string>> = {
     '1.0.0': '798289fb3a6b7de1',
-    '1.1.0': '4c0a47eb6a6c6476',
+    '1.1.0': '559ed377d791d261',
   };
 
   const digest = (): string =>
@@ -209,6 +227,12 @@ describe('one versioned set', () => {
   it('carries the digest recorded for its version', () => {
     expect(Object.keys(DIGESTS)).toContain(ILLUSTRATION_SET_VERSION);
     expect(digest()).toBe(DIGESTS[ILLUSTRATION_SET_VERSION]);
+  });
+
+  it('does not see colour: every drawing hashes the same in both themes', () => {
+    // The property the digest claims. Without it a palette change reads as a redrawing.
+    for (const name of DRAWN_ILLUSTRATIONS)
+      expect([name, silhouette(name, 'light')]).toStrictEqual([name, silhouette(name, 'dark')]);
   });
 
   it('gives no two versions the same drawings', () => {

@@ -3,7 +3,13 @@
  *
  * ## The constraint
  *
- * `foreground.3` is `usage: "largeText"` — it fails AA against every surface below the WCAG
+ * **Since F-225 no token is large-text-only**, and the mechanism below is kept for the day one is.
+ * The mockups' tertiary text is small metadata, so R9-MOCKUP-FIDELITY §4 E3 measured it against
+ * 4.5:1 and moved it where it failed: `foreground.3` (the ground) and `foreground.3.card` (cards)
+ * are both `usage: "text"`, and `LargeTextToken` is therefore empty. What follows is the history
+ * of why the mechanism exists.
+ *
+ * `foreground.3` was `usage: "largeText"` — it failed AA against every surface below the WCAG
  * large-text floor. That restriction was *claimed* to be gate-enforced from F-003 while
  * `foreground.3` appeared in no `pairsWith` list, so nothing checked it at all; F-003 fixed
  * the token half. The remaining half is catching a 13 px label that uses it, and a gate can
@@ -13,7 +19,7 @@
  *
  * ```tsx
  * <Text size="title" color="foreground.3" />   // fine — 22px, above the floor
- * <Text size="small" color="foreground.3" />   // does not compile
+ * <Text size="small" color="foreground.3" />   // did not compile until F-225 made it text
  * ```
  *
  * ## Two affordances the HeroUI comparison surfaced (F-088)
@@ -60,11 +66,20 @@ export type LargeTypeSize = (typeof nativeLargeTextSizes)[number];
  * Colours legal at a given size.
  *
  * At a large size, both normal-text and large-text-only tokens are legal. Below the floor,
- * only tokens that meet the normal-text ratio are — which is what excludes `foreground.3`.
+ * only tokens that meet the normal-text ratio are. (That excluded `foreground.3` until F-225; no
+ * token is large-text-only today, so the two branches currently agree.)
  */
 export type ColorFor<S extends TypeSize> = S extends LargeTypeSize
-  ? TextToken | LargeTextToken
+  ? Either<TextToken, LargeTextToken>
   : TextToken;
+
+/**
+ * `A | B`, spelled through a generic so an EMPTY `B` is not a lint error. Since F-225
+ * `LargeTextToken` is `never`, and a literal `TextToken | LargeTextToken` reads to the linter as a
+ * redundant constituent — true today, and exactly the branch that must still widen the day a token
+ * is classified large-text again.
+ */
+type Either<A, B> = A | B;
 
 export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> & {
   readonly size: S;

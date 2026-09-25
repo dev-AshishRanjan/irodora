@@ -104,15 +104,14 @@ const WARN_NOW = { l: 0.518, c: 0.11, h: 70 };
  * The value this token HELD until ADR-0098, and the reason the case is now that value.
  *
  * It was L 0.64 — a nudge that fails against every ground at once, which is a fine test of the
- * arithmetic and a weak test of the gate's SCOPE. L 0.54 is sharper: it clears the floor on
- * `background` (5.04), on `surface.1` (5.18) and on `surface.2` (4.78), and fails only on
- * `swatch.well` (4.32). That is exactly the defect F-174 fixed, and it went unseen for four
- * features because the well was not in `pairsWith` — gate scope is driven by what the manifest
- * declares, so an undeclared ground is a ground nobody measures.
+ * arithmetic and a weak test of the gate's SCOPE. L 0.54 is sharper. Since F-225 put Washi's
+ * grounds in place it clears the floor on `background` (4.75) and `surface.1` (5.18) and fails
+ * only on `surface.2` (4.42), Washi's darker level 2. (Until F-225 the one ground it failed on
+ * was `swatch.well`; F-205 withdrew that pairing and F-225 made the well level 1.)
  *
- * So this case now proves the two things together: the ratio, and the fact that the well is
- * being looked at. Remove `swatch.well` from the status `pairsWith` lists and this goes green
- * with the mutation applied, which is the failure it exists to catch.
+ * So this case proves two things together: the ratio, and that every declared ground is looked
+ * at. Remove `surface.2` from the status `pairsWith` lists and it goes green with the mutation
+ * applied — the failure it exists to catch, the one F-174 found four features late.
  */
 const WARN_TOO_LIGHT = { l: 0.54, c: 0.11, h: 70 };
 /** Dark theme: where success and caution are furthest apart, so a rotation is a real move. */
@@ -120,22 +119,19 @@ const OK_DARK = ['color', 'dark', 'status.ok', 'oklch'];
 const OK_DARK_NOW = { l: 0.67, c: 0.12, h: 158 };
 const OK_DARK_ROTATED = { l: 0.7, c: 0.14, h: 74 };
 /**
- * The accent (F-175), and the ground the decoy is aimed at.
+ * Tertiary text on a card (F-225), and the one ground the decoy fails on.
  *
- * L 0.640 is chosen rather than "obviously too dark": it still clears AA on `background`
- * (5.64), `surface.1` (5.27), `surface.2` (4.89) **and** `surface.3` (4.55), and fails on
- * exactly one ground — `accent.muted`, at 4.47.
- *
- * That is the sharpest available test of gate SCOPE rather than of arithmetic. A gate that
- * measures the accent against the four page grounds and stops would call this value fine, and
- * the product would ship an accent that is illegible on the one surface built to hold it.
- * Drop `accent.muted` from the accent's `pairsWith` and this case goes green with the
- * mutation applied — which is the failure it exists to catch, and the same failure F-174 found
- * four features late when `swatch.well` was in nobody's `pairsWith`.
+ * THIS CASE WAS THE GOLD ACCENT on `accent.muted` (F-175) until F-225 withdrew the gold and made
+ * `accent.muted` level 1, so the accent no longer has a ground of its own. The property it proved
+ * moved with it: a token that passes on some declared grounds and fails on exactly one. The card
+ * tertiary sits at §4 E3's minimal passing value on level 3; 0.005 L darker it still clears level 1
+ * (5.86) and level 2 (5.21) and fails only on level 3 (4.45). A gate that measured it on the first
+ * two cards and stopped would call it fine. Drop `foreground.3.card` from `surface.3`'s
+ * `pairsWith` and this goes green with the mutation applied.
  */
-const ACCENT_DARK = ['color', 'dark', 'accent', 'oklch'];
-const ACCENT_DARK_NOW = { l: 0.92, c: 0.11, h: 92 };
-const ACCENT_DARK_DIM = { l: 0.64, c: 0.11, h: 92 };
+const CARD_TERTIARY = ['color', 'dark', 'foreground.3.card', 'oklch'];
+const CARD_TERTIARY_NOW = { l: 0.7032400162820793, c: 0.02528458762367927, h: 250.16573004323408 };
+const CARD_TERTIARY_DIM = { ...CARD_TERTIARY_NOW, l: CARD_TERTIARY_NOW.l - 0.005 };
 
 const cases = [
   {
@@ -157,12 +153,13 @@ const cases = [
     name: 'gate 9 — a hand-edited srgb hex (ADR-0043)',
     file: MANIFEST,
     /*
-     * THE ANCHOR IS THE DARK GROUND, AND IT MOVED IN F-175 — from #090807 to #12100F when the
-     * ramp lifted off near-black. This harness reported it as "MUTATION DID NOT APPLY" rather
-     * than passing, which is the whole reason the no-op guard exists: a mutation that silently
-     * stops applying is a proof that silently stops proving.
+     * THE ANCHOR IS THE DARK GROUND, AND IT HAS MOVED TWICE — #090807 to #12100F in F-175, and
+     * to the README's #15171B in F-225. Both times this harness reported "MUTATION DID NOT APPLY"
+     * rather than passing, which is the whole reason the no-op guard exists: a mutation that
+     * silently stops applying is a proof that silently stops proving. The first occurrence is the
+     * ground's (it precedes the tokens that share its value).
      */
-    mutate: (s) => s.replace('"srgb": "#12100F"', '"srgb": "#141312"'),
+    mutate: (s) => s.replace('"srgb": "#15171B"', '"srgb": "#16181C"'),
     check: gate9,
   },
   {
@@ -176,11 +173,10 @@ const cases = [
     check: gate9,
   },
   {
-    // F-175. The accent is the first chromatic token in the persistent chrome since `ring`,
-    // and the first one that pairs with a ground of its own.
-    name: 'gate 9 — the accent below AA on its OWN ground only (F-175)',
+    // F-175's scope case, re-derived by F-225 onto the card tertiary (see CARD_TERTIARY).
+    name: 'gate 9 — the card tertiary below AA on ONE card only (F-225)',
     file: MANIFEST,
-    mutate: (s) => jsonEdit(s, ACCENT_DARK, ACCENT_DARK_NOW, ACCENT_DARK_DIM),
+    mutate: (s) => jsonEdit(s, CARD_TERTIARY, CARD_TERTIARY_NOW, CARD_TERTIARY_DIM),
     check: gate9,
   },
   {

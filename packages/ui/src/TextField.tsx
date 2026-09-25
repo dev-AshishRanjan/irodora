@@ -119,7 +119,7 @@ export function TextField({
           // Focus is a RING. On a field whose fill already means "you can type here",
           // changing the fill would give one channel two meanings.
           borderWidth: focused ? 2 : 0,
-          ...(focused ? { borderColor: colors['border.strong'] } : {}),
+          ...(focused ? { borderColor: colors.ring } : {}),
           // Every declared state renders differently. A control returning the same tree for
           // default and disabled has defined the state in name only, and the conformance
           // suite rejects exactly that.

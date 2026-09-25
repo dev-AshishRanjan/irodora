@@ -221,7 +221,9 @@ export function Switch({
             width: SWITCH_MARKER,
             height: SWITCH_MARKER,
             borderRadius: nativeRadius.pill,
-            backgroundColor: colors['foreground.3'],
+            // The dot sits on 15's CARD, so it is the card tertiary (F-225: tertiary text has a
+            // ground value and a card value, and the inventory draws this one on level 1).
+            backgroundColor: colors['foreground.3.card'],
             opacity: inert ? 0.5 : 1,
           }}
         />

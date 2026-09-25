@@ -77,19 +77,22 @@ describe('largeText is not text', () => {
     const text = new Set<string>(TEXT_TOKENS);
     for (const name of LARGE_TEXT_TOKENS) expect(text.has(name)).toBe(false);
     expect(TEXT_TOKENS.length).toBeGreaterThan(0);
-    expect(LARGE_TEXT_TOKENS.length).toBeGreaterThan(0);
   });
 
-  it('a LargeTextToken is not assignable where a TextToken is expected', () => {
-    // `foreground.3` meets 3:1 and not 4.5:1. This is now a real literal union, so the
-    // error comes from the token NAME, not from a brand nobody applies.
-    const large: LargeTextToken = 'foreground.3';
-
-    // @ts-expect-error — the whole point. foreground.3 is not in TEXT_TOKENS.
-    const asText: TextToken = large;
-    void asText;
-
-    expectTypeOf<LargeTextToken>().not.toEqualTypeOf<TextToken>();
+  it('since F-225 no token is large-text-only, and the tertiary text is ordinary text', () => {
+    /*
+     * The mockups' tertiary text is small metadata, so R9-MOCKUP-FIDELITY §4 E3 measured it
+     * against 4.5:1 and moved it where it failed. Both tertiary tokens are `usage: "text"`, the
+     * large-text list is EMPTY, and the machinery below it is kept for the day one is not.
+     */
+    expect([...LARGE_TEXT_TOKENS]).toHaveLength(0);
+    expect(TEXT_TOKENS).toContain('foreground.3');
+    expect(TEXT_TOKENS).toContain('foreground.3.card');
+    expectTypeOf<LargeTextToken>().toEqualTypeOf<never>();
+    const onGround: TextToken = 'foreground.3';
+    const onCard: TextToken = 'foreground.3.card';
+    void onGround;
+    void onCard;
   });
 
   it('an arbitrary string is not a token name', () => {

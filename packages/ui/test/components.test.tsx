@@ -260,11 +260,14 @@ describe('Text applies the scale and cannot express the pairing that fails AA', 
     const large: ColorFor<'title'> = 'foreground.3';
     void large;
 
-    // @ts-expect-error — `foreground.3` is usage: "largeText"; `small` is 13px, under the
-    // manifest's 18.66px floor. If this ever starts compiling, tsc fails on the UNUSED
-    // directive rather than letting the restriction rot into a comment.
+    // SINCE F-225 THIS COMPILES, and that is the change being recorded: the tertiary text is
+    // ordinary text (§4 E3 measured it against 4.5:1), so no colour is restricted to large sizes
+    // and `ColorFor<'small'>` accepts it. The restriction's machinery is proven in tree.test.tsx.
     const small: ColorFor<'small'> = 'foreground.3';
     void small;
+    // @ts-expect-error — still refused: a name that is not a token at all.
+    const unknown: ColorFor<'small'> = 'foreground.9';
+    void unknown;
   });
 
   it('DOES NOT COMPILE for a size outside the scale', () => {

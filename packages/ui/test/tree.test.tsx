@@ -52,11 +52,15 @@ describe('the harness has subjects at all', () => {
     expect(paintedColors(t, 'light').length).toBeGreaterThan(0);
   });
 
-  it('knows which tokens are large-text-only, from the generated exports', () => {
-    // Hard-coding 'foreground.3' would leave the NEXT largeText token unchecked with nothing
-    // saying so — the exact defect DESIGN-SYSTEM.md records against the first attempt.
-    expect(LARGE_TEXT_TOKENS.length).toBeGreaterThan(0);
-    expect(LARGE_TEXT_TOKENS).toContain('foreground.3');
+  it('knows which tokens are large-text-only, from the generated exports — and today none is', () => {
+    /*
+     * SAID, NOT LEFT SILENT. Since F-225 the mockups' tertiary text is ordinary text (§4 E3
+     * measured it against 4.5:1), so the generated list is EMPTY and the conformance rule that
+     * reads it checks nothing on any real subject. That is recorded here rather than discovered:
+     * the rule stays, reading the list, for the day a token is classified large-text again, and
+     * the walker it depends on is proven below against a stand-in classification.
+     */
+    expect([...LARGE_TEXT_TOKENS]).toHaveLength(0);
   });
 });
 
@@ -77,6 +81,14 @@ describe('an unresolvable colour is a failure, not a skip', () => {
 });
 
 describe('the small-text check, and the inheritance that hides it', () => {
+  /*
+   * A STAND-IN CLASSIFICATION. The fixtures paint `foreground.3` because it was the large-text
+   * token until F-225; no token is today (see above), so the check is proven against this list
+   * rather than the generated one — what is under test is the walker and the inheritance model,
+   * which a real classification will need the day it exists.
+   */
+  const RESTRICTED: readonly string[] = ['foreground.3'];
+
   /** The check itself, written once and applied to every fixture below. */
   const violations = (element: React.JSX.Element): readonly string[] =>
     resolveTextNodes(tree(element), 'light')
@@ -84,9 +96,7 @@ describe('the small-text check, and the inheritance that hides it', () => {
         (n) =>
           n.fontSize < LARGE_TEXT_MIN &&
           n.colorResolution.kind === 'token' &&
-          n.colorResolution.tokens.some((t) =>
-            (LARGE_TEXT_TOKENS as readonly string[]).includes(t),
-          ),
+          n.colorResolution.tokens.some((t) => RESTRICTED.includes(t)),
       )
       .map((n) => `${n.path.join('>')} ${String(n.fontSize)}px`);
 

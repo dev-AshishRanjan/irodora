@@ -170,9 +170,10 @@ describe('checkChromaCeiling', () => {
     const probe = JSON.parse(source) as {
       exceptions: { token: string }[];
     };
-    probe.exceptions = probe.exceptions.filter((e) => e.token !== 'ring');
+    // `status.bad`: `ring` was the probe until F-225 retuned it under the re-stated ceiling.
+    probe.exceptions = probe.exceptions.filter((e) => e.token !== 'status.bad');
     const findings = checkChromaCeiling(parseManifest(probe));
-    expect(findings.some((f) => f.detail.includes('ring'))).toBe(true);
+    expect(findings.some((f) => f.detail.includes('status.bad'))).toBe(true);
   });
 
   it('reports an exception nobody needs', () => {
