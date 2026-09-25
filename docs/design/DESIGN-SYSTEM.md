@@ -119,7 +119,8 @@ are `#20232A` · `#282C35` · `#323742`. Washi's ground is `#F6F5F2`, with level
 OKLab lightness step that passes, hue and chroma held. Every move is listed in
 [R9-MOCKUP-FIDELITY §4 E3](R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates).
 **Focus is `ring`** (`#788090` / `#3A3B3E`), and `border.strong` (`#464D5B` / `#1A1B1E`) is
-decorative wherever a label identifies the component.
+decorative wherever a label identifies the component. Where nothing else identifies it, as with the
+sheet's drag handle, the token is `border.indicator`, checked at 3:1 like `ring`.
 
 **`swatch.well`** — the ground beneath every colour sample, at every size. Functional, not
 decorative: simultaneous contrast means whatever touches a sample changes how it reads. **It is

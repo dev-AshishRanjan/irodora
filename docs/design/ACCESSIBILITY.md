@@ -122,7 +122,9 @@ at every size, carries:
 - its **provenance** — source class and confidence
   ([ADR-0005](../adr/0005-measurement-provenance-is-a-type.md));
 - a **defined border**, so its edges are perceptible against any surface;
-- a **neutral separator** from any adjacent coloured element.
+- a **known separator** from any adjacent coloured element: `swatch.well`, which since F-225 is
+  the card the mockups draw a sample on rather than a neutral (R9-MOCKUP-FIDELITY C11,
+  [ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)).
 
 ```html
 <div role="img"

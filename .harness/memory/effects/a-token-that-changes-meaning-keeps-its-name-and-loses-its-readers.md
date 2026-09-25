@@ -37,3 +37,16 @@ When a token's meaning moves and its name does not, grep every reader
 (`colors['border.strong']`, `colors.ring`) and decide each one by hand. For each state indicator,
 add a rendered assertion, because the gate measures the declared pairing, not the component that
 paints it.
+
+## The one the review found
+
+This note's own advice was not followed all the way. The sheet's drag handle also read
+`border.strong`, and it was waved through by a reason written for the outlined buttons: *"carries its
+own label or is a sheet handle"*. The handle has no label, so that reason did not cover it. It fell to
+1.65:1 on Sumi and 1.07:1 on Slate, and the test excluded `border.strong` wholesale on the same
+premise, so nothing saw it.
+
+It is now `border.indicator`: the strong border's E3 move where nothing else identifies the
+component. Washi keeps the drawn ink, which passes. The test checks the premise element by
+element: every outline in `border.strong` needs a label, and a decoy with none is named. **A reason
+that names a category is a claim about every member of it, and it has to be checked per member.**

@@ -552,7 +552,9 @@ export function formatFindings(findings: readonly Finding[]): string {
  * would be switched off within a week — which is worse than no rule.
  *
  * **`swatch.well` on the shared parent is the escape**, because it is precisely the mandated
- * neutral ground: if the sample is already in its well, the status colour is not touching it.
+ * ground: if the sample is already in its well, the status colour is not touching it. (The well
+ * is the drawn card since F-225, C11, so it is known rather than neutral; the rule keys on the
+ * token's NAME and holds as written.)
  */
 export function checkStatusAdjacency(
   tree: TestNode,

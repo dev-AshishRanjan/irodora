@@ -91,6 +91,19 @@ function inventories(): { ids: Set<string>; needed: Set<string> } {
 const elementExceptions = (m: Manifest): readonly ElementChromaException[] =>
   m.exceptions.filter((e): e is ElementChromaException => 'elements' in e);
 
+/** What a manifest leaves uncovered, and what it covers twice. Empty on both is the pass. */
+function coverage(
+  m: Manifest,
+  needed: ReadonlySet<string>,
+): { readonly missing: string[]; readonly twice: string[] } {
+  const covered = new Map<string, number>();
+  for (const e of elementExceptions(m))
+    for (const el of e.elements) covered.set(el, (covered.get(el) ?? 0) + 1);
+  const missing = [...needed].filter((el) => !MEASURED_ACHROMATIC.has(el) && !covered.has(el));
+  const twice = [...covered].filter(([, n]) => n > 1).map(([el]) => el);
+  return { missing: missing.sort(), twice };
+}
+
 describe('the chroma the mockups draw in chrome', () => {
   const { ids, needed } = inventories();
 
@@ -100,12 +113,7 @@ describe('the chroma the mockups draw in chrome', () => {
   });
 
   it('covers every C10 and ADR-0110 element exactly once, but those measured achromatic', () => {
-    const covered = new Map<string, number>();
-    for (const e of elementExceptions(manifest))
-      for (const el of e.elements) covered.set(el, (covered.get(el) ?? 0) + 1);
-    const missing = [...needed].filter((el) => !MEASURED_ACHROMATIC.has(el) && !covered.has(el));
-    const twice = [...covered].filter(([, n]) => n > 1).map(([el]) => el);
-    expect({ missing: missing.sort(), twice }).toStrictEqual({ missing: [], twice: [] });
+    expect(coverage(manifest, needed)).toStrictEqual({ missing: [], twice: [] });
   });
 
   it('names no element no inventory draws', () => {
@@ -124,10 +132,21 @@ describe('the chroma the mockups draw in chrome', () => {
     for (const e of raw.exceptions)
       if (e.elements?.includes('02.conditions') === true)
         e.elements = e.elements.filter((el) => el !== '02.conditions');
-    const dropped = parseManifest(raw);
-    const covered = new Set(elementExceptions(dropped).flatMap((e) => e.elements));
-    expect(covered.has('02.conditions')).toBe(false);
-    expect(needed.has('02.conditions')).toBe(true);
+    // The SAME computation the real test runs, on the mutated manifest, must name the element.
+    expect(coverage(parseManifest(raw), needed)).toStrictEqual({
+      missing: ['02.conditions'],
+      twice: [],
+    });
+  });
+
+  it('DECOY — an element covered by two exceptions is named', () => {
+    const raw = JSON.parse(source) as { exceptions: { elements?: string[] }[] };
+    const first = raw.exceptions.find((e) => e.elements?.includes('11.gap.icon') === true);
+    first?.elements?.push('02.conditions');
+    expect(coverage(parseManifest(raw), needed)).toStrictEqual({
+      missing: [],
+      twice: ['02.conditions'],
+    });
   });
 
   it('reports an element exception whose every measured tint is under the ceiling', () => {

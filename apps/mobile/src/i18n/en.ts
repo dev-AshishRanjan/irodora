@@ -768,7 +768,7 @@ export const en = {
   'contemporary.open': 'What you could buy in this',
   'appearance.title': 'Appearance',
   'appearance.hint':
-    'A theme sets the page and the cards a colour sits on. The cards carry the theme’s own slight tint, and a colour is seen against it.',
+    'A theme sets the page and the cards a colour sits on, and a colour is seen against its card.',
   'appearance.close': 'Close the theme list',
   'appearance.theme': 'Theme',
   'appearance.theme.sumi': 'Sumi Charcoal',

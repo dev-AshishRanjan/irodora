@@ -141,8 +141,8 @@ export function Strip({ members, weights, height, testID }: StripProps): React.J
     <View
       testID={testID}
       style={{
-        // The mandatory neutral ground, exactly as on a swatch: whatever touches a sample
-        // changes how it reads, so what touches the STRIP is a known colour.
+        // The mandatory ground, exactly as on a swatch: whatever touches a sample changes how
+        // it reads, so what touches the STRIP is a known colour (the drawn card since F-225, C11).
         backgroundColor: colors['swatch.well'],
         padding: nativeSpacing.sm,
       }}

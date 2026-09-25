@@ -96,13 +96,12 @@ export interface ThemeRecipe {
  * Two different reasons, and both are worth keeping apart.
  *
  * **The sample's furniture** — `swatch.well` and the two-tone keyline — is what a colour is
- * read against. Tinting it would put a hue behind every sample in the product and change what
- * the sample looks like, which is the one thing a colour-measurement app may not do. That is
- * F-153's fourth acceptance criterion, and it is met here by construction rather than checked
- * afterwards.
+ * read against. A DEVICE TINT never touches it: that would put the phone's hue behind every
+ * sample. Since F-225 the well is the drawn card (C11, ADR-0111), which carries the mockups'
+ * chroma, and it keeps exactly that value in every theme a seed derives.
  *
- * **The signals** — the chart ramp, the three status colours and the focus ring — are not
- * chrome. `chart.*` is a greyscale ramp precisely so hue is not the channel; a status says
+ * **The signals** — the chart ramp, the three status colours, the focus ring and the handle's
+ * indicator — are not chrome. `chart.*` is a greyscale ramp precisely so hue is not the channel; a status says
  * something is wrong; a ring says where the cursor is. A signal that changes colour with the
  * decoration is a signal that has to be relearned every time somebody picks a new theme.
  */
@@ -119,6 +118,7 @@ export const NEUTRAL_IN_EVERY_THEME = [
   'status.warn',
   'status.bad',
   'ring',
+  'border.indicator',
   // GATE-FORCED VALUES, since F-225. R9-MOCKUP-FIDELITY §4 E3 moves a drawn value by the SMALLEST
   // step that passes, so these sit at their floors with no margin — and a tint that lifts their
   // chroma pushes them back under it (measured: a device seed failed 9 of 24 hues on Washi, on
@@ -126,11 +126,9 @@ export const NEUTRAL_IN_EVERY_THEME = [
   'foreground.3',
   'foreground.3.card',
   'border.strong',
-  // The accent joins the neutral list for the reason `ring` is on it, and one that is forced:
-  // `deriveTheme` clamps every tinted token to the chroma ceiling, so an accent left tintable
-  // would be FLATTENED TO GREY in all four derived families — the gold would exist only in
-  // `base`. It is also the right reading: a theme tints the chrome; this is a signal, and a
-  // signal that changes colour with the decoration has to be relearned (ADR-0099).
+  // The primary action is the README's white or ink (ADR-0111), and its text is the ground. A
+  // device tint leaves them as drawn: the action is a signal, and a signal that changes colour
+  // with the decoration has to be relearned. `accent.muted` is level 1, the selected tile's card.
   'accent',
   'accent.foreground',
   'accent.muted',
@@ -503,9 +501,10 @@ function parseToken(v: unknown, path: string): ColorToken {
  * The largest chroma that fits in sRGB at this lightness and hue.
  *
  * Bisection on chroma alone, holding L and H exactly — which is the same move ADR-0045 makes
- * for gamut mapping, and it is done here rather than through `gamutMap` because the point of
- * this feature is that **a theme never moves lightness**. A mapper free to trade L for C would
- * make that sentence untrue in the one place it has to hold.
+ * for gamut mapping, and it is done here rather than through `gamutMap` because a TINT never
+ * moves lightness. A mapper free to trade L for C would move it silently. Since F-225 lightness
+ * moves in one place only: a floor the tint breaks is settled the E3 way by `settleFloors`,
+ * and reported as a `floor` correction (seed.ts).
  */
 export function fittedChroma(l: number, c: number, h: number): number {
   if (isInGamut(oklchToRgb({ l, c, h }))) return c;
@@ -556,16 +555,11 @@ export function deriveTheme(
     }
 
     /*
-     * THE CEILING IS THE ANSWER TO "HOW STRONG MAY A THEME BE", and it was already in the
-     * manifest before this feature existed:
-     *
-     *   > "The interface is near-achromatic by rule so that the garment colour is the only
-     *   > chroma competing for the eye."
-     *
-     * That is a product rule with a stated reason, and a theme does not get to argue with it.
-     * So a tint may lift chroma toward the ceiling and never past it — which means NO THEME
-     * ADDS A CHROMA EXCEPTION, and the near-achromatic guarantee holds in all eight palettes
-     * rather than in the two somebody happened to author.
+     * THE CEILING IS THE ANSWER TO "HOW STRONG MAY A TINT BE". A tint may lift chroma toward
+     * the manifest's ceiling and never past it, so NO SEEDED THEME ADDS A CHROMA EXCEPTION.
+     * Since F-225 the ceiling is 0.026, the largest chroma the mockups draw in chrome
+     * (ADR-0111). It was 0.01 while the interface was near-achromatic by rule, and the person
+     * chose the mockups' palette over that rule.
      *
      * The hue is what carries the theme. A cool grey and a warm grey are immediately
      * distinguishable across a whole screen at chroma this low; that is the same effect that

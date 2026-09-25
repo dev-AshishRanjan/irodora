@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted. Its *depth is tint, never shadow* is amended by
+Accepted. Its chroma ceiling (0.01) is amended to 0.026 by
+[ADR-0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md),
+the largest chroma the mockups draw in chrome; the rule that every token above it is a recorded
+exception stands. Its *depth is tint, never shadow* is amended by
 [ADR-0103](0103-the-scales-are-the-mockups-and-a-shadow-exists-only-where-one-is-drawn.md): one
 shadow, where `25` draws it — light theme, elevation level 1.
 

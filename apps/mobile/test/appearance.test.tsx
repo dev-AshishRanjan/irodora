@@ -19,6 +19,7 @@ import {
   formatAppearance,
   parseAppearance,
   resolveThemeName,
+  Select,
   ThemeProvider,
   useTheme,
   type Appearance,
@@ -33,6 +34,8 @@ import {
   useAppearance,
   type AppearanceStore,
 } from '../src/appearance';
+import { en } from '../src/i18n/en';
+import { Preferences } from '../src/screens/Preferences';
 
 /** An in-memory settings store — the two methods, and a record of what was written. */
 function fakeSettings(initial?: string): AppearanceStore & { readonly rows: Map<string, string> } {
@@ -87,10 +90,12 @@ describe('parseAppearance', () => {
 });
 
 describe('resolveThemeName', () => {
-  it('paints a drawn theme whatever the phone says', () => {
+  it('paints a drawn theme whatever the phone says — all four of them', () => {
     for (const scheme of ['light', 'dark', null] as const) {
       expect(resolveThemeName(scheme, undefined, 'sumi')).toBe('dark');
       expect(resolveThemeName(scheme, undefined, 'washi')).toBe('light');
+      expect(resolveThemeName(scheme, undefined, 'slate')).toBe('slate.dark');
+      expect(resolveThemeName(scheme, undefined, 'obsidian')).toBe('obsidian.dark');
     }
   });
 
@@ -231,5 +236,45 @@ describe('the device colour', () => {
     // `device` is not a drawn theme, but it is a choice somebody makes, so the stored form has
     // to carry it.
     expect(parseAppearance(formatAppearance('device'))).toBe('device');
+  });
+});
+
+/*
+ * CRITERION 2, RENDERED (F-225's review). The list is built from `APPEARANCES`, but nothing held
+ * the screen to it: a Preferences that filtered, reordered or relabelled its options would pass
+ * every test above. So the screen is rendered and the options its picker receives are read back.
+ */
+describe('the picker Preferences renders', () => {
+  const offered = (): readonly { readonly value: string; readonly label: string }[] => {
+    const tree = render(
+      <ThemeProvider>
+        <Preferences
+          store={{ listPreferences: () => [], resetPreferences: () => undefined }}
+          onChooseAppearance={() => undefined}
+        />
+      </ThemeProvider>,
+    );
+    return (
+      tree.UNSAFE_getByType(Select).props as {
+        readonly options: readonly { readonly value: string; readonly label: string }[];
+      }
+    ).options;
+  };
+
+  it('offers the four themes 15 draws, in its order, then system and device — and nothing else', () => {
+    expect(offered().map((o) => [o.value, o.label])).toStrictEqual([
+      ['sumi', 'Sumi Charcoal'],
+      ['slate', 'Slate Graphite'],
+      ['obsidian', 'Obsidian Noir'],
+      ['washi', 'Washi Minimal'],
+      ['system', en['appearance.system']],
+      ['device', en['appearance.device']],
+    ]);
+  });
+
+  it('DECOY — the options are read off the screen, not copied from the constant', () => {
+    // Same length and order as APPEARANCES, and the labels are the catalogue's, not the values.
+    expect(offered().map((o) => o.value)).toStrictEqual([...APPEARANCES]);
+    expect(offered().every((o) => o.label !== o.value)).toBe(true);
   });
 });

@@ -846,7 +846,7 @@ const SUBJECTS: readonly ConformanceSubject[] = [
      * The subject renders a swatch inside it, which is the shape the product actually uses and
      * the shape `verify-motion` explicitly allows: the WRAPPER animates, the sample does not.
      * If `Appear` ever put a background or an opacity floor on its child, the swatch's own
-     * conformance rules — its neutral well, its keyline, its accessible name — would be read
+     * conformance rules — its well, its keyline, its accessible name — would be read
      * through this wrapper here and would fail.
      */
     name: 'Appear',

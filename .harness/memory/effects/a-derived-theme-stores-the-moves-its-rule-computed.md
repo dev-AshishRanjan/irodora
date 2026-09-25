@@ -16,13 +16,13 @@ links: [[the-mockups-readme-is-the-palette-now]], [[the-guarantee-written-for-co
 ## What happened
 
 ADR-0107 derives Slate Graphite and Obsidian Noir by re-anchoring Sumi's drawn steps at each
-theme's drawn ground. Obsidian then passes everything. Slate fails seven pairings, and §4 E3 says
+theme's drawn ground. Obsidian then passes everything. Slate fails eight pairings, and §4 E3 says
 each failing token moves by the smallest lightness step that passes, hue and chroma held.
 
-Six of Slate's failures settled that way. The seventh did not. Lifting `status.ok` and
+Seven of Slate's failures settled that way. The eighth did not. Lifting `status.ok` and
 `status.warn` to clear 4.5:1 on Slate's lighter levels brought them close to `status.bad`, and
-the triple stopped separating under CVD simulation. **No lightness-only move exists**: 13,662
-in-gamut combinations of the triple were searched, and none was clean. So the rule took one more
+the triple stopped separating under CVD simulation. **No lightness-only move exists**: of the 256 lightness-only combinations that pass contrast (39,114 in gamut, on a 0.01 grid), none is clean
+(`mockups/tools/slate-status-search.mjs`). So the rule took one more
 step: a failing CVD pair moves whichever member passes by the smallest ΔE00, **with its hue held**,
 lightness and chroma free. Slate's `status.bad` went to L 0.884, C 0.060.
 

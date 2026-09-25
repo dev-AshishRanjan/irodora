@@ -452,7 +452,7 @@ if (process.argv.includes('--json')) {
           : ` — ${cost.introducedOnSpecifiedTokens.join(', ')}`),
     );
     console.log(
-      `    on tokens §5 does NOT list (held from the pre-R9 manifest): ` +
+      `    on tokens §5 does NOT list (held at their manifest values): ` +
         `${String(cost.introducedOnTokensR9DoesNotList.length)}` +
         (cost.introducedOnTokensR9DoesNotList.length === 0
           ? ''

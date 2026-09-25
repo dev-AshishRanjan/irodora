@@ -196,6 +196,22 @@ export const runtimeManifest: CheckableManifest = {
         "pairsWith": [],
         "uncheckedReason": ""
       },
+      "border.indicator": {
+        "oklch": {
+          "l": 0.599353403336669,
+          "c": 0.025073982748887492,
+          "h": 264.256403293355
+        },
+        "srgb": "#788090",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ]
+      },
       "inverse": {
         "oklch": {
           "l": 1,
@@ -612,6 +628,22 @@ export const runtimeManifest: CheckableManifest = {
         "usage": "nonText",
         "pairsWith": [],
         "uncheckedReason": ""
+      },
+      "border.indicator": {
+        "oklch": {
+          "l": 0.2223215245555405,
+          "c": 0.006012717775781599,
+          "h": 271.1392735408755
+        },
+        "srgb": "#1A1B1E",
+        "role": "",
+        "usage": "nonText",
+        "pairsWith": [
+          "background",
+          "surface.1",
+          "surface.2",
+          "surface.3"
+        ]
       },
       "inverse": {
         "oklch": {

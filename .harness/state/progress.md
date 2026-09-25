@@ -8,6 +8,80 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-25 — F-225 The mockup palette becomes the token set, with the four themes mockup 15 draws
+
+**Done.** The product now paints the mockups' palette
+([ADR-0111](../../docs/adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md),
+which supersedes ADR-0096 and ADR-0099). It shipped in ten commits, `5f43b72` through this one.
+
+- **Sumi and Washi are the README table.** Values are stored as OKLCh at full precision, so the
+  engine derives each drawn hex back exactly. `mockup-palette.test.ts` reads the table out of
+  `mockups/README.md` itself and holds every criterion-1 role to it, in both themes.
+- **Where a blocking gate forced a value off the drawing**, it moved the smallest OKLab lightness
+  step that passes, with hue and chroma held (§4 E3). The test recomputes each move from the drawn
+  value with the gate's checker, and asserts that the drawn value fails first:
+  - Sumi `foreground.3.card` #94A1AF;
+  - Washi tertiary #5D6674;
+  - Sumi `ring` and `border.indicator` #788090, row 3 corrected by its own rule, because the
+    indicator is also drawn on levels 1–3;
+  - Washi `ring` #3A3B3E, forced by gate 10.
+
+  §4's published values turned out to be OKLab's, not CIE L\*'s.
+- **Roles changed meaning, as drawn.**
+  - `border.strong` is decorative where a label identifies the component, which is checked per
+    element. `ring` carries state, and `border.indicator` carries the sheet handle.
+  - `foreground.3` is ordinary text and has a card twin.
+  - The primary action is white or ink, and the gold accent is withdrawn.
+  - `accent.muted` and `swatch.well` are level 1 (C11).
+  - `swatch.keyline` is declared, and F-233 draws it.
+- **The four themes 15 draws, plus system and device.** The recipes are removed, and a stored
+  recipe choice reads as its mode. The names are Latin in both locales, as 15 prints them.
+  - Slate and Obsidian are ADR-0107's derivation, applied at parse time. The generator computes
+    their moves, and `--check` holds them.
+  - Obsidian needs no move. Slate takes seven lightness moves, plus one hue-held CVD move on
+    `status.bad` (L 0.884, C 0.060). No lightness-only answer exists: 0 clean of the 256
+    combinations that pass contrast (`mockups/tools/slate-status-search.mjs`).
+  - The device colour settles broken floors the same way at runtime, and reports each move. All
+    720 seeds apply.
+- **The ceiling is 0.026**, computed from the chrome the mockups draw. C10 and ADR-0110 are declared
+  as 17 element exceptions, held against the inventories. The census is in §6.
+- **Documents and records.**
+  - R9-MOCKUP-FIDELITY §4 E3 (every move, per theme, with its space), §5 and §6; PRD FR-70;
+    DESIGN-SYSTEM.md; ACCESSIBILITY.md; mockups/AGENTS.md; the manifest's notes.
+  - `valuesChangedSinceApproval` says **NOT YET APPROVED BY A PERSON**.
+  - Effects: E-093, E-095, E-098 and E-111 are updated, and E-147 through E-151 are new, each
+    with its note.
+  - Notes were added to F-232, F-233, F-240, F-262, F-267 and F-269.
+
+**Review (once, on `a79fbe8`): FAIL.** It found 1 blocking, 6 significant and 10 minor findings.
+Each was fixed or recorded (F-225's notes list them), and the gates were re-run.
+
+- **B1, blocking:** the sheet's drag handle had been left decorative with no label, at 1.65:1 on
+  Sumi and 1.07:1 on Slate. It is now `border.indicator`, and the "decorative" premise is checked
+  per element.
+- **Significant, all fixed:**
+  - S1: §4's two tables no longer contradict each other.
+  - S2: every criterion-1 role and E3 move is held by a test.
+  - S3: the Japanese catalogue had invented katakana theme names. They are Latin now, under a
+    rule-checked category.
+  - S4: stale neutral-well, gold and recipe claims are corrected.
+  - S5: an unreproducible search figure is replaced by a committed tool, and the plan's stop rule,
+    which was overridden, is recorded for the person.
+  - S6: the picker is tested as rendered.
+- **Recorded for a person (F-267):** row 3 ships #788090 where #5C6472 was approved; the hue-held
+  status move; Slate's border inversion; Washi's focus edge being lighter than its resting edge;
+  the APCA status-colour report. The slider thumb's edge is recorded on F-232.
+
+**Gates run on the final tree:** `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm test` (every package) · `pnpm test:golden` · `pnpm build` · `pnpm test:a11y` · `pnpm test:contrast` (every declared pairing, four themes, runs `generate-design-tokens.mjs --check` first) · `pnpm test:cvd` · `pnpm test:content` · `pnpm security` · `node scripts/verify-contrast-proof.mjs` · `node scripts/verify-token-reach.mjs` — **all exit 0** on the final tree. Lint failed once on the review fixes (three redundant `String()` calls in a new test), was fixed, and was re-run with format, gate 0 and the mobile tests.
+
+**Not run:** `e2e` (gate 7 is pending; Maestro needs a device), `artifact` (no JDK on this
+machine), `perf` (no engine change). **Nobody has compared a screen with its mockup**; that is
+F-267, which now carries three re-approvals and the review's items for a person.
+
+**Next:** F-226, the serif (Gelasio plus a Japanese serif, per ADR-0106).
+
+---
+
 ## 2026-09-24 — F-224 The corpus holds the family chips and the kasane the mockups draw
 
 **Done.** Two things the mockups draw had no data behind them: `05`'s colour-family chips (C13)

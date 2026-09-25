@@ -87,6 +87,7 @@ const MESSAGE_KEY_SET: ReadonlySet<MessageKey> = new Set(MESSAGE_KEYS);
 export { en, type MessageKey } from './en';
 export {
   ja,
+  DRAWN_LATIN_NAMES,
   IDENTICAL_BY_DESIGN,
   JA_REVIEWED,
   NOTATION_KEYS,

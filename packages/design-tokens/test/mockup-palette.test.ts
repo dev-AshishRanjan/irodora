@@ -16,7 +16,16 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { deltaE00 } from '@irodora/color-difference';
 import { oklchToXyz, xyzToLab } from '@irodora/color-spaces';
-import { COLOR, hexToOklch, parseManifest } from '../src/index.js';
+import {
+  checkContrast,
+  checkSeparation,
+  COLOR,
+  hexToOklch,
+  parseManifest,
+  smallestLightnessMove,
+  withOklch,
+  type ColorToken,
+} from '../src/index.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -48,8 +57,9 @@ const DARK = tokensOf('darkMonochromeTokens');
 const LIGHT = tokensOf('lightWashiTokens');
 
 /**
- * README role → manifest token, for the values the manifest takes AS DRAWN. The E3 moves (text
- * tertiary, the state border) are asserted beside the rule that moved them, not here.
+ * README role → manifest token, for the values the manifest takes AS DRAWN, in both themes. The E3
+ * moves are recomputed by the rule that moved them, in the last block of this file; everything
+ * criterion 1 names is covered by one or the other.
  */
 const AS_DRAWN: Readonly<Record<string, string>> = {
   'background.ground': 'background',
@@ -57,9 +67,23 @@ const AS_DRAWN: Readonly<Record<string, string>> = {
   'background.level2': 'surface.2',
   'background.level3': 'surface.3',
   'border.subtle': 'border',
+  'border.strong': 'border.strong',
   'typography.primary': 'foreground',
   'typography.secondary': 'foreground.2',
 };
+
+/**
+ * Roles drawn as-is in ONE theme, or drawn by a mockup rather than the table. Sumi's tertiary keeps
+ * its drawn value on the ground, where it passes. Sumi's primary action is the table's white.
+ * Washi's is `25`'s ink pill, which the table leaves out; the ink is its `typography.primary`.
+ * The handle's border keeps the drawn ink on Washi, where it passes.
+ */
+const AS_DRAWN_IN: readonly (readonly ['dark' | 'light', string, string])[] = [
+  ['dark', 'typography.tertiary', 'foreground.3'],
+  ['dark', 'accent.primary', 'accent'],
+  ['light', 'typography.primary', 'accent'],
+  ['light', 'border.strong', 'border.indicator'],
+];
 
 /** Every drawn/declared mismatch, by name. Empty is the pass. */
 function mismatches(color: typeof COLOR): string[] {
@@ -68,7 +92,10 @@ function mismatches(color: typeof COLOR): string[] {
     ['dark', DARK],
     ['light', LIGHT],
   ] as const)
-    for (const [role, token] of Object.entries(AS_DRAWN)) {
+    for (const [role, token] of [
+      ...Object.entries(AS_DRAWN),
+      ...AS_DRAWN_IN.filter(([t]) => t === theme).map(([, r, k]) => [r, k] as const),
+    ]) {
       const want = drawn[role];
       const have = color[theme][token as keyof (typeof color)['dark']].srgb.toUpperCase();
       if (want === undefined) out.push(`${theme}: the README has no ${role}`);
@@ -105,6 +132,13 @@ describe('the README table, read from the README', () => {
     expect(dark.oklch.alpha).toBeCloseTo(0x22 / 255, 12);
     expect(light.oklch.alpha).toBeCloseTo(0x18 / 255, 12);
     expect(hexToOklch('#FFFFFF').l).toBe(dark.oklch.l);
+    const ink = hexToOklch('#1A1B1E');
+    expect([light.oklch.l, light.oklch.c, light.oklch.h]).toStrictEqual([ink.l, ink.c, ink.h]);
+  });
+
+  it('puts the ground on the primary action, as the pill draws it', () => {
+    for (const theme of ['dark', 'light'] as const)
+      expect(COLOR[theme]['accent.foreground'].srgb).toBe(COLOR[theme].background.srgb);
   });
 });
 
@@ -140,5 +174,88 @@ describe('the surround a sample is judged against (C11, ADR-0111)', () => {
     expect(measured.map((m) => m.d.toFixed(2))).toStrictEqual(['2.94', '4.64', '5.63', '6.50']);
     // And the well IS a card: the sample sits on level 1, as drawn.
     expect(COLOR.dark['swatch.well'].srgb).toBe(COLOR.dark['surface.1'].srgb);
+  });
+});
+
+/*
+ * THE E3 MOVES, RECOMPUTED. Each forced value is the smallest OKLab lightness step off the drawn
+ * value that the GATE'S OWN CHECKER passes (R9-MOCKUP-FIDELITY §4 E3). So a hand-edited move, or a
+ * drawn value that changes under it, fails here by name rather than passing every gate.
+ */
+describe('every E3 move is what the rule gives from the drawn value', () => {
+  const manifest = parseManifest(JSON.parse(source) as unknown);
+
+  const inTheme = (theme: 'dark' | 'light', name: string, candidate: ColorToken) => ({
+    ...manifest.color,
+    [theme]: { ...manifest.color[theme], [name]: candidate },
+  });
+
+  /** The token's own declared pairings, in its theme, judged by `checkContrast`. */
+  const clears =
+    (theme: 'dark' | 'light', name: string) =>
+    (candidate: ColorToken): boolean =>
+      checkContrast(manifest, [theme], inTheme(theme, name, candidate))
+        .results.filter((r) => r.foreground === name || r.background === name)
+        .every((r) => r.passes);
+
+  /** And gate 10's pairs that name it. */
+  const separates =
+    (theme: 'dark' | 'light', name: string) =>
+    (candidate: ColorToken): boolean =>
+      checkSeparation(manifest, [theme], inTheme(theme, name, candidate))
+        .filter((r) => r.a === name || r.b === name)
+        .every((r) => r.passes);
+
+  const move = (
+    theme: 'dark' | 'light',
+    name: string,
+    drawn: string,
+    direction: 'lighter' | 'darker',
+    passes: (t: ColorToken) => boolean,
+  ): string | undefined => {
+    const held = manifest.color[theme][name];
+    if (held === undefined) throw new Error(`${theme}.${name} is not in the manifest`);
+    const start = withOklch(held, hexToOklch(drawn), `${theme}.${name}`);
+    // It IS forced: the drawn value fails, or this row would be a discretionary departure.
+    expect(passes(start)).toBe(false);
+    return smallestLightnessMove({ token: start, direction, space: 'oklab', passes, where: name })
+      ?.srgb;
+  };
+
+  const drawnValue = (theme: 'dark' | 'light', role: string): string => {
+    const v = (theme === 'dark' ? DARK : LIGHT)[role];
+    if (v === undefined) throw new Error(`the README has no ${role}`);
+    return v;
+  };
+
+  /*
+   * A row moves a ROLE, which may be several tokens: on Washi the tertiary role is one value on the
+   * ground and on the cards (§4's row 2), so it is judged over the pairings of both tokens. On Sumi
+   * the ground keeps the drawn value and only the card token moves.
+   */
+  it.each([
+    ['dark', ['foreground.3.card'], 'typography.tertiary', 'lighter', '#94A1AF'],
+    ['light', ['foreground.3', 'foreground.3.card'], 'typography.tertiary', 'darker', '#5D6674'],
+    ['dark', ['ring'], 'border.strong', 'lighter', '#788090'],
+    ['dark', ['border.indicator'], 'border.strong', 'lighter', '#788090'],
+  ] as const)('%s %s — %s moved %s is %s', (theme, names, role, direction, value) => {
+    const asEach = (t: ColorToken): boolean =>
+      names.every((name) => {
+        const held = manifest.color[theme][name];
+        if (held === undefined) throw new Error(`${theme}.${name} is not in the manifest`);
+        return clears(theme, name)(withOklch(held, t.oklch, `${theme}.${name}`));
+      });
+    const [first] = names;
+    expect(move(theme, first, drawnValue(theme, role), direction, asEach)).toBe(value);
+    for (const name of names) expect(COLOR[theme][name].srgb).toBe(value);
+  });
+
+  it('light ring — the drawn ink moved lighter until gate 10 separates it is #3A3B3E', () => {
+    const both = (t: ColorToken): boolean =>
+      clears('light', 'ring')(t) && separates('light', 'ring')(t);
+    expect(move('light', 'ring', drawnValue('light', 'border.strong'), 'lighter', both)).toBe(
+      '#3A3B3E',
+    );
+    expect(COLOR.light.ring.srgb).toBe('#3A3B3E');
   });
 });

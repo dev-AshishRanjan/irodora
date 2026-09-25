@@ -70,9 +70,11 @@ it. **Editing the README's table is therefore editing the product's palette**: t
 new values, and `F-267`'s person-led comparison is the check nothing automated can do.
 
 **Some tokens still move**, because a blocking accessibility gate may not be lowered. Each takes the
-smallest passing OKLab lightness step, hue and chroma held. Every move, per theme, is listed in
+smallest passing OKLab lightness step, hue and chroma held (one Slate move, which no lightness step can
+make, also frees chroma: ADR-0111 §5). Every move, per theme, is listed in
 [§4 E3](../docs/design/R9-MOCKUP-FIDELITY.md#e3--accessibility-floors-that-are-blocking-gates):
-Sumi's card tertiary and focus ring, Washi's tertiary and ring, Slate's seven, and none for Obsidian.
+Sumi's card tertiary, focus ring and sheet handle; Washi's tertiary and ring; Slate's eight; and none for
+Obsidian.
 
 ---
 

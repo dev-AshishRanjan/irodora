@@ -16,6 +16,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  DRAWN_LATIN_NAMES,
   en,
   IDENTICAL_BY_DESIGN,
   ja,
@@ -263,7 +264,11 @@ describe('Japanese is written, not copied', () => {
     // THE CHECK THAT CATCHES A PLACEHOLDER. A copy-paste of the English text type-checks
     // perfectly — `Record<MessageKey, string>` is satisfied by any string at all.
     const identical = MESSAGE_KEYS.filter((k) => ja[k] === en[k]);
-    const allowed = [...IDENTICAL_BY_DESIGN, ...NOTATION_KEYS];
+    const allowed = [
+      ...IDENTICAL_BY_DESIGN,
+      ...NOTATION_KEYS,
+      ...(Object.keys(DRAWN_LATIN_NAMES) as MessageKey[]),
+    ];
     expect(identical.sort()).toEqual(allowed.sort());
   });
 
@@ -306,6 +311,55 @@ describe('Japanese is written, not copied', () => {
   });
 
   /*
+   * The third category (F-225): a name a mockup PRINTS in Latin. Checked against the inventory
+   * element that draws it, so "it is drawn in Latin" is a fact the test reads rather than a claim.
+   */
+  describe('names a mockup draws in Latin', () => {
+    interface Drawn {
+      readonly id: string;
+      readonly copy?: { readonly script?: string } | null;
+      readonly children?: readonly Drawn[];
+    }
+    /* ONE `join` per path, every segment literal, so verify-cache-scope can see what is read. */
+    const inventory = (file: string): Map<string, Drawn> => {
+      const parsed = JSON.parse(
+        readFileSync(join(APP, '..', '..', 'mockups', 'inventory', file), 'utf8'),
+      ) as { readonly elements: readonly Drawn[] };
+      const out = new Map<string, Drawn>();
+      const walk = (els: readonly Drawn[] | undefined): void => {
+        for (const e of els ?? []) {
+          out.set(e.id, e);
+          walk(e.children);
+        }
+      };
+      walk(parsed.elements);
+      return out;
+    };
+    const drawnIn = (id: string): string | undefined =>
+      inventory(`${id.split('.')[0] ?? ''}.json`).get(id)?.copy?.script;
+
+    it('lists the four themes 15 names, and each is identical in both languages', () => {
+      expect(Object.keys(DRAWN_LATIN_NAMES).sort()).toStrictEqual([
+        'appearance.theme.obsidian',
+        'appearance.theme.slate',
+        'appearance.theme.sumi',
+        'appearance.theme.washi',
+      ]);
+      for (const k of Object.keys(DRAWN_LATIN_NAMES) as MessageKey[]) expect(ja[k]).toBe(en[k]);
+    });
+
+    it('admits a key only where its inventory element is drawn in Latin', () => {
+      for (const [k, id] of Object.entries(DRAWN_LATIN_NAMES))
+        expect(`${k} ← ${id}: ${drawnIn(id) ?? 'not drawn'}`).toBe(`${k} ← ${id}: latin`);
+    });
+
+    it('DECOY — an element drawn in Japanese, or not drawn at all, is not Latin', () => {
+      expect(drawnIn('26.title')).toBe('japanese');
+      expect(drawnIn('15.themes.nonexistent.name')).toBeUndefined();
+    });
+  });
+
+  /*
    * The decoy. Without it NOTATION_SHAPE could match anything and every assertion above would
    * still pass [[a-negative-test-needs-a-decoy-not-an-empty-fixture]].
    */
@@ -335,7 +389,11 @@ describe('Japanese is written, not copied', () => {
     // Hiragana, katakana or kanji. Stronger than "not equal to English": it rejects a value
     // someone edited into a near-copy, which `!==` alone would accept.
     const japanese = /[぀-ゟ゠-ヿ一-鿿]/u;
-    const exempt = [...IDENTICAL_BY_DESIGN, ...NOTATION_KEYS];
+    const exempt = [
+      ...IDENTICAL_BY_DESIGN,
+      ...NOTATION_KEYS,
+      ...(Object.keys(DRAWN_LATIN_NAMES) as MessageKey[]),
+    ];
     const prose = MESSAGE_KEYS.filter((k) => !exempt.includes(k));
     expect(prose.length).toBeGreaterThan(0);
     // The key is folded into the compared value so a failure names WHICH entry, since

@@ -23,9 +23,12 @@ Two more things came out of reproducing rather than copying:
 
 - **Row 3 was measured on one surface.** `#5C6472` passes on the ground. Focus also lands on levels
   1–3, where it fails. The rule, applied to every surface it is drawn on, gives `#788090`.
-- **The rule has no answer for Slate's status triple.** Lightness-only moves were searched across
-  13,662 combinations, and none was clean. Only an exhaustive search could show that no answer
+- **The rule has no answer for Slate's status triple.** Of the 256 lightness-only combinations
+  that pass contrast, none is clean (`mockups/tools/slate-status-search.mjs`). Only an exhaustive search could show that no answer
   exists. A partial one would have looked like "not found yet".
+- **This lesson nearly broke itself.** The first figure quoted for that search, 13,662, came from a
+  run nobody committed. The review could not reproduce it, and got a different grid's count. The
+  search is now a committed tool, and the docs quote what it prints.
 
 **The rule.** When a document publishes a number together with the method that produced it, run
 the method on the document's own inputs first. If it reproduces the number, the method is

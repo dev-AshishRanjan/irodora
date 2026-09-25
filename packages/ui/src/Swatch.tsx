@@ -263,8 +263,9 @@ export function Swatch({
           minWidth: nativeTapTarget,
           minHeight: nativeTapTarget,
           justifyContent: 'center',
-          // The mandatory neutral ground. Not decoration — it is what makes the sample
-          // readable next to anything else on the screen. `selectionStyle` paints over it only
+          // The mandatory ground. Not decoration: it is what makes the sample readable next to
+          // anything else on the screen. Since F-225 it is the card the mockups draw a sample
+          // on (C11, ADR-0111), which carries a measured chroma rather than none. `selectionStyle` paints over it only
           // when the swatch is chosen, and omits the key entirely otherwise.
           backgroundColor: colors['swatch.well'],
           // Concentric with the keyline inside it — see `swatchCorner`. `WELL_INSET` is this

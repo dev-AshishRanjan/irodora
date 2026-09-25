@@ -365,7 +365,7 @@ interface CellProps {
  * a photograph is not a colour reading and must never be read as one. They are drawn as two
  * things for that reason rather than blended into one.
  *
- * `Swatch` is unchanged, so the mandatory neutral well comes with it. That well is doing more
+ * `Swatch` is unchanged, so the mandatory well comes with it (the drawn card since F-225, C11). That well is doing more
  * work here than anywhere else in the product: the surround is an arbitrary photograph, which is
  * the worst case for simultaneous contrast.
  *

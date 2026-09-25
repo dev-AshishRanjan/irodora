@@ -633,13 +633,14 @@ export const ja: Record<MessageKey, string> = {
   'contemporary.open': 'いま手に入る近い色',
   'appearance.title': '外観',
   'appearance.hint':
-    'テーマは、ページと色を置くカードの色を決めます。カードにはテーマのわずかな色みがあり、色はその上で見えます。',
+    'テーマは、ページと色を置くカードの色を決めます。色はそのカードの上で見えます。',
   'appearance.close': 'テーマ一覧を閉じる',
   'appearance.theme': 'テーマ',
-  'appearance.theme.sumi': '墨チャコール',
-  'appearance.theme.slate': 'スレートグラファイト',
-  'appearance.theme.obsidian': 'オブシディアン・ノワール',
-  'appearance.theme.washi': '和紙ミニマル',
+  // Names 15 prints in Latin script, kept as drawn (DRAWN_LATIN_NAMES, below).
+  'appearance.theme.sumi': 'Sumi Charcoal',
+  'appearance.theme.slate': 'Slate Graphite',
+  'appearance.theme.obsidian': 'Obsidian Noir',
+  'appearance.theme.washi': 'Washi Minimal',
   'appearance.system': '端末に合わせる',
   'appearance.device': '端末の色',
   'appearance.device.unsupported':
@@ -847,6 +848,26 @@ export const NOTATION_SHAPE = /^[A-Za-zΔ][A-Za-z0-9Δ.-]*(?: \([A-Za-z0-9]+\))?
 
 /** Long enough for "XYZ (D65)", far too short for a phrase. */
 export const NOTATION_MAX = 12;
+
+/**
+ * NAMES a mockup prints in Latin script, which are not translated (F-225 decision F).
+ *
+ * `15` names its four themes in Latin only: *Sumi Charcoal*, *Slate Graphite*, *Obsidian Noir*,
+ * *Washi Minimal*. A name is not prose. A Japanese one would be a name no mockup draws, which
+ * golden rule 14 leaves to a person. F-225 first shipped katakana names, and its review caught it.
+ *
+ * NOTATION_SHAPE refuses these, rightly: "Sumi Charcoal" has a space before a bare word, which is
+ * the shape of a phrase. So this is a third category with its own rule. Each key names the
+ * inventory element that draws it, and the test requires that element to exist in F-220's
+ * inventory with `copy.script: "latin"`. A key cannot be added here unless a mockup draws it in
+ * Latin, whatever anyone claims about it.
+ */
+export const DRAWN_LATIN_NAMES: Readonly<Partial<Record<MessageKey, string>>> = {
+  'appearance.theme.sumi': '15.themes.sumi.name',
+  'appearance.theme.slate': '15.themes.slate.name',
+  'appearance.theme.obsidian': '15.themes.obsidian.name',
+  'appearance.theme.washi': '15.themes.washi.name',
+};
 
 /**
  * Which entries a competent speaker has reviewed, by roster id.

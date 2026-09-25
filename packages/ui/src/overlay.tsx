@@ -551,9 +551,10 @@ export function Sheet({
               ]}
             />
           )}
-          // The drag handle is the only affordance saying this panel moves, so it is drawn from
-          // a border token rather than left to the library's grey.
-          handleIndicatorStyle={{ backgroundColor: colors['border.strong'] }}
+          // The drag handle is the only affordance saying this panel moves, and it carries no
+          // label, so it is `border.indicator`: the README's strong border moved the E3 way where
+          // nothing else identifies the component, checked at 3:1 on every surface (F-225).
+          handleIndicatorStyle={{ backgroundColor: colors['border.indicator'] }}
         >
           {/*
             THE CONTENT SCROLLS, AND THAT IS WHAT MAKES THE CEILING SAFE.

@@ -146,18 +146,29 @@ record.
 ### E3 — Accessibility floors that are blocking gates
 
 NFR-8 (WCAG 2.2 AA) is enforced by gate 9, and a threshold may not be lowered to go green. The
-mockup palette fails it in three places. **Each token moves the smallest CIE L\* step that
-passes on the worst surface it is drawn on, hue and chroma held**:
+mockup palette fails it in the places below. **Each token moves the smallest lightness step that
+passes on the worst surface it is drawn on, hue and chroma held.** The step is OKLab's. This rule
+first said "CIE L\*", and its published values turned out to be OKLab's (see the adopted table
+below).
 
 | token | mockup | fails | smallest passing | moved by |
 |---|---|---|---|---|
 | dark `text.tertiary` on cards | `#768290` | 4.02 · 3.57 · 3.05 :1 on level 1 · 2 · 3 | `#94A1AF` (4.53:1 on level 3) | ΔE00 10.43 |
 | light `text.tertiary` | `#8C96A5` | 2.33–2.99 :1 everywhere | `#5D6674` | ΔE00 18.55 |
-| dark `border.strong`, **where it is the only indicator of a state** | `#464D5B` | 2.11:1 on ground | `#5C6472` | ΔE00 8.12 |
+| dark `border.strong`, **where it is the only indicator of a state** | `#464D5B` | 2.11:1 on ground | ~~`#5C6472`~~ **`#788090`**, carried by `ring` and `border.indicator` | ~~ΔE00 8.12~~ **ΔE00 19.13** |
+| light `ring` (added by `F-225`) | `#1A1B1E` | cannot separate from `border.strong`, which is the same colour, under gate 10's `[ring, border.strong]` pair | `#3A3B3E` | ΔE00 10.17 |
+
+**Row 3 is corrected by its own rule.** `#5C6472` was measured on the ground only, and it is the
+value the person approved on 2026-09-10. Focus also lands on levels 1–3, where `#5C6472` fails
+(2.0–2.64:1). Applying the rule as written, to every surface the indicator is drawn on, gives
+`#788090`. The gate forces that value, so it is not a new choice. But it is not the number that
+was approved, so `F-267` carries it for a person to confirm.
 
 Dark `text.tertiary` on the **ground** passes (4.59:1) and keeps the mockup value there. Dark
-`border.strong` where a label also identifies the component is decorative and keeps its value.
-Every other mockup token passes as drawn.
+`border.strong` where a label also identifies the component is decorative and keeps its value;
+`inventory-pairings.test.ts` checks the label element by element. **Where nothing else identifies
+the component**, the sheet's drag handle in `03` and `04`, the token is `border.indicator`. It takes
+the row-3 move on Sumi and keeps the drawn ink on Washi. Every other mockup token passes as drawn.
 
 **As adopted by `F-225` ([ADR-0111](../adr/0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md)), with every move and the space it is made in.**
 The rule above says "CIE L\*". **The three values it publishes are OKLab's**: `smallestLightnessMove`
@@ -171,16 +182,18 @@ typed.
 | Sumi | `foreground.3` (ground) | `#768290` | `#768290` | nothing: 4.59:1 passes |
 | Sumi | `foreground.3.card` | `#768290` | `#94A1AF` | row 1 |
 | Sumi | `border.strong` | `#464D5B` | `#464D5B` | nothing: decorative, a label identifies the component |
+| Sumi | `border.indicator` (the sheet handle) | `#464D5B` | **`#788090`** | row 3: the handle has no label, and the drawn value is 2.11:1 on the ground a sheet sits on |
 | Sumi | `ring` | `#464D5B` | **`#788090`** | row 3 **as corrected**: `#5C6472` was measured on the ground only, and focus also lands on levels 1–3 (2.0–2.64:1 there). The same rule over those surfaces gives this value (F-225 decision A) |
 | Washi | `foreground.3`, `foreground.3.card` | `#8C96A5` | `#5D6674` | row 2 |
+| Washi | `border.indicator` | `#1A1B1E` | `#1A1B1E` | nothing: the drawn ink passes |
 | Washi | `ring` | `#1A1B1E` | **`#3A3B3E`** | a **fourth row**. The drawn value is also `foreground` and the primary action, so gate 10's `[ring, border.strong]` pair cannot separate. This is the smallest lightness step that does (F-225 decision B) |
 | Slate | `foreground.2` | `#A6B0BC` | `#BFC9D5` | on level 2: 4.14:1 < 4.5 |
 | Slate | `foreground.3` | `#768290` | `#8D9AA8` | on its ground: 3.30:1 < 4.5 |
 | Slate | `foreground.3.card` | `#94A1AF` | `#BCCAD8` | on level 1: 4.02:1 < 4.5 |
-| Slate | `ring` | `#788090` | `#9CA4B4` | on level 1: 2.67:1 < 3 |
+| Slate | `ring`, `border.indicator` | `#788090` | `#9CA4B4` | on level 1: 2.67:1 < 3 |
 | Slate | `status.ok` | `#49AB79` | `#69C995` | on level 1: 3.73:1 < 4.5 |
 | Slate | `status.warn` | `#D58D25` | `#F2A847` | on level 1: 3.86:1 < 4.5 |
-| Slate | `status.bad` | `#FEAAAC` | `#FECACA` (L 0.884, **C 0.060**) | the two moves above leave `status.ok / status.bad` at 29.5 under deutan (< 60). **No lightness-only move exists**: 13,662 in-gamut combinations of the triple, none clean. So the smallest-ΔE00 move with **hue held** is taken, lightness and chroma free (ADR-0111 §5) |
+| Slate | `status.bad` | `#FEAAAC` | `#FECACA` (L 0.884, **C 0.060**) | the two moves above leave `status.ok / status.bad` at 29.5 under deutan (< 60). **No lightness-only move exists**: of the 256 lightness-only combinations that pass contrast (39,114 in gamut, on a 0.01 grid), none is clean (`mockups/tools/slate-status-search.mjs`). So the smallest-ΔE00 move with **hue held** is taken, lightness and chroma free (ADR-0111 §5) |
 | Obsidian | none | | | every pairing passes as derived |
 
 Slate's and Obsidian's "drawn" column is ADR-0107's derivation, since neither theme's roles are
@@ -233,7 +246,7 @@ mockup prints it; `F-220` read it at the centre of `15`'s tile, and a colour rea
 ΔE00 ≈ 2), *Obsidian Noir* (`#101114`, printed on its tile; read as `#101115`, within that noise), *Washi Minimal*. The `fuka`, `yama`
 and `aota` families are **removed by `F-225`** (ADR-0111), and a stored choice is read by the mode it chose. *System* and *device accent* stay (E4).
 
-**Answered 2026-09-24 ([ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md), OQ-36 closed on the person's delegation):** each tile draws its theme's **ground**. Sumi's swatch reads `#171A1E` against its ground `#15171B` (card `#20232A`), and Washi's reads `#F3F2ED` against `#F6F5F2` (card `#FFFFFF`). The ramps below are adopted as the rule produces them, and a pairing that fails moves the E3 way, in that theme only. **`F-225` implements it**: Obsidian needs no move, and Slate takes the seven listed in §4 E3. The four Sumi failures described below are gone. `border.strong` is decorative, `ring` carries the state at `#788090`, and `swatch.well` is level 1 (C11).
+**Answered 2026-09-24 ([ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md), OQ-36 closed on the person's delegation):** each tile draws its theme's **ground**. Sumi's swatch reads `#171A1E` against its ground `#15171B` (card `#20232A`), and Washi's reads `#F3F2ED` against `#F6F5F2` (card `#FFFFFF`). The ramps below are adopted as the rule produces them, and a pairing that fails moves the E3 way, in that theme only. **`F-225` implements it**: Obsidian needs no move, and Slate takes the eight listed in §4 E3. The four Sumi failures described below are gone. `border.strong` is decorative, `ring` carries the state at `#788090`, and `swatch.well` is level 1 (C11).
 
 **What the two undrawn themes would be, and what the numbers actually say (`F-289`, OQ-36).**
 `15` draws Slate Graphite and Obsidian Noir as one swatch each, so their levels are drawn
@@ -279,7 +292,8 @@ than the run supports and `F-289`'s review said so:
   value (`#94A1AF`) on the ground too, which is the more generous of the pair; with the on-ground
   `#768290`, Slate's `foreground.3` on ground is 3.30 against a largeText 3 rather than 4.91. No
   verdict changes, and Slate's margin there is thinner than the run prints.
-- **`border.subtle` is mapped onto the `border` token, which is translucent** and declares no
+- **`border.subtle` is mapped onto the `border` token, which was translucent then** (F-225 made it
+  the opaque `#2E333D` the README draws) and declares no
   pairings, so that assignment is checked by nothing; the `keyline` row has no token at all.
 
 Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's `border.strong`,

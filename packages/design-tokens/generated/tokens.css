@@ -22,6 +22,7 @@
   --irodora-color-border: #2E333D;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
   --irodora-color-border-strong: #464D5B;
+  --irodora-color-border-indicator: #788090;
   --irodora-color-inverse: #FFFFFF;
   --irodora-color-inverse-foreground: #15171B;
   --irodora-color-ring: #788090;
@@ -55,6 +56,7 @@
   --irodora-color-border: #E5E3DE;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.4);
   --irodora-color-border-strong: #1A1B1E;
+  --irodora-color-border-indicator: #1A1B1E;
   --irodora-color-inverse: #1A1B1E;
   --irodora-color-inverse-foreground: #F6F5F2;
   --irodora-color-ring: #3A3B3E;
@@ -88,6 +90,7 @@
   --irodora-color-border: #2E333D;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
   --irodora-color-border-strong: #464D5B;
+  --irodora-color-border-indicator: #9CA4B4;
   --irodora-color-inverse: #FFFFFF;
   --irodora-color-inverse-foreground: #2F3136;
   --irodora-color-ring: #9CA4B4;
@@ -121,6 +124,7 @@
   --irodora-color-border: #2E333D;
   --irodora-color-backdrop: rgba(0, 0, 0, 0.6);
   --irodora-color-border-strong: #464D5B;
+  --irodora-color-border-indicator: #788090;
   --irodora-color-inverse: #FFFFFF;
   --irodora-color-inverse-foreground: #0F1115;
   --irodora-color-ring: #788090;
@@ -155,6 +159,7 @@
     --irodora-color-border: oklch(0.32041726700498324 0.01915627225379902 264.25644677294986);
     --irodora-color-backdrop: oklch(0 0 0 / 0.6);
     --irodora-color-border-strong: oklch(0.41935340333666893 0.025073982748887492 264.256403293355);
+    --irodora-color-border-indicator: oklch(0.599353403336669 0.025073982748887492 264.256403293355);
     --irodora-color-inverse: oklch(1 0 0);
     --irodora-color-inverse-foreground: oklch(0.20423564960316032 0.008553488228561541 264.3666987591157);
     --irodora-color-ring: oklch(0.599353403336669 0.025073982748887492 264.256403293355);
@@ -187,6 +192,7 @@
     --irodora-color-border: oklch(0.9159872521518699 0.00706754037676315 88.64560184061156);
     --irodora-color-backdrop: oklch(0 0 0 / 0.4);
     --irodora-color-border-strong: oklch(0.2223215245555405 0.006012717775781599 271.1392735408755);
+    --irodora-color-border-indicator: oklch(0.2223215245555405 0.006012717775781599 271.1392735408755);
     --irodora-color-inverse: oklch(0.2223215245555405 0.006012717775781599 271.1392735408755);
     --irodora-color-inverse-foreground: oklch(0.9700818876373151 0.004122095072712324 91.44637793652691);
     --irodora-color-ring: oklch(0.3513215245555405 0.006012717775781599 271.1392735408755);
@@ -219,6 +225,7 @@
     --irodora-color-border: oklch(0.32041726700498324 0.01915627225379902 264.25644677294986);
     --irodora-color-backdrop: oklch(0 0 0 / 0.6);
     --irodora-color-border-strong: oklch(0.41935340333666893 0.025073982748887492 264.256403293355);
+    --irodora-color-border-indicator: oklch(0.717353403336669 0.025073982748887492 264.256403293355);
     --irodora-color-inverse: oklch(1 0 0);
     --irodora-color-inverse-foreground: oklch(0.3146671601438604 0.008553488228561541 264.3666987591157);
     --irodora-color-ring: oklch(0.717353403336669 0.025073982748887492 264.256403293355);
@@ -251,6 +258,7 @@
     --irodora-color-border: oklch(0.32041726700498324 0.01915627225379902 264.25644677294986);
     --irodora-color-backdrop: oklch(0 0 0 / 0.6);
     --irodora-color-border-strong: oklch(0.41935340333666893 0.025073982748887492 264.256403293355);
+    --irodora-color-border-indicator: oklch(0.599353403336669 0.025073982748887492 264.256403293355);
     --irodora-color-inverse: oklch(1 0 0);
     --irodora-color-inverse-foreground: oklch(0.17786923358635712 0.008553488228561541 264.3666987591157);
     --irodora-color-ring: oklch(0.599353403336669 0.025073982748887492 264.256403293355);

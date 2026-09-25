@@ -382,8 +382,8 @@ export function ColourDetail({
         screen and see whether you can judge it — has its best case here, where nothing sits
         between the sample and the eye except the well and the keyline.
 
-        The `Swatch` is unchanged. Its mandatory neutral well and gamut-verified two-tone keyline
-        come with it, which is why the sample can be this large without the page around it
+        The `Swatch` is unchanged. Its mandatory well (the drawn card since F-225, C11) and its
+        gamut-verified two-tone keyline come with it, which is why the sample can be this large without the page around it
         shifting how the colour reads.
       */}
       <Swatch name={entry.name.en} hex={derived.hex} color={colorFor(entry)} size={heroSize} />
@@ -392,14 +392,13 @@ export function ColourDetail({
         <Stack gap="xs">
           {/*
             The name leads in Japanese and the English is a gloss — the corpus's own order. The
-            romaji sits between them at a display size in `foreground.3`, which is the token that
-            exists for exactly this: large, decorative, subordinate. Nothing had ever painted it.
+            romaji sits between them at a display size in `foreground.3`: large, decorative,
+            subordinate.
 
-            ITS OWN `pairsWith` IS EMPTY, AND THAT IS CORRECT — a first attempt here added one and
-            the contrast gate refused it: a largeText token is listed BY THE SURFACES that carry
-            it, so the surface stays the thing that decides where it may appear. The pairing was
-            already declared from that side, and the gate already measured it: 3.17:1 at worst
-            against a 3.0 large-text threshold. Painting it needed no manifest change at all.
+            SINCE F-225 IT IS ORDINARY TEXT (ADR-0111). The README's tertiary passes 4.5:1 on
+            the ground, where this sits, and `foreground.3.card` carries it on the cards. The
+            pairing is declared by the surface, as every text pairing is, and gate 9 measures it.
+            Before F-225 this token was large-text-only (3.17:1 against a 3.0 threshold).
           */}
           <Text size="display.2" color="foreground" script="japanese" heading>
             {entry.name.kanji}

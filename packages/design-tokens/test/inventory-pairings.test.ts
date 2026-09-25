@@ -31,43 +31,13 @@ interface Element {
   readonly id: string;
   readonly parent: string | null;
   readonly tokens?: Readonly<Record<string, string>>;
+  readonly copy?: unknown;
   readonly children?: readonly Element[];
 }
 
-/** README surface role → manifest token. */
-const SURFACE: Readonly<Record<string, string>> = {
-  ground: 'background',
-  level1: 'surface.1',
-  level2: 'surface.2',
-  level3: 'surface.3',
-  'action.primary': 'accent',
-};
-
-/**
- * README text role → manifest token, by surface. Tertiary text has two drawn values — the ground
- * keeps #768290, cards take §4 E3's #94A1AF — so it is two tokens. The ground's own colour ON the
- * primary action is the pill's text.
- */
-function textToken(role: string, surface: string): string | null {
-  if (role === 'text.primary') return 'foreground';
-  if (role === 'text.secondary') return 'foreground.2';
-  if (role === 'text.tertiary')
-    return surface === 'background' ? 'foreground.3' : 'foreground.3.card';
-  if (role === 'ground' && surface === 'accent') return 'accent.foreground';
-  return null;
-}
-
-/**
- * Roles the manifest declares UNCHECKED, each with its reason in the manifest: the subtle border
- * and the keyline are decorative or face an arbitrary sample, and the strong border is decorative
- * wherever the inventories draw it (§4 E3 ¶2). Named here so a new role cannot slip through as
- * "not text".
- */
-const DECLARED_UNCHECKED = new Set(['border.subtle', 'keyline', 'border.strong']);
-
-/** Every (text role, surface role) the inventories draw, with where. */
-function drawnPairs(): Map<string, string> {
-  const found = new Map<string, string>();
+/** Every element of every inventory, flattened, per file. */
+function inventories(): Element[][] {
+  const out: Element[][] = [];
   for (const file of readdirSync(INVENTORY)) {
     if (!file.endsWith('.json')) continue;
     const inv = JSON.parse(readFileSync(join(INVENTORY, file), 'utf8')) as {
@@ -81,6 +51,49 @@ function drawnPairs(): Map<string, string> {
       }
     };
     walk(inv.elements);
+    out.push(all);
+  }
+  return out;
+}
+
+/** README surface role → manifest token. */
+const SURFACE: Readonly<Record<string, string>> = {
+  ground: 'background',
+  level1: 'surface.1',
+  level2: 'surface.2',
+  level3: 'surface.3',
+  'action.primary': 'accent',
+};
+
+/**
+ * README foreground role → manifest token, by surface. Tertiary text has two drawn values — the
+ * ground keeps #768290, cards take §4 E3's #94A1AF — so it is two tokens. The ground's own colour
+ * ON the primary action is the pill's text. The strong border drawn as a FOREGROUND is the sheet's
+ * drag handle, which has no label, so it is `border.indicator` — checked, not decorative.
+ */
+function textToken(role: string, surface: string): string | null {
+  if (role === 'border.strong') return 'border.indicator';
+  if (role === 'text.primary') return 'foreground';
+  if (role === 'text.secondary') return 'foreground.2';
+  if (role === 'text.tertiary')
+    return surface === 'background' ? 'foreground.3' : 'foreground.3.card';
+  if (role === 'ground' && surface === 'accent') return 'accent.foreground';
+  return null;
+}
+
+/**
+ * Roles the manifest declares UNCHECKED, each with its reason in the manifest: the subtle border
+ * and the keyline are decorative or face an arbitrary sample. Named here so a new role cannot slip
+ * through as "not text". The strong border is NOT here: as a foreground it is checked (above), and
+ * as an OUTLINE it is decorative only because a label identifies the component — which the last
+ * block of this file checks per element rather than assuming (F-225's review).
+ */
+const DECLARED_UNCHECKED = new Set(['border.subtle', 'keyline']);
+
+/** Every (text role, surface role) the inventories draw, with where. */
+function drawnPairs(): Map<string, string> {
+  const found = new Map<string, string>();
+  for (const all of inventories()) {
     const byId = new Map(all.map((e) => [e.id, e]));
     for (const e of all) {
       const fg = e.tokens?.['fg'];
@@ -140,5 +153,42 @@ describe('every pairing the mockups draw is declared', () => {
     // The check above would pass for a `declared` that always said yes.
     expect(MANIFEST.color.dark['surface.1']?.pairsWith).toContain('foreground.3.card');
     expect(declared('dark', 'foreground.3', 'surface.1')).toBe(false);
+  });
+});
+
+describe('the strong border is decorative only where a label identifies the component', () => {
+  /** An element's label: its own copy, or a child's (a button drawn as icon + label). */
+  const labelled = (e: Element, all: readonly Element[]): boolean =>
+    (e.copy !== null && e.copy !== undefined) ||
+    all.some((k) => k.parent === e.id && k.copy !== null && k.copy !== undefined);
+
+  const outlined = inventories().flatMap((all) =>
+    all.filter((e) => e.tokens?.['border'] === 'border.strong').map((e) => ({ e, all })),
+  );
+
+  it('reads the outlined elements — an empty scan would agree with anything', () => {
+    expect(outlined.length).toBeGreaterThan(5);
+  });
+
+  it('finds a label on every element outlined in border.strong (§4 E3 ¶2)', () => {
+    const bare = outlined.filter(({ e, all }) => !labelled(e, all)).map(({ e }) => e.id);
+    expect(bare).toStrictEqual([]);
+  });
+
+  it('DECOY — an outlined element with no label is named', () => {
+    const e: Element = {
+      id: 'x.bare',
+      parent: null,
+      tokens: { border: 'border.strong' },
+      copy: null,
+    };
+    expect(labelled(e, [e])).toBe(false);
+  });
+
+  it('declares the handle, which has no label, in both themes', () => {
+    const handles = [...drawnPairs()].filter(([pair]) => pair.startsWith('border.strong on '));
+    expect(handles.length).toBeGreaterThan(0);
+    for (const theme of ['dark', 'light'] as const)
+      expect(declared(theme, 'border.indicator', 'background')).toBe(true);
   });
 });

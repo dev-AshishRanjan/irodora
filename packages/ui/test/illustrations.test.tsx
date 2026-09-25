@@ -311,7 +311,7 @@ describe('never over a sample (the rule the well exists for)', () => {
   /**
    * Read off the RECORD's own geometry, which is where the evidence is.
    *
-   * Simultaneous contrast is why a sample sits in a neutral well: whatever touches a colour
+   * Simultaneous contrast is why a sample sits in a well: whatever touches a colour
    * changes how it reads, and a drawing behind one would tint it exactly as a status chip beside
    * one does (F-069). The mockups never do it, and this asserts that over every box F-220
    * measured rather than over a component that happens to be registered — a surface built from an

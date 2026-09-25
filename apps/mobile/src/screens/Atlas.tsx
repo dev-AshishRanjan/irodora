@@ -173,7 +173,8 @@ export interface AtlasProps {
  *
  * ## The colour is the element, not an adornment on a row
  *
- * A full-width band, 180px tall, on the mandatory neutral well with the two-tone keyline intact.
+ * A full-width band, 180px tall, on the mandatory well (the drawn card since F-225, C11) with the
+ * two-tone keyline intact.
  * The `Swatch` component is unchanged — it was never the defect. What was wrong is that the
  * artefact the product exists to show was the smallest considered thing on the screen.
  *

@@ -103,7 +103,8 @@ const lab = (o: ManifestOklch) => xyzToLab(oklchToXyz([o.l, o.c, o.h]));
  * lifting `status.ok` and `status.warn` to clear 4.5:1 on its levels brings them close to
  * `status.bad`, and they stop separating under protan, deutan and tritan simulation. NO lightness
  * move of any one of the three — nor of all three together, hue and chroma held — passes both
- * (measured: 13,662 in-gamut combinations, none). So the pair's members are tried one at a time and
+ * (measured by mockups/tools/slate-status-search.mjs: of the 256 lightness-only combinations that
+ * pass contrast, none is clean). So the pair's members are tried one at a time and
  * the one that passes by the SMALLEST ΔE00 change **with its hue held** moves, lightness and chroma
  * free. Hue is the status's identity (green, amber, red); it never moves. Every candidate is judged
  * by the gate's own contrast, separation and salience checks. Only the generator calls this — a
