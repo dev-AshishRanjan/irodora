@@ -7370,7 +7370,7 @@
       "service": "mobile",
       "release": "R9",
       "priority": "must",
-      "status": "todo",
+      "status": "in_progress",
       "blockedBy": [
         "F-220"
       ],
@@ -7399,7 +7399,8 @@
         "cvd",
         "content"
       ],
-      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it. BLOCKED 2026-09-15 on OQ-29: F-220 measured the wordmark closest to Georgia Pro, which is commercially licensed, and no open-licence face was a candidate; trying open faces is F-275, which needs the person's permission to download them. FROM F-239 (2026-09-21): this feature’s criterion \"every number renders in tabular figures\" is now true WHILE 15’s Tabular Numeric Figures switch is on, which is its drawn state and its default — a person who never opens Preferences sees exactly what this feature shipped. Turning that switch off sets the same text in proportional figures deliberately; Text’s numeric prop still DECLARES that the text carries figures, and every call site this feature added still declares it. E-138 carries the link. UNBLOCKED 2026-09-24: OQ-29 is closed by ADR-0106, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The serif is GELASIO (SIL OFL), Georgia's metric-compatible open counterpart — first of 109 over the eight serif crops the mockups draw. The weight per role is this feature's to measure (stem width against the drawn stems), and upstream ships a variable [wght] file, so static instances are cut from it reproducibly."
+      "notes": "Today the app ships Geist, Geist Mono and a Noto Sans JP subset — there is no serif, and every mockup draws the wordmark, Home’s three propositions and the display sizes in one. F-220 identifies the face; this ships it. BLOCKED 2026-09-15 on OQ-29: F-220 measured the wordmark closest to Georgia Pro, which is commercially licensed, and no open-licence face was a candidate; trying open faces is F-275, which needs the person's permission to download them. FROM F-239 (2026-09-21): this feature’s criterion \"every number renders in tabular figures\" is now true WHILE 15’s Tabular Numeric Figures switch is on, which is its drawn state and its default — a person who never opens Preferences sees exactly what this feature shipped. Turning that switch off sets the same text in proportional figures deliberately; Text’s numeric prop still DECLARES that the text carries figures, and every call site this feature added still declares it. E-138 carries the link. UNBLOCKED 2026-09-24: OQ-29 is closed by ADR-0106, decided on the person's delegation (\"Follow mockup strictly. Decide yourself. Think reason research before deciding\"). The serif is GELASIO (SIL OFL), Georgia's metric-compatible open counterpart — first of 109 over the eight serif crops the mockups draw. The weight per role is this feature's to measure (stem width against the drawn stems), and upstream ships a variable [wght] file, so static instances are cut from it reproducibly.",
+      "plan": "plans/F-226-the-type-is-the-mockups-type.md"
     },
     {
       "id": "F-227",
