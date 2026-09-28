@@ -359,6 +359,27 @@ export function paintedColors(
   ] as const;
 
   /**
+   * A gradient's stops, as painted colours (F-232).
+   *
+   * `<LinearGradient><Stop stopColor="#5DA9E5" /></LinearGradient>` renders to ONE node whose
+   * `gradient` prop is `[offset, argb, offset, argb, …]`, each colour a signed 32-bit integer. The
+   * `Stop` elements themselves are gone. Without this a gradient track would be colour no gate
+   * measures, and a hand-typed stop would pass the colour-literal rule by being invisible to it:
+   * the same blindness `svgPaint` below closed for strokes.
+   */
+  const gradientStops = (node: TestNode): readonly string[] => {
+    const raw: unknown = node.props['gradient'];
+    if (!Array.isArray(raw)) return [];
+    const out: string[] = [];
+    for (let i = 1; i < raw.length; i += 2) {
+      const argb: unknown = raw[i];
+      if (typeof argb !== 'number') continue;
+      out.push(`#${((argb >>> 0) & 0xffffff).toString(16).padStart(6, '0')}`);
+    }
+    return out;
+  };
+
+  /**
    * An SVG element's paint, as if it had been written in `style`.
    *
    * ## It arrives parsed, not as the string that was written
@@ -453,6 +474,8 @@ export function paintedColors(
       if (value.toLowerCase() === 'transparent') continue;
       out.push({ property, resolution: resolveColor(value, theme), path: here });
     }
+    for (const stop of gradientStops(node))
+      out.push({ property: 'stopColor', resolution: resolveColor(stop, theme), path: here });
     for (const child of node.children ?? []) if (isNode(child)) walk(child, here);
   };
 

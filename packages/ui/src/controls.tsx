@@ -52,11 +52,12 @@ import {
   Switch as HeroSwitch,
 } from 'heroui-native';
 import { nativeRadius, nativeSpacing, nativeTapTarget } from '@irodora/design-tokens';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { hitArea } from './hitArea.js';
 import { overlayKeyframes } from './motion.js';
 import { FocusRing } from './selection.js';
 import { Text } from './Text.js';
-import { useTheme } from './theme.js';
+import { useTheme, type ThemeColors } from './theme.js';
 import type { Script } from './layout.js';
 
 /**
@@ -531,14 +532,20 @@ export function Select({
   );
 }
 
-export interface SliderProps {
-  /** What is being set. The thumb's accessible name, and drawn above the track. */
+/** The end labels `23` draws under a readout: the two poles, and a note between them. */
+export interface SliderEnds {
+  readonly low: string;
+  readonly high: string;
+  /** `23`'s confidence note, centred between the poles. */
+  readonly note?: string;
+}
+
+interface SliderShared {
+  /** What is being set, or shown. The accessible name, and drawn above the track. */
   readonly label: string;
   readonly value: number;
-  readonly onValueChange: (value: number) => void;
   readonly min?: number;
   readonly max?: number;
-  readonly step?: number;
   /**
    * The current value, already formatted by the caller.
    *
@@ -552,26 +559,78 @@ export interface SliderProps {
    * owns neither (ADR-0056).
    */
   readonly valueLabel: string;
-  readonly focused?: boolean;
   readonly disabled?: boolean;
   readonly loading?: boolean;
   readonly script?: Script;
   readonly testID?: string;
+  /** The track's drawn thickness in dp: the element's own. Defaults to {@link SLIDER_TRACK}. */
+  readonly trackHeight?: number;
+  /** The thumb's drawn diameter in dp: the element's own. Defaults to {@link SLIDER_THUMB}. */
+  readonly thumbSize?: number;
 }
 
-/** How tall the track is drawn. Below this a thumb has nowhere to sit and the bar reads as a rule. */
-const TRACK_HEIGHT = 10;
-/** The visible thumb. The TARGET around it is `nativeTapTarget`; see the note at the thumb. */
-const THUMB_DISC = 24;
+interface InteractiveSliderProps extends SliderShared {
+  readonly readout?: false;
+  readonly onValueChange: (value: number) => void;
+  readonly step?: number;
+  readonly focused?: boolean;
+  readonly gradient?: never;
+  readonly halo?: never;
+  readonly ends?: never;
+}
 
 /**
- * A draggable value on a bounded interval.
+ * A value SHOWN on a track, not set (F-232): `17`'s live readings and `23`'s finished profile.
+ * Nothing on it moves under a finger, so it is not adjustable and not a control.
+ */
+interface ReadoutSliderProps extends SliderShared {
+  readonly readout: true;
+  readonly onValueChange?: never;
+  readonly step?: never;
+  readonly focused?: never;
+  /**
+   * The track painted as a gradient through these tokens, evenly spaced (`23`), in place of a fill.
+   * Tokens, never literals: the colour-literal rule reads every stop (`tree.ts`). `23`'s own stops
+   * are F-260's to mint.
+   */
+  readonly gradient?: readonly (keyof ThemeColors)[];
+  /** `17` rings its marker in the card it sits on, so the marker separates from the fill. */
+  readonly halo?: 'surface.1';
+  readonly ends?: SliderEnds;
+}
+
+export type SliderProps = InteractiveSliderProps | ReadoutSliderProps;
+
+/**
+ * The track's thickness, in dp: `09`'s, the only interactive slider a screen draws (P3). 6.1–6.7 px
+ * at 2 px/dp, the median snapped to half a dp. Recomputed by `slider.test`.
+ */
+export const SLIDER_TRACK = 3.5;
+/**
+ * The thumb's diameter, in dp: `09`'s, 27.4–27.5 px, snapped to half a dp. It is drawn at this
+ * size, and the target is in its hit area (ADR-0114). Recomputed by `slider.test`.
+ */
+export const SLIDER_THUMB = 14;
+
+/** The halo `17` draws round its marker, in dp: a ring of the card between marker and fill. */
+const SLIDER_HALO = 2;
+
+/**
+ * A value on a bounded interval: set with a thumb, or shown with a marker.
  *
  * ## The value is shown, always
  *
  * A slider whose position is the only readout is a control you can move but cannot set. The
  * number is drawn beside the label and announced through `accessibilityValue.text`, so the two
  * channels agree and neither is the colour of the fill.
+ *
+ * ## As the mockups draw it (F-232)
+ *
+ * A thin track, white (`accent`) up to the value and `surface.3` past it, under a white thumb with
+ * **no edge**: the thumb is identified by its fill, so the `border.strong` edge it used to rest in
+ * (1.85:1 on Sumi, F-225's review) is gone rather than moved. Each screen draws its own thickness
+ * and thumb, which it passes: `09` 3.5 and 14, `17` 2 and 7.5 with a halo, `23` 6.5 and 16.5 on a
+ * gradient.
  *
  * ## Single thumb only
  *
@@ -580,7 +639,38 @@ const THUMB_DISC = 24;
  * recorded: *"a two-thumbed range control is the kind of thing that works on a design and not
  * under a thumb."* A second thumb can be added the day something asks for one.
  */
-export function Slider({
+export function Slider(props: SliderProps): React.JSX.Element {
+  return props.readout === true ? <ReadoutSlider {...props} /> : <InteractiveSlider {...props} />;
+}
+
+/** The label and the value, drawn above the track. */
+function SliderHeader({
+  label,
+  valueLabel,
+  script,
+}: {
+  readonly label: string;
+  readonly valueLabel: string;
+  readonly script: Script;
+}): React.JSX.Element {
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: nativeSpacing.sm }}>
+      <Text size="caption" color="foreground.2" script={script}>
+        {label}
+      </Text>
+      {/*
+        `numeric` DECLARES that the readout carries figures, and `15`'s tabular switch decides
+        whether they are set tabular (F-239). `selectable` because a figure you can read is a
+        figure you can copy — `screens.test.tsx` asserts it over every tabular node on Compare.
+      */}
+      <Text size="caption" color="foreground" numeric selectable>
+        {valueLabel}
+      </Text>
+    </View>
+  );
+}
+
+function InteractiveSlider({
   label,
   value,
   onValueChange,
@@ -593,34 +683,15 @@ export function Slider({
   loading = false,
   script = 'latin',
   testID,
-}: SliderProps): React.JSX.Element {
+  trackHeight = SLIDER_TRACK,
+  thumbSize = SLIDER_THUMB,
+}: InteractiveSliderProps): React.JSX.Element {
   const { colors } = useTheme();
   const inert = disabled || loading;
 
   return (
     <View style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}>
-      <View
-        style={{ flexDirection: 'row', justifyContent: 'space-between', gap: nativeSpacing.sm }}
-      >
-        <Text size="caption" color="foreground.2" script={script}>
-          {label}
-        </Text>
-        {/*
-          `numeric` DECLARES that the readout carries figures, and `15`'s tabular
-   * switch decides whether they are set tabular (F-239). With that switch off a value under a
-   * moving thumb reflows — the cost of the switch existing, stated here rather than left as a
-   * guarantee this file no longer holds. The readout does not exempt itself: somebody who turned
-   * proportional figures on asked for them everywhere, and the one control that opted out would
-   * be the place the setting silently did not apply.
-
-          `selectable` because this repository's rule is that a figure you can read is a figure
-          you can copy — `screens.test.tsx` asserts it over every tabular node on Compare, and
-          it caught this one the first time the slider rendered there.
-        */}
-        <Text size="caption" color="foreground" numeric selectable>
-          {valueLabel}
-        </Text>
-      </View>
+      <SliderHeader label={label} valueLabel={valueLabel} script={script} />
       <HeroSlider
         value={value}
         minValue={min}
@@ -636,32 +707,27 @@ export function Slider({
           // `null` removes the theme-decided layer, for the reason in the header.
           background={null}
           style={{
-            height: TRACK_HEIGHT,
+            height: trackHeight,
             borderRadius: nativeRadius.pill,
             backgroundColor: colors['surface.3'],
           }}
         >
           <HeroSlider.Fill
-            style={{ backgroundColor: colors.inverse, borderRadius: nativeRadius.pill }}
+            style={{ backgroundColor: colors.accent, borderRadius: nativeRadius.pill }}
           />
           <HeroSlider.Thumb
             testID={testID}
             index={0}
             /*
               ONE ELEMENT, not a group. A thumb is a single thing a person grabs, and without
-              this the platform walks into it and announces the disc inside.
-
-              It is also what makes the thumb visible to `pressableNodes` on any harness that
-              has not learned about `accessibilityValue` — the two together are belt and
-              braces, and the widened detector is the one that catches the NEXT slider.
+              this the platform walks into it and announces what is inside.
             */
             accessible
             accessibilityLabel={label}
             /*
               `text` IS THE ANNOUNCEMENT. `now` is a percentage HeroUI computed because the
               bridge cannot carry a fraction; the caller's formatted string is the quantity a
-              person actually set. Both are declared, and the readable one is not left to a
-              default.
+              person actually set.
             */
             accessibilityValue={{
               min: 0,
@@ -670,35 +736,127 @@ export function Slider({
               text: valueLabel,
             }}
             accessibilityState={{ disabled: inert, busy: loading }}
-            /*
-              THE TARGET IS 44 AND THE DISC IS 24, which is not the same statement twice.
-
-              WCAG 2.2 asks for 44 on the thing a finger lands on; a 44px disc on a 10px track
-              is a ball on a wire. So the thumb node — the one `pressableNodes` reads and the
-              one the platform hit-tests — is a transparent 44 square, and what a person sees
-              is the disc centred in it.
-            */
+            // Drawn at its size; the target is in the hit area (ADR-0114), not a transparent 44.
+            hitSlop={hitArea(thumbSize, thumbSize)}
             style={{
-              minWidth: nativeTapTarget,
-              minHeight: nativeTapTarget,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'transparent',
+              width: thumbSize,
+              height: thumbSize,
+              borderRadius: nativeRadius.pill,
+              backgroundColor: colors.accent,
             }}
           >
-            <View
-              style={{
-                width: THUMB_DISC,
-                height: THUMB_DISC,
-                borderRadius: nativeRadius.pill,
-                backgroundColor: colors['surface.1'],
-                borderWidth: focused ? 2 : 1,
-                borderColor: focused ? colors.ring : colors['border.strong'],
-              }}
-            />
+            <FocusRing visible={focused} radius={nativeRadius.pill} />
           </HeroSlider.Thumb>
         </HeroSlider.Track>
       </HeroSlider>
+    </View>
+  );
+}
+
+function ReadoutSlider({
+  label,
+  value,
+  min = 0,
+  max = 1,
+  valueLabel,
+  disabled = false,
+  loading = false,
+  script = 'latin',
+  testID,
+  trackHeight = SLIDER_TRACK,
+  thumbSize = SLIDER_THUMB,
+  gradient,
+  halo,
+  ends,
+}: ReadoutSliderProps): React.JSX.Element {
+  const { colors } = useTheme();
+  const inert = disabled || loading;
+  const at = `${String(percentOf(value, min, max))}%` as `${number}%`;
+  const ring = halo === undefined ? 0 : SLIDER_HALO;
+  const marker = thumbSize + 2 * ring;
+
+  return (
+    <View
+      testID={testID}
+      /*
+        ONE ANNOUNCEMENT, and not a control: a readout is read, not set, so it carries no
+        `accessibilityValue` (which is what marks a thing a person adjusts) and no adjustable role.
+        Its name says what it is and what it reads.
+      */
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${label}: ${valueLabel}`}
+      accessibilityState={{ disabled: inert, busy: loading }}
+      style={{ gap: nativeSpacing.sm, opacity: inert ? 0.5 : 1 }}
+    >
+      <SliderHeader label={label} valueLabel={valueLabel} script={script} />
+      <View style={{ height: Math.max(marker, trackHeight), justifyContent: 'center' }}>
+        <View
+          style={{
+            height: trackHeight,
+            borderRadius: nativeRadius.pill,
+            overflow: 'hidden',
+            backgroundColor: gradient === undefined ? colors['surface.3'] : 'transparent',
+          }}
+        >
+          {gradient === undefined ? (
+            <View
+              style={{
+                width: at,
+                height: trackHeight,
+                borderRadius: nativeRadius.pill,
+                backgroundColor: colors.accent,
+              }}
+            />
+          ) : (
+            <Svg width="100%" height={trackHeight} fill="none">
+              <Defs>
+                <LinearGradient id="track" x1="0" y1="0" x2="1" y2="0">
+                  {gradient.map((token, i) => (
+                    <Stop
+                      key={token}
+                      offset={gradient.length === 1 ? 0 : i / (gradient.length - 1)}
+                      stopColor={colors[token]}
+                    />
+                  ))}
+                </LinearGradient>
+              </Defs>
+              <Rect width="100%" height={trackHeight} fill="url(#track)" />
+            </Svg>
+          )}
+        </View>
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: at,
+            marginLeft: -marker / 2,
+            width: marker,
+            height: marker,
+            borderRadius: nativeRadius.pill,
+            backgroundColor: colors.accent,
+            borderWidth: ring,
+            ...(halo === undefined ? {} : { borderColor: colors[halo] }),
+          }}
+        />
+      </View>
+      {ends === undefined ? null : (
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', gap: nativeSpacing.sm }}
+        >
+          <Text size="body" color="foreground.2" script={script}>
+            {ends.low}
+          </Text>
+          {ends.note === undefined ? null : (
+            <Text size="caption" color="foreground.2" script={script}>
+              {ends.note}
+            </Text>
+          )}
+          <Text size="body" color="foreground.2" script={script}>
+            {ends.high}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

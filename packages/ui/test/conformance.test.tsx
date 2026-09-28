@@ -872,6 +872,43 @@ const SUBJECTS: readonly ConformanceSubject[] = [
         theme,
       ),
   },
+  /*
+   * THE READOUT FORMS (F-232): 17's live reading, thin with a halo round its marker, and 23's
+   * finished profile, on a gradient with its end labels. Shown, not set, and `static`: a readout is
+   * a drawn value with one state, and no mockup draws it loading, failed or empty, so those states
+   * would be designed here rather than built. The gradient's stops here are neutral tokens; 23's
+   * own are F-260's to mint.
+   */
+  ...(
+    [
+      ['Slider (readout, 17)', { trackHeight: 2, thumbSize: 7.5, halo: 'surface.1' }],
+      [
+        'Slider (readout, 23)',
+        {
+          trackHeight: 6.5,
+          thumbSize: 16.5,
+          gradient: ['foreground.3', 'foreground'],
+          ends: { low: 'Cool', high: 'Warm', note: 'From 6 trials' },
+        },
+      ],
+    ] as const
+  ).map(([name, form]): ConformanceSubject => ({
+    name,
+    kind: 'static',
+    forbiddenNames: ['slider', 'range', 'value'],
+    render: (state, theme) =>
+      draw(
+        <Slider
+          readout
+          label="Temperature"
+          value={0.62}
+          valueLabel="Warm"
+          {...form}
+          testID={state}
+        />,
+        theme,
+      ),
+  })),
   {
     /*
      * FOUR ITEMS, because three separators are what put `border` on a screen for the first

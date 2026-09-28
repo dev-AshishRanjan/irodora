@@ -873,13 +873,21 @@
       },
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "level3"
       },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "engine:profile.dimensions.temperature.range",
       "action": null,
+      "measured": {
+        "fg": "#ECEFF2",
+        "track": "#363C45"
+      },
+      "raw": {
+        "trackPx": 3.6,
+        "thumbPx": 14.8
+      },
       "copy": null
     },
     {
@@ -975,7 +983,7 @@
       },
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "level3"
       },
       "type": null,
       "icon": null,
@@ -1152,7 +1160,7 @@
       },
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "level3"
       },
       "type": null,
       "icon": null,
@@ -1291,7 +1299,7 @@
       },
       "tokens": {
         "fg": "text.primary",
-        "track": "border.subtle"
+        "track": "level3"
       },
       "type": null,
       "icon": null,

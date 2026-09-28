@@ -323,6 +323,13 @@
       "illustration": null,
       "binding": "engine:profile.dimensions.temperature.range",
       "action": null,
+      "measured": {
+        "fg": "#F2F3F7"
+      },
+      "raw": {
+        "trackPx": 9.2,
+        "thumbPx": 23.3
+      },
       "copy": null
     },
     {

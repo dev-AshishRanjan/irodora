@@ -179,6 +179,8 @@ export {
   Accordion,
   Select,
   Slider,
+  SLIDER_THUMB,
+  SLIDER_TRACK,
   Switch,
   SWITCH_THUMB,
   SWITCH_TRACK,
@@ -187,6 +189,7 @@ export {
   type AccordionProps,
   type SelectOption,
   type SelectProps,
+  type SliderEnds,
   type SliderProps,
   type SwitchProps,
 } from './controls.js';

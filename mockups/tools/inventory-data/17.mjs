@@ -94,9 +94,15 @@ const dimension = (key, label, value, track, em) => [
     ...cap(em.value),
     copy: { shape: 'value', script: 'mixed' },
   }),
+  // A readout, measured on the temperature row (F-232): a 3.6 px track, white to the value and
+  // `level3` past it (ΔE00 2.1; `border.subtle`, recorded before, sits at 3.0), under a 14.8 px
+  // white marker ringed about 3.7 px in the card's own colour where it meets the fill.
   el(`17.radar.${key}.range`, 'ui:Slider', track, {
     parent: '17.radar',
-    tokens: { fg: 'text.primary', track: 'border.subtle' },
+    tokens: { fg: 'text.primary', track: 'level3' },
+    ...(key === 'temperature'
+      ? { measured: { fg: '#ECEFF2', track: '#363C45' }, raw: { trackPx: 3.6, thumbPx: 14.8 } }
+      : {}),
     binding: `engine:profile.dimensions.${key}.range`,
   }),
 ];

@@ -43,9 +43,14 @@ const dimension = (key, d) => {
       ...sized(d.valueSize, d.valueEm),
       copy: { shape: 'value', script: 'mixed' },
     }),
+    // A readout on a gradient track, measured on the temperature row (F-232): 9.2 px thick, under
+    // a white marker 23.3 px across. The gradient's stops are F-260's to mint.
     el(`${p}.range`, 'ui:Slider', d.range, {
       parent: '23.profile',
       tokens: { fg: 'text.primary' },
+      ...(key === 'temperature'
+        ? { measured: { fg: '#F2F3F7' }, raw: { trackPx: 9.2, thumbPx: 23.3 } }
+        : {}),
       binding: `engine:profile.dimensions.${key}.range`,
     }),
     t(`${p}.low`, d.low, '23.profile', `static:profile.dimension.${key}.low`, {
