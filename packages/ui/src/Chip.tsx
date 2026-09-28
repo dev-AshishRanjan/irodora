@@ -66,7 +66,7 @@ export function chipAccessibleName(label: string, selected: boolean): string {
  * The badge on a chip, smaller than the default.
  *
  * A chip is only `nativeTapTarget` tall and its label runs the full width, so the 18px badge
- * a swatch carries would sit on the text. 14 is the largest that clears a `small` label at
+ * a swatch carries would sit on the text. 14 is the largest that clears a `label` at
  * the chip's padding, and it is still a drawn glyph rather than a character.
  */
 const SELECTION_MARK_CHIP = 14;

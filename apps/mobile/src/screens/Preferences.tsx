@@ -343,7 +343,7 @@ export function Preferences({
         level="1"
         padding="md"
         header={
-          <Text size="body" color="foreground" script={script} heading>
+          <Text size="body" color="foreground" script={script} heading numeric>
             {t('settings.engine')}
           </Text>
         }
@@ -423,7 +423,7 @@ export function Preferences({
           }
         >
           <Stack gap="sm">
-            <Text size="caption" color="foreground.2" script={script}>
+            <Text size="caption" color="foreground.2" script={script} numeric>
               {`${t('preferences.formula')} ${String(PREFERENCE_SATURATION)}`}
             </Text>
 
@@ -455,7 +455,7 @@ export function Preferences({
                   it is derived from what precedes it, so a reader going left to right meets the
                   evidence before the conclusion.
                 */}
-                <Text size="label" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script} numeric>
                   {[
                     `${t('preferences.accepted')} ${String(row.accepted)}`,
                     `${t('preferences.rejected')} ${String(row.rejected)}`,
@@ -485,7 +485,7 @@ export function Preferences({
                 THE QUESTION NAMES THE COUNT. This is the only thing between a tap and an
                 irreversible delete, so it says what goes rather than asking "are you sure".
               */}
-              <Text size="body" color="foreground" script={script}>
+              <Text size="body" color="foreground" script={script} numeric>
                 {`${t('preferences.resetCount')} ${String(rows.length)}`}
               </Text>
               <Text size="label" color="foreground" script={script}>

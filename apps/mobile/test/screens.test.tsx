@@ -2628,16 +2628,34 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
    * gap was found by re-reading a green test rather than by anything failing.
    */
   /**
-   * A string that is nothing but a quantity: a sign, digits and the punctuation of figures,
-   * optionally one unit the product prints after a figure (F-226 widened it) — or a hex, which is
-   * a colour value in a column exactly as a delta is (C9).
+   * A string that CARRIES a figure: any digit at all.
+   *
+   * It matched only a string that was nothing but a quantity until F-226's review, which found the
+   * counts on Preferences ("Kept 3 · Passed 1 · Net +2 · Weight ×1.2", stacked row under row — C9's
+   * column case exactly), the Atlas's "Showing 12 / 480" and four more set in proportional digits,
+   * because each figure sat inside a sentence. Tabular digits change only the digits' widths, so a
+   * mixed string loses nothing by being marked, and "every number" means every number.
    */
-  const BARE_FIGURE = /^(?:[+−-]?\d[\d\s.,:/%°–-]*(?:\s?(?:dp|px|K|nm|lx))?|#[0-9A-Fa-f]{6})$/u;
+  //
+  // Two things a digit can be that are NOT a figure, each excluded by rule rather than by string:
+  //   - part of a NAME or an identifier: a standard space or unit (D65, ΔE00, WCAG 2.2, sRGB,
+  //     Display-P3) or a hyphenated id (IRO-ED-001, ed-002, F-019). Nobody reads "65" in D65 as a
+  //     quantity.
+  //   - inside running PROSE: eight or more words. A figure in a sentence is read, not scanned down
+  //     a column, which is the case C9 is about — and a translation that happens to contain a
+  //     digit ("Android 12 and later") must not make its Text a column of figures.
+  const NAMED_DIGITS =
+    /ΔE00|\b(?:D65|D50|sRGB|Display-P3|WCAG\s?\d(?:\.\d)?)\b|\b[A-Za-z]+(?:-[A-Za-z]+)*-\d+\b/gu;
+  const isProse = (s: string): boolean => (s.match(/\p{L}{2,}/gu) ?? []).length >= 8;
+  const carriesFigure = (s: string): boolean => {
+    const rest = s.replace(NAMED_DIGITS, '');
+    return /\d/u.test(rest) && !isProse(rest);
+  };
 
   function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
     // The node that OWNS the text, not the string itself — the `numeric` prop and the font
     // variant both live on the element, and a string has no props to check.
-    if ((node.children ?? []).some((c) => typeof c === 'string' && BARE_FIGURE.test(c)))
+    if ((node.children ?? []).some((c) => typeof c === 'string' && carriesFigure(c)))
       out.push(node);
     for (const child of node.children ?? []) if (typeof child !== 'string') figureNodes(child, out);
     return out;
@@ -2725,6 +2743,25 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
       'light',
     );
     expect(ragged(marked)).toHaveLength(0);
+
+    // And a figure inside a sentence, which the matcher missed until F-226's review.
+    const mixed = draw(
+      <Text size="label" color="foreground">
+        Showing 12 / 480
+      </Text>,
+      'light',
+    );
+    expect(ragged(mixed)).toEqual(['Showing 12 / 480']);
+
+    // And the two exclusions are rules that DISCRIMINATE: a name's digits and a sentence's are not
+    // figures, but a count beside either one still is.
+    expect(carriesFigure('CIELAB (D65)')).toBe(false);
+    expect(carriesFigure('IRO-ED-001')).toBe(false);
+    expect(carriesFigure('This phone does not offer a colour; Android 12 and later do.')).toBe(
+      false,
+    );
+    expect(carriesFigure('ΔE00 0.42')).toBe(true);
+    expect(carriesFigure('Reviewed by ed-002 on 2026-08-24')).toBe(true);
 
     // And a hex, which the matcher reads as a figure since F-226.
     const hex = draw(

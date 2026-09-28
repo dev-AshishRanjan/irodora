@@ -8,6 +8,76 @@ reader cannot reconstruct.
 
 ---
 
+## 2026-09-28 — F-226 The type is the mockups' type: a serif for display, the sans for reading, tabular figures for every number
+
+**Done.** The app's type is the mockups'. It shipped in twelve commits, `a7137b8` through this one
+([ADR-0112](../../docs/adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md),
+[ADR-0113](../../docs/adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)).
+
+- **The serif is Gelasio Regular, at no tracking.** The weight was measured:
+  - `mockups/tools/stem.ps1` integrates ink coverage across horizontal bands, a quantity JPEG bloom
+    leaves alone.
+  - `serif-weight.mjs` computes the same number exactly from Gelasio's outlines along `wght`.
+  - A calibration run on known cuts recovers 500, 600 and 700 to within about 12 at display sizes.
+  - Every serif element a screen draws reads at or below Regular: the two wordmarks C4 uses, and the
+    tagline.
+  - Board `00`'s *Display 1* and *Title* samples read about Medium. No screen sets a serif there
+    except the wordmark, so a Medium cut waits for one that does (ADR-0112, Revisit).
+- **The mincho is Noto Serif JP at 400.** It is first of seven open-licence minchos on `20`'s kanji,
+  and it is subset to exactly the corpus names' kanji. The requirement is derived from the
+  inventories' mincho bindings.
+- **Both are cut static from pinned sources**, with rebuilt name tables and their OFL records. The
+  content gate checks coverage and structure, and `--prove` now has five structural decoys.
+- **Tokens.** The manifest carries `faces`, and every face loads before the first frame. `FontGate`
+  holds it, and a test renders `FontGate` with the loader held and released; a mutation check shows
+  the test can fail.
+- **`Text` takes a `face`.** A serif caption, a serif figure or a Latin mincho does not compile.
+  `Wordmark` is set in the serif, as Latin, in both locales.
+- **The scale is board `00`'s:** display1 72, title 22, body 16, label 14, and a measured caption of
+  10.3, which closes OQ-12.
+  - The old scale is replaced: about 275 sites were rewritten by an error-driven pass over `tsc`, and
+    three more were found by hand behind `Extract<>` and `@ts-expect-error`.
+  - Pre-R9 screens change size, and section headers lose their weight, until they are rebuilt.
+- **Every number is tabular.** The sweep covers every registered screen and state in both themes.
+  - It reads any figure outside a name, an identifier or a sentence.
+  - It found 264 proportional figures, then 106 more once it read figures inside mixed strings. All
+    are fixed.
+  - One of them was a real bug: four swatches passed a built accessible name as their name, so it was
+    announced twice and printed as the visible label. That is fixed.
+
+**Review (once, on `3cb8c41`): FAIL.** It found 1 blocking, 7 significant and 5 minor findings. Each
+was fixed or recorded, and the gates were re-run.
+
+- **B1, blocking:** figures inside mixed strings rendered proportional, and the sweep could not see
+  them. The matcher is widened with rules and decoys, and every site is marked.
+- **S1:** OQ-13 was closed on the premise that §2's snap rule was "approved by the person on
+  2026-09-10". `git log -S` shows an agent wrote §2 on 09-14, after which F-220 still raised OQ-13.
+  **The closure is withdrawn and OQ-13 is open again.** F-230, F-242, F-247, F-253 and F-258 carry
+  it. The same false date was corrected on F-225's row-3 note. A lesson records the mistake.
+- **S2:** ADR-0112's "every governing crop reads Regular" was false for board `00`'s two samples. It
+  is corrected (see above).
+- **S3:** criterion 4's guard now renders `FontGate`. **S4:** the device halves of criteria 1 and 4
+  are declared `attested`.
+- **S5:** F-140 and F-146 carry supersession notes. **S6:** ADR-0113's "nothing gets smaller" was
+  false, and is corrected along with the header collapse. **S7:** Home's dead conditional is removed.
+- **Minor:** stale comments fixed; Geist gone from the stacks; the licence pins nothing checked
+  removed; the serif requirement's comment corrected; two structural decoys added.
+
+**Recorded, not built:**
+- F-301: the large-text floor is WCAG's bold one; a threshold, for a person.
+- F-302 / OQ-42: a failed font load hangs the splash.
+- F-303: the Noto Sans JP subset is still variable, with a Thin default.
+
+**Gates run on the final tree:** `node scripts/verify-state.mjs` · `pnpm typecheck` · `pnpm lint` · `pnpm format:check` · `pnpm test` (every package) · `pnpm build` · `pnpm test:a11y` · `pnpm test:contrast` · `pnpm test:cvd` · `pnpm test:content` · `node scripts/verify-font-coverage.mjs --prove` · `node scripts/generate-font-subset.mjs --check` · `node scripts/verify-token-reach.mjs` · `node scripts/verify-contrast-proof.mjs` — **all exit 0** on the final tree. Lint failed once on the review fixes: a test imported the root layout, which a rule forbids (E-099). The hold moved into `src/fontGate.tsx`, where it is rendered. Lint, typecheck, format, gate 0, the mobile tests and a11y were re-run after that.
+
+**Not run:** `e2e` (gate 7 is pending; no device), `artifact` (no JDK), `perf` (no engine change).
+**Attested, outstanding:** glyph rendering and weight on a device (criterion 1), and the no-gap launch
+on a device (criterion 4). **Nobody has compared a screen with its mockup**; that is F-267.
+
+**Next:** F-232, board 00's controls. F-230 is next by number, but it waits on OQ-13; F-221 waits on a device.
+
+---
+
 ## 2026-09-25 — F-225 The mockup palette becomes the token set, with the four themes mockup 15 draws
 
 **Done.** The product now paints the mockups' palette

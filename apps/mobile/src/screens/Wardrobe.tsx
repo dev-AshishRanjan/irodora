@@ -404,11 +404,7 @@ function GarmentCell({
         <View style={{ aspectRatio: 1, overflow: 'hidden', borderRadius: nativeRadius.lg }}>
           {uri === null ? (
             <Swatch
-              name={swatchAccessibleName(
-                garment.color.name,
-                garment.color.hex,
-                colorOf(garment.color),
-              )}
+              name={garment.color.name}
               hex={garment.color.hex}
               color={colorOf(garment.color)}
               size={photoSize}
@@ -431,11 +427,7 @@ function GarmentCell({
                 style={{ position: 'absolute', left: nativeSpacing.sm, bottom: nativeSpacing.sm }}
               >
                 <Swatch
-                  name={swatchAccessibleName(
-                    garment.color.name,
-                    garment.color.hex,
-                    colorOf(garment.color),
-                  )}
+                  name={garment.color.name}
                   hex={garment.color.hex}
                   color={colorOf(garment.color)}
                   size={CELL_SWATCH}
@@ -606,11 +598,7 @@ export function Wardrobe({
         >
           <Row gap="md">
             <Swatch
-              name={swatchAccessibleName(
-                selected.color.name,
-                selected.color.hex,
-                colorOf(selected.color),
-              )}
+              name={selected.color.name}
               hex={selected.color.hex}
               color={colorOf(selected.color)}
               size={56}
@@ -993,7 +981,7 @@ export function Wardrobe({
                 <Text size="body" color="foreground" script={script} heading>
                   {section.title}
                 </Text>
-                <Text size="label" color="foreground.2" script={script}>
+                <Text size="label" color="foreground.2" script={script} numeric>
                   {`${t('browse.count')}: ${String(section.count)}`}
                 </Text>
               </Stack>

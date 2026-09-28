@@ -943,7 +943,7 @@ export function Lens({
                     everyone who has ever seen one.
                   */}
                   <Row gap="sm">
-                    <Text size="caption" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script} numeric>
                       {t('lens.confidence')}
                     </Text>
                     <Text size="caption" color="foreground.2" numeric selectable>
@@ -989,7 +989,7 @@ export function Lens({
                     <Text size="label" color="foreground.2" numeric selectable>
                       {`L ${display.oklch[0].toFixed(3)}  C ${display.oklch[1].toFixed(3)}  h ${display.oklch[2].toFixed(1)}°`}
                     </Text>
-                    <Text size="caption" color="foreground.2" script={script}>
+                    <Text size="caption" color="foreground.2" script={script} numeric>
                       {`${t('lens.samples')} ${String(capture.usableSamples)}`}
                     </Text>
                   </View>

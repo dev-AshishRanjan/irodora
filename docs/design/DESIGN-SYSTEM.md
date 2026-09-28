@@ -345,5 +345,5 @@ Every component in `@irodora/ui` must:
 - ~~**Type scale**~~ — settled as board `00`'s (F-226,
   [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)):
   `display1` 72 · `title` 22 · `body` 16 · `label` 14 · `caption` 10.3. The caption is the median
-  of every em the mockups draw below 12 dp, and a test recomputes it. Type drawn off the scale
-  snaps to it.
+  of every em the mockups draw below 12 dp, and a test recomputes it. Which governs type a screen
+  draws off the scale is OQ-13, open.

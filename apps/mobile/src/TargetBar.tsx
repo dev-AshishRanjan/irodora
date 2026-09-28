@@ -16,7 +16,7 @@
 
 import { View } from 'react-native';
 import { nativeSpacing } from '@irodora/design-tokens';
-import { Button, Row, Surface, swatchAccessibleName, Swatch, Text, useTheme } from '@irodora/ui';
+import { Button, Row, Surface, Swatch, Text, useTheme } from '@irodora/ui';
 import { useMessages } from './i18n/useMessages';
 import type { TargetColour } from './target';
 
@@ -45,7 +45,7 @@ export function TargetBar({ target, onDisarm }: TargetBarProps): React.JSX.Eleme
       >
         <Row gap="sm" align="center">
           <Swatch
-            name={swatchAccessibleName(target.label, target.hex, target.color)}
+            name={target.label}
             hex={target.hex}
             color={target.color}
             size={MARK}

@@ -74,16 +74,23 @@ reported in the tool's output as part of the error.
 
 ## Decision
 
-1. **One cut of the serif: Gelasio Regular (`wght` 400), at no tracking**, for every role the
-   mockups draw it in: the wordmark, `display1`, `title` and the serif `body`.
-   - Every governing crop measures at or below Regular. The two wordmarks C4 uses read 356 and 437.
-     The tagline lines read 275–347, lighter than the lightest instance the face has.
-   - *Display 1* reads 433. Its three bands through the stems read about 490; the band through the
-     baseline serifs reads low. *Title*'s interval, at a size where the instrument is loosest, spans
-     Regular.
-   - The rule the plan set before measuring was: the nearest instance, and the lighter one when the
-     interval overlaps both, because Gelasio widens with weight and a lighter cut still fits the box
-     §2 measured. It gives Regular for every role, so one file serves all four.
+1. **One cut of the serif: Gelasio Regular (`wght` 400), at no tracking**, for every serif element a
+   SCREEN draws: the wordmark and the serif `body`.
+   - The serif elements the screens draw read at or below Regular. The two wordmarks C4 uses read
+     356 and 437. The tagline lines read 275–347, lighter than the lightest instance the face has.
+   - **Board `00`'s *Display 1* and *Title* samples read nearer Medium.** *Display 1*'s three bands
+     through the stems read 483–504, and *Title*'s two clean bands 509 and 537. The band through each
+     word's baseline serifs reads low (~256, ~226); it measures a shape difference between faces, not
+     weight. So without it they read about 490, and the calibration's error at those sizes does not
+     reach 400. The first version of this record averaged that band in (433, 427) and claimed "every
+     governing crop" read at or below Regular. F-226's review showed that claim is false for these
+     two.
+   - **They are board samples, and no screen sets a serif at `display1` or `title` except the
+     wordmark,** which reads Regular. Under P3 the board governs how a component is built where no
+     screen shows it, so the Medium reading is real. It governs a serif display element that nothing
+     draws yet. So Regular ships as one file, and **a Medium cut is added the day a screen draws a
+     non-wordmark serif at `display1` or `title`** (Revisit). That is a one-file preference with a
+     stated cost, not a measurement of those two samples, and F-267 carries it for the person.
    - Tracking reads within ±0.02 em of zero wherever it can be read. The manifest's −0.04 em on
      `display.1` was set for a sans, and it does not carry over to the serif.
 2. **It is cut from the pinned variable source** (`scripts/font-sources.json`: google/fonts
@@ -125,10 +132,11 @@ reported in the tool's output as part of the error.
   and kanji beside each other sit on one baseline.
 
 **Bad.**
-- **`00`'s own wordmark and `25`'s read heavier (479, 485), and so do *Display 1*'s stem bands
-  (about 490).** A person comparing `00`'s board with the app may find its display type a shade
-  light. Neither `00`'s wordmark nor `25`'s governs (C4, P2), and *Display 1*'s interval overlaps
-  Regular. F-267's comparison is where this is looked at.
+- **`00`'s own wordmark and `25`'s read heavier (479, 485), and board `00`'s *Display 1* and *Title*
+  samples read about Medium (~490).** A person comparing `00`'s board with the app may find its display
+  type a shade light. Neither `00`'s wordmark nor `25`'s governs (C4, P2). The two samples would
+  govern a serif display element no screen draws yet, and that is the Revisit condition below. F-267's
+  comparison is where this is looked at.
 - The tagline reads lighter than any Gelasio instance. The face has nothing lighter than Regular, so
   the drawn lightness is approached, not met.
 - The instrument is loose at 22 px (*Title*) and on kanji, where horizontal strokes cross the bands.
@@ -136,8 +144,11 @@ reported in the tool's output as part of the error.
 - The cut is instanced by HarfBuzz. Byte-identity across operating systems is confirmed only when
   CI's `--check` runs.
 
-**Neutral.** The sources stay uncommitted under `.cache/fonts/`, as Noto Sans JP's does; the cut
-faces and their `OFL.txt` are committed and recorded in NOTICE.md.
+**Neutral.** The sources stay uncommitted under `.cache/fonts/`, as Noto Sans JP's does. The cut
+faces are committed. Their licence travels inside each file (name records 0, 13 and 14, which is
+OFL §2's machine-readable form) and is recorded in NOTICE.md; no separate `OFL.txt` is committed, as
+none is for Noto Sans JP. (The first version of this record said the `OFL.txt` files were committed;
+they never were.)
 
 ## Alternatives considered
 
@@ -153,6 +164,8 @@ faces and their `OFL.txt` are committed and recorded in NOTICE.md.
 ## Revisit when
 
 - A mockup draws serif figures, a serif caption or a serif label; or
+- **a screen draws a serif at `display1` or `title` that is not a wordmark**. Board `00`'s samples read
+  about Medium, so that element gets a Medium cut, measured and added the same way; or
 - F-267's comparison finds the display type or the card's kanji visibly lighter than drawn; or
 - React Native gains dependable variable-font axes on Android, and one variable file becomes cheaper
   than cut instances.

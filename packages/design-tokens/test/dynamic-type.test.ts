@@ -30,15 +30,15 @@ describe('the nearest-size match', () => {
     }
   });
 
-  it('resolves a tie to the LARGER ramp, which our own scale hits at xs', () => {
-    // 11.5 is exactly equidistant from caption2 (11) and caption1 (12). This is a live case,
-    // not a defensive one — it is the size of the `xs` step.
+  it('resolves a tie to the LARGER ramp', () => {
+    // 11.5 is exactly equidistant from caption2 (11) and caption1 (12). It was the size of the old
+    // `xs` step; since F-226's scale (ADR-0113) no step lands on a tie, and the rule is defensive.
     expect(Math.abs(11.5 - 11)).toBe(Math.abs(11.5 - 12));
     expect(dynamicTypeRampFor(11.5)).toBe('caption1');
   });
 
   it('clamps above the largest ramp rather than returning nothing', () => {
-    // display.1 is 72px. Apple publishes nothing above 34, and there is no curve beyond it.
+    // display1 is 72px. Apple publishes nothing above 34, and there is no curve beyond it.
     expect(dynamicTypeRampFor(72)).toBe('largeTitle');
     expect(dynamicTypeRampFor(1000)).toBe('largeTitle');
   });

@@ -3,8 +3,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
-import { FONT_ASSETS } from '../src/fonts';
+import { FontGate } from '../src/fontGate';
 import { DEVICE_APPEARANCE, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
@@ -167,17 +166,6 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
 
 export default function RootLayout(): React.JSX.Element {
   /*
-   * Every bundled face (ADR-0057, ADR-0112): the Japanese sans, the serif and the mincho. Their
-   * coverage is checked by `gate:content`, so a corpus publish that introduces a character a
-   * face lacks fails the build rather than showing a tofu box on a device.
-   *
-   * Rendering is held until ALL of them load. A frame drawn before the face is ready falls back to
-   * the platform font, which is the silent failure the whole decision exists to avoid — it
-   * would look like a font that simply differs rather than one that is missing.
-   */
-  const [loaded] = useFonts(FONT_ASSETS);
-
-  /*
    * THE LAUNCH OVERLAY, AND THE ORDER IS THE FEATURE.
    *
    * `launching` starts true and the overlay renders ON TOP of the app rather than instead of
@@ -195,13 +183,6 @@ export default function RootLayout(): React.JSX.Element {
   const onDone = useCallback(() => {
     setLaunching(false);
   }, []);
-
-  /*
-   * STILL NOTHING WHILE THE FONT LOADS — and now that is correct rather than a gap, because the
-   * native splash is still up. A frame drawn before the face is ready falls back to the
-   * platform font, which is the silent failure ADR-0057 bundles a subset to avoid.
-   */
-  if (!loaded) return <></>;
 
   /*
    * THE SAFE-AREA PROVIDER IS EXPLICIT, not inherited.
@@ -225,10 +206,15 @@ export default function RootLayout(): React.JSX.Element {
    * store seam in this app gives: `expo-sqlite` needs a device, and a module that imported it
    * could not be rendered by the suite where the accessibility guarantees are checked.
    */
+  /*
+   * EVERY BUNDLED FACE LOADS BEFORE THE FIRST FRAME (ADR-0057, ADR-0112): `FontGate` draws nothing
+   * until they have, while the native splash stays up. It lives in src/ so a test can RENDER it.
+   */
   return (
-    <SafeAreaProvider>
-      <AppearanceProvider store={deviceRepository()}>
-        {/*
+    <FontGate>
+      <SafeAreaProvider>
+        <AppearanceProvider store={deviceRepository()}>
+          {/*
           THE THREE DISPLAY SETTINGS, INSIDE THE APPEARANCE AND OUTSIDE THE THEME (F-239).
 
           Inside, because both read the same settings table and the appearance is the choice the
@@ -236,10 +222,11 @@ export default function RootLayout(): React.JSX.Element {
           settings and `Themed` renders the theme around every `Text` there is. A provider that
           sat under the theme would leave the first frame of every screen reading the default.
         */}
-        <DisplayProvider store={deviceRepository()}>
-          <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
-        </DisplayProvider>
-      </AppearanceProvider>
-    </SafeAreaProvider>
+          <DisplayProvider store={deviceRepository()}>
+            <Themed launch={launching ? <Launch onShown={onShown} onDone={onDone} /> : null} />
+          </DisplayProvider>
+        </AppearanceProvider>
+      </SafeAreaProvider>
+    </FontGate>
   );
 }

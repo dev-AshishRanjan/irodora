@@ -159,7 +159,7 @@ below).
 | light `ring` (added by `F-225`) | `#1A1B1E` | cannot separate from `border.strong`, which is the same colour, under gate 10's `[ring, border.strong]` pair | `#3A3B3E` | ΔE00 10.17 |
 
 **Row 3 is corrected by its own rule.** `#5C6472` was measured on the ground only, and it is the
-value the person approved on 2026-09-10. Focus also lands on levels 1–3, where `#5C6472` fails
+value §4 published (2026-09-14). Focus also lands on levels 1–3, where `#5C6472` fails
 (2.0–2.64:1). Applying the rule as written, to every surface the indicator is drawn on, gives
 `#788090`. The gate forces that value, so it is not a new choice. But it is not the number that
 was approved, so `F-267` carries it for a person to confirm.
@@ -303,8 +303,8 @@ Reproduce: `node mockups/tools/derive-theme.mjs` (add `--drawn` for this table's
 4-point grid. **Type** (board `00`): *Display 1* 72 and *Title* 22 in a serif; *Body* 16 and
 *Label* 14 in the sans; tabular figures for every number. **Adopted by `F-226`**
 ([ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md)): the scale is those four steps plus a **`caption` at 10.3**, the
-measured median of every em the mockups draw below 12 dp (OQ-12), and type drawn off the scale snaps
-to it by §2 (OQ-13). **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
+measured median of every em the mockups draw below 12 dp (OQ-12). **Which governs type a screen
+draws off the scale — its drawn size or the nearest step — is OQ-13, still open.** **The serif ships as Gelasio Regular at no tracking, and the card's mincho as
 Noto Serif JP at 400** ([ADR-0112](../adr/0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md)). Both weights are measured against the drawn
 stems with a blur-invariant instrument, and calibrated. The serif is named by no mockup. `F-220` measured it against every serif installed where it measured
 (20 faces, each rendered as the drawn word and scored by mask overlap after scaling to it): `01`'s
@@ -607,6 +607,7 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 | **OQ-9** | Four printed figures have no definition in the product: *% Match* (`03`), *Master Harmony* (`13`), *Garment Calibration History · concordance* (`23`), *Wardrobe Pairings* (`22`). Define each, or put a defined figure in the slot? | `F-222` (claims-ok: quotes the drawn construction this row resolves) |
 | **OQ-10** | `22` omits FR-52's compatibility score and investment signal. Extend the drawn grid, or amend FR-52? | `F-258` |
 | **OQ-11** | The checkered badge on every garment tile (`01`, `25`) has no defined meaning. Define it, or leave it out? | `F-242` |
+| **OQ-13** | Measured type runs off the scale (`01`'s tagline ≈ 18.5 dp, `17`'s slider labels ≈ 9 dp, `22`'s figures ≈ 46 dp). The screens' sizes (P3), or §5's steps? ADR-0113 lists the seven elements drawn more than 4 dp from a step; its first version closed this on a false premise, and the closure is withdrawn | `F-230` `F-242` `F-247` `F-253` `F-258` |
 | **OQ-14** | The page inset: 18–20 dp on most screens, ≈ 37 dp on `01`. One inset, or is `01`'s deliberate? | `F-227` |
 | **OQ-16** | `04` draws its gauge and its sheet wider than its screen. Fit them, or keep the drawn width? | `F-245` |
 | **OQ-17** | `05`'s cards end in an era no entry holds. The season instead, no line, or authored eras? | `F-246` |
@@ -637,7 +638,6 @@ Recorded in [`PRD.md` §10](../PRD.md). Each blocks the feature that needs it an
 |---|---|---|
 | **OQ-15**, **OQ-20**, **OQ-21**, **OQ-37** | The multicoloured icons are followed as drawn, each colour a declared exception, over the one-ink silhouette F-228 registered; each already reads by shape and by the text beside it | [ADR-0110](../adr/0110-the-multicoloured-icons-are-followed-as-drawn-over-a-silhouette-that-reads-in-one-ink.md) |
 | **OQ-12** | A `caption` step at 10.3 dp: the median of the 92 ems the mockups draw below 12 dp, recomputed by a test. 14 as a floor would enlarge 121 drawn elements and nothing forces it | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
-| **OQ-13** | §5's steps, by §2's snap rule, the definition of strict the person approved. The seven elements it moves by more than 4 dp are listed for F-267; P3 would amend §2 | [ADR-0113](../adr/0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) |
 | **OQ-29** | The serif is **Gelasio** (OFL), Georgia’s metric-compatible counterpart: first of 109 over the eight serif crops the mockups draw (§5) | [ADR-0106](../adr/0106-the-serif-is-gelasio-because-the-mockups-type-is-georgia-metric.md) |
 | **OQ-35** | Nine chips: the six `05` draws, in its order, then Ki 黄, Shiro 白, Nezumi 鼠 past the drawn edge | [ADR-0108](../adr/0108-the-family-chips-are-the-six-drawn-then-ki-shiro-and-nezumi-past-the-edge.md) |
 | **OQ-36** | Each tile draws its theme’s ground; Slate and Obsidian are Sumi’s drawn steps re-anchored there; a failing pairing moves the E3 way, per theme | [ADR-0107](../adr/0107-slate-and-obsidian-are-sumis-drawn-steps-re-anchored-at-their-drawn-grounds.md) |

@@ -464,7 +464,7 @@ export function ColourDetail({
                   {/*
           PROSE, NOT ROWS. These two paragraphs are what 120 entries of sourced editorial work
           produced, and they were set at `small` — 13px, the size this page used for label/value
-          pairs — which presented them as another field. `body` is 15px with 1.65 leading in
+          pairs — which presented them as another field. `body` is 16px with 1.65 leading in
           Latin and 1.85 in Japanese, which is the step the scale defines for reading rather than
           for scanning.
         */}
@@ -509,6 +509,7 @@ export function ColourDetail({
                   <DetailRow
                     label={derived.inSrgbGamut ? t('coord.inGamut') : t('coord.outOfGamut')}
                     value={`${t('coord.renderDifference')} ${t('colour.differenceUnit')} ${derived.renderDeltaE00.toFixed(2)}`}
+                    numeric
                   />
                 </>
               ),
@@ -558,7 +559,7 @@ export function ColourDetail({
         />
 
         <DetailSection title={t('detail.provenance')}>
-          <DetailRow label={t('prov.source')} value={entry.provenance.source} />
+          <DetailRow label={t('prov.source')} value={entry.provenance.source} numeric />
           <DetailRow label={t('prov.sourceId')} value={entry.provenance.sourceId} />
           <DetailRow
             label={t('prov.sourceType')}

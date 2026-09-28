@@ -11,8 +11,7 @@
       "sha256": "4daecea457258c9ebeb8bc99ed3fd24353618bfad3ea4b93fa0b5d0468fc04e4",
       "licence": {
         "file": "OFL.txt",
-        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/gelasio/OFL.txt",
-        "sha256": "b393cb01867c919b44381512120dc3e4c954c7b47e2035c405f3a324799a4d29"
+        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/gelasio/OFL.txt"
       },
       "cache": ".cache/fonts/gelasio/"
     },
@@ -25,10 +24,10 @@
       "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
       "licence": {
         "file": "OFL.txt",
-        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/OFL.txt",
-        "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6"
+        "url": "https://raw.githubusercontent.com/google/fonts/1ac2012c34919f5fa2675aacf723fa98edb30b5f/ofl/notoserifjp/OFL.txt"
       },
       "cache": ".cache/fonts/mincho/notoserifjp/"
     }
-  ]
+  ],
+  "$licenceComment": "Each face's OFL.txt is recorded by URL only. The licence travels INSIDE each cut (name records 0, 13 and 14, which the generator carries over and verify-font-coverage requires) and in NOTICE.md; no OFL.txt is committed, so a pinned sha256 of one would be a number nothing checks."
 }

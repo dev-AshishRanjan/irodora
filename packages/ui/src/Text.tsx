@@ -31,7 +31,7 @@
  * [`heroui-wrappers.md`](../../../.harness/rules/frontend/heroui-wrappers.md).
  *
  * **`dynamicTypeRamp`.** iOS scales text along different curves at different sizes. Naming the
- * curve is how a 15 px label and a 34 px title both behave correctly as the user's setting
+ * curve is how a 14 px label and a 72 px display both behave correctly as the user's setting
  * moves. Derived per step from the manifest scale, matched by SIZE rather than by name — see
  * `typography.ts` for why those differ and which is right. iOS only; `maxFontSizeMultiplier`
  * remains the mechanism on Android.
@@ -122,7 +122,7 @@ export type TextProps<S extends TypeSize> = Omit<RNTextProps, 'style'> &
     /**
      * Announce this as a heading, so a screen reader can navigate by it (NFR-8).
      *
-     * A prop rather than a size rule: `display.1` is usually a heading and sometimes a large
+     * A prop rather than a size rule: `display1` is usually a heading and sometimes a large
      * number, and a component that guessed would be wrong in the case nobody checks.
      */
     readonly heading?: boolean;

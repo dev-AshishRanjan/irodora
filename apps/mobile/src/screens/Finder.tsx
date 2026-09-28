@@ -167,7 +167,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
               padding="sm"
             >
               <View>
-                <Text size="caption" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script} numeric>
                   {`${t('atlas.showing')} ${String(shown.length)} / ${String(result.entries.length)}`}
                 </Text>
                 {shown.map((entry, i) => (
@@ -224,7 +224,7 @@ export function Finder({ onOpenColour, initialQuery }: FinderProps = {}): React.
                     </Row>
                   );
                 })}
-                <Text size="caption" color="foreground.2" script={script}>
+                <Text size="caption" color="foreground.2" script={script} numeric>
                   {`${t('finder.vocabulary')} ${result.lexiconVersion ?? ''}`}
                 </Text>
               </Stack>

@@ -40,6 +40,7 @@ Format: a markdown link to the file, then an em dash, then the claim in one line
 
 ### Engineering discipline
 
+- [lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md](lessons/check-who-approved-a-rule-before-resting-a-decision-on-it.md) — F-226 closed OQ-13 on "§2 was approved on 2026-09-10"; `git log -S` showed an agent wrote §2 on 09-14. A header date is not every sentence's date.
 - [lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md](lessons/a-type-that-filters-or-expects-an-error-hides-a-rename.md) — `Extract<>` and `@ts-expect-error` let three renamed type steps through a "it type-checks" rewrite; delete an old name before giving it a new meaning.
 - [lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md](lessons/a-negative-test-needs-a-decoy-not-an-empty-fixture.md) — "X cannot see Y" is untested if Y does not exist.
 - [lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md](lessons/jests-toequal-accepts-an-array-of-undefined-as-an-empty-one.md) — `expect([undefined]).toEqual([])` passes, so a "nothing happened" assertion can be satisfied by something happening; use `toHaveLength(0)`.

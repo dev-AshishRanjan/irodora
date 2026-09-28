@@ -31,7 +31,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cmapCodepoints, hasTable, names, weightClass } from './sfnt-read.mjs';
+import { cmapCodepoints, hasTable, names, tables, weightClass } from './sfnt-read.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const GREEN = '\x1b[32m',
@@ -228,7 +228,10 @@ const inSerifRanges = (cp) => SERIF_RANGES.some(([lo, hi]) => cp >= lo && cp <= 
 
 /**
  * What the serif must carry: all of printable ASCII, and every character of the English
- * catalogue inside the ranges it is cut to — any English string may be set at a serif step.
+ * catalogue that falls inside the ranges it is cut to. NOT every character of the catalogue: Δ
+ * (in "ΔE00") is outside them, and it never reaches the serif, because figures and units are refused
+ * in it at the type (ADR-0112 d.5). Gelasio also lacks a few codepoints in those ranges (U+00AD,
+ * U+2016…); the generator asks for them and HarfBuzz keeps what exists, and none is in the catalogue.
  */
 function serifRequired() {
   const required = new Map();
@@ -395,6 +398,36 @@ function prove() {
   if (!variable.some((m) => m.includes('still variable')))
     failures.push('decoy: a face that still carries fvar was not reported as variable');
   else console.log(`  ${GREEN}✓${OFF} detected  a variable face shipped as static`);
+
+  // The other two structural branches, on the COMMITTED serif with one field changed each (F-226's
+  // review found them unproven): a weight class that is not the pin, and no licence record.
+  const serifPath = join(FONTS, 'Gelasio-Regular.ttf');
+  if (!existsSync(serifPath))
+    failures.push('decoy: the committed serif is missing, so two decoys cannot run');
+  else {
+    const heavy = Buffer.from(readFileSync(serifPath));
+    const os2 = tables(heavy).get('OS/2');
+    if (os2 !== undefined) heavy.writeUInt16BE(700, os2.offset + 4);
+    if (!structuralProblems('decoy.ttf', heavy, 400).some((m) => m.includes('declares weight 700')))
+      failures.push('decoy: a face cut at 700 and pinned at 400 was not reported');
+    else console.log(`  ${GREEN}✓${OFF} detected  a weight class that is not the one pinned`);
+
+    // Every record numbered 13 (the licence) renumbered, so the licence text is present but unfound.
+    const unlicensed = Buffer.from(readFileSync(serifPath));
+    const name = tables(unlicensed).get('name');
+    if (name !== undefined) {
+      const count = unlicensed.readUInt16BE(name.offset + 2);
+      for (let i = 0; i < count; i += 1) {
+        const id = name.offset + 6 + i * 12 + 6;
+        if (unlicensed.readUInt16BE(id) === 13) unlicensed.writeUInt16BE(0x7fff, id);
+      }
+    }
+    if (
+      !structuralProblems('decoy.ttf', unlicensed, 400).some((m) => m.includes('no licence record'))
+    )
+      failures.push('decoy: a face without its licence record was not reported');
+    else console.log(`  ${GREEN}✓${OFF} detected  a face that does not carry its licence`);
+  }
 
   if (failures.length > 0) {
     for (const f of failures) console.log(`  ${RED}✗${OFF} ${f}`);

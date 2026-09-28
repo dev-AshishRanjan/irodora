@@ -180,7 +180,7 @@ export interface AtlasProps {
  *
  * ## The name leads in Japanese
  *
- * Kanji at `display.2`, the kana beneath it, and the romaji and English subordinate to both.
+ * Kanji at `title` (it was `display.2` until F-226, ADR-0113), the kana beneath it, and the romaji and English subordinate to both.
  * That order is the corpus's own: these are Japanese colours and the English is a gloss. The hex
  * is `numeric` — tabular, so a column of them scans — and deliberately the smallest thing here.
  */
@@ -295,7 +295,11 @@ export function Atlas({
     onChange,
   }: {
     readonly label: string;
-    readonly options: readonly { readonly value: K; readonly label: string }[];
+    readonly options: readonly {
+      readonly value: K;
+      readonly label: string;
+      readonly numeric?: boolean;
+    }[];
     readonly selected: K | null;
     readonly onChange: (value: K | null) => void;
   }): React.JSX.Element {
@@ -324,7 +328,7 @@ export function Atlas({
         The version is on the root screen rather than buried in a settings page. Which corpus
         the app holds is what makes every value on every detail screen reproducible (FR-25).
       */}
-      <Text size="label" color="foreground.2" script={script}>
+      <Text size="label" color="foreground.2" script={script} numeric>
         {`${t('atlas.corpus')} ${CORPUS_LABEL} · ${String(CORPUS_ENTRY_COUNT)} ${t('atlas.colours')} · ${String(CORPUS_PALETTE_COUNT)} ${t('atlas.palettes')}`}
       </Text>
 
@@ -384,6 +388,7 @@ export function Atlas({
         options={familyOptions.map((f) => ({
           value: f.family,
           label: `${familyLabel(f.family, locale)} ${String(f.count)}`,
+          numeric: true,
         }))}
         selected={filters.family}
         onChange={(family) => {
@@ -437,7 +442,7 @@ export function Atlas({
 
       {active ? (
         <Row gap="sm">
-          <Text size="label" color="foreground.2" script={script}>
+          <Text size="label" color="foreground.2" script={script} numeric>
             {`${t('atlas.showing')} ${String(shown.length)} / ${String(entries.length)}`}
           </Text>
           <Pressable

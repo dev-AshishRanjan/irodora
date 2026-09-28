@@ -165,7 +165,7 @@ export function Measure({
           level="1"
         >
           <Stack gap="sm">
-            <Text size="body" color="foreground.2" script={script}>
+            <Text size="body" color="foreground.2" script={script} numeric>
               {library.name}
             </Text>
             <Text size="label" color="foreground.2" script={script}>
@@ -205,7 +205,7 @@ export function Measure({
           {t('measure.noReference')}
         </Text>
       ) : (
-        <Text size="body" color="foreground" script={script}>
+        <Text size="body" color="foreground" script={script} numeric>
           {`${t('measure.reference')}: ${reference.name}`}
         </Text>
       )}

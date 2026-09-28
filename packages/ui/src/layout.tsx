@@ -244,8 +244,9 @@ export type SectionProps = Omit<ViewProps, 'style'> & {
 /**
  * An editorial block: an optional eyebrow, an optional heading, and content.
  *
- * The eyebrow uses the `label` step — 10px, uppercase, 0.16em tracking — which is the bottom of
- * the type scale and exists for exactly this. Setting it against a `title` is where the scale's
+ * The eyebrow uses the `caption` step — 10.3px, the bottom of the type scale. Until F-226 it was a
+ * 10px, uppercase, 0.16em-tracked, weight-600 `label` that existed for exactly this; board 00's scale
+ * has no such step (ADR-0113), so the eyebrow now reads like a note until the screens are rebuilt. Setting it against a `title` is where the scale's
  * contrast becomes visible, and contrast between the largest and smallest thing on a page is
  * what the calm is made of.
  */

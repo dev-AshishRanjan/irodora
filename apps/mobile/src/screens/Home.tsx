@@ -155,7 +155,12 @@ export function Home({
           size={size}
         />
         <Stack gap="xs">
-          <Text size={size === LEAD_SAMPLE ? 'title' : 'title'} color="foreground" script={script}>
+          {/*
+            ONE SIZE NOW, AND THAT IS A LOSS RECORDED RATHER THAN HIDDEN. The lead sample's name was
+            `display.2` (34) and the quieter one's `title` (22); board 00's scale has no 34 step, so
+            both are `title` (ADR-0113). F-242 rebuilds Home to 01 and decides the lead from it.
+          */}
+          <Text size="title" color="foreground" script={script}>
             {content.lastReading.name}
           </Text>
           <Text size="label" color="foreground.2" numeric selectable>
@@ -189,11 +194,7 @@ export function Home({
               The kanji leads, with the reading beneath it. That order is the corpus's own — the
               entry is a Japanese colour and its name is the Japanese one; the English is a gloss.
             */}
-            <Text
-              size={size === LEAD_SAMPLE ? 'title' : 'title'}
-              color="foreground"
-              script="japanese"
-            >
+            <Text size="title" color="foreground" script="japanese">
               {content.today.entry.name.kanji}
             </Text>
             <Text size="label" color="foreground.2" script="japanese">

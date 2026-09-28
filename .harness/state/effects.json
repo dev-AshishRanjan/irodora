@@ -6140,7 +6140,11 @@
         },
         {
           "kind": "test",
-          "ref": "apps/mobile/test/fonts.test.ts"
+          "ref": "apps/mobile/test/fonts.test.tsx"
+        },
+        {
+          "kind": "file",
+          "ref": "apps/mobile/src/fontGate.tsx"
         }
       ],
       "kind": "EFFECT_LINK",
@@ -6150,7 +6154,7 @@
         "apps/mobile"
       ],
       "severity": "high",
-      "guard": "`fonts.ts`'s map `satisfies Record<Family, number>`, so a face the manifest adds without an asset is a compile error. `fonts.test.ts` holds the emitted families to the loaded map in both directions (with a decoy), checks each import against the face's file and that the file exists, and reads the hold-until-loaded order off the root layout. `text-face.test.tsx` asserts every face resolves to the family the manifest names, at the weight it is cut at.",
+      "guard": "`fonts.ts`'s map `satisfies Record<Family, number>`, so a face the manifest adds without an asset is a compile error. `fonts.test.tsx` holds the emitted families to the loaded map in both directions (with a decoy), checks each import against the face's file and that the file exists, and RENDERS `FontGate` (src/fontGate.tsx) with the font loader held (nothing drawn, no child mounted, so no frame can hide the splash) and released (it draws) — mutation-checked: removing the hold fails it. That the root layout wraps its whole tree in `FontGate` and holds the splash at module scope is read off the route as text, because a test may not import a route (E-099). `text-face.test.tsx` asserts every face resolves to the family the manifest names, at the weight it is cut at.",
       "memory": "memory/effects/a-family-name-nobody-registered-is-the-platform-font-in-silence.md",
       "rationale": "React Native takes ONE family name and has no cascade: a `fontFamily` nothing registered falls back to the platform face with no error and no log. The name a component sets (nativeFaces, from the manifest), the name the app registers (fonts.ts, for useFonts) and the file on disk are three statements of one fact. And the root layout draws nothing until every face has loaded, which is what keeps the launch hand-over gapless — one more face is one more thing the first frame waits for (F-302 records what happens when one fails).",
       "confidence": 0.9,

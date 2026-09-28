@@ -47,7 +47,10 @@ like the mockups, and nothing flashes on launch.
   answer, "14 as the floor", would enlarge 121 drawn elements by 18–63 %. No §4 category forces
   that: WCAG 2.2 sets no minimum size, and no gate does. So the mockups answer it. The step value is
   **recomputed by a test** from every `raw.emDp` below 12, not typed.
-- **OQ-13 → §5's steps, by §2's snap rule.** §2 is titled *"What 'strict' means, measurably"*; it is
+- **~~OQ-13 → §5's steps, by §2's snap rule.~~ WITHDRAWN BY F-226'S REVIEW.** §2 was written by an agent on
+  2026-09-14, not approved by the person on 2026-09-10, and F-220 raised OQ-13 after §2 existed. OQ-13
+  is open and blocks the screens that draw the listed elements (ADR-0113). What follows is the
+  withdrawn reasoning, kept for the record. §2 is titled *"What 'strict' means, measurably"*; it is
   the definition of strict the person approved on 2026-09-10, and it says a measured value snaps to
   the nearest §5 step. Criterion 3 names the steps. So reading strictly means reading §2. The
   elements that snapping moves by more than 4 dp are listed in the ADR and on F-267, so the person's

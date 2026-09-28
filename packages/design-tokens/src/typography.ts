@@ -8,7 +8,7 @@
  * largest accessibility setting would otherwise be unusable. Naming a ramp tells iOS which of
  * those curves to apply.
  *
- * That is why the match here is by **size, not by name**. Our `body` is 15 px; Apple's `body`
+ * That is why the match here is by **size, not by name**. Our `body` is 16 px; Apple's `body`
  * is 17. Matching by name would scale our body text along a curve calibrated for something
  * larger, so it would drift from its intended appearance as the user's setting moves. Matching
  * by size preserves the intended size at the default setting and scales proportionally from
@@ -51,11 +51,11 @@ export type DynamicTypeRamp = (typeof APPLE_TYPE_RAMP)[number]['ramp'];
  *
  * **Ties resolve to the LARGER ramp.** Two reasons, and the second is the one that matters:
  * it is deterministic where object key order is not, and at the small end of the scale the
- * larger ramp scales with more headroom — which is the direction A7 cares about. Our `xs` step
- * at 11.5 px is exactly equidistant from `caption2` (11) and `caption1` (12), so this is a live
- * case rather than a defensive one.
+ * larger ramp scales with more headroom — which is the direction A7 cares about. The old `xs`
+ * step at 11.5 px was exactly equidistant from `caption2` (11) and `caption1` (12); since F-226's
+ * scale (ADR-0113) no step lands on a tie, so the rule is defensive now, and still tested.
  *
- * A size above the largest ramp clamps to `largeTitle`. `display.1` is 72 px, far beyond
+ * A size above the largest ramp clamps to `largeTitle`. `display1` is 72 px, far beyond
  * anything Apple publishes, and there is no curve above that one to choose.
  */
 export function dynamicTypeRampFor(sizePx: number): DynamicTypeRamp {
