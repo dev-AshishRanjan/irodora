@@ -20,7 +20,10 @@ export function tables(buf) {
   const numTables = u16(buf, 4);
   for (let i = 0; i < numTables; i += 1) {
     const rec = 12 + i * 16;
-    out.set(buf.toString('ascii', rec, rec + 4), { offset: u32(buf, rec + 8), length: u32(buf, rec + 12) });
+    out.set(buf.toString('ascii', rec, rec + 4), {
+      offset: u32(buf, rec + 8),
+      length: u32(buf, rec + 12),
+    });
   }
   return out;
 }
@@ -102,7 +105,8 @@ export function cmapCodepoints(buf) {
  */
 export function names(buf) {
   const name = tables(buf).get('name');
-  if (name === undefined) throw new Error('no name table — the font has no family or PostScript name');
+  if (name === undefined)
+    throw new Error('no name table — the font has no family or PostScript name');
   const base = name.offset;
   const count = u16(buf, base + 2);
   const strings = base + u16(buf, base + 4);
@@ -110,13 +114,16 @@ export function names(buf) {
   const mac = new Map();
   for (let i = 0; i < count; i += 1) {
     const rec = base + 6 + i * 12;
-    const [platform, encoding, , id, length, offset] = [0, 2, 4, 6, 8, 10].map((k) => u16(buf, rec + k));
+    const [platform, encoding, , id, length, offset] = [0, 2, 4, 6, 8, 10].map((k) =>
+      u16(buf, rec + k),
+    );
     const at = strings + offset;
     if (platform === 3 && (encoding === 1 || encoding === 10) && !windows.has(id)) {
       let s = '';
       for (let k = 0; k < length; k += 2) s += String.fromCharCode(u16(buf, at + k));
       windows.set(id, s);
-    } else if (platform === 1 && encoding === 0 && !mac.has(id)) mac.set(id, buf.toString('latin1', at, at + length));
+    } else if (platform === 1 && encoding === 0 && !mac.has(id))
+      mac.set(id, buf.toString('latin1', at, at + length));
   }
   const out = new Map(mac);
   for (const [id, s] of windows) out.set(id, s);
@@ -137,6 +144,7 @@ export function gsubFeatures(buf) {
   const list = gsub.offset + u16(buf, gsub.offset + 6);
   const count = u16(buf, list);
   const out = new Set();
-  for (let i = 0; i < count; i += 1) out.add(buf.toString('ascii', list + 2 + i * 6, list + 6 + i * 6));
+  for (let i = 0; i < count; i += 1)
+    out.add(buf.toString('ascii', list + 2 + i * 6, list + 6 + i * 6));
   return out;
 }
