@@ -22,12 +22,19 @@ const t = (id, box, parent, binding, extra = {}) =>
     ...extra,
   });
 
-const slider = (key, label, track, value) => [
+// The only interactive slider a screen draws (F-232), so its sizes are the component's (P3): a track
+// 6.1–6.7 px (3–3.5 dp) thick, white up to the value and `level3` (ΔE00 1.8–2.7) past it, under a
+// white thumb 27.4–27.5 px (13.7 dp) across. The box runs the track's length and the thumb's height.
+// The whites read like board 00's, where a control's white fill is `action.primary`.
+const slider = (key, label, track, value, m) => [
   t(`09.sliders.${key}.label`, label, '09.sliders', `static:finder.${key}`, {
     tokens: { fg: 'text.primary' },
   }),
   el(`09.sliders.${key}.track`, 'ui:Slider', track, {
     parent: '09.sliders',
+    tokens: { track: 'level3', fill: 'action.primary', thumb: 'action.primary', radius: 'pill' },
+    measured: m.measured,
+    raw: m.raw,
     binding: `store:finder.${key}`,
     action: `adjust:finder.${key}`,
   }),
@@ -129,9 +136,19 @@ export default {
       tokens: { bg: 'level1', border: 'border.subtle', radius: 'md' },
       measured: { bg: '#1D2227' },
     }),
-    ...slider('lightness', B(53, 499, 154, 30), B(222, 497, 250, 31), B(488, 499, 230, 29)),
-    ...slider('chroma', B(53, 569, 137, 28), B(204, 567, 268, 31), B(488, 570, 230, 26)),
-    ...slider('hue', B(53, 639, 91, 28), B(159, 637, 332, 30), B(506, 639, 212, 28)),
+    ...slider('lightness', B(53, 499, 154, 30), B(222, 497, 250, 31), B(488, 499, 230, 29), {
+      measured: { track: '#343B44', fill: '#ECF0F4', thumb: '#F1F1F5' },
+      raw: { trackPx: 6.7, thumbPx: 27.5 },
+    }),
+    // the value sits at the start, so too little fill shows to read
+    ...slider('chroma', B(53, 569, 137, 28), B(204, 567, 268, 31), B(488, 570, 230, 26), {
+      measured: { track: '#353C45', thumb: '#EEF2F5' },
+      raw: { trackPx: 6.1, thumbPx: 27.4 },
+    }),
+    ...slider('hue', B(53, 639, 91, 28), B(159, 637, 332, 30), B(506, 639, 212, 28), {
+      measured: { track: '#353B44', fill: '#ECF0F4', thumb: '#EFF0F5' },
+      raw: { trackPx: 6.5, thumbPx: 27.5 },
+    }),
     // ---- the nearest references
     t('09.results.heading', B(30, 748, 606, 32), null, 'static:finder.nearest', {
       tokens: { fg: 'text.primary' },

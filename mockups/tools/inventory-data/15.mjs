@@ -62,17 +62,23 @@ const tile = (key, box, swatch, name, detail, colour, selected = false) => [
     copy: { shape: 'caption', script: 'latin', lines: 2 },
   }),
 ];
+// The chosen mode is FILLED as well as outlined (F-232): its inside reads #2B3036, `level2` (ΔE00 2.4),
+// where the others' insides are the card's. Its white dot is recorded beside the modes.
 const mode = (key, box, selected = false) =>
   el(`15.cvd.${key}`, 'ui:Chip', box, {
     parent: '15.section-2',
     tokens: selected
-      ? { border: 'text.primary', radius: 'pill' }
+      ? { bg: 'level2', border: 'text.primary', radius: 'pill' }
       : { border: 'border.subtle', radius: 'pill' },
+    ...(selected ? { measured: { bg: '#2B3036' } } : {}),
     binding: `static:settings.cvd.${key}`,
     action: `select:cvd.${key}`,
     copy: { shape: 'label', script: 'latin' },
   });
-const toggle = (key, label, dot, control) => [
+// The switch (F-232) is its TRACK: 69 × 36 px, a 34.5 × 18 dp pill, drawn on — a white track and a
+// thumb 28.3 px across in the card's own `level1` (ΔE00 1.1–1.3), inset 2 dp. The whites read like
+// board 00's, where a control's white fill is `action.primary`.
+const toggle = (key, label, dot, control, measured) => [
   t(`15.engine.${key}.label`, label, '15.section-3', `static:settings.${key}`, {
     tokens: { fg: 'text.primary' },
     type: text('sans', 'body'),
@@ -83,6 +89,9 @@ const toggle = (key, label, dot, control) => [
   }),
   el(`15.engine.${key}.switch`, 'ui:Switch', control, {
     parent: '15.section-3',
+    tokens: { track: 'action.primary', thumb: 'level1', radius: 'pill' },
+    measured,
+    raw: { thumbPx: 28.3 },
     binding: `store:settings.${key}`,
     action: `toggle:settings.${key}`,
   }),
@@ -151,6 +160,10 @@ export default {
     mode('protanopia', B(216, 551, 152, 46)),
     mode('deuteranopia', B(380, 551, 178, 46)),
     mode('tritanopia', B(570, 551, 144, 46)),
+    el('15.cvd.standard.dot', null, B(70, 567, 13, 13), {
+      parent: '15.cvd.standard',
+      tokens: { fg: 'text.primary' },
+    }),
     el('15.cvd.badge', 'ui:Chip', B(51, 608, 375, 40), {
       parent: '15.section-2',
       tokens: { bg: 'level2', radius: 'pill' },
@@ -161,9 +174,18 @@ export default {
     // ---- 3. engine and controls
     heading(3, B(28, 713, 385, 28), 'engine'),
     card(3, B(27, 752, 711, 199)),
-    ...toggle('tabular', B(51, 780, 401, 31), B(624, 790, 10, 11), B(647, 773, 71, 45)),
-    ...toggle('haptics', B(52, 839, 399, 29), B(624, 847, 11, 11), B(647, 830, 71, 43)),
-    ...toggle('provenance', B(52, 897, 416, 27), B(624, 904, 10, 11), B(646, 888, 72, 41)),
+    ...toggle('tabular', B(51, 780, 401, 31), B(624, 790, 10, 11), B(648, 776, 69, 36), {
+      track: '#EEF0F2',
+      thumb: '#202328',
+    }),
+    ...toggle('haptics', B(52, 839, 399, 29), B(624, 847, 11, 11), B(648, 834, 69, 36), {
+      track: '#EFEFF1',
+      thumb: '#212329',
+    }),
+    ...toggle('provenance', B(52, 897, 416, 27), B(624, 904, 10, 11), B(648, 891, 69, 36), {
+      track: '#EFF0F2',
+      thumb: '#212429',
+    }),
     // ---- 4. learned preference weights
     heading(4, B(28, 994, 432, 28), 'weights'),
     card(4, B(27, 1032, 711, 113)),

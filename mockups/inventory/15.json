@@ -791,6 +791,7 @@
         "h": 25.5
       },
       "tokens": {
+        "bg": "level2",
         "border": "text.primary",
         "radius": "pill"
       },
@@ -799,6 +800,9 @@
       "illustration": null,
       "binding": "static:settings.cvd.standard",
       "action": "select:cvd.standard",
+      "measured": {
+        "bg": "#2B3036"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -898,8 +902,35 @@
       }
     },
     {
-      "id": "15.cvd.badge",
+      "id": "15.cvd.standard.dot",
       "order": 29,
+      "parent": "15.cvd.standard",
+      "component": null,
+      "box": {
+        "x": 70,
+        "y": 567,
+        "w": 13,
+        "h": 13
+      },
+      "dp": {
+        "x": 35,
+        "y": 283.5,
+        "w": 6.5,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "15.cvd.badge",
+      "order": 30,
       "parent": "15.section-2",
       "component": "ui:Chip",
       "box": {
@@ -930,7 +961,7 @@
     },
     {
       "id": "15.section-3.heading",
-      "order": 30,
+      "order": 31,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -964,7 +995,7 @@
     },
     {
       "id": "15.section-3",
-      "order": 31,
+      "order": 32,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -993,7 +1024,7 @@
     },
     {
       "id": "15.engine.tabular.label",
-      "order": 32,
+      "order": 33,
       "parent": "15.section-3",
       "component": "ui:Text",
       "box": {
@@ -1027,32 +1058,43 @@
     },
     {
       "id": "15.engine.tabular.switch",
-      "order": 33,
+      "order": 34,
       "parent": "15.section-3",
       "component": "ui:Switch",
       "box": {
-        "x": 647,
-        "y": 773,
-        "w": 71,
-        "h": 45
+        "x": 648,
+        "y": 776,
+        "w": 69,
+        "h": 36
       },
       "dp": {
-        "x": 323.5,
-        "y": 386.5,
-        "w": 35.5,
-        "h": 22.5
+        "x": 324,
+        "y": 388,
+        "w": 34.5,
+        "h": 18
       },
-      "tokens": {},
+      "tokens": {
+        "track": "action.primary",
+        "thumb": "level1",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "store:settings.tabular",
       "action": "toggle:settings.tabular",
+      "measured": {
+        "track": "#EEF0F2",
+        "thumb": "#202328"
+      },
+      "raw": {
+        "thumbPx": 28.3
+      },
       "copy": null
     },
     {
       "id": "15.engine.tabular.state",
-      "order": 34,
+      "order": 35,
       "parent": "15.section-3",
       "component": null,
       "box": {
@@ -1075,31 +1117,6 @@
       "illustration": null,
       "binding": null,
       "action": null,
-      "copy": null
-    },
-    {
-      "id": "15.engine.haptics.switch",
-      "order": 35,
-      "parent": "15.section-3",
-      "component": "ui:Switch",
-      "box": {
-        "x": 647,
-        "y": 830,
-        "w": 71,
-        "h": 43
-      },
-      "dp": {
-        "x": 323.5,
-        "y": 415,
-        "w": 35.5,
-        "h": 21.5
-      },
-      "tokens": {},
-      "type": null,
-      "icon": null,
-      "illustration": null,
-      "binding": "store:settings.haptics",
-      "action": "toggle:settings.haptics",
       "copy": null
     },
     {
@@ -1164,28 +1181,39 @@
       "copy": null
     },
     {
-      "id": "15.engine.provenance.switch",
+      "id": "15.engine.haptics.switch",
       "order": 38,
       "parent": "15.section-3",
       "component": "ui:Switch",
       "box": {
-        "x": 646,
-        "y": 888,
-        "w": 72,
-        "h": 41
+        "x": 648,
+        "y": 834,
+        "w": 69,
+        "h": 36
       },
       "dp": {
-        "x": 323,
-        "y": 444,
-        "w": 36,
-        "h": 20.5
+        "x": 324,
+        "y": 417,
+        "w": 34.5,
+        "h": 18
       },
-      "tokens": {},
+      "tokens": {
+        "track": "action.primary",
+        "thumb": "level1",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
-      "binding": "store:settings.provenance",
-      "action": "toggle:settings.provenance",
+      "binding": "store:settings.haptics",
+      "action": "toggle:settings.haptics",
+      "measured": {
+        "track": "#EFEFF1",
+        "thumb": "#212329"
+      },
+      "raw": {
+        "thumbPx": 28.3
+      },
       "copy": null
     },
     {
@@ -1250,8 +1278,44 @@
       "copy": null
     },
     {
-      "id": "15.section-4.heading",
+      "id": "15.engine.provenance.switch",
       "order": 41,
+      "parent": "15.section-3",
+      "component": "ui:Switch",
+      "box": {
+        "x": 648,
+        "y": 891,
+        "w": 69,
+        "h": 36
+      },
+      "dp": {
+        "x": 324,
+        "y": 445.5,
+        "w": 34.5,
+        "h": 18
+      },
+      "tokens": {
+        "track": "action.primary",
+        "thumb": "level1",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "store:settings.provenance",
+      "action": "toggle:settings.provenance",
+      "measured": {
+        "track": "#EFF0F2",
+        "thumb": "#212429"
+      },
+      "raw": {
+        "thumbPx": 28.3
+      },
+      "copy": null
+    },
+    {
+      "id": "15.section-4.heading",
+      "order": 42,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1285,7 +1349,7 @@
     },
     {
       "id": "15.section-4",
-      "order": 42,
+      "order": 43,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1314,7 +1378,7 @@
     },
     {
       "id": "15.weights.reset",
-      "order": 43,
+      "order": 44,
       "parent": "15.section-4",
       "component": "ui:Button",
       "box": {
@@ -1345,7 +1409,7 @@
     },
     {
       "id": "15.weights.pair",
-      "order": 44,
+      "order": 45,
       "parent": "15.section-4",
       "component": "ui:Text",
       "box": {
@@ -1381,7 +1445,7 @@
     },
     {
       "id": "15.section-5.heading",
-      "order": 45,
+      "order": 46,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -1415,7 +1479,7 @@
     },
     {
       "id": "15.section-5",
-      "order": 46,
+      "order": 47,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1444,7 +1508,7 @@
     },
     {
       "id": "15.security.badge",
-      "order": 47,
+      "order": 48,
       "parent": "15.section-5",
       "component": "ui:Chip",
       "box": {
@@ -1472,7 +1536,7 @@
     },
     {
       "id": "15.tabs",
-      "order": 48,
+      "order": 49,
       "parent": null,
       "component": "app:TabBar",
       "box": {
@@ -1503,7 +1567,7 @@
     },
     {
       "id": "15.tabs.indicator",
-      "order": 49,
+      "order": 50,
       "parent": "15.tabs",
       "component": null,
       "box": {
@@ -1530,7 +1594,7 @@
     },
     {
       "id": "15.tabs.profile",
-      "order": 50,
+      "order": 51,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1558,7 +1622,7 @@
     },
     {
       "id": "15.tabs.home",
-      "order": 51,
+      "order": 52,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1583,7 +1647,7 @@
     },
     {
       "id": "15.tabs.compass",
-      "order": 52,
+      "order": 53,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1608,7 +1672,7 @@
     },
     {
       "id": "15.tabs.bell",
-      "order": 53,
+      "order": 54,
       "parent": "15.tabs",
       "component": "ui:NavIcon",
       "box": {

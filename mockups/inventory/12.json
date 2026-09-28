@@ -338,7 +338,7 @@
         "h": 19
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
       "type": null,
@@ -346,14 +346,44 @@
       "illustration": null,
       "binding": "static:garment.source.lens",
       "action": "select:garment.source.lens",
+      "measured": {
+        "bg": "#384048"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
       }
     },
     {
-      "id": "12.source.method.photo",
+      "id": "12.source.method.lens.dot",
       "order": 12,
+      "parent": "12.source.method.lens",
+      "component": null,
+      "box": {
+        "x": 272,
+        "y": 325,
+        "w": 11,
+        "h": 11
+      },
+      "dp": {
+        "x": 136,
+        "y": 162.5,
+        "w": 5.5,
+        "h": 5.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "12.source.method.photo",
+      "order": 13,
       "parent": "12.source.method",
       "component": "ui:Text",
       "box": {
@@ -387,7 +417,7 @@
     },
     {
       "id": "12.source.method.atlas-pick",
-      "order": 13,
+      "order": 14,
       "parent": "12.source.method",
       "component": "ui:Text",
       "box": {
@@ -421,7 +451,7 @@
     },
     {
       "id": "12.source.method.hex",
-      "order": 14,
+      "order": 15,
       "parent": "12.source.method",
       "component": "ui:Text",
       "box": {
@@ -455,7 +485,7 @@
     },
     {
       "id": "12.source.label",
-      "order": 15,
+      "order": 16,
       "parent": "12.source",
       "component": "ui:Text",
       "box": {
@@ -489,7 +519,7 @@
     },
     {
       "id": "12.form",
-      "order": 16,
+      "order": 17,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -521,7 +551,7 @@
     },
     {
       "id": "12.form.title-label",
-      "order": 17,
+      "order": 18,
       "parent": "12.form",
       "component": "ui:Text",
       "box": {
@@ -555,7 +585,7 @@
     },
     {
       "id": "12.form.title",
-      "order": 18,
+      "order": 19,
       "parent": "12.form",
       "component": "ui:TextField",
       "box": {
@@ -586,7 +616,7 @@
     },
     {
       "id": "12.form.category",
-      "order": 19,
+      "order": 20,
       "parent": "12.form",
       "component": "ui:ChoiceGroup",
       "box": {
@@ -614,7 +644,7 @@
     },
     {
       "id": "12.form.category.top",
-      "order": 20,
+      "order": 21,
       "parent": "12.form.category",
       "component": null,
       "box": {
@@ -630,7 +660,7 @@
         "h": 19
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "sm"
       },
       "type": null,
@@ -638,14 +668,44 @@
       "illustration": null,
       "binding": "static:garment.category.top",
       "action": "select:garment.category.top",
+      "measured": {
+        "bg": "#3A4049"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
       }
     },
     {
+      "id": "12.form.category.top.dot",
+      "order": 22,
+      "parent": "12.form.category.top",
+      "component": null,
+      "box": {
+        "x": 84,
+        "y": 595,
+        "w": 13,
+        "h": 13
+      },
+      "dp": {
+        "x": 42,
+        "y": 297.5,
+        "w": 6.5,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "12.form.category.trousers",
-      "order": 21,
+      "order": 23,
       "parent": "12.form.category",
       "component": "ui:Text",
       "box": {
@@ -679,7 +739,7 @@
     },
     {
       "id": "12.form.category.outerwear",
-      "order": 22,
+      "order": 24,
       "parent": "12.form.category",
       "component": "ui:Text",
       "box": {
@@ -713,7 +773,7 @@
     },
     {
       "id": "12.form.category.footwear",
-      "order": 23,
+      "order": 25,
       "parent": "12.form.category",
       "component": "ui:Text",
       "box": {
@@ -747,7 +807,7 @@
     },
     {
       "id": "12.form.category.accessory",
-      "order": 24,
+      "order": 26,
       "parent": "12.form.category",
       "component": "ui:Text",
       "box": {
@@ -781,7 +841,7 @@
     },
     {
       "id": "12.form.material.linen",
-      "order": 25,
+      "order": 27,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -797,7 +857,7 @@
         "h": 21.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
       "type": null,
@@ -805,6 +865,9 @@
       "illustration": null,
       "binding": "static:garment.material.linen",
       "action": "select:garment.material.linen",
+      "measured": {
+        "bg": "#383F46"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -812,7 +875,7 @@
     },
     {
       "id": "12.form.material.cotton",
-      "order": 26,
+      "order": 28,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -843,7 +906,7 @@
     },
     {
       "id": "12.form.material.wool",
-      "order": 27,
+      "order": 29,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -874,7 +937,7 @@
     },
     {
       "id": "12.form.material.silk",
-      "order": 28,
+      "order": 30,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -905,7 +968,7 @@
     },
     {
       "id": "12.form.material.denim",
-      "order": 29,
+      "order": 31,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -935,8 +998,35 @@
       }
     },
     {
+      "id": "12.form.material.linen.dot",
+      "order": 32,
+      "parent": "12.form.material.linen",
+      "component": null,
+      "box": {
+        "x": 84,
+        "y": 695,
+        "w": 13,
+        "h": 13
+      },
+      "dp": {
+        "x": 42,
+        "y": 347.5,
+        "w": 6.5,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "12.form.formality.casual",
-      "order": 30,
+      "order": 33,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -952,7 +1042,7 @@
         "h": 21.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
       "type": null,
@@ -960,6 +1050,9 @@
       "illustration": null,
       "binding": "static:garment.formality.casual",
       "action": "select:garment.formality.casual",
+      "measured": {
+        "bg": "#3C4249"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -967,7 +1060,7 @@
     },
     {
       "id": "12.form.formality.smart-casual",
-      "order": 31,
+      "order": 34,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -998,7 +1091,7 @@
     },
     {
       "id": "12.form.formality.formal",
-      "order": 32,
+      "order": 35,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -1028,8 +1121,35 @@
       }
     },
     {
+      "id": "12.form.formality.casual.dot",
+      "order": 36,
+      "parent": "12.form.formality.casual",
+      "component": null,
+      "box": {
+        "x": 84,
+        "y": 793,
+        "w": 13,
+        "h": 13
+      },
+      "dp": {
+        "x": 42,
+        "y": 396.5,
+        "w": 6.5,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "12.form.season.spring-summer",
-      "order": 33,
+      "order": 37,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -1045,7 +1165,7 @@
         "h": 21.5
       },
       "tokens": {
-        "bg": "level2",
+        "bg": "level3",
         "radius": "pill"
       },
       "type": null,
@@ -1053,6 +1173,9 @@
       "illustration": null,
       "binding": "static:garment.season.spring-summer",
       "action": "select:garment.season.spring-summer",
+      "measured": {
+        "bg": "#383F47"
+      },
       "copy": {
         "shape": "label",
         "script": "latin"
@@ -1060,7 +1183,7 @@
     },
     {
       "id": "12.form.season.autumn-winter",
-      "order": 34,
+      "order": 38,
       "parent": "12.form",
       "component": "ui:Chip",
       "box": {
@@ -1090,8 +1213,35 @@
       }
     },
     {
+      "id": "12.form.season.spring-summer.dot",
+      "order": 39,
+      "parent": "12.form.season.spring-summer",
+      "component": null,
+      "box": {
+        "x": 84,
+        "y": 845,
+        "w": 13,
+        "h": 13
+      },
+      "dp": {
+        "x": 42,
+        "y": 422.5,
+        "w": 6.5,
+        "h": 6.5
+      },
+      "tokens": {
+        "fg": "text.primary"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "copy": null
+    },
+    {
       "id": "12.intelligence",
-      "order": 35,
+      "order": 40,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1121,7 +1271,7 @@
     },
     {
       "id": "12.intelligence.icon",
-      "order": 36,
+      "order": 41,
       "parent": "12.intelligence",
       "component": null,
       "box": {
@@ -1146,7 +1296,7 @@
     },
     {
       "id": "12.intelligence.title",
-      "order": 37,
+      "order": 42,
       "parent": "12.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1180,7 +1330,7 @@
     },
     {
       "id": "12.intelligence.check",
-      "order": 38,
+      "order": 43,
       "parent": "12.intelligence",
       "component": null,
       "box": {
@@ -1205,7 +1355,7 @@
     },
     {
       "id": "12.intelligence.body",
-      "order": 39,
+      "order": 44,
       "parent": "12.intelligence",
       "component": "ui:Text",
       "box": {
@@ -1240,7 +1390,7 @@
     },
     {
       "id": "12.art-bottom",
-      "order": 40,
+      "order": 45,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -1265,7 +1415,7 @@
     },
     {
       "id": "12.tracking",
-      "order": 41,
+      "order": 46,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1297,7 +1447,7 @@
     },
     {
       "id": "12.tracking.title",
-      "order": 42,
+      "order": 47,
       "parent": "12.tracking",
       "component": "ui:Text",
       "box": {
@@ -1331,7 +1481,7 @@
     },
     {
       "id": "12.tracking.toggle",
-      "order": 43,
+      "order": 48,
       "parent": "12.tracking",
       "component": null,
       "box": {
@@ -1356,7 +1506,7 @@
     },
     {
       "id": "12.tracking.price",
-      "order": 44,
+      "order": 49,
       "parent": "12.tracking",
       "component": "ui:Text",
       "box": {
@@ -1390,7 +1540,7 @@
     },
     {
       "id": "12.tracking.brand",
-      "order": 45,
+      "order": 50,
       "parent": "12.tracking",
       "component": "ui:Text",
       "box": {
@@ -1424,7 +1574,7 @@
     },
     {
       "id": "12.bar",
-      "order": 46,
+      "order": 51,
       "parent": null,
       "component": "app:ActionBar",
       "box": {
@@ -1451,7 +1601,7 @@
     },
     {
       "id": "12.bar.save",
-      "order": 47,
+      "order": 52,
       "parent": "12.bar",
       "component": "ui:Button",
       "box": {

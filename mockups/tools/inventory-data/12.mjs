@@ -24,16 +24,33 @@ const t = (id, box, parent, binding, extra = {}) =>
     copy: { shape: 'label', script: 'latin' },
     ...extra,
   });
-const choice = (group, key, box, selected = false) =>
-  el(`12.form.${group}.${key}`, 'ui:Chip', box, {
-    parent: '12.form',
-    tokens: selected
-      ? { bg: 'level2', radius: 'pill' }
-      : { border: 'border.subtle', radius: 'pill' },
-    binding: `static:garment.${group}.${key}`,
-    action: `select:garment.${group}.${key}`,
-    copy: { shape: 'label', script: 'latin' },
-  });
+// What is selected here — a choice pill or a segment — is FILLED and carries a white leading dot
+// (F-232). Every such fill reads #383F46–#3C4249: `level3` at ΔE00 3.2–4.0, outside §2's ≈ 2 but the
+// nearest token by far (`level2`, recorded before, sits at 6.5). The dot is 13.4 px (6.7 dp) across;
+// the source row's is 11.1 px.
+const choice = (group, key, box, measuredBg) => {
+  const id = `12.form.${group}.${key}`;
+  return [
+    el(id, 'ui:Chip', box, {
+      parent: '12.form',
+      tokens: measuredBg
+        ? { bg: 'level3', radius: 'pill' }
+        : { border: 'border.subtle', radius: 'pill' },
+      ...(measuredBg ? { measured: { bg: measuredBg } } : {}),
+      binding: `static:garment.${group}.${key}`,
+      action: `select:garment.${group}.${key}`,
+      copy: { shape: 'label', script: 'latin' },
+    }),
+    ...(measuredBg
+      ? [
+          el(`${id}.dot`, null, B(box.x + 17, box.y + 14, 13, 13), {
+            parent: id,
+            tokens: { fg: 'text.primary' },
+          }),
+        ]
+      : []),
+  ];
+};
 const segment = (group, key, box, parent) =>
   t(`${parent}.${key}`, box, parent, `static:garment.${group}.${key}`, {
     tokens: { fg: 'text.secondary' },
@@ -99,10 +116,15 @@ export default {
     }),
     el('12.source.method.lens', null, B(267, 312, 154, 38), {
       parent: '12.source.method',
-      tokens: { bg: 'level2', radius: 'pill' },
+      tokens: { bg: 'level3', radius: 'pill' },
+      measured: { bg: '#384048' },
       binding: 'static:garment.source.lens',
       action: 'select:garment.source.lens',
       copy: { shape: 'label', script: 'latin' },
+    }),
+    el('12.source.method.lens.dot', null, B(272, 325, 11, 11), {
+      parent: '12.source.method.lens',
+      tokens: { fg: 'text.primary' },
     }),
     segment('source', 'photo', B(437, 323, 54, 17), '12.source.method'),
     segment('source', 'atlas-pick', B(515, 322, 90, 18), '12.source.method'),
@@ -131,25 +153,30 @@ export default {
     }),
     el('12.form.category.top', null, B(75, 583, 85, 38), {
       parent: '12.form.category',
-      tokens: { bg: 'level2', radius: 'sm' },
+      tokens: { bg: 'level3', radius: 'sm' },
+      measured: { bg: '#3A4049' },
       binding: 'static:garment.category.top',
       action: 'select:garment.category.top',
       copy: { shape: 'label', script: 'latin' },
+    }),
+    el('12.form.category.top.dot', null, B(84, 595, 13, 13), {
+      parent: '12.form.category.top',
+      tokens: { fg: 'text.primary' },
     }),
     segment('category', 'trousers', B(181, 594, 87, 17), '12.form.category'),
     segment('category', 'outerwear', B(304, 593, 107, 19), '12.form.category'),
     segment('category', 'footwear', B(446, 594, 94, 17), '12.form.category'),
     segment('category', 'accessory', B(575, 594, 106, 22), '12.form.category'),
-    choice('material', 'linen', B(67, 681, 112, 43), true),
-    choice('material', 'cotton', B(189, 681, 114, 43)),
-    choice('material', 'wool', B(313, 681, 90, 43)),
-    choice('material', 'silk', B(413, 681, 70, 43)),
-    choice('material', 'denim', B(493, 681, 99, 43)),
-    choice('formality', 'casual', B(67, 779, 126, 43), true),
-    choice('formality', 'smart-casual', B(203, 779, 169, 43)),
-    choice('formality', 'formal', B(382, 779, 108, 43)),
-    choice('season', 'spring-summer', B(67, 831, 214, 43), true),
-    choice('season', 'autumn-winter', B(291, 831, 186, 43)),
+    ...choice('material', 'linen', B(67, 681, 112, 43), '#383F46'),
+    ...choice('material', 'cotton', B(189, 681, 114, 43)),
+    ...choice('material', 'wool', B(313, 681, 90, 43)),
+    ...choice('material', 'silk', B(413, 681, 70, 43)),
+    ...choice('material', 'denim', B(493, 681, 99, 43)),
+    ...choice('formality', 'casual', B(67, 779, 126, 43), '#3C4249'),
+    ...choice('formality', 'smart-casual', B(203, 779, 169, 43)),
+    ...choice('formality', 'formal', B(382, 779, 108, 43)),
+    ...choice('season', 'spring-summer', B(67, 831, 214, 43), '#383F47'),
+    ...choice('season', 'autumn-winter', B(291, 831, 186, 43)),
     // ---- the duplicate check (green: C10)
     el('12.intelligence', 'ui:Card', B(37, 917, 695, 130), {
       tokens: { radius: 'md' },

@@ -476,6 +476,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -484,6 +485,9 @@
       "illustration": null,
       "binding": "corpus:family.ao",
       "action": "select:filter.family.ao",
+      "measured": {
+        "bg": "#1C2026"
+      },
       "raw": {
         "cornerPx": 18
       },
@@ -510,6 +514,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -518,6 +523,9 @@
       "illustration": null,
       "binding": "corpus:family.aka",
       "action": "select:filter.family.aka",
+      "measured": {
+        "bg": "#1E2128"
+      },
       "copy": {
         "shape": "label",
         "script": "mixed"
@@ -541,6 +549,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -572,6 +581,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -603,6 +613,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -634,6 +645,7 @@
         "h": 20
       },
       "tokens": {
+        "bg": "level1",
         "border": "border.subtle",
         "radius": "pill"
       },
@@ -648,8 +660,158 @@
       }
     },
     {
-      "id": "05.filters-rule",
+      "id": "05.filters.family.ao.dot",
       "order": 21,
+      "parent": "05.filters.family.ao",
+      "component": null,
+      "box": {
+        "x": 48,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 24,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.ao.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters.family.aka.dot",
+      "order": 22,
+      "parent": "05.filters.family.aka",
+      "component": null,
+      "box": {
+        "x": 154,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 77,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.aka.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters.family.midori.dot",
+      "order": 23,
+      "parent": "05.filters.family.midori",
+      "component": null,
+      "box": {
+        "x": 269,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 134.5,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.midori.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters.family.murasaki.dot",
+      "order": 24,
+      "parent": "05.filters.family.murasaki",
+      "component": null,
+      "box": {
+        "x": 406,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 203,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.murasaki.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters.family.cha.dot",
+      "order": 25,
+      "parent": "05.filters.family.cha",
+      "component": null,
+      "box": {
+        "x": 567,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 283.5,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.cha.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters.family.kuro.dot",
+      "order": 26,
+      "parent": "05.filters.family.kuro",
+      "component": null,
+      "box": {
+        "x": 684,
+        "y": 389,
+        "w": 12,
+        "h": 12
+      },
+      "dp": {
+        "x": 342,
+        "y": 194.5,
+        "w": 6,
+        "h": 6
+      },
+      "tokens": {},
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": "corpus:family.kuro.hex",
+      "action": null,
+      "copy": null
+    },
+    {
+      "id": "05.filters-rule",
+      "order": 27,
       "parent": null,
       "component": null,
       "box": {
@@ -676,7 +838,7 @@
     },
     {
       "id": "05.heading",
-      "order": 22,
+      "order": 28,
       "parent": null,
       "component": "ui:Text",
       "box": {
@@ -710,7 +872,7 @@
     },
     {
       "id": "05.card-1",
-      "order": 23,
+      "order": 29,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -745,7 +907,7 @@
     },
     {
       "id": "05.card-2",
-      "order": 24,
+      "order": 30,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -774,7 +936,7 @@
     },
     {
       "id": "05.card-1.swatch",
-      "order": 25,
+      "order": 31,
       "parent": "05.card-1",
       "component": "ui:Swatch",
       "box": {
@@ -805,7 +967,7 @@
     },
     {
       "id": "05.card-2.swatch",
-      "order": 26,
+      "order": 32,
       "parent": "05.card-2",
       "component": "ui:Swatch",
       "box": {
@@ -833,7 +995,7 @@
     },
     {
       "id": "05.card-1.kanji",
-      "order": 27,
+      "order": 33,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -870,7 +1032,7 @@
     },
     {
       "id": "05.card-1.hex",
-      "order": 28,
+      "order": 34,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -908,7 +1070,7 @@
     },
     {
       "id": "05.card-2.kanji",
-      "order": 29,
+      "order": 35,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -945,7 +1107,7 @@
     },
     {
       "id": "05.card-2.hex",
-      "order": 30,
+      "order": 36,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -983,7 +1145,7 @@
     },
     {
       "id": "05.card-1.romaji",
-      "order": 31,
+      "order": 37,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1017,7 +1179,7 @@
     },
     {
       "id": "05.card-2.romaji",
-      "order": 32,
+      "order": 38,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1051,7 +1213,7 @@
     },
     {
       "id": "05.card-1.oklch",
-      "order": 33,
+      "order": 39,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1089,7 +1251,7 @@
     },
     {
       "id": "05.card-2.oklch",
-      "order": 34,
+      "order": 40,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1127,7 +1289,7 @@
     },
     {
       "id": "05.card-1.era",
-      "order": 35,
+      "order": 41,
       "parent": "05.card-1",
       "component": "ui:Text",
       "box": {
@@ -1164,7 +1326,7 @@
     },
     {
       "id": "05.card-2.era",
-      "order": 36,
+      "order": 42,
       "parent": "05.card-2",
       "component": "ui:Text",
       "box": {
@@ -1201,7 +1363,7 @@
     },
     {
       "id": "05.card-3",
-      "order": 37,
+      "order": 43,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1230,7 +1392,7 @@
     },
     {
       "id": "05.card-4",
-      "order": 38,
+      "order": 44,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1259,7 +1421,7 @@
     },
     {
       "id": "05.card-3.swatch",
-      "order": 39,
+      "order": 45,
       "parent": "05.card-3",
       "component": "ui:Swatch",
       "box": {
@@ -1287,7 +1449,7 @@
     },
     {
       "id": "05.card-4.swatch",
-      "order": 40,
+      "order": 46,
       "parent": "05.card-4",
       "component": "ui:Swatch",
       "box": {
@@ -1315,7 +1477,7 @@
     },
     {
       "id": "05.card-3.kanji",
-      "order": 41,
+      "order": 47,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1352,7 +1514,7 @@
     },
     {
       "id": "05.card-3.hex",
-      "order": 42,
+      "order": 48,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1390,7 +1552,7 @@
     },
     {
       "id": "05.card-4.kanji",
-      "order": 43,
+      "order": 49,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1427,7 +1589,7 @@
     },
     {
       "id": "05.card-4.hex",
-      "order": 44,
+      "order": 50,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1465,7 +1627,7 @@
     },
     {
       "id": "05.card-3.romaji",
-      "order": 45,
+      "order": 51,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1499,7 +1661,7 @@
     },
     {
       "id": "05.card-4.romaji",
-      "order": 46,
+      "order": 52,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1533,7 +1695,7 @@
     },
     {
       "id": "05.card-3.oklch",
-      "order": 47,
+      "order": 53,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1571,7 +1733,7 @@
     },
     {
       "id": "05.card-4.era",
-      "order": 48,
+      "order": 54,
       "parent": "05.card-4",
       "component": "ui:Text",
       "box": {
@@ -1608,7 +1770,7 @@
     },
     {
       "id": "05.tabs",
-      "order": 49,
+      "order": 55,
       "parent": null,
       "component": "app:TabBar",
       "box": {
@@ -1639,7 +1801,7 @@
     },
     {
       "id": "05.card-3.era",
-      "order": 50,
+      "order": 56,
       "parent": "05.card-3",
       "component": "ui:Text",
       "box": {
@@ -1676,7 +1838,7 @@
     },
     {
       "id": "05.tabs.indicator",
-      "order": 51,
+      "order": 57,
       "parent": "05.tabs",
       "component": null,
       "box": {
@@ -1703,7 +1865,7 @@
     },
     {
       "id": "05.tabs.atlas.icon",
-      "order": 52,
+      "order": 58,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1728,7 +1890,7 @@
     },
     {
       "id": "05.tabs.compass.icon",
-      "order": 53,
+      "order": 59,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1753,7 +1915,7 @@
     },
     {
       "id": "05.tabs.search.icon",
-      "order": 54,
+      "order": 60,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1778,7 +1940,7 @@
     },
     {
       "id": "05.tabs.profile.icon",
-      "order": 55,
+      "order": 61,
       "parent": "05.tabs",
       "component": "ui:NavIcon",
       "box": {
@@ -1803,7 +1965,7 @@
     },
     {
       "id": "05.tabs.atlas.label",
-      "order": 56,
+      "order": 62,
       "parent": "05.tabs",
       "component": "ui:Text",
       "box": {

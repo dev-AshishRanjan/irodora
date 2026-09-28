@@ -25,14 +25,23 @@ const season = (key, box, selected = false) =>
     copy: { shape: 'label', script: key === 'all' ? 'latin' : 'mixed' },
     ...(key === 'spring' ? { raw: { cornerPx: 20.5 } } : {}),
   });
-const family = (key, box) =>
+// A family chip is FILLED (F-232): its inside reads `level1` (#1C2026, #1E2128; ΔE00 0.7–1.1) against
+// the ground around it. Its dot is the family's colour, 12.2–12.6 px (6 dp) across, 13 px in from the
+// chip's left edge and 14 down.
+const family = (key, box, measuredBg) => [
   el(`05.filters.family.${key}`, 'ui:Chip', box, {
-    tokens: { border: 'border.subtle', radius: 'pill' },
+    tokens: { bg: 'level1', border: 'border.subtle', radius: 'pill' },
+    ...(measuredBg ? { measured: { bg: measuredBg } } : {}),
     binding: `corpus:family.${key}`,
     action: `select:filter.family.${key}`,
     copy: { shape: 'label', script: 'mixed' },
     ...(key === 'ao' ? { raw: { cornerPx: 18 } } : {}),
-  });
+  }),
+  el(`05.filters.family.${key}.dot`, null, B(box.x + 13, box.y + 14, 12, 12), {
+    parent: `05.filters.family.${key}`,
+    binding: `corpus:family.${key}.hex`,
+  }),
+];
 // [card, swatch, kanji, hex, romaji, oklch|null, era]
 const cards = [
   [
@@ -193,12 +202,12 @@ export default {
       raw: { emDp: 11.8 },
     }),
     // the family row scrolls: its last chip is cut by the screen edge as drawn
-    family('ao', B(35, 375, 96, 40)),
-    family('aka', B(141, 375, 105, 40)),
-    family('midori', B(256, 375, 127, 40)),
-    family('murasaki', B(393, 375, 152, 40)),
-    family('cha', B(554, 375, 107, 40)),
-    family('kuro', B(671, 375, 97, 40)),
+    ...family('ao', B(35, 375, 96, 40), '#1C2026'),
+    ...family('aka', B(141, 375, 105, 40), '#1E2128'),
+    ...family('midori', B(256, 375, 127, 40)),
+    ...family('murasaki', B(393, 375, 152, 40)),
+    ...family('cha', B(554, 375, 107, 40)),
+    ...family('kuro', B(671, 375, 97, 40)),
     el('05.filters-rule', null, B(35, 435, 698, 2), { tokens: { fg: 'border.subtle' } }),
     el('05.heading', 'ui:Text', B(35, 462, 65, 23), {
       tokens: { fg: 'text.primary' },

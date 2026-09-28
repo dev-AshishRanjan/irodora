@@ -129,6 +129,7 @@ Two rules that matter more than the format:
 | [0111](0111-the-palette-is-the-mockups-and-a-sample-is-judged-against-the-surface-it-sits-on.md) | The palette is the mockups', the themes are the four mockup 15 draws, and a sample is judged against the surface it sits on | Accepted |
 | [0112](0112-the-serif-ships-as-gelasio-regular-and-the-mincho-as-noto-serif-jp-because-the-drawings-measure-there.md) | The serif ships as one cut, Gelasio Regular at no tracking, and the mincho as Noto Serif JP at 400, because that is where the drawings measure | Accepted |
 | [0113](0113-the-type-scale-is-board-00s-four-steps-and-a-measured-caption-and-off-scale-type-snaps.md) | The type scale is board 00's four steps and a measured caption | Accepted; closes OQ-12 only (its OQ-13 closure was withdrawn) |
+| [0115](0115-an-icon-only-control-drawn-on-a-plate-is-a-button-and-one-drawn-bare-is-an-iconbutton.md) | An icon-only control drawn on a plate is a Button, and one drawn bare is an IconButton | Accepted |
 | [0080](0080-the-pdf-report-is-latin-1-and-refuses-what-it-cannot-draw.md) | The PDF report is Latin-1 and refuses what it cannot draw | Accepted |
 | [0081](0081-the-pattern-corpus-is-constructed-so-its-ground-truth-is-exact.md) | The pattern corpus is constructed, so its ground truth is exact | Accepted |
 | [0082](0082-the-investment-signal-is-two-numbers-from-your-own-wardrobe-and-no-verdict.md) | The investment signal is two numbers from your own wardrobe, and no verdict | Accepted |

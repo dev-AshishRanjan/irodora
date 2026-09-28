@@ -56,7 +56,10 @@ const option = (key, o) => {
       ...cap(o.em.hex),
       copy: { shape: 'value', script: 'mixed' },
     }),
-    el(`${p}.select`, 'ui:Button', o.select, {
+    // A choice pill, not a button (F-232): the two select one trial, and the chosen one is white with
+    // a leading dot in the pill's ink — its darkest pixels read #060B0E, below the ground, which is a
+    // dark disc lifted by blur at its edge rather than a lighter token.
+    el(`${p}.select`, 'ui:Chip', o.select, {
       parent: p,
       tokens: o.selected
         ? { bg: 'action.primary', radius: 'sm' }
@@ -66,7 +69,12 @@ const option = (key, o) => {
       copy: { shape: 'label', script: 'latin' },
     }),
     ...(o.selected
-      ? [el(`${p}.select.selected`, null, o.selected, { parent: `${p}.select` })]
+      ? [
+          el(`${p}.select.selected`, null, o.selected, {
+            parent: `${p}.select`,
+            tokens: { fg: 'ground' },
+          }),
+        ]
       : []),
   ];
 };

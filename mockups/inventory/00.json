@@ -843,7 +843,8 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "camera",
@@ -868,13 +869,17 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "image",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 4.5
+      },
       "copy": null
     },
     {
@@ -890,13 +895,17 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "palette-solid",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 5
+      },
       "copy": null
     },
     {
@@ -912,13 +921,17 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "settings",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 4
+      },
       "copy": null
     },
     {
@@ -957,18 +970,29 @@
       "parent": null,
       "component": "ui:Switch",
       "box": {
-        "x": 595,
-        "y": 592,
-        "w": 47,
+        "x": 597,
+        "y": 591,
+        "w": 44,
         "h": 25
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "track": "#32363F",
+        "thumb": "#F5F7F9"
+      },
+      "raw": {
+        "thumbPx": 19.7
+      },
       "copy": null
     },
     {
@@ -983,7 +1007,11 @@
         "h": 30
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "fg": "text.secondary",
+        "border": "border.strong",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
@@ -995,8 +1023,35 @@
       }
     },
     {
-      "id": "00.buttons.slider",
+      "id": "00.buttons.choice.selected",
       "order": 38,
+      "parent": "00.buttons.choice",
+      "component": null,
+      "box": {
+        "x": 598,
+        "y": 636,
+        "w": 54,
+        "h": 27
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "fg": "ground",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#F3F5FA"
+      },
+      "copy": null
+    },
+    {
+      "id": "00.buttons.slider",
+      "order": 39,
       "parent": null,
       "component": "ui:Slider",
       "box": {
@@ -1006,17 +1061,31 @@
         "h": 28
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "fill": "action.primary",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "track": "#373C44",
+        "fill": "#F5F6F8",
+        "thumb": "#F3F4F8"
+      },
+      "raw": {
+        "trackPx": 4.4,
+        "thumbPx": 24.2
+      },
       "copy": null
     },
     {
       "id": "00.controls.primary",
-      "order": 39,
+      "order": 40,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1046,7 +1115,7 @@
     },
     {
       "id": "00.controls.icon-camera",
-      "order": 40,
+      "order": 41,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1057,18 +1126,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "camera",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 4
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-edit",
-      "order": 41,
+      "order": 42,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1079,18 +1152,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "edit",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 4.5
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-external",
-      "order": 42,
+      "order": 43,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1101,18 +1178,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "external",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 3
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-contrast",
-      "order": 43,
+      "order": 44,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1123,18 +1204,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "sm"
       },
       "type": null,
       "icon": "contrast",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 3.25
+      },
       "copy": null
     },
     {
       "id": "00.controls.secondary",
-      "order": 44,
+      "order": 45,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1164,7 +1249,7 @@
     },
     {
       "id": "00.controls.icon-camera-2",
-      "order": 45,
+      "order": 46,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1175,18 +1260,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "pill"
       },
       "type": null,
       "icon": "camera",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 14.5
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-palette",
-      "order": 46,
+      "order": 47,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1197,18 +1286,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "pill"
       },
       "type": null,
       "icon": "palette",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 14.75
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-edit-2",
-      "order": 47,
+      "order": 48,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1219,18 +1312,22 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "pill"
       },
       "type": null,
       "icon": "edit",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 14.75
+      },
       "copy": null
     },
     {
       "id": "00.controls.icon-wheel",
-      "order": 48,
+      "order": 49,
       "parent": null,
       "component": "ui:Button",
       "box": {
@@ -1241,58 +1338,84 @@
       },
       "dp": null,
       "tokens": {
-        "bg": "level2"
+        "bg": "level2",
+        "radius": "pill"
       },
       "type": null,
       "icon": "colour-wheel",
       "illustration": null,
       "binding": null,
       "action": null,
+      "raw": {
+        "cornerPx": 12.5
+      },
       "copy": null
     },
     {
       "id": "00.controls.switch-on",
-      "order": 49,
-      "parent": null,
-      "component": "ui:Switch",
-      "box": {
-        "x": 936,
-        "y": 226,
-        "w": 50,
-        "h": 27
-      },
-      "dp": null,
-      "tokens": {},
-      "type": null,
-      "icon": null,
-      "illustration": null,
-      "binding": null,
-      "action": null,
-      "copy": null
-    },
-    {
-      "id": "00.controls.switch-off",
       "order": 50,
       "parent": null,
       "component": "ui:Switch",
       "box": {
-        "x": 998,
-        "y": 227,
-        "w": 46,
+        "x": 937,
+        "y": 226,
+        "w": 47,
         "h": 25
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "track": "action.primary",
+        "thumb": "border.subtle",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "track": "#F5F6FA",
+        "thumb": "#2D343D"
+      },
+      "raw": {
+        "thumbPx": 20
+      },
+      "copy": null
+    },
+    {
+      "id": "00.controls.switch-off",
+      "order": 51,
+      "parent": null,
+      "component": "ui:Switch",
+      "box": {
+        "x": 999,
+        "y": 226,
+        "w": 44,
+        "h": 25
+      },
+      "dp": null,
+      "tokens": {
+        "track": "level3",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "track": "#313840",
+        "thumb": "#F3F6FA"
+      },
+      "raw": {
+        "thumbPx": 18.7
+      },
       "copy": null
     },
     {
       "id": "00.controls.choice",
-      "order": 51,
+      "order": 52,
       "parent": null,
       "component": "ui:ChoiceGroup",
       "box": {
@@ -1302,20 +1425,55 @@
         "h": 29
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "bg": "level2",
+        "fg": "text.primary",
+        "border": "border.strong",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "bg": "#2C3039"
+      },
       "copy": {
         "shape": "label",
         "script": "figures"
       }
     },
     {
+      "id": "00.controls.choice.selected",
+      "order": 53,
+      "parent": "00.controls.choice",
+      "component": null,
+      "box": {
+        "x": 1157,
+        "y": 227,
+        "w": 38,
+        "h": 24
+      },
+      "dp": null,
+      "tokens": {
+        "bg": "action.primary",
+        "fg": "ground",
+        "radius": "pill"
+      },
+      "type": null,
+      "icon": null,
+      "illustration": null,
+      "binding": null,
+      "action": null,
+      "measured": {
+        "bg": "#F3F7FA"
+      },
+      "copy": null
+    },
+    {
       "id": "00.controls.slider",
-      "order": 52,
+      "order": 54,
       "parent": null,
       "component": "ui:Slider",
       "box": {
@@ -1325,17 +1483,31 @@
         "h": 22
       },
       "dp": null,
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "fill": "action.primary",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": null,
       "action": null,
+      "measured": {
+        "track": "#383D45",
+        "fill": "#FCFCFC",
+        "thumb": "#EEF2F6"
+      },
+      "raw": {
+        "trackPx": 4.3,
+        "thumbPx": 20.2
+      },
       "copy": null
     },
     {
       "id": "00.cards.level1",
-      "order": 53,
+      "order": 55,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1360,7 +1532,7 @@
     },
     {
       "id": "00.cards.level2",
-      "order": 54,
+      "order": 56,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1382,7 +1554,7 @@
     },
     {
       "id": "00.cards.level3",
-      "order": 55,
+      "order": 57,
       "parent": null,
       "component": "ui:Card",
       "box": {
@@ -1404,7 +1576,7 @@
     },
     {
       "id": "00.art.kimono",
-      "order": 56,
+      "order": 58,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -1424,7 +1596,7 @@
     },
     {
       "id": "00.art.viewfinder",
-      "order": 57,
+      "order": 59,
       "parent": null,
       "component": "ui:Illustration",
       "box": {
@@ -1444,7 +1616,7 @@
     },
     {
       "id": "00.empty",
-      "order": 58,
+      "order": 60,
       "parent": null,
       "component": "ui:EmptyState",
       "box": {
@@ -1464,7 +1636,7 @@
     },
     {
       "id": "00.empty.art",
-      "order": 59,
+      "order": 61,
       "parent": "00.empty",
       "component": "ui:Illustration",
       "box": {
@@ -1484,7 +1656,7 @@
     },
     {
       "id": "00.empty.message",
-      "order": 60,
+      "order": 62,
       "parent": "00.empty",
       "component": "ui:Text",
       "box": {

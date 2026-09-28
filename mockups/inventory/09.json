@@ -436,12 +436,26 @@
         "w": 125,
         "h": 15.5
       },
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "fill": "action.primary",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "store:finder.lightness",
       "action": "adjust:finder.lightness",
+      "measured": {
+        "track": "#343B44",
+        "fill": "#ECF0F4",
+        "thumb": "#F1F1F5"
+      },
+      "raw": {
+        "trackPx": 6.7,
+        "thumbPx": 27.5
+      },
       "copy": null
     },
     {
@@ -530,12 +544,25 @@
         "w": 134,
         "h": 15.5
       },
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "fill": "action.primary",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "store:finder.chroma",
       "action": "adjust:finder.chroma",
+      "measured": {
+        "track": "#353C45",
+        "thumb": "#EEF2F5"
+      },
+      "raw": {
+        "trackPx": 6.1,
+        "thumbPx": 27.4
+      },
       "copy": null
     },
     {
@@ -624,12 +651,26 @@
         "w": 166,
         "h": 15
       },
-      "tokens": {},
+      "tokens": {
+        "track": "level3",
+        "fill": "action.primary",
+        "thumb": "action.primary",
+        "radius": "pill"
+      },
       "type": null,
       "icon": null,
       "illustration": null,
       "binding": "store:finder.hue",
       "action": "adjust:finder.hue",
+      "measured": {
+        "track": "#353B44",
+        "fill": "#ECF0F4",
+        "thumb": "#EFF0F5"
+      },
+      "raw": {
+        "trackPx": 6.5,
+        "thumbPx": 27.5
+      },
       "copy": null
     },
     {

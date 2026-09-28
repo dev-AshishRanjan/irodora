@@ -528,7 +528,7 @@
       "id": "17.draping.option-a.select",
       "order": 16,
       "parent": "17.draping.option-a",
-      "component": "ui:Button",
+      "component": "ui:Chip",
       "box": {
         "x": 88,
         "y": 567,
@@ -559,7 +559,7 @@
       "id": "17.draping.option-b.select",
       "order": 17,
       "parent": "17.draping.option-b",
-      "component": "ui:Button",
+      "component": "ui:Chip",
       "box": {
         "x": 406,
         "y": 566,
@@ -603,7 +603,9 @@
         "w": 5.5,
         "h": 5.5
       },
-      "tokens": {},
+      "tokens": {
+        "fg": "ground"
+      },
       "type": null,
       "icon": null,
       "illustration": null,

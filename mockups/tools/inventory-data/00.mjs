@@ -133,6 +133,8 @@ export default {
     ),
 
     // ---- column 2: buttons and controls
+    // The icon plates (F-232, corner.ps1): each column's first row fits r 3–5.5 px on a 33–37 px plate,
+    // `sm`; column 3's second row fits r 12.5–15.5 px on a 34 px plate, a circle.
     el('00.buttons.primary', 'ui:Button', B(487, 476, 194, 42), {
       tokens: { bg: 'action.primary', radius: 'pill' },
       type: sans('body', 500),
@@ -140,32 +142,56 @@ export default {
       raw: { cornerPx: 23.25 },
     }),
     el('00.buttons.icon-camera', 'ui:Button', B(710, 478, 36, 37), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'camera',
       raw: { cornerPx: 5.5 },
     }),
     el('00.buttons.icon-image', 'ui:Button', B(757, 478, 36, 37), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'image',
+      raw: { cornerPx: 4.5 },
     }),
     el('00.buttons.icon-palette', 'ui:Button', B(804, 478, 37, 37), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'palette-solid',
+      raw: { cornerPx: 5 },
     }),
     el('00.buttons.icon-settings', 'ui:Button', B(851, 478, 36, 37), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'settings',
+      raw: { cornerPx: 4 },
     }),
     el('00.buttons.secondary', 'ui:Button', B(488, 535, 192, 37), {
       tokens: { border: 'border.strong', radius: 'pill' },
       type: sans('body'),
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('00.buttons.switch', 'ui:Switch', B(595, 592, 47, 25)),
+    // The controls (F-232), measured on the image. Every white here reads #F3F6FA–#F5F7F9, the primary
+    // pill's (bound `action.primary`) included, so the render cannot tell the README's two whites
+    // apart: a control's white FILL takes `action.primary`, the README's role for it. Off: a `level3`
+    // track (ΔE00 1.2) and a white thumb 0.81 of the track's height. The box is the track.
+    el('00.buttons.switch', 'ui:Switch', B(597, 591, 44, 25), {
+      tokens: { track: 'level3', thumb: 'action.primary', radius: 'pill' },
+      measured: { track: '#32363F', thumb: '#F5F7F9' },
+      raw: { thumbPx: 19.7 },
+    }),
+    // Outlined in `border.strong`: the edge's integrated excess over the ground is the secondary pill's
+    // (0.12 against 0.13 L·px), where `border.subtle` would give half. The labels read secondary.
     el('00.buttons.choice', 'ui:ChoiceGroup', B(594, 635, 177, 30), {
+      tokens: { fg: 'text.secondary', border: 'border.strong', radius: 'pill' },
       copy: { shape: 'label', script: 'latin' },
     }),
-    el('00.buttons.slider', 'ui:Slider', B(594, 684, 294, 28)),
+    el('00.buttons.choice.selected', null, B(598, 636, 54, 27), {
+      parent: '00.buttons.choice',
+      tokens: { bg: 'action.primary', fg: 'ground', radius: 'pill' },
+      measured: { bg: '#F3F5FA' },
+    }),
+    // A 4.4 px track, white up to the value and `level3` (ΔE00 2.4) past it, under a white thumb.
+    el('00.buttons.slider', 'ui:Slider', B(594, 684, 294, 28), {
+      tokens: { track: 'level3', fill: 'action.primary', thumb: 'action.primary', radius: 'pill' },
+      measured: { track: '#373C44', fill: '#F5F6F8', thumb: '#F3F4F8' },
+      raw: { trackPx: 4.4, thumbPx: 24.2 },
+    }),
 
     // ---- column 3: buttons and controls, second rendering
     el('00.controls.primary', 'ui:Button', B(937, 91, 186, 35), {
@@ -174,23 +200,27 @@ export default {
       copy: { shape: 'label', script: 'latin' },
     }),
     el('00.controls.icon-camera', 'ui:Button', B(1153, 91, 33, 33), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'camera',
+      raw: { cornerPx: 4 },
     }),
     el('00.controls.icon-edit', 'ui:Button', B(1198, 91, 33, 33), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'edit',
+      raw: { cornerPx: 4.5 },
     }),
     // Rebound by F-228: drawn as a box with an arrow leaving its corner — an EXTERNAL glyph. It was
     // recorded as `share`, which every screen draws as a tray with an arrow up (06 20 23 24 26), so
     // one name would have drawn two shapes.
     el('00.controls.icon-external', 'ui:Button', B(1243, 91, 32, 33), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'external',
+      raw: { cornerPx: 3 },
     }),
     el('00.controls.icon-contrast', 'ui:Button', B(1288, 91, 32, 33), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'sm' },
       icon: 'contrast',
+      raw: { cornerPx: 3.25 },
     }),
     el('00.controls.secondary', 'ui:Button', B(938, 138, 185, 34), {
       tokens: { border: 'border.strong', radius: 'pill' },
@@ -198,27 +228,55 @@ export default {
       copy: { shape: 'label', script: 'latin' },
     }),
     el('00.controls.icon-camera-2', 'ui:Button', B(1153, 138, 33, 34), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'pill' },
       icon: 'camera',
+      raw: { cornerPx: 14.5 },
     }),
     el('00.controls.icon-palette', 'ui:Button', B(1198, 138, 33, 34), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'pill' },
       icon: 'palette',
+      raw: { cornerPx: 14.75 },
     }),
     el('00.controls.icon-edit-2', 'ui:Button', B(1242, 138, 34, 34), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'pill' },
       icon: 'edit',
+      raw: { cornerPx: 14.75 },
     }),
     el('00.controls.icon-wheel', 'ui:Button', B(1287, 138, 34, 34), {
-      tokens: { bg: 'level2' },
+      tokens: { bg: 'level2', radius: 'pill' },
       icon: 'colour-wheel',
+      raw: { cornerPx: 12.5 },
     }),
-    el('00.controls.switch-on', 'ui:Switch', B(936, 226, 50, 27)),
-    el('00.controls.switch-off', 'ui:Switch', B(998, 227, 46, 25)),
+    // On: a white track and a dark thumb (`border.subtle` ΔE00 1.2, `level3` 2.1). Off, as column 2.
+    el('00.controls.switch-on', 'ui:Switch', B(937, 226, 47, 25), {
+      tokens: { track: 'action.primary', thumb: 'border.subtle', radius: 'pill' },
+      measured: { track: '#F5F6FA', thumb: '#2D343D' },
+      raw: { thumbPx: 20 },
+    }),
+    el('00.controls.switch-off', 'ui:Switch', B(999, 226, 44, 25), {
+      tokens: { track: 'level3', thumb: 'action.primary', radius: 'pill' },
+      measured: { track: '#313840', thumb: '#F3F6FA' },
+      raw: { thumbPx: 18.7 },
+    }),
+    // A filled container outlined in `border.strong` (as column 2's), the selected segment a white pill
+    // inset from it. The fill reads #2C3039: `accent.secondary` 0.88, `border.subtle` 1.10, `level2`
+    // 1.27 — inside one another's noise, so the README's role decides: `level2`, the raised interactive
+    // container, which the manifest carries and `accent.secondary` it does not.
     el('00.controls.choice', 'ui:ChoiceGroup', B(1075, 225, 123, 29), {
+      tokens: { bg: 'level2', fg: 'text.primary', border: 'border.strong', radius: 'pill' },
+      measured: { bg: '#2C3039' },
       copy: { shape: 'label', script: 'figures' },
     }),
-    el('00.controls.slider', 'ui:Slider', B(1229, 228, 91, 22)),
+    el('00.controls.choice.selected', null, B(1157, 227, 38, 24), {
+      parent: '00.controls.choice',
+      tokens: { bg: 'action.primary', fg: 'ground', radius: 'pill' },
+      measured: { bg: '#F3F7FA' },
+    }),
+    el('00.controls.slider', 'ui:Slider', B(1229, 228, 91, 22), {
+      tokens: { track: 'level3', fill: 'action.primary', thumb: 'action.primary', radius: 'pill' },
+      measured: { track: '#383D45', fill: '#FCFCFC', thumb: '#EEF2F6' },
+      raw: { trackPx: 4.3, thumbPx: 20.2 },
+    }),
 
     // ---- column 3: elevated cards and sheets
     el('00.cards.level1', 'ui:Card', B(935, 376, 122, 120), {

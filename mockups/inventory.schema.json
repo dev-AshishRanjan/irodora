@@ -285,7 +285,7 @@
               "type": "null"
             }
           ],
-          "description": "ui:<export of @irodora/ui>, new:<a component a feature must add to it>, or app:<a screen-local composition>. null for a pure container."
+          "description": "ui:<export of @irodora/ui>, new:<a component a feature must add to it>, or app:<a screen-local composition>. null for a pure container. A ui:Button with an icon, no copy on itself or any child, and a bg or border token is Button's icon-only form: the plate is the pressable. With neither, it is IconButton — the glyph alone (ADR-0115)."
         },
         "box": {
           "$ref": "#/$defs/box"
@@ -391,7 +391,7 @@
         },
         "raw": {
           "type": "object",
-          "description": "Optional. Readings kept beside a snapped value so a reviewer can see what the snap changed: emDp, the estimated em in dp (§2's glyph-class rule) wherever the size step moved it by more than 2 dp or the step is caption; cornerPx, a fitted corner radius in image px wherever the radius token moved it by more than 2 dp or the image has no scale.",
+          "description": "Optional. Readings kept beside a snapped value so a reviewer can see what the snap changed: emDp, the estimated em in dp (§2's glyph-class rule) wherever the size step moved it by more than 2 dp or the step is caption; cornerPx, a fitted corner radius in image px wherever the radius token moved it by more than 2 dp or the image has no scale; trackPx and thumbPx, a control's track thickness and thumb diameter in image px, from which its drawn sizes come (F-232).",
           "additionalProperties": {
             "type": "number"
           }
