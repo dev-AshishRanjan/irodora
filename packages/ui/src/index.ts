@@ -80,7 +80,14 @@ export { Bands, MAX_BANDS, type Band, type BandsProps } from './Bands.js';
 export { elevationShadow } from './elevation.js';
 export { Card, type CardLevel, type CardProps } from './Card.js';
 export { Chip, CHIP_HEIGHT, chipAccessibleName, type ChipProps } from './Chip.js';
-export { ChoiceGroup, type Choice, type ChoiceGroupProps } from './ChoiceGroup.js';
+export {
+  ChoiceGroup,
+  SEGMENT_INSET,
+  SEGMENTED_HEIGHT,
+  type Choice,
+  type ChoiceGroupProps,
+  type Segmented,
+} from './ChoiceGroup.js';
 export {
   currentTone,
   FocusRing,

@@ -414,11 +414,57 @@ const SUBJECTS: readonly ConformanceSubject[] = [
           onChange={() => undefined}
           disabled={state === 'disabled'}
           loading={state === 'loading'}
+          focused={state === 'focus' ? 'warm' : undefined}
           testID={state}
         />,
         theme,
       ),
   },
+  /*
+   * THE SEGMENTED ROW (F-232), in the forms the mockups draw: 00's accent segment in a
+   * border.strong outline (and 00.controls' filled container), and the screens' filled segment with
+   * a leading dot and 02's dividers.
+   */
+  ...(
+    [
+      [
+        'ChoiceGroup (segmented, 00)',
+        { mark: 'fill', selectedFill: 'accent', edge: 'border.strong' },
+      ],
+      [
+        'ChoiceGroup (segmented, 00.controls)',
+        { mark: 'fill', selectedFill: 'accent', edge: 'border.strong', ground: 'surface.2' },
+      ],
+      ['ChoiceGroup (segmented, 12)', { selectedFill: 'surface.3', radius: 'sm', height: 23 }],
+      ['ChoiceGroup (segmented, 02)', { dividers: true, height: 31 }],
+    ] as const
+  ).map(([name, segmented]): ConformanceSubject => ({
+    name,
+    kind: 'interactive',
+    selectable: true,
+    treatment: 'segment',
+    forbiddenNames: ['option', 'choice', 'filter'],
+    render: (state, theme) =>
+      draw(
+        <ChoiceGroup
+          label="Colour source"
+          value={state === 'active' ? 'lens' : null}
+          clearLabel="Any"
+          options={[
+            { value: 'lens', label: 'Lens' },
+            { value: 'photo', label: 'Photo' },
+            { value: 'hex', label: 'Hex', disabled: state === 'disabled' },
+          ]}
+          onChange={() => undefined}
+          segmented={segmented}
+          disabled={state === 'disabled'}
+          loading={state === 'loading'}
+          focused={state === 'focus' ? 'photo' : undefined}
+          testID={state}
+        />,
+        theme,
+      ),
+  })),
   {
     /*
      * ALL THREE DRAWINGS, IN BOTH THEMES (F-191).

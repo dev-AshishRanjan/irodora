@@ -91,10 +91,13 @@ export interface ConformanceSubject {
   /**
    * Which selection picture a selectable subject draws (F-232). `chooser`, the default, is board
    * 00's shared treatment: an `accent.muted` ground and an `accent` edge. `pill` is the screens':
-   * the chosen pill is filled, or edged in `foreground`, and a dot leads its label. Either way the
-   * picture is read off the rendered tree, never taken on the subject's word.
+   * the chosen pill is filled, or edged in `foreground`, and a dot leads its label. `segment` is a
+   * segmented row's: the chosen segment is filled. An unchosen segment draws no shape at all, only
+   * its label, so the fill is a SHAPE that appears, not a fill swapped on a shape that was already
+   * there; that is why a segment needs no dot and a pill does (OQ-43 is the pill case). Either way
+   * the picture is read off the rendered tree, never taken on the subject's word.
    */
-  readonly treatment?: 'chooser' | 'pill';
+  readonly treatment?: 'chooser' | 'pill' | 'segment';
   /**
    * Why this subject paints no colour at all — a REASON, never a boolean.
    *
@@ -508,7 +511,14 @@ export function checkSubject(
               c.resolution.kind === 'token' &&
               c.resolution.tokens.includes(token),
           );
-        if (subject.treatment === 'pill') {
+        if (subject.treatment === 'segment') {
+          if (!PILL_FILLS.some((t) => paints('backgroundColor', t)))
+            at(
+              'selection-treatment',
+              'is a selected segment but draws no fill — the chosen segment of a segmented row is ' +
+                'the one shape in it (F-232), and without it only the label says which is chosen.',
+            );
+        } else if (subject.treatment === 'pill') {
           const filled = PILL_FILLS.some((t) => paints('backgroundColor', t));
           const edged = paints('borderColor', 'foreground');
           if (!(filled || edged) || !drawsDot(tree))
