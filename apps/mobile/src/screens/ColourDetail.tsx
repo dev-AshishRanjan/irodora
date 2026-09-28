@@ -244,15 +244,23 @@ export function ColourDetail({
    */
   const [sections, setSections] = useState<readonly string[]>(initialSections);
 
-  /** A labelled row. `value === null` renders the recorded reason where the value would be. */
+  /**
+   * A labelled row. `value === null` renders the recorded reason where the value would be.
+   *
+   * `numeric` says the value IS figures — a coordinate triple, a hex, a date — so it is set in
+   * tabular digits and can be selected, like every other value a person copies (FR-48, C9). The
+   * caller says so; no heuristic can tell "0.42" from "F-019" (Text's own note).
+   */
   function DetailRow({
     label,
     value,
     reasonFor,
+    numeric = false,
   }: {
     readonly label: string;
     readonly value: string | null;
     readonly reasonFor?: string;
+    readonly numeric?: boolean;
   }): React.JSX.Element {
     const reason = reasonFor === undefined ? undefined : entry.unknowns[reasonFor];
     return (
@@ -261,7 +269,12 @@ export function ColourDetail({
           {label}
         </Text>
         {value !== null ? (
-          <Text size="label" color="foreground" script={script}>
+          <Text
+            size="label"
+            color="foreground"
+            script={script}
+            {...(numeric ? { numeric: true, selectable: true } : {})}
+          >
             {value}
           </Text>
         ) : (
@@ -483,12 +496,12 @@ export function ColourDetail({
               title: t('detail.coordinates'),
               children: (
                 <>
-                  <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} />
-                  <DetailRow label={t('coord.lab')} value={triple(derived.lab)} />
-                  <DetailRow label={t('coord.lch')} value={triple(derived.lch)} />
-                  <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} />
-                  <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} />
-                  <DetailRow label={t('colour.hex')} value={derived.hex} />
+                  <DetailRow label={t('coord.xyz')} value={triple(entry.color.xyz, 6)} numeric />
+                  <DetailRow label={t('coord.lab')} value={triple(derived.lab)} numeric />
+                  <DetailRow label={t('coord.lch')} value={triple(derived.lch)} numeric />
+                  <DetailRow label={t('coord.oklch')} value={triple(derived.oklch)} numeric />
+                  <DetailRow label={t('coord.rgb')} value={triple(derived.rgb)} numeric />
+                  <DetailRow label={t('colour.hex')} value={derived.hex} numeric />
                   {/*
           ADR-0031: "closest digital reference" is only an honest phrase when a number stands
           behind it, so the number is here rather than the phrase alone.
@@ -579,7 +592,7 @@ export function ColourDetail({
           <DetailRow label={t('prov.derivation')} value={entry.provenance.derivation} />
           <DetailRow label={t('prov.author')} value={entry.provenance.authoredBy} />
           <DetailRow label={t('prov.reviewer')} value={entry.provenance.verifiedBy} />
-          <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} />
+          <DetailRow label={t('prov.reviewedAt')} value={entry.provenance.verifiedAt} numeric />
           {/*
           F-084's attested criterion, discharged. `self` is a weaker claim than `independent`
           and it is stated in words rather than as a code, because a reader deciding whether to

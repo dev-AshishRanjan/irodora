@@ -344,7 +344,12 @@ export function Swatch({
           }}
         />
       </View>
-      <Text size="label" color="foreground" script={script}>
+      {/*
+        A swatch NAMED BY ITS VALUE (a generated colour has no other name) prints a figure, and a
+        figure is set in tabular digits like every other colour value (C9, F-226). Read off the
+        props, not guessed from the string: the name is the hex exactly when the caller said so.
+      */}
+      <Text size="label" color="foreground" script={script} numeric={name === hex}>
         {loading ? `${name}…` : selected ? `✓ ${name}` : name}
       </Text>
     </AnimatedPressable>

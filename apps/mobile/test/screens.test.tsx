@@ -2627,8 +2627,12 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
    * and silent one step outside it (E-086, E-087, E-089, E-090). It is worth stating that the
    * gap was found by re-reading a green test rather than by anything failing.
    */
-  /** A string that is nothing but a quantity: a sign, digits, and the punctuation of figures. */
-  const BARE_FIGURE = /^[+−-]?\d[\d\s.,:/%°–-]*$/u;
+  /**
+   * A string that is nothing but a quantity: a sign, digits and the punctuation of figures,
+   * optionally one unit the product prints after a figure (F-226 widened it) — or a hex, which is
+   * a colour value in a column exactly as a delta is (C9).
+   */
+  const BARE_FIGURE = /^(?:[+−-]?\d[\d\s.,:/%°–-]*(?:\s?(?:dp|px|K|nm|lx))?|#[0-9A-Fa-f]{6})$/u;
 
   function figureNodes(node: TestNode, out: TestNode[] = []): TestNode[] {
     // The node that OWNS the text, not the string itself — the `numeric` prop and the font
@@ -2676,6 +2680,26 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
     expect(ragged(studio)).toHaveLength(0);
   });
 
+  /*
+   * EVERY REGISTERED SCREEN AND STATE, IN BOTH THEMES (F-226, criterion 3). The block above
+   * checks the three instrument surfaces; "every number renders in tabular figures" is a claim
+   * about all of them, so it is checked over the registry the conformance sweep renders.
+   */
+  it('marks every bare figure as tabular on every registered screen and state, in both themes', () => {
+    const found: string[] = [];
+    let figures = 0;
+    for (const subject of SCREENS)
+      for (const theme of ['light', 'dark'] as const) {
+        const screen = subject.render('default', theme);
+        if (screen === null) continue;
+        figures += figureNodes(screen).length;
+        for (const f of ragged(screen)) found.push(`${subject.name} (${theme}): ${f}`);
+      }
+    // Found something first: a sweep over no figures agrees with anything.
+    expect(figures).toBeGreaterThan(SCREENS.length);
+    expect(found).toStrictEqual([]);
+  });
+
   it('DECOY — the check finds a figure that forgot the prop', () => {
     /*
      * Without this, `ragged` could be returning nothing because `figureNodes` matches nothing,
@@ -2701,6 +2725,15 @@ describe('the numbers are tabular and copyable (FR-48)', () => {
       'light',
     );
     expect(ragged(marked)).toHaveLength(0);
+
+    // And a hex, which the matcher reads as a figure since F-226.
+    const hex = draw(
+      <Text size="label" color="foreground">
+        #5B6B78
+      </Text>,
+      'light',
+    );
+    expect(ragged(hex)).toEqual(['#5B6B78']);
   });
 });
 
