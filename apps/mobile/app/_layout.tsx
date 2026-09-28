@@ -4,7 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import NotoSansJP from '../assets/fonts/NotoSansJP-Subset.ttf';
+import { FONT_ASSETS } from '../src/fonts';
 import { DEVICE_APPEARANCE, durations, ThemeProvider, useTheme } from '@irodora/ui';
 import { installRandomSource } from '../src/store/random';
 import { AppearanceProvider, useAppearance } from '../src/appearance';
@@ -167,17 +167,15 @@ function Themed({ launch }: { readonly launch?: React.ReactNode }): React.JSX.El
 
 export default function RootLayout(): React.JSX.Element {
   /*
-   * The bundled Japanese subset (ADR-0057, F-076). Its coverage over the corpus and the
-   * message catalogue is checked by `gate:content`, so a corpus publish that introduces a
-   * character this face lacks fails the build rather than showing a tofu box on a device.
+   * Every bundled face (ADR-0057, ADR-0112): the Japanese sans, the serif and the mincho. Their
+   * coverage is checked by `gate:content`, so a corpus publish that introduces a character a
+   * face lacks fails the build rather than showing a tofu box on a device.
    *
-   * Rendering is held until it loads. A frame drawn before the face is ready falls back to
+   * Rendering is held until ALL of them load. A frame drawn before the face is ready falls back to
    * the platform font, which is the silent failure the whole decision exists to avoid — it
    * would look like a font that simply differs rather than one that is missing.
    */
-  const [loaded] = useFonts({
-    NotoSansJP,
-  });
+  const [loaded] = useFonts(FONT_ASSETS);
 
   /*
    * THE LAUNCH OVERLAY, AND THE ORDER IS THE FEATURE.
